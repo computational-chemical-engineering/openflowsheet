@@ -37,7 +37,12 @@ from openflowsheet.compiled import CompiledProblem, EvaluationContext
 from openflowsheet.models import flow_id
 from openflowsheet.models.syn001.flowsheet import STREAMS, Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
-from openflowsheet.orchestrator.rank import AliasElimination, eliminate_alias_rows
+from openflowsheet.orchestrator.rank import (
+    PRESSURE_SHIFT,
+    AliasElimination,
+    eliminate_alias_rows,
+    pressure_shifted_state,
+)
 from openflowsheet.orchestrator.tear import Syn001TearProblem
 from openflowsheet.run.compare import CURRENT_POLICY_ID
 from openflowsheet.thermo import PropertyProvider
@@ -890,7 +895,7 @@ class BoundDeclaration:
     eliminated rows are the procedure's structural answer at `x_final` only."""
 
     #: K03 §7.2's second state: every pressure moved by a distinct amount, as the tear's.
-    PRESSURE_SHIFT: Final = 997.0
+    PRESSURE_SHIFT: Final = PRESSURE_SHIFT
     #: The fresh provider's declared pressure range the shifted copy stays inside (ADR 0014 D5);
     #: `None` reads SYN-001's at the shift (M02 design note §14.2 B15: a revision's basis's).
     pressure_domain: tuple[float, float] | None = None
@@ -924,34 +929,17 @@ class BoundDeclaration:
         return dict(zip(result.equation_ids, result.values, strict=True))
 
     def _shifted(self, state: Mapping[str, float]) -> tuple[dict[str, float], str]:
-        """K03 §7.2's second state under ADR 0014 D5's direction rule, and `""` or the reason it
-        cannot be built: `pressure_shift_outside_domain` when a column's move leaves the
-        provider's pressure domain both ways, `pressure_shift_not_generic` when two pressures
-        distinct at `state` coincide after the moves (equal ones never can: the amounts are
-        distinct and each is positive)."""
-        low, high = (
+        """K03 §7.2's second state under ADR 0014 D5's direction rule, in the provider's declared
+        pressure domain (`orchestrator.rank.pressure_shifted_state`): `pressure_domain` when set,
+        else SYN-001's."""
+        return pressure_shifted_state(
+            self.spec.variable_ids,
+            self.spec.variable_kinds,
+            state,
             self.pressure_domain
             if self.pressure_domain is not None
-            else Syn001Provider().describe().domain["P"]
+            else Syn001Provider().describe().domain["P"],
         )
-        shifted = dict(state)
-        moved: list[str] = []
-        for index, name in enumerate(self.spec.variable_ids):
-            if self.spec.variable_kinds.get(name) != "pressure":
-                continue
-            step = self.PRESSURE_SHIFT * (index + 1)
-            if low <= state[name] + step <= high:
-                shifted[name] = state[name] + step
-            elif low <= state[name] - step <= high:
-                shifted[name] = state[name] - step
-            else:
-                return shifted, "pressure_shift_outside_domain"
-            moved.append(name)
-        original_at: dict[float, float] = {}
-        for name in moved:
-            if original_at.setdefault(shifted[name], state[name]) != state[name]:
-                return shifted, "pressure_shift_not_generic"
-        return shifted, ""
 
     def _aliases(self, state: Mapping[str, float]) -> AliasElimination:
         jacobian = self.compiled.jacobian(np.array(state_vector(self.spec, state)), self.context)

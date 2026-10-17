@@ -1,0 +1,604 @@
+"""M05 WO-3: TRF's state read from its log, its outcomes, its registered configurations and its
+pin (design note §6.7; ADR 0038 D1, D4, D8), in the default gate. `trf_state` imports no Pyomo;
+the log fixture below is TRF 6.10.1's own record of TR-E1 (`tests/test_m05_trf.py` reproduces it
+in the audited environment).
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+from pathlib import Path
+
+import pytest
+from conftest import REPO_ROOT
+
+from openflowsheet.studies.trust_region.holders import RunState
+from openflowsheet.studies.trust_region.trf_state import (
+    EXIT_FEASIBLE,
+    EXIT_OPTIMAL,
+    PYOMO_VERSION,
+    RETURNS_MODEL,
+    TRF_CONFIG_V1,
+    TRF_MODULE_SHA256,
+    TRSP_EXECUTABLE_SHA256,
+    TRSP_OPTIONS,
+    WARNING_INSUFFICIENT_PROGRESS,
+    EFBasis,
+    IterationRecord,
+    TrfLogError,
+    TrfLogHandler,
+    basis_refusals,
+    classify_exit,
+    final_step_ratio,
+    framework_readiness,
+    last_accepted,
+    radius_in_force,
+    reconstruct_filter,
+    step_size_termination,
+    trf_config_v1,
+    zero_basis,
+)
+
+#: TRF 6.10.1's INFO records of TR-E1 through `openflowsheet_trsp_ipopt` (measured, WO-3).
+TR_E1_LOG = """\
+****** Iteration 0 ******
+trustRadius = 1.0
+feasibility = 0.39409145195691153
+objectiveValue = 0.33780685817104034
+stepNorm = 0
+****** Iteration 1 ******
+trustRadius = 0.06886655497881056
+feasibility = 0.020618399647490016
+objectiveValue = 0.2759713000394235
+stepNorm = 0.1377331099576211
+INFO: theta-type step
+****** Iteration 2 ******
+trustRadius = 0.002965276432002395
+feasibility = 8.062946323050824e-06
+objectiveValue = 0.2770443672997913
+stepNorm = 0.00593055286400479
+INFO: theta-type step
+****** Iteration 3 ******
+trustRadius = 0.002965276432002395
+feasibility = 2.2818900546894838e-08
+objectiveValue = 0.2770447875414949
+stepNorm = 7.224864113797302e-05
+INFO: theta-type step
+****** Iteration 4 ******
+trustRadius = 0.002965276432002395
+feasibility = 5.525213619961278e-11
+objectiveValue = 0.2770447887637415
+stepNorm = 3.446238002746682e-06
+INFO: theta-type step"""
+
+
+def parsed(text: str = TR_E1_LOG) -> tuple[TrfLogHandler, tuple[IterationRecord, ...]]:
+    handler = TrfLogHandler(RunState("trf-1"))
+    for line in text.splitlines():
+        handler.consume(line)
+    return handler, handler.iterations()
+
+
+def record(k: int, theta: float, f: float, kind: str | None) -> IterationRecord:
+    return IterationRecord(k, theta, f, 1.0, 0.1, kind)  # type: ignore[arg-type]
+
+
+# -- the parser -----------------------------------------------------------------------------------
+
+
+def test_the_log_parses_exactly_and_advances_the_run_state() -> None:
+    handler, iterations = parsed()
+    assert [r.k for r in iterations] == [0, 1, 2, 3, 4]
+    assert [r.step_type for r in iterations] == [None, "theta", "theta", "theta", "theta"]
+    assert iterations[4].theta == 5.525213619961278e-11
+    assert iterations[1].radius == 0.06886655497881056
+    assert iterations[0].step_norm == 0.0
+    assert handler.run is not None and handler.run.last_logged_iteration == 4
+    assert iterations[1].as_document()["radius_logged"] == "updated"
+
+
+def test_the_float_round_trip_through_the_log_is_exact() -> None:
+    """`%s` of a float is its `repr`, so `float()` of the logged text is the binary64 TRF held."""
+    value = 0.1 + 0.2
+    handler = TrfLogHandler()
+    lines = (
+        "****** Iteration 0 ******",
+        f"trustRadius = {value}",
+        "feasibility = %s" % (value,),  # noqa: UP031 - the format TRF itself uses
+        "objectiveValue = 1e-300",
+        "stepNorm = 0",
+    )
+    for line in lines:
+        handler.consume(line)
+    (only,) = handler.iterations()
+    assert only.radius == value and only.theta == value and only.objective == 1e-300
+
+
+def test_a_rejected_step_logs_the_radius_it_used() -> None:
+    handler = TrfLogHandler()
+    text = (
+        "****** Iteration 0 ******\ntrustRadius = 0.25\nfeasibility = 1.0\n"
+        "objectiveValue = 2.0\nstepNorm = 0\n****** Iteration 1 ******\ntrustRadius = 0.25\n"
+        "feasibility = 3.0\nobjectiveValue = 1.0\nstepNorm = 0.25\nINFO: step rejected"
+    )
+    for line in text.splitlines():
+        handler.consume(line)
+    rejected = handler.iterations()[1]
+    assert rejected.step_type == "rejected"
+    assert rejected.as_document()["radius_logged"] == "used"
+
+
+def test_warnings_are_kept_apart() -> None:
+    handler, _ = parsed()
+    handler.consume("EXIT: Maximum iterations reached: 4.", logging.WARNING)
+    assert handler.warnings == ["EXIT: Maximum iterations reached: 4."]
+    handler.iterations()  # a warning does not disturb the records
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        (lambda t: t.replace("stepNorm = 0.00593055286400479\n", ""), "logged"),
+        (lambda t: t.replace("Iteration 3", "Iteration 7"), "position"),
+        (lambda t: t.replace("INFO: theta-type step", "INFO: something else", 1), "unrecognized"),
+        (lambda t: t + "\nfeasibility = not-a-number", "unrecognized"),
+        (lambda t: t.replace("****** Iteration 2 ******\n", "", 1), "unrecognized"),
+    ],
+)
+def test_a_log_that_is_not_trf_6_10_1s_is_refused(mutation: object, message: str) -> None:
+    handler = TrfLogHandler()
+    for line in mutation(TR_E1_LOG).splitlines():  # type: ignore[operator]
+        handler.consume(line)
+    with pytest.raises(TrfLogError, match=message):
+        handler.iterations()
+
+
+# -- the filter -----------------------------------------------------------------------------------
+
+
+def test_the_filter_of_tr_e1_is_every_theta_step_offered() -> None:
+    _, iterations = parsed()
+    rebuilt = reconstruct_filter(iterations, 0.01, 0.01)
+    assert rebuilt == tuple(
+        (r.objective - 0.01 * r.theta, (1 - 0.01) * r.theta) for r in iterations[1:]
+    )
+
+
+def test_the_filter_follows_add_to_filter_dominance() -> None:
+    iterations = (
+        record(0, 9.0, 9.0, None),
+        record(1, 1.0, 1.0, "theta"),  # offered (0.99, 0.99)
+        record(2, 2.0, 0.5, "theta"),  # (0.48, 1.98): neither dominates (0.99, 0.99)
+        record(3, 3.0, 3.0, "theta"),  # dominated by (0.99, 0.99): skipped
+        record(4, 0.5, 0.1, "theta"),  # dominates both: they are removed
+        record(5, 0.1, 0.0, "f"),  # f-type steps do not enter the filter
+    )
+    assert reconstruct_filter(iterations, 0.01, 0.01) == ((0.1 - 0.01 * 0.5, 0.99 * 0.5),)
+    assert reconstruct_filter(iterations[:4], 0.01, 0.01) == (
+        (1.0 - 0.01, 0.99),
+        (0.5 - 0.02, 0.99 * 2.0),
+    )
+
+
+def test_the_final_iterate_is_the_last_accepted_one() -> None:
+    iterations = (record(0, 1.0, 1.0, None), record(1, 0.5, 0.9, "f"), record(2, 2, 2, "rejected"))
+    accepted = last_accepted(iterations)
+    assert accepted is not None and accepted.k == 1
+    assert last_accepted(iterations[:1]) == iterations[0]
+
+
+# -- the outcome ----------------------------------------------------------------------------------
+
+
+def classify(
+    exit_lines: list[str],
+    warnings: list[str],
+    iterations: tuple[IterationRecord, ...],
+    maximum: int = 50,
+    theta_recheck: float | None = None,
+    box_bound_exempt: bool = False,
+) -> str:
+    """`classify_exit` at TR-E1's terminations and radius rule (its log's initial radius 1.0,
+    `M05-trf-config-v1`'s minimum radius and γ_c); θ re-checked equal to the last accepted logged
+    θ unless given (what a model left at that iterate gives, bitwise)."""
+    accepted = last_accepted(iterations)
+    if theta_recheck is None:
+        theta_recheck = accepted.theta if accepted is not None else 0.0
+    return classify_exit(
+        exit_lines=exit_lines,
+        warnings=warnings,
+        iterations=iterations,
+        theta_recheck=theta_recheck,
+        feasibility_termination=1e-5,
+        step_size_termination=1e-5,
+        maximum_iterations=maximum,
+        trust_radius=1.0,
+        minimum_radius=TRF_CONFIG_V1["minimum_radius"],
+        gamma_c=TRF_CONFIG_V1["radius_update_param_gamma_c"],
+        box_bound_exempt=box_bound_exempt,
+    )
+
+
+def test_converged_needs_the_exit_line_and_the_logged_values_to_agree() -> None:
+    _, iterations = parsed()
+    assert classify([EXIT_OPTIMAL], [], iterations) == "TRF_CONVERGED"
+    assert classify([EXIT_OPTIMAL], [], iterations[:4]) == "TRF_ERROR(exit_mismatch)"
+    assert classify([EXIT_OPTIMAL, EXIT_OPTIMAL], [], iterations) == "TRF_ERROR(exit_mismatch)"
+    assert classify([], [], iterations) == "TRF_ERROR(exit_mismatch)"
+    assert classify([EXIT_OPTIMAL], [], ()) == "TRF_ERROR(exit_mismatch)"
+
+
+def test_converged_on_the_last_permitted_iteration_is_still_converged() -> None:
+    """`TRF.py` logs the maximum-iterations warning whenever `iteration >= maximum_iterations`,
+    including after a `break` on convergence at the last permitted iteration."""
+    _, iterations = parsed()
+    warning = ["EXIT: Maximum iterations reached: 5."]
+    assert classify([EXIT_OPTIMAL], warning, iterations, maximum=5) == "TRF_CONVERGED"
+
+
+def test_feasible_stalled_needs_the_insufficient_progress_warning() -> None:
+    _, iterations = parsed()
+    warning = [WARNING_INSUFFICIENT_PROGRESS]
+    assert classify([EXIT_FEASIBLE], warning, iterations) == "TRF_FEASIBLE_STALLED"
+    assert classify([EXIT_FEASIBLE], [], iterations) == "TRF_ERROR(exit_mismatch)"
+
+
+def test_max_iterations_needs_the_warning_and_that_many_logged_iterations() -> None:
+    _, iterations = parsed()
+    reached = ["EXIT: Maximum iterations reached: 4."]
+    assert classify([], reached, iterations, maximum=4) == "TRF_MAX_ITERATIONS"
+    assert classify([], reached, iterations, maximum=5) == "TRF_ERROR(exit_mismatch)"
+    assert classify([], reached, iterations[:4], maximum=4) == "TRF_ERROR(exit_mismatch)"
+
+
+#: Probe P14 (b)'s log through `run_trf`: the PMP leaves the start, θ_PMP = 0, and TRF prints
+#: "Optimal" before any subproblem (toy A with the constant basis).
+P14B_LOG = """\
+****** Iteration 0 ******
+trustRadius = 1.0
+feasibility = 0.0
+objectiveValue = 0.3721
+stepNorm = 0"""
+#: Probe P14 (c)'s log through `run_trf` (the parabola block from T = 300.5, affine basis, Pyomo's
+#: defaults): the radius collapses to the minimum, and TRF prints "Feasible" at θ = 1.80.
+P14C_LOG = """\
+****** Iteration 0 ******
+trustRadius = 1.0
+feasibility = 29.046489250485404
+objectiveValue = 0.0
+stepNorm = 0
+****** Iteration 1 ******
+trustRadius = 1e-06
+feasibility = 7.249727765372173
+objectiveValue = 0.0
+stepNorm = 2.9764e-09
+INFO: theta-type step
+****** Iteration 2 ******
+trustRadius = 1e-06
+feasibility = 1.800595684745263
+objectiveValue = 0.0
+stepNorm = 3.6287e-07
+INFO: theta-type step"""
+
+
+def test_r279_optimal_without_an_accepted_step_is_exit_without_step() -> None:
+    """P14 (b): no TRSP at all, or only rejected ones — the model is the PMP's, TRF's "Optimal" is
+    no convergence claim."""
+    _, pmp_only = parsed(P14B_LOG)
+    assert classify([EXIT_OPTIMAL], [], pmp_only) == "TRF_EXIT_WITHOUT_STEP"
+    rejected = (*pmp_only, IterationRecord(1, 1e-7, 0.3, 0.5, 1e-6, "rejected"))
+    assert classify([EXIT_OPTIMAL], [], rejected) == "TRF_EXIT_WITHOUT_STEP"
+    _, iterations = parsed()
+    assert classify([EXIT_OPTIMAL], [], iterations) == "TRF_CONVERGED"
+
+
+def test_r299_optimal_with_theta_rechecked_above_the_tolerance_is_stalled_inconsistent() -> None:
+    """R-299: a model whose θ disagrees with TRF's "Optimal" is believed over the line — no
+    candidate, and an abort for the retry (`TRF_STALLED_INCONSISTENT`), not a parser defect; it
+    precedes `TRF_EXIT_WITHOUT_STEP` (P14 (b)'s PMP-only log)."""
+    _, iterations = parsed()
+    assert classify([EXIT_OPTIMAL], [], iterations, theta_recheck=1e-5) == "TRF_CONVERGED"
+    assert classify([EXIT_OPTIMAL], [], iterations, theta_recheck=2e-5) == (
+        "TRF_STALLED_INCONSISTENT"
+    )
+    _, pmp_only = parsed(P14B_LOG)
+    assert classify([EXIT_OPTIMAL], [], pmp_only, theta_recheck=0.5) == "TRF_STALLED_INCONSISTENT"
+
+
+def test_r299_a_line_that_disagrees_with_the_log_stays_exit_mismatch() -> None:
+    """R-299: `TRF_ERROR(exit_mismatch)` keeps its meaning — an "Optimal" line whose own logged θ
+    or step is beyond the terminations is a defect, whatever θ the model re-checks to."""
+    _, iterations = parsed()
+    for recheck in (0.0, 0.5):
+        assert classify([EXIT_OPTIMAL], [], iterations[:4], theta_recheck=recheck) == (
+            "TRF_ERROR(exit_mismatch)"
+        )
+
+
+def test_r299_the_exit_claim() -> None:
+    from openflowsheet.studies.trust_region.trf_state import exit_claim
+
+    assert exit_claim([EXIT_OPTIMAL]) == "optimal"
+    assert exit_claim([EXIT_FEASIBLE]) == "feasible"
+    assert exit_claim([]) is None
+    assert exit_claim([EXIT_OPTIMAL, EXIT_OPTIMAL]) is None
+
+
+def test_r279_a_feasible_exit_above_the_tolerance_is_stalled_inconsistent() -> None:
+    """P14 (c): `TRF.py`'s stall test compares θ with itself after an accepted step, so the
+    "Feasible" line says nothing about θ; the re-check decides."""
+    _, iterations = parsed(P14C_LOG)
+    warning = [WARNING_INSUFFICIENT_PROGRESS]
+    assert classify([EXIT_FEASIBLE], warning, iterations) == "TRF_STALLED_INCONSISTENT"
+    assert classify([EXIT_FEASIBLE], warning, iterations, theta_recheck=1e-5) == (
+        "TRF_FEASIBLE_STALLED"
+    )
+    assert classify([EXIT_FEASIBLE], [], iterations) == "TRF_ERROR(exit_mismatch)"
+
+
+def test_r279_which_outcomes_keep_the_model() -> None:
+    assert RETURNS_MODEL == {
+        "TRF_CONVERGED",
+        "TRF_EXIT_WITHOUT_STEP",
+        "TRF_EXIT_UNVERIFIED(final_step_rejected)",
+        "TRF_EXIT_UNVERIFIED(radius_limited)",
+        "TRF_FEASIBLE_STALLED",
+        "TRF_MAX_ITERATIONS",
+    }
+    assert "TRF_STALLED_INCONSISTENT" not in RETURNS_MODEL
+
+
+# -- R-401: an "Optimal" exit whose final step does not show a stationary model -----------------
+
+#: F-15's TR-E2 run (v1 basis, WO-8; the parked record's iterations 27 and 28, verbatim): k = 27
+#: is a θ-type step whose updated radius is Δ_28, and k = 28 an f-type step on that radius.
+F15_K27 = IterationRecord(
+    27, 4.098217793735426e-05, -0.45583707628232506, 0.0036370503649489384,
+    0.007274100729897877, "theta",
+)  # fmt: skip
+F15_K28_STEP = 0.0036364873109182225
+#: TR-E2's terminations (`M05-trf-config-v1`, σ = 0.5 · 0.5 K / 20 K) and radius rule.
+TR_E2_RULE = {
+    "trust_radius": TRF_CONFIG_V1["trust_radius"],
+    "minimum_radius": TRF_CONFIG_V1["minimum_radius"],
+    "gamma_c": TRF_CONFIG_V1["radius_update_param_gamma_c"],
+}
+
+
+def trajectory(*tail: IterationRecord) -> tuple[IterationRecord, ...]:
+    """Iteration 0 and accepted θ-type fillers up to the first record of `tail`, then `tail`."""
+    first = tail[0].k
+    filler = tuple(IterationRecord(k, 1e-3, -0.4, 0.5, 0.25, "theta") for k in range(1, first))
+    return (IterationRecord(0, 0.5, -0.45, 0.25, 0.0, None), *filler, *tail)
+
+
+def classify_tr_e2(iterations: tuple[IterationRecord, ...], *, exempt: bool = False) -> str:
+    return classify_exit(
+        exit_lines=[EXIT_OPTIMAL],
+        warnings=[],
+        iterations=iterations,
+        theta_recheck=iterations[-1].theta,
+        feasibility_termination=1e-5,
+        step_size_termination=step_size_termination([0.5], [20.0]),
+        maximum_iterations=30,
+        **TR_E2_RULE,
+        box_bound_exempt=exempt,
+    )
+
+
+def test_r401_f15s_k28_with_theta_below_the_termination_is_unverified() -> None:
+    """§20.7 WO-8a (i): F-15's k = 27/28 with an `Optimal` exit at θ 9.9e-6 (it missed by 2.6 %)
+    is radius-limited: s_28/Δ_28 = 0.99985 ≥ 0.99."""
+    k28 = IterationRecord(28, 9.9e-6, -0.45585003274150676, 0.009, F15_K28_STEP, "f")
+    iterations = trajectory(F15_K27, k28)
+    assert classify_tr_e2(iterations) == "TRF_EXIT_UNVERIFIED(radius_limited)"
+    ratio = final_step_ratio(iterations, **TR_E2_RULE)
+    assert ratio == F15_K28_STEP / 0.0036370503649489384
+    assert 0.99 < ratio < 1.0
+    # The exception: n_d = 1 with the returned decision at a box bound.
+    assert classify_tr_e2(iterations, exempt=True) == "TRF_CONVERGED"
+
+
+def test_r401_a_rejected_final_step_is_unverified() -> None:
+    """§20.7 WO-8a (i): an `Optimal` exit after a rejected final step, however small."""
+    rejected = IterationRecord(28, 9.9e-6, -0.4, 1e-3, 1e-6, "rejected")
+    assert classify_tr_e2(trajectory(F15_K27, rejected)) == (
+        "TRF_EXIT_UNVERIFIED(final_step_rejected)"
+    )
+    assert classify_tr_e2(trajectory(F15_K27, rejected), exempt=True) == (
+        "TRF_EXIT_UNVERIFIED(final_step_rejected)"
+    )
+
+
+def test_r401_a_full_step_at_a_box_bound_is_converged() -> None:
+    """§20.7 WO-8a (i): s_K = Δ_K with the returned decision at a box bound (n_d = 1)."""
+    full = IterationRecord(28, 9.9e-6, -0.4, 0.009, 0.0036370503649489384, "f")
+    iterations = trajectory(F15_K27, full)
+    assert final_step_ratio(iterations, **TR_E2_RULE) == 1.0
+    assert classify_tr_e2(iterations, exempt=True) == "TRF_CONVERGED"
+    assert classify_tr_e2(iterations) == "TRF_EXIT_UNVERIFIED(radius_limited)"
+
+
+def test_r401_the_margin_is_one_percent_of_the_radius() -> None:
+    radius = F15_K27.radius
+    below = IterationRecord(28, 9.9e-6, -0.4, 0.009, 0.98 * radius, "f")
+    at = IterationRecord(28, 9.9e-6, -0.4, 0.009, (1 - 1e-2) * radius, "f")
+    assert classify_tr_e2(trajectory(F15_K27, below)) == "TRF_CONVERGED"
+    assert classify_tr_e2(trajectory(F15_K27, at)) == "TRF_EXIT_UNVERIFIED(radius_limited)"
+
+
+@pytest.mark.parametrize("step_norm", [0.0036364873109182225, 1.5e-4, 1e-9])
+def test_r401_the_radius_after_a_rejected_step_is_trf_s_rejection_rule(step_norm: float) -> None:
+    """§20.7 WO-8a (i): Δ_K after a rejected K − 1 is `TRF.py`'s `max(config.minimum_radius,
+    step_norm_k * config.radius_update_param_gamma_c)`, bitwise — the rejected record's own
+    logged radius is the one it used, not this one. The minimum binds for the last step."""
+    rejected = IterationRecord(27, 2e-5, -0.4, 0.0072, step_norm, "rejected")
+    after = IterationRecord(28, 9.9e-6, -0.4, 0.0072, 1e-6, "f")
+    iterations = trajectory(rejected, after)
+    expected = max(
+        TRF_CONFIG_V1["minimum_radius"], step_norm * TRF_CONFIG_V1["radius_update_param_gamma_c"]
+    )
+    assert radius_in_force(iterations, 28, **TR_E2_RULE) == expected
+    assert radius_in_force(iterations, 28, **TR_E2_RULE) != rejected.radius
+    assert final_step_ratio(iterations, **TR_E2_RULE) == 1e-6 / expected
+
+
+def test_r401_the_first_trsp_uses_the_configured_radius_and_tr_e1_stays_converged() -> None:
+    """Δ_1 is `trust_radius`; §20.7 WO-8a (ii): TR-E1's final step is 1.16e-3 of its radius."""
+    _, iterations = parsed()
+    assert radius_in_force(iterations, 1, trust_radius=0.3, minimum_radius=1e-4, gamma_c=0.5) == 0.3
+    ratio = final_step_ratio(iterations, trust_radius=1.0, minimum_radius=1e-4, gamma_c=0.5)
+    assert ratio is not None and round(ratio, 5) == 0.00116
+    assert classify([EXIT_OPTIMAL], [], iterations) == "TRF_CONVERGED"
+    assert final_step_ratio(iterations[:1], **TR_E2_RULE) is None
+    with pytest.raises(ValueError):
+        radius_in_force(iterations, 0, **TR_E2_RULE)
+
+
+def test_r401_precedence_stalled_and_exit_without_step_come_first() -> None:
+    """R-401's precedence: `TRF_STALLED_INCONSISTENT` > `TRF_EXIT_WITHOUT_STEP` >
+    `TRF_EXIT_UNVERIFIED` > `TRF_CONVERGED`."""
+    k28 = IterationRecord(28, 9.9e-6, -0.4, 0.009, F15_K28_STEP, "f")
+    iterations = trajectory(F15_K27, k28)
+    stalled = classify_exit(
+        exit_lines=[EXIT_OPTIMAL],
+        warnings=[],
+        iterations=iterations,
+        theta_recheck=2e-5,
+        feasibility_termination=1e-5,
+        step_size_termination=0.0125,
+        maximum_iterations=30,
+        **TR_E2_RULE,
+        box_bound_exempt=False,
+    )
+    assert stalled == "TRF_STALLED_INCONSISTENT"
+    pmp = IterationRecord(0, 1e-6, -0.4, 0.25, 0.0, None)
+    only_rejected = (pmp, IterationRecord(1, 1e-6, -0.4, 0.25, 1e-6, "rejected"))
+    assert classify_tr_e2(only_rejected) == "TRF_EXIT_WITHOUT_STEP"
+
+
+# -- the basis (R-277) ----------------------------------------------------------------------------
+
+
+def test_r277_a_missing_or_incomplete_basis_is_refused() -> None:
+    efs = ("ef_0", "ef_1", "ef_ext_0")
+    affine = EFBasis("affine_taylor", lambda args: args[0])
+    assert basis_refusals(efs, None, "pass") == tuple(
+        f"TRF_CONFIGURATION_REFUSED(basis_missing:{name})" for name in efs
+    )
+    assert basis_refusals(efs, {"ef_0": affine, "ef_ext_0": affine}, "pass") == (
+        "TRF_CONFIGURATION_REFUSED(basis_missing:ef_1)",
+    )
+    complete = {name: affine for name in efs}
+    assert basis_refusals(efs, complete, "pass") == ()
+    assert basis_refusals(efs, {**complete, "ef_9": affine}, "pass") == (
+        "TRF_CONFIGURATION_REFUSED(basis_unknown:ef_9)",
+    )
+
+
+def test_r277_the_zero_basis_is_tr_e1s_only() -> None:
+    efs = ("ef_0",)
+    zero = zero_basis(efs)
+    assert {name: basis.kind for name, basis in zero.items()} == {"ef_0": "zero"}
+    result = zero["ef_0"].build([1.0, 2.0])
+    assert result == 0 and type(result) is int  # TRF's own default, `lambda comp, ef: 0`
+    assert basis_refusals(efs, zero, "exempt_oracle") == ()
+    assert basis_refusals(efs, zero, "pass") == (
+        "TRF_CONFIGURATION_REFUSED(zero_basis_not_oracle:ef_0)",
+    )
+
+
+# -- the registered configurations ----------------------------------------------------------------
+
+
+def test_the_trsp_options_are_the_design_notes_table() -> None:
+    assert dict(TRSP_OPTIONS) == {
+        "linear_solver": "mumps",
+        "hessian_approximation": "exact",
+        "bound_relax_factor": 0.0,
+        "honor_original_bounds": "yes",
+        "mu_strategy": "monotone",
+        "tol": 1e-8,
+        "constr_viol_tol": 1e-8,
+        "compl_inf_tol": 1e-8,
+        "dual_inf_tol": 1e-6,
+        "acceptable_iter": 0,
+        "max_iter": 500,
+        "max_wall_time": 120.0,
+        "nlp_scaling_method": "user-scaling",
+        "print_level": 0,
+    }
+
+
+def test_the_step_size_termination_is_half_the_scaled_decision_tolerance() -> None:
+    """§6.7: 0.005556 for C1 REAL (δ = 0.5 K, h = 45 K) and 0.0125 for TR-E2 (h = 20 K)."""
+    assert step_size_termination([0.5], [45.0]) == pytest.approx(0.005556, abs=5e-7)
+    assert step_size_termination([0.5], [20.0]) == 0.0125
+    assert step_size_termination([0.5, 0.01], [20.0, 0.1]) == 0.0125
+    config = trf_config_v1(0.0125)
+    assert config["step_size_termination"] == 0.0125
+    assert config["maximum_radius"] == 1.0 and config["solver"] == "openflowsheet_trsp_ipopt"
+    assert "step_size_termination" not in TRF_CONFIG_V1
+    with pytest.raises(ValueError):
+        step_size_termination([], [])
+
+
+# -- the pin and readiness (G2's default-gate half) -----------------------------------------------
+
+
+def test_readiness_names_every_failing_pin_item(tmp_path: Path) -> None:
+    """A patched version, a module with a changed byte, a missing module and an unaudited
+    executable each give their reason, all of them listed."""
+    modules = tmp_path / "trustregion"
+    modules.mkdir()
+    for name in TRF_MODULE_SHA256:
+        (modules / name).write_bytes(b"not the pinned module\n")
+    (modules / "util.py").unlink()
+    executable = tmp_path / "ipopt"
+    executable.write_bytes(b"not the audited executable")
+    readiness = framework_readiness(version="6.10.2", module_dir=modules, executable=executable)
+    assert readiness.status == "UNSUPPORTED"
+    assert readiness.codes == ("TRUST_REGION_FRAMEWORK_UNPINNED", "TRSP_SOLVER_UNAUDITED")
+    details = " ".join(reason.detail for reason in readiness.reasons)
+    assert "'6.10.2'" in details and PYOMO_VERSION in details
+    assert all(name in details for name in TRF_MODULE_SHA256)
+    assert "SHA-256 None" in details  # the missing module
+    missing = framework_readiness(
+        version=PYOMO_VERSION, module_dir=modules, executable=tmp_path / "absent"
+    )
+    assert "no subproblem executable" in missing.reasons[-1].detail
+
+
+def test_without_pyomo_the_framework_is_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Design note §6.8: in the default install readiness is
+    `UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNAVAILABLE)` naming the audit. Pyomo is hidden from
+    the lookup, so the case is checked whichever environment runs it."""
+    import importlib.util
+
+    real = importlib.util.find_spec
+    monkeypatch.setattr(
+        importlib.util, "find_spec", lambda name, *a: None if name == "pyomo" else real(name, *a)
+    )
+    readiness = framework_readiness()
+    assert readiness.status == "UNSUPPORTED"
+    assert readiness.codes == ("TRUST_REGION_FRAMEWORK_UNAVAILABLE",)
+    assert "docs/m03-ipopt-audit.md" in readiness.reasons[0].detail
+
+
+#: WO-1's [A10] audit record of the Ipopt executable (audit §11), merged at `aef41bf`.
+TRSP_INVENTORY = REPO_ROOT / "benchmarks" / "m05" / "trsp-inventory-x86_64.json"
+
+
+def test_the_pin_is_what_wo1_audited() -> None:
+    """The adapter's pin (WO-3) and the audit record (WO-1) name the same framework and the same
+    executable: the five TRF module hashes, the Pyomo version, and `bin/ipopt`'s SHA-256 — as the
+    workload measured it and as the object inventory lists it."""
+    record = json.loads(TRSP_INVENTORY.read_text(encoding="utf-8"))
+    run = record["workload"]["executable"]
+    assert run["trf_modules"] == dict(TRF_MODULE_SHA256)
+    assert run["versions"]["pyomo"] == PYOMO_VERSION
+    assert run["executable_pinned"] == "$ENV/bin/ipopt"
+    assert run["executable"] == TRSP_EXECUTABLE_SHA256
+    (inventoried,) = [entry for entry in record["objects"] if entry["path"] == "$ENV/bin/ipopt"]
+    assert inventoried["sha256"] == TRSP_EXECUTABLE_SHA256

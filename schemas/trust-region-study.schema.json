@@ -1,0 +1,2002 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/trust-region-study.schema.json",
+  "title": "TrustRegionStudy",
+  "description": "M05 design note §9.1 as amended by §18.4 (R-329), ADRs 0038 and 0039: the record of one trust-region study (`trust-region-study-v1`). Built from `studies.trust_region.study.StudyResult.as_document`. Every fixed-field object is closed and declares every field the producer writes (S14); id-keyed maps (decision ids, holder names, module names, EF names, units, stages, iterations, candidates) constrain only their values. `readiness`, `start`, `stage_a` and `best` are required, each an object or null (S13). The contents of `spec.decisions`, `spec.objective`, `spec.inequalities`, `spec.decision_tolerances` and `spec.budgets` are the caller's (build log S39). A study that ends before a run (UNSUPPORTED, start not certified, budget exhausted) has empty `runs` and `candidates`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "study_id",
+    "spec",
+    "environment",
+    "readiness",
+    "start",
+    "stage_a",
+    "runs",
+    "candidates",
+    "best",
+    "accounting",
+    "status",
+    "claims",
+    "limitations",
+    "fd_check",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "trust-region-study-v1"
+    },
+    "study_id": {
+      "type": "string"
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "case",
+        "revision_sha256",
+        "decisions",
+        "objective",
+        "inequalities",
+        "decision_tolerances",
+        "budgets",
+        "configs",
+        "truth",
+        "surrogate"
+      ],
+      "properties": {
+        "case": {
+          "type": "string"
+        },
+        "revision_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "decisions": {
+          "type": "array"
+        },
+        "objective": {},
+        "inequalities": {
+          "type": "array"
+        },
+        "decision_tolerances": {
+          "type": "object"
+        },
+        "budgets": {
+          "type": "object"
+        },
+        "configs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "trf",
+            "trsp",
+            "fd",
+            "basis",
+            "checks"
+          ],
+          "properties": {
+            "trf": {
+              "type": "string"
+            },
+            "trsp": {
+              "type": "string"
+            },
+            "fd": {
+              "type": "string"
+            },
+            "basis": {
+              "type": "string"
+            },
+            "checks": {
+              "type": "string"
+            }
+          }
+        },
+        "truth": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "id",
+            "sha256",
+            "synthetic"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "sha256": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/sha256"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "synthetic": {
+              "type": "boolean"
+            },
+            "gradient": {
+              "enum": [
+                "analytic",
+                "finite_difference"
+              ]
+            }
+          }
+        },
+        "surrogate": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "manifest_sha256",
+                "verdict"
+              ],
+              "properties": {
+                "manifest_sha256": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "verdict": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pyomo_version",
+        "trf_module_sha256",
+        "ipopt_version",
+        "mumps_version",
+        "trsp_executable_sha256",
+        "platform"
+      ],
+      "properties": {
+        "pyomo_version": {
+          "type": "string"
+        },
+        "trf_module_sha256": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/sha256"
+          }
+        },
+        "ipopt_version": {
+          "type": "string"
+        },
+        "mumps_version": {
+          "type": "string"
+        },
+        "trsp_executable_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "platform": {
+          "type": "string"
+        }
+      }
+    },
+    "readiness": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "reasons"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "READY",
+                "UNSUPPORTED"
+              ]
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "detail"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "detail": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "start": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/parent_solve"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "stage_a": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "executed"
+          ],
+          "properties": {
+            "executed": {
+              "type": "boolean"
+            },
+            "reason": {
+              "const": "surrogate_not_promoted"
+            },
+            "runs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "description": "Stage A (§7.3): skipped with its reason, or executed with its run ids and, after a second abort, the stopping status."
+        },
+        {
+          "type": "object",
+          "maxProperties": 0,
+          "description": "The study stopped before stage A (UNSUPPORTED, start not certified, budget exhausted at S0)."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "run_id",
+          "stage",
+          "study_iteration",
+          "retry",
+          "truth",
+          "basis",
+          "projection",
+          "iterations",
+          "filter",
+          "outcome",
+          "final",
+          "ledger",
+          "assumptions",
+          "cold",
+          "start_check_id",
+          "radius_factor",
+          "config",
+          "exit_lines",
+          "theta_recheck",
+          "exit_claim",
+          "theta_logged",
+          "final_state_is_last_truth_point",
+          "error"
+        ],
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "stage": {
+            "enum": [
+              "A",
+              "C"
+            ]
+          },
+          "study_iteration": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "retry": {
+            "enum": [
+              0,
+              1
+            ]
+          },
+          "truth": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/truth_identity"
+            }
+          },
+          "basis": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/basis_kinds"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "policy",
+                  "kinds",
+                  "links"
+                ],
+                "properties": {
+                  "policy": {
+                    "const": "M05-basis-v2"
+                  },
+                  "kinds": {
+                    "$ref": "#/$defs/basis_kinds"
+                  },
+                  "links": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "$ref": "#/$defs/basis_curvature_link"
+                    }
+                  }
+                },
+                "description": "R-400's block: the policy, each EF's kind and each link holder's curvature record."
+              }
+            ],
+            "description": "Each EF's basis kind (`EFBasis.kind`) by EF name (M05-basis-v1), or R-400's `M05-basis-v2` block."
+          },
+          "projection": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source_map_sha256",
+              "n_vars",
+              "n_rows",
+              "n_block_efs",
+              "n_link_efs",
+              "n_ineq"
+            ],
+            "properties": {
+              "source_map_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "n_vars": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "n_rows": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "n_block_efs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "n_link_efs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "n_ineq": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "iterations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "k",
+                "theta",
+                "objective",
+                "radius",
+                "radius_logged",
+                "step_norm",
+                "type"
+              ],
+              "properties": {
+                "k": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "theta": {
+                  "type": "number"
+                },
+                "objective": {
+                  "type": "number"
+                },
+                "radius": {
+                  "type": "number"
+                },
+                "radius_logged": {
+                  "enum": [
+                    "used",
+                    "updated"
+                  ]
+                },
+                "step_norm": {
+                  "type": "number"
+                },
+                "type": {
+                  "enum": [
+                    "f",
+                    "theta",
+                    "rejected",
+                    null
+                  ]
+                }
+              },
+              "description": "Iteration 0 is the PMP and takes no step (`type` null); every later iteration has a step type.",
+              "if": {
+                "properties": {
+                  "k": {
+                    "const": 0
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "type": {
+                    "const": null
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "f",
+                      "theta",
+                      "rejected"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "filter": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "f",
+                "theta"
+              ],
+              "properties": {
+                "f": {
+                  "type": "number"
+                },
+                "theta": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "final": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "decisions",
+                  "objective",
+                  "theta"
+                ],
+                "properties": {
+                  "decisions": {
+                    "$ref": "#/$defs/decisions"
+                  },
+                  "objective": {
+                    "type": "number"
+                  },
+                  "theta": {
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ledger": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "summary",
+              "cold_parent"
+            ],
+            "properties": {
+              "summary": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/$defs/holder_summary"
+                }
+              },
+              "cold_parent": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "description": "S12: each truth holder's summary over the run, by holder name, and the run's cold parent requests. The ledger itself is `artifacts.ledger`."
+          },
+          "assumptions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "status"
+              ],
+              "properties": {
+                "id": {
+                  "pattern": "^A[1-7]$",
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "pattern": "^(holds_by_construction|checked\\(.+\\)|assumed|qualified\\(.+\\)|limitation)$"
+                }
+              }
+            }
+          },
+          "cold": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "start_check_id": {
+            "type": "string"
+          },
+          "radius_factor": {
+            "type": "number"
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            },
+            "description": "TRF's effective configuration, by option name."
+          },
+          "exit_lines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "theta_recheck": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "exit_claim": {
+            "enum": [
+              "optimal",
+              "feasible",
+              null
+            ]
+          },
+          "theta_logged": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "final_state_is_last_truth_point": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "final_step_ratio": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "description": "R-401: s_K/Δ_K of the final logged iteration K (TRF's ∞-norm step in scaled decisions over the radius TRSP K was solved with); null with no logged TRSP or when the log did not parse."
+          },
+          "final_step_at_box_bound": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "R-401: whether a bounded decision of the returned model is within 1e-6 (scaled) of a box bound (§7.4's at-bound rule); null with no logged TRSP or no returned model."
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "description": "One TRF run: `TrfStageRunner`'s document and the loop's keys. `exit_claim`, `theta_logged`, `theta_recheck` and `final_state_is_last_truth_point` are null when TRF raised (W4). `final_step_ratio` and `final_step_at_box_bound` (R-401) are additive: absent from records written before WO-8a."
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidate_id",
+          "run_id",
+          "decisions",
+          "label",
+          "revision_sha256",
+          "checks",
+          "poll",
+          "noise_floor",
+          "curvature",
+          "indifference_halfwidth",
+          "status",
+          "limitations",
+          "stage",
+          "stopped_by",
+          "solves"
+        ],
+        "properties": {
+          "candidate_id": {
+            "type": "string"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stage": {
+            "enum": [
+              "A",
+              "C"
+            ]
+          },
+          "decisions": {
+            "$ref": "#/$defs/decisions"
+          },
+          "label": {
+            "const": "targeted_check"
+          },
+          "revision_sha256": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/sha256"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "checks": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "P1": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "pass",
+                  "values"
+                ],
+                "properties": {
+                  "pass": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "check_id",
+                      "outcome",
+                      "certificate"
+                    ],
+                    "properties": {
+                      "check_id": {
+                        "type": "string"
+                      },
+                      "outcome": {
+                        "type": "string"
+                      },
+                      "certificate": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "P2": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "pass",
+                  "judged",
+                  "reason",
+                  "values"
+                ],
+                "properties": {
+                  "pass": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "judged": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "enum": [
+                      null,
+                      "no_trf_point",
+                      "theta_recheck"
+                    ]
+                  },
+                  "values": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "applicable"
+                        ],
+                        "properties": {
+                          "applicable": {
+                            "const": false
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "reference",
+                          "objective_trf",
+                          "objective_reference",
+                          "objective_error",
+                          "objective_bound",
+                          "n_mapped",
+                          "worst_state",
+                          "worst_state_variable",
+                          "final_state_checks_failed",
+                          "theta_recheck",
+                          "feasibility_termination"
+                        ],
+                        "properties": {
+                          "reference": {
+                            "type": "string"
+                          },
+                          "objective_trf": {
+                            "type": "number"
+                          },
+                          "objective_reference": {
+                            "type": "number"
+                          },
+                          "objective_error": {
+                            "type": "number"
+                          },
+                          "objective_bound": {
+                            "type": "number"
+                          },
+                          "n_mapped": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "worst_state": {
+                            "type": "number"
+                          },
+                          "worst_state_variable": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "final_state_checks_failed": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "theta_recheck": {
+                            "type": "number"
+                          },
+                          "feasibility_termination": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    ],
+                    "description": "P2 without a TRF point (`applicable: false`), else `gross_agreement`'s values."
+                  }
+                }
+              },
+              "P3": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "pass",
+                  "values"
+                ],
+                "properties": {
+                  "pass": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "n",
+                      "violated",
+                      "worst_scaled_violation"
+                    ],
+                    "properties": {
+                      "n": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "violated": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "worst_scaled_violation": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
+              "P4": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "pass",
+                  "values"
+                ],
+                "properties": {
+                  "pass": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "changed"
+                    ],
+                    "properties": {
+                      "changed": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "reference",
+                            "found"
+                          ],
+                          "properties": {
+                            "reference": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "found": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        },
+                        "description": "By unit: the reference (S0's) and the found regime label."
+                      }
+                    }
+                  }
+                }
+              },
+              "P5": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "pass",
+                  "values"
+                ],
+                "properties": {
+                  "pass": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "points",
+                      "n_feasible"
+                    ],
+                    "properties": {
+                      "points": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "check_id",
+                            "improvement",
+                            "allowance",
+                            "pass"
+                          ],
+                          "properties": {
+                            "check_id": {
+                              "type": "string"
+                            },
+                            "improvement": {
+                              "type": "number"
+                            },
+                            "allowance": {
+                              "type": "number"
+                            },
+                            "pass": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      },
+                      "n_feasible": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "poll": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "decision",
+                "direction",
+                "decisions",
+                "clipped",
+                "check_id",
+                "J",
+                "e",
+                "feasible",
+                "regimes_match"
+              ],
+              "properties": {
+                "decision": {
+                  "type": "string"
+                },
+                "direction": {
+                  "enum": [
+                    -1,
+                    1
+                  ]
+                },
+                "decisions": {
+                  "$ref": "#/$defs/decisions"
+                },
+                "clipped": {
+                  "type": "boolean"
+                },
+                "check_id": {
+                  "type": "string"
+                },
+                "J": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "e": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "feasible": {
+                  "type": "boolean"
+                },
+                "regimes_match": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "noise_floor": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "dJ_dX",
+                  "dJ_dT",
+                  "e_star",
+                  "h_X",
+                  "h_T",
+                  "inner"
+                ],
+                "properties": {
+                  "dJ_dX": {
+                    "type": "number"
+                  },
+                  "dJ_dT": {
+                    "type": "number"
+                  },
+                  "e_star": {
+                    "type": "number"
+                  },
+                  "h_X": {
+                    "type": "number"
+                  },
+                  "h_T": {
+                    "type": "number"
+                  },
+                  "inner": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "w",
+                        "J"
+                      ],
+                      "properties": {
+                        "w": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          }
+                        },
+                        "J": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "curvature": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "indifference_halfwidth": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "S15/S36: per decision id, √(2(e* + max e_j)/|c|) ≥ 0, or null where it is undefined; the whole field is null iff P5 did not run. The bound is ≥ 0, not > 0: a parent with no noise (e* = e_j = 0) gives exactly 0.0 (build log S36)."
+          },
+          "status": {
+            "type": "string"
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stopped_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "solves": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/parent_solve"
+            }
+          }
+        }
+      }
+    },
+    "best": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "check_id",
+            "decisions",
+            "objective",
+            "stable"
+          ],
+          "properties": {
+            "check_id": {
+              "type": "string"
+            },
+            "decisions": {
+              "$ref": "#/$defs/decisions"
+            },
+            "objective": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "stable": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "accounting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "totals",
+        "by_stage",
+        "by_iteration",
+        "by_candidate",
+        "budgets",
+        "exhausted"
+      ],
+      "properties": {
+        "totals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "trf_cold",
+            "parent_executions",
+            "store_hits",
+            "parent_solves",
+            "trf_runs"
+          ],
+          "properties": {
+            "trf_cold": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "parent_executions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "store_hits": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "parent_solves": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "trf_runs": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "by_stage": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "trf_cold",
+              "parent_executions",
+              "store_hits"
+            ],
+            "properties": {
+              "trf_cold": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "parent_executions": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "store_hits": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "by_iteration": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "trf_cold",
+              "parent_executions",
+              "store_hits"
+            ],
+            "properties": {
+              "trf_cold": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "parent_executions": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "store_hits": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "by_candidate": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "produce_trf_cold",
+              "check_parent_executions"
+            ],
+            "properties": {
+              "produce_trf_cold": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "check_parent_executions": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "budgets": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "budget_id",
+            "configuration",
+            "study_cold",
+            "study_wall_s",
+            "run_cold",
+            "run_iterations",
+            "unit",
+            "k_max",
+            "cold_used",
+            "exhausted"
+          ],
+          "properties": {
+            "budget_id": {
+              "type": "string"
+            },
+            "configuration": {
+              "type": "string"
+            },
+            "study_cold": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "study_wall_s": {
+              "type": "number"
+            },
+            "run_cold": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "run_iterations": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "unit": {
+              "enum": [
+                "cold_parent_experiments",
+                "evaluations"
+              ]
+            },
+            "k_max": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cold_used": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "exhausted": {
+              "enum": [
+                "cold",
+                "wall",
+                null
+              ]
+            }
+          },
+          "description": "`StudyBudget.as_document` (`M05-budget-v1`, §7.5)."
+        },
+        "exhausted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "pattern": "^(DECISION_STABLE|ITERATION_LIMIT|BUDGET_EXHAUSTED|FAILED\\(.+\\)|UNSUPPORTED\\(.+\\))$"
+    },
+    "claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "global_optimality",
+        "trf_theory",
+        "stationarity"
+      ],
+      "properties": {
+        "global_optimality": {
+          "const": false
+        },
+        "trf_theory": {
+          "type": "string",
+          "pattern": "^(assumptions_hold|qualified\\(.+\\))$"
+        },
+        "stationarity": {
+          "enum": [
+            "not_claimed",
+            "poll_at_delta"
+          ]
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fd_check": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "policy",
+            "w0",
+            "sides",
+            "candidates",
+            "selected_eta",
+            "class",
+            "result",
+            "stopped",
+            "half_steps"
+          ],
+          "properties": {
+            "policy": {
+              "const": "M05-fd-v2"
+            },
+            "w0": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "sides": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  -1,
+                  1
+                ]
+              }
+            },
+            "candidates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "eta",
+                  "g_inf",
+                  "truncation",
+                  "noise",
+                  "allowance",
+                  "class"
+                ],
+                "properties": {
+                  "eta": {
+                    "type": "number"
+                  },
+                  "g_inf": {
+                    "type": "number"
+                  },
+                  "truncation": {
+                    "type": "number"
+                  },
+                  "noise": {
+                    "type": "number"
+                  },
+                  "allowance": {
+                    "type": "number"
+                  },
+                  "class": {
+                    "enum": [
+                      "clean",
+                      "truncation_dominated",
+                      "noise_dominated"
+                    ]
+                  }
+                }
+              }
+            },
+            "selected_eta": {
+              "type": "number"
+            },
+            "class": {
+              "enum": [
+                "clean",
+                "truncation_dominated",
+                "noise_dominated"
+              ]
+            },
+            "result": {
+              "enum": [
+                "pass",
+                "fd_unstable"
+              ]
+            },
+            "stopped": {
+              "enum": [
+                "passed",
+                "noise_not_falling",
+                "side_limit",
+                "exhausted"
+              ]
+            },
+            "half_steps": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          },
+          "description": "§17.2's `fd_check` document (`truths.GradientCheck.as_document`), null without an FD truth."
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ledger",
+        "coupled_runs"
+      ],
+      "properties": {
+        "source_map": {},
+        "ledger": {
+          "$ref": "#/$defs/sha256",
+          "description": "S12: the study ledger file's sha256; a run's sequence is this ledger filtered by its run id."
+        },
+        "experiment_store": {
+          "$ref": "#/$defs/sha256",
+          "description": "Build log S67 (WO-9, REAL): the sha256 of `<stem>.experiments.json`, the study's experiment-store records (requests, results, attempts) that its replay from the record serves the reactor from (F-20). Absent for the in-process records."
+        },
+        "coupled_runs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "check_id",
+              "sha256"
+            ],
+            "properties": {
+              "check_id": {
+                "type": "string"
+              },
+              "sha256": {
+                "$ref": "#/$defs/sha256"
+              }
+            }
+          },
+          "description": "S18: the solves (S0, then every candidate's in order) that have a coupling record; a parent without an external unit gives no entry."
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_commit",
+        "tree_clean",
+        "wall_s"
+      ],
+      "properties": {
+        "run_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "The commit the study was run at."
+        },
+        "tree_clean": {
+          "type": "boolean",
+          "description": "Whether the working tree was clean (no tracked or untracked change) when the run started."
+        },
+        "wall_s": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "The study's spent wall time, s (its budget clock from start to end)."
+        }
+      },
+      "description": "Build log S65 (M07 spec A1.6, FD-3): the run's anchor, written by the evidence script for records made from WO-9 on. Optional: the WO-8 records predate it and are not re-taken. Provenance, never compared between a run and its replay."
+    }
+  },
+  "$defs": {
+    "basis_kinds": {
+      "type": "object",
+      "additionalProperties": {
+        "enum": [
+          "zero",
+          "constant",
+          "affine_taylor",
+          "affine_curvature",
+          "surrogate"
+        ]
+      }
+    },
+    "basis_curvature_link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stencil",
+        "t",
+        "d_points",
+        "solves",
+        "w_points",
+        "v",
+        "c",
+        "status",
+        "reason",
+        "noise_ratio"
+      ],
+      "properties": {
+        "stencil": {
+          "enum": [
+            "central",
+            "forward",
+            "backward"
+          ]
+        },
+        "t": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "d_points": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "solves": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 2
+        },
+        "w_points": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "maxItems": 2
+        },
+        "v": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "c": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "failed"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "noise_ratio": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "R-400 step 10, one link holder: the stencil, t = δ/h, the path points d_i (scaled) and their inner solves' outcomes and link inputs w_i, the direction v, the curvature c per output (all 0 on failure), status and reason, and noise_ratio 4ν̂/(t²|c_k|) on the run carrying the FD check (reported, not judged)."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "decisions": {
+      "description": "Decision values by decision id (an id-keyed map).",
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "truth_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id",
+        "sha256",
+        "gradient"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
+        "gradient": {
+          "enum": [
+            "analytic",
+            "finite_difference"
+          ]
+        }
+      },
+      "description": "A truth's `describe()` (`holders.TruthModel`): `gradient` says whether the holder applies `M05-fd-v2` (finite_difference); `synthetic` is written by the parent experiment."
+    },
+    "holder_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value_cold",
+        "value_store_hit",
+        "value_memo_hit",
+        "jacobian_cold",
+        "jacobian_store_hit",
+        "jacobian_memo_hit",
+        "requests",
+        "refused",
+        "by_purpose",
+        "pmp_point_equals_start"
+      ],
+      "properties": {
+        "value_cold": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "value_store_hit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "value_memo_hit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jacobian_cold": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jacobian_store_hit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jacobian_memo_hit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "refused": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "by_purpose": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "trf_start_value",
+            "trf_pmp_value",
+            "trf_trial_value",
+            "trf_fd_point",
+            "fdcheck_point",
+            "basis_fd_point"
+          ],
+          "properties": {
+            "trf_start_value": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "trf_pmp_value": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "trf_trial_value": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "trf_fd_point": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "fdcheck_point": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "basis_fd_point": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "basis_curvature_point": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "R-400: M05-basis-v2's truth requests at the decision-path points (2 per link). Additive: absent from records written before WO-8d."
+            }
+          }
+        },
+        "pmp_point_equals_start": {
+          "type": "boolean"
+        }
+      },
+      "description": "`EFHolder.summary(run_id)` (§8.1, S16): counts by call and service, the requests carrying each of §8.1's five purposes and `basis_fd_point`, and `pmp_point_equals_start` (S32)."
+    },
+    "parent_solve": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "purpose",
+        "decisions",
+        "revision_sha256",
+        "outcome",
+        "certificate",
+        "objective",
+        "coupling",
+        "coupling_residuals",
+        "regimes",
+        "coupling_record_sha256",
+        "experiments",
+        "limitations",
+        "wall_s"
+      ],
+      "properties": {
+        "check_id": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "decisions": {
+          "$ref": "#/$defs/decisions"
+        },
+        "revision_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "certificate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "objective": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "coupling": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coupling_residuals": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "regimes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "coupling_record_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "experiments": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "executions",
+            "store_hits"
+          ],
+          "properties": {
+            "executions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "store_hits": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "wall_s": {
+          "type": "number"
+        }
+      },
+      "description": "`ParentSolve.as_document` (§8.2's coupled-check summary). `coupling`, `coupling_residuals` and `coupling_record_sha256` are null for a parent without an external unit."
+    }
+  }
+}

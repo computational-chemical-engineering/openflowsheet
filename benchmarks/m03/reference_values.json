@@ -1,0 +1,1791 @@
+{
+ "schema": "m03-reference-v1",
+ "generator": "docs/derivations/scripts/m03_reference.py",
+ "specification": "docs/derivations/M03-studies-spec.md",
+ "note": "Every number is a decimal string at 20 significant digits from mpmath at 60 digits, or the repr of a registered binary64 input; none is produced by openflowsheet.",
+ "constants": {
+  "tau_regime": "0.0001",
+  "tau_root": "1.0e-10",
+  "tau_alias": "1.0e-8",
+  "tau_id": "1.0e-8",
+  "tau_abs_scaled": "1.0e-11",
+  "tau_rel": "1.0e-10",
+  "tau_fd_scaled": "1.0e-9",
+  "scales": {
+   "molar_flow": "3.0",
+   "temperature": "100.0",
+   "heat_rate": "100000.0"
+  },
+  "parameters": [
+   {
+    "id": "U-SPLIT.split_fraction",
+    "scale": "1.0"
+   },
+   {
+    "id": "U-FLASH.T_spec",
+    "scale": "100.0"
+   },
+   {
+    "id": "U-HEAT.T_spec",
+    "scale": "100.0"
+   },
+   {
+    "id": "U-FEED.T_spec",
+    "scale": "100.0"
+   },
+   {
+    "id": "U-FEED.n_spec.A",
+    "scale": "3.0"
+   }
+  ],
+  "outputs": [
+   {
+    "id": "S4.N",
+    "scale": "3.0"
+   },
+   {
+    "id": "S5.N",
+    "scale": "3.0"
+   },
+   {
+    "id": "S6.n.A",
+    "scale": "3.0"
+   },
+   {
+    "id": "S6.n.B",
+    "scale": "3.0"
+   },
+   {
+    "id": "S6.n.C",
+    "scale": "3.0"
+   },
+   {
+    "id": "S7.n.A",
+    "scale": "3.0"
+   },
+   {
+    "id": "S4.n.A",
+    "scale": "3.0"
+   },
+   {
+    "id": "S2.T",
+    "scale": "100.0"
+   },
+   {
+    "id": "U-HEAT.Q",
+    "scale": "100000.0"
+   },
+   {
+    "id": "U-FLASH.Q",
+    "scale": "100000.0"
+   },
+   {
+    "id": "S3.V",
+    "scale": "3.0"
+   },
+   {
+    "id": "Q_total",
+    "coefficients": {
+     "U-HEAT.Q": 1,
+     "U-FLASH.Q": 1
+    },
+    "scale": "100000.0"
+   }
+  ]
+ },
+ "sensitivity_states": {
+  "P1": {
+   "case": "SYN-001-nominal",
+   "why": "The nominal case: heater outlet LIQUID, flash TWO_PHASE, K_B(360 K) = 1 exactly. The heater vapour S3.V and its whole sensitivity row vanish here and are registered as zeros because they vanish here; the same row is non-zero at P3.",
+   "pinned": {
+    "U-SPLIT.split_fraction": "0.5",
+    "U-FLASH.T_spec": "360.0",
+    "U-HEAT.T_spec": "350.0",
+    "U-FEED.T_spec": "300.0",
+    "U-FEED.n_spec.A": "1.0"
+   },
+   "pinned_doubles": {
+    "U-SPLIT.split_fraction": "0.5",
+    "U-FLASH.T_spec": "360.0",
+    "U-HEAT.T_spec": "350.0",
+    "U-FEED.T_spec": "300.0",
+    "U-FEED.n_spec.A": "1.0"
+   },
+   "values": {
+    "S4.N": "1.3608090692231516326",
+    "S5.N": "3.2783818615536967347",
+    "S6.n.A": "0.29777671393051394767",
+    "S6.n.B": "0.54639697692561612246",
+    "S6.n.C": "0.79501723992071829724",
+    "S7.n.A": "0.29777671393051394767",
+    "S4.n.A": "0.70222328606948605233",
+    "S2.T": "321.20013108193881014",
+    "U-HEAT.Q": "13360.809069223151633",
+    "U-FLASH.Q": "42977.260377520375599",
+    "S3.V": "0.0",
+    "Q_total": "56338.069446743527231",
+    "S4.n.B": "0.45360302307438387754",
+    "S4.n.C": "0.20498276007928170276",
+    "S7.n.B": "0.54639697692561612246",
+    "S7.n.C": "0.79501723992071829724"
+   },
+   "liquid_S5_n": [
+    "0.59555342786102789535",
+    "1.0927939538512322449",
+    "1.5900344798414365945"
+   ],
+   "regime_margins": {
+    "U-HEAT": {
+     "split": "S3",
+     "regime": "LIQUID",
+     "margin": "0.037683439964723324815"
+    },
+    "U-FLASH": {
+     "split": "S4/S5",
+     "regime": "TWO_PHASE",
+     "margin": "0.24815188142494474991"
+    },
+    "mixer_subcooling_margin": "0.58166753568336652778"
+   },
+   "sensitivity": {
+    "S4.N": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "0.10251738388480473362",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "1.94893963127984485"
+    },
+    "S5.N": {
+     "U-SPLIT.split_fraction": "6.5567637231073934695",
+     "U-FLASH.T_spec": "-0.20503476776960946724",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-1.8978792625596897"
+    },
+    "S6.n.A": {
+     "U-SPLIT.split_fraction": "1.1911068557220557907",
+     "U-FLASH.T_spec": "-0.033682282831898862266",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-0.12275566756603807821"
+    },
+    "S6.n.B": {
+     "U-SPLIT.split_fraction": "2.1855879077024644898",
+     "U-FLASH.T_spec": "-0.041072734658692488472",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-0.49844553606848699082"
+    },
+    "S6.n.C": {
+     "U-SPLIT.split_fraction": "3.1800689596828731889",
+     "U-FLASH.T_spec": "-0.027762366394213382883",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-0.32773842764531978098"
+    },
+    "S7.n.A": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "-0.033682282831898862266",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-0.12275566756603807821"
+    },
+    "S4.n.A": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "0.033682282831898862266",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "1.1227556675660380782"
+    },
+    "S2.T": {
+     "U-SPLIT.split_fraction": "54.83748713499603892",
+     "U-FLASH.T_spec": "-0.50406852416064477936",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.64666448196768649764",
+     "U-FEED.n_spec.A": "-12.506246294337071262"
+    },
+    "U-HEAT.Q": {
+     "U-SPLIT.split_fraction": "-6556.7637231073934695",
+     "U-FLASH.T_spec": "-61.401709192880103115",
+     "U-HEAT.T_spec": "463.91909307768483674",
+     "U-FEED.T_spec": "-300.0",
+     "U-FEED.n_spec.A": "5948.93963127984485"
+    },
+    "U-FLASH.Q": {
+     "U-SPLIT.split_fraction": "6556.7637231073934695",
+     "U-FLASH.T_spec": "3407.3236435485947148",
+     "U-HEAT.T_spec": "-463.91909307768483674",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "54544.163107511909164"
+    },
+    "S3.V": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "0.0",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "0.0"
+    },
+    "Q_total": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "3345.9219343557146117",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "-300.0",
+     "U-FEED.n_spec.A": "60493.102738791754014"
+    }
+   },
+   "structural_zeros": [
+    [
+     "S4.N",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "S4.N",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S4.N",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S5.N",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S5.N",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.A",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.A",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.B",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.B",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.C",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.C",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S7.n.A",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "S7.n.A",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S7.n.A",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S4.n.A",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "S4.n.A",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S4.n.A",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S2.T",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "U-FLASH.Q",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S3.V",
+     "U-SPLIT.split_fraction",
+     "state_specific"
+    ],
+    [
+     "S3.V",
+     "U-FLASH.T_spec",
+     "state_specific"
+    ],
+    [
+     "S3.V",
+     "U-HEAT.T_spec",
+     "state_specific"
+    ],
+    [
+     "S3.V",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S3.V",
+     "U-FEED.n_spec.A",
+     "state_specific"
+    ],
+    [
+     "Q_total",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "Q_total",
+     "U-HEAT.T_spec",
+     "universal"
+    ]
+   ],
+   "fd_oracle": {
+    "order": 4,
+    "relative_step": "0.0001",
+    "steps": {
+     "U-SPLIT.split_fraction": "0.0001",
+     "U-FLASH.T_spec": "0.01",
+     "U-HEAT.T_spec": "0.01",
+     "U-FEED.T_spec": "0.01",
+     "U-FEED.n_spec.A": "0.0003"
+    },
+    "smallest_stencil_margin": "0.037169448572352836182"
+   }
+  },
+  "P2": {
+   "case": "SYN-001-high-recycle",
+   "why": "r = 0.95: the recycle derivatives carry 1/(1 - r) = 20 and 1/(1 - r)^2 = 400, so a dropped or mis-scaled factor of (1 - r) is visible; the heater duty is negative.",
+   "pinned": {
+    "U-SPLIT.split_fraction": "0.95",
+    "U-FLASH.T_spec": "360.0",
+    "U-HEAT.T_spec": "350.0",
+    "U-FEED.T_spec": "300.0",
+    "U-FEED.n_spec.A": "1.0"
+   },
+   "pinned_doubles": {
+    "U-SPLIT.split_fraction": "0.95",
+    "U-FLASH.T_spec": "360.0",
+    "U-HEAT.T_spec": "350.0",
+    "U-FEED.T_spec": "300.0",
+    "U-FEED.n_spec.A": "1.0"
+   },
+   "values": {
+    "S4.N": "1.3608090692231516326",
+    "S5.N": "32.783818615536967347",
+    "S6.n.A": "5.6577575646797650058",
+    "S6.n.B": "10.381542561586706327",
+    "S6.n.C": "15.105327558493647647",
+    "S7.n.A": "0.29777671393051394767",
+    "S4.n.A": "0.70222328606948605233",
+    "S2.T": "354.7283068463405745",
+    "U-HEAT.Q": "-16144.62768476011898",
+    "U-FLASH.Q": "72482.697131503646211",
+    "S3.V": "0.0",
+    "Q_total": "56338.069446743527231",
+    "S4.n.B": "0.45360302307438387754",
+    "S4.n.C": "0.20498276007928170276",
+    "S7.n.B": "0.54639697692561612246",
+    "S7.n.C": "0.79501723992071829724"
+   },
+   "liquid_S5_n": [
+    "5.9555342786102789535",
+    "10.927939538512322449",
+    "15.900344798414365945"
+   ],
+   "regime_margins": {
+    "U-HEAT": {
+     "split": "S3",
+     "regime": "LIQUID",
+     "margin": "0.20848259590514152223"
+    },
+    "U-FLASH": {
+     "split": "S4/S5",
+     "regime": "TWO_PHASE",
+     "margin": "0.033716108091453725801"
+    },
+    "mixer_subcooling_margin": "0.10043629066455261397"
+   },
+   "sensitivity": {
+    "S4.N": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "0.10251738388480473362",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "1.94893963127984485"
+    },
+    "S5.N": {
+     "U-SPLIT.split_fraction": "655.67637231073934695",
+     "U-FLASH.T_spec": "-2.0503476776960946724",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-18.978792625596897"
+    },
+    "S6.n.A": {
+     "U-SPLIT.split_fraction": "119.11068557220557907",
+     "U-FLASH.T_spec": "-0.63996337380607838306",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-2.332357683754723486"
+    },
+    "S6.n.B": {
+     "U-SPLIT.split_fraction": "218.55879077024644898",
+     "U-FLASH.T_spec": "-0.78038195851515728096",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-9.4704651853012528256"
+    },
+    "S6.n.C": {
+     "U-SPLIT.split_fraction": "318.00689596828731889",
+     "U-FLASH.T_spec": "-0.52748496149005427478",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-6.2270301252610758385"
+    },
+    "S7.n.A": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "-0.033682282831898862266",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-0.12275566756603807821"
+    },
+    "S4.n.A": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "0.033682282831898862266",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "1.1227556675660380782"
+    },
+    "S2.T": {
+     "U-SPLIT.split_fraction": "101.2318738642897793",
+     "U-FLASH.T_spec": "0.61140699067286899586",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.08786155256099042507",
+     "U-FEED.n_spec.A": "-4.3865219682807595532"
+    },
+    "U-HEAT.Q": {
+     "U-SPLIT.split_fraction": "-655676.37231073934695",
+     "U-FLASH.T_spec": "-1166.6324746647219592",
+     "U-HEAT.T_spec": "3414.462768476011898",
+     "U-FEED.T_spec": "-300.0",
+     "U-FEED.n_spec.A": "23029.85299431705215"
+    },
+    "U-FLASH.Q": {
+     "U-SPLIT.split_fraction": "655676.37231073934695",
+     "U-FLASH.T_spec": "4512.5544090204365709",
+     "U-HEAT.T_spec": "-3414.462768476011898",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "37463.249744474701864"
+    },
+    "S3.V": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "0.0",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "0.0"
+    },
+    "Q_total": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "3345.9219343557146117",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "-300.0",
+     "U-FEED.n_spec.A": "60493.102738791754014"
+    }
+   },
+   "structural_zeros": [
+    [
+     "S4.N",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "S4.N",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S4.N",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S5.N",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S5.N",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.A",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.A",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.B",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.B",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.C",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.C",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S7.n.A",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "S7.n.A",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S7.n.A",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S4.n.A",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "S4.n.A",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S4.n.A",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S2.T",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "U-FLASH.Q",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S3.V",
+     "U-SPLIT.split_fraction",
+     "state_specific"
+    ],
+    [
+     "S3.V",
+     "U-FLASH.T_spec",
+     "state_specific"
+    ],
+    [
+     "S3.V",
+     "U-HEAT.T_spec",
+     "state_specific"
+    ],
+    [
+     "S3.V",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S3.V",
+     "U-FEED.n_spec.A",
+     "state_specific"
+    ],
+    [
+     "Q_total",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "Q_total",
+     "U-HEAT.T_spec",
+     "universal"
+    ]
+   ]
+  },
+  "P3": {
+   "case": null,
+   "why": "Off the K_B = 1 point (T_f = 365 K, so no value is right only because x_B = 1/3) and at a heater outlet that is TWO_PHASE, so the heater's lifted split rows and their property derivatives enter the sensitivity and the S3.V row is non-zero.",
+   "pinned": {
+    "U-SPLIT.split_fraction": "0.3",
+    "U-FLASH.T_spec": "365.0",
+    "U-HEAT.T_spec": "350.0",
+    "U-FEED.T_spec": "300.0",
+    "U-FEED.n_spec.A": "1.0"
+   },
+   "pinned_doubles": {
+    "U-SPLIT.split_fraction": "0.3",
+    "U-FLASH.T_spec": "365.0",
+    "U-HEAT.T_spec": "350.0",
+    "U-FEED.T_spec": "300.0",
+    "U-FEED.n_spec.A": "1.0"
+   },
+   "values": {
+    "S4.N": "1.8814801947595618638",
+    "S5.N": "1.597885436057768766",
+    "S6.n.A": "0.067411923373673257334",
+    "S6.n.B": "0.14628651092031152172",
+    "S6.n.C": "0.26566719652334585073",
+    "S7.n.A": "0.15729448787190426711",
+    "S4.n.A": "0.84270551212809573289",
+    "S2.T": "308.95530085345099223",
+    "U-HEAT.Q": "16260.56682768850595",
+    "U-FLASH.Q": "57370.860828352169708",
+    "S3.V": "0.073140461224620009033",
+    "Q_total": "73631.427656040675659",
+    "S4.n.B": "0.65866480785260644932",
+    "S4.n.C": "0.38010987477885968162",
+    "S7.n.B": "0.34133519214739355068",
+    "S7.n.C": "0.61989012522114031838"
+   },
+   "liquid_S5_n": [
+    "0.22470641124557752445",
+    "0.4876217030677050724",
+    "0.88555732174448616911"
+   ],
+   "regime_margins": {
+    "U-HEAT": {
+     "split": "S3",
+     "regime": "TWO_PHASE",
+     "margin": "0.014759377388563516981"
+    },
+    "U-FLASH": {
+     "split": "S4/S5",
+     "regime": "TWO_PHASE",
+     "margin": "0.38139578155908621582"
+    },
+    "mixer_subcooling_margin": "0.70147909103031132493"
+   },
+   "sensitivity": {
+    "S4.N": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "0.10685861987157596249",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "2.0209152347434450106"
+    },
+    "S5.N": {
+     "U-SPLIT.split_fraction": "2.2826934800825268085",
+     "U-FLASH.T_spec": "-0.15265517124510851784",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-1.4584503353477785866"
+    },
+    "S6.n.A": {
+     "U-SPLIT.split_fraction": "0.32100915892225360635",
+     "U-FLASH.T_spec": "-0.0099357959370106810299",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-0.045457672382641304138"
+    },
+    "S6.n.B": {
+     "U-SPLIT.split_fraction": "0.69660243295386438914",
+     "U-FLASH.T_spec": "-0.017287216664421088121",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-0.19144020828116021977"
+    },
+    "S6.n.C": {
+     "U-SPLIT.split_fraction": "1.265081888206408813",
+     "U-FLASH.T_spec": "-0.018573538772100786202",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-0.20063721994053205207"
+    },
+    "S7.n.A": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "-0.023183523853024922403",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "-0.10606790222616304299"
+    },
+    "S4.n.A": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "0.023183523853024922403",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "1.106067902226163043"
+    },
+    "S2.T": {
+     "U-SPLIT.split_fraction": "36.769021399157100738",
+     "U-FLASH.T_spec": "-0.59990484885357005636",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "0.8622261407161385811",
+     "U-FEED.n_spec.A": "-9.6215309010257563927"
+    },
+    "U-HEAT.Q": {
+     "U-SPLIT.split_fraction": "-32821.306976197193761",
+     "U-FLASH.T_spec": "268.52776137154841482",
+     "U-HEAT.T_spec": "3914.6149956580123422",
+     "U-FEED.T_spec": "-300.0",
+     "U-FEED.n_spec.A": "58899.630133865738595"
+    },
+    "U-FLASH.Q": {
+     "U-SPLIT.split_fraction": "32821.306976197193761",
+     "U-FLASH.T_spec": "3338.0045011851150202",
+     "U-HEAT.T_spec": "-3914.6149956580123422",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "5038.254963279670449"
+    },
+    "S3.V": {
+     "U-SPLIT.split_fraction": "-1.0858892068655572079",
+     "U-FLASH.T_spec": "0.0091565448824907569304",
+     "U-HEAT.T_spec": "0.13150576765861022046",
+     "U-FEED.T_spec": "0.0",
+     "U-FEED.n_spec.A": "1.9675265983227153328"
+    },
+    "Q_total": {
+     "U-SPLIT.split_fraction": "0.0",
+     "U-FLASH.T_spec": "3606.532262556663435",
+     "U-HEAT.T_spec": "0.0",
+     "U-FEED.T_spec": "-300.0",
+     "U-FEED.n_spec.A": "63937.885097145409044"
+    }
+   },
+   "structural_zeros": [
+    [
+     "S4.N",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "S4.N",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S4.N",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S5.N",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S5.N",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.A",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.A",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.B",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.B",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.C",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S6.n.C",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S7.n.A",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "S7.n.A",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S7.n.A",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S4.n.A",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "S4.n.A",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "S4.n.A",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S2.T",
+     "U-HEAT.T_spec",
+     "universal"
+    ],
+    [
+     "U-FLASH.Q",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "S3.V",
+     "U-FEED.T_spec",
+     "universal"
+    ],
+    [
+     "Q_total",
+     "U-SPLIT.split_fraction",
+     "universal"
+    ],
+    [
+     "Q_total",
+     "U-HEAT.T_spec",
+     "universal"
+    ]
+   ],
+   "fd_oracle": {
+    "order": 4,
+    "relative_step": "0.0001",
+    "steps": {
+     "U-SPLIT.split_fraction": "0.0001",
+     "U-FLASH.T_spec": "0.01",
+     "U-HEAT.T_spec": "0.01",
+     "U-FEED.T_spec": "0.01",
+     "U-FEED.n_spec.A": "0.0003"
+    },
+    "smallest_stencil_margin": "0.014221162683139344771"
+   }
+  }
+ },
+ "parameter_jacobian_P1": {
+  "U-SPLIT.split_fraction": {
+   "U-SPLIT:SPLIT-recycle:A": "-0.59555342786102789535",
+   "U-SPLIT:SPLIT-recycle:B": "-1.0927939538512322449",
+   "U-SPLIT:SPLIT-recycle:C": "-1.5900344798414365945",
+   "U-SPLIT:SPLIT-purge:A": "0.59555342786102789535",
+   "U-SPLIT:SPLIT-purge:B": "1.0927939538512322449",
+   "U-SPLIT:SPLIT-purge:C": "1.5900344798414365945"
+  },
+  "U-FLASH.T_spec": {
+   "U-FLASH:FLASH-T:vapor": "-1.0",
+   "U-FLASH:FLASH-T:liquid": "-1.0"
+  },
+  "U-HEAT.T_spec": {
+   "U-HEAT:HEAT-T": "-1.0"
+  },
+  "U-FEED.T_spec": {
+   "U-FEED:FEED-T": "-1.0"
+  },
+  "U-FEED.n_spec.A": {
+   "U-FEED:FEED-n:A": "-1.0"
+  }
+ },
+ "alias_refusals": {
+  "state": "P1",
+  "eliminated_rows": [
+   "U-FLASH:FLASH-P:inlet",
+   "U-SPLIT:SPLIT-P:recycle"
+  ],
+  "refused_columns": [
+   "U-FLASH.P_spec",
+   "U-FEED.P_spec"
+  ],
+  "expected_refusal": "INCONSISTENT_WITH_ELIMINATED_ROWS",
+  "note": "Each pressure specification alone moves a pressure that an eliminated alias row ties to the other; the scaled tangent residual of the eliminated rows is 1 (measured 1.0 exactly for both, 0.0 for the five registered parameters)."
+ },
+ "boundary_states": {
+  "equimolar_bubble_K": "347.44118198144020477",
+  "equimolar_bubble_double": "347.4411819814402",
+  "equimolar_dew_K": "374.27030411847760313",
+  "B1": {
+   "why": "two-phase side, 1e-3 K above the bubble point: margin below tau_regime, Jacobian still regular (measured rcond_1 2.9e-7), certificate VERIFIED",
+   "pinned_doubles": {
+    "U-FLASH.T_spec": "347.44218198144017",
+    "U-SPLIT.split_fraction": "0.5"
+   },
+   "flash_regime": "TWO_PHASE",
+   "flash_margin": "0.000013370443403991747118",
+   "heater_regime": "TWO_PHASE",
+   "heater_margin": "0.070300026625651129786",
+   "expected_refusal": "PHASE_BOUNDARY",
+   "S4.N": "0.00012420221525222610085"
+  },
+  "B2": {
+   "why": "liquid side, 1e-3 K below the bubble point: the same, from the other regime",
+   "pinned_doubles": {
+    "U-FLASH.T_spec": "347.4401819814402",
+    "U-SPLIT.split_fraction": "0.5"
+   },
+   "flash_regime": "LIQUID",
+   "flash_margin": "0.000026739763020633807372",
+   "heater_regime": "TWO_PHASE",
+   "heater_margin": "0.070314219080774155153",
+   "expected_refusal": "PHASE_BOUNDARY",
+   "S4.N": "0.0"
+  },
+  "B3": {
+   "why": "1e-5 K above the bubble point: the margin, the [A08] screen (ILL_CONDITIONED, measured rcond_1 2.9e-9) and the certificate (UNVERIFIED) all refuse; every reason is listed",
+   "pinned_doubles": {
+    "U-FLASH.T_spec": "347.44119198144017",
+    "U-SPLIT.split_fraction": "0.5"
+   },
+   "flash_regime": "TWO_PHASE",
+   "flash_margin": "1.3370028216879490671e-7",
+   "heater_regime": "TWO_PHASE",
+   "heater_margin": "0.070314077151513597831",
+   "expected_refusal": "PHASE_BOUNDARY",
+   "S4.N": "1.2420459087480088145e-6"
+  }
+ },
+ "toys": {
+  "x_squared": {
+   "residual": "x^2 - p",
+   "note": "residual_binary64 is x*x - p evaluated in binary64 (two roundings); residual_exact is the real value at the binary64 inputs. Only the exact zeros are asserted (A13).",
+   "states": [
+    {
+     "p": "0.25",
+     "x": "0.5",
+     "expected": "QUALIFIED",
+     "dx_dp": "1.0",
+     "residual_binary64": "0.0",
+     "residual_exact": "0.0"
+    },
+    {
+     "p": "1e-20",
+     "x": "1e-10",
+     "expected": "ILL_CONDITIONED",
+     "screen_reason": "absolute",
+     "residual_binary64": "1.504632769052528e-36",
+     "residual_exact": "1.2771112317678591283e-36"
+    },
+    {
+     "p": "0.0",
+     "x": "0.0",
+     "expected": "RANK_DEFICIENT",
+     "residual_binary64": "0.0",
+     "residual_exact": "0.0"
+    }
+   ]
+  },
+  "linear_2x2": {
+   "residual": "A(delta) x - p, A(delta) = [[1, 2], [3, 6 + delta]], F_p = -I",
+   "p": [
+    "1.0",
+    "3.0"
+   ],
+   "x": [
+    "1.0",
+    "0.0"
+   ],
+   "states": [
+    {
+     "delta": "1.0",
+     "expected": "QUALIFIED",
+     "dx_dp": [
+      [
+       "7.0",
+       "-2.0"
+      ],
+      [
+       "-3.0",
+       "1.0"
+      ]
+     ],
+     "output_C": [
+      [
+       "1.0",
+       "10.0"
+      ]
+     ],
+     "dy_dp": [
+      [
+       "-23.0",
+       "8.0"
+      ]
+     ],
+     "missing_transpose_value": [
+      [
+       "-13.0",
+       "7.0"
+      ]
+     ]
+    },
+    {
+     "delta": "1e-12",
+     "expected": "ILL_CONDITIONED",
+     "screen_reason": "relative"
+    },
+    {
+     "delta": "0.0",
+     "expected": "RANK_DEFICIENT"
+    }
+   ]
+  }
+ },
+ "sweep": {
+  "split_fraction": "0.5",
+  "parameter": "U-FLASH.T_spec",
+  "points": [
+   {
+    "U-FLASH.T_spec": "310.0",
+    "expected_outcome": "CONVERGED",
+    "expected_certificate": "VERIFIED",
+    "flash_regime": "LIQUID",
+    "heater_regime": "TWO_PHASE",
+    "S4.N": "0.0",
+    "S5.N": "6.0",
+    "dS4.N_dT_f": "0.0",
+    "expected_sensitivity": "QUALIFIED"
+   },
+   {
+    "U-FLASH.T_spec": "340.0",
+    "expected_outcome": "CONVERGED",
+    "expected_certificate": "VERIFIED",
+    "flash_regime": "LIQUID",
+    "heater_regime": "TWO_PHASE",
+    "S4.N": "0.0",
+    "S5.N": "6.0",
+    "dS4.N_dT_f": "0.0",
+    "expected_sensitivity": "QUALIFIED"
+   },
+   {
+    "U-FLASH.T_spec": "355.0",
+    "expected_outcome": "CONVERGED",
+    "expected_certificate": "VERIFIED",
+    "flash_regime": "TWO_PHASE",
+    "heater_regime": "LIQUID",
+    "S4.N": "0.84624155289961063661",
+    "S5.N": "4.3075168942007787268",
+    "dS4.N_dT_f": "0.10436021282954965235",
+    "expected_sensitivity": "QUALIFIED"
+   },
+   {
+    "U-FLASH.T_spec": "360.0",
+    "expected_outcome": "CONVERGED",
+    "expected_certificate": "VERIFIED",
+    "flash_regime": "TWO_PHASE",
+    "heater_regime": "LIQUID",
+    "S4.N": "1.3608090692231516326",
+    "S5.N": "3.2783818615536967347",
+    "dS4.N_dT_f": "0.10251738388480473362",
+    "expected_sensitivity": "QUALIFIED"
+   },
+   {
+    "U-FLASH.T_spec": "365.0",
+    "expected_outcome": "CONVERGED",
+    "expected_certificate": "VERIFIED",
+    "flash_regime": "TWO_PHASE",
+    "heater_regime": "LIQUID",
+    "S4.N": "1.8814801947595618638",
+    "S5.N": "2.2370396104808762723",
+    "dS4.N_dT_f": "0.10685861987157596249",
+    "expected_sensitivity": "QUALIFIED"
+   },
+   {
+    "U-FLASH.T_spec": "374.0",
+    "expected_outcome": "CONVERGED",
+    "expected_certificate": "VERIFIED",
+    "flash_regime": "TWO_PHASE",
+    "heater_regime": "TWO_PHASE",
+    "S4.N": "2.9615605874906797042",
+    "S5.N": "0.076878825018640591633",
+    "dS4.N_dT_f": "0.14123421158611055833",
+    "expected_sensitivity": "QUALIFIED"
+   },
+   {
+    "U-FLASH.T_spec": "380.0",
+    "expected_outcome": "CONVERGED",
+    "expected_certificate": "VERIFIED",
+    "flash_regime": "VAPOR",
+    "heater_regime": "TWO_PHASE",
+    "S4.N": "3.0",
+    "S5.N": "0.0",
+    "dS4.N_dT_f": "0.0",
+    "expected_sensitivity": "QUALIFIED"
+   },
+   {
+    "U-FLASH.T_spec": "420.0",
+    "expected_outcome": "CONVERGED",
+    "expected_certificate": "VERIFIED",
+    "flash_regime": "VAPOR",
+    "heater_regime": "TWO_PHASE",
+    "S4.N": "3.0",
+    "S5.N": "0.0",
+    "dS4.N_dT_f": "0.0",
+    "expected_sensitivity": "QUALIFIED"
+   },
+   {
+    "U-FLASH.T_spec": "445.0",
+    "expected_outcome": "SPECIFICATION_REFUSED",
+    "reason": "flash temperature outside the provider's declared domain [280, 440] K"
+   }
+  ]
+ },
+ "estimation": {
+  "evidence_class": "numerical_verification",
+  "statement": "Synthetic data generated from the model itself: a numerical verification of the estimation machinery, not empirical validation.",
+  "data": {
+   "generator": "SplitMix64",
+   "seed": 20261008,
+   "uniform": "u_k = ((w_k >> 11) + 1/2) * 2^-53",
+   "normal": "e_k = sqrt(2) * erfinv(2 u_k - 1)",
+   "observation": "y_obs_k = binary64(y_k(theta_true) + sigma_k e_k)",
+   "theta_true": {
+    "U-SPLIT.split_fraction": "0.7",
+    "U-FLASH.T_spec": "361.0"
+   },
+   "measurements": [
+    {
+     "id": "S4.n.A",
+     "coefficients": {
+      "S4.n.A": 1
+     },
+     "sigma": "0.002",
+     "true": "0.73467456526014009152",
+     "normal_draw": "0.49775605153682106449",
+     "observed": "0.7356700773632138"
+    },
+    {
+     "id": "S4.n.B",
+     "coefficients": {
+      "S4.n.B": 1
+     },
+     "sigma": "0.002",
+     "true": "0.49476692321194234922",
+     "normal_draw": "2.1253102242991738845",
+     "observed": "0.4990175436605407"
+    },
+    {
+     "id": "S4.n.C",
+     "coefficients": {
+      "S4.n.C": 1
+     },
+     "sigma": "0.002",
+     "true": "0.23404314742826617282",
+     "normal_draw": "0.17654148152510739214",
+     "observed": "0.23439623039131638"
+    },
+    {
+     "id": "S7.n.A",
+     "coefficients": {
+      "S7.n.A": 1
+     },
+     "sigma": "0.002",
+     "true": "0.26532543473985990848",
+     "normal_draw": "-0.5214698714970743677",
+     "observed": "0.26428249499686574"
+    },
+    {
+     "id": "S7.n.B",
+     "coefficients": {
+      "S7.n.B": 1
+     },
+     "sigma": "0.002",
+     "true": "0.50523307678805765078",
+     "normal_draw": "2.0800689668847650214",
+     "observed": "0.5093932147218272"
+    },
+    {
+     "id": "S7.n.C",
+     "coefficients": {
+      "S7.n.C": 1
+     },
+     "sigma": "0.002",
+     "true": "0.76595685257173382718",
+     "normal_draw": "-0.34731183443926293759",
+     "observed": "0.7652622289028553"
+    },
+    {
+     "id": "recycle_total",
+     "coefficients": {
+      "S6.n.A": 1,
+      "S6.n.B": 1,
+      "S6.n.C": 1
+     },
+     "sigma": "0.005",
+     "true": "3.5852025162325199017",
+     "normal_draw": "0.40865193531448113661",
+     "observed": "3.5872457759090923"
+    },
+    {
+     "id": "S2.T",
+     "coefficients": {
+      "S2.T": 1
+     },
+     "sigma": "0.05",
+     "true": "333.21042184368588217",
+     "normal_draw": "-0.35596260725640728404",
+     "observed": "333.1926237133231"
+    }
+   ],
+   "validation": [
+    {
+     "id": "U-HEAT.Q",
+     "coefficients": {
+      "U-HEAT.Q": 1
+     },
+     "sigma": "20",
+     "true": "11056.277232144228108",
+     "normal_draw": "0.92130845801411366993",
+     "observed": "11074.70340130451"
+    },
+    {
+     "id": "S4.N",
+     "coefficients": {
+      "S4.N": 1
+     },
+     "sigma": "0.002",
+     "true": "1.4634846359003486136",
+     "normal_draw": "-0.94911792804789998681",
+     "observed": "1.4615864000442529"
+    }
+   ]
+  },
+  "theta": [
+   {
+    "id": "U-SPLIT.split_fraction",
+    "scale": "1.0",
+    "lower": "0.5",
+    "upper": "0.97",
+    "start": "0.6"
+   },
+   {
+    "id": "U-FLASH.T_spec",
+    "scale": "100.0",
+    "lower": "356.0",
+    "upper": "366.0",
+    "start": "358.0"
+   }
+  ],
+  "tau_id": "1.0e-8",
+  "box_smallest_margins": {
+   "heater": "0.018366370209068401924",
+   "flash": "0.010855025592558946159",
+   "mixer": "0.051907251146912309396"
+  },
+  "fits": {
+   "FIT-I": {
+    "measurements": [
+     "S4.n.A",
+     "S4.n.B",
+     "S4.n.C",
+     "S7.n.A",
+     "S7.n.B",
+     "S7.n.C",
+     "recycle_total",
+     "S2.T"
+    ],
+    "singular_values_scaled": [
+     "7110.420673175697897",
+     "2273.8566643401531844"
+    ],
+    "singular_value_ratio": "0.31979214294849730017",
+    "chi2": "9.5431049088050379467",
+    "degrees_of_freedom": 6,
+    "expected_status": "IDENTIFIABLE",
+    "estimate": {
+     "U-SPLIT.split_fraction": "0.70019969945978752144",
+     "U-FLASH.T_spec": "361.01048462191079342"
+    },
+    "covariance": [
+     [
+      "1.6058012569224069693e-7",
+      "6.7986441355486700708e-6"
+     ],
+     [
+      "6.7986441355486700708e-6",
+      "0.00052606836728043296305"
+     ]
+    ],
+    "standard_errors": {
+     "U-SPLIT.split_fraction": "0.00040072450098819849541",
+     "U-FLASH.T_spec": "0.022936180311473681887"
+    },
+    "correlation": "0.73969948853207465584",
+    "validation": [
+     {
+      "id": "U-HEAT.Q",
+      "determined": true,
+      "predicted": "11051.535633710619825",
+      "prediction_standard_error": "9.2477156698209162373",
+      "observed": "11074.70340130451",
+      "normalized_residual": "1.0514303672099659912"
+     },
+     {
+      "id": "S4.N",
+      "determined": true,
+      "predicted": "1.4645632460356359921",
+      "prediction_standard_error": "0.0023596269023610551856",
+      "observed": "1.4615864000442529",
+      "normalized_residual": "-0.96238630604698631885"
+     }
+    ],
+    "numerical_tolerance_scaled": "1e-8"
+   },
+   "FIT-U": {
+    "measurements": [
+     "S4.n.A",
+     "S4.n.B",
+     "S4.n.C",
+     "S7.n.A",
+     "S7.n.B",
+     "S7.n.C"
+    ],
+    "singular_values_scaled": [
+     "4242.9608024935732768",
+     "0.0"
+    ],
+    "singular_value_ratio": "0.0",
+    "chi2": "9.1730199261312216856",
+    "degrees_of_freedom": 5,
+    "expected_status": "UNIDENTIFIABLE",
+    "estimate": {
+     "U-FLASH.T_spec": "361.01378311044446537"
+    },
+    "not_determined": [
+     "U-SPLIT.split_fraction"
+    ],
+    "final_iterate_not_registered": [
+     "U-SPLIT.split_fraction"
+    ],
+    "null_direction_scaled": [
+     "1.0",
+     "0.0"
+    ],
+    "validation": [
+     {
+      "id": "U-HEAT.Q",
+      "determined": false,
+      "null_projection_relative_range_over_box": [
+       "0.85959902505661175246",
+       "0.99761483948515808323"
+      ]
+     },
+     {
+      "id": "S4.N",
+      "determined": true,
+      "predicted": "1.4649025903220597423",
+      "null_projection_relative": "0.0"
+     }
+    ],
+    "numerical_tolerance_scaled": "1e-8"
+   }
+  }
+ },
+ "nlp": {
+  "NLP-1": {
+   "decisions": [
+    {
+     "id": "U-SPLIT.split_fraction",
+     "lower": "0.5",
+     "upper": "0.97",
+     "scale": "1.0"
+    },
+    {
+     "id": "U-FLASH.T_spec",
+     "lower": "356.0",
+     "upper": "366.0",
+     "scale": "100.0"
+    }
+   ],
+   "objective": "(U-HEAT.Q + U-FLASH.Q)/1e5 + 100 (U-HEAT.Q/1e5)^2",
+   "constraints": [
+    {
+     "id": "recovery_A",
+     "expression": "(S4.n.A - 0.75 S1.n.A)/3",
+     "lower": "0.0",
+     "upper": null
+    }
+   ],
+   "starts": [
+    {
+     "U-SPLIT.split_fraction": "0.6",
+     "U-FLASH.T_spec": "360.0",
+     "constraint_scaled": "-0.015925571310171315892",
+     "objective": "2.1362010810375275932"
+    },
+    {
+     "U-SPLIT.split_fraction": "0.85",
+     "U-FLASH.T_spec": "357.0",
+     "constraint_scaled": "-0.05368521409840310884",
+     "objective": "0.99383779771821713987"
+    },
+    {
+     "U-SPLIT.split_fraction": "0.55",
+     "U-FLASH.T_spec": "365.0",
+     "constraint_scaled": "0.030901837376031910963",
+     "objective": "2.4131787928783124558"
+    }
+   ],
+   "reference_optimum": {
+    "U-SPLIT.split_fraction": "0.89778661301194663877",
+    "U-FLASH.T_spec": "361.49964918640849022",
+    "objective": "0.61396250699565445521",
+    "Q_total": "61396.250699565445521",
+    "S4.n.A": "0.75",
+    "U-HEAT.Q": "0.0",
+    "multiplier_recovery_scaled": "3.3911548784306044423",
+    "reduced_gradient_scaled": [
+     "0.0",
+     "0.0"
+    ],
+    "objective_gradient_scaled": [
+     "0.0",
+     "3.4026404850588027247"
+    ],
+    "constraint_gradient_scaled": [
+     "0.0",
+     "1.0033869307182789942"
+    ],
+    "reduced_hessian_r": "534.38062573445328669",
+    "heater_margin": "0.20300891167481490831",
+    "flash_margin": "0.081605272666194107638",
+    "mixer_margin": "0.20300891167481490831"
+   },
+   "active_set": [
+    "recovery_A"
+   ],
+   "second_order_expected_report": "not_assessed"
+  },
+  "NLP-INF": {
+   "as": "NLP-1",
+   "constraints": [
+    {
+     "id": "recovery_A",
+     "expression": "(S4.n.A - 1.05 S1.n.A)/3",
+     "lower": "0.0",
+     "upper": null
+    }
+   ],
+   "expected_status_in": [
+    "INFEASIBLE_REPORTED",
+    "NOT_VERIFIED",
+    "SOLVER_FAILED"
+   ]
+  }
+ },
+ "generator_claims": [
+  "C1[P1] 2nd- and 4th-order closed-form derivatives agree to 2.6e-39 < 1e-30 (scaled)",
+  "C1'[P1] dV/dT_f by the implicit function theorem equals the difference derivative to 1e-30",
+  "C3[P1] heater margin 0.0376834 > 10 tau_regime",
+  "C3[P1] flash margin 0.248152 > 10 tau_regime",
+  "C3[P1] mixer outlet subcooled by 0.581668",
+  "C3[P1] fresh feed subcooled at its temperature",
+  "C3[P1] flash feed and fresh feed share the regime (derivation §5.1)",
+  "C4[P1] stencil r stays in (0, 1)",
+  "C4[P1] heater regime unchanged at U-SPLIT.split_fraction -2h",
+  "C4[P1] flash regime unchanged at U-SPLIT.split_fraction -2h",
+  "C4[P1] stencil r stays in (0, 1)",
+  "C4[P1] heater regime unchanged at U-SPLIT.split_fraction -1h",
+  "C4[P1] flash regime unchanged at U-SPLIT.split_fraction -1h",
+  "C4[P1] stencil r stays in (0, 1)",
+  "C4[P1] heater regime unchanged at U-SPLIT.split_fraction +1h",
+  "C4[P1] flash regime unchanged at U-SPLIT.split_fraction +1h",
+  "C4[P1] stencil r stays in (0, 1)",
+  "C4[P1] heater regime unchanged at U-SPLIT.split_fraction +2h",
+  "C4[P1] flash regime unchanged at U-SPLIT.split_fraction +2h",
+  "C4[P1] heater regime unchanged at U-FLASH.T_spec -2h",
+  "C4[P1] flash regime unchanged at U-FLASH.T_spec -2h",
+  "C4[P1] heater regime unchanged at U-FLASH.T_spec -1h",
+  "C4[P1] flash regime unchanged at U-FLASH.T_spec -1h",
+  "C4[P1] heater regime unchanged at U-FLASH.T_spec +1h",
+  "C4[P1] flash regime unchanged at U-FLASH.T_spec +1h",
+  "C4[P1] heater regime unchanged at U-FLASH.T_spec +2h",
+  "C4[P1] flash regime unchanged at U-FLASH.T_spec +2h",
+  "C4[P1] heater regime unchanged at U-HEAT.T_spec -2h",
+  "C4[P1] flash regime unchanged at U-HEAT.T_spec -2h",
+  "C4[P1] heater regime unchanged at U-HEAT.T_spec -1h",
+  "C4[P1] flash regime unchanged at U-HEAT.T_spec -1h",
+  "C4[P1] heater regime unchanged at U-HEAT.T_spec +1h",
+  "C4[P1] flash regime unchanged at U-HEAT.T_spec +1h",
+  "C4[P1] heater regime unchanged at U-HEAT.T_spec +2h",
+  "C4[P1] flash regime unchanged at U-HEAT.T_spec +2h",
+  "C4[P1] heater regime unchanged at U-FEED.T_spec -2h",
+  "C4[P1] flash regime unchanged at U-FEED.T_spec -2h",
+  "C4[P1] heater regime unchanged at U-FEED.T_spec -1h",
+  "C4[P1] flash regime unchanged at U-FEED.T_spec -1h",
+  "C4[P1] heater regime unchanged at U-FEED.T_spec +1h",
+  "C4[P1] flash regime unchanged at U-FEED.T_spec +1h",
+  "C4[P1] heater regime unchanged at U-FEED.T_spec +2h",
+  "C4[P1] flash regime unchanged at U-FEED.T_spec +2h",
+  "C4[P1] heater regime unchanged at U-FEED.n_spec.A -2h",
+  "C4[P1] flash regime unchanged at U-FEED.n_spec.A -2h",
+  "C4[P1] heater regime unchanged at U-FEED.n_spec.A -1h",
+  "C4[P1] flash regime unchanged at U-FEED.n_spec.A -1h",
+  "C4[P1] heater regime unchanged at U-FEED.n_spec.A +1h",
+  "C4[P1] flash regime unchanged at U-FEED.n_spec.A +1h",
+  "C4[P1] heater regime unchanged at U-FEED.n_spec.A +2h",
+  "C4[P1] flash regime unchanged at U-FEED.n_spec.A +2h",
+  "C4[P1] smallest margin on the stencil 0.0371694 > 10 tau_regime",
+  "C1[P2] 2nd- and 4th-order closed-form derivatives agree to 8.74e-36 < 1e-30 (scaled)",
+  "C1'[P2] dV/dT_f by the implicit function theorem equals the difference derivative to 1e-30",
+  "C3[P2] heater margin 0.208483 > 10 tau_regime",
+  "C3[P2] flash margin 0.0337161 > 10 tau_regime",
+  "C3[P2] mixer outlet subcooled by 0.100436",
+  "C3[P2] fresh feed subcooled at its temperature",
+  "C3[P2] flash feed and fresh feed share the regime (derivation §5.1)",
+  "C1[P3] 2nd- and 4th-order closed-form derivatives agree to 3.86e-39 < 1e-30 (scaled)",
+  "C1'[P3] dV/dT_f by the implicit function theorem equals the difference derivative to 1e-30",
+  "C3[P3] heater margin 0.0147594 > 10 tau_regime",
+  "C3[P3] flash margin 0.381396 > 10 tau_regime",
+  "C3[P3] mixer outlet subcooled by 0.701479",
+  "C3[P3] fresh feed subcooled at its temperature",
+  "C3[P3] flash feed and fresh feed share the regime (derivation §5.1)",
+  "C4[P3] stencil r stays in (0, 1)",
+  "C4[P3] heater regime unchanged at U-SPLIT.split_fraction -2h",
+  "C4[P3] flash regime unchanged at U-SPLIT.split_fraction -2h",
+  "C4[P3] stencil r stays in (0, 1)",
+  "C4[P3] heater regime unchanged at U-SPLIT.split_fraction -1h",
+  "C4[P3] flash regime unchanged at U-SPLIT.split_fraction -1h",
+  "C4[P3] stencil r stays in (0, 1)",
+  "C4[P3] heater regime unchanged at U-SPLIT.split_fraction +1h",
+  "C4[P3] flash regime unchanged at U-SPLIT.split_fraction +1h",
+  "C4[P3] stencil r stays in (0, 1)",
+  "C4[P3] heater regime unchanged at U-SPLIT.split_fraction +2h",
+  "C4[P3] flash regime unchanged at U-SPLIT.split_fraction +2h",
+  "C4[P3] heater regime unchanged at U-FLASH.T_spec -2h",
+  "C4[P3] flash regime unchanged at U-FLASH.T_spec -2h",
+  "C4[P3] heater regime unchanged at U-FLASH.T_spec -1h",
+  "C4[P3] flash regime unchanged at U-FLASH.T_spec -1h",
+  "C4[P3] heater regime unchanged at U-FLASH.T_spec +1h",
+  "C4[P3] flash regime unchanged at U-FLASH.T_spec +1h",
+  "C4[P3] heater regime unchanged at U-FLASH.T_spec +2h",
+  "C4[P3] flash regime unchanged at U-FLASH.T_spec +2h",
+  "C4[P3] heater regime unchanged at U-HEAT.T_spec -2h",
+  "C4[P3] flash regime unchanged at U-HEAT.T_spec -2h",
+  "C4[P3] heater regime unchanged at U-HEAT.T_spec -1h",
+  "C4[P3] flash regime unchanged at U-HEAT.T_spec -1h",
+  "C4[P3] heater regime unchanged at U-HEAT.T_spec +1h",
+  "C4[P3] flash regime unchanged at U-HEAT.T_spec +1h",
+  "C4[P3] heater regime unchanged at U-HEAT.T_spec +2h",
+  "C4[P3] flash regime unchanged at U-HEAT.T_spec +2h",
+  "C4[P3] heater regime unchanged at U-FEED.T_spec -2h",
+  "C4[P3] flash regime unchanged at U-FEED.T_spec -2h",
+  "C4[P3] heater regime unchanged at U-FEED.T_spec -1h",
+  "C4[P3] flash regime unchanged at U-FEED.T_spec -1h",
+  "C4[P3] heater regime unchanged at U-FEED.T_spec +1h",
+  "C4[P3] flash regime unchanged at U-FEED.T_spec +1h",
+  "C4[P3] heater regime unchanged at U-FEED.T_spec +2h",
+  "C4[P3] flash regime unchanged at U-FEED.T_spec +2h",
+  "C4[P3] heater regime unchanged at U-FEED.n_spec.A -2h",
+  "C4[P3] flash regime unchanged at U-FEED.n_spec.A -2h",
+  "C4[P3] heater regime unchanged at U-FEED.n_spec.A -1h",
+  "C4[P3] flash regime unchanged at U-FEED.n_spec.A -1h",
+  "C4[P3] heater regime unchanged at U-FEED.n_spec.A +1h",
+  "C4[P3] flash regime unchanged at U-FEED.n_spec.A +1h",
+  "C4[P3] heater regime unchanged at U-FEED.n_spec.A +2h",
+  "C4[P3] flash regime unchanged at U-FEED.n_spec.A +2h",
+  "C4[P3] smallest margin on the stencil 0.0142212 > 10 tau_regime",
+  "C2[P1] the zero dS4.N/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS4.N/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS4.N/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS5.N/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS5.N/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS6.n.A/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS6.n.A/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS6.n.B/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS6.n.B/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS6.n.C/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS6.n.C/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS7.n.A/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS7.n.A/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS7.n.A/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS4.n.A/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS4.n.A/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS4.n.A/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS2.T/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dU-FLASH.Q/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS3.V/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS3.V/dU-FLASH.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS3.V/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS3.V/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P1] the zero dS3.V/dU-FEED.n_spec.A has a live column here and a live row at some registered state",
+  "C2[P1] the zero dQ_total/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P1] the zero dQ_total/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS4.N/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS4.N/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS4.N/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS5.N/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS5.N/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS6.n.A/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS6.n.A/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS6.n.B/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS6.n.B/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS6.n.C/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS6.n.C/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS7.n.A/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS7.n.A/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS7.n.A/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS4.n.A/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS4.n.A/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS4.n.A/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS2.T/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dU-FLASH.Q/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS3.V/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS3.V/dU-FLASH.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS3.V/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS3.V/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P2] the zero dS3.V/dU-FEED.n_spec.A has a live column here and a live row at some registered state",
+  "C2[P2] the zero dQ_total/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P2] the zero dQ_total/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS4.N/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS4.N/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS4.N/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS5.N/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS5.N/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS6.n.A/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS6.n.A/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS6.n.B/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS6.n.B/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS6.n.C/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS6.n.C/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS7.n.A/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS7.n.A/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS7.n.A/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS4.n.A/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS4.n.A/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS4.n.A/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS2.T/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dU-FLASH.Q/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dS3.V/dU-FEED.T_spec has a live column here and a live row at some registered state",
+  "C2[P3] the zero dQ_total/dU-SPLIT.split_fraction has a live column here and a live row at some registered state",
+  "C2[P3] the zero dQ_total/dU-HEAT.T_spec has a live column here and a live row at some registered state",
+  "C5 the equimolar bubble point is SYN-001 §3.1's 347.44118198144020 K",
+  "C5 the equimolar dew point is SYN-001 §3.1's 374.27030411847760 K",
+  "C5[B1] flash regime is TWO_PHASE",
+  "C5[B1] flash margin 1.33704e-5 lies in (0, tau_regime/2)",
+  "C5[B1] the heater is not the refusing split",
+  "C5[B2] flash regime is LIQUID",
+  "C5[B2] flash margin 2.67398e-5 lies in (0, tau_regime/2)",
+  "C5[B2] the heater is not the refusing split",
+  "C5[B3] flash regime is TWO_PHASE",
+  "C5[B3] flash margin 1.337e-7 lies in (0, tau_regime/2)",
+  "C5[B3] the heater is not the refusing split",
+  "C6 A(1)^-1 = [[7, -2], [-3, 1]]",
+  "C6 C A(1)^-1 = [-23, 8]",
+  "C6 the missing-transpose value is [-13, 7], which differs",
+  "C6 kappa_1(A(1)) = 90",
+  "C6 A12's tolerance tau_abs = 1e-11 exceeds the a priori error estimate 4.4e-12 of the 2 x 2 solve",
+  "C6 the missing-transpose value is at least 1e10 tau_abs from C A(1)^-1 in every entry",
+  "C6 x^2 - p is exactly 0.0 in binary64 at (0.25, 0.5) and (0, 0), and 1.5e-36 (not 0) at (1e-20, 1e-10), whose decimal inputs are not binary64 numbers",
+  "C6 the (1e-20, 1e-10) residual is non-zero and more than 20 orders below tau_root: Q1 passes there, and the refusal is the screen's",
+  "C7 sweep 310.0 K heater margin > 10 tau_regime",
+  "C7 sweep 310.0 K flash margin > 10 tau_regime",
+  "C7 sweep 310.0 K mixer subcooled",
+  "C7 sweep 310.0 K: dV/dT_f vanishes iff the flash is single-phase",
+  "C7 sweep 340.0 K heater margin > 10 tau_regime",
+  "C7 sweep 340.0 K flash margin > 10 tau_regime",
+  "C7 sweep 340.0 K mixer subcooled",
+  "C7 sweep 340.0 K: dV/dT_f vanishes iff the flash is single-phase",
+  "C7 sweep 355.0 K heater margin > 10 tau_regime",
+  "C7 sweep 355.0 K flash margin > 10 tau_regime",
+  "C7 sweep 355.0 K mixer subcooled",
+  "C7 sweep 355.0 K: dV/dT_f vanishes iff the flash is single-phase",
+  "C7 sweep 360.0 K heater margin > 10 tau_regime",
+  "C7 sweep 360.0 K flash margin > 10 tau_regime",
+  "C7 sweep 360.0 K mixer subcooled",
+  "C7 sweep 360.0 K: dV/dT_f vanishes iff the flash is single-phase",
+  "C7 sweep 365.0 K heater margin > 10 tau_regime",
+  "C7 sweep 365.0 K flash margin > 10 tau_regime",
+  "C7 sweep 365.0 K mixer subcooled",
+  "C7 sweep 365.0 K: dV/dT_f vanishes iff the flash is single-phase",
+  "C7 sweep 374.0 K heater margin > 10 tau_regime",
+  "C7 sweep 374.0 K flash margin > 10 tau_regime",
+  "C7 sweep 374.0 K mixer subcooled",
+  "C7 sweep 374.0 K: dV/dT_f vanishes iff the flash is single-phase",
+  "C7 sweep 380.0 K heater margin > 10 tau_regime",
+  "C7 sweep 380.0 K flash margin > 10 tau_regime",
+  "C7 sweep 380.0 K mixer subcooled",
+  "C7 sweep 380.0 K: dV/dT_f vanishes iff the flash is single-phase",
+  "C7 sweep 420.0 K heater margin > 10 tau_regime",
+  "C7 sweep 420.0 K flash margin > 10 tau_regime",
+  "C7 sweep 420.0 K mixer subcooled",
+  "C7 sweep 420.0 K: dV/dT_f vanishes iff the flash is single-phase",
+  "C8 every registered standard normal draw lies within 4 sigma",
+  "C9[FIT-I] U-SPLIT.split_fraction estimate is interior to its bounds by 0.2002 scaled",
+  "C9[FIT-I] the normal equation for U-SPLIT.split_fraction holds to 1e-30 (4.27e-38)",
+  "C9[FIT-I] U-FLASH.T_spec estimate is interior to its bounds by 0.0499 scaled",
+  "C9[FIT-I] the normal equation for U-FLASH.T_spec holds to 1e-30 (1.69e-38)",
+  "C9[FIT-I] identifiable: singular value ratio 0.319792 > 1e-3",
+  "C9[FIT-I] the numerical tolerance on the estimate is below 1e-3 of its standard error",
+  "C9[FIT-U] U-FLASH.T_spec estimate is interior to its bounds by 0.04986 scaled",
+  "C9[FIT-U] the normal equation for U-FLASH.T_spec holds to 1e-30 (1.05e-38)",
+  "C9[FIT-U] unidentifiable at the start",
+  "C9[FIT-U] the smaller singular value vanishes in closed form (2.98e-43)",
+  "C9[FIT-U] the null direction is the split fraction alone",
+  "C9[FIT-U] on the grid r = 0.50, 0.51, ..., 0.97 the six product measurements, their theta-Jacobian (r column below 1e-35, T_f column unchanged) and the vapour-flow prediction are independent of r, so chi2, the singular values, the null direction, the T_f estimate and the determined prediction do not depend on the estimator's final r",
+  "C9[FIT-U] the heater-duty prediction's null projection rises monotonically on the grid from 0.859599 (r = 0.50) to 0.997615 (r = 0.97), above 100 x 1e-3 everywhere: it is not determined wherever r ends",
+  "C9[FIT-U] the vapour-flow prediction's null projection is below 1e-35 at every grid r: it is determined wherever r ends",
+  "C9 the two fits' flash-temperature estimates differ (the recycle and mixer data move it)",
+  "C10 on the 21 x 21 grid of the box every margin exceeds 1e-3 (smallest 0.01086)",
+  "C11 the recovery constraint is active at the reference optimum",
+  "C11 the heater is idle at the reference optimum",
+  "C11 the constraint does not depend on the split fraction",
+  "C11 stationarity in the split fraction holds in closed form",
+  "C11 strict complementarity: mu = 3.3911549 > 0",
+  "C11 the reduced Hessian (d2 phi/d r2) is positive: 534.38063",
+  "C12 on a 41 x 21 grid: S4.n.A and Q_total increase in T_f, U-HEAT.Q decreases in r, and the idle-heater r stays inside the box for every feasible T_f",
+  "C13 every start is inside the regimes",
+  "C13 every start is inside the regimes",
+  "C13 every start is inside the regimes",
+  "C14 NLP-INF asks for more A in the vapour than the feed carries"
+ ]
+}

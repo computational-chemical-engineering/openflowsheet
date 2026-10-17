@@ -1,0 +1,343 @@
+{
+ "kind": "estimation",
+ "model": {
+  "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+  "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769"
+ },
+ "outputs": [
+  {
+   "coefficients": {
+    "S4.n.A": 1.0
+   },
+   "output_id": "S4.n.A",
+   "scale": 0.002
+  },
+  {
+   "coefficients": {
+    "S4.n.B": 1.0
+   },
+   "output_id": "S4.n.B",
+   "scale": 0.002
+  },
+  {
+   "coefficients": {
+    "S4.n.C": 1.0
+   },
+   "output_id": "S4.n.C",
+   "scale": 0.002
+  },
+  {
+   "coefficients": {
+    "S7.n.A": 1.0
+   },
+   "output_id": "S7.n.A",
+   "scale": 0.002
+  },
+  {
+   "coefficients": {
+    "S7.n.B": 1.0
+   },
+   "output_id": "S7.n.B",
+   "scale": 0.002
+  },
+  {
+   "coefficients": {
+    "S7.n.C": 1.0
+   },
+   "output_id": "S7.n.C",
+   "scale": 0.002
+  },
+  {
+   "coefficients": {
+    "U-HEAT.Q": 1.0
+   },
+   "output_id": "U-HEAT.Q",
+   "scale": 20.0
+  },
+  {
+   "coefficients": {
+    "S4.N": 1.0
+   },
+   "output_id": "S4.N",
+   "scale": 0.002
+  }
+ ],
+ "parameters": [
+  {
+   "domain": [
+    0.5,
+    0.97
+   ],
+   "parameter_id": "U-SPLIT.split_fraction",
+   "scale": 1.0
+  },
+  {
+   "domain": [
+    356.0,
+    366.0
+   ],
+   "parameter_id": "U-FLASH.T_spec",
+   "scale": 100.0
+  }
+ ],
+ "request": {
+  "estimator": {
+   "ftol": 1e-14,
+   "function": "scipy.optimize.least_squares",
+   "gtol": 1e-14,
+   "jac": "M03 forward sensitivities (implicit-exact)",
+   "max_nfev": 100,
+   "method": "trf",
+   "xtol": 1e-14
+  },
+  "fit_id": "FIT-U",
+  "start": [
+   0.6,
+   358.0
+  ]
+ },
+ "result": {
+  "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+  "chi2": 9.173019926214655,
+  "correlation": null,
+  "covariance": null,
+  "covariance_basis": "declared_sigma",
+  "degrees_of_freedom": 5,
+  "estimator": {
+   "ftol": 1e-14,
+   "function": "scipy.optimize.least_squares",
+   "gtol": 1e-14,
+   "jac": "M03 forward sensitivities (implicit-exact)",
+   "max_nfev": 100,
+   "method": "trf",
+   "xtol": 1e-14
+  },
+  "estimator_result": {
+   "active_mask": [
+    0,
+    0
+   ],
+   "cost": 4.586509963107328,
+   "message": "`xtol` termination condition is satisfied.",
+   "nfev": 26,
+   "njev": 6,
+   "optimality": 5.615266029884237e-06,
+   "status": 3,
+   "success": true
+  },
+  "evaluations": {
+   "jacobian_calls": 6,
+   "residual_calls": 26,
+   "sensitivities": 6,
+   "solves": 26
+  },
+  "evidence_class": "numerical_verification",
+  "failure": null,
+  "fit_id": "FIT-U",
+  "identifiability": {
+   "null_directions_scaled": [
+    [
+     1.0000000000000002,
+     -1.3130539680664914e-14
+    ]
+   ],
+   "rank": 1,
+   "right_singular_vectors_scaled": [
+    [
+     1.3130539680664914e-14,
+     1.0000000000000002
+    ],
+    [
+     1.0000000000000002,
+     -1.3130539680664914e-14
+    ]
+   ],
+   "singular_value_ratio": 9.085839713082678e-15,
+   "singular_values_scaled": [
+    4242.960802503306,
+    3.855086176043768e-11
+   ],
+   "status": "UNIDENTIFIABLE",
+   "tau_id": 1e-08,
+   "theta": [
+    0.9690555399030523,
+    361.013783111067
+   ]
+  },
+  "identifiability_at_start": {
+   "null_directions_scaled": [
+    [
+     1.0,
+     -1.3166678068241127e-16
+    ]
+   ],
+   "rank": 1,
+   "right_singular_vectors_scaled": [
+    [
+     1.3166678068241127e-16,
+     1.0
+    ],
+    [
+     1.0,
+     -1.3166678068241127e-16
+    ]
+   ],
+   "singular_value_ratio": 8.65269775524528e-17,
+   "singular_values_scaled": [
+    4293.53426956719,
+    3.715065433635271e-13
+   ],
+   "status": "UNIDENTIFIABLE",
+   "tau_id": 1e-08,
+   "theta": [
+    0.6,
+    358.0
+   ]
+  },
+  "measurements": [
+   {
+    "coefficients": {
+     "S4.n.A": 1.0
+    },
+    "id": "S4.n.A",
+    "observed": 0.7356700773632138,
+    "sigma": 0.002
+   },
+   {
+    "coefficients": {
+     "S4.n.B": 1.0
+    },
+    "id": "S4.n.B",
+    "observed": 0.4990175436605407,
+    "sigma": 0.002
+   },
+   {
+    "coefficients": {
+     "S4.n.C": 1.0
+    },
+    "id": "S4.n.C",
+    "observed": 0.23439623039131638,
+    "sigma": 0.002
+   },
+   {
+    "coefficients": {
+     "S7.n.A": 1.0
+    },
+    "id": "S7.n.A",
+    "observed": 0.26428249499686574,
+    "sigma": 0.002
+   },
+   {
+    "coefficients": {
+     "S7.n.B": 1.0
+    },
+    "id": "S7.n.B",
+    "observed": 0.5093932147218272,
+    "sigma": 0.002
+   },
+   {
+    "coefficients": {
+     "S7.n.C": 1.0
+    },
+    "id": "S7.n.C",
+    "observed": 0.7652622289028553,
+    "sigma": 0.002
+   }
+  ],
+  "noise_model": {
+   "generator": "SplitMix64",
+   "normal": "e_k = sqrt(2) * erfinv(2 u_k - 1)",
+   "observation": "y_obs_k = binary64(y_k(theta_true) + sigma_k e_k)",
+   "uniform": "u_k = ((w_k >> 11) + 1/2) * 2^-53"
+  },
+  "parameters": [
+   {
+    "at_bound": false,
+    "determined": false,
+    "estimate": null,
+    "final_iterate": 0.9690555399030523,
+    "id": "U-SPLIT.split_fraction",
+    "standard_error": null
+   },
+   {
+    "at_bound": false,
+    "determined": true,
+    "estimate": 361.013783111067,
+    "final_iterate": 361.013783111067,
+    "id": "U-FLASH.T_spec",
+    "standard_error": null
+   }
+  ],
+  "parameters_declared": [
+   {
+    "bounds": [
+     0.5,
+     0.97
+    ],
+    "id": "U-SPLIT.split_fraction",
+    "scale": 1.0,
+    "start": 0.6
+   },
+   {
+    "bounds": [
+     356.0,
+     366.0
+    ],
+    "id": "U-FLASH.T_spec",
+    "scale": 100.0,
+    "start": 358.0
+   }
+  ],
+  "seed": 20261008,
+  "sensitivity_policy_id": "M03-sensitivity-v1",
+  "state_sha256": "e11db759470bc22c4a65116cc1d3bb7b0efb1f3c514abc033fa0e63a4b668aa9",
+  "statement": "Synthetic data generated from the model itself: a numerical verification of the estimation machinery, not empirical validation.",
+  "status": "UNIDENTIFIABLE",
+  "theta_true": {
+   "U-FLASH.T_spec": 361.0,
+   "U-SPLIT.split_fraction": 0.7
+  },
+  "validation": [
+   {
+    "determined": false,
+    "id": "U-HEAT.Q",
+    "normalized_residual": null,
+    "null_projection_relative": 0.9974677958052346,
+    "observed": 11074.70340130451,
+    "predicted": null,
+    "prediction_standard_error": null,
+    "sigma": 20.0
+   },
+   {
+    "determined": true,
+    "id": "S4.N",
+    "normalized_residual": null,
+    "null_projection_relative": 6.3239423353894586e-15,
+    "observed": 1.4615864000442529,
+    "predicted": 1.4649025903859885,
+    "prediction_standard_error": null,
+    "sigma": 0.002
+   }
+  ],
+  "validation_measurements": [
+   {
+    "coefficients": {
+     "U-HEAT.Q": 1.0
+    },
+    "id": "U-HEAT.Q",
+    "observed": 11074.70340130451,
+    "sigma": 20.0
+   },
+   {
+    "coefficients": {
+     "S4.N": 1.0
+    },
+    "id": "S4.N",
+    "observed": 1.4615864000442529,
+    "sigma": 0.002
+   }
+  ]
+ },
+ "schema_version": "study-v1",
+ "study_id": "M03-FIT-U"
+}

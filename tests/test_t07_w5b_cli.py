@@ -211,6 +211,7 @@ def test_r148_with_v1_recorded_the_commands_print_the_v1_pins(
         assert now == then, " ".join(then["argv"][:2])
 
 
+@pytest.mark.usefixtures("single_threaded")
 def test_the_existing_commands_are_unchanged_byte_for_byte(tmp_path: Path) -> None:
     pinned = json.loads(PINS.read_text(encoding="utf-8"))
     record = capture_existing(tmp_path / "run")

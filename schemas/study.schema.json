@@ -1,0 +1,1993 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/study.schema.json",
+  "title": "Study",
+  "description": "M03 spec §10, ADR 0031 D7 (Amendment 1): one study over a compiled problem's pinned inputs — a sensitivity (§3), a sweep (§6) or an estimation (§7) — with the base problem's identity, its parameters and outputs, what it was asked and its result. The `$defs` are the records the study runtime emits (`openflowsheet.studies`). Rules a JSON Schema cannot express — a refused column's values are `null`, `status` agrees with `refusals`, a `determined: false` parameter carries no standard error — are checked beside it by `tests/test_m03_schemas.py`. Round-trip fixtures are emitted by real runs (`scripts/m03_schema_fixtures.py`).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "study_id",
+    "kind",
+    "model",
+    "parameters",
+    "outputs",
+    "request",
+    "result"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "study-v1"
+    },
+    "study_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "enum": [
+        "sensitivity",
+        "sweep",
+        "estimation"
+      ]
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The base problem's identity; for a sweep and a fit, the flowsheet before any pinned input is moved.",
+      "required": [
+        "model_version",
+        "constants_sha256"
+      ],
+      "properties": {
+        "model_version": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/properties/model_version"
+        },
+        "constants_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+        }
+      }
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/study_parameter"
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/output_functional"
+      }
+    },
+    "request": {
+      "type": "object"
+    },
+    "result": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "sensitivity"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "state_sha256"
+            ],
+            "properties": {
+              "mode": {
+                "enum": [
+                  "forward",
+                  "adjoint",
+                  "both"
+                ]
+              },
+              "state_sha256": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+              }
+            }
+          },
+          "result": {
+            "$ref": "#/$defs/sensitivity_result"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "sweep"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameter_id",
+              "values",
+              "start",
+              "max_points"
+            ],
+            "properties": {
+              "parameter_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "values": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "start": {
+                "const": "registered_initializer"
+              },
+              "max_points": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              }
+            }
+          },
+          "result": {
+            "$ref": "#/$defs/sweep_result"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "estimation"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "request": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fit_id",
+              "start",
+              "estimator"
+            ],
+            "properties": {
+              "fit_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "start": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "estimator": {
+                "$ref": "#/$defs/estimation_report/properties/estimator"
+              }
+            }
+          },
+          "result": {
+            "$ref": "#/$defs/estimation_report"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "study_parameter": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "ADR 0031 D1, spec §3.1: a pinned input of the compiled problem, declared by the study with a scale and a finite domain `[lower, upper]` (recorded; no qualification reads it).",
+      "required": [
+        "parameter_id",
+        "scale",
+        "domain"
+      ],
+      "properties": {
+        "parameter_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "domain": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "output_functional": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec §2: a variable, or a linear functional `{variable_id: coefficient}` of them, with its scale.",
+      "required": [
+        "output_id",
+        "coefficients",
+        "scale"
+      ],
+      "properties": {
+        "output_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "coefficients": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "sensitivity_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec §3.7, ADR 0031 D3-D4: an implicit sensitivity under `M03-sensitivity-v1`, or its typed refusal. A refused request or column carries `null` values, never zeros; that and the agreement of `status` with `refusals` are checked beside the schema (`tests/test_m03_schemas.py`).",
+      "required": [
+        "policy_id",
+        "identity",
+        "parameters",
+        "outputs",
+        "mode",
+        "status",
+        "refusals",
+        "qualification",
+        "forward",
+        "adjoint",
+        "consistency",
+        "linear_solves",
+        "derivative_provenance"
+      ],
+      "properties": {
+        "policy_id": {
+          "const": "M03-sensitivity-v1"
+        },
+        "identity": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The pairing identity of the base evaluation at `x*` (ADR 0008 D2).",
+          "required": [
+            "model_version",
+            "constants_sha256",
+            "state_sha256",
+            "phase_signature"
+          ],
+          "properties": {
+            "model_version": {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/properties/model_version"
+            },
+            "constants_sha256": {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+            },
+            "state_sha256": {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+            },
+            "phase_signature": {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/phase_signature"
+            }
+          }
+        },
+        "parameters": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameter_id",
+              "scale",
+              "domain",
+              "status",
+              "alias_residual"
+            ],
+            "properties": {
+              "parameter_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "scale": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "domain": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "status": {
+                "enum": [
+                  "QUALIFIED",
+                  "REFUSED"
+                ]
+              },
+              "alias_residual": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "Q3's scaled tangent residual; null when not evaluated."
+              }
+            }
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/output_functional"
+          }
+        },
+        "mode": {
+          "enum": [
+            "forward",
+            "adjoint",
+            "both"
+          ]
+        },
+        "status": {
+          "enum": [
+            "QUALIFIED",
+            "PARTIALLY_QUALIFIED",
+            "REFUSED"
+          ]
+        },
+        "refusals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "scope",
+              "qualification",
+              "detail",
+              "parameter_id"
+            ],
+            "properties": {
+              "code": {
+                "enum": [
+                  "IDENTITY_MISMATCH",
+                  "TWIN_MISMATCH",
+                  "UNKNOWN_PARAMETER",
+                  "PARAMETER_NOT_DIFFERENTIABLE",
+                  "ROOT_NOT_CONVERGED",
+                  "ROOT_NOT_VERIFIED",
+                  "UNSUPPORTED_RANK_STRUCTURE",
+                  "RANK_DEFICIENT",
+                  "ILL_CONDITIONED",
+                  "REGULARITY_INCONCLUSIVE",
+                  "LINEAR_SOLVE_FAILED",
+                  "INCONSISTENT_WITH_ELIMINATED_ROWS",
+                  "PHASE_BOUNDARY",
+                  "REGIME_MARGIN_UNSUPPORTED"
+                ]
+              },
+              "scope": {
+                "enum": [
+                  "request",
+                  "column"
+                ]
+              },
+              "qualification": {
+                "enum": [
+                  "Q0",
+                  "Q0'",
+                  "Q0''",
+                  "Q1",
+                  "Q1'",
+                  "Q2",
+                  "Q2'",
+                  "Q3",
+                  "Q4",
+                  "Q4'"
+                ]
+              },
+              "detail": {
+                "type": "string"
+              },
+              "parameter_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "qualification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "outcomes",
+            "scaled_residual_inf",
+            "regularity",
+            "splits",
+            "alias_residuals"
+          ],
+          "properties": {
+            "outcomes": {
+              "type": "array",
+              "description": "Spec §3.5's table, every row, in its order (Q2′ included).",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "required": [
+                    "qualification",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "qualification": {
+                      "const": "Q0"
+                    },
+                    "outcome": {
+                      "enum": [
+                        "pass",
+                        "fail",
+                        "not_evaluated",
+                        "not_applicable"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "qualification",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "qualification": {
+                      "const": "Q0'"
+                    },
+                    "outcome": {
+                      "enum": [
+                        "pass",
+                        "fail",
+                        "not_evaluated",
+                        "not_applicable"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "qualification",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "qualification": {
+                      "const": "Q0''"
+                    },
+                    "outcome": {
+                      "enum": [
+                        "pass",
+                        "fail",
+                        "not_evaluated",
+                        "not_applicable"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "qualification",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "qualification": {
+                      "const": "Q1"
+                    },
+                    "outcome": {
+                      "enum": [
+                        "pass",
+                        "fail",
+                        "not_evaluated",
+                        "not_applicable"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "qualification",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "qualification": {
+                      "const": "Q1'"
+                    },
+                    "outcome": {
+                      "enum": [
+                        "pass",
+                        "fail",
+                        "not_evaluated",
+                        "not_applicable"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "qualification",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "qualification": {
+                      "const": "Q2"
+                    },
+                    "outcome": {
+                      "enum": [
+                        "pass",
+                        "fail",
+                        "not_evaluated",
+                        "not_applicable"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "qualification",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "qualification": {
+                      "const": "Q2'"
+                    },
+                    "outcome": {
+                      "enum": [
+                        "pass",
+                        "fail",
+                        "not_evaluated",
+                        "not_applicable"
+                      ]
+                    },
+                    "solves": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "forward",
+                        "transposed"
+                      ],
+                      "properties": {
+                        "forward": {
+                          "enum": [
+                            "pass",
+                            "fail"
+                          ]
+                        },
+                        "transposed": {
+                          "enum": [
+                            "pass",
+                            "fail",
+                            "not_evaluated",
+                            "not_applicable"
+                          ]
+                        }
+                      }
+                    },
+                    "failed_solve": {
+                      "enum": [
+                        "forward",
+                        "transposed"
+                      ]
+                    },
+                    "reason": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "residual_normalized": {
+                      "type": "array",
+                      "items": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "maxItems": 2
+                    },
+                    "threshold": {
+                      "const": 1e-12
+                    }
+                  },
+                  "description": "Amendment 1: the solves on the qualified target pass ADR 0004 D3 — the forward solve, and in modes `adjoint` and `both` the transposed solve. `not_evaluated` when Q2 did not pass. A failure is the request refusal `LINEAR_SOLVE_FAILED` with ADR 0004's reason.",
+                  "allOf": [
+                    {
+                      "if": {
+                        "properties": {
+                          "outcome": {
+                            "const": "fail"
+                          }
+                        }
+                      },
+                      "then": {
+                        "required": [
+                          "solves",
+                          "failed_solve",
+                          "reason"
+                        ],
+                        "properties": {
+                          "reason": {
+                            "enum": [
+                              "residual",
+                              "exactly_singular"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "if": {
+                        "properties": {
+                          "outcome": {
+                            "const": "pass"
+                          }
+                        }
+                      },
+                      "then": {
+                        "required": [
+                          "solves",
+                          "residual_normalized",
+                          "threshold"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "qualification",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "qualification": {
+                      "const": "Q3"
+                    },
+                    "outcome": {
+                      "enum": [
+                        "pass",
+                        "fail",
+                        "not_evaluated",
+                        "not_applicable"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "qualification",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "qualification": {
+                      "const": "Q4"
+                    },
+                    "outcome": {
+                      "enum": [
+                        "pass",
+                        "fail",
+                        "not_evaluated",
+                        "not_applicable"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "qualification",
+                    "outcome"
+                  ],
+                  "properties": {
+                    "qualification": {
+                      "const": "Q4'"
+                    },
+                    "outcome": {
+                      "enum": [
+                        "pass",
+                        "fail",
+                        "not_evaluated",
+                        "not_applicable"
+                      ]
+                    }
+                  }
+                }
+              ],
+              "minItems": 10,
+              "items": false
+            },
+            "scaled_residual_inf": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "regularity": {
+              "oneOf": [
+                {
+                  "$ref": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/regularity-evidence.schema.json"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "splits": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "unit_id",
+                  "streams",
+                  "kind",
+                  "regime",
+                  "margin"
+                ],
+                "properties": {
+                  "unit_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "streams": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "enum": [
+                      "TP",
+                      "PH"
+                    ]
+                  },
+                  "regime": {
+                    "enum": [
+                      "LIQUID",
+                      "VAPOR",
+                      "TWO_PHASE",
+                      "ZERO_FLOW",
+                      null
+                    ]
+                  },
+                  "margin": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            },
+            "alias_residuals": {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "forward": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Rows the outputs, columns the parameters; `null` in every refused column (or everywhere).",
+              "required": [
+                "scaled",
+                "unscaled"
+              ],
+              "properties": {
+                "scaled": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "unscaled": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "adjoint": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Rows the outputs, columns the parameters; `null` in every refused column (or everywhere).",
+              "required": [
+                "scaled",
+                "unscaled"
+              ],
+              "properties": {
+                "scaled": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "unscaled": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "consistency": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Mode `both` (spec §3.6, Amendment 1): recorded, never a refusal; `QUALIFIED` does not imply `within_tolerance`.",
+              "required": [
+                "max_abs_difference",
+                "tolerance",
+                "within_tolerance"
+              ],
+              "properties": {
+                "max_abs_difference": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "tolerance": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "within_tolerance": {
+                  "type": "boolean"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "linear_solves": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "ADR 0004 D3.1's record of one completed solve: the forward one, then the transposed one.",
+            "required": [
+              "residual_normalized",
+              "min_abs_u_diagonal",
+              "max_abs_u_diagonal",
+              "nnz_l",
+              "nnz_u",
+              "dimension",
+              "linear_suspect"
+            ],
+            "properties": {
+              "residual_normalized": {
+                "type": "number",
+                "minimum": 0
+              },
+              "min_abs_u_diagonal": {
+                "type": "number",
+                "minimum": 0
+              },
+              "max_abs_u_diagonal": {
+                "type": "number",
+                "minimum": 0
+              },
+              "nnz_l": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "nnz_u": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "dimension": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "linear_suspect": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "derivative_provenance": {
+          "const": "implicit-exact"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "forward"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "adjoint": {
+                "type": "null"
+              },
+              "forward": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "adjoint"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "forward": {
+                "type": "null"
+              },
+              "adjoint": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "both"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "forward": {
+                "type": "object"
+              },
+              "adjoint": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "sweep_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec §6: one point of a sweep. A failed or unrun point is a result: its outputs and sensitivity are `null`.",
+      "required": [
+        "value",
+        "outcome",
+        "message",
+        "solve_outcome",
+        "certificate_status",
+        "state_sha256",
+        "constants_sha256",
+        "root_fingerprint",
+        "outputs",
+        "sensitivity"
+      ],
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "outcome": {
+          "type": "string",
+          "minLength": 1,
+          "description": "`CONVERGED` (solved and certified `VERIFIED`), a K03 solve outcome, `SPECIFICATION_REFUSED`, `CERTIFICATE_NOT_VERIFIED`, or `NOT_RUN`."
+        },
+        "message": {
+          "type": "string"
+        },
+        "solve_outcome": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "certificate_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state_sha256": {
+          "oneOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "constants_sha256": {
+          "oneOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "root_fingerprint": {
+          "$ref": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/solution-certificate.schema.json#/properties/root_fingerprint"
+        },
+        "outputs": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "sensitivity": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/sensitivity_result"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "outcome": {
+            "not": {
+              "const": "CONVERGED"
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "outputs": {
+            "type": "null"
+          },
+          "sensitivity": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    "sweep_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec §6, ADR 0031 D5 (Amendment 1): independent certified solves in input order; the only budget is a point count, and points beyond it are `NOT_RUN`.",
+      "required": [
+        "parameter_id",
+        "values",
+        "start",
+        "outputs",
+        "sensitivity_request",
+        "points",
+        "summary",
+        "status"
+      ],
+      "properties": {
+        "parameter_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "number"
+          }
+        },
+        "start": {
+          "const": "registered_initializer"
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/output_functional"
+          }
+        },
+        "sensitivity_request": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "parameters",
+                "outputs",
+                "mode"
+              ],
+              "properties": {
+                "parameters": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "outputs": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "mode": {
+                  "enum": [
+                    "forward",
+                    "adjoint",
+                    "both"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "points": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/sweep_point"
+          }
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "total",
+            "converged",
+            "verified",
+            "sensitivity_qualified",
+            "failed",
+            "not_run"
+          ],
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "converged": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "verified": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sensitivity_qualified": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "failed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "not_run": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "status": {
+          "enum": [
+            "COMPLETE",
+            "INCOMPLETE"
+          ]
+        }
+      }
+    },
+    "estimation_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Spec §7.4, ADR 0031 D6: a weighted least-squares fit, its identifiability and its validation. Data generated from the model are numerical verification, not empirical validation. An undetermined parameter's `final_iterate` is provenance only (Amendment 1); it carries no estimate and no standard error.",
+      "required": [
+        "fit_id",
+        "status",
+        "evidence_class",
+        "statement",
+        "seed",
+        "noise_model",
+        "theta_true",
+        "parameters_declared",
+        "measurements",
+        "validation_measurements",
+        "estimator",
+        "estimator_result",
+        "evaluations",
+        "failure",
+        "parameters",
+        "identifiability",
+        "identifiability_at_start",
+        "covariance_basis",
+        "covariance",
+        "correlation",
+        "chi2",
+        "degrees_of_freedom",
+        "validation",
+        "certificate_id",
+        "state_sha256",
+        "sensitivity_policy_id"
+      ],
+      "properties": {
+        "fit_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "IDENTIFIABLE",
+            "UNIDENTIFIABLE",
+            "FAILED"
+          ]
+        },
+        "evidence_class": {
+          "const": "numerical_verification"
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seed": {
+          "type": "integer"
+        },
+        "noise_model": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "theta_true": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "parameters_declared": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "scale",
+              "bounds",
+              "start"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "scale": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "bounds": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "start": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "measurements": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "coefficients",
+              "sigma",
+              "observed"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "coefficients": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": {
+                  "type": "number"
+                }
+              },
+              "sigma": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "observed": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "validation_measurements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "coefficients",
+              "sigma",
+              "observed"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "coefficients": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": {
+                  "type": "number"
+                }
+              },
+              "sigma": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "observed": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "estimator": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Spec §7.3's pinned settings, as the run used them.",
+          "required": [
+            "function",
+            "method",
+            "ftol",
+            "xtol",
+            "gtol",
+            "max_nfev",
+            "jac"
+          ],
+          "properties": {
+            "function": {
+              "const": "scipy.optimize.least_squares"
+            },
+            "method": {
+              "const": "trf"
+            },
+            "ftol": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "xtol": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "gtol": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "max_nfev": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "jac": {
+              "const": "M03 forward sensitivities (implicit-exact)"
+            }
+          }
+        },
+        "estimator_result": {
+          "description": "`least_squares`'s result; empty when the fit failed inside it.",
+          "oneOf": [
+            {
+              "type": "object",
+              "maxProperties": 0
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "message",
+                "success",
+                "nfev",
+                "njev",
+                "cost",
+                "optimality",
+                "active_mask"
+              ],
+              "properties": {
+                "status": {
+                  "type": "integer"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "success": {
+                  "type": "boolean"
+                },
+                "nfev": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "njev": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "cost": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "optimality": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "active_mask": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      -1,
+                      0,
+                      1
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "evaluations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "residual_calls",
+            "jacobian_calls",
+            "solves",
+            "sensitivities"
+          ],
+          "properties": {
+            "residual_calls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "jacobian_calls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "solves": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sensitivities": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "failure": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "stage",
+                "codes",
+                "detail",
+                "iterate"
+              ],
+              "properties": {
+                "stage": {
+                  "enum": [
+                    "solve",
+                    "sensitivity",
+                    "estimator"
+                  ]
+                },
+                "codes": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "iterate": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "final_iterate",
+              "determined",
+              "estimate",
+              "standard_error",
+              "at_bound"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "final_iterate": {
+                "type": "number"
+              },
+              "determined": {
+                "type": "boolean"
+              },
+              "estimate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "standard_error": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "at_bound": {
+                "type": "boolean"
+              }
+            },
+            "if": {
+              "properties": {
+                "determined": {
+                  "const": false
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "estimate": {
+                  "type": "null"
+                },
+                "standard_error": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        "identifiability": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "theta",
+                "singular_values_scaled",
+                "singular_value_ratio",
+                "rank",
+                "tau_id",
+                "status",
+                "null_directions_scaled",
+                "right_singular_vectors_scaled"
+              ],
+              "properties": {
+                "theta": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "singular_values_scaled": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "singular_value_ratio": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "rank": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "tau_id": {
+                  "const": 1e-08
+                },
+                "status": {
+                  "enum": [
+                    "IDENTIFIABLE",
+                    "UNIDENTIFIABLE"
+                  ]
+                },
+                "null_directions_scaled": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "right_singular_vectors_scaled": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "identifiability_at_start": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "theta",
+                "singular_values_scaled",
+                "singular_value_ratio",
+                "rank",
+                "tau_id",
+                "status",
+                "null_directions_scaled",
+                "right_singular_vectors_scaled"
+              ],
+              "properties": {
+                "theta": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "singular_values_scaled": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "singular_value_ratio": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "rank": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "tau_id": {
+                  "const": 1e-08
+                },
+                "status": {
+                  "enum": [
+                    "IDENTIFIABLE",
+                    "UNIDENTIFIABLE"
+                  ]
+                },
+                "null_directions_scaled": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "right_singular_vectors_scaled": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "covariance_basis": {
+          "const": "declared_sigma"
+        },
+        "covariance": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "correlation": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "chi2": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "degrees_of_freedom": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "validation": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "observed",
+              "sigma",
+              "determined",
+              "predicted",
+              "prediction_standard_error",
+              "normalized_residual",
+              "null_projection_relative"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "observed": {
+                "type": "number"
+              },
+              "sigma": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "determined": {
+                "type": "boolean"
+              },
+              "predicted": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "prediction_standard_error": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "normalized_residual": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "null_projection_relative": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "certificate_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state_sha256": {
+          "oneOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sensitivity_policy_id": {
+          "enum": [
+            "M03-sensitivity-v1",
+            null
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "FAILED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "failure": {
+                "type": "object"
+              },
+              "parameters": {
+                "maxItems": 0
+              },
+              "identifiability": {
+                "type": "null"
+              },
+              "covariance": {
+                "type": "null"
+              },
+              "validation": {
+                "maxItems": 0
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "failure": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNIDENTIFIABLE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "covariance": {
+                "type": "null"
+              },
+              "correlation": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

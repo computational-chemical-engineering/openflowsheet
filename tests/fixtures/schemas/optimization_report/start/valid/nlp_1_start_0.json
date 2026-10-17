@@ -1,0 +1,98 @@
+{
+ "checks": [
+  {
+   "certificate_status": "VERIFIED",
+   "check": "V1",
+   "message": "",
+   "outcome": "pass",
+   "resolve_outcome": "CONVERGED"
+  },
+  {
+   "check": "V2",
+   "outcome": "pass",
+   "scaled_difference_inf": 2.5461114698070258e-14,
+   "threshold": 1e-06,
+   "worst_variable": "S5.N"
+  },
+  {
+   "active_set": [
+    "recovery_A"
+   ],
+   "check": "V3",
+   "outcome": "pass",
+   "outside_box": [],
+   "tau_active": 1e-06,
+   "tau_feas": 1e-08,
+   "violated": []
+  },
+  {
+   "check": "V4",
+   "declared": {
+    "U-FLASH": "TWO_PHASE",
+    "U-HEAT": "LIQUID"
+   },
+   "inside_tau_regime": [],
+   "outcome": "pass",
+   "regime_changed": [],
+   "splits": [
+    {
+     "kind": "TP",
+     "margin": 0.20300891167946022,
+     "regime": "LIQUID",
+     "streams": "S3",
+     "unit_id": "U-HEAT"
+    },
+    {
+     "kind": "TP",
+     "margin": 0.08160527266757933,
+     "regime": "TWO_PHASE",
+     "streams": "S4/S5",
+     "unit_id": "U-FLASH"
+    }
+   ],
+   "tau_regime": 0.0001
+  },
+  {
+   "check": "V5",
+   "licq": true,
+   "multipliers_nonnegative": true,
+   "outcome": "pass",
+   "second_order": "not_assessed",
+   "sensitivity_status": "QUALIFIED",
+   "stationarity_residual_inf": 1.431709890855154e-09,
+   "tau_kkt": 1e-06
+  },
+  {
+   "check": "V6",
+   "constraint_values": {
+    "recovery_A": 2.680522470654978e-12
+   },
+   "objective": 0.6139625070047441,
+   "outcome": "pass"
+  }
+ ],
+ "classification": "KKT_POINT_VERIFIED",
+ "evaluations": {
+  "evaluation_errors": 0,
+  "jacobian_calls": 24,
+  "property_calls": 630,
+  "residual_calls": 22
+ },
+ "final_decisions": {
+  "U-FLASH.T_spec": 361.49964918667564,
+  "U-SPLIT.split_fraction": 0.897786613014196
+ },
+ "ipopt_final": {
+  "complementarity": 9.091008091482351e-12,
+  "dual_infeasibility": 1.9844397359658331e-13,
+  "primal_infeasibility": 3.637978807091713e-11
+ },
+ "ipopt_message": "Algorithm terminated successfully at a locally optimal point, satisfying the convergence tolerances (can be specified by options).",
+ "ipopt_status": 0,
+ "iterations": 21,
+ "start": {
+  "U-FLASH.T_spec": 360.0,
+  "U-SPLIT.split_fraction": 0.6
+ },
+ "wall_time_s": 0.07557152699882863
+}

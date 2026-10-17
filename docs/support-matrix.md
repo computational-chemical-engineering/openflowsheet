@@ -131,10 +131,14 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | L-WEB-2 | The web shell's security is the local, single-user model: loopback by default, the bearer token on every data request, a strict Content-Security-Policy; no TLS, no multi-user hosting, and no security assessment beyond design note §7. Served with `--allow-remote` over plain HTTP the page is an insecure context and record digests show "unchecked". | `tests/test_m06_wo4_serving.py::test_a_shell_file_is_served_with_its_type_and_the_shell_headers`<br>`doc:docs/design/M06-web-shell.md §7` |
 | L-WEB-3 | The web shell is tested in headless Chromium only. No usability, workflow or screen-reader study exists; accessibility is limited to status shown as glyph and word, controls that are keyboard-reachable by construction, and the measured contrast of its colour tokens. | `tests/test_m06_contrast.py::test_every_text_token_on_every_background_is_legible`<br>`doc:docs/design/M06-web-shell.md §13` |
 | L-WEB-4 | The agent history shows what the project recorded, not what an agent claimed; the validation shown beside a commit is recomputed now by the current server, not the report the agent received at commit time. | `doc:docs/web-shell.md`<br>`doc:docs/design/M06-web-shell.md §12` |
+| L44 | The C1 reactor (`c1.reactor`) is measured on Linux x86-64 only, on one machine (`ref-x86-64`). Its runs are opt-in: they need the separately built, pinned reactor environment, which no CI job builds (M02 N2). They are reproducibility class R3 (ADR 0034 D6). A run on aarch64 is not measured, nor is the reproduction of a coupled run across architectures. macOS is best effort, and Windows is refused before spawn (ADR 0033 D2). | `doc:docs/design/M02-pymrm-adapter.md §2.4`<br>`doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2`<br>`doc:docs/adr/0034-external-models-in-a-flowsheet-solve.md §D6` |
+| L45 | `external-subprocess-v1` runs the group's pinned code with the user's privileges and is not a sandbox: there is no filesystem confinement, network isolation, memory or CPU quota, or syscall filtering, and trust rests on provenance (ADR 0033 D2; M02 N1). | `doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2`<br>`doc:docs/design/M02-pymrm-adapter.md §12` |
+| L46 | No reactor result has been compared with experimental data by this project. The group's published comparison (Gargiulo et al. 2025 §3.1, of Rossetti et al. 2006's rate law) is the group's evidence. Every real-reactor number is the group's model at the pin, a regression, and its discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13). | `doc:docs/design/M02-pymrm-adapter.md §13` |
+| L48 | The C1 loop's convergence is evidenced at the corners and the centre of its registered hard domain only (M02 G11). The inert-fraction floor y_inert ≥ 0.035 sits just above a measured stage-1 failure (0.03 at 653.15 K, 11 MPa, H₂/N₂ 2.5). A failure inside the domain ends in a typed refusal and then `COUPLING_NOT_CONVERGED`, never in a false success. | `check:M02.G11`<br>`doc:docs/design/M02-pymrm-adapter.md §13` |
 
 ## Harvest (T08.A21)
 
-295 items — every `limitations[]` entry and non-`pass` check of the 22 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
+345 items — every `limitations[]` entry and non-`pass` check of the 24 manifests under `evidence/` — each classified once: **E** user-facing (a row above), **S** superseded or closed, **P** provenance or process note (stays in its manifest), **B** v0.2 backlog (spec §6.3). The classification is a build-lane draft for the design-lane review.
 
 | Package | E | S | P | B |
 | --- | --- | --- | --- | --- |
@@ -145,8 +149,10 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | K05 | 6 | 0 | 2 | 0 |
 | K06 | 0 | 7 | 1 | 0 |
 | M01 | 2 | 0 | 12 | 0 |
-| M02 | 0 | 0 | 7 | 0 |
-| M04 | 2 | 1 | 3 | 4 |
+| M02 | 5 | 0 | 6 | 0 |
+| M03 | 2 | 0 | 17 | 0 |
+| M04 | 2 | 1 | 10 | 4 |
+| M05 | 0 | 0 | 20 | 0 |
 | M06 | 6 | 0 | 2 | 0 |
 | P00 | 0 | 1 | 8 | 0 |
 | P01 | 2 | 2 | 5 | 0 |
@@ -160,4 +166,4 @@ Envelope `v0.2-envelope-dev` (T08 release spec §5). **Unlisted is unsupported**
 | T05b | 11 | 2 | 7 | 1 |
 | T06 | 11 | 3 | 14 | 0 |
 | T07 | 3 | 2 | 7 | 2 |
-| **all** | 103 | 43 | 140 | 9 |
+| **all** | 110 | 43 | 183 | 9 |

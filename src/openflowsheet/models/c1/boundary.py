@@ -75,6 +75,17 @@ HARD_TEMPERATURE_K: Final = (573.15, 773.15)
 HARD_PRESSURE_PA: Final = (5.0e6, 1.5e7)
 HARD_H2_N2: Final = (1.0, 4.0)
 HARD_INERT_FRACTION: Final = 0.2
+#: The inert floor's relative slack, 4 ulp of 1 (4 · 2⁻⁵², ≈ 8.9e-16; build log D134, M02 close-out
+#: C1), applied to every `inert_min > 0` (only v3 declares a floor today). `n_Ar + n_CH4 >=
+#: inert_min · n_tot` evaluated in binary64 is off the exact comparison by at most 8 half-ulps
+#: (u = 2⁻⁵³) relative: the two-term sum, n_tot (four roundings for `np.float64` elements; about
+#: one for Python floats, whose `sum` is compensated), the product, the slack product
+#: `(inert_min · n_tot) · (1 − s)`, and inert_min's own representation (< u). The slack is 8 u, so
+#: an exact ratio >= the floor is accepted, one below floor · (1 − 8 · 2⁻⁵²) is refused, and in
+#: between rounding decides. v3's design composition (y_Ar + y_CH4 = 0.035, on the floor) was
+#: accepted at every tested flow scaling.
+#: The floor only; refusals move only within that knife-edge.
+INERT_FLOOR_SLACK_REL: Final = 4.0 * 2.0**-52
 #: The kinetics' data domain (spec §8.12): inside the hard domain but outside it, `ok` and
 #: `extrapolated` with the violated bounds.
 DATA_TEMPERATURE_K: Final = (643.15, 733.15)
@@ -375,7 +386,7 @@ def hard_domain_violations(
     With a per-tube flow bound (ADR 0034 D10) `n_tubes` is required, and F_ret_in is formed as
     `tube_inlet` forms it; that bound is checked last, so M01's messages are unchanged. The inert
     floor, n_Ar + n_CH4 >= inert_min n_tot,in (§14.6 E3), is checked only when it is above 0, so a
-    domain without one gives M01's messages too.
+    domain without one gives M01's messages too; it is checked with `INERT_FLOOR_SLACK_REL`.
     """
     n = inlet.n
     violated = []
@@ -387,7 +398,9 @@ def hard_domain_violations(
         violated.append(f"H2/N2 outside {list(domain.h2_n2)}")
     if not (n[3] + n[4]) <= domain.inert_fraction * inlet.total_flow:
         violated.append(f"inert fraction above {domain.inert_fraction}")
-    if domain.inert_min > 0.0 and not (n[3] + n[4]) >= domain.inert_min * inlet.total_flow:
+    if domain.inert_min > 0.0 and not (n[3] + n[4]) >= domain.inert_min * inlet.total_flow * (
+        1.0 - INERT_FLOOR_SLACK_REL
+    ):
         violated.append(f"inert fraction below {domain.inert_min}")
     if domain.tube_flow is not None:
         if n_tubes is None:

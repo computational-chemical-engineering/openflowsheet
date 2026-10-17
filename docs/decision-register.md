@@ -507,6 +507,8 @@ layers down.
 
 **Watch for.** A session deleting `SYN-001-inadmissible-guess` as a duplicate of the nominal case (it is, by design, and it is the only registered rejection); a session counting it in the success denominator.
 
+---
+
 ## R-015 — Every round-trip fixture is regenerated from live code by a committed generator, and the ledger's pointers are checked
 
 > **Applied 2026-09-26 (T06 Amendment 2, spec A81):** the K03 OFF-B restart-trace fixture is re-baselined by its generator (`property_calls` 115 → 116, the one difference; counters are measured non-reproducible and forgiven by design); for a fixture carrying `VOLATILE_FIELDS` (the K05 run manifest), "regenerates identically" means `run.compare.differences` empty with those fields excluded plus Q-S7's hash check, and the file is rewritten only when a compared field changes.
@@ -613,6 +615,7 @@ they are left that way: each was written at its own commit and describes its own
 numerical content, which is broader than these four documents. Nothing here is empirical
 validation — SYN-001 is synthetic.
 
+---
 
 ## R-017 — A sign-off records that someone looked, not that the result is guaranteed
 
@@ -673,7 +676,9 @@ now written (R-003, R-A04, R-004), 0005 is accepted (R-028), 0008 is used by R-0
 R-035 (T04's globalization: specification continuation, edge 3, the residence-time PTC family,
 experimental; certificates of a bound declaration; Proposed 2026-09-24). 0011 is used by R-036 to
 R-043 (T05's unit models: the PH closure in the unit layer, `SYN-001-ref-v1` as a formation datum,
-SYN-001 bit-identical; accepted 2026-09-25). 0012 is used by R-052 to R-058 (T05b: the saturation band and the PH kernel's band route, the phase contract `T05b-phase-contract-v2` with its `ZERO_FLOW` regime, the verifier's temperature-degenerate judgement, R-007's and R-029's amendments, what stays registered, and the zero-flow form of dormant non-lifted outlets; accepted 2026-09-25). 0013 is used by R-059 to R-062 (K04's fresh-flash checks at the verifier's projection; accepted 2026-09-25). 0014 is used by R-066 to R-074 (T06: the corpus and NET-07, the sampling law, the gate, a deterministic regularity estimate, the verifier's domain-safe alias shift, validation's dimension and component checks, the reference semantics, identity and replay; accepted 2026-09-27) and, from its Amendment 1 (2026-09-26), R-076 to R-080 (component-order mapping, unit conversion by ADR 0001 D1.3–D1.4, the typed tear-path initializer failure, the reference-tool qualification rulings, the shared-provider qualification's field). 0015 is used by R-075 (T06 F4: recovery edge 3's second action, the sequential restart of a revision-built region from `traversal-G0-pass8-v1`; accepted 2026-09-27). 0016 is used by R-081 (input units by recorded conversion, `unit-conversion-v2`, widening ADR 0001 D1.1/D1.4 by Frank's Q11; accepted 2026-09-27). 0017 is used by R-082 (SYN-001's TP flash classified by its Rachford–Rice bracket when the binary64 tests disagree, and SYN-001's identity re-baselined by substitution; accepted 2026-09-27; Frank approved the identity move 2026-09-26). ADR 0014's Amendment 2 carries R-083 (IDAES SmoothVLE) and R-084 (the screen's identity refusal). 0018 is used by R-085 (the solver's terminal refinement, `globalization.eo_core = newton_refined`; accepted 2026-09-27; the enum widening approved by Frank 2026-09-26; Amendment 1, 2026-09-27: the outcome claim under the property budget). ADR 0014's Amendment 4 carries R-086 (the saturation closure) and R-087 (scoring run 1 stands; nothing that scores a start changes after it). Its Amendment 5 (2026-09-27) carries R-088 (six questions handed to T07), R-089 (the holdout ensemble) and R-090 (run records as committed evidence). 0019 is used by R-091 to R-096 (T07's application contract: the sibling protocols, the frozen schemas with Amendments 1 (`application-results`) and 2 (`list_models` `specifications`), idempotency, authorization, the error shape, transports adding nothing; approved by Frank 2026-09-27, Accepted with T07's tested evidence). 0020 is used by R-097 to R-104 (job execution, R-088 Q27, cancellation and budgets, revision-built runs and their routes with the solution state, validate's fallback, R-088 Q29, Q26, Q28). ADR 0002's Amendment 1 (integer canonicity) is recorded in R-A02, and ADR 0013's Amendment 2 (routing on registered tolerances) in R-059 and R-061. T07's decisions outside an ADR are R-105 to R-116: the design note's ruling rounds 3–7 (R-105 to R-109), Frank's v0.1 exclusions (R-110), the V17 specification's four entries (R-111 to R-114), its Amendment R6 and `v17-c2` (R-115), and operator identity isolation (R-116). 0021 is used by R-117, R-118, R-119, R-121, R-125 (the v0.1 release policy; accepted 2026-10-02 with its proposed revisions 1 and 2 and T08's tested evidence). 0022 is used by R-120 (the v0.2 real-chemistry selection, the ammonia loop; accepted 2026-10-02 with V19 PASS). 0023 is used by R-123 (the kinetic CSTR and PTC-R1; accepted 2026-10-02 with T08's tested evidence) and, from its Amendment 1 (2026-09-29), R-126 (the `2⁻¹⁰` C trace). 0024 is used by R-124 (compatible warm starts; accepted 2026-10-02 with T08's tested evidence). T08's decisions outside an ADR: R-122, R-127 (build-first Amendment 1's other rulings), R-128 (build-first Amendment 2: the review's P-budget and P-trace rulings), and, from review 2 (`docs/reviews/T08-review-2.md`, 2026-10-01), R-129 (U05's refusal), R-130 (recovery-edge evidence kinds and `library-only`), R-131 (CLI `replay --rerun`, reversing T07 D-Q6) and R-132 (the description review blocks the RC); R-133 (Frank, 2026-10-01: V17 carried across U05 and the description review's two fixes). R-134 (Frank, 2026-10-01: B50 amended to the carried surface). ADR 0006 Amendment 1 carries R-135 (the GCC runtime library; LGPL-2.1). T08 release spec Amendment R3 (2026-10-01) carries R-136 (A45's bundle set; T06 A34 by A46), R-137 (A49's digest), R-138 (the verdict table, read by column), R-139 (ADR 0021 D2.4's tree list, proposed revision 2), R-140 (no lock in the wheel, L41; the lock lookup confined to the checkout), R-141 (T06 A89 by machine class, T06 Amendment T08-1), R-142 (ADR 0006 Amendment 2: D4 on aarch64) and R-143 (V19 for C1; ADR 0022 proposed revision 1). R-144 (B50 excludes the package version) and R-145 (ADR 0022: Frank's choice recorded). ADR 0025 is used by R-146 (`T08-numerical-policy-v2`; accepted 2026-10-02 with T08's tested evidence; entered at its W9 as amended by R-147, its Correction of 2026-10-02) and R-147 (Frank, 2026-10-02: Q4, a record is compared under the policy it records; an unknown policy is refused). R-148 (Frank, 2026-10-02: the K05 identity re-registered for recording `T08-numerical-policy-v2`, substitution only). R-149 (Frank, 2026-10-02: the project is named OpenFlowsheet; the rename's identity move re-registered, substitution only). R-150 (Frank, 2026-10-03: the public repository is the one working repository; the pre-0.1.0 history archived in `openflowsheet-dev`) and R-151 (the release gate identifies `C` by its recorded file hashes where `C` is absent). R-152 (Frank, 2026-10-06: M01 pins the code's K_NH₃ enthalpy term) and R-153 (Frank, 2026-10-06: the v0.2 order — M01's design first with M06 built alongside — and a `0.2.0a1` pre-release after M02). ADR 0026 is used by R-154 to R-160 (M01: the C1 property route; accepted 2026-10-08 with M01's tested evidence and the review closure `9098f14`) and ADR 0027 by R-161 to R-169 (M01: the C1 reactor boundary; Proposed 2026-10-08, still Proposed). Their Amendments 1 (M01 spec Amendment 1, §19) carry R-196 and R-197 (0026: the ln φ block's bounds, the request checks) and R-195, R-198, R-199 and R-200 (0027: the projection's defect assertion, the boundary's check order, the stand-in's label, M02's bitwise probe). M01's decisions outside an ADR: R-217 (T08's manifest-count and review-table tests scoped to the v0.1 packages) and R-219 (the C1 records' declared no-walk-up exception). ADR 0030 is used by R-170 and R-171 (M06: the diagnostic web shell, hand-written ES modules served same-origin; the bearer token in Web Storage, never a cookie; accepted 2026-10-08 with M06's tested evidence), with R-173 and R-174 (the gap triage closed; the scenario view is the run comparison) from its design note. ADR 0019 Amendment 3 (approved by Frank 2026-10-08, accepted with M06's tested evidence) carries R-172 (the structure index, element-level `diff_revisions`, `list_audit`) and R-192 (the served MCP tool-list digest moves to `6c4375b4…`). M06's W27 registration carries R-175 to R-179, and its decisions outside an ADR are R-193 (v0.2's working envelope `v0.2-envelope-dev`), R-194 (T08's U14 restated for v0.2) and R-216 (the v0.1.0 CHANGELOG-limitations test reads the envelope as released). **R-180 to R-191 and R-210 to R-218 (less M06's R-216 and M01's R-217) are held by M03, R-220 to R-237 by M02 and R-240 onward by M04; R-238 is the next free R number. ADRs 0031–0032 are held by M03 and 0033–0035 by M02; 0028 is the next free ADR number.**
+SYN-001 bit-identical; accepted 2026-09-25). 0012 is used by R-052 to R-058 (T05b: the saturation band and the PH kernel's band route, the phase contract `T05b-phase-contract-v2` with its `ZERO_FLOW` regime, the verifier's temperature-degenerate judgement, R-007's and R-029's amendments, what stays registered, and the zero-flow form of dormant non-lifted outlets; accepted 2026-09-25). 0013 is used by R-059 to R-062 (K04's fresh-flash checks at the verifier's projection; accepted 2026-09-25). 0014 is used by R-066 to R-074 (T06: the corpus and NET-07, the sampling law, the gate, a deterministic regularity estimate, the verifier's domain-safe alias shift, validation's dimension and component checks, the reference semantics, identity and replay; accepted 2026-09-27) and, from its Amendment 1 (2026-09-26), R-076 to R-080 (component-order mapping, unit conversion by ADR 0001 D1.3–D1.4, the typed tear-path initializer failure, the reference-tool qualification rulings, the shared-provider qualification's field). 0015 is used by R-075 (T06 F4: recovery edge 3's second action, the sequential restart of a revision-built region from `traversal-G0-pass8-v1`; accepted 2026-09-27). 0016 is used by R-081 (input units by recorded conversion, `unit-conversion-v2`, widening ADR 0001 D1.1/D1.4 by Frank's Q11; accepted 2026-09-27). 0017 is used by R-082 (SYN-001's TP flash classified by its Rachford–Rice bracket when the binary64 tests disagree, and SYN-001's identity re-baselined by substitution; accepted 2026-09-27; Frank approved the identity move 2026-09-26). ADR 0014's Amendment 2 carries R-083 (IDAES SmoothVLE) and R-084 (the screen's identity refusal). 0018 is used by R-085 (the solver's terminal refinement, `globalization.eo_core = newton_refined`; accepted 2026-09-27; the enum widening approved by Frank 2026-09-26; Amendment 1, 2026-09-27: the outcome claim under the property budget). ADR 0014's Amendment 4 carries R-086 (the saturation closure) and R-087 (scoring run 1 stands; nothing that scores a start changes after it). Its Amendment 5 (2026-09-27) carries R-088 (six questions handed to T07), R-089 (the holdout ensemble) and R-090 (run records as committed evidence). 0019 is used by R-091 to R-096 (T07's application contract: the sibling protocols, the frozen schemas with Amendments 1 (`application-results`) and 2 (`list_models` `specifications`), idempotency, authorization, the error shape, transports adding nothing; approved by Frank 2026-09-27, Accepted with T07's tested evidence). 0020 is used by R-097 to R-104 (job execution, R-088 Q27, cancellation and budgets, revision-built runs and their routes with the solution state, validate's fallback, R-088 Q29, Q26, Q28). ADR 0002's Amendment 1 (integer canonicity) is recorded in R-A02, and ADR 0013's Amendment 2 (routing on registered tolerances) in R-059 and R-061. T07's decisions outside an ADR are R-105 to R-116: the design note's ruling rounds 3–7 (R-105 to R-109), Frank's v0.1 exclusions (R-110), the V17 specification's four entries (R-111 to R-114), its Amendment R6 and `v17-c2` (R-115), and operator identity isolation (R-116). 0021 is used by R-117, R-118, R-119, R-121, R-125 (the v0.1 release policy; accepted 2026-10-02 with its proposed revisions 1 and 2 and T08's tested evidence). 0022 is used by R-120 (the v0.2 real-chemistry selection, the ammonia loop; accepted 2026-10-02 with V19 PASS). 0023 is used by R-123 (the kinetic CSTR and PTC-R1; accepted 2026-10-02 with T08's tested evidence) and, from its Amendment 1 (2026-09-29), R-126 (the `2⁻¹⁰` C trace). 0024 is used by R-124 (compatible warm starts; accepted 2026-10-02 with T08's tested evidence). T08's decisions outside an ADR: R-122, R-127 (build-first Amendment 1's other rulings), R-128 (build-first Amendment 2: the review's P-budget and P-trace rulings), and, from review 2 (`docs/reviews/T08-review-2.md`, 2026-10-01), R-129 (U05's refusal), R-130 (recovery-edge evidence kinds and `library-only`), R-131 (CLI `replay --rerun`, reversing T07 D-Q6) and R-132 (the description review blocks the RC); R-133 (Frank, 2026-10-01: V17 carried across U05 and the description review's two fixes). R-134 (Frank, 2026-10-01: B50 amended to the carried surface). ADR 0006 Amendment 1 carries R-135 (the GCC runtime library; LGPL-2.1). T08 release spec Amendment R3 (2026-10-01) carries R-136 (A45's bundle set; T06 A34 by A46), R-137 (A49's digest), R-138 (the verdict table, read by column), R-139 (ADR 0021 D2.4's tree list, proposed revision 2), R-140 (no lock in the wheel, L41; the lock lookup confined to the checkout), R-141 (T06 A89 by machine class, T06 Amendment T08-1), R-142 (ADR 0006 Amendment 2: D4 on aarch64) and R-143 (V19 for C1; ADR 0022 proposed revision 1). R-144 (B50 excludes the package version) and R-145 (ADR 0022: Frank's choice recorded). ADR 0025 is used by R-146 (`T08-numerical-policy-v2`; accepted 2026-10-02 with T08's tested evidence; entered at its W9 as amended by R-147, its Correction of 2026-10-02) and R-147 (Frank, 2026-10-02: Q4, a record is compared under the policy it records; an unknown policy is refused). R-148 (Frank, 2026-10-02: the K05 identity re-registered for recording `T08-numerical-policy-v2`, substitution only). R-149 (Frank, 2026-10-02: the project is named OpenFlowsheet; the rename's identity move re-registered, substitution only). R-150 (Frank, 2026-10-03: the public repository is the one working repository; the pre-0.1.0 history archived in `openflowsheet-dev`) and R-151 (the release gate identifies `C` by its recorded file hashes where `C` is absent). R-152 (Frank, 2026-10-06: M01 pins the code's K_NH₃ enthalpy term) and R-153 (Frank, 2026-10-06: the v0.2 order — M01's design first with M06 built alongside — and a `0.2.0a1` pre-release after M02). ADR 0026 is used by R-154 to R-160 (M01: the C1 property route; accepted 2026-10-08 with M01's tested evidence and the review closure `9098f14`) and ADR 0027 by R-161 to R-169 (M01: the C1 reactor boundary; Proposed 2026-10-08, still Proposed). Their Amendments 1 (M01 spec Amendment 1, §19) carry R-196 and R-197 (0026: the ln φ block's bounds, the request checks) and R-195, R-198, R-199 and R-200 (0027: the projection's defect assertion, the boundary's check order, the stand-in's label, M02's bitwise probe). M01's decisions outside an ADR: R-217 (T08's manifest-count and review-table tests scoped to the v0.1 packages) and R-219 (the C1 records' declared no-walk-up exception). ADR 0030 is used by R-170 and R-171 (M06: the diagnostic web shell, hand-written ES modules served same-origin; the bearer token in Web Storage, never a cookie; accepted 2026-10-08 with M06's tested evidence), with R-173 and R-174 (the gap triage closed; the scenario view is the run comparison) from its design note. ADR 0019 Amendment 3 (approved by Frank 2026-10-08, accepted with M06's tested evidence) carries R-172 (the structure index, element-level `diff_revisions`, `list_audit`) and R-192 (the served MCP tool-list digest moves to `6c4375b4…`). M06's W27 registration carries R-175 to R-179, and its decisions outside an ADR are R-193 (v0.2's working envelope `v0.2-envelope-dev`), R-194 (T08's U14 restated for v0.2) and R-216 (the v0.1.0 CHANGELOG-limitations test reads the envelope as released). ADR 0031 is used by R-180 to R-185 (M03: parametric sensitivities and studies — the parametric twin reproducing the base residual and Jacobian, the qualified-root policy `M03-sensitivity-v1`, one factorization for forward and adjoint, sweeps as independent certified solves, SYN-001's (r, T_f) estimation example, one new study schema; Proposed 2026-10-08) and ADR 0032 by R-186 to R-191 (M03: the general NLP adapter — the PyNumero grey-box bridge, the Hessian policy, the candidate judged on the re-solved certified simulation, true domain restrictions, Ipopt behind gate G-A10 as the optional `nlp` extra, the study-level optimization closure; Proposed 2026-10-08). Their Amendments 1 (M03 spec Amendment 1) carry R-210, R-211 and R-215 (0031: the complete refusal vocabulary with `LINEAR_SOLVE_FAILED`, the unidentifiable fit's undetermined parameters recorded and not held, a sweep's point-count budget) and R-212 (0032: a report's status is its starts' highest classification). M03's decisions outside an ADR: R-213 (the schema list registered in `schemas/registry.json`), R-214 (A12's tolerance τ_abs = 1e-11), R-218 (the rename-substitution test's registered list of fixture directories added after the rename) and R-253 (M03's regression fixtures compared under the numerical policy with registered pre-pass rules; ratified in the M03 review's Closure `a8a6dcc`). **R-180 to R-191, R-210 to R-215, R-218 and R-253 are M03's; R-220 to R-237 are held by M02 and R-240 onward by M04 (less M03's R-253); R-238 is the next free R number. ADRs 0031–0032 are M03's and 0033–0035 are held by M02; 0028 is the next free ADR number.**
+
+---
 
 ## R-018 — Structural analysis reads the declaration, never the compiled sparsity pattern
 
@@ -755,6 +760,8 @@ and relaxing any one closes the system. The report therefore lists every candida
 list is complete and not minimal (statement S4), and the naming is done by a second, independent
 count — unit-local degrees of freedom — tied to the first by an executable identity.
 
+---
+
 ## R-021 — A copy row is a difference; two coefficients that do not cancel are not a copy
 
 | | |
@@ -786,6 +793,8 @@ then refuses it, because its two-state witness sees the mismatch move by the sec
 no K03 result was ever wrong. But the refusal was *numerical*, and R-011's whole point is that
 this elimination is structural, so the same guard is now in `rank.py` and fires first. T01, which
 has no state and therefore no witness, is the case where the gap had nothing underneath it.
+
+---
 
 ## R-022 — When the structural analysis cannot run, the status depends on why
 
@@ -819,6 +828,8 @@ analysed" at status level rather than from the check message.
 
 > **Amended 2026-09-27 by R-106 (T07 ruling round 5, S3; the kind by Frank):** a fixed value that its model refuses at construction (`value_outside_model_domain`, the `Unbound` kind `inadmissible`, which has no fallback) makes the revision **`INVALID`**, `CAP-01`: a real defect in the revision, like the specification conflict. A refused start is `incomplete` and stays **`DRAFT`** (§4.3). A schema-invalid document is SCHEMA-01 under the frozen revision schema. The table's other rows are unchanged.
 
+---
+
 ## R-023 — A cross-unit specification's start value is a `role: free` specification
 
 | | |
@@ -849,6 +860,7 @@ EO region in v0.1, including when its target is owned by the same unit: no v0.1 
 local solver for a freed outlet, and the unit-local shortcut ran the flowsheet at the guess and
 reported `CONVERGED` with the specification unmet (*measured*). T02 §7.1 as amended.
 
+---
 
 ## R-024 — T02 extends the frozen schema list by ADR 0009, additively
 
@@ -870,6 +882,8 @@ failure-bundle action, `provide_derivatives`. `SolvePlan` does not change.
 fixture's meaning); a separate trace for the recycle (two orderings, two identities); an optional
 `recycle` with defaults (a default mistakable for a declaration); `report_defect` for a missing
 EO derivative (an honest `unavailable` is not a bug). ADR 0009 "Alternatives considered".
+
+---
 
 ## R-025 — T02's recycle and phase policies are registered values, not tuning
 
@@ -897,6 +911,8 @@ Changing a constant is a spec amendment by Fable, not a tuning edit.
 
 **Reversed in part by R-028 (ADR 0005, 2026-09-24).** On the lifted EO path a phase now leaves only when an attempt ends `BOUND_BLOCKED` on one of its lifted variables — a landing alone is an overshoot — and a phase can appear *during* an attempt through the admissibility screen. The Anderson constants, `auto` and the merge edge are unchanged.
 
+---
+
 ## R-026 — A least-squares float is compared within a comparability window, not under a floor
 
 | | |
@@ -922,6 +938,7 @@ quantities). "Recorded, never compared" (loses a real check where the data are g
 on 26 of 44 events — and needs a new float class in D2.2 anyway). A window at `1e-6` (REC-05
 γ=0.1's event 8 sits at `1.7e-6` and deviates `6.4e-9`).
 
+---
 
 ## R-027 — The work is split by lane, not by model
 
@@ -3120,6 +3137,8 @@ release note calling V14 passed.
 
 **Watch for.** T08.A49/B50 read as passing on `6d13e13d…` at the RC without this entry; another description or schema change carried under this entry (it covers U05, N1 and N2 only — a further change of the surface is a new decision); `v17_c2_tool_descriptions_sha256` re-baselined to the new digest; the carry described as covering agent behaviour on the changed `validate` path, which no agent exercised.
 
+---
+
 ## R-134 — T08.B50's descriptions digest is the surface R-133 carries (`171dd768…`), by Frank's decision
 
 | | |
@@ -4133,6 +4152,222 @@ that model. A headline score: blueprint §11.4.
 
 ---
 
+## R-180 — M03: a study parameter is a pinned input, and its derivative Fₚ comes from a parametric twin that must reproduce the base residual and Jacobian bit for bit; the frozen CompiledProblem does not change
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D1, D2; `docs/derivations/M03-studies-spec.md` §3.1–§3.2 |
+| Evidence | Specification A01–A04 (planned); measured 2026-10-08: the twin is bitwise equal to the base at P1–P3 |
+| Affected packages | M03, M04, M05 |
+
+**Decision.** Parameters are elements of `metadata.parameter_ids`. `casadi_backend.py` compiles the same `ProblemSpec` again with only the requested pinned inputs as symbols; the twin's residual and x-Jacobian must equal the base's after signed-zero normalization at the requested state (`TWIN_MISMATCH` otherwise); a builder that cannot take a symbol refuses `PARAMETER_NOT_DIFFERENTIABLE`. No metadata, capability, `model_version` or `constants_sha256` changes.
+
+**Rejected alternatives, and why.** Widening `Capabilities`/`CompiledProblem` (frozen-interface and metadata migration for no gain); finite differences in p (R-010); hand-written ∂F/∂p per unit (a second model); one twin with every pinned input symbolic (one value-branching builder would disable every sensitivity).
+
+**Watch for.** Any sensitivity path that evaluates the base problem at perturbed pinned inputs; a tolerance replacing the bitwise guard without a specification amendment.
+
+---
+
+## R-181 — M03: a sensitivity is issued only at a qualified regular root (policy `M03-sensitivity-v1`); every failure is a typed refusal with null values; τ_regime = 1e-4
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D3; specification §3.4–§3.5 |
+| Evidence | Specification A13–A20 (planned); measured rcond₁ ≈ 0.02 × margin near SYN-001's bubble point; alias tangent residual 1.0 for both pressure specifications, 0.0 for the five registered parameters |
+| Affected packages | M03, M04, M05 |
+
+**Decision.** Q0 identity, twin guard, known differentiable parameters; Q1 kept-row scaled residual ≤ 1e-10 and (study level) a `VERIFIED` K04 certificate; Q2 K04's screen on the reduced scaled Jacobian `NO_RANK_LOSS_DETECTED`; Q3 per parameter, eliminated alias rows' tangent residual ≤ 1e-8 (else that column only is refused); Q4 every TP split's margin ≥ 1e-4, PH-type splits `REGIME_MARGIN_UNSUPPORTED`. All failures listed; refused values `null`; no override.
+
+**Rejected alternatives, and why.** The [A08] screen alone (it notices a boundary only below m ≈ 1e-6); an LU-pivot screen (blueprint §8.1: not rank revealing); a per-call threshold override (blueprint §8.1: a study cannot relabel).
+
+**Watch for.** A refusal that returns zeros or the unqualified numbers; a changed τ without a new policy id; the screen applied to a matrix containing decision variables.
+
+---
+
+## R-182 — M03: forward and adjoint sensitivities share one factorization; the adjoint is a transposed back-solve under ADR 0004 D3's record; finite differences stay test oracles
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D4; specification §3.6, §4.5 |
+| Evidence | Specification A03, A05–A10, A12 (planned); measured forward–adjoint ≤ 3.8e-14 scaled; FD floor 3.3e-12 at ε = 1e-4 (4th order) |
+| Affected packages | M03, ADR 0004's linear-solve module |
+
+**Decision.** One `factorize` for the solves per request regardless of the number of parameters and outputs (plus the screen's own); `KeptFactorization.solve_transposed` judged against Aᵀ; mode `both` records the consistency identity. The FD oracle (4th order, h = 1e-4 s_p, P1 and P3) lives in test support only.
+
+**Rejected alternatives, and why.** A factorization per parameter (ADR 0004's cost); a separate factorization of Jᵀ (two factorizations of one matrix); reusing the last Newton factorization (not the final Jacobian, blueprint [A08]).
+
+**Watch for.** A factorization count that grows with the request; an FD helper imported from `src`.
+
+---
+
+## R-183 — M03: a sweep is independent certified solves from the registered initializer; failed points are results; nothing is claimed between points
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D5; specification §6 |
+| Evidence | Specification A21–A24 (planned); measured: all eight in-domain registered points converge and certify `VERIFIED` |
+| Affected packages | M03, M04 (sampling), M07 |
+
+**Decision.** `start = "registered_initializer"` (single-valued literal); typed outcomes with `null` outputs for failed points; order independence; root fingerprints recorded; `INCOMPLETE` with `NOT_RUN` points on interrupt or budget.
+
+**Rejected alternatives, and why.** Warm-start chaining (order dependence, poisoned successors, branch following belongs to continuation); interpolating or dropping failed points (placeholder success).
+
+**Watch for.** A sweep summary that counts only converged points; chaining introduced without a new `start` value.
+
+---
+
+## R-184 — M03: the estimation example fits SYN-001's (r, T_f) to seeded synthetic data; identifiability by the weighted scaled sensitivity matrix (τ_id = 1e-8); the product streams alone cannot identify r
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D6; specification §7 |
+| Evidence | Specification A25–A30 (planned); closed forms in `benchmarks/m03/reference_values.json` (FIT-I ratio 0.3198; FIT-U ratio 0, null direction e_r) |
+| Affected packages | M03, M04 |
+
+**Decision.** WLS by SciPy `least_squares` (`trf`) with M03's exact forward sensitivities and a certified solve per evaluation; covariance only when identifiable, on the declared σ; undetermined parameters and predictions carry no values; data from SplitMix64 + erfinv in the generator, stored in the JSON and read, never regenerated; `evidence_class = numerical_verification`, not empirical validation.
+
+**Rejected alternatives, and why.** Profile likelihood or Bayesian identifiability (unnecessary to decide either registered fit); noise-free data (χ² and validation degenerate); a library RNG (streams may change across versions; the data must be byte-reproducible).
+
+**Watch for.** A covariance or standard error reported for an undetermined parameter; optimizer termination read as identifiability.
+
+---
+
+## R-185 — M03: one new schema file for studies; no existing schema changes; ExperimentRequest/Result left to M04; the R-149 `$id` move does not ride on M03
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0031 D7; specification §10 |
+| Evidence | Schema round-trip tests from emitted fixtures (planned, WO-9) |
+| Affected packages | M03, M01, M04, M06 |
+
+**Decision.** `schemas/study.schema.json` (sensitivity, sweep, estimation) and, by ADR 0032, `schemas/optimization-report.schema.json`; fixtures emitted by real runs; four non-schema rules in a test.
+
+**Rejected alternatives, and why.** Editing existing schemas (collides with M01/M06, gains nothing); carrying the `$id` move (touches every schema).
+
+**Watch for.** A hand-written fixture; a refused value serialized as 0.
+
+---
+
+## R-186 — M03: the general NLP bridge is a full-space PyNumero ExternalGreyBoxModel over the parametric twin
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0032 D1; specification §8.2 |
+| Evidence | Specification A31, A35 (planned) |
+| Affected packages | M03, M05 |
+
+**Decision.** Inputs: state variables and decisions; equality constraints: the kept rows via the twin; Jacobian `[Fₓ Fₚ]` exact; Pyomo holds only the objective, inequalities, bounds and scaling.
+
+**Rejected alternatives, and why.** Reduced space (not [A06]'s residual-exposing bridge; nested-solve failures become evaluation errors; it is M05's design space); a hand-transpiled Pyomo model (plan L271); CasADi `nlpsol` (ADR 0006 D2.4); cyipopt without PyNumero (departs from [A06]; a later ADR if ASL alone fails the audit).
+
+**Watch for.** Pyomo expressions duplicating model equations; claims of trust-region guarantees from this bridge.
+
+---
+
+## R-187 — M03: Hessian policy — the exact Hessian stays absent; Ipopt's limited-memory approximation is configured and recorded; second-order conditions are reported not assessed
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0032 D2; specification §8.3 |
+| Evidence | Specification A35, A36, A38 (planned) |
+| Affected packages | M03, M05, ADR 0003 (T5 not fired) |
+
+**Decision.** `hessian_approximation = limited-memory`, history 6, recorded; `exact` refused `HESSIAN_UNAVAILABLE` before any solve; `second_order = "not_assessed"` except `"vacuous_at_vertex"`.
+
+**Rejected alternatives, and why.** FD Hessian (a fabricated derivative class); Gauss–Newton (not for general constraints); zeros (the frozen interface forbids them).
+
+**Watch for.** Any Hessian callback on the gray box; a second-order claim without an exact Hessian.
+
+---
+
+## R-188 — M03: an optimizer's candidate is its decision vector; feasibility, constraints and KKT are judged on the re-solved, certified simulation, independently of Ipopt
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0032 D3; specification §8.5–§8.6 |
+| Evidence | Specification A32, A35–A37, A40 (planned) |
+| Affected packages | M03, M05, M07 |
+
+**Decision.** V1 re-solve and `VERIFIED`; V2 Ipopt-state gross-error check (≤ 1e-6 scaled); V3 bounds and inequalities on the re-solved state; V4 regimes and margins; V5 reduced KKT from M03 adjoints (stationarity ≤ 1e-6, signs, LICQ); statuses `KKT_POINT_VERIFIED` / `NOT_VERIFIED` / `INFEASIBLE_REPORTED` / `SOLVER_FAILED` / `UNSUPPORTED`; `global_optimality = false` always.
+
+**Rejected alternatives, and why.** Trusting Ipopt's return status or state (termination is not feasibility).
+
+**Watch for.** A report whose constraint values come from Ipopt's iterate; a status that implies optimality.
+
+---
+
+## R-189 — M03: optimizers receive true domain restrictions — decision boxes, the provider's T and P domain, flows ≥ 0 except those exactly zero at the verified start — never penalties; bound_relax_factor = 0
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0032 D4; specification §8.2, §8.4 |
+| Evidence | Specification A31 (planned) |
+| Affected packages | M03, M05 |
+
+**Decision.** As the title; regime-pinned zero flows are left unbounded because a bound there is degenerate (LICQ), and V2/V4 police them.
+
+**Rejected alternatives, and why.** Bounding every flow (LICQ failure at the liquid heater); a penalty for constraints (blueprint §10).
+
+**Watch for.** Ipopt's default bound relaxation re-enabled; a penalty term in an objective.
+
+---
+
+## R-190 — M03: Ipopt only from a separately distributed package behind the [A10] gate G-A10; an optional `nlp` extra after a PASS and Frank's licence answer; otherwise UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass; licence acceptance is Frank's (N1, pending) |
+| Normative text | ADR 0032 D5; specification §9 |
+| Evidence | `docs/m03-ipopt-audit.md` (planned, WO-6); A39, A41. Probe 2026-10-08 (not the audit): no binary cyipopt on PyPI for linux/cp313; Pyomo 6.10.1's wheel has no `libpynumero_ASL`; no system Ipopt |
+| Affected packages | M03, T08-style release gates |
+
+**Decision.** G1–G8 of specification §9; the extra never in the default install; CasADi's METIS-closure objects never loaded (checked per test run); no substitute optimizer without a new ADR.
+
+**Rejected alternatives, and why.** CasADi's bundled Ipopt (ADR 0006 D2.4); adding cyipopt/pyomo as default dependencies (blueprint §15); proceeding before the audit (ADR 0006 D2.4: the audit runs first).
+
+**Watch for.** An `nlp` import on a default path; the extra declared before the audit document exists.
+
+---
+
+## R-191 — M03: the optimization closure is study-level (`optimization_readiness`); `validate(task="optimization")` keeps R-129's typed `unsupported`
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 specification pass |
+| Normative text | ADR 0032 D6; specification §8.7 |
+| Evidence | Specification A33, A34 (planned) |
+| Affected packages | M03, a later package that gives `ProcessRevision` an optimization formulation |
+
+**Decision.** `READY_FOR_OPTIMIZATION` only when the formulation closes and an audited NLP solver is importable; every failing reason listed otherwise; `optimize()` returns `UNSUPPORTED` with those reasons and never raises.
+
+**Rejected alternatives, and why.** Flipping the application-level validate now (no revision-level formulation exists; R-129's watch-for).
+
+**Watch for.** `READY_FOR_OPTIMIZATION` returned with the extra absent; R-129's refusal removed without a formulation behind it.
+
+---
+
 ## R-192 — The served MCP tool-list digest moves from R-133's `171dd768…` to `6c4375b4…`, as the direct consequence of ADR 0019 Amendment 3's `diff_revisions` `elements` (A3.2); the move is bound to that member alone
 
 | | |
@@ -4399,6 +4634,116 @@ T_out range was corrected to 1.2–1.7 K (the draft printed 1.3).
 
 ---
 
+## R-210 — M03 Amendment 1: the sensitivity refusal vocabulary is complete; a failed linear solve after a clean screen is the typed refusal `LINEAR_SOLVE_FAILED`, not an exception; the forward–adjoint consistency is recorded and never refuses
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 |
+| Normative text | ADR 0031 D3, D4 and its Amendment 1; `docs/derivations/M03-studies-spec.md` §3.3, §3.5 (Q1, Q2, Q2′), §3.6, §16 |
+| Evidence | Specification A43, A44, A45 (planned, WO-2a). Measured at `5cf4160`: P1 with `S2.T` = 500 K gives the residual status `invalid_trial_state` and the refusal `ROOT_NOT_CONVERGED`; the linear toy with one row eliminated gives `UNSUPPORTED_RANK_STRUCTURE`; the registered states' rcond₁ ≥ 1.33e-4 |
+| Affected packages | M03, M04, M05 (every consumer of `M03-sensitivity-v1`) |
+
+**Decision.** An unevaluable residual fails Q1 as `ROOT_NOT_CONVERGED`, with the status in the detail. A non-square reduced system is `UNSUPPORTED_RANK_STRUCTURE` at Q2, and the screen is not run. A `LinearSolveFailedError` from the forward or the transposed solve is the request refusal `LINEAR_SOLVE_FAILED` at the new Q2′, with ADR 0004's reason. Mode `both` records `{max_abs_difference, tolerance, within_tolerance}` and never refuses on it. Mode `adjoint` performs the forward solve, because Q3 needs `X̂`, and does not publish it. Mode `forward` performs no transposed solve. No state or factorization makes a request raise.
+
+**Rejected alternatives, and why.** Letting `LinearSolveFailedError` propagate: a sweep, fit or verifier would crash instead of recording a result, against ADR 0004 D3.3's "singularity is a typed result". Refusing on forward–adjoint inconsistency: that would be a hidden conditioning threshold near κ ≈ 1e6, below Q2's registered `τ_ill`. A distinct code for an unevaluable residual: no consumer acts on it differently.
+
+**Watch for.** A raise reaching a study from a state-dependent failure; `QUALIFIED` read as `within_tolerance`; a third factorization added for the adjoint.
+
+---
+
+## R-211 — M03 Amendment 1: an unidentifiable fit does not hold its undetermined parameters; their final iterate is arbitrary and only recorded; registered FIT-U values are those invariant along the null direction; `ESTIMATOR_NOT_CONVERGED` when `least_squares` status ≤ 0
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 |
+| Normative text | ADR 0031 D6 and its Amendment 1; specification §7.3, §7.4, §7.5, §14 D-3 |
+| Evidence | Measured: FIT-U's r went from 0.6 to 0.96906 under trf, where U-HEAT.Q's null projection is 0.99747, against the JSON's former 0.869 at r = θ₀. Generator claims C9[FIT-U] (r-invariance on r = 0.50 … 0.97; the projection's monotone range [0.85960, 0.99761]); A27, A28 as amended; A46 (planned) |
+| Affected packages | M03, M04 |
+
+**Decision.** The estimator moves every parameter. An undetermined parameter's final iterate is set by the optimizer's path, not by the data. It is recorded as `final_iterate`, checked only to lie in its bounds, and nothing may be derived from it. Reportable with values: determined estimates, singular values, null directions, χ², dof, and determined predictions. Undefined: the undetermined estimates and their SEs, the covariance, the correlation, and undetermined predictions' values. An undetermined prediction's null projection is reported, but registered only as its range over the box. A fit whose `least_squares` status is ≤ 0 is `FAILED(ESTIMATOR_NOT_CONVERGED)`, with no estimates.
+
+**Rejected alternatives, and why.** Holding undetermined parameters at their start (the generator's former implicit choice): it needs the identifiability decision before the fit and fails for a null direction that is not a coordinate axis. Projecting steps onto the identifiable subspace: the null space can turn with θ, and the registered fits do not need it. Registering the projection at θ₀: it depends on where the estimator stops.
+
+**Watch for.** An undetermined parameter's value quoted as an estimate; an expectation registered at an arbitrary final iterate; a FAILED fit caused by a wandering undetermined parameter (§14 D-3's revisit trigger).
+
+---
+
+## R-212 — M03 Amendment 1: an optimization report's status is its starts' highest classification, `KKT_POINT_VERIFIED` > `NOT_VERIFIED` > `INFEASIBLE_REPORTED` > `SOLVER_FAILED`; verification decides whatever Ipopt returned
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 |
+| Normative text | ADR 0032 D3, D6 and its Amendment 1; specification §8.5, §8.7 |
+| Evidence | Specification A47 (planned, WO-7a; synthetic per-start table, default gate), A32 as amended (V2 `not_evaluated` without an optimizer state), A33 (the pressure decision at 1e5 Pa, alias residual 1.0) |
+| Affected packages | M03 (WO-7a, WO-8), M05 |
+
+**Decision.** V1–V6 run on every start's decisions. A start is classified by the first rule that applies: V1–V5 pass → `KKT_POINT_VERIFIED`; Ipopt status 0 or 1 → `NOT_VERIFIED`; status 2 → `INFEASIBLE_REPORTED`; otherwise `SOLVER_FAILED`. The report takes the highest-precedence classification, and `reasons` lists every non-verified start. Without an optimizer's state V2 is `not_evaluated`, so the candidate is never `passed`. `SIMULATION_NOT_READY` covers four start conditions, distinguished by the start record's fields: the flowsheet does not build; the decisions are refused before a solve (including a pressure moved alone); the start does not converge or certify; Q3 cannot be evaluated. A pressure id is accepted only at its current value.
+
+**Rejected alternatives, and why.** `INFEASIBLE_REPORTED` before `NOT_VERIFIED`: a heuristic, local statement about the problem would mask a refuted claim about a point. Requiring Ipopt success for `KKT_POINT_VERIFIED`: the re-solved simulation is the truth (R-188). One readiness code per sub-condition: no consumer acts on them differently.
+
+**Watch for.** WO-8 computing its own status; a refuted start missing from `reasons` beside a verified candidate; a candidate verified without an optimizer state.
+
+---
+
+## R-213 — The schema count is a registered list (`schemas/registry.json`), not a number in a test
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 (item for WO-9; affects every package that adds a schema) |
+| Normative text | specification §10 (Amendment 1), A48; `docs/interfaces-frozen.md` §2 stays the authority for the list |
+| Evidence | `tests/test_t08_w4_package_data.py` asserts `32 + 3` and `32`; M01, M03 and M06 add schemas on separate branches |
+| Affected packages | M01, M03, M06, every later schema-adding package, T08's package-data tests |
+
+**Decision.** `schemas/registry.json` (not packaged, like `units.json`) is a sorted, duplicate-free JSON array of schema file names, one per line. The test asserts that it equals the directory's `*.schema.json`, the published `$id`s' file names and the packaged schema names. Every count is derived from it. Adding a schema adds one line, in the commit that cites its ADR.
+
+**Rejected alternatives, and why.** A literal count: two branches that each bump it merge cleanly to a wrong number. Parsing `docs/interfaces-frozen.md` or `schemas/README.md`: prose, and README's tables list 21 of the 32 files.
+
+**Watch for.** A literal schema count reintroduced; a registry line added without its ADR.
+
+---
+
+## R-214 — M03 Amendment 1: A12's tolerance is §4.7's τ_abs = 1e-11 (was 1e-13); the x² − p toy residual at (1e-20, 1e-10) is 1.5e-36 in binary64, not 0
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 (rule 6: the document is amended, the test is not bent) |
+| Normative text | specification §5, A12, §13 C6 |
+| Evidence | Measured (WO-2, deterministic): Ŝ error 2.13e-14 against 1e-13 (4.7×, inside the amend-first window), X error 6.2e-15. A priori estimate `n u ρ κ₁ ‖C‖₁ ‖A⁻¹‖₁` = 4.4e-12 with κ₁ = 90 (claim C6). `fl(fl(x·x) − p)` = 1.504632769052528e-36; exact at the binary64 inputs 1.277e-36 (C6) |
+| Affected packages | M03 |
+
+**Decision.** A12 judges X and Ŝ within 1e-11. That is 2.3× above the a priori estimate, 470× above the measured floor, and 10¹¹ below the O(1) missing-transpose error. The generator computes the toy residuals at the binary64 inputs instead of writing `"0.0"`.
+
+**Rejected alternatives, and why.** Keeping 1e-13: it sat below the a priori estimate, so a different but equally backward-stable LU could fail it. A relative form `τ_rel |Ŝ*|`: looser than needed, and τ_abs already clears every floor.
+
+**Watch for.** A12 tightened again below the a priori estimate; a toy expectation written by hand rather than computed.
+
+---
+
+## R-215 — M03 Amendment 1: a sweep's only budget is a point count; M03 has no interrupt path; the model's construction is the only domain check
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | design lane (`specifier`), M03 Amendment 1 (confirming the build) |
+| Normative text | ADR 0031 D5 and its Amendment 1; specification §6 |
+| Evidence | A21 (the 445 K point `SPECIFICATION_REFUSED` by the flash), A23, A24 (`max_points = 4`) |
+| Affected packages | M03, M04 (sampling), M07 |
+
+**Decision.** `max_points` is the budget, and the rest are `NOT_RUN`. A `KeyboardInterrupt` propagates and yields no `SweepResult`; job-level cancellation, if sweeps become jobs, is ADR 0020's. Values are not pre-checked against any domain: the unit refuses them, and the point is a result. An ill-formed request raises before any point runs. That covers an unknown id, an empty list, a negative budget, and a pressure moved alone.
+
+**Rejected alternatives, and why.** A wall-time budget: the outcome would depend on the machine, against A23. A study-level domain pre-check: a second copy of the model's domain, free to drift. A partial result on interrupt: it could be read as complete.
+
+**Watch for.** A sweep that drops the points it did not run; a domain table copied into the study layer.
+
+---
+
+---
+
 ## R-216 — T08's CHANGELOG-limitations test compares the v0.1.0 release notes with the envelope as v0.1.0 released it, not with v0.2's working envelope
 
 | | |
@@ -4455,6 +4800,28 @@ released it (`PUBLIC_ROOT`), where L42 and every later row are absent, so the co
 list. The merge keeps R-216's form and drops `ADDED_AFTER_V0_1_0`, which would have failed against the released
 envelope (L42 is not a row of it). The obligation stands: M07's 0.2.0 notes name L42 and every other v0.2 row,
 checked by the v0.2 gate (R-216's Watch for).
+
+---
+
+## R-218 — T08's rename-substitution test carries a registered list of fixture directories added after the rename
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The build lane (session), on the M03 WO-9 engineer's escalation |
+| Normative text | This entry; R-149 |
+| Evidence | `26d1f1a`: `tests/test_t08_rename_substitution.py` `ADDED_AFTER_THE_RENAME` (each listed directory must exist) |
+| Affected packages | M01–M07 (any package emitting fixtures that carry the provider hash) |
+
+**Decision.** The test assumed that every fixture carrying the provider hash had been moved by the 2026-10-02
+rename. Fixtures emitted after the rename (M03's `study` and `optimization-report` first) carry that hash too, so
+the test failed. It now subtracts an explicit, registered list of directories added after the rename. Each entry
+must exist, so a stale entry fails. Every fixture outside the list is checked exactly as before.
+
+**Rejected alternative, and why.** Excluding by date or glob would let an un-renamed old fixture hide. Not emitting
+the provider hash in new fixtures would put a schema-level difference between old and new records.
+
+**Watch for.** M01, M02 and M06 add their fixture directories to the list at merge, by name.
 
 ---
 
@@ -5138,6 +5505,40 @@ one, and a fabricated attempt would record an execution that never happened.
 
 ---
 
+## R-253 — M03's regression fixtures are compared under the numerical policy, with registered pre-pass rules for values the policy has no row for
+
+| | |
+| --- | --- |
+| Date | 2026-10-08 |
+| Decided by | The design lane (`reviewer`), ratified in the M03 review's Closure (`docs/reviews/M03-review.md`, `a8a6dcc`); recorded by the session |
+| Normative text | This entry; `tests/m03_fixture_compare.py` (`ca3d833`); M03 spec Amendment 2 |
+| Evidence | Eight regenerations with every back-solve perturbed by 1–64 ulps compare clean; a 3e-9 relative χ² change is caught; eight permanent must-catch mutations |
+| Affected packages | M03; M05 and anything that makes study or optimization records replay-comparable |
+
+**Decision.** M03's study and optimization fixtures are compared with `run.compare.differences` under
+`T08-numerical-policy-v2`. Before the comparison, a pre-pass checks each value that has no policy row against its own
+rule, then removes it from the comparison. The rules:
+- scaled sensitivities floored at τ_abs = 1e-11, unscaled ones at τ_abs·s_y/s_p;
+- residuals floored at the threshold they are judged by;
+- the normalized-residual floor 1e-9·|pred|/√(σ²+SE²);
+- FIT-U's undetermined r inside its bounds, σ₂ ≤ 1e-12σ₁, null directions within 1e-8, and U-HEAT.Q's projection
+  inside its registered range ±1e-6;
+- the fit's path counters, `optimality` and trf's status checked for kind only, with `success` compared;
+- `wall_time_s` positive.
+
+No `state_sha256` is pinned (ADR 0008 D2.1). Every floor is an existing registered number, so no new tolerance enters.
+
+**Rejected alternative, and why.** Byte-for-byte comparison fails across the two CI architectures, which differ by 1–3
+ulp on converged floats. It also pins values that the spec declares arbitrary (R-211).
+
+**Watch for.**
+- A return to byte-for-byte comparison of converged floats.
+- Comparing an undetermined parameter's final iterate, or a fit's path counters, by value.
+- Before any study or optimization record becomes replay-comparable (K05 bundles, M05), these rules must move into
+  `run/compare` and the policy data, through a design-lane amendment of ADR 0025.
+
+---
+
 ## R-254 — The C1 flash's NH₃ equilibrium row is in R-008's pairwise form; the liquid's light-gas flows are zero rows pinned in TWO_PHASE
 
 | | |
@@ -5311,6 +5712,446 @@ liquid.
 
 **Watch for.** A variant whose runner needs a different environment: that is a new lock, hence a new `env_id`, never a
 manifest key.
+
+---
+
+## R-260 — M05's trust region is Pyomo 6.10.1's `contrib.trustregion`, unmodified and pinned by version and module hashes; its state is read from its INFO log and EXIT lines
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D1, D8; `docs/design/M05-trust-region.md` §6.7 |
+| Evidence | Probe of 2026-10-09 (design note §4, P1–P2′, P9): it composes with Python-callback EFs; Pyomo's example 1 is reproduced bitwise through a `PropertyBlock`-style wrapper; it is deterministic on repeat |
+| Affected packages | M05, M07 |
+
+**Decision.** Use the framework as shipped: pin `pyomo` 6.10.1 and the sha256 of its five TRF modules, and refuse with
+`UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNPINNED)` on any mismatch. Read the trust-region and filter state and the rejected
+steps from the `pyomo.contrib.trustregion` INFO records, reconstruct the filter, and take the outcome from the captured
+EXIT lines. Run one TRF run per process.
+
+**Rejected alternatives, and why.** Patching TRF to expose its state, which breaks the pin. Our own trust-region loop
+as the primary route, which is not a tested framework (D13); it is kept as ADR 0040's conditional fallback.
+
+**Watch for.** Any Pyomo upgrade, which is a new ADR. Log-text changes fail G2 loudly.
+
+---
+
+## R-261 — The glass box is the `ProblemSpec` evaluated with a `PyomoAlgebra`, property outputs become ExternalFunctions behind explicit output variables, and the reactor enters full-space through its two coupling coordinates
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D2, D3; design note §6.1–§6.2 |
+| Evidence | `compile/spec.py`: rows are builders over `Algebra` (`exp`, `log`, `sqrt`); blocks are opaque with Jacobians. Probe P4: explicit output variables pass TRF's DOF check |
+| Affected packages | M05 |
+
+**Decision.** The projection calls each `EquationSpec.build` with Pyomo symbols and `PyomoAlgebra`. Decisions are
+pinned inputs promoted to scaled variables. Each block output is `y == s·EF(inputs)`, with one holder per block. An
+external unit's (X̂, ΔT̂) become variables linked to two EFs of its seven inlet variables, and TRF solves the coupling
+together with the optimization. The projection has a source map and equivalence gates against CasADi (residual
+≤ 1e-12 scaled, Jacobian ≤ 1e-10). `PyomoAlgebra` is not a compile backend (R-003 stands, guard G13).
+
+**Rejected alternatives, and why.**
+- A text code generator: a second artifact to keep in sync.
+- Peng–Robinson in Pyomo algebra: a second model.
+- Grey-box property blocks in the subproblem: TRF passes `keepfiles`, and its DOF count and rejection cannot see
+  inside them.
+- The reactor as a reduced-space black box through M02's coupled solve: 2–6 min and tolerance noise per evaluation.
+
+**Watch for.** A row builder that branches on a decision's value (`PARAMETER_NOT_DIFFERENTIABLE`); nonsmooth nodes
+(`PROJECTION_NONSMOOTH`).
+
+---
+
+## R-262 — ExternalFunction holders keep their identity under TRF's clone, memoize on exact inputs, never return a non-finite value, and raise typed refusals
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D5; design note §6.3 |
+| Evidence | Probe P2′: without `__deepcopy__` returning `self`, the accounting saw 0 of 23 calls. P6: an exception aborts TRF. P7: NaN is accepted silently |
+| Affected packages | M05 |
+
+**Decision.** One `EFHolder` per black box, which:
+- returns itself from `__deepcopy__`;
+- memoizes on binary64 tuples;
+- raises `TruthRefused` for a non-finite output, a property `DomainError`, an experiment status other than `ok`, an
+  infeasible FD side, or the budget;
+- checks the caps before each cold request.
+
+A refusal ends the TRF run as `TRF_TRUTH_REFUSED`; retries belong to the study.
+
+**Rejected alternatives, and why.** Plain callbacks (invisible accounting; a runner with locks cannot be deep-copied).
+Returning NaN or a penalty (silently accepted; R-189).
+
+**Watch for.** A holder holding state that a future Pyomo copies by another path.
+
+---
+
+## R-263 — TRF's subproblems are solved by the audited Ipopt 3.14.20 ASL executable through a registered alias with exact Hessian, `bound_relax_factor = 0` and `acceptable_iter = 0`; the executable joins the [A10] inventory
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D4; design note §6.7 |
+| Evidence | Probe P8: `solver='cyipopt'` is refused (TRF passes `keepfiles`). P10: the alias works without `PATH`. P12: `ldd bin/ipopt` adds `bin/ipopt`, `libipoptamplinterface.so.3.14.20` and `libgomp.so.1` to M03's inventory |
+| Affected packages | M05; M03 (the environment is shared, its inventory not edited) |
+
+**Decision.** `openflowsheet_trsp_ipopt` subclasses Pyomo's `IPOPT` shell plugin, with the executable pinned by path
+and sha256 and the options `M05-trsp-ipopt-v1`. The Hessian is exact: the subproblem is pure algebra, so ADR 0032 D2's
+L-BFGS rule for M03's Hessian-less twin does not apply. The audit extension goes in
+`benchmarks/m05/trsp-inventory-x86_64.json`, under M03's criteria. The contingency, only if the audit fails, is a
+cyipopt shim that drops `keepfiles` and `tee` and must reproduce TR-E1 within 1e-8.
+
+**Rejected alternatives, and why.** PyNumero cyipopt (refused by TRF). The shim as the primary route (a configuration
+the framework never tested). L-BFGS for the subproblem (a Hessian exists).
+
+**Watch for.** `libgomp` licence classification (GCC runtime exception, as `libgcc_s`).
+
+---
+
+## R-264 — TRF basis functions: an affine Taylor basis at w₀ for property EFs; the promoted M04 quadratic, or else the constant d(w₀), for the reactor EF; frozen for the study
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D7; design note §6.6 |
+| Evidence | `interface.py`: r_k = b + [d − b](w_k) + [∇d − ∇b](w_k)ᵀ(w − w_k), so an affine b leaves every r_k equal to the Taylor model. Probe P5: a constant basis converges to the same point within 4e-7 |
+| Affected packages | M05, M04 (its manifest is read) |
+
+**Decision.** As in the title. The basis is built on the clone's EF arguments, never on the original model's
+variables. An unpromoted surrogate is never a basis (N-F5's default).
+
+**Rejected alternatives, and why.** TRF's default b = 0: the first subproblem would see zero enthalpies and ln φ.
+Retraining the basis during a study: voids the theory (blueprint L437).
+
+**Watch for.** N-F5: Frank may allow `any_fitted`; the theory does not need the basis to be accurate.
+
+---
+
+## R-265 — A derivative-free truth's gradient is forward FD in the seven inlet coordinates at η = 2⁻¹⁴ with exact steps, inward at hard bounds, run concurrently, behind a once-per-study η-against-η/4 check
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D6; design note §6.5 |
+| Evidence | R-250: the march runs at S3 rtol 1e-12. Probe P11: an FD gradient from a thread pool inside the gradient callback agrees with exact within 1.5e-6 |
+| Affected packages | M05, M02 (runner concurrency) |
+
+**Decision.** h_j = η·max(|w_j|, f_j) with f_n = 1e-3 Σn, f_T = 1 K and f_P = 1e5 Pa. The quotient uses the exact
+difference fl(w + h) − w. The seven points run on min(7, cores − 1) workers after the base point. The check passes iff
+‖G(η) − G(η/4)‖_∞ ≤ 1e-3 · max(1, ‖G(η)‖_∞) (scaled); on failure η ← 4η, at most twice, after which A3 is marked
+`fd_unstable`. FD values are never sensitivities.
+
+**Rejected alternatives, and why.** Central differences (double the cost). Steps tied to M02's cross-environment
+ε_eval = 1e-6 (irrelevant within one environment).
+
+**Watch for.** A gradient check that fails on the real reactor: report it, do not tune it silently.
+
+---
+
+## R-266 — M05's eligible example is TR-E2 (the C1 formulation with the test-only C^∞ truth `m05-synthetic-interior-v1`); TR-E1 (Eason–Biegler example 1 as a `ProblemSpec`) is the framework-equivalence oracle; the real reactor is qualified, not eligible
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0038 D9; ADR 0039 D2; design note §5 |
+| Evidence | Design note §5.2's assumption table A1–A7 |
+| Affected packages | M05, M07 |
+
+**Decision.** TR-E2's truth is X = 0.16·exp(a·z − z_T²) and ΔT = 80 K·exp(b·z), with an analytic gradient. Its T
+optimum is interior, and the independent expectation comes from a tightly coupled golden-section reference in test
+support. TR-E1 must match Pyomo's native example: 5 iterations, values within 1e-10. The real reactor's outcomes are
+empirical, without an inherited guarantee (blueprint L443).
+
+**Rejected alternatives, and why.** The real reactor as the eligible example (A2 assumed, A3 by FD). The M04 surrogate
+(depends on M04's real build). Pyomo's example alone (no flowsheet).
+
+**Watch for.** A claim of "eligible" attached to any parent-truth run.
+
+---
+
+## R-267 — The C1 study optimizes the reactor inlet temperature in [643.15, 733.15] K for liquid NH₃ product at fixed purge 0.02; hard domains and admissibility are constraints, `extrapolated` is a stated limit
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed; the objective and the box await Frank (N-F1, N-F6) |
+| Normative text | ADR 0039 D1; design note §7.1 |
+| Evidence | ADR 0022 D6 (the inlet temperature is the decision; interior optimum); R-169 (every registered state is extrapolated); the steady-state inert balance (φ degenerate under this objective) |
+| Affected packages | M05, M07 |
+
+**Decision.** As in the title. The objective is `c1-obj-nh3-liquid-v1` and the decision tolerance is 0.5 K. The
+constraints are generated from the bound variant's hard domain and M04's admissibility set, with a margin of 1e-6 on
+expression constraints.
+
+**Rejected alternatives, and why.** (T_in, φ) jointly (φ runs to its bound). An economic objective (prices are Frank's
+call). `extrapolated` as a constraint (infeasible). Box7 as a constraint (not a true restriction of the parent).
+
+**Watch for.** A bound-active real optimum: report it as such.
+
+> **Amended 2026-10-15 (R-330):** the box is [653.15, 693.15] K for every configuration, v3's hard-domain T_in span
+> (R-313, R-315); N-F6 is closed. The inert floor `hard_domain.inert_min` is generated from the variant.
+
+---
+
+## R-268 — The refinement loop is S0 → A (promoted surrogate only) → B → C (parent through the EF) → B, at most 3 study iterations, stopping only on parent evidence; M05 does not retrain the surrogate
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0039 D3; design note §7.2–§7.3 |
+| Evidence | Blueprint §9.3 L427 and §10 L437; M04 spec §5.5 and §8.5 |
+| Affected packages | M05, M04 |
+
+**Decision.** A TRF abort is retried once at ¼ of the radius. `NOT_STATIONARY_AT_DELTA` restarts from the best
+feasible poll point. Any other failing status stops the study `FAILED`. A budget or iteration stop is never called
+stable.
+
+**Rejected alternative, and why.** Surrogate-based optimization with retraining between iterations: it breaks TRF's
+theory, and M04's splits must stay i.i.d.
+
+**Watch for.** A request to add targeted parent points to M04's training, which needs an M04 amendment.
+
+---
+
+## R-269 — Candidates are judged by P1–P5: the targeted check, gross agreement, constraints, regimes, and a poll at the decision tolerance against a noise floor from the achieved coupling residuals
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0039 D4; design note §7.4 |
+| Evidence | ADR 0034 D3 (coupling tolerances, achieved residuals in the certificate); Kolda, Lewis & Torczon 2003, Thm 3.3 (what a poll certifies) |
+| Affected packages | M05, M07 |
+
+**Decision.** e_i = 2(|∂J/∂X̂|ΔX_i + |∂J/∂ΔT̂|ΔT_i), with the sensitivities from central differences of M02's inner
+solve (no reactor call). Statuses, by precedence: P1, P4, P3, P2, P5. The curvature and the indifference half-width
+are reported. The claims are `global_optimality: false` and `stationarity: poll_at_delta`.
+
+**Rejected alternatives, and why.** M03's V5 (refused by ADR 0031 C3). An FD-KKT verdict (no decidable tolerance). A
+fixed noise floor (risks false stability).
+
+**Watch for.** A curved active constraint (n_d > 1), where the coordinate poll does not establish KKT.
+
+---
+
+## R-270 — Every true-model request is in a ledger, attributed to stage, iteration and candidate, and reconciled bijectively with M02's store; budgets are in cold experiments and wall time, enforced before each call
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed; the REAL budget awaits Frank (N-F3) |
+| Normative text | ADR 0039 D5, D6; design note §7.5, §8 |
+| Evidence | Probe P2′ (TRF's call order); ADR 0033 (one attempt is one execution; `cache_hit`) |
+| Affected packages | M05, M02 |
+
+**Decision.** `truth-ledger-v1` with served ∈ {cold, store_hit, memo_hit}. Per-check summaries come from
+`external-coupling.json`. TRF 6.10.1's request identity is gated. REAL budget: 400 cold / 4 h per study, 250 cold /
+30 iterations per TRF run.
+
+**Rejected alternative, and why.** Counting from the store alone (no attribution).
+
+**Watch for.** Any unattributed store attempt, which is a gate failure, not noise.
+
+---
+
+## R-271 — M05's records use the new schema `trust-region-study-v1`; replay classes follow M02; R-253's move into `run/compare` falls to the first package exposing study replay, not M05
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed |
+| Normative text | ADR 0039 D7; design note §9 |
+| Evidence | R-253's watch-for; ADR 0034 D6 |
+| Affected packages | M05, M07 |
+
+**Decision.** A new schema file. No existing schema changes. Same-machine replay is bitwise; cross-architecture
+comparison is under `T08-numerical-policy-v2` with a test-level pre-pass.
+
+**Rejected alternatives, and why.** Extending M03's `optimization-report` (disjoint content; A06). Doing R-253's move
+in M05 (no product-level study replay is added).
+
+**Watch for.** M07 exposing study replay, which must do R-253's move first.
+
+---
+
+## R-272 — The conditional fallback (ADR 0040): a scipy-only reduced-space trust-region model management over certified simulations, activated only by trigger T1, T2 or T3
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Conditional, inactive |
+| Normative text | ADR 0040; design note §10 |
+| Evidence | Plan L271 |
+| Affected packages | M05 |
+
+**Decision.** See ADR 0040. If activated, it may not claim a tested-framework guarantee. It is withdrawn if M05 closes
+without a trigger.
+
+**Rejected alternative, and why.** A re-implementation of TRF over the same projection: it keeps the failed route's
+dependencies.
+
+**Watch for.** Activation without a recorded trigger.
+
+---
+
+## R-273 — M05 exposes a library, evidence scripts and `trust_region_readiness`; no application job operation
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05; Proposed (N-F7) |
+| Normative text | ADR 0039 D8; ADR 0038 D10; design note §6.8, §9.5 |
+| Evidence | ADR 0032 D6 (a `ProcessRevision` has no place for decisions or objectives) |
+| Affected packages | M05, M07 |
+
+**Decision.** In the default install, readiness is `UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNAVAILABLE)` until N1, and
+lists every failing reason otherwise.
+
+**Rejected alternative, and why.** A `trust_region_study` job operation now (an ADR 0019 amendment). M07 decides
+whether its journey needs one.
+
+**Watch for.** M07 needing it.
+
+---
+
+## R-274 — The trust-region projection omits exactly the rows that the certified alias elimination removes; it derives and certifies them itself
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on the build lane's escalation `aaa2452`; Proposed |
+| Normative text | `docs/design/M05-trust-region.md` §16.1 (amends §6.1–§6.2) |
+| Evidence | SYN-001: 49 rows over 47 variables, of which two are certified pressure alias rows; projecting all 49 rows → `PROJECTION_DOF(3)`; without them DOF = 5 = n_d at M03's P1–P3 and B1–B3 |
+| Affected packages | M05 (C1's zero-ΔP loop likewise) |
+
+**Decision.** The omitted set is the set `orchestrator/rank.py`'s `eliminate_alias_rows` eliminates (the certificate's
+and M03's elimination), computed by the projection. A row is certified by four facts, all recorded:
+- it is on the retained-forest path;
+- its residual at x₀ is within `pressure_tolerance`;
+- every decision's tangent residual on it is ≤ 1e-8;
+- its residual at every TRF final state is within `pressure_tolerance` (else P2 fails).
+
+A caller set that differs from the certified one is refused `PROJECTION_OMITTED_ROW_UNCERTIFIED`.
+
+**Rejected alternative, and why.** A free caller-chosen `omitted_rows` (as built in `aaa2452`): it could drop a row
+that is not implied.
+
+**Watch for.** An alias pattern the elimination refuses (`UnsupportedRankStructureError`) on C1. That is an escalation,
+not a reason to choose rows by hand.
+
+---
+
+## R-275 — The projection's scales are K03's `Scaling.from_spec`, for G4, for the Ipopt scaling suffixes, for P2 and for the source map; a spec without kinds uses unit scales, recorded
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on the build lane's escalation `545a385`; Proposed |
+| Normative text | Design note §16.2 (amends §6.1 and G4) |
+| Evidence | SYN-001 in raw watts: an evaluation-order difference of 2.2e-11 W fails 1e-12 (ratio 21.8); in K03's 1e5 W nominal it is 2.2e-16 |
+| Affected packages | M05 |
+
+**Decision.** As in the title. A spec with partial kinds is refused as `PROJECTION_SCALES_UNAVAILABLE`.
+`ProblemSpec.row_scales` and `column_scales` are not read directly.
+
+**Rejected alternatives, and why.** The spec's unit scales (rounding fails the gate). Different scales for the gate and
+for Ipopt (two notions of "scaled").
+
+**Watch for.** A spec that declares both kinds and explicit scales. K03 governs until an ADR says otherwise.
+
+---
+
+## R-276 — `run_trf` evaluates every ExternalFunction at the start before invoking TRF, and any refusal recorded during a run makes the outcome `TRF_TRUTH_REFUSED`, because TRF 6.10.1 swallows start-value exceptions
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on the build lane's finding in WO-3; Proposed |
+| Normative text | Design note §4 P13, §16.3 (amends §6.7) |
+| Evidence | `pyomo/contrib/trustregion/interface.py:86`: a bare `except:` in `EFReplacement.exitNode` sets the holder to 0; it is the module's only bare `except` |
+| Affected packages | M05 |
+
+**Decision.** A pre-flight evaluation of the values at x₀; a refusal there is `TRF_TRUTH_REFUSED(start:…)`, and TRF
+is not invoked. Backstop: any refusal recorded in a run means no candidate, whatever TRF reported. §8.3's identity is
+unchanged, because the start request is the pre-flight's.
+
+**Rejected alternative, and why.** Recording the refusal only (as built): a run after a swallowed start refusal can
+still end "optimal".
+
+**Watch for.** A Pyomo upgrade that changes `exitNode`. This is covered by the pin (R-260).
+
+---
+
+## R-277 — A TRF basis is mandatory; without a promoted surrogate the reactor EF's basis is the affine Taylor model at w₀, not the constant d(w₀)
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on probe P14; Proposed; amends R-264 |
+| Normative text | `docs/design/M05-trust-region.md` §6.6, §16.5; ADR 0038 Amendment 1 |
+| Evidence | `scratchpad/m05-probe2`. With b ≡ 0, the PMP is infeasible at iteration 0 (d = −2 ∉ [−1, 1]) and a C1-shaped toy aborts in TRSP₁. With a constant or Taylor basis, 6 of 6 starts end within 4e-3 of the grid optimum. A constant basis with an objective that does not see the frozen output exits "Optimal" with zero steps |
+| Affected packages | M05 |
+
+**Decision.** `run_trf` refuses a missing or incomplete basis rule. `zero_basis` is test-only, for TR-E1. The reactor's
+fallback basis is affine, with its gradient from the truth adapter. An FD truth reuses the gradient check's G(η) at the
+study's first w₀; later runs pay n_in cold experiments.
+
+**Rejected alternatives, and why.** TRF's default b ≡ 0: infeasible PMP. A constant d(w₀): C1's PMP cannot move, so TRF
+exits without a step and the loop degenerates into pattern search.
+
+**Watch for.** A PMP over the whole decision box with a linear reactor model can land at a corner, and walking back
+costs parent calls. Measure it in WO-8 and WO-9.
+
+---
+
+## R-278 — The projection refuses `PROJECTION_IMPLICIT_EF_INPUT` unless, with the decisions and the link-EF outputs fixed and the property relations kept, the glass box has a perfect matching
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on probe P14; Proposed |
+| Normative text | Design note §16.5; ADR 0038 Amendment 1 |
+| Evidence | Probe P14: an EF output pinned by the decisions alone makes the input undetermined and the output over-determined |
+| Affected packages | M05 |
+
+**Decision.** The check is structural, via `scipy.sparse.csgraph.maximum_bipartite_matching`, on the unknowns other
+than the decisions. Block definitions are incident on y and on their inputs; link definitions only on w. Numeric
+regularity is S0's K04 certificate. TR-E1 is exempt as the oracle.
+
+**Rejected alternatives, and why.** Fixing the property outputs as well, which would refuse every property-based
+flowsheet (a mixer temperature enters only through h(T)). A list of forbidden shapes in place of a criterion.
+
+**Watch for.** A refusal on C1, which counts toward ADR 0040 T2.
+
+---
+
+## R-279 — TRF exits are classified from the returned model: θ re-checked, `TRF_CONVERGED` only after ≥ 1 accepted TRSP step, a stalled exit with θ > 1e-5 is `TRF_STALLED_INCONSISTENT`
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05, on probe P14; Proposed |
+| Normative text | Design note §6.7, §16.5; ADR 0038 Amendment 1; ADR 0040 T2 ruling |
+| Evidence | Probe P14 (b): "Optimal" with zero TRSPs when θ_PMP = 0 (objective 0.3721 against a true optimum of 0). P14 (c): the stall test compares θ with itself (`TRF.py:120`, `:265`), giving "Feasible solution found" at θ = 1.80 |
+| Affected packages | M05 |
+
+**Decision.** New outcomes `TRF_EXIT_WITHOUT_STEP` (its point goes to stage B) and `TRF_STALLED_INCONSISTENT` (an
+abort for the retry policy). θ_recheck is recorded for every run. TRF's radius collapse is not patched (pin), only its
+labelling. P14 does not fire ADR 0040's T2.
+
+**Rejected alternative, and why.** Trusting the EXIT lines (P14 shows both lines can be false).
+
+**Watch for.** A rate of `TRF_STALLED_INCONSISTENT` on C1, which would be evidence for T2.
 
 ---
 
@@ -5679,6 +6520,139 @@ raise the timeout ad hoc.
 members would pass.
 
 **Watch for.** Each package's strip function must remove only its own additions.
+
+---
+
+## R-296 — An exactly-zero flow at x₀ is eliminated from the trust-region projection as the constant +0.0, together with its certified pinning row; it is neither bounded nor left free
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05 ruling round after WO-4/5 |
+| Normative text | Design note §17.1 (rule `M05-zero-flow-v1`), §6.1 step 1 as amended |
+| Evidence | C1 TR-E2: `TRF_TRUTH_REFUSED(property_domain_error:S1_Hdot_V)` at the PMP point, with `S1.n.NH3 = −3.448e-27`. The pins are projected (feed `specification_row`, C1FL `zero_row`); R-274 omits only the two pressure alias rows (`e1c9af0`). TRF counts fixed `Var`s as degrees of freedom (`pyomo/contrib/trustregion/interface.py:60–69, 184–193`) |
+| Affected packages | M05 (M03: watch-for only) |
+
+**Decision.** A molar flow that is exactly 0.0 at x₀ is paired with a kept row that pins it: single remaining
+incidence, residual exactly 0 at x₀, a nonzero pivot, and a decision/link tangent of exactly 0. The pairing repeats
+until nothing changes. The flow becomes the float +0.0 in the projection and its pin is not built; the pair is recorded
+in the source map and re-evaluated at every final state. An unpaired zero flow, a redundant row or a zero link input is
+refused as `PROJECTION_ZERO_FLOW(<id>:<reason>)`. DOF and LICQ are unchanged; C1's R-278 matching goes from 73 × 73 to
+68 × 68. ADR 0032 D4 is not amended: this rule certifies exactly the pin D4 presumes.
+
+**Rejected alternative, and why.**
+- A bound n ≥ 0: LICQ and MFCQ fail at every feasible point, and Ipopt's `bound_push` moves n off 0.
+- `Var.fix`: it breaks TRF's DOF count.
+- Restoring a row: the rows were never missing.
+- Clamping in the holder: it quantizes the exact path.
+- Widening the provider's domain: it moves a frozen identity.
+
+**Watch for.** M03's full-space path, which evaluates property blocks at Ipopt iterates with such flows free. A hit
+there means an ADR 0032 amendment that adopts this rule.
+
+---
+
+## R-297 — `M05-fd-v2`: forward differences at η = 2⁻¹⁴ are kept; the gradient check uses three steps, separates noise from truncation, and escalates η for noise only
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05 ruling round after WO-4/5; supersedes R-265's check, keeps its scheme |
+| Normative text | Design note §17.2; §6.5 as amended; G6 and G11 restated |
+| Evidence | Synthetic at TR-E2's start: worst forward error 4.1e-2 on dX/dT, equal to the predicted truncation (δz/2)·\|X″/X′\| = (2.05e-3/2)·39.95. v1's check gave ‖ΔG‖ = 0.0373 against an allowance of 2.27e-3, then 0.149 at 2⁻¹² and 0.598 at 2⁻¹⁰: truncation, growing with η |
+| Affected packages | M05 |
+
+**Decision.**
+- *The check.* At w₀, compute G at η/4, η and 4η. The noise estimate ν̂ = ‖G(4η) − 5G(η) + 4G(η/4)‖_∞/14 cancels
+  first-order truncation. The truncation estimate is τ̂ = (4/3)‖G(η) − G(η/4)‖_∞. The check passes iff
+  ν̂ ≤ 1e-3·max(1, ‖G‖_∞); a pass is classed `clean` or `truncation_dominated`.
+- *Escalation.* Up to 2⁻¹⁰, only while ν̂ falls at least 2× per step; otherwise `fd_unstable`.
+- *Cost.* 1 + 21 cold (worst case 1 + 35), once per study.
+- *Why truncation is not gated.* It displaces the stationary point by about ½h, ≈ 0.02 K in T, against δ_T = 0.5 K.
+- *Acceptance.* WO-4's "≤ 1e-6 relative" is replaced by a Richardson agreement ≤ 1e-5, the τ̂ bound, a check pass and a
+  noise-injection test.
+
+**Rejected alternative, and why.**
+- Central differences: 2× the cost per iteration (the 250-cold cap binds at about 16 iterations), and still 4.2e-6 on
+  dX/dT.
+- Range-scaled steps: they hide the misreading on this synthetic only.
+- A smaller η: tuned to a noise-free synthetic.
+- Escalating in both directions: it needs this classification first.
+
+**Watch for.** REAL's `fd_check` class (F-9). A `noise_dominated` result at 2⁻¹⁰ means a new ruling, not a retune.
+
+---
+
+## R-298 — The TR-E1 affine-basis acceptance compares final states within 2 × TR-E1's own step-size termination (2e-5), not 1e-6
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05 ruling round after WO-4/5 |
+| Normative text | Design note §17.3; §16.4's table as amended |
+| Evidence | TR-E1 runs Pyomo's defaults: `step_size_termination` = `feasibility_termination` = 1e-5 (`TRF.py:383, 392`). Measured \|Δz\| = 1.18e-6, 1.11e-6, 5.7e-7; objective within 4e-11 relative |
+| Affected packages | M05 |
+
+**Decision.** Both runs must end `TRF_CONVERGED` with θ_recheck ≤ 1e-5, and ‖Δz‖_∞ ≤ 2e-5; |ΔJ| is recorded. The
+basis itself is tested by the bitwise value test, the gradient-at-w₀ test and the clone-membership test, since the
+limit cannot discriminate between bases (§6.6).
+
+**Rejected alternative, and why.** Tightening TRF's termination for the test: the steps plateau at Ipopt's 1e-8 and
+risk `TRF_MAX_ITERATIONS`, and the tighter run still says nothing about the basis.
+
+**Watch for.** Nothing.
+
+---
+
+## R-299 — An "Optimal" TRF exit with θ_recheck > 1e-5 is `TRF_STALLED_INCONSISTENT` (an abort, retried once), not `TRF_ERROR(exit_mismatch)`
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05 ruling round (pending since WO-3a) |
+| Normative text | Design note §17.4; §6.7's outcome table as amended |
+| Evidence | R-279's principle: exits are classified from the returned model |
+| Affected packages | M05 |
+
+**Decision.** Exits are classified in this order: `TRF_TRUTH_REFUSED`, then θ_recheck > 1e-5 →
+`TRF_STALLED_INCONSISTENT` whatever the EXIT line says, then `TRF_EXIT_WITHOUT_STEP`, then `TRF_CONVERGED` or
+`TRF_FEASIBLE_STALLED`. The record carries `exit_claim`, θ_logged, θ_recheck and `final_state_is_last_truth_point`.
+`exit_mismatch` remains the class for an EXIT line that disagrees with TRF's own logged values, and it is never retried.
+
+**Rejected alternative, and why.** `TRF_ERROR(exit_mismatch)`: it labels an inconsistent model state as a parser defect
+and forfeits the retry. A holder defect still surfaces, because a second abort is `FAILED(trf_aborted:…)`.
+
+**Watch for.** `final_state_is_last_truth_point: true` on such an exit. That would point to a holder or memo defect, not
+to a framework reset.
+
+---
+
+## R-300 — M05's WO-4/5 build decisions ratified: `meta.code`, envelope (X, ΔT) as a guarded interim, FD purposes on memo hits, budget refusal, `variable_bounds`, completion-order independence, `with_coupling` on `wp/M02` without separate review
+
+| | |
+| --- | --- |
+| Date | 2026-10-09 |
+| Decided by | design lane (`architect`), M05 ruling round after WO-4/5 |
+| Normative text | Design note §17.5 (E1–E7) |
+| Evidence | Build lane's commits `59725c6`…`6b54b8d` on `wp/M05` |
+| Affected packages | M05, M02 (E7) |
+
+**Decision.**
+- E1. `meta` has six keys; `code` is `""` when there is none.
+- E2. The envelope's (X, ΔT) stand, guarded by a test against M02's own code path.
+- E3. FD-issued requests keep their purpose on memo hits (§8.3 amended).
+- E4. A parent budget on a non-parent holder is a `ValueError` at construction.
+- E5. `variable_bounds` only intersects, and refuses decisions and eliminated zero flows.
+- E6. Records and ledger never depend on completion order, and artifacts are referenced by SHA-256 (WO-6, tested in
+  WO-8).
+- E7. `with_coupling` is cherry-picked byte-identically to `wp/M02` with its inertness test. It is covered by M05's
+  `reviewer` pass and never becomes a revision parameter (R-287).
+
+**Rejected alternative, and why.** Re-implementing M02's coupling coordinates permanently (§6.4 forbids it), and a
+separate design-lane review of an inert accessor (the bit-identity test is the proof).
+
+**Watch for.** M02 gaining a coupling-coordinate function: M05 switches to it. An artifact id appearing in a compared
+record.
 
 ---
 
@@ -6281,6 +7255,142 @@ content-addressed manifest; the facet is not relaxed.
 
 ---
 
+## R-326 — SYN-001's jointly pinned zero flows are eliminated by a certified square block (rule `M05-zero-flow-v2`); they are neither refused nor exempted
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`architect`), M05 batched ruling round, on build log Z2 |
+| Normative text | Design note §18.1 (extends §17.1, R-296) |
+| Evidence | Z2: P1, P2 (S3.vap.{A,B,C}, S3.V) and B2 (S4.n.{A,B,C}, S4.N) refused `unpinned`; 15 strict xfails. The rows are v_i L − K_i l_i V (`models/rows.py:133`) and V − Σv_i. At z = 0 their partials outside the zero set vanish, and det J_B = ±L³(1 − Σ K_i x_i) ≠ 0 in the liquid regime |
+| Affected packages | M05 (M03's watch-for F-11 is unchanged) |
+
+**Decision.** After the single-pin fixpoint, rows with r(x₀) = 0, a zero decision and link tangent, and a nonzero
+numerical incidence inside the remaining zero flows form bipartite components. A component is eliminated iff it is
+square, its scaled σ_min/σ_max ≥ 1e-10, and its rows evaluate to exactly 0.0 at two ±1e-3 perturbed states with the
+zero flows held at +0.0. The two stages repeat to a fixpoint. The new refusal reasons are `joint_not_square`,
+`joint_singular` and `joint_not_persistent`. `zero_blocks` is written only when a block exists, so the existing
+configurations stay byte-identical.
+
+**Rejected alternatives, and why.**
+- Refusing SYN-001 at P1, P2 and B2: it halves G4's SYN-001 denominator, with a false reason.
+- Exempting SYN-001: a case-id hack.
+- Eliminating only EF arguments: it reopens R-296 and moves C1's 68 × 68.
+- A symbolic identity test: CasADi's simplification is incomplete.
+
+**Watch for.** A joint block in a TRF case (there is none yet: F-14). An rcond near 1e-10, which means a state near its
+bubble point.
+
+---
+
+## R-327 — A `TRF_MAX_ITERATIONS` exit keeps its candidate whatever θ_recheck; P2 is judged only when θ_recheck ≤ `feasibility_termination`
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`architect`), M05 batched ruling round, on build log W2 |
+| Normative text | Design note §18.2; §6.7's outcome table and §7.4's P2 row as amended |
+| Evidence | Z8: TR-E2 after WO-2b ended `TRF_MAX_ITERATIONS` with θ_recheck 4.01e-4 |
+| Affected packages | M05 |
+
+**Decision.** No abort. Above the tolerance, P2 is recorded with `pass: null, judged: false, reason: "theta_recheck"`
+and never yields `PROJECTION_DISAGREES`. The candidate carries `trf_max_iterations`. P5 runs unless P4, P3 or P2 is
+`false`.
+
+**Rejected alternatives, and why.**
+- `TRF_STALLED_INCONSISTENT` with a retry: no claim is contradicted. A ¼ radius from the same start cures a
+  trajectory, not slowness, so the likely result is a second abort and the loss of a decision the parent could have
+  checked.
+- A P2 tolerance widened by θ: no bound justifies one.
+
+**Watch for.** TR-E2 failing G5 for the same reason (F-15). That is a G5 failure, not a reason to raise the iteration
+limit.
+
+---
+
+## R-328 — M05's WO-6 build choices S1–S10 ratified; G8 also requires stage A to return a model
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`architect`), M05 batched ruling round |
+| Normative text | Design note §18.3 |
+| Evidence | Build log S1–S10; the isolated commit `c5aa61b` (S6) |
+| Affected packages | M05 |
+
+**Decision.** All ten are confirmed as built:
+- S1: σ_REAL = 0.0125.
+- S3: the real `Parent` adapter is WO-5c, after the M02 merge.
+- S4: P5's gating is restated by R-327.
+- S5: P3's scales stand, and the inert floor is checked at scale F.
+- S6: after two stage-A aborts, stage C runs from S0. G8 therefore also requires `stage_a.outcome` ∈ `RETURNS_MODEL`.
+- S7: a run-cap refusal is an abort with one retry. The cap is a backstop, since a 30-iteration run issues at most 248
+  cold requests.
+
+**Rejected alternatives, and why.**
+- Stopping `FAILED(trf_aborted)` on stage A: stage A only accelerates, and stage C is the evidence path.
+- Polling after an earlier failure: it cannot change the status, and it costs six solves.
+
+**Watch for.** A REAL run reaching the 250-request cap (F-13).
+
+---
+
+## R-329 — M05's study record schema: closed objects with every producer field declared, the ruling fields required, a per-run ledger without a digest, purpose counts now, and `coupled_runs` only for solves with a coupling record
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`architect`), M05 batched ruling round, on build log S11–S18 |
+| Normative text | Design note §18.4; §9.1 as amended |
+| Evidence | Build log S11–S18; `c6c229e` (S11) |
+| Affected packages | M05; T08's numerical policy tooling (S11's addendum audit) |
+
+**Decision.**
+- S11: the per-package addendum `M05-numerical-policy-external-v1` classifies the four sha256 names `exact_sha256`.
+  `--check` audits every addendum, and v2 is unmoved.
+- S12: `runs[].ledger` is `{summary, cold_parent}`, and `artifacts.ledger` is the study ledger's sha256.
+- S13: `readiness`, `start`, `stage_a` and `best` are required, each an object or null.
+- S14: every fixed-field object is closed, and the §17.4 run fields and the top-level `fd_check` are required.
+- S15: `indifference_halfwidth` is null iff there was no poll.
+- S16: holders count requests by purpose, and §8.3's identity is tested in G12 and G6.
+- S17: confirmed.
+- S18: `coupled_runs` lists only solves that have a coupling record.
+
+**Rejected alternatives, and why.**
+- Tolerated extras: a record could then omit a ruling's fields, or misspell one, and still validate.
+- An optional per-run digest: a dead field that invites an inconsistent one.
+- Deferring the request identity to WO-8: G12 must be able to check it on committed records.
+- A null `coupled_runs[].sha256`: a reference to nothing.
+
+**Watch for.** A producer field added without a schema change, which fails G12 by design.
+
+---
+
+## R-330 — M05's design note restated to the REAL box [653.15, 693.15] K (R-313, R-315): σ = 0.0125 everywhere, N-F6 closed, the inert floor generated from the variant
+
+| | |
+| --- | --- |
+| Date | 2026-10-15 |
+| Decided by | design lane (`architect`), M05 batched ruling round, following R-313 and R-315 (M02's seventh and eighth rounds) |
+| Normative text | Design note §18.5; D10, §6.7, §7.1, §11, §14 and §15 edited in place |
+| Evidence | R-313: M05's 643.15 K point fails v3's S1. D87: the loop's inerts are 0.045484 at 653.15 K and 0.040468 at 693.15 K |
+| Affected packages | M05 (ADR 0039 D1 gets an amendment note in WO-10) |
+
+**Decision.**
+- The box is [653.15, 693.15] K for every configuration.
+- σ = 0.5 · 0.5 / 20 = 0.0125.
+- N-F6 is closed: widening the box needs an M02 domain amendment first.
+- §7.1 generates y_min Σn − (n_Ar + n_CH₄) ≤ 0 whenever the bound variant sets `hard_domain.inert_min`. M05 holds no
+  y_min constant.
+
+**Rejected alternatives, and why.**
+- Keeping [643.15, 733.15] K: it is outside v3's domain.
+- Authoring the floor per case: §7.1 generates constraints from the variant.
+
+**Watch for.** A bound-active REAL optimum at 653.15 K or 693.15 K: report it as such (R-267).
+
+---
+
 ## R-331 — M07's journey: one decision (SPEC-S3-T), four rungs — stand-in, PyMRM v3, M04 surrogate only if PROMOTABLE, M05's REAL study
 
 | | |
@@ -6702,6 +7812,464 @@ an archive whose failure bundle names a different record would reproduce MATCH.
 
 **Watch for.** —
 
+---
+
+## R-381 — ADRs 0033, 0034 (with Amendment 1) and 0035 are Accepted; their conditions are met by M02's `tested` manifest and the design lane's recorded reviews
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), V02 alpha verdicts finding B6 |
+| Normative text | each ADR's Status line |
+| Evidence | `evidence/M02/ba90619c…/manifest.json`: `tested`, M02.G1–G12 `pass`. Reviews: 0033 WO-3/WO-4, note §14 (as built, `02403d1`); 0034 WO-7 §14.2 B18, WO-8 §14.3, WO-9 §14.4, WO-10 §14.5 and `docs/reviews/M02-review.md`, with F1–F3 closed by `080d197`, `88b3ab4` and `908d9a3`; 0035 WO-11 §14.5 D6, §14.6 (WO-11a) and the review. Every cited commit is an ancestor of `C_α²` = `cc73219` (checked with `git merge-base --is-ancestor`) |
+| Affected packages | M02 (closed); M07a (§7.3 item 12) |
+
+**Decision.** Each ADR moves from Proposed to Accepted. Its own condition, in its Status line, is met:
+
+| ADR | Gates in its condition | Review in its condition |
+| --- | --- | --- |
+| 0033 | G1–G6, G10, G11 `pass` | WO-3/WO-4 |
+| 0034 | G2, G6–G9, G12 `pass` | WO-7–WO-10 |
+| 0035 | G6, G9 `pass` | WO-11 |
+
+Flipping the lines after the cut is legitimate. `scripts/v0_2_gate.py` reads the ADRs at the candidate, not at `C`
+(§7.2 item 7; `files_at`). `docs/adr/` is not a D2.4 path, and R-151's tree record covers only those paths. §8.1
+item 2 held in substance at `C_α²`: every piece of acceptance evidence is an ancestor of it. Only the record lagged.
+
+**What it does not establish.** WO-7's record is B18, which confirms D27 (G6 (a)). D28 and D29 were not ruled one by
+one. The real-reactor evidence is `judged: false`, R3, from one machine. The manifest's `review.numerical` and
+`review.process_model` are `pending`. Human sign-off is separate.
+
+**Rejected alternatives, and why.** Leaving the three Proposed until a fresh review: none of the three conditions asks
+for one.
+
+**Watch for.** `main` still reads Proposed for the three ADRs until this branch merges.
+
+---
+
+## R-383 — `coupling_record_sha256` is `exact_sha256` in ADR 0025 D2.3's partition; no third class (S40)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.1 item 1; `benchmarks/m05/numerical_policy_external.yaml` |
+| Evidence | build log S40; `parent.py:297` digests the coupling record's canonical JSON bytes |
+| Affected packages | M05 |
+
+**Decision.** It is a digest of a document's bytes, not of a state vector, so it is exact. The addendum and `--check` are unchanged.
+
+**Rejected alternatives, and why.** A float digest, or a new identity-excluded class: either is an ADR 0025 amendment that moves v2's content for one field, and the replay rule (R-384) already covers what such a class would add.
+
+**Watch for.** Any other digest of an artifact that carries timings: it gets R-384's shape rule, not a new class.
+
+---
+
+## R-384 — Coupling-record digests are compared for shape between runs; exact within a record
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.1 item 2; R-318 (the precedent) |
+| Evidence | S44: two runs of one tree differ in 6 + 1 coupling digests only, because of `execution.timing` |
+| Affected packages | M05 (G10), M07 (R3 carry and compare) |
+
+**Decision.** `start.`/`solves[].coupling_record_sha256` and `artifacts.coupled_runs[].sha256`: both null or both 64-hex across runs; inside one record, each solve's digest equals its `coupled_runs` copy. A study record's file sha256 is never compared between runs.
+
+**Rejected alternatives, and why.** Exact comparison fails G10 by construction. A digest of a timing-free projection would define a second coupling-record identity beside M02's `rules.coupling`, and as a float digest the addenda cannot declare it.
+
+**Watch for.** A digest whose referent is not kept: it certifies nothing (R-385).
+
+---
+
+## R-385 — WO-8 persists every digested coupling record; G10 checks its integrity and its content
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.1 item 3, §19.4 |
+| Evidence | — |
+| Affected packages | M05 |
+
+**Decision.** `C1Parent(coupling_sink=None)` is an optional sink. The script writes `canonical_json(record)` to `<record stem>.coupling/<solve_id>.json`. G10 checks two things: (a) the sha256 of each file equals its digest; (b) on the same machine, the fresh coupling record equals the persisted one after M02's `excluded` paths are removed, read from M02's addendum.
+
+**Rejected alternatives, and why.** An unpersisted digest certifies nothing. Embedding the coupling records in the study record changes the schema and duplicates M02's format.
+
+**Watch for.** F-18 (the store's state at replay) and F-20 (REAL replay uses M02's `reproduce`).
+
+---
+
+## R-386 — `fd_check`'s floats: η exact; w₀, ½h_j and the FD statistics `r1_r2_existing_floors`
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.2; `benchmarks/m05/numerical_policy_external.yaml` |
+| Evidence | build log S42; `truths.py` `GradientCheck.as_document`, `candidate_statistics` |
+| Affected packages | M05 |
+
+**Decision.** `selected_eta` and `candidates[].eta` are `exact`: η ∈ {2⁻¹⁴, 2⁻¹², 2⁻¹⁰}, built by ×4 and ÷4. `candidates[].{g_inf, truncation, noise, allowance}`, `w0[]` and `half_steps.*` are `r1_r2_existing_floors`. One generated record carries an `fd_check` with at least two candidates, so that no rule is dead.
+
+**Rejected alternatives, and why.** `exact` for w₀ and ½h_j: they are computed from the parent's solve. `excluded` for τ̂ and ν̂: they decide `class` and `result`, which are identity.
+
+**Watch for.** F-17: τ̂ and ν̂ are cancellation-dominated across architectures.
+
+---
+
+## R-387 — WO-8 needs no job entry: its evidence script is the composition root
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.3; §9.5; R-273 |
+| Evidence | `tests/test_m05_isolation.py` scans `src/` only; M04's `studies` rule scans `studies` only |
+| Affected packages | M05 |
+
+**Decision.** `scripts/m05_*.py` imports `studies.trust_region` and `application.trust_region_parent`, and wires `C1_PARENT_SERVICES` into `C1Parent`. R-273 stands.
+
+**Rejected alternatives, and why.** An application job now: R-273 rejected it, and no WO-8 deliverable needs one.
+
+**Watch for.** —
+
+---
+
+## R-388 — M07 needs no job entry either; it compares M05 records under R-384
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.3; `docs/derivations/M07-spec.md` §4.6 (on `wp/M07`, R-336) |
+| Evidence | M07 spec §4.6: "one script, no new operation" |
+| Affected packages | M07 |
+
+**Decision.** `scripts/m07_journey.py` is M07's composition root. Carrying or comparing an M05 record uses R-384's shape rule for coupling digests. R-271's precondition holds if M07 exposes study replay.
+
+**Rejected alternatives, and why.** A job operation: it extends a frozen interface for one script (R-336).
+
+**Watch for.** —
+
+---
+
+## R-389 — A future trust-region job operation needs an ADR and a narrowed R-003 test; never indirection
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 pre-WO-8 ruling |
+| Normative text | design note §19.3 |
+| Evidence | S44: the R-003 test and M04's `studies` rule together forbid an in-`src` composition root |
+| Affected packages | the first package that wants one (not M05, not M07) |
+
+**Decision.** Not authorized now. If one is wanted, it takes three things: an ADR amending R-273, R-336 and ADR 0019; an explicit, reasoned allow-list of exactly one application module in the R-003 test; and `run`, `compile`, `orchestrator` and route selection kept importable with Pyomo blocked.
+
+**Rejected alternatives, and why.** `importlib` or an entry-point string to evade the AST test: it hides a dependency the test exists to show. Moving the wiring into `studies`: it breaks M04's rule.
+
+**Watch for.** —
+
+---
+
+## R-390 — v3's inert floor is decided with a relative slack of 4·2⁻⁵² (confirms build log D134; M02 close-out C1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M02 follow-up (`docs/reviews/M02-followup-review.md`) |
+| Normative text | Build log D134; `models/c1/boundary.py` `INERT_FLOOR_SLACK_REL`, `hard_domain_violations`; design note §14.6 E3; ADR 0027 Amendments 3/4 (the floor's value is unchanged) |
+| Evidence | D134's measurements. Exact comparison: 46.2 % of 2×10⁵ design-composition scalings refused; largest shortfall 1.59·2⁻⁵². The review's adversarial check: 10⁵ minimal admissible states over four floors, 0 refused with `float` or `np.float64` sums. |
+| Affected packages | M02; every variant that declares `inert_min > 0` (only v3 today); M04 box v2 (0.036) is unaffected |
+
+**Decision.** Confirmed. The floor refuses iff `n_Ar + n_CH4 < inert_min · n_tot · (1 − 4·2⁻⁵²)`, the floor only.
+
+What the comparison guarantees in binary64, for positive normal inputs, with naive or compensated summation:
+- an exact ratio ≥ inert_min is accepted;
+- an exact ratio < inert_min·(1 − 8·2⁻⁵²) is refused;
+- in between, rounding decides.
+
+The worst-case budget is 8 roundings, against an 8 u slack; it holds because inert_min's representation error is < u.
+A decimal composition built as `y·n_tot` is accepted at every scaling tested, which is a measurement, not a proof.
+
+**Rejected alternatives, and why.**
+- An exact comparison with a sentence in v3's document saying rounding decides the face. That would refuse ADR 0027's own
+  design composition at about half of all flow scalings.
+- 8·2⁻⁵². That would also cover the construction rounding of decimal compositions, which the domain should not absorb.
+  The observed margin at 4·2⁻⁵² is 2.2×.
+
+**Watch for.**
+- A second face check without the slack: `benchmarks/m02/g11_coverage_v3.py` `below_floor` is one, and it is stricter,
+  which is harmless as long as it is not used as an oracle.
+- A change of evaluation order or of the summation, which moves the budget. `StreamState.total_flow` is compensated for
+  `float` elements and naive for `np.float64`.
+## R-400 — `M05-basis-v2`: the no-surrogate link basis carries the truth's curvature along the decision path
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.1; §6.6 (amended); ADR 0038 Amendment 2 (D7) |
+| Evidence | F-15 diagnosis (`docs/design/M05-F15-diagnosis.md`); §20.1's scratch table (TR-E2 v2: `TRF_EXIT_WITHOUT_STEP`, θ 3.0e-6, 0.0074 K from T_ref) |
+| Affected packages | M05 (WO-8d, WO-9) |
+
+**Decision.** b_k = (d_k(w₀) + g_kᵀ(w − w₀) + ½ c_k p(w)²)/s_k. c_k comes from a central second difference of the
+Taylor remainder at t = δ/h on two inlets from M02's pinned inner solve at d₀ ± t, one-sided inward at the box bounds.
+p is the scaled coordinate along the open-loop direction v. It requires n_d = 1. On failure it falls back to c = 0 with
+the limitation `basis_without_curvature`. It costs two truth requests per run, and the basis is frozen per run.
+
+**Rejected alternatives, and why.** Keeping the affine basis: the TRSP is linear in the decision, the PMP lands on a
+vertex, and every step equals the radius. A full FD Hessian: 28–56 cold experiments for curvature the decision cannot
+reach. The forward stencil: it carries the FD gradient's error into c.
+
+**Watch for.** A stage-C start where the inner solve fails (F-21). n_d > 1 needs a new ruling.
+
+---
+
+## R-401 — An `Optimal` exit with a rejected or radius-limited final step is `TRF_EXIT_UNVERIFIED`, not convergence
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.1; §6.7's outcome table; ADR 0038 Amendment 2 (D8) |
+| Evidence | F-15: s_k = Δ_{k−1} at every trial, and k = 28 missed exiting by 2.6 % at 0.66 K off; scratch G5b C1: ratio 0.99997, P5 fails |
+| Affected packages | M05 (WO-8a) |
+
+**Decision.** Radius-limited means s_K ≥ (1 − 10⁻²)·Δ_K, unless n_d = 1 and the returned decision is within 1e-6
+(scaled) of a box bound. Δ_K is the radius in force for TRSP K. Precedence: STALLED_INCONSISTENT > EXIT_WITHOUT_STEP >
+EXIT_UNVERIFIED > CONVERGED. The outcome returns a model, its candidate goes to stage B with P2 judged, and it is never
+retried. `final_step_ratio` is recorded for every run.
+
+**Rejected alternatives, and why.** θ alone: θ = C·s² tests the same thing as the step. Stage B alone: the run label is
+a recorded claim and must not say "converged" when TRF's own step contradicts it.
+
+**Watch for.** Existing tests that assert `TRF_CONVERGED` and flip (F-23). Never fix such a flip by moving ρ_s.
+
+---
+
+## R-402 — `M05-trf-config-v1` is unchanged after F-15
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.1 |
+| Evidence | F-15 §2: the exit tests Δ alone under a linear model; the 150-iteration scratch run ended at k = 35 on the TR bound |
+| Affected packages | M05 |
+
+**Decision.** 30 iterations, `minimum_feasibility` 1e-4, `feasibility_termination` 1e-5 and σ = 0.0125 stay as they are.
+R-400 removes the cause and R-401 guards the claim.
+
+**Rejected alternatives, and why.** A larger budget: the exit remains a lottery, and REAL's cap allows about 30
+iterations. Moving the θ band or the termination value: it trades false exits for slowness. A different x₀: the PMP
+ignores it. Patching TRF: the pin forbids it (R-260).
+
+**Watch for.** A request to retune these values on an outcome alone.
+
+---
+
+## R-403 — G5 accepts `TRF_EXIT_WITHOUT_STEP`; G5b (TR-E2 from 663.15 K) gates TRF's own convergence; G6 restated
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.2, §20.7 |
+| Evidence | Scratch with v2: TR-E2 exits at the PMP (θ 3.0e-6); TR-E2-FD `TRF_CONVERGED` at k = 1; from 663.15 K, C2 `TRF_CONVERGED` with ratio 0.0167 |
+| Affected packages | M05 (WO-8e) |
+
+**Decision.** G5 at u₀ = 673.15 K requires `TRF_CONVERGED` or `TRF_EXIT_WITHOUT_STEP`, P2 judged and passed,
+`DECISION_STABLE` after one run, and |T* − T_ref| ≤ 0.5 K. G5b requires at least one `TRF_CONVERGED` run with an
+interior final step and a `PARENT_LOCAL_EVIDENCE` candidate, and no max-iterations exit or abort. G6 takes the same
+outcome set, plus |T*_FD − T*_E2| ≤ 0.1 K and the extended identity.
+
+**Rejected alternatives, and why.** Keeping "`TRF_CONVERGED`" for the near start: with a consistent PMP, Pyomo's
+initial step norm of 0 exits before any TRSP, so the gate would require a mislabel. Changing the registered start: it
+is 0.49 K from T_ref by registration.
+
+**Watch for.** —
+
+---
+
+## R-404 — G8 and G9 judge "at the lower bound" as within 1e-6 scaled (§7.4's definition)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.3, §20.7 |
+| Evidence | LOOP-R: \|T* − 653.15\| = 1.067e-6 K = 5.3e-8 scaled, Ipopt's interior offset |
+| Affected packages | M05 |
+
+**Decision.** |d* − d_lb| ≤ 1e-6 scaled (2e-5 K), and P5 polled the inward point only.
+
+**Rejected alternatives, and why.** 1e-6 K: it is below an interior-point method's offset from an active bound, and it
+contradicts the study's own at-bound rule.
+
+**Watch for.** —
+
+---
+
+## R-405 — A holder refunds its budget charge when the request is served as a store hit (S51)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.4 |
+| Evidence | S51: TR-E2 `cold_used` 48 = 31 + 16 + 1 store hit |
+| Affected packages | M05 (WO-8c) |
+
+**Decision.** Charge atomically at admission, as now, and refund atomically once the entry is `served: store_hit`. The
+identity `cold_used = trf_cold + parent_executions` stands. At the cap, a would-be store hit is still refused.
+
+**Rejected alternatives, and why.** Restating the checker: "cold ≤ cap" would then count free values. Charging only
+after the answer: concurrent FD requests could overshoot the cap.
+
+**Watch for.** F-24, timing-dependent refusals at a cap under concurrency.
+
+---
+
+## R-406 — The FD check is charged to the study budget and attributed to its run, outside the run cap (S50)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.4; §8.3 (amended) |
+| Evidence | S50: 21 cold check evaluations in no budget; S7's bound with R-400 is 250, equal to the cap |
+| Affected packages | M05 (WO-8c, WO-9) |
+
+**Decision.** The check's entries carry stage `fdcheck`, `trf_run` = the run they serve and purpose `fdcheck_point`.
+They are in that run's `by_purpose` and in the study's cold totals and budget, but not under the run cap.
+
+**Rejected alternatives, and why.** Leaving them unbudgeted: REAL would spend 21 uncounted reactor runs. Charging them
+to the run cap: the cap would bind on a 30-iteration run.
+
+**Watch for.** —
+
+---
+
+## R-407 — S52: LOOP-S needs a missing work order (WO-8b); G8 is not re-scoped
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.5, §20.7 |
+| Evidence | S52; §12 WO-4 lists `SurrogateTruth`, which was never built |
+| Affected packages | M05 (WO-8b) |
+
+**Decision.** WO-8b builds `SurrogateTruth` (with WO-4's acceptance), the promoted link basis, stage A with that basis,
+and P2_A, then runs LOOP-S for G8.
+
+**Rejected alternatives, and why.** Re-scoping G8: it is the only gate on §7.3's promoted branch, which REAL takes if
+its surrogate is promoted.
+
+**Watch for.** F-22, the availability of the PROMOTABLE manifest.
+
+---
+
+## R-408 — Stage A's basis is the promoted quadratic, not a constant
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.5; §6.6 (amended); ADR 0038 Amendment 2 (D7) |
+| Evidence | Probe P14 b: a constant link basis exits at the start with no step |
+| Affected packages | M05 (WO-8b) |
+
+**Decision.** Stage A uses the compiled M04 quadratic (b = the truth). TRF exits at the PMP as `TRF_EXIT_WITHOUT_STEP`
+at the surrogate-backed optimum, and P2_A and stage B judge that point.
+
+**Rejected alternatives, and why.** The constant basis: stage A would always return u₀. `M05-basis-v2` on the surrogate:
+it is strictly worse than the exact quadratic that is already available.
+
+**Watch for.** —
+
+---
+
+## R-409 — S47 (assumption blocks) and S49 (G9's "constant basis" means the no-surrogate basis) confirmed
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`architect`), M05 post-WO-8 ruling |
+| Normative text | design note §20.6 |
+| Evidence | Build log S47, S49; `m04-synthetic-rough-v1` is exp-linear (amplitude 4), C^∞ |
+| Affected packages | M05 |
+
+**Decision.** TR-E2: A1/A2/A3/A5 hold by construction and A4/A6/A7 are limitations. The FD truths have A3
+`qualified(fd_gradient)`. G9 runs with `M05-basis-v2`.
+
+**Rejected alternatives, and why.** —
+
+**Watch for.** —
+
+---
+
+## R-410 — ADR 0036 (with Amendments 1 and 2) is Accepted; its condition is met by M04's `tested` manifest and the design-lane review whose must-fix items are closed
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), ADR acceptance round (`wp/adr-acceptance`) |
+| Normative text | ADR 0036's Status line |
+| Evidence | `evidence/M04/8df0ea7c…/manifest.json`: `tested`, 60/61, M04.A01–A24 and A34 `pass` (A33 `not_applicable`, outside the condition). Review: `docs/reviews/M04-review.md`, one pass over `37ae0adc..3f99eee` (WO-1–WO-20, so WO-2, WO-3 and WO-5); must-fix MF1 closed by `6363c24` (R-360, A48), MF2 by `8ad0ec7` (R-361, A24's three added mutations). Both are ancestors of `8df0ea7`, which `main` carries as `78685cc` (checked with `git merge-base --is-ancestor`) |
+| Affected packages | M04 (closed); M05, M07 (inherit the claim and its qualifications) |
+
+**Decision.** ADR 0036 moves from Proposed to Accepted. Its own condition, in its Status line, is met: the gates
+A01–A24 and A34 pass in a `tested` manifest, and the design-lane review's two must-fix items are fixed by the
+corrections Amendment 3 (§A3.1, §A3.2) prescribed, each with an assertion in that manifest. The acceptance-evidence
+section's further items also hold: the generator's `--check` is A34, and A31–A32 are recorded for the real variant.
+
+**The real verdict.** No part of the condition needs a promotable real surrogate. A01–A24 rest on closed forms and the
+synthetic parents; A31–A32 record the real iteration whatever its verdict. The real verdict is NOT_PROMOTABLE
+(`band_not_finite`, R-364), and N6 counts M04 as `tested` regardless.
+
+**What it does not establish.** That split-conformal coverage holds for the real reactor: its band is not finite, so the
+real surrogate claims nothing beyond its verdict. Coverage is marginal over each study's own P_ref and nothing else (D1′).
+The manifest's `review.numerical` and `review.process_model` are `pending`. Human sign-off is separate.
+
+**Rejected alternatives, and why.** Waiting for a PROMOTABLE real iteration: the condition does not ask for one, and the
+ADR fixes semantics that the synthetic closed forms verify. A second reviewer pass over the fixes: the condition asks
+that the must-fix items be closed, and each closure is an assertion in a `tested` manifest.
+
+**Watch for.** —
+
+## R-411 — ADR 0037 (with Amendment 1) is Accepted; its condition is met by M04's `tested` manifest, the recorded review of WO-7 and WO-8, and ADR 0035's acceptance
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), ADR acceptance round (`wp/adr-acceptance`) |
+| Normative text | ADR 0037's Status line |
+| Evidence | `evidence/M04/8df0ea7c…/manifest.json`: `tested`, M04.A12–A15, A25–A30 and A35 `pass`. Review: `docs/reviews/M04-review.md` over `37ae0adc..3f99eee`, which includes WO-7 and WO-8; MF1 (the promotion bypass in `replacement.py`) closed by `6363c24` (R-360, A48). ADR 0035 Accepted by R-381 |
+| Affected packages | M04 (closed); M02 (its replacement check and schema gained members); M05, M07 (consume the unit) |
+
+**Decision.** ADR 0037 moves from Proposed to Accepted. Its three conditions are met: the gates pass in a `tested`
+manifest, the review of WO-7 and WO-8 is recorded, and ADR 0035, which it amends, is Accepted.
+
+**The real verdict.** No part of the condition needs a promotable real surrogate. A25–A30 commit, reject and roll back
+surrogates of the synthetic parent (A17, A18, A19, and the stand-in for A28). A33, the real surrogate in
+`C1-LOOP-M02-v1`, is conditional on a PROMOTABLE real verdict. It is `not_applicable` because the verdict is
+NOT_PROMOTABLE (R-364), and neither the Status line nor the acceptance-evidence section requires it.
+
+**What it does not establish.** Promotion, rollback and a surrogate-backed solve are shown on the synthetic parent
+only, never with `c1.reactor`. Q-A2.1 stays open (R-366). ADR 0037 says "pointer paragraphs are added at merge", but
+ADRs 0019 and 0035 carry no pointer to 0037 on `main`. That migration step is not part of the condition and is still
+outstanding. ADR 0035 is left untouched here so that it stays byte-identical to the alpha branch.
+
+**Rejected alternatives, and why.** Leaving 0037 Proposed until A33 runs: A33 is conditional, and the condition does not
+name it.
+
+**Watch for.** The pointer paragraphs in ADRs 0019 and 0035, which should be added after the alpha merge.
+
+---
+
 ## R-420 — A missing noise floor is a value not determined: the pair is FE_NOT_DETERMINED, TC-1 is TC1_NOT_APPLICABLE (B never replaced), and no floor is read as 0
 
 | | |
@@ -6829,3 +8397,156 @@ an archive whose failure bundle names a different record would reproduce MATCH.
 **Rejected alternatives, and why.** The literal "best verified grid point": it reports a bound-active decision from differences the parent cannot resolve.
 
 **Watch for.** —
+## R-430 — §7.4's at-bound distance stays 1e-6 as a classification; G8 and G9 stop gating Ipopt's offset
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review |
+| Normative text | design note §21.1, §21.6 |
+| Evidence | Plus-poll slopes 3.4e-3 / 3.4e-3 / 2.9e-3 per scaled unit; offsets LOOP-R 5.3e-8, LOOP-S 1.10e-6, REAL 1.76e-6 (33×); `docs/reviews/M05-review.md` ruling 1 |
+| Affected packages | M05 (supersedes R-404's rationale and G8/G9 rows) |
+
+**Decision.** `AT_BOUND_SCALED` = 1e-6 is unchanged for P5's inward-only rule and for R-401's exemption: its
+misclassification only adds a clipped poll at the bound or withholds a label. G8 and G9 judge
+|T* − 653.15 K| ≤ δ_T, and that P5's evidence contains the bound (inward-only, or the minus point clipped to 653.15 K
+and passed). |d* − d_lb| is reported. G8 passes on the committed LOOP-S record, with no re-take.
+
+**Rejected alternatives, and why.**
+- *Bound multipliers.* TRF's Ipopt duals are internal, and TRF is pinned (R-260).
+- *A μ/z offset bound.* z_L is not known before the poll.
+- *Snapping to the bound.* It moves the candidate off TRF's point.
+- *A larger fixed distance.* No independent reason supports it, and R-404's μ_final/z premise does not hold: the
+  offsets span 33× at equal slope.
+
+**Watch for.** A zero-noise parent: the clipped sub-resolution poll would fail P5 at every restart.
+
+---
+
+## R-431 — R-408 corrected: stage A's θ_PMP is the property EFs' affine error; `TRF_CONVERGED` is expected
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review |
+| Normative text | design note §21.2 |
+| Evidence | LOOP-S (S64): θ_k0 6.55e-3, k = 1 θ-step, ratio 3.28e-6, θ_recheck 8.88e-9, P2_A error 5.95e-14 |
+| Affected packages | M05 |
+
+**Decision.** The prediction θ_PMP ≈ 1e-14 is withdrawn, because the property EFs stay affine (R-400). G8's rows, the
+promoted basis and the LOOP-S record are unchanged.
+
+**Rejected alternatives, and why.** Exact property EFs in stage A: P2_A already agrees to 6e-14, so nothing is gained.
+
+**Watch for.** —
+
+---
+
+## R-432 — `noise_ratio` = 4σ̂_k/(t²|c_k|) with σ̂_k = ν̂·η·s_k/√2 (S58 reversed)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review (MF1) |
+| Normative text | design note §21.3 (amends R-400 step 10) |
+| Evidence | REAL: recorded (3591.6, 5.42), corrected (0.0388, 0.0299); ν̂ is sd of the scaled gradient G(η) (§17.2) |
+| Affected packages | M05 |
+
+**Decision.** The formula is corrected. LOOP-R, TR-E2-FD and REAL are re-taken, and each must be bitwise equal to its
+committed record with `noise_ratio` and `provenance` masked.
+
+**Rejected alternatives, and why.**
+- *c_k/s_k (S58's guess).* It leaves the 1/η error.
+- *Keeping the records and correcting only the manifest.* A committed record would then carry a known-wrong number.
+
+**Watch for.** —
+
+---
+
+## R-433 — `extrapolated`: the ledger count suffices; the data-edge flip is limitation wording plus a note to M07
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review |
+| Normative text | design note §21.4 |
+| Evidence | S69: 12 of 61 reactor requests; the flag flips between solves 3.5e-5 K apart; M07 R-424 counts the final coupling iteration |
+| Affected packages | M05, M07 (note) |
+
+**Decision.** No record count field is added. The digest-anchored, replay-compared ledger carries the count. W24 and the
+manifest state that C1's inlet H2/N2 sits on the data edge.
+
+**Rejected alternatives, and why.**
+- *A record field.* It duplicates an anchored artifact.
+- *A finding against the reactor.* It flags correctly, and a binary edge flag at an on-edge state flips at solver
+  resolution.
+
+**Watch for.** M07's per-state count at C1 inherits the flip.
+
+---
+
+## R-434 — M05 build choices S33–S69 ruled at the review
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review |
+| Normative text | design note §21.5; build log `docs/design/M05-build-decisions.md` |
+| Evidence | `docs/reviews/M05-review.md` |
+| Affected packages | M05 |
+
+**Decision.**
+- *Confirmed:* S33/S37, S36/S38, S39, S41, S45, S46, S48, S53, S55–S57, S59–S63, S65–S69.
+- *Superseded:* S54.
+- *Reversed:* S58 (R-432).
+- *S64:* by R-430.
+
+**Rejected alternatives, and why.** —
+
+**Watch for.** —
+
+---
+
+## R-435 — G10's in-process replays run in the `nlp` test tier
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`reviewer`), M05 review (SF1) |
+| Normative text | design note §21.6 |
+| Evidence | At `7350684`, G10 is only `scripts/m05_wo8_runs.py --replay` run by hand; G5–G9 read committed files |
+| Affected packages | M05 |
+
+**Decision.** An `nlp`-tier test replays TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R and LOOP-S at `OMP_NUM_THREADS=1`. A
+fingerprint mismatch fails and names the mismatch. REAL's replay stays a script.
+
+**Rejected alternatives, and why.** The script alone: a later commit could move numerics with every gate green.
+
+**Watch for.** —
+
+---
+
+## R-450 — M03 N1: Frank accepts the licences of the optional, non-default `nlp` extra as the [A10] audit lists them
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | Frank Peters, 2026-10-16, verbatim: "I accept the licenses." Recorded by the build lane |
+| Normative text | M03 specification §14 N1 (`docs/derivations/M03-studies-spec.md`); ADR 0032 D5 and its acceptance evidence; this entry |
+| Evidence | `docs/m03-ipopt-audit.md` (G-A10 `PASS`), §7 the licence list, §5 the loaded objects; `benchmarks/m03/ipopt-inventory-x86_64.json` |
+| Affected packages | M03 (A35–A40 rest on it); T08-style release gates (the extra's notices) |
+
+**Decision.** N1 is answered with its default: the licences of the `nlp` extra's stack, as the audit's §7 lists them
+(EPL-2.0, CeCILL-C, public domain, Apache-2.0, Apache-2.0 WITH LLVM-exception, BSD-3-Clause, the AMPL Solver Library's
+BSD-3-Clause and f2c notice, MIT, LGPL-2.1-only for `libiconv`, the GCC Runtime Library Exception 3.1 for conda-forge's
+GCC runtime, PSF-2.0 and CPython's standard-library closure), are accepted for an **optional, non-default extra** that
+ships their notices. The provisional state the M03 build carried since the review (`NLP_LICENCES_ACCEPTED = True`,
+`2b6e350`; the extra declared in `91537b0`) becomes final: neither commit is reverted.
+
+**What it does not cover.** The acceptance is of the audited list. A change to the audited environment that adds a
+package or a licence outside it needs a re-audit and a new answer; the extra never enters the default install (R-190).
+
+**Rejected alternatives, and why.** Declining (not shipping the extra; A35–A40 recorded unsupported): Frank chose to
+accept.
+
+**Watch for.** An `nlp` lock change that is not re-audited; the extra's notices missing from a release that ships it.

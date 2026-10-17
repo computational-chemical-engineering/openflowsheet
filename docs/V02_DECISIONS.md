@@ -857,3 +857,149 @@ Grep, don't read whole. Newest at the bottom.
 - **Alpha B6/B5** (2026-10-16, `specifier`, `758a902`, R-380…R-382): ADR status flips legitimate (gate reads ADRs at the decision
   commit; `docs/adr/` outside D2.4 trees). 0027 copied from main; 0033/0034/0035 Accepted (M02 `ba90619` tested, G1–G12 pass;
   thin spot: D28/D29 never ruled individually). §20 Am. 4 contingent on Frank declining M02 N1. Dry run: only ADR 0028 + Frank.
+- **M07 spec** (2026-10-16, `specifier`, `wp/M07` `48d4112`): ADR 0041/0042 Proposed, R-331…R-339, 40 assertions, journey R0–R3,
+  W25 8 clauses (honest reporting), 0.2.0 gate `v0.2-gate-v1` + RC steps 13–18. Needs Frank (0.2.0, defaults) listed in state.
+  Engineer launched on WO-1/WO-2 with a build-lane coverage read.
+- **M07 WO-1/WO-2** (2026-10-16, `opus-engineer`, `53ba75f`/`94819ea`, gate 8731): journey script + 61 tests; R0 ≈ 3 s in default
+  gate; R1/R3 UNSUPPORTED without reactor env / M05; `replay` exits 2 until WO-4. Spec issues J3, J4, J5, J6, J8, J9 batched for
+  the M07 ruling round (none numerics). Merging `wp/test-hardening` (1-line test pin) into main with a full gate.
+- **wp/test-hardening merged** (2026-10-16, `26b13db`, main gate PASS 8670 passed, 31 skipped).
+- **M05 S33/S36/WO-7b + main merge** (2026-10-16, `opus-engineer`, `899cc2b`/`ce86c03`/`733cf8a`/`d65a9a4`/`e4a8f4b`; gates 8790/8889;
+  merged tree 9186 passed 1 failed (S43); nlp 167/1). S33 bitwise on FD link toy; value_cold 8→16 (accounting).
+  DECISION: S43 → (a) invert dependency (adapter into `application`, injected), alt. (b) exemption / (c) narrow rule;
+  reversible by reverting S44. S40 + `fd_check` float rule → design ruling before WO-8.
+- **M05 S44** (2026-10-16, `opus-engineer`, `a5927b4`, gate 9187 passed, nlp 167/1): `ParentServices` injected
+  (`application/trust_region_parent.py`); moving `parent.py` would break R-003's isolation test. Bitwise dumps identical (6393 +
+  3668 lines; coupling-record sha masked — wall times, S40). Found: R-003 means no application job can run the study.
+  `architect` pre-WO-8 ruling launched (S40, fd_check floats, R-003 vs jobs; R-383…R-389).
+- **M05 pre-WO-8 ruling** (2026-10-16, `architect`, `4c83d15`, §19, R-383…R-389): `coupling_record_sha256` exact_sha256; between runs
+  shape-only (as R-318); coupling records saved via `coupling_sink` and file-checked in G10; fd_check floats classed (eta exact,
+  rest r1_r2_existing_floors); R-003 stands, no job entry for WO-8/M07. WO-8 engineer launched.
+- **M02 follow-up** (2026-10-16, `opus-engineer`, `wp/M02-followup` 39e6b0c/768690f/b6f51d8; gates 8672/8675/8675): D133 R-341 guard
+  (negative control MATCH→MISMATCH); D134 C1 slack 4·2⁻⁵² (exact compare refused 46.2 % of 2×10⁵ scalings, max shortfall 1.59·2⁻⁵²;
+  pin rewritten 1 ulp accepted/16 refused); D135 L44/L45/L46/L48, harvest [1]→L44 [2]→L45 [3]→L48 [5]→L46 [6]→L44. `reviewer` launched
+  (R-390 if it rules D134).
+- **M02 follow-up review** (2026-10-16, `reviewer`, `54b7baa`, R-390): merge; D134 4·2⁻⁵² confirmed (correct worst case just under
+  8 rounding units vs slack 8; adversarial 10⁵ states refused 0, exact 11.1 %); should-fix S1/S2 wording only. R-390 taken →
+  M07 continues at R-391. Sonnet on S1/S2 + manifest `evidence/M02-followup/…`.
+- **M05 WO-8 (partial)** (2026-10-16, `opus-engineer`, 313115d…6a9d29d, gate 9212, nlp pytest 167/1; `m03_nlp_check.sh` exits 1 on the stale
+  M03 inventory): §19 items done. G10 PASS; G5 FAIL (F-15, θ min 1.03e-5 vs 1e-5, θ_recheck 4.01e-4); G6 FAIL (TRF_CONVERGED clause);
+  G9 FAIL (1.067e-6 K vs 1e-6 K); G7 partial; G8 not run (S52). No limit raised. Open S47, S49, S50, S51, S52. Diagnosis engineer
+  launched (doc only) before an architect ruling.
+- **M05 F-15 diagnosis** (2026-10-16, `opus-engineer`, `04454d7`, doc only): mechanism = linear model drops the truth's curvature,
+  start at box corner, full-radius steps θ = C·Δ² (C 0.27→0.775), radius band 1e-4 vs termination 1e-5; refuted criticality /
+  scaling / floor / FD noise. 150-iteration scratch: θ 9.72e-6 at k = 35. `architect` ruling launched (R-400…R-409).
+- **M05 post-WO-8 ruling** (2026-10-16, `architect`, `a9d05d3`, §20, R-400…R-409, ADR 0038 Am. 2): see state. WO-8a/8c/8d engineer launched.
+- **M02 follow-up merged** (626fb26) — first main gate FAIL (2): manifest under `M02-followup/` but work_package M02; its limitations
+  unharvested. Fixed `95053be` (moved to `evidence/M02/6c3a087…`, 4 P harvest entries, matrix re-emitted). **wp/adr-acceptance merged**
+  (`61cc785`, ADRs 0033–0037 Accepted, R-381 copied, R-410/R-411; register union 284). **Main gate PASS 8681 passed, 31 skipped.**
+- **M05 WO-8a/8c/8d** (2026-10-16, `opus-engineer`, 4c9a083/55674aa/d56b42d/f72a875; gates 9231/9235/9238, nlp 177/1): TRF_EXIT_UNVERIFIED
+  (F-15 k=27/28 ratio 0.99985 → radius_limited); store-hit refund (TR-E2 cold_used 47 = 31 + 16); basis v2 matches §20.1 (TR-E2 θ 2.998e-6,
+  0.00734 K; c_X −9.5883e-4 /K²); v1 bitwise vs a9d05d3. Finding: v1 records don't replay across environments (~1e-15). Open S53, S54,
+  S56, S57, S58. WO-8e launched.
+- **M05 WO-8e** (2026-10-16, `opus-engineer`, 4da50ad/546b14a/5961915; gate 9257, nlp 177/1): v1 records replaced by four v2
+  records (TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R). G5 PASS (TRF_EXIT_WITHOUT_STEP k=0, θ 2.998e-6, 0.00734 K); G5b PASS (C1 radius_limited
+  k=7, C2 converged k=1, |ΔT| 0.0107 K); G6 PASS (converged k=1, |T*_FD−T*_E2| 0.0213 K); G7 PASS (store bijection 0 violations, 19/42/48/63
+  attempts); G9 PASS (|d*−d_lb| 5.29e-8 scaled vs 1e-6); G10 PASS (0 diffs, one env). Drift cause: OpenMP OpenBLAS thread count, not a
+  venv rebuild; script now requires OMP_NUM_THREADS=1 and writes `<stem>.environment.json` (S59, S60, S61). Open for review: S53, S56–S61.
+  Note: `m03_nlp_check.sh` inventory diff (conda_packages, gates, objects) not touched by M05; pre-existing staleness, unverified.
+- **M07 ruling round 1** (2026-10-16, `specifier`, `9ef4543` on wp/M07, docs only): spec §18 Amendment 1, R-420…R-427; ADR 0041 D6
+  gains refusal reason `surrogate_loop_unavailable`. J3 confirmed (missing noise floor → FE_NOT_DETERMINED/TC1_NOT_APPLICABLE, never 0;
+  fixtures tc1-08/09, A06 7→9); J4 confirmed (check recomputes budget stop); J5 W25 (a) not met under PROMOTABLE without surrogate loop;
+  J6 experiments split {cold, store_hit, in_process}; J7 changed: `extrapolated` counts last coupling iteration only, closed-form R0
+  checks (X_pass tol 2.5e-13); J8 replaced: M05 record named by five content conditions, not a path (defects: R3 wall always 0.0,
+  carried_from defaults "rerun"); J9 re-solve T* with M05 C1Parent, J bitwise; J11 changed: grid-only decision = R1's own rung decision.
+  AQ1–AQ3 are facts for the build lane. Finding FD-3 for M05: study record lacks run commit and spent wall (put in WO-9 brief).
+- **M07 WO-2b** (2026-10-16, `opus-engineer`, 140e262…6e2640d on wp/M07, each commit gated in a detached worktree; final tree re-gated
+  after the workstation reboot): Amendment 1 applied, one commit per ruling (J14–J20). R0 re-taken: VERIFIED ×9, INDIFFERENT at 673.15,
+  J unchanged within the registered one-ulp spread; moved as ruled: experiments {cold 0, store_hit 0, in_process 2}, `extrapolated` 1 → 0.
+  AQ1 answered yes. J15 (build choice): A1.4's first identity holds by construction, checkable only at replay (WO-4).
+- **M05 WO-8b** (2026-10-16, `opus-engineer`; interrupted by the reboot before commit, work complete in the tree): F-22 yes (M04.A19's
+  PROMOTABLE manifest on wp/M05). SurrogateTruth, promoted basis, P2_A, LOOP-S record (S62–S64). **G8 FAIL** on its at-bound rows:
+  stage A TRF_CONVERGED k=1, P2_A passed, DECISION_STABLE, but |d*−d_lb| 1.0965e-6 scaled vs 1e-6 (LOOP-R 5.29e-8), so P5 polled both
+  sides; held as strict xfail. Premise off: R-408 expected TRF_EXIT_WITHOUT_STEP θ≈1e-14; measured θ 6.55e-3 (affine property EFs not
+  exact). For the M05 design ruling/review batch.
+- **M05 WO-9 REAL** (2026-10-16, `opus-engineer`, c912f92/20e398e/c3ff66b/7350684; gate 9287 + 1 xfail, nlp 180, pymrm 1): G11 PASS,
+  G10-REAL PASS. fd_check clean at 2⁻¹⁴ (τ̂ 3.1e-3, ν̂ 6.9e-4); C1 converged k=1, θ_recheck 2.33e-6, P2 passed; 48/400 cold, 1454 s;
+  no cap hit (F-13); F-21 yes. Not interior: T* 653.1500352 K, 1.76e-6 scaled above the bound (same at-bound question as G8).
+  `extrapolated` 12/61 from the ledger (no record field); H2/N2 at the kinetics' data edge flips the flag. M07 needs: FD-3 done
+  (`provenance {run_commit, tree_clean, wall_s}`), AQ2 no. M05 `reviewer` launched (brief `docs/briefs/M05-review-brief.md`,
+  R-430…449), then WO-10.
+- **M05 review** (2026-10-16, `reviewer`, `f0693d8` on wp/M05; `docs/reviews/M05-review.md`, design note §21, R-430…R-435): verdict
+  fix first. Core sound (R-401 exits, basis v2, R-405/R-406 accounting, P2/P2_A/P5). MF1: `noise_ratio` misses η·s_k/√2 (REAL
+  (3591.6, 5.42) → (0.0388, 0.0299)); re-take LOOP-R, TR-E2-FD, REAL, bitwise with noise_ratio/provenance masked. SF1: in-process
+  replays as an nlp test. SF2/R-430: §7.4's 1e-6 classification kept; R-404's offset rationale wrong (slopes within 15 %, offsets span
+  33×), so G8/G9 stop gating Ipopt's offset: |T*−653.15| ≤ δ_T 0.5 K and P5's evidence contains the bound (G8 then passes on the
+  committed LOOP-S). R-431: TRF_CONVERGED expected for stage A. R-433: ledger count suffices; data-edge flip = limitation + note to M07.
+  R-434: build choices confirmed (S58 reversed, S54 superseded, S64 settled). WO-10a (fixes) launched; WO-10b (manifest) after.
+- **M05 WO-10a** (2026-10-16, `opus-engineer`, cdacc32…748f8cf; gate 9289/31, nlp 186/1): MF1 fixed (R-432); LOOP-R, TR-E2-FD, REAL
+  re-taken, new/old noise_ratio exactly η·s_k/√2, REAL → (0.0388, 0.0299); 0 other differences (`scripts/m05_retake_diff.py`); G8/G9
+  restated (G8 PASS, xfail gone); `tests/test_m05_g10_replay.py` (nlp, mutation-checked); `EXTRAPOLATED_LIMITATION`; note to M07
+  `docs/briefs/M05-note-to-M07.md`. S70: the re-take diff also masks wall-clock timings and digests over them (M02 attempt timings,
+  reactor diagnostics wall_s, REAL experiments archive digest; request/result files byte-equal).
+  DECISION: accept S70's timing mask without another design pass → yes (timings are not reproducible by nature; every non-timing byte
+  equal). Alternative: a ruling round. Reversible by: re-running the diff script with a narrower mask.
+  Review notes: N2 (in-flight key on a non-TruthRefused exception) fixed in WO-10b; N1 (stage C restart ignores regime match) open,
+  default at next touch: apply stage A's eligibility; N3/N4 noted in the manifest.
+  DECISION: M05 merges into main only after M03 (M05 contains M03's nlp code; M03 merges when Frank answers its licence question N1).
+  Alternative: merge M05 with M03 now. Reversible by: merging once Frank answers. M07 WO-4 may build on wp/M05 meanwhile.
+- **Frank, 2026-10-16: "I accept the licenses."** M03 N1 answered: the optional, non-default `nlp` extra ships with the licences the
+  [A10] audit lists. M03 closeout launched (`opus-engineer`): register R-450, main merged into wp/M03, the stale inventory check
+  explained (stop if anything outside the audited set appears), CI on both runners at the final commit, manifest → tested. Then the
+  session merges M03, then M05, into main. The four 0.2.0a1 questions remain open.
+- **M05 WO-10b** (2026-10-17, `sonnet-implementer`, cfecb15/b5099a3/1032ed0; gate 9296/31, nlp 186/1): review N2 fixed (try/finally,
+  test); manifest `evidence/M05/cfecb15…/manifest.json` **tested**, 14 checks (G1–G13 + G5b) all pass, review pending; 10 limitations
+  harvested (all class P), matrix --check 0 problems; ADR 0039 box note; progress.md; `docs/briefs/M05-W24-table.md`. S75 interpretations
+  for the next design touch: G10 cross-architecture `not_run` (limitation), E-row candidates (`extrapolated`, bound-active REAL optimum,
+  `fd_gradient`), case_hash = sha256 of c1-loop-real.json. Open: review N1 (stage-C restart eligibility). cfecb15 carries a Sonnet
+  trailer (accurate; not rewritten). M05 ready to merge after M03.
+- **M03 closeout, part 1** (2026-10-17, `opus-engineer`, wp/M03 0c6ca90/4ccd369/b0db48e/2bba33e; gate 8867/31, nlp 18/1): R-450 records
+  Frank's N1; main merged (register union by hand: scratchpad `regunion.py` was lost in the reboot); manifest script takes `--n1
+  accepted` and `--ci-run`. Inventory: fresh env reproduces 086bf2b's 178 objects; after the main merge M02's `adapters/pymrm/env.py`
+  imports urllib → ssl, mapping `libssl.so.3` (openssl-3.6.5, Apache-2.0) and `_ssl` (CPython 3.13.5, PSF-2.0); same packages,
+  same licences, 41 conda packages and wheels unchanged.
+  DECISION: are the two new objects inside Frank's licence acceptance → yes (same audited packages and licences; no licence added).
+  Alternative: ask Frank again. Reversible by: reverting b074d57 on wp/M03. Re-take cherry-picked as `b074d57`, m03_nlp_check.sh exit 0.
+  **Blocker:** main's CI red since 2026-10-16 (M04 tests on 2-core runners: prewarm a40 max_workers 4; a49 negative control; a35
+  a19 fixture differs on arm). `wp/M04-ci` engineer launched; M03's CI-on-both-runners check waits for it.
+- **Main CI fix** (2026-10-17, `opus-engineer`, wp/M04-ci 2a07b66/df818a1/422c53a/09c6fed/54778d2; CI run 38998365118 green on both
+  runners): A40 script-path test skips below 4 physical cores (refusal tests at min(4, cores)); A49 asserts both pinned claims
+  everywhere, skips only the negative control where it cannot show a difference; A35 floats compared only on the recorded CPU class
+  `x86_64/Haswell` (spec §18 A1.3 makes no cross-machine bitwise claim), non-float members everywhere; CI prints skip reasons (E39–E42).
+  Manifest `evidence/M04/09c6fed…` tested. Open for M04's design lane: off-Haswell floats against A1.3's R1/R2 floors (default no).
+  Merged into main `f79864d`, **main gate PASS 8687/31**.
+- **M03 merged into main** (2026-10-17, `0bdb80d`): closeout part 2 (`sonnet-implementer`, a35885b/e8a22eb) merged main, CI 39007361803
+  green on both runners, manifest `evidence/M03/a35885b…` **tested** 52/0/0, 8 limitations harvested (one new: licence acceptance covers
+  the audited list only, class P — design lane may confirm). Merge tree identical to gated e8a22eb (8879 passed, 31 skipped).
+  M05 main-merge launched (`opus-engineer`).
+- **Frank, 2026-10-17: "Accept the defaults"** — the four 0.2.0a1 questions (asked in plain words): N3 claim set v0.2-alpha-gate-v1;
+  V17 carry (no new campaign); M02 N1 ship the reactor subprocess as "not a sandbox"; V14 (b) PTC failure accepted again. Dated after
+  the verdict (Judged 2026-10-16), as R-371 requires. Recorded in ADR 0028's four cells on wp/V02-alpha-gate (status left Proposed:
+  acceptance also needs M07a's manifest at the candidate). Next: `verdict` re-judges V13/V17/W21 (brief
+  `docs/briefs/V02-alpha-rejudge-brief.md`), then action 10's build part (step 5, A52, A64, manifest, step 7), then merge to main.
+- **Alpha re-judgement** (2026-10-17, `verdict`, `c52039b` on wp/V02-alpha-gate): V13, V17, W21 BLOCKED → PASS at C_α²; V14 FAIL (accepted
+  in D3). Findings R1 (ADR 0028 still Proposed), R2 (notes should say V17's agent evidence is carried). Gate at c52039b: NO (W21/W22 not
+  in the ledger; ADR 0028 not Accepted) — action 10's build part launched (`opus-engineer`, brief `docs/briefs/V02-alpha-action10-brief.md`).
+- **Finding (session's own error): the release freeze was broken.** ADR 0028 / spec §9.2 step 2: from C_α² (2026-10-15) until Frank's
+  dispatch, main takes no change to D2.4 paths (src, schemas, benchmarks, lock, pyproject, …). Since then main took the M02 follow-up,
+  M03 and the M04 CI fix (52 files under D2.4 differ), so main's head can no longer be the candidate. The alpha branch's D2.4 paths
+  still equal C_α² exactly. Asked Frank: release from the alpha branch/tag (ADR 0028's named alternative; recommended) or re-cut the
+  candidate from main and redo the RC job and verdicts.
+
+## 2026-10-17 — M05 main-merge
+- `wp/M05` @ `56fb2fa`: origin/main merged (`eb17f79`; register numeric union, no clash), NLP inventory re-taken (181 objects,
+  `_queue` added, same packages/licences; S76, as M03's `b074d57`), five in-process G10 records re-taken (`56fb2fa`, S77): main's
+  D134 change to `models/c1/boundary.py` changed the environment fingerprint, so 105–185 digest differences per record; all
+  non-digest fields equal except timings, old→new digest map one-to-one, REAL unaffected. Gate 9319/31 skipped, nlp 186/1,
+  m03_nlp_check exit 0, REAL replay 0 diffs, CI 39018247132 green on both runners.
+- DECISION: S77 re-take vs narrowing the fingerprint → keep the re-take (engineer's choice; fingerprint working as designed).
+  Alternative: exclude unrelated model files from the in-process fingerprint (design-lane). Reversible by: revert `56fb2fa`.
+  Batched for M05's next design touch.
+- DECISION: merge M05 into main now, although the freeze question to Frank is open → yes. Default (release from the alpha
+  branch) is unaffected; a re-cut would then include M05 too. Reversible by: reverting the merge commit on main.
+
+## 2026-10-17 — Frank: release 0.2.0a1 from the alpha branch
+- Frank, verbatim: "Perform the release as recommended". Release ref = the alpha branch `wp/V02-alpha-gate` (D2.4 paths =
+  C_α² `cc73219` exactly), not main; ADR 0028's named alternative. Frank asks the session to perform the dispatch.
+- Mechanics: the `pypi` environment admits only `main` or `v*` tags. Plan: dry run from the branch at the head that prints
+  YES; then the real run from a `v0.2.0a1` tag on that same commit (rc = `cc73219…`).

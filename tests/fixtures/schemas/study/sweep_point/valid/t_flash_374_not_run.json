@@ -1,0 +1,12 @@
+{
+ "certificate_status": null,
+ "constants_sha256": null,
+ "message": "not run: the sweep's point budget was spent",
+ "outcome": "NOT_RUN",
+ "outputs": null,
+ "root_fingerprint": null,
+ "sensitivity": null,
+ "solve_outcome": null,
+ "state_sha256": null,
+ "value": 374.0
+}

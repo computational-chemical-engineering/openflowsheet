@@ -1,0 +1,2018 @@
+{
+ "kind": "sweep",
+ "model": {
+  "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+  "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769"
+ },
+ "outputs": [
+  {
+   "coefficients": {
+    "S4.N": 1.0
+   },
+   "output_id": "S4.N",
+   "scale": 3.0
+  },
+  {
+   "coefficients": {
+    "S5.N": 1.0
+   },
+   "output_id": "S5.N",
+   "scale": 3.0
+  }
+ ],
+ "parameters": [
+  {
+   "domain": [
+    280.0,
+    440.0
+   ],
+   "parameter_id": "U-FLASH.T_spec",
+   "scale": 100.0
+  }
+ ],
+ "request": {
+  "max_points": null,
+  "parameter_id": "U-FLASH.T_spec",
+  "start": "registered_initializer",
+  "values": [
+   310.0,
+   340.0,
+   355.0,
+   360.0,
+   365.0,
+   374.0,
+   380.0,
+   420.0,
+   445.0
+  ]
+ },
+ "result": {
+  "outputs": [
+   {
+    "coefficients": {
+     "S4.N": 1.0
+    },
+    "output_id": "S4.N",
+    "scale": 3.0
+   },
+   {
+    "coefficients": {
+     "S5.N": 1.0
+    },
+    "output_id": "S5.N",
+    "scale": 3.0
+   }
+  ],
+  "parameter_id": "U-FLASH.T_spec",
+  "points": [
+   {
+    "certificate_status": "VERIFIED",
+    "constants_sha256": "34b51b1c2552eec86b262f2dbd294368e04e55b5ea5192cde3083b1326a79dfa",
+    "message": "",
+    "outcome": "CONVERGED",
+    "outputs": {
+     "S4.N": 0.0,
+     "S5.N": 6.0
+    },
+    "root_fingerprint": {
+     "branch_found": [
+      [
+       "U-HEAT",
+       "TWO_PHASE"
+      ],
+      [
+       "U-FLASH",
+       "LIQUID"
+      ]
+     ],
+     "claims": {
+      "dynamic_stability": "NOT_ASSESSED",
+      "uniqueness": "NOT_ASSESSED"
+     },
+     "constants_sha256": "34b51b1c2552eec86b262f2dbd294368e04e55b5ea5192cde3083b1326a79dfa",
+     "delta_scaled_inf": 0.0001,
+     "full_state_sha256": "803dedbbff324e15a7aa730a88f9352999edb730c127aba247e09cd72469c7e2",
+     "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+     "policy": "T03-root-fingerprint-v1",
+     "variable_ids_sha256": "1faf1be992696d5e61b2bbdc2a83b960235408278f4bdadac9649c91cfd93a91"
+    },
+    "sensitivity": {
+     "adjoint": null,
+     "consistency": null,
+     "derivative_provenance": "implicit-exact",
+     "forward": {
+      "scaled": [
+       [
+        0.0
+       ]
+      ],
+      "unscaled": [
+       [
+        0.0
+       ]
+      ]
+     },
+     "identity": {
+      "constants_sha256": "34b51b1c2552eec86b262f2dbd294368e04e55b5ea5192cde3083b1326a79dfa",
+      "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+      "phase_signature": null,
+      "state_sha256": "803dedbbff324e15a7aa730a88f9352999edb730c127aba247e09cd72469c7e2"
+     },
+     "linear_solves": [
+      {
+       "dimension": 47,
+       "linear_suspect": false,
+       "max_abs_u_diagonal": 1.9543280497686712,
+       "min_abs_u_diagonal": 0.5,
+       "nnz_l": 116,
+       "nnz_u": 115,
+       "residual_normalized": 0.0
+      }
+     ],
+     "mode": "forward",
+     "outputs": [
+      {
+       "coefficients": {
+        "S4.N": 1.0
+       },
+       "output_id": "S4.N",
+       "scale": 3.0
+      }
+     ],
+     "parameters": [
+      {
+       "alias_residual": 0.0,
+       "domain": [
+        280.0,
+        440.0
+       ],
+       "parameter_id": "U-FLASH.T_spec",
+       "scale": 100.0,
+       "status": "QUALIFIED"
+      }
+     ],
+     "policy_id": "M03-sensitivity-v1",
+     "qualification": {
+      "alias_residuals": {
+       "U-FLASH.T_spec": 0.0
+      },
+      "outcomes": [
+       {
+        "outcome": "pass",
+        "qualification": "Q0"
+       },
+       {
+        "entries_compared": 2352,
+        "outcome": "pass",
+        "qualification": "Q0'"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q0''"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q1",
+        "scaled_residual_inf": 1.973729821555834e-15,
+        "threshold": 1e-10
+       },
+       {
+        "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+        "outcome": "pass",
+        "qualification": "Q1'",
+        "same_state": true,
+        "verification_status": "VERIFIED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2",
+        "rcond_1": 0.0020187630191823716,
+        "status": "NO_RANK_LOSS_DETECTED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2'",
+        "residual_normalized": [
+         0.0
+        ],
+        "solves": {
+         "forward": "pass",
+         "transposed": "not_applicable"
+        },
+        "threshold": 1e-12
+       },
+       {
+        "eliminated_rows": [
+         "U-FLASH:FLASH-P:inlet",
+         "U-SPLIT:SPLIT-P:recycle"
+        ],
+        "outcome": "pass",
+        "qualification": "Q3",
+        "refused_columns": [],
+        "threshold": 1e-08
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4",
+        "splits": [
+         {
+          "kind": "TP",
+          "margin": 0.07031421908077462,
+          "regime": "TWO_PHASE",
+          "streams": "S3",
+          "unit_id": "U-HEAT"
+         },
+         {
+          "kind": "TP",
+          "margin": 0.6719302716448137,
+          "regime": "LIQUID",
+          "streams": "S4/S5",
+          "unit_id": "U-FLASH"
+         }
+        ],
+        "threshold": 0.0001
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4'"
+       }
+      ],
+      "regularity": {
+       "derivative_accuracy": "exact-ad-double",
+       "dimension": 47,
+       "escalation": null,
+       "factorization_source": "evaluated_at_final_state",
+       "ill_conditioned_reason": null,
+       "inconclusive_reason": null,
+       "inverse_one_norm_estimate": 79.93091115770572,
+       "inverse_one_norm_threshold": 958212.6866745737,
+       "jacobian_identity": {
+        "constants_sha256": "34b51b1c2552eec86b262f2dbd294368e04e55b5ea5192cde3083b1326a79dfa",
+        "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+        "phase_signature": null,
+        "state_sha256": "803dedbbff324e15a7aa730a88f9352999edb730c127aba247e09cd72469c7e2"
+       },
+       "matrix": "target_after_alias_elimination",
+       "method": "splu_onenormest_rcond1",
+       "nnz": 150,
+       "one_norm": 6.197262553146566,
+       "rcond_1": 0.0020187630191823716,
+       "scales_provenance": "SolvePlan.row_scales and column_scales",
+       "solution_error_bound_scaled": 1.5776202301609372e-13,
+       "status": "NO_RANK_LOSS_DETECTED",
+       "superlu_options": {
+        "diag_pivot_thresh": 1.0,
+        "options": {
+         "Equil": false,
+         "IterRefine": "NOREFINE",
+         "SymmetricMode": false
+        },
+        "panel_size": 10,
+        "permc_spec": "COLAMD",
+        "relax": 1
+       },
+       "thresholds": {
+        "svd_dimension_cap": 2000,
+        "svd_rank_tolerance": "n eps sigma_max",
+        "tau_ill": 1e-08
+       },
+       "u_diagonal_ratio": 0.25584241092951804
+      },
+      "scaled_residual_inf": 1.973729821555834e-15,
+      "splits": [
+       {
+        "kind": "TP",
+        "margin": 0.07031421908077462,
+        "regime": "TWO_PHASE",
+        "streams": "S3",
+        "unit_id": "U-HEAT"
+       },
+       {
+        "kind": "TP",
+        "margin": 0.6719302716448137,
+        "regime": "LIQUID",
+        "streams": "S4/S5",
+        "unit_id": "U-FLASH"
+       }
+      ]
+     },
+     "refusals": [],
+     "status": "QUALIFIED"
+    },
+    "solve_outcome": "CONVERGED",
+    "state_sha256": "803dedbbff324e15a7aa730a88f9352999edb730c127aba247e09cd72469c7e2",
+    "value": 310.0
+   },
+   {
+    "certificate_status": "VERIFIED",
+    "constants_sha256": "f3a5e710f32ef7b5906ab71ca092b72f74334248ff1266fb6bd360291d3442f3",
+    "message": "",
+    "outcome": "CONVERGED",
+    "outputs": {
+     "S4.N": 0.0,
+     "S5.N": 6.0
+    },
+    "root_fingerprint": {
+     "branch_found": [
+      [
+       "U-HEAT",
+       "TWO_PHASE"
+      ],
+      [
+       "U-FLASH",
+       "LIQUID"
+      ]
+     ],
+     "claims": {
+      "dynamic_stability": "NOT_ASSESSED",
+      "uniqueness": "NOT_ASSESSED"
+     },
+     "constants_sha256": "f3a5e710f32ef7b5906ab71ca092b72f74334248ff1266fb6bd360291d3442f3",
+     "delta_scaled_inf": 0.0001,
+     "full_state_sha256": "4c11aa59e0ce60d1a5f339f03538d83d424df5dd6cc82bf55c8419d34645ebb9",
+     "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+     "policy": "T03-root-fingerprint-v1",
+     "variable_ids_sha256": "1faf1be992696d5e61b2bbdc2a83b960235408278f4bdadac9649c91cfd93a91"
+    },
+    "sensitivity": {
+     "adjoint": null,
+     "consistency": null,
+     "derivative_provenance": "implicit-exact",
+     "forward": {
+      "scaled": [
+       [
+        1.9196116534298955e-16
+       ]
+      ],
+      "unscaled": [
+       [
+        5.758834960289686e-18
+       ]
+      ]
+     },
+     "identity": {
+      "constants_sha256": "f3a5e710f32ef7b5906ab71ca092b72f74334248ff1266fb6bd360291d3442f3",
+      "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+      "phase_signature": null,
+      "state_sha256": "4c11aa59e0ce60d1a5f339f03538d83d424df5dd6cc82bf55c8419d34645ebb9"
+     },
+     "linear_solves": [
+      {
+       "dimension": 47,
+       "linear_suspect": false,
+       "max_abs_u_diagonal": 2.0,
+       "min_abs_u_diagonal": 0.39962630737800514,
+       "nnz_l": 140,
+       "nnz_u": 129,
+       "residual_normalized": 1.1759526353910397e-17
+      }
+     ],
+     "mode": "forward",
+     "outputs": [
+      {
+       "coefficients": {
+        "S4.N": 1.0
+       },
+       "output_id": "S4.N",
+       "scale": 3.0
+      }
+     ],
+     "parameters": [
+      {
+       "alias_residual": 0.0,
+       "domain": [
+        280.0,
+        440.0
+       ],
+       "parameter_id": "U-FLASH.T_spec",
+       "scale": 100.0,
+       "status": "QUALIFIED"
+      }
+     ],
+     "policy_id": "M03-sensitivity-v1",
+     "qualification": {
+      "alias_residuals": {
+       "U-FLASH.T_spec": 0.0
+      },
+      "outcomes": [
+       {
+        "outcome": "pass",
+        "qualification": "Q0"
+       },
+       {
+        "entries_compared": 2352,
+        "outcome": "pass",
+        "qualification": "Q0'"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q0''"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q1",
+        "scaled_residual_inf": 1.973729821555834e-15,
+        "threshold": 1e-10
+       },
+       {
+        "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+        "outcome": "pass",
+        "qualification": "Q1'",
+        "same_state": true,
+        "verification_status": "VERIFIED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2",
+        "rcond_1": 0.0020187630191823664,
+        "status": "NO_RANK_LOSS_DETECTED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2'",
+        "residual_normalized": [
+         1.1759526353910397e-17
+        ],
+        "solves": {
+         "forward": "pass",
+         "transposed": "not_applicable"
+        },
+        "threshold": 1e-12
+       },
+       {
+        "eliminated_rows": [
+         "U-FLASH:FLASH-P:inlet",
+         "U-SPLIT:SPLIT-P:recycle"
+        ],
+        "outcome": "pass",
+        "qualification": "Q3",
+        "refused_columns": [],
+        "threshold": 1e-08
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4",
+        "splits": [
+         {
+          "kind": "TP",
+          "margin": 0.07031421908077462,
+          "regime": "TWO_PHASE",
+          "streams": "S3",
+          "unit_id": "U-HEAT"
+         },
+         {
+          "kind": "TP",
+          "margin": 0.18377977128184564,
+          "regime": "LIQUID",
+          "streams": "S4/S5",
+          "unit_id": "U-FLASH"
+         }
+        ],
+        "threshold": 0.0001
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4'"
+       }
+      ],
+      "regularity": {
+       "derivative_accuracy": "exact-ad-double",
+       "dimension": 47,
+       "escalation": null,
+       "factorization_source": "evaluated_at_final_state",
+       "ill_conditioned_reason": null,
+       "inconclusive_reason": null,
+       "inverse_one_norm_estimate": 79.93091115770594,
+       "inverse_one_norm_threshold": 958212.6866745737,
+       "jacobian_identity": {
+        "constants_sha256": "f3a5e710f32ef7b5906ab71ca092b72f74334248ff1266fb6bd360291d3442f3",
+        "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+        "phase_signature": null,
+        "state_sha256": "4c11aa59e0ce60d1a5f339f03538d83d424df5dd6cc82bf55c8419d34645ebb9"
+       },
+       "matrix": "target_after_alias_elimination",
+       "method": "splu_onenormest_rcond1",
+       "nnz": 150,
+       "one_norm": 6.197262553146566,
+       "rcond_1": 0.0020187630191823664,
+       "scales_provenance": "SolvePlan.row_scales and column_scales",
+       "solution_error_bound_scaled": 1.5776202301609415e-13,
+       "status": "NO_RANK_LOSS_DETECTED",
+       "superlu_options": {
+        "diag_pivot_thresh": 1.0,
+        "options": {
+         "Equil": false,
+         "IterRefine": "NOREFINE",
+         "SymmetricMode": false
+        },
+        "panel_size": 10,
+        "permc_spec": "COLAMD",
+        "relax": 1
+       },
+       "thresholds": {
+        "svd_dimension_cap": 2000,
+        "svd_rank_tolerance": "n eps sigma_max",
+        "tau_ill": 1e-08
+       },
+       "u_diagonal_ratio": 0.19981315368900257
+      },
+      "scaled_residual_inf": 1.973729821555834e-15,
+      "splits": [
+       {
+        "kind": "TP",
+        "margin": 0.07031421908077462,
+        "regime": "TWO_PHASE",
+        "streams": "S3",
+        "unit_id": "U-HEAT"
+       },
+       {
+        "kind": "TP",
+        "margin": 0.18377977128184564,
+        "regime": "LIQUID",
+        "streams": "S4/S5",
+        "unit_id": "U-FLASH"
+       }
+      ]
+     },
+     "refusals": [],
+     "status": "QUALIFIED"
+    },
+    "solve_outcome": "CONVERGED",
+    "state_sha256": "4c11aa59e0ce60d1a5f339f03538d83d424df5dd6cc82bf55c8419d34645ebb9",
+    "value": 340.0
+   },
+   {
+    "certificate_status": "VERIFIED",
+    "constants_sha256": "8d5aa0acd9843de19592b4bf46b47777250cfd9af51cfd4d718431c083495004",
+    "message": "",
+    "outcome": "CONVERGED",
+    "outputs": {
+     "S4.N": 0.846241552899609,
+     "S5.N": 4.3075168942007815
+    },
+    "root_fingerprint": {
+     "branch_found": [
+      [
+       "U-HEAT",
+       "LIQUID"
+      ],
+      [
+       "U-FLASH",
+       "TWO_PHASE"
+      ]
+     ],
+     "claims": {
+      "dynamic_stability": "NOT_ASSESSED",
+      "uniqueness": "NOT_ASSESSED"
+     },
+     "constants_sha256": "8d5aa0acd9843de19592b4bf46b47777250cfd9af51cfd4d718431c083495004",
+     "delta_scaled_inf": 0.0001,
+     "full_state_sha256": "527bbd2903b27e8506e79123ddce69190e6cb86a6b128bb1f6af7ccf6f718515",
+     "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+     "policy": "T03-root-fingerprint-v1",
+     "variable_ids_sha256": "1faf1be992696d5e61b2bbdc2a83b960235408278f4bdadac9649c91cfd93a91"
+    },
+    "sensitivity": {
+     "adjoint": null,
+     "consistency": null,
+     "derivative_provenance": "implicit-exact",
+     "forward": {
+      "scaled": [
+       [
+        3.4786737609849876
+       ]
+      ],
+      "unscaled": [
+       [
+        0.10436021282954963
+       ]
+      ]
+     },
+     "identity": {
+      "constants_sha256": "8d5aa0acd9843de19592b4bf46b47777250cfd9af51cfd4d718431c083495004",
+      "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+      "phase_signature": null,
+      "state_sha256": "527bbd2903b27e8506e79123ddce69190e6cb86a6b128bb1f6af7ccf6f718515"
+     },
+     "linear_solves": [
+      {
+       "dimension": 47,
+       "linear_suspect": false,
+       "max_abs_u_diagonal": 2.5152858300937777,
+       "min_abs_u_diagonal": 0.014043875493738311,
+       "nnz_l": 113,
+       "nnz_u": 162,
+       "residual_normalized": 1.0286062988939837e-16
+      }
+     ],
+     "mode": "forward",
+     "outputs": [
+      {
+       "coefficients": {
+        "S4.N": 1.0
+       },
+       "output_id": "S4.N",
+       "scale": 3.0
+      }
+     ],
+     "parameters": [
+      {
+       "alias_residual": 0.0,
+       "domain": [
+        280.0,
+        440.0
+       ],
+       "parameter_id": "U-FLASH.T_spec",
+       "scale": 100.0,
+       "status": "QUALIFIED"
+      }
+     ],
+     "policy_id": "M03-sensitivity-v1",
+     "qualification": {
+      "alias_residuals": {
+       "U-FLASH.T_spec": 0.0
+      },
+      "outcomes": [
+       {
+        "outcome": "pass",
+        "qualification": "Q0"
+       },
+       {
+        "entries_compared": 2352,
+        "outcome": "pass",
+        "qualification": "Q0'"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q0''"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q1",
+        "scaled_residual_inf": 1.4802973661668753e-16,
+        "threshold": 1e-10
+       },
+       {
+        "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+        "outcome": "pass",
+        "qualification": "Q1'",
+        "same_state": true,
+        "verification_status": "VERIFIED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2",
+        "rcond_1": 0.0003312079746462155,
+        "status": "NO_RANK_LOSS_DETECTED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2'",
+        "residual_normalized": [
+         1.0286062988939837e-16
+        ],
+        "solves": {
+         "forward": "pass",
+         "transposed": "not_applicable"
+        },
+        "threshold": 1e-12
+       },
+       {
+        "eliminated_rows": [
+         "U-FLASH:FLASH-P:inlet",
+         "U-SPLIT:SPLIT-P:recycle"
+        ],
+        "outcome": "pass",
+        "qualification": "Q3",
+        "refused_columns": [],
+        "threshold": 1e-08
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4",
+        "splits": [
+         {
+          "kind": "TP",
+          "margin": 0.011296288648895758,
+          "regime": "LIQUID",
+          "streams": "S3",
+          "unit_id": "U-HEAT"
+         },
+         {
+          "kind": "TP",
+          "margin": 0.1275090944978965,
+          "regime": "TWO_PHASE",
+          "streams": "S4/S5",
+          "unit_id": "U-FLASH"
+         }
+        ],
+        "threshold": 0.0001
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4'"
+       }
+      ],
+      "regularity": {
+       "derivative_accuracy": "exact-ad-double",
+       "dimension": 47,
+       "escalation": null,
+       "factorization_source": "evaluated_at_final_state",
+       "ill_conditioned_reason": null,
+       "inconclusive_reason": null,
+       "inverse_one_norm_estimate": 493.50943283248233,
+       "inverse_one_norm_threshold": 958212.6866745737,
+       "jacobian_identity": {
+        "constants_sha256": "8d5aa0acd9843de19592b4bf46b47777250cfd9af51cfd4d718431c083495004",
+        "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+        "phase_signature": null,
+        "state_sha256": "527bbd2903b27e8506e79123ddce69190e6cb86a6b128bb1f6af7ccf6f718515"
+       },
+       "matrix": "target_after_alias_elimination",
+       "method": "splu_onenormest_rcond1",
+       "nnz": 151,
+       "one_norm": 6.117919482366797,
+       "rcond_1": 0.0003312079746462155,
+       "scales_provenance": "SolvePlan.row_scales and column_scales",
+       "solution_error_bound_scaled": 7.30540713600432e-14,
+       "status": "NO_RANK_LOSS_DETECTED",
+       "superlu_options": {
+        "diag_pivot_thresh": 1.0,
+        "options": {
+         "Equil": false,
+         "IterRefine": "NOREFINE",
+         "SymmetricMode": false
+        },
+        "panel_size": 10,
+        "permc_spec": "COLAMD",
+        "relax": 1
+       },
+       "thresholds": {
+        "svd_dimension_cap": 2000,
+        "svd_rank_tolerance": "n eps sigma_max",
+        "tau_ill": 1e-08
+       },
+       "u_diagonal_ratio": 0.005583411366498539
+      },
+      "scaled_residual_inf": 1.4802973661668753e-16,
+      "splits": [
+       {
+        "kind": "TP",
+        "margin": 0.011296288648895758,
+        "regime": "LIQUID",
+        "streams": "S3",
+        "unit_id": "U-HEAT"
+       },
+       {
+        "kind": "TP",
+        "margin": 0.1275090944978965,
+        "regime": "TWO_PHASE",
+        "streams": "S4/S5",
+        "unit_id": "U-FLASH"
+       }
+      ]
+     },
+     "refusals": [],
+     "status": "QUALIFIED"
+    },
+    "solve_outcome": "CONVERGED",
+    "state_sha256": "527bbd2903b27e8506e79123ddce69190e6cb86a6b128bb1f6af7ccf6f718515",
+    "value": 355.0
+   },
+   {
+    "certificate_status": "VERIFIED",
+    "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+    "message": "",
+    "outcome": "CONVERGED",
+    "outputs": {
+     "S4.N": 1.3608090692231514,
+     "S5.N": 3.2783818615536977
+    },
+    "root_fingerprint": {
+     "branch_found": [
+      [
+       "U-HEAT",
+       "LIQUID"
+      ],
+      [
+       "U-FLASH",
+       "TWO_PHASE"
+      ]
+     ],
+     "claims": {
+      "dynamic_stability": "NOT_ASSESSED",
+      "uniqueness": "NOT_ASSESSED"
+     },
+     "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+     "delta_scaled_inf": 0.0001,
+     "full_state_sha256": "8dc637985b0d2dbe80e71c9aec6565ba224a826a891920df4aea11140efeb84f",
+     "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+     "policy": "T03-root-fingerprint-v1",
+     "variable_ids_sha256": "1faf1be992696d5e61b2bbdc2a83b960235408278f4bdadac9649c91cfd93a91"
+    },
+    "sensitivity": {
+     "adjoint": null,
+     "consistency": null,
+     "derivative_provenance": "implicit-exact",
+     "forward": {
+      "scaled": [
+       [
+        3.417246129493492
+       ]
+      ],
+      "unscaled": [
+       [
+        0.10251738388480476
+       ]
+      ]
+     },
+     "identity": {
+      "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+      "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+      "phase_signature": null,
+      "state_sha256": "8dc637985b0d2dbe80e71c9aec6565ba224a826a891920df4aea11140efeb84f"
+     },
+     "linear_solves": [
+      {
+       "dimension": 47,
+       "linear_suspect": false,
+       "max_abs_u_diagonal": 1.7186228482170647,
+       "min_abs_u_diagonal": 0.0711508372046602,
+       "nnz_l": 114,
+       "nnz_u": 157,
+       "residual_normalized": 7.677334636314097e-17
+      }
+     ],
+     "mode": "forward",
+     "outputs": [
+      {
+       "coefficients": {
+        "S4.N": 1.0
+       },
+       "output_id": "S4.N",
+       "scale": 3.0
+      }
+     ],
+     "parameters": [
+      {
+       "alias_residual": 0.0,
+       "domain": [
+        280.0,
+        440.0
+       ],
+       "parameter_id": "U-FLASH.T_spec",
+       "scale": 100.0,
+       "status": "QUALIFIED"
+      }
+     ],
+     "policy_id": "M03-sensitivity-v1",
+     "qualification": {
+      "alias_residuals": {
+       "U-FLASH.T_spec": 0.0
+      },
+      "outcomes": [
+       {
+        "outcome": "pass",
+        "qualification": "Q0"
+       },
+       {
+        "entries_compared": 2352,
+        "outcome": "pass",
+        "qualification": "Q0'"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q0''"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q1",
+        "scaled_residual_inf": 1.4802973661668753e-16,
+        "threshold": 1e-10
+       },
+       {
+        "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+        "outcome": "pass",
+        "qualification": "Q1'",
+        "same_state": true,
+        "verification_status": "VERIFIED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2",
+        "rcond_1": 0.0011612638121767359,
+        "status": "NO_RANK_LOSS_DETECTED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2'",
+        "residual_normalized": [
+         7.677334636314097e-17
+        ],
+        "solves": {
+         "forward": "pass",
+         "transposed": "not_applicable"
+        },
+        "threshold": 1e-12
+       },
+       {
+        "eliminated_rows": [
+         "U-FLASH:FLASH-P:inlet",
+         "U-SPLIT:SPLIT-P:recycle"
+        ],
+        "outcome": "pass",
+        "qualification": "Q3",
+        "refused_columns": [],
+        "threshold": 1e-08
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4",
+        "splits": [
+         {
+          "kind": "TP",
+          "margin": 0.03768343996472279,
+          "regime": "LIQUID",
+          "streams": "S3",
+          "unit_id": "U-HEAT"
+         },
+         {
+          "kind": "TP",
+          "margin": 0.24815188142494482,
+          "regime": "TWO_PHASE",
+          "streams": "S4/S5",
+          "unit_id": "U-FLASH"
+         }
+        ],
+        "threshold": 0.0001
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4'"
+       }
+      ],
+      "regularity": {
+       "derivative_accuracy": "exact-ad-double",
+       "dimension": 47,
+       "escalation": null,
+       "factorization_source": "evaluated_at_final_state",
+       "ill_conditioned_reason": null,
+       "inconclusive_reason": null,
+       "inverse_one_norm_estimate": 144.8155534676199,
+       "inverse_one_norm_threshold": 958212.6866745737,
+       "jacobian_identity": {
+        "constants_sha256": "4054a86c0dd9fae56ff0462e137966622a68513bf4ba7d0a84934ffa4a07656d",
+        "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+        "phase_signature": null,
+        "state_sha256": "8dc637985b0d2dbe80e71c9aec6565ba224a826a891920df4aea11140efeb84f"
+       },
+       "matrix": "target_after_alias_elimination",
+       "method": "splu_onenormest_rcond1",
+       "nnz": 151,
+       "one_norm": 5.946396976925617,
+       "rcond_1": 0.0011612638121767359,
+       "scales_provenance": "SolvePlan.row_scales and column_scales",
+       "solution_error_bound_scaled": 2.1437008237811606e-14,
+       "status": "NO_RANK_LOSS_DETECTED",
+       "superlu_options": {
+        "diag_pivot_thresh": 1.0,
+        "options": {
+         "Equil": false,
+         "IterRefine": "NOREFINE",
+         "SymmetricMode": false
+        },
+        "panel_size": 10,
+        "permc_spec": "COLAMD",
+        "relax": 1
+       },
+       "thresholds": {
+        "svd_dimension_cap": 2000,
+        "svd_rank_tolerance": "n eps sigma_max",
+        "tau_ill": 1e-08
+       },
+       "u_diagonal_ratio": 0.041399913470528786
+      },
+      "scaled_residual_inf": 1.4802973661668753e-16,
+      "splits": [
+       {
+        "kind": "TP",
+        "margin": 0.03768343996472279,
+        "regime": "LIQUID",
+        "streams": "S3",
+        "unit_id": "U-HEAT"
+       },
+       {
+        "kind": "TP",
+        "margin": 0.24815188142494482,
+        "regime": "TWO_PHASE",
+        "streams": "S4/S5",
+        "unit_id": "U-FLASH"
+       }
+      ]
+     },
+     "refusals": [],
+     "status": "QUALIFIED"
+    },
+    "solve_outcome": "CONVERGED",
+    "state_sha256": "8dc637985b0d2dbe80e71c9aec6565ba224a826a891920df4aea11140efeb84f",
+    "value": 360.0
+   },
+   {
+    "certificate_status": "VERIFIED",
+    "constants_sha256": "490cb6a9588701f61f35281b06fb8d97523f3c34aa72aca2bb06b865f7e03c9e",
+    "message": "",
+    "outcome": "CONVERGED",
+    "outputs": {
+     "S4.N": 1.8814801947595625,
+     "S5.N": 2.237039610480874
+    },
+    "root_fingerprint": {
+     "branch_found": [
+      [
+       "U-HEAT",
+       "LIQUID"
+      ],
+      [
+       "U-FLASH",
+       "TWO_PHASE"
+      ]
+     ],
+     "claims": {
+      "dynamic_stability": "NOT_ASSESSED",
+      "uniqueness": "NOT_ASSESSED"
+     },
+     "constants_sha256": "490cb6a9588701f61f35281b06fb8d97523f3c34aa72aca2bb06b865f7e03c9e",
+     "delta_scaled_inf": 0.0001,
+     "full_state_sha256": "ba0d66cc310b27a30d363462536d091142ec1051fd5bc78f867d99cd9d378614",
+     "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+     "policy": "T03-root-fingerprint-v1",
+     "variable_ids_sha256": "1faf1be992696d5e61b2bbdc2a83b960235408278f4bdadac9649c91cfd93a91"
+    },
+    "sensitivity": {
+     "adjoint": null,
+     "consistency": null,
+     "derivative_provenance": "implicit-exact",
+     "forward": {
+      "scaled": [
+       [
+        3.5619539957191972
+       ]
+      ],
+      "unscaled": [
+       [
+        0.10685861987157592
+       ]
+      ]
+     },
+     "identity": {
+      "constants_sha256": "490cb6a9588701f61f35281b06fb8d97523f3c34aa72aca2bb06b865f7e03c9e",
+      "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+      "phase_signature": null,
+      "state_sha256": "ba0d66cc310b27a30d363462536d091142ec1051fd5bc78f867d99cd9d378614"
+     },
+     "linear_solves": [
+      {
+       "dimension": 47,
+       "linear_suspect": false,
+       "max_abs_u_diagonal": 1.56125333774781,
+       "min_abs_u_diagonal": 0.06571867643415191,
+       "nnz_l": 112,
+       "nnz_u": 163,
+       "residual_normalized": 2.915896069832386e-17
+      }
+     ],
+     "mode": "forward",
+     "outputs": [
+      {
+       "coefficients": {
+        "S4.N": 1.0
+       },
+       "output_id": "S4.N",
+       "scale": 3.0
+      }
+     ],
+     "parameters": [
+      {
+       "alias_residual": 0.0,
+       "domain": [
+        280.0,
+        440.0
+       ],
+       "parameter_id": "U-FLASH.T_spec",
+       "scale": 100.0,
+       "status": "QUALIFIED"
+      }
+     ],
+     "policy_id": "M03-sensitivity-v1",
+     "qualification": {
+      "alias_residuals": {
+       "U-FLASH.T_spec": 0.0
+      },
+      "outcomes": [
+       {
+        "outcome": "pass",
+        "qualification": "Q0"
+       },
+       {
+        "entries_compared": 2352,
+        "outcome": "pass",
+        "qualification": "Q0'"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q0''"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q1",
+        "scaled_residual_inf": 8.640199666842819e-17,
+        "threshold": 1e-10
+       },
+       {
+        "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+        "outcome": "pass",
+        "qualification": "Q1'",
+        "same_state": true,
+        "verification_status": "VERIFIED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2",
+        "rcond_1": 0.0012459666041526164,
+        "status": "NO_RANK_LOSS_DETECTED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2'",
+        "residual_normalized": [
+         2.915896069832386e-17
+        ],
+        "solves": {
+         "forward": "pass",
+         "transposed": "not_applicable"
+        },
+        "threshold": 1e-12
+       },
+       {
+        "eliminated_rows": [
+         "U-FLASH:FLASH-P:inlet",
+         "U-SPLIT:SPLIT-P:recycle"
+        ],
+        "outcome": "pass",
+        "qualification": "Q3",
+        "refused_columns": [],
+        "threshold": 1e-08
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4",
+        "splits": [
+         {
+          "kind": "TP",
+          "margin": 0.03919674696613462,
+          "regime": "LIQUID",
+          "streams": "S3",
+          "unit_id": "U-HEAT"
+         },
+         {
+          "kind": "TP",
+          "margin": 0.41196374012777826,
+          "regime": "TWO_PHASE",
+          "streams": "S4/S5",
+          "unit_id": "U-FLASH"
+         }
+        ],
+        "threshold": 0.0001
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4'"
+       }
+      ],
+      "regularity": {
+       "derivative_accuracy": "exact-ad-double",
+       "dimension": 47,
+       "escalation": null,
+       "factorization_source": "evaluated_at_final_state",
+       "ill_conditioned_reason": null,
+       "inconclusive_reason": null,
+       "inverse_one_norm_estimate": 139.0285784279394,
+       "inverse_one_norm_threshold": 958212.6866745737,
+       "jacobian_identity": {
+        "constants_sha256": "490cb6a9588701f61f35281b06fb8d97523f3c34aa72aca2bb06b865f7e03c9e",
+        "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+        "phase_signature": null,
+        "state_sha256": "ba0d66cc310b27a30d363462536d091142ec1051fd5bc78f867d99cd9d378614"
+       },
+       "matrix": "target_after_alias_elimination",
+       "method": "splu_onenormest_rcond1",
+       "nnz": 151,
+       "one_norm": 5.772839935080146,
+       "rcond_1": 0.0012459666041526164,
+       "scales_provenance": "SolvePlan.row_scales and column_scales",
+       "solution_error_bound_scaled": 1.2012346770147128e-14,
+       "status": "NO_RANK_LOSS_DETECTED",
+       "superlu_options": {
+        "diag_pivot_thresh": 1.0,
+        "options": {
+         "Equil": false,
+         "IterRefine": "NOREFINE",
+         "SymmetricMode": false
+        },
+        "panel_size": 10,
+        "permc_spec": "COLAMD",
+        "relax": 1
+       },
+       "thresholds": {
+        "svd_dimension_cap": 2000,
+        "svd_rank_tolerance": "n eps sigma_max",
+        "tau_ill": 1e-08
+       },
+       "u_diagonal_ratio": 0.04209353782964817
+      },
+      "scaled_residual_inf": 8.640199666842819e-17,
+      "splits": [
+       {
+        "kind": "TP",
+        "margin": 0.03919674696613462,
+        "regime": "LIQUID",
+        "streams": "S3",
+        "unit_id": "U-HEAT"
+       },
+       {
+        "kind": "TP",
+        "margin": 0.41196374012777826,
+        "regime": "TWO_PHASE",
+        "streams": "S4/S5",
+        "unit_id": "U-FLASH"
+       }
+      ]
+     },
+     "refusals": [],
+     "status": "QUALIFIED"
+    },
+    "solve_outcome": "CONVERGED",
+    "state_sha256": "ba0d66cc310b27a30d363462536d091142ec1051fd5bc78f867d99cd9d378614",
+    "value": 365.0
+   },
+   {
+    "certificate_status": "VERIFIED",
+    "constants_sha256": "669a1aa0c04fe3d0a88b599231de3ff1d1dd99ac44a224a4550739019e00ef31",
+    "message": "",
+    "outcome": "CONVERGED",
+    "outputs": {
+     "S4.N": 2.9615605874906845,
+     "S5.N": 0.07687882501863148
+    },
+    "root_fingerprint": {
+     "branch_found": [
+      [
+       "U-HEAT",
+       "TWO_PHASE"
+      ],
+      [
+       "U-FLASH",
+       "TWO_PHASE"
+      ]
+     ],
+     "claims": {
+      "dynamic_stability": "NOT_ASSESSED",
+      "uniqueness": "NOT_ASSESSED"
+     },
+     "constants_sha256": "669a1aa0c04fe3d0a88b599231de3ff1d1dd99ac44a224a4550739019e00ef31",
+     "delta_scaled_inf": 0.0001,
+     "full_state_sha256": "3bbff14b4fbd38842878d5edf62a47b366d26bcc6c94a2afb2ac5b5fafc63f37",
+     "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+     "policy": "T03-root-fingerprint-v1",
+     "variable_ids_sha256": "1faf1be992696d5e61b2bbdc2a83b960235408278f4bdadac9649c91cfd93a91"
+    },
+    "sensitivity": {
+     "adjoint": null,
+     "consistency": null,
+     "derivative_provenance": "implicit-exact",
+     "forward": {
+      "scaled": [
+       [
+        4.707807052870247
+       ]
+      ],
+      "unscaled": [
+       [
+        0.14123421158610738
+       ]
+      ]
+     },
+     "identity": {
+      "constants_sha256": "669a1aa0c04fe3d0a88b599231de3ff1d1dd99ac44a224a4550739019e00ef31",
+      "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+      "phase_signature": null,
+      "state_sha256": "3bbff14b4fbd38842878d5edf62a47b366d26bcc6c94a2afb2ac5b5fafc63f37"
+     },
+     "linear_solves": [
+      {
+       "dimension": 47,
+       "linear_suspect": false,
+       "max_abs_u_diagonal": 3.5115974121260574,
+       "min_abs_u_diagonal": 0.010013109637518836,
+       "nnz_l": 151,
+       "nnz_u": 177,
+       "residual_normalized": 4.7886649433160144e-17
+      }
+     ],
+     "mode": "forward",
+     "outputs": [
+      {
+       "coefficients": {
+        "S4.N": 1.0
+       },
+       "output_id": "S4.N",
+       "scale": 3.0
+      }
+     ],
+     "parameters": [
+      {
+       "alias_residual": 0.0,
+       "domain": [
+        280.0,
+        440.0
+       ],
+       "parameter_id": "U-FLASH.T_spec",
+       "scale": 100.0,
+       "status": "QUALIFIED"
+      }
+     ],
+     "policy_id": "M03-sensitivity-v1",
+     "qualification": {
+      "alias_residuals": {
+       "U-FLASH.T_spec": 0.0
+      },
+      "outcomes": [
+       {
+        "outcome": "pass",
+        "qualification": "Q0"
+       },
+       {
+        "entries_compared": 2352,
+        "outcome": "pass",
+        "qualification": "Q0'"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q0''"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q1",
+        "scaled_residual_inf": 2.8023805498378353e-16,
+        "threshold": 1e-10
+       },
+       {
+        "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+        "outcome": "pass",
+        "qualification": "Q1'",
+        "same_state": true,
+        "verification_status": "VERIFIED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2",
+        "rcond_1": 6.317249204159056e-05,
+        "status": "NO_RANK_LOSS_DETECTED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2'",
+        "residual_normalized": [
+         4.7886649433160144e-17
+        ],
+        "solves": {
+         "forward": "pass",
+         "transposed": "not_applicable"
+        },
+        "threshold": 1e-12
+       },
+       {
+        "eliminated_rows": [
+         "U-FLASH:FLASH-P:inlet",
+         "U-SPLIT:SPLIT-P:recycle"
+        ],
+        "outcome": "pass",
+        "qualification": "Q3",
+        "refused_columns": [],
+        "threshold": 1e-08
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4",
+        "splits": [
+         {
+          "kind": "TP",
+          "margin": 0.06333426700479361,
+          "regime": "TWO_PHASE",
+          "streams": "S3",
+          "unit_id": "U-HEAT"
+         },
+         {
+          "kind": "TP",
+          "margin": 0.015197761101400253,
+          "regime": "TWO_PHASE",
+          "streams": "S4/S5",
+          "unit_id": "U-FLASH"
+         }
+        ],
+        "threshold": 0.0001
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4'"
+       }
+      ],
+      "regularity": {
+       "derivative_accuracy": "exact-ad-double",
+       "dimension": 47,
+       "escalation": null,
+       "factorization_source": "evaluated_at_final_state",
+       "ill_conditioned_reason": null,
+       "inconclusive_reason": null,
+       "inverse_one_norm_estimate": 2243.584278901628,
+       "inverse_one_norm_threshold": 958212.6866745737,
+       "jacobian_identity": {
+        "constants_sha256": "669a1aa0c04fe3d0a88b599231de3ff1d1dd99ac44a224a4550739019e00ef31",
+        "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+        "phase_signature": null,
+        "state_sha256": "3bbff14b4fbd38842878d5edf62a47b366d26bcc6c94a2afb2ac5b5fafc63f37"
+       },
+       "matrix": "target_after_alias_elimination",
+       "method": "splu_onenormest_rcond1",
+       "nnz": 163,
+       "one_norm": 7.055529344087281,
+       "rcond_1": 6.317249204159056e-05,
+       "scales_provenance": "SolvePlan.row_scales and column_scales",
+       "solution_error_bound_scaled": 6.287376945115868e-13,
+       "status": "NO_RANK_LOSS_DETECTED",
+       "superlu_options": {
+        "diag_pivot_thresh": 1.0,
+        "options": {
+         "Equil": false,
+         "IterRefine": "NOREFINE",
+         "SymmetricMode": false
+        },
+        "panel_size": 10,
+        "permc_spec": "COLAMD",
+        "relax": 1
+       },
+       "thresholds": {
+        "svd_dimension_cap": 2000,
+        "svd_rank_tolerance": "n eps sigma_max",
+        "tau_ill": 1e-08
+       },
+       "u_diagonal_ratio": 0.0028514400890438376
+      },
+      "scaled_residual_inf": 2.8023805498378353e-16,
+      "splits": [
+       {
+        "kind": "TP",
+        "margin": 0.06333426700479361,
+        "regime": "TWO_PHASE",
+        "streams": "S3",
+        "unit_id": "U-HEAT"
+       },
+       {
+        "kind": "TP",
+        "margin": 0.015197761101400253,
+        "regime": "TWO_PHASE",
+        "streams": "S4/S5",
+        "unit_id": "U-FLASH"
+       }
+      ]
+     },
+     "refusals": [],
+     "status": "QUALIFIED"
+    },
+    "solve_outcome": "CONVERGED",
+    "state_sha256": "3bbff14b4fbd38842878d5edf62a47b366d26bcc6c94a2afb2ac5b5fafc63f37",
+    "value": 374.0
+   },
+   {
+    "certificate_status": "VERIFIED",
+    "constants_sha256": "de3d0c647a33af7fc469967f7ab38deefe7be1bac794bfe78ae597f0c50b078e",
+    "message": "",
+    "outcome": "CONVERGED",
+    "outputs": {
+     "S4.N": 3.0,
+     "S5.N": 0.0
+    },
+    "root_fingerprint": {
+     "branch_found": [
+      [
+       "U-HEAT",
+       "TWO_PHASE"
+      ],
+      [
+       "U-FLASH",
+       "VAPOR"
+      ]
+     ],
+     "claims": {
+      "dynamic_stability": "NOT_ASSESSED",
+      "uniqueness": "NOT_ASSESSED"
+     },
+     "constants_sha256": "de3d0c647a33af7fc469967f7ab38deefe7be1bac794bfe78ae597f0c50b078e",
+     "delta_scaled_inf": 0.0001,
+     "full_state_sha256": "158f947f833336014eefe9e2af2bce88d7e8434952b607c2e39825edb80127d2",
+     "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+     "policy": "T03-root-fingerprint-v1",
+     "variable_ids_sha256": "1faf1be992696d5e61b2bbdc2a83b960235408278f4bdadac9649c91cfd93a91"
+    },
+    "sensitivity": {
+     "adjoint": null,
+     "consistency": null,
+     "derivative_provenance": "implicit-exact",
+     "forward": {
+      "scaled": [
+       [
+        -8.231825132728611e-18
+       ]
+      ],
+      "unscaled": [
+       [
+        -2.4695475398185834e-19
+       ]
+      ]
+     },
+     "identity": {
+      "constants_sha256": "de3d0c647a33af7fc469967f7ab38deefe7be1bac794bfe78ae597f0c50b078e",
+      "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+      "phase_signature": null,
+      "state_sha256": "158f947f833336014eefe9e2af2bce88d7e8434952b607c2e39825edb80127d2"
+     },
+     "linear_solves": [
+      {
+       "dimension": 47,
+       "linear_suspect": false,
+       "max_abs_u_diagonal": 4.07555597709416,
+       "min_abs_u_diagonal": 0.2158402329595034,
+       "nnz_l": 134,
+       "nnz_u": 163,
+       "residual_normalized": 2.17935355797889e-18
+      }
+     ],
+     "mode": "forward",
+     "outputs": [
+      {
+       "coefficients": {
+        "S4.N": 1.0
+       },
+       "output_id": "S4.N",
+       "scale": 3.0
+      }
+     ],
+     "parameters": [
+      {
+       "alias_residual": 0.0,
+       "domain": [
+        280.0,
+        440.0
+       ],
+       "parameter_id": "U-FLASH.T_spec",
+       "scale": 100.0,
+       "status": "QUALIFIED"
+      }
+     ],
+     "policy_id": "M03-sensitivity-v1",
+     "qualification": {
+      "alias_residuals": {
+       "U-FLASH.T_spec": 0.0
+      },
+      "outcomes": [
+       {
+        "outcome": "pass",
+        "qualification": "Q0"
+       },
+       {
+        "entries_compared": 2352,
+        "outcome": "pass",
+        "qualification": "Q0'"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q0''"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q1",
+        "scaled_residual_inf": 4.934324553889585e-16,
+        "threshold": 1e-10
+       },
+       {
+        "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+        "outcome": "pass",
+        "qualification": "Q1'",
+        "same_state": true,
+        "verification_status": "VERIFIED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2",
+        "rcond_1": 0.0012820860935893066,
+        "status": "NO_RANK_LOSS_DETECTED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2'",
+        "residual_normalized": [
+         2.17935355797889e-18
+        ],
+        "solves": {
+         "forward": "pass",
+         "transposed": "not_applicable"
+        },
+        "threshold": 1e-12
+       },
+       {
+        "eliminated_rows": [
+         "U-FLASH:FLASH-P:inlet",
+         "U-SPLIT:SPLIT-P:recycle"
+        ],
+        "outcome": "pass",
+        "qualification": "Q3",
+        "refused_columns": [],
+        "threshold": 1e-08
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4",
+        "splits": [
+         {
+          "kind": "TP",
+          "margin": 0.07031421908077462,
+          "regime": "TWO_PHASE",
+          "streams": "S3",
+          "unit_id": "U-HEAT"
+         },
+         {
+          "kind": "TP",
+          "margin": 0.14770400106048176,
+          "regime": "VAPOR",
+          "streams": "S4/S5",
+          "unit_id": "U-FLASH"
+         }
+        ],
+        "threshold": 0.0001
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4'"
+       }
+      ],
+      "regularity": {
+       "derivative_accuracy": "exact-ad-double",
+       "dimension": 47,
+       "escalation": null,
+       "factorization_source": "evaluated_at_final_state",
+       "ill_conditioned_reason": null,
+       "inconclusive_reason": null,
+       "inverse_one_norm_estimate": 101.97282109600043,
+       "inverse_one_norm_threshold": 958212.6866745737,
+       "jacobian_identity": {
+        "constants_sha256": "de3d0c647a33af7fc469967f7ab38deefe7be1bac794bfe78ae597f0c50b078e",
+        "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+        "phase_signature": null,
+        "state_sha256": "158f947f833336014eefe9e2af2bce88d7e8434952b607c2e39825edb80127d2"
+       },
+       "matrix": "target_after_alias_elimination",
+       "method": "splu_onenormest_rcond1",
+       "nnz": 141,
+       "one_norm": 7.648889310427493,
+       "rcond_1": 0.0012820860935893066,
+       "scales_provenance": "SolvePlan.row_scales and column_scales",
+       "solution_error_bound_scaled": 5.031669949633848e-14,
+       "status": "NO_RANK_LOSS_DETECTED",
+       "superlu_options": {
+        "diag_pivot_thresh": 1.0,
+        "options": {
+         "Equil": false,
+         "IterRefine": "NOREFINE",
+         "SymmetricMode": false
+        },
+        "panel_size": 10,
+        "permc_spec": "COLAMD",
+        "relax": 1
+       },
+       "thresholds": {
+        "svd_dimension_cap": 2000,
+        "svd_rank_tolerance": "n eps sigma_max",
+        "tau_ill": 1e-08
+       },
+       "u_diagonal_ratio": 0.052959702718497766
+      },
+      "scaled_residual_inf": 4.934324553889585e-16,
+      "splits": [
+       {
+        "kind": "TP",
+        "margin": 0.07031421908077462,
+        "regime": "TWO_PHASE",
+        "streams": "S3",
+        "unit_id": "U-HEAT"
+       },
+       {
+        "kind": "TP",
+        "margin": 0.14770400106048176,
+        "regime": "VAPOR",
+        "streams": "S4/S5",
+        "unit_id": "U-FLASH"
+       }
+      ]
+     },
+     "refusals": [],
+     "status": "QUALIFIED"
+    },
+    "solve_outcome": "CONVERGED",
+    "state_sha256": "158f947f833336014eefe9e2af2bce88d7e8434952b607c2e39825edb80127d2",
+    "value": 380.0
+   },
+   {
+    "certificate_status": "VERIFIED",
+    "constants_sha256": "49467ea0edacee9957aefc681cb6e3c0c5745fc204b4f1b494082640aa0fbc31",
+    "message": "",
+    "outcome": "CONVERGED",
+    "outputs": {
+     "S4.N": 3.0,
+     "S5.N": 0.0
+    },
+    "root_fingerprint": {
+     "branch_found": [
+      [
+       "U-HEAT",
+       "TWO_PHASE"
+      ],
+      [
+       "U-FLASH",
+       "VAPOR"
+      ]
+     ],
+     "claims": {
+      "dynamic_stability": "NOT_ASSESSED",
+      "uniqueness": "NOT_ASSESSED"
+     },
+     "constants_sha256": "49467ea0edacee9957aefc681cb6e3c0c5745fc204b4f1b494082640aa0fbc31",
+     "delta_scaled_inf": 0.0001,
+     "full_state_sha256": "96577ed9a95b184e0832d35ae23ed608cf2a446f5f813f5f133785d5a267779f",
+     "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+     "policy": "T03-root-fingerprint-v1",
+     "variable_ids_sha256": "1faf1be992696d5e61b2bbdc2a83b960235408278f4bdadac9649c91cfd93a91"
+    },
+    "sensitivity": {
+     "adjoint": null,
+     "consistency": null,
+     "derivative_provenance": "implicit-exact",
+     "forward": {
+      "scaled": [
+       [
+        0.0
+       ]
+      ],
+      "unscaled": [
+       [
+        0.0
+       ]
+      ]
+     },
+     "identity": {
+      "constants_sha256": "49467ea0edacee9957aefc681cb6e3c0c5745fc204b4f1b494082640aa0fbc31",
+      "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+      "phase_signature": null,
+      "state_sha256": "96577ed9a95b184e0832d35ae23ed608cf2a446f5f813f5f133785d5a267779f"
+     },
+     "linear_solves": [
+      {
+       "dimension": 47,
+       "linear_suspect": false,
+       "max_abs_u_diagonal": 9.033817579083182,
+       "min_abs_u_diagonal": 0.3,
+       "nnz_l": 113,
+       "nnz_u": 153,
+       "residual_normalized": 0.0
+      }
+     ],
+     "mode": "forward",
+     "outputs": [
+      {
+       "coefficients": {
+        "S4.N": 1.0
+       },
+       "output_id": "S4.N",
+       "scale": 3.0
+      }
+     ],
+     "parameters": [
+      {
+       "alias_residual": 0.0,
+       "domain": [
+        280.0,
+        440.0
+       ],
+       "parameter_id": "U-FLASH.T_spec",
+       "scale": 100.0,
+       "status": "QUALIFIED"
+      }
+     ],
+     "policy_id": "M03-sensitivity-v1",
+     "qualification": {
+      "alias_residuals": {
+       "U-FLASH.T_spec": 0.0
+      },
+      "outcomes": [
+       {
+        "outcome": "pass",
+        "qualification": "Q0"
+       },
+       {
+        "entries_compared": 2352,
+        "outcome": "pass",
+        "qualification": "Q0'"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q0''"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q1",
+        "scaled_residual_inf": 4.934324553889585e-16,
+        "threshold": 1e-10
+       },
+       {
+        "certificate_id": "cert-SYN-001-SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9-SYN-001-K03",
+        "outcome": "pass",
+        "qualification": "Q1'",
+        "same_state": true,
+        "verification_status": "VERIFIED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2",
+        "rcond_1": 0.0007705208089216418,
+        "status": "NO_RANK_LOSS_DETECTED"
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q2'",
+        "residual_normalized": [
+         0.0
+        ],
+        "solves": {
+         "forward": "pass",
+         "transposed": "not_applicable"
+        },
+        "threshold": 1e-12
+       },
+       {
+        "eliminated_rows": [
+         "U-FLASH:FLASH-P:inlet",
+         "U-SPLIT:SPLIT-P:recycle"
+        ],
+        "outcome": "pass",
+        "qualification": "Q3",
+        "refused_columns": [],
+        "threshold": 1e-08
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4",
+        "splits": [
+         {
+          "kind": "TP",
+          "margin": 0.07031421908077462,
+          "regime": "TWO_PHASE",
+          "streams": "S3",
+          "unit_id": "U-HEAT"
+         },
+         {
+          "kind": "TP",
+          "margin": 0.6828419776488437,
+          "regime": "VAPOR",
+          "streams": "S4/S5",
+          "unit_id": "U-FLASH"
+         }
+        ],
+        "threshold": 0.0001
+       },
+       {
+        "outcome": "pass",
+        "qualification": "Q4'"
+       }
+      ],
+      "regularity": {
+       "derivative_accuracy": "exact-ad-double",
+       "dimension": 47,
+       "escalation": null,
+       "factorization_source": "evaluated_at_final_state",
+       "ill_conditioned_reason": null,
+       "inconclusive_reason": null,
+       "inverse_one_norm_estimate": 101.97282109600047,
+       "inverse_one_norm_threshold": 958212.6866745737,
+       "jacobian_identity": {
+        "constants_sha256": "49467ea0edacee9957aefc681cb6e3c0c5745fc204b4f1b494082640aa0fbc31",
+        "model_version": "SYN001-fs1-syn001-4e4c37cc8054-44f894ff62f9@73a8950bc0038a967ddf8cf7f5d1d07695ff6c230e1965ff898fe8e02ef67769",
+        "phase_signature": null,
+        "state_sha256": "96577ed9a95b184e0832d35ae23ed608cf2a446f5f813f5f133785d5a267779f"
+       },
+       "matrix": "target_after_alias_elimination",
+       "method": "splu_onenormest_rcond1",
+       "nnz": 141,
+       "one_norm": 12.727150912416516,
+       "rcond_1": 0.0007705208089216418,
+       "scales_provenance": "SolvePlan.row_scales and column_scales",
+       "solution_error_bound_scaled": 5.03166994963385e-14,
+       "status": "NO_RANK_LOSS_DETECTED",
+       "superlu_options": {
+        "diag_pivot_thresh": 1.0,
+        "options": {
+         "Equil": false,
+         "IterRefine": "NOREFINE",
+         "SymmetricMode": false
+        },
+        "panel_size": 10,
+        "permc_spec": "COLAMD",
+        "relax": 1
+       },
+       "thresholds": {
+        "svd_dimension_cap": 2000,
+        "svd_rank_tolerance": "n eps sigma_max",
+        "tau_ill": 1e-08
+       },
+       "u_diagonal_ratio": 0.0332085519077358
+      },
+      "scaled_residual_inf": 4.934324553889585e-16,
+      "splits": [
+       {
+        "kind": "TP",
+        "margin": 0.07031421908077462,
+        "regime": "TWO_PHASE",
+        "streams": "S3",
+        "unit_id": "U-HEAT"
+       },
+       {
+        "kind": "TP",
+        "margin": 0.6828419776488437,
+        "regime": "VAPOR",
+        "streams": "S4/S5",
+        "unit_id": "U-FLASH"
+       }
+      ]
+     },
+     "refusals": [],
+     "status": "QUALIFIED"
+    },
+    "solve_outcome": "CONVERGED",
+    "state_sha256": "96577ed9a95b184e0832d35ae23ed608cf2a446f5f813f5f133785d5a267779f",
+    "value": 420.0
+   },
+   {
+    "certificate_status": null,
+    "constants_sha256": null,
+    "message": "U-FLASH: specified temperature 445.0 K is outside the declared domain [280.0, 440.0] K",
+    "outcome": "SPECIFICATION_REFUSED",
+    "outputs": null,
+    "root_fingerprint": null,
+    "sensitivity": null,
+    "solve_outcome": null,
+    "state_sha256": null,
+    "value": 445.0
+   }
+  ],
+  "sensitivity_request": {
+   "mode": "forward",
+   "outputs": [
+    "S4.N"
+   ],
+   "parameters": [
+    "U-FLASH.T_spec"
+   ]
+  },
+  "start": "registered_initializer",
+  "status": "COMPLETE",
+  "summary": {
+   "converged": 8,
+   "failed": 1,
+   "not_run": 0,
+   "sensitivity_qualified": 8,
+   "total": 9,
+   "verified": 8
+  },
+  "values": [
+   310.0,
+   340.0,
+   355.0,
+   360.0,
+   365.0,
+   374.0,
+   380.0,
+   420.0,
+   445.0
+  ]
+ },
+ "schema_version": "study-v1",
+ "study_id": "M03-sweep"
+}

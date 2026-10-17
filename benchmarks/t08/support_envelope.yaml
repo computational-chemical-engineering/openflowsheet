@@ -829,6 +829,44 @@ limitations:
     evidence:
       - doc:docs/web-shell.md
       - doc:docs/design/M06-web-shell.md §12
+  # L44–L46, L48: R-343 (M02 close-out), M02's user-facing limitations as E. Ids and texts are
+  # V02 alpha release spec §19.1's (R-370), so that the two branches converge; L47 is the alpha's.
+  - id: L44
+    text: >-
+      The C1 reactor (`c1.reactor`) is measured on Linux x86-64 only, on one machine
+      (`ref-x86-64`). Its runs are opt-in: they need the separately built, pinned reactor
+      environment, which no CI job builds (M02 N2). They are reproducibility class R3 (ADR 0034
+      D6). A run on aarch64 is not measured, nor is the reproduction of a coupled run across
+      architectures. macOS is best effort, and Windows is refused before spawn (ADR 0033 D2).
+    evidence:
+      - doc:docs/design/M02-pymrm-adapter.md §2.4
+      - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
+      - doc:docs/adr/0034-external-models-in-a-flowsheet-solve.md §D6
+  - id: L45
+    text: >-
+      `external-subprocess-v1` runs the group's pinned code with the user's privileges and is not
+      a sandbox: there is no filesystem confinement, network isolation, memory or CPU quota, or
+      syscall filtering, and trust rests on provenance (ADR 0033 D2; M02 N1).
+    evidence:
+      - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
+      - doc:docs/design/M02-pymrm-adapter.md §12
+  - id: L46
+    text: >-
+      No reactor result has been compared with experimental data by this project. The group's
+      published comparison (Gargiulo et al. 2025 §3.1, of Rossetti et al. 2006's rate law) is the
+      group's evidence. Every real-reactor number is the group's model at the pin, a regression,
+      and its discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13).
+    evidence:
+      - doc:docs/design/M02-pymrm-adapter.md §13
+  - id: L48
+    text: >-
+      The C1 loop's convergence is evidenced at the corners and the centre of its registered hard
+      domain only (M02 G11). The inert-fraction floor y_inert ≥ 0.035 sits just above a measured
+      stage-1 failure (0.03 at 653.15 K, 11 MPa, H₂/N₂ 2.5). A failure inside the domain ends in a
+      typed refusal and then `COUPLING_NOT_CONVERGED`, never in a false success.
+    evidence:
+      - check:M02.G11
+      - doc:docs/design/M02-pymrm-adapter.md §13
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
@@ -2703,6 +2741,75 @@ harvest:
   to:
   - U14
   note: W27 campaign is M07's (G16)
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[0]
+  sha256: 7add8a7d7f4abd01cae49e3d48a3108350c8baeaf86d0f6521794081802c3075
+  class: P
+  to: []
+  note: N1 pending; A35-A40 rest on the provisional extra and acceptance (review F4)
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[1]
+  sha256: f6cad1cc35d29c2973a6bc5a4c16b7d8b38da89267e3aa43a24527bba856a887
+  class: P
+  to: []
+  note: default gate on one x86-64 machine; both CI runners not yet observed (review F1)
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[2]
+  sha256: 20d8959b3fc24444f47972db5a309abb24b94e214a59f8f905d145ef6dab6181
+  class: P
+  to: []
+  note: NLP evidence single-threaded on the audited host; recorded, not enforced (ruling Q2)
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[3]
+  sha256: 791f6725722ffd6e000219d55b093ca1c017b9fbadd18f15c5153609766fc1cf
+  class: P
+  to: []
+  note: W24 outside the requirements pattern; verdict is the verdict lane's
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[4]
+  sha256: 557e94309908b3170245c2b14a54581a7d487b7b4b7c968597ff774e029f1bdc
+  class: E
+  to:
+  - L18
+  note: synthetic flowsheet and synthetic data; numerical verification only
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[5]
+  sha256: 4c1e822247d3ee426fa5e27ddbcacc49a7cd79b46ebde51f826df1ec50ae9c2d
+  class: P
+  to: []
+  note: local stationarity, not global optimality; second order not assessed
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[6]
+  sha256: aa21a103e5f5921f43001c2df19282cf63055eb6fcb55d1601072ab98456bd09
+  class: P
+  to: []
+  note: M03 comparison rules for policy gaps live in a test module; design lane registers
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[7]
+  sha256: 119e60d4c528d2fee51b99d8ead4a192f9a1fb8a94ef9306ca873789c9179bd9
+  class: P
+  to: []
+  note: review notes F6, F8.2-F8.4 open
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: limitations[8]
+  sha256: 598b9fdb4bc667f1d08467f8efe1f4f968b7e62259339ca9dc4ad082684aa7b5
+  class: P
+  to: []
+  note: review pending
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: checks[50]
+  check_id: M03.N1
+  sha256: 80a83c9e51b1edc069499e4ca7034f65c293596f72e0ecb3b2b32cb9dc9e5f28
+  class: P
+  to: []
+  note: Frank's N1 licence answer pending (review F4); passes when stated
+- manifest: evidence/M03/fd1683472549b52067608b7259c0fc259803cef4/manifest.json
+  item: checks[51]
+  check_id: M03.ci_both_runners
+  sha256: 730778aa9fa701602b69579a7a560853829d5bb0b04dcafd82f2c15abd8e38bb
+  class: P
+  to: []
+  note: both CI runners not yet observed (review F1); passes when stated
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[0]
   sha256: b24a4c8006bd8fb9d37d3eef51ef54911404e6305f33edfa78cbe142ddcba456
@@ -2712,21 +2819,24 @@ harvest:
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[1]
   sha256: dfd8ca7840569a3f97f92f6b90b8036a97ad876adb24439d3c0c24bfcd8bdb6b
-  class: P
-  to: []
-  note: real-reactor runs opt-in, Linux-only, R3, one machine, read not re-run
+  class: E
+  to:
+  - L44
+  note: real-reactor runs opt-in, Linux-only, R3, one machine, read not re-run (R-343, class E)
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[2]
   sha256: 28b3606f19c531f178ddbaf9a38af13559d1cec586dbe744c30d50a4c4e670e7
-  class: P
-  to: []
-  note: isolation profile not a sandbox (stated in the envelope's external_execution axis)
+  class: E
+  to:
+  - L45
+  note: isolation profile not a sandbox (stated in the envelope's external_execution axis) (R-343, class E)
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[3]
   sha256: 5266e33ca1cc2b8fdffd15c7726369a905a1559b897d91f8cd3a8d6a166dba4c
-  class: P
-  to: []
-  note: v3's inert floor near a measured S1 failure; corners and centre only (review F10)
+  class: E
+  to:
+  - L48
+  note: v3's inert floor near a measured S1 failure; corners and centre only (review F10) (R-343, class E)
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[4]
   sha256: 314efcaecdb681cc1bcbc3b78d4908bb0057435bcf0815128701ea2edcdd7e9f
@@ -2736,15 +2846,41 @@ harvest:
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[5]
   sha256: d5b5618ed4f463dbd9b8b1b981b3de6414227e7be25eb69400f82d27a78699a7
-  class: P
-  to: []
-  note: self-generated records are regression fixtures (review F10)
+  class: E
+  to:
+  - L46
+  note: self-generated records are regression fixtures (review F10) (R-343, class E)
 - manifest: evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
   item: limitations[6]
   sha256: 326d3a4be0be30a8f73651217aaf41b9b8cbcef12ab1517c1019ae7fdf100476
+  class: E
+  to:
+  - L44
+  note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled (R-343, class E)
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[0]
+  sha256: 6f416725a7145a7c3e25042a368e6520de953e97be9239c13c2da592b32122e9
   class: P
   to: []
-  note: coupled cross-platform replay tested by a one-ulp seam only; D130 unruled
+  note: follow-up outside the requirements pattern; extends M02 (D10)
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[1]
+  sha256: ddd5c9b486877e4f10ecfb18fbe09e9ba45eb54afad0951bf805cb00e20ab448
+  class: P
+  to: []
+  note: hashes inherited from the M02 manifest (no new case or environment)
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[2]
+  sha256: e567419bc3932c58bdec2ff051aa393cdde05835abed77954e2ef19836513e8f
+  class: P
+  to: []
+  note: gate summary-line hash; process note
+- manifest: evidence/M02/6c3a08729386e9c455996d2e7fb9d2a30df14810/manifest.json
+  item: limitations[3]
+  sha256: 50208afc494e1e9455f4178014cb0aeb34f1cd9079ef859fd1471a3d76925556
+  class: P
+  to: []
+  note: tested, not reviewed (merge verdict only)
 - manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
   item: limitations[0]
   sha256: cb2034d20d6e7455c21fc709a5b496e80ff9b4025814a97e1813cb3cc01af6aa
@@ -2814,3 +2950,214 @@ harvest:
   to:
   - B10
   note: A33 is conditional on a PROMOTABLE A31 (spec §12, §19 A2.13); not run (R-365)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[0]
+  sha256: 092b43bb8e2135dce2bb76d5a88bd2038baada863260e79719869a228bc888c2
+  class: P
+  to: []
+  note: follow-up outside the requirements pattern; extends M04 (A07, D12)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[1]
+  sha256: f1f45ef92d856a6489edfa002413a0a69456ed07b4d97220c46cf079ae0e513b
+  class: P
+  to: []
+  note: hashes inherited from the M04 manifest (no new case or environment)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[2]
+  sha256: 52b003791da93323f0d25159413c62dd523c14a6bea3af3d56060322dfc320da
+  class: P
+  to: []
+  note: gate summary-line hash; process note
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[3]
+  sha256: 7302c381ce9de66fe0e7a1cca3c3d46d67d772f34320aee4ece097abd1b532ba
+  class: P
+  to: []
+  note: A40 script path unexercised on 2-core hosted runners; checked locally and on arm (E39)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[4]
+  sha256: e3b2f600482e635ecadd0b8ad372d2bd26f634e0140ac63239a8641738584f82
+  class: P
+  to: []
+  note: A49 negative control vacuous on aarch64 and x86_64/SkylakeX; claims asserted (E40)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[5]
+  sha256: 10053a15174927ae8714e9caaa86060e95bd3d9decd923173098c89c1662fd87
+  class: P
+  to: []
+  note: A35 floats compared on x86_64/Haswell only; R0 members elsewhere (E41)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[6]
+  sha256: b5f10afb7c933862239b8817b91063d65c8e6dc0e9fcf3352ac3600f6cabed65
+  class: P
+  to: []
+  note: tested, not reviewed
+- manifest: evidence/M03/a35885b06f15da6dc13c4428b6777b39af8e423e/manifest.json
+  item: limitations[0]
+  sha256: fe09c00d637cab4ac9182c9f04088bc2e220c0007eba35abfa315966d77a8015
+  class: P
+  to: []
+  note: N1 accepted (R-450); the licence acceptance covers the audited list only
+- manifest: evidence/M03/a35885b06f15da6dc13c4428b6777b39af8e423e/manifest.json
+  item: limitations[1]
+  sha256: 20d8959b3fc24444f47972db5a309abb24b94e214a59f8f905d145ef6dab6181
+  class: P
+  to: []
+  note: NLP evidence single-threaded on the audited host; recorded, not enforced (ruling Q2)
+- manifest: evidence/M03/a35885b06f15da6dc13c4428b6777b39af8e423e/manifest.json
+  item: limitations[2]
+  sha256: 791f6725722ffd6e000219d55b093ca1c017b9fbadd18f15c5153609766fc1cf
+  class: P
+  to: []
+  note: W24 outside the requirements pattern; verdict is the verdict lane's
+- manifest: evidence/M03/a35885b06f15da6dc13c4428b6777b39af8e423e/manifest.json
+  item: limitations[3]
+  sha256: 557e94309908b3170245c2b14a54581a7d487b7b4b7c968597ff774e029f1bdc
+  class: E
+  to:
+  - L18
+  note: synthetic flowsheet and synthetic data; numerical verification only
+- manifest: evidence/M03/a35885b06f15da6dc13c4428b6777b39af8e423e/manifest.json
+  item: limitations[4]
+  sha256: 4c1e822247d3ee426fa5e27ddbcacc49a7cd79b46ebde51f826df1ec50ae9c2d
+  class: P
+  to: []
+  note: local stationarity, not global optimality; second order not assessed
+- manifest: evidence/M03/a35885b06f15da6dc13c4428b6777b39af8e423e/manifest.json
+  item: limitations[5]
+  sha256: aa21a103e5f5921f43001c2df19282cf63055eb6fcb55d1601072ab98456bd09
+  class: P
+  to: []
+  note: M03 comparison rules for policy gaps live in a test module; design lane registers
+- manifest: evidence/M03/a35885b06f15da6dc13c4428b6777b39af8e423e/manifest.json
+  item: limitations[6]
+  sha256: 119e60d4c528d2fee51b99d8ead4a192f9a1fb8a94ef9306ca873789c9179bd9
+  class: P
+  to: []
+  note: review notes F6, F8.2-F8.4 open
+- manifest: evidence/M03/a35885b06f15da6dc13c4428b6777b39af8e423e/manifest.json
+  item: limitations[7]
+  sha256: 598b9fdb4bc667f1d08467f8efe1f4f968b7e62259339ca9dc4ad082684aa7b5
+  class: P
+  to: []
+  note: review pending
+- manifest: evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json
+  item: limitations[0]
+  sha256: c4e69b956c330641779cc4357ae78f1fe853298c7d63951d6cac59d5eae9248d
+  class: P
+  to: []
+  note: extrapolated, 12 of 61 reactor requests, flag decided at solver resolution (R-433)
+- manifest: evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json
+  item: limitations[1]
+  sha256: fe3af9de48f8f0c8c3fee5b28cbeccab3b6e1992ba4d64f3d1a4d461f8ead7a1
+  class: P
+  to: []
+  note: REAL is opt-in, one machine; cross-architecture comparison not run
+- manifest: evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json
+  item: limitations[2]
+  sha256: 07fbbeaf77c8dad5d76c74c1cc5e67b768f2477b2f3fa3da8bb5e8bd777a01b1
+  class: P
+  to: []
+  note: REAL optimum bound-active; no real-reactor optimum or convergence guarantee claimed (W25)
+- manifest: evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json
+  item: limitations[3]
+  sha256: fb14b68fc0cdb116c88f25a7895ee2975ba5e225fcc861ae763c8e7e06998c2d
+  class: P
+  to: []
+  note: forward finite-difference gradient; noise_ratio reported, not judged (section 21.3)
+- manifest: evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json
+  item: limitations[4]
+  sha256: 72c94177ddd2f1837e16b2b0f41ab7e114b78754f639db3d8af9e03b2a44141d
+  class: P
+  to: []
+  note: no promotable real surrogate (M04 L43); synthetic truths claim only the composition
+- manifest: evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json
+  item: limitations[5]
+  sha256: 7bdb9ceccfe8a71d24e9a0c1e1c956343d7511684f81cc7084d81c6979ff3e39
+  class: P
+  to: []
+  note: self-generated records are regression fixtures; correctness rows rest on independent expectations
+- manifest: evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json
+  item: limitations[6]
+  sha256: 0043c5e974f0bad4a3d5de610893be41b18ca7047b2b5a485eb52c99f08ad10f
+  class: P
+  to: []
+  note: TR-E1 within 3e-16 of native, not bitwise; reported
+- manifest: evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json
+  item: limitations[7]
+  sha256: 99f70fcb9d7a1085a3d8fc5c298b2cfccad7e2eb86975847c5903713bdcc4b15
+  class: P
+  to: []
+  note: REAL coupling records compared under T08 v2 floors, not bitwise (review N3)
+- manifest: evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json
+  item: limitations[8]
+  sha256: 9220c02a9321ead8456bb4f0941ac328a560542bdb39a6c0fd73e6f3e83607e7
+  class: P
+  to: []
+  note: review notes N1 and S70's timing mask open; sign-off pending
+- manifest: evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json
+  item: limitations[9]
+  sha256: 44318f7c0bd418524b9267fadc31ba25d43968d6ca9b16125d8ef3e7ff936d82
+  class: P
+  to: []
+  note: audited x86_64 environment; the nlp extra's licences wait on Frank's N1 (M03)
+- manifest: evidence/M05/56fb2fac9fd4e2f227c4c8ad5805d8ba8862fdff/manifest.json
+  item: limitations[0]
+  sha256: c4e69b956c330641779cc4357ae78f1fe853298c7d63951d6cac59d5eae9248d
+  class: P
+  to: []
+  note: extrapolated, 12 of 61 reactor requests, flag decided at solver resolution (R-433)
+- manifest: evidence/M05/56fb2fac9fd4e2f227c4c8ad5805d8ba8862fdff/manifest.json
+  item: limitations[1]
+  sha256: fe3af9de48f8f0c8c3fee5b28cbeccab3b6e1992ba4d64f3d1a4d461f8ead7a1
+  class: P
+  to: []
+  note: REAL is opt-in, one machine; cross-architecture comparison not run
+- manifest: evidence/M05/56fb2fac9fd4e2f227c4c8ad5805d8ba8862fdff/manifest.json
+  item: limitations[2]
+  sha256: 07fbbeaf77c8dad5d76c74c1cc5e67b768f2477b2f3fa3da8bb5e8bd777a01b1
+  class: P
+  to: []
+  note: REAL optimum bound-active; no real-reactor optimum or convergence guarantee claimed (W25)
+- manifest: evidence/M05/56fb2fac9fd4e2f227c4c8ad5805d8ba8862fdff/manifest.json
+  item: limitations[3]
+  sha256: fb14b68fc0cdb116c88f25a7895ee2975ba5e225fcc861ae763c8e7e06998c2d
+  class: P
+  to: []
+  note: forward finite-difference gradient; noise_ratio reported, not judged (section 21.3)
+- manifest: evidence/M05/56fb2fac9fd4e2f227c4c8ad5805d8ba8862fdff/manifest.json
+  item: limitations[4]
+  sha256: 72c94177ddd2f1837e16b2b0f41ab7e114b78754f639db3d8af9e03b2a44141d
+  class: P
+  to: []
+  note: no promotable real surrogate (M04 L43); synthetic truths claim only the composition
+- manifest: evidence/M05/56fb2fac9fd4e2f227c4c8ad5805d8ba8862fdff/manifest.json
+  item: limitations[5]
+  sha256: 7bdb9ceccfe8a71d24e9a0c1e1c956343d7511684f81cc7084d81c6979ff3e39
+  class: P
+  to: []
+  note: self-generated records are regression fixtures; correctness rows rest on independent expectations
+- manifest: evidence/M05/56fb2fac9fd4e2f227c4c8ad5805d8ba8862fdff/manifest.json
+  item: limitations[6]
+  sha256: 0043c5e974f0bad4a3d5de610893be41b18ca7047b2b5a485eb52c99f08ad10f
+  class: P
+  to: []
+  note: TR-E1 within 3e-16 of native, not bitwise; reported
+- manifest: evidence/M05/56fb2fac9fd4e2f227c4c8ad5805d8ba8862fdff/manifest.json
+  item: limitations[7]
+  sha256: 99f70fcb9d7a1085a3d8fc5c298b2cfccad7e2eb86975847c5903713bdcc4b15
+  class: P
+  to: []
+  note: REAL coupling records compared under T08 v2 floors, not bitwise (review N3)
+- manifest: evidence/M05/56fb2fac9fd4e2f227c4c8ad5805d8ba8862fdff/manifest.json
+  item: limitations[8]
+  sha256: 9220c02a9321ead8456bb4f0941ac328a560542bdb39a6c0fd73e6f3e83607e7
+  class: P
+  to: []
+  note: review notes N1 and S70's timing mask open; sign-off pending
+- manifest: evidence/M05/56fb2fac9fd4e2f227c4c8ad5805d8ba8862fdff/manifest.json
+  item: limitations[9]
+  sha256: 44318f7c0bd418524b9267fadc31ba25d43968d6ca9b16125d8ef3e7ff936d82
+  class: P
+  to: []
+  note: audited x86_64 environment; the nlp extra's licences wait on Frank's N1 (M03)
