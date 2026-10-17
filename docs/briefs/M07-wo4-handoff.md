@@ -1,23 +1,26 @@
-# M07 WO-4 handoff (2026-10-17, WO-4b: done)
+# M07 WO-4 handoff (2026-10-17, WO-4c: done)
 
-Branch `wp/M07` (worktree `.claude/worktrees/m07`). Build log J21–J30 has the choices; J29 lists the open questions.
+Branch `wp/M07` (worktree `.claude/worktrees/m07`). Build log J21–J37 has the choices; the review is
+`docs/reviews/M07-review.md`, its rulings spec §19 (Amendment 2, R-452…R-455).
 
 ## Done
-- `672df66` environment block before any rung (J26). `1623633` `replay` and the store archive (J27).
-- The real journey at J = `1623633db5afd6a55e2807f848ad4cf6a84e71b3`, committed at `c1f104f` under
-  `benchmarks/m07/journey/1623633…/` {journey.json, journey.md, journey.experiments.json, m05/ (R3's re-run)}.
-  `check` ACCEPT; `replay` bitwise (13 s), exit 2 on `OMP_NUM_THREADS=2`. Same numbers as the `8f85aa2` run (J28).
-- Tests: `tests/test_m07_journey.py` A24 on a dry run (default gate); `tests/test_m07_journey_record.py`
-  A20–A23, A25, A26 on the committed record (default gate), A24 replay `-m pymrm`.
+- WO-4b: the journey at J = `1623633` (`c1f104f`); superseded by Amendment 2 and retired at `7f108d3` (J31).
+- WO-4c: MF1 `6501016` (δ_T bound tolerance), MF2 `854deda` (carry sets, GC-CARRY-1), SF2 `2905034` (`offered`),
+  SF1 `974c395` (M05 re-run replay, `compare(stem=)`), SF3 + record at `c4e8467`.
+- The real journey at J′ = `974c395fbb2ab60fd69fc8d53e4f33e7207e9f3e` under `benchmarks/m07/journey/974c395…/`.
+  Every number bitwise equal to the `1623633` record; R3 and the journey read `BOUND_LOWER` (J37). `check` ACCEPT;
+  `replay` bitwise (17.7 s) with the M05 re-run replay clean.
 
 ## How to re-run
 - Journey: a clean detached worktree at the new J; `OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYTHONPATH=src`
   `PYOMO_CONFIG_DIR=<m05>/.venv-nlp/share/pyomo <m05>/.venv-nlp/bin/python scripts/m07_journey.py run --out
   benchmarks/m07/journey/<J> --artifacts <dir> --m05-record benchmarks/m05/records/trust-region-study-real.json`
-  (~55 min; R3 re-runs M05 while `carry.journey_files` differ from M05's run commit).
-- Replay / opt-in: `OMP_NUM_THREADS=1 PYTHONPATH=src .venv/bin/python scripts/m07_journey.py replay <dir>`;
-  `pytest -m pymrm tests/test_m07_journey_record.py` in the main `.venv` (`.venv-nlp` has no pytest; J25).
+  (~55 min; R3 re-runs M05 while `carry.r3_files` differ from M05's run commit).
+- Replay: same interpreter and environment, `scripts/m07_journey.py replay <dir>` (a re-run R3 needs pyomo).
+- Opt-in tests (`-m pymrm`): `.venv-nlp` with the nlp-test-tools appended to `sys.path` in process, not on
+  `PYTHONPATH` (J25, J35): `python -c "import sys; sys.path.append('<tools>'); import pytest;
+  sys.exit(pytest.main(sys.argv[1:]))" -m pymrm tests/test_m07_journey_record.py tests/test_m07_journey.py`.
 
 ## Not done / next
-- Design-lane ruling round: J22, J25, the T* label (J29), and J27's list of members replay takes from the record.
-- The evidence manifest for M07 and the `reviewer` pass on WO-1/WO-4 (spec §13) are the session's.
+- M07's evidence manifest; whatever the session schedules after the review's fixes (WO-3, WO-5…WO-8).
+- M02 follow-up (A2.5): `env.verify` lists `variant_id` against R-259; the journey's filter goes once it is fixed.

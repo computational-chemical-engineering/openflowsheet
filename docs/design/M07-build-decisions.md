@@ -192,3 +192,54 @@ J30 [coverage] Every WO-4b commit was gated on a clean detached worktree at that
 `672df66` 9413 passed / 31 skipped; `1623633` 9419 / 31; `c1f104f` 9435 / 31 (gates and opt-in on the docs commit: its message). A first `31067bd` failed
 ruff format on one test line (tests passed); it was amended before any push, which moved J, so the journey started at
 the unpushed `1ca7ef0` was stopped and re-run at `1623633`. Opt-in: `-m pymrm` on the journey tests 1 passed (replay).
+
+## WO-4c — the review's fixes and the re-take at J′ (2026-10-17)
+
+J31 [coverage] Retiring the stale record (`7f108d3`). Amendment 2 changes the registration and R3's member, so the
+`1623633` record fails `check` from the first fix on, and the default-gate record tests with it. As at J, the commit J′
+holds no record and no record tests (`benchmarks/m07/journey/1623633…/` and `tests/test_m07_journey_record.py` removed);
+both return in the record commit after J′, the tests with SF3 and the `offered` assertion. Alternative: keep both and
+leave J′'s gate red. Reversible by: restoring the directory from `c1f104f`.
+
+J32 [coverage] MF1 / R-452 (`6501016`): G5 applied verbatim (`BOUND_TOL_SCALED = DELTA_T / HALF_WIDTH` = 0.025;
+fixtures b-02/b-03/b-05/b-06 at ±0.475 / ±0.525 K, b-08 = 653.15 + 3.5e-5 K `BOUND_LOWER`; catalogue row A07).
+Registration regenerated, `--check` PASS; the script reads the tolerance from the registration and is unchanged.
+
+J33 [coverage] MF2 / R-453 (`854deda`): G6 (`CARRY_R3`, `CARRY_JOURNEY`, registration `carry.r3_files`), GC-CARRY-1
+(ast, module-body `import`/`from` statements, first name component, resolved in `scripts/` then `tests/support/`;
+closure = the five files G6 lists). `carry_paths(key)`, `carry_identical(anchor, key)`, R3 on `r3_files`
+(`r3_carry_identical`). The A21 case runs in a scratch git repository with `ROOT` patched: a changed
+`scripts/m05_wo9_real.py`, `m05_wo8_runs.py`, `tests/support/m05_replay.py` or the schema carries neither set;
+`m07_journey.py` / the registration break only `journey_files`; an unrelated script neither.
+
+J34 [coverage] SF2 / R-454 (`2905034`): `m05_record.offered` {path, sha256, anchor, reason}, null when carried;
+`check` requires the member, stated iff `rerun`, reason `carry_anchor_missing` iff anchor null; `replay` copies it
+(A2.4); the report's provenance gains one line naming it. `_r3_document(…, offered=)` is keyword-only, no default, so
+no caller can drop it silently.
+
+J35 [coverage] SF1 / R-455 (`974c395`): `m05_wo9_real.compare(real, *, stem=STEM)`; `replay` calls
+`replay_m05_rerun` for a re-run R3 (`run_real(archive=…)`, then `compare(stem=…)`; a `ReplayDivergedError` is a
+difference). M05's REAL replay imports pyomo, so `replay` of a re-run record and the opt-in record tests now need the
+nlp environment. pytest there without the J25 leak: the nlp-test-tools directory is appended to `sys.path` in process
+(`python -c "…sys.path.append(tools); pytest.main(…)"`), `PYTHONPATH=src` only. Opt-in test on M05's committed REAL
+record at a scratch stem: clean replay → no difference; one `result.json` dropped → `replay diverged` (1 passed, 7.4 s).
+
+J36 [coverage] SF3 and the `offered` assertion (`c4e8467`, with the record): A21 asserts R3 equals
+`_r3_document(path, m05, chosen, carried_from, wall, offered=…)` of its M05 record, apart from `t_star_resolve` and
+`candidate.constraints`, compared by `dumps` text; and that `offered` names a tracked, unmodified file of that sha256,
+with the anchor `m05_run_commit` / `manifest_anchor` give and the matching reason. Record tests 18 passed (default).
+
+J37 [coverage] J′ = `974c395fbb2ab60fd69fc8d53e4f33e7207e9f3e` (gated 9436 passed / 31 skipped before the run; pushed).
+Journey run in a clean detached worktree, `OMP_NUM_THREADS=1`, m05's `.venv-nlp`, `PYTHONPATH=src`: exit 0, 3324 s;
+committed at `c4e8467`. R3 re-ran (`carry.r3_files` differ from `cdacc32`): DECISION_STABLE, T* = 653.1500351610193,
+cold 48, wall 1461 s, bijection violations 0. Against the `1623633` record (`json_differences`, 74 members): every
+number is bitwise equal; the differences are walls, coupling/store digests (`coupling_sha256`,
+`coupling_record_sha256`, `run_sha256` of R3 and journey parent checks), `commit`, `registration_sha256`, R3's
+`m05_record` {path, sha256, offered}, and the labels A2.6 predicts: `rungs.R3.bound_activity` and
+`decision.bound_activity` INTERIOR → BOUND_LOWER, limitations + `bound:R3`, `bound:journey` (bound phrase now for R1, R3,
+journey). The M05 re-run record against `1623633`'s: 15 members, all walls, digests and `provenance`. `offered` =
+M05's REAL record (sha256 `09cf5366…`), anchor `cdacc32…`, `carry_identity_differs`. `check` ACCEPT. `replay`
+(nlp environment): bitwise, 17.7 s, M05 re-run replay clean; `OMP_NUM_THREADS=2` exit 2. Opt-in (`-m pymrm`, the
+J35 in-process path): 2 passed. nlp tier: 186 passed, 1 skipped. Gates: `7f108d3` 9419/31, `6501016` 9420/31,
+`854deda` 9427/31, `2905034` 9436/31, `974c395` 9436/31, `c4e8467` 9454/31 (each on a clean detached worktree at that
+commit).
