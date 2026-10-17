@@ -428,8 +428,15 @@ def _a49_fit(mode: str, threads: int) -> list[str]:
 def test_a49_the_fits_coefficients_are_bitwise_equal_at_one_and_eight_blas_threads() -> None:
     pinned_1, pinned_8 = _a49_fit("pinned", 1), _a49_fit("pinned", 8)
     unpinned_1, unpinned_8 = _a49_fit("unpinned", 1), _a49_fit("unpinned", 8)
-    # Not vacuous: at this size the unpinned fit differs with the thread count (build log E33).
-    assert unpinned_1 != unpinned_8
     assert pinned_1 == pinned_8
     # And the pin is single-threaded OpenBLAS: the bits of a process started at one thread.
     assert pinned_8 == unpinned_1
+    # Not vacuous: at this size the unpinned fit differs with the thread count (build log E33).
+    # Whether it does is the host's (its cores, the OpenBLAS kernel's threading thresholds); where
+    # it does not, the control cannot tell the pin from no pin, so the test does not count as
+    # passed there (build decision E40).
+    if unpinned_1 == unpinned_8:
+        pytest.skip(
+            f"the negative control is vacuous on this host ({os.cpu_count()} CPUs): the unpinned "
+            "fit at 1 and 8 BLAS threads agrees bitwise; the pinned claims above held (E40)"
+        )

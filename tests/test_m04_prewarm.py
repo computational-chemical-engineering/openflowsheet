@@ -50,6 +50,10 @@ import m04_synthetic_parents as parents  # noqa: E402
 
 STANDIN = variants.registered_variant("standin-x025-v1")
 WORKERS = 4
+#: R-250 caps the script's `max_workers` at the host's physical cores, so A40's four workers need
+#: four of them (build decision E39). A refusal is decided before any worker exists, so the
+#: refusal tests take the largest count the host admits; the claim they check does not name it.
+REFUSAL_WORKERS = min(WORKERS, m04_prewarm.physical_cores())
 
 
 def _result_bytes(root: Path, keys: list[str]) -> dict[str, bytes]:
@@ -104,6 +108,11 @@ def _study(app: LocalApplication, key: str, budget: int) -> dict[str, Any]:
     return study
 
 
+@pytest.mark.skipif(
+    m04_prewarm.physical_cores() < WORKERS,
+    reason=f"A40 names max_workers = {WORKERS} and R-250 caps it at the physical cores "
+    f"({m04_prewarm.physical_cores()} here); checked on a host with {WORKERS} or more (E39)",
+)
 def test_a40_the_prewarm_script_under_the_process_executor_changes_no_bit(tmp_path: Path) -> None:
     sequential_dir = tmp_path / "sequential"
     app = LocalApplication.create(sequential_dir)
@@ -174,7 +183,7 @@ def test_a40_the_prewarm_refuses_a_budget_below_the_misses_before_submitting(
 ) -> None:
     LocalApplication.create(tmp_path / "project").close()
     report = m04_prewarm.prewarm(
-        tmp_path / "project", STANDIN, "it1-prefix", max_workers=WORKERS, budget=198
+        tmp_path / "project", STANDIN, "it1-prefix", max_workers=REFUSAL_WORKERS, budget=198
     )
     assert report.refused == {
         "verdict": "INSUFFICIENT_EVIDENCE",
@@ -193,7 +202,9 @@ def test_a40_the_prewarm_refuses_a_budget_below_the_misses_before_submitting(
 def test_a40_the_prewarm_refuses_what_the_study_would(tmp_path: Path) -> None:
     LocalApplication.create(tmp_path / "project").close()
     with pytest.raises(sp.PlanRefusedError) as refused:
-        m04_prewarm.prewarm(tmp_path / "project", STANDIN, "it2", max_workers=WORKERS, budget=2000)
+        m04_prewarm.prewarm(
+            tmp_path / "project", STANDIN, "it2", max_workers=REFUSAL_WORKERS, budget=2000
+        )
     assert refused.value.code == "iteration_not_permitted"
     with pytest.raises(ValueError, match="physical cores"):
         m04_prewarm.prewarm(
