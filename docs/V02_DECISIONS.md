@@ -1041,3 +1041,12 @@ Grep, don't read whole. Newest at the bottom.
   Alternative: keep it as history. Reversible by: restore from `c1f104f`.
 - DECISION (engineer, J35): replay of a re-run record needs pyomo → runs in the nlp env, nlp-test-tools on `sys.path` in
   process (avoids the J25 leak) → accept. Reversible by: revert the J35 commit.
+
+## 2026-10-17 — alpha into main: merged on `wp/V02-alpha-main` @ `d73004a`, CI red
+- Engineer: register union (381, no clash), L43 collision → main's M04 row renumbered L49 (`989b16f`), version 0.2.0a1,
+  W27 coverage re-taken. Gate 5 failed / 9591 / 31; CI 39050289989 red on both runners with the same five:
+  ledger `test_the_unclaimed_gates_are_untouched` (W24 row moved), A37 chain ×3 (served MCP list moved since C_α²: digest
+  `383b4e2c…` → `455d01eb…` at c_2 R-234), changelog `test_c` (gate NO at main: D2.4 differs). nlp: 5 G10 replays fail on
+  version-derived hashes only (551 diffs). Not merged into main.
+- A37 finding matters for 0.2.0 (agent surface moved after C_α²; V17 carry for 0.2.0).
+- Design-lane rulings pass launched (`specifier`, brief `docs/briefs/V02-alpha-main-rulings-brief.md` `6a760c1`).
