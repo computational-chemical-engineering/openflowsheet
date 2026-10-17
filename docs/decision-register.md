@@ -8550,3 +8550,96 @@ package or a licence outside it needs a re-audit and a new answer; the extra nev
 accept.
 
 **Watch for.** An `nlp` lock change that is not re-audited; the extra's notices missing from a release that ships it.
+
+---
+
+## R-452 — The journey's bound activity is judged at the decision tolerance δ_T = 0.5 K, not at 10⁻⁶ scaled
+
+| | |
+| --- | --- |
+| Date | 2026-10-17 |
+| Decided by | design lane (`reviewer`), M07 review of WO-1/WO-4 (build log J29 c) |
+| Normative text | `docs/derivations/M07-spec.md` §19 A2.1 (replaces §4.4.6's tolerance); ADR 0041 D2 as amended |
+| Evidence | Record at J = `1623633`: T* − 653.15 K = 3.516e-5 K (1.758e-6 scaled); M05 re-run `poll[0].clipped` true; J(T*) − J(653.15) = −8.17e-9 against ε = 3.71e-6; R-430 (the REAL offset 1.76e-6); `docs/reviews/M07-review.md` MF1 |
+| Affected packages | M07 (A07, A11, A23; the journey record is re-taken) |
+
+**Decision.** A decision is `BOUND_LOWER` or `BOUND_UPPER` when it lies within δ_T of that bound. The registration sets
+`bound_tol_scaled` = δ_T / 20, and the formula is unchanged. Grid decisions do not change. R3's T* and a refined decision
+at Ipopt's barrier offset read bound-active and carry the bound phrase.
+
+**Rejected alternatives, and why.**
+- *10⁻⁶ scaled, M05 §7.4's distance.* M05's review found it blind to Ipopt's offset (R-430). It labels the headline
+  decision INTERIOR and drops the bound phrase.
+- *M05's two-clause G9 criterion.* It reads M05's poll structure and means nothing for grid decisions.
+- *Snapping T* to the bound.* R-430: it moves the candidate off TRF's point.
+
+**Watch for.** A future interior stationary point within 0.5 K of a bound now carries the bound phrase. That is
+intended: the journey cannot tell it from the bound.
+
+---
+
+## R-453 — The carry sets name the files that compute the carried result: `carry.r3_files` (M05's REAL entry point, its imports, the schema) and `carry.journey_files` (plus the journey's script and registration)
+
+| | |
+| --- | --- |
+| Date | 2026-10-17 |
+| Decided by | design lane (`reviewer`), M07 review (a finding, not a build-log item) |
+| Normative text | `docs/derivations/M07-spec.md` §19 A2.2 (amends §4.6 and A1.6 item 2); ADR 0041 D5 as amended |
+| Evidence | M05's REAL configuration lives in `scripts/m05_wo9_real.py` and `scripts/m05_wo8_runs.py`, which import from `tests/support/`; none is in the registered carry set; none changed in `cdacc32..1623633` (today's record is unaffected); `docs/reviews/M07-review.md` MF2 |
+| Affected packages | M07 (R3's carry, RC step 15, A21, A38) |
+
+**Decision.** R3 carries only if `carry.r3_files` are byte-equal between the anchor and J. That set is the old six
+entries, M05's REAL entry point with its `scripts/` and `tests/support/` import closure (generator self-claim
+GC-CARRY-1), and `schemas/trust-region-study.schema.json`. The journey carries from J to C only if
+`carry.journey_files` are byte-equal: that set is `carry.r3_files` plus `scripts/m07_journey.py` and
+`benchmarks/m07/registration.json`.
+
+**Rejected alternatives, and why.**
+- *`scripts/**`.* Unrelated edits would force re-runs.
+- *Relying on `replay` at C.* `replay` never re-runs M05's study.
+- *One list for both carries.* Journey edits would force R3 re-runs.
+
+**Watch for.** A new import in M05's REAL script. GC-CARRY-1 makes the generator refuse until the list follows.
+
+---
+
+## R-454 — R3's re-run: `R3:carry_identity_differs` registered; condition 5 judged on the committed re-run record; `m05_record.offered` states the record offered and why it was not carried
+
+| | |
+| --- | --- |
+| Date | 2026-10-17 |
+| Decided by | design lane (`reviewer`), M07 review (build log J22) |
+| Normative text | `docs/derivations/M07-spec.md` §19 A2.3 (adds to A1.6 items 2 and 3) |
+| Evidence | `scripts/m07_journey.py` `r3_rung` (re-run path, condition 5 waived at run time); `tests/test_m07_journey_record.py` A21 applies condition 5 to the committed re-run record; `docs/reviews/M07-review.md` SF2 |
+| Affected packages | M07 |
+
+**Decision.** The refusal code and the run-time waiver of condition 5 stand as built. A re-run record is W25 evidence only
+once it is committed with the journey; A21 and `replay` check it there. On a re-run the record names the offered M05
+record (path, sha256, anchor) and the reason it was not carried.
+
+**Rejected alternatives, and why.** Judging condition 5 at run time against a commit that does not exist yet, which is
+circular.
+
+**Watch for.** A re-run record left uncommitted while the journey record is cited.
+
+---
+
+## R-455 — `replay` takes from the record exactly the measured members and run-time digests listed in A2.4, re-derives everything else, and replays a journey-produced M05 re-run with M05's REAL replay
+
+| | |
+| --- | --- |
+| Date | 2026-10-17 |
+| Decided by | design lane (`reviewer`), M07 review (build log J27) |
+| Normative text | `docs/derivations/M07-spec.md` §19 A2.4 (interprets §6.4 and A24) |
+| Evidence | `scripts/m07_journey.py` `_settle`, `_replay_r3`, `_rederive`; the R3 re-run's coupling digests differ from M05's record only through `cache_hit` and attempts; replay at `c1f104f` bitwise, 13.4 s; `docs/reviews/M07-review.md` SF1 |
+| Affected packages | M07 (A24, A61), M05 (`m05_wo9_real.compare` gains a `stem` keyword; behaviour unchanged) |
+
+**Decision.** "Every number" means every number that is a function of the stored experiment records, the M05 record,
+the case files and the registration. `replay` takes these from the record: walls, coupling digests, experiment counts
+(once the served total matches), R3's carry label, `offered`, a re-run's wall, and refusal codes. A re-run M05 record is
+replayed by M05's REAL replay and must show no difference.
+
+**Rejected alternatives, and why.** Re-deriving the per-point count split from the archive: the archive does not link
+attempts to points, and A25 pins the totals by kind.
+
+**Watch for.** The list growing without an amendment.

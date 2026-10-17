@@ -5,7 +5,7 @@ review of the journey's work orders (WO-1, WO-4) is recorded.
 **Author:** design lane (`specifier`), M07; brief `docs/briefs/M07-specification.md` with the 2026-10-16 updates.
 **Normative text:** `docs/derivations/M07-spec.md` §3–§6, §11; reference `benchmarks/m07/registration.json`
 (`docs/derivations/scripts/m07_reference.py`, `--check`).
-**Register:** R-331…R-337; Amendment 1: R-420…R-427.
+**Register:** R-331…R-337; Amendment 1: R-420…R-427; Amendment 2: R-452…R-455.
 
 ## Context
 
@@ -24,11 +24,14 @@ parent without it (M05 §7.6). No equilibrium reactor exists in the repository. 
 - **D2 — Decisions are compared by the parent.** Each pair (R0→R1, R1→R3) is judged on parent values at both decisions
   with ε = the sum of M05's noise floors; the five-way fidelity-effect class of spec §4.4.4; truth check TC-1 against the
   parent grid; bound activity at 10⁻⁶ scaled. The journey never reports a decision from R0 or R2 (spec §4.4.7).
+  *Amendment 2 (2026-10-17, spec §19 A2.1, R-452):* bound activity is at the decision tolerance δ_T = 0.5 K.
 - **D3 — W25 is met by its eight clauses** (spec §5), none of which requires a changed decision, a converged study, an
   interior decision or a promotable surrogate. `TC1_CONTRADICTED` is a reported limitation and a finding, not a FAIL.
 - **D4 — Budget `M07-budget-v1`** (460 cold experiments, 6 h), checked before each evaluation; exhaustion is reported.
 - **D5 — No new job operation**; one script `scripts/m07_journey.py`. Reactor-dependent evidence carries between
   commits only by byte-identity of the registered determining files, else it is re-run.
+  *Amendment 2 (2026-10-17, spec §19 A2.2, R-453):* the determining files include M05's REAL entry point and its
+  imports, and the record schema (`carry.r3_files`), plus the journey's script and registration (`carry.journey_files`).
 - **D6 — Refusal is a result**: `UNSUPPORTED(reactor_environment_unavailable)`, `UNSUPPORTED(m05_study_unavailable)`.
   *Amendment 1 (2026-10-16, spec §18 A1.3, R-422):* and `UNSUPPORTED(surrogate_loop_unavailable)`, R2's refusal under a
   `PROMOTABLE` verdict without a surrogate-backed loop. W25 (a) is then not met.
