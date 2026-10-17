@@ -1003,3 +1003,13 @@ Grep, don't read whole. Newest at the bottom.
   C_α² `cc73219` exactly), not main; ADR 0028's named alternative. Frank asks the session to perform the dispatch.
 - Mechanics: the `pypi` environment admits only `main` or `v*` tags. Plan: dry run from the branch at the head that prints
   YES; then the real run from a `v0.2.0a1` tag on that same commit (rc = `cc73219…`).
+- Action 10 build part done: `wp/V02-alpha-gate` @ `423ae9c` (ADR 0028 Accepted R-451 `47246c1`; ledger + A64 test `9324a91`;
+  CHANGELOG/gate table, candidate `5c3a068`; manifest regenerated `423ae9c`: tested, 40 pass, 4 unsupported A60–A63). Gate
+  8642/31. Session check: D2.4 diff cc73219..423ae9c empty; `v0_2_gate.py --rc cc73219… --candidate 423ae9c` → YES.
+- Release dry run 39024603561 from the branch at `423ae9c`: gate, build success. Tag push from the session was refused by the
+  permission classifier; Frank given the two commands (tag + real dispatch from the tag).
+
+## 2026-10-17 — M05 merged into main
+- `defa458` = merge of `wp/M05` @ `b0d4123` (manifest `evidence/M05/56fb2fa…` tested; 6 artifact hashes re-taken: 5 G10
+  records + build log). Gate at `defa458`: 9325 passed, 31 skipped (also covers b0d4123's envelope change, which its own
+  gate did not). Pushed. M07 WO-4 (real journey) launched.
