@@ -236,3 +236,17 @@ def test_a21_a_bad_harvest_is_caught(
     envelope: dict[str, Any], harvest_context: dict[str, Any], change: Any
 ) -> None:
     assert MATRIX.check_a21(_mutated(envelope, change), **harvest_context) != []
+
+
+def test_m04_and_m05_harvest_rows_map_to_l49_not_the_alphas_l43(envelope: dict[str, Any]) -> None:
+    """The alpha's released L43 keeps its id; M04's envelope row is L49, and the M04/M05 manifests
+    that cite it as "L43" are mapped there by their harvest rows (R-459, AM-30)."""
+    rows = [
+        entry
+        for entry in envelope["harvest"]
+        if entry["manifest"].startswith(("evidence/M04/", "evidence/M05/"))
+    ]
+    assert [entry["item"] for entry in rows if "L43" in (entry.get("to") or [])] == []
+    assert any("L49" in (entry.get("to") or []) for entry in rows)
+    (l43,) = (row for row in envelope["limitations"] if row["id"] == "L43")
+    assert " ".join(l43["text"].split()).startswith("The Anderson recycle")

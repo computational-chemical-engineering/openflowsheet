@@ -1032,3 +1032,7 @@ Grep, don't read whole. Newest at the bottom.
   (contradicts the released CHANGELOG). Reversible by: reverting that commit and re-resolving the merge. Committed
   M04/M05 manifests and historical notes that say "L43" for the surrogate are not rewritten. R-365's text ("row L43")
   awaits a design-lane ruling (substitution only).
+- Rulings R-456 – R-460 applied (`docs/design/V02-alpha-main-rulings.md` §3, in §4's order):
+  - E1–E4, E8: `ALPHA_TAG_COMMIT`; the alpha's ledger and changelog tests read the record at the tag (AM-01 – AM-08);
+    `m07a_rc.LINKS` gains c_3 (R-295, `strip_m04`, `455d01eb…`) with the controls re-aimed, each preceded by an
+    unmodified-list pass (AM-10 – AM-18); AM-30 (M04/M05 harvest rows map to L49). Gate 9602 passed, 0 failed.

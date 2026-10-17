@@ -17,6 +17,13 @@ manifest at the candidate"; R-216's and R-217's failure for v0.1.0): once the he
 `C_α`, (e) reads the envelope at `C_α` and (g) MR-5's set from `C_α`'s tree, with committer times
 from `git log C_α`; while the marker is present, both read the working tree. M07a has no row: its
 manifest is written after `C_α`, the record of this gate rather than a package of the candidate.
+
+Since the release these are checks of a past release (R-456): every clause judges the section as
+0.2.0a1 released it, read from the tag commit `ALPHA_TAG_COMMIT`, and clause (a)'s "first section"
+is a fact of the released file. Clause (c) runs the working tree's gate script on the alpha's own
+candidate, so a change to the script that moves the alpha entry's output by one byte fails it (M07
+§7.2). The working tree's `## v0.2.0a1` section must stay byte-identical to the released one
+(`test_the_released_section_is_unchanged_here`).
 """
 
 from __future__ import annotations
@@ -28,7 +35,7 @@ import sys
 
 import pytest
 import yaml
-from conftest import REPO_ROOT
+from conftest import ALPHA_TAG_COMMIT, REPO_ROOT
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import v0_2_gate  # noqa: E402
@@ -61,10 +68,20 @@ PHRASES: tuple[str, ...] = tuple(TARGETS["changelog_phrases"])
 FORBIDDEN: tuple[str, ...] = tuple(TARGETS["changelog_forbidden"])
 
 
-def section() -> str:
-    text = CHANGELOG.read_text(encoding="utf-8")
+def section_of(text: str) -> str:
+    """The `## v0.2.0a1` section of a changelog text, from its heading up to the next `\n## `."""
     start = text.index("## v0.2.0a1")
     return text[start : text.index("\n## ", start + 1)]
+
+
+def released() -> str:
+    """`CHANGELOG.md` as 0.2.0a1 released it (R-456)."""
+    return git("show", f"{ALPHA_TAG_COMMIT}:{CHANGELOG.relative_to(REPO_ROOT).as_posix()}")
+
+
+def section() -> str:
+    """The `## v0.2.0a1` section as 0.2.0a1 released it (R-456)."""
+    return section_of(released())
 
 
 def candidate() -> str | None:
@@ -88,7 +105,7 @@ def between(body: str, start: str, end: str) -> str:
 
 
 def test_a_the_section_is_first_and_names_the_candidate() -> None:
-    text = CHANGELOG.read_text(encoding="utf-8")
+    text = released()
     assert text.index("## v0.2.0a1") < text.index("## v0.1.1")
     assert text.index("\n## ") == text.index("\n## v0.2.0a1")  # the first section of the file
     heading = section().splitlines()[0]
@@ -123,6 +140,8 @@ def test_c_the_gate_table_is_what_the_gate_script_prints() -> None:
             str(REPO_ROOT / "scripts" / "v0_2_gate.py"),
             "--rc",
             candidate,
+            "--candidate",
+            ALPHA_TAG_COMMIT,
             "--markdown",
         ],
         cwd=REPO_ROOT,
@@ -131,6 +150,11 @@ def test_c_the_gate_table_is_what_the_gate_script_prints() -> None:
         check=True,
     ).stdout
     assert table in body
+
+
+def test_the_released_section_is_unchanged_here() -> None:
+    """The working tree's `## v0.2.0a1` section equals the released one byte for byte (AM-08)."""
+    assert section_of(CHANGELOG.read_text(encoding="utf-8")) == section()
 
 
 def test_d_what_it_is_not_names_every_phrase() -> None:

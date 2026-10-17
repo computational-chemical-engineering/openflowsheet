@@ -28,6 +28,12 @@ function, a registered digest and Frank's carry extended to name it):
   `tests/m02_schema_support.py`'s `without_m02` (R-234's decomposition function); `D_2` =
   `383b4e2c…`, the digest served on the tree that merged M02 into `main` (M02's manifest at
   `ba90619` records it as `checks[0].value.mcp_tool_list.served_sha256`; build decision B-WO5-1).
+- c_3, R-295 (ADR 0037 D6, ADR 0019 Amendment 5): M04's `surrogate_study` job kind, stripped by
+  `tests/m04_schema_support.py`'s `without_m04` (R-295's decomposition function); `D_3` =
+  `455d01eb…`, registered at the alpha's merge into `main` (R-457).
+
+The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
+alpha's step 8 uses this script at the tag.
 
 **Registered values** are restated with their sources, and `tests/test_m07a_surface_chain.py`
 holds each equal to its source.
@@ -131,6 +137,16 @@ def strip_m02(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_m04(tools: Tools) -> Tools:
+    """s_3 (R-295): `tools` without M04's additions (`m04_schema_support.without_m04`)."""
+    t08_rc._tests_on_path()
+    from m04_schema_support import without_m04  # noqa: PLC0415
+
+    stripped = without_m04(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -154,6 +170,12 @@ LINKS: Final = (
         "R-234",
         strip_m02,
         "383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403",
+    ),
+    Link(
+        "c_3",
+        "R-295",
+        strip_m04,
+        "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
     ),
 )
 
