@@ -6462,3 +6462,28 @@ for one.
 frozen-interface change.
 
 ---
+
+## R-451 — ADR 0028 is Accepted; its own condition is met by Frank's recorded answers and M07a's `tested` manifest at `C_α²`
+
+| | |
+| --- | --- |
+| Date | 2026-10-17 |
+| Decided by | build lane, V02 alpha re-judgement finding R1 (the ADR's own condition; no new decision) |
+| Normative text | `docs/adr/0028-v0.2-pre-release-policy.md` Status line |
+| Evidence | Frank's four answers, each `accepted, 2026-10-17`, in the ADR's two tables (`e4cad68`); `evidence/M07a/cc73219…/manifest.json`: `tested`, 38 pass, 6 unsupported (A52, A60–A64), at `C_α²` = `cc73219` (`7f4f6e0`); the re-judgement of 2026-10-17 (`docs/reviews/V02-alpha-verdicts.md`, `c52039b`), finding R1 |
+| Affected packages | M07a (§7.2 item 7, §9.2 step 6) |
+
+**Decision.** The ADR moves from Proposed to Accepted, 2026-10-17. Its Status block names two conditions, and both
+hold: Frank's answers are recorded in the two tables at its end, and M07a's manifest is `tested` at the alpha's release
+candidate. §9.2 step 6 says the ADR "is marked Accepted"; the gate's required-ADR check (§7.2 item 7, Table T5) reads
+the Status line at the candidate. `docs/adr/` is not a D2.4 path, so the flip needs no re-cut (as R-381).
+
+**What it does not establish.** No `reviewed`, no human sign-off, no change to any verdict. The answers are one phrase,
+recorded by a lane (the re-judgement's travelling limitation).
+
+**Rejected alternatives, and why.** Waiting for a design-lane pass to flip the line: the condition is mechanical and the
+re-judgement names it as a build-lane finding.
+
+**Watch for.** `main` reads Proposed until this branch merges; the register keeps R-238, R-239 and R-451.
+
+---

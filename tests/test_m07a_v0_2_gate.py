@@ -1076,9 +1076,15 @@ def test_a11_the_real_adrs_0022_and_0028() -> None:
     assert report(files(adr_0022=real_0022))["tag_may_be_proposed"]
     real_0028 = (REPO_ROOT / ADR_0028).read_text(encoding="utf-8")
     line = v0_2_gate.status_line(real_0028)
-    assert line is not None and line.startswith("**Status:** Proposed")
+    # Marked Accepted on 2026-10-17 (§9.2 step 6, R-451): read as Accepted ...
+    assert line is not None and line.startswith("**Status:** **Accepted, 2026-10-17**")
     reasons = report(files(adr_0028=real_0028))["reasons"]
-    assert f"ADR 0028 is not Accepted: {line}" in reasons
+    assert [reason for reason in reasons if reason.startswith("ADR 0028 ")] == []
+    # ... and the same document under its Proposed line of 2026-10-08 is refused, as before.
+    proposed_line = "**Status:** Proposed, 2026-10-08, design lane (`specifier`)."
+    proposed = real_0028.replace(line, proposed_line, 1)
+    reasons = report(files(adr_0028=proposed))["reasons"]
+    assert f"ADR 0028 is not Accepted: {proposed_line}" in reasons
 
 
 # -- M07a.A12: output and exit codes -----------------------------------------------------------
