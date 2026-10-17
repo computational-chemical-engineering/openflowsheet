@@ -20,13 +20,16 @@ measured it, and its `value` names that evidence:
    registered and agreeing, R-347), MR-11's step 12 in step 10's inputs and its committed kept
    certificates re-audited, counted and bound to the step-12 record (R-348), MR-12's extras, the
    push run at `C_α`.
-5. **The design lane's verdicts** (A60–A63) and the ledger (A64) are `unsupported` with the state
-   `pending` until `docs/reviews/V02-alpha-verdicts.md` exists and WO-11 has written the ledger;
-   this script does not judge them.
+5. **The design lane's verdicts** (A60–A63) are `unsupported` with the state `pending`; this script
+   does not judge them.
+6. **At the tag candidate** (Amendment 3 §19.4, R-373): M07a.A52 and the ledger (M07a.A64) are
+   judged by their tests (`tests/test_m07a_changelog.py`, `tests/test_m07a_ledger.py`) run here,
+   once §9.2 step 5 is done: the `## v0.2.0a1` heading names `C_α` and the ledger cites
+   `evidence/M07a/<C_α>/manifest.json`. Until then each is `unsupported` with the state `pending`.
+   Once judged, each check's value carries `judged_at`, the commit the tests ran at (the candidate).
 
 Status is `tested` iff every check M07a.A00–A51 and A53 is `pass` (Amendment 3 §19.4, R-373);
-otherwise `implemented`. M07a.A52 is `unsupported` at `C_α`: it is judged at the tag candidate after
-§9.2 step 5, and its skeleton tests run in step 1's `check.sh`.
+otherwise `implemented`. A52 and A64 are outside that set, so judging them cannot change it.
 `reviewed` is never set, and both review fields stay `pending`.
 
 Usage:
@@ -58,12 +61,15 @@ RC_RECORD = ROOT / "docs" / "v02-alpha-rc-record.md"
 VERDICTS = ROOT / "docs" / "reviews" / "V02-alpha-verdicts.md"
 ENVELOPE = ROOT / "benchmarks" / "t08" / "support_envelope.yaml"
 LEDGER = ROOT / "docs" / "requirements.yaml"
+CHANGELOG = ROOT / "CHANGELOG.md"
 #: The release-gate requirements T08's manifest supplies evidence for; the alpha re-runs T08's
 #: acceptance at `C_α` (build decision B-WO10-9).
 REQUIREMENTS = ("D04", "A10", "D17", "D20")
 #: R-373 (Amendment 3 §19.4): the manifest is `tested` iff A00–A51 and A53 pass; A52 is judged at
 #: the candidate, and the verdicts and the ledger come after the manifest.
 STATUS_IDS = re.compile(r"A(?:[0-4]\d|5[013])$")
+#: The checks judged at the tag candidate after §9.2 step 5, each by its tests (§19.4).
+AT_CANDIDATE = ("A52", "A64")
 #: The tag whose extras MR-12 compares against.
 V0_1_1 = "v0.1.1"
 CHECK_JOBS = ("check (ubuntu-latest)", "check (ubuntu-24.04-arm)")
@@ -198,7 +204,7 @@ SPECS: tuple[Spec, ...] = (
         measure="envelope",
     ),
     Spec("A51", tests=("tests/test_t08_b50_surface_content.py::test_m07a_a51_*",)),
-    Spec("A52", measure="changelog"),
+    Spec("A52", tests=("tests/test_m07a_changelog.py",), measure="changelog"),
     Spec(
         "A53",
         tests=(
@@ -207,7 +213,7 @@ SPECS: tuple[Spec, ...] = (
         ),
     ),
     *(Spec(f"A6{n}", measure="verdict") for n in range(4)),
-    Spec("A64", measure="ledger"),
+    Spec("A64", tests=("tests/test_m07a_ledger.py",), measure="ledger"),
 )
 
 
@@ -239,6 +245,8 @@ class Inputs:
     ci: list[dict[str, Any]] = field(default_factory=list)
     manifest_exists: bool = False
     evidence: Path = ROOT / "evidence" / "M07a"
+    #: The commit the tests ran at: the tag candidate once §9.2 step 5 is done (§19.4).
+    judged_at: str | None = None
 
     @property
     def rc_dir(self) -> Path:
@@ -434,22 +442,28 @@ def _m_verdict(inputs: Inputs) -> Part:
 
 def _m_changelog(inputs: Inputs) -> Part:
     """R-373: A52 (c) and (a) need the gate table and `C_α` pasted at the candidate, after the
-    verdicts; at `C_α` it is recorded `unsupported`. `tests/test_m07a_changelog.py` still runs in
-    step 1's `check.sh`."""
-    return "unsupported", {
-        "state": "pending",
-        "reason": "judged at the candidate after §9.2 step 5 (Amendment 3 §19.4)",
-    }
+    verdicts; until the heading names `C_α` it is recorded `unsupported`. Then its tests decide,
+    and this part records where they ran."""
+    text = CHANGELOG.read_text(encoding="utf-8")
+    heading = next((ln for ln in text.splitlines() if ln.startswith("## v0.2.0a1")), "")
+    if "[[PENDING: " in heading:
+        return "unsupported", {
+            "state": "pending",
+            "reason": "judged at the candidate after §9.2 step 5 (Amendment 3 §19.4)",
+        }
+    named = f"`C_α` = `{inputs.commit}`" in heading
+    return ("pass" if named else "fail"), {"names_c": named}
 
 
 def _m_ledger(inputs: Inputs) -> Part:
+    """M07a.A64, after WO-11: its tests decide, and this part records where they ran."""
     wanted = f"evidence/M07a/{inputs.commit}/manifest.json"
     if wanted not in LEDGER.read_text(encoding="utf-8"):
         return "unsupported", {
             "state": "pending",
             "reason": f"the ledger does not cite {wanted} (WO-11)",
         }
-    return "unsupported", {"state": "pending", "reason": "tests/test_m07a ledger test after WO-11"}
+    return "pass", {"cites": wanted}
 
 
 MEASURES: dict[str, Callable[[Inputs], Part]] = {
@@ -489,6 +503,8 @@ def decide(spec: Spec, subject: str, judged_by: str, inputs: Inputs) -> dict[str
             result, said = "fail", {"error": f"{type(error).__name__}: {error}"}
         parts.append(result)
         value[name] = said
+    if spec.id in AT_CANDIDATE and value.get("measured", {}).get("state") != "pending":
+        value["judged_at"] = inputs.judged_at
     description = re.sub(r"<([^<>]*)>", r"{\1}", subject)
     return {
         "id": f"M07a.{spec.id}",
@@ -519,7 +535,8 @@ def limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
     found = [
         "Evidence class: numerical and software verification at the alpha's release candidate "
         "C_α (tests run here, the RC job's records on ref-x86-64, ci-x86-64 and ci-aarch64, CI); "
-        "the design lane's verdicts (A60-A63) and the ledger (A64) are not judged here.",
+        "the design lane's verdicts (A60-A63) are not judged here; M07a.A52 and A64 are judged at "
+        "the tag candidate after §9.2 step 5, by their tests run here (Amendment 3 §19.4).",
         "Step 13 (`scripts/v0_2_gate.py --rc C_α`) needs the verdicts and is not run; M07a.A12 is "
         "judged by its fixture tests only.",
     ]
@@ -607,7 +624,7 @@ def main() -> int:
     t08._test_modules = _test_modules  # T08's runner, over this catalogue's modules
     tests, test_command = t08.run_tests(artifacts)
     commands.append(test_command)
-    inputs = Inputs(commit, tests, ci, manifest_exists=destination.is_file())
+    inputs = Inputs(commit, tests, ci, manifest_exists=destination.is_file(), judged_at=head)
 
     manifest = build(inputs, commands, artifacts)
     manifest["commands"].append(
