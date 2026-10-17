@@ -1040,3 +1040,7 @@ Grep, don't read whole. Newest at the bottom.
     support matrix re-emitted (0 problems), RELEASING "After a tag", `tests/test_v02_main_version.py` (AM-40 – AM-42).
     AM-10 still passes at the new version (D_3 unchanged). W27 coverage re-taken from the working tree (rows and
     `list_models` unchanged; snapshot `153894c4…`), then once more at the E7 commit so `git_commit` names its build.
+  - E5: `m05_retake_diff.py --digest-only` (AM-20 PASS ×5 on S77's pair, 42/80/71/92/38 = S77's; AM-22 unit tests).
+    DECISION: store-index pairing in the leaf walk → by relabelled key, not position (the index is sorted by key, so
+    positional pairing fails (b)/(c) on S77's pair: 17 and 14 digests). Alternative: positional (AM-20 cannot pass).
+    Reversible by: reverting the E5 commit. M05 build log S78.

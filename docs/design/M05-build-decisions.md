@@ -776,3 +776,14 @@ S77 Merge of `main` into wp/M05: the five in-process G10 records re-taken (TR-E2
    The cfecb15 manifest's record sha256 values describe the records before this re-take. Choice for the design lane
    (replay identity): re-take, rather than amending the fingerprint or the G10 comparison. Reversible by reverting
    this commit (G10 then fails until the boundary file is restored or a ruling changes the comparison).
+
+S78 `scripts/m05_retake_diff.py --digest-only` (R-458; rulings `docs/design/V02-alpha-main-rulings.md` §3 E5), the
+   committed proof of a digest-only re-take. On S77's pair (records at `56fb2fa^` against `56fb2fa`, `git archive`)
+   it prints PASS for all five cases (AM-20), changed digests 42/80/71/92/38 for TR-E2/TR-E2-FAR/TR-E2-FD/LOOP-R/LOOP-S,
+   equal to S77's counts under E5's rule (distinct old digests whose new value differs; AM-21, Q2: no mismatch).
+   Class counts (digest/timing/other): 150/20/0, 327/35/0, 219/20/0, 288/26/0, 128/20/0; environment files equal.
+   Build-lane choice: the store index is sorted by `(experiment_key, attempt)`, so it is paired by the relabelled key
+   (each old entry with the new entry of its key's image under the map the record, ledger and coupling records built),
+   not by position. Positional pairing on S77's pair makes the map fail to be a function and injective on 17 (TR-E2)
+   and 14 (LOOP-S) digests — an artefact of the sort order, not of the content. The store's digests still enter the
+   map, so (b) and (c) cover them. Reversible by reverting the E5 commit. Unit tests: `tests/test_m05_retake_digest_only.py`.
