@@ -149,3 +149,46 @@ this machine's environment was built by v1 and serves v3 (same env_id), so `reac
 The journey ignores that one line (`8f85aa2`). `env.verify` itself (M02's) is unchanged: flag to the design lane.
 Also measured: a `PYTHONPATH` that includes `.reference-downloads/m03-ipopt/nlp-test-tools` leaks into the reactor
 child's package check (pytest 9.1.1 vs the lock's 8.3.5), so the real run uses `PYTHONPATH=src` only.
+
+## WO-4 — the real journey at J, part 2 (2026-10-17)
+
+J26 [coverage] The environment block is taken before any rung (`672df66`). The J=`8f85aa2` run recorded
+`tree_clean: false` only because R3's re-run writes `m05/` under `--out` before the block was read.
+
+J27 [design-adjacent] `replay` (`1623633`). `run` writes `journey.experiments.json` (the spec names no file; M05's
+`<stem>.experiments.json` convention, `m05_wo9_real.store_archive`). `replay` restores it and runs `run_journey`'s
+steps with M05's `RecordOnlyBackend` for every unit, in process too (nothing executes; a request the archive cannot
+serve is a difference and ends the replay). R0/R1 go through `run_grid` against M07-budget-v1 with the record's costs
+(so it evaluates the points the record evaluated and stops where it stopped); R3 from the named M05 record (sha256,
+conditions 1–5, `_r3_document`), carry and a re-run's wall from the record (the carry is RC step 15's, not replay's);
+a refused R3's codes are copied (nothing to re-derive them from); then the T* re-solve. Taken from the record after
+checking: measured walls; `experiments`, once the replay's counts equal {cold 0, in_process 0, store_hit = cold +
+store_hit + in_process}; the coupling digest (its record carries the attempts and `cache_hit` a store hit changes).
+Everything derived (budgets, accounting, labels, pairs, TC-1, parent checks) is re-derived and the whole record is
+compared member by member, numbers by JSON text. `run_sha256` needed no exception. Exit 2 `omp_num_threads differs`
+on a thread mismatch, or without the archive. Needs a ruling only if the substituted members are not what the spec
+means by "every number".
+
+J28 [coverage] J. `672df66` and `1623633` change `run` (the environment timing, the archive), so the `8f85aa2`
+output (uncommitted) was not taken as WO-4's record; the journey was re-run at J = `1623633` (clean detached
+worktree, `OMP_NUM_THREADS=1`, `.venv-nlp` with `PYTHONPATH=src`; exit 0) and committed at `c1f104f`. Against the
+`8f85aa2` run, every number is bitwise equal; the differences are `commit`, `tree_clean` (false → true), walls,
+the coupling digests and R3's M05 record (path, sha256: its provenance carries the run commit and wall; the targeted
+check's coupling digest follows). Result: decision `refined` at T* = 653.1500351610193 K (R3 `DECISION_STABLE`,
+`PARENT_LOCAL_EVIDENCE`, J* = 0.4524965242483627, e* = 1.85395193012364e-06); R1 `DECIDED` at 653.15 K
+`BOUND_LOWER`; R0 `INDIFFERENT`; R2 `SURROGATE_NOT_PROMOTABLE`; TC-1 `TC1_HOLDS`; P01 `FE_CHANGED`, P13
+`FE_UNCHANGED`; reactor cold R1 36, R3 48 (M05's re-run, wall 1458 s), T* re-solve 4. `check` ACCEPT. `replay` at
+`c1f104f`: bitwise, 13.4 s; with `OMP_NUM_THREADS=2` exit 2. The `8f85aa2` record also replayed bitwise (dev check).
+
+J29 [design] Open, carried with their defaults (no code changed for them): (a) J22 — the limitation code
+`R3:carry_identity_differs` and condition 5 holding for a re-run record only once committed (default: as
+implemented); (b) J25 — `env.verify` lists `variant_id` despite R-259, and `nlp-test-tools` on `PYTHONPATH` breaks the
+reactor check, so the opt-in tests run in the main `.venv` and the run in `.venv-nlp` with `PYTHONPATH=src` (default:
+leave, documented); (c) T* = 653.15 + 3.5e-5 K reads `INTERIOR` under the registered at-bound tolerance while R1's
+653.15 K reads `BOUND_LOWER`; the record reports both labels as the rules give them, and the bound phrase appears for
+R1 only (default: no tolerance change).
+
+J30 [coverage] Every WO-4b commit was gated on a clean detached worktree at that commit before it was pushed:
+`672df66` 9413 passed / 31 skipped; `1623633` 9419 / 31; `c1f104f` 9435 / 31 (gates and opt-in on the docs commit: its message). A first `31067bd` failed
+ruff format on one test line (tests passed); it was amended before any push, which moved J, so the journey started at
+the unpushed `1ca7ef0` was stopped and re-run at `1623633`. Opt-in: `-m pymrm` on the journey tests 1 passed (replay).
