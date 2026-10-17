@@ -24,11 +24,19 @@ wheel's METIS closure (derived from that wheel's own `DT_NEEDED` graph, ADR 0006
 HSL object and Ipopt's own banner naming MUMPS; G5 the licence findings; G6 `pyomo` and `cyipopt`
 absent from the default install's requirements. G7 and G8 are judged in `docs/m03-ipopt-audit.md`.
 
+M05 WO-1 adds the workload `trsp-exe` for the Ipopt *executable* (`bin/ipopt`), which Pyomo's
+`SolverFactory('ipopt')` and the trust-region framework run as a child process: Pyomo solves a
+two-variable NLP through the executable pinned by path and runs its own trust-region example. The
+executable's objects are measured by the dynamic loader's own log of each spawned process
+(`LD_DEBUG=files`, which also lists any `dlopen`) and cross-checked against `ldd`'s static
+closure of the same file; the record goes to `benchmarks/m05/trsp-inventory-x86_64.json`.
+
 Usage (any Python 3.13 with the standard library; needs objdump, nm and dpkg-query)::
 
     python scripts/m03_ipopt_inventory.py --env .venv-nlp            # writes the inventory
     python scripts/m03_ipopt_inventory.py --env .venv-nlp --check    # regenerates and compares
     python scripts/m03_ipopt_inventory.py --env .venv-nlp --workload stand-in --check
+    python scripts/m03_ipopt_inventory.py --env .venv-nlp --workload trsp-exe [--check]
 
 The environment is built by `scripts/build-m03-ipopt-env.sh`. `--check` exits 0 iff the regenerated
 record equals the committed one; objects of the host platform (glibc, owned by a dpkg package) are
@@ -55,7 +63,11 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 FORMAT = "m03-ipopt-inventory-v1"
+#: M05 WO-1: the same record for the Ipopt *executable* (the ASL `bin/ipopt`) that Pyomo's
+#: `SolverFactory('ipopt')` and the trust-region framework spawn.
+FORMAT_TRSP = "m05-trsp-inventory-v1"
 DEFAULT_OUT = ROOT / "benchmarks" / "m03" / "ipopt-inventory-x86_64.json"
+DEFAULT_OUT_TRSP = ROOT / "benchmarks" / "m05" / "trsp-inventory-x86_64.json"
 LOCKS = {
     "conda": ROOT / "benchmarks" / "m03" / "nlp-conda-explicit.txt",
     "pip": ROOT / "benchmarks" / "m03" / "nlp-pip.lock",
@@ -65,7 +77,9 @@ A30_SUMMARY = ROOT / "docs" / "t08-a30" / "t08-a30-x86_64.json"
 SITE = "lib/python3.13/site-packages"
 PYNUMERO_ASL = "share/pyomo/lib/libpynumero_ASL.so"
 #: The child's solve: spec §8.1's NLP-1 through the adapter (audit §9 item 1), or WO-6's stand-in.
-WORKLOADS = ("nlp-1", "stand-in")
+#: `trsp-exe` (M05 WO-1) does not use the NLP path at all: it runs the ipopt executable.
+WORKLOADS = ("nlp-1", "stand-in", "trsp-exe")
+TRF_MODULES = ("TRF.py", "interface.py", "filter.py", "funnel.py", "util.py")
 RECIPE_NOTICES = "share/m03-ipopt-notices"
 
 # Specification §9 G2: what a mapped path under the CasADi package may not name.
@@ -211,6 +225,81 @@ print(json.dumps({
 }))
 """
 
+# The M05 child (workload `trsp-exe`): Pyomo solves through the ipopt *executable*, a child process
+# of this one. argv: the loader-log prefix, the audited prefix, the TRF module names (JSON). The
+# dynamic loader of every ipopt process records the objects it loads (`LD_DEBUG=files`, set only
+# now, so this interpreter's own loads are not logged); the parent reads those logs. It prints one
+# JSON line.
+_TRSP_WORKLOAD = r"""
+import contextlib, hashlib, io, json, logging, os, sys
+prefix_log, env, module_names = sys.argv[1], sys.argv[2], json.loads(sys.argv[3])
+import pyomo.environ as pyo, pyomo.version
+from pyomo.opt import SolverFactory
+import pyomo.contrib.trustregion.TRF as trf_module
+from pyomo.contrib.trustregion.examples import example1
+
+pinned = os.path.realpath(env + "/bin/ipopt")
+os.environ["LD_DEBUG"] = "files"
+os.environ["LD_DEBUG_OUTPUT"] = prefix_log
+
+def banners(text):
+    return sorted({line.strip() for line in text.splitlines() if "This is Ipopt version" in line})
+
+# (a) a two-variable NLP through SolverFactory('ipopt') with the executable pinned by path:
+# min x + 2 y subject to x y = 1, x, y >= 0.1; the minimizer is (sqrt 2, 1/sqrt 2).
+m = pyo.ConcreteModel()
+m.x = pyo.Var(initialize=2.0, bounds=(0.1, None))
+m.y = pyo.Var(initialize=2.0, bounds=(0.1, None))
+m.c = pyo.Constraint(expr=m.x * m.y == 1)
+m.o = pyo.Objective(expr=m.x + 2 * m.y)
+direct_options = {"linear_solver": "mumps", "tol": 1e-10, "print_level": 5}
+solver = SolverFactory("ipopt", executable=pinned)
+solver.options.update(direct_options)
+result = solver.solve(m, tee=False, logfile=prefix_log + ".direct.log")
+direct = {
+    "termination": str(result.solver.termination_condition),
+    "max_error": max(abs(pyo.value(m.x) - 2 ** 0.5), abs(pyo.value(m.y) - 0.5 ** 0.5)),
+    "banner": banners(open(prefix_log + ".direct.log", encoding="utf-8").read()),
+}
+
+# (b) Pyomo's own trust-region example (example1), whose subproblems the framework solves with the
+# executable resolved by name on PATH; resolved here and required to be the pinned file.
+resolved = os.path.realpath(SolverFactory("ipopt").executable())
+assert resolved == pinned, (resolved, pinned)
+handler_lines = []
+class Rec(logging.Handler):
+    def emit(self, record): handler_lines.append(record.getMessage())
+logger = logging.getLogger("pyomo.contrib.trustregion")
+logger.setLevel(logging.INFO)
+logger.addHandler(Rec())
+captured = io.StringIO()
+model = example1.create_model()
+with contextlib.redirect_stdout(captured):
+    solved = SolverFactory("trustregion", maximum_iterations=50, tee=True).solve(
+        model, [model.z[0], model.z[1], model.z[2]])
+trf = {
+    "iterations": sum(1 for line in handler_lines if line.startswith("****** Iteration")),
+    "objective": pyo.value(solved.obj),
+    "banner": banners(captured.getvalue()),
+}
+base = os.path.dirname(trf_module.__file__)
+print(json.dumps({
+    "workload": "trsp-exe",
+    "direct": direct,
+    "direct_options": direct_options,
+    "trf_example1": trf,
+    "executable_pinned": pinned,
+    "executable_resolved_on_path": resolved,
+    "trf_modules": {
+        name: hashlib.sha256(open(os.path.join(base, name), "rb").read()).hexdigest()
+        for name in module_names
+    },
+    "casadi_imported": "casadi" in sys.modules,
+    "cyipopt_imported": "cyipopt" in sys.modules,
+    "versions": {"pyomo": pyomo.version.version},
+}))
+"""
+
 # Where Pyomo would look for libpynumero_ASL in this environment if PYOMO_CONFIG_DIR were not set.
 _DEFAULT_LOOKUP = r"""
 from pyomo.common.fileutils import find_library
@@ -246,8 +335,93 @@ def _child_environment(env: Path, *, pyomo_config: bool) -> dict[str, str]:
     return environment
 
 
+_LD_INIT = re.compile(r"^\s*(\d+):\s+calling init: (/\S.*)$")
+_LD_DLOPEN = re.compile(r"^\s*(\d+):\s+file=(\S+) \[0\];\s+dynamically loaded by (/\S.*?) \[0\]$")
+
+
+def loader_logs(prefix: Path) -> dict[str, Any]:
+    """What the dynamic loader of each ipopt process recorded: the objects it initialised (a
+    glibc `LD_DEBUG=files` log, one file per process) and the `dlopen`s it attempted. Paths are
+    resolved, so a symlink (`libgomp.so.1`) shows as the object it names, as in /proc/<pid>/maps."""
+    processes: dict[str, set[str]] = {}
+    requested: dict[str, set[str]] = {}
+    dlopen: dict[str, set[str]] = {}
+    for log in sorted(prefix.parent.glob(prefix.name + ".[0-9]*")):
+        pid = log.suffix[1:]
+        for line in log.read_text(encoding="utf-8", errors="replace").splitlines():
+            found = _LD_INIT.match(line)
+            if found:
+                real = os.path.realpath(found.group(2))
+                processes.setdefault(pid, set()).add(real)
+                if Path(found.group(2)).name != Path(real).name:
+                    requested.setdefault(str(Path(found.group(2)).name), set()).add(real)
+                continue
+            found = _LD_DLOPEN.match(line)
+            if found:
+                dlopen.setdefault(found.group(2), set()).add(os.path.realpath(found.group(3)))
+    return {"processes": processes, "requested_as": requested, "dlopen": dlopen}
+
+
+def ldd_closure(executable: Path, env: dict[str, str]) -> set[str]:
+    """The static (`DT_NEEDED`) closure the loader resolves for `executable`, from `ldd`."""
+    completed = subprocess.run(
+        ["ldd", str(executable)], capture_output=True, text=True, check=True, env=env
+    )
+    paths = set()
+    for line in completed.stdout.splitlines():
+        match = re.search(r"=> (/\S+) \(0x", line) or re.match(r"\s*(/\S+) \(0x", line)
+        if match:
+            paths.add(os.path.realpath(match.group(1)))
+    return paths
+
+
+def run_trsp_workload(env: Path) -> dict[str, Any]:
+    """The ipopt-executable workload: a fresh interpreter of `env` whose Pyomo spawns `bin/ipopt`;
+    the objects the executable maps come from the loader's own log of each spawned process
+    (`LD_DEBUG=files`), checked against `ldd`'s static closure of the same file."""
+    child_env = _child_environment(env, pyomo_config=True)
+    with tempfile.TemporaryDirectory() as scratch:
+        completed = subprocess.run(
+            [str(env / "bin" / "python"), "-I", "-c", _TRSP_WORKLOAD, f"{scratch}/ld", str(env),
+             json.dumps(list(TRF_MODULES))],
+            capture_output=True, text=True, check=False, cwd=scratch, env=child_env,
+        )  # fmt: skip
+        if completed.returncode != 0:
+            raise SystemExit(f"the ipopt-executable workload failed:\n{completed.stderr[-3000:]}")
+        run = dict(json.loads(completed.stdout.strip().splitlines()[-1]))
+        logs = loader_logs(Path(scratch) / "ld")
+    executable = Path(run["executable_pinned"])
+    needed_static = ldd_closure(executable, child_env) | {str(executable)}
+    process_sets = {pid: paths | {str(executable)} for pid, paths in logs["processes"].items()}
+    union = set().union(*process_sets.values()) if process_sets else set()
+    if not process_sets or any(
+        str(env / "lib" / "libipopt.so.3.14.20") not in p for p in process_sets.values()
+    ):
+        raise SystemExit("an ipopt process did not map libipopt: the loader logs are not usable")
+    run["processes"] = len(process_sets)
+    run["each_process_maps_the_same_objects"] = (
+        len({frozenset(v) for v in process_sets.values()}) == 1
+    )
+    run["loader_equals_ldd_closure"] = union == needed_static
+    run["loader_minus_ldd"] = sorted(_normalise(p, env) for p in union - needed_static)
+    run["ldd_minus_loader"] = sorted(_normalise(p, env) for p in needed_static - union)
+    run["loaded_through_a_symlink"] = {
+        name: sorted(_normalise(p, env) for p in paths)
+        for name, paths in sorted(logs["requested_as"].items())
+    }
+    run["dlopen_attempts"] = {
+        name: sorted(_normalise(p, env) for p in paths)
+        for name, paths in sorted(logs["dlopen"].items())
+    }
+    run["mapped"] = sorted(union)
+    run["nlpsol_calls"] = []  # casadi is not imported at all (`casadi_imported`)
+    return run
+
+
 def run_workload(env: Path, order: str, workload: str) -> dict[str, Any]:
     """One NLP-path solve in a fresh interpreter of `env`, from an empty working directory."""
+    if workload == "trsp-exe":
+        return run_trsp_workload(env)
     with tempfile.TemporaryDirectory() as scratch:
         completed = subprocess.run(
             [str(env / "bin" / "python"), "-I", "-c", _WORKLOAD, str(ROOT / "src"), order,
@@ -561,7 +735,10 @@ def _normalise(path: str, env: Path) -> str:
 def build_record(env: Path, workload: str) -> dict[str, Any]:
     env = env.resolve()
     site = env / SITE
-    runs = {order: run_workload(env, order, workload) for order in ("project-first", "nlp-first")}
+    trsp = workload == "trsp-exe"
+    orders = ("executable",) if trsp else ("project-first", "nlp-first")
+    runs = {order: run_workload(env, order, workload) for order in orders}
+    first = runs[orders[0]]
     mapped_sets = {order: set(run.pop("mapped")) for order, run in runs.items()}
     mapped = sorted(set().union(*mapped_sets.values()))
     elf_paths = [path for path in mapped if is_elf(Path(path))]
@@ -725,7 +902,12 @@ def build_record(env: Path, workload: str) -> dict[str, Any]:
         "pass": all(item["conclusion"] == "METIS 5.x" for item in carriers),
     }
     # G4: no HSL object; Ipopt's own banner names the linear solver.
-    banners = sorted({line for run in runs.values() for line in run["ipopt_banner"]})
+    if trsp:
+        banners = sorted(set(first["direct"]["banner"]) | set(first["trf_example1"]["banner"]))
+        first["ipopt_banner"] = banners
+        first["options"] = dict(first["direct_options"])
+    else:
+        banners = sorted({line for run in runs.values() for line in run["ipopt_banner"]})
     g4: dict[str, Any] = {
         "hsl_symbol_exporters": sorted(row["path"] for row in objects if row["hsl_exports"]),
         "hsl_symbol_importers": sorted(row["path"] for row in objects if row["hsl_imports"]),
@@ -734,7 +916,7 @@ def build_record(env: Path, workload: str) -> dict[str, Any]:
         ),
         "hsl_named_objects": sorted(p for p in by_path if "hsl" in Path(p).name.lower()),
         "ipopt_banner": banners,
-        "linear_solver_option": runs["project-first"]["options"]["linear_solver"],
+        "linear_solver_option": first["options"]["linear_solver"],
     }
     g4["pass"] = (
         not g4["hsl_symbol_exporters"]
@@ -800,10 +982,20 @@ def build_record(env: Path, workload: str) -> dict[str, Any]:
         "import_orders_map_the_same_objects": len({frozenset(v) for v in mapped_sets.values()})
         == 1,
     }
+    if trsp:
+        # Orders do not exist for a spawned executable; the analogue is that every spawned ipopt
+        # process maps one set, and that the loader's log equals ldd's static closure.
+        g1["processes"] = first["processes"]
+        g1["each_process_maps_the_same_objects"] = first["each_process_maps_the_same_objects"]
+        g1["loader_equals_ldd_closure"] = first["loader_equals_ldd_closure"]
     g1["pass"] = (
         not g1["unknown_origin"]
         and not g1["conda_objects_not_matching_their_package"]
         and g1["import_orders_map_the_same_objects"]
+        and (
+            not trsp
+            or (g1["each_process_maps_the_same_objects"] and g1["loader_equals_ldd_closure"])
+        )
     )
 
     a30 = json.loads(A30_SUMMARY.read_text(encoding="utf-8"))
@@ -853,17 +1045,28 @@ def build_record(env: Path, workload: str) -> dict[str, Any]:
         )
 
     for run in runs.values():
-        run["pynumero_asl"] = _normalise(run["pynumero_asl"], env)
+        if "pynumero_asl" in run:
+            run["pynumero_asl"] = _normalise(run["pynumero_asl"], env)
+    if trsp:
+        run = first
+        for key in ("executable_pinned", "executable_resolved_on_path"):
+            run[key] = _normalise(run[key], env)
+        run["executable"] = next(row for row in objects if row["path"] == run["executable_pinned"])[
+            "sha256"
+        ]
+        g2["casadi_imported"] = run["casadi_imported"]
+        g2["pass"] = g2["pass"] and not run["casadi_imported"]
+        g6["cyipopt_imported"] = run["cyipopt_imported"]
     return {
-        "format": FORMAT,
+        "format": FORMAT_TRSP if trsp else FORMAT,
         "host": {
             "machine": platform.machine(),
             "libc": " ".join(platform.libc_ver()),
         },
         "locks": {name: P03.sha256_of(path) for name, path in sorted(LOCKS.items())},
-        "pynumero_asl_build": built,
+        **({} if trsp else {"pynumero_asl_build": built}),
         "workload": runs,
-        "pynumero_asl_lookup_without_pyomo_config_dir": default_lookup(env),
+        **({} if trsp else {"pynumero_asl_lookup_without_pyomo_config_dir": default_lookup(env)}),
         "conda_packages": conda_rows,
         "pip_distributions": pip_distributions,
         "objects": objects,
@@ -893,19 +1096,22 @@ def _comparable(record: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--env", type=Path, default=ROOT / ".venv-nlp")
-    parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--out", type=Path, default=None)
     parser.add_argument("--check", action="store_true")
     parser.add_argument(
         "--workload",
         choices=WORKLOADS,
         default="nlp-1",
         help="what the child solves: spec §8.1's NLP-1 through the WO-8 adapter (the default), or "
-        "WO-6's two-variable stand-in, which the audit was first measured on",
+        "WO-6's two-variable stand-in, which the audit was first measured on, or M05 WO-1's "
+        "`trsp-exe`: Pyomo spawning the ipopt executable (writes benchmarks/m05/ by default)",
     )
     arguments = parser.parse_args()
     if not (arguments.env / "bin" / "python").exists():
         print(f"no environment at {arguments.env}; build it with scripts/build-m03-ipopt-env.sh")
         return 2
+    if arguments.out is None:
+        arguments.out = DEFAULT_OUT_TRSP if arguments.workload == "trsp-exe" else DEFAULT_OUT
     record = build_record(arguments.env, arguments.workload)
     text = json.dumps(record, indent=1, sort_keys=True) + "\n"
     gates = " ".join(

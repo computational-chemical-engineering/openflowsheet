@@ -17,8 +17,11 @@ is its only author. It refuses to emit unless (ADR 0025 A1):
 The schemas M02 adds (`experiment`, `model-variant`, `model-replacement`) are classified beside v2,
 not in it, so v2's content does not move: `benchmarks/m02/numerical_policy_external.yaml` names
 them and lists the exact `sha256` names they introduce, and `--check` holds that table to the same
-closed-partition rule (M02 design note §3.6). The schemas M04 adds (`surrogate-manifest`,
-`model-evidence`) are classified the same way, in `benchmarks/m04/numerical_policy_surrogate.yaml`.
+closed-partition rule (M02 design note §3.6). M05's `trust-region-study` follows the same pattern
+(`benchmarks/m05/numerical_policy_external.yaml`, M05 build decision S11): `ADDENDA` lists the
+tables, and each is audited in turn, a name an earlier table classified keeping its class. The
+schemas M04 adds (`surrogate-manifest`, `model-evidence`) are classified the same way, in
+`benchmarks/m04/numerical_policy_surrogate.yaml`.
 
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/t08_numerical_policy.py --check
@@ -45,6 +48,8 @@ V1: Final = ROOT / "benchmarks" / "k04" / "reference_values.yaml"
 V2: Final = ROOT / "benchmarks" / "t08" / "numerical_policy_v2.yaml"
 #: M02 design note §3.6: the addendum that classifies the M02 schemas' floats and digests.
 EXTERNAL: Final = ROOT / "benchmarks" / "m02" / "numerical_policy_external.yaml"
+#: Every addendum, in the order `--check` audits them (M02's, then M05's: build decision S11).
+ADDENDA: Final = (EXTERNAL, ROOT / "benchmarks" / "m05" / "numerical_policy_external.yaml")
 #: M04: the addendum that classifies the M04 schemas' digests, beside M02's.
 SURROGATE: Final = ROOT / "benchmarks" / "m04" / "numerical_policy_surrogate.yaml"
 SCHEMAS: Final = ROOT / "schemas"
@@ -138,9 +143,9 @@ def v1_policy() -> dict[str, Any]:
     return dict(document)
 
 
-def external_policy() -> dict[str, Any]:
-    """The M02 addendum's table (`numerical_policy_external`)."""
-    document = yaml.safe_load(EXTERNAL.read_text(encoding="utf-8"))["numerical_policy_external"]
+def external_policy(path: Path = EXTERNAL) -> dict[str, Any]:
+    """An addendum's table (`numerical_policy_external`), M02's by default."""
+    document = yaml.safe_load(path.read_text(encoding="utf-8"))["numerical_policy_external"]
     return dict(document)
 
 
@@ -150,13 +155,24 @@ def surrogate_policy() -> dict[str, Any]:
     return dict(document)
 
 
-def schema_sha256_names(*, external: bool = False, surrogate: bool = False) -> set[str]:
+def schema_sha256_names(
+    *,
+    external: bool = False,
+    addendum: Mapping[str, Any] | None = None,
+    surrogate: bool = False,
+) -> set[str]:
     """Every property name containing `sha256` declared anywhere in `schemas/*.json` — outside
-    both addenda's schemas, or inside M02's (`external=True`), or inside M04's
-    (`surrogate=True`)."""
+    every addendum's schemas (M02's and M05's `ADDENDA`, M04's), or (`external=True`) inside one
+    `ADDENDA` table's (`addendum`, M02's by default), or (`surrogate=True`) inside M04's."""
     names: set[str] = set()
-    m02 = set(external_policy()["schemas"])
     m04 = set(surrogate_policy()["schemas"])
+    if surrogate:
+        selected = m04
+    elif external:
+        selected = set((external_policy() if addendum is None else addendum)["schemas"])
+    else:
+        selected = {name for path in ADDENDA for name in external_policy(path)["schemas"]} | m04
+    inside = external or surrogate
 
     def walk(node: Any) -> Iterator[str]:
         if isinstance(node, dict):
@@ -169,13 +185,7 @@ def schema_sha256_names(*, external: bool = False, surrogate: bool = False) -> s
                 yield from walk(entry)
 
     for path in sorted(SCHEMAS.glob("*.json")):
-        if surrogate:
-            if path.name not in m04:
-                continue
-        elif external:
-            if path.name not in m02:
-                continue
-        elif path.name in m02 | m04:
+        if (path.name in selected) != inside:
             continue
         names.update(walk(json.loads(path.read_text(encoding="utf-8"))))
     return names
@@ -297,22 +307,36 @@ def audit(policy: Mapping[str, Any], v1: Mapping[str, Any], declared: set[str]) 
     return problems
 
 
-def external_audit(policy: Mapping[str, Any], external: Mapping[str, Any]) -> list[str]:
+def external_audit(
+    policy: Mapping[str, Any],
+    external: Mapping[str, Any],
+    earlier: Sequence[Mapping[str, Any]] = (),
+) -> list[str]:
     """M02 design note §3.6: every `sha256` name of the addendum's schemas is classified — by v2's
-    lists (a name M02 reuses keeps its class) or by the addendum's `exact_sha256` — and the
-    addendum's names are new (none in v2's lists) and declared."""
-    declared = schema_sha256_names(external=True)
+    lists or an `earlier` addendum's (a name reused keeps its class) or by the addendum's own
+    `exact_sha256` — and the addendum's names are new (in no earlier list) and declared, and its
+    schemas are no earlier addendum's. Problems are tagged with the addendum's package, `(m02)`."""
+    tag = "(" + external["id"].split("-", 1)[0].lower() + ")"
+    declared = schema_sha256_names(external=True, addendum=external)
     digests = set(policy["float_digests"]["names"])
     exact = set(policy["exact_sha256"])
+    before = {name for table in earlier for name in table["exact_sha256"]}
     added = set(external["exact_sha256"])
     problems: list[str] = []
+    claimed = set(external["schemas"]) & {name for table in earlier for name in table["schemas"]}
+    if claimed:
+        problems.append(f"{tag} schemas of an earlier addendum: {sorted(claimed)}")
     if added & (digests | exact):
-        problems.append(f"(m02) already classified by v2: {sorted(added & (digests | exact))}")
-    unclassified = declared - digests - exact - added
+        problems.append(f"{tag} already classified by v2: {sorted(added & (digests | exact))}")
+    if added & before:
+        problems.append(
+            f"{tag} already classified by an earlier addendum: {sorted(added & before)}"
+        )
+    unclassified = declared - digests - exact - before - added
     if unclassified:
-        problems.append(f"(m02) unclassified sha256 names: {sorted(unclassified)}")
+        problems.append(f"{tag} unclassified sha256 names: {sorted(unclassified)}")
     if added - declared:
-        problems.append(f"(m02) classified but undeclared: {sorted(added - declared)}")
+        problems.append(f"{tag} classified but undeclared: {sorted(added - declared)}")
     return problems
 
 
@@ -373,7 +397,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     if arguments.check and V2.is_file():
         committed = yaml.safe_load(V2.read_text(encoding="utf-8"))["numerical_policy"]
         problems.extend(audit(committed, v1_policy(), schema_sha256_names()))
-        problems.extend(external_audit(committed, external_policy()))
+        earlier: list[dict[str, Any]] = []
+        for path in ADDENDA:
+            table = external_policy(path)
+            problems.extend(external_audit(committed, table, earlier))
+            earlier.append(table)
         problems.extend(surrogate_audit(committed, external_policy(), surrogate_policy()))
     for problem in problems:
         print(problem)

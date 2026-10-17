@@ -37,5 +37,6 @@
   "study.schema.json",
   "surrogate-manifest.schema.json",
   "transaction-result.schema.json",
+  "trust-region-study.schema.json",
   "validation-report.schema.json"
 ]
