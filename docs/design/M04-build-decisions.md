@@ -378,3 +378,64 @@ repeats, 4467 s wall on a shared host (load ≈ 80–96 on 48 threads from other
   `not_applicable` (A31 NOT_PROMOTABLE); A48 5 nodes, A49 1, A50 2, A24 16, all passed; gate at
   `8df0ea7` GATE PASS, 8664 passed, 31 skipped. Harvested with `a9566a6`'s manifest by
   `--harvest-from` (10 entries; classes of R-365, E37). Not `reviewed`.
+
+## Follow-up: main's CI on the hosted runners (`wp/M04-ci`)
+
+`ci` failed on every push since 2026-10-16 (run 38975380701; last green 38810003221): three A40
+tests on `ubuntu-latest` and `default-install`, A49 on `ubuntu-24.04-arm`, A35 on both `check`
+runners. Locally (48 threads) all passed. Each is a machine precondition or a comparison wider than
+the spec's claim; no tolerance moved and no case was removed.
+
+- **E39. A40's script path needs four physical cores; the refusals do not.** R-250 caps
+  `m04_prewarm.prewarm`'s `max_workers` at `physical_cores()` (2 on `ubuntu-latest`), and A40
+  names `max_workers = 4`, so `ValueError` was raised before anything ran (the `cold_experiments
+  == 199` line in the log is the traceback's context, it held). DECISION: the script-path test
+  skips, with the reason, where `physical_cores() < 4`; the two refusal tests run at
+  `min(4, physical_cores())`, since a refusal is decided before any worker exists and their claim
+  names no count. A40's A19-bitwise half (four spawned processes, no cap) runs everywhere.
+  Alternative: run the script path at 2 workers on small hosts (not A40's parameter). Reversible
+  by: reverting the E39 commit.
+- **E40. A49's negative control is a precondition.** On `ubuntu-24.04-arm` the unpinned fit at 1
+  and 8 BLAS threads agreed bitwise at N = 141, so `unpinned_1 != unpinned_8` failed: the control
+  cannot tell the pin from no pin there. DECISION: the claims (`pinned_1 == pinned_8`,
+  `pinned_8 == unpinned_1`) are asserted first, everywhere; where the control is vacuous the test
+  then skips with the reason instead of passing. Alternative: search a size per host that splits
+  (spec: "if no synthetic size reproduces the difference, the opt-in real record is used").
+  Reversible by: reverting the E40 commit.
+- **E41. A35's rounded float comparison is scoped to the machine class the fixtures were recorded
+  on.** `stable` rounds floats to 10 significant digits; rounding is not a tolerance, and a score
+  that is a small difference of two predictions keeps fewer digits than binary64 carries.
+  Reproduced locally with `OPENBLAS_CORETYPE=Sandybridge|Nehalem|Prescott`: one leaf differs,
+  `evaluation.scores[7]` 4.3685482476500205e-05 (fixture) against 4.36854824575524e-05, 1.9e-14
+  apart, where A1.3's R1/R2 floor is 1e-10 score units. Spec §18 A1.3 promises R1/R2 for these
+  floats across platforms and R0 (conditional; A19 is not near threshold, A37) for every
+  non-float member; it claims no cross-platform 10-digit agreement. DECISION:
+  `m04_schema_fixtures.RECORDED_ON = "x86_64/Haswell"` (`machine_class()`: `platform.machine()`
+  and the OpenBLAS kernel name of NumPy's and SciPy's libraries); on that class the comparison is
+  unchanged; on another the non-float members are compared exactly and the test then skips the
+  floats with the reason; the failure message lists each differing leaf with both raw values.
+  `--write` writes nothing off the recorded class. The committed fixture is unchanged (M05's
+  LOOP-S record cites it). Alternative: compare floats off-class under A1.3's per-rule R1/R2
+  floors from `benchmarks/m04/numerical_policy_surrogate.yaml` (needs the floor units, e.g. w_o,
+  resolved per rule; R-253 says no comparator reads that table yet — a design-lane call).
+  Reversible by: reverting the E41 commit.
+- **E42. CI prints skip reasons.** Run 38992908629 (E39–E41) is green on both runners, but its
+  logs show counts only (`pytest -q`): which test skipped for which machine reason is not on
+  record. Counts reconcile — `ubuntu-latest` 8613 passed / 99 skipped (was 8609 / 5 failed / 98),
+  `ubuntu-24.04-arm` 8584 / 98 (was 8584 / 2 failed / 96), `default-install` 8356 / 326 (was
+  8356 / 3 failed / 323) — but `default-install`'s +3 skips with +0 passes is not what E39 alone
+  predicts (+2 passes, +1 skip) and cannot be read from counts. DECISION: `PYTEST_ADDOPTS=-rs`
+  on the `check` job's step and `-rs` on `default-install`'s pytest; CI-only, the local gate and
+  its summary line are untouched. Reversible by: reverting the E42 commit.
+- **Evidence of the CI follow-up.** CI run 38998365118 at `09c6fed` is green on every job it ran
+  (`check` on both runners, `default-install`, `identity`), with the skip reasons on record:
+  `check (ubuntu-latest)` (x86_64/Haswell, 2 physical cores) skips A40's script path only — A35
+  compared the floats there and passed, A49's control split; `default-install` (x86_64/SkylakeX,
+  2 physical cores) skips A40's script path, A49's control (vacuous) and A35's floats (R0 members
+  agreed); `check (ubuntu-24.04-arm)` (aarch64/neoversen2, 4 CPUs) skips A49's control and A35's
+  floats. The hosted x86 runners are a hardware lottery (run 38992908629's `default-install` and
+  run 38975380701's `check` evidently drew other classes). Manifest:
+  `evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json`; its limitations are
+  harvested by hand at the end of `support_envelope.yaml` (all P): `m04_evidence_manifest.py
+  --harvest-from` rewrites every `evidence/M04/` entry and must be given this manifest's entries
+  back if it is re-run.

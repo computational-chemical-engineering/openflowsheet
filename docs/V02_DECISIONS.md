@@ -947,3 +947,24 @@ Grep, don't read whole. Newest at the bottom.
   [A10] audit lists. M03 closeout launched (`opus-engineer`): register R-450, main merged into wp/M03, the stale inventory check
   explained (stop if anything outside the audited set appears), CI on both runners at the final commit, manifest → tested. Then the
   session merges M03, then M05, into main. The four 0.2.0a1 questions remain open.
+- **M05 WO-10b** (2026-10-17, `sonnet-implementer`, cfecb15/b5099a3/1032ed0; gate 9296/31, nlp 186/1): review N2 fixed (try/finally,
+  test); manifest `evidence/M05/cfecb15…/manifest.json` **tested**, 14 checks (G1–G13 + G5b) all pass, review pending; 10 limitations
+  harvested (all class P), matrix --check 0 problems; ADR 0039 box note; progress.md; `docs/briefs/M05-W24-table.md`. S75 interpretations
+  for the next design touch: G10 cross-architecture `not_run` (limitation), E-row candidates (`extrapolated`, bound-active REAL optimum,
+  `fd_gradient`), case_hash = sha256 of c1-loop-real.json. Open: review N1 (stage-C restart eligibility). cfecb15 carries a Sonnet
+  trailer (accurate; not rewritten). M05 ready to merge after M03.
+- **M03 closeout, part 1** (2026-10-17, `opus-engineer`, wp/M03 0c6ca90/4ccd369/b0db48e/2bba33e; gate 8867/31, nlp 18/1): R-450 records
+  Frank's N1; main merged (register union by hand: scratchpad `regunion.py` was lost in the reboot); manifest script takes `--n1
+  accepted` and `--ci-run`. Inventory: fresh env reproduces 086bf2b's 178 objects; after the main merge M02's `adapters/pymrm/env.py`
+  imports urllib → ssl, mapping `libssl.so.3` (openssl-3.6.5, Apache-2.0) and `_ssl` (CPython 3.13.5, PSF-2.0); same packages,
+  same licences, 41 conda packages and wheels unchanged.
+  DECISION: are the two new objects inside Frank's licence acceptance → yes (same audited packages and licences; no licence added).
+  Alternative: ask Frank again. Reversible by: reverting b074d57 on wp/M03. Re-take cherry-picked as `b074d57`, m03_nlp_check.sh exit 0.
+  **Blocker:** main's CI red since 2026-10-16 (M04 tests on 2-core runners: prewarm a40 max_workers 4; a49 negative control; a35
+  a19 fixture differs on arm). `wp/M04-ci` engineer launched; M03's CI-on-both-runners check waits for it.
+- **Main CI fix** (2026-10-17, `opus-engineer`, wp/M04-ci 2a07b66/df818a1/422c53a/09c6fed/54778d2; CI run 38998365118 green on both
+  runners): A40 script-path test skips below 4 physical cores (refusal tests at min(4, cores)); A49 asserts both pinned claims
+  everywhere, skips only the negative control where it cannot show a difference; A35 floats compared only on the recorded CPU class
+  `x86_64/Haswell` (spec §18 A1.3 makes no cross-machine bitwise claim), non-float members everywhere; CI prints skip reasons (E39–E42).
+  Manifest `evidence/M04/09c6fed…` tested. Open for M04's design lane: off-Haswell floats against A1.3's R1/R2 floors (default no).
+  Merged into main `f79864d`, **main gate PASS 8687/31**.
