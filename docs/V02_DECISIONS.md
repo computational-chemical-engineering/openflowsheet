@@ -1013,3 +1013,12 @@ Grep, don't read whole. Newest at the bottom.
 - `defa458` = merge of `wp/M05` @ `b0d4123` (manifest `evidence/M05/56fb2fa…` tested; 6 artifact hashes re-taken: 5 G10
   records + build log). Gate at `defa458`: 9325 passed, 31 skipped (also covers b0d4123's envelope change, which its own
   gate did not). Pushed. M07 WO-4 (real journey) launched.
+
+## 2026-10-17 — M07 WO-4 part 1 (`wp/M07` @ `6996507`, gate 9412/31)
+- Main merged (`8ef35e6`; R-017 differed only by a `---` separator). Journey at J=`8f85aa2` EXIT 0, `check` accepts:
+  R0 INDIFFERENT 673.15; R1 DECIDED 653.15 BOUND_LOWER; R2 SURROGATE_NOT_PROMOTABLE; R3 re-run (carry fails, src changed)
+  DECISION_STABLE, T* 653.1500351610193, J* 0.4524965242483627 = M05's record, re-solve bitwise; 88/460 cold runs, 3316 s.
+- Process slip: only the tip was gated (J24), not every commit. Next engineer told to gate every commit.
+- Open for M07's ruling round / reviewer (defaults: as implemented): J22 limitation `R3:carry_identity_differs`; J25
+  `env.verify` vs R-259 `variant_id`; T* 3.5e-5 K inside the bound reads INTERIOR (tolerance 2e-5 K) while R1 says
+  BOUND_LOWER. WO-4b (replay, committed record, A20–A26 tests) launched.
