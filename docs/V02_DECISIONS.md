@@ -1008,6 +1008,10 @@ Grep, don't read whole. Newest at the bottom.
   8642/31. Session check: D2.4 diff cc73219..423ae9c empty; `v0_2_gate.py --rc cc73219… --candidate 423ae9c` → YES.
 - Release dry run 39024603561 from the branch at `423ae9c`: gate, build success. Tag push from the session was refused by the
   permission classifier; Frank given the two commands (tag + real dispatch from the tag).
+- **0.2.0a1 RELEASED 2026-10-17.** Frank: "Do the push and release." Annotated tag `v0.2.0a1` → `423ae9c` pushed; release
+  run 39045791146 from the tag: gate, tag, build, pypi, github-release all success. PyPI `openflowsheet 0.2.0a1`: wheel
+  sha256 `ebcf0daf040522c9…`, sdist `bda40baea315cd2b…`. GitHub pre-release
+  https://github.com/computational-chemical-engineering/openflowsheet/releases/tag/v0.2.0a1 with both files.
 
 ## 2026-10-17 — M05 merged into main
 - `defa458` = merge of `wp/M05` @ `b0d4123` (manifest `evidence/M05/56fb2fa…` tested; 6 artifact hashes re-taken: 5 G10

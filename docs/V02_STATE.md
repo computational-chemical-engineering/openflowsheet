@@ -42,8 +42,7 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 ## Needs Frank
 
 - **For 0.2.0 later (M07 spec, defaults set, not urgent):** claim all 17 gates (yes); M03 N1 licences accepted 2026-10-16; add an equilibrium-reactor fidelity level (no); re-accept the PTC failure, the agent-evidence carry and "not a sandbox" for 0.2.0 (yes); if the agent-facing surface changes after the paid W27 run, stop and ask.
-- **`0.2.0a1` release ref answered 2026-10-17: "Perform the release as recommended"**: from the alpha branch (D2.4 = C_α² exactly), session dispatches: dry run from the branch, then the real run from a `v0.2.0a1` tag on the YES head (`pypi` env admits `main`/`v*` tags only).
-- **`0.2.0a1` answered 2026-10-17: "Accept the defaults"** (N3 claim set, V17 carry, "not a sandbox", PTC failure accepted); recorded in ADR 0028 on the alpha branch. Nothing else needs Frank until he tags and publishes.
+- **`0.2.0a1` RELEASED 2026-10-17** (tag `v0.2.0a1` → `423ae9c` on the alpha branch; run 39045791146 all green; on PyPI and as a GitHub pre-release). Nothing open for Frank on the alpha.
 - **M03 N1:** answered 2026-10-16 (accepted).
 
 - **M01 (defaults set, work proceeds):** Q-F1 the reactor's inlet heat loss (23–33 % of reaction heat through the
@@ -100,7 +99,7 @@ M05 merge main + WO-5c + S3 (`m05`). No new launch until fewer than 2 run.
 `wp/test-hardening` merged into main (`26b13db`, gate 8670). Saved WIP: `wp/M06-wo17` WIP commit (ungated); `wp/M07` WIP reference script
 (spec still to write). Done in the burst: M02 closeout merged (`2497ec2`); M05 rulings §18 on `wp/M05-rulings2` (`4cc5956`).
 Register: alpha R-319…321; M04 R-322…325; M05 R-326…330; M07 R-331…339, R-350…359, R-391+; M02 follow-up R-390; M05 WO-8 ruling R-400…409; ADR 0036/0037 acceptance R-410…411; M02 closeout R-340…344; alpha Am. 2 R-345…349; M04 review R-360…369; alpha Am. 3 R-370…379, B6/B5 R-380…382.
-After these: Frank's 4 answers → re-judge V13/V17/W21 → gate table pasted, A52 → M07a manifest `tested` → step 13 → WO-11 → Frank publishes `0.2.0a1`; 
+Next: alpha → main merge (`wp/V02-alpha-main`) → M07 WO-3 (0.2.0 gate); M07 WO-4c (review fixes, re-take) → M07 manifest; then WO-5 (M06 WO-17, paid, approved), WO-6…8, 0.2.0 RC;
 M05 WO-8 + `reviewer`; M07 build.
 
 In worktrees run `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/gate.sh`. W27 archive for tests: symlink the
