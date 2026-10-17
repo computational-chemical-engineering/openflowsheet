@@ -1022,3 +1022,13 @@ Grep, don't read whole. Newest at the bottom.
 - Open for M07's ruling round / reviewer (defaults: as implemented): J22 limitation `R3:carry_identity_differs`; J25
   `env.verify` vs R-259 `variant_id`; T* 3.5e-5 K inside the bound reads INTERIOR (tolerance 2e-5 K) while R1 says
   BOUND_LOWER. WO-4b (replay, committed record, A20–A26 tests) launched.
+
+## 2026-10-17 — alpha into main (`wp/V02-alpha-main`), build lane
+
+- DECISION: envelope id L43 is held twice — the alpha's (R-321: Anderson/E1/E2 library-only; released, cited by the
+  `## v0.2.0a1` CHANGELOG section) and main's (R-365: no promotable real surrogate; M04). → main's M04 row is
+  renumbered **L49** (next free; row, `unit_models` statement, M04/M05 harvest `to`/notes, `scripts/m04_evidence_manifest.py`)
+  in its own pre-merge commit; the alpha's L43 keeps its released meaning. Alternative: renumber the alpha's row
+  (contradicts the released CHANGELOG). Reversible by: reverting that commit and re-resolving the merge. Committed
+  M04/M05 manifests and historical notes that say "L43" for the surrogate are not rewritten. R-365's text ("row L43")
+  awaits a design-lane ruling (substitution only).
