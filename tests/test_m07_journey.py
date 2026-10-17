@@ -845,6 +845,80 @@ def test_a21_a_record_that_does_not_carry_is_re_run_at_j(
     assert r3(rerun=rerun)["m05_record"]["carried_from"] == m07.RERUN and calls == [1, 1]
 
 
+# -- A23, A25 (WO-4 part): the T* re-solve (Amendment 1 A1.7) --------------------------------------
+
+J_STAR = 0.4940269880217402  # `m05_study`'s targeted-check objective
+P3_VALUES = [
+    {"constraint_id": "h2_limit", "value": 0.25, "bound": 0.5, "sense": "<=", "scale": 1.0},
+    {"constraint_id": "n_tube", "value": 2.0, "bound": 1.5, "sense": ">=", "scale": 1.0},
+]
+
+
+def mock_resolver(objective: float, cold: int = 0) -> Callable[[float], Any]:
+    """A mock parent at T*: certified, `objective`, M05 P3 values, the given cold count."""
+
+    def resolve(t: float) -> tuple[float | None, bool, list[dict[str, Any]] | None, Any]:
+        assert t == T_STAR
+        experiments = {"cold": cold, "store_hit": 4 - cold, "in_process": 0}
+        return objective, True, copy.deepcopy(P3_VALUES), experiments
+
+    return resolve
+
+
+def resolved_record(
+    tmp_path: Path, inputs: tuple[Path, Path], dry: Mapping[str, Any], objective: float, cold: int
+) -> dict[str, Any]:
+    clock = iter([10.0, 13.5])
+    r3 = carried(tmp_path, inputs, m05_study())
+    m07.apply_t_star_resolve(r3, mock_resolver(objective, cold), lambda: next(clock))
+    return rederived(dry, lambda rungs: rungs.__setitem__("R3", r3))
+
+
+def test_a23_a_bitwise_equal_t_star_re_solve_gives_r3s_values_and_margins(
+    tmp_path: Path, m05_inputs: tuple[Path, Path], dry: Mapping[str, Any]
+) -> None:
+    record = resolved_record(tmp_path, m05_inputs, dry, J_STAR, cold=1)
+    r3 = record["rungs"]["R3"]
+    assert r3["t_star_resolve"] == {"cold": 1, "store_hit": 3, "in_process": 0, "wall_s": 3.5}
+    assert [c["margin"] for c in r3["candidate"]["constraints"]] == [0.25, 0.5]
+    assert "R3:j_star_not_reproduced" not in r3["limitations"]
+    assert accepted(record) == []
+    assert record["parent_checks"]["R3"]["constraints"] == r3["candidate"]["constraints"]
+    totals = record["accounting"]
+    assert totals["t_star_resolve"] == r3["t_star_resolve"]
+    assert (
+        totals["journey"]["reactor_cold"] == sum(totals[n]["reactor_cold"] for n in m07.RUNGS) + 1
+    )  # the re-solve counts in the journey's totals, not in M05's spend
+    assert totals["R3"]["reactor_cold"] == 63
+    wrong = copy.deepcopy(record)
+    wrong["rungs"]["R3"]["candidate"]["constraints"][1]["margin"] = -0.5
+    assert any("margin" in p for p in m07.check(wrong, None))
+
+
+def test_a23_an_unequal_t_star_re_solve_gives_null_values_and_the_limitation(
+    tmp_path: Path, m05_inputs: tuple[Path, Path], dry: Mapping[str, Any]
+) -> None:
+    record = resolved_record(tmp_path, m05_inputs, dry, J_STAR + 2.0**-53, cold=0)
+    r3 = record["rungs"]["R3"]
+    assert r3["candidate"]["constraints"] is None
+    assert r3["limitations"][-1] == "R3:j_star_not_reproduced"
+    assert (r3["candidate"]["J"], r3["candidate"]["e"]) == (J_STAR, 1.25e-6)  # still serve P13
+    assert accepted(record) == []
+    unstated = copy.deepcopy(record)
+    unstated["rungs"]["R3"]["limitations"].remove("R3:j_star_not_reproduced")
+    assert any("j_star_not_reproduced" in p for p in m07.check(unstated, None))
+
+
+def test_a23_a_real_record_needs_the_t_star_re_solve(
+    tmp_path: Path, m05_inputs: tuple[Path, Path], dry: Mapping[str, Any]
+) -> None:
+    r3 = carried(tmp_path, m05_inputs, m05_study())
+    record = rederived(dry, lambda rungs: rungs.__setitem__("R3", r3))
+    record["synthetic_dry_run"] = False
+    record = m07.derive(record)
+    assert "R3's verified candidate has no T* re-solve (A1.7)" in m07.check(record, None)
+
+
 def test_replay_refuses_until_wo4(tmp_path: Path) -> None:
     assert m07.main(["replay", str(tmp_path)]) == 2
 

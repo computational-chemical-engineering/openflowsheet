@@ -40,6 +40,7 @@ import copy
 import hashlib
 import json
 import math
+import os
 import platform
 import re
 import subprocess
@@ -988,6 +989,83 @@ def m05_rerun(out: Path, clock: Callable[[], float] = time.monotonic) -> Callabl
     return rerun
 
 
+class TStarResolve(Protocol):
+    """A parent solve at R3's decision T*: (objective or None, certified, M05 `ConstraintValue`
+    documents or None, `experiments` {cold, store_hit, in_process} of its coupling record)."""
+
+    def __call__(
+        self, t: float
+    ) -> tuple[float | None, bool, list[dict[str, Any]] | None, dict[str, int]]: ...
+
+
+def m05_t_star_resolver(document: Mapping[str, Any], runner: Any) -> TStarResolve | None:
+    """Amendment 1 A1.7 (R-426): M05's own `C1Parent.solve` at T* on the journey's case document
+    and store (the mechanism of R1's grid extras), its experiments attributed like a grid point's
+    (A1.4). `None` when M05's study package is not in this tree."""
+    try:
+        from openflowsheet.application.trust_region_parent import C1_PARENT_SERVICES
+        from openflowsheet.studies.trust_region.parent import C1Parent
+    except ImportError:
+        return None
+    records: list[Mapping[str, Any]] = []
+    box = (float(BOX_LITERALS[0]), float(BOX_LITERALS[1]))
+    parent = C1Parent(
+        document,
+        runner,
+        box,
+        services=C1_PARENT_SERVICES,
+        coupling_sink=lambda solve_id, record: records.append(record),
+    )
+    (decision,) = parent.decisions
+
+    def resolve(
+        t: float,
+    ) -> tuple[float | None, bool, list[dict[str, Any]] | None, dict[str, int]]:
+        records.clear()
+        solve = parent.solve({decision.name: t}, solve_id="m07-t-star", purpose="t_star_resolve")
+        experiments, _ = coupling_attribution(records[-1] if records else None)
+        if not solve.certified:
+            return None, False, None, experiments
+        return (
+            solve.objective,
+            True,
+            [item.as_document() for item in solve.constraints],
+            experiments,
+        )
+
+    return resolve
+
+
+def apply_t_star_resolve(
+    r3: dict[str, Any], resolve: TStarResolve, clock: Callable[[], float] = time.monotonic
+) -> dict[str, Any]:
+    """A1.7: R3's P3 values come from a journey re-solve of T*, whose objective must equal M05's
+    recorded J* bit for bit; otherwise the values are null with `R3:j_star_not_reproduced` (J*
+    and e* from M05's record still serve P13 and TC-1). The re-solve's cost is `t_star_resolve`
+    {cold, store_hit, in_process, wall_s}: in the journey totals, not in M05's spend, never
+    budget-gated. Nothing is re-solved without a verified candidate."""
+    candidate = r3.get("candidate")
+    if not candidate or not candidate["verified"]:
+        return r3
+    started = clock()
+    objective, certified, constraints, experiments = resolve(candidate["T"])
+    wall = clock() - started
+    r3["t_star_resolve"] = {
+        "cold": int(experiments["cold"]),
+        "store_hit": int(experiments["store_hit"]),
+        "in_process": int(experiments["in_process"]),
+        "wall_s": wall,
+    }
+    reproduced = certified and constraints is not None and objective == candidate["J"]
+    if reproduced and constraints is not None:
+        candidate["constraints"] = [with_margin(item) for item in constraints]
+    else:
+        candidate["constraints"] = None
+        r3["limitations"] = [*(r3.get("limitations") or ()), "R3:j_star_not_reproduced"]
+        print(f"R3: the T* re-solve gave J = {objective!r}, not J* = {candidate['J']!r}")
+    return r3
+
+
 # == the record (spec §6.1) ========================================================================
 
 
@@ -1004,6 +1082,7 @@ def environment_block() -> dict[str, Any]:
         "reactor_lock_sha256": sha256_file(reactor_lock),
         "platform": f"{platform.system()}-{platform.machine()}-py{platform.python_version()}",
         "tree_clean": _git("status", "--porcelain") == "",
+        "omp_num_threads": os.environ.get("OMP_NUM_THREADS"),
     }
 
 
@@ -1135,8 +1214,13 @@ def accounting(rungs: Mapping[str, Any]) -> dict[str, Any]:
             "budget": {"cold": rung["budget"]["cold"], "wall_s": rung["budget"]["wall_s"]},
             "exhausted": rung["outcome"] == "BUDGET_EXHAUSTED",
         }
+    resolved = rungs["R3"].get("t_star_resolve")  # A1.7: in the totals, not in M05's spend
+    per["t_star_resolve"] = None if resolved is None else dict(resolved)
     colds = [per[n]["reactor_cold"] for n in RUNGS]
     walls = [per[n]["wall_s"] for n in RUNGS]
+    if resolved is not None:
+        colds.append(resolved["cold"])
+        walls.append(resolved["wall_s"])
     per["journey"] = {  # null when a rung's spend is unrecorded (A1.6 item 4)
         "reactor_cold": None if None in colds else sum(colds),
         "wall_s": None if None in walls else math.fsum(walls),
@@ -1172,6 +1256,8 @@ LIMITATION_TEXT: Final = {
     "R3:carry_identity_differs": "R3's M05 record is not carried: the journey's determining files "
     "differ between its anchor commit and J, and it was not re-run.",
     "R3:m05_cold_unrecorded": "M05's record states no cold count; R3's cold is null.",
+    "R3:j_star_not_reproduced": "The journey's re-solve at T* did not reproduce M05's J* bit for "
+    "bit; R3's constraint values are null (a finding to the design lane).",
     "R3:m05_wall_unrecorded": "M05's record states no spent wall; R3's wall is null and W25 (g) "
     "is not met.",
 }
@@ -1499,6 +1585,12 @@ def render(record: Mapping[str, Any]) -> str:
             f"{_n(a['experiments']['in_process'])} / {_n(a['experiments']['store_hit'])} "
             f"| {_n(a['exhausted'])} |"
         )
+    resolved = acct["t_star_resolve"]
+    if resolved is not None:
+        cost.append(
+            f"| R3 re-solve at T* | {resolved['cold']} | — | {_n(resolved['wall_s'])} | — "
+            f"| {resolved['cold']} / {resolved['in_process']} / {resolved['store_hit']} | — |"
+        )
     total = acct["journey"]
     cost.append(
         f"| journey | {_n(total['reactor_cold'])} | {total['budget']['cold']} "
@@ -1525,8 +1617,14 @@ def render(record: Mapping[str, Any]) -> str:
     env = record["environment"]
     prov.append(
         f"- Environment: lock `{env['lock_sha256']}`, reactor lock `{env['reactor_lock_sha256']}`, "
-        f"{env['platform']}, tree clean {_n(env['tree_clean'])}"
+        f"{env['platform']}, tree clean {_n(env['tree_clean'])}, "
+        f"OMP_NUM_THREADS {_n(env.get('omp_num_threads'))}"
     )
+    if "m05_record" in r3:
+        prov.append(
+            f"- M05 record `{r3['m05_record']['path']}`, sha256 `{r3['m05_record']['sha256']}`, "
+            f"carried from `{r3['m05_record']['carried_from']}`"
+        )
     prov.append(f"- Synthetic dry run: {_n(record['synthetic_dry_run'])}")
     prov.append("- Replay: `python scripts/m07_journey.py replay <dir>`; check: `… check <dir>`.")
 
@@ -1572,6 +1670,14 @@ def check(record: Mapping[str, Any], report: str | None) -> list[str]:
         for key in ("discrepancy", "indifference_set"):
             if rungs[name].get(key) != rederived["rungs"][name][key]:
                 problems.append(f"{name} {key} differs from its re-derivation")
+    candidate = rungs["R3"].get("candidate")
+    if (
+        not record["synthetic_dry_run"]
+        and candidate
+        and candidate["verified"]
+        and rungs["R3"].get("t_star_resolve") is None
+    ):
+        problems.append("R3's verified candidate has no T* re-solve (A1.7)")
     if record["decision"].get("label") not in JOURNEY["decision_labels"]:
         problems.append(f"decision label {record['decision'].get('label')!r} is not registered")
     if report is not None:
@@ -1707,10 +1813,35 @@ def _check_r3(r3: Mapping[str, Any]) -> list[str]:
     else:
         problems.extend(_check_r3_carry(r3))
     candidate = r3.get("candidate")
+    problems.extend(_check_t_star_resolve(r3))
     if r3.get("decision") != (None if not candidate else candidate["T"]):
         problems.append("R3's decision is not its candidate's T")
     if r3.get("bound_activity") != bound_activity(r3.get("decision")):
         problems.append("R3 bound activity is not the rule's")
+    return problems
+
+
+def _check_t_star_resolve(r3: Mapping[str, Any]) -> list[str]:
+    """A1.7 on R3: a re-solve only at a verified candidate, its four cost members, constraint
+    values null exactly when `R3:j_star_not_reproduced` is stated, each margin the rule's."""
+    resolved = r3.get("t_star_resolve")
+    if resolved is None:
+        return []
+    candidate = r3.get("candidate")
+    if not candidate or not candidate["verified"]:
+        return ["R3 has a T* re-solve without a verified candidate"]
+    problems: list[str] = []
+    if sorted(resolved) != ["cold", "in_process", "store_hit", "wall_s"]:
+        problems.append(f"R3 t_star_resolve members {sorted(resolved)} are not A1.7's")
+    stated = "R3:j_star_not_reproduced" in (r3.get("limitations") or ())
+    constraints = candidate["constraints"]
+    if (constraints is None) != stated:
+        problems.append("R3's constraints are null iff R3:j_star_not_reproduced is stated: not so")
+    if isinstance(constraints, list) and any(
+        not isinstance(item, Mapping) or item.get("margin") != with_margin(item)["margin"]
+        for item in constraints
+    ):
+        problems.append("an R3 constraint margin is not the rule's")
     return problems
 
 
@@ -1869,13 +2000,25 @@ def run_journey(
     clock: Callable[[], float] = time.monotonic,
     commit: str | None = None,
     environment: Mapping[str, Any] | None = None,
+    out: Path | None = None,
+    t_star: TStarResolve | None | str = M05_EXTRAS,
 ) -> dict[str, Any]:
+    """R0, R1, R2, R3 in that order, then the T* re-solve (A1.7) on the journey's store. A real
+    run (not `dry_run`) re-runs M05's study under `out` when its record does not carry (A1.6)."""
     runner = runner if runner is not None else standin_runner(artifacts / "store")
     reactor = dry_run or reactor_available(env_base)
     r0 = run_r0(artifacts, runner, clock)
     r1 = run_r1(artifacts, runner, dry_run=dry_run, reactor=reactor, extras=extras, clock=clock)
     r2 = r2_rung(ROOT / JOURNEY["m04_facts"]["record"], parent_grid=r1.get("grid") or [])
-    r3 = r3_rung(m05_record) if reactor else unsupported_rung("R3", REACTOR_UNAVAILABLE)
+    if not reactor:
+        r3 = unsupported_rung("R3", REACTOR_UNAVAILABLE)
+    else:
+        rerun = None if dry_run or out is None else m05_rerun(out, clock)
+        r3 = r3_rung(m05_record, rerun=rerun)
+        if t_star == M05_EXTRAS:
+            t_star = None if dry_run else m05_t_star_resolver(load_loop("real"), runner)
+        if callable(t_star):
+            apply_t_star_resolve(r3, t_star, clock)
     return build_record(
         {"R0": r0, "R1": r1, "R2": r2, "R3": r3},
         synthetic_dry_run=dry_run,
@@ -1911,11 +2054,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         sub.add_parser(name).add_argument("directory", type=Path)
     args = parser.parse_args(argv)
     if args.command == "run":
+        if (
+            not args.dry_run
+            and os.environ.get("OMP_NUM_THREADS") != "1"
+            and reactor_available(args.env_base)
+        ):
+            print("run: R1, R3's re-solve and replay need OMP_NUM_THREADS=1 (Amendment 1 A1.7)")
+            return 2
         record = run_journey(
             args.artifacts.resolve(),
             dry_run=args.dry_run,
             m05_record=args.m05_record,
             env_base=args.env_base,
+            out=args.out,
         )
         write(record, args.out)
         print(f"journey written to {args.out}: decision {record['decision']['label']}")
