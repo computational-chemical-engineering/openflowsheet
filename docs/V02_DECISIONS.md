@@ -1036,3 +1036,7 @@ Grep, don't read whole. Newest at the bottom.
   - E1–E4, E8: `ALPHA_TAG_COMMIT`; the alpha's ledger and changelog tests read the record at the tag (AM-01 – AM-08);
     `m07a_rc.LINKS` gains c_3 (R-295, `strip_m04`, `455d01eb…`) with the controls re-aimed, each preceded by an
     unmodified-list pass (AM-10 – AM-18); AM-30 (M04/M05 harvest rows map to L49). Gate 9602 passed, 0 failed.
+  - E7: version `0.2.0a2.dev0` (B-WO10-4's set), envelope back to `v0.2-envelope-dev` / `0.2.0.dev0`, `ENVELOPE_ID`,
+    support matrix re-emitted (0 problems), RELEASING "After a tag", `tests/test_v02_main_version.py` (AM-40 – AM-42).
+    AM-10 still passes at the new version (D_3 unchanged). W27 coverage re-taken from the working tree (rows and
+    `list_models` unchanged; snapshot `153894c4…`), then once more at the E7 commit so `git_commit` names its build.

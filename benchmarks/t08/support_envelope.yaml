@@ -3,7 +3,7 @@
 # the v0.1 envelope as released is `git show v0.1.1:benchmarks/t08/support_envelope.yaml`
 # (`v0.1-envelope-1`, release 0.1.0). It is finalised for 0.2.0 at M07.
 # Pinned at the alpha's candidate `C_α` as `v0.2-alpha-envelope-1`, release 0.2.0a1 (V02 alpha
-# release spec MR-3); the first D2.4 change on `main` after the tag returns it to the working form.
+# release spec MR-3); returned to the working form at the alpha's merge into `main` (R-460).
 #
 # Machine-readable source of `docs/support-matrix.md`, which `scripts/t08_support_matrix.py --emit`
 # renders and `--check` holds to this file byte for byte (T08.A23). `--check` also compares the
@@ -21,8 +21,8 @@
 #   starts across runs" is no longer true; the GUESS-role half stands.
 # - L18 onward are rows the harvest (W2.2) needed that §5.5's seed does not carry.
 
-envelope_id: v0.2-alpha-envelope-1
-release: 0.2.0a1
+envelope_id: v0.2-envelope-dev
+release: 0.2.0.dev0
 
 axes:
   - id: property_model

@@ -150,6 +150,18 @@ refused as not covered until M07 registers the 0.2.0 gate set.
    `C_α`**. The `rc` input's default is the v0.1 candidate `67c66d9`; a dispatch that forgets to
    change it is refused, because that candidate's version `0.1.0rc1` is not the candidate's.
 
+**After a tag** (R-460). The first change to a D2.4 path after a tag moves the version to a `.dev0`
+that sorts after the tagged version, and returns the envelope to its working form
+(`v0.2-envelope-dev`, `release: 0.2.0.dev0`, R-193). After `0.2.0a1`, `main` carries
+`0.2.0a2.dev0`; `0.2.0.dev0` would sort before the release it follows. The version is set in
+`pyproject.toml`, `src/openflowsheet/__init__.py`, the two `project_summary` fixtures and
+`tests/test_m06_w27_coverage.py`, and W27's `coverage.json` is re-taken at that build. A version
+string that names a release identifies that release's D2.4 tree and nothing else
+(`tests/test_v02_main_version.py`). `release.yml` refuses a `.devN` version and the gate answers NO
+for it, so a head between releases cannot be dispatched. The version is part of the in-process
+experiment fingerprint, so the five in-process G10 records are re-taken after it changes and the
+re-take is proved with `scripts/m05_retake_diff.py --digest-only` (R-458).
+
 ## What the workflow refuses
 
 | Refusal | Enforced by |
