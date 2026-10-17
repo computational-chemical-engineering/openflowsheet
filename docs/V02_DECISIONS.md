@@ -1057,3 +1057,9 @@ Grep, don't read whole. Newest at the bottom.
   (the S77 proof was manual); R-459 L49 confirmed; R-460 main's version `0.2.0a2.dev0` + test that main never carries a
   released version on a different tree. For Frank later: the 0.2.0 "carry the agent evidence" question must name M04's
   new job kind. Engineer applying E1–E8 launched.
+- E1–E5, E7, E8 applied (`wp/V02-alpha-main` @ `3969e57`): gate 9611/0; CI 39066214331 green both runners; R-456 check
+  YES at `423ae9c`, table found verbatim in the released section; REAL replay 0 diffs. `--digest-only` passes S77's pair
+  (42/80/71/92/38); S78 build choice: store index paired by key. **E6 stopped**: re-take after the version change moves one
+  non-digest leaf per coupling record (`frozen.reactor.fingerprint.openflowsheet_version`), so R-458's rule (a) can never
+  pass; G10 red (nlp 181/5). Narrow design question sent to a fresh `specifier` (proposal: a `version` class on that one
+  path, old = `--old-version`, new = running `__version__`).
