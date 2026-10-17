@@ -787,3 +787,13 @@ S78 `scripts/m05_retake_diff.py --digest-only` (R-458; rulings `docs/design/V02-
    not by position. Positional pairing on S77's pair makes the map fail to be a function and injective on 17 (TR-E2)
    and 14 (LOOP-S) digests — an artefact of the sort order, not of the content. The store's digests still enter the
    map, so (b) and (c) cover them. Reversible by reverting the E5 commit. Unit tests: `tests/test_m05_retake_digest_only.py`.
+
+S79 `--digest-only` gains the class `version` and the fingerprint binding (R-458 Amendment A1; rulings §3 E5a). The
+   coupling records' clear `frozen.reactor.fingerprint.openflowsheet_version`, at exactly that path, is admitted when the
+   committed side equals `--old-version` and the re-take side the running `openflowsheet.__version__` (without
+   `--old-version`: the sides are equal); the rule is checked on every coupling pair, and a pair that breaks it or lacks
+   the leaf is other. On both sides of every coupling pair each frozen unit's `fingerprint_sha256` must equal
+   `document_sha256(fingerprint)`, always. The summary line gains `version=<n>`. AM-20 re-run on S77's pair: PASS,
+   42/80/71/92/38, `version=0 other=0` on all five (the binding holds on the 44 coupling sides). AM-22: six new cases
+   (the stale-digest case passes with the binding neutralised, checked once by monkeypatching `document_sha256`); the
+   existing synthetic coupling record gained a bound `frozen` block, since a record without one is now other.
