@@ -419,3 +419,11 @@ the spec's claim; no tolerance moved and no case was removed.
   floors from `benchmarks/m04/numerical_policy_surrogate.yaml` (needs the floor units, e.g. w_o,
   resolved per rule; R-253 says no comparator reads that table yet — a design-lane call).
   Reversible by: reverting the E41 commit.
+- **E42. CI prints skip reasons.** Run 38992908629 (E39–E41) is green on both runners, but its
+  logs show counts only (`pytest -q`): which test skipped for which machine reason is not on
+  record. Counts reconcile — `ubuntu-latest` 8613 passed / 99 skipped (was 8609 / 5 failed / 98),
+  `ubuntu-24.04-arm` 8584 / 98 (was 8584 / 2 failed / 96), `default-install` 8356 / 326 (was
+  8356 / 3 failed / 323) — but `default-install`'s +3 skips with +0 passes is not what E39 alone
+  predicts (+2 passes, +1 skip) and cannot be read from counts. DECISION: `PYTEST_ADDOPTS=-rs`
+  on the `check` job's step and `-rs` on `default-install`'s pytest; CI-only, the local gate and
+  its summary line are untouched. Reversible by: reverting the E42 commit.
