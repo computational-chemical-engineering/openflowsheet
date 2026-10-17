@@ -1063,3 +1063,6 @@ Grep, don't read whole. Newest at the bottom.
   non-digest leaf per coupling record (`frozen.reactor.fingerprint.openflowsheet_version`), so R-458's rule (a) can never
   pass; G10 red (nlp 181/5). Narrow design question sent to a fresh `specifier` (proposal: a `version` class on that one
   path, old = `--old-version`, new = running `__version__`).
+- R-458 Amendment A1 `12bbd89` (E5a): stricter than proposed — exact path only, pinned old/new values, plus binding check
+  `fingerprint_sha256 == document_sha256(fingerprint)` on both sides (holds on all 22 committed records and S77's 44 sides).
+  Rejected: unbound glob. E6 expected: version leaves 4/7/4/3/4, digests 41/79/70/91/37. Engineer applying E5a + E6 launched.
