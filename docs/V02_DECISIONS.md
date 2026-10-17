@@ -968,3 +968,7 @@ Grep, don't read whole. Newest at the bottom.
   `x86_64/Haswell` (spec §18 A1.3 makes no cross-machine bitwise claim), non-float members everywhere; CI prints skip reasons (E39–E42).
   Manifest `evidence/M04/09c6fed…` tested. Open for M04's design lane: off-Haswell floats against A1.3's R1/R2 floors (default no).
   Merged into main `f79864d`, **main gate PASS 8687/31**.
+- **M03 merged into main** (2026-10-17, `0bdb80d`): closeout part 2 (`sonnet-implementer`, a35885b/e8a22eb) merged main, CI 39007361803
+  green on both runners, manifest `evidence/M03/a35885b…` **tested** 52/0/0, 8 limitations harvested (one new: licence acceptance covers
+  the audited list only, class P — design lane may confirm). Merge tree identical to gated e8a22eb (8879 passed, 31 skipped).
+  M05 main-merge launched (`opus-engineer`).
