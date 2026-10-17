@@ -1,12 +1,12 @@
 # Changelog
 
-## v0.2.0a1 — release candidate `C_α` = `[[PENDING: C_α]]` (`0.2.0a1`); a pre-release; tag and publication by Frank
+## v0.2.0a1 — release candidate `C_α` = `cc73219a77f6a54579c8acb151ed6fae228c8a4c` (`0.2.0a1`); a pre-release; tag and publication by Frank
 
-*ADR 0021 D4, reused by ADR 0028. **Skeleton: the gate table is pending.** The table below is what
-`scripts/v0_2_gate.py --rc C_α --markdown` prints for the release candidate `C_α` after the design
-lane's verdicts (`docs/reviews/V02-alpha-verdicts.md`); it is pasted at the cut, and `C_α` replaces
-the marker in the heading. Until then nothing in this section is released. The tag and every
-publication are Frank's (ADR 0021 D5).*
+*ADR 0021 D4, reused by ADR 0028. The gate table below is what
+`scripts/v0_2_gate.py --rc C_α --markdown` prints at the tag candidate, after the design lane's
+verdicts on `C_α` (`docs/reviews/V02-alpha-verdicts.md`: judged 2026-10-16, V13, V17 and W21
+re-judged 2026-10-17 on Frank's answers in ADR 0028). Nothing in this section is released until
+the tag; the tag and every publication are Frank's (ADR 0021 D5).*
 
 **What it does.** Everything v0.1.0 does (the application contract, the thirteen unit models, the
 planner, the verifier, the certificate or the typed failure, the replay bundle) and, added since
@@ -18,7 +18,25 @@ unsupported**.
 
 **Gates (V11–V20, W21, W22), as `scripts/v0_2_gate.py` prints them.** A FAIL is printed FAIL.
 
-[[PENDING: gate table from `scripts/v0_2_gate.py --rc C_α --markdown`, pasted after the verdicts]]
+| Gate | Verdict at C | Required evidence | Clauses and travelling limitations |
+| --- | --- | --- | --- |
+| V11 | PASS | Semantic diff, drafts, task validation, units/references, real migration when applicable | limitations: L38 |
+| V12 | PASS | Required unit library with per-model definition of done | limitations: L02, L26, L27, L28, L29, L30, L-CSTR-1, L-CSTR-2, L-CSTR-3 |
+| V13 | PASS | DM/SCC/BTF, tear and EO, scaling and initialization | limitations: L10, L22, L23, L24, L36, L38, L43, L-WS-1, L-WS-2 |
+| V14 | FAIL | Homotopy, qualified PTC/SER and three bounded recovery edges | failing: V14 (b); V14 (b) FAIL, accepted by Frank 2026-10-17 (ADR 0028 D3); limitations: L01, L08, L20, L21, L43 |
+| V15 | PASS | Frozen phases, EO cross-unit spec, multiple-root evidence | limitations: L02, L14, L19, L20, L33 |
+| V16 | PASS | 30+ distinct cases, eight shared comparisons, two both-reference cases where feasible, registered 20x20 ensemble | limitations: L16, L17, L18, L32 |
+| V17 | PASS | Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification | limitations: L11, L12, L13 |
+| V18 | PASS | Distribution/data gates, local rank evidence, qualified energy checks, all recovery edges tested | limitations: L03, L05, L06, L15, L19, L25, L34, L37, L39, L40, L41 |
+| V19 | PASS | Real-chemistry dossier with usable data/kinetics/property/reference route | — |
+| V20 | PASS | >=95% nominal robustness, correct invalid-structure handling, no adversarial false verification | limitations: L04, L07, L09, L31, L32, L38 |
+| W21 | PASS | PyMRM boundary/accuracy/execution and provenance | limitations: L05, L06, L07, L15, L19, L20, L44, L45, L46, L48 |
+| W22 | PASS | One validated needed nonideal property route | limitations: L42, L47 |
+| W23 | not claimed | Surrogate conservation/domain/derivative/default UQ and promotion | — |
+| W24 | not claimed | Fixed-topology optimization, eligible trust-region example and parent-model checks | — |
+| W25 | not claimed | End-to-end real reactor refinement with honest evidence limits | — |
+| W26 | not claimed | Diagnostic web shell through shared contract | — |
+| W27 | not claimed | External agent benchmark adaptation attempted; inaccessible assets disclosed | — |
 
 **What it is not.**
 
@@ -37,7 +55,10 @@ unsupported**.
   registered tolerances; the solution-error bound is recorded and disclosed, never promised
   (ADR 0007 F3).
 - **PTC is experimental.** No PTC family is qualified: V14 (b) is judged FAIL at `C_α`.
-- **The agent evidence is narrow.** One pinned model and configuration, MCP only.
+- **The agent evidence is narrow.** One pinned model and configuration, MCP only. V17's agent
+  evidence is carried from `v17-c2`'s surface, not re-measured on v0.2's: Frank accepted the carry
+  (ADR 0028, 2026-10-17), and the release candidate's job checks the recorded decomposition chain
+  from that surface to this one (M07a.A37).
 - **The reactor is opt-in and measured on one machine.** Real-reactor runs are opt-in (they need
   the separately built, pinned reactor environment) and of reproducibility class R3 (ADR 0034 D6).
   The reactor has been run on Linux x86-64 on one machine (`ref-x86-64`): it is not measured on
