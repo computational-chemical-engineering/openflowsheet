@@ -9,7 +9,7 @@
  ],
  "status": "tested",
  "inputs": {
-  "case_id": "M07a's acceptance at C_α: one check per assertion of docs/derivations/V02-alpha-release-spec.md §10 (73eda2e9b63141c855cc7a49a08b9ec38d448d0d116ae482804c83de2a0797f7)",
+  "case_id": "M07a's acceptance at C_α: one check per assertion of docs/derivations/V02-alpha-release-spec.md §10 (070c8e4c92a8400651a13ec41ed039b2e1ea417218e5d2310b29e8e885ea2d26)",
   "case_hash": "8ea659cf081eb5d3c51ea18f62d193647b2e47af53a21f189ec0ac4c962c98ef",
   "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
  },
@@ -27,13 +27,13 @@
    "stdout_sha256": "847d959813da0e9fb50164e50633352d794951fabd5a1b6801dcaabaff048726"
   },
   {
-   "cmd": "PYTHONPATH=src:. .venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=ARTIFACTS/t08-tests.junit.xml tests/test_changelog_section.py tests/test_m07a_harvest.py tests/test_m07a_rc_records.py tests/test_m07a_surface_chain.py tests/test_m07a_v011_bundle.py tests/test_m07a_v0_2_gate.py tests/test_release_workflows.py tests/test_t08_b50_surface_content.py tests/test_t08_reference_generators.py tests/test_t08_w2_support_envelope.py tests/test_t08_w4_changelog.py",
+   "cmd": "PYTHONPATH=src:. .venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=ARTIFACTS/t08-tests.junit.xml tests/test_changelog_section.py tests/test_m07a_changelog.py tests/test_m07a_harvest.py tests/test_m07a_ledger.py tests/test_m07a_rc_records.py tests/test_m07a_surface_chain.py tests/test_m07a_v011_bundle.py tests/test_m07a_v0_2_gate.py tests/test_release_workflows.py tests/test_t08_b50_surface_content.py tests/test_t08_reference_generators.py tests/test_t08_w2_support_envelope.py tests/test_t08_w4_changelog.py",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "fccef751a9d3d82738484eac4bb339555e169ba8e35311afd3bbf008eede3ec6"
+   "stdout_sha256": "457701678e49c9c44b5523736a603d84c6570e53a618d065e09e4ceb3267c576"
   },
   {
-   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/m07a_evidence_manifest.py --commit cc73219a77f6a54579c8acb151ed6fae228c8a4c --ci-run 38813135468 --ci-run 38813136015 (run at d6836bc08cf835fbf7bbcbd2189e062f8926c4a4)",
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/m07a_evidence_manifest.py --commit cc73219a77f6a54579c8acb151ed6fae228c8a4c --ci-run 38813135468 --ci-run 38813136015 (run at 5c3a0688f66134af21c7ffaae9b9dfd41324a0b9)",
    "cwd": ".",
    "exit_code": 0
   }
@@ -883,13 +883,25 @@
   {
    "id": "M07a.A52",
    "description": "`CHANGELOG.md` `## v0.2.0a1`: (a) the heading is first, above `## v0.1.1`, and names `C_α`; (b) ADR 0021 D4's six headings in order; (c) the gate table equals `v0_2_gate.py --markdown` at the candidate; (d) \"what it is not\" contains each phrase of §10.1; (e) the limitation ids named are exactly the alpha envelope's, in order; (f) the reproducibility promise is ADR 0007 F1 verbatim; (g) the review table, as rows, equals MR-5's computed set. Judged at the candidate after §9.2 step 5, not at `C_α`, and outside the `tested` condition; (d) also requires that the section contain none of §10.1's forbidden phrases; the phrase lists are read from the generator's YAML *(amended 2026-10-15, Amendment 3 A4 and A5, R-373, R-374)*",
-   "result": "unsupported",
+   "result": "pass",
    "value": {
     "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_changelog.py"
+     ],
+     "nodes": 10,
+     "outcomes": {
+      "passed": 10
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
     "measured": {
-     "state": "pending",
-     "reason": "judged at the candidate after §9.2 step 5 (Amendment 3 §19.4)"
-    }
+     "names_c": true
+    },
+    "judged_at": "5c3a0688f66134af21c7ffaae9b9dfd41324a0b9"
    }
   },
   {
@@ -921,7 +933,7 @@
     "judged_by": "verdict",
     "measured": {
      "state": "pending",
-     "reason": "docs/reviews/V02-alpha-verdicts.md does not exist (the verdict agent, §6.3)"
+     "reason": "judged by the verdict agent, not here"
     }
    }
   },
@@ -933,7 +945,7 @@
     "judged_by": "verdict",
     "measured": {
      "state": "pending",
-     "reason": "docs/reviews/V02-alpha-verdicts.md does not exist (the verdict agent, §6.3)"
+     "reason": "judged by the verdict agent, not here"
     }
    }
   },
@@ -945,7 +957,7 @@
     "judged_by": "verdict",
     "measured": {
      "state": "pending",
-     "reason": "docs/reviews/V02-alpha-verdicts.md does not exist (the verdict agent, §6.3)"
+     "reason": "judged by the verdict agent, not here"
     }
    }
   },
@@ -957,20 +969,32 @@
     "judged_by": "verdict",
     "measured": {
      "state": "pending",
-     "reason": "docs/reviews/V02-alpha-verdicts.md does not exist (the verdict agent, §6.3)"
+     "reason": "judged by the verdict agent, not here"
     }
    }
   },
   {
    "id": "M07a.A64",
    "description": "`docs/requirements.yaml`",
-   "result": "unsupported",
+   "result": "pass",
    "value": {
     "judged_by": "test",
+    "tests": {
+     "selectors": [
+      "tests/test_m07a_ledger.py"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 5
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
     "measured": {
-     "state": "pending",
-     "reason": "the ledger does not cite evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json (WO-11)"
-    }
+     "cites": "evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json"
+    },
+    "judged_at": "5c3a0688f66134af21c7ffaae9b9dfd41324a0b9"
    }
   }
  ],
@@ -992,19 +1016,17 @@
   },
   {
    "path": "evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/artifacts/t08-tests.junit.xml",
-   "sha256": "c2f1b72eda608102cd76c742e9c16c730f64350ea89dd8b7ce7de3c5a8a0660c",
+   "sha256": "9aa5efb85383c36ee20272b24df4cff7af0cf945c7f5d4cb5d78c482cc32392b",
    "description": "the tests run here, per node (not committed)"
   }
  ],
  "limitations": [
-  "Evidence class: numerical and software verification at the alpha's release candidate C_α (tests run here, the RC job's records on ref-x86-64, ci-x86-64 and ci-aarch64, CI); the design lane's verdicts (A60-A63) and the ledger (A64) are not judged here.",
+  "Evidence class: numerical and software verification at the alpha's release candidate C_α (tests run here, the RC job's records on ref-x86-64, ci-x86-64 and ci-aarch64, CI); the design lane's verdicts (A60-A63) are not judged here; M07a.A52 and A64 are judged at the tag candidate after §9.2 step 5, by their tests run here (Amendment 3 §19.4).",
   "Step 13 (`scripts/v0_2_gate.py --rc C_α`) needs the verdicts and is not run; M07a.A12 is judged by its fixture tests only.",
-  "M07a.A52 is unsupported (pending): see its value.",
   "M07a.A60 is unsupported (pending): see its value.",
   "M07a.A61 is unsupported (pending): see its value.",
   "M07a.A62 is unsupported (pending): see its value.",
-  "M07a.A63 is unsupported (pending): see its value.",
-  "M07a.A64 is unsupported (pending): see its value."
+  "M07a.A63 is unsupported (pending): see its value."
  ],
  "review": {
   "numerical": "pending",
