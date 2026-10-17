@@ -1056,3 +1056,13 @@ Grep, don't read whole. Newest at the bottom.
   - Q1 settled at `2345b54` (0.2.0a2.dev0): `m05_wo9_real.py --replay` REPLAY PASS REAL, 0 differences (REAL's
     fingerprint carries no version, F4). nlp tier: 181 passed, 1 skipped, 5 failed (G10 ×5 only; 107/185/107/147/…
     differences); `m03_nlp_check.sh` fails on that pytest step only (inventory checks exit 0).
+- R-458 Amendment A1 applied (`12bbd89` rulings; E5a then E6):
+  - E5a (`f6ea52b`): `--digest-only` admits `frozen.reactor.fingerprint.openflowsheet_version` (exact path) as class
+    `version`, pinned to `--old-version` / the running `__version__`, with every frozen unit's `fingerprint_sha256`
+    bound to `document_sha256(fingerprint)` on both sides. AM-20 on S77's pair still PASS ×5, 42/80/71/92/38,
+    `version=0`; AM-22 +6 cases (13 in the file). Gate 9618 passed, 0 failed. M05 build log S79.
+  - E6: five G10 records re-taken at `f6ea52b` (clean tree, `.venv-nlp`, OMP 1, nlp-test-tools on `PYTHONPATH` as
+    WO-8 took them — without it the environment has 14 distributions, not 17, and (d) fails). `--digest-only
+    --old-version 0.1.1` PASS ×5: version 4/7/4/3/4, changed digests 41/79/70/91/37, other 0, environment equal —
+    as expected. nlp tier 186 passed, 0 failed (G10 5 passed); `m03_nlp_check.sh` PASSED; REAL `--replay` 0
+    differences; gate 9618 passed, 0 failed. M05 build log S80.

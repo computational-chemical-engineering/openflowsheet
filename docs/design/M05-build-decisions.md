@@ -797,3 +797,20 @@ S79 `--digest-only` gains the class `version` and the fingerprint binding (R-458
    42/80/71/92/38, `version=0 other=0` on all five (the binding holds on the 44 coupling sides). AM-22: six new cases
    (the stale-digest case passes with the binding neutralised, checked once by monkeypatching `document_sha256`); the
    existing synthetic coupling record gained a bound `frozen` block, since a record without one is now other.
+
+S80 The five in-process G10 records re-taken after the version change (R-458, A1; rulings §3 E6). `run_case` and
+   `write_files` into a scratch directory from a clean tree at `f6ea52b` (`__version__` `0.2.0a2.dev0`,
+   `provenance.tree_clean: true`), in `.venv-nlp` with `OMP_NUM_THREADS=1` and `PYTHONPATH=src:<nlp-test-tools>`,
+   then copied over the committed files. `--digest-only --old-version 0.1.1`, committed against re-take:
+     RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2: changed-digests=41 digest=146 timing=20 version=4 other=0 environment=equal
+     RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-far: changed-digests=79 digest=320 timing=35 version=7 other=0 environment=equal
+     RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-fd: changed-digests=70 digest=215 timing=20 version=4 other=0 environment=equal
+     RETAKE-DIGEST-ONLY PASS trust-region-study-loop-r: changed-digests=91 digest=285 timing=26 version=3 other=0 environment=equal
+     RETAKE-DIGEST-ONLY PASS trust-region-study-loop-s: changed-digests=37 digest=124 timing=20 version=4 other=0 environment=equal
+   The counts are the ones E6 expects (version 4/7/4/3/4, changed 41/79/70/91/37). A first take without the
+   nlp-test-tools directory on `PYTHONPATH` FAILed (d) in all five cases with the same counts: 14 distributions, not
+   17 (pytest, pluggy and iniconfig live there); with it the running list reproduces the committed `f775c97d…`, and
+   the environment files are byte-equal. The records are the second take. AM-23 and the rest on the re-taken tree:
+   nlp tier 186 passed, 1 skipped, 0 failed (G10 5 passed); `OMP_NUM_THREADS=1 ./scripts/m03_nlp_check.sh` PASSED;
+   `m05_wo9_real.py --replay` REPLAY PASS REAL, 0 differences (Q1); full gate 9618 passed, 0 failed. M05's committed
+   manifests are not rewritten; their record sha256s describe the records before this re-take (as S77).
