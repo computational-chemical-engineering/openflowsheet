@@ -13,6 +13,7 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
+import math
 import subprocess
 import sys
 from collections.abc import Callable, Iterator, Mapping
@@ -939,8 +940,95 @@ def test_the_environment_is_taken_before_any_rung_runs(
     assert record["environment"] == ENVIRONMENT
 
 
-def test_replay_refuses_until_wo4(tmp_path: Path) -> None:
-    assert m07.main(["replay", str(tmp_path)]) == 2
+# -- A24: replay (spec §6.4, Amendment 1 A1.7), on a dry run: the mechanics without the reactor --
+
+
+@pytest.fixture(scope="module")
+def dry_run_dir(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
+    """`run --dry-run` through the CLI, under OMP_NUM_THREADS=1: its record and its archive."""
+    root = tmp_path_factory.mktemp("m07-dry-cli")
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setenv("OMP_NUM_THREADS", "1")
+        code = m07.main(["run", "--dry-run", "--out", str(root / "out"), "--artifacts", str(root)])
+    assert code == 3  # R3: no M05 record is passed (A14's exit; the record is written)
+    yield root / "out"
+
+
+def copied(directory: Path, target: Path) -> Path:
+    for name in (m07.RECORD_NAME, m07.REPORT_NAME, m07.ARCHIVE_NAME):
+        (target / name).write_bytes((directory / name).read_bytes())
+    return target
+
+
+def test_a24_run_writes_the_store_archive(dry_run_dir: Path) -> None:
+    archive = json.loads((dry_run_dir / m07.ARCHIVE_NAME).read_bytes())
+    record = json.loads((dry_run_dir / m07.RECORD_NAME).read_text(encoding="utf-8"))
+    attempts = [key for key in archive if "/attempts/" in key]
+    executions = sum(
+        e["experiments"]["cold"] + e["experiments"]["in_process"]
+        for rung in m07.GRID_RUNGS
+        for e in record["rungs"][rung]["grid"]
+    )
+    assert len(attempts) == executions > 0
+
+
+def test_a24_replay_reproduces_a_dry_run_bitwise(
+    dry_run_dir: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv("OMP_NUM_THREADS", "1")
+    assert m07.main(["replay", str(dry_run_dir)]) == 0
+    assert capsys.readouterr().out.strip().endswith("replay: bitwise")
+
+
+def test_a24_replay_refuses_on_a_thread_setting_other_than_the_records(
+    dry_run_dir: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setenv("OMP_NUM_THREADS", "2")
+    assert m07.main(["replay", str(dry_run_dir)]) == 2
+    assert "omp_num_threads differs" in capsys.readouterr().out
+
+
+def test_a24_replay_refuses_without_the_archive(
+    dry_run_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("OMP_NUM_THREADS", "1")
+    directory = copied(dry_run_dir, tmp_path)
+    (directory / m07.ARCHIVE_NAME).unlink()
+    assert m07.main(["replay", str(directory)]) == 2
+
+
+def test_a24_replay_reports_a_number_the_record_does_not_reproduce(
+    dry_run_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("OMP_NUM_THREADS", "1")
+    directory = copied(dry_run_dir, tmp_path)
+    record = json.loads((directory / m07.RECORD_NAME).read_text(encoding="utf-8"))
+    point = record["rungs"]["R1"]["grid"][3]
+    point["J"] = math.nextafter(point["J"], math.inf)
+    (directory / m07.RECORD_NAME).write_text(m07.dumps(record), encoding="utf-8")
+    _, found = m07.replay_journey(directory, tmp_path / "scratch")
+    assert any(line.startswith("rungs.R1.grid[3].J: ") for line in found)
+    assert m07.main(["replay", str(directory)]) == 1
+
+
+def test_a24_a_request_the_archive_cannot_serve_is_a_difference_not_an_execution(
+    dry_run_dir: Path, tmp_path: Path
+) -> None:
+    directory = copied(dry_run_dir, tmp_path)
+    archive = json.loads((directory / m07.ARCHIVE_NAME).read_bytes())
+    dropped = sorted(key for key in archive if key.endswith("/result.json"))[0]
+    del archive[dropped]
+    (directory / m07.ARCHIVE_NAME).write_text(json.dumps(archive), encoding="utf-8")
+    _, found = m07.replay_journey(directory, tmp_path / "scratch")
+    assert any(line.startswith("replay diverged: a cold execution") for line in found)
+
+
+def test_a24_a_replayed_evaluation_counts_store_hits_only() -> None:
+    assert m07.replay_experiments({"cold": 4, "store_hit": 1, "in_process": 2}) == {
+        "cold": 0,
+        "in_process": 0,
+        "store_hit": 7,
+    }
 
 
 # -- A15: R2 reads M04's committed verdict ---------------------------------------------------------

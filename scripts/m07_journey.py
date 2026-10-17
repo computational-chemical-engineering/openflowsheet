@@ -24,9 +24,14 @@ Usage (``PYTHONPATH=src``)::
     python scripts/m07_journey.py render benchmarks/m07/journey/<J>
     python scripts/m07_journey.py replay benchmarks/m07/journey/<J>
 
-Exit codes: 0 done (or `check` accepts); 1 `check` rejects; 2 usage, or `replay` (WO-4, not
-implemented: it refuses rather than pretends); 3 a rung is `UNSUPPORTED` — the record and the
-report are written all the same (spec §4.6, A14).
+Exit codes: 0 done (or `check` accepts, or `replay` reproduces the record); 1 `check` rejects, or
+`replay` finds a difference; 2 usage, or `replay` refuses (a thread setting other than the
+record's, or no experiment archive); 3 a rung is `UNSUPPORTED` — the record and the report are
+written all the same (spec §4.6, A14).
+
+`run` also writes `journey.experiments.json`, the journey's experiment store as M05's REAL
+archive keeps one (`m05_wo9_real.store_archive`); `replay` restores it and re-derives the record
+from it and the M05 record without executing the reactor (spec §6.4, A24; build log J27).
 
 `--dry-run` plays R1 with the stand-in (spec §11 A10). Such a record carries
 `synthetic_dry_run: true` and is never W25 evidence. Build decisions: `docs/design/M07-build-
@@ -64,6 +69,7 @@ DECISION: Final[dict[str, Any]] = JOURNEY["decision"]
 SCHEMA: Final = "m07-journey-v1"
 RECORD_NAME: Final = "journey.json"
 REPORT_NAME: Final = "journey.md"
+ARCHIVE_NAME: Final = "journey.experiments.json"
 GRID_LITERALS: Final[tuple[str, ...]] = tuple(DECISION["grid_literals"])
 BOX_LITERALS: Final = (GRID_LITERALS[0], GRID_LITERALS[-1])
 T_NOMINAL: Final = float(DECISION["t_nominal_K"])
@@ -572,11 +578,13 @@ def run_grid(
     budget: RungBudget,
     extras: ParentExtras | None = None,
     clock: Callable[[], float] = time.monotonic,
+    settle: Callable[[str, dict[str, Any]], None] | None = None,
 ) -> tuple[list[dict[str, Any]], bool]:
     """The nine grid evaluations of a rung in grid order, the budget checked before each (§4.5,
     A1.2). A point not evaluated because the budget would be exceeded is recorded as
     `NOT_EVALUATED(budget)`. A point's `wall_s` is everything spent on it: the loop solve and its
-    parent extras. Returns the entries and whether the budget ran out."""
+    parent extras. `settle` (the replay's) sees each evaluated entry before it is charged.
+    Returns the entries and whether the budget ran out."""
     entries: list[dict[str, Any]] = []
     exhausted = False
     for literal in GRID_LITERALS:
@@ -592,6 +600,8 @@ def run_grid(
             started = clock()
             entry["e"], entry["constraints"] = extras(t, entry)
             entry["wall_s"] = float(entry["wall_s"]) + (clock() - started)
+        if settle is not None:
+            settle(literal, entry)
         budget.charge(int(entry["experiments"]["cold"]), float(entry["wall_s"]))
         entries.append(entry)
         if budget.overrun:
@@ -959,18 +969,27 @@ def _r3_document(
     }
 
 
-def m05_rerun(out: Path, clock: Callable[[], float] = time.monotonic) -> Callable[[], Any] | None:
-    """A1.6 item 3: M05's REAL study re-run at J by M05's own entry point as merged
-    (`scripts/m05_wo9_real.py`'s `run_real`, on a fresh experiment store as M05 requires), its
-    record and sidecars written under `<out>/m05/` with M05's writer. `None` when M05's script
-    cannot be imported here. The call refuses a dirty tree (M05's S65), so nothing of the journey
-    is written before it."""
+def m05_wo9_real() -> Any:
+    """M05's REAL script (`scripts/m05_wo9_real.py`: its re-run, store archive and record-only
+    backend), or `None` when it cannot be imported here."""
     scripts = str(ROOT / "scripts")
     if scripts not in sys.path:
         sys.path.insert(0, scripts)
     try:
         import m05_wo9_real as real
     except ImportError:
+        return None
+    return real
+
+
+def m05_rerun(out: Path, clock: Callable[[], float] = time.monotonic) -> Callable[[], Any] | None:
+    """A1.6 item 3: M05's REAL study re-run at J by M05's own entry point as merged
+    (`scripts/m05_wo9_real.py`'s `run_real`, on a fresh experiment store as M05 requires), its
+    record and sidecars written under `<out>/m05/` with M05's writer. `None` when M05's script
+    cannot be imported here. The call refuses a dirty tree (M05's S65), so nothing of the journey
+    is written before it."""
+    real = m05_wo9_real()
+    if real is None:
         return None
 
     def rerun() -> tuple[Path, float]:
@@ -1936,7 +1955,9 @@ def _section(report: str, title: str) -> list[str]:
 # == run ===========================================================================================
 
 
-def standin_runner(store: Path, model_version: str = "m07-journey") -> Any:
+def standin_runner(
+    store: Path, model_version: str = "m07-journey", backend_for: Callable[[Any], Any] | None = None
+) -> Any:
     from openflowsheet.adapters.experiments.runner import ExperimentRunner
     from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
     from openflowsheet.compiled import EvaluationContext
@@ -1946,6 +1967,7 @@ def standin_runner(store: Path, model_version: str = "m07-journey") -> Any:
         ExperimentStore(store, ListArtifactSink()),
         PrC1Provider(),
         EvaluationContext(model_version=model_version, constants_sha256="0" * 64),
+        backend_for=backend_for,
     )
 
 
@@ -2048,6 +2070,233 @@ def any_unsupported(record: Mapping[str, Any]) -> bool:
     return any(str(r["outcome"]).startswith("UNSUPPORTED(") for r in record["rungs"].values())
 
 
+def write_archive(artifacts: Path, out: Path) -> bool:
+    """`<out>/journey.experiments.json` from the journey's store under `artifacts` (M05's archive
+    format); False, with nothing written, when M05's script cannot be imported here."""
+    real = m05_wo9_real()
+    if real is None:
+        return False
+    (out / ARCHIVE_NAME).write_bytes(real.store_archive(artifacts / "store"))
+    return True
+
+
+# == replay (spec §6.4, A24; Amendment 1 A1.7) =====================================================
+
+
+def replay_experiments(recorded: Mapping[str, Any]) -> dict[str, int]:
+    """What an evaluation counts when the restored store serves it: every execution and every hit
+    of the run is a store hit, and nothing executes (M05's F-20: served from the record, cold
+    requests become store hits by design)."""
+    served = int(recorded["cold"]) + int(recorded["store_hit"]) + int(recorded["in_process"])
+    return {"cold": 0, "in_process": 0, "store_hit": served}
+
+
+def _settle(where: str, entry: dict[str, Any], before: Mapping[str, Any], found: list[str]) -> None:
+    """A replayed evaluation takes the record's measured members — `wall_s`, `experiments` once
+    they map as `replay_experiments` says, and the coupling digest, whose record carries the
+    attempts and `cache_hit` a store hit changes — so that everything derived from them is
+    re-derived and compared (build log J27)."""
+    expected = replay_experiments(before["experiments"])
+    if entry["experiments"] != expected:
+        found.append(
+            f"{where}: the replay counts {entry['experiments']}, not {expected} "
+            f"(the record's {before['experiments']} served from the store)"
+        )
+    entry["experiments"] = dict(before["experiments"])
+    entry["wall_s"] = before["wall_s"]
+    if "coupling_sha256" in before:
+        entry["coupling_sha256"] = before["coupling_sha256"]
+
+
+def _replay_grid(
+    name: str,
+    recorded: Mapping[str, Any],
+    evaluate: Evaluator,
+    extras: ParentExtras | None,
+    found: list[str],
+) -> dict[str, Any]:
+    """A grid rung re-run by `run_grid` against M07-budget-v1 with the record's costs, so the
+    replay evaluates the points the record evaluated and stops where it stopped."""
+    before = {e["T_literal"]: e for e in recorded.get("grid") or []}
+
+    def settle(literal: str, entry: dict[str, Any]) -> None:
+        if literal not in before:
+            found.append(f"{name} {literal}: evaluated by the replay, absent from the record")
+            return
+        _settle(f"{name} {literal}", entry, before[literal], found)
+
+    budget = budget_for(name)
+    entries, exhausted = run_grid(name, evaluate, budget, extras, settle=settle)
+    return grid_rung(entries, exhausted, budget)
+
+
+def _replay_r3(recorded: Mapping[str, Any], found: list[str]) -> dict[str, Any]:
+    """R3 from the M05 record the journey record names, whose sha256 must match, through A1.6's
+    conditions 1–5 (a re-run record is committed with the journey, so condition 5 applies) and
+    `_r3_document`; the carry is the record's (re-judged at C by RC step 15, not by the replay),
+    and so is a re-run's wall, which the journey measured. A refused R3 names no M05 record:
+    its refusal codes are the record's, with nothing to re-derive them from."""
+    m05 = recorded.get("m05_record")
+    if m05 is None:
+        refused = unsupported_rung("R3", M05_UNAVAILABLE)
+        if "limitations" in recorded:
+            refused["limitations"] = list(recorded["limitations"])
+        return refused
+    path = ROOT / m05["path"]
+    if not path.is_file() or sha256_file(path) != m05["sha256"]:
+        found.append(f"R3: {m05['path']} is not the M05 record of sha256 {m05['sha256']}")
+        return copy.deepcopy(dict(recorded))
+    failed, record, chosen = _r3_condition(path, M05_SCHEMA, tracked_unmodified)
+    if failed is not None or record is None:
+        found.append(f"R3: {m05['path']} fails A1.6 input condition {failed}")
+        return copy.deepcopy(dict(recorded))
+    carried_from = m05["carried_from"]
+    wall = (
+        recorded["budget"]["spent"]["wall_s"] if carried_from == RERUN else m05_spent_wall(record)
+    )
+    return _r3_document(path, record, chosen, carried_from, wall)
+
+
+def replay_journey(
+    directory: Path,
+    scratch: Path,
+    *,
+    extras: ParentExtras | None | str = M05_EXTRAS,
+    t_star: TStarResolve | None | str = M05_EXTRAS,
+) -> tuple[dict[str, Any] | None, list[str]]:
+    """Spec §6.4: the journey of `directory` re-derived from its experiment archive (restored
+    under `scratch`) and its M05 record, by `run_journey`'s own steps, with M05's record-only
+    backend for every unit: a request the archive cannot serve is a difference, never an
+    execution, and ends the replay (no re-derived record). Returns the re-derived record and
+    every difference from the recorded one; it is `dumps`-equal to the record iff the list is
+    empty. Measured members are the record's (`_settle`)."""
+    record = json.loads((directory / RECORD_NAME).read_text(encoding="utf-8"))
+    real = m05_wo9_real()
+    if real is None:
+        raise SystemExit("replay needs scripts/m05_wo9_real.py (the archive and its backend)")
+    from openflowsheet.adapters.experiments.backends import InProcessBackend, OutOfProcessBackend
+
+    found: list[str] = []
+    real.restore_store((directory / ARCHIVE_NAME).read_bytes(), scratch / "store")
+
+    def backend_for(variant: Any) -> Any:
+        """Record-only for both kinds: the replay executes no unit, in process or out."""
+        inner = InProcessBackend if variant.kind == "in_process" else OutOfProcessBackend
+        return real.RecordOnlyBackend(inner(variant), found)
+
+    runner = standin_runner(scratch / "store", backend_for=backend_for)
+    try:
+        replayed = _rederive(record, runner, scratch, found, extras, t_star)
+    except real.ReplayDivergedError:
+        return None, found
+    found.extend(json_differences(record, replayed))
+    return replayed, found
+
+
+def _rederive(
+    record: Mapping[str, Any],
+    runner: Any,
+    scratch: Path,
+    found: list[str],
+    extras: ParentExtras | None | str,
+    t_star: TStarResolve | None | str,
+) -> dict[str, Any]:
+    """`replay_journey`'s re-derivation: `run_journey`'s steps on the restored store."""
+    dry = bool(record["synthetic_dry_run"])
+    rungs = record["rungs"]
+    r0 = _replay_grid(
+        "R0", rungs["R0"], LoopEvaluator(load_loop("standin"), runner, scratch, "R0"), None, found
+    )
+    reactor = rungs["R1"]["outcome"] != unsupported(REACTOR_UNAVAILABLE)
+    if not reactor:
+        r1 = unsupported_rung("R1", REACTOR_UNAVAILABLE)
+    else:
+        document = load_loop("standin" if dry else "real")
+        if extras == M05_EXTRAS:
+            extras = m05_parent_extras(document, runner)
+        evaluate = LoopEvaluator(document, runner, scratch, "R1")
+        r1 = _replay_grid("R1", rungs["R1"], evaluate, extras if callable(extras) else None, found)
+    r2 = r2_rung(ROOT / JOURNEY["m04_facts"]["record"], parent_grid=r1.get("grid") or [])
+    if not reactor:
+        r3 = unsupported_rung("R3", REACTOR_UNAVAILABLE)
+    else:
+        r3 = _replay_r3(rungs["R3"], found)
+        if t_star == M05_EXTRAS:
+            t_star = None if dry else m05_t_star_resolver(load_loop("real"), runner)
+        if callable(t_star) and "t_star_resolve" not in r3:
+            apply_t_star_resolve(r3, t_star)
+            if "t_star_resolve" in r3:
+                before = rungs["R3"].get("t_star_resolve")
+                if before is None:
+                    found.append("R3: the replay re-solved T*, the record did not")
+                else:
+                    replayed_resolve = _resolve_as_entry(r3["t_star_resolve"])
+                    _settle("R3 T*", replayed_resolve, _resolve_as_entry(before), found)
+                    r3["t_star_resolve"] = dict(before)
+    return build_record(
+        {"R0": r0, "R1": r1, "R2": r2, "R3": r3},
+        synthetic_dry_run=dry,
+        commit=record["commit"],
+        environment=record["environment"],
+    )
+
+
+def _resolve_as_entry(resolve: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "experiments": {k: resolve[k] for k in ("cold", "store_hit", "in_process")},
+        "wall_s": resolve["wall_s"],
+    }
+
+
+def json_differences(recorded: Any, replayed: Any, path: str = "") -> list[str]:
+    """Every member where two JSON documents differ, by path; numbers by their JSON text
+    (binary64 bit for bit), so 0.0 and -0.0 or 1 and 1.0 differ."""
+    if isinstance(recorded, dict) and isinstance(replayed, dict):
+        found = []
+        for key in sorted(set(recorded) | set(replayed)):
+            where = f"{path}.{key}" if path else key
+            if key not in recorded or key not in replayed:
+                found.append(f"{where}: only in the {'replay' if key in replayed else 'record'}")
+            else:
+                found.extend(json_differences(recorded[key], replayed[key], where))
+        return found
+    if isinstance(recorded, list) and isinstance(replayed, list):
+        if len(recorded) != len(replayed):
+            return [f"{path}: {len(recorded)} items recorded, {len(replayed)} replayed"]
+        found = []
+        for k, (a, b) in enumerate(zip(recorded, replayed, strict=True)):
+            found.extend(json_differences(a, b, f"{path}[{k}]"))
+        return found
+    if json.dumps(recorded) != json.dumps(replayed):
+        return [f"{path}: recorded {json.dumps(recorded)}, replayed {json.dumps(replayed)}"]
+    return []
+
+
+def replay(directory: Path) -> int:
+    """`replay <dir>`: exit 2 on a thread setting other than the record's (A1.7) or without the
+    archive; 0 iff the re-derived record equals the recorded one, else 1 with the differences."""
+    record = json.loads((directory / RECORD_NAME).read_text(encoding="utf-8"))
+    recorded_threads = record["environment"].get("omp_num_threads")
+    threads = os.environ.get("OMP_NUM_THREADS")
+    if threads != recorded_threads:
+        print(
+            f"replay: omp_num_threads differs (OMP_NUM_THREADS={threads!r}, the record's "
+            f"{recorded_threads!r}); nothing was re-derived"
+        )
+        return 2
+    if not (directory / ARCHIVE_NAME).is_file():
+        print(f"replay: {directory / ARCHIVE_NAME} is missing; nothing was re-derived")
+        return 2
+    import tempfile
+
+    with tempfile.TemporaryDirectory(prefix="m07-replay-") as scratch:
+        _, found = replay_journey(directory, Path(scratch))
+    for line in found[:40]:
+        print(f"DIFFERS: {line}")
+    print("replay: bitwise" if not found else f"replay: DIFFERS ({len(found)})")
+    return 0 if not found else 1
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -2076,11 +2325,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             out=args.out,
         )
         write(record, args.out)
+        if not write_archive(args.artifacts.resolve(), args.out):
+            print(f"run: no {ARCHIVE_NAME} (M05's script is not importable); replay will refuse")
         print(f"journey written to {args.out}: decision {record['decision']['label']}")
         return 3 if any_unsupported(record) else 0
     if args.command == "replay":
-        print("replay: not implemented before WO-4 (M07 spec §13); nothing was re-derived")
-        return 2
+        return replay(args.directory)
     record = json.loads((args.directory / RECORD_NAME).read_text(encoding="utf-8"))
     if args.command == "render":
         (args.directory / REPORT_NAME).write_text(render(record), encoding="utf-8")
