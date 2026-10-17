@@ -378,3 +378,20 @@ repeats, 4467 s wall on a shared host (load ≈ 80–96 on 48 threads from other
   `not_applicable` (A31 NOT_PROMOTABLE); A48 5 nodes, A49 1, A50 2, A24 16, all passed; gate at
   `8df0ea7` GATE PASS, 8664 passed, 31 skipped. Harvested with `a9566a6`'s manifest by
   `--harvest-from` (10 entries; classes of R-365, E37). Not `reviewed`.
+
+## Follow-up: main's CI on the hosted runners (`wp/M04-ci`)
+
+`ci` failed on every push since 2026-10-16 (run 38975380701; last green 38810003221): three A40
+tests on `ubuntu-latest` and `default-install`, A49 on `ubuntu-24.04-arm`, A35 on both `check`
+runners. Locally (48 threads) all passed. Each is a machine precondition or a comparison wider than
+the spec's claim; no tolerance moved and no case was removed.
+
+- **E39. A40's script path needs four physical cores; the refusals do not.** R-250 caps
+  `m04_prewarm.prewarm`'s `max_workers` at `physical_cores()` (2 on `ubuntu-latest`), and A40
+  names `max_workers = 4`, so `ValueError` was raised before anything ran (the `cold_experiments
+  == 199` line in the log is the traceback's context, it held). DECISION: the script-path test
+  skips, with the reason, where `physical_cores() < 4`; the two refusal tests run at
+  `min(4, physical_cores())`, since a refusal is decided before any worker exists and their claim
+  names no count. A40's A19-bitwise half (four spawned processes, no cap) runs everywhere.
+  Alternative: run the script path at 2 workers on small hosts (not A40's parameter). Reversible
+  by: reverting the E39 commit.
