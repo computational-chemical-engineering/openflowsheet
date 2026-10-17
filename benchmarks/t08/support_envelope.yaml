@@ -2881,3 +2881,45 @@ harvest:
   to:
   - B10
   note: A33 is conditional on a PROMOTABLE A31 (spec §12, §19 A2.13); not run (R-365)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[0]
+  sha256: 092b43bb8e2135dce2bb76d5a88bd2038baada863260e79719869a228bc888c2
+  class: P
+  to: []
+  note: follow-up outside the requirements pattern; extends M04 (A07, D12)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[1]
+  sha256: f1f45ef92d856a6489edfa002413a0a69456ed07b4d97220c46cf079ae0e513b
+  class: P
+  to: []
+  note: hashes inherited from the M04 manifest (no new case or environment)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[2]
+  sha256: 52b003791da93323f0d25159413c62dd523c14a6bea3af3d56060322dfc320da
+  class: P
+  to: []
+  note: gate summary-line hash; process note
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[3]
+  sha256: 7302c381ce9de66fe0e7a1cca3c3d46d67d772f34320aee4ece097abd1b532ba
+  class: P
+  to: []
+  note: A40 script path unexercised on 2-core hosted runners; checked locally and on arm (E39)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[4]
+  sha256: e3b2f600482e635ecadd0b8ad372d2bd26f634e0140ac63239a8641738584f82
+  class: P
+  to: []
+  note: A49 negative control vacuous on aarch64 and x86_64/SkylakeX; claims asserted (E40)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[5]
+  sha256: 10053a15174927ae8714e9caaa86060e95bd3d9decd923173098c89c1662fd87
+  class: P
+  to: []
+  note: A35 floats compared on x86_64/Haswell only; R0 members elsewhere (E41)
+- manifest: evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json
+  item: limitations[6]
+  sha256: b5f10afb7c933862239b8817b91063d65c8e6dc0e9fcf3352ac3600f6cabed65
+  class: P
+  to: []
+  note: tested, not reviewed

@@ -427,3 +427,15 @@ the spec's claim; no tolerance moved and no case was removed.
   predicts (+2 passes, +1 skip) and cannot be read from counts. DECISION: `PYTEST_ADDOPTS=-rs`
   on the `check` job's step and `-rs` on `default-install`'s pytest; CI-only, the local gate and
   its summary line are untouched. Reversible by: reverting the E42 commit.
+- **Evidence of the CI follow-up.** CI run 38998365118 at `09c6fed` is green on every job it ran
+  (`check` on both runners, `default-install`, `identity`), with the skip reasons on record:
+  `check (ubuntu-latest)` (x86_64/Haswell, 2 physical cores) skips A40's script path only — A35
+  compared the floats there and passed, A49's control split; `default-install` (x86_64/SkylakeX,
+  2 physical cores) skips A40's script path, A49's control (vacuous) and A35's floats (R0 members
+  agreed); `check (ubuntu-24.04-arm)` (aarch64/neoversen2, 4 CPUs) skips A49's control and A35's
+  floats. The hosted x86 runners are a hardware lottery (run 38992908629's `default-install` and
+  run 38975380701's `check` evidently drew other classes). Manifest:
+  `evidence/M04/09c6fed2e2da4dbad4e405c2925e2d6c5227ba9b/manifest.json`; its limitations are
+  harvested by hand at the end of `support_envelope.yaml` (all P): `m04_evidence_manifest.py
+  --harvest-from` rewrites every `evidence/M04/` entry and must be given this manifest's entries
+  back if it is re-run.
