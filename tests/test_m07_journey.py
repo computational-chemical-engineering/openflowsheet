@@ -697,7 +697,13 @@ def carried(
         (evidence / C_M).mkdir(parents=True, exist_ok=True)
         manifest = {"status": "tested", "artifacts": [{"sha256": m07.sha256_file(path)}]}
         (evidence / C_M / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
-    return m07.r3_rung(path, schema_path=schema, evidence=evidence, tracked=lambda p: True)
+    return m07.r3_rung(
+        path,
+        schema_path=schema,
+        evidence=evidence,
+        tracked=lambda p: True,
+        identical=lambda a: True,
+    )
 
 
 @pytest.mark.parametrize(
@@ -779,6 +785,64 @@ def test_a21_r3_without_an_anchor_or_a_cold_count_says_so(
     assert uncounted["budget"]["spent"]["cold"] is None
     assert uncounted["limitations"] == ["R3:m05_cold_unrecorded", "R3:m05_wall_unrecorded"]
     assert m07._check_r3(uncounted) == []
+
+
+def test_a21_the_carry_identity_is_the_determining_files_at_the_anchor_and_j() -> None:
+    """Spec §4.6: `carry.journey_files` as pathspecs; HEAD is identical to itself; a commit git does
+    not know is not."""
+    assert m07.carry_paths() == (
+        "src/openflowsheet",
+        "benchmarks/m02",
+        "benchmarks/m04",
+        "benchmarks/m05",
+        "requirements.lock",
+        m07.REACTOR_LOCK,
+    )
+    assert (REPO_ROOT / m07.REACTOR_LOCK).is_file()
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True, check=True
+    ).stdout.strip()
+    assert m07.carry_identical(head) is True
+    assert m07.carry_identical("0" * 40) is False
+
+
+def test_a21_a_record_that_does_not_carry_is_re_run_at_j(
+    tmp_path: Path, m05_inputs: tuple[Path, Path]
+) -> None:
+    """A1.6 items 2.3 and 3: no anchor, or determining files that differ at J, re-run M05's study
+    (its record then carried_from `rerun`, its wall the journey's measurement); without a re-run,
+    R3 refuses and says which."""
+    schema, evidence = m05_inputs
+    stated = {"run_commit": "c" * 40, "tree_clean": True, "wall_s": 1454.5}
+    path = tmp_path / "study.json"
+    path.write_text(json.dumps(m05_study(provenance=stated)), encoding="utf-8")
+    rerun_path = tmp_path / "m05" / "rerun.json"
+    rerun_path.parent.mkdir()
+    rerun_path.write_text(json.dumps(m05_study(**{"accounting.budgets.cold_used": 51})), "utf-8")
+    calls: list[int] = []
+
+    def rerun() -> tuple[Path, float]:
+        calls.append(1)
+        return rerun_path, 1500.25
+
+    def r3(**kw: Any) -> dict[str, Any]:
+        return m07.r3_rung(
+            path, schema_path=schema, evidence=evidence, tracked=lambda p: True, **kw
+        )
+
+    differs = r3(identical=lambda a: False)
+    assert differs["outcome"] == m07.unsupported(m07.M05_UNAVAILABLE)
+    assert differs["limitations"] == ["R3:carry_identity_differs"]
+    rerun_r3 = r3(identical=lambda a: False, rerun=rerun)
+    assert calls == [1] and rerun_r3["m05_record"]["carried_from"] == m07.RERUN
+    assert rerun_r3["m05_record"]["sha256"] == m07.sha256_file(rerun_path)
+    assert rerun_r3["budget"]["spent"] == {"cold": 51, "wall_s": 1500.25}
+    assert rerun_r3["budget"]["wall_source"] == "journey_measured"
+    assert m07._check_r3(rerun_r3) == []
+    assert r3(identical=lambda a: True, rerun=rerun)["m05_record"]["carried_from"] == "c" * 40
+    assert calls == [1]  # a carried record is not re-run
+    path.write_text(json.dumps(m05_study()), encoding="utf-8")  # no anchor at all
+    assert r3(rerun=rerun)["m05_record"]["carried_from"] == m07.RERUN and calls == [1, 1]
 
 
 def test_replay_refuses_until_wo4(tmp_path: Path) -> None:

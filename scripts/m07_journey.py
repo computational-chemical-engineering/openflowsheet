@@ -720,6 +720,38 @@ M05_STUDY_ID: Final = str(JOURNEY["study"])
 M05_BUDGET_ID: Final = "M05-budget-v1"
 M05_CONFIGURATION: Final = "REAL"
 RERUN: Final = "rerun"
+#: The reactor environment lock (M02), the one `carry.journey_files` member named in prose.
+REACTOR_LOCK: Final = "src/openflowsheet/adapters/pymrm/reactor-env.lock"
+#: A re-run's record and sidecars, under the journey's directory (A1.6 item 3).
+M05_RERUN_DIR: Final = "m05"
+
+
+def carry_paths() -> tuple[str, ...]:
+    """The registration's `carry.journey_files` as git pathspecs (spec §4.6): a `dir/**` glob is
+    the directory, the reactor environment lock is `REACTOR_LOCK`, a file is itself."""
+    paths = []
+    for item in REG["carry"]["journey_files"]:
+        if item.endswith("/**"):
+            paths.append(item[: -len("/**")])
+        elif item.startswith("the reactor environment lock"):
+            paths.append(REACTOR_LOCK)
+        else:
+            paths.append(item)
+    return tuple(paths)
+
+
+def carry_identical(anchor: str) -> bool:
+    """Spec §4.6 carry by identity: every determining file is byte-equal between the anchor commit
+    and this tree (`HEAD`, with no change to those paths in the working tree). An anchor git does
+    not know is not identical."""
+    paths = carry_paths()
+    differs = subprocess.run(
+        ["git", "diff", "--quiet", anchor, "HEAD", "--", *paths],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    return differs.returncode == 0 and _git("status", "--porcelain", "--", *paths) == ""
 
 
 def tracked_unmodified(path: Path) -> bool:
@@ -827,23 +859,49 @@ def r3_rung(
     schema_path: Path = M05_SCHEMA,
     evidence: Path = M05_EVIDENCE,
     tracked: Callable[[Path], bool] = tracked_unmodified,
+    identical: Callable[[str], bool] = carry_identical,
+    rerun: Callable[[], tuple[Path, float]] | None = None,
 ) -> dict[str, Any]:
-    """R3 from M05's REAL study record passed as `--m05-record`, carried by identity (Amendment 1
-    A1.6, R-425). The record is accepted iff conditions 1–5 hold; otherwise R3 is
+    """R3 from M05's REAL study record passed as `--m05-record`, carried by identity (spec §4.6;
+    Amendment 1 A1.6, R-425). The record is accepted iff conditions 1–5 hold; otherwise R3 is
     `UNSUPPORTED(m05_study_unavailable)` with `R3:record_rejected:<n>`, never an exception. The
     carry anchor is M05's stated run commit, else a tested M05 manifest listing the record's
-    sha256; without one, `R3:carry_anchor_missing` (re-running the study at J is WO-4's). The
-    accounting is copied from M05's record, never reconstructed or defaulted. Without a record,
-    `UNSUPPORTED(m05_study_unavailable)`."""
+    sha256. A record with no anchor, or whose `carry.journey_files` differ between the anchor and
+    J, is re-run at J by `rerun` (M05's REAL entry point, A1.6 item 3), which returns the re-run
+    record's path and the journey's monotonic-clock wall of the study call; without `rerun`, R3
+    refuses with `R3:carry_anchor_missing` or `R3:carry_identity_differs`. A re-run record meets
+    conditions 1–4 at J; condition 5 holds once it is committed with the journey record (build
+    log J22). The accounting is copied from M05's record, never reconstructed or defaulted.
+    Without a record, `UNSUPPORTED(m05_study_unavailable)`."""
     if record_path is None:
         return unsupported_rung("R3", M05_UNAVAILABLE)
     failed, record, chosen = _r3_condition(record_path, schema_path, tracked)
     if failed is not None or record is None:
         return _r3_refused(f"R3:record_rejected:{failed}")
-    record_sha256 = sha256_file(record_path)
-    anchor = m05_run_commit(record) or manifest_anchor(record_sha256, evidence)
-    if anchor is None:
-        return _r3_refused("R3:carry_anchor_missing")
+    anchor = m05_run_commit(record) or manifest_anchor(sha256_file(record_path), evidence)
+    if anchor is not None and identical(anchor):
+        return _r3_document(record_path, record, chosen, anchor, m05_spent_wall(record))
+    if rerun is None:
+        return _r3_refused(
+            "R3:carry_anchor_missing" if anchor is None else "R3:carry_identity_differs"
+        )
+    rerun_path, wall = rerun()
+    failed, record, chosen = _r3_condition(rerun_path, schema_path, lambda path: True)
+    if failed is not None or record is None:
+        return _r3_refused(f"R3:record_rejected:{failed}")
+    return _r3_document(rerun_path, record, chosen, RERUN, wall)
+
+
+def _r3_document(
+    record_path: Path,
+    record: Mapping[str, Any],
+    chosen: Mapping[str, Any] | None,
+    carried_from: str,
+    wall: float | None,
+) -> dict[str, Any]:
+    """R3's rung from an accepted M05 record: its best candidate, M05's statuses verbatim, and
+    M05's spend copied (A1.6 item 4); `wall` is M05's stated wall for a carried record and the
+    journey's measurement for a re-run (`wall_source`)."""
     candidate: dict[str, Any] | None = None
     if chosen is not None:
         (t,) = chosen["decisions"].values()
@@ -864,7 +922,6 @@ def r3_rung(
         }
     accounting = record.get("accounting") or {}
     cold = (accounting.get("budgets") or {}).get("cold_used")
-    wall = m05_spent_wall(record)
     limitations = []
     if cold is None:
         limitations.append("R3:m05_cold_unrecorded")
@@ -872,7 +929,9 @@ def r3_rung(
         limitations.append("R3:m05_wall_unrecorded")
     budget = budget_for("R3").as_document()  # M05 enforces M05-budget-v1; R3 copies its spend
     budget["spent"] = {"cold": cold, "wall_s": wall}
-    budget["wall_source"] = None if wall is None else "m05_record"
+    budget["wall_source"] = (
+        None if wall is None else "journey_measured" if carried_from == RERUN else "m05_record"
+    )
     try:
         relative = str(record_path.resolve().relative_to(ROOT))
     except ValueError:
@@ -881,7 +940,11 @@ def r3_rung(
     return {
         "outcome": record["status"],
         "study_status": record["status"],
-        "m05_record": {"path": relative, "sha256": record_sha256, "carried_from": anchor},
+        "m05_record": {
+            "path": relative,
+            "sha256": sha256_file(record_path),
+            "carried_from": carried_from,
+        },
         "candidate": candidate,
         "decision": decision,
         "bound_activity": bound_activity(decision),
@@ -889,6 +952,40 @@ def r3_rung(
         "store_hits": (accounting.get("totals") or {}).get("store_hits"),
         "limitations": limitations,
     }
+
+
+def m05_rerun(out: Path, clock: Callable[[], float] = time.monotonic) -> Callable[[], Any] | None:
+    """A1.6 item 3: M05's REAL study re-run at J by M05's own entry point as merged
+    (`scripts/m05_wo9_real.py`'s `run_real`, on a fresh experiment store as M05 requires), its
+    record and sidecars written under `<out>/m05/` with M05's writer. `None` when M05's script
+    cannot be imported here. The call refuses a dirty tree (M05's S65), so nothing of the journey
+    is written before it."""
+    scripts = str(ROOT / "scripts")
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    try:
+        import m05_wo9_real as real
+    except ImportError:
+        return None
+
+    def rerun() -> tuple[Path, float]:
+        import tempfile
+
+        stem = out / M05_RERUN_DIR / real.STEM.name
+        if stem.with_suffix(".json").exists():
+            raise SystemExit(f"{stem}.json exists: a committed run is never overwritten in place")
+        with tempfile.TemporaryDirectory(prefix="m07-r3-") as root:
+            started = clock()
+            result = real.run_real(Path(root))
+            wall = clock() - started
+        real.wo8.write_files(stem, result.run)
+        stem.with_suffix(".experiments.json").write_bytes(result.archive)
+        for line in result.run.bijection[:40]:
+            print(f"  R3 re-run bijection: {line}", file=sys.stderr)
+        print(f"R3 re-run: {real.summary(result)}", file=sys.stderr)
+        return stem.with_suffix(".json"), wall
+
+    return rerun
 
 
 # == the record (spec §6.1) ========================================================================
@@ -1072,6 +1169,8 @@ LIMITATION_TEXT: Final = {
     "Amendment 1 A1.6 does not hold.",
     "R3:carry_anchor_missing": "R3's M05 record has no carry anchor: M05 states no run commit and "
     "no tested M05 manifest lists the record.",
+    "R3:carry_identity_differs": "R3's M05 record is not carried: the journey's determining files "
+    "differ between its anchor commit and J, and it was not re-run.",
     "R3:m05_cold_unrecorded": "M05's record states no cold count; R3's cold is null.",
     "R3:m05_wall_unrecorded": "M05's record states no spent wall; R3's wall is null and W25 (g) "
     "is not met.",
