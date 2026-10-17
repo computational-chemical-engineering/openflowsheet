@@ -972,3 +972,8 @@ Grep, don't read whole. Newest at the bottom.
   green on both runners, manifest `evidence/M03/a35885b…` **tested** 52/0/0, 8 limitations harvested (one new: licence acceptance covers
   the audited list only, class P — design lane may confirm). Merge tree identical to gated e8a22eb (8879 passed, 31 skipped).
   M05 main-merge launched (`opus-engineer`).
+- **Frank, 2026-10-17: "Accept the defaults"** — the four 0.2.0a1 questions (asked in plain words): N3 claim set v0.2-alpha-gate-v1;
+  V17 carry (no new campaign); M02 N1 ship the reactor subprocess as "not a sandbox"; V14 (b) PTC failure accepted again. Dated after
+  the verdict (Judged 2026-10-16), as R-371 requires. Recorded in ADR 0028's four cells on wp/V02-alpha-gate (status left Proposed:
+  acceptance also needs M07a's manifest at the candidate). Next: `verdict` re-judges V13/V17/W21 (brief
+  `docs/briefs/V02-alpha-rejudge-brief.md`), then action 10's build part (step 5, A52, A64, manifest, step 7), then merge to main.

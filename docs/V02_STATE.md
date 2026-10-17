@@ -41,15 +41,8 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Needs Frank
 
-- **For 0.2.0 later (M07 spec, defaults set, not urgent):** claim all 17 gates (yes); the optional `nlp` extra's licences = M03 N1 (accept; until then the optimization gate W24 is BLOCKED and 0.2.0 can't be tagged); add an equilibrium-reactor fidelity level (no); re-accept the PTC failure, the agent-evidence carry and "not a sandbox" for 0.2.0 (yes); if the agent-facing surface changes after the paid W27 run, stop and ask.
-- **Blocking `0.2.0a1`** (ADR 0028 `pending`; verdicts `fffb0e4`; asked in plain words 2026-10-15):
-  1. What the pre-release claims (N3): default = v0.1's ten gates re-checked + PyMRM reactor adapter + Peng–Robinson route;
-     not surrogate, optimization, end-to-end refinement, web shell, agent benchmark. Alts: add web shell; adapter + PR only; no pre-release.
-  2. Carry v0.1's paid agent-interface evidence across two additive interface fields (V17 carry): default carry; alt. re-run
-     (≈ USD 10, 1 h). Unblocks the agent gate and one solver-structure clause.
-  3. Ship the reactor child process, unconfined with user privileges, labelled "not a sandbox" (M02 N1): default accept;
-     no → reactor-adapter gate not claimable.
-  4. Release again with v0.1's known failure "one PTC solver variant qualified" (V14 (b)): default accept, PTC stays experimental.
+- **For 0.2.0 later (M07 spec, defaults set, not urgent):** claim all 17 gates (yes); M03 N1 licences accepted 2026-10-16; add an equilibrium-reactor fidelity level (no); re-accept the PTC failure, the agent-evidence carry and "not a sandbox" for 0.2.0 (yes); if the agent-facing surface changes after the paid W27 run, stop and ask.
+- **`0.2.0a1` answered 2026-10-17: "Accept the defaults"** (N3 claim set, V17 carry, "not a sandbox", PTC failure accepted); recorded in ADR 0028 on the alpha branch. Nothing else needs Frank until he tags and publishes.
 - **M03 N1:** answered 2026-10-16 (accepted).
 
 - **M01 (defaults set, work proceeds):** Q-F1 the reactor's inlet heat loss (23–33 % of reaction heat through the
