@@ -318,7 +318,7 @@
   {
    "build": "hec9711d_102_cp313",
    "declared_licence": "Python-2.0",
-   "loaded_objects": 32,
+   "loaded_objects": 33,
    "md5": "89e07d92cf50743886f41638d58c4328",
    "name": "python",
    "sha256": "c2cdcc98ea3cbf78240624e4077e164dc9d5588eefb044b4097c3df54d24d504",
@@ -373,11 +373,11 @@
  "format": "m03-ipopt-inventory-v1",
  "gates": {
   "G1": {
-   "bytes": 289435275,
+   "bytes": 289493659,
    "conda_objects_not_matching_their_package": [],
-   "distinct_sha256": 180,
+   "distinct_sha256": 181,
    "import_orders_map_the_same_objects": true,
-   "objects": 180,
+   "objects": 181,
    "pass": true,
    "unknown_origin": []
   },
@@ -2380,6 +2380,45 @@
    "path": "$ENV/lib/python3.13/lib-dynload/_posixsubprocess.cpython-313-x86_64-linux-gnu.so",
    "python_extension": true,
    "sha256": "ebb1c327afe186df1369356078fb69d4f55f5f3b5aa93fbf5d6d72a1a49a8335",
+   "soname": null
+  },
+  {
+   "bytes": 58384,
+   "hsl_exports": [],
+   "hsl_imports": [],
+   "installed_equals_package": true,
+   "ipopt_hsl_interface": false,
+   "licence": {
+    "category": "identified",
+    "declared": "Python-2.0",
+    "declared_vs_read": [],
+    "notices": [
+     {
+      "identifiers": [
+       "ISC-style",
+       "PSF-2.0",
+       "SMLNJ-style"
+      ],
+      "path": "$PKGS/python-3.13.5-hec9711d_102_cp313/info/licenses/LICENSE",
+      "restrictive_clauses": [],
+      "sha256": "78b12c3a81360b357002334f0e70ea0e92eebf7a9b358805c03c48484945f3bb"
+     }
+    ],
+    "source": "conda package notices (package-level: applied to each of its objects)"
+   },
+   "loaded_in": [
+    "nlp-first",
+    "project-first"
+   ],
+   "metis_exports": 0,
+   "metis_imports": [],
+   "needed": [
+    "libc.so.6"
+   ],
+   "origin": "conda-forge: python-3.13.5-hec9711d_102_cp313",
+   "path": "$ENV/lib/python3.13/lib-dynload/_queue.cpython-313-x86_64-linux-gnu.so",
+   "python_extension": true,
+   "sha256": "4057f81d11153e5f5f129d3dfa463faff29e28ffb3cc08290dc878feb8ac89e5",
    "soname": null
   },
   {

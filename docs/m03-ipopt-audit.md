@@ -39,7 +39,7 @@ answered: Frank accepted the licences of §7 on 2026-10-16 (R-450).
 
 | Item | Outcome | Evidence (details in §6) |
 | --- | --- | --- |
-| G1 | **PASS** | 180 mapped ELF objects (289 435 275 bytes, 180 distinct SHA-256; 178 before the re-take of §5), each with path, size, SHA-256, SONAME, `DT_NEEDED`, owner and licence; no object of unknown origin; both import orders map the same set; every conda-owned object equals its package's recorded bytes (five after conda's prefix relocation, verified by re-applying it) |
+| G1 | **PASS** | 181 mapped ELF objects (289 493 659 bytes, 181 distinct SHA-256; 178 and 180 before the re-takes of §5), each with path, size, SHA-256, SONAME, `DT_NEEDED`, owner and licence; no object of unknown origin; both import orders map the same set; every conda-owned object equals its package's recorded bytes (five after conda's prefix relocation, verified by re-applying it) |
 | G2 | **PASS** | Mapped from the CasADi package: `_casadi.so` and `libcasadi.so.3.7` only; neither is in the CasADi wheel's METIS closure (55 objects, derived from the wheel's own `DT_NEEDED` graph); no mapped CasADi path names `ipopt`/`mumps`/`metis`; `casadi.nlpsol` raised-if-called and was called 0 times in both orders |
 | G3 | **PASS** | One `METIS_` exporter is mapped: conda-forge `metis-5.1.0` `libmetis.so` (`970cd095…`); it defines `METIS_SetDefaultOptions` and `METIS_Free` and none of `METIS_EstimateMemory`, `METIS_mCPartGraphKway`, `METIS_EdgeND`: METIS 5 by ADR 0006 D2.1's binary test |
 | G4 | **PASS** | No mapped object defines or imports an `ma27`/`ma57`/`ma77`/`ma86`/`ma97` routine or is named `*hsl*`; Ipopt's own banner: `This is Ipopt version 3.14.20, running with linear solver MUMPS 5.8.2.`; `linear_solver = mumps` set and recorded |
@@ -170,13 +170,13 @@ left unresolved for its own GitHub-fetched ASL build.
 
 | Origin | Objects | Bytes |
 | --- | ---: | ---: |
-| conda-forge packages | 62 | 146 431 595 |
+| conda-forge packages | 63 | 146 489 979 |
 | PyPI wheels (numpy 15, scipy 91, casadi 2, PyYAML 1, rpds-py 1) | 110 | 139 703 952 |
 | built here (`libpynumero_ASL.so`) | 1 | 43 952 |
 | platform (`libc6`) | 7 | 3 255 776 |
-| **total** | **180** | **289 435 275** |
+| **total** | **181** | **289 493 659** |
 
-The conda-forge interpreter (`python-3.13.5-hec9711d_102_cp313`: `python3.13` and 31 `lib-dynload`
+The conda-forge interpreter (`python-3.13.5-hec9711d_102_cp313`: `python3.13` and 32 `lib-dynload`
 modules, Python-2.0, notice read) aside, every compiled object the NLP stack adds:
 
 | Object | Package | Bytes | SHA-256 | Declared | Read from notice | Category |
@@ -220,6 +220,14 @@ wheels are unchanged with their hashes, no licence is added, and G1-G6 stay PASS
 rebuilt from the locks reproduces the earlier 178-object record at `086bf2b` (before the merge) and
 this one after it, both under `OMP_NUM_THREADS=1`. The inventory was re-taken with
 `scripts/m03_ipopt_inventory.py --env .venv-nlp`; `--check` reproduces it.
+
+**Re-take, 2026-10-17 (merge of `main` into `wp/M05`).** M05's
+`openflowsheet.studies.trust_region.holders` imports `concurrent.futures`, whose thread pool
+imports `queue`, so one more object is mapped in both import orders:
+`lib-dynload/_queue.cpython-313-x86_64-linux-gnu.so` (python-3.13.5-hec9711d_102_cp313, 58 384
+bytes, Python-2.0, `identified`). The interpreter's package was already loaded and audited, the
+41 conda packages and the pip wheels are unchanged with their hashes, no licence is added, and
+G1-G6 stay PASS. Re-taken under `OMP_NUM_THREADS=1` with the same command; `--check` reproduces it.
 
 "Read" identifiers are pattern hits on the notice text (P03's patterns plus a few added in the
 script). P03's 2-clause pattern matches every BSD text, so a BSD-2 hit beside a BSD-3 declaration

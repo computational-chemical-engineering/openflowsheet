@@ -754,3 +754,10 @@ S75 WO-10b: the manifest, the harvest and the docs. `evidence/M05/cfecb15abcb2d6
    `benchmarks/m02/c1-loop-real.json`. G8's `section_7_4_at_the_bound: false` is carried in the check with R-430's note.
    Support matrix re-emitted (`--check`: 0 problems). ADR 0039 gains the amendment note on the box (R-313, R-315,
    R-330), status unchanged; `docs/briefs/M05-W24-table.md` for `verdict`; `docs/progress.md` M05 row.
+S76 Merge of `main` (`0bdb80d`) into wp/M05 (`eb17f79`): the [A10] inventory re-taken, 181 objects. M03's
+   re-take (`b074d57`, 180) measured `main`'s tree; M05's `studies.trust_region.holders` imports
+   `concurrent.futures`, whose thread pool imports `queue`, so the NLP-1 workload maps one more object in both import
+   orders: `lib-dynload/_queue.cpython-313-x86_64-linux-gnu.so` (python-3.13.5-hec9711d_102_cp313, 58 384 bytes,
+   Python-2.0, `identified`). Same package, already audited; the 41 conda packages and the wheels unchanged; no licence
+   added; G1-G6 PASS; `--check` reproduces it. Inside N1 (R-450) on the precedent of `b074d57`'s session decision.
+   Audit §1 G1, §5 updated. Gate 9319 passed, 31 skipped; nlp tier without G10 181 passed, 1 skipped.
