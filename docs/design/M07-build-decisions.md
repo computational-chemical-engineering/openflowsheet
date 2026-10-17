@@ -115,3 +115,37 @@ from {cold 2, store_hit 0} to {cold 0, store_hit 0, in_process 2} (A1.4); `extra
 
 J20 [coverage] Each commit was gated by the full `scripts/gate.sh` in its own detached worktree (in parallel) before
 the push, rather than serially before each local commit; a red gate would have meant a local fixup before pushing.
+
+## WO-4 — the real journey at J, part 1 (2026-10-17)
+
+J21 [coverage] Main (M05 at `defa458`) merged at `8ef35e6`: the register is a numeric union (R-017, the one entry both
+sides held with different text, unchanged on M07's side, taken from main); `support_envelope.yaml` auto-merged to main's;
+`docs/support-matrix.md` re-emitted unchanged. Premises read on M05's REAL record as merged (l.831-842): AQ2 holds
+(condition 4: the targeted check's `revision_sha256` 03e2b696… = `document_sha256(document_at(c1-loop-real.json, T*))`,
+T* = 653.1500351610193); AQ3 holds (M05 states `provenance` {run_commit cdacc322…, tree_clean, wall_s 1454.46}).
+Conditions 1–5 pass. `m05_run_commit`/`m05_spent_wall` read those fields (`bf05034`); `C1Parent` now needs
+`services=C1_PARENT_SERVICES` (the grid extras were broken against merged M05; fixed in the same commit).
+
+J22 [design] Carry by identity is now checked (`9949eb3`): `git diff anchor HEAD` on `carry.journey_files` as pathspecs
+(the prose "reactor environment lock (M02)" is `src/openflowsheet/adapters/pymrm/reactor-env.lock`). M05's anchor
+cdacc322 differs from J in `src/openflowsheet/**` (coupled_run, revision_run, boundary, closure, holders, from M05's
+later commits), so R3 is re-run at J by `m05_wo9_real.run_real` on a fresh store, written under
+`benchmarks/m07/journey/<J>/m05/` with M05's writer; wall `journey_measured`. Choices: (a) without a re-run R3 refuses
+with a new limitation code `R3:carry_identity_differs` (A1.6 names only `carry_anchor_missing`); (b) a re-run record
+meets conditions 1–4 at run time and condition 5 once committed with the journey (it cannot be tracked at J). Needs:
+ratify the code, or name another.
+
+J23 [coverage] A1.7 (`f5de819`): the T* re-solve uses `C1Parent.solve` on the journey's store (R1's), not R3's fresh
+M05 store, so it may run up to 4 cold experiments, recorded in `t_star_resolve` and counted only in the journey totals
+(`accounting.t_star_resolve`, `accounting.journey`). `check` requires a re-solve on a real record with a verified
+candidate. A real `run` refuses (exit 2) without `OMP_NUM_THREADS=1` when the reactor environment is there (A14's
+no-reactor path still exits 3).
+
+J24 [coverage] Only the tip `8f85aa2` was gated (the four WO-4 commits are small and sequential): 9412 passed,
+31 skipped, 189 deselected (27 min).
+
+J25 [design] `env.verify` still lists the manifest's `variant_id` as a difference although R-259 rules it provenance;
+this machine's environment was built by v1 and serves v3 (same env_id), so `reactor_available` read it as unavailable.
+The journey ignores that one line (`8f85aa2`). `env.verify` itself (M02's) is unchanged: flag to the design lane.
+Also measured: a `PYTHONPATH` that includes `.reference-downloads/m03-ipopt/nlp-test-tools` leaks into the reactor
+child's package check (pytest 9.1.1 vs the lock's 8.3.5), so the real run uses `PYTHONPATH=src` only.
