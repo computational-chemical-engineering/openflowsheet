@@ -761,3 +761,18 @@ S76 Merge of `main` (`0bdb80d`) into wp/M05 (`eb17f79`): the [A10] inventory re-
    Python-2.0, `identified`). Same package, already audited; the 41 conda packages and the wheels unchanged; no licence
    added; G1-G6 PASS; `--check` reproduces it. Inside N1 (R-450) on the precedent of `b074d57`'s session decision.
    Audit §1 G1, §5 updated. Gate 9319 passed, 31 skipped; nlp tier without G10 181 passed, 1 skipped.
+S77 Merge of `main` into wp/M05: the five in-process G10 records re-taken (TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R,
+   LOOP-S). `main`'s M02 follow-up D134 (R-390, `768690f`) edits `models/c1/boundary.py` (the v3 inert floor's 4-ulp
+   slack), and the in-process backend's environment fingerprint carries `boundary_sha256`, the file's sha256
+   (`adapters/experiments/backends.py` `InProcessBackend.environment`). So every experiment key, request and
+   coupling digest of the five records moved, and G10 failed with 107/185/107/147/105 differences, all digests.
+   Shown before re-taking, by a leaf walk of record (without `provenance`), ledger, every persisted coupling
+   record and the store (order-free after relabelling): every non-digest leaf is equal except timings; the old-to-new
+   digest map is a function and injective (42/80/71/92/38 digests); the environment files are byte-equal; the store
+   equals the old one after the relabelling. No number, status, iterate or count moved. Re-taken with `run_case` and
+   `write_files` into a scratch directory from a clean tree at `33b03b6` (`provenance.tree_clean: true`), then copied
+   over the committed files (`write_files` refuses to overwrite in place). REAL is unaffected (external fingerprint):
+   `m05_wo9_real.py --replay` 0 differences, `-m pymrm tests/test_m05_parent.py` 1 passed, on the merged tree.
+   The cfecb15 manifest's record sha256 values describe the records before this re-take. Choice for the design lane
+   (replay identity): re-take, rather than amending the fingerprint or the G10 comparison. Reversible by reverting
+   this commit (G10 then fails until the boundary file is restored or a ruling changes the comparison).
