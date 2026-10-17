@@ -1033,3 +1033,11 @@ Grep, don't read whole. Newest at the bottom.
   schema and journey script → split lists + GC-CARRY-1; SF1 replay the re-run M05 record; SF2 `m05_record.offered`; SF3
   A21 default-gate test. J22 stands; J25 is M02's (`env.py:347` contradicts R-259) — backlog; J27 meets "every number".
   WO-4c launched.
+- WO-4c done `wp/M07` @ `9d2d072`: MF1 `6501016`, MF2 `854deda`, SF2 `2905034`, SF1 `974c395` = J′, record `c4e8467`.
+  Re-take at J′ (3324 s): every number bitwise equal to the `1623633` record; labels R3 + journey INTERIOR → BOUND_LOWER
+  (predicted); limitations gain `bound:R3`, `bound:journey`. check ACCEPT; replay bitwise 17.7 s; re-run M05 replay clean;
+  pymrm 2 passed; nlp 186/1; gate 9454/31, every commit gated.
+- DECISION (engineer, J31): old `1623633` record + its test removed (fails `check` under the new registration) → accept.
+  Alternative: keep it as history. Reversible by: restore from `c1f104f`.
+- DECISION (engineer, J35): replay of a re-run record needs pyomo → runs in the nlp env, nlp-test-tools on `sys.path` in
+  process (avoids the J25 leak) → accept. Reversible by: revert the J35 commit.
