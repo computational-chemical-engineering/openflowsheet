@@ -395,3 +395,10 @@ the spec's claim; no tolerance moved and no case was removed.
   names no count. A40's A19-bitwise half (four spawned processes, no cap) runs everywhere.
   Alternative: run the script path at 2 workers on small hosts (not A40's parameter). Reversible
   by: reverting the E39 commit.
+- **E40. A49's negative control is a precondition.** On `ubuntu-24.04-arm` the unpinned fit at 1
+  and 8 BLAS threads agreed bitwise at N = 141, so `unpinned_1 != unpinned_8` failed: the control
+  cannot tell the pin from no pin there. DECISION: the claims (`pinned_1 == pinned_8`,
+  `pinned_8 == unpinned_1`) are asserted first, everywhere; where the control is vacuous the test
+  then skips with the reason instead of passing. Alternative: search a size per host that splits
+  (spec: "if no synthetic size reproduces the difference, the opt-in real record is used").
+  Reversible by: reverting the E40 commit.
