@@ -42,6 +42,7 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 ## Needs Frank
 
 - **For 0.2.0 later (M07 spec, defaults set, not urgent):** claim all 17 gates (yes); M03 N1 licences accepted 2026-10-16; add an equilibrium-reactor fidelity level (no); re-accept the PTC failure, the agent-evidence carry and "not a sandbox" for 0.2.0 (yes); if the agent-facing surface changes after the paid W27 run, stop and ask.
+- **`0.2.0a1` release ref (NEW, 2026-10-17):** main broke the freeze since C_α² (M02 follow-up, M03, M04 CI fix under D2.4), so main's head can't be the candidate. Default: Frank dispatches the release from the alpha branch / a tag on it (D2.4 = C_α² exactly; ADR 0028's named alternative). Alt: re-cut from main, redo RC job + verdicts, freeze main.
 - **`0.2.0a1` answered 2026-10-17: "Accept the defaults"** (N3 claim set, V17 carry, "not a sandbox", PTC failure accepted); recorded in ADR 0028 on the alpha branch. Nothing else needs Frank until he tags and publishes.
 - **M03 N1:** answered 2026-10-16 (accepted).
 

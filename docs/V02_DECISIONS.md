@@ -977,3 +977,11 @@ Grep, don't read whole. Newest at the bottom.
   the verdict (Judged 2026-10-16), as R-371 requires. Recorded in ADR 0028's four cells on wp/V02-alpha-gate (status left Proposed:
   acceptance also needs M07a's manifest at the candidate). Next: `verdict` re-judges V13/V17/W21 (brief
   `docs/briefs/V02-alpha-rejudge-brief.md`), then action 10's build part (step 5, A52, A64, manifest, step 7), then merge to main.
+- **Alpha re-judgement** (2026-10-17, `verdict`, `c52039b` on wp/V02-alpha-gate): V13, V17, W21 BLOCKED → PASS at C_α²; V14 FAIL (accepted
+  in D3). Findings R1 (ADR 0028 still Proposed), R2 (notes should say V17's agent evidence is carried). Gate at c52039b: NO (W21/W22 not
+  in the ledger; ADR 0028 not Accepted) — action 10's build part launched (`opus-engineer`, brief `docs/briefs/V02-alpha-action10-brief.md`).
+- **Finding (session's own error): the release freeze was broken.** ADR 0028 / spec §9.2 step 2: from C_α² (2026-10-15) until Frank's
+  dispatch, main takes no change to D2.4 paths (src, schemas, benchmarks, lock, pyproject, …). Since then main took the M02 follow-up,
+  M03 and the M04 CI fix (52 files under D2.4 differ), so main's head can no longer be the candidate. The alpha branch's D2.4 paths
+  still equal C_α² exactly. Asked Frank: release from the alpha branch/tag (ADR 0028's named alternative; recommended) or re-cut the
+  candidate from main and redo the RC job and verdicts.
