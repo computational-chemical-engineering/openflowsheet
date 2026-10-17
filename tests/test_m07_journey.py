@@ -788,23 +788,86 @@ def test_a21_r3_without_an_anchor_or_a_cold_count_says_so(
     assert m07._check_r3(uncounted) == []
 
 
+R3_PATHSPECS = (
+    "src/openflowsheet",
+    "benchmarks/m02",
+    "benchmarks/m04",
+    "benchmarks/m05",
+    "requirements.lock",
+    m07.REACTOR_LOCK,
+    "scripts/m05_wo9_real.py",
+    "scripts/m05_wo8_runs.py",
+    "tests/support/m05_replay.py",
+    "tests/support/m05_synthetic.py",
+    "tests/support/m04_synthetic_parents.py",
+    "schemas/trust-region-study.schema.json",
+)
+
+
 def test_a21_the_carry_identity_is_the_determining_files_at_the_anchor_and_j() -> None:
-    """Spec §4.6: `carry.journey_files` as pathspecs; HEAD is identical to itself; a commit git does
-    not know is not."""
-    assert m07.carry_paths() == (
-        "src/openflowsheet",
-        "benchmarks/m02",
-        "benchmarks/m04",
-        "benchmarks/m05",
-        "requirements.lock",
-        m07.REACTOR_LOCK,
+    """Spec §4.6, A2.2: `carry.r3_files` and `carry.journey_files` as pathspecs; HEAD is identical
+    to itself; a commit git does not know is not."""
+    assert m07.carry_paths(m07.R3_CARRY) == R3_PATHSPECS
+    assert m07.carry_paths(m07.JOURNEY_CARRY) == (
+        *R3_PATHSPECS,
+        "scripts/m07_journey.py",
+        "benchmarks/m07/registration.json",
     )
-    assert (REPO_ROOT / m07.REACTOR_LOCK).is_file()
+    for spec in R3_PATHSPECS:
+        assert (REPO_ROOT / spec).exists(), spec
     head = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True, check=True
     ).stdout.strip()
-    assert m07.carry_identical(head) is True
-    assert m07.carry_identical("0" * 40) is False
+    for key in (m07.R3_CARRY, m07.JOURNEY_CARRY):
+        assert m07.carry_identical(head, key) is True
+        assert m07.carry_identical("0" * 40, key) is False
+    assert m07.r3_carry_identical(head) is True
+
+
+@pytest.mark.parametrize(
+    ("changed", "r3_carries", "journey_carries"),
+    [
+        ("scripts/m05_wo9_real.py", False, False),
+        ("scripts/m05_wo8_runs.py", False, False),
+        ("tests/support/m05_replay.py", False, False),
+        ("schemas/trust-region-study.schema.json", False, False),
+        ("scripts/m07_journey.py", True, False),
+        ("benchmarks/m07/registration.json", True, False),
+        ("scripts/unrelated.py", True, True),
+    ],
+)
+def test_a21_a_change_to_a_determining_file_outside_src_does_not_carry(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    changed: str,
+    r3_carries: bool,
+    journey_carries: bool,
+) -> None:
+    """A2.2 (R-453): with `src/**` byte-equal, a changed `scripts/m05_*.py` (M05's REAL
+    configuration), one of its `tests/support` imports or the study schema does not carry R3;
+    the journey's script and registration break only the journey's carry; any other file neither."""
+
+    def git(*args: str) -> str:
+        return subprocess.run(
+            ["git", *args], cwd=tmp_path, capture_output=True, text=True, check=True
+        ).stdout.strip()
+
+    git("init", "-q")
+    git("config", "user.email", "test@example.invalid")
+    git("config", "user.name", "test")
+    for spec in (*R3_PATHSPECS, "scripts/m07_journey.py", "benchmarks/m07/registration.json"):
+        path = tmp_path / spec / "x" if not Path(spec).suffix else tmp_path / spec
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("anchor\n", encoding="utf-8")
+    (tmp_path / "scripts" / "unrelated.py").write_text("anchor\n", encoding="utf-8")
+    git("add", "-A")
+    git("commit", "-q", "-m", "anchor")
+    anchor = git("rev-parse", "HEAD")
+    (tmp_path / changed).write_text("changed\n", encoding="utf-8")
+    git("commit", "-q", "-am", "change")
+    monkeypatch.setattr(m07, "ROOT", tmp_path)
+    assert m07.carry_identical(anchor, m07.R3_CARRY) is r3_carries
+    assert m07.carry_identical(anchor, m07.JOURNEY_CARRY) is journey_carries
 
 
 def test_a21_a_record_that_does_not_carry_is_re_run_at_j(

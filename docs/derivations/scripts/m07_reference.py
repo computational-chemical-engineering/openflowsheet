@@ -18,6 +18,7 @@ measured facts the specification quotes (§3) are re-read from the committed rec
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import re
@@ -99,15 +100,26 @@ UNSUPPORTED_REASONS: Final = (
     "m05_study_unavailable",
     "surrogate_loop_unavailable",  # spec §4.6, Amendment 1 A1.3
 )  # spec §4.6
-# spec §4.6: byte-equal between M05's run commit and J, and between J and C
-CARRY_JOURNEY: Final = (
+# spec §4.6, A2.2 (R-453): R3's carry is byte-equality of these between M05's run commit and J;
+# the journey's carry from J to C (RC step 15) adds the journey's script and registration.
+CARRY_R3: Final = (
     "src/openflowsheet/**",
     "benchmarks/m02/**",
     "benchmarks/m04/**",
     "benchmarks/m05/**",
     "requirements.lock",
     "the reactor environment lock (M02)",
+    "scripts/m05_wo9_real.py",
+    "scripts/m05_wo8_runs.py",
+    "tests/support/m05_replay.py",
+    "tests/support/m05_synthetic.py",
+    "tests/support/m04_synthetic_parents.py",
+    "schemas/trust-region-study.schema.json",
 )
+CARRY_JOURNEY: Final = CARRY_R3 + ("scripts/m07_journey.py", "benchmarks/m07/registration.json")
+#: GC-CARRY-1: M05's REAL entry point and the two directories its script puts on `sys.path`.
+M05_REAL_SCRIPT: Final = "scripts/m05_wo9_real.py"
+M05_IMPORT_DIRS: Final = ("scripts", "tests/support")
 
 
 def _best(points: list[dict[str, Any]]) -> dict[str, Any]:
@@ -558,6 +570,32 @@ def _strip(doc: dict[str, Any]) -> dict[str, Any]:
     return d
 
 
+def _local_import_closure(start: str) -> list[str]:
+    """GC-CARRY-1: `start` and every module it imports, directly or transitively, that resolves
+    to `<dir>/<name>.py` for a `dir` of `M05_IMPORT_DIRS`; imports read with `ast`, top-level
+    `import` and `from` statements only (their first name component)."""
+    seen: set[str] = set()
+    todo = [start]
+    while todo:
+        relative = todo.pop()
+        if relative in seen:
+            continue
+        seen.add(relative)
+        tree = ast.parse((ROOT / relative).read_text(encoding="utf-8"))
+        names = []
+        for node in tree.body:
+            if isinstance(node, ast.Import):
+                names += [alias.name.split(".")[0] for alias in node.names]
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                names.append(node.module.split(".")[0])
+        for name in names:
+            for directory in M05_IMPORT_DIRS:
+                if (ROOT / directory / f"{name}.py").is_file():
+                    todo.append(f"{directory}/{name}.py")
+                    break
+    return sorted(seen)
+
+
 def _spec_ids() -> list[str]:
     text = SPEC.read_text(encoding="utf-8")
     return re.findall(r"^\| (M07\.A\d{2}) \|", text, flags=re.M)
@@ -897,6 +935,12 @@ def build() -> dict[str, Any]:
         "GC-BUDGET-1",
         f"journey {total_cold} / {total_wall}",
     )
+    closure = _local_import_closure(M05_REAL_SCRIPT)
+    claim(
+        set(closure) <= set(CARRY_R3),
+        "GC-CARRY-1",
+        f"M05's REAL imports outside carry.r3_files: {sorted(set(closure) - set(CARRY_R3))}",
+    )
     ids = _spec_ids()
     claim(
         ids == sorted(ids) and len(set(ids)) == len(ids), "GC-CAT-1", "spec ids sorted and unique"
@@ -962,7 +1006,11 @@ def build() -> dict[str, Any]:
             "changelog_what_it_is_not": list(WHAT_IT_IS_NOT),
             "w27_carry": list(CARRY_W27),
         },
-        "carry": {"journey_files": list(CARRY_JOURNEY), "w27": list(CARRY_W27)},
+        "carry": {
+            "r3_files": list(CARRY_R3),
+            "journey_files": list(CARRY_JOURNEY),
+            "w27": list(CARRY_W27),
+        },
         "catalogue": CATALOGUE,
     }
 

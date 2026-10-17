@@ -735,17 +735,22 @@ M05_STUDY_ID: Final = str(JOURNEY["study"])
 M05_BUDGET_ID: Final = "M05-budget-v1"
 M05_CONFIGURATION: Final = "REAL"
 RERUN: Final = "rerun"
-#: The reactor environment lock (M02), the one `carry.journey_files` member named in prose.
+#: The reactor environment lock (M02), the one carry-set member named in prose.
 REACTOR_LOCK: Final = "src/openflowsheet/adapters/pymrm/reactor-env.lock"
 #: A re-run's record and sidecars, under the journey's directory (A1.6 item 3).
 M05_RERUN_DIR: Final = "m05"
 
 
-def carry_paths() -> tuple[str, ...]:
-    """The registration's `carry.journey_files` as git pathspecs (spec §4.6): a `dir/**` glob is
-    the directory, the reactor environment lock is `REACTOR_LOCK`, a file is itself."""
+#: A2.2 (R-453): R3's carry set (M05's run commit to J) and the journey's (J to C, RC step 15).
+R3_CARRY: Final = "r3_files"
+JOURNEY_CARRY: Final = "journey_files"
+
+
+def carry_paths(key: str) -> tuple[str, ...]:
+    """The registration's carry set `carry.<key>` as git pathspecs (spec §4.6, A2.2): a `dir/**`
+    glob is the directory, the reactor environment lock is `REACTOR_LOCK`, a file is itself."""
     paths = []
-    for item in REG["carry"]["journey_files"]:
+    for item in REG["carry"][key]:
         if item.endswith("/**"):
             paths.append(item[: -len("/**")])
         elif item.startswith("the reactor environment lock"):
@@ -755,11 +760,11 @@ def carry_paths() -> tuple[str, ...]:
     return tuple(paths)
 
 
-def carry_identical(anchor: str) -> bool:
-    """Spec §4.6 carry by identity: every determining file is byte-equal between the anchor commit
-    and this tree (`HEAD`, with no change to those paths in the working tree). An anchor git does
-    not know is not identical."""
-    paths = carry_paths()
+def carry_identical(anchor: str, key: str) -> bool:
+    """Spec §4.6 carry by identity: every file of the carry set `carry.<key>` is byte-equal
+    between the anchor commit and this tree (`HEAD`, with no change to those paths in the working
+    tree). An anchor git does not know is not identical."""
+    paths = carry_paths(key)
     differs = subprocess.run(
         ["git", "diff", "--quiet", anchor, "HEAD", "--", *paths],
         cwd=ROOT,
@@ -767,6 +772,11 @@ def carry_identical(anchor: str) -> bool:
         check=False,
     )
     return differs.returncode == 0 and _git("status", "--porcelain", "--", *paths) == ""
+
+
+def r3_carry_identical(anchor: str) -> bool:
+    """R3's carry by identity: `carry.r3_files` (A1.6 item 2, A2.2)."""
+    return carry_identical(anchor, R3_CARRY)
 
 
 def tracked_unmodified(path: Path) -> bool:
@@ -874,14 +884,14 @@ def r3_rung(
     schema_path: Path = M05_SCHEMA,
     evidence: Path = M05_EVIDENCE,
     tracked: Callable[[Path], bool] = tracked_unmodified,
-    identical: Callable[[str], bool] = carry_identical,
+    identical: Callable[[str], bool] = r3_carry_identical,
     rerun: Callable[[], tuple[Path, float]] | None = None,
 ) -> dict[str, Any]:
     """R3 from M05's REAL study record passed as `--m05-record`, carried by identity (spec §4.6;
     Amendment 1 A1.6, R-425). The record is accepted iff conditions 1–5 hold; otherwise R3 is
     `UNSUPPORTED(m05_study_unavailable)` with `R3:record_rejected:<n>`, never an exception. The
     carry anchor is M05's stated run commit, else a tested M05 manifest listing the record's
-    sha256. A record with no anchor, or whose `carry.journey_files` differ between the anchor and
+    sha256. A record with no anchor, or whose `carry.r3_files` differ between the anchor and
     J, is re-run at J by `rerun` (M05's REAL entry point, A1.6 item 3), which returns the re-run
     record's path and the journey's monotonic-clock wall of the study call; without `rerun`, R3
     refuses with `R3:carry_anchor_missing` or `R3:carry_identity_differs`. A re-run record meets

@@ -6,7 +6,29 @@
       "benchmarks/m04/**",
       "benchmarks/m05/**",
       "requirements.lock",
-      "the reactor environment lock (M02)"
+      "the reactor environment lock (M02)",
+      "scripts/m05_wo9_real.py",
+      "scripts/m05_wo8_runs.py",
+      "tests/support/m05_replay.py",
+      "tests/support/m05_synthetic.py",
+      "tests/support/m04_synthetic_parents.py",
+      "schemas/trust-region-study.schema.json",
+      "scripts/m07_journey.py",
+      "benchmarks/m07/registration.json"
+    ],
+    "r3_files": [
+      "src/openflowsheet/**",
+      "benchmarks/m02/**",
+      "benchmarks/m04/**",
+      "benchmarks/m05/**",
+      "requirements.lock",
+      "the reactor environment lock (M02)",
+      "scripts/m05_wo9_real.py",
+      "scripts/m05_wo8_runs.py",
+      "tests/support/m05_replay.py",
+      "tests/support/m05_synthetic.py",
+      "tests/support/m04_synthetic_parents.py",
+      "schemas/trust-region-study.schema.json"
     ],
     "w27": [
       "served_tool_list_sha256",
