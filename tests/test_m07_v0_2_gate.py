@@ -656,3 +656,102 @@ def test_a36_main_on_a_scratch_repository(
     out = capsys.readouterr().out
     assert code == 1
     assert out.splitlines()[-1] == "v0.2.0 tag may be proposed: NO (1 reasons)"
+
+
+# -- M07.A37: the W27 carry from C_W to C (RC step 17, spec §9) -------------------------------
+
+W27_MEMBERS = GATE["w27_carry"]
+SURFACE = {
+    "served_tool_list_sha256": "6c" * 32,
+    "list_models": {"models": [{"id": "pfr-c1"}, {"id": "cstr"}]},
+    "coverage_rows": [["V11", "pfr-c1", "covered"], ["W27", "cstr", "covered"]],
+}
+
+
+def test_a37_an_equal_triple_carries() -> None:
+    assert W27_MEMBERS == ["served_tool_list_sha256", "list_models", "coverage_rows"]
+    carry = v0_2_gate.w27_carry(SURFACE, json.loads(json.dumps(SURFACE)), W27_MEMBERS)
+    assert carry == v0_2_gate.Carry(True)
+    assert carry.line(17, "the W27 campaign") == "RC step 17: the W27 campaign carried"
+
+
+@pytest.mark.parametrize("member", W27_MEMBERS)
+def test_a37_any_member_different_fails_step_17(member: str) -> None:
+    at_c = SURFACE | {member: "changed"}
+    carry = v0_2_gate.w27_carry(SURFACE, at_c, W27_MEMBERS)
+    assert carry == v0_2_gate.Carry(
+        False, "W27 campaign surface differs between C_W and C", (member,)
+    )
+    assert carry.line(17, "the W27 campaign") == (
+        f"RC step 17: W27 campaign surface differs between C_W and C (differs: {member})"
+    )
+    missing = {key: value for key, value in SURFACE.items() if key != member}
+    assert v0_2_gate.w27_carry(missing, SURFACE, W27_MEMBERS).differs == (member,)
+
+
+def test_a37_the_command_line(
+    scratch: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    rc = _commit(scratch, {"docs/c.md": f"{MARK}\n"}, "C")
+    at_cw, at_c = tmp_path / "cw.json", tmp_path / "c.json"
+    at_cw.write_text(json.dumps(SURFACE), "utf-8")
+    at_c.write_text(json.dumps(SURFACE), "utf-8")
+    assert v0_2_gate.main(["--rc", rc, "--carry-w27", str(at_cw), str(at_c)]) == 0
+    assert capsys.readouterr().out == "RC step 17: the W27 campaign carried\n"
+    at_c.write_text(json.dumps(SURFACE | {"list_models": {"models": []}}), "utf-8")
+    assert v0_2_gate.main(["--rc", rc, "--carry-w27", str(at_cw), str(at_c)]) == 1
+    assert capsys.readouterr().out == (
+        "RC step 17: W27 campaign surface differs between C_W and C (differs: list_models)\n"
+    )
+
+
+# -- M07.A38: the journey carry from J to C (RC step 15, spec §4.6) ---------------------------
+
+JOURNEY_FILES = {
+    "src/openflowsheet/model.py": "X = 1\n",
+    "benchmarks/m05/study.json": "{}\n",
+    "scripts/m07_journey.py": "# journey\n",
+    "benchmarks/m07/registration.json": "{}\n",
+}
+
+
+@pytest.mark.parametrize(
+    ("changed", "carried"),
+    [
+        ({"docs/notes.md": "after J\n"}, True),
+        ({"benchmarks/m07/journey/abc/journey.json": "{}\n"}, True),
+        ({"src/openflowsheet/model.py": "X = 2\n"}, False),
+        ({"benchmarks/m05/study.json": '{"a": 1}\n'}, False),
+        ({"scripts/m07_journey.py": "# changed\n"}, False),
+        ({"benchmarks/m07/registration.json": '{"b": 2}\n'}, False),
+    ],
+)
+def test_a38_the_journey_carries_iff_its_files_are_equal(
+    scratch: Path, changed: dict[str, str], carried: bool
+) -> None:
+    journey = _commit(scratch, JOURNEY_FILES, "J")
+    rc = _commit(scratch, changed, "C")
+    carry = v0_2_gate.journey_carry(journey, rc)
+    if carried:
+        assert carry == v0_2_gate.Carry(True)
+    else:
+        assert carry == v0_2_gate.Carry(
+            False, "step 15 requires a re-run of the journey at C", tuple(changed)
+        )
+
+
+def test_a38_an_unknown_j_and_the_command_line(
+    scratch: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    journey = _commit(scratch, JOURNEY_FILES, "J")
+    rc = _commit(scratch, {"docs/notes.md": "after J\n"}, "C")
+    carry = v0_2_gate.journey_carry("e" * 40, rc)
+    assert carry.carried is False and carry.differs == (f"{'e' * 40} is not a commit",)
+    assert v0_2_gate.main(["--rc", rc, "--carry-journey", journey]) == 0
+    assert capsys.readouterr().out == f"RC step 15: the journey at {journey} carried\n"
+    rc = _commit(scratch, {"src/openflowsheet/model.py": "X = 3\n"}, "C2")
+    assert v0_2_gate.main(["--rc", rc, "--carry-journey", journey]) == 1
+    assert capsys.readouterr().out == (
+        "RC step 15: step 15 requires a re-run of the journey at C "
+        "(differs: src/openflowsheet/model.py)\n"
+    )

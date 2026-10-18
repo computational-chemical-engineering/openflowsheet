@@ -1100,6 +1100,59 @@ def text(report: Mapping[str, Any]) -> str:
     return "\n".join(out) + "\n"
 
 
+# -- the carries of RC steps 15 and 17 (M07 spec §4.6, §9; A37, A38) ---------------------------
+
+#: §9: RC step 17 fails with this when the W27 campaign does not carry from C_W to C.
+W27_SURFACE_DIFFERS: Final = "W27 campaign surface differs between C_W and C"
+#: §8 step 15, A38: the journey does not carry from J to C and must be re-run at C.
+JOURNEY_RERUN: Final = "step 15 requires a re-run of the journey at C"
+
+
+@dataclass(frozen=True)
+class Carry:
+    """A carry check's answer: carried, or the reason it is not and what differs."""
+
+    carried: bool
+    reason: str | None = None
+    differs: tuple[str, ...] = ()
+
+    def line(self, step: int, what: str) -> str:
+        if self.carried:
+            return f"RC step {step}: {what} carried"
+        return f"RC step {step}: {self.reason} (differs: {', '.join(self.differs)})"
+
+
+def w27_carry(at_cw: Mapping[str, Any], at_c: Mapping[str, Any], members: Sequence[str]) -> Carry:
+    """RC step 17 (M07 §9): the W27 campaign stands at C iff every member of the registration's
+    `gate.w27_carry` (`served_tool_list_sha256`, the `list_models` result, the coverage rows) is
+    equal at C_W and at C. A member missing on either side differs."""
+    missing = object()
+    differs = tuple(
+        member
+        for member in members
+        if at_cw.get(member, missing) is missing
+        or at_c.get(member, missing) is missing
+        or at_cw[member] != at_c[member]
+    )
+    return Carry(True) if not differs else Carry(False, W27_SURFACE_DIFFERS, differs)
+
+
+def journey_carry(journey: str, rc: str) -> Carry:
+    """RC step 15 (M07 §4.6, A38): the journey recorded at commit J carries to C iff every file
+    of the registration's `carry.journey_files` is byte-equal at J and at C; else step 15
+    requires a re-run at C. The pathspecs are `m07_journey.carry_paths`, the journey's own
+    reading of its registration in this tree (the RC job's tree is C). A J or C that git does
+    not know does not carry."""
+    import m07_journey  # noqa: PLC0415 (only the carry check needs the journey's registration)
+
+    paths = m07_journey.carry_paths(m07_journey.JOURNEY_CARRY)
+    unknown = tuple(commit for commit in (journey, rc) if not has_commit(commit))
+    if unknown:
+        return Carry(False, JOURNEY_RERUN, tuple(f"{commit} is not a commit" for commit in unknown))
+    changed = git("diff", "--name-only", journey, rc, "--", *paths).decode("utf-8").split()
+    return Carry(True) if not changed else Carry(False, JOURNEY_RERUN, tuple(changed))
+
+
 # -- reading the candidate ---------------------------------------------------------------------
 
 
@@ -1164,6 +1217,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help=f"write {RC_TREES}/<C>.json for --rc C, which must be in the repository (R-151)",
     )
+    output.add_argument(
+        "--carry-journey",
+        metavar="J",
+        help="RC step 15: does the journey recorded at J carry to --rc C? (M07 §4.6, A38)",
+    )
+    output.add_argument(
+        "--carry-w27",
+        nargs=2,
+        metavar=("AT_C_W", "AT_C"),
+        help="RC step 17: JSON files of the W27 carry members at C_W and at C (M07 §9, A37)",
+    )
     arguments = parser.parse_args(argv)
 
     try:
@@ -1177,6 +1241,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             path.write_text(json.dumps(tree_record(rc), indent=1, sort_keys=True) + "\n", "utf-8")
             print(f"wrote {RC_TREES / path.name}")
             return 0
+        if arguments.carry_journey is not None or arguments.carry_w27 is not None:
+            if arguments.carry_journey is not None:
+                carry = journey_carry(arguments.carry_journey, rc)
+                print(carry.line(15, f"the journey at {arguments.carry_journey}"))
+            else:
+                import m07_journey  # noqa: PLC0415
+
+                at_cw, at_c = (
+                    json.loads(Path(name).read_text("utf-8")) for name in arguments.carry_w27
+                )
+                carry = w27_carry(at_cw, at_c, m07_journey.REG["gate"]["w27_carry"])
+                print(carry.line(17, "the W27 campaign"))
+            return 0 if carry.carried else 1
         candidate = git("rev-parse", f"{arguments.candidate}^{{commit}}").decode().strip()
         version = version_at(candidate)
         gate_set = gate_set_of(version)
