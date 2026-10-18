@@ -1,0 +1,68 @@
+"""WO-10: copy the RC records docs/v02-alpha-rc-record.md cites into evidence/M07a/<C_α>/rc/ and write
+rc/records.json (V02 alpha release spec §8.3; T08 Amendments R7 1 and R8 1's form).
+
+    python collect_records.py <artifacts/rc dir> <evidence/M07a/<C_α>/rc dir> <cited.txt>
+
+`cited.txt` lists the cited paths, one per line, relative to the artifacts directory. A record of
+1 MB or less is copied byte for byte; a larger one is committed gzip-compressed (`gzip -n`, level 9)
+beside its path, and its entry carries the uncompressed bytes' size and SHA-256.
+"""
+
+from __future__ import annotations
+
+import gzip
+import hashlib
+import json
+import shutil
+import sys
+from pathlib import Path
+
+C_ALPHA = "e0e198e4632224612671db5b07445639d272d6da"
+LIMIT = 1_000_000
+
+
+def main() -> int:
+    source, target, cited = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
+    paths = [line.strip() for line in cited.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if len(paths) != len(set(paths)):
+        print("refused: a path is cited twice", file=sys.stderr)
+        return 2
+    if target.exists():
+        shutil.rmtree(target)
+    files = []
+    for path in paths:
+        data = (source / path).read_bytes()
+        out = target / path
+        out.parent.mkdir(parents=True, exist_ok=True)
+        committed = len(data) <= LIMIT
+        if committed:
+            out.write_bytes(data)
+        else:
+            (target / f"{path}.gz").write_bytes(gzip.compress(data, compresslevel=9, mtime=0))
+        files.append(
+            {
+                "path": path,
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "bytes": len(data),
+                "committed": committed,
+            }
+        )
+    index = {
+        "format": "m07a-rc-records-v1",
+        "commit": C_ALPHA,
+        "rc_record": "docs/v02-alpha-rc-record.md",
+        "description": "Every record docs/v02-alpha-rc-record.md's per-step table cites by sha256 "
+        "(V02 alpha release spec §8.3). A committed file is under this directory at its path; a "
+        "file over 1 MB (committed false) is committed gzip-compressed beside its path "
+        "(<path>.gz; sha256 and bytes are the uncompressed record's) and stays under "
+        f"evidence/M07a/{C_ALPHA}/artifacts/rc/ at the same path, git-ignored.",
+        "size_limit_bytes": LIMIT,
+        "files": files,
+    }
+    (target / "records.json").write_text(json.dumps(index, indent=1) + "\n", encoding="utf-8")
+    print(f"{len(files)} records, {sum(f['committed'] for f in files)} committed as is")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

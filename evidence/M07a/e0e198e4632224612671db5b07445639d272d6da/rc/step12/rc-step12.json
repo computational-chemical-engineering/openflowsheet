@@ -1,0 +1,218 @@
+{
+ "checks": [
+  {
+   "build_exit": 0,
+   "env_manifest": {
+    "commit": "6089593464fc9bc2c0a0cb58e30ad5433ece6332",
+    "created_at": "2026-10-15T12:01:46+00:00",
+    "export_tree_sha256": "c51b4734e453733ea2c3c473392d29255214e562d57446b5431406b424dfe3bd",
+    "licence_notice_sha256": "795d48d7719fe12bf405bbaa8dc1c28bbf21caedf4d4c7fd1e138d8c60a80f63",
+    "lock_sha256": "032a050c6cf39e1eb2f01ebf03ea92a386f99967cb7fd0797c54431a33a60288",
+    "merged_database_sha256": "74cb058c545ad2056b7e7cc0b433642b5677e46dced8f55c04e7ec2326888454",
+    "python": "3.13.5",
+    "variant_id": "pymrm-6089593-g2-nz800-s123-v1"
+   },
+   "id": "a41.environment_from_c_alpha_lock",
+   "lock_sha256": "032a050c6cf39e1eb2f01ebf03ea92a386f99967cb7fd0797c54431a33a60288",
+   "result": "pass",
+   "verify_exit": 0
+  },
+  {
+   "exits": {
+    "step12-g10": 0
+   },
+   "id": "a41.g10",
+   "judged_by": "scripts/m02_evidence_manifest.py:g10",
+   "result": "pass",
+   "value": {
+    "A41_accepted": [
+     true,
+     true,
+     true
+    ],
+    "A42_bound": 1e-06,
+    "A42_max_rel_diff": 1.559285305616933e-08,
+    "A43_repeat_bitwise_equal": [
+     true,
+     true
+    ],
+    "A44_bitwise_identical": true,
+    "A45_bound": 1e-07,
+    "A45_element_defect_max": 3.8383264652952895e-08,
+    "A46_bound": 0.001,
+    "A46_dP_over_P_max": 5.0592748045548796e-05,
+    "A47_a_bitwise": true,
+    "A47_a_environment_block_equal": true,
+    "A47_b_bound": 1e-06,
+    "A47_b_max_rel_diff": 1.4289545806002592e-08,
+    "A48_estimates_equal_reference": [
+     true,
+     true,
+     true
+    ],
+    "G10v3_met": true,
+    "record": {
+     "judged": false,
+     "path": "evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/step12/g10-adapter-halves-v3.json",
+     "sha256": "81964cafe945e23637deb5706e704d29412ff52f91504549c6d8ba159c598a4d",
+     "variant": "pymrm-6089593-g2-nz800-s123-v3-provisional"
+    },
+    "round2_ran": []
+   }
+  },
+  {
+   "exits": {
+    "step12-g11": 0
+   },
+   "id": "a41.g11",
+   "judged_by": "scripts/m02_evidence_manifest.py:g11",
+   "result": "pass",
+   "value": {
+    "G11v3-4_selected": "V5",
+    "G11v3-5_all_equal": true,
+    "G11v3-5_points_per_run": 121,
+    "G11v3-5_runs": 2,
+    "met": {
+     "G11v3-1": true,
+     "G11v3-11": true,
+     "G11v3-12": true,
+     "G11v3-2": true,
+     "G11v3-3": true,
+     "G11v3-8": true
+    },
+    "record": {
+     "judged": false,
+     "path": "evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/step12/g11-coverage-v3.json",
+     "sha256": "586fc599ea6611dfe7c28921cba4e8cf8ab2828a9a0afe74490d566d71434cb3",
+     "variant": "pymrm-6089593-g2-nz800-s123-v3-provisional"
+    },
+    "superseded_record": {
+     "judged": false,
+     "path": "evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/step12/g11-coverage.json",
+     "sha256": "22df74c4d02a25674564b27250a8a641d689d8b66f581e61115d239d8dbb6a4a",
+     "variant": "pymrm-6089593-g2-nz800-s123-v2"
+    },
+    "variant_timeout_s": 600
+   }
+  },
+  {
+   "exits": {
+    "step12-g12": 0,
+    "step12-g12-edges": 0
+   },
+   "id": "a41.g12",
+   "judged_by": "scripts/m02_evidence_manifest.py:g12",
+   "result": "pass",
+   "value": {
+    "edges": {
+     "a_converged_verified": true,
+     "b_no_out_of_domain": true,
+     "c_y_inert": {
+      "653.15": [
+       0.04548369262982363,
+       0.039076252301607876
+      ],
+      "693.15": [
+       0.040467661354128166,
+       0.039076252301607876
+      ]
+     }
+    },
+    "edges_record": {
+     "judged": false,
+     "path": "evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/step12/g12-real-loop-v3-edges.json",
+     "sha256": "f68cc88a42813c56c07459050ed618473e3d4278e12573bf33dcb95c2dc38249",
+     "variant": "pymrm-6089593-g2-nz800-s123-v3"
+    },
+    "experiments": 4,
+    "final_k": 3,
+    "floor_ratio_T_final": 13.301000546006525,
+    "floor_ratio_xi_final": 65.32035659939199,
+    "live_rerun_repeat_bitwise_equal": [
+     true,
+     true,
+     true,
+     true
+    ],
+    "outcome": "CONVERGED",
+    "outer_iterations": 4,
+    "reactor_inlet_hard_domain_violations": [],
+    "reactor_inlet_per_tube_multiple_of_F_nom": 0.811103582825666,
+    "record": {
+     "judged": false,
+     "path": "evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/step12/g12-real-loop-v3.json",
+     "sha256": "56010f74736f9bbca8d042e4f4d55a9ec5841a51f4747a0feb798c0d72264425",
+     "variant": "pymrm-6089593-g2-nz800-s123-v3"
+    },
+    "reproduce": {
+     "bitwise_floats": true,
+     "reasons": [
+      "external_results_replayed_from_record(4)"
+     ],
+     "verdict": "MATCH"
+    },
+    "reproducibility_class": "R3",
+    "rho_final": 0.29179569104087477,
+    "rp1_constants_equal": true,
+    "solve_wall_s": 294.2,
+    "verification_status": "VERIFIED"
+   }
+  },
+  {
+   "environment": {
+    "cpu_model": "AMD Ryzen Threadripper PRO 5965WX 24-Cores",
+    "env_id": "pymrm-6089593-032a050c6cf3",
+    "export_tree_sha256": "c51b4734e453733ea2c3c473392d29255214e562d57446b5431406b424dfe3bd",
+    "external_root_default": false,
+    "fingerprint_sha256": "b58e43b102ca0db16e38d291d5a19c1a7a33db73272110d37b770260f4d3b156",
+    "llvmlite": "0.50.0",
+    "lock_sha256": "032a050c6cf39e1eb2f01ebf03ea92a386f99967cb7fd0797c54431a33a60288",
+    "machine": "x86_64",
+    "merged_database_sha256": "74cb058c545ad2056b7e7cc0b433642b5677e46dced8f55c04e7ec2326888454",
+    "numba": "0.68.0",
+    "packages": {
+     "numpy": "2.5.3",
+     "pandas": "3.0.6",
+     "pymrm": "2.5.0",
+     "scipy": "1.18.1"
+    },
+    "platform": "Linux-6.12.111+deb13-amd64-x86_64-with-glibc2.41",
+    "python": "3.13.5",
+    "runner_sha256": "0d2c345f1d414c457e047f698b9e6a3235701b91c4990ef2300d4375f753d893",
+    "threads": "OMP/OPENBLAS/MKL_NUM_THREADS=1",
+    "worker_python": "3.13.5"
+   },
+   "id": "a41.one_thread_environment_recorded",
+   "result": "pass"
+  },
+  {
+   "command": "pytest -q -p no:cacheprovider -m 'pymrm or not pymrm' tests/test_m02_*.py",
+   "exit_code": 0,
+   "id": "a41.m02_tests_with_reactor",
+   "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 562
+   },
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "e0e198e4632224612671db5b07445639d272d6da",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": null,
+   "OMP_NUM_THREADS": null,
+   "OPENBLAS_NUM_THREADS": null
+  },
+  "tree_clean": true
+ },
+ "step": "reactor-evidence"
+}

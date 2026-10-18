@@ -2,6 +2,8 @@
 # (2026-10-08) this file is v0.2's working envelope, held to the live code during v0.2 development;
 # the v0.1 envelope as released is `git show v0.1.1:benchmarks/t08/support_envelope.yaml`
 # (`v0.1-envelope-1`, release 0.1.0). It is finalised for 0.2.0 at M07.
+# Pinned at the alpha's candidate `C_α` as `v0.2-alpha-envelope-1`, release 0.2.0a1 (V02 alpha
+# release spec MR-3); returned to the working form at the alpha's merge into `main` (R-460).
 #
 # Machine-readable source of `docs/support-matrix.md`, which `scripts/t08_support_matrix.py --emit`
 # renders and `--check` holds to this file byte for byte (T08.A23). `--check` also compares the
@@ -84,7 +86,7 @@ axes:
       `c1.reactor_surrogate`, on the `pr-c1-v1` basis only (R-288). `c1.reactor_standin` is
       synthetic only: the stand-in for the C1 reactor (ADR 0034 D9), labelled synthetic in its
       manifest and in every result's identity (R-199, R-231). No promotable surrogate of the real
-      C1 reactor exists in v0.2 (L43, R-365). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
+      C1 reactor exists in v0.2 (L49, R-365). A cooler is the TP heater with negative duty (ADR 0001's sign convention).
     members:
       - c1.adiabatic_mixer
       - c1.feed_source
@@ -124,7 +126,7 @@ axes:
     title: Topologies
     statement: >-
       Acyclic flowsheets; recycles (single, nested, high-gain) by tear with safeguarded Anderson
-      and restart, or merged to EO; EO regions; cross-unit specifications promoted to EO; exact
+      and restart (L43), or merged to EO; EO regions; cross-unit specifications promoted to EO; exact
       zero-flow streams and components (ADR 0001 D3; the `ZERO_FLOW` regime). More than one loop
       or region per plan is not exercised by a registered case (L23).
     evidence:
@@ -190,7 +192,7 @@ axes:
   - id: globalization_and_recovery
     title: Globalization and recovery
     statement: >-
-      Damped Newton, with or without the terminal refinement (ADR 0018), Anderson recycle, specification continuation via
+      Damped Newton, with or without the terminal refinement (ADR 0018), Anderson recycle (L43), specification continuation via
       edge 3, sequential restart (ADR 0015); the recovery-edge inventory of spec §5.6 (T08.A33,
       W2.4); PTC offered as `T08-ptc-v1`, experimental (V14 (b) carried as FAIL, ADR 0021 D3).
     evidence:
@@ -269,7 +271,9 @@ axes:
 
   - id: platforms
     title: Platforms
-    statement: Linux x86-64 and aarch64, Python 3.13, the one lock (L15).
+    statement: >-
+      Linux x86-64 and aarch64, Python 3.13, the one lock (L15). The C1 reactor's runs are
+      measured on x86-64 only (L44).
     architectures: [aarch64, x86-64]
     python: "3.13"
     lock_sha256: ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4
@@ -442,6 +446,17 @@ unsupported:
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u14_no_external_benchmark_comparison_is_registered
 
+  # U15: V02 alpha release spec §19.1 (Amendment 3, R-377; finding A8, M02 N5).
+  - id: U15
+    capability: "`pr-c1-v1`'s LIQUID regime and pure-NH₃ saturation flashes"
+    outcome: >-
+      The verifier's phase-admissibility check ends `unsupported` with reason
+      `pr_liquid_regime_unsupported`, and the solve is not `VERIFIED`. A pure-NH₃ flash is refused
+      typed.
+    evidence:
+      - tests/test_m02_wo8_verifier.py::test_g7j_a_liquid_branch_is_unsupported
+      - tests/test_m02_wo8_g7.py::test_g7e_a_pure_nh3_feed_is_refused_by_the_flash
+
 limitations:
   - id: L01
     text: >-
@@ -541,7 +556,9 @@ limitations:
       - doc:docs/derivations/T02-recycle-spec.md §7.1
       - tests/test_t07_r7_admission.py::test_a_route_bound_without_admission_ends_typed_at_plan_time
   - id: L15
-    text: Linux x86-64 and aarch64 only; Python 3.13; the one lock.
+    text: >-
+      Linux x86-64 and aarch64 only; Python 3.13; the one lock. The C1 reactor (`c1.reactor`) is
+      measured on x86-64 only (L44).
     evidence:
       - doc:.github/workflows/ci.yml
       - check:K05.G05.two_platform_structural_equality
@@ -782,18 +799,14 @@ limitations:
       - tests/test_m01_provider.py::test_a04_describe_declares_exactly_the_registered_surface
   - id: L43
     text: >-
-      No promotable surrogate of the real C1 reactor exists in v0.2. M04's one real iteration
-      (plan `b2-it1` on box v2, reactor variant v3) is NOT_PROMOTABLE (`band_not_finite`): 26 of
-      its 632 registered experiments, 5 of them among the 118 calibration draws, end in a
-      deterministic `reactor_not_accepted(certificate)`, more than the n − k = 4 refused draws the
-      conformal band tolerates, so q̂ is infinite. A revision binds `c1.reactor_surrogate` only
-      through a manifest that re-derives PROMOTABLE (R-360), and no further iteration on v3 is
-      admissible (R-364).
+      The Anderson recycle, its stagnation restart (recovery edge E1) and the stalled-recycle EO
+      merge (E2) are library capabilities: every shipped unit that can sit in a loop declares
+      exact derivatives, so `auto` resolves to `newton_tear`, and no application-offered policy
+      requests `anderson` (`docs/recovery-edges.yaml`, `enabled: library-only`, R-130). V13 (b)'s
+      and V14 (c)'s evidence for them is library-level.
     evidence:
-      - check:M04.A31
-      - tests/test_m04_wo9_synthetic_loop.py::test_a48_renaming_the_reactor_onto_the_rough_surrogate_is_rejected
-      - doc:benchmarks/m04/wo11-b2-it1-v3/record.json
-      - doc:docs/derivations/M04-spec.md §20
+      - tests/test_t08_w2_edge_identity.py::test_e1_e2_no_offered_policy_or_unit_reaches_a_recycle_iteration
+      - doc:docs/recovery-edges.yaml
   - id: L-WEB-1
     text: >-
       The web shell (`serve-http --ui`) is a diagnostic client of the HTTP binding: it edits
@@ -829,8 +842,9 @@ limitations:
     evidence:
       - doc:docs/web-shell.md
       - doc:docs/design/M06-web-shell.md §12
-  # L44–L46, L48: R-343 (M02 close-out), M02's user-facing limitations as E. Ids and texts are
-  # V02 alpha release spec §19.1's (R-370), so that the two branches converge; L47 is the alpha's.
+  # L44–L46, L48: R-343 (M02 close-out), M02's user-facing limitations as E; ids and texts are V02
+  # alpha release spec §19.1's (Amendment 3, R-370). L47 is the alpha's (R-377). L49 is M04's (R-365),
+  # renumbered from M04's L43 at the alpha's merge into main: the released alpha holds L43 (R-321).
   - id: L44
     text: >-
       The C1 reactor (`c1.reactor`) is measured on Linux x86-64 only, on one machine
@@ -842,6 +856,7 @@ limitations:
       - doc:docs/design/M02-pymrm-adapter.md §2.4
       - doc:docs/adr/0033-external-model-execution-and-experiment-records.md §D2
       - doc:docs/adr/0034-external-models-in-a-flowsheet-solve.md §D6
+      - doc:docs/derivations/V02-alpha-release-spec.md §13
   - id: L45
     text: >-
       `external-subprocess-v1` runs the group's pinned code with the user's privileges and is not
@@ -858,6 +873,14 @@ limitations:
       and its discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13).
     evidence:
       - doc:docs/design/M02-pymrm-adapter.md §13
+      - doc:docs/derivations/V02-alpha-release-spec.md §6.1
+  - id: L47
+    text: >-
+      `pr-c1-v1`'s saturated-liquid NH₃ volume is 11–30 % high (240–400 K) and its enthalpy of
+      vaporization 2–5 % high (−7 % at 400 K), against the reference equations of state. No v0.2
+      loop decision uses either.
+    evidence:
+      - doc:docs/derivations/M01-spec.md §11
   - id: L48
     text: >-
       The C1 loop's convergence is evidenced at the corners and the centre of its registered hard
@@ -867,6 +890,20 @@ limitations:
     evidence:
       - check:M02.G11
       - doc:docs/design/M02-pymrm-adapter.md §13
+  - id: L49
+    text: >-
+      No promotable surrogate of the real C1 reactor exists in v0.2. M04's one real iteration
+      (plan `b2-it1` on box v2, reactor variant v3) is NOT_PROMOTABLE (`band_not_finite`): 26 of
+      its 632 registered experiments, 5 of them among the 118 calibration draws, end in a
+      deterministic `reactor_not_accepted(certificate)`, more than the n − k = 4 refused draws the
+      conformal band tolerates, so q̂ is infinite. A revision binds `c1.reactor_surrogate` only
+      through a manifest that re-derives PROMOTABLE (R-360), and no further iteration on v3 is
+      admissible (R-364).
+    evidence:
+      - check:M04.A31
+      - tests/test_m04_wo9_synthetic_loop.py::test_a48_renaming_the_reactor_onto_the_rough_surrogate_is_rejected
+      - doc:benchmarks/m04/wo11-b2-it1-v3/record.json
+      - doc:docs/derivations/M04-spec.md §20
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
@@ -2598,6 +2635,426 @@ harvest:
   class: P
   to: []
   note: export lifecycles
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[0]
+  sha256: 0554419afa855c739b78acb0a796b22b4a5d732876f88ae88abcaf659574702c
+  class: P
+  to: []
+  note: evidence class; review fields pending for Frank
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[1]
+  sha256: 92ecdd3804643b0411e588ab155ed8d01d9815badcc5d1513a52dfc37a208925
+  class: P
+  to: []
+  note: V11-V20 outside the requirements pattern; verdicts travel in the ledger
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[2]
+  sha256: 4bad960ad7f72a113a691c418b7dc5beab86990025badc5660c9816b2e1d65ca
+  class: E
+  to:
+  - L01
+  - B8
+  note: PTC experimental; V14 (b) FAIL carried; the PTC-R1 qualification handed on (B8, R-321)
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[3]
+  sha256: 9d291d14ff47d20919af2cbb5312c894c2f84f6d811ac7bc49b14a05742afeee
+  class: P
+  to: []
+  note: test-provenance note, tests/ differs from C's in four files
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[4]
+  sha256: ed4baffccd16e1bde6515df3d9efc5943146758e8ff45f4d803067a4786331ce
+  class: P
+  to: []
+  note: §A4.6 attestation, no pre-C_case PTC-R1 run (process record)
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[5]
+  sha256: 416e00f765f8cb245703355f95d3848d7d87661cceae44f22bf4da1e0145bf0a
+  class: E
+  to:
+  - L07
+  note: A45 under T08-numerical-policy-v2; pivot paths not compared, bitwise not promised
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[6]
+  sha256: 9fb0a48e38b4c4154bf20bb9491b06506e67c3d6336262e78085e26a5e1cb0aa
+  class: P
+  to: []
+  note: V13 (e) rests on B50 as amended by Frank (R-134, R-144); provenance
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[7]
+  sha256: 4607b4f95c3a53a46af5d12f49364849dd18b5b9665014ba907a4f0fb8cae959
+  class: E
+  to:
+  - L42
+  note: V19 feasibility; the C1 route now shipped as pr-c1-v1 (vapour-only light gases, no mixture VLE validation, k_ij = 0); K_NH3 and the property values closed by R-152 and M01
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[8]
+  sha256: a5676af0b32eccce5c0718765aa40e828f17193eafa1df72c85324cdbe79ca56
+  class: E
+  to:
+  - L43
+  note: 'library-only (R-130): the Anderson recycle, E1 and E2 are library capabilities (R-321)'
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[9]
+  sha256: 29e1bcb996e503d4cdeb488254172685fa4d3175656a1a827213319787b3b97f
+  class: B
+  to:
+  - B13
+  note: A34 over the certificates the replays re-emit, still open at the alpha (R-321)
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[10]
+  sha256: 9fb69e55e37bfd8a1705f44a6be42de76f8a0d08f2a9cdc55303abccb10b5b49
+  class: P
+  to: []
+  note: RC record storage, 42 of 44 committed, two ensemble files on one host and CI
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[11]
+  sha256: 9646adaba9c110234fffa8bf36ad736010c7863c92a98f75770d586ea283a40d
+  class: E
+  to:
+  - L07
+  - L15
+  note: bitwise not promised; Linux x86-64/aarch64, Python 3.13, one lock
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[12]
+  sha256: bf89a3b698010a1c02ee82746f55fb853f215144b2b9ddf68738edcaaa36f480
+  class: E
+  to:
+  - L01
+  note: T08's restatement of envelope row L01
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[13]
+  sha256: b3d888b772c6e046a9345028d44b262709bc8f15202e79133296173096e6efc2
+  class: E
+  to:
+  - L02
+  note: T08's restatement of envelope row L02
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[14]
+  sha256: a0b29a7cf2290dbfd9950d47c2ff5c651480b5ad22cbdb49052d4bde37a4c42c
+  class: E
+  to:
+  - L03
+  note: T08's restatement of envelope row L03
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[15]
+  sha256: 5fe173562bd434941c9c6cfe0b4a0540f63adc42504f272554f6892d8ababfd0
+  class: E
+  to:
+  - L04
+  note: T08's restatement of envelope row L04
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[16]
+  sha256: 8843f93cb5208f4f077811953bfa224321da9d36d4e8e1a54cb2d2df1025c823
+  class: E
+  to:
+  - L05
+  note: T08's restatement of envelope row L05
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[17]
+  sha256: 476e3263ecddfda801c6ad9fa44600b7f68e2edb979aec521938c506c9818b36
+  class: E
+  to:
+  - L06
+  note: T08's restatement of envelope row L06
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[18]
+  sha256: 1ed2f4b811b3409dea8fd643155a5b57bcd4a0ba52291a6dd50289df4758e009
+  class: E
+  to:
+  - L07
+  note: T08's restatement of envelope row L07
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[19]
+  sha256: ac220fce6cd9a94e831a3b361c827e395c6f0447fee52804ca332552c118a2b9
+  class: E
+  to:
+  - L08
+  note: T08's restatement of envelope row L08
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[20]
+  sha256: e7cbe0e71247b86440ef7b27465b978ebcc2204c940734ff4555dae6e660368e
+  class: E
+  to:
+  - L09
+  note: T08's restatement of envelope row L09
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[21]
+  sha256: a8b439b2af3bcfaf6f7e18eaa5020e4fa51386aaa64fd803309944e36b4b45d8
+  class: E
+  to:
+  - L10
+  note: T08's restatement of envelope row L10
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[22]
+  sha256: c48e5e0fbb8546c403f5f081f879462b919a8226647a5676a455217101f3da55
+  class: E
+  to:
+  - L11
+  note: T08's restatement of envelope row L11
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[23]
+  sha256: 8d0b1a36b051f1e27e97cf8fa4d60f45bde8e5fb26278c7051383436737fd25e
+  class: E
+  to:
+  - L12
+  note: T08's restatement of envelope row L12
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[24]
+  sha256: eee1ae016863da7795ab8f4d138566bc57fec443854dee6c695f753243346b11
+  class: E
+  to:
+  - L13
+  note: T08's restatement of envelope row L13
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[25]
+  sha256: 148f6c48d650adc545c28848ffd676f368f3f74bfeb1982ece28ab6894269fc8
+  class: E
+  to:
+  - L14
+  note: T08's restatement of envelope row L14
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[26]
+  sha256: 6e0826088f582e4556dd12f8b666b8b3f2cb9d85d8d1c814df8db9d738d3a718
+  class: E
+  to:
+  - L15
+  note: T08's restatement of envelope row L15
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[27]
+  sha256: c64ece3ec3e4b8ede39482f3410c96cd8e24c03beee3cd49f03ee0d8216a5940
+  class: E
+  to:
+  - L16
+  note: T08's restatement of envelope row L16
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[28]
+  sha256: a69c944b9b202dc65e984889bb98a2828921e5be75b058f34c5318c8bceebe6b
+  class: E
+  to:
+  - L17
+  note: T08's restatement of envelope row L17
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[29]
+  sha256: 76ccb8b50ccf446e55288711e6ae1d45013f9ed2c13c951b08c39080a66eb0f1
+  class: E
+  to:
+  - L-CSTR-1
+  note: T08's restatement of envelope row L-CSTR-1
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[30]
+  sha256: 20e57b77f639334f9abbd66a85b895f8ea1558da8e0ef7997925fd969cd06c87
+  class: E
+  to:
+  - L-CSTR-2
+  note: T08's restatement of envelope row L-CSTR-2
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[31]
+  sha256: a9e7226c45c97904ec435bd42047115fc383081bc968c1b56f0c52a4347abe57
+  class: E
+  to:
+  - L-CSTR-3
+  note: T08's restatement of envelope row L-CSTR-3
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[32]
+  sha256: e5bec8364cfc0bd3be0f8f5f5e1f9b1c1c265a4603871e3dd25638e7c6bb4efa
+  class: E
+  to:
+  - L-WS-1
+  note: T08's restatement of envelope row L-WS-1
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[33]
+  sha256: 8f902c0b5911c561cd5493eba2de23a42a0be4e58876d62f5b1968f2a0c754a4
+  class: E
+  to:
+  - L-WS-2
+  note: T08's restatement of envelope row L-WS-2
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[34]
+  sha256: beda8e9c2a1d8af81179226f81ea1b8d49d686454a194e1f5b98ca10f4ab22c3
+  class: E
+  to:
+  - L18
+  note: T08's restatement of envelope row L18
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[35]
+  sha256: 21144f5fd741081df4d842c17d4ffc27e26cc043cf0033c11a10c6d72c27caf6
+  class: E
+  to:
+  - L19
+  note: T08's restatement of envelope row L19
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[36]
+  sha256: 1a0005d5e625575b520ec8ecaf17bfdefae58e1b1ff933ef83a5de69dec74b4e
+  class: E
+  to:
+  - L20
+  note: T08's restatement of envelope row L20
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[37]
+  sha256: d3107675d332b12148b774ee03b26899f23bafe8e5ab7e0535e6b8020bf6b677
+  class: E
+  to:
+  - L21
+  note: T08's restatement of envelope row L21
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[38]
+  sha256: 2c24b5041ace491e3ea3b82a98919805f5ade960bcbcdec5de06be5d42afa1f3
+  class: E
+  to:
+  - L22
+  note: T08's restatement of envelope row L22
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[39]
+  sha256: 7cb63bba9291e2b837f2ffb9a7ec879e435c05dac979d61539d12c84cdd19926
+  class: E
+  to:
+  - L36
+  note: T08's restatement of envelope row L36
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[40]
+  sha256: 4caf750eaee9aa61dcc9f7a0ae2e4d108f8352aa998f5d441edb5be1b92a6751
+  class: E
+  to:
+  - L37
+  note: T08's restatement of envelope row L37
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[41]
+  sha256: 7fe01d8194b0c5df6b0555e21a727a446fb1ffe179b1f6a6b773927f5f933bb6
+  class: E
+  to:
+  - L38
+  note: T08's restatement of envelope row L38
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[42]
+  sha256: 3d60b6d24c80e6cb63a57ec944bcec95313ea816d703ff5a872582bc753249cc
+  class: E
+  to:
+  - L39
+  note: T08's restatement of envelope row L39
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[43]
+  sha256: d599de2a229274acd0d2e564628fa753a063f5665d4726e59ee3535f2ec1b313
+  class: E
+  to:
+  - L23
+  note: T08's restatement of envelope row L23
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[44]
+  sha256: c768d63a01ca3b6c7e0c97484a06f491c29cc790238daa828494953ade88a582
+  class: E
+  to:
+  - L24
+  note: T08's restatement of envelope row L24
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[45]
+  sha256: 14b0425c70736f029581a7e7c196d7efc597e791da36c72d14b210db701e616e
+  class: E
+  to:
+  - L25
+  note: T08's restatement of envelope row L25
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[46]
+  sha256: b2261f5599cb62556ee79c2b78cb48d330f5a382b80a700e96b1ee855f3c8af2
+  class: E
+  to:
+  - L26
+  note: T08's restatement of envelope row L26
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[47]
+  sha256: a9eabeadf77edf9865ad69e6be9719e81055a2ac423c3082fe0e66f3d4777490
+  class: E
+  to:
+  - L27
+  note: T08's restatement of envelope row L27
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[48]
+  sha256: 21f06970c30fcff5db386a4604cbc4525e6d94b73a5330935896215f0c584cb8
+  class: E
+  to:
+  - L28
+  note: T08's restatement of envelope row L28
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[49]
+  sha256: 0532a786c5174f6e3dff7a56e63f5384dfa62b5566e2804a988903567defd0e9
+  class: E
+  to:
+  - L29
+  note: T08's restatement of envelope row L29
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[50]
+  sha256: 6734b1e0a33ce10e5b72cce9598e73a97c0dd5dc415a13049989f63cbc3020f2
+  class: E
+  to:
+  - L30
+  note: T08's restatement of envelope row L30
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[51]
+  sha256: 4964c8cebe1bf887a24dea0ec1f6806e3699e963c1d68ce064a27010e70c5f06
+  class: E
+  to:
+  - L31
+  note: T08's restatement of envelope row L31
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[52]
+  sha256: c1ff884fbc9b6929c175f61d95ca3451e12aeb5b0a7b466ea3016ba1a164b401
+  class: E
+  to:
+  - L32
+  note: T08's restatement of envelope row L32
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[53]
+  sha256: ceb2bb02388f577413a343fa87368f869e74e06bcde9468474e7182c2249a5cd
+  class: E
+  to:
+  - L33
+  note: T08's restatement of envelope row L33
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[54]
+  sha256: 657c16fd1b27946f2b466af2bc4cba2dd41b0add4bf8b4c665dd817edb37a684
+  class: E
+  to:
+  - L34
+  note: T08's restatement of envelope row L34
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[55]
+  sha256: d4817e7106b84a9bfa68af9eef596c05e3899def49ee807d31cbf138f2c0939c
+  class: E
+  to:
+  - L35
+  note: T08's restatement of envelope row L35
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[56]
+  sha256: 58a888ec3a66a42036c67c187678f9026fa335201a5190d748c4e59d99ae592c
+  class: E
+  to:
+  - L40
+  note: T08's restatement of envelope row L40
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: limitations[57]
+  sha256: bc781c4007870d64b3e55a63d23d6f23b3ddd7124993f398c59026dd68f9a93e
+  class: E
+  to:
+  - L41
+  note: T08's restatement of envelope row L41
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: checks[42]
+  check_id: T08.A70
+  sha256: cb5db9e481f03d273bc008790f7235d824eb7a4fbe73dbc83b36804fa036f4d6
+  class: E
+  to:
+  - L01
+  - B8
+  note: T08.A70 fail, accepted in ADR 0021 D3 (V14 (b)); PTC experimental; PTC-R1 qualification handed on (B8, R-321)
+- manifest: evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
+  item: checks[67]
+  check_id: T08.B23
+  sha256: 29b92d806b2e9ac50d08a898d5a0b5bf378eb38bb0fb2bb31ed25239056f467d
+  class: E
+  to:
+  - L01
+  - B8
+  note: T08.B23 fail, accepted in ADR 0021 D3 (V14 (b)); PTC experimental; PTC-R1 qualification handed on (B8, R-321)
 - manifest: evidence/M01/6c81683078b0463c4149caa922933aa6c95049cb/manifest.json
   item: limitations[0]
   sha256: ee46a433f1bfe6f19f00877097a0e961d9957f6e811812f936098abe5d743036
@@ -2886,8 +3343,8 @@ harvest:
   sha256: cb2034d20d6e7455c21fc709a5b496e80ff9b4025814a97e1813cb3cc01af6aa
   class: E
   to:
-  - L43
-  note: real surrogate NOT_PROMOTABLE (band_not_finite) on v3; L43 (R-365)
+  - L49
+  note: real surrogate NOT_PROMOTABLE (band_not_finite) on v3; L49 (R-365)
 - manifest: evidence/M04/a9566a6b3805938e8d4d386cc1820a551530f771/manifest.json
   item: limitations[1]
   sha256: f525c178eee67f1a6efb57626d60867f8010f9b98cff33025c681770dd74cf0e
@@ -2921,8 +3378,8 @@ harvest:
   sha256: cb2034d20d6e7455c21fc709a5b496e80ff9b4025814a97e1813cb3cc01af6aa
   class: E
   to:
-  - L43
-  note: real surrogate NOT_PROMOTABLE (band_not_finite) on v3; L43 (R-365)
+  - L49
+  note: real surrogate NOT_PROMOTABLE (band_not_finite) on v3; L49 (R-365)
 - manifest: evidence/M04/8df0ea7c6248ebe1fbc265b3f39f9fdd9c0a0fa5/manifest.json
   item: limitations[1]
   sha256: f525c178eee67f1a6efb57626d60867f8010f9b98cff33025c681770dd74cf0e
@@ -3070,7 +3527,7 @@ harvest:
   sha256: 72c94177ddd2f1837e16b2b0f41ab7e114b78754f639db3d8af9e03b2a44141d
   class: P
   to: []
-  note: no promotable real surrogate (M04 L43); synthetic truths claim only the composition
+  note: no promotable real surrogate (M04 L49); synthetic truths claim only the composition
 - manifest: evidence/M05/cfecb15abcb2d632149e37749a107fa0b3991cc0/manifest.json
   item: limitations[5]
   sha256: 7bdb9ceccfe8a71d24e9a0c1e1c956343d7511684f81cc7084d81c6979ff3e39
@@ -3130,7 +3587,7 @@ harvest:
   sha256: 72c94177ddd2f1837e16b2b0f41ab7e114b78754f639db3d8af9e03b2a44141d
   class: P
   to: []
-  note: no promotable real surrogate (M04 L43); synthetic truths claim only the composition
+  note: no promotable real surrogate (M04 L49); synthetic truths claim only the composition
 - manifest: evidence/M05/56fb2fac9fd4e2f227c4c8ad5805d8ba8862fdff/manifest.json
   item: limitations[5]
   sha256: 7bdb9ceccfe8a71d24e9a0c1e1c956343d7511684f81cc7084d81c6979ff3e39

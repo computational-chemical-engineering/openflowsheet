@@ -136,7 +136,10 @@ def test_the_three_states_end_to_end(tmp_path: Path) -> None:
             pythonpath=pythonpath,
         )
         assert ran.returncode == 0, ran.stdout + ran.stderr[-2000:]
-        records[state] = {c["id"]: c for c in json.loads(out.read_text("utf-8"))["checks"]}
+        document = json.loads(out.read_text("utf-8"))
+        # V02 alpha spec §18.3 (R-347): the record names the host's registered machine class.
+        assert document["provenance"]["machine_class"] == t08_rc.machine_class(), state
+        records[state] = {c["id"]: c for c in document["checks"]}
     installed, checkout = records["installed"], records["checkout"]
     strays = installed["a19.b_installed_outside_the_tree_beneath_a_stray_lock"]["strays"]
     assert strays == [str((scratch / "requirements.lock").resolve())]

@@ -1,5 +1,117 @@
 # Changelog
 
+## v0.2.0a1 — release candidate `C_α` = `cc73219a77f6a54579c8acb151ed6fae228c8a4c` (`0.2.0a1`); a pre-release; tag and publication by Frank
+
+*ADR 0021 D4, reused by ADR 0028. The gate table below is what
+`scripts/v0_2_gate.py --rc C_α --markdown` prints at the tag candidate, after the design lane's
+verdicts on `C_α` (`docs/reviews/V02-alpha-verdicts.md`: judged 2026-10-16, V13, V17 and W21
+re-judged 2026-10-17 on Frank's answers in ADR 0028). Nothing in this section is released until
+the tag; the tag and every publication are Frank's (ADR 0021 D5).*
+
+**What it does.** Everything v0.1.0 does (the application contract, the thirteen unit models, the
+planner, the verifier, the certificate or the typed failure, the replay bundle) and, added since
+v0.1.1: an adapter that runs the pinned PyMRM reactor as a unit model, with its coupled route and
+its experiment artifacts (M02); the Peng–Robinson property route of the ammonia loop (M01); and a
+diagnostic web shell served by `serve-http --ui`, which edits nothing (Solve and Cancel are its
+only effects; M06). The supported envelope is `docs/support-matrix.md`: **unlisted is
+unsupported**.
+
+**Gates (V11–V20, W21, W22), as `scripts/v0_2_gate.py` prints them.** A FAIL is printed FAIL.
+
+| Gate | Verdict at C | Required evidence | Clauses and travelling limitations |
+| --- | --- | --- | --- |
+| V11 | PASS | Semantic diff, drafts, task validation, units/references, real migration when applicable | limitations: L38 |
+| V12 | PASS | Required unit library with per-model definition of done | limitations: L02, L26, L27, L28, L29, L30, L-CSTR-1, L-CSTR-2, L-CSTR-3 |
+| V13 | PASS | DM/SCC/BTF, tear and EO, scaling and initialization | limitations: L10, L22, L23, L24, L36, L38, L43, L-WS-1, L-WS-2 |
+| V14 | FAIL | Homotopy, qualified PTC/SER and three bounded recovery edges | failing: V14 (b); V14 (b) FAIL, accepted by Frank 2026-10-17 (ADR 0028 D3); limitations: L01, L08, L20, L21, L43 |
+| V15 | PASS | Frozen phases, EO cross-unit spec, multiple-root evidence | limitations: L02, L14, L19, L20, L33 |
+| V16 | PASS | 30+ distinct cases, eight shared comparisons, two both-reference cases where feasible, registered 20x20 ensemble | limitations: L16, L17, L18, L32 |
+| V17 | PASS | Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification | limitations: L11, L12, L13 |
+| V18 | PASS | Distribution/data gates, local rank evidence, qualified energy checks, all recovery edges tested | limitations: L03, L05, L06, L15, L19, L25, L34, L37, L39, L40, L41 |
+| V19 | PASS | Real-chemistry dossier with usable data/kinetics/property/reference route | — |
+| V20 | PASS | >=95% nominal robustness, correct invalid-structure handling, no adversarial false verification | limitations: L04, L07, L09, L31, L32, L38 |
+| W21 | PASS | PyMRM boundary/accuracy/execution and provenance | limitations: L05, L06, L07, L15, L19, L20, L44, L45, L46, L48 |
+| W22 | PASS | One validated needed nonideal property route | limitations: L42, L47 |
+| W23 | not claimed | Surrogate conservation/domain/derivative/default UQ and promotion | — |
+| W24 | not claimed | Fixed-topology optimization, eligible trust-region example and parent-model checks | — |
+| W25 | not claimed | End-to-end real reactor refinement with honest evidence limits | — |
+| W26 | not claimed | Diagnostic web shell through shared contract | — |
+| W27 | not claimed | External agent benchmark adaptation attempted; inaccessible assets disclosed | — |
+
+**What it is not.**
+
+- **Not 0.2.0.** A pre-release: W23–W27 are not claimed, and the web shell is included and not
+  claimed.
+- **Not empirically validated.** SYN-001 is synthetic, and every result is numerical verification
+  against the same equations. Also, no reactor result has been compared with experimental data by
+  this project: the group's published comparison is the group's evidence, and every real-reactor
+  number is the group's model at the pin, a regression, whose discretization bias is 1.0–1.4 % in
+  NH₃ (M02 design note §13).
+- **Not a guarantee.** A human sign-off records that someone with the relevant expertise examined
+  the evidence and raised no objection, not that the content is correct (R-017).
+- **Not general beyond the support matrix.** What `docs/support-matrix.md` does not list is
+  unsupported, and each unsupported capability ends typed.
+- **Not a certificate of solution accuracy.** `VERIFIED` certifies residual accuracy at the
+  registered tolerances; the solution-error bound is recorded and disclosed, never promised
+  (ADR 0007 F3).
+- **PTC is experimental.** No PTC family is qualified: V14 (b) is judged FAIL at `C_α`.
+- **The agent evidence is narrow.** One pinned model and configuration, MCP only. V17's agent
+  evidence is carried from `v17-c2`'s surface, not re-measured on v0.2's: Frank accepted the carry
+  (ADR 0028, 2026-10-17), and the release candidate's job checks the recorded decomposition chain
+  from that surface to this one (M07a.A37).
+- **The reactor is opt-in and measured on one machine.** Real-reactor runs are opt-in (they need
+  the separately built, pinned reactor environment) and of reproducibility class R3 (ADR 0034 D6).
+  The reactor has been run on Linux x86-64 on one machine (`ref-x86-64`): it is not measured on
+  aarch64, and no CI job runs the reactor. What CI runs in its place is a stand-in, and the reactor
+  stand-in is synthetic; it certifies nothing about the reactor. There is no warm start of the
+  reactor (L44).
+- **The reactor execution profile is not a sandbox.** The group's pinned code runs with the user's
+  privileges, unconfined (L45). The profile is registered on Linux; macOS is best effort, and
+  Windows is refused before spawn (ADR 0033 D2).
+- **The property route is narrow.** Validation covers pure-component behaviour within R-160's bands
+  against the reference equations of state; `k_ij = 0`; there is no mixture VLE validation. Of
+  `pr-c1-v1`'s liquid side: the LIQUID regime and pure-NH₃ flashes are deferred and refused typed
+  (U15), and against the reference equations of state its saturated-liquid volume is 11–30 % high
+  and its enthalpy of vaporization 2–5 % high (L47); no v0.2 loop decision uses either.
+- **Rights.** The group's 4TU dataset may be used and referenced (Frank, 2026-10-02; the real
+  chemistry dossier §8, row 8); no result of this release is compared with it.
+
+**Known limitations, by support-matrix id** (the text of each is in `docs/support-matrix.md`):
+`L01`, `L02`, `L03`, `L04`, `L05`, `L06`, `L07`, `L08`, `L09`, `L10`, `L11`, `L12`, `L13`, `L14`, `L15`, `L16`, `L17`, `L-CSTR-1`, `L-CSTR-2`, `L-CSTR-3`, `L-WS-1`, `L-WS-2`, `L18`, `L19`, `L20`, `L21`, `L22`, `L36`, `L37`, `L38`, `L39`, `L23`, `L24`, `L25`, `L26`, `L27`, `L28`, `L29`, `L30`, `L31`, `L32`, `L33`, `L34`, `L35`, `L40`, `L41`, `L42`, `L43`, `L-WEB-1`, `L-WEB-2`, `L-WEB-3`, `L-WEB-4`, `L44`, `L45`, `L46`, `L47`, `L48`.
+
+**Reproducibility.** In the words of ADR 0007 F1: "the project reports bitwise agreement and
+never promises it, on any platform including a single machine; R0 bit-identity of structure plus
+D2 agreement for floats is the promise."
+
+**Review status of every package** (each manifest's `status` at `C_α`, the manifest at the latest
+committer time where there are several; human `review` fields as recorded; M07a, whose manifest is
+the record of this gate and is written after `C_α`, has no row, R-320):
+
+| Package | Status | Human review (numerical / process model) |
+| --- | --- | --- |
+| K01 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| K02 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| K03 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| K04 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| K05 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| K06 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| M01 | `tested` | pending / pending |
+| M02 | `tested` | pending / pending |
+| M06 | `tested` | pending / pending |
+| P00 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| P01 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| P02 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| P03 | `reviewed` | signed 2026-09-23 (R-017) / signed 2026-09-23 (R-017) |
+| T01 | `tested` | pending / pending |
+| T02 | `tested` | pending / pending |
+| T03 | `tested` | pending / pending |
+| T04 | `tested` | pending / pending |
+| T05 | `tested` | pending / pending |
+| T05b | `tested` | pending / pending |
+| T06 | `tested` | pending / pending |
+| T07 | `tested` | pending / pending |
+| T08 | `tested` | pending / pending |
+
 ## v0.2.0 — unreleased
 
 *In development on `main`; nothing below is released. The section is finalised, with its gate

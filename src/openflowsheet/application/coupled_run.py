@@ -773,8 +773,9 @@ def _check(
     tolerance: float,
     equal: bool,
     ratio: float | None,
-    reproducibility: str,
 ) -> CheckResult:
+    # [A09] text only (R-345): the external model and its reproducibility class are the
+    # `external_model` limitation's, not a provider qualification.
     passed = value <= tolerance and equal
     return CheckResult(
         id=check_id,
@@ -788,7 +789,7 @@ def _check(
         if equal
         else "the experiment's request inputs are not the certified state's inlet bit for bit",
         near_threshold=ratio is not None and ratio < FLOOR_RATIO_MIN,
-        independence_qualification=f"external model, {reproducibility}",
+        independence_qualification=None,
     )
 
 
@@ -823,7 +824,6 @@ def coupling_evidence(solved: CoupledSolve, state: Mapping[str, float]) -> Exter
                 block.tau_xi_rel,
                 equal,
                 entry["floor_ratio_xi"],
-                reproducibility,
             )
         )
         checks.append(
@@ -834,7 +834,6 @@ def coupling_evidence(solved: CoupledSolve, state: Mapping[str, float]) -> Exter
                 block.tau_T_K,
                 equal,
                 entry["floor_ratio_T"],
-                reproducibility,
             )
         )
         limitations.append(

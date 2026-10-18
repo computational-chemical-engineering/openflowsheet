@@ -1066,3 +1066,47 @@ Grep, don't read whole. Newest at the bottom.
 - R-458 Amendment A1 `12bbd89` (E5a): stricter than proposed — exact path only, pinned old/new values, plus binding check
   `fingerprint_sha256 == document_sha256(fingerprint)` on both sides (holds on all 22 committed records and S77's 44 sides).
   Rejected: unbound glob. E6 expected: version leaves 4/7/4/3/4, digests 41/79/70/91/37. Engineer applying E5a + E6 launched.
+
+## 2026-10-17 — alpha into main (`wp/V02-alpha-main`), build lane
+
+- DECISION: envelope id L43 is held twice — the alpha's (R-321: Anderson/E1/E2 library-only; released, cited by the
+  `## v0.2.0a1` CHANGELOG section) and main's (R-365: no promotable real surrogate; M04). → main's M04 row is
+  renumbered **L49** (next free; row, `unit_models` statement, M04/M05 harvest `to`/notes, `scripts/m04_evidence_manifest.py`)
+  in its own pre-merge commit; the alpha's L43 keeps its released meaning. Alternative: renumber the alpha's row
+  (contradicts the released CHANGELOG). Reversible by: reverting that commit and re-resolving the merge. Committed
+  M04/M05 manifests and historical notes that say "L43" for the surrogate are not rewritten. R-365's text ("row L43")
+  awaits a design-lane ruling (substitution only).
+- Rulings R-456 – R-460 applied (`docs/design/V02-alpha-main-rulings.md` §3, in §4's order):
+  - E1–E4, E8: `ALPHA_TAG_COMMIT`; the alpha's ledger and changelog tests read the record at the tag (AM-01 – AM-08);
+    `m07a_rc.LINKS` gains c_3 (R-295, `strip_m04`, `455d01eb…`) with the controls re-aimed, each preceded by an
+    unmodified-list pass (AM-10 – AM-18); AM-30 (M04/M05 harvest rows map to L49). Gate 9602 passed, 0 failed.
+  - E7: version `0.2.0a2.dev0` (B-WO10-4's set), envelope back to `v0.2-envelope-dev` / `0.2.0.dev0`, `ENVELOPE_ID`,
+    support matrix re-emitted (0 problems), RELEASING "After a tag", `tests/test_v02_main_version.py` (AM-40 – AM-42).
+    AM-10 still passes at the new version (D_3 unchanged). W27 coverage re-taken from the working tree (rows and
+    `list_models` unchanged; snapshot `153894c4…`), then once more at the E7 commit so `git_commit` names its build.
+  - E5: `m05_retake_diff.py --digest-only` (AM-20 PASS ×5 on S77's pair, 42/80/71/92/38 = S77's; AM-22 unit tests).
+    DECISION: store-index pairing in the leaf walk → by relabelled key, not position (the index is sorted by key, so
+    positional pairing fails (b)/(c) on S77's pair: 17 and 14 digests). Alternative: positional (AM-20 cannot pass).
+    Reversible by: reverting the E5 commit. M05 build log S78.
+  - E6 STOPPED (not applied; for the design lane). The re-take at `2345b54` (clean tree, `.venv-nlp`, OMP 1) is
+    not digest-only: `--digest-only` FAILs every case with other = one leaf per coupling record,
+    `frozen.reactor.fingerprint.openflowsheet_version` `'0.1.1'` → `'0.2.0a2.dev0'` (4/7/4/3/4 leaves; the committed
+    records were taken at 0.1.1). Everything else is digest-only: changed digests 41/79/70/91/37, timing 20/35/20/26/20,
+    environment files equal, map a function and injective. The coupling record carries the fingerprint in clear, so a
+    version change always moves one non-digest leaf; S77's boundary change moved a digest leaf there instead (hence
+    its +1 counts). Passing would need E5 to admit that leaf (e.g. a `version` class: committed side = `--old-version`,
+    re-take side = the running `__version__`, only at `*.fingerprint.openflowsheet_version`) — a change to rule (a),
+    not made here. Committed records untouched; G10 stays red until a ruling.
+  - Q1 settled at `2345b54` (0.2.0a2.dev0): `m05_wo9_real.py --replay` REPLAY PASS REAL, 0 differences (REAL's
+    fingerprint carries no version, F4). nlp tier: 181 passed, 1 skipped, 5 failed (G10 ×5 only; 107/185/107/147/…
+    differences); `m03_nlp_check.sh` fails on that pytest step only (inventory checks exit 0).
+- R-458 Amendment A1 applied (`12bbd89` rulings; E5a then E6):
+  - E5a (`f6ea52b`): `--digest-only` admits `frozen.reactor.fingerprint.openflowsheet_version` (exact path) as class
+    `version`, pinned to `--old-version` / the running `__version__`, with every frozen unit's `fingerprint_sha256`
+    bound to `document_sha256(fingerprint)` on both sides. AM-20 on S77's pair still PASS ×5, 42/80/71/92/38,
+    `version=0`; AM-22 +6 cases (13 in the file). Gate 9618 passed, 0 failed. M05 build log S79.
+  - E6: five G10 records re-taken at `f6ea52b` (clean tree, `.venv-nlp`, OMP 1, nlp-test-tools on `PYTHONPATH` as
+    WO-8 took them — without it the environment has 14 distributions, not 17, and (d) fails). `--digest-only
+    --old-version 0.1.1` PASS ×5: version 4/7/4/3/4, changed digests 41/79/70/91/37, other 0, environment equal —
+    as expected. nlp tier 186 passed, 0 failed (G10 5 passed); `m03_nlp_check.sh` PASSED; REAL `--replay` 0
+    differences; gate 9618 passed, 0 failed. M05 build log S80.

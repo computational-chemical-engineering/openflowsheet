@@ -25,7 +25,7 @@ this script ran or read at `C`:
 `--harvest-from MANIFEST...` classifies the named manifests' limitations and non-pass checks in
 `benchmarks/t08/support_envelope.yaml#harvest` (T08.A21), replacing every `evidence/M04/` entry,
 and regenerates `docs/support-matrix.md`; the manifests are not touched. The classes are R-365's
-(spec §20 A3.5): the real verdict E (envelope row L43), A33 and Q-A2.1 B, the rest P; the
+(spec §20 A3.5): the real verdict E (envelope row L49), A33 and Q-A2.1 B, the rest P; the
 `a9566a6` manifest's E33 limitation is S, closed by A49 (`HARVEST_BY_COMMIT`).
 
 Status is `tested` when every check is `pass` (A33 may be `not_applicable`) and every command
@@ -510,7 +510,7 @@ Classified = tuple[str, tuple[str, ...], str]
 #: R-365 (spec §20 A3.5). B points to T08 §6.3's B10, the handed-on follow-ups (build decision
 #: E37: §6.3 has no M04 id).
 NOTES: tuple[Classified, ...] = (
-    ("E", ("L43",), "real surrogate NOT_PROMOTABLE (band_not_finite) on v3; L43 (R-365)"),
+    ("E", ("L49",), "real surrogate NOT_PROMOTABLE (band_not_finite) on v3; L49 (R-365)"),
     ("B", ("B10",), "A33 not run (A31 not PROMOTABLE); Q-A2.1 open until A33's record (R-366)"),
     ("P", (), "real-reactor records opt-in, one machine; A32 bitwise per platform (R-362)"),
     ("P", (), "W23 verdict is the verdict lane's; self-generated records are regression fixtures"),
