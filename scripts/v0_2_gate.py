@@ -102,6 +102,7 @@ ADR_DIRECTORY: Final = "docs/adr"
 HEADERS: Final = ("Gate", "Verdict", "Failing clauses", "Travelling limitations", "Basis")
 NONE: Final = "—"
 
+#: The alpha's clause grammar (V11–V20, W21, W22): `v0.2-alpha-gate-v1`'s `clause` (M07.A31).
 CLAUSE: Final = re.compile(r"\b(?:V(?:1[1-9]|20)|W2[12]) \([a-z0-9]+\)")
 LIMITATION: Final = re.compile(r"\bL(?:\d{2}|-[A-Z]+-\d+)\b")
 DATE: Final = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -129,6 +130,9 @@ class GateSet:
     covers: re.Pattern[str]
     claimed: tuple[str, ...]
     not_claimed: tuple[str, ...]
+    #: The clause grammar `Gnn (x)` of this set's gates (M07 spec §7.2): every clause the
+    #: verdict document and the policy ADR's D3 table name is read with it.
+    clause: re.Pattern[str]
     policy_adr: str
     verdict_document: str
     rc_record: str
@@ -157,6 +161,7 @@ GATE_SETS: Final = (
         covers=re.compile(r"0\.2\.0a[1-9][0-9]*"),
         claimed=(*(f"V{n}" for n in range(11, 21)), "W21", "W22"),
         not_claimed=("W23", "W24", "W25", "W26", "W27"),
+        clause=CLAUSE,
         policy_adr="docs/adr/0028-v0.2-pre-release-policy.md",
         verdict_document="docs/reviews/V02-alpha-verdicts.md",
         rc_record="docs/v02-alpha-rc-record.md",
@@ -212,12 +217,12 @@ class VerdictDocument:
     rejudged: Rejudgement | None = None
 
 
-def _ids_outside_their_column(cell: str) -> list[str]:
-    return [*CLAUSE.findall(cell), *LIMITATION.findall(cell)]
+def _ids_outside_their_column(cell: str, gate_set: GateSet) -> list[str]:
+    return [*gate_set.clause.findall(cell), *LIMITATION.findall(cell)]
 
 
 def _failing_clauses(
-    where: str, gate: str, verdict: str, cell: str
+    where: str, gate: str, verdict: str, cell: str, gate_set: GateSet
 ) -> tuple[tuple[str, ...], tuple[str, ...]]:
     """The `Failing clauses` cell: a FAIL's clauses, or a BLOCKED's `clause: missing input`."""
     where = f"{where}, {gate}, Failing clauses"
@@ -232,10 +237,10 @@ def _failing_clauses(
     for entry in (part.strip() for part in cell.split(";" if verdict == "BLOCKED" else ",")):
         clause, _, missing = entry.partition(":") if verdict == "BLOCKED" else (entry, "", "")
         clause, missing = clause.strip(), missing.strip()
-        if not CLAUSE.fullmatch(clause) or not clause.startswith(gate + " "):
+        if not gate_set.clause.fullmatch(clause) or not clause.startswith(gate + " "):
             raise ValueError(f"{where}: {entry!r} is not one of {gate}'s clauses as `Gnn (x)`")
         if verdict == "BLOCKED":
-            if not missing or _ids_outside_their_column(missing):
+            if not missing or _ids_outside_their_column(missing, gate_set):
                 raise ValueError(
                     f"{where}: {entry!r} names its missing input, and no clause or envelope id"
                 )
@@ -359,12 +364,12 @@ def verdict_document(text: str, gate_set: GateSet, rc: str) -> VerdictDocument:
         _, word, failing, travelling, basis = cells
         if word not in VERDICTS:
             raise ValueError(f"{where}, {gate}: verdict {word!r} is not one of {VERDICTS}")
-        if _ids_outside_their_column(basis):
+        if _ids_outside_their_column(basis, gate_set):
             raise ValueError(
-                f"{where}, {gate}, Basis: holds {_ids_outside_their_column(basis)}; "
+                f"{where}, {gate}, Basis: holds {_ids_outside_their_column(basis, gate_set)}; "
                 "clauses and envelope ids belong in their own columns"
             )
-        clauses, blocked = _failing_clauses(where, gate, word, failing)
+        clauses, blocked = _failing_clauses(where, gate, word, failing, gate_set)
         found[gate] = VerdictRow(
             verdict=word,
             clauses=clauses,
@@ -446,7 +451,7 @@ def policy(
             problems.append(f"{where}: D3: {why}")
     else:
         for first, cell in d3:
-            if not CLAUSE.fullmatch(first):
+            if not gate_set.clause.fullmatch(first):
                 continue
             if first in accepted:
                 problems.append(f"{where}: D3 lists {first} twice")
