@@ -9736,3 +9736,77 @@ Every unpinned attempt would fail, and the registered P7 states P7-T1 and P7-T5 
 about the pinning attempt's model, that is circular, and the design lane must be told.
 
 ---
+
+## R-473 — M07 RC step 17 runs on the campaign operator's login, never on CI; the W27 identifier term carries to C by record identity; `campaign.json` is recomputed on a scratch copy and cited by SHA-256
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M07 spec §22 (Amendment 5), ruling on the W27 verdict's F-7 and L-W27-1 (`docs/reviews/W27-verdict-83f825d.md`) |
+| Normative text | M07 spec §22.1, §22.2; §8 step 17 and §11 M07.A62 [A5] |
+| Evidence | GC-W27-1, GC-W27-2 (`docs/derivations/scripts/m07_reference.py`, output unchanged); the rehearsal of 17a–17d at `c50e6fb` (§22.2) |
+| Affected packages | M07 (WO-8, M07.A62), M06 (W27 record `w27-m07-83f825d`) |
+
+**Decision.** Step 17 runs in WO-8 on the login that ran the campaign. It uses a clean checkout of C, the project
+environment, and `CLAUDE_CONFIG_DIR` unset. Every file it writes goes into a fresh directory outside the repository.
+- **17a:** the git tree of the campaign directory at C is `95f9fcf2…895a`, the tree at `89cd931` and at `c50e6fb`.
+- **17b:** coverage at C goes to a scratch `--out`, never M06's committed file.
+- **17c:** `v0_2_gate.py --carry-w27` compares the three members that §22.2 defines.
+  `served_tool_list_sha256` is `tool_descriptions_sha256()`, recorded as `campaign.json#/surface`. `list_models` is
+  compared through `list_models_sha256`. The coverage rows are `coverage.json#/rows`.
+- **17d:** `harness aggregate` runs on a copy, and `diff -r` against the record is empty. `campaign.json` is
+  `4812910a…9e28`.
+
+The address is read by `operator_address()`, and never passed, written or logged. If the harness refuses the address
+as unreadable, step 17 is `unsupported`, which is not a pass. W27-R56's identifier term carries by record identity
+(17a), whichever login recomputes, and the recomputing login is not recorded (L-A5-1). The campaign's aggregate is
+always cited by its full SHA-256, because the superseded file shares its schema id.
+
+**Rejected alternatives, and why.**
+- *Run on CI or on any login, with a new `aggregate` mode that leaves out the address and carries the term from the
+  record.* It needs new harness code and produces a hybrid document that is not a recompute.
+- *Record the address or its hash.* R6.6 forbids it, and the hash can be reversed by guessing.
+- *Carry `campaign.json` by identity alone.* It loses the check that the aggregation code at C reproduces the judged
+  bytes.
+- *Recompute in place.* It dirties C.
+- *A `benchmarks/m07/registration.json` member.* That file is a journey carry file, so changing it after K forces
+  the journey to be re-run at C.
+
+**Watch for.**
+- A change to any file of the campaign directory now fails GC-W27-2 in the gate. It needs a new verdict and an
+  amendment, not a re-pin.
+- If the aggregation code changes between `89cd931` and C, 17d fails by design.
+
+---
+
+## R-474 — W27-R02 stands for every coverage under the W27 registration, step 17's at C included; the "a case's own `units.json` can hide a unit" fix (F-1) goes to the next OpenIDAES-450 registration
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M07 spec §22.4 (Amendment 5), ruling on the W27 verdict's F-1 |
+| Normative text | M07 spec §22.4; W27 registration W27-R02 (unchanged) |
+| Evidence | the verdict's F-1: 5 of 138 comparable `units.json` cases omit a non-boundary topology kind, and only `official_idaes_skeleton_pervaporation` (run 26) loses its only unavailable process unit |
+| Affected packages | M06 (W27), M07 (step 17), the OpenIDAES-450 split registration (`docs/briefs/OpenIDAES-split-registration.md`) |
+
+**Decision.** W27-R02 is not amended under the W27 registration. Amending it would change at least run 26's coverage
+row, and with it step 17's `coverage_rows` carry, and it would change the basis of a campaign already scored. Run 26's
+`WRONG_LIMITATION` stands. The first registration after `w27-m07-83f825d` that classifies OpenIDAES-450 carries the
+fix. The split registration is expected to be that one.
+
+Its recommended default has four parts:
+- A case's units are the `units.json` units together with each non-boundary `topology.json#/units` unit whose kind no
+  `units.json` entry has.
+- Each unit taken from the topology is marked so in its reason.
+- W27-A08's case keeps exactly one unit reason.
+- If the split stratifies by blocking class, it states which R02 its strata use.
+
+**Rejected alternatives, and why.**
+- *A flag alone (`map_defect_candidate`).* It leaves the wrong class in place.
+- *Amending R02 now.* It breaks step 17's carry and re-bases a scored campaign.
+- *Re-scoring run 26.* The verdict rejected it.
+
+**Watch for.** A union with the topology's units can make an internal sub-block a unit. W27-A08 is the registered
+state that catches it.
+
+---
