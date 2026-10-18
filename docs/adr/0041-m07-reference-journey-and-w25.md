@@ -5,7 +5,7 @@ review of the journey's work orders (WO-1, WO-4) is recorded.
 **Author:** design lane (`specifier`), M07; brief `docs/briefs/M07-specification.md` with the 2026-10-16 updates.
 **Normative text:** `docs/derivations/M07-spec.md` §3–§6, §11; reference `benchmarks/m07/registration.json`
 (`docs/derivations/scripts/m07_reference.py`, `--check`).
-**Register:** R-331…R-337; Amendment 1: R-420…R-427; Amendment 2: R-452…R-455.
+**Register:** R-331…R-337; Amendment 1: R-420…R-427; Amendment 2: R-452…R-455; Amendment 3 (M07 spec §20): R-464, R-465.
 
 ## Context
 
