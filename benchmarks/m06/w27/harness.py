@@ -24,17 +24,23 @@ What W27 adds:
 The campaign runs the registered order of `sample.json`, never repeats a run whose directory
 exists, and starts only when the preflight (P1–P8) passes. Nothing here is run by the gate: the
 dry run (`benchmarks.m06.w27.dryrun`) drives it with a stub `claude` that makes no model call.
+
+`python -m benchmarks.m06.w27.harness` drives WO-17 (`main`): `canaries`, `preflight`, `campaign`
+and `spend` over `RUNS_ROOT/<campaign>/`, whose `coverage.json` and `sample.json` are written
+first by `benchmarks.m06.w27.coverage` and `benchmarks.m06.w27.sample`
+(`docs/briefs/W27-runbook.md`).
 """
 
 from __future__ import annotations
 
+import argparse
 import base64
 import json
 import platform
 import shutil
 import subprocess
 import sys
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any, Final
 
@@ -513,3 +519,114 @@ def a23(record: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(record.get("tree_clean"), bool):
         problems.append("tree_clean_not_a_boolean")
     return {"passed": not problems, "problems": sorted(set(problems))}
+
+
+# =================================================================================================
+# The command line (WO-17): canaries, preflight, campaign, spend
+# =================================================================================================
+
+
+def spend(campaign_dir: Path) -> dict[str, Any]:
+    """The campaign's recorded spend: the sum of `total_cost_usd` of every `result.json` under
+    `campaign_dir` (canaries included), Claude Code's estimate on the login (`v17.COST_BASIS`).
+    A run directory without a recorded cost is listed in `uncosted`."""
+    run_dirs = sorted(p.parent for p in campaign_dir.glob("**/" + w27_scorer.RUN_FILE))
+    total = 0.0
+    uncosted = []
+    for run_dir in run_dirs:
+        result = run_dir / w27_scorer.RESULT_FILE
+        cost = json.loads(result.read_bytes()).get("total_cost_usd") if result.is_file() else None
+        if isinstance(cost, int | float) and not isinstance(cost, bool):
+            total += float(cost)
+        else:
+            uncosted.append(str(run_dir.relative_to(campaign_dir)))
+    return {
+        "cost_basis": v17.COST_BASIS,
+        "runs": len(run_dirs),
+        "total_cost_usd": total,
+        "uncosted": uncosted,
+    }
+
+
+def _campaign_files(runs_root: Path, name: str) -> tuple[Path, Path]:
+    """`<campaign>/coverage.json` and `<campaign>/sample.json`, which must exist."""
+    directory = runs_root / name
+    paths = (directory / "coverage.json", directory / "sample.json")
+    missing = [str(p) for p in paths if not p.is_file()]
+    if missing:
+        raise HarnessError(f"write the campaign's coverage and sample first: {missing}")
+    return paths
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    from benchmarks.m06.w27 import preflight  # noqa: PLC0415 (preflight imports this module)
+
+    parser = argparse.ArgumentParser(description="W27 WO-17: canaries, preflight, campaign, spend")
+    parser.add_argument("--claude", default="claude", help="the claude binary (default: claude)")
+    parser.add_argument("--runs-root", type=Path, default=RUNS_ROOT, help="default: RUNS_ROOT")
+    sub = parser.add_subparsers(dest="command", required=True)
+    probe = sub.add_parser("canaries", help="the three canaries of sample.json (W27-R31)")
+    check = sub.add_parser("preflight", help="P1-P8; exit 1 unless all eight pass")
+    many = sub.add_parser("campaign", help="the registered runs in order, then campaign.json")
+    cost = sub.add_parser("spend", help="the recorded spend of the campaign (canaries included)")
+    for each in (probe, check, many, cost):
+        each.add_argument("--campaign", required=True)
+    for each in (probe, check, many):
+        each.add_argument("--model", required=True, help="the exact model id (W27-R33)")
+    for each in (check, many):
+        each.add_argument("--claude-code-version", required=True, help="as the canaries ran")
+    for each in (probe, many):
+        each.add_argument("--work", required=True, type=Path, help="outside the repository")
+        each.add_argument("--oauth-token-file", required=True, type=Path)
+    many.add_argument("--resume", action="store_true")
+    arguments = parser.parse_args(argv)
+    runs_root: Path = arguments.runs_root
+    directory = runs_root / arguments.campaign
+    if arguments.command == "spend":
+        print(json.dumps(spend(directory), indent=1, sort_keys=True))
+        return 0
+    coverage_path, sample_path = _campaign_files(runs_root, arguments.campaign)
+    context = preflight.Campaign(
+        name=arguments.campaign,
+        runs_root=runs_root,
+        coverage_path=coverage_path,
+        sample_path=sample_path,
+        model=arguments.model,
+        claude_code_version=getattr(arguments, "claude_code_version", ""),
+    )
+    if arguments.command == "preflight":
+        results = preflight.run_all(context)
+        print(json.dumps(results, indent=1, sort_keys=True))
+        return 0 if all(v["passed"] for v in results.values()) else 1
+    config = agent_config(arguments.model, claude=arguments.claude)
+    operator = v17.login_operator(arguments.oauth_token_file, config)
+    if arguments.command == "canaries":
+        verdicts = canaries(
+            arguments.campaign,
+            json.loads(sample_path.read_bytes()),
+            work=arguments.work,
+            config=config,
+            coverage_path=coverage_path,
+            runs_root=runs_root,
+            operator=operator,
+        )
+        print(json.dumps(verdicts, indent=1, sort_keys=True))
+        return 0 if all(v["passed"] for v in verdicts) else 1
+    campaign_dir = campaign(
+        arguments.campaign,
+        work=arguments.work,
+        config=config,
+        claude_code_version=arguments.claude_code_version,
+        coverage_path=coverage_path,
+        sample_path=sample_path,
+        runs_root=runs_root,
+        resume=arguments.resume,
+        operator=operator,
+        preflight=lambda: preflight.require(context),
+    )
+    print(campaign_dir / w27_scorer.CAMPAIGN_FILE)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

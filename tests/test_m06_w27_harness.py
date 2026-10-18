@@ -317,6 +317,77 @@ def test_p6_p7_p8_on_stub_canaries(tmp_path: Path) -> None:
 
 
 # =================================================================================================
+# The command line (WO-17), over the stand-in `claude`: no model call
+# =================================================================================================
+
+
+def test_spend_sums_the_recorded_costs(tmp_path: Path) -> None:
+    for name, cost in (("canary/01-a", 0.25), ("01-b", 1.5), ("02-c", None)):
+        run_dir = tmp_path / name
+        run_dir.mkdir(parents=True)
+        (run_dir / "run.json").write_text("{}", encoding="utf-8")
+        if cost is not None:
+            (run_dir / "result.json").write_text(json.dumps({"total_cost_usd": cost}), "utf-8")
+    assert harness.spend(tmp_path) == {
+        "cost_basis": v17.COST_BASIS,
+        "runs": 3,
+        "total_cost_usd": 1.75,
+        "uncosted": ["02-c"],
+    }
+
+
+def test_cli_refuses_a_campaign_without_its_coverage_and_sample(tmp_path: Path) -> None:
+    with pytest.raises(harness.HarnessError, match="coverage and sample first"):
+        harness.main(
+            ["--runs-root", str(tmp_path), "preflight", "--campaign", "c"]
+            + ["--model", "claude-test-model-id", "--claude-code-version", "9.9.9"]
+        )
+
+
+def test_cli_canaries_preflight_and_spend_on_stubs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    pytest.importorskip("mcp")
+    if not ARCHIVE_PRESENT:
+        pytest.skip("pinned archive absent (scripts/m06_w27_acquire.py)")
+    runs_root = tmp_path / "runs"
+    (runs_root / "c").mkdir(parents=True)
+    data = registration.COVERAGE_JSON.read_bytes()
+    drawn = sample.sample_document(json.loads(data), data)
+    (runs_root / "c" / "coverage.json").write_bytes(data)
+    (runs_root / "c" / "sample.json").write_bytes(registration.dump(drawn))
+    claude = stubs.write_fake_claude(tmp_path / "bin", stubs.State("canary", "", "", text="S."))
+    operator = stubs.stub_operator(tmp_path)
+    monkeypatch.setattr(v17, "login_operator", lambda token_file, config: operator)
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    common = ["--claude", str(claude), "--runs-root", str(runs_root)]
+    assert (
+        harness.main(
+            [*common, "canaries", "--campaign", "c", "--model", stubs.STUB_MODEL]
+            + ["--work", str(tmp_path / "work"), "--oauth-token-file", str(operator.token_file)]
+        )
+        == 0
+    )
+    verdicts = json.loads(capsys.readouterr().out)
+    assert [v["case_id"] for v in verdicts] == drawn["canaries"]
+    assert sorted(p.name for p in (runs_root / "c" / "canary").iterdir()) == [
+        f"{k:02d}-{c}" for k, c in enumerate(drawn["canaries"], start=1)
+    ]
+    pins = ["--model", stubs.STUB_MODEL, "--claude-code-version", stubs.STUB_VERSION]
+    # P3 fails: the committed coverage.json was not made at this commit.
+    assert harness.main([*common, "preflight", "--campaign", "c", *pins]) == 1
+    results = json.loads(capsys.readouterr().out)
+    assert results["P6"]["passed"] and results["P7"]["passed"] and not results["P3"]["passed"]
+    assert harness.main([*common, "spend", "--campaign", "c"]) == 0
+    assert json.loads(capsys.readouterr().out) == {
+        "cost_basis": v17.COST_BASIS,
+        "runs": 3,
+        "total_cost_usd": 0.0,
+        "uncosted": [],
+    }
+
+
+# =================================================================================================
 # The generated report (Tier 0 item 4)
 # =================================================================================================
 
