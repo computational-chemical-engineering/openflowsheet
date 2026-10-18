@@ -1178,3 +1178,8 @@ Grep, don't read whole. Newest at the bottom.
   first run). G16 gated terms met (vacuously: no job, revision or certificate). Run 26 WRONG_LIMITATION stands. Repair (build
   lane) launched: extend `scorer.aggregate`, regenerate `campaign.json` from unchanged records, re-judge (e). Findings F-1, F-3
   to the M07 ruling round. F-5: correction — the inaccessible assets are **nine** (W27-R57 record), not ten as logged earlier.
+- 2026-10-18 W27 (e) repair `89cd931` (+R53/R54/R56 terms; identifier scan all 384 files, 0 hits; 45/45 name the preflight)
+  campaign.json 15c6b300… → 4812910a…; verdict re-judged (e) MET `c50e6fb` (engineer's 3 choices confirmed; F-7 for WO-7/step 17).
+  WO-6 `120c51f`+`5cdec3b` merged into wp/M07 `10ae324` (gate 9935/35).
+- 2026-10-18 **Frank, M07 §15:** N1 claim all seventeen gates (V11–V20, W21–W27); N3 no equilibrium-reactor rung in 0.2.0;
+  N5 carry V17 across R-192, R-234, R-295 (no re-run). Dated acceptances N4 (V14 (b)) and N6 (M02 N1) follow the 0.2.0 verdict.

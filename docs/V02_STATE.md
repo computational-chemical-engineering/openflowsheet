@@ -41,6 +41,8 @@ PR's. K_NH₃ settled (R-152: the code's 7000 cal/mol).
 
 ## Needs Frank
 
+- **Answered 2026-10-18 (Frank):** N1 claim all seventeen; N3 no equilibrium rung; N5 carry V17 across R-192/R-234/R-295.
+  Still to answer after the 0.2.0 verdict (dated acceptances): N4 V14 (b), N6 M02 N1; N7 only if the W27 surface differs.
 - **For 0.2.0 later (M07 spec, defaults set, not urgent):** claim all 17 gates (yes); M03 N1 licences accepted 2026-10-16; add an equilibrium-reactor fidelity level (no); re-accept the PTC failure, the agent-evidence carry and "not a sandbox" for 0.2.0 (yes); if the agent-facing surface changes after the paid W27 run, stop and ask.
 - **`0.2.0a1` RELEASED 2026-10-17** (tag `v0.2.0a1` → `423ae9c` on the alpha branch; run 39045791146 all green; on PyPI and as a GitHub pre-release). Nothing open for Frank on the alpha.
 - **M03 N1:** answered 2026-10-16 (accepted).
@@ -96,8 +98,9 @@ green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree 
 (c) canaries 3/3 passed first attempt (pin `claude-sonnet-5-5`, the login's CLI default; Claude Code 2.1.302; USD-eq 0.23);
 (d) preflight P1–P8 pass; 45 runs done: CORRECT_LIMITATION 44, WRONG_LIMITATION 1 (26 pervaporation), 0 false verification /
 unauthorized / critical; order exit 0; spend USD-eq 3.38. Records committed `wp/M07` `22ae1e3` (gate 9923/35). Verdict `14d4527`
-(`docs/reviews/W27-verdict-83f825d.md`): (a)–(d), (f), (g) MET; **(e) NOT MET** (campaign.json omits R53/R54/R56 terms) →
-repair engineer running (brief scratchpad `W27-e-repair-brief.md`), then re-judge (e). WO-6 running (`wp/M07-wo6`).
+(`docs/reviews/W27-verdict-83f825d.md`): (a)–(d), (f), (g) MET; (e) NOT MET, repaired (`89cd931`, campaign.json
+`4812910a…`), **re-judged MET** (`c50e6fb`). WO-6 merged (`10ae324`, gate 9935/35). F-7 (A62 recompute at C needs the
+login address + recorded surface) for the ruling round before WO-8.
 Findings for the M07 ruling round: F-1 (R02 can hide a unit; run 26 stands), F-3 (coverage doc shows M06 snapshot), F-5. Then (ceiling USD-equivalent 45, Max plan usage) → order → commit → `verdict`.
 
 **Queued for the 0.2.0 cut (Frank, 2026-10-18):** transient-readiness re-check (ADR 0008 Amendment 2), `architect`, brief
