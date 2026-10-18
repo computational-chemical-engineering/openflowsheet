@@ -399,3 +399,12 @@ Authority: registration §23.12 (R-472), M07 spec §21 addendum. No build decisi
   the tree for P8): G14, P1–P8, `preflight.json` (registered members, passed), 45 campaign runs, `order_check` (0
   problems), G15 20/20, A23 PASS on 62 records (14 state runs, 45 campaign runs, 3 canary attempts; attempt 01
   `model` null, `pinned.model` = `STUB_MODEL`).
+
+## WO-6 — release notes, ADR 0042 rows, examples pointer (`wp/M07-wo6`, 2026-10-18)
+
+- `CHANGELOG.md` `## v0.2.0`: M01–M05 and M07 entries (from the ADR titles and the register), the eleven "What it is
+  not" phrases verbatim from `benchmarks/m07/registration.json` `gate.changelog_what_it_is_not` (M07.A40). No W27 numbers.
+- ADR 0042: headers untouched (A3.6); the D3 table's `—` row replaced by `V14 (b) | pending` (spec §15 N4); the four
+  Frank rows already carry their defaults, `V17 carry` names R-192, R-234, R-295; every answer stays `pending`.
+- `examples/README.md`: pointer to the journey report `journey.md` (the report's directory is not fixed by the spec; named
+  by file, not path). Manifest (A43) not in scope.
