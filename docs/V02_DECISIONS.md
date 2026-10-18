@@ -1157,3 +1157,6 @@ Grep, don't read whole. Newest at the bottom.
 - R-472 `a230156` (registration §23.12): engineer's form accepted — `model` = the `--model` passed or null (canary attempts
   only); `pinned.model` = `model`, or the init model for an unpinned attempt (non-empty, not `claude-sonnet-5`); scorer
   unchanged; W27-A23 and M07.A51 restated; A79 new; K registered `"f"*40`. WO-17b + merge into `wp/M07` launched.
+- 2026-10-18 Frank: run a transient-readiness re-check (ADR 0008 Amendment 2) at the 0.2.0 cut, covering the v0.2
+  additions (external models, surrogates, C1 boundary, M03/M05 adapters, web shell). Brief
+  `docs/briefs/ADR-0008-A2-readiness-recheck.md`; readiness tests 44/44 on main `4edcb5a`.
