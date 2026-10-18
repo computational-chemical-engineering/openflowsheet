@@ -22,6 +22,7 @@ import ast
 import hashlib
 import json
 import re
+import subprocess
 import sys
 from decimal import Decimal
 from pathlib import Path
@@ -545,6 +546,23 @@ CATALOGUE: Final = (  # spec §11; GC-CAT-2 compares it with the spec's table
 )
 
 
+#: Spec §22.1 [A5] (L-W27-1, F-7): the judged W27 record that RC step 17 carries to C.
+#: GC-W27-1 and GC-W27-2 re-read every value; none is a member of the output, because
+#: `benchmarks/m07/registration.json` is in `carry.journey_files` (spec §22, R-473).
+W27_DIR: Final = "benchmarks/m06/openidaes450/runs/w27-m07-83f825d"
+W27_CAMPAIGN_JSON_SHA256: Final = "4812910abb2622b9192c01eae331fa2e97b3f523d78f73510b845c32f20f9e28"
+W27_CAMPAIGN_SCHEMA: Final = "w27-campaign-v1"
+W27_RECORD_TREE: Final = "95f9fcf2c6a24084b823746959971fc5e183895a"
+W27_SURFACE_SHA256: Final = "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125"
+W27_LIST_MODELS_SHA256: Final = "f070fbe0c67695765cdb3862031a18208af959a5b82de6911d1c99fcabea49b4"
+W27_ROW_CLASSES: Final = {
+    "UNIT_UNAVAILABLE": 367,
+    "NOT_STEADY_STATE_SIMULATION": 65,
+    "COMPONENT_UNAVAILABLE": 17,
+    "ARTIFACT_INCOMPLETE": 1,
+}
+
+
 class ClaimFailedError(Exception):
     pass
 
@@ -606,6 +624,30 @@ def _spec_rc_steps() -> tuple[dict[int, str], bool]:
     rows = re.findall(r"^\| (1[3-8]) \| .+ \| (M07\.A\d{2}) \|$", section, flags=re.M)
     first = re.search(r"^\| 1–12 \| .+ \| M07a\.A30–A41 at C \|$", section, flags=re.M)
     return {int(step): assertion for step, assertion in rows}, first is not None
+
+
+def _w27_record() -> dict[str, Any]:
+    """Spec §22.1 [A5], re-read (GC-W27-1, GC-W27-2): the committed campaign record and the git
+    tree of its directory at HEAD."""
+    directory = ROOT / W27_DIR
+    campaign = _json(directory / "campaign.json")
+    coverage = _json(directory / "coverage.json")
+    classes: dict[str, int] = {}
+    for row in coverage["rows"]:
+        classes[row["class"]] = classes.get(row["class"], 0) + 1
+    tree = subprocess.run(
+        ["git", "rev-parse", f"HEAD:{W27_DIR}"], cwd=ROOT, capture_output=True, text=True
+    )
+    section = SPEC.read_text(encoding="utf-8").split("\n## 22. ", 1)
+    return {
+        "campaign_json_sha256": _sha256(directory / "campaign.json"),
+        "schema": campaign["schema"],
+        "surface_sha256": campaign["surface"]["tool_descriptions_sha256"],
+        "list_models_sha256": coverage["list_models_sha256"],
+        "classes": classes,
+        "tree": tree.stdout.strip() if tree.returncode == 0 else None,
+        "section": section[1] if len(section) == 2 else "",
+    }
 
 
 def _spec_ids() -> list[str]:
@@ -975,6 +1017,26 @@ def build() -> dict[str, Any]:
     )
     claim(
         ids == CATALOGUE, "GC-CAT-2", f"spec ids != catalogue: {sorted(set(ids) ^ set(CATALOGUE))}"
+    )
+    w27 = _w27_record()
+    claim(
+        w27["campaign_json_sha256"] == W27_CAMPAIGN_JSON_SHA256
+        and w27["schema"] == W27_CAMPAIGN_SCHEMA
+        and w27["surface_sha256"] == W27_SURFACE_SHA256
+        and w27["list_models_sha256"] == W27_LIST_MODELS_SHA256
+        and w27["classes"] == W27_ROW_CLASSES
+        and sum(w27["classes"].values()) == 450
+        and all(
+            v in w27["section"]
+            for v in (W27_CAMPAIGN_JSON_SHA256, W27_SURFACE_SHA256, W27_LIST_MODELS_SHA256)
+        ),
+        "GC-W27-1",
+        "the committed W27 campaign record is not spec §22.1's",
+    )
+    claim(
+        w27["tree"] == W27_RECORD_TREE and W27_RECORD_TREE in w27["section"],
+        "GC-W27-2",
+        f"git tree of {W27_DIR} at HEAD is {w27['tree']}, not spec §22.1's",
     )
     return {
         "schema": "m07-registration-v1",

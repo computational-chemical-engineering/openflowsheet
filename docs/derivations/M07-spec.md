@@ -321,7 +321,7 @@ outward done.
 | 14 | W24: M03 nlp-tier A35–A42 and M05 G1–G10, G12, G13 at C in the audited environment | M07.A60 |
 | 15 | W25: the journey run at the cut commit K and carried from K to C by identity (§4.6) [A3.4]; `check` and `replay` at C | M07.A61 |
 | 16 | W26: M06 G1–G15 at C; the browser test on CI x86-64 | M07.A60 |
-| 17 | W27: coverage at C; the campaign's carry from C_W to C (§9); `campaign.json` recomputed | M07.A62 |
+| 17 | W27: coverage at C; the campaign's carry from C_W to C (§9); `campaign.json` recomputed; exactly as §22.2 [A5] | M07.A62 |
 | 18 | `scripts/v0_2_gate.py --rc C` (not required in the record) | M07.A36 |
 
 ## 9. W27 at M07
@@ -389,7 +389,7 @@ Tolerances: "exact" means equality of binary64 values or bytes; the fixtures are
 | M07.A51 | W27 records complete per W27-R58 [A4]; spend within the approval | complete; ≤ USD 45 | exact | O |
 | M07.A60 | RC steps 13, 14, 16 pass at C | pass | per package gates | R |
 | M07.A61 | RC step 15 [A3.4]: C contains the journey record of the cut commit K; `--carry-journey K --rc C` says carried; `check` and `replay` pass at C | pass | bytes | R |
-| M07.A62 | RC step 17: coverage at C; W27 carry; `campaign.json` recomputed equal | pass | bytes | R |
+| M07.A62 | RC step 17 as §22.2 [A5]: record tree at C is §22.1's; coverage at C; W27 carry; `campaign.json` recomputed on a scratch copy equal to `4812910a…9e28` | pass (17a–17d); `unsupported` is not pass | bytes | R |
 
 ## 12. Reference generator and executable self-claims
 
@@ -1377,3 +1377,209 @@ written, A50 could not be checked. The chain and the commit rule are registratio
 run with `model` null is incomplete. Where a null `model` may occur is P7 condition 3
 (registration §23.5), which `preflight.json` records. The spend clause is unchanged. `benchmarks/m07/registration.json`
 is unchanged. *Not established:* no W27 measurement; nothing has run.
+
+## 22. Amendment 5 — the W27 verdict's findings before the RC (2026-10-18)
+
+**Authority and scope.** Design lane (`specifier`). This amendment rules on findings F-1, F-3, F-6 and F-7 and on
+limitation L-W27-1 of the W27 verdict `docs/reviews/W27-verdict-83f825d.md`. That verdict judged clauses (a)–(g) MET
+at C_W `83f825d`, with (e) re-judged MET on `campaign.json` `4812910a…9e28` after the repair `89cd931`.
+
+The W27 registration document is not amended, because nothing in it changes: W27-R02 stands (§22.4). Amending it would
+also change the SHA-256 that the campaign preflight's P2 pins (`benchmarks/m06/w27/preflight.py`, `REGISTERED_SHA256`),
+which is build-lane code. Register entries R-473 and R-474 record the W27 side.
+
+The rows this amendment changes carry [A5]: §8 step 17 and §11 M07.A62. Nothing else in
+this specification changes. `benchmarks/m07/registration.json` is unchanged on purpose: it is in
+`carry.journey_files` (§4.6), so changing it after the cut commit K would force the journey to be re-run at C (step 15).
+The generator's self-claims GC-W27-1 and GC-W27-2 (§22.6) re-read every value below. They add no member to its
+output, so `m07_reference.py --check` passes on unchanged bytes.
+
+### 22.1 The judged record (L-W27-1)
+
+| Item | Value |
+| --- | --- |
+| campaign | `w27-m07-83f825d` |
+| directory | `benchmarks/m06/openidaes450/runs/w27-m07-83f825d` |
+| `campaign.json` SHA-256 | `4812910abb2622b9192c01eae331fa2e97b3f523d78f73510b845c32f20f9e28` |
+| `campaign.json#/schema` | `w27-campaign-v1`, the same id as the superseded `15c6b300…5839` |
+| git tree of the directory (`git rev-parse <commit>:<directory>`) at `89cd931` and at `c50e6fb` | `95f9fcf2c6a24084b823746959971fc5e183895a` |
+| `campaign.json#/surface/tool_descriptions_sha256` | `455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125` |
+| campaign `coverage.json#/list_models_sha256` | `f070fbe0c67695765cdb3862031a18208af959a5b82de6911d1c99fcabea49b4` |
+| campaign `coverage.json#/rows` | 450 rows: 367 `UNIT_UNAVAILABLE`, 65 `NOT_STEADY_STATE_SIMULATION`, 17 `COMPONENT_UNAVAILABLE`, 1 `ARTIFACT_INCOMPLETE`, none of any other class |
+
+Every citation of the campaign's aggregate names it by the full SHA-256 above. That covers the RC manifest, the release
+report, `CHANGELOG.md` and `docs/progress.md`. A path or the schema id alone is not a citation. `15c6b300…5839` is
+never cited as the campaign's record.
+
+### 22.2 RC step 17, restated (F-7; R-473)
+
+**Where it runs.** Step 17 runs in the RC job (WO-8) on the login that ran the campaign: the operator's workstation
+login, whose `~/.claude.json` the `89cd931` regeneration and the verdict's scan read. It runs from a clean checkout of C,
+in the project environment that `scripts/check.sh` requires (`python` below is its interpreter), with
+`PYTHONPATH=<checkout>/src`, with `CLAUDE_CONFIG_DIR` unset, and with the W27 archive at its pinned path as for
+`scripts/gate.sh`. It never runs on CI. Every file it writes goes into one fresh, empty directory `$S` outside the
+repository. Nothing under the repository is written. `<dir>` below is §22.1's directory.
+
+**What it supplies.** The step supplies two things, and only these:
+- *The address:* `benchmarks.t07.v17.harness.operator_address()` reads it from that login's config, as the harness
+  already does. It is never printed, never passed as an argument, never written and never logged (R6.6).
+- *The served surface:* the build at C, imported from the checkout. `aggregate` already compares it with the recorded
+  `surface`.
+
+Steps 17a–17d run in order. The first failure ends step 17 and gives its line.
+
+| Sub-step | Command and expected result | On failure |
+| --- | --- | --- |
+| 17a record identity | `git rev-parse C:<dir>` prints `95f9fcf2c6a24084b823746959971fc5e183895a` | `RC step 17: W27 campaign record differs from the judged record`. The verdict's (e) reopens; stop |
+| 17b coverage at C | `python -m benchmarks.m06.w27.coverage --out "$S/coverage-at-C.json"` exits 0. Never the default `--out`: that file is M06's committed record | `RC step 17: W27 coverage at C failed (exit <n>)` |
+| 17c carry | write `$S/at-cw.json` and `$S/at-c.json` as in the table below; then `python scripts/v0_2_gate.py --rc C --carry-w27 "$S/at-cw.json" "$S/at-c.json"` exits 0 and prints `RC step 17: the W27 campaign carried` | its own line, `RC step 17: W27 campaign surface differs between C_W and C (differs: …)`, exit 1; §15 N7 applies (stop and ask) |
+| 17d recompute | precheck: `python -c 'import benchmarks.t07.v17.harness as h; h.operator_address()' > /dev/null` exits 0. Then `cp -a <dir> "$S/w27-m07-83f825d"`; `python -m benchmarks.m06.w27.harness --runs-root "$S" aggregate --campaign w27-m07-83f825d` exits 0; `diff -r "$S/w27-m07-83f825d" <dir>` exits 0 and prints nothing; `sha256sum "$S/w27-m07-83f825d/campaign.json"` prints `4812910abb2622b9192c01eae331fa2e97b3f523d78f73510b845c32f20f9e28` | precheck non-zero with `operator_identity_isolation: unsupported(` on stderr: see "Unsupported" below. Precheck non-zero otherwise (for example an import error): `RC step 17: precheck failed (exit <n>)`. `aggregate` exit 2 (surface refusal): the 17c line and N7. Any other difference: `RC step 17: W27 campaign.json recomputed at C differs from 4812910a…9e28`. In that case (e) reopens ("a regeneration from these records giving different bytes"), the committed `campaign.json` is not replaced, and the design lane judges the aggregation change between `89cd931` and C |
+
+The carry members:
+
+| Member | `at-cw.json` (C_W, from the committed record) | `at-c.json` (C) |
+| --- | --- | --- |
+| `served_tool_list_sha256` | `<dir>/campaign.json#/surface/tool_descriptions_sha256` | `benchmarks.t07.v17.harness.tool_descriptions_sha256()` evaluated at C |
+| `list_models` | `<dir>/coverage.json#/list_models_sha256` | `$S/coverage-at-C.json#/list_models_sha256` |
+| `coverage_rows` | `<dir>/coverage.json#/rows` | `$S/coverage-at-C.json#/rows` |
+
+This defines the three members, which §9 named without defining:
+- `served_tool_list_sha256` is V17 §14.2's SHA-256 of the canonical JSON of the MCP tool list as `list_tools` serves
+  it. `campaign.json` records it as `surface.tool_descriptions_sha256`.
+- "The `list_models` result" is compared through its canonical-JSON SHA-256, `list_models_sha256`.
+- "The coverage rows" are `coverage.json#/rows`.
+
+`v0_2_gate.w27_carry` compares parsed values, so the two files' formatting is free. The expected C_W values are §22.1's.
+
+*Rehearsal (2026-10-18, not step 17).* The recipe was run once at `c50e6fb`, the base of this amendment, with
+`--rc HEAD` in place of C, from a scratch directory that was then deleted. 17a printed `95f9fcf2…895a`. 17b exited 0.
+17c printed `RC step 17: the W27 campaign carried`. 17d's precheck and `aggregate` exited 0, `diff -r` was empty, and
+`campaign.json` hashed to `4812910a…`. This shows that the commands are well formed and agree with the record at
+C_W's successor. It establishes nothing about C.
+
+**Unsupported.** If 17d's precheck exits non-zero and its stderr holds `operator_identity_isolation: unsupported(` (the
+harness's refusal for an unreadable address: CI, another account, a missing config; the message never holds an
+address), step 17 reports `RC step 17: unsupported (the operator login's address is unreadable; step 17 runs on the campaign
+operator's login)`. A62 is then not pass. The RC is blocked on step 17, not failed, and nothing substitutes for 17d.
+Silence, a skipped 17d, or a recompute in place is never a pass.
+
+**The record.** A62's entry in `evidence/M07/<C>/manifest.json` holds:
+- each command above with its exit code, and the tree id that 17a read;
+- the SHA-256 of `coverage-at-C.json`, `at-cw.json` and `at-c.json`;
+- `coverage-at-C.json`'s `snapshot_sha256`, `list_models_sha256` and `snapshot.package_version`;
+- 17c's line, and the recomputed `campaign.json` SHA-256.
+
+The three files are about 2.5 MB each. If they are kept, they go under `evidence/M07/<C>/artifacts/` (git-ignored)
+and the manifest cites them by hash. Otherwise `$S` is deleted after the hashes are recorded. A62 is `pass` only when
+17a–17d all pass. The release report's W27 version is `coverage-at-C.json#/snapshot/package_version` (L-W27-7). The
+report carries L-W27-1 and L-A5-1.
+
+**How the identifier term carries.** W27-R56's identifier term counts the operator's address in the campaign's run and
+canary files.
+- 17a fixes those files to the judged bytes. On those bytes, the count for the operator's address is 0. Two sources
+  show it: `campaign.json#/gated/operator_identifier_hits` at `89cd931`, and the verdict's independent scan (V1) of all
+  389 committed files.
+- So the term holds at C by record identity, whichever login runs 17d.
+- `aggregate` needs the address only in order to run. On the operator's login, 17d re-derives the term as well as the
+  bytes.
+- On another account with a readable address, 17d's byte equality still shows that the aggregation code at C
+  reproduces the judged record. Its scan used another address, though, so it is not evidence, and the term rests on
+  17a alone.
+- The record cannot show which login ran 17d, because it holds no address (R6.6). **L-A5-1** travels with A62: "the
+  identifier term at C is carried by record identity (17a); the recomputing login is not recorded."
+
+**Rejected alternatives.**
+- *Run on CI, or on any login, with a new `aggregate` mode that leaves out the address and carries the identifier term
+  from the record.* It needs new harness code, and it produces a hybrid document whose bytes are not a recompute. 17a
+  already carries the term.
+- *Record the address, or a hash of it, so that the login can be checked.* R6.6 keeps the identifier out of committed
+  files, and a hash of an e-mail address can be reversed by guessing.
+- *Drop "recomputed equal" and carry `campaign.json` by 17a alone.* That loses the check that the aggregation at C
+  reproduces the judged bytes, which the verdict names as a condition that reopens (e).
+- *Recompute in place.* It rewrites a committed record and leaves C's tree dirty.
+- *Register the values as a `registration.json` member.* That file is a journey carry file (see the authority
+  paragraph).
+
+### 22.3 `docs/m06-w27-coverage.md` (F-3): build lane, WO-10
+
+The document is generated by `python -m benchmarks.m06.w27.report` and checked by its `--check`. It is generated from
+M06's Tier 0 coverage, `benchmarks/m06/openidaes450/coverage.json` (snapshot `13eb2d76…`, built at `2f35e9b`). It stays
+M06's Tier 0 record and is never edited by hand.
+- *Where it agrees with the campaign's coverage:* today its 450 rows and its `list_models` are equal to the campaign's.
+- *Where it differs:* its snapshot, its commit and its registration digest are not the campaign's.
+- *What it lacks:* nothing in it says that it is not the campaign's coverage.
+
+**WO-10 (build lane).** `report.render` emits the following paragraph directly after the "Generated by" paragraph,
+exactly, and the document is regenerated:
+
+> Scope: this is M06's Tier 0 coverage, classified at the commit in the table below. It is not the record of a W27
+> campaign. Each campaign records the coverage it ran under in its own directory,
+> `benchmarks/m06/openidaes450/runs/<campaign>/coverage.json`, and the 0.2.0 release reports the coverage taken at the
+> release candidate (M07 RC step 17).
+
+Acceptance: `python -m benchmarks.m06.w27.report --check` prints `OK`, the paragraph appears once, and no other line of
+the document changes. The paragraph holds no digest, so nothing in it can go stale. Do it before C. Neither the
+document nor `report.py` is a carry member or a journey file, and step 17 reads neither.
+
+### 22.4 W27-R02 and later campaigns (F-1; R-474)
+
+**This campaign and C.**
+- W27-R02 as registered governs every coverage taken under the W27 registration, step 17's coverage at C included.
+- Amending R02 before C would change at least `official_idaes_skeleton_pervaporation`'s row, and with it the
+  `coverage_rows` that 17c compares. It would also change the classification basis of a campaign already scored.
+- Run 26's `WRONG_LIMITATION` stands (the verdict, L-W27-6).
+
+**Later campaigns.** The rule change belongs to the first registration after `w27-m07-83f825d` that classifies
+OpenIDAES-450 for a new campaign or a split. The OpenIDAES development/held-out split, queued for the 0.2.0 cut
+(`docs/briefs/OpenIDAES-split-registration.md` on `main`), is expected to be that registration.
+
+**Recommended default for it.**
+- A case's units are the `units.json` units together with each non-boundary unit of `topology.json#/units` whose kind
+  no `units.json` entry has.
+- Each unit taken from the topology is marked as such in its reason.
+- W27-A08's case keeps exactly one unit reason (an internal sub-block is not a unit). That registration re-states A08
+  as a state its rule must keep.
+- If that registration stratifies by blocking class, it says which R02 its strata use.
+
+Rejected: a flag alone (such as `map_defect_candidate`), because it leaves the wrong class in place; and amending R02
+now, for the reasons above.
+
+### 22.5 The account name in committed files (F-6)
+
+The local account name appears in `run.json#/interpreter`, which W27-R58 requires, and in `mcp.json`'s server command.
+It is not the registered operator identifier (R6.6: the login's e-mail address). No action is taken for this campaign.
+Extending R6.6 to the account name is a registration change for later campaigns, never a rewrite of this record, which
+17a would refuse.
+
+### 22.6 Self-claims (generator `docs/derivations/scripts/m07_reference.py`; output unchanged)
+
+- **GC-W27-1.** The committed `<dir>/campaign.json` hashes to §22.1's SHA-256 and has schema `w27-campaign-v1`. Its
+  `surface.tool_descriptions_sha256`, the campaign `coverage.json`'s `list_models_sha256`, and its row classes (450 in
+  all) are §22.1's. This section contains each full value.
+- **GC-W27-2.** `git rev-parse HEAD:<dir>` is §22.1's tree, and this section contains it. Any change to the record
+  therefore fails the gate at the first commit that makes it, not only at RC step 17a.
+
+Both claims were seen to refuse before this section existed: GC-W27-1 refused because the values were absent from the
+spec.
+
+### 22.7 Work orders and open questions
+
+| WO | Lane | What | Acceptance |
+| --- | --- | --- | --- |
+| WO-8 (restated for step 17) | build | step 17 exactly as §22.2 | A62 as §11 [A5] |
+| WO-10 | build | F-3's paragraph (§22.3) | `report --check` OK; the paragraph once |
+
+- **A5-Q1 (needs a fact).** Is the RC job's login the campaign's? The measurement is 17d's precheck exiting 0 on the
+  login where WO-8 runs. Default: run WO-8 on the workstation login that ran the campaign and the `89cd931`
+  regeneration.
+- **A5-Q2 (for the successor registration, not Frank).** The form of F-1's rule. Default: §22.4.
+
+Nothing here needs Frank.
+
+### 22.8 What this amendment does not establish
+
+- Nothing about C. Step 17 has not run, and every value above is C_W's or `89cd931`'s.
+- That the login that runs 17d is the operator's (L-A5-1).
+- That the coverage at C equals C_W's. 17c measures that.
+- F-1's extent beyond the verdict's crude comparison (5 of 138 comparable cases). Nothing is re-scored.
+- Any W27 measurement, or anything about the agent.
