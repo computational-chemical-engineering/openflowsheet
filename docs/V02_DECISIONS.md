@@ -1173,3 +1173,8 @@ Grep, don't read whole. Newest at the bottom.
 - 2026-10-18 W27 campaign done: 45/45 recorded; CORRECT_LIMITATION 44, WRONG_LIMITATION 1 (26-official_idaes_skeleton_pervaporation);
   system false verification 0, unauthorized 0, critical 0; order_check exit 0; spend USD-eq 3.379 (48 results). Records
   `wp/M07` `22ae1e3` (gate 9923/35 at 83f825d tree + records). Launched: `verdict` on W27 (a)–(g); WO-6 (Sonnet) on `wp/M07-wo6`.
+- 2026-10-18 W27 verdict `14d4527` at C_W: (a)–(d), (f), (g) MET; (e) NOT MET — `campaign.json` reproduces byte for byte but
+  omits W27-R53 (coverage by family), R54 (§11.10 pooled terms; model, version, cost), R56 (identifier hits; preflight before
+  first run). G16 gated terms met (vacuously: no job, revision or certificate). Run 26 WRONG_LIMITATION stands. Repair (build
+  lane) launched: extend `scorer.aggregate`, regenerate `campaign.json` from unchanged records, re-judge (e). Findings F-1, F-3
+  to the M07 ruling round. F-5: correction — the inaccessible assets are **nine** (W27-R57 record), not ten as logged earlier.

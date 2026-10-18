@@ -95,8 +95,10 @@ green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree 
 (a) coverage 0/450 CANDIDATE, G14 PASS; (b) 45 drawn, canaries prommis NF / mvo CO2 / cryst n13; (b′) confirmation written;
 (c) canaries 3/3 passed first attempt (pin `claude-sonnet-5-5`, the login's CLI default; Claude Code 2.1.302; USD-eq 0.23);
 (d) preflight P1–P8 pass; 45 runs done: CORRECT_LIMITATION 44, WRONG_LIMITATION 1 (26 pervaporation), 0 false verification /
-unauthorized / critical; order exit 0; spend USD-eq 3.38. Records committed `wp/M07` `22ae1e3` (gate 9923/35). Running:
-`verdict` (brief scratchpad `W27-verdict-brief.md` → `docs/reviews/W27-verdict-83f825d.md`) and WO-6 (`wp/M07-wo6`). Then (ceiling USD-equivalent 45, Max plan usage) → order → commit → `verdict`.
+unauthorized / critical; order exit 0; spend USD-eq 3.38. Records committed `wp/M07` `22ae1e3` (gate 9923/35). Verdict `14d4527`
+(`docs/reviews/W27-verdict-83f825d.md`): (a)–(d), (f), (g) MET; **(e) NOT MET** (campaign.json omits R53/R54/R56 terms) →
+repair engineer running (brief scratchpad `W27-e-repair-brief.md`), then re-judge (e). WO-6 running (`wp/M07-wo6`).
+Findings for the M07 ruling round: F-1 (R02 can hide a unit; run 26 stands), F-3 (coverage doc shows M06 snapshot), F-5. Then (ceiling USD-equivalent 45, Max plan usage) → order → commit → `verdict`.
 
 **Queued for the 0.2.0 cut (Frank, 2026-10-18):** transient-readiness re-check (ADR 0008 Amendment 2), `architect`, brief
 `docs/briefs/ADR-0008-A2-readiness-recheck.md`; after M07 merges into main.
