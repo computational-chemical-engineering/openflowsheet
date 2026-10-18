@@ -12,7 +12,7 @@ included. Clause (h), the carry from C_W to C (M07 spec §9, RC step 17, M07.A62
 | (b) seeded sample equals a re-draw from that coverage | **MET** | `sample.json`: byte-identical re-draw, and an independent re-draw from W27-R26…R31 gives the same 45 cases, run order and canaries |
 | (c) three canaries, disjoint from the sample, after the draw and before the first run (≤ 3 re-canaries) | **MET** | `canary/01…03`: 3 attempts, no re-canary, each passed; digest chain intact; pin from attempt 01 run without `--model` |
 | (d) the approved runs, each with W27-R58's complete record and a clean tree | **MET** | `01…45`: 45 of 45 in registered order; A23 (§23.12) passes on all 48 `run.json`; every record at C_W, `tree_clean` true |
-| (e) `campaign.json` computed (W27-R53…R56) | **NOT MET** | `campaign.json` recomputes byte for byte and every member it carries is right, but it omits terms R53, R54 and R56 require (see (e)) |
+| (e) `campaign.json` computed (W27-R53…R56) | **MET** (re-judged 2026-10-18; first judged NOT MET) | `campaign.json` `4812910a…9e28` (repair `89cd931`) carries every R53, R54 and R56 term. It recomputes byte for byte from unchanged per-run records, and each new term was checked independently (see "§(e) re-judged"). The superseded `15c6b300…5839` omitted them (see (e)) |
 | (f) the nine inaccessible assets disclosed (W27-R57) | **MET at C_W** | `access_report.json`: nine, each `absent`, each with where it was sought; `docs/m06-w27-coverage.md` lists all nine. The release report's own text is C's |
 | (g) exact provenance (model id, Claude Code version, commit, lock) | **MET** | every `run.json`: `claude-sonnet-5-5`, Claude Code 2.1.302, C_W, `lock_sha256` = SHA-256 of `requirements.lock` at C_W |
 | (h) carry from C_W to C | not judged | RC step 17 at C (WO-7) |
@@ -25,6 +25,9 @@ as it stands. (e) can be repaired without a session and without spend, because e
 from the committed per-run records. Two routes would do it. The build lane can regenerate `campaign.json` with an
 aggregate that carries those terms. Or the design lane can amend W27-R58 to say which record holds each term. After
 either, (e) is judged again. Clause (h) is judged at C in any case.
+
+**Update, 2026-10-18.** The build lane took the first route (`89cd931`). (e) has been re-judged **MET** (see "§(e)
+re-judged", at the end). All seven clauses judged at C_W are now met. Clause (h) is still to be judged at C.
 
 ## Read this first
 
@@ -436,7 +439,12 @@ The scorer, its re-run and the independent matcher all agree. **Under the regist
 
 ## Limitations that must travel into the manifest and the release report
 
-- **L-W27-1.** (e) is not met at C_W, and W27 cannot pass until it is repaired and re-judged.
+- **L-W27-1.** (e) was first judged not met and was re-judged **met** on 2026-10-18 (see "§(e) re-judged"). The
+  campaign's `campaign.json` is `4812910a…9e28`; cite it by that digest, because the superseded `15c6b300…5839` has the
+  same schema id. It was regenerated after C_W, at `89cd931`, by the aggregate code there, from the unchanged C_W
+  records. Its operator-identifier term rests on the login address of the machine that regenerated it, which the
+  record does not hold (by design). Its gated identifier count includes the 3 canaries, which is stricter than
+  W27-R56's "every run".
 - **L-W27-2.** The system false-verification and effects zeros are established but vacuous: no session produced a
   job, a commit or a certificate.
 - **L-W27-3.** 0 candidates. The campaign measures limitation reporting and false-verification exposure only (§17
@@ -474,3 +482,135 @@ The scorer, its re-run and the independent matcher all agree. **Under the regist
 - **F-6: the local account name appears in committed files.** It appears in `run.json` (the interpreter path,
   required by W27-R58) and in `mcp.json` (the server command path). It is not the registered operator identifier
   (the login's e-mail address) and is noted only for anyone extending R6.6.
+
+## §(e) re-judged (2026-10-18)
+
+**Judged at:** `wp/M07` @ `10ae324`.   **Repair:** `89cd931`, which extends `scorer.aggregate` and adds
+`harness.identifier_scan`, `write_campaign` and `harness aggregate`. Its build log is `f7d01e2`,
+`docs/design/M07-build-decisions.md`, entry "W27 (e) repair".   **By:** design lane (`verdict`). Only (e) is judged
+here. (a)–(d), (f), (g), G16, M07.A50 and M07.A51 stand as judged above.
+
+### Verdict per term (W27-R53…R56, as registered; R58 names `campaign.json` as their record)
+
+| Term | Verdict | `campaign.json` member and check |
+| --- | --- | --- |
+| R53 per family | **met** | `coverage.by_family.{all_450,full82}`. It equals `coverage.json#/summary/*/by_family`, and it equals an independent recount from the 450 rows (9 families) and the 82 rows (4 families). Registration l.323 defines the per-family coverage as class counts per family |
+| R54 §11.10 pooled (R52) | **met** | `reported.semantic`: items 216, judged 214, matched 193, contradicted 11, naming nothing 10, unjudged 2, malformed 0; semantic error 21/214; API rejection 0/95; draft commit 0/0; internal errors 0. `reported.cost`: sum, median and runs for each of V17's twelve cost fields, plus jobs by operation and the cost basis |
+| R54 model id, Claude Code version, cost | **met** | `reported.model`: pinned, requested and `init` are all `claude-sonnet-5-5`. `reported.claude_code_version`: pinned 2.1.302, `init` 2.1.302, recorded "2.1.302 (Claude Code)". Cost: 3.1462062, basis `subscription_estimate` |
+| R56 gated: operator-identifier hits = 0 | **met** | `gated.operator_identifier_hits`: 0 in the 45 runs and 0 in the 3 canaries, over 384 files; `established` true |
+| R56 gated: the preflight passed before the first run (§23.3) | **met** | `gated.preflight_passed_before_first_run`: digest `56dc325e…d02f`, `passed` true, 45 of 45 `run.json` name the digest, `established` true |
+| members carried before the repair (outcomes, splits, bounds, other gated terms, coverage counts and digests, surface) | **met** | all 135 old leaves are unchanged (as judged in (e) above) |
+
+**Decision: (e) is MET** for campaign `w27-m07-83f825d`, with `campaign.json` SHA-256
+`4812910abb2622b9192c01eae331fa2e97b3f523d78f73510b845c32f20f9e28`. Each term that (e) above listed as omitted is now in
+the record, and each agrees with an expectation computed independently from the committed records.
+
+### Provenance and evidence class
+
+- **Record.** Between `22ae1e3` and `10ae324`, `git diff` under the campaign directory touches only `campaign.json`, so
+  every per-run record and the digest chain are unchanged. `git ls-files` lists 389 tracked files, and none is
+  git-ignored.
+- **V1, independent expectations** (`python -I`, no project import; script and log in the session scratchpad `w27e/`).
+  These are procedural and numerical verification of the aggregation against the record:
+  - the old file's 135 leaves, each compared with the new file;
+  - by-family counts recounted from `coverage.json` rows;
+  - limitation items and the semantic-error ratio summed from the 45 `scores.json`;
+  - tokens, cost, turns and both durations summed (with medians) from the 45 `result.json`, which are Claude Code's
+    own output, not the scorer's;
+  - tool calls (95) and errored tool results (0 of 95) counted from the 45 transcripts;
+  - model and version compared with `preflight.json`, `run.json` and `session.init`;
+  - the preflight digest computed and compared with all 45 `run.json`;
+  - a case-insensitive scan of all 389 committed files for the login address, read from `~/.claude.json` as
+    `v17.operator_address` reads it: 0 hits, and 0 hits for its local part followed by "@".
+
+  All checks passed.
+- **V2, reproductions with the project's code at `10ae324`.** These pin determinism only:
+  - `python -m benchmarks.m06.w27.harness aggregate`, run on a scratchpad copy of the campaign, exits 0. It
+    reproduces `campaign.json` byte for byte and changes no other file of the copy.
+  - `harness order --campaign w27-m07-83f825d` exits 0.
+  - `tests/test_m06_w27_scorer.py` and `tests/test_m06_w27_harness.py`: 48 passed, 24 skipped. Every skip is "pinned
+    archive absent", and the 12 test items of the repair all passed.
+- **Fault injection, so that the two new gated terms cannot be always-pass.** On the copy:
+  - the address was planted once in a canary file (upper case) and once in a run file, and the term read count 2
+    (runs 1, canaries 1);
+  - one `run.json`'s `preflight_sha256` was zeroed, and the term read 44 of 45, `established` false;
+  - the recorded surface was altered, and `aggregate` refused it with exit 2.
+
+  The copy was then deleted.
+- **Status.** The repair is implemented and tested by the build lane. This verdict is procedural. It is neither a code
+  review (`reviewed` is not set by it) nor a scientific review.
+
+### The engineer's three choices, judged against the registration's wording
+
+1. **Canary identifier hits counted in the gated count and reported separately: confirmed.**
+   - R56 gates "every run's committed files". Canary attempts are runs with the same files (W27-R68), committed in
+     the same record.
+   - The combined count is a superset of the registered-run count, so it can only fail where the registered term
+     would pass, never the reverse.
+   - The registered-run count stays visible as `runs`.
+   - The harness scan covers the run and canary directories, not the five campaign-level files. R56 does not ask for
+     those, and V1's scan found 0 in them.
+2. **The schema stays `w27-campaign-v1`: confirmed.**
+   - The registration fixes no schema id for `campaign.json`.
+   - The change only adds members; none is changed or removed.
+   - The consequence travels as L-W27-1: the two files share an id, so the record is cited by SHA-256.
+3. **`aggregate` refuses on a surface difference: confirmed.**
+   - R54 reports "the surface the agent had", which is a fact of the campaign.
+   - Regenerating under a different served surface would either rewrite that fact or carry a value the regenerating
+     build cannot vouch for. Refusing is the conservative choice.
+   - The recorded surface itself is carried, not re-derived. Its correctness rests on (e) and (d) above.
+
+### Alternatives considered and rejected
+
+1. **NOT MET because `campaign.json` was regenerated after C_W, by code that is not C_W's.** Rejected.
+   - §7.3 (e) and R58 say "computed", not "computed at C_W".
+   - The C_W condition binds the runs, which is (d).
+   - `campaign.json` is in no link of the digest chain.
+   - Every input is a C_W record, apart from the address used by the identifier scan.
+   - Recomputation at C is M07.A62's (RC step 17), not this clause's.
+2. **NOT MET because R53's "per family" also asks for reason counts per family.** Rejected. Registration l.323 defines
+   the coverage summary as class counts per family. That definition is what the original (e) named as missing.
+3. **NOT MET because the pooled rates are pooled numerators over pooled denominators, not means of per-run rates.**
+   Rejected.
+   - R52 asks for "per run and pooled" without defining pooling further.
+   - The pooled form uses V17's convention, and the per-run rates stay in each `scores.json`.
+   - The semantic-error ratio is over parseable answers, as R52 says.
+4. **INSUFFICIENT EVIDENCE because the identifier term rests on an address that the record does not hold.** Rejected.
+   - The verdict's own scan read the same source and found 0 hits in all 389 committed files.
+   - Keeping the address out of the record is what R6.6 requires.
+   - The dependence travels as a limitation.
+5. **The design-lane route (amending W27-R58 to place the terms elsewhere).** Not taken. It is unnecessary now that
+   the record conforms to R58 as registered.
+
+### What would change this verdict
+
+(e) reopens on any of the following:
+- `campaign.json` bytes other than `4812910a…9e28`;
+- any change to a per-run record or to `preflight.json`;
+- a regeneration from these records giving different bytes;
+- an operator identifier found in any committed file of the campaign;
+- a pooled value that disagrees with a sum from `result.json`, the transcripts or `scores.json`.
+
+Reversing it takes a new explicit verdict.
+
+### What this does not establish
+
+- Nothing about C. Clause (h) and M07.A62's "recomputed equal" are judged at RC step 17.
+- No validation of the §11.10 values as measures of agent quality. These are counts and Claude Code's own estimates,
+  aggregated correctly.
+- All of "What this verdict does not establish" above still applies unchanged.
+
+### Findings
+
+- **F-2: closed** by `89cd931`.
+- **F-4: resolved for G16's term.** The campaign-level scan now reads every file of every run. The per-run
+  `run.json#/operator_identifier_hits` still names R6.6's four `SCANNED_FILES`; it is unchanged, and it is not the
+  gated term.
+- **F-7 (for WO-7, RC step 17): M07.A62 requires `campaign.json` "recomputed equal" at C.** The aggregate now needs two
+  things from the recomputing environment:
+  - the login address (`v17.operator_address`), without which the identifier term reads not established or the
+    command fails;
+  - a served surface equal to the recorded one.
+
+  A recompute on CI or on another login will not reproduce these bytes unless step 17 supplies both or states how the
+  identifier term is carried. Step 17 is the design lane's to specify. Nothing in (e) depends on it.
