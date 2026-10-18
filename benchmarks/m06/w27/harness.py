@@ -9,8 +9,10 @@ runner with its wall cap, infrastructure detection and the `init` checks.
 
 What W27 adds:
 
-- the **model is a recorded parameter** (Frank, F2): the most recent model at campaign time, by
-  exact id, never a default and never `claude-sonnet-5` (`agent_config`);
+- the **model is a recorded parameter** (Frank, F2): Claude Code's default on the campaign's
+  login, read from the pinning canary attempt's `init` message and passed by exact id to every
+  later attempt and run, never `claude-sonnet-5` (registration §23.5; `agent_config`,
+  `model_pin`);
 - the prompt is the registered template over the case card, whose SHA-256 must equal the
   registered one (W27-A21, A22);
 - a **fresh, empty project per run**, seeded only by `project init` and `project grant` of
@@ -21,14 +23,18 @@ What W27 adds:
   whether the tree is clean, the model, effort and Claude Code version and the pins, and the
   SHA-256 of the registration, coverage, snapshot, card and prompt (W27-R58, W27-A23).
 
-The campaign runs the registered order of `sample.json`, never repeats a run whose directory
-exists, and starts only when the preflight (P1–P8) passes. Nothing here is run by the gate: the
-dry run (`benchmarks.m06.w27.dryrun`) drives it with a stub `claude` that makes no model call.
+The records follow registration §23.2's order, each naming the SHA-256 of the earlier ones
+(`order_check`): `coverage.json`, `sample.json`, `confirmation/confirmation.json` (`confirm`,
+W27-R66), the canary attempts `canary/<NN>-<case_id>/` (`canaries`, W27-R68), `preflight.json`
+(written by `campaign` once P1–P8 pass, W27-R67), then the runs in the registered order of
+`sample.json` and `campaign.json`. A run whose directory exists is never repeated. Nothing here
+is run by the gate: the dry run (`benchmarks.m06.w27.dryrun`) drives it with a stub `claude` that
+makes no model call.
 
-`python -m benchmarks.m06.w27.harness` drives WO-17 (`main`): `canaries`, `preflight`, `campaign`
-and `spend` over `RUNS_ROOT/<campaign>/`, whose `coverage.json` and `sample.json` are written
-first by `benchmarks.m06.w27.coverage` and `benchmarks.m06.w27.sample`
-(`docs/briefs/W27-runbook.md`).
+`python -m benchmarks.m06.w27.harness` drives WO-17 (`main`): `confirm`, `canaries`,
+`preflight`, `campaign`, `order` and `spend` over `RUNS_ROOT/<campaign>/`, whose `coverage.json`
+and `sample.json` are written first by `benchmarks.m06.w27.coverage` and
+`benchmarks.m06.w27.sample` (`docs/briefs/W27-runbook.md`).
 """
 
 from __future__ import annotations
@@ -37,6 +43,7 @@ import argparse
 import base64
 import json
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -52,9 +59,12 @@ from benchmarks.t07.v17 import harness as v17
 from openflowsheet.canonical import canonical_json
 
 HarnessError = v17.HarnessError
-#: R58: the campaign record's place (its runs are M07's; U14 keeps them untracked until then).
+#: R58: the campaign record's place (U14, W27-R64: the campaign's records only under it).
 RUNS_ROOT: Final[Path] = registration.RECORDS / "runs"
 CANARY_DIR: Final[str] = "canary"
+#: W27-R66, W27-R67: the confirmation and preflight records, relative to the campaign directory.
+CONFIRMATION_FILE: Final[str] = "confirmation/confirmation.json"
+PREFLIGHT_FILE: Final[str] = "preflight.json"
 #: The command line's spend ceiling: the top of Frank's approval, USD 15–45 (P1's line).
 SPEND_CEILING_USD: Final[float] = 45.0
 PROJECT_ID: Final[str] = "w27-run"
@@ -63,6 +73,10 @@ NOT_THE_MODEL: Final[str] = "claude-sonnet-5"
 #: The registered tool and isolation flags (W27-R33), as V17's command line spells them.
 TOOLS_TEXT: Final[str] = '--tools "" with --allowedTools "mcp__procsim__*" and --strict-mcp-config'
 ISOLATION_TEXT: Final[str] = '--setting-sources ""'
+
+
+class RefusalError(HarnessError):
+    """A refusal registration §23 names: nothing was launched or written (exit 2)."""
 
 
 @dataclass(frozen=True)
@@ -76,6 +90,12 @@ class AgentConfig(v17.AgentConfig):
                 raise HarnessError("the effort is not pinned")
             return
         super().check()
+
+
+def campaign_records() -> Mapping[str, Any]:
+    """`registration.json#/campaign_records` (registration §23)."""
+    records: Mapping[str, Any] = registration.load()["campaign_records"]
+    return records
 
 
 def _registered() -> Mapping[str, Any]:
@@ -276,9 +296,13 @@ def run(
     operator: v17.Operator | None = None,
     name: str | None = None,
     replay: w27_scorer.ReplayRunner = w27_scorer.replay_in_fresh_process,
+    chain: Mapping[str, str] | None = None,
 ) -> Path:
     """One case: a fresh project, the session, the record, the export, the score. Returns
-    `runs_root/<campaign>/<order:02d>-<case_id>` (or `.../<name>`)."""
+    `runs_root/<campaign>/<order:02d>-<case_id>` (or `.../<name>`). `chain` holds the digests of
+    the earlier records `run.json` names (registration §23.2): `sample_sha256` with
+    `confirmation_sha256` for a canary attempt, or with `preflight_sha256` for a campaign run.
+    `model` is the requested model, None for an attempt run without `--model`."""
     config.check()
     coverage_bytes = coverage_path.read_bytes()
     coverage = json.loads(coverage_bytes)
@@ -319,6 +343,7 @@ def run(
         "interpreter": interpreter(),
         "registration_sha256": registration.sha256_file(registration.REGISTRATION_JSON),
         "coverage_sha256": registration.sha256_bytes(coverage_bytes),
+        **(chain or {}),
         "snapshot_sha256": coverage["snapshot_sha256"],
         "card_sha256": registration.sha256_bytes(card.encode("utf-8")),
         "prompt_sha256": v17.sha256_text(text),
@@ -375,7 +400,49 @@ def _write(path: Path, document: Any) -> None:
 
 
 # =================================================================================================
-# Canaries and the campaign (M07; WO-17 runs them, not WO-16)
+# The confirmation record (W27-R66)
+# =================================================================================================
+
+
+def sampled_candidates(coverage: Mapping[str, Any], sample: Mapping[str, Any]) -> list[str]:
+    """The sorted ids of the sampled cases whose `coverage.json` row has class `CANDIDATE`."""
+    rows = {row["case_id"]: row for row in coverage["rows"]}
+    return sorted(c for c in sample["cases"] if rows[c]["class"] == "CANDIDATE")
+
+
+def confirm(name: str, *, runs_root: Path = RUNS_ROOT) -> Path:
+    """W27-R66: `confirmation/confirmation.json` after the draw, at a clean HEAD. A non-empty C
+    is refused (`RefusalError`, nothing written): §7's reference builds have no registered
+    record."""
+    coverage_path, sample_path = _campaign_files(runs_root, name)
+    state = git_state(runs_root)
+    if state["tree_clean"] is not True:
+        raise HarnessError("confirm: the tree is not clean (registration §23.3)")
+    coverage_bytes, sample_bytes = coverage_path.read_bytes(), sample_path.read_bytes()
+    candidates = sampled_candidates(json.loads(coverage_bytes), json.loads(sample_bytes))
+    if candidates:
+        raise RefusalError(
+            f"confirmation: {len(candidates)} sampled CANDIDATE case(s); §7's reference builds "
+            "have no registered record (registration §23.3)"
+        )
+    document = {
+        "schema": campaign_records()["confirmation"]["schema"],
+        "campaign": name,
+        "commit": state["commit"],
+        "tree_clean": True,
+        "coverage_sha256": registration.sha256_bytes(coverage_bytes),
+        "sample_sha256": registration.sha256_bytes(sample_bytes),
+        "candidates": candidates,
+        "empty": candidates == [],
+    }
+    path = runs_root / name / CONFIRMATION_FILE
+    path.parent.mkdir(exist_ok=True)
+    path.write_bytes(registration.dump(document))
+    return path
+
+
+# =================================================================================================
+# Canaries (W27-R31, W27-R68) and the model pin (registration §23.5)
 # =================================================================================================
 
 
@@ -399,34 +466,198 @@ def canary_verdict(run_dir: Path) -> dict[str, Any]:
     }
 
 
+@dataclass(frozen=True)
+class CanaryAttempt:
+    """One directory `canary/<NN>-<case_id>/` (W27-R68), as P6, P7 and the pin read it."""
+
+    name: str
+    n: int | None  # None when the name is not `<digits>-<case_id>`
+    case_id: str
+    commit: str | None
+    tree_clean: bool | None
+    model: str | None  # requested: None for an attempt run without `--model`
+    init_model: str | None  # the transcript's `init` message, None without one
+    init_claude_code_version: str | None
+    passed: bool  # `canary_verdict`
+    path: Path
+
+
+def _transcript_init(run_dir: Path) -> Mapping[str, Any]:
+    counter = v17.TurnCounter()
+    transcript = run_dir / w27_scorer.TRANSCRIPT_FILE
+    if transcript.is_file():
+        for line in transcript.read_bytes().splitlines():
+            counter.feed(line)
+    return counter.init or {}
+
+
+def canary_attempts(campaign_dir: Path) -> list[CanaryAttempt]:
+    """Every attempt directory under `campaign_dir/canary/`, in attempt order."""
+    root = campaign_dir / CANARY_DIR
+    attempts = []
+    for path in sorted(p for p in root.iterdir() if p.is_dir()) if root.is_dir() else []:
+        match = re.match(r"^([0-9]+)-(.+)$", path.name)
+        run_json = path / w27_scorer.RUN_FILE
+        record = json.loads(run_json.read_bytes()) if run_json.is_file() else {}
+        init = _transcript_init(path)
+        model = init.get("model")
+        attempts.append(
+            CanaryAttempt(
+                name=path.name,
+                n=int(match[1]) if match else None,
+                case_id=match[2] if match else path.name,
+                commit=record.get("commit"),
+                tree_clean=record.get("tree_clean"),
+                model=record.get("model"),
+                init_model=model if isinstance(model, str) and model else None,
+                init_claude_code_version=init.get("claude_code_version"),
+                passed=run_json.is_file() and canary_verdict(path)["passed"],
+                path=path,
+            )
+        )
+    return sorted(attempts, key=lambda a: (a.n is None, a.n or 0, a.name))
+
+
+def counted_attempts(
+    attempts: Sequence[CanaryAttempt], canary_cases: Sequence[str]
+) -> dict[str, CanaryAttempt | None]:
+    """Each canary case's latest attempt, its *counted* attempt (W27-R68); None if none."""
+    return {
+        case_id: next((a for a in reversed(attempts) if a.case_id == case_id), None)
+        for case_id in canary_cases
+    }
+
+
+def pinning_attempt(attempts: Sequence[CanaryAttempt]) -> CanaryAttempt | None:
+    """The earliest attempt whose transcript has an `init` message with a model id (§23.5)."""
+    return next((a for a in attempts if a.init_model is not None), None)
+
+
+def model_pin(attempts: Sequence[CanaryAttempt]) -> str | None:
+    """The pin, the pinning attempt's `init` model, or None before one exists. Refused when it
+    would be V17's model (Frank, §3 F1) or is no full model id (the design lane, A4-Q1)."""
+    pinning = pinning_attempt(attempts)
+    if pinning is None or pinning.init_model is None:
+        return None
+    pin = pinning.init_model
+    if pin == NOT_THE_MODEL:
+        raise RefusalError(
+            f"the pin would be {NOT_THE_MODEL} ({pinning.name}): Frank (registration §3 F1, §23.5)"
+        )
+    if pin in v17.MODEL_ALIASES or not pin.startswith("claude-"):
+        raise RefusalError(
+            f"{pinning.name}'s init model {pin!r} is no full model id: the design lane rules "
+            "before the next attempt (registration §23.10 A4-Q1)"
+        )
+    return pin
+
+
 def canaries(
     campaign: str,
-    sample: Mapping[str, Any],
     *,
     work: Path,
-    config: AgentConfig,
-    coverage_path: Path,
+    claude: str = "claude",
     runs_root: Path = RUNS_ROOT,
     operator: v17.Operator | None = None,
     run_one: Callable[..., Path] = run,
 ) -> list[dict[str, Any]]:
-    """W27-R31: the three canary cases, each a harness check recorded under
-    `<campaign>/canary/`; their verdicts. Not campaign data."""
-    verdicts = []
-    for k, case_id in enumerate(sample["canaries"], start=1):
+    """W27-R31, W27-R68: at HEAD, the canary cases of `sample.json` in order, skipping a case
+    that already passed at HEAD; each attempt is `<campaign>/canary/<NN>-<case_id>/`, numbered on
+    from the attempts already there. Stops after the first attempt that fails. Refuses a seventh
+    attempt (`RefusalError`, nothing launched). The model is read from the directory (`model_pin`):
+    none until an attempt's `init` names one, that one after. Returns the attempts' verdicts.
+    Harness checks, not campaign data."""
+    directory = runs_root / campaign
+    coverage_path, sample_path = _campaign_files(runs_root, campaign)
+    confirmation_path = directory / CONFIRMATION_FILE
+    if not confirmation_path.is_file():
+        raise HarnessError(f"write the confirmation first (`confirm`): {confirmation_path}")
+    sample = json.loads(sample_path.read_bytes())
+    chain = {
+        "sample_sha256": registration.sha256_file(sample_path),
+        "confirmation_sha256": registration.sha256_file(confirmation_path),
+    }
+    head = git_state(runs_root)["commit"]
+    limit = int(campaign_records()["canary_attempts_max"])
+    verdicts: list[dict[str, Any]] = []
+    for case_id in sample["canaries"]:
+        attempts = canary_attempts(directory)
+        if any(a.case_id == case_id and a.commit == head and a.passed for a in attempts):
+            continue
+        n = 1 + max((a.n or 0 for a in attempts), default=0)
+        if n > limit:
+            raise RefusalError("re-canary allowance exhausted (registration §17 Q3): Frank")
         run_dir = run_one(
             case_id,
-            k,
+            n,
             f"{campaign}/{CANARY_DIR}",
             work=work,
-            config=config,
+            config=agent_config(model_pin(attempts), claude=claude),
             coverage_path=coverage_path,
             pinned_claude_code_version=None,
             runs_root=runs_root,
             operator=operator,
+            chain=chain,
         )
-        verdicts.append({"case_id": case_id, **canary_verdict(run_dir)})
+        verdicts.append({"attempt": run_dir.name, "case_id": case_id, **canary_verdict(run_dir)})
+        if not verdicts[-1]["passed"]:
+            break
     return verdicts
+
+
+# =================================================================================================
+# The preflight record (W27-R67) and the campaign (M07; WO-17 runs them, not WO-16)
+# =================================================================================================
+
+
+def write_preflight(
+    name: str,
+    runs_root: Path,
+    *,
+    model: str,
+    claude_code_version: str,
+    checks: Mapping[str, Mapping[str, Any]],
+) -> Path:
+    """W27-R67: `preflight.json`, once, after P1–P8 passed and before run 01."""
+    if not checks or not all(verdict["passed"] for verdict in checks.values()):
+        raise HarnessError("preflight.json records a preflight that passed, nothing else")
+    directory = runs_root / name
+    path = directory / PREFLIGHT_FILE
+    if path.exists():
+        raise HarnessError(f"{path} exists; it is written once")
+    sample_path = directory / "sample.json"
+    confirmation_path = directory / CONFIRMATION_FILE
+    sample = json.loads(sample_path.read_bytes())
+    counted = counted_attempts(canary_attempts(directory), sample["canaries"])
+    missing = [case_id for case_id, attempt in counted.items() if attempt is None]
+    if missing:
+        raise HarnessError(f"no counted canary attempt for {missing}")
+    state = git_state(runs_root)
+    document = {
+        "schema": campaign_records()["preflight"]["schema"],
+        "campaign": name,
+        "commit": state["commit"],
+        "tree_clean": state["tree_clean"],
+        "registration_sha256": registration.sha256_file(registration.REGISTRATION_JSON),
+        "coverage_sha256": registration.sha256_file(directory / "coverage.json"),
+        "sample_sha256": registration.sha256_file(sample_path),
+        "confirmation_sha256": registration.sha256_file(confirmation_path),
+        "canaries": [
+            {
+                "attempt": attempt.name,
+                "case_id": attempt.case_id,
+                "run_json_sha256": registration.sha256_file(attempt.path / w27_scorer.RUN_FILE),
+            }
+            for attempt in counted.values()
+            if attempt is not None
+        ],
+        "model": model,
+        "claude_code_version": claude_code_version,
+        "checks": dict(checks),
+        "passed": True,
+    }
+    path.write_bytes(registration.dump(document))
+    return path
 
 
 def campaign(
@@ -440,24 +671,43 @@ def campaign(
     runs_root: Path = RUNS_ROOT,
     resume: bool = False,
     operator: v17.Operator | None = None,
-    preflight: Callable[[], None],
+    preflight: Callable[[], Mapping[str, Mapping[str, Any]]],
     run_one: Callable[..., Path] = run,
     spend_ceiling_usd: float | None = None,
 ) -> Path:
     """W27-R58: every sampled case once, in the registered run order; a run whose directory
-    exists is never run again; the campaign starts only after `preflight` (P1–P8) passes and
-    stops at a run outside the configuration (the run is kept and counts). With
-    `spend_ceiling_usd` it also stops before a run that could take the spend past it
-    (`within_spend_ceiling`); `resume` continues. Writes `campaign.json`."""
+    exists is never run again. The campaign starts only after `preflight` (P1–P8) passes; it
+    returns their verdicts, which `preflight.json` records before run 01 (W27-R67); a failing
+    preflight writes nothing. It stops at a run outside the configuration (the run is kept and
+    counts). With `spend_ceiling_usd` it also stops before a run that could take the spend past
+    it (`within_spend_ceiling`); `resume` continues on the recorded `preflight.json`. Each run
+    names the digests of `sample.json` and `preflight.json`. Writes `campaign.json`."""
     config.check()
+    if config.model is None:
+        raise HarnessError("a campaign run passes --model <pin> (registration §23.5)")
     campaign_dir = runs_root / name
     if not resume:
-        preflight()
+        checks = preflight()
         prepare_campaign(name, coverage_path, sample_path, runs_root)
+        write_preflight(
+            name,
+            runs_root,
+            model=config.model,
+            claude_code_version=claude_code_version,
+            checks=checks,
+        )
     elif not campaign_dir.is_dir():
         raise HarnessError(f"{campaign_dir} does not exist; nothing to resume")
+    preflight_path = campaign_dir / PREFLIGHT_FILE
+    if not preflight_path.is_file():
+        raise HarnessError(f"{preflight_path} is missing: the preflight never passed")
     coverage_path = campaign_dir / "coverage.json"
-    sample = json.loads((campaign_dir / "sample.json").read_text(encoding="utf-8"))
+    sample_path = campaign_dir / "sample.json"
+    chain = {
+        "sample_sha256": registration.sha256_file(sample_path),
+        "preflight_sha256": registration.sha256_file(preflight_path),
+    }
+    sample = json.loads(sample_path.read_text(encoding="utf-8"))
     coverage = json.loads(coverage_path.read_bytes())
     for order, case_id in enumerate(sample["run_order"], start=1):
         if (campaign_dir / f"{order:02d}-{case_id}").exists():
@@ -474,6 +724,7 @@ def campaign(
             pinned_claude_code_version=claude_code_version,
             runs_root=runs_root,
             operator=operator,
+            chain=chain,
         )
         problems = v17.recorded_checks(run_dir)
         if problems:
@@ -522,6 +773,86 @@ def prepare_campaign(name: str, coverage_path: Path, sample_path: Path, runs_roo
     return campaign_dir
 
 
+# =================================================================================================
+# The order (registration §23.2; M07.A50 restated)
+# =================================================================================================
+
+
+def order_check(campaign_dir: Path) -> dict[str, Any]:
+    """M07.A50 (W27-A78): every record of `campaign_records.digest_chain` names the SHA-256 of
+    the earlier records listed for it, each equal to that file's; and the commit rule: the
+    confirmation, the counted canary attempts, `preflight.json` and every campaign `run.json`
+    carry `coverage.json`'s snapshot commit C_W with `tree_clean` true. `problems` names each
+    broken link as `<record>#<member>` (a missing record as `<record>#missing`)."""
+    records = campaign_records()
+    documents: dict[str, Any] = {}
+
+    def load(relative: str) -> Any:
+        if relative not in documents:
+            path = campaign_dir / relative
+            documents[relative] = json.loads(path.read_bytes()) if path.is_file() else None
+        return documents[relative]
+
+    def digest(relative: str) -> str | None:
+        path = campaign_dir / relative
+        return registration.sha256_file(path) if path.is_file() else None
+
+    sample = load("sample.json") or {}
+    counted = [
+        attempt
+        for attempt in counted_attempts(
+            canary_attempts(campaign_dir), sample.get("canaries", [])
+        ).values()
+        if attempt is not None
+    ]
+    canary_files = [f"{CANARY_DIR}/{a.name}/{w27_scorer.RUN_FILE}" for a in counted]
+    pattern = re.compile(str(records["run_dir_pattern"]))
+    run_files = sorted(
+        f"{p.name}/{w27_scorer.RUN_FILE}"
+        for p in (campaign_dir.iterdir() if campaign_dir.is_dir() else [])
+        if p.is_dir() and pattern.match(p.name)
+    )
+    files = {
+        "coverage": ["coverage.json"],
+        "sample": ["sample.json"],
+        "confirmation": [CONFIRMATION_FILE],
+        "canaries": canary_files,
+        "preflight": [PREFLIGHT_FILE],
+        "runs": run_files,
+    }
+    single = {record: paths[0] for record, paths in files.items() if len(paths) == 1}
+    problems = [f"{p}#missing" for p in single.values() if load(p) is None]
+    for link in records["digest_chain"]:
+        for relative in files[link["record"]]:
+            document = load(relative)
+            if document is None:
+                problems.append(f"{relative}#missing")
+                continue
+            for member, earlier in link["names"].items():
+                if member == "canaries[].run_json_sha256":
+                    expected = [
+                        {"attempt": a.name, "case_id": a.case_id, "run_json_sha256": digest(f)}
+                        for a, f in zip(counted, canary_files, strict=True)
+                    ]
+                    if document.get("canaries") != expected:
+                        problems.append(f"{relative}#canaries")
+                elif digest(single[earlier]) is None or document.get(member) != digest(
+                    single[earlier]
+                ):
+                    problems.append(f"{relative}#{member}")
+    coverage = load("coverage.json") or {}
+    commit = (coverage.get("snapshot") or {}).get("git_commit")
+    for relative in [CONFIRMATION_FILE, *canary_files, PREFLIGHT_FILE, *run_files]:
+        document = load(relative)
+        if document is None:
+            continue
+        if commit is None or document.get("commit") != commit:
+            problems.append(f"{relative}#commit")
+        if document.get("tree_clean") is not True:
+            problems.append(f"{relative}#tree_clean")
+    return {"passed": not problems, "commit": commit, "problems": sorted(set(problems))}
+
+
 #: W27-A23: the members a run record must carry, each non-empty.
 RUN_RECORD_MEMBERS: Final[tuple[str, ...]] = (
     "lock_sha256",
@@ -562,7 +893,7 @@ def a23(record: Mapping[str, Any]) -> dict[str, Any]:
 
 
 # =================================================================================================
-# The command line (WO-17): canaries, preflight, campaign, spend
+# The command line (WO-17): confirm, canaries, preflight, campaign, order, spend
 # =================================================================================================
 
 
@@ -616,19 +947,22 @@ def _campaign_files(runs_root: Path, name: str) -> tuple[Path, Path]:
 def main(argv: Sequence[str] | None = None) -> int:
     from benchmarks.m06.w27 import preflight  # noqa: PLC0415 (preflight imports this module)
 
-    parser = argparse.ArgumentParser(description="W27 WO-17: canaries, preflight, campaign, spend")
+    parser = argparse.ArgumentParser(
+        description="W27 WO-17: confirm, canaries, preflight, campaign, order, spend"
+    )
     parser.add_argument("--claude", default="claude", help="the claude binary (default: claude)")
     parser.add_argument("--runs-root", type=Path, default=RUNS_ROOT, help="default: RUNS_ROOT")
     sub = parser.add_subparsers(dest="command", required=True)
-    probe = sub.add_parser("canaries", help="the three canaries of sample.json (W27-R31)")
-    check = sub.add_parser("preflight", help="P1-P8; exit 1 unless all eight pass")
-    many = sub.add_parser("campaign", help="the registered runs in order, then campaign.json")
+    record = sub.add_parser("confirm", help="confirmation/confirmation.json (W27-R66)")
+    probe = sub.add_parser("canaries", help="the canary attempts at HEAD (W27-R31, W27-R68)")
+    check = sub.add_parser("preflight", help="P1-P8, written nowhere; exit 1 unless all pass")
+    many = sub.add_parser("campaign", help="preflight.json, the registered runs, campaign.json")
+    chain = sub.add_parser("order", help="the digest chain and the commit rule (M07.A50)")
     cost = sub.add_parser("spend", help="the recorded spend of the campaign (canaries included)")
-    for each in (probe, check, many, cost):
+    for each in (record, probe, check, many, chain, cost):
         each.add_argument("--campaign", required=True)
-    for each in (probe, check, many):
-        each.add_argument("--model", required=True, help="the exact model id (W27-R33)")
     for each in (check, many):
+        each.add_argument("--model", required=True, help="the pin (registration §23.5)")
         each.add_argument("--claude-code-version", required=True, help="as the canaries ran")
     for each in (probe, many):
         each.add_argument("--work", required=True, type=Path, help="outside the repository")
@@ -643,17 +977,47 @@ def main(argv: Sequence[str] | None = None) -> int:
     arguments = parser.parse_args(argv)
     runs_root: Path = arguments.runs_root
     directory = runs_root / arguments.campaign
+    try:
+        return _command(arguments, runs_root, directory, preflight)
+    except RefusalError as refusal:
+        print(refusal, file=sys.stderr)
+        return 2
+
+
+def _command(
+    arguments: argparse.Namespace, runs_root: Path, directory: Path, preflight: Any
+) -> int:
     if arguments.command == "spend":
         print(json.dumps(spend(directory), indent=1, sort_keys=True))
         return 0
+    if arguments.command == "order":
+        verdict = order_check(directory)
+        print(json.dumps(verdict, indent=1, sort_keys=True))
+        return 0 if verdict["passed"] else 1
+    if arguments.command == "confirm":
+        print(confirm(arguments.campaign, runs_root=runs_root))
+        return 0
     coverage_path, sample_path = _campaign_files(runs_root, arguments.campaign)
+    if arguments.command == "canaries":
+        operator = v17.login_operator(
+            arguments.oauth_token_file, agent_config(None, claude=arguments.claude)
+        )
+        verdicts = canaries(
+            arguments.campaign,
+            work=arguments.work,
+            claude=arguments.claude,
+            runs_root=runs_root,
+            operator=operator,
+        )
+        print(json.dumps(verdicts, indent=1, sort_keys=True))
+        return 1 if verdicts and not verdicts[-1]["passed"] else 0
     context = preflight.Campaign(
         name=arguments.campaign,
         runs_root=runs_root,
         coverage_path=coverage_path,
         sample_path=sample_path,
         model=arguments.model,
-        claude_code_version=getattr(arguments, "claude_code_version", ""),
+        claude_code_version=arguments.claude_code_version,
     )
     if arguments.command == "preflight":
         results = preflight.run_all(context)
@@ -661,18 +1025,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0 if all(v["passed"] for v in results.values()) else 1
     config = agent_config(arguments.model, claude=arguments.claude)
     operator = v17.login_operator(arguments.oauth_token_file, config)
-    if arguments.command == "canaries":
-        verdicts = canaries(
-            arguments.campaign,
-            json.loads(sample_path.read_bytes()),
-            work=arguments.work,
-            config=config,
-            coverage_path=coverage_path,
-            runs_root=runs_root,
-            operator=operator,
-        )
-        print(json.dumps(verdicts, indent=1, sort_keys=True))
-        return 0 if all(v["passed"] for v in verdicts) else 1
     campaign_dir = campaign(
         arguments.campaign,
         work=arguments.work,

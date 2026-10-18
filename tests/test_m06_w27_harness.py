@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from m06_w27_support import clean_head, stub_campaign
 
 from benchmarks.m06.w27 import harness, preflight, registration, report, sample, stubs
 from benchmarks.t07.v17 import harness as v17
@@ -167,11 +168,11 @@ def test_a_fresh_project_and_the_export(stub_run: Path) -> None:
 # =================================================================================================
 
 
-def test_campaign_runs_the_order_once_after_the_preflight(tmp_path: Path) -> None:
-    data = registration.COVERAGE_JSON.read_bytes()
-    drawn = sample.sample_document(json.loads(data), data)
-    (tmp_path / "coverage.json").write_bytes(data)
-    (tmp_path / "sample.json").write_bytes(registration.dump(drawn))
+def test_campaign_runs_the_order_once_after_the_preflight(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    campaign = stub_campaign(tmp_path / "runs", clean_head(monkeypatch))
+    drawn = json.loads(campaign.sample_path.read_bytes())
     calls: list[tuple[str, int]] = []
     stop_at = [2]
 
@@ -190,51 +191,30 @@ def test_campaign_runs_the_order_once_after_the_preflight(tmp_path: Path) -> Non
     config = harness.agent_config("claude-test-model-id")
     refused: list[str] = []
 
-    def failing() -> None:
+    def failing() -> dict[str, Any]:
         refused.append("preflight")
         raise preflight.PreflightError("P1")
 
+    common: dict[str, Any] = {
+        "work": tmp_path / "w",
+        "config": config,
+        "claude_code_version": "1",
+        "coverage_path": campaign.coverage_path,
+        "sample_path": campaign.sample_path,
+        "runs_root": campaign.runs_root,
+        "run_one": run_one,
+    }
     with pytest.raises(preflight.PreflightError):
-        harness.campaign(
-            "c",
-            work=tmp_path / "w",
-            config=config,
-            claude_code_version="1",
-            coverage_path=tmp_path / "coverage.json",
-            sample_path=tmp_path / "sample.json",
-            runs_root=tmp_path / "runs",
-            preflight=failing,
-            run_one=run_one,
-        )
-    assert refused == ["preflight"] and not (tmp_path / "runs").exists() and calls == []
+        harness.campaign("c", preflight=failing, **common)
+    assert refused == ["preflight"] and calls == []
+    assert not (campaign.directory / "preflight.json").exists()
     with pytest.raises(StopError):
-        harness.campaign(
-            "c",
-            work=tmp_path / "w",
-            config=config,
-            claude_code_version="1",
-            coverage_path=tmp_path / "coverage.json",
-            sample_path=tmp_path / "sample.json",
-            runs_root=tmp_path / "runs",
-            preflight=lambda: None,
-            run_one=run_one,
-        )
+        harness.campaign("c", preflight=lambda: {"P1": {"passed": True}}, **common)
     assert [o for _, o in calls] == [1, 2]
-    assert (tmp_path / "runs" / "c" / "sample.json").read_bytes() == registration.dump(drawn)
+    assert [c for c, _ in calls] == drawn["run_order"][:2]
     stop_at[0] = 3
     with pytest.raises(StopError):
-        harness.campaign(
-            "c",
-            work=tmp_path / "w",
-            config=config,
-            claude_code_version="1",
-            coverage_path=tmp_path / "coverage.json",
-            sample_path=tmp_path / "sample.json",
-            runs_root=tmp_path / "runs",
-            resume=True,
-            preflight=lambda: None,
-            run_one=run_one,
-        )
+        harness.campaign("c", resume=True, preflight=dict, **common)
     assert [o for _, o in calls] == [1, 2, 3]  # 1 and 2 exist and are not re-run
 
 
@@ -280,55 +260,37 @@ def test_p2_pins_and_checks_pass_at_registration(tmp_path: Path) -> None:
     assert verdict["passed"]
 
 
-def test_p4_and_p5(tmp_path: Path) -> None:
+def test_p4(tmp_path: Path) -> None:
     campaign = _campaign(tmp_path)
     assert preflight.p4(campaign)["passed"]
-    assert preflight.p5(campaign) == {
-        "passed": True,
-        "candidates": 0,
-        "record": "C is empty: §7 has nothing to confirm",
-    }
     drawn = json.loads(campaign.sample_path.read_bytes())
     drawn["cases"] = drawn["cases"][1:]
     campaign.sample_path.write_bytes(registration.dump(drawn))
     assert not preflight.p4(campaign)["passed"]
 
 
-def test_p5_requires_a_confirmation_for_each_sampled_candidate(tmp_path: Path) -> None:
-    coverage = stubs.candidate_coverage()
-    (tmp_path / "coverage.json").write_bytes(registration.dump(coverage))
-    drawn = {"cases": [stubs.SYNTHETIC]}
-    (tmp_path / "sample.json").write_bytes(registration.dump(drawn))
-    (tmp_path / "x").mkdir()
-    campaign = replace(
-        _campaign(tmp_path / "x"),
-        coverage_path=tmp_path / "coverage.json",
-        sample_path=tmp_path / "sample.json",
-    )
-    assert preflight.p5(campaign) == {
-        "passed": False,
-        "candidates": 1,
-        "not_confirmed": [stubs.SYNTHETIC],
-    }
-
-
-def test_p6_p7_p8_on_stub_canaries(tmp_path: Path) -> None:
+def test_p6_p7_p8_on_stub_canaries(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     pytest.importorskip("mcp")
     if not ARCHIVE_PRESENT:
         pytest.skip("pinned archive absent (scripts/m06_w27_acquire.py)")
+    clean_head(monkeypatch)
     campaign = _campaign(tmp_path, model=stubs.STUB_MODEL, claude_code_version=stubs.STUB_VERSION)
+    campaign.directory.mkdir(parents=True)
+    for name in ("coverage.json", "sample.json"):
+        shutil.copyfile(tmp_path / name, campaign.directory / name)
+    campaign = replace(
+        campaign,
+        coverage_path=campaign.directory / "coverage.json",
+        sample_path=campaign.directory / "sample.json",
+    )
+    harness.confirm("c", runs_root=campaign.runs_root)
     assert not preflight.p6(campaign)["passed"] and not preflight.p7(campaign)["passed"]
     canary = stubs.State("canary", "", "", text="Stub canary.")
-    config = harness.agent_config(
-        stubs.STUB_MODEL, claude=str(stubs.write_fake_claude(tmp_path / "bin", canary))
-    )
     drawn = json.loads(campaign.sample_path.read_bytes())
     verdicts = harness.canaries(
         "c",
-        drawn,
         work=tmp_path / "work",
-        config=config,
-        coverage_path=campaign.coverage_path,
+        claude=str(stubs.write_fake_claude(tmp_path / "bin", canary)),
         runs_root=campaign.runs_root,
         operator=stubs.stub_operator(tmp_path),
         run_one=lambda *a, **k: harness.run(
@@ -337,6 +299,15 @@ def test_p6_p7_p8_on_stub_canaries(tmp_path: Path) -> None:
     )
     assert [v["case_id"] for v in verdicts] == drawn["canaries"]
     assert all(v["passed"] for v in verdicts), verdicts
+    records = [
+        json.loads((campaign.directory / "canary" / v["attempt"] / "run.json").read_bytes())
+        for v in verdicts
+    ]
+    # Attempt 01 runs on Claude Code's default and pins it; 02 and 03 pass --model (§23.5).
+    assert [r["model"] for r in records] == [None, stubs.STUB_MODEL, stubs.STUB_MODEL]
+    assert "--model" not in records[0]["command"] and "--model" in records[1]["command"]
+    confirmation = registration.sha256_file(campaign.directory / harness.CONFIRMATION_FILE)
+    assert all(r["confirmation_sha256"] == confirmation for r in records)
     assert preflight.p6(campaign)["passed"] and preflight.p7(campaign)["passed"]
     assert not preflight.p7(replace(campaign, model="claude-other"))["passed"]
     assert preflight.p8(campaign)["runs_present"] == []
@@ -364,11 +335,10 @@ def test_spend_sums_the_recorded_costs(tmp_path: Path) -> None:
     }
 
 
-def test_campaign_stops_before_a_run_that_could_pass_the_spend_ceiling(tmp_path: Path) -> None:
-    data = registration.COVERAGE_JSON.read_bytes()
-    drawn = sample.sample_document(json.loads(data), data)
-    (tmp_path / "coverage.json").write_bytes(data)
-    (tmp_path / "sample.json").write_bytes(registration.dump(drawn))
+def test_campaign_stops_before_a_run_that_could_pass_the_spend_ceiling(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    campaign = stub_campaign(tmp_path / "runs", clean_head(monkeypatch))
     calls: list[int] = []
 
     def run_one(case_id: str, order: int, campaign: str, **kwargs: Any) -> Path:
@@ -380,27 +350,28 @@ def test_campaign_stops_before_a_run_that_could_pass_the_spend_ceiling(tmp_path:
         return run_dir
 
     config = harness.agent_config("claude-test-model-id")  # the USD 5 cap per run
-    # Before run k: 4(k-1) recorded + 5 for run k; run 4 would bound USD 17 > 14.
-    with pytest.raises(harness.HarnessError, match="spend ceiling USD 14: recorded 12.00"):
+    # The stub canaries record no cost: three uncosted runs at the cap, USD 15, come first.
+    # Before run k: 15 + 4(k-1) recorded or capped + 5 for run k; run 4 would bound 32 > 29.
+    with pytest.raises(harness.HarnessError, match="spend ceiling USD 29: recorded 12.00"):
         harness.campaign(
             "c",
             work=tmp_path / "w",
             config=config,
             claude_code_version="1",
-            coverage_path=tmp_path / "coverage.json",
-            sample_path=tmp_path / "sample.json",
-            runs_root=tmp_path / "runs",
-            preflight=lambda: None,
+            coverage_path=campaign.coverage_path,
+            sample_path=campaign.sample_path,
+            runs_root=campaign.runs_root,
+            preflight=lambda: {"P1": {"passed": True}},
             run_one=run_one,
-            spend_ceiling_usd=14.0,
+            spend_ceiling_usd=29.0,
         )
     assert calls == [1, 2, 3]
-    # A run with no recorded cost counts at the cap: 12 + 5 + 5 = 22 > 21.
-    (tmp_path / "runs" / "c" / "03-uncosted").mkdir()
-    (tmp_path / "runs" / "c" / "03-uncosted" / "run.json").write_text("{}", encoding="utf-8")
-    harness.within_spend_ceiling(tmp_path / "runs" / "c", config, 22.0)
-    with pytest.raises(harness.HarnessError, match="1 uncosted run"):
-        harness.within_spend_ceiling(tmp_path / "runs" / "c", config, 21.0)
+    # A run with no recorded cost counts at the cap: 12 + 5 x 4 + 5 = 37 > 36.
+    (campaign.directory / "03-uncosted").mkdir()
+    (campaign.directory / "03-uncosted" / "run.json").write_text("{}", encoding="utf-8")
+    harness.within_spend_ceiling(campaign.directory, config, 37.0)
+    with pytest.raises(harness.HarnessError, match="4 uncosted run"):
+        harness.within_spend_ceiling(campaign.directory, config, 36.0)
 
 
 def test_cli_refuses_a_campaign_without_its_coverage_and_sample(tmp_path: Path) -> None:
@@ -411,12 +382,13 @@ def test_cli_refuses_a_campaign_without_its_coverage_and_sample(tmp_path: Path) 
         )
 
 
-def test_cli_canaries_preflight_and_spend_on_stubs(
+def test_cli_confirm_canaries_preflight_and_spend_on_stubs(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     pytest.importorskip("mcp")
     if not ARCHIVE_PRESENT:
         pytest.skip("pinned archive absent (scripts/m06_w27_acquire.py)")
+    clean_head(monkeypatch)
     runs_root = tmp_path / "runs"
     (runs_root / "c").mkdir(parents=True)
     data = registration.COVERAGE_JSON.read_bytes()
@@ -428,9 +400,11 @@ def test_cli_canaries_preflight_and_spend_on_stubs(
     monkeypatch.setattr(v17, "login_operator", lambda token_file, config: operator)
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     common = ["--claude", str(claude), "--runs-root", str(runs_root)]
+    assert harness.main([*common, "confirm", "--campaign", "c"]) == 0
+    assert capsys.readouterr().out.strip().endswith(harness.CONFIRMATION_FILE)
     assert (
         harness.main(
-            [*common, "canaries", "--campaign", "c", "--model", stubs.STUB_MODEL]
+            [*common, "canaries", "--campaign", "c"]
             + ["--work", str(tmp_path / "work"), "--oauth-token-file", str(operator.token_file)]
         )
         == 0
@@ -445,6 +419,8 @@ def test_cli_canaries_preflight_and_spend_on_stubs(
     assert harness.main([*common, "preflight", "--campaign", "c", *pins]) == 1
     results = json.loads(capsys.readouterr().out)
     assert results["P6"]["passed"] and results["P7"]["passed"] and not results["P3"]["passed"]
+    assert results["P5"]["passed"] and results["P8"]["passed"]
+    assert not (runs_root / "c" / "preflight.json").exists()
     assert harness.main([*common, "spend", "--campaign", "c"]) == 0
     assert json.loads(capsys.readouterr().out) == {
         "cost_basis": v17.COST_BASIS,
@@ -452,6 +428,9 @@ def test_cli_canaries_preflight_and_spend_on_stubs(
         "total_cost_usd": 0.0,
         "uncosted": [],
     }
+    # The order so far: no preflight.json and no run yet.
+    assert harness.main([*common, "order", "--campaign", "c"]) == 1
+    assert "preflight.json#missing" in json.loads(capsys.readouterr().out)["problems"]
 
 
 # =================================================================================================
