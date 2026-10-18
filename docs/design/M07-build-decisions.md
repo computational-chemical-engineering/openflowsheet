@@ -301,3 +301,24 @@ non-acceptance answer under v0.2-gate-v1 still says "amend the alpha specificati
 say "§8.2 step" (the alpha's numbering); changing them needs a field. (F4) A dry v0.2-gate-v1 run at HEAD as if 0.2.0
 lists 35 reasons: no verdicts/RC record/M07 manifest, W23–W27 without ledger verdicts, the dev envelope, ADRs 0031,
 0032, 0038, 0039, 0041, 0042 Proposed, and F2.
+
+## WO-5 prerequisites — W27 readiness at `wp/M07-w27` (2026-10-18; no model call, nothing spent)
+
+Verified against registration §21.8/§22.5 at `958b983`: the binder reading (`snapshot.reading_for` → `bases-v1`; the
+spec's "`snapshot.READINGS`" has no such symbol), the C1 rows (22 `model_functions`; the three reactors null with
+`fixed_design_reactor`, `synthetic_stand_in`, `surrogate_model`), and J3′: the live snapshot equals
+`hypothetical_v02_a3` (models and routes); live coverage rows and summary equal the committed `coverage.json` (snapshot
+equal but for `git_commit`), 0 CANDIDATE, 0 class/reason differences (`amendment_3`). Stub dry run at `958b983`: G14,
+P1–P8 (stub canaries), G15 20/20, A23 all PASS. Added: the harness command line (`27fb4b8`), the spend ceiling (next
+commit), `docs/briefs/W27-runbook.md`.
+- DECISION: campaign spend guard → stop before a run when recorded spend + USD 5 × (uncosted runs + 1) > 45 (CLI
+  default; `within_spend_ceiling`). Alternative: no guard (45 × the USD 5 cap allows 225) or stop only once spend ≥ 45
+  (may pass it by one run). Reversible by: reverting its commit.
+- Open (design lane): (Q1) U14's rewrite "with the campaign" (R-194) is unwritten: text and test are not settled;
+  `test_u14_…` fails on any `/runs/` path, so the records cannot be committed until it is. (Q2) M07.A50 orders
+  "canaries, draw", but W27-R31 defines the canaries as frame cases not in the sample: the draw must come first.
+  (Q3) R58's `confirmation/` record of an empty C, and a record that the preflight passed (W27-R56), have no writer and
+  no format. (Q4) Re-canaries (registration Q3) are not implemented: P6 counts exactly three canary directories.
+  (Q5) "Most recent model" is ambiguous across families in 2.1.302's catalog.
+- Finding: `tests/test_m07a_harvest.py` fails when `evidence/M06/W27/artifacts` is a real (ignored) directory — it
+  harvests the archive's `wheelhouse/manifest.json`; the campaign needs exactly that (a symlink dirties the tree).
