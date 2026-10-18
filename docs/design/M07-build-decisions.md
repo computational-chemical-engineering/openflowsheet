@@ -243,3 +243,61 @@ M05's REAL record (sha256 `09cf5366…`), anchor `cdacc32…`, `carry_identity_d
 J35 in-process path): 2 passed. nlp tier: 186 passed, 1 skipped. Gates: `7f108d3` 9419/31, `6501016` 9420/31,
 `854deda` 9427/31, `2905034` 9436/31, `974c395` 9436/31, `c4e8467` 9454/31 (each on a clean detached worktree at that
 commit).
+
+## WO-3 — the 0.2.0 gate script (2026-10-18)
+
+J38 [choice] Merge of `origin/main` (the released 0.2.0a1 alpha, `93cfbe5`) at `81cc0cd`: the register's only
+conflict was its tail; numeric union R-451 (main), R-452…R-455 (ours), R-456…R-460 (main), no number on both sides,
+407 headings, no line lost from either side. Envelope merged clean (`--emit` unchanged, `--check` 0 problems). Gate
+9747 passed / 31 skipped. The journey record's default-gate tests pass (its `check` does not require the carry to
+HEAD), so no re-take. Note: J′ no longer carries to HEAD (J42).
+
+J39 [choice] The re-judgement line and the ADR's name read from the gate set (`0d5dbfb`). `GateSet.rejudged` is Table
+T8's line over the gate alternation of the set's `clause`; `REJUDGED_VALUE` stays the alpha's pinned constant and
+equals the alpha's `rejudged`. Without it v0.2-gate-v1's registered wait (W24, M03 N1) can never be listed: the
+alpha's grammar stops at W22. `GateSet.adr` = "ADR " + the number in `policy_adr`, so the 0.2.0 report reads ADR 0042
+where the alpha's reads ADR 0028 (§7.1). Neither is a new field. Alternative: leave both module-level and accept
+that W24 cannot be re-judged and the 0.2.0 report names ADR 0028. Reversible by: reverting `0d5dbfb`.
+
+J40 [needs ruling] M07.A31 ("alpha tests pass unmodified") cannot hold beside A30 (`039cbd8`). Five alpha cases assume
+the alpha is the only set: `test_the_registry_is_the_specification_s` (`GATE_SETS` names == [alpha]), and
+`test_a01_coverage_is_table_t1` for 0.2.0, 0.2.0b1, 0.2.0rc1 and `test_a12_main_on_an_uncovered_version` (0.2.0),
+which assert "not covered" for versions Table T-V gives to v0.2-gate-v1. Minimal edit, isolated, holding with or
+without the new entry: the registry test checks `GATE_SETS[0]`; T1 judges the alpha's pattern on every row and skips
+the uncovered-report check where another set covers the version; the end-to-end uncovered case uses 0.2.1. Every
+other alpha assertion, AM-07 and the alpha ledger test are unmodified, and the alpha's text/--json/--markdown output
+at `cc73219`/`423ae9c` is byte-identical after every WO-3 commit. Proposed wording: "the alpha's tests pass,
+unmodified except the five cases that assumed it was the only set". Alternative: keep `GATE_SETS` alpha-only and a
+second registry for `gate_set_of` (still breaks the T1 and 0.2.0 cases). Reversible by: reverting `039cbd8` (then
+those five fail).
+
+J41 [choice] O3 (`d4680b7`): a second new field, `GateSet.links_item` (default None; "V17 carry" for v0.2-gate-v1),
+beside §7.2's "only structural change" `clause`; R-457/O3 postdate the spec and need a per-set switch so the alpha
+stays byte-identical. The registers are read from `scripts/m07a_rc.py` at the candidate with `ast` (the `LINKS`
+tuple's `Link(name, register, …)`; today R-192, R-234, R-295; equal to the imported `LINKS`), and each must appear as
+a whole id (`(?<![\w-])R-295(?![\w-])`) in any cell of the decisions-table row; a miss adds "V17 carry does not name
+R-…" to Frank's problems. The field is not in the registration, so A32 compares the registration's fields only.
+Alternative: a hard-coded check on the set's name. Reversible by: reverting `d4680b7`.
+
+J42 [choice] Carry checks (`9479f97`): `w27_carry` and `journey_carry` return `Carry(carried, reason, differs)`;
+the reason is exactly §9's "W27 campaign surface differs between C_W and C" or "step 15 requires a re-run of the
+journey at C" (my wording of A38), with the differing members / changed files listed apart from it. The journey's
+pathspecs are `m07_journey.carry_paths("journey_files")` (this tree's registration; the RC job's tree is C); an
+unknown J does not carry. CLI `--carry-journey J` / `--carry-w27 AT_C_W AT_C` with `--rc C`, exit 0/1. **Measured:**
+`--rc HEAD --carry-journey 974c395` → re-run required: main's merge changed `src/openflowsheet/{__init__.py,
+application/coupled_run.py, verify/checks.py}` and the 36 `benchmarks/m05/records/trust-region-study-*` files of the
+G10 re-take (R-458). Unless a later J is cut, RC step 15 re-runs the journey at C.
+
+J43 [choice] O1 (`8a4c4e0`): `tests/test_m07_ledger.py` judges only on a tree whose version v0.2-gate-v1 covers (there a
+missing `docs/reviews/V02-verdicts.md` fails); on main's `.devN` tree its four tests skip naming the version; a fifth
+test pins that rule. W21 (M01, M02) and W22 (M01) package citations are carried from the alpha; no per-gate citation is
+checked for W23–W27 (the rulings name none). Alternative: no skip (red until C), or citations for W23–W27 by package.
+Reversible by: editing the one test file.
+
+Findings (recorded, not acted on): (F1) registration `gate.rc_steps` step 17 names `M07.A53`; spec §8 names M07.A62.
+(F2) ADR 0042's tables read "Frank's acceptance (date)" and "Answer (date)"; the gate reads columns "Frank's
+acceptance" and "Frank's answer", so today it finds no answers table (WO-6 must use the gate's headers, A42). (F3) A
+non-acceptance answer under v0.2-gate-v1 still says "amend the alpha specification for it", and RC-record reasons
+say "§8.2 step" (the alpha's numbering); changing them needs a field. (F4) A dry v0.2-gate-v1 run at HEAD as if 0.2.0
+lists 35 reasons: no verdicts/RC record/M07 manifest, W23–W27 without ledger verdicts, the dev envelope, ADRs 0031,
+0032, 0038, 0039, 0041, 0042 Proposed, and F2.
