@@ -1118,3 +1118,14 @@ Grep, don't read whole. Newest at the bottom.
 - Merged into main `93cfbe5` (tree = gated `09f9b9c` except the two V02 docs; log conflict resolved as union). Pushed.
 - DECISION: order M07 WO-3 → M07 into main → cut C_W on main → paid W27, so the W27 carry surface is not moved by M07's
   merge afterwards. Alternative: cut C_W now. Reversible by: cutting C_W at any later main commit.
+
+## 2026-10-18 — M07 WO-3 done (`wp/M07` @ `271f70d`)
+- Main merged (`81cc0cd`, register union, journey record tests pass). Per-set clause, `v0.2-gate-v1`, carry checks, O1–O3,
+  `tests/test_m07_v0_2_gate.py`, `tests/test_m07_ledger.py`. Gate on every commit (head 9876/35); nlp 186/1; CI
+  39089921525 green both runners. Gate script on head: NO (version 0.2.0a2.dev0 not covered) as expected.
+- Needs ruling: J40 (A31 "alpha tests unmodified" vs A30's registry; five alpha test cases edited, isolated `039cbd8`;
+  alpha output byte-identical). Revertible choices J39, J41, J42, J43. Findings: journey at J′ no longer carries (re-run at
+  RC step 15); ADR 0042 headers ≠ gate's; registration A53 vs spec A62 for step 17. Ruling round 3 launched.
+- DECISION: C_W is cut on `wp/M07` (not main), because M07 cannot merge before WO-5…8 and its manifest. The W27 carry
+  compares the served tool list, `list_models` and coverage rows at C_W and C, which M07's later WOs do not touch.
+  Alternative: merge M07 early. Reversible by: cutting C_W elsewhere before the first canary.
