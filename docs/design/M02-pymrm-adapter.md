@@ -475,7 +475,7 @@ iterations. The stand-in's F is constant ((0.25, 0)), so it converges at k = 1 w
 - **Certificate.** K04 verifies the final inner state as for `revision_eo`. The coupling driver supplies two
   `checks` per external unit: `{id: "EXT-COUPLING:<unit>:xi", category: "residual", subject: <unit>, value: |ξ_E −
   X̂ n_N₂,in| / n_tot,in, tolerance: 1e-5, result, scope: "evaluated", near_threshold, independence_qualification:
-  "external model, R3"}` and `…:T` (K, tolerance 1e-2). The check also asserts that the experiment's request inputs
+  "external model, R3"}` and `…:T` (K, tolerance 1e-2) *(superseded 2026-10-15, V02 alpha spec Amendment 2 §18.1, R-345: `independence_qualification` is `None` on both checks; the class stays in the `external_model` limitation)*. The check also asserts that the experiment's request inputs
   equal the certified state's inlet bitwise (else `fail`). `limitations` gains `{kind: "external_model", unit,
   variant_id, synthetic, reproducibility: "R3" | "R1", discretization_estimate}`; `derivative_provenance` records
   `unavailable` for the external map. No certificate on any non-`CONVERGED` outcome (failure bundle, which embeds the
@@ -1478,7 +1478,8 @@ declared Jacobian. Amendments to `d9c7cd4`:
   perturbing them makes no provider call.
 - **Record.** No schema change is needed.
   - Both witness checks carry `independence_qualification` = `"not differenced: <k> exactly-zero pr-c1-v1
-    stream-flow columns (design note §14.3 C2)"`.
+    stream-flow columns (design note §14.3 C2)"`. *(Superseded 2026-10-15, V02 alpha spec Amendment 2 §18.1, R-345:
+    both witness checks carry `None`; the exclusion is recorded by the limitation below only.)*
   - The certificate carries one limitation, `{"kind": "derivative_witness_partial", "columns": [<sorted ids>],
     "reason": "pr_c1_zero_flow_columns"}`. `limitations` items are open objects with a required `kind`.
   - When nothing is excluded, neither is written, so SYN-001 certificates do not move (G2 (ii)).

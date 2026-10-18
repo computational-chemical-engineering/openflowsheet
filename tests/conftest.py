@@ -18,6 +18,8 @@ ARCHIVED_HISTORY = "pre-0.1.0 development history is archived in openflowsheet-d
 #: v0.1.0 on the public line: the root commit of `computational-chemical-engineering/openflowsheet`,
 #: whose tree is the archive's v0.1.0 tree but which has none of its history (R-150).
 PUBLIC_ROOT = "5a350199f1334e52cfd789109a0e1dc944ef328c"
+#: 0.2.0a1 as released: the commit tagged `v0.2.0a1` (2026-10-17; release run 39045791146), R-456.
+ALPHA_TAG_COMMIT = "423ae9c54d903f9dcf0ea90fe9639222c1acbda4"
 
 
 def _git_ok(*arguments: str) -> bool:

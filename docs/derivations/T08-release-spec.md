@@ -334,6 +334,8 @@ B10 handed-on follow-ups, unreachable or harmless in v0.1: a `CONVERGED` result 
 
 B12 a verified dependency-set identity for installed packages (envelope L41): the wheel carries the lock, and `environment()` records its hash only after checking every locked distribution's installed version against it, else empty — an ADR 0007 D4/D6 amendment, because it changes what `lock_sha256` attests. *(added 2026-10-01, Amendment R3 5)*
 
+B13 T08.A34's audit over the certificates the replays re-emit: the RC bundle set's replays (T08.A45, the alpha's RC step 5) re-emit certificates that neither T08.A34 nor M07a.A39 audits (MR-11 widens A34 to steps 4–7 and 12, not to step 5's replays; T08 manifest `limitations[9]`). *(added 2026-10-15, V02 alpha read F4, R-321)*
+
 **M06 contract asks (v0.2/M06 only; each needs an ADR 0019 amendment before it is built):** M06-1 `inspect_structure` returns the validation structural report when no route binds; M06-2 a specification → residual-rows map; M06-3 `NewtonResult.blocked_by` in failure-bundle observations; M06-4 a `list_audit` operation; M06-5 operations with their rights in `get_project`.
 
 ---

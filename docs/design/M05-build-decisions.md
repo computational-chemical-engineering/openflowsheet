@@ -776,3 +776,41 @@ S77 Merge of `main` into wp/M05: the five in-process G10 records re-taken (TR-E2
    The cfecb15 manifest's record sha256 values describe the records before this re-take. Choice for the design lane
    (replay identity): re-take, rather than amending the fingerprint or the G10 comparison. Reversible by reverting
    this commit (G10 then fails until the boundary file is restored or a ruling changes the comparison).
+
+S78 `scripts/m05_retake_diff.py --digest-only` (R-458; rulings `docs/design/V02-alpha-main-rulings.md` §3 E5), the
+   committed proof of a digest-only re-take. On S77's pair (records at `56fb2fa^` against `56fb2fa`, `git archive`)
+   it prints PASS for all five cases (AM-20), changed digests 42/80/71/92/38 for TR-E2/TR-E2-FAR/TR-E2-FD/LOOP-R/LOOP-S,
+   equal to S77's counts under E5's rule (distinct old digests whose new value differs; AM-21, Q2: no mismatch).
+   Class counts (digest/timing/other): 150/20/0, 327/35/0, 219/20/0, 288/26/0, 128/20/0; environment files equal.
+   Build-lane choice: the store index is sorted by `(experiment_key, attempt)`, so it is paired by the relabelled key
+   (each old entry with the new entry of its key's image under the map the record, ledger and coupling records built),
+   not by position. Positional pairing on S77's pair makes the map fail to be a function and injective on 17 (TR-E2)
+   and 14 (LOOP-S) digests — an artefact of the sort order, not of the content. The store's digests still enter the
+   map, so (b) and (c) cover them. Reversible by reverting the E5 commit. Unit tests: `tests/test_m05_retake_digest_only.py`.
+
+S79 `--digest-only` gains the class `version` and the fingerprint binding (R-458 Amendment A1; rulings §3 E5a). The
+   coupling records' clear `frozen.reactor.fingerprint.openflowsheet_version`, at exactly that path, is admitted when the
+   committed side equals `--old-version` and the re-take side the running `openflowsheet.__version__` (without
+   `--old-version`: the sides are equal); the rule is checked on every coupling pair, and a pair that breaks it or lacks
+   the leaf is other. On both sides of every coupling pair each frozen unit's `fingerprint_sha256` must equal
+   `document_sha256(fingerprint)`, always. The summary line gains `version=<n>`. AM-20 re-run on S77's pair: PASS,
+   42/80/71/92/38, `version=0 other=0` on all five (the binding holds on the 44 coupling sides). AM-22: six new cases
+   (the stale-digest case passes with the binding neutralised, checked once by monkeypatching `document_sha256`); the
+   existing synthetic coupling record gained a bound `frozen` block, since a record without one is now other.
+
+S80 The five in-process G10 records re-taken after the version change (R-458, A1; rulings §3 E6). `run_case` and
+   `write_files` into a scratch directory from a clean tree at `f6ea52b` (`__version__` `0.2.0a2.dev0`,
+   `provenance.tree_clean: true`), in `.venv-nlp` with `OMP_NUM_THREADS=1` and `PYTHONPATH=src:<nlp-test-tools>`,
+   then copied over the committed files. `--digest-only --old-version 0.1.1`, committed against re-take:
+     RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2: changed-digests=41 digest=146 timing=20 version=4 other=0 environment=equal
+     RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-far: changed-digests=79 digest=320 timing=35 version=7 other=0 environment=equal
+     RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-fd: changed-digests=70 digest=215 timing=20 version=4 other=0 environment=equal
+     RETAKE-DIGEST-ONLY PASS trust-region-study-loop-r: changed-digests=91 digest=285 timing=26 version=3 other=0 environment=equal
+     RETAKE-DIGEST-ONLY PASS trust-region-study-loop-s: changed-digests=37 digest=124 timing=20 version=4 other=0 environment=equal
+   The counts are the ones E6 expects (version 4/7/4/3/4, changed 41/79/70/91/37). A first take without the
+   nlp-test-tools directory on `PYTHONPATH` FAILed (d) in all five cases with the same counts: 14 distributions, not
+   17 (pytest, pluggy and iniconfig live there); with it the running list reproduces the committed `f775c97d…`, and
+   the environment files are byte-equal. The records are the second take. AM-23 and the rest on the re-taken tree:
+   nlp tier 186 passed, 1 skipped, 0 failed (G10 5 passed); `OMP_NUM_THREADS=1 ./scripts/m03_nlp_check.sh` PASSED;
+   `m05_wo9_real.py --replay` REPLAY PASS REAL, 0 differences (Q1); full gate 9618 passed, 0 failed. M05's committed
+   manifests are not rewritten; their record sha256s describe the records before this re-take (as S77).

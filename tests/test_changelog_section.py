@@ -1,11 +1,16 @@
 """`scripts/changelog_section.py`: the release notes of `.github/workflows/release.yml` are the
-version's `CHANGELOG.md` section (docs/RELEASING.md)."""
+version's `CHANGELOG.md` section (docs/RELEASING.md). M07a.A22 (V02 alpha release spec §9.1): the
+tag may be a PEP 440 pre-release, and Table T3 (read from `benchmarks/m07a/reference_values.yaml`,
+which `v02a_reference.py --check` re-derives) fixes which heading is a tag's section."""
 
 from __future__ import annotations
 
+import subprocess
 import sys
+from pathlib import Path
 
 import pytest
+import yaml
 from conftest import REPO_ROOT
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
@@ -58,3 +63,42 @@ def test_changelog_section_of_the_repository() -> None:
     assert notes.startswith("*ADR 0021 D4.")
     assert "## v0.0.0" not in notes and "## v0.1.0" not in notes
     assert notes.strip() in text
+
+
+M07A = yaml.safe_load(
+    (REPO_ROOT / "benchmarks" / "m07a" / "reference_values.yaml").read_text(encoding="utf-8")
+)
+
+
+def test_m07a_a22_the_tag_pattern_is_the_registered_one() -> None:
+    assert changelog_section.TAG.pattern == M07A["targets"]["changelog_tag_pattern"]
+
+
+@pytest.mark.parametrize(
+    ("tag", "heading", "is_section"), M07A["truth_tables"]["T3_changelog_section"]
+)
+def test_m07a_a22_table_t3(tag: str, heading: str, is_section: bool) -> None:
+    changelog = f"# Changelog\n\n{heading}\n\nThe section.\n\n## v0.0.1\n\nOlder.\n"
+    if is_section:
+        assert changelog_section.section(changelog, tag) == "The section.\n"
+    else:
+        with pytest.raises(changelog_section.MissingSectionError, match="0 sections"):
+            changelog_section.section(changelog, tag)
+
+
+@pytest.mark.parametrize("tag", M07A["truth_tables"]["T3_malformed_tags"])
+def test_m07a_a22_a_malformed_tag_exits_2(tmp_path: Path, tag: str) -> None:
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text(f"# Changelog\n\n## {tag}\n\nBody.\n", "utf-8")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts" / "changelog_section.py"),
+            tag,
+            "--changelog",
+            str(changelog),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 2 and "is not of the form" in result.stderr, result.stderr

@@ -662,6 +662,7 @@ gates:
     verdict: PASS
     evidence:
       - evidence/K06/cda68cd446be27992051d43422336ad5f9430fe8/manifest.json
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
       - evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
       - evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
       - evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
@@ -671,6 +672,7 @@ gates:
     owner_packages: [T05]
     verdict: PASS
     evidence:
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
       - evidence/T05/91ac0103c1040175560d74d9afa2a091a8d25b2d/manifest.json
       - evidence/T05b/ba9a27b422834138daeff98481072c65db8b3744/manifest.json
 
@@ -681,6 +683,7 @@ gates:
     evidence:
       - evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
       - evidence/K03/c806f83fd3fb0e71967235000fb517fc1c26efd4/manifest.json
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
       - evidence/T01/00a71f4562b7bd80441df50cf64b53064d832b78/manifest.json
       - evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
 
@@ -689,6 +692,7 @@ gates:
     owner_packages: [T04]
     verdict: FAIL
     evidence:
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
       - evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
       - evidence/T04/53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5/manifest.json
 
@@ -697,6 +701,7 @@ gates:
     owner_packages: [T02, T03]
     verdict: PASS
     evidence:
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
       - evidence/T02/b68585f775cc2b009ae1b130eebb865150cf943c/manifest.json
       - evidence/T03/6ac24be9da572a90b198ba91b81d603f082cfa74/manifest.json
       - evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
@@ -706,6 +711,7 @@ gates:
     owner_packages: [T06]
     verdict: PASS
     evidence:
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
       - evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
 
   - id: V17
@@ -713,6 +719,7 @@ gates:
     owner_packages: [T07]
     verdict: PASS
     evidence:
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
       - evidence/T07/5f3d3ea25e8349b83c8f8382df3c793532971ca4/manifest.json
 
   - id: V18
@@ -721,6 +728,7 @@ gates:
     verdict: PASS
     evidence:
       - evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
       - evidence/P03/449cf3d6618f301242e07083d6f7d1c127566ac4/manifest.json
       - evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
       - evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
@@ -730,6 +738,7 @@ gates:
     owner_packages: [T08]
     verdict: PASS
     evidence:
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
       - evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
 
   - id: V20
@@ -738,20 +747,26 @@ gates:
     verdict: PASS
     evidence:
       - evidence/K04/bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29/manifest.json
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
       - evidence/T06/ebec629d63e32fb1984b56ad31372c960cd0ae2f/manifest.json
       - evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.json
 
   - id: W21
     required_evidence: "PyMRM boundary/accuracy/execution and provenance"
     owner_packages: [M01, M02]
-    verdict: null
-    evidence: []
+    verdict: PASS
+    evidence:
+      - evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+      - evidence/M02/ba90619c62329165a21731fdff01ebc9c7203287/manifest.json
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
 
   - id: W22
     required_evidence: "One validated needed nonideal property route"
     owner_packages: [M01]
-    verdict: null
-    evidence: []
+    verdict: PASS
+    evidence:
+      - evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+      - evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
 
   - id: W23
     required_evidence: "Surrogate conservation/domain/derivative/default UQ and promotion"

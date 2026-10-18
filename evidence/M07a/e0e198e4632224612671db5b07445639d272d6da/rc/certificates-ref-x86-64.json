@@ -1,0 +1,53 @@
+{
+ "checks": [
+  {
+   "certificates": 77,
+   "id": "a34.certificates_audited",
+   "result": "pass"
+  },
+  {
+   "first": {
+    "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-e0e198e/evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/step12/g12-bundles/m02-g12-0/bundle/artifacts/solution-certificate.json": [
+     "a09.qualified_check_ids"
+    ],
+    "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-e0e198e/evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/step12/g12-bundles/m02-g12-0/live/artifacts/solution-certificate.json": [
+     "a09.qualified_check_ids"
+    ],
+    "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-e0e198e/evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/step12/g12-bundles/m02-g12-0/replay/artifacts/solution-certificate.json": [
+     "a09.qualified_check_ids"
+    ],
+    "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-e0e198e/evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/step12/g12-edges-bundles/m02-g12v3-2-0/bundle/artifacts/solution-certificate.json": [
+     "a09.qualified_check_ids"
+    ],
+    "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-e0e198e/evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/step12/g12-edges-bundles/m02-g12v3-2-1/bundle/artifacts/solution-certificate.json": [
+     "a09.qualified_check_ids"
+    ]
+   },
+   "id": "a34.violations",
+   "result": "fail",
+   "violations": 5
+  }
+ ],
+ "format": "t08-rc-v1",
+ "inputs": [
+  "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-e0e198e/evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/identity",
+  "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-e0e198e/evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/ensemble",
+  "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-e0e198e/evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/surface",
+  "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-e0e198e/evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/artifacts/rc/step12"
+ ],
+ "passed": false,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "e0e198e4632224612671db5b07445639d272d6da",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "certificates"
+}

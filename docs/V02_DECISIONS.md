@@ -1003,3 +1003,118 @@ Grep, don't read whole. Newest at the bottom.
   C_α² `cc73219` exactly), not main; ADR 0028's named alternative. Frank asks the session to perform the dispatch.
 - Mechanics: the `pypi` environment admits only `main` or `v*` tags. Plan: dry run from the branch at the head that prints
   YES; then the real run from a `v0.2.0a1` tag on that same commit (rc = `cc73219…`).
+- Action 10 build part done: `wp/V02-alpha-gate` @ `423ae9c` (ADR 0028 Accepted R-451 `47246c1`; ledger + A64 test `9324a91`;
+  CHANGELOG/gate table, candidate `5c3a068`; manifest regenerated `423ae9c`: tested, 40 pass, 4 unsupported A60–A63). Gate
+  8642/31. Session check: D2.4 diff cc73219..423ae9c empty; `v0_2_gate.py --rc cc73219… --candidate 423ae9c` → YES.
+- Release dry run 39024603561 from the branch at `423ae9c`: gate, build success. Tag push from the session was refused by the
+  permission classifier; Frank given the two commands (tag + real dispatch from the tag).
+- **0.2.0a1 RELEASED 2026-10-17.** Frank: "Do the push and release." Annotated tag `v0.2.0a1` → `423ae9c` pushed; release
+  run 39045791146 from the tag: gate, tag, build, pypi, github-release all success. PyPI `openflowsheet 0.2.0a1`: wheel
+  sha256 `ebcf0daf040522c9…`, sdist `bda40baea315cd2b…`. GitHub pre-release
+  https://github.com/computational-chemical-engineering/openflowsheet/releases/tag/v0.2.0a1 with both files.
+
+## 2026-10-17 — M05 merged into main
+- `defa458` = merge of `wp/M05` @ `b0d4123` (manifest `evidence/M05/56fb2fa…` tested; 6 artifact hashes re-taken: 5 G10
+  records + build log). Gate at `defa458`: 9325 passed, 31 skipped (also covers b0d4123's envelope change, which its own
+  gate did not). Pushed. M07 WO-4 (real journey) launched.
+
+## 2026-10-17 — M07 WO-4 part 1 (`wp/M07` @ `6996507`, gate 9412/31)
+- Main merged (`8ef35e6`; R-017 differed only by a `---` separator). Journey at J=`8f85aa2` EXIT 0, `check` accepts:
+  R0 INDIFFERENT 673.15; R1 DECIDED 653.15 BOUND_LOWER; R2 SURROGATE_NOT_PROMOTABLE; R3 re-run (carry fails, src changed)
+  DECISION_STABLE, T* 653.1500351610193, J* 0.4524965242483627 = M05's record, re-solve bitwise; 88/460 cold runs, 3316 s.
+- Process slip: only the tip was gated (J24), not every commit. Next engineer told to gate every commit.
+- Open for M07's ruling round / reviewer (defaults: as implemented): J22 limitation `R3:carry_identity_differs`; J25
+  `env.verify` vs R-259 `variant_id`; T* 3.5e-5 K inside the bound reads INTERIOR (tolerance 2e-5 K) while R1 says
+  BOUND_LOWER. WO-4b (replay, committed record, A20–A26 tests) launched.
+- WO-4b done `d8ae8c1`: record at J=`1623633` (bitwise = `8f85aa2` run), replay bitwise 13.4 s, refuses at 2 threads;
+  A20–A26 tested; each commit gated (9413 → 9435/31); nlp 186/1.
+- M07 review `0ad726a`, fix first (spec §19 Am. 2, R-452…455, ADR 0041 D2/D5): MF1 at-bound tolerance δ_T = 0.5 K
+  (T* 1.76e-6 scaled from the bound is the interior-point offset, as M05 R-430); MF2 carry list missing M05 REAL config,
+  schema and journey script → split lists + GC-CARRY-1; SF1 replay the re-run M05 record; SF2 `m05_record.offered`; SF3
+  A21 default-gate test. J22 stands; J25 is M02's (`env.py:347` contradicts R-259) — backlog; J27 meets "every number".
+  WO-4c launched.
+- WO-4c done `wp/M07` @ `9d2d072`: MF1 `6501016`, MF2 `854deda`, SF2 `2905034`, SF1 `974c395` = J′, record `c4e8467`.
+  Re-take at J′ (3324 s): every number bitwise equal to the `1623633` record; labels R3 + journey INTERIOR → BOUND_LOWER
+  (predicted); limitations gain `bound:R3`, `bound:journey`. check ACCEPT; replay bitwise 17.7 s; re-run M05 replay clean;
+  pymrm 2 passed; nlp 186/1; gate 9454/31, every commit gated.
+- DECISION (engineer, J31): old `1623633` record + its test removed (fails `check` under the new registration) → accept.
+  Alternative: keep it as history. Reversible by: restore from `c1f104f`.
+- DECISION (engineer, J35): replay of a re-run record needs pyomo → runs in the nlp env, nlp-test-tools on `sys.path` in
+  process (avoids the J25 leak) → accept. Reversible by: revert the J35 commit.
+
+## 2026-10-17 — alpha into main: merged on `wp/V02-alpha-main` @ `d73004a`, CI red
+- Engineer: register union (381, no clash), L43 collision → main's M04 row renumbered L49 (`989b16f`), version 0.2.0a1,
+  W27 coverage re-taken. Gate 5 failed / 9591 / 31; CI 39050289989 red on both runners with the same five:
+  ledger `test_the_unclaimed_gates_are_untouched` (W24 row moved), A37 chain ×3 (served MCP list moved since C_α²: digest
+  `383b4e2c…` → `455d01eb…` at c_2 R-234), changelog `test_c` (gate NO at main: D2.4 differs). nlp: 5 G10 replays fail on
+  version-derived hashes only (551 diffs). Not merged into main.
+- A37 finding matters for 0.2.0 (agent surface moved after C_α²; V17 carry for 0.2.0).
+- Design-lane rulings pass launched (`specifier`, brief `docs/briefs/V02-alpha-main-rulings-brief.md` `6a760c1`).
+- Rulings `d85e7b4` (`docs/design/V02-alpha-main-rulings.md`, E1–E8): R-456 alpha ledger/changelog tests read the
+  released commit `423ae9c` (R-217 pattern); R-457 surface chain gets a third link (the move is M04's `surrogate_study` job
+  kind, not M03/M05; 17 tools, no description changed); R-458 G10 records re-taken digest-only now and at the 0.2.0 cut,
+  fingerprint unchanged (version = cache-safety guard, ADR 0036 D8), proof by a new `m05_retake_diff.py --digest-only`
+  (the S77 proof was manual); R-459 L49 confirmed; R-460 main's version `0.2.0a2.dev0` + test that main never carries a
+  released version on a different tree. For Frank later: the 0.2.0 "carry the agent evidence" question must name M04's
+  new job kind. Engineer applying E1–E8 launched.
+- E1–E5, E7, E8 applied (`wp/V02-alpha-main` @ `3969e57`): gate 9611/0; CI 39066214331 green both runners; R-456 check
+  YES at `423ae9c`, table found verbatim in the released section; REAL replay 0 diffs. `--digest-only` passes S77's pair
+  (42/80/71/92/38); S78 build choice: store index paired by key. **E6 stopped**: re-take after the version change moves one
+  non-digest leaf per coupling record (`frozen.reactor.fingerprint.openflowsheet_version`), so R-458's rule (a) can never
+  pass; G10 red (nlp 181/5). Narrow design question sent to a fresh `specifier` (proposal: a `version` class on that one
+  path, old = `--old-version`, new = running `__version__`).
+- R-458 Amendment A1 `12bbd89` (E5a): stricter than proposed — exact path only, pinned old/new values, plus binding check
+  `fingerprint_sha256 == document_sha256(fingerprint)` on both sides (holds on all 22 committed records and S77's 44 sides).
+  Rejected: unbound glob. E6 expected: version leaves 4/7/4/3/4, digests 41/79/70/91/37. Engineer applying E5a + E6 launched.
+
+## 2026-10-17 — alpha into main (`wp/V02-alpha-main`), build lane
+
+- DECISION: envelope id L43 is held twice — the alpha's (R-321: Anderson/E1/E2 library-only; released, cited by the
+  `## v0.2.0a1` CHANGELOG section) and main's (R-365: no promotable real surrogate; M04). → main's M04 row is
+  renumbered **L49** (next free; row, `unit_models` statement, M04/M05 harvest `to`/notes, `scripts/m04_evidence_manifest.py`)
+  in its own pre-merge commit; the alpha's L43 keeps its released meaning. Alternative: renumber the alpha's row
+  (contradicts the released CHANGELOG). Reversible by: reverting that commit and re-resolving the merge. Committed
+  M04/M05 manifests and historical notes that say "L43" for the surrogate are not rewritten. R-365's text ("row L43")
+  awaits a design-lane ruling (substitution only).
+- Rulings R-456 – R-460 applied (`docs/design/V02-alpha-main-rulings.md` §3, in §4's order):
+  - E1–E4, E8: `ALPHA_TAG_COMMIT`; the alpha's ledger and changelog tests read the record at the tag (AM-01 – AM-08);
+    `m07a_rc.LINKS` gains c_3 (R-295, `strip_m04`, `455d01eb…`) with the controls re-aimed, each preceded by an
+    unmodified-list pass (AM-10 – AM-18); AM-30 (M04/M05 harvest rows map to L49). Gate 9602 passed, 0 failed.
+  - E7: version `0.2.0a2.dev0` (B-WO10-4's set), envelope back to `v0.2-envelope-dev` / `0.2.0.dev0`, `ENVELOPE_ID`,
+    support matrix re-emitted (0 problems), RELEASING "After a tag", `tests/test_v02_main_version.py` (AM-40 – AM-42).
+    AM-10 still passes at the new version (D_3 unchanged). W27 coverage re-taken from the working tree (rows and
+    `list_models` unchanged; snapshot `153894c4…`), then once more at the E7 commit so `git_commit` names its build.
+  - E5: `m05_retake_diff.py --digest-only` (AM-20 PASS ×5 on S77's pair, 42/80/71/92/38 = S77's; AM-22 unit tests).
+    DECISION: store-index pairing in the leaf walk → by relabelled key, not position (the index is sorted by key, so
+    positional pairing fails (b)/(c) on S77's pair: 17 and 14 digests). Alternative: positional (AM-20 cannot pass).
+    Reversible by: reverting the E5 commit. M05 build log S78.
+  - E6 STOPPED (not applied; for the design lane). The re-take at `2345b54` (clean tree, `.venv-nlp`, OMP 1) is
+    not digest-only: `--digest-only` FAILs every case with other = one leaf per coupling record,
+    `frozen.reactor.fingerprint.openflowsheet_version` `'0.1.1'` → `'0.2.0a2.dev0'` (4/7/4/3/4 leaves; the committed
+    records were taken at 0.1.1). Everything else is digest-only: changed digests 41/79/70/91/37, timing 20/35/20/26/20,
+    environment files equal, map a function and injective. The coupling record carries the fingerprint in clear, so a
+    version change always moves one non-digest leaf; S77's boundary change moved a digest leaf there instead (hence
+    its +1 counts). Passing would need E5 to admit that leaf (e.g. a `version` class: committed side = `--old-version`,
+    re-take side = the running `__version__`, only at `*.fingerprint.openflowsheet_version`) — a change to rule (a),
+    not made here. Committed records untouched; G10 stays red until a ruling.
+  - Q1 settled at `2345b54` (0.2.0a2.dev0): `m05_wo9_real.py --replay` REPLAY PASS REAL, 0 differences (REAL's
+    fingerprint carries no version, F4). nlp tier: 181 passed, 1 skipped, 5 failed (G10 ×5 only; 107/185/107/147/…
+    differences); `m03_nlp_check.sh` fails on that pytest step only (inventory checks exit 0).
+- R-458 Amendment A1 applied (`12bbd89` rulings; E5a then E6):
+  - E5a (`f6ea52b`): `--digest-only` admits `frozen.reactor.fingerprint.openflowsheet_version` (exact path) as class
+    `version`, pinned to `--old-version` / the running `__version__`, with every frozen unit's `fingerprint_sha256`
+    bound to `document_sha256(fingerprint)` on both sides. AM-20 on S77's pair still PASS ×5, 42/80/71/92/38,
+    `version=0`; AM-22 +6 cases (13 in the file). Gate 9618 passed, 0 failed. M05 build log S79.
+  - E6: five G10 records re-taken at `f6ea52b` (clean tree, `.venv-nlp`, OMP 1, nlp-test-tools on `PYTHONPATH` as
+    WO-8 took them — without it the environment has 14 distributions, not 17, and (d) fails). `--digest-only
+    --old-version 0.1.1` PASS ×5: version 4/7/4/3/4, changed digests 41/79/70/91/37, other 0, environment equal —
+    as expected. nlp tier 186 passed, 0 failed (G10 5 passed); `m03_nlp_check.sh` PASSED; REAL `--replay` 0
+    differences; gate 9618 passed, 0 failed. M05 build log S80.
+
+## 2026-10-18 — alpha on main
+- E5a `f6ea52b`, E6 `09f9b9c` (five G10 records re-taken; `--digest-only --old-version 0.1.1` passes: version 4/7/4/3/4,
+  digests 41/79/70/91/37, other 0; re-take needs nlp-test-tools on PYTHONPATH to reproduce WO-8's 17 distributions).
+  Gate 9618/0; nlp 186/1/0; m03_nlp_check PASS; REAL replay 0; CI 39080413397 green both runners.
+- Merged into main `93cfbe5` (tree = gated `09f9b9c` except the two V02 docs; log conflict resolved as union). Pushed.
+- DECISION: order M07 WO-3 → M07 into main → cut C_W on main → paid W27, so the W27 carry surface is not moved by M07's
+  merge afterwards. Alternative: cut C_W now. Reversible by: cutting C_W at any later main commit.

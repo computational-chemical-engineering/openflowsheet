@@ -12,12 +12,20 @@ project, not the build). Today's content is served by this build on a fresh proj
 same way; with the version member and the three named entries taken out, the two are equal, and
 each named entry is there exactly once. (The generator, run without `--write`, re-serves `c7bbc98`
 from a temporary worktree and compares; that is not run here, since it writes to `.git`.)
+
+The alpha's counterpart (V02 alpha release spec §5.2 MR-7; M07a.A51): the differences from
+`c7bbc98`, excluding `server.package_version`, are exactly B50's three named entries plus the v0.2
+additions that register entries name (`V02_ADDITIONS`, each with the entry that names it, checked
+against the register's text). An addition no entry names fails, and so does a named one that is
+not served; each failure names the entry.
 """
 
 from __future__ import annotations
 
 import copy
+import dataclasses
 import json
+import re
 import sys
 from typing import Any
 
@@ -25,6 +33,7 @@ import pytest
 from conftest import REPO_ROOT
 from m04_schema_support import M04_MODELS
 
+from openflowsheet.application import local
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
 
@@ -35,18 +44,27 @@ FIXTURE = json.loads(generator.FIXTURE.read_text(encoding="utf-8"))
 V17_C2 = REPO_ROOT / "benchmarks" / "t07" / "v17" / "runs" / "v17-c2"
 #: B50's named differences.
 NEW_MODELS = ("syn001.kinetic_cstr",)
+#: MR-7's register-sourced v0.2 additions: per `c7bbc98` content member, each id with the register
+#: entry that names it (R-230: M02's six PR units; R-231: the two bindable C1 reactor ids). v0.2
+#: adds no solve policy. The join that serves them is R-280's.
+V02_ADDITIONS: dict[str, dict[str, str]] = {
+    "models": {
+        "c1.adiabatic_mixer": "R-230",
+        "c1.feed_source": "R-230",
+        "c1.product_sink": "R-230",
+        "c1.stream_splitter": "R-230",
+        "c1.tp_flash": "R-230",
+        "c1.tp_heater": "R-230",
+        "c1.reactor": "R-231",
+        "c1.reactor_standin": "R-231",
+        # M04's surrogate (W27 Amendment 3; R-295), added at the alpha's merge into main.
+        "c1.reactor_surrogate": "R-301",
+    },
+    "solve_policies": {},
+}
 #: M02's join (R-280 (b); R-234's method): the eight C1 models `list_models` serves since M02,
 #: stripped before B50's clause is judged, so the clause stands as T08 registered it.
-M02_MODELS = (
-    "c1.adiabatic_mixer",
-    "c1.feed_source",
-    "c1.product_sink",
-    "c1.reactor",
-    "c1.reactor_standin",
-    "c1.stream_splitter",
-    "c1.tp_flash",
-    "c1.tp_heater",
-)
+M02_MODELS = tuple(sorted(set(V02_ADDITIONS["models"]) - set(M04_MODELS)))
 NEW_POLICIES = ("T08-ptc-v1", "T08-warm-v1")
 #: `get_project`'s members that the server determines, whatever the project's state.
 SERVER_MEMBERS = ("default_policy_id", "server", "solve_policies")
@@ -119,3 +137,101 @@ def test_b50_get_project_differs_by_the_two_policies_and_the_version_only(
         del document["server"]["package_version"]
     today["solve_policies"] = _taken_out(today["solve_policies"], "policy_id", NEW_POLICIES)
     assert today == then
+
+
+# --- The alpha's counterpart (MR-7; M07a.A51) ------------------------------------------------
+
+REGISTER = REPO_ROOT / "docs" / "decision-register.md"
+#: (operation, content member, entry key, B50's named additions to that member).
+SURFACE = (
+    ("list_models", "models", "model_id", NEW_MODELS),
+    ("get_project", "solve_policies", "policy_id", NEW_POLICIES),
+)
+
+
+def _register_entry(entry_id: str) -> str:
+    """The register's text for `entry_id`, from its heading to the next heading."""
+    match = re.search(
+        rf"^## {re.escape(entry_id)} — .*?(?=^## |\Z)",
+        REGISTER.read_text(encoding="utf-8"),
+        flags=re.MULTILINE | re.DOTALL,
+    )
+    assert match is not None, entry_id
+    return match.group(0)
+
+
+def mr7_problems(served: dict[str, Any]) -> list[str]:
+    """MR-7's clause on `served` (`get_project` and `list_models` on a fresh project): one line per
+    failure, naming the entry; empty iff the clause holds."""
+    today, then = copy.deepcopy(served), copy.deepcopy(FIXTURE)
+    for documents in (today, then):
+        del documents["get_project"]["server"]["package_version"]
+    problems: list[str] = []
+    for operation, member, key, named in SURFACE:
+        additions = {**dict.fromkeys(named, "T08.B50"), **V02_ADDITIONS[member]}
+        ids = [entry[key] for entry in today[operation][member]]
+        before = {entry[key] for entry in then[operation][member]}
+        for entry_id, source in additions.items():
+            count = ids.count(entry_id)
+            if count != 1:
+                problems.append(f"{member}: `{entry_id}` ({source}) served {count} times, not once")
+        for entry_id in sorted(set(ids) - before - set(additions)):
+            problems.append(f"{member}: `{entry_id}` is served, not c7bbc98's, named by no entry")
+        for entry_id in sorted(before - set(ids)):
+            problems.append(f"{member}: c7bbc98's `{entry_id}` is not served")
+        # What remains is compared entry by entry: the entries both serve, and the other members.
+        today[operation][member] = [
+            entry for entry in today[operation][member] if entry[key] in before
+        ]
+        then[operation][member] = [
+            entry for entry in then[operation][member] if entry[key] in set(ids)
+        ]
+    for operation, _, _, _ in SURFACE:
+        if today[operation] != then[operation]:
+            problems.append(f"{operation}: content other than additions and removals differs")
+    return problems
+
+
+def _serve(directory: Any) -> dict[str, Any]:
+    project = directory / "p"
+    LocalApplication.create(project, project_id=generator.PROJECT_ID).close()
+    with LocalApplication.open(project) as application:
+        return {name: dispatch(application, name, {}) for name in ("get_project", "list_models")}
+
+
+def test_m07a_a51_each_v0_2_addition_is_named_by_its_register_entry() -> None:
+    """MR-7's list is register-sourced: each entry's text names its id, and no id is B50's."""
+    for member, additions in V02_ADDITIONS.items():
+        for entry_id, source in additions.items():
+            assert f"`{entry_id}`" in _register_entry(source), (member, entry_id, source)
+    assert not set(V02_ADDITIONS["models"]) & set(NEW_MODELS)
+    assert not set(V02_ADDITIONS["solve_policies"]) & set(NEW_POLICIES)
+
+
+def test_m07a_a51_a_the_content_is_b50s_entries_plus_the_registered_additions(
+    served: dict[str, Any],
+) -> None:
+    assert mr7_problems(served) == []
+
+
+def test_m07a_a51_b_an_unregistered_model_fails_naming_it(
+    tmp_path: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    probe = "c1.unregistered_probe"
+    signature = dataclasses.replace(local.MODEL_SIGNATURES["c1.tp_heater"], model_id=probe)
+    builders = {**local.MODEL_BUILDERS, probe: local.MODEL_BUILDERS["c1.tp_heater"]}
+    monkeypatch.setattr(local, "MODEL_BUILDERS", builders)
+    monkeypatch.setattr(local, "MODEL_SIGNATURES", {**local.MODEL_SIGNATURES, probe: signature})
+    assert mr7_problems(_serve(tmp_path)) == [
+        f"models: `{probe}` is served, not c7bbc98's, named by no entry"
+    ]
+
+
+def test_m07a_a51_c_a_registered_addition_removed_fails_naming_it(
+    tmp_path: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    builders = {k: v for k, v in local.MODEL_BUILDERS.items() if k != "c1.tp_heater"}
+    monkeypatch.setattr(local, "MODEL_BUILDERS", builders)
+    assert mr7_problems(_serve(tmp_path)) == [
+        "models: `c1.tp_heater` (R-230) served 0 times, not once"
+    ]
