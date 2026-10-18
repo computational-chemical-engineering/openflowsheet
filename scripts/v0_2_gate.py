@@ -2,9 +2,12 @@
 
 V02 alpha release spec §7 (`docs/derivations/V02-alpha-release-spec.md`); ADR 0028. One script for
 the 0.2 line (`release.yml` resolves `scripts/v<major>_<minor>_gate.py`). It holds a registry of
-**gate sets**, each covering the versions its pattern fullmatches; today the only one is
-`v0.2-alpha-gate-v1`, which covers `0.2.0aN` (N ≥ 1, canonical) and claims V11–V20, W21 and W22.
-A version that no set covers is refused, and nothing else is read. It judges nothing: every
+**gate sets**, each covering the versions its pattern fullmatches: `v0.2-alpha-gate-v1` covers
+`0.2.0aN` (N ≥ 1, canonical) and claims V11–V20, W21 and W22; `v0.2-gate-v1` (M07 spec §7,
+`docs/derivations/M07-spec.md`; ADR 0042) covers 0.2.0, 0.2.0bN and 0.2.0rcN and claims all
+seventeen. Each set reads its own clause grammar, verdict document, policy ADR, RC record and
+manifests; what follows names the alpha's. A version that no set covers is refused, and nothing
+else is read. It judges nothing: every
 verdict is read from where the design lane records it, and decides whether a tag `v<version>` may
 be **proposed** to Frank (the tag is his, ADR 0021 D5).
 
@@ -194,6 +197,47 @@ GATE_SETS: Final = (
         frank_items=("N3", "V17 carry", "M02 N1"),
         # MR-7, F-α2, F-α3: V13 and V17 wait on `V17 carry`, W21 on `M02 N1`.
         rejudge_waits=(("V13", "V17 carry"), ("V17", "V17 carry"), ("W21", "M02 N1")),
+    ),
+    # M07 spec §7.2 (registration `gate.gate_sets`): 0.2.0, 0.2.0bN and 0.2.0rcN claim all
+    # seventeen gates (§15 N1), each judged at its own candidate, under ADR 0042.
+    GateSet(
+        name="v0.2-gate-v1",
+        covers=re.compile(r"0\.2\.0(?:(?:b|rc)[1-9][0-9]*)?"),
+        claimed=(*(f"V{n}" for n in range(11, 21)), *(f"W{n}" for n in range(21, 28))),
+        not_claimed=(),
+        clause=re.compile(r"\b(?:V(?:1[1-9]|20)|W2[1-7]) \([a-z0-9]+\)"),
+        policy_adr="docs/adr/0042-v0.2.0-release-policy.md",
+        verdict_document="docs/reviews/V02-verdicts.md",
+        rc_record="docs/v02-rc-record.md",
+        rc_steps=tuple(range(1, 18)),
+        rc_last_step=18,
+        evidence_package="M07",
+        packages=("M01", "M02", "M03", "M04", "M05", "M06"),
+        envelope_id="v0.2-envelope-1",
+        required_adrs=(
+            "0022",
+            "0026",
+            "0027",
+            "0030",
+            "0031",
+            "0032",
+            "0033",
+            "0034",
+            "0035",
+            "0036",
+            "0037",
+            "0038",
+            "0039",
+            "0041",
+            "0042",
+        ),
+        frank_items=("Claim set", "V17 carry", "M02 N1", "M03 N1"),
+        rejudge_waits=(
+            ("V13", "V17 carry"),
+            ("V17", "V17 carry"),
+            ("W21", "M02 N1"),
+            ("W24", "M03 N1"),
+        ),
     ),
 )
 
