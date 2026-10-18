@@ -1110,3 +1110,11 @@ Grep, don't read whole. Newest at the bottom.
     --old-version 0.1.1` PASS ×5: version 4/7/4/3/4, changed digests 41/79/70/91/37, other 0, environment equal —
     as expected. nlp tier 186 passed, 0 failed (G10 5 passed); `m03_nlp_check.sh` PASSED; REAL `--replay` 0
     differences; gate 9618 passed, 0 failed. M05 build log S80.
+
+## 2026-10-18 — alpha on main
+- E5a `f6ea52b`, E6 `09f9b9c` (five G10 records re-taken; `--digest-only --old-version 0.1.1` passes: version 4/7/4/3/4,
+  digests 41/79/70/91/37, other 0; re-take needs nlp-test-tools on PYTHONPATH to reproduce WO-8's 17 distributions).
+  Gate 9618/0; nlp 186/1/0; m03_nlp_check PASS; REAL replay 0; CI 39080413397 green both runners.
+- Merged into main `93cfbe5` (tree = gated `09f9b9c` except the two V02 docs; log conflict resolved as union). Pushed.
+- DECISION: order M07 WO-3 → M07 into main → cut C_W on main → paid W27, so the W27 carry surface is not moved by M07's
+  merge afterwards. Alternative: cut C_W now. Reversible by: cutting C_W at any later main commit.

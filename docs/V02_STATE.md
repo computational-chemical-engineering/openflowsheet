@@ -99,7 +99,7 @@ M05 merge main + WO-5c + S3 (`m05`). No new launch until fewer than 2 run.
 `wp/test-hardening` merged into main (`26b13db`, gate 8670). Saved WIP: `wp/M06-wo17` WIP commit (ungated); `wp/M07` WIP reference script
 (spec still to write). Done in the burst: M02 closeout merged (`2497ec2`); M05 rulings §18 on `wp/M05-rulings2` (`4cc5956`).
 Register: alpha R-319…321; M04 R-322…325; M05 R-326…330; M07 R-331…339, R-350…359, R-391+; M02 follow-up R-390; M05 WO-8 ruling R-400…409; ADR 0036/0037 acceptance R-410…411; M02 closeout R-340…344; alpha Am. 2 R-345…349; M04 review R-360…369; alpha Am. 3 R-370…379, B6/B5 R-380…382.
-Next: alpha → main merge (`wp/V02-alpha-main` `d73004a`, CI red: 5 alpha tests pin C_α² facts, 5 G10 records version hashes; rulings R-456…460 `d85e7b4`; E1–E5, E7, E8 applied `3969e57`, CI green; E6 ruled (R-458 A1 `12bbd89`); **engineer applying E5a + E6**) → M07 WO-3 (0.2.0 gate); M07 WO-4c (review fixes, re-take) → M07 manifest; then WO-5 (M06 WO-17, paid, approved), WO-6…8, 0.2.0 RC;
+Next: alpha on main (merged `93cfbe5`, version 0.2.0a2.dev0) → **M07 WO-3 running** (0.2.0 gate) → M07 into main → cut C_W on main, paid W27 (WO-5) → (0.2.0 gate); M07 WO-4c (review fixes, re-take) → M07 manifest; then WO-5 (M06 WO-17, paid, approved), WO-6…8, 0.2.0 RC;
 M05 WO-8 + `reviewer`; M07 build.
 
 In worktrees run `PYTHONPATH=$PWD/src PATH=<main>/.venv/bin:$PATH ./scripts/gate.sh`. W27 archive for tests: symlink the
