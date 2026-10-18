@@ -301,7 +301,8 @@ six packages.
 - **W25**: (a)–(h) of §5.
 - **W26**: (a) M06 G1–G15 at C; (b) the browser test on CI x86-64.
 - **W27** (M06 registration): (a) Tier 0 coverage re-taken at C_W against the candidate registry; (b) the seeded sample
-  equals a re-draw from that coverage; (c) three canaries, disjoint from the sample, run before it; (d) the approved runs,
+  equals a re-draw from that coverage; (c) three canaries, disjoint from the sample, run after the draw and before the first run (up to three re-canaries;
+  registration §23.4) [A4]; (d) the approved runs,
   each with W27-R58's complete record and a clean tree; (e) `campaign.json` computed (W27-R53…R56); (f) the nine
   inaccessible assets disclosed (W27-R57); (g) exact provenance (model id, Claude Code version, commit, lock);
   (h) the carry from C_W to C (§9).
@@ -327,8 +328,9 @@ outward done.
 
 Order at the W27 candidate C_W (a commit with every v0.2 model row present, M04's surrogate row included): (1) the
 WO-17 prerequisites (binder reading in `snapshot.READINGS`, the C1 id rows, the U14 rewrite; M06 registration §21.8,
-§22.5 — the §20 ruling is already made in §21.6); (2) coverage re-taken at C_W; (3) the three canaries (up to three
-re-canaries, Q3); (4) the seeded draw; (5) the 45 runs (Q5: even with 0 candidates). Spend stays within Frank's approval
+§22.5 — the §20 ruling is already made in §21.6); (2) coverage re-taken at C_W; (3) the seeded draw; (4) the three
+canaries (up to three re-canaries, Q3) [A4]; (5) the 45 runs (Q5: even with 0 candidates). The confirmation and
+preflight records, the re-canary layout and the model pin are registration §23's. Spend stays within Frank's approval
 (USD 15–45). **Carry to C:** the campaign stands at C iff `served_tool_list_sha256`, the `list_models` result and the
 coverage rows are equal at C_W and C (registration `gate.w27_carry`); otherwise RC step 17 fails with "W27 campaign
 surface differs between C_W and C" and a re-run is Frank's call (it costs money; §15 N7).
@@ -383,7 +385,7 @@ Tolerances: "exact" means equality of binary64 values or bytes; the fixtures are
 | M07.A41 | `docs/reviews/V02-verdicts.md` has 17 rows; every clause label parses under v0.2's grammar | 17 | exact | R |
 | M07.A42 | ADR 0042's D3 and Frank tables pass the alpha's cell rule | pass | exact | R |
 | M07.A43 | `evidence/M07/<C>/manifest.json` `tested`, listing A00–A62 with commands run | present | exact | R |
-| M07.A50 | W27 order: coverage at C_W, canaries, draw, runs — by record timestamps and commits | in order | exact | O |
+| M07.A50 | W27 order at C_W by digest chain (registration §23.2): each record of `campaign_records.digest_chain` names the SHA-256 of the earlier records listed for it, each equal to the file's; the commit rule holds [A4] | every link equal; every commit C_W | exact (SHA-256 of bytes) | O |
 | M07.A51 | W27 records complete per W27-R58; spend within the approval | complete; ≤ USD 45 | exact | O |
 | M07.A60 | RC steps 13, 14, 16 pass at C | pass | per package gates | R |
 | M07.A61 | RC step 15 [A3.4]: C contains the journey record of the cut commit K; `--carry-journey K --rc C` says carried; `check` and `replay` pass at C | pass | bytes | R |
@@ -1349,3 +1351,21 @@ generator refuse with GC-RC-2, and a `links_item` outside `frank_items` makes it
 - **Q-A3-2 (needs a fact).** K's journey wall in the reactor environment, with R3 re-run. *Default:* within §4.5's
   budgets. `BUDGET_EXHAUSTED` is a stated outcome that `check` accepts when the record states it (A12, A13). It does
   not fail step 15; W25's verdict judges it.
+
+## 21. Amendment 4 — W27's order (2026-10-18)
+
+**Authority and scope.** Design lane (`specifier`), with M06 W27 registration §23 (Amendment 4, R-467…R-471), as asked
+by `docs/briefs/W27-rulings-brief.md`. The rows this amendment changes carry [A4] in §7.3, §9 and §11. Nothing else in
+this specification changes. `benchmarks/m07/registration.json` holds only the assertion ids, so it is unchanged and
+`m07_reference.py --check` still passes.
+
+**Ruling (R-468).** The seeded draw precedes the canaries. W27-R31 defines the canaries as frame cases not in the
+sample, so they cannot be named before the draw. The draw is a deterministic function of the coverage and of a seed
+fixed at registration, so drawing first chooses nothing.
+
+**Restated M07.A50.** The order is checked by a digest chain, not by timestamps. `coverage.json` and `sample.json`
+carry no timestamp, and `sample.json` cannot carry one, because its re-draw must be byte-identical (P4, W27-A20). As
+written, A50 could not be checked. The chain and the commit rule are registration §23.2. Its implementation is
+`order_check` (W27-A78).
+
+**Not established.** No W27 measurement; nothing has run.

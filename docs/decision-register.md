@@ -9581,3 +9581,130 @@ Otherwise `check` refuses with one of two exact texts.
 **Watch for.** WO-6 adds rows only.
 
 ---
+
+## R-467 — U14 is rewritten with the W27 campaign: still no comparison, records only under `runs/<campaign>/`
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M06 W27 registration Amendment 4 (§23.1, W27-R64), on the WO-5 readiness item Q1 |
+| Normative text | `docs/derivations/M06-W27-registration.md` §23.1; `benchmarks/t08/support_envelope.yaml` U14 (text given verbatim in §23.1); `registration.json#/campaign_records/u14` |
+| Evidence | W27-A70…A73 (`tests/test_t08_w2_unsupported.py::test_u14_…`, WO-17a); GC-A4-3 |
+| Affected packages | M06 (W27), M07 |
+
+**Decision.** This supersedes R-194's clause "no run or campaign record exists"; R-194's other clauses stand. U14 keeps
+its claim that no comparison with CRAFTS or any other system is made (W27-R57). Campaign records may exist only under
+`benchmarks/m06/openidaes450/runs/w27-m07-<hex 7–40>/`. Every other R-194 check stays: the registry, `src/`, the
+adaptation directory and `pyproject.toml`. `MANIFEST.in` is added. A registered set of path states shows that the rule
+rejects; without it the test would pass vacuously before the campaign.
+
+**Rejected alternatives, and why.**
+- *Narrowing the test to `registry.yaml` and `src/`.* R-194 rejected it.
+- *A new U-row for the campaign.* The capability is the same.
+- *Allowing any path under `runs/`.* A stray or misnamed directory would pass.
+
+**Watch for.** A second campaign (M07 N7) needs no change. Its directory follows the same pattern.
+
+---
+
+## R-468 — W27's draw precedes its canaries, and the order is proved by a digest chain, not by timestamps (M07.A50 restated)
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), registration §23.2 (W27-R65) and M07 spec §21, on the readiness item Q2 |
+| Normative text | registration §23.2; `registration.json#/campaign_records/{order,digest_chain,commit_rule}`; M07 spec §9, §7.3 W27 (c) and M07.A50 [A4] |
+| Evidence | GC-A4-2; W27-A78 (`order_check`), which M07.A50 calls |
+| Affected packages | M06 (W27), M07 (WO-17) |
+
+**Decision.** The order is coverage, draw, confirmation, canaries, preflight, runs, all at C_W. W27-R31 stands as
+written. Each record names the SHA-256 of earlier records, its predecessor among them. The campaign keeps the name it
+was given at its first coverage. A harness fix moves C_W, and records 1–3 are then re-made there.
+
+**Rejected alternatives, and why.**
+- *Keeping "canaries, draw" by redefining W27-R31.* This needs a smaller frame, which would change the sample
+  procedure after registration.
+- *Writing `sample.json` after the canaries although it was computed before them.* The record would state a false
+  order.
+- *Timestamps.* `coverage.json` and `sample.json` carry none, and `sample.json` cannot carry one, because its re-draw
+  must be byte-identical.
+
+**Watch for.** A C_W move overwrites records 1–3. If one happens, the build log records the old digests (A4-Q3).
+
+---
+
+## R-469 — W27's confirmation and preflight records: `confirmation/confirmation.json` (an empty C only) and `preflight.json`, written by the harness before run 01
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), registration §23.3 (W27-R66, W27-R67, W27-R58 amended), on the readiness item Q3 |
+| Normative text | registration §23.3; `registration.json#/campaign_records/{confirmation,preflight,run_json_added}` |
+| Evidence | W27-A74 (P5), W27-A75 (P8 and the writer); GC-A4-4 |
+| Affected packages | M06 (W27), M07 (M07.A51, G16) |
+
+**Decision.**
+- `harness confirm` writes the confirmation record for an empty C and refuses a non-empty C (exit 2, no file).
+- `harness campaign` writes `preflight.json` once, after P1–P8 pass and before run 01. A failing preflight writes
+  nothing. The standalone `preflight` command writes nothing.
+- P5 and P8 are restated: a `confirmation/` directory no longer fails P8.
+- Campaign `run.json` files carry `sample_sha256` and `preflight_sha256`. Canary `run.json` files carry `sample_sha256`
+  and `confirmation_sha256`.
+- G16's preflight term is established only through `preflight.json`.
+
+**Rejected alternatives, and why.**
+- *Shell-redirected preflight output.* Nothing then ties it to the runs.
+- *A record format for §7's builds now.* C is measured empty, and a format registered without a case would be a guess.
+- *P5 passing an empty C with no record.* Silence would read as success.
+
+**Watch for.** A non-empty C at C_W: stop, and the design lane registers §7's record.
+
+---
+
+## R-470 — W27 re-canaries: at most six numbered attempts in `canary/`, the three counted attempts all at C_W, and no re-run of a passed canary
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), registration §23.4 (W27-R68; §17 Q3's default made executable), on the readiness item Q4 |
+| Normative text | registration §23.4; `registration.json#/campaign_records/{canary_attempt_pattern,recanaries_max,canary_attempts_max,p6_states}` |
+| Evidence | GC-A4-1, GC-A4-5; W27-A76 (11 states) |
+| Affected packages | M06 (W27), M07 (WO-17) |
+
+**Decision.**
+- Attempts are named `canary/<NN>-<case_id>/`, NN 01…06, contiguous across the three cases.
+- The `canaries` command skips cases already passed at HEAD, stops at the first failure, and refuses attempt 07.
+- P6 passes iff each canary case's latest attempt passed at HEAD with a clean tree, no case was re-run after passing
+  at the same commit, and every attempt is on a canary case.
+- Attempts at an earlier commit are kept and counted in spend, but they do not count toward P6.
+
+**Rejected alternatives, and why.**
+- *Counting a canary that passed before a harness fix.* It certifies code the campaign does not run.
+- *Re-running a passed canary.* That re-rolls a check.
+- *One campaign directory per fix.* Spend and the cap would then have to add up across directories.
+
+**Watch for.** Frank may count fixes instead of attempts (A4-Q2). That change is one number in `campaign_records`,
+made before the first canary.
+
+---
+
+## R-471 — W27's model is Claude Code's default, read from the pinning canary attempt's `init`, and pinned by exact id with `--model` for every later attempt and run
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), registration §23.5 (W27-R33 made mechanical), confirming the brief's item 5 (readiness item Q5) |
+| Normative text | registration §23.5; `registration.json#/campaign_records/model_pin`, `p7_states` |
+| Evidence | GC-A4-6; W27-A77 (6 states) |
+| Affected packages | M06 (W27), M07 (WO-17) |
+
+**Decision.** The pinning attempt is the earliest canary attempt whose `init` carries a model id. It, and every
+attempt before it, runs without `--model`. Every later attempt and every run passes `--model <pin>`. `claude-sonnet-5`
+is never pinned; the harness stops and the question goes to Frank. P7 is restated to check this rule.
+
+**Rejected alternatives, and why.** *The session chooses among the catalogue's newest ids* (the runbook's text until
+now). The choice would be discretionary, made by the party being measured, and could be made after seeing results.
+
+**Watch for.** A4-Q1. If `init` reports an alias rather than a full id, the design lane rules before attempt 02.
+
+---
