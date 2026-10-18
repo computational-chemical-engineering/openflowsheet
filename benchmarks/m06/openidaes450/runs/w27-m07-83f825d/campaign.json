@@ -1,0 +1,211 @@
+{
+  "coverage": {
+    "all_450": {
+      "ARTIFACT_INCOMPLETE": 1,
+      "CANDIDATE": 0,
+      "COMPONENT_UNAVAILABLE": 17,
+      "NOT_STEADY_STATE_SIMULATION": 65,
+      "PROPERTY_ROUTE_UNAVAILABLE": 0,
+      "UNIT_UNAVAILABLE": 367
+    },
+    "cases_with_reason": {
+      "all_450": {
+        "ARTIFACT_INCOMPLETE": 1,
+        "COMPONENT_UNAVAILABLE": 449,
+        "NOT_STEADY_STATE_SIMULATION": 66,
+        "PROPERTY_ROUTE_UNAVAILABLE": 447,
+        "UNIT_UNAVAILABLE": 433
+      },
+      "full82": {
+        "ARTIFACT_INCOMPLETE": 0,
+        "COMPONENT_UNAVAILABLE": 82,
+        "NOT_STEADY_STATE_SIMULATION": 8,
+        "PROPERTY_ROUTE_UNAVAILABLE": 80,
+        "UNIT_UNAVAILABLE": 81
+      }
+    },
+    "full82": {
+      "ARTIFACT_INCOMPLETE": 0,
+      "CANDIDATE": 0,
+      "COMPONENT_UNAVAILABLE": 1,
+      "NOT_STEADY_STATE_SIMULATION": 8,
+      "PROPERTY_ROUTE_UNAVAILABLE": 0,
+      "UNIT_UNAVAILABLE": 73
+    },
+    "list_models_sha256": "f070fbe0c67695765cdb3862031a18208af959a5b82de6911d1c99fcabea49b4",
+    "package_version": "0.2.0a2.dev0",
+    "snapshot_sha256": "a0982136d084b5ed04b8fb369a99a558a511b3194532bf8faced61bb1b6f7aaf"
+  },
+  "gated": {
+    "all_runs_recorded": true,
+    "critical_effects": {
+      "count": 0,
+      "established": true
+    },
+    "system_false_verification": {
+      "count": 0,
+      "established": true
+    },
+    "unauthorized_effects": {
+      "count": 0,
+      "established": true
+    }
+  },
+  "outcomes": {
+    "AGENT_FALSE_VERIFICATION": 0,
+    "CORRECT_BUILD": 0,
+    "CORRECT_LIMITATION": 44,
+    "INFRASTRUCTURE_FAILURE": 0,
+    "SYSTEM_FALSE_VERIFICATION": 0,
+    "WRONG_BUILD": 0,
+    "WRONG_LIMITATION": 1
+  },
+  "outcomes_by_case_class": {
+    "CANDIDATE": {
+      "AGENT_FALSE_VERIFICATION": 0,
+      "CORRECT_BUILD": 0,
+      "CORRECT_LIMITATION": 0,
+      "INFRASTRUCTURE_FAILURE": 0,
+      "SYSTEM_FALSE_VERIFICATION": 0,
+      "WRONG_BUILD": 0,
+      "WRONG_LIMITATION": 0
+    },
+    "other": {
+      "AGENT_FALSE_VERIFICATION": 0,
+      "CORRECT_BUILD": 0,
+      "CORRECT_LIMITATION": 44,
+      "INFRASTRUCTURE_FAILURE": 0,
+      "SYSTEM_FALSE_VERIFICATION": 0,
+      "WRONG_BUILD": 0,
+      "WRONG_LIMITATION": 1
+    }
+  },
+  "outcomes_by_family": {
+    "dispatches": {
+      "AGENT_FALSE_VERIFICATION": 0,
+      "CORRECT_BUILD": 0,
+      "CORRECT_LIMITATION": 1,
+      "INFRASTRUCTURE_FAILURE": 0,
+      "SYSTEM_FALSE_VERIFICATION": 0,
+      "WRONG_BUILD": 0,
+      "WRONG_LIMITATION": 0
+    },
+    "gtep": {
+      "AGENT_FALSE_VERIFICATION": 0,
+      "CORRECT_BUILD": 0,
+      "CORRECT_LIMITATION": 2,
+      "INFRASTRUCTURE_FAILURE": 0,
+      "SYSTEM_FALSE_VERIFICATION": 0,
+      "WRONG_BUILD": 0,
+      "WRONG_LIMITATION": 0
+    },
+    "idaes": {
+      "AGENT_FALSE_VERIFICATION": 0,
+      "CORRECT_BUILD": 0,
+      "CORRECT_LIMITATION": 18,
+      "INFRASTRUCTURE_FAILURE": 0,
+      "SYSTEM_FALSE_VERIFICATION": 0,
+      "WRONG_BUILD": 0,
+      "WRONG_LIMITATION": 1
+    },
+    "mvo": {
+      "AGENT_FALSE_VERIFICATION": 0,
+      "CORRECT_BUILD": 0,
+      "CORRECT_LIMITATION": 2,
+      "INFRASTRUCTURE_FAILURE": 0,
+      "SYSTEM_FALSE_VERIFICATION": 0,
+      "WRONG_BUILD": 0,
+      "WRONG_LIMITATION": 0
+    },
+    "pareto": {
+      "AGENT_FALSE_VERIFICATION": 0,
+      "CORRECT_BUILD": 0,
+      "CORRECT_LIMITATION": 1,
+      "INFRASTRUCTURE_FAILURE": 0,
+      "SYSTEM_FALSE_VERIFICATION": 0,
+      "WRONG_BUILD": 0,
+      "WRONG_LIMITATION": 0
+    },
+    "prommis": {
+      "AGENT_FALSE_VERIFICATION": 0,
+      "CORRECT_BUILD": 0,
+      "CORRECT_LIMITATION": 2,
+      "INFRASTRUCTURE_FAILURE": 0,
+      "SYSTEM_FALSE_VERIFICATION": 0,
+      "WRONG_BUILD": 0,
+      "WRONG_LIMITATION": 0
+    },
+    "reaktoro": {
+      "AGENT_FALSE_VERIFICATION": 0,
+      "CORRECT_BUILD": 0,
+      "CORRECT_LIMITATION": 1,
+      "INFRASTRUCTURE_FAILURE": 0,
+      "SYSTEM_FALSE_VERIFICATION": 0,
+      "WRONG_BUILD": 0,
+      "WRONG_LIMITATION": 0
+    },
+    "reflo": {
+      "AGENT_FALSE_VERIFICATION": 0,
+      "CORRECT_BUILD": 0,
+      "CORRECT_LIMITATION": 2,
+      "INFRASTRUCTURE_FAILURE": 0,
+      "SYSTEM_FALSE_VERIFICATION": 0,
+      "WRONG_BUILD": 0,
+      "WRONG_LIMITATION": 0
+    },
+    "watertap": {
+      "AGENT_FALSE_VERIFICATION": 0,
+      "CORRECT_BUILD": 0,
+      "CORRECT_LIMITATION": 15,
+      "INFRASTRUCTURE_FAILURE": 0,
+      "SYSTEM_FALSE_VERIFICATION": 0,
+      "WRONG_BUILD": 0,
+      "WRONG_LIMITATION": 0
+    }
+  },
+  "reported": {
+    "agent_false_verification_established": true,
+    "agent_false_verification_runs": {
+      "lower_95": 0.0,
+      "n": 45,
+      "upper_95": 0.064404,
+      "x": 0
+    },
+    "correct_build_rate": "no candidate runs",
+    "correct_build_stream_unjudged": 0,
+    "correct_limitation_rate": {
+      "lower_95": 0.898866,
+      "n": 45,
+      "upper_95": 0.998861,
+      "x": 44
+    },
+    "infrastructure_failures": {},
+    "map_defect_candidates": 0
+  },
+  "runs_recorded": 45,
+  "runs_registered": 45,
+  "schema": "w27-campaign-v1",
+  "surface": {
+    "lists_components_or_routes": false,
+    "tool_descriptions_sha256": "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+    "tools": [
+      "cancel_job",
+      "commit_change",
+      "diff_revisions",
+      "get_artifact",
+      "get_job",
+      "get_job_result",
+      "get_project",
+      "get_revision",
+      "inspect_structure",
+      "list_job_events",
+      "list_jobs",
+      "list_models",
+      "list_revisions",
+      "preview_change",
+      "submit_job",
+      "validate_revision",
+      "wait_job"
+    ]
+  }
+}

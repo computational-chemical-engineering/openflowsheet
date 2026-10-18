@@ -1,0 +1,19 @@
+{
+ "mcpServers": {
+  "procsim": {
+   "args": [
+    "-m",
+    "openflowsheet.application.cli",
+    "serve-mcp",
+    "--project",
+    "/tmp/w27-work-w27-m07-83f825d/w27-m07-83f825d/34-watertap_seawater_ro_pump_as_turbine/project"
+   ],
+   "command": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python",
+   "env": {
+    "OPENFLOWSHEET_TOKEN_FILE": "/tmp/w27-work-w27-m07-83f825d/w27-m07-83f825d/34-watertap_seawater_ro_pump_as_turbine/secret/token",
+    "PYTHONPATH": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m07/src"
+   },
+   "type": "stdio"
+  }
+ }
+}

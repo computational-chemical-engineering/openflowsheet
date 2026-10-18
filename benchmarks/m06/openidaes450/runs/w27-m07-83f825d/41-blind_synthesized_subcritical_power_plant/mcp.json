@@ -1,0 +1,19 @@
+{
+ "mcpServers": {
+  "procsim": {
+   "args": [
+    "-m",
+    "openflowsheet.application.cli",
+    "serve-mcp",
+    "--project",
+    "/tmp/w27-work-w27-m07-83f825d/w27-m07-83f825d/41-blind_synthesized_subcritical_power_plant/project"
+   ],
+   "command": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python",
+   "env": {
+    "OPENFLOWSHEET_TOKEN_FILE": "/tmp/w27-work-w27-m07-83f825d/w27-m07-83f825d/41-blind_synthesized_subcritical_power_plant/secret/token",
+    "PYTHONPATH": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m07/src"
+   },
+   "type": "stdio"
+  }
+ }
+}
