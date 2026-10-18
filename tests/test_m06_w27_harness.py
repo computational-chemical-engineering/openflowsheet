@@ -504,3 +504,73 @@ def test_report_is_generated_from_coverage_json() -> None:
     coverage = json.loads(registration.COVERAGE_JSON.read_bytes())
     assert report.sentence(coverage) in text
     assert coverage["snapshot_sha256"] in text and coverage["list_models_sha256"] in text
+
+
+# =================================================================================================
+# W27-R56 (G16): the identifier scan over every committed file, and `campaign.json` again
+# =================================================================================================
+
+RECORDED_CAMPAIGN = harness.RUNS_ROOT / "w27-m07-83f825d"
+
+
+def _scan_campaign(directory: Path) -> Path:
+    directory.mkdir(parents=True)
+    (directory / "sample.json").write_text(
+        json.dumps({"run_order": ["case_a", "case_b"]}), encoding="utf-8"
+    )
+    for name in ("01-case_a", "02-case_b", f"{harness.CANARY_DIR}/01-case_c"):
+        (directory / name).mkdir(parents=True)
+        for file in (*v17.SCANNED_FILES, "run.json", "mcp.json", "prompt.txt"):
+            (directory / name / file).write_text('{"text": "nothing here"}\n', encoding="utf-8")
+    return directory
+
+
+def test_the_identifier_scan_reads_every_committed_file(tmp_path: Path) -> None:
+    directory = _scan_campaign(tmp_path / "c")
+    clean = harness.identifier_scan(directory, stubs.STUB_ADDRESS)
+    assert clean == {
+        "runs": 0,
+        "canaries": 0,
+        "run_directories": 2,
+        "canary_directories": 1,
+        "files_scanned": 3 * (len(v17.SCANNED_FILES) + 3),
+    }
+    # Outside R6.6's `SCANNED_FILES` (verdict F-4), case-insensitively, in a nested file too.
+    (directory / "01-case_a" / "mcp.json").write_text(stubs.STUB_ADDRESS.upper(), encoding="utf-8")
+    nested = directory / "02-case_b" / "extra" / "note.txt"
+    nested.parent.mkdir()
+    nested.write_text(f"{stubs.STUB_ADDRESS} {stubs.STUB_ADDRESS}", encoding="utf-8")
+    (directory / harness.CANARY_DIR / "01-case_c" / "run.json").write_text(
+        json.dumps({"text": stubs.STUB_ADDRESS}), encoding="utf-8"
+    )
+    assert v17.identifier_hits(directory / "01-case_a", stubs.STUB_ADDRESS) == dict.fromkeys(
+        v17.SCANNED_FILES, 0
+    )
+    hit = harness.identifier_scan(directory, stubs.STUB_ADDRESS)
+    assert (hit["runs"], hit["canaries"], hit["files_scanned"]) == (
+        3,
+        1,
+        clean["files_scanned"] + 1,
+    )
+    shutil.rmtree(directory / "02-case_b")
+    assert harness.identifier_scan(directory, stubs.STUB_ADDRESS)["run_directories"] == 1
+
+
+@pytest.mark.skipif(not RECORDED_CAMPAIGN.is_dir(), reason="campaign record absent")
+def test_campaign_json_is_reproduced_from_the_recorded_runs(tmp_path: Path) -> None:
+    """The committed `campaign.json` is `write_campaign` over the campaign's unchanged records
+    (with a stand-in address: the scan's counts are 0 either way, and only counts are kept)."""
+    copy = tmp_path / RECORDED_CAMPAIGN.name
+    shutil.copytree(RECORDED_CAMPAIGN, copy)
+    recorded = (RECORDED_CAMPAIGN / w27_scorer.CAMPAIGN_FILE).read_bytes()
+    served = json.loads(recorded)["surface"]
+    harness.reaggregate(copy, address=stubs.STUB_ADDRESS, served=served)
+    assert (copy / w27_scorer.CAMPAIGN_FILE).read_bytes() == recorded
+    document = json.loads(recorded)
+    assert document["gated"]["operator_identifier_hits"]["established"] is True
+    assert document["gated"]["preflight_passed_before_first_run"]["established"] is True
+    with pytest.raises(harness.RefusalError, match="surface"):
+        harness.reaggregate(copy, address=stubs.STUB_ADDRESS, served={**served, "tools": []})
+    (copy / w27_scorer.CAMPAIGN_FILE).unlink()
+    with pytest.raises(harness.RefusalError, match="does not exist"):
+        harness.reaggregate(copy, address=stubs.STUB_ADDRESS, served=served)

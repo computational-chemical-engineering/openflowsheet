@@ -1154,14 +1154,151 @@ def bounds(successes: int, runs: int) -> dict[str, Any]:
     }
 
 
+#: W27-R52's limitation-item counts, pooled by summing over the runs that have them.
+LIMITATION_ITEM_FIELDS: Final = (
+    "items",
+    "judged",
+    "matched",
+    "contradicted",
+    "names_nothing",
+    "unjudged",
+    "malformed",
+)
+
+
+def _pooled_semantic(scores: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """W27-R52 pooled (§11.10): counts summed over the runs that have them; each rate is the
+    pooled numerator over the pooled denominator (V17 `_pooled_semantic`), the semantic error
+    rate over parseable limitation answers only."""
+    present = [s["semantic"]["limitation_items"] for s in scores]
+    parsed = [c for c in present if c is not None]
+    pooled: dict[str, Any] = {
+        "limitation_items": {
+            "runs": len(parsed),
+            **{name: sum(c[name] for c in parsed) for name in LIMITATION_ITEM_FIELDS},
+        }
+    }
+    for name in ("semantic_error_rate", "api_rejection_rate", "draft_commit_rate"):
+        numerator = denominator = 0
+        for s in scores:
+            measure = s["semantic"][name]
+            if measure["numerator"] is not None and measure["denominator"] is not None:
+                numerator += measure["numerator"]
+                denominator += measure["denominator"]
+        pooled[name] = v17._rate(numerator, denominator)
+    pooled["internal_errors"] = {
+        key: sum(s["semantic"]["internal_errors"][key] or 0 for s in scores)
+        for key in ("tool_results", "jobs")
+    }
+    return pooled
+
+
+def _pooled_cost(scores: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """W27-R52 pooled (§11.10): V17's cost fields (sum, median and the runs that report each,
+    as V17 `_pooled_cost`), jobs summed by operation, and the cost basis as recorded."""
+    out: dict[str, Any] = {}
+    for name in v17.COST_FIELDS:
+        values = [s["cost"][name] for s in scores if _is_number(s["cost"].get(name))]
+        out[name] = {
+            "sum": sum(values) if values else None,
+            "median": v17._median(values),
+            "runs": len(values),
+        }
+    jobs: dict[str, int] = {}
+    for s in scores:
+        for operation, count in (s["cost"].get("jobs_submitted") or {}).items():
+            jobs[str(operation)] = jobs.get(str(operation), 0) + int(count)
+    out["jobs_submitted"] = dict(sorted(jobs.items()))
+    out["total_cost_usd_basis"] = sorted(
+        {str(s["cost"].get("total_cost_usd_basis")) for s in scores}
+    )
+    return out
+
+
+def _distinct(values: Sequence[Any]) -> list[Any]:
+    """The distinct recorded values, None last (a value absent from a record stays visible)."""
+    present = sorted({v for v in values if v is not None})
+    return [*present, None] if any(v is None for v in values) else present
+
+
+def _provenance(
+    runs: Sequence[Mapping[str, Any]] | None, preflight: Mapping[str, Any] | None
+) -> dict[str, Any]:
+    """W27-R54: the model id and the Claude Code version, as pinned by `preflight.json`
+    (§23.5), as each `run.json` requested or recorded them, and as each session's `init`
+    reported them (registration §23.12)."""
+    records = list(runs or [])
+    inits = [((r.get("session") or {}).get("init") or {}) for r in records]
+    pinned = preflight or {}
+    return {
+        "model": {
+            "pinned": pinned.get("model"),
+            "requested": _distinct([r.get("model") for r in records]),
+            "init": _distinct([i.get("model") for i in inits]),
+        },
+        "claude_code_version": {
+            "pinned": pinned.get("claude_code_version"),
+            "recorded": _distinct([r.get("claude_code_version") for r in records]),
+            "init": _distinct([i.get("claude_code_version") for i in inits]),
+        },
+    }
+
+
+def _preflight_before_first_run(
+    runs: Sequence[Mapping[str, Any]] | None,
+    preflight: Mapping[str, Any] | None,
+    preflight_sha256: str | None,
+) -> dict[str, Any]:
+    """W27-R56 (G16), as §23.3 defines it: established iff `preflight.json` exists with
+    `passed` true and every campaign `run.json`'s `preflight_sha256` equals its digest."""
+    records = list(runs or [])
+    matching = sum(
+        1
+        for r in records
+        if preflight_sha256 is not None and r.get("preflight_sha256") == preflight_sha256
+    )
+    passed = preflight.get("passed") is True if preflight is not None else False
+    return {
+        "preflight_sha256": preflight_sha256,
+        "passed": passed,
+        "runs": len(records),
+        "runs_naming_the_preflight": matching,
+        "established": passed and bool(records) and matching == len(records),
+    }
+
+
+def _identifier_hits(scan: Mapping[str, Any] | None, registered_runs: int) -> dict[str, Any]:
+    """W27-R56 (G16): operator-identifier hits in every committed file of every run (verdict
+    F-4: not only R6.6's `SCANNED_FILES`), from the harness's campaign scan (`identifier_scan`,
+    counts only), the canaries counted with the runs. Not established without a scan of every
+    registered run directory."""
+    if scan is None:
+        return {"count": None, "established": False}
+    return {
+        "count": scan["runs"] + scan["canaries"],
+        "runs": scan["runs"],
+        "canaries": scan["canaries"],
+        "run_directories": scan["run_directories"],
+        "canary_directories": scan["canary_directories"],
+        "files_scanned": scan["files_scanned"],
+        "established": scan["run_directories"] == registered_runs,
+    }
+
+
 def aggregate(
     scores: Sequence[Mapping[str, Any]],
     coverage: Mapping[str, Any],
     *,
     registered_runs: int,
     surface: Mapping[str, Any],
+    runs: Sequence[Mapping[str, Any]] | None = None,
+    preflight: Mapping[str, Any] | None = None,
+    preflight_sha256: str | None = None,
+    identifier_scan: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """`campaign.json` (W27-R53…R56) from the runs' scores, in run order."""
+    """`campaign.json` (W27-R53…R56) from the runs' scores and `run.json` records, in run
+    order, `preflight.json` and its digest, and the harness's identifier scan. A term whose
+    record is not given is reported as not established (or None), never assumed."""
     outcomes = list(registration.load()["outcomes"])
 
     def counts(selected: Sequence[Mapping[str, Any]]) -> dict[str, int]:
@@ -1197,6 +1334,10 @@ def aggregate(
                 "all_450": summary["all_450"]["cases_with_reason"],
                 "full82": summary["full82"]["cases_with_reason"],
             },
+            "by_family": {
+                "all_450": summary["all_450"]["by_family"],
+                "full82": summary["full82"]["by_family"],
+            },
         },
         "runs_recorded": len(scores),
         "runs_registered": registered_runs,
@@ -1217,6 +1358,10 @@ def aggregate(
                 "count": sum(s["effects"].get("critical_effects") or 0 for s in scores),
                 "established": effects_established,
             },
+            "operator_identifier_hits": _identifier_hits(identifier_scan, registered_runs),
+            "preflight_passed_before_first_run": _preflight_before_first_run(
+                runs, preflight, preflight_sha256
+            ),
         },
         "reported": {
             "agent_false_verification_runs": bounds(agent_runs, len(scores)),
@@ -1230,6 +1375,9 @@ def aggregate(
             "correct_build_stream_unjudged": sum(
                 1 for s in scores if s["flags"]["correct_build_stream_unjudged"]
             ),
+            "semantic": _pooled_semantic(scores),
+            "cost": _pooled_cost(scores),
+            **_provenance(runs, preflight),
         },
         "surface": dict(surface),
     }

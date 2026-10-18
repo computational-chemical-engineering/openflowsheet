@@ -707,7 +707,6 @@ def campaign(
         "preflight_sha256": registration.sha256_file(preflight_path),
     }
     sample = json.loads(sample_path.read_text(encoding="utf-8"))
-    coverage = json.loads(coverage_path.read_bytes())
     for order, case_id in enumerate(sample["run_order"], start=1):
         if (campaign_dir / f"{order:02d}-{case_id}").exists():
             continue
@@ -728,18 +727,85 @@ def campaign(
         problems = v17.recorded_checks(run_dir)
         if problems:
             raise HarnessError(f"{run_dir.name} ran outside the configuration: {problems}")
-    scores = [
-        json.loads((campaign_dir / f"{k:02d}-{c}" / w27_scorer.SCORES_FILE).read_bytes())
-        for k, c in enumerate(sample["run_order"], start=1)
+    write_campaign(
+        campaign_dir, address=operator.address if operator is not None else None, served=surface()
+    )
+    return campaign_dir
+
+
+def identifier_scan(campaign_dir: Path, address: str) -> dict[str, Any]:
+    """W27-R56 (G16; verdict F-4): occurrences of the operator address, case-insensitively, in
+    every file of every registered run directory and of every canary attempt, all of which
+    the record commits (nothing under `runs/` is ignored by git) — not only R6.6's
+    `SCANNED_FILES`. Only counts leave this function."""
+    pattern = re.compile(re.escape(address.encode("utf-8")), re.IGNORECASE)
+    sample = json.loads((campaign_dir / "sample.json").read_bytes())
+    runs = [campaign_dir / f"{k:02d}-{c}" for k, c in enumerate(sample["run_order"], start=1)]
+    canaries = [attempt.path for attempt in canary_attempts(campaign_dir)]
+    files = 0
+
+    def hits(directories: Sequence[Path]) -> int:
+        nonlocal files
+        total = 0
+        for directory in directories:
+            for path in sorted(p for p in directory.rglob("*") if p.is_file()):
+                files += 1
+                total += len(pattern.findall(path.read_bytes()))
+        return total
+
+    present = [d for d in runs if d.is_dir()]
+    return {
+        "runs": hits(present),
+        "canaries": hits(canaries),
+        "run_directories": len(present),
+        "canary_directories": len(canaries),
+        "files_scanned": files,
+    }
+
+
+def write_campaign(campaign_dir: Path, *, address: str | None, served: Mapping[str, Any]) -> Path:
+    """`campaign.json` (W27-R53…R56) from the campaign's records: every run's `scores.json`
+    and `run.json` in the registered run order, `coverage.json`, `preflight.json` and its
+    digest, and, given the operator address, the identifier scan. `served` is the MCP surface
+    (`surface()`). Without an address the identifier term is not established."""
+    sample = json.loads((campaign_dir / "sample.json").read_bytes())
+    coverage = json.loads((campaign_dir / "coverage.json").read_bytes())
+    directories = [
+        campaign_dir / f"{k:02d}-{c}" for k, c in enumerate(sample["run_order"], start=1)
     ]
-    aggregate = w27_scorer.aggregate(
+    scores = [json.loads((d / w27_scorer.SCORES_FILE).read_bytes()) for d in directories]
+    runs = [json.loads((d / w27_scorer.RUN_FILE).read_bytes()) for d in directories]
+    preflight_path = campaign_dir / PREFLIGHT_FILE
+    document = w27_scorer.aggregate(
         scores,
         coverage,
         registered_runs=len(sample["run_order"]),
-        surface=surface(),
+        surface=served,
+        runs=runs,
+        preflight=json.loads(preflight_path.read_bytes()) if preflight_path.is_file() else None,
+        preflight_sha256=registration.sha256_file(preflight_path)
+        if preflight_path.is_file()
+        else None,
+        identifier_scan=identifier_scan(campaign_dir, address) if address is not None else None,
     )
-    (campaign_dir / w27_scorer.CAMPAIGN_FILE).write_bytes(w27_scorer.dump(aggregate))
-    return campaign_dir
+    path = campaign_dir / w27_scorer.CAMPAIGN_FILE
+    path.write_bytes(w27_scorer.dump(document))
+    return path
+
+
+def reaggregate(campaign_dir: Path, *, address: str, served: Mapping[str, Any]) -> Path:
+    """`campaign.json` again from the campaign's unchanged records (`write_campaign`). Refused
+    when the campaign has no `campaign.json` yet (that is `campaign`'s to write) or when the
+    served MCP surface differs from the one it records: the surface is the campaign's."""
+    path = campaign_dir / w27_scorer.CAMPAIGN_FILE
+    if not path.is_file():
+        raise RefusalError(f"{path} does not exist: the campaign writes it, not a re-aggregation")
+    recorded = json.loads(path.read_bytes()).get("surface")
+    if recorded != dict(served):
+        raise RefusalError(
+            f"the served MCP surface differs from {path}'s: re-aggregate at the campaign's surface"
+        )
+    return write_campaign(campaign_dir, address=address, served=served)
 
 
 def surface() -> dict[str, Any]:
@@ -978,7 +1044,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     from benchmarks.m06.w27 import preflight  # noqa: PLC0415 (preflight imports this module)
 
     parser = argparse.ArgumentParser(
-        description="W27 WO-17: confirm, canaries, preflight, campaign, order, spend"
+        description="W27 WO-17: confirm, canaries, preflight, campaign, order, spend, aggregate"
     )
     parser.add_argument("--claude", default="claude", help="the claude binary (default: claude)")
     parser.add_argument("--runs-root", type=Path, default=RUNS_ROOT, help="default: RUNS_ROOT")
@@ -989,7 +1055,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     many = sub.add_parser("campaign", help="preflight.json, the registered runs, campaign.json")
     chain = sub.add_parser("order", help="the digest chain and the commit rule (M07.A50)")
     cost = sub.add_parser("spend", help="the recorded spend of the campaign (canaries included)")
-    for each in (record, probe, check, many, chain, cost):
+    again = sub.add_parser(
+        "aggregate", help="campaign.json again from the unchanged recorded runs (W27-R53…R56)"
+    )
+    for each in (record, probe, check, many, chain, cost, again):
         each.add_argument("--campaign", required=True)
     for each in (check, many):
         each.add_argument("--model", required=True, help="the pin (registration §23.5)")
@@ -1024,6 +1093,9 @@ def _command(
         verdict = order_check(directory)
         print(json.dumps(verdict, indent=1, sort_keys=True))
         return 0 if verdict["passed"] else 1
+    if arguments.command == "aggregate":
+        print(reaggregate(directory, address=v17.operator_address(), served=surface()))
+        return 0
     if arguments.command == "confirm":
         print(confirm(arguments.campaign, runs_root=runs_root))
         return 0

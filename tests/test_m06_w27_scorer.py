@@ -280,3 +280,127 @@ def test_campaign_aggregate(candidate_results: dict[str, Any]) -> None:
     assert document["outcomes"]["AGENT_FALSE_VERIFICATION"] == 3
     assert document["reported"]["agent_false_verification_runs"]["x"] == 3
     assert document["gated"]["system_false_verification"] == {"count": 0, "established": False}
+
+
+# =================================================================================================
+# W27-R53, R54 and R56 terms of `campaign.json` (verdict 83f825d §(e))
+# =================================================================================================
+
+
+def test_campaign_aggregate_reports_coverage_per_family_and_section_11_10(
+    candidate_results: dict[str, Any],
+) -> None:
+    scores = [candidate_results[s]["scores"] for s in CANDIDATE_STATES]
+    coverage = stubs.candidate_coverage()
+    document = scorer.aggregate(scores, coverage, registered_runs=6, surface={})
+    summary = coverage["summary"]
+    assert document["coverage"]["by_family"] == {
+        "all_450": summary["all_450"]["by_family"],
+        "full82": summary["full82"]["by_family"],
+    }
+    semantic = document["reported"]["semantic"]
+    parsed = [s["semantic"]["limitation_items"] for s in scores]
+    parsed = [c for c in parsed if c is not None]
+    assert semantic["limitation_items"]["runs"] == len(parsed)
+    for name in scorer.LIMITATION_ITEM_FIELDS:
+        assert semantic["limitation_items"][name] == sum(c[name] for c in parsed)
+    for name in ("semantic_error_rate", "api_rejection_rate", "draft_commit_rate"):
+        measures = [s["semantic"][name] for s in scores]
+        kept = [m for m in measures if m["numerator"] is not None and m["denominator"] is not None]
+        assert semantic[name]["numerator"] == sum(m["numerator"] for m in kept)
+        assert semantic[name]["denominator"] == sum(m["denominator"] for m in kept)
+    cost = document["reported"]["cost"]
+    assert cost["tool_calls"]["sum"] == sum(s["cost"]["tool_calls"] for s in scores)
+    assert cost["num_turns"]["runs"] == len(scores)
+    assert cost["total_cost_usd_basis"] == sorted(
+        {str(s["cost"]["total_cost_usd_basis"]) for s in scores}
+    )
+    # Without the run records, `preflight.json` and the scan, no term is assumed.
+    assert document["reported"]["model"] == {"pinned": None, "requested": [], "init": []}
+    gated = document["gated"]
+    assert gated["operator_identifier_hits"] == {"count": None, "established": False}
+    assert gated["preflight_passed_before_first_run"]["established"] is False
+
+
+def test_section_11_10_pools_rates_over_parseable_answers_only() -> None:
+    def run(items: dict[str, int] | None, rejected: int, calls: int) -> dict[str, Any]:
+        errors = items["contradicted"] + items["names_nothing"] if items else None
+        return {
+            "semantic": {
+                "limitation_items": items,
+                "semantic_error_rate": {
+                    "numerator": errors,
+                    "denominator": items["judged"] if items else None,
+                },
+                "api_rejection_rate": {"numerator": rejected, "denominator": calls},
+                "draft_commit_rate": {"numerator": 0, "denominator": 0},
+                "internal_errors": {"tool_results": 1, "jobs": None},
+            }
+        }
+
+    items = dict.fromkeys(scorer.LIMITATION_ITEM_FIELDS, 0)
+    a = {**items, "items": 4, "judged": 4, "matched": 3, "contradicted": 1}
+    b = {**items, "items": 3, "judged": 2, "matched": 0, "names_nothing": 2, "unjudged": 1}
+    pooled = scorer._pooled_semantic([run(a, 0, 2), run(None, 1, 3), run(b, 0, 1)])
+    assert pooled["limitation_items"]["runs"] == 2 and pooled["limitation_items"]["items"] == 7
+    assert pooled["semantic_error_rate"] == {"numerator": 3, "denominator": 6, "rate": 0.5}
+    assert pooled["api_rejection_rate"] == {"numerator": 1, "denominator": 6, "rate": 1 / 6}
+    assert pooled["draft_commit_rate"] == {"numerator": 0, "denominator": 0, "rate": None}
+    assert pooled["internal_errors"] == {"tool_results": 3, "jobs": 0}
+
+
+def test_model_and_version_as_pinned_requested_and_reported() -> None:
+    runs = [
+        {"model": "m", "claude_code_version": "9 (Claude Code)", "session": {"init": {}}},
+        {
+            "model": "m",
+            "claude_code_version": "9 (Claude Code)",
+            "session": {"init": {"model": "m", "claude_code_version": "9"}},
+        },
+    ]
+    provenance = scorer._provenance(runs, {"model": "m", "claude_code_version": "9"})
+    assert provenance["model"] == {"pinned": "m", "requested": ["m"], "init": ["m", None]}
+    assert provenance["claude_code_version"] == {
+        "pinned": "9",
+        "recorded": ["9 (Claude Code)"],
+        "init": ["9", None],
+    }
+
+
+@pytest.mark.parametrize(
+    ("preflight", "named", "established"),
+    [
+        ({"passed": True}, ["p", "p"], True),
+        # A run recorded before `preflight.json` (or after another one) does not name its digest.
+        ({"passed": True}, ["p", None], False),
+        ({"passed": True}, ["p", "q"], False),
+        ({"passed": False}, ["p", "p"], False),
+        (None, ["p", "p"], False),
+        ({"passed": True}, [], False),
+    ],
+)
+def test_r56_the_preflight_passed_before_the_first_run(
+    preflight: dict[str, Any] | None, named: list[str | None], established: bool
+) -> None:
+    runs = [{"preflight_sha256": digest} for digest in named]
+    term = scorer._preflight_before_first_run(
+        runs, preflight, "p" if preflight is not None else None
+    )
+    assert term["established"] is established
+    assert term["runs"] == len(named)
+
+
+def test_r56_operator_identifier_hits_are_counted_not_hidden() -> None:
+    scan = {
+        "runs": 1,
+        "canaries": 0,
+        "run_directories": 45,
+        "canary_directories": 3,
+        "files_scanned": 384,
+    }
+    term = scorer._identifier_hits(scan, 45)
+    assert term["count"] == 1 and term["runs"] == 1 and term["established"] is True
+    assert scorer._identifier_hits({**scan, "canaries": 2}, 45)["count"] == 3
+    # A scan that did not reach every registered run directory establishes nothing.
+    assert scorer._identifier_hits({**scan, "run_directories": 44}, 45)["established"] is False
+    assert scorer._identifier_hits(None, 45) == {"count": None, "established": False}

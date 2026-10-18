@@ -8,6 +8,116 @@
       "PROPERTY_ROUTE_UNAVAILABLE": 0,
       "UNIT_UNAVAILABLE": 367
     },
+    "by_family": {
+      "all_450": {
+        "dispatches": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 0,
+          "NOT_STEADY_STATE_SIMULATION": 7,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 4
+        },
+        "gtep": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 0,
+          "NOT_STEADY_STATE_SIMULATION": 21,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 0
+        },
+        "idaes": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 16,
+          "NOT_STEADY_STATE_SIMULATION": 7,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 165
+        },
+        "mvo": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 0,
+          "NOT_STEADY_STATE_SIMULATION": 18,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 0
+        },
+        "pareto": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 1,
+          "NOT_STEADY_STATE_SIMULATION": 1,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 2
+        },
+        "prommis": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 0,
+          "NOT_STEADY_STATE_SIMULATION": 2,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 23
+        },
+        "reaktoro": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 0,
+          "NOT_STEADY_STATE_SIMULATION": 0,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 6
+        },
+        "reflo": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 0,
+          "NOT_STEADY_STATE_SIMULATION": 1,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 18
+        },
+        "watertap": {
+          "ARTIFACT_INCOMPLETE": 1,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 0,
+          "NOT_STEADY_STATE_SIMULATION": 8,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 149
+        }
+      },
+      "full82": {
+        "dispatches": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 0,
+          "NOT_STEADY_STATE_SIMULATION": 0,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 1
+        },
+        "idaes": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 1,
+          "NOT_STEADY_STATE_SIMULATION": 0,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 19
+        },
+        "prommis": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 0,
+          "NOT_STEADY_STATE_SIMULATION": 0,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 20
+        },
+        "watertap": {
+          "ARTIFACT_INCOMPLETE": 0,
+          "CANDIDATE": 0,
+          "COMPONENT_UNAVAILABLE": 0,
+          "NOT_STEADY_STATE_SIMULATION": 8,
+          "PROPERTY_ROUTE_UNAVAILABLE": 0,
+          "UNIT_UNAVAILABLE": 33
+        }
+      }
+    },
     "cases_with_reason": {
       "all_450": {
         "ARTIFACT_INCOMPLETE": 1,
@@ -41,6 +151,22 @@
     "critical_effects": {
       "count": 0,
       "established": true
+    },
+    "operator_identifier_hits": {
+      "canaries": 0,
+      "canary_directories": 3,
+      "count": 0,
+      "established": true,
+      "files_scanned": 384,
+      "run_directories": 45,
+      "runs": 0
+    },
+    "preflight_passed_before_first_run": {
+      "established": true,
+      "passed": true,
+      "preflight_sha256": "56dc325ea04617a29f59b17c14f7d94693e916e803fa8a40c258086086c3d02f",
+      "runs": 45,
+      "runs_naming_the_preflight": 45
     },
     "system_false_verification": {
       "count": 0,
@@ -171,6 +297,15 @@
       "upper_95": 0.064404,
       "x": 0
     },
+    "claude_code_version": {
+      "init": [
+        "2.1.302"
+      ],
+      "pinned": "2.1.302",
+      "recorded": [
+        "2.1.302 (Claude Code)"
+      ]
+    },
     "correct_build_rate": "no candidate runs",
     "correct_build_stream_unjudged": 0,
     "correct_limitation_rate": {
@@ -179,8 +314,114 @@
       "upper_95": 0.998861,
       "x": 44
     },
+    "cost": {
+      "cache_creation_input_tokens": {
+        "median": 12141.0,
+        "runs": 45,
+        "sum": 621371
+      },
+      "cache_read_input_tokens": {
+        "median": 31698.0,
+        "runs": 45,
+        "sum": 1680942
+      },
+      "duplicate_experiments_by_content": {
+        "median": 0.0,
+        "runs": 45,
+        "sum": 0
+      },
+      "duplicate_experiments_by_request": {
+        "median": 0.0,
+        "runs": 45,
+        "sum": 0
+      },
+      "duration_api_ms": {
+        "median": 10493.0,
+        "runs": 45,
+        "sum": 468335
+      },
+      "duration_ms": {
+        "median": 10573.0,
+        "runs": 45,
+        "sum": 471929
+      },
+      "input_tokens": {
+        "median": 4.0,
+        "runs": 45,
+        "sum": 194
+      },
+      "job_wall_s": {
+        "median": 0.0,
+        "runs": 45,
+        "sum": 0.0
+      },
+      "jobs_submitted": {},
+      "num_turns": {
+        "median": 3.0,
+        "runs": 45,
+        "sum": 140
+      },
+      "output_tokens": {
+        "median": 1120.0,
+        "runs": 45,
+        "sum": 49224
+      },
+      "tool_calls": {
+        "median": 2.0,
+        "runs": 45,
+        "sum": 95
+      },
+      "total_cost_usd": {
+        "median": 0.06340660000000001,
+        "runs": 45,
+        "sum": 3.1462062
+      },
+      "total_cost_usd_basis": [
+        "subscription_estimate"
+      ]
+    },
     "infrastructure_failures": {},
-    "map_defect_candidates": 0
+    "map_defect_candidates": 0,
+    "model": {
+      "init": [
+        "claude-sonnet-5-5"
+      ],
+      "pinned": "claude-sonnet-5-5",
+      "requested": [
+        "claude-sonnet-5-5"
+      ]
+    },
+    "semantic": {
+      "api_rejection_rate": {
+        "denominator": 95,
+        "numerator": 0,
+        "rate": 0.0
+      },
+      "draft_commit_rate": {
+        "denominator": 0,
+        "numerator": 0,
+        "rate": null
+      },
+      "internal_errors": {
+        "jobs": 0,
+        "tool_results": 0
+      },
+      "limitation_items": {
+        "contradicted": 11,
+        "items": 216,
+        "judged": 214,
+        "malformed": 0,
+        "matched": 193,
+        "names_nothing": 10,
+        "runs": 45,
+        "unjudged": 2
+      },
+      "semantic_error_rate": {
+        "denominator": 214,
+        "numerator": 21,
+        "rate": 0.09813084112149532
+      }
+    }
   },
   "runs_recorded": 45,
   "runs_registered": 45,
