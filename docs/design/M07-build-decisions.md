@@ -336,3 +336,11 @@ C_W move, the old digests go into this log (runbook (c)).
   attempt an infrastructure failure, so no canary could pass, contradicting `p6_states`/`p7_states` (attempt 01 null,
   passed). Alternative: a scorer exemption for an unpinned run (changes a scoring rule; §23 says none changes).
   Reversible by: reverting the `_unpinned` hunk of its commit. For the design lane's ruling round.
+- Done (`1ed4a96`, `b71d86c`, `8a3b17e`): U14 text verbatim and its test (W27-A70…A73); `harness confirm` and P5
+  (A74); `canaries` numbering, stop at the first failure, the cap, no `--model`, the pin from the directory, P6/P7
+  (A76, A77: 11 and 6 registered states); `preflight.json` in `campaign`, P8, the new `run.json` members (A75);
+  `order_check` and the `order` command (A78); the runbook in the new order. Stub dry run at tree `ac59800`
+  (= `8a3b17e`; run from a clean temporary commit of the same tree): G14, P1–P8, `preflight.json` (registered
+  members, passed), 45 stub runs + `campaign.json`, `order_check` (0 problems), G15 20/20, A23 (59 records) all PASS.
+- Note for M07.A51 (other branch): A23's `RUN_RECORD_MEMBERS` requires a non-empty `model`, which an unpinned canary
+  attempt records as null by §23.3; A23 is applied to campaign runs only (the dry run does so).
