@@ -63,6 +63,7 @@ if the verdict document is malformed or `C` cannot be found.
 from __future__ import annotations
 
 import argparse
+import ast
 import datetime
 import json
 import re
@@ -101,6 +102,8 @@ MANIFEST_STATUSES: Final = ("tested", "reviewed")
 LEDGER: Final = "docs/requirements.yaml"
 ENVELOPE: Final = "benchmarks/t08/support_envelope.yaml"
 ADR_DIRECTORY: Final = "docs/adr"
+#: The surface chain's links (R-457): `LINKS` there, each a `Link(name, register, …)`.
+LINKS_MODULE: Final = "scripts/m07a_rc.py"
 #: T08.A03's verdict table (Amendment R3 §R3.3), reused by §6.3: its headers, in order.
 HEADERS: Final = ("Gate", "Verdict", "Failing clauses", "Travelling limitations", "Basis")
 NONE: Final = "—"
@@ -152,6 +155,10 @@ class GateSet:
     frank_items: tuple[str, ...]
     #: The gates a re-judgement may list, each with the answer it waits on (§19.2 item 2).
     rejudge_waits: tuple[tuple[str, str], ...]
+    #: The Frank item whose row in the policy ADR must name the register entry of every link of
+    #: the surface chain (`LINKS_MODULE`, read at the candidate; R-457, M07 obligation O3), or
+    #: `None` when the set reads no links (the alpha, whose record is its own).
+    links_item: str | None = None
 
     @property
     def gates(self) -> tuple[str, ...]:
@@ -238,6 +245,7 @@ GATE_SETS: Final = (
             ("W21", "M02 N1"),
             ("W24", "M03 N1"),
         ),
+        links_item="V17 carry",
     ),
 )
 
@@ -694,6 +702,72 @@ def status_line(text: str) -> str | None:
     return next((line for line in text.splitlines() if line.startswith("**Status:**")), None)
 
 
+def _register(link: ast.expr) -> str | None:
+    """The register entry of one `Link(name, register, …)` call, or `None` if it is not one."""
+    if (
+        isinstance(link, ast.Call)
+        and isinstance(link.func, ast.Name)
+        and link.func.id == "Link"
+        and len(link.args) >= 2
+        and isinstance(link.args[1], ast.Constant)
+        and isinstance(link.args[1].value, str)
+    ):
+        return link.args[1].value
+    return None
+
+
+def link_registers(text: str) -> tuple[str, ...]:
+    """The register entry of each link in `LINKS_MODULE`'s `LINKS`, in order: the second
+    argument of every `Link(…)` in the module-level assignment to `LINKS`. A module without
+    such a non-empty tuple is a `ValueError`."""
+    for node in ast.parse(text).body:
+        if isinstance(node, ast.Assign) and len(node.targets) == 1:
+            target, value = node.targets[0], node.value
+        elif isinstance(node, ast.AnnAssign):
+            target, value = node.target, node.value
+        else:
+            continue
+        if isinstance(target, ast.Name) and target.id == "LINKS":
+            registers = (
+                [_register(link) for link in value.elts] if isinstance(value, ast.Tuple) else []
+            )
+            if registers and None not in registers:
+                return tuple(register for register in registers if register is not None)
+            break
+    raise ValueError(f"{LINKS_MODULE} has no `LINKS = (Link(name, register, …), …)`")
+
+
+def links_problems(
+    policy_text: str | None, module_text: str | None, gate_set: GateSet
+) -> list[str]:
+    """M07 obligation O3 (R-457): the policy ADR's row for `gate_set.links_item` names the
+    register entry of every link in `LINKS_MODULE` at the candidate, each as a whole id. A
+    missing ADR, decisions table or row is `policy`'s refusal and is not repeated here."""
+    item = gate_set.links_item
+    if item is None:
+        return []
+    if module_text is None:
+        return [f"{LINKS_MODULE} does not exist at the candidate: {item}'s links cannot be read"]
+    try:
+        registers = link_registers(module_text)
+    except (SyntaxError, ValueError) as error:
+        return [f"{item}: {error}"]
+    rows = [
+        " | ".join(cells)
+        for header, table in _tables(policy_text or "")
+        if "frank's answer" in [_bare(cell).lower() for cell in header]
+        for cells in table
+        if cells and _bare(cells[0]) == item
+    ]
+    if len(rows) != 1:
+        return []
+    return [
+        f"{item} does not name {register}"
+        for register in registers
+        if not re.search(rf"(?<![\w-]){re.escape(register)}(?![\w-])", rows[0])
+    ]
+
+
 def adr_problems(files: Mapping[str, str], gate_set: GateSet) -> list[str]:
     """§7.2 item 7: every required ADR exists once and its status line starts `Status: Accepted`
     (Table T5)."""
@@ -882,7 +956,11 @@ def build(
     )
     envelope = envelope_problems(envelope_text, gate_set, version)
     adrs = adr_problems(files, gate_set)
-    for group in (record, manifests, envelope, adrs, found.problems, found.frank):
+    frank = [
+        *found.frank,
+        *links_problems(files.get(gate_set.policy_adr), files.get(LINKS_MODULE), gate_set),
+    ]
+    for group in (record, manifests, envelope, adrs, found.problems, frank):
         reasons.extend(group)
     return {
         "gate_set": gate_set.name,
@@ -914,7 +992,7 @@ def build(
         "manifest_problems": manifests,
         "envelope_problems": envelope,
         "adr_problems": adrs,
-        "frank_problems": found.problems + found.frank,
+        "frank_problems": found.problems + frank,
         "tag_may_be_proposed": not reasons,
         "reasons": reasons,
     }
@@ -1050,6 +1128,7 @@ def files_at(candidate: str, rc: str, gate_set: GateSet) -> dict[str, str]:
         gate_set.policy_adr,
         gate_set.verdict_document,
         gate_set.rc_record,
+        *([LINKS_MODULE] if gate_set.links_item is not None else []),
         f"evidence/{gate_set.evidence_package}/{rc}/manifest.json",
         *(
             path

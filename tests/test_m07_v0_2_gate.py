@@ -5,8 +5,10 @@ The registry gains `v0.2-gate-v1` beside the alpha's entry: it covers 0.2.0, 0.2
 `docs/reviews/V02-verdicts.md`, `docs/v02-rc-record.md` (steps 1–17), M07's manifest at `C` and the
 six packages' at ancestors of `C`. The decision items are the alpha's §7.3 items 1–12 with this
 entry's values (§7.2); each has its own refusing state here on an otherwise passing fixture, so a
-dropped rule fails its own test. The alpha's entry is unchanged (A31): its own tests are
-`tests/test_m07a_v0_2_gate.py`.
+dropped rule fails its own test. With item 11, ADR 0042's `V17 carry` row must name the register
+entry of every link of the surface chain (`scripts/m07a_rc.py`'s `LINKS` at the candidate; R-457,
+obligation O3 of `docs/design/V02-alpha-main-rulings.md` §5). The alpha's entry is unchanged
+(A31): its own tests are `tests/test_m07a_v0_2_gate.py`.
 
 The inputs are of two kinds, and each says which it is:
 
@@ -177,6 +179,7 @@ PATHS = {
     "adr_0042": ADR_0042,
     "envelope": ENVELOPE,
     "rc_record": RC_RECORD,
+    "links": v0_2_gate.LINKS_MODULE,
     "m07": M07_MANIFEST,
     **{name.lower(): f"evidence/{name}/{at}/manifest.json" for name, at in PACKAGE_AT.items()},
     **{
@@ -185,6 +188,16 @@ PATHS = {
         if number != "0042"
     },
 }
+
+
+#: A constructed surface chain: `LINKS` as `scripts/m07a_rc.py` writes it.
+LINKS_TEXT = f"""# {MARK}
+LINKS: Final = (
+    Link("c_1", "R-192", strip_a3_2, "6c"),
+    Link("c_2", "R-234", strip_m02, "38"),
+    Link("c_3", "R-295", strip_m04, "45"),
+)
+"""
 
 
 def files(**overrides: str | None) -> dict[str, str]:
@@ -196,6 +209,7 @@ def files(**overrides: str | None) -> dict[str, str]:
         ADR_0042: adr_0042(),
         ENVELOPE: envelope(),
         RC_RECORD: rc_record(),
+        v0_2_gate.LINKS_MODULE: LINKS_TEXT,
         M07_MANIFEST: manifest("M07", RC),
         **{
             f"evidence/{name}/{at}/manifest.json": manifest(name, at)
@@ -521,6 +535,54 @@ def test_a36_markdown_has_17_rows_none_unclaimed() -> None:
     assert len(table) == 2 + 17
     assert [row.split(" | ")[0].lstrip("| ") for row in table[2:]] == list(CLAIMED)
     assert not any("not claimed" in row for row in table)
+
+
+# -- obligation O3 (R-457): the V17 carry names every link of the surface chain ---------------
+
+
+def test_o3_the_real_links_are_read_as_the_module_defines_them() -> None:
+    import m07a_rc  # noqa: PLC0415
+
+    text = (REPO_ROOT / v0_2_gate.LINKS_MODULE).read_text(encoding="utf-8")
+    assert v0_2_gate.link_registers(text) == tuple(link.register for link in m07a_rc.LINKS)
+    assert v0_2_gate.link_registers(LINKS_TEXT) == ("R-192", "R-234", "R-295")
+    assert V02.links_item == "V17 carry" and ALPHA.links_item is None
+
+
+@pytest.mark.parametrize(
+    "default",
+    [
+        "carry v0.1's paid evidence across R-192 and R-234",
+        "carry across R-192, R-234 and R-2950",
+        "carry across R-192, R-234 and AR-295",
+    ],
+)
+def test_o3_a_v17_carry_that_does_not_name_a_link_refuses(default: str) -> None:
+    result = report(files(adr_0042=adr_0042(v17_default=default)))
+    assert result["reasons"] == ["V17 carry does not name R-295"]
+    assert result["frank_problems"] == ["V17 carry does not name R-295"]
+
+
+def test_o3_the_register_may_be_named_in_any_cell_of_the_row() -> None:
+    answers = {"V17 carry": f"accepted, {JUDGED}; carries `R-192`, `R-234`, `R-295`"}
+    result = report(files(adr_0042=adr_0042(v17_default="carry", answers=answers)))
+    assert result["reasons"] == []
+
+
+def test_o3_unreadable_links_refuse() -> None:
+    missing = report(files(links=None))
+    assert missing["reasons"] == [
+        "scripts/m07a_rc.py does not exist at the candidate: V17 carry's links cannot be read"
+    ]
+    unlinked = report(files(links=f"# {MARK}\nLINKS = ()\n"))
+    assert unlinked["reasons"] == [
+        "V17 carry: scripts/m07a_rc.py has no `LINKS = (Link(name, register, …), …)`"
+    ]
+
+
+def test_o3_no_v17_carry_row_is_policy_s_refusal_alone() -> None:
+    result = report(files(adr_0042=adr_0042(answers={"V17 carry": None})))
+    assert result["reasons"] == [f"Frank's answer to V17 carry: no row 'V17 carry' in {ADR_0042}"]
 
 
 # -- end to end: `main` on a scratch repository -------------------------------------------------
