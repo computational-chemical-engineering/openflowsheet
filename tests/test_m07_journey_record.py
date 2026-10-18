@@ -87,6 +87,54 @@ def test_a10_a11_check_accepts_the_record_and_render_gives_its_report(
     assert m07.render(record) == report
 
 
+# -- A10 [A3.5]: a committed record is checked under the registration it records (R-465) -------
+
+#: The record at J′ (WO-4c), committed before §20 A3.7 changed the registration's `gate` member.
+J_PRIME = REPO_ROOT / "benchmarks" / "m07" / "journey" / "974c395fbb2ab60fd69fc8d53e4f33e7207e9f3e"
+NOT_THE_REGISTRATIONS = "registration_sha256 is not the registration's"
+
+
+@pytest.fixture(scope="module")
+def j_prime() -> tuple[dict[str, Any], str]:
+    record = json.loads((J_PRIME / m07.RECORD_NAME).read_text(encoding="utf-8"))
+    return record, (J_PRIME / m07.REPORT_NAME).read_text(encoding="utf-8")
+
+
+def test_a10_s1_a_gate_only_difference_is_accepted_by_path_ii(
+    j_prime: tuple[dict[str, Any], str],
+) -> None:
+    record, report = j_prime
+    assert record["registration_sha256"] != m07.sha256_file(m07.REGISTRATION_PATH)
+    assert m07.check(record, report) == []
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [{"registration_sha256": "0" * 64}, {"commit": "e" * 40}],
+    ids=["S2-wrong-digest", "S3-unknown-commit"],
+)
+def test_a10_s2_s3_a_wrong_digest_or_an_unknown_commit_is_refused(
+    j_prime: tuple[dict[str, Any], str], mutation: dict[str, str]
+) -> None:
+    record, report = j_prime
+    assert NOT_THE_REGISTRATIONS in m07.check(record | mutation, report)
+
+
+def test_a10_s4_a_difference_outside_gate_is_refused(
+    j_prime: tuple[dict[str, Any], str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    record, report = j_prime
+    tree = json.loads(m07.REGISTRATION_PATH.read_text(encoding="utf-8"))
+    tree["journey"] = tree["journey"] | {"rung_flatness_tol_rel": 0.5}
+    monkeypatch.setattr(m07, "_tree_registration", lambda: json.dumps(tree).encode("utf-8"))
+    problems = m07.check(record, report)
+    assert (
+        "the registration at 974c395fbb2ab60fd69fc8d53e4f33e7207e9f3e differs from this tree's "
+        "in journey"
+    ) in problems
+    assert NOT_THE_REGISTRATIONS not in problems
+
+
 # -- A20: R1 real ----------------------------------------------------------------------------------
 
 

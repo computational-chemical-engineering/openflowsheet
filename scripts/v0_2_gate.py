@@ -157,7 +157,8 @@ class GateSet:
     rejudge_waits: tuple[tuple[str, str], ...]
     #: The Frank item whose row in the policy ADR must name the register entry of every link of
     #: the surface chain (`LINKS_MODULE`, read at the candidate; R-457, M07 obligation O3), or
-    #: `None` when the set reads no links (the alpha, whose record is its own).
+    #: `None` when the set reads no links (the alpha, whose record is its own). Registered as
+    #: `gate.gate_sets.<set>.links_item` (M07 spec §20 A3.2, R-462; GC-SET-3).
     links_item: str | None = None
 
     @property

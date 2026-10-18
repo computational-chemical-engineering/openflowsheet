@@ -1692,6 +1692,51 @@ def render(record: Mapping[str, Any]) -> str:
 # == check (spec §5 (h); A10, A12) =================================================================
 
 
+_ABSENT: Final = object()
+
+
+def _tree_registration() -> bytes:
+    """The working tree's registration, as bytes (the reader A10's state S4 replaces)."""
+    return REGISTRATION_PATH.read_bytes()
+
+
+def _registration_at(commit: str) -> bytes | None:
+    """`benchmarks/m07/registration.json` at `commit`; None for an unknown commit or a missing
+    file."""
+    if not re.fullmatch(r"[0-9a-f]{40}", str(commit)):
+        return None
+    shown = subprocess.run(
+        ["git", "show", f"{commit}:{REGISTRATION_PATH.relative_to(ROOT).as_posix()}"],
+        cwd=ROOT,
+        capture_output=True,
+    )
+    return shown.stdout if shown.returncode == 0 else None
+
+
+def _check_registration(record: Mapping[str, Any]) -> list[str]:
+    """The registration a record names (spec §20 A3.5, R-465): accepted when its digest is the
+    working tree's registration's (i), or the registration at the record's commit's, which then
+    parses equal to the tree's once the top-level member `gate` is removed from both (ii). `gate`
+    is the one member the journey does not read; any other difference refuses."""
+    tree = _tree_registration()
+    digest = record["registration_sha256"]
+    if digest == hashlib.sha256(tree).hexdigest():
+        return []
+    at_commit = _registration_at(record["commit"])
+    if at_commit is None or digest != hashlib.sha256(at_commit).hexdigest():
+        return ["registration_sha256 is not the registration's"]
+    ours, theirs = json.loads(tree), json.loads(at_commit)
+    differs = sorted(
+        name
+        for name in set(ours) | set(theirs)
+        if name != "gate" and ours.get(name, _ABSENT) != theirs.get(name, _ABSENT)
+    )
+    if differs:
+        members = ", ".join(differs)
+        return [f"the registration at {record['commit']} differs from this tree's in {members}"]
+    return []
+
+
 def check(record: Mapping[str, Any], report: str | None) -> list[str]:
     """Every problem with a journey record and its report; empty when both are accepted.
 
@@ -1706,8 +1751,7 @@ def check(record: Mapping[str, Any], report: str | None) -> list[str]:
         return [f"record lacks {missing}"]
     if record["schema"] != SCHEMA:
         problems.append(f"schema {record['schema']!r} is not {SCHEMA!r}")
-    if record["registration_sha256"] != sha256_file(REGISTRATION_PATH):
-        problems.append("registration_sha256 is not the registration's")
+    problems.extend(_check_registration(record))
     rungs = record["rungs"]
     if sorted(rungs) != sorted(RUNGS):
         return [*problems, f"rungs {sorted(rungs)} are not {list(RUNGS)}"]

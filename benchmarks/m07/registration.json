@@ -784,6 +784,7 @@
           "V17 carry",
           "M02 N1"
         ],
+        "links_item": null,
         "not_claimed": [
           "W23",
           "W24",
@@ -867,6 +868,7 @@
           "M02 N1",
           "M03 N1"
         ],
+        "links_item": "V17 carry",
         "not_claimed": [],
         "packages": [
           "M01",
@@ -1010,7 +1012,7 @@
       {
         "assertion": "M07.A61",
         "step": 15,
-        "what": "W25: the journey carried to C by identity (spec §4.6) or re-run at C; check and replay at C"
+        "what": "W25: the journey run at the cut commit K and carried from K to C by identity (spec §4.6, §20 A3.4); check and replay at C"
       },
       {
         "assertion": "M07.A60",
@@ -1018,7 +1020,7 @@
         "what": "W26: M06 design note G1-G15 at C; the browser test on CI x86-64"
       },
       {
-        "assertion": "M07.A53",
+        "assertion": "M07.A62",
         "step": 17,
         "what": "W27: coverage at C; the campaign's carry from C_W to C (spec §9); campaign.json recomputed"
       },

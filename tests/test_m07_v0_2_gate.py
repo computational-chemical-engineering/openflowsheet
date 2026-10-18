@@ -21,6 +21,7 @@ The inputs are of two kinds, and each says which it is:
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 import subprocess
@@ -296,6 +297,41 @@ def test_a31_the_alpha_entry_reads_the_alpha_s_grammar() -> None:
     assert ALPHA.adr == "ADR 0028" and V02.adr == "ADR 0042"
 
 
+#: The released alpha's tag commit (v0.2.0a1) and the three functions of its gate test that
+#: `039cbd8` edited, the only edits M07 spec §20 A3.1 (R-461) admits.
+ALPHA_TAG = "423ae9c54d903f9dcf0ea90fe9639222c1acbda4"
+ALPHA_TESTS = "tests/test_m07a_v0_2_gate.py"
+ALPHA_TESTS_EDITED = (
+    "test_the_registry_is_the_specification_s",
+    "test_a01_coverage_is_table_t1",
+    "test_a12_main_on_an_uncovered_version",
+)
+
+
+def _top_level(source: str) -> list[str]:
+    """Each top-level node of a module as its `ast.dump`, an admitted edit as its name only."""
+    return [
+        f"edited {node.name}"
+        if isinstance(node, ast.FunctionDef) and node.name in ALPHA_TESTS_EDITED
+        else ast.dump(node)
+        for node in ast.parse(source).body
+    ]
+
+
+def test_a31_b_the_alpha_s_tests_are_the_tagged_ones_but_the_three_edited() -> None:
+    tagged = subprocess.run(
+        ["git", "show", f"{ALPHA_TAG}:{ALPHA_TESTS}"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    now = (REPO_ROOT / ALPHA_TESTS).read_text(encoding="utf-8")
+    for edited in ALPHA_TESTS_EDITED:
+        assert f"edited {edited}" in _top_level(tagged)
+    assert _top_level(now) == _top_level(tagged)
+
+
 def _fields(entry: v0_2_gate.GateSet) -> dict[str, Any]:
     return {
         "claimed": list(entry.claimed),
@@ -304,6 +340,7 @@ def _fields(entry: v0_2_gate.GateSet) -> dict[str, Any]:
         "envelope_id": entry.envelope_id,
         "evidence_package": entry.evidence_package,
         "frank_items": list(entry.frank_items),
+        "links_item": entry.links_item,
         "not_claimed": list(entry.not_claimed),
         "packages": list(entry.packages),
         "policy_adr": entry.policy_adr,

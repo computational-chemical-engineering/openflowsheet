@@ -301,3 +301,23 @@ non-acceptance answer under v0.2-gate-v1 still says "amend the alpha specificati
 say "§8.2 step" (the alpha's numbering); changing them needs a field. (F4) A dry v0.2-gate-v1 run at HEAD as if 0.2.0
 lists 35 reasons: no verdicts/RC record/M07 manifest, W23–W27 without ledger verdicts, the dev envelope, ADRs 0031,
 0032, 0038, 0039, 0041, 0042 Proposed, and F2.
+
+## WO-3b — spec Amendment 3 applied (R-461…R-466), 2026-10-18
+
+J44 [ruled, R-462/R-465] §20 A3.7 step 1. The generator delta applied verbatim (`git apply` of the spec's block, clean
+against `958b983`); regenerated `benchmarks/m07/registration.json` sha256
+`85e56dd5792e2ead3de3d8eae5b2bfff45bd61f5e32a9d5ec6dd61b9d282506b` (= the spec's), `--check` PASS; the registration
+differs from J′'s in `gate` only (`links_item` ×2, RC step 15's text, step 17 → M07.A62). `check`
+(`scripts/m07_journey.py` `_check_registration`) implements A3.5's two paths and two texts; `git show
+<commit>:benchmarks/m07/registration.json` is read as bytes, and a `commit` that is not 40 lower-case hex digits is an
+unknown commit (fails closed without calling git). The tree's registration is read through `_tree_registration()`, the
+reader S4 monkeypatches. A32's `_fields` compares `links_item`. A10's states S1–S4 are four tests on the committed J′
+record (`tests/test_m07_journey_record.py`); mutations measured: path (ii) removed → S1, S4 and the J′ `check` fail;
+`journey` added to the ignored members → S4 fails. CI needs full history for path (ii): every pytest job checks out with
+`fetch-depth: 0`.
+
+J45 [ruled, R-461] A31 (b): `test_a31_b_the_alpha_s_tests_are_the_tagged_ones_but_the_three_edited` compares each
+top-level node of `tests/test_m07a_v0_2_gate.py` (`ast.dump`, no positions) with `git show 423ae9c54d…:…`, the three
+functions of F-a replaced by their names, so an added, removed, reordered or edited node outside them fails (mutation:
+one appended assignment → fails). It lives in `tests/test_m07_v0_2_gate.py`: placed in the alpha's module it would
+itself be an added node.

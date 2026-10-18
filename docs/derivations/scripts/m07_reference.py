@@ -357,6 +357,7 @@ GATE_SETS: Final = {
         "required_adrs": ["0022", "0026", "0027", "0028", "0033", "0034", "0035"],
         "frank_items": ["N3", "V17 carry", "M02 N1"],
         "rejudge_waits": [["V13", "V17 carry"], ["V17", "V17 carry"], ["W21", "M02 N1"]],
+        "links_item": None,  # spec §20 A3.2 (R-462): the alpha reads no link list
     },
     "v0.2-gate-v1": {
         "covers": r"0\.2\.0(?:(?:b|rc)[1-9][0-9]*)?",
@@ -395,6 +396,7 @@ GATE_SETS: Final = {
             ["W21", "M02 N1"],
             ["W24", "M03 N1"],
         ],
+        "links_item": "V17 carry",  # spec §20 A3.2 (R-462; R-457 obligation O3)
     },
 }
 # Table T-V (spec §8.2): the expectation is written by hand; GC-VER-1 compares it with the patterns.
@@ -454,8 +456,8 @@ RC_STEPS: Final = tuple(
         ),
         (
             15,
-            "W25: the journey carried to C by identity (spec §4.6) or re-run at C; check and "
-            "replay at C",
+            "W25: the journey run at the cut commit K and carried from K to C by identity (spec "
+            "§4.6, §20 A3.4); check and replay at C",
             "M07.A61",
         ),
         (16, "W26: M06 design note G1-G15 at C; the browser test on CI x86-64", "M07.A60"),
@@ -463,7 +465,7 @@ RC_STEPS: Final = tuple(
             17,
             "W27: coverage at C; the campaign's carry from C_W to C (spec §9); campaign.json "
             "recomputed",
-            "M07.A53",
+            "M07.A62",
         ),
         (18, "scripts/v0_2_gate.py --rc C (not required in the record)", "M07.A36"),
     ]
@@ -594,6 +596,16 @@ def _local_import_closure(start: str) -> list[str]:
                     todo.append(f"{directory}/{name}.py")
                     break
     return sorted(seen)
+
+
+def _spec_rc_steps() -> tuple[dict[int, str], bool]:
+    """Spec §8's step table (GC-RC-2): step -> assertion for rows 13-18, and whether the 1-12 row
+    names M07a.A30-A41."""
+    text = SPEC.read_text(encoding="utf-8")
+    section = text.split("\n## 8. ", 1)[1].split("\n## 9. ", 1)[0]
+    rows = re.findall(r"^\| (1[3-8]) \| .+ \| (M07\.A\d{2}) \|$", section, flags=re.M)
+    first = re.search(r"^\| 1–12 \| .+ \| M07a\.A30–A41 at C \|$", section, flags=re.M)
+    return {int(step): assertion for step, assertion in rows}, first is not None
 
 
 def _spec_ids() -> list[str]:
@@ -868,6 +880,13 @@ def build() -> dict[str, Any]:
         "GC-SET-2",
         "a re-judgement waits on a gate not claimed or an answer not among the Frank items",
     )
+    claim(
+        GATE_SETS["v0.2-alpha-gate-v1"]["links_item"] is None
+        and GATE_SETS["v0.2-gate-v1"]["links_item"] == "V17 carry"
+        and all(s["links_item"] in (None, *s["frank_items"]) for s in GATE_SETS.values()),
+        "GC-SET-3",
+        "links_item: none for the alpha, a Frank item of the set otherwise (R-462)",
+    )
     g = GATE_SETS["v0.2-gate-v1"]
     claim(
         tuple(g["claimed"]) == GATES17 and not g["not_claimed"],
@@ -900,6 +919,15 @@ def build() -> dict[str, Any]:
         and g["rc_last_step"] == 18,
         "GC-RC-1",
         "RC steps dense; 1-17 required",
+    )
+    spec_steps, spec_first = _spec_rc_steps()
+    claim(
+        spec_steps == {s: x for s, _, x in RC_STEPS if s >= 13}
+        and spec_first
+        and [x for s, _, x in RC_STEPS if s <= 12] == [f"M07a.A{29 + k}" for k in range(1, 13)]
+        and all(x in CATALOGUE for s, _, x in RC_STEPS if s >= 13),
+        "GC-RC-2",
+        f"RC_STEPS' assertions are not spec §8's or not in the catalogue: {spec_steps}",
     )
     claim(
         len(set(NOT_ESTABLISHED)) == len(NOT_ESTABLISHED) == 13
