@@ -92,6 +92,8 @@ F5 education mode deferred.
 
 **Queued for the 0.2.0 cut (Frank, 2026-10-18):** transient-readiness re-check (ADR 0008 Amendment 2), `architect`, brief
 `docs/briefs/ADR-0008-A2-readiness-recheck.md`; after M07 merges into main.
+Also queued (Frank, 2026-10-18): OpenIDAES-450 development/held-out split registration, `specifier`, brief
+`docs/briefs/OpenIDAES-split-registration.md`; before any OpenIDAES-targeted scope.
 
 **2026-10-15: burst over; back to ≤ 2 agents (Frank).** Alpha WO-10 done (`wp/V02-alpha-gate` `4d591c7`, gate 8580): RC steps 1–9, 11, 12 PASS at `C_α`; step 10 FAIL (F1: 5 coupled-route
 certificates qualify 4 extra ids — EXT-COUPLING:T/xi, derivative_witness on/off → V18 (b) FAIL by Q5 default); M07a manifest `implemented`

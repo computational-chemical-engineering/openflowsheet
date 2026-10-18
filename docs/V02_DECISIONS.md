@@ -1160,3 +1160,6 @@ Grep, don't read whole. Newest at the bottom.
 - 2026-10-18 Frank: run a transient-readiness re-check (ADR 0008 Amendment 2) at the 0.2.0 cut, covering the v0.2
   additions (external models, surrogates, C1 boundary, M03/M05 adapters, web shell). Brief
   `docs/briefs/ADR-0008-A2-readiness-recheck.md`; readiness tests 44/44 on main `4edcb5a`.
+- 2026-10-18 Frank: register a seeded development/held-out split of OpenIDAES-450 at the 0.2.0 cut, before any
+  OpenIDAES-targeted scope; held-out scored only at release gates; W27-exposed cases count as development. v0.2 W27
+  unchanged. Brief `docs/briefs/OpenIDAES-split-registration.md`.
