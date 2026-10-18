@@ -444,3 +444,36 @@ Authority: verdict `docs/reviews/W27-verdict-83f825d.md` §(e) and F-4; registra
   Frank rows already carry their defaults, `V17 carry` names R-192, R-234, R-295; every answer stays `pending`.
 - `examples/README.md`: pointer to the journey report `journey.md` (the report's directory is not fixed by the spec; named
   by file, not path). Manifest (A43) not in scope.
+
+## WO-8a — the cut commit K: stopped before K for two rulings (2026-10-18; no model call, nothing spent)
+
+J48 [coverage] K's content, drafted on the local branch `wp/M07-K-draft` (not pushed; `853e7e3` = the version set,
+`c38e1ba` = the re-take): `0.2.0` in R-460's file list (`pyproject.toml`, `__init__.py`, the two `project_summary`
+fixtures, `test_m06_w27_coverage.py`); envelope pinned `v0.2-envelope-1` / `0.2.0` with `ENVELOPE_ID`, support matrix
+re-emitted (`--check` 0 problems); W27 coverage re-taken (G14 PASS; rows, summary and `list_models` f070fbe0… equal to
+C_W's `runs/w27-m07-83f825d/coverage.json`; snapshot 6fd235c1…; `registration_sha256` ba627342… → ee099a60…, the
+value C_W's coverage already carries). G10 re-take of the five records from the clean tree at `853e7e3` (alpha-main's
+`.venv-nlp`, `OMP_NUM_THREADS=1`, `PYTHONPATH=src:<nlp-test-tools>`), proved with `--digest-only --old-version
+0.2.0a2.dev0`, every case PASS, `other=0`, `environment=equal`; changed digests / version leaves:
+TR-E2 41/4, TR-E2-FAR 79/7, TR-E2-FD 70/4, LOOP-R 91/3, LOOP-S 37/4 (E6's counts exactly).
+- DECISION: K as two commits → the version set (A), then K = A + the G10 records, whose `provenance.run_commit` is A.
+  Reason: the committed G10 records (E6's) state `provenance.tree_clean: true`; a re-take on K's own uncommitted tree
+  would record `false`, and a single commit made after a clean re-take would leave `run_commit` outside the history. Precedent E7 → E6. Alternative: one commit, `run_commit`
+  unreachable. Reversible by: squashing before the journey runs.
+
+J49 [stop, design lane] Full gate on the K-equivalent tree `c38e1ba`: 30 failed, 9904 passed, 32 skipped, 5 errors.
+29 failures and one teardown error are `tests/test_m06_browser_smoke.py` (BrokenPipe: the browser died under load;
+re-run alone 31 passed). The other five are registered behaviour at a `0.2.0` tree, not local bugs:
+- (Q-K1) `tests/test_m07a_v0_2_gate.py::test_a10_the_envelope_must_be_pinned_to_the_alpha`: its fixture undoes only the
+  alpha's pin (B-WO10-1), so with `v0.2-envelope-1` it asserts `'v0.2-envelope-1' == 'v0.2-envelope-dev'` and fails.
+  Editing it breaks A31 (b) (`test_a31_b_…_but_the_three_edited`, R-461 admits three edited functions). Default
+  proposed: admit `test_a10_…` as a fourth edited function, the edit being the two pairs that undo the 0.2.0 pin.
+- (Q-K2) `tests/test_m07_ledger.py`, four setup errors: `docs/reviews/V02-verdicts.md is missing at a 0.2.0 tree`.
+  R-463 rules exactly this, so every commit from K until WO-7's verdict document is red, C included — and RC step 1
+  (`check.sh` at C) runs before WO-7 can write the document. Default proposed: at a covered version the four tests
+  skip while the verdict document is absent (naming it), the fifth test pins that; `v0_2_gate.py` already answers NO
+  without the document, so the release cannot pass over it.
+Nothing was committed to `wp/M07` except this entry; the journey has not run (it needs K).
+This entry's own gate (docs only, on `c50e6fb`): 29 failed, 9905 passed, 36 skipped, 1 error, all in
+`tests/test_m06_browser_smoke.py` (BrokenPipe, load average 29 from other work on the machine); that module alone at
+this tree: 31 passed.
