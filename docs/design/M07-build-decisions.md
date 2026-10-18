@@ -399,3 +399,39 @@ Authority: registration §23.12 (R-472), M07 spec §21 addendum. No build decisi
   the tree for P8): G14, P1–P8, `preflight.json` (registered members, passed), 45 campaign runs, `order_check` (0
   problems), G15 20/20, A23 PASS on 62 records (14 state runs, 45 campaign runs, 3 canary attempts; attempt 01
   `model` null, `pinned.model` = `STUB_MODEL`).
+
+## W27 (e) repair — `campaign.json` completed (2026-10-18; no model call, nothing spent)
+
+Authority: verdict `docs/reviews/W27-verdict-83f825d.md` §(e) and F-4; registration W27-R52…R56, §23.3. Commit
+`89cd931`.
+- `scorer.aggregate` gains, keyword-only and defaulting to "not established"/None: `coverage.by_family` (R53, from
+  `coverage.json#/summary/*/by_family`); `reported.semantic` and `reported.cost` (R54's §11.10, pooled as V17's
+  `_pooled_semantic`/`_pooled_cost`: counts summed, each rate = pooled numerator / pooled denominator over the runs that
+  have both, the semantic error rate over parseable limitation answers; cost fields sum, median, runs; jobs summed by
+  operation; the cost basis as recorded); `reported.model` and `reported.claude_code_version` (R54: pinned from
+  `preflight.json`, requested/recorded from each `run.json`, `init` from each session, as distinct values);
+  `gated.operator_identifier_hits` and `gated.preflight_passed_before_first_run` (R56).
+- Identifier scan (F-4): `harness.identifier_scan` counts the operator address, case-insensitively, in every file of
+  every registered run directory and every canary attempt (nothing under `runs/` is git-ignored, so these are the
+  committed files). Only counts leave it. The per-run `run.json#/operator_identifier_hits` (R6.6's four
+  `SCANNED_FILES`, V17's RUN-ID-SCAN and the canary verdict) is unchanged, so old records stay valid. Canary hits are
+  reported separately and included in `count`.
+- Preflight term exactly as §23.3: established iff `preflight.json` exists with `passed` true and every campaign
+  `run.json#/preflight_sha256` equals its digest.
+- `harness.write_campaign` (used by `campaign`) and `harness aggregate --campaign <name>` (`reaggregate`: refused
+  without an existing `campaign.json` or when the served MCP surface differs from the recorded one).
+- Regeneration: `PYTHONPATH=$PWD/src python -m benchmarks.m06.w27.harness aggregate --campaign w27-m07-83f825d`.
+  `campaign.json` SHA-256 old `15c6b300927342ac04037e34faba4fc7a7b0f20487997b16ca42b5f62d5f5839`, new
+  `4812910abb2622b9192c01eae331fa2e97b3f523d78f73510b845c32f20f9e28`. `git diff --stat` on the campaign directory: only
+  `campaign.json` (+242 −1; the −1 is the comma after `map_defect_candidates`). Every member of the old document is
+  equal in the new one (outcomes included); `harness order --campaign w27-m07-83f825d` exit 0, 0 problems. Pooled
+  values equal the verdict's: items 216 (214 judged: 193 matched, 11 contradicted, 10 naming nothing; 2 unjudged;
+  0 malformed), semantic error 21/214, API rejection 0/95, draft-commit 0/0, internal errors 0, tool calls 95, turns
+  140, jobs 0, job wall 0 s, duplicates 0, tokens 194 / 49 224 / 621 371 / 1 680 942, duration 471 929 ms (API
+  468 335 ms), cost 3.1462062 (subscription estimate); identifier hits 0 over 384 files (45 runs, 3 canaries);
+  preflight established (45/45 name `56dc325e…d02f`).
+- Tests: `tests/test_m06_w27_scorer.py` (by-family, §11.10 pooling incl. null rates, provenance, six preflight states,
+  identifier counts incl. a positive hit and a partial scan), `tests/test_m06_w27_harness.py` (scan beyond
+  `SCANNED_FILES`, nested, case-insensitive, canary; the committed `campaign.json` reproduced byte for byte from a copy
+  of the records; both refusals).
+- `CAMPAIGN_SCHEMA` stays `w27-campaign-v1` (members added, none changed or removed).
