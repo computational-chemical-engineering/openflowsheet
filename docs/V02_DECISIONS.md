@@ -1146,3 +1146,7 @@ Grep, don't read whole. Newest at the bottom.
   `runs/w27-m07-<hex>/`, A70–A73), draw before canaries with each record naming its predecessors' SHA-256 (M07.A50 restated
   in M07 spec §21), `confirmation/confirmation.json` (empty set only) and `preflight.json`, ≤ 6 canary attempts (P6 11
   states), model pinning without `--model` (P7 6 states). WO-17a launched (no spend).
+- M07 Am. 3 build actions done `wp/M07` @ `bdd2004`: registration regenerated to `85e56dd5…282506b`, `check` paths (i)/(ii)
+  with exact refusal texts (J′ record passes via (ii)), A31(b) ast test in `tests/test_m07_v0_2_gate.py`, A32 `links_item`,
+  A37/A38 refusal texts; Q-A3-1 default (J47). Gates 9881/9886/9887, 35 skipped; CI 39113895404 green both runners.
+- Plan: after WO-17a, merge `wp/M07-w27` into `wp/M07`; C_W = that merge; then canaries + campaign; WO-6 after.
