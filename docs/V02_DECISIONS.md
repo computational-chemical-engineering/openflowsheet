@@ -1137,3 +1137,8 @@ Grep, don't read whole. Newest at the bottom.
   K→C by identity (R-464). Launched: Am. 3 build actions on `wp/M07`; W27 readiness (no spend) on `wp/M07-w27`.
 - W27 recon: WO-16h, M02 join J1/J2, WO-16i present; unclear: S20, A21/A22, live snapshot vs `hypothetical_v02_a3`,
   U14 rewrite. P1 approval line present (l.191).
+- W27 readiness `wp/M07-w27` @ `273ab0f` (no spend): live snapshot = `hypothetical_v02_a3`, live coverage = committed
+  (0 CANDIDATE); C1 rows in place; CLI `python -m benchmarks.m06.w27.harness` (`27fb4b8`); DECISION (engineer): spend
+  ceiling — stop before a run whose USD 5 cap could pass USD 45 (`8e6d80b`, revertible). Stub dry run: P1–P5, P8 pass;
+  Claude Code 2.1.302. Stopped on four design questions (U14 text; A50 vs R31 order; R58/R56 record formats; re-canaries)
+  → `specifier` launched. Model: registration l.378 settles it (CLI default read from the first canary's init, pinned).
