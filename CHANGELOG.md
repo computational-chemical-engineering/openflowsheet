@@ -183,8 +183,8 @@ at the release candidate (M07).*
 ### M07 — the reference journey and the release gate (W25)
 
 - **Reference journey.** One decision (the reactor inlet temperature) taken through four rungs of
-  fidelity, with decisions compared by the parent's objective against its noise floor and W25
-  met by reporting what happened, not by a changed decision (ADR 0041).
+  fidelity, with decisions compared by the parent's objective against its noise floor; W25 is
+  judged on reporting what happened, not on whether the decision changed (ADR 0041).
 - **The 0.2.0 gate.** `scripts/v0_2_gate.py` gains `v0.2-gate-v1`, which claims all seventeen
   gates V11–V20 and W21–W27, each judged at its own candidate, with per-release acceptance of
   failures (ADR 0042, proposed).
