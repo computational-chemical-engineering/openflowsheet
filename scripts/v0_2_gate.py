@@ -114,7 +114,8 @@ RELEASE_CANDIDATE: Final = "**Release candidate:**"
 RELEASE_CANDIDATE_VALUE: Final = re.compile(r"\*\*Release candidate:\*\* `([0-9a-f]{40})`")
 JUDGED: Final = "**Judged:**"
 JUDGED_VALUE: Final = re.compile(r"\*\*Judged:\*\* (\d{4}-\d{2}-\d{2})(?![0-9])")
-#: §19.2 item 3 (Table T8): the re-judgement line, stripped, fullmatches `REJUDGED_VALUE`.
+#: §19.2 item 3 (Table T8): the re-judgement line, stripped, fullmatches `REJUDGED_VALUE` (the
+#: alpha's; a gate set reads its own, `GateSet.rejudged`, built from its `clause`).
 REJUDGED: Final = "**Re-judged:**"
 REJUDGED_VALUE: Final = re.compile(
     r"\*\*Re-judged:\*\* (\d{4}-\d{2}-\d{2}) "
@@ -152,6 +153,25 @@ class GateSet:
     @property
     def gates(self) -> tuple[str, ...]:
         return (*self.claimed, *self.not_claimed)
+
+    @property
+    def adr(self) -> str:
+        """The policy ADR as the report names it, `ADR <number>` (ADR 0028 for the alpha; M07
+        §7.1: ADR 0042 in its place for 0.2.0)."""
+        return "ADR " + Path(self.policy_adr).name.split("-", 1)[0]
+
+    @property
+    def rejudged(self) -> re.Pattern[str]:
+        """Table T8's re-judgement line over this set's gate ids: `REJUDGED_VALUE` with the gate
+        alternation of the set's `clause` (for the alpha it is `REJUDGED_VALUE` itself)."""
+        prefix, suffix = r"\b(?:", r") \([a-z0-9]+\)"
+        pattern = self.clause.pattern
+        if not (pattern.startswith(prefix) and pattern.endswith(suffix)):
+            raise ValueError(f"{self.name}: clause {pattern!r} is not {prefix}<gates>{suffix}")
+        gate = f"(?:{pattern[len(prefix) : -len(suffix)]})"
+        return re.compile(
+            rf"\*\*Re-judged:\*\* (\d{{4}}-\d{{2}}-\d{{2}}) \(({gate}(?:, {gate})*)\)"
+        )
 
 
 #: The registry (§7.1). M07 adds `v0.2-gate-v1` for 0.2.0 beside this entry.
@@ -295,7 +315,7 @@ def _rejudgement(
     if len(lines) > 1:
         raise ValueError(f"{where} has {len(lines)} `{REJUDGED}` lines, not at most 1")
     (line,) = lines
-    found = REJUDGED_VALUE.fullmatch(line)
+    found = gate_set.rejudged.fullmatch(line)
     if found is None:
         raise ValueError(f"{where}: {line!r} is not `{REJUDGED} YYYY-MM-DD (G, …)`")
     try:
@@ -713,7 +733,7 @@ def judge_gate(
             elif judged is None or date < judged:
                 line.problems.append(
                     f"{clause}: accepted {date.isoformat()}, before the verdict's "
-                    f"{_verdict_dates(judged, rejudged)} (D2.3; ADR 0028 D2)"
+                    f"{_verdict_dates(judged, rejudged)} (D2.3; {gate_set.adr} D2)"
                 )
             elif rejudged is not None and gate in rejudged.gates and date < rejudged.date:
                 line.problems.append(
@@ -723,7 +743,9 @@ def judge_gate(
             else:
                 line.accepted[clause] = cell
         if unaccepted:
-            line.problems.append(f"FAIL clause not accepted in ADR 0028 D3: {unaccepted} (D2.3)")
+            line.problems.append(
+                f"FAIL clause not accepted in {gate_set.adr} D3: {unaccepted} (D2.3)"
+            )
     return line
 
 
@@ -803,7 +825,7 @@ def build(
         reasons.insert(0, f"{gate_set.verdict_document} does not exist at the candidate")
     if rc_version != version:
         reasons.append(
-            f"C's version {rc_version} is not the candidate's version {version} (ADR 0028 D4)"
+            f"C's version {rc_version} is not the candidate's version {version} ({gate_set.adr} D4)"
         )
     if differences is None:
         # Review F3: a caller that does not run the tree check gets no YES (D2.4 fails closed).
@@ -862,7 +884,13 @@ def _verdict_word(entry: Mapping[str, Any]) -> str:
     return str(entry["ledger"]) if entry["ledger"] else "no verdict"
 
 
-def _notes(entry: Mapping[str, Any]) -> str:
+def _adr(report: Mapping[str, Any]) -> str:
+    """The policy ADR of the report's gate set, as the report names it."""
+    (gate_set,) = [entry for entry in GATE_SETS if entry.name == report["gate_set"]]
+    return gate_set.adr
+
+
+def _notes(entry: Mapping[str, Any], adr: str) -> str:
     notes = []
     if entry["failing_clauses"]:
         notes.append("failing: " + ", ".join(entry["failing_clauses"]))
@@ -870,9 +898,7 @@ def _notes(entry: Mapping[str, Any]) -> str:
         notes.append("blocked: " + "; ".join(entry["blocked_clauses"]))
     for clause, acceptance in entry["accepted_fail_clauses"].items():
         date = DATE.search(acceptance)
-        notes.append(
-            f"{clause} FAIL, accepted by Frank {date.group(0) if date else ''} (ADR 0028 D3)"
-        )
+        notes.append(f"{clause} FAIL, accepted by Frank {date.group(0) if date else ''} ({adr} D3)")
     if entry["limitations"]:
         notes.append("limitations: " + ", ".join(entry["limitations"]))
     return "; ".join(notes)
@@ -885,7 +911,7 @@ def markdown(report: Mapping[str, Any]) -> str:
     ]
     for entry in report["gates"]:
         if entry["claimed"]:
-            word, notes = _verdict_word(entry), _notes(entry) or NONE
+            word, notes = _verdict_word(entry), _notes(entry, _adr(report)) or NONE
         else:
             word, notes = "not claimed", NONE
         lines.append(f"| {entry['gate']} | {word} | {entry['requirement']} | {notes} |")
@@ -913,7 +939,7 @@ def text(report: Mapping[str, Any]) -> str:
             out.append(f"{entry['gate']}  {_not_claimed(report)}")
             continue
         out.append(f"{entry['gate']}  {_verdict_word(entry):<11}{entry['requirement']}")
-        notes = _notes(entry)
+        notes = _notes(entry, _adr(report))
         if notes:
             out.append(f"      {notes}")
         for problem in entry["problems"]:
@@ -941,7 +967,8 @@ def text(report: Mapping[str, Any]) -> str:
     out.append("envelope (§7.2 item 6): " + _summary(report["envelope_problems"], "pinned"))
     out.append("ADRs (§7.2 item 7): " + _summary(report["adr_problems"], "every one Accepted"))
     out.append(
-        "Frank's answers (ADR 0028): " + _summary(report["frank_problems"], "every one accepted")
+        f"Frank's answers ({_adr(report)}): "
+        + _summary(report["frank_problems"], "every one accepted")
     )
     gates = tuple(entry["gate"] for entry in report["gates"])
     for reason in report["reasons"]:
