@@ -321,3 +321,9 @@ top-level node of `tests/test_m07a_v0_2_gate.py` (`ast.dump`, no positions) with
 functions of F-a replaced by their names, so an added, removed, reordered or edited node outside them fails (mutation:
 one appended assignment → fails). It lives in `tests/test_m07_v0_2_gate.py`: placed in the alpha's module it would
 itself be an added node.
+
+J46 [ruled, R-464] A37/A38 as restated in §11: the tests now pin the registered reason on every refusing path — a
+member missing on either side of the W27 triple (both directions, not only C_W's), and an unknown J
+(`Carry(False, "step 15 requires a re-run of the journey at C", ("<J> is not a commit",))`, the reason was not asserted
+before) — and the exclusivity §20 A3.4 states: `--carry-journey` with `--carry-w27`, and either with `--json` or
+`--markdown`, is refused by argparse (exit 2), five cases. No code change: `v0_2_gate.py` already behaved so.

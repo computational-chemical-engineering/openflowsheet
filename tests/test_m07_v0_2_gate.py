@@ -723,7 +723,10 @@ def test_a37_any_member_different_fails_step_17(member: str) -> None:
         f"RC step 17: W27 campaign surface differs between C_W and C (differs: {member})"
     )
     missing = {key: value for key, value in SURFACE.items() if key != member}
-    assert v0_2_gate.w27_carry(missing, SURFACE, W27_MEMBERS).differs == (member,)
+    for at_cw, at_c in ((missing, SURFACE), (SURFACE, missing)):
+        assert v0_2_gate.w27_carry(at_cw, at_c, W27_MEMBERS) == v0_2_gate.Carry(
+            False, "W27 campaign surface differs between C_W and C", (member,)
+        )
 
 
 def test_a37_the_command_line(
@@ -783,7 +786,9 @@ def test_a38_an_unknown_j_and_the_command_line(
     journey = _commit(scratch, JOURNEY_FILES, "J")
     rc = _commit(scratch, {"docs/notes.md": "after J\n"}, "C")
     carry = v0_2_gate.journey_carry("e" * 40, rc)
-    assert carry.carried is False and carry.differs == (f"{'e' * 40} is not a commit",)
+    assert carry == v0_2_gate.Carry(
+        False, "step 15 requires a re-run of the journey at C", (f"{'e' * 40} is not a commit",)
+    )
     assert v0_2_gate.main(["--rc", rc, "--carry-journey", journey]) == 0
     assert capsys.readouterr().out == f"RC step 15: the journey at {journey} carried\n"
     rc = _commit(scratch, {"src/openflowsheet/model.py": "X = 3\n"}, "C2")
@@ -792,3 +797,23 @@ def test_a38_an_unknown_j_and_the_command_line(
         "RC step 15: step 15 requires a re-run of the journey at C "
         "(differs: src/openflowsheet/model.py)\n"
     )
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        ["--carry-journey", "J", "--carry-w27", "a.json", "b.json"],
+        ["--carry-journey", "J", "--json"],
+        ["--carry-journey", "J", "--markdown"],
+        ["--carry-w27", "a.json", "b.json", "--json"],
+        ["--carry-w27", "a.json", "b.json", "--markdown"],
+    ],
+)
+def test_a37_a38_the_carry_options_exclude_each_other_and_the_report_formats(
+    options: list[str], capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Spec §20 A3.4: no answer is silently dropped; argparse refuses the pair (exit 2)."""
+    with pytest.raises(SystemExit) as refused:
+        v0_2_gate.main(["--rc", "HEAD", *options])
+    assert refused.value.code == 2
+    assert "not allowed with argument" in capsys.readouterr().err
