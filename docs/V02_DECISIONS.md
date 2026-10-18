@@ -1163,3 +1163,7 @@ Grep, don't read whole. Newest at the bottom.
 - 2026-10-18 Frank: register a seeded development/held-out split of OpenIDAES-450 at the 0.2.0 cut, before any
   OpenIDAES-targeted scope; held-out scored only at release gates; W27-exposed cases count as development. v0.2 W27
   unchanged. Brief `docs/briefs/OpenIDAES-split-registration.md`.
+- 2026-10-18 WO-17b `d0307d8` (A79; A23 62/62 in dry run; gate 9912/35) + merge into `wp/M07` `83f825d` (conflict only in
+  M07-build-decisions.md, both kept; gate 9923/35; CI 39136157258 green). C_W = `83f825d`, campaign `w27-m07-83f825d`:
+  coverage 0/450, 0/82 CANDIDATE, G14 PASS; sample 45, canaries blind_synthesized_prommis_nanofiltration_membrane_schematic,
+  mvo_variant_transcritical_co2_high_demand_flexible, variant_v4_cryst_n13_t338_y45_50; confirm written. Canaries launched.
