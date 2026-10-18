@@ -5,7 +5,8 @@
 2026-10-09: the C1 model and provider rows, units judged on the serving route W27-R62, the v0.2 snapshot reading
 W27-R63, refusals W27-R24 (d)–(e), and the ruling on §20, which amends W27-R59); §22 (Amendment 3, 2026-10-09:
 `c1.reactor_surrogate`); §23 (Amendment 4, 2026-10-18: the campaign's records, order, re-canaries and model pin,
-W27-R64…R68). Design lane (`specifier`), M06 WO-15, branch
+W27-R64…R68; addendum §23.12, 2026-10-18: the model members of an unpinned attempt's `run.json`, W27-A23
+restated, W27-A79). Design lane (`specifier`), M06 WO-15, branch
 `wp/M06-w27`. Brief: `docs/briefs/M06-W27-registration.md` (`1fb65c1`).
 **Machine-readable companion:** `benchmarks/m06/openidaes450/registration.json`, written by
 `docs/derivations/scripts/m06_w27_registration.py` from the tables in that script and from
@@ -711,7 +712,7 @@ Expected values come from this document and the generator, which WO-16's code do
 | W27-A20 | `sample.json` re-drawn from `coverage.json` by W27-R26…R31 | byte-identical |
 | W27-A21 | the harness's card for every case | SHA-256 equal to `registration.json#/prompt/card/sha256_by_case` (450/450) |
 | W27-A22 | the harness's prompt for a case | `template.format(...)` with the registered markers; the footer's `{case_id}` filled; nothing else |
-| W27-A23 | `run.json` of a stub run | carries `lock_sha256` (non-empty), interpreter, commit, `tree_clean`, model id, effort, Claude Code version, and the four SHA-256 values of W27-R58 |
+| W27-A23 | `run.json` of a stub run | carries `lock_sha256` (non-empty), interpreter, commit, `tree_clean`, model id, effort, Claude Code version, and the four SHA-256 values of W27-R58. *Restated (§23.12):* the model id is W27-R58's model rule; an unpinned canary attempt records `model` null |
 | W27-A30 | stream check, temperature | T_ref = 350 K: 351.999 K passes, 352.001 K fails |
 | W27-A31 | stream check, pressure | P_ref = 1.0 × 10⁵ Pa: tolerance 1 100 Pa; 101 099 passes, 101 101 fails |
 | W27-A32 | stream check, flow | port flows n = (10, 30) mol/s: tolerance on the first 0.504 mol/s; 10.503 passes, 10.505 fails (an absolute term taken from the component's own flow, 0.501, would fail 10.503) |
@@ -1723,3 +1724,122 @@ If a change needs a rule this section does not give, escalate it to the design l
   `tests/test_m06_w27_coverage.py` l.434 disambiguates them in a comment. Nothing is renumbered here, because that would
   break the byte-identity of pre-existing members. This amendment starts at W27-A70.
 - **FA4-2.** The header's status line said "amended twice". It now names §22 and §23.
+
+### 23.12 Addendum: the model members of a `run.json` (2026-10-18, before any W27 run)
+
+**Source and authority.** Design lane (`specifier`), on `wp/M07-w27` @ `fec8ca1`, as asked by
+`docs/briefs/W27-unpinned-brief.md`. Register entry R-472. It rules on the build decision of `b71d86c` (hunk
+`harness._unpinned`, build log entry WO-17a), restates W27-A23 and adds W27-A79. No canary has run and nothing has been
+spent.
+
+**Facts read for this ruling.**
+- **F-5.** `harness.run` (`benchmarks/m06/w27/harness.py` l.331–339) writes `model` and `pinned.model` as the
+  requested model. For an attempt without `--model`, both would be null. The scorer's W27-R51 check
+  (`scorer.py` l.863–864) reports `pin_mismatch(model)` when `pinned.model` is null or differs from the `init` model.
+  Without a rule, every unpinned attempt would fail. P7-T1 and P7-T5, which register a passing attempt run without
+  `--model`, could then never occur.
+- **F-6.** §23.3 registers `model` as the *requested* model, null without `--model`. P7 (`preflight.py` l.258–275)
+  reads `model` and the `init` model and never reads `pinned.model`. Only the scorer's pin check reads `pinned.model`.
+- **F-7.** `harness.a23` (l.857–892) requires every member of `RUN_RECORD_MEMBERS`, `model` among them, to be
+  non-null and non-empty. W27-A23's test applies it to one campaign stub run. M07.A51 reads the completeness of R58
+  over every record, canary attempts included. As written, A23 fails every unpinned attempt.
+- **F-8.** W27-A76 says that K is "a fixed other 40-hex commit". `p6_states` writes the symbol `K`, and
+  `tests/m06_w27_support.py` l.22 takes `"f" * 40`. The registration gives K no value.
+
+**Ruling (W27-R58 amended again; `registration.json#/campaign_records/run_json_added/pinned_model`).** The
+engineer's form is accepted. Every `run.json` carries three model members:
+- `model` is the requested model: the string passed as `--model`, or null for an attempt run without it (§23.3,
+  unchanged).
+- `pinned.model` is the pin the record is checked against. When `model` is a string, `pinned.model` equals it. When
+  `model` is null, `pinned.model` is `session.init.model` if that is a non-empty string other than `claude-sonnet-5`.
+  Otherwise it is null.
+- `session.init.model` is what the session reported (unchanged).
+
+`model` may be null only in a canary attempt, that is, a record whose `campaign` ends in `/canary`. The harness writes
+`<campaign>/canary` there. A campaign run with `model` null fails W27-A23. That a null `model` occurs only at or before
+the pinning attempt is P7 condition 3, which is unchanged.
+
+**What the scorer's pin check means for an unpinned attempt.** For the pinning attempt, the check compares the `init`
+model with itself, so it holds by construction. That is not a weakening, because nothing earlier exists to compare
+with. The pinning attempt's model is checked elsewhere: (i) by the session check (non-empty, not `claude-sonnet-5`,
+§23.5); (ii) by `model_pin`, which refuses an alias or `claude-sonnet-5` with exit 2 (A4-Q1); and (iii) by P7
+conditions 2–4, across the attempts and against the preflight's pin. An unpinned attempt with no `init` model, or
+with `claude-sonnet-5`, records `pinned.model` null. The scorer then reports `pin_mismatch(model)` or an earlier
+reason, and the attempt fails, which is the intended result. The scorer is unchanged, and no scoring rule changes.
+
+**W27-A23 restated.** The `run.json` of a stub campaign run carries `lock_sha256` (non-empty), the interpreter,
+`commit`, `tree_clean`, effort, the Claude Code version and the four SHA-256 values of W27-R58. Its `model`,
+`pinned.model` and `session.init.model` satisfy W27-R58's model rule. `harness.a23` applies this to any `run.json`,
+and M07.A51 applies it to every `run.json` under the campaign directory, `canary/` included.
+
+**K.** K is `"f" * 40`, registered at `campaign_records#/p6_symbols/K`. It is no commit of the repository. P6 compares
+a commit with HEAD only, so any K other than HEAD gives the same verdicts. The test reads K from the registration and
+asserts that K differs from HEAD.
+
+**W27-A79** (build lane). All comparisons are exact (strings, booleans, null), so no tolerance applies.
+
+| Part | Assertion | Expected | Why |
+| --- | --- | --- | --- |
+| (a) | `harness.a23` on the W27-A23 stub record, with each `run_json_model_states` entry overlaid: `campaign` becomes `<campaign>/canary` for kind `canary` and stays without that suffix for kind `campaign`; then `model`, `pinned.model` and `session.init.model` are overlaid, with M1 = `claude-test-m1` and M2 = `claude-test-m2` | each entry's `expected_pass`: R1, R2, R3, R4 and R10 pass; R5–R9 and R11 fail, each listing at least one problem | every other member is valid, so the model rule alone decides |
+| (b) | one unpinned attempt through the production `harness.run`, with `agent_config(None)`, the dry run's stub canary `claude` (`dryrun.py` l.58) and campaign `<x>/canary`; then a copy of its directory with `pinned.model` set to null, re-scored by `scorer.score` | `harness.a23` passes; `model` is null; `pinned.model` = `session.init.model` = `STUB_MODEL`; `scores.json#/infrastructure_failure` is null. The copy's `infrastructure_failure.reason` is `pin_mismatch(model)` | `_unpinned` writes what the rule requires, and without it the scorer fails the attempt (F-5) |
+
+**The registered states** (`campaign_records#/run_json_model_states`; fields kind, `model`, `pinned.model`, `init`).
+
+| Id | Kind | model | pinned | init | A23 | Why it is in the list |
+| --- | --- | --- | --- | --- | --- | --- |
+| R1 | campaign | M1 | M1 | M1 | pass | baseline: the pin is the requested model |
+| R2 | canary | null | M1 | M1 | pass | the pinning attempt (the engineer's form) |
+| R3 | canary | null | null | null | pass | an attempt before the pinning attempt (P7-T5's attempt 01) |
+| R4 | canary | null | null | `claude-sonnet-5` | pass | V17's default: the record is complete and holds no pin; the attempt fails in the scorer and `canaries` refuses |
+| R5 | campaign | null | M1 | M1 | fail | only a canary attempt may run without `--model`; differs from R2 in kind alone and from R1 in `model` alone |
+| R6 | canary | null | null | M1 | fail | the pin not recorded (the record before `b71d86c`); differs from R3 in `init` alone |
+| R7 | canary | null | M2 | M1 | fail | a recorded pin other than the `init` model |
+| R8 | canary | null | `claude-sonnet-5` | `claude-sonnet-5` | fail | V17's model recorded as a pin |
+| R9 | campaign | M1 | M2 | M1 | fail | a pin other than the requested model; differs from R1 in `pinned` alone |
+| R10 | campaign | M1 | M1 | M2 | pass | A23 is not the scorer: a complete record of a run that the scorer fails with `pin_mismatch(model)` |
+| R11 | campaign | "" | "" | M1 | fail | an empty requested model |
+
+**Self-claims (the generator refuses to emit when one fails).**
+
+| Id | Claim |
+| --- | --- |
+| GC-A4-7 | the reference rule `ref_run_model` gives every `run_json_model_states` entry its expectation; the entries are pairwise distinct; both verdicts occur; and each of kind, `model`, `pinned` and `init` alone changes the verdict in some pair of entries |
+| GC-A4-8 | K is 40 lower-case hex digits and is not the symbol `HEAD` |
+
+**Rejected.**
+- *`model` = the observed id, with a new `requested_model: null`.* It contradicts §23.3, P7 condition 3 as registered
+  and as built (`preflight.py` l.264 reads `model` as the requested model), and `p7_states`. It would restate P7 and
+  two registered members before the first canary, and `model` would mean different things in different records.
+- *A scorer exemption: skip the pin check when `model` is null.* It changes a scoring rule (§23, "What does not
+  change"). It would also let an unpinned record with no `init` model pass the pin check silently.
+- *`pinned.model` null and A23 unchanged.* Every unpinned attempt would fail `pin_mismatch(model)` and A23, so
+  P7-T1 and P7-T5 could never occur (F-5, F-7).
+
+**WO-17b (build lane, on `wp/M07-w27`, before any canary).**
+1. `harness.a23`: drop `model` from the non-empty check. Instead, `model` must be present as a key, and the model
+   rule must hold, with kind `canary` iff `str(record.get("campaign", "")).endswith("/" + CANARY_DIR)`, `pinned`
+   from `record["pinned"]["model"]` and `init` from `record["session"]["init"]["model"]` (a missing level reads as
+   null). When the rule fails, add the problem `model_rule`.
+2. W27-A79 (a) and (b) in `tests/test_m06_w27_harness.py`, beside W27-A23, reading the states from
+   `registration.load()["campaign_records"]["run_json_model_states"]`. Assert that there are 11 states and that the
+   passing ids are R1, R2, R3, R4 and R10.
+3. `tests/m06_w27_support.py`: K is read from `campaign_records["p6_symbols"]["K"]`, and `_states_campaign` asserts
+   `K != head()`.
+4. `dryrun.py` (l.114): apply A23 to every `run.json` under the campaign directory, `canary/` included.
+5. `harness._unpinned` stays as built. Its docstring cites §23.12 and R-472 instead of the build decision. The
+   build log marks the WO-17a decision as ruled and withdraws its note for M07.A51.
+6. The full gate is green.
+
+**Pins.** `registration.json`, `dry_illustration.json` (`registration_sha256` only) and preflight P2's
+`REGISTERED_SHA256` are re-taken in this commit. In `registration.json`, `amendments` (entry 4 gains `addenda`),
+`campaign_records` (`run_json_added.pinned_model`, `run_json_model_states`, `p6_symbols`) and `generator_claims`
+(GC-A4-7, GC-A4-8) change. Every other member is byte-identical.
+
+**What this addendum does not establish.**
+- That the pinning attempt's `init` carries a full model id. That is A4-Q1, a fact from attempt 01.
+- That Claude Code's default model is the newest model (§23.9 stands).
+- Anything about the scorer beyond W27-R51, which is unchanged. The scorer's pin check is satisfied by construction
+  for the pinning attempt and is not evidence about that attempt's model.
+- Any campaign result. Nothing has run.
+
+**Open questions.** None new. A4-Q1 stands.

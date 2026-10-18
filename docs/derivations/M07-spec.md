@@ -386,7 +386,7 @@ Tolerances: "exact" means equality of binary64 values or bytes; the fixtures are
 | M07.A42 | ADR 0042's D3 and Frank tables pass the alpha's cell rule | pass | exact | R |
 | M07.A43 | `evidence/M07/<C>/manifest.json` `tested`, listing A00–A62 with commands run | present | exact | R |
 | M07.A50 | W27 order at C_W by digest chain (registration §23.2): each record of `campaign_records.digest_chain` names the SHA-256 of the earlier records listed for it, each equal to the file's; the commit rule holds [A4] | every link equal; every commit C_W | exact (SHA-256 of bytes) | O |
-| M07.A51 | W27 records complete per W27-R58; spend within the approval | complete; ≤ USD 45 | exact | O |
+| M07.A51 | W27 records complete per W27-R58 [A4]; spend within the approval | complete; ≤ USD 45 | exact | O |
 | M07.A60 | RC steps 13, 14, 16 pass at C | pass | per package gates | R |
 | M07.A61 | RC step 15 [A3.4]: C contains the journey record of the cut commit K; `--carry-journey K --rc C` says carried; `check` and `replay` pass at C | pass | bytes | R |
 | M07.A62 | RC step 17: coverage at C; W27 carry; `campaign.json` recomputed equal | pass | bytes | R |
@@ -1369,3 +1369,11 @@ written, A50 could not be checked. The chain and the commit rule are registratio
 `order_check` (W27-A78).
 
 **Not established.** No W27 measurement; nothing has run.
+
+**Addendum (2026-10-18, R-472; registration §23.12).** *Restated M07.A51.* "Complete per W27-R58" means, for each
+`run.json` under the campaign directory, `canary/` included, that W27-A23 as restated in registration §23.12 holds
+(`harness.a23`). In particular, a canary attempt run without `--model` records `model` null, and records as
+`pinned.model` its `init` model when that is a non-empty id other than `claude-sonnet-5`, null otherwise. A campaign
+run with `model` null is incomplete. Where a null `model` may occur is P7 condition 3
+(registration §23.5), which `preflight.json` records. The spend clause is unchanged. `benchmarks/m07/registration.json`
+is unchanged. *Not established:* no W27 measurement; nothing has run.

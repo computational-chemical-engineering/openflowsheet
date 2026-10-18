@@ -2003,6 +2003,14 @@ AMENDMENTS: Final = [
             "W27-R67",
             "W27-R68",
         ],
+        "addenda": [
+            {
+                "date": "2026-10-18",
+                "section": "§23.12",
+                "rules": ["W27-R58"],
+                "assertions": ["W27-A23", "W27-A79"],
+            }
+        ],
     },
 ]
 
@@ -2276,6 +2284,72 @@ def ref_p7(
     return all(a["init_model"] == pin for a in counted)
 
 
+#: §23.12 (Amendment 4 addendum): the symbols of `p6_states` and `p7_states`. HEAD is the
+#: campaign commit (the test's clean HEAD); K is this fixed string, which is no commit of the
+#: repository. P6 compares a commit with HEAD only, so any K other than HEAD gives the same
+#: verdicts.
+P6_COMMIT_K: Final = "f" * 40
+
+#: §23.12: W27-R58's model rule on one `run.json`, as W27-A23 (restated) applies it. Fields:
+#: kind ("canary" iff `campaign` ends in "/canary"), `model` (requested), `pinned.model`,
+#: `session.init.model`. (id, kind, model, pinned, init, expected A23 verdict, why)
+RUN_MODEL_STATES: Final = (
+    ("R1", "campaign", "M1", "M1", "M1", True, "a campaign run: the pin is the requested model"),
+    ("R2", "canary", None, "M1", "M1", True, "the pinning attempt: its init model is the pin"),
+    ("R3", "canary", None, None, None, True, "an attempt before the pinning attempt (P7-T5's 01)"),
+    (
+        "R4",
+        "canary",
+        None,
+        None,
+        NOT_W27_MODEL,
+        True,
+        "V17's default model: the record is complete and holds no pin; the attempt fails elsewhere",
+    ),
+    ("R5", "campaign", None, "M1", "M1", False, "only a canary attempt may run without --model"),
+    (
+        "R6",
+        "canary",
+        None,
+        None,
+        "M1",
+        False,
+        "the pin is not recorded (the record before b71d86c)",
+    ),
+    ("R7", "canary", None, "M2", "M1", False, "a recorded pin other than the init model"),
+    (
+        "R8",
+        "canary",
+        None,
+        NOT_W27_MODEL,
+        NOT_W27_MODEL,
+        False,
+        "V17's model recorded as a pin",
+    ),
+    ("R9", "campaign", "M1", "M2", "M1", False, "a pin other than the requested model"),
+    (
+        "R10",
+        "campaign",
+        "M1",
+        "M1",
+        "M2",
+        True,
+        "A23 is not the scorer: a complete record of a run the scorer fails (pin_mismatch(model))",
+    ),
+    ("R11", "campaign", "", "", "M1", False, "an empty requested model"),
+)
+
+
+def ref_run_model(kind: str, model: str | None, pinned: str | None, init: str | None) -> bool:
+    """§23.12: W27-R58's model rule on one `run.json` (part of W27-A23 restated)."""
+    if model is not None:
+        return isinstance(model, str) and model != "" and pinned == model
+    if kind != "canary":
+        return False
+    established = init if isinstance(init, str) and init and init != NOT_W27_MODEL else None
+    return pinned == established
+
+
 CAMPAIGN_RECORDS: Final = {
     "section": "§23",
     "runs_root": "benchmarks/m06/openidaes450/runs",
@@ -2333,6 +2407,26 @@ CAMPAIGN_RECORDS: Final = {
         "canary": ["confirmation_sha256", "sample_sha256"],
         "campaign": ["preflight_sha256", "sample_sha256"],
         "model": "the requested model: null for an attempt run without --model",
+        "pinned_model": "§23.12: the pin the record is checked against. When model is a "
+        "string, pinned.model equals it. When model is null (allowed only in a canary attempt, "
+        "whose campaign ends in /canary), pinned.model is session.init.model if that is a "
+        "non-empty string other than claude-sonnet-5, and null otherwise",
+    },
+    "run_json_model_states": [
+        {
+            "id": i,
+            "kind": k,
+            "model": m,
+            "pinned_model": p,
+            "init_model": n,
+            "expected_pass": e,
+            "why": w,
+        }
+        for i, k, m, p, n, e, w in RUN_MODEL_STATES
+    ],
+    "p6_symbols": {
+        "HEAD": "the campaign commit (in the tests, the clean HEAD)",
+        "K": P6_COMMIT_K,
     },
     "model_pin": "the pinning attempt is the earliest canary attempt whose transcript has an init "
     "message with a model id; it and every attempt before it run without --model (Claude Code's "
@@ -2355,7 +2449,7 @@ CAMPAIGN_RECORDS: Final = {
 
 
 def campaign_record_claims() -> Claims:
-    """§23's self-claims GC-A4-1…GC-A4-6."""
+    """§23's self-claims GC-A4-1…GC-A4-8."""
     claims: Claims = []
     admitted = [n for n in range(100) if re.match(CANARY_ATTEMPT_PATTERN, f"{n:02d}-x")]
     claims.append(
@@ -2424,6 +2518,41 @@ def campaign_record_claims() -> Claims:
             and all(g == e for _, g, e in p7)
             and {e for _, _, e in p7} == {True, False},
             f"differ {[(i, g) for i, g, e in p7 if g != e]}",
+        )
+    )
+    fields = ("kind", "model", "pinned", "init")
+    rows = {s[0]: (s[1:5], s[5]) for s in RUN_MODEL_STATES}
+    got = {i: ref_run_model(*v) for i, (v, _) in rows.items()}
+    flips = {
+        f: [
+            (a, b)
+            for a, (va, ea) in rows.items()
+            for b, (vb, eb) in rows.items()
+            if a < b
+            and ea != eb
+            and [x != y for x, y in zip(va, vb, strict=True)] == [g == f for g in fields]
+        ]
+        for f in fields
+    }
+    claims.append(
+        (
+            "GC-A4-7 the model rule (ref_run_model) gives every run_json_model_states entry its "
+            "expectation; the states are pairwise distinct; both verdicts occur; each of kind, "
+            "model, pinned and init alone changes the verdict in some pair",
+            all(got[i] == e for i, (_, e) in rows.items())
+            and len({v for v, _ in rows.values()}) == len(rows) == len(RUN_MODEL_STATES)
+            and {e for _, e in rows.values()} == {True, False}
+            and all(flips.values()),
+            f"differ {[i for i, (_, e) in rows.items() if got[i] != e]}; "
+            f"flips {dict((f, p[:1]) for f, p in flips.items())}",
+        )
+    )
+    claims.append(
+        (
+            "GC-A4-8 K is 40 lower-case hex digits, so it is a commit-shaped string, and is not "
+            "the symbol HEAD",
+            re.fullmatch(r"[0-9a-f]{40}", P6_COMMIT_K) is not None and P6_COMMIT_K != "HEAD",
+            f"K {P6_COMMIT_K}",
         )
     )
     return claims

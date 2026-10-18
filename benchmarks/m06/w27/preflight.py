@@ -56,10 +56,10 @@ APPROVAL_LINE: Final[str] = "- **W27 Tier 1 approved**"
 #: that records it.
 REGISTERED_SHA256: Final[Mapping[Path, str]] = {
     registration.REGISTRATION_JSON: (
-        "066feacbb0c91e13c15a2db7d95a603d00a376c4ad04ebeb522c2f6bd61a3c18"
+        "ee099a60f9da6900325f54127f92e9eee926d2015f97b527843db482d6f0e52e"
     ),
-    registration.DOCUMENT: "c2e1d1237aef5b85ee5a20e227635978a7e2170e3effc75a0485aedbf06f5d9c",
-    registration.GENERATOR: "a7afdbab305a40ad8971adb20e3769117136059eb71574fe1be1e6eef8baf228",
+    registration.DOCUMENT: "bf48a5212cb0f17675567a8194e61d1f5b6665a082c0c3916a341d7d93260c70",
+    registration.GENERATOR: "3d7429a258fca0bc92af4a3e4113af7f4ef62cd2b1cd8e4999e9c8f6eb9241eb",
 }
 
 

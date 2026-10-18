@@ -48,6 +48,19 @@
       "section": "§22"
     },
     {
+      "addenda": [
+        {
+          "assertions": [
+            "W27-A23",
+            "W27-A79"
+          ],
+          "date": "2026-10-18",
+          "rules": [
+            "W27-R58"
+          ],
+          "section": "§23.12"
+        }
+      ],
       "date": "2026-10-18",
       "number": 4,
       "rules": [
@@ -572,6 +585,10 @@
         "why": "C never attempted"
       }
     ],
+    "p6_symbols": {
+      "HEAD": "the campaign commit (in the tests, the clean HEAD)",
+      "K": "ffffffffffffffffffffffffffffffffffffffff"
+    },
     "p7_states": [
       {
         "attempts": [
@@ -810,8 +827,110 @@
         "confirmation_sha256",
         "sample_sha256"
       ],
-      "model": "the requested model: null for an attempt run without --model"
+      "model": "the requested model: null for an attempt run without --model",
+      "pinned_model": "§23.12: the pin the record is checked against. When model is a string, pinned.model equals it. When model is null (allowed only in a canary attempt, whose campaign ends in /canary), pinned.model is session.init.model if that is a non-empty string other than claude-sonnet-5, and null otherwise"
     },
+    "run_json_model_states": [
+      {
+        "expected_pass": true,
+        "id": "R1",
+        "init_model": "M1",
+        "kind": "campaign",
+        "model": "M1",
+        "pinned_model": "M1",
+        "why": "a campaign run: the pin is the requested model"
+      },
+      {
+        "expected_pass": true,
+        "id": "R2",
+        "init_model": "M1",
+        "kind": "canary",
+        "model": null,
+        "pinned_model": "M1",
+        "why": "the pinning attempt: its init model is the pin"
+      },
+      {
+        "expected_pass": true,
+        "id": "R3",
+        "init_model": null,
+        "kind": "canary",
+        "model": null,
+        "pinned_model": null,
+        "why": "an attempt before the pinning attempt (P7-T5's 01)"
+      },
+      {
+        "expected_pass": true,
+        "id": "R4",
+        "init_model": "claude-sonnet-5",
+        "kind": "canary",
+        "model": null,
+        "pinned_model": null,
+        "why": "V17's default model: the record is complete and holds no pin; the attempt fails elsewhere"
+      },
+      {
+        "expected_pass": false,
+        "id": "R5",
+        "init_model": "M1",
+        "kind": "campaign",
+        "model": null,
+        "pinned_model": "M1",
+        "why": "only a canary attempt may run without --model"
+      },
+      {
+        "expected_pass": false,
+        "id": "R6",
+        "init_model": "M1",
+        "kind": "canary",
+        "model": null,
+        "pinned_model": null,
+        "why": "the pin is not recorded (the record before b71d86c)"
+      },
+      {
+        "expected_pass": false,
+        "id": "R7",
+        "init_model": "M1",
+        "kind": "canary",
+        "model": null,
+        "pinned_model": "M2",
+        "why": "a recorded pin other than the init model"
+      },
+      {
+        "expected_pass": false,
+        "id": "R8",
+        "init_model": "claude-sonnet-5",
+        "kind": "canary",
+        "model": null,
+        "pinned_model": "claude-sonnet-5",
+        "why": "V17's model recorded as a pin"
+      },
+      {
+        "expected_pass": false,
+        "id": "R9",
+        "init_model": "M1",
+        "kind": "campaign",
+        "model": "M1",
+        "pinned_model": "M2",
+        "why": "a pin other than the requested model"
+      },
+      {
+        "expected_pass": true,
+        "id": "R10",
+        "init_model": "M2",
+        "kind": "campaign",
+        "model": "M1",
+        "pinned_model": "M1",
+        "why": "A23 is not the scorer: a complete record of a run the scorer fails (pin_mismatch(model))"
+      },
+      {
+        "expected_pass": false,
+        "id": "R11",
+        "init_model": "M1",
+        "kind": "campaign",
+        "model": "",
+        "pinned_model": "",
+        "why": "an empty requested model"
+      }
+    ],
     "runs_root": "benchmarks/m06/openidaes450/runs",
     "section": "§23",
     "u14": {
@@ -1244,6 +1363,16 @@
     {
       "claim": "GC-A4-6 P7's model rule gives every registered state its expectation, every state P6-valid; both verdicts occur",
       "detail": "differ []",
+      "holds": true
+    },
+    {
+      "claim": "GC-A4-7 the model rule (ref_run_model) gives every run_json_model_states entry its expectation; the states are pairwise distinct; both verdicts occur; each of kind, model, pinned and init alone changes the verdict in some pair",
+      "detail": "differ []; flips {'kind': [('R2', 'R5')], 'model': [('R1', 'R5')], 'pinned': [('R1', 'R9')], 'init': [('R3', 'R6')]}",
+      "holds": true
+    },
+    {
+      "claim": "GC-A4-8 K is 40 lower-case hex digits, so it is a commit-shaped string, and is not the symbol HEAD",
+      "detail": "K ffffffffffffffffffffffffffffffffffffffff",
       "holds": true
     }
   ],

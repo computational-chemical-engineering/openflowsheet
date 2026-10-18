@@ -9708,3 +9708,31 @@ now). The choice would be discretionary, made by the party being measured, and c
 **Watch for.** A4-Q1. If `init` reports an alias rather than a full id, the design lane rules before attempt 02.
 
 ---
+
+## R-472 — An unpinned W27 canary attempt records `model` null and its `init` model as `pinned.model`; W27-A23 and M07.A51 read that rule
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), registration §23.12 (Amendment 4 addendum), ruling on the build decision of `b71d86c` (`harness._unpinned`, build log WO-17a) |
+| Normative text | registration §23.12; `registration.json#/campaign_records/run_json_added/pinned_model`, `run_json_model_states`, `p6_symbols`; M07 spec §21 (addendum) |
+| Evidence | GC-A4-7, GC-A4-8; W27-A79 (11 states, and one production-harness attempt) |
+| Affected packages | M06 (W27), M07 (WO-17, M07.A51) |
+
+**Decision.** In every `run.json`, `model` is the requested model, and null for an attempt run without `--model`.
+`pinned.model` equals `model` when `model` is a string. When `model` is null, `pinned.model` is `session.init.model`
+if that is a non-empty id other than `claude-sonnet-5`, and null otherwise. `model` may be null only in a canary
+attempt, that is, a record whose `campaign` ends in `/canary`. W27-A23 is restated to check this rule, and M07.A51
+applies it to every record, `canary/` included. The scorer is unchanged: for the pinning attempt its pin check holds by
+construction, and that attempt's model is checked by the session check, by `model_pin` and by P7. W27-A76's K is
+registered as `"f" * 40`.
+
+**Rejected alternatives, and why.** *Record the observed id in `model`, with a new `requested_model`.* It contradicts
+§23.3, P7 condition 3 and `p7_states` as registered and built. *Exempt unpinned runs from the scorer's pin check.* It
+changes a scoring rule, and it would let a record with no `init` model pass silently. *Leave `pinned.model` null.*
+Every unpinned attempt would fail, and the registered P7 states P7-T1 and P7-T5 could never occur.
+
+**Watch for.** A4-Q1 (an alias in `init`) is still open. If the scorer or P7 ever reads `pinned.model` as evidence
+about the pinning attempt's model, that is circular, and the design lane must be told.
+
+---
