@@ -297,6 +297,12 @@ def test_a31_the_alpha_entry_reads_the_alpha_s_grammar() -> None:
     assert ALPHA.adr == "ADR 0028" and V02.adr == "ADR 0042"
 
 
+def test_q_a3_1_the_reasons_name_the_set_s_specification() -> None:
+    """M07 spec §20 Q-A3-1: derived from `evidence_package`; the alpha's text is unchanged."""
+    assert (ALPHA.specification, ALPHA.rc_section) == ("the alpha specification", "§8.2")
+    assert (V02.specification, V02.rc_section) == ("the M07 specification", "§8")
+
+
 #: The released alpha's tag commit (v0.2.0a1) and the three functions of its gate test that
 #: `039cbd8` edited, the only edits M07 spec §20 A3.1 (R-461) admits.
 ALPHA_TAG = "423ae9c54d903f9dcf0ea90fe9639222c1acbda4"
@@ -459,8 +465,8 @@ NO = {
     ),
     7: (
         {"files": {"rc_record": rc_record(STEP_15)}},
-        f"§8.2 step 15 (A15, CI): failed in {RC_RECORD}",
-        f"§8.2 step 15: no row of {RC_RECORD} states that it passed",
+        f"§8 step 15 (A15, CI): failed in {RC_RECORD}",
+        f"§8 step 15: no row of {RC_RECORD} states that it passed",
     ),
     8: (
         {"files": {"m07": manifest("M07", RC, "planned")}},
@@ -478,7 +484,7 @@ NO = {
     11: (
         {"files": {"adr_0042": adr_0042(answers={"M03 N1": "pending"})}},
         "Frank's answer to M03 N1 is not an acceptance of the default; "
-        "amend the alpha specification for it",
+        "amend the M07 specification for it",
     ),
     12: (
         {"files": {"adr_0039": adr("**Status:** Proposed, 2026-10-14")}},

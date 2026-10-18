@@ -127,6 +127,12 @@ REJUDGED_VALUE: Final = re.compile(
     r"\*\*Re-judged:\*\* (\d{4}-\d{2}-\d{2}) "
     r"\(((?:V(?:1[1-9]|20)|W2[12])(?:, (?:V(?:1[1-9]|20)|W2[12]))*)\)"
 )
+#: How a gate set's reasons name its specification and its RC step table, by evidence package
+#: (M07 spec §20 Q-A3-1): `M07a` is the alpha's text byte for byte (A31).
+_SPECIFICATION_TEXTS: Final = {
+    "M07a": ("the alpha specification", "§8.2"),
+    "M07": ("the M07 specification", "§8"),
+}
 
 
 @dataclass(frozen=True)
@@ -164,6 +170,18 @@ class GateSet:
     @property
     def gates(self) -> tuple[str, ...]:
         return (*self.claimed, *self.not_claimed)
+
+    @property
+    def specification(self) -> str:
+        """The specification a non-acceptance answer is sent to amend, from `evidence_package`
+        (M07 spec §20 Q-A3-1): the alpha's text byte for byte, "the M07 specification" for M07."""
+        return _SPECIFICATION_TEXTS[self.evidence_package][0]
+
+    @property
+    def rc_section(self) -> str:
+        """The section of the RC job's step table that RC-record reasons cite, from
+        `evidence_package` (§20 Q-A3-1): the alpha's §8.2, M07's §8."""
+        return _SPECIFICATION_TEXTS[self.evidence_package][1]
 
     @property
     def adr(self) -> str:
@@ -543,7 +561,7 @@ def policy(
             elif (date := acceptance_date(cells[0])) is None:
                 frank.append(
                     f"Frank's answer to {item} is not an acceptance of the default; "
-                    "amend the alpha specification for it"
+                    f"amend {gate_set.specification} for it"
                 )
             elif judged is None or date < judged:
                 frank.append(
@@ -603,11 +621,14 @@ def rc_record_problems(text: str | None, rc: str, gate_set: GateSet) -> list[str
         if int(step) in gate_set.rc_steps and outcome in ("failed", "unstated"):
             said = "failed" if outcome == "failed" else "not stated as passed"
             problems.append(
-                f"§8.2 step {step} ({_bare(cells[1])}, {_bare(cells[2])}): {said} in {where}"
+                f"{gate_set.rc_section} step {step} ({_bare(cells[1])}, {_bare(cells[2])}): "
+                f"{said} in {where}"
             )
     for required in gate_set.rc_steps:
         if "passed" not in outcomes.get(required, []):
-            problems.append(f"§8.2 step {required}: no row of {where} states that it passed")
+            problems.append(
+                f"{gate_set.rc_section} step {required}: no row of {where} states that it passed"
+            )
     return problems
 
 

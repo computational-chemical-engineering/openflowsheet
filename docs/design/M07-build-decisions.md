@@ -327,3 +327,10 @@ member missing on either side of the W27 triple (both directions, not only C_W's
 (`Carry(False, "step 15 requires a re-run of the journey at C", ("<J> is not a commit",))`, the reason was not asserted
 before) — and the exclusivity §20 A3.4 states: `--carry-journey` with `--carry-w27`, and either with `--json` or
 `--markdown`, is refused by argparse (exit 2), five cases. No code change: `v0_2_gate.py` already behaved so.
+
+J47 [choice, §20 Q-A3-1 default] F3's wording: `GateSet.specification` and `GateSet.rc_section` are properties derived
+from `evidence_package` through one module table (`M07a` → "the alpha specification", "§8.2"; `M07` → "the M07
+specification", "§8"); no new registered field. The non-acceptance answer and the two RC-record reasons read them. The
+alpha's texts are byte for byte today's (its tests, AM-07 and A31 (b) unchanged and green); the v0.2-gate-v1 cases now
+expect "amend the M07 specification for it" and "§8 step 15 …". Alternative: leave the alpha's wording under both sets.
+Reversible by: reverting this one commit.
