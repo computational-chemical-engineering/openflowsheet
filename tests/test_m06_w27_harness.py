@@ -51,6 +51,34 @@ def test_an_alias_or_v17s_model_is_refused(model: str) -> None:
         harness.agent_config(model)
 
 
+def test_an_unpinned_configuration_runs_without_model() -> None:
+    config = harness.agent_config(None)
+    config.check()
+    assert "--model" not in v17.command(config, "PROMPT", Path("/x/mcp.json"))
+    init = {"apiKeySource": "none", "mcp_servers": [], "tools": []}
+    assert "the init message names no model" in v17.session_checks(config, init)
+    assert not any("model" in p for p in v17.session_checks(config, {**init, "model": "m"}))
+    with pytest.raises(harness.HarnessError):
+        v17.AgentConfig(**{**v17.AGENT.as_document(), "isolation": (), "model": None}).check()
+
+
+def test_an_unpinned_attempt_records_its_init_model_as_the_pin() -> None:
+    def record(model: str) -> dict[str, Any]:
+        session = {"init": {"model": model}, "checks": []}
+        return {"model": None, "pinned": {"model": None, "effort": "high"}, "session": session}
+
+    unpinned = record("claude-test-m1")
+    harness._unpinned(unpinned)
+    assert unpinned["pinned"] == {"model": "claude-test-m1", "effort": "high"}
+    assert unpinned["model"] is None and unpinned["session"]["checks"] == []
+    v17s = record("claude-sonnet-5")
+    harness._unpinned(v17s)
+    assert v17s["pinned"]["model"] is None
+    assert v17s["session"]["checks"] == [
+        "model 'claude-sonnet-5' is V17's, not W27's (registration §3 F1, §23.5)"
+    ]
+
+
 # =================================================================================================
 # W27-A21, A22: the card and the prompt
 # =================================================================================================

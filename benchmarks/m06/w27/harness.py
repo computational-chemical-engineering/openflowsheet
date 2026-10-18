@@ -41,6 +41,7 @@ import shutil
 import subprocess
 import sys
 from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
 
@@ -50,7 +51,6 @@ from benchmarks.t07.v17 import export as v17_export
 from benchmarks.t07.v17 import harness as v17
 from openflowsheet.canonical import canonical_json
 
-AgentConfig = v17.AgentConfig
 HarnessError = v17.HarnessError
 #: R58: the campaign record's place (its runs are M07's; U14 keeps them untracked until then).
 RUNS_ROOT: Final[Path] = registration.RECORDS / "runs"
@@ -65,6 +65,19 @@ TOOLS_TEXT: Final[str] = '--tools "" with --allowedTools "mcp__procsim__*" and -
 ISOLATION_TEXT: Final[str] = '--setting-sources ""'
 
 
+@dataclass(frozen=True)
+class AgentConfig(v17.AgentConfig):
+    """V17's configuration, where `model` None is an unpinned canary attempt: the pinning attempt
+    and every attempt before it run on Claude Code's default (registration §23.5)."""
+
+    def check(self) -> None:
+        if self.model is None:
+            if not self.effort:
+                raise HarnessError("the effort is not pinned")
+            return
+        super().check()
+
+
 def _registered() -> Mapping[str, Any]:
     configuration: Mapping[str, Any] = registration.load()["agent_configuration"]
     return configuration
@@ -75,9 +88,10 @@ def _principal() -> Mapping[str, Any]:
     return principal
 
 
-def agent_config(model: str, *, claude: str = "claude") -> AgentConfig:
-    """W27-R33's configuration with `model` as given: effort, turns, wall cap, budget guard,
-    tools and isolation from `registration.json`; operator isolation on."""
+def agent_config(model: str | None, *, claude: str = "claude") -> AgentConfig:
+    """W27-R33's configuration with `model` as given (None: no `--model`, registration §23.5):
+    effort, turns, wall cap, budget guard, tools and isolation from `registration.json`;
+    operator isolation on."""
     table = _registered()
     if table["tools"] != TOOLS_TEXT or table["isolation"] != ISOLATION_TEXT:
         raise HarnessError("the registered tools or isolation are not V17's command line")
@@ -323,6 +337,8 @@ def run(
         "session_start": session_start,
         "infrastructure_failure": v17.infrastructure_failure(session.outcome),
     }
+    if config.model is None:
+        _unpinned(record)
     _write(run_dir / w27_scorer.RUN_FILE, record)
     export_store(paths.project, session_start, run_dir)
     if config.operator_isolation:
@@ -334,6 +350,24 @@ def run(
     scores = w27_scorer.score(run_dir, coverage, cases_root=cases_root, replay=replay)
     (run_dir / w27_scorer.SCORES_FILE).write_bytes(w27_scorer.dump(scores))
     return run_dir
+
+
+def _unpinned(record: dict[str, Any]) -> None:
+    """An attempt run without `--model` (registration §23.5): its model check is that the
+    `init` model is non-empty (V17 `session_checks`) and not `claude-sonnet-5`. That model is
+    the pin this attempt establishes, so it is recorded as `pinned.model` (the scorer's pin
+    check, W27-R58 `pinned`); `model`, the requested model, stays None. BUILD DECISION
+    (WO-17a, logged in docs/design/M07-build-decisions.md): §23 does not say what `pinned.model`
+    holds for such an attempt, and with None the scorer's `pin_mismatch(model)` fails every
+    unpinned canary."""
+    session = record["session"]
+    model = (session["init"] or {}).get("model")
+    if model == NOT_THE_MODEL:
+        session["checks"].append(
+            f"model {NOT_THE_MODEL!r} is V17's, not W27's (registration §3 F1, §23.5)"
+        )
+    elif isinstance(model, str) and model:
+        record["pinned"] = {**record["pinned"], "model": model}
 
 
 def _write(path: Path, document: Any) -> None:

@@ -322,3 +322,17 @@ commit), `docs/briefs/W27-runbook.md`.
   (Q5) "Most recent model" is ambiguous across families in 2.1.302's catalog.
 - Finding: `tests/test_m07a_harvest.py` fails when `evidence/M06/W27/artifacts` is a real (ignored) directory — it
   harvests the archive's `wheelhouse/manifest.json`; the campaign needs exactly that (a symlink dirties the tree).
+
+## WO-17a — registration Amendment 4 build actions at `wp/M07-w27` (2026-10-18; no model call, nothing spent)
+
+Authority: registration §23 (W27-R64…R68, R-467…R-471), §23.8's list; M07 spec §21. A4-Q1…Q3 take their defaults:
+(Q1) an alias in the pinning attempt's `init` stops `canaries` with exit 2 before the next attempt (`model_pin`);
+(Q2) the cap counts attempts, 6 (`campaign_records.canary_attempts_max`); (Q3) records 1–3 are re-made in place after a
+C_W move, the old digests go into this log (runbook (c)).
+- DECISION: what `run.json#/pinned/model` holds for a canary attempt run without `--model` → that attempt's `init`
+  model, when it is non-empty and not `claude-sonnet-5` (`harness._unpinned`); `model` (the requested one) stays null.
+  Why: §23 registers `model` null and the session check (init model non-empty, not `claude-sonnet-5`) but not `pinned`;
+  with `pinned.model` null the scorer's unchanged pin check (`pin_mismatch(model)`, scorer l.863) makes every unpinned
+  attempt an infrastructure failure, so no canary could pass, contradicting `p6_states`/`p7_states` (attempt 01 null,
+  passed). Alternative: a scorer exemption for an unpinned run (changes a scoring rule; §23 says none changes).
+  Reversible by: reverting the `_unpinned` hunk of its commit. For the design lane's ruling round.

@@ -236,7 +236,7 @@ if sys.argv[1:] == ["--version"]:
     sys.exit(0)
 plan = json.loads(Path(__PLAN__).read_text(encoding="utf-8"))
 argv = sys.argv
-model = argv[argv.index("--model") + 1]
+model = argv[argv.index("--model") + 1] if "--model" in argv else __DEFAULT_MODEL__
 mcp = json.loads(Path(argv[argv.index("--mcp-config") + 1]).read_text(encoding="utf-8"))
 server = mcp["mcpServers"]["procsim"]
 project = Path(server["args"][server["args"].index("--project") + 1])
@@ -315,6 +315,7 @@ def write_fake_claude(directory: Path, state: State) -> Path:
         _FAKE_CLAUDE.replace("__SRC__", repr(str(registration.ROOT / "src")))
         .replace("__ROOT__", repr(str(registration.ROOT)))
         .replace("__VERSION__", repr(f"{STUB_VERSION} (Claude Code stub)"))
+        .replace("__DEFAULT_MODEL__", repr(STUB_MODEL))
         .replace("__PLAN__", repr(str(plan)))
         .replace("__VERIFIED__", repr(VERIFIED_CASE))
         .replace("__UNVERIFIED__", repr(UNVERIFIED_CASE))
