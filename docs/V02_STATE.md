@@ -99,9 +99,7 @@ green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree 
 (d) preflight P1–P8 pass; 45 runs done: CORRECT_LIMITATION 44, WRONG_LIMITATION 1 (26 pervaporation), 0 false verification /
 unauthorized / critical; order exit 0; spend USD-eq 3.38. Records committed `wp/M07` `22ae1e3` (gate 9923/35). Verdict `14d4527`
 (`docs/reviews/W27-verdict-83f825d.md`): (a)–(d), (f), (g) MET; (e) NOT MET, repaired (`89cd931`, campaign.json
-`4812910a…`), **re-judged MET** (`c50e6fb`). WO-6 merged (`10ae324`, gate 9935/35). Running: `specifier` ruling round 4 (F-7 step 17,
-F-3, F-1, F-6; `wp/M07-rulings4`, brief scratchpad `M07-rulings4-brief.md`) and WO-8a (K = version 0.2.0 + G10
-re-takes; journey at K; brief scratchpad `M07-WO8a-brief.md`). Then WO-8b: C, RC steps 1–17, WO-7 verdict, Frank's
+`4812910a…`), **re-judged MET** (`c50e6fb`). WO-6 merged (`10ae324`, gate 9935/35). Ruling round 4 done (`be7a06d`, R-473 step 17, R-474); merging into `wp/M07` (gate running). WO-8a stopped before K (build log J48–J49, `195bc93`): K drafted on local `wp/M07-K-draft` (`853e7e3` version 0.2.0 + envelope pin, `c38e1ba` G10 re-takes, digest-only proof PASS 41/79/70/91/37); two registered tests fail at any 0.2.0 tree (Q-K1 test_a10 vs R-461's three-function list; Q-K2 ledger needs the verdict doc before RC step 1, R-463). Running: `specifier` ruling round 5 (Q-K1, Q-K2, Q-K3 = K as two commits; `wp/M07-rulings5`, brief scratchpad `M07-rulings5-brief.md`). Then: apply rulings, commit A + K, journey at K, record commit. Then WO-8b: C, RC steps 1–17, WO-7 verdict, Frank's
 dated acceptances (N4, N6), step 18, M07 manifest, merge M07 into main; then the queued readiness re-check + split.
 Findings for the M07 ruling round: F-1 (R02 can hide a unit; run 26 stands), F-3 (coverage doc shows M06 snapshot), F-5. Then (ceiling USD-equivalent 45, Max plan usage) → order → commit → `verdict`.
 
