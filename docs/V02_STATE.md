@@ -99,8 +99,10 @@ green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree 
 (d) preflight P1–P8 pass; 45 runs done: CORRECT_LIMITATION 44, WRONG_LIMITATION 1 (26 pervaporation), 0 false verification /
 unauthorized / critical; order exit 0; spend USD-eq 3.38. Records committed `wp/M07` `22ae1e3` (gate 9923/35). Verdict `14d4527`
 (`docs/reviews/W27-verdict-83f825d.md`): (a)–(d), (f), (g) MET; (e) NOT MET, repaired (`89cd931`, campaign.json
-`4812910a…`), **re-judged MET** (`c50e6fb`). WO-6 merged (`10ae324`, gate 9935/35). F-7 (A62 recompute at C needs the
-login address + recorded surface) for the ruling round before WO-8.
+`4812910a…`), **re-judged MET** (`c50e6fb`). WO-6 merged (`10ae324`, gate 9935/35). Running: `specifier` ruling round 4 (F-7 step 17,
+F-3, F-1, F-6; `wp/M07-rulings4`, brief scratchpad `M07-rulings4-brief.md`) and WO-8a (K = version 0.2.0 + G10
+re-takes; journey at K; brief scratchpad `M07-WO8a-brief.md`). Then WO-8b: C, RC steps 1–17, WO-7 verdict, Frank's
+dated acceptances (N4, N6), step 18, M07 manifest, merge M07 into main; then the queued readiness re-check + split.
 Findings for the M07 ruling round: F-1 (R02 can hide a unit; run 26 stands), F-3 (coverage doc shows M06 snapshot), F-5. Then (ceiling USD-equivalent 45, Max plan usage) → order → commit → `verdict`.
 
 **Queued for the 0.2.0 cut (Frank, 2026-10-18):** transient-readiness re-check (ADR 0008 Amendment 2), `architect`, brief

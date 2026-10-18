@@ -1183,3 +1183,5 @@ Grep, don't read whole. Newest at the bottom.
   WO-6 `120c51f`+`5cdec3b` merged into wp/M07 `10ae324` (gate 9935/35).
 - 2026-10-18 **Frank, M07 §15:** N1 claim all seventeen gates (V11–V20, W21–W27); N3 no equilibrium-reactor rung in 0.2.0;
   N5 carry V17 across R-192, R-234, R-295 (no re-run). Dated acceptances N4 (V14 (b)) and N6 (M02 N1) follow the 0.2.0 verdict.
+- 2026-10-18 Launched: `specifier` ruling round 4 on the W27 verdict findings (F-7 blocks RC step 17) on `wp/M07-rulings4`;
+  WO-8a (opus-engineer) on `wp/M07`: K (0.2.0 + O5 G10 re-takes), journey at K, record committed after K.
