@@ -1170,3 +1170,6 @@ Grep, don't read whole. Newest at the bottom.
 - 2026-10-18 W27 canaries: 3/3 passed at the first attempt; pinning attempt 01 init model `claude-sonnet-5-5` (CLI default of
   the v17 setup-token login, R-471: nobody chooses), Claude Code 2.1.302; recorded spend USD-eq 0.233. Preflight P1–P8 pass.
   45-run campaign launched (ceiling 45).
+- 2026-10-18 W27 campaign done: 45/45 recorded; CORRECT_LIMITATION 44, WRONG_LIMITATION 1 (26-official_idaes_skeleton_pervaporation);
+  system false verification 0, unauthorized 0, critical 0; order_check exit 0; spend USD-eq 3.379 (48 results). Records
+  `wp/M07` `22ae1e3` (gate 9923/35 at 83f825d tree + records). Launched: `verdict` on W27 (a)–(g); WO-6 (Sonnet) on `wp/M07-wo6`.
