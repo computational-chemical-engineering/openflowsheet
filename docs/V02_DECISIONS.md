@@ -1154,3 +1154,6 @@ Grep, don't read whole. Newest at the bottom.
   confirm/P5, preflight.json/P8, canaries with attempt cap, P6/P7, order_check `8a3b17e`. Stub dry run (clean tree): G14,
   P1–P8, 45 stub runs, order_check 0, G15 20/20, A23 on 59 records. Gate 9910/35. Open: unpinned attempt records the init
   model as `pinned/model` with `model` null; A23 needs non-empty `model` (affects M07.A51) → `specifier` before any spend.
+- R-472 `a230156` (registration §23.12): engineer's form accepted — `model` = the `--model` passed or null (canary attempts
+  only); `pinned.model` = `model`, or the init model for an unpinned attempt (non-empty, not `claude-sonnet-5`); scorer
+  unchanged; W27-A23 and M07.A51 restated; A79 new; K registered `"f"*40`. WO-17b + merge into `wp/M07` launched.
