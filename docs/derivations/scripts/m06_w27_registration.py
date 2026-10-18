@@ -1989,7 +1989,573 @@ AMENDMENTS: Final = [
         "section": "§22",
         "rules": ["W27-R14"],
     },
+    {
+        "number": 4,
+        "date": "2026-10-18",
+        "section": "§23",
+        "rules": [
+            "W27-R31",
+            "W27-R33",
+            "W27-R58",
+            "W27-R64",
+            "W27-R65",
+            "W27-R66",
+            "W27-R67",
+            "W27-R68",
+        ],
+        "addenda": [
+            {
+                "date": "2026-10-18",
+                "section": "§23.12",
+                "rules": ["W27-R58"],
+                "assertions": ["W27-A23", "W27-A79"],
+            }
+        ],
+    },
 ]
+
+# =================================================================================================
+# Amendment 4 (§23): the campaign records, their order, re-canaries and the model pin
+# =================================================================================================
+
+#: W27-R64: U14's record confinement. A record name outside `runs/<campaign>/` violates W27-A72;
+#: a path naming the benchmark outside the adaptation directory violates W27-A71.
+U14_ADAPTATION: Final = "benchmarks/m06/openidaes450/"
+U14_RECORD_NAMES: Final = (
+    "campaign.json",
+    "confirmation.json",
+    "preflight.json",
+    "prompt.txt",
+    "result.json",
+    "run.json",
+    "sample.json",
+    "scores.json",
+    "store-export.json",
+    "transcript.jsonl",
+)
+CAMPAIGN_NAME_PATTERN: Final = r"^w27-m07-[0-9a-f]{7,40}$"
+U14_CAMPAIGN_PATH: Final = r"^benchmarks/m06/openidaes450/runs/w27-m07-[0-9a-f]{7,40}/[^/]"
+_C: Final = "benchmarks/m06/openidaes450/runs/w27-m07-997060d/"
+#: (path, "" when allowed or the one assertion it violates, why it is in the list)
+U14_PATH_STATES: Final = (
+    (U14_ADAPTATION + "coverage.json", "", "M06's Tier 0 coverage stays where WO-14 put it"),
+    (U14_ADAPTATION + "confirmation/idaes_feed_flash.py", "", "§7's scripted build location"),
+    (_C + "coverage.json", "", "the campaign's coverage at C_W"),
+    (_C + "sample.json", "", "the campaign's draw"),
+    (_C + "confirmation/confirmation.json", "", "W27-R66's record"),
+    (_C + "canary/01-idaes_feed_flash/run.json", "", "a canary attempt (W27-R68)"),
+    (_C + "07-idaes_feed_flash/transcript.jsonl", "", "a campaign run"),
+    (_C + "preflight.json", "", "W27-R67's record"),
+    ("src/openflowsheet/openidaes.py", "W27-A71", "shipped code naming the benchmark"),
+    ("benchmarks/t07/crafts/run.json", "W27-A71", "a record outside the adaptation directory"),
+    (U14_ADAPTATION + "run.json", "W27-A72", "a run record outside runs/"),
+    (U14_ADAPTATION + "sample.json", "W27-A72", "a draw outside a campaign"),
+    (U14_ADAPTATION + "runs/campaign.json", "W27-A72", "no campaign directory"),
+    (U14_ADAPTATION + "runs/w27-m07-XYZ1234/run.json", "W27-A72", "campaign name not hex"),
+    (U14_ADAPTATION + "runs/w27-m07-99706/run.json", "W27-A72", "abbreviation under 7 digits"),
+    (
+        U14_ADAPTATION + "campaign/01-idaes_feed_flash/scores.json",
+        "W27-A72",
+        "a record name outside runs/",
+    ),
+)
+
+
+def u14_violation(path: str) -> str:
+    """W27-R64 for one tracked path: "" when allowed, else the assertion it violates."""
+    low = path.lower()
+    named = "openidaes" in low or "crafts" in low
+    if named and path.startswith(("src/", "benchmarks/")) and not path.startswith(U14_ADAPTATION):
+        return "W27-A71"
+    if path.startswith(U14_ADAPTATION):
+        record = "/runs/" in path or Path(path).name in U14_RECORD_NAMES
+        if record and re.match(U14_CAMPAIGN_PATH, path) is None:
+            return "W27-A72"
+    return ""
+
+
+#: W27-R65: the order at C_W, and the digest each record names (member -> earlier record).
+CAMPAIGN_ORDER: Final = ("coverage", "sample", "confirmation", "canaries", "preflight", "runs")
+DIGEST_CHAIN: Final = (
+    {"record": "sample", "file": "sample.json", "names": {"coverage_sha256": "coverage"}},
+    {
+        "record": "confirmation",
+        "file": "confirmation/confirmation.json",
+        "names": {"coverage_sha256": "coverage", "sample_sha256": "sample"},
+    },
+    {
+        "record": "canaries",
+        "file": "canary/<NN>-<case_id>/run.json, each counted attempt (W27-R68)",
+        "names": {
+            "coverage_sha256": "coverage",
+            "sample_sha256": "sample",
+            "confirmation_sha256": "confirmation",
+        },
+    },
+    {
+        "record": "preflight",
+        "file": "preflight.json",
+        "names": {
+            "coverage_sha256": "coverage",
+            "sample_sha256": "sample",
+            "confirmation_sha256": "confirmation",
+            "canaries[].run_json_sha256": "canaries",
+        },
+    },
+    {
+        "record": "runs",
+        "file": "<NN>-<case_id>/run.json, every campaign run",
+        "names": {
+            "coverage_sha256": "coverage",
+            "sample_sha256": "sample",
+            "preflight_sha256": "preflight",
+        },
+    },
+)
+RUN_DIR_PATTERN: Final = r"^[0-9]{2}-.+$"
+RECANARIES_MAX: Final = 3
+CANARY_ATTEMPTS_MAX: Final = CANARY_COUNT + RECANARIES_MAX
+CANARY_ATTEMPT_PATTERN: Final = r"^0[1-6]-.+$"
+NOT_W27_MODEL: Final = "claude-sonnet-5"
+
+
+def _attempt(
+    n: int,
+    case: str,
+    passed: bool,
+    commit: str = "HEAD",
+    model: str | None = "M1",
+    init: str | None = "M1",
+) -> dict[str, Any]:
+    return {
+        "n": n,
+        "case": case,
+        "commit": commit,
+        "passed": passed,
+        "model": model,
+        "init_model": init,
+    }
+
+
+def _three(rest: str = "M1", init: str = "M1") -> list[dict[str, Any]]:
+    return [
+        _attempt(1, "A", True, model=None, init=init),
+        _attempt(2, "B", True, model=rest, init=init),
+        _attempt(3, "C", True, model=rest, init=init),
+    ]
+
+
+def _fails(numbers: Sequence[int]) -> list[dict[str, Any]]:
+    return [_attempt(n, "A", False, model=None if n == 1 else "M1") for n in numbers]
+
+
+#: W27-R68 (P6): canaries A, B, C (sample.json order); X is a frame case that is not a canary;
+#: HEAD is the campaign commit, K an earlier one. (id, attempts, expected pass, why)
+P6_STATES: Final = (
+    ("P6-S1", _three(), True, "three passes at HEAD"),
+    (
+        "P6-S2",
+        [_attempt(1, "A", False, model=None), _attempt(2, "A", True)]
+        + [_attempt(3, "B", True), _attempt(4, "C", True)],
+        True,
+        "one same-commit re-canary",
+    ),
+    ("P6-S3", [*_three()[:2], _attempt(3, "C", False)], False, "the latest attempt of C failed"),
+    (
+        "P6-S4",
+        [_attempt(1, "A", False, "K", model=None), _attempt(2, "A", True)]
+        + [_attempt(3, "B", True), _attempt(4, "C", True)],
+        True,
+        "a superseded attempt at K is kept and not counted",
+    ),
+    (
+        "P6-S5",
+        [_attempt(1, "A", True, "K", model=None), _attempt(2, "B", True, "K")]
+        + [_attempt(3, "C", False, "K"), _attempt(4, "C", True)],
+        False,
+        "A and B passed only at K, not at the campaign commit",
+    ),
+    (
+        "P6-S6",
+        _fails((1, 2, 3))
+        + [_attempt(4, "A", True), _attempt(5, "B", True), _attempt(6, "C", True)],
+        True,
+        "the whole allowance: six attempts",
+    ),
+    (
+        "P6-S7",
+        _fails((1, 2, 3, 4))
+        + [_attempt(5, "A", True), _attempt(6, "B", True), _attempt(7, "C", True)],
+        False,
+        "a seventh attempt",
+    ),
+    (
+        "P6-S8",
+        [_attempt(1, "A", True, model=None), _attempt(2, "A", True)]
+        + [_attempt(3, "B", True), _attempt(4, "C", True)],
+        False,
+        "a passed canary attempted again at the same commit",
+    ),
+    (
+        "P6-S9",
+        [_attempt(1, "A", True, model=None), _attempt(2, "X", True)]
+        + [_attempt(3, "B", True), _attempt(4, "C", True)],
+        False,
+        "an attempt on a case that is no canary",
+    ),
+    (
+        "P6-S10",
+        [_attempt(1, "A", True, model=None), _attempt(2, "B", True), _attempt(4, "C", True)],
+        False,
+        "attempt numbers not contiguous",
+    ),
+    ("P6-S11", _three()[:2], False, "C never attempted"),
+)
+#: W27-R33 as clarified by §23 (P7's model rule). (id, attempts, pin, expected pass, why)
+P7_STATES: Final = (
+    ("P7-T1", _three(), "M1", True, "pinned from attempt 01, passed to the later attempts"),
+    ("P7-T2", _three(), "M2", False, "a pin other than the pinning attempt's init model"),
+    (
+        "P7-T3",
+        [_three()[0], _attempt(2, "B", True, model=None), _attempt(3, "C", True)],
+        "M1",
+        False,
+        "an attempt after the pinning attempt ran without --model",
+    ),
+    (
+        "P7-T4",
+        _three(rest=NOT_W27_MODEL, init=NOT_W27_MODEL),
+        NOT_W27_MODEL,
+        False,
+        "Claude Code's default is V17's model",
+    ),
+    (
+        "P7-T5",
+        [_attempt(1, "A", False, model=None, init=None), _attempt(2, "A", True, model=None)]
+        + [_attempt(3, "B", True), _attempt(4, "C", True)],
+        "M1",
+        True,
+        "attempt 01 has no init message: attempt 02 pins",
+    ),
+    (
+        "P7-T6",
+        [*_three()[:2], _attempt(3, "C", True, init="M2")],
+        "M1",
+        False,
+        "a counted attempt's init model differs from the pin",
+    ),
+)
+
+
+def ref_p6(
+    attempts: Sequence[Mapping[str, Any]], canaries: Sequence[str] = ("A", "B", "C")
+) -> bool:
+    """W27-R68's P6: the reference model the registered states are checked against."""
+    numbers = [a["n"] for a in attempts]
+    if numbers != list(range(1, len(numbers) + 1)) or len(numbers) > CANARY_ATTEMPTS_MAX:
+        return False
+    if any(a["case"] not in canaries for a in attempts):
+        return False
+    for i, a in enumerate(attempts):
+        if any(
+            b["case"] == a["case"] and b["commit"] == a["commit"] and b["passed"]
+            for b in attempts[:i]
+        ):
+            return False
+    for case in canaries:
+        mine = [a for a in attempts if a["case"] == case]
+        if not mine or not mine[-1]["passed"] or mine[-1]["commit"] != "HEAD":
+            return False
+    return True
+
+
+def ref_p7(
+    attempts: Sequence[Mapping[str, Any]], pin: str, canaries: Sequence[str] = ("A", "B", "C")
+) -> bool:
+    """W27-R33 as clarified by §23: the model half of P7."""
+    pinning = next((i for i, a in enumerate(attempts) if a["init_model"]), None)
+    if pinning is None or pin != attempts[pinning]["init_model"] or pin == NOT_W27_MODEL:
+        return False
+    if any(a["model"] is not None for a in attempts[: pinning + 1]):
+        return False
+    if any(a["model"] != pin for a in attempts[pinning + 1 :]):
+        return False
+    counted = [[a for a in attempts if a["case"] == c][-1] for c in canaries]
+    return all(a["init_model"] == pin for a in counted)
+
+
+#: §23.12 (Amendment 4 addendum): the symbols of `p6_states` and `p7_states`. HEAD is the
+#: campaign commit (the test's clean HEAD); K is this fixed string, which is no commit of the
+#: repository. P6 compares a commit with HEAD only, so any K other than HEAD gives the same
+#: verdicts.
+P6_COMMIT_K: Final = "f" * 40
+
+#: §23.12: W27-R58's model rule on one `run.json`, as W27-A23 (restated) applies it. Fields:
+#: kind ("canary" iff `campaign` ends in "/canary"), `model` (requested), `pinned.model`,
+#: `session.init.model`. (id, kind, model, pinned, init, expected A23 verdict, why)
+RUN_MODEL_STATES: Final = (
+    ("R1", "campaign", "M1", "M1", "M1", True, "a campaign run: the pin is the requested model"),
+    ("R2", "canary", None, "M1", "M1", True, "the pinning attempt: its init model is the pin"),
+    ("R3", "canary", None, None, None, True, "an attempt before the pinning attempt (P7-T5's 01)"),
+    (
+        "R4",
+        "canary",
+        None,
+        None,
+        NOT_W27_MODEL,
+        True,
+        "V17's default model: the record is complete and holds no pin; the attempt fails elsewhere",
+    ),
+    ("R5", "campaign", None, "M1", "M1", False, "only a canary attempt may run without --model"),
+    (
+        "R6",
+        "canary",
+        None,
+        None,
+        "M1",
+        False,
+        "the pin is not recorded (the record before b71d86c)",
+    ),
+    ("R7", "canary", None, "M2", "M1", False, "a recorded pin other than the init model"),
+    (
+        "R8",
+        "canary",
+        None,
+        NOT_W27_MODEL,
+        NOT_W27_MODEL,
+        False,
+        "V17's model recorded as a pin",
+    ),
+    ("R9", "campaign", "M1", "M2", "M1", False, "a pin other than the requested model"),
+    (
+        "R10",
+        "campaign",
+        "M1",
+        "M1",
+        "M2",
+        True,
+        "A23 is not the scorer: a complete record of a run the scorer fails (pin_mismatch(model))",
+    ),
+    ("R11", "campaign", "", "", "M1", False, "an empty requested model"),
+)
+
+
+def ref_run_model(kind: str, model: str | None, pinned: str | None, init: str | None) -> bool:
+    """§23.12: W27-R58's model rule on one `run.json` (part of W27-A23 restated)."""
+    if model is not None:
+        return isinstance(model, str) and model != "" and pinned == model
+    if kind != "canary":
+        return False
+    established = init if isinstance(init, str) and init and init != NOT_W27_MODEL else None
+    return pinned == established
+
+
+CAMPAIGN_RECORDS: Final = {
+    "section": "§23",
+    "runs_root": "benchmarks/m06/openidaes450/runs",
+    "campaign_name_pattern": CAMPAIGN_NAME_PATTERN,
+    "campaign_name": "w27-m07-<abbreviated commit at which the campaign's first coverage.json "
+    "was taken>; fixed for the campaign's life (W27-R65)",
+    "order": list(CAMPAIGN_ORDER),
+    "digest_chain": list(DIGEST_CHAIN),
+    "digest": "SHA-256 of the file's bytes, lower-case hex",
+    "commit_rule": "coverage.json's snapshot git_commit, confirmation.json, the counted canary "
+    "attempts, preflight.json and every campaign run.json carry commit C_W, tree_clean true",
+    "run_dir_pattern": RUN_DIR_PATTERN,
+    "canary_dir": "canary",
+    "canary_attempt_pattern": CANARY_ATTEMPT_PATTERN,
+    "canaries": CANARY_COUNT,
+    "recanaries_max": RECANARIES_MAX,
+    "canary_attempts_max": CANARY_ATTEMPTS_MAX,
+    "confirmation": {
+        "file": "confirmation/confirmation.json",
+        "schema": "w27-confirmation-v1",
+        "members": [
+            "campaign",
+            "candidates",
+            "commit",
+            "coverage_sha256",
+            "empty",
+            "sample_sha256",
+            "schema",
+            "tree_clean",
+        ],
+        "non_empty": "refused: the writer writes nothing and exits non-zero; P5 fails",
+    },
+    "preflight": {
+        "file": "preflight.json",
+        "schema": "w27-preflight-v1",
+        "members": [
+            "campaign",
+            "canaries",
+            "checks",
+            "claude_code_version",
+            "commit",
+            "confirmation_sha256",
+            "coverage_sha256",
+            "model",
+            "passed",
+            "registration_sha256",
+            "sample_sha256",
+            "schema",
+            "tree_clean",
+        ],
+        "canaries_item": ["attempt", "case_id", "run_json_sha256"],
+        "writer": "the campaign command only, after P1-P8 pass, before run 01; never on --resume",
+    },
+    "run_json_added": {
+        "canary": ["confirmation_sha256", "sample_sha256"],
+        "campaign": ["preflight_sha256", "sample_sha256"],
+        "model": "the requested model: null for an attempt run without --model",
+        "pinned_model": "§23.12: the pin the record is checked against. When model is a "
+        "string, pinned.model equals it. When model is null (allowed only in a canary attempt, "
+        "whose campaign ends in /canary), pinned.model is session.init.model if that is a "
+        "non-empty string other than claude-sonnet-5, and null otherwise",
+    },
+    "run_json_model_states": [
+        {
+            "id": i,
+            "kind": k,
+            "model": m,
+            "pinned_model": p,
+            "init_model": n,
+            "expected_pass": e,
+            "why": w,
+        }
+        for i, k, m, p, n, e, w in RUN_MODEL_STATES
+    ],
+    "p6_symbols": {
+        "HEAD": "the campaign commit (in the tests, the clean HEAD)",
+        "K": P6_COMMIT_K,
+    },
+    "model_pin": "the pinning attempt is the earliest canary attempt whose transcript has an init "
+    "message with a model id; it and every attempt before it run without --model (Claude Code's "
+    "default); every later attempt and every campaign run passes --model <its init model>; "
+    "claude-sonnet-5 is never pinned",
+    "u14": {
+        "adaptation": U14_ADAPTATION,
+        "record_names": list(U14_RECORD_NAMES),
+        "campaign_path_pattern": U14_CAMPAIGN_PATH,
+        "path_states": [{"path": p, "violates": v, "why": w} for p, v, w in U14_PATH_STATES],
+    },
+    "p6_states": [
+        {"id": i, "attempts": a, "expected_pass": e, "why": w} for i, a, e, w in P6_STATES
+    ],
+    "p7_states": [
+        {"id": i, "attempts": a, "pin": p, "expected_pass": e, "why": w}
+        for i, a, p, e, w in P7_STATES
+    ],
+}
+
+
+def campaign_record_claims() -> Claims:
+    """§23's self-claims GC-A4-1…GC-A4-8."""
+    claims: Claims = []
+    admitted = [n for n in range(100) if re.match(CANARY_ATTEMPT_PATTERN, f"{n:02d}-x")]
+    claims.append(
+        (
+            "GC-A4-1 3 canaries + 3 re-canaries = 6 attempts; the pattern admits 01..06 only",
+            CANARY_ATTEMPTS_MAX == 6 and admitted == list(range(1, CANARY_ATTEMPTS_MAX + 1)),
+            f"max {CANARY_ATTEMPTS_MAX}, admitted {admitted}",
+        )
+    )
+    position = {r: i for i, r in enumerate(CAMPAIGN_ORDER)}
+    chained = [e["record"] for e in DIGEST_CHAIN]
+    ordered = chained == list(CAMPAIGN_ORDER[1:]) and all(
+        all(position[t] < position[e["record"]] for t in e["names"].values())
+        and CAMPAIGN_ORDER[position[e["record"]] - 1] in e["names"].values()
+        for e in DIGEST_CHAIN
+    )
+    claims.append(
+        (
+            "GC-A4-2 every record after coverage names only earlier records, its predecessor "
+            "among them, so the digests prove the whole order",
+            ordered,
+            f"chain {chained}",
+        )
+    )
+    got = [u14_violation(p) for p, _, _ in U14_PATH_STATES]
+    wrong = [(s[0], g) for s, g in zip(U14_PATH_STATES, got, strict=True) if g != s[1]]
+    kinds = Counter(s[1] for s in U14_PATH_STATES)
+    claims.append(
+        (
+            "GC-A4-3 the U14 path states classify as registered; allowed, W27-A71 and W27-A72 "
+            "all occur",
+            not wrong and set(kinds) == {"", "W27-A71", "W27-A72"},
+            f"wrong {wrong}; kinds {dict(sorted(kinds.items()))}",
+        )
+    )
+    non_runs = (
+        "canary",
+        "confirmation",
+        "coverage.json",
+        "sample.json",
+        "preflight.json",
+        "campaign.json",
+    )
+    claims.append(
+        (
+            "GC-A4-4 the run-directory pattern matches 01-x and 45-x and no other campaign entry",
+            all(re.match(RUN_DIR_PATTERN, n) for n in ("01-x", "45-x"))
+            and not any(re.match(RUN_DIR_PATTERN, n) for n in non_runs),
+            "P8's discrimination",
+        )
+    )
+    p6 = [(s[0], ref_p6(s[1]), s[2]) for s in P6_STATES]
+    claims.append(
+        (
+            "GC-A4-5 P6 (W27-R68) gives each registered state its expectation; both verdicts occur",
+            all(g == e for _, g, e in p6) and {e for _, _, e in p6} == {True, False},
+            f"differ {[(i, g) for i, g, e in p6 if g != e]}",
+        )
+    )
+    p7 = [(s[0], ref_p7(s[1], s[2]), s[3]) for s in P7_STATES]
+    claims.append(
+        (
+            "GC-A4-6 P7's model rule gives every registered state its expectation, every state "
+            "P6-valid; both verdicts occur",
+            all(ref_p6(s[1]) for s in P7_STATES)
+            and all(g == e for _, g, e in p7)
+            and {e for _, _, e in p7} == {True, False},
+            f"differ {[(i, g) for i, g, e in p7 if g != e]}",
+        )
+    )
+    fields = ("kind", "model", "pinned", "init")
+    rows = {s[0]: (s[1:5], s[5]) for s in RUN_MODEL_STATES}
+    got = {i: ref_run_model(*v) for i, (v, _) in rows.items()}
+    flips = {
+        f: [
+            (a, b)
+            for a, (va, ea) in rows.items()
+            for b, (vb, eb) in rows.items()
+            if a < b
+            and ea != eb
+            and [x != y for x, y in zip(va, vb, strict=True)] == [g == f for g in fields]
+        ]
+        for f in fields
+    }
+    claims.append(
+        (
+            "GC-A4-7 the model rule (ref_run_model) gives every run_json_model_states entry its "
+            "expectation; the states are pairwise distinct; both verdicts occur; each of kind, "
+            "model, pinned and init alone changes the verdict in some pair",
+            all(got[i] == e for i, (_, e) in rows.items())
+            and len({v for v, _ in rows.values()}) == len(rows) == len(RUN_MODEL_STATES)
+            and {e for _, e in rows.values()} == {True, False}
+            and all(flips.values()),
+            f"differ {[i for i, (_, e) in rows.items() if got[i] != e]}; "
+            f"flips {dict((f, p[:1]) for f, p in flips.items())}",
+        )
+    )
+    claims.append(
+        (
+            "GC-A4-8 K is 40 lower-case hex digits, so it is a commit-shaped string, and is not "
+            "the symbol HEAD",
+            re.fullmatch(r"[0-9a-f]{40}", P6_COMMIT_K) is not None and P6_COMMIT_K != "HEAD",
+            f"K {P6_COMMIT_K}",
+        )
+    )
+    return claims
 
 
 def registration_claims(facts: Mapping[str, Any]) -> Claims:
@@ -2207,7 +2773,7 @@ def registration_claims(facts: Mapping[str, Any]) -> Claims:
             f"{lows[-1]:.10f}",
         )
     )
-    return claims + tolerance_claims()
+    return claims + tolerance_claims() + campaign_record_claims()
 
 
 def statistics(facts: Mapping[str, Any]) -> dict[str, Any]:
@@ -2407,6 +2973,7 @@ def build_registration(facts: Mapping[str, Any]) -> dict[str, Any]:
             },
         },
         "agent_configuration": AGENT_CONFIGURATION,
+        "campaign_records": CAMPAIGN_RECORDS,
         "reporting": {
             "alpha_one_sided": CP_ALPHA,
             "clopper_pearson_n45": cp_table(SAMPLE_SIZE),

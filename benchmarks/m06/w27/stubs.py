@@ -236,7 +236,7 @@ if sys.argv[1:] == ["--version"]:
     sys.exit(0)
 plan = json.loads(Path(__PLAN__).read_text(encoding="utf-8"))
 argv = sys.argv
-model = argv[argv.index("--model") + 1]
+model = argv[argv.index("--model") + 1] if "--model" in argv else __DEFAULT_MODEL__
 mcp = json.loads(Path(argv[argv.index("--mcp-config") + 1]).read_text(encoding="utf-8"))
 server = mcp["mcpServers"]["procsim"]
 project = Path(server["args"][server["args"].index("--project") + 1])
@@ -315,6 +315,7 @@ def write_fake_claude(directory: Path, state: State) -> Path:
         _FAKE_CLAUDE.replace("__SRC__", repr(str(registration.ROOT / "src")))
         .replace("__ROOT__", repr(str(registration.ROOT)))
         .replace("__VERSION__", repr(f"{STUB_VERSION} (Claude Code stub)"))
+        .replace("__DEFAULT_MODEL__", repr(STUB_MODEL))
         .replace("__PLAN__", repr(str(plan)))
         .replace("__VERIFIED__", repr(VERIFIED_CASE))
         .replace("__UNVERIFIED__", repr(UNVERIFIED_CASE))
@@ -356,6 +357,53 @@ def harness_run(
         operator=stub_operator(root),
         name=state.state_id,
     )
+
+
+def canary_attempt(
+    campaign_dir: Path,
+    n: int,
+    case_id: str,
+    *,
+    commit: str,
+    passed: bool,
+    model: str | None,
+    init_model: str | None,
+    claude_code_version: str = STUB_VERSION,
+    tree_clean: bool = True,
+    chain: Mapping[str, str] | None = None,
+) -> Path:
+    """A stub canary attempt `campaign_dir/canary/<NN>-<case_id>/` as P6, P7, the pin and the
+    digest chain read it (W27-R68): `run.json` (the requested `model`, `commit`, `tree_clean`,
+    `chain`'s digests), a transcript whose `init` message names `init_model` (none when None) and
+    `scores.json`. No session runs; `passed` False records a failed session check."""
+    run_dir = campaign_dir / harness.CANARY_DIR / f"{n:02d}-{case_id}"
+    run_dir.mkdir(parents=True)
+    init = None
+    if init_model is not None:
+        init = {"model": init_model, "claude_code_version": claude_code_version}
+        line = {"type": "system", "subtype": "init", **init}
+        (run_dir / w27_scorer.TRANSCRIPT_FILE).write_text(json.dumps(line) + "\n", "utf-8")
+    else:
+        (run_dir / w27_scorer.TRANSCRIPT_FILE).write_text("", encoding="utf-8")
+    record = {
+        "campaign": f"{campaign_dir.name}/{harness.CANARY_DIR}",
+        "order": n,
+        "case_id": case_id,
+        "model": model,
+        "commit": commit,
+        "tree_clean": tree_clean,
+        **(chain or {}),
+        "session": {"init": init, "checks": [] if passed else ["stub: the attempt failed"]},
+        "operator_identifier_hits": 0,
+        "infrastructure_failure": None,
+    }
+    (run_dir / w27_scorer.RUN_FILE).write_text(
+        json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    (run_dir / w27_scorer.SCORES_FILE).write_bytes(
+        w27_scorer.dump({"infrastructure_failure": None})
+    )
+    return run_dir
 
 
 # =================================================================================================

@@ -1,8 +1,10 @@
 """W27's preflight: the campaign's preconditions P1–P8 (M06 WO-16e).
 
 Normative text: registration §18 WO-16e and W27-R56 ("the preflight of §18 WO-16e passed before the
-first run" is gated, G16), after V17's `benchmarks/t07/v17/preflight.py`. Each check returns a
-verdict `{passed, …detail}`; `require` raises unless all eight pass.
+first run" is gated, G16), after V17's `benchmarks/t07/v17/preflight.py`; P5–P8 as registration
+§23.3–§23.5 (Amendment 4) restate them. Each check returns a verdict `{passed, …detail}`;
+`require` raises unless all eight pass and returns the verdicts, which the `campaign` command
+records in `preflight.json` (W27-R67). The standalone `preflight` command writes nothing.
 
 - **P1** Frank's spend approval is recorded: a line starting `APPROVAL_LINE` in `APPROVAL_FILE`
   (registration §17 Q3/Q5, design note F1). Nothing in the build lane can make it pass.
@@ -13,18 +15,24 @@ verdict `{passed, …detail}`; `require` raises unless all eight pass.
 - **P3** the campaign's `coverage.json` was made at this commit from this build (its snapshot is
   rebuilt equal), re-classifies to the same rows, passes G14, and its snapshot is not refused.
 - **P4** `sample.json` is the byte-identical re-draw from that `coverage.json` (W27-A20).
-- **P5** §7: every sampled `CANDIDATE` has its committed scripted reference build and a record
-  showing `VERIFIED` with every stream floor ≤ 1/`floor_margin`; or the sample has none.
-- **P6** three canaries are recorded under `<campaign>/canary/` and each passed
-  (`harness.canary_verdict`).
-- **P7** the model id and Claude Code version the campaign pins are what all three canaries'
-  `init` messages showed.
-- **P8** the checkout is a clean commit, and the campaign directory holds no run yet.
+- **P5** `confirmation/confirmation.json` (W27-R66) has exactly the registered members, names
+  this campaign and HEAD, both digests equal the files', its candidates are the recomputed ones,
+  and C is empty (a non-empty C fails with `non_empty_candidates`).
+- **P6** the canary attempts `canary/<NN>-<case_id>/` are numbered 01…N contiguously, N ≤ 6, each
+  on a canary case, none repeating a case that passed at its commit; each canary case's latest
+  (counted) attempt passed (`harness.canary_verdict`) at HEAD with a clean tree (W27-R68).
+- **P7** a pinning attempt exists; the pin equals its `init` model and is not `claude-sonnet-5`;
+  it and the attempts before it requested no model, every later one the pin; every counted
+  attempt's `init` shows the pin and the pinned Claude Code version (registration §23.5).
+- **P8** the checkout is a clean commit, and the campaign directory holds no run directory, no
+  `campaign.json` and no `preflight.json` (`canary/`, `confirmation/`, `coverage.json` and
+  `sample.json` are expected there).
 """
 
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from collections.abc import Callable, Mapping
@@ -34,6 +42,7 @@ from typing import Any, Final
 
 from benchmarks.m06.w27 import coverage as classifier
 from benchmarks.m06.w27 import facts, harness, registration, sample, snapshot
+from benchmarks.m06.w27 import scorer as w27_scorer
 
 Verdict = dict[str, Any]
 
@@ -41,18 +50,17 @@ Verdict = dict[str, Any]
 APPROVAL_FILE: Final[Path] = registration.ROOT / "docs" / "V02_DECISIONS.md"
 APPROVAL_LINE: Final[str] = "- **W27 Tier 1 approved**"
 #: P2: the registered files' SHA-256 at registration (WO-15, `5ceb32c`), as amended by the
-#: document's §20 (Amendment 1, M06 review F5), §21 (Amendment 2: the C1 rows, W27-R62/R63) and
-#: §22 (Amendment 3: `c1.reactor_surrogate`). An amendment of the registration changes these pins
-#: in the commit that records it.
+#: document's §20 (Amendment 1, M06 review F5), §21 (Amendment 2: the C1 rows, W27-R62/R63),
+#: §22 (Amendment 3: `c1.reactor_surrogate`) and §23 (Amendment 4: the campaign's records, order,
+#: re-canaries and model pin). An amendment of the registration changes these pins in the commit
+#: that records it.
 REGISTERED_SHA256: Final[Mapping[Path, str]] = {
     registration.REGISTRATION_JSON: (
-        "ba627342f07e913875170992bad1621a9d6911ca43f47004457749bab6d68753"
+        "ee099a60f9da6900325f54127f92e9eee926d2015f97b527843db482d6f0e52e"
     ),
-    registration.DOCUMENT: "b5b5b3a5103ce63cda4a5547ffd6d4c599e82ff04e500358be19671c91e8effe",
-    registration.GENERATOR: "575682048470a95fd9c9a337b716d40abb89e74e376d5a838a1240aae153eb4b",
+    registration.DOCUMENT: "bf48a5212cb0f17675567a8194e61d1f5b6665a082c0c3916a341d7d93260c70",
+    registration.GENERATOR: "3d7429a258fca0bc92af4a3e4113af7f4ef62cd2b1cd8e4999e9c8f6eb9241eb",
 }
-#: P5: the scripted reference builds of §7.
-CONFIRMATION: Final[Path] = registration.RECORDS / "confirmation"
 
 
 class PreflightError(harness.HarnessError):
@@ -170,69 +178,124 @@ def p4(campaign: Campaign) -> Verdict:
 
 
 def p5(campaign: Campaign) -> Verdict:
-    drawn = json.loads(campaign.sample_path.read_bytes())
-    rows = {r["case_id"]: r for r in json.loads(campaign.coverage_path.read_bytes())["rows"]}
-    candidates = [c for c in drawn["cases"] if rows[c]["class"] == "CANDIDATE"]
-    if not candidates:
-        return {"passed": True, "candidates": 0, "record": "C is empty: §7 has nothing to confirm"}
-    margin = float(registration.load()["scoring"]["stream_tolerance"]["floor_margin"])
-    missing = []
-    for case_id in candidates:
-        script = CONFIRMATION / f"{case_id}.py"
-        record_path = CONFIRMATION / f"{case_id}.json"
-        record = json.loads(record_path.read_bytes()) if record_path.is_file() else {}
-        floors = record.get("floors") or {}
-        ok = (
-            script.is_file()
-            and record.get("verification_status") == "VERIFIED"
-            and bool(floors)
-            and all(isinstance(v, int | float) and v <= 1.0 / margin for v in floors.values())
-        )
-        if not ok:
-            missing.append(case_id)
-    return {"passed": not missing, "candidates": len(candidates), "not_confirmed": missing}
+    path = campaign.directory / harness.CONFIRMATION_FILE
+    coverage_bytes = campaign.coverage_path.read_bytes()
+    sample_bytes = campaign.sample_path.read_bytes()
+    candidates = harness.sampled_candidates(json.loads(coverage_bytes), json.loads(sample_bytes))
+    reason = "non_empty_candidates" if candidates else None
+    if not path.is_file():
+        return {"passed": False, "candidates": candidates, "failed": ["file"], "reason": reason}
+    record = json.loads(path.read_bytes())
+    table = harness.campaign_records()["confirmation"]
+    checks = {
+        "members": sorted(record) == sorted(table["members"])
+        and record.get("schema") == table["schema"],
+        "campaign": record.get("campaign") == campaign.name,
+        "commit": record.get("commit") == _git("rev-parse", "HEAD"),
+        "coverage_sha256": record.get("coverage_sha256")
+        == registration.sha256_bytes(coverage_bytes),
+        "sample_sha256": record.get("sample_sha256") == registration.sha256_bytes(sample_bytes),
+        "candidates": record.get("candidates") == candidates,
+        "empty": record.get("empty") is True,
+    }
+    failed = [name for name, held in checks.items() if not held]
+    return {"passed": not failed, "candidates": candidates, "failed": failed, "reason": reason}
 
 
-def _canary_dirs(campaign: Campaign) -> list[Path]:
-    root = campaign.directory / harness.CANARY_DIR
-    return sorted(p for p in root.iterdir() if p.is_dir()) if root.is_dir() else []
+def _canaries(campaign: Campaign) -> list[str]:
+    canaries: list[str] = json.loads(campaign.sample_path.read_bytes())["canaries"]
+    return canaries
 
 
 def p6(campaign: Campaign) -> Verdict:
-    verdicts = {p.name: harness.canary_verdict(p) for p in _canary_dirs(campaign)}
+    records = harness.campaign_records()
+    attempts = harness.canary_attempts(campaign.directory)
+    canaries = _canaries(campaign)
+    head = _git("rev-parse", "HEAD")
+    pattern = re.compile(str(records["canary_attempt_pattern"]))
+    problems: list[str] = []
+    numbered = [a.n for a in attempts] == list(range(1, len(attempts) + 1))
+    if (
+        not numbered
+        or len(attempts) > int(records["canary_attempts_max"])
+        or not all(pattern.match(a.name) for a in attempts)
+    ):
+        problems.append(f"numbering: {[a.name for a in attempts]}")
+    strangers = [a.name for a in attempts if a.case_id not in canaries]
+    if strangers:
+        problems.append(f"not_a_canary: {strangers}")
+    rerolled = [
+        a.name
+        for k, a in enumerate(attempts)
+        if any(b.case_id == a.case_id and b.commit == a.commit and b.passed for b in attempts[:k])
+    ]
+    if rerolled:
+        problems.append(f"passed_case_attempted_again: {rerolled}")
+    counted = harness.counted_attempts(attempts, canaries)
+    for case_id, attempt in counted.items():
+        if attempt is None:
+            problems.append(f"never_attempted: {case_id}")
+        elif not attempt.passed:
+            problems.append(f"counted_attempt_failed: {attempt.name}")
+        elif attempt.commit != head or attempt.tree_clean is not True:
+            problems.append(f"counted_attempt_not_at_head_clean: {attempt.name}")
     return {
-        "passed": len(verdicts) == 3 and all(v["passed"] for v in verdicts.values()),
-        "canaries": verdicts,
+        "passed": not problems,
+        "problems": problems,
+        "attempts": [a.name for a in attempts],
+        "counted": {c: a.name if a is not None else None for c, a in counted.items()},
     }
 
 
 def p7(campaign: Campaign) -> Verdict:
-    seen = [harness.canary_verdict(p) for p in _canary_dirs(campaign)]
-    models = sorted({str(v["init_model"]) for v in seen})
-    versions = sorted({str(v["init_claude_code_version"]) for v in seen})
+    attempts = harness.canary_attempts(campaign.directory)
+    pinning = harness.pinning_attempt(attempts)
+    pin = campaign.model
+    problems: list[str] = []
+    if pinning is None:
+        problems.append("no_pinning_attempt")
+    else:
+        if pin != pinning.init_model:
+            problems.append(f"pin_is_not_{pinning.name}_init_model: {pinning.init_model!r}")
+        if pin == harness.NOT_THE_MODEL:
+            problems.append(f"pin_is_{harness.NOT_THE_MODEL}")
+        k = attempts.index(pinning)
+        early = [a.name for a in attempts[: k + 1] if a.model is not None]
+        late = [a.name for a in attempts[k + 1 :] if a.model != pinning.init_model]
+        if early:
+            problems.append(f"model_requested_before_the_pin: {early}")
+        if late:
+            problems.append(f"pin_not_requested_after_it: {late}")
+    for attempt in harness.counted_attempts(attempts, _canaries(campaign)).values():
+        if attempt is None:
+            continue
+        if attempt.init_model != pin:
+            problems.append(f"counted_init_model_not_the_pin: {attempt.name}")
+        if attempt.init_claude_code_version != campaign.claude_code_version:
+            problems.append(f"counted_init_version_not_pinned: {attempt.name}")
     return {
-        "passed": len(seen) == 3
-        and models == [campaign.model]
-        and versions == [campaign.claude_code_version],
-        "pinned": {"model": campaign.model, "claude_code_version": campaign.claude_code_version},
-        "canary_models": models,
-        "canary_claude_code_versions": versions,
+        "passed": not problems,
+        "problems": problems,
+        "pinned": {"model": pin, "claude_code_version": campaign.claude_code_version},
+        "pinning_attempt": pinning.name if pinning is not None else None,
     }
 
 
 def p8(campaign: Campaign) -> Verdict:
     clean = harness.git_state(campaign.runs_root)["tree_clean"] is True
     directory = campaign.directory
-    runs = (
+    pattern = re.compile(str(harness.campaign_records()["run_dir_pattern"]))
+    files = {harness.PREFLIGHT_FILE, w27_scorer.CAMPAIGN_FILE}
+    present = (
         sorted(
             p.name
             for p in directory.iterdir()
-            if p.name != harness.CANARY_DIR and (p.is_dir() or p.name == "campaign.json")
+            if (p.is_dir() and pattern.match(p.name)) or (p.is_file() and p.name in files)
         )
         if directory.is_dir()
         else []
     )
-    return {"passed": clean and not runs, "tree_clean": clean, "runs_present": runs}
+    return {"passed": clean and not present, "tree_clean": clean, "runs_present": present}
 
 
 CHECKS: Final[Mapping[str, Callable[[Campaign], Verdict]]] = {
@@ -247,9 +310,11 @@ CHECKS: Final[Mapping[str, Callable[[Campaign], Verdict]]] = {
 }
 
 
-def run_all(campaign: Campaign) -> dict[str, Verdict]:
+def run_all(
+    campaign: Campaign, checks: Mapping[str, Callable[[Campaign], Verdict]] = CHECKS
+) -> dict[str, Verdict]:
     results: dict[str, Verdict] = {}
-    for name, check in CHECKS.items():
+    for name, check in checks.items():
         try:
             results[name] = check(campaign)
         except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as error:
@@ -257,8 +322,12 @@ def run_all(campaign: Campaign) -> dict[str, Verdict]:
     return results
 
 
-def require(campaign: Campaign) -> None:
-    results = run_all(campaign)
+def require(
+    campaign: Campaign, checks: Mapping[str, Callable[[Campaign], Verdict]] = CHECKS
+) -> dict[str, Verdict]:
+    """P1–P8's verdicts, which `preflight.json` records; raises unless all pass."""
+    results = run_all(campaign, checks)
     failed = sorted(name for name, verdict in results.items() if not verdict["passed"])
     if failed:
         raise PreflightError(f"preflight failed: {failed}")
+    return results
