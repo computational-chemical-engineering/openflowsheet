@@ -336,6 +336,45 @@ def test_spend_sums_the_recorded_costs(tmp_path: Path) -> None:
     }
 
 
+def test_campaign_stops_before_a_run_that_could_pass_the_spend_ceiling(tmp_path: Path) -> None:
+    data = registration.COVERAGE_JSON.read_bytes()
+    drawn = sample.sample_document(json.loads(data), data)
+    (tmp_path / "coverage.json").write_bytes(data)
+    (tmp_path / "sample.json").write_bytes(registration.dump(drawn))
+    calls: list[int] = []
+
+    def run_one(case_id: str, order: int, campaign: str, **kwargs: Any) -> Path:
+        run_dir = kwargs["runs_root"] / campaign / f"{order:02d}-{case_id}"
+        run_dir.mkdir(parents=True)
+        (run_dir / "run.json").write_text("{}", encoding="utf-8")
+        (run_dir / "result.json").write_text('{"total_cost_usd": 4.0}', encoding="utf-8")
+        calls.append(order)
+        return run_dir
+
+    config = harness.agent_config("claude-test-model-id")  # the USD 5 cap per run
+    # Before run k: 4(k-1) recorded + 5 for run k; run 4 would bound USD 17 > 14.
+    with pytest.raises(harness.HarnessError, match="spend ceiling USD 14: recorded 12.00"):
+        harness.campaign(
+            "c",
+            work=tmp_path / "w",
+            config=config,
+            claude_code_version="1",
+            coverage_path=tmp_path / "coverage.json",
+            sample_path=tmp_path / "sample.json",
+            runs_root=tmp_path / "runs",
+            preflight=lambda: None,
+            run_one=run_one,
+            spend_ceiling_usd=14.0,
+        )
+    assert calls == [1, 2, 3]
+    # A run with no recorded cost counts at the cap: 12 + 5 + 5 = 22 > 21.
+    (tmp_path / "runs" / "c" / "03-uncosted").mkdir()
+    (tmp_path / "runs" / "c" / "03-uncosted" / "run.json").write_text("{}", encoding="utf-8")
+    harness.within_spend_ceiling(tmp_path / "runs" / "c", config, 22.0)
+    with pytest.raises(harness.HarnessError, match="1 uncosted run"):
+        harness.within_spend_ceiling(tmp_path / "runs" / "c", config, 21.0)
+
+
 def test_cli_refuses_a_campaign_without_its_coverage_and_sample(tmp_path: Path) -> None:
     with pytest.raises(harness.HarnessError, match="coverage and sample first"):
         harness.main(

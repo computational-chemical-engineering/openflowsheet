@@ -55,6 +55,8 @@ HarnessError = v17.HarnessError
 #: R58: the campaign record's place (its runs are M07's; U14 keeps them untracked until then).
 RUNS_ROOT: Final[Path] = registration.RECORDS / "runs"
 CANARY_DIR: Final[str] = "canary"
+#: The command line's spend ceiling: the top of Frank's approval, USD 15–45 (P1's line).
+SPEND_CEILING_USD: Final[float] = 45.0
 PROJECT_ID: Final[str] = "w27-run"
 #: Registration §3 F1: the campaign model is not V17's.
 NOT_THE_MODEL: Final[str] = "claude-sonnet-5"
@@ -406,11 +408,13 @@ def campaign(
     operator: v17.Operator | None = None,
     preflight: Callable[[], None],
     run_one: Callable[..., Path] = run,
+    spend_ceiling_usd: float | None = None,
 ) -> Path:
     """W27-R58: every sampled case once, in the registered run order; a run whose directory
     exists is never run again; the campaign starts only after `preflight` (P1–P8) passes and
-    stops at a run outside the configuration (the run is kept and counts). Writes
-    `campaign.json`."""
+    stops at a run outside the configuration (the run is kept and counts). With
+    `spend_ceiling_usd` it also stops before a run that could take the spend past it
+    (`within_spend_ceiling`); `resume` continues. Writes `campaign.json`."""
     config.check()
     campaign_dir = runs_root / name
     if not resume:
@@ -424,6 +428,8 @@ def campaign(
     for order, case_id in enumerate(sample["run_order"], start=1):
         if (campaign_dir / f"{order:02d}-{case_id}").exists():
             continue
+        if spend_ceiling_usd is not None:
+            within_spend_ceiling(campaign_dir, config, spend_ceiling_usd)
         run_dir = run_one(
             case_id,
             order,
@@ -548,6 +554,21 @@ def spend(campaign_dir: Path) -> dict[str, Any]:
     }
 
 
+def within_spend_ceiling(campaign_dir: Path, config: AgentConfig, ceiling_usd: float) -> None:
+    """Refuses the next run unless the recorded spend, plus the per-run cap for each run with no
+    recorded cost and for the next run, stays within `ceiling_usd` (Frank's approval): the
+    campaign then never spends past it, whatever a run costs."""
+    recorded = spend(campaign_dir)
+    cap = config.max_budget_usd
+    bound = recorded["total_cost_usd"] + cap * (len(recorded["uncosted"]) + 1)
+    if bound > ceiling_usd:
+        raise HarnessError(
+            f"spend ceiling USD {ceiling_usd:g}: recorded {recorded['total_cost_usd']:.2f}, "
+            f"{len(recorded['uncosted'])} uncosted run(s) and the next run at the USD {cap:g} cap "
+            f"bound USD {bound:.2f}; stop (Frank's approval), then --resume"
+        )
+
+
 def _campaign_files(runs_root: Path, name: str) -> tuple[Path, Path]:
     """`<campaign>/coverage.json` and `<campaign>/sample.json`, which must exist."""
     directory = runs_root / name
@@ -579,6 +600,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         each.add_argument("--work", required=True, type=Path, help="outside the repository")
         each.add_argument("--oauth-token-file", required=True, type=Path)
     many.add_argument("--resume", action="store_true")
+    many.add_argument(
+        "--spend-ceiling-usd",
+        type=float,
+        default=SPEND_CEILING_USD,
+        help="stop before a run that could pass it (default: Frank's approval, USD 45)",
+    )
     arguments = parser.parse_args(argv)
     runs_root: Path = arguments.runs_root
     directory = runs_root / arguments.campaign
@@ -623,6 +650,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         resume=arguments.resume,
         operator=operator,
         preflight=lambda: preflight.require(context),
+        spend_ceiling_usd=arguments.spend_ceiling_usd,
     )
     print(campaign_dir / w27_scorer.CAMPAIGN_FILE)
     return 0
