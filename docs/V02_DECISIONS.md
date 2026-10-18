@@ -1150,3 +1150,7 @@ Grep, don't read whole. Newest at the bottom.
   with exact refusal texts (J′ record passes via (ii)), A31(b) ast test in `tests/test_m07_v0_2_gate.py`, A32 `links_item`,
   A37/A38 refusal texts; Q-A3-1 default (J47). Gates 9881/9886/9887, 35 skipped; CI 39113895404 green both runners.
 - Plan: after WO-17a, merge `wp/M07-w27` into `wp/M07`; C_W = that merge; then canaries + campaign; WO-6 after.
+- W27 WO-17a done `wp/M07-w27` @ `1219636` (no spend): U14 + A70–A73 `1ed4a96`; unpinned canary attempt `b71d86c`;
+  confirm/P5, preflight.json/P8, canaries with attempt cap, P6/P7, order_check `8a3b17e`. Stub dry run (clean tree): G14,
+  P1–P8, 45 stub runs, order_check 0, G15 20/20, A23 on 59 records. Gate 9910/35. Open: unpinned attempt records the init
+  model as `pinned/model` with `model` null; A23 needs non-empty `model` (affects M07.A51) → `specifier` before any spend.
