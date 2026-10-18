@@ -16,7 +16,8 @@ version; scorer classifies the stub runs as registered"); registration §14.3, a
    `campaign.json`;
 6. `harness.order_check` on the campaign directory (M07.A50, W27-A78);
 7. the twenty scorer states (`stubs.run_states`; S19, S20 by Amendment 2) and G15's judgement;
-8. W27-A23 on every scorer-state harness run's and every campaign run's `run.json`.
+8. W27-A23 (restated, registration §23.12) on every scorer-state harness run's `run.json` and on
+   every `run.json` under the campaign directory, the canary attempts' included.
 
 Everything is written under `--out`, outside the tree or git-ignored (P8 needs a clean tree);
 `summary.json` holds the verdicts. Run:
@@ -36,6 +37,8 @@ from benchmarks.m06.w27 import coverage as classifier
 from benchmarks.m06.w27 import facts, harness, preflight, registration, sample, snapshot, stubs
 
 CAMPAIGN = "dry-run"
+#: The stand-in `claude` of the canary attempts: a session with the stub's model and no answer.
+CANARY = stubs.State("canary", "", "", text="Stub canary: no model, no answer.")
 
 
 def run(out: Path, work: Path) -> dict[str, Any]:
@@ -55,8 +58,7 @@ def run(out: Path, work: Path) -> dict[str, Any]:
     sample_path.write_bytes(registration.dump(drawn))
     harness.confirm(CAMPAIGN, runs_root=runs_root)
 
-    canary = stubs.State("canary", "", "", text="Stub canary: no model, no answer.")
-    claude = str(stubs.write_fake_claude(out / "bin", canary))
+    claude = str(stubs.write_fake_claude(out / "bin", CANARY))
     operator = stubs.stub_operator(out)
     environment = {"HOME": str(out / "home"), "PATH": "/usr/bin:/bin"}
 
@@ -110,7 +112,12 @@ def run(out: Path, work: Path) -> dict[str, Any]:
         for k, v in results.items()
         if v["scores"]["case_class"] != "CANDIDATE"
     }
-    records.update({p.name: json.loads((p / "run.json").read_bytes()) for p in runs})
+    records.update(
+        {
+            str(p.parent.relative_to(directory)): json.loads(p.read_bytes())
+            for p in directory.glob("**/run.json")
+        }
+    )
     a23 = {k: harness.a23(r) for k, r in sorted(records.items())}
     summary = {
         "commit": coverage["snapshot"]["git_commit"],

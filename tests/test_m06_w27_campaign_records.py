@@ -116,6 +116,7 @@ def _states_campaign(tmp_path: Path, state: dict[str, Any]) -> preflight.Campaig
     assert remaining[:3] == canaries
     cases = {"A": canaries[0], "B": canaries[1], "C": canaries[2], "X": remaining[3]}
     commits = {"HEAD": head(), "K": K}
+    assert K != commits["HEAD"]
     for attempt in state["attempts"]:
         stubs.canary_attempt(
             directory,

@@ -7,6 +7,7 @@ no network or model call. Tests that need a case card read the pinned archive an
 
 from __future__ import annotations
 
+import copy
 import json
 import shutil
 from dataclasses import replace
@@ -14,9 +15,10 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from m06_w27_support import clean_head, stub_campaign
+from m06_w27_support import MODELS, clean_head, stub_campaign
 
-from benchmarks.m06.w27 import harness, preflight, registration, report, sample, stubs
+from benchmarks.m06.w27 import dryrun, harness, preflight, registration, report, sample, stubs
+from benchmarks.m06.w27 import scorer as w27_scorer
 from benchmarks.t07.v17 import harness as v17
 
 ARCHIVE_PRESENT = (registration.ARCHIVE_DIR / "cases").is_dir()
@@ -149,6 +151,64 @@ def test_a23_run_record(stub_run: Path) -> None:
     assert record["infrastructure_failure"] is None
     broken = {k: v for k, v in record.items() if k != "lock_sha256"}
     assert not harness.a23(broken)["passed"]
+
+
+# =================================================================================================
+# W27-A79: W27-R58's model rule in W27-A23 (registration §23.12, R-472)
+# =================================================================================================
+
+
+def test_a79a_the_registered_model_states(stub_run: Path) -> None:
+    record = json.loads((stub_run / "run.json").read_text(encoding="utf-8"))
+    states = registration.load()["campaign_records"]["run_json_model_states"]
+    assert len(states) == 11
+    assert [s["id"] for s in states if s["expected_pass"]] == ["R1", "R2", "R3", "R4", "R10"]
+    assert not record["campaign"].endswith("/" + harness.CANARY_DIR)
+    models = {**MODELS, None: None}
+    for state in states:
+        overlaid = copy.deepcopy(record)
+        if state["kind"] == "canary":
+            overlaid["campaign"] = f"{record['campaign']}/{harness.CANARY_DIR}"
+        overlaid["model"] = models.get(state["model"], state["model"])
+        overlaid["pinned"]["model"] = models.get(state["pinned_model"], state["pinned_model"])
+        overlaid["session"]["init"]["model"] = models.get(state["init_model"], state["init_model"])
+        verdict = harness.a23(overlaid)
+        assert verdict["passed"] is state["expected_pass"], (state["id"], verdict)
+        assert verdict["passed"] or verdict["problems"], state["id"]
+
+
+@needs_archive
+def test_a79b_an_unpinned_attempt_through_the_harness(tmp_path: Path) -> None:
+    pytest.importorskip("mcp")
+    config = harness.agent_config(
+        None, claude=str(stubs.write_fake_claude(tmp_path / "bin", dryrun.CANARY))
+    )
+    run_dir = harness.run(
+        stubs.NON_CANDIDATE,
+        1,
+        f"dry-run/{harness.CANARY_DIR}",
+        work=tmp_path / "work",
+        config=config,
+        coverage_path=registration.COVERAGE_JSON,
+        pinned_claude_code_version=None,
+        runs_root=tmp_path / "runs",
+        environment={"HOME": str(tmp_path / "home"), "PATH": "/usr/bin:/bin"},
+        operator=stubs.stub_operator(tmp_path),
+    )
+    record = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
+    assert harness.a23(record)["passed"], harness.a23(record)
+    assert record["model"] is None
+    assert record["pinned"]["model"] == record["session"]["init"]["model"] == stubs.STUB_MODEL
+    scores = json.loads((run_dir / "scores.json").read_text(encoding="utf-8"))
+    assert scores["infrastructure_failure"] is None
+    unrecorded = tmp_path / "unrecorded"
+    shutil.copytree(run_dir, unrecorded)
+    document = json.loads((unrecorded / "run.json").read_text(encoding="utf-8"))
+    document["pinned"]["model"] = None
+    (unrecorded / "run.json").write_text(json.dumps(document), encoding="utf-8")
+    coverage = json.loads(registration.COVERAGE_JSON.read_bytes())
+    rescored = w27_scorer.score(unrecorded, coverage)
+    assert rescored["infrastructure_failure"]["reason"] == "pin_mismatch(model)"
 
 
 def test_a_fresh_project_and_the_export(stub_run: Path) -> None:

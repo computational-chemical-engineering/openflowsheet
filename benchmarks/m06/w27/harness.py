@@ -381,10 +381,9 @@ def _unpinned(record: dict[str, Any]) -> None:
     """An attempt run without `--model` (registration §23.5): its model check is that the
     `init` model is non-empty (V17 `session_checks`) and not `claude-sonnet-5`. That model is
     the pin this attempt establishes, so it is recorded as `pinned.model` (the scorer's pin
-    check, W27-R58 `pinned`); `model`, the requested model, stays None. BUILD DECISION
-    (WO-17a, logged in docs/design/M07-build-decisions.md): §23 does not say what `pinned.model`
-    holds for such an attempt, and with None the scorer's `pin_mismatch(model)` fails every
-    unpinned canary."""
+    check, W27-R58 `pinned`); `model`, the requested model, stays None. Otherwise `pinned.model`
+    stays None and the scorer fails the attempt with `pin_mismatch(model)` (registration §23.12,
+    R-472: W27-R58's model rule)."""
     session = record["session"]
     model = (session["init"] or {}).get("model")
     if model == NOT_THE_MODEL:
@@ -853,13 +852,13 @@ def order_check(campaign_dir: Path) -> dict[str, Any]:
     return {"passed": not problems, "commit": commit, "problems": sorted(set(problems))}
 
 
-#: W27-A23: the members a run record must carry, each non-empty.
+#: W27-A23: the members a run record must carry, each non-empty. `model` is not among them: it
+#: must be present and may be null, and W27-R58's model rule decides it (registration §23.12).
 RUN_RECORD_MEMBERS: Final[tuple[str, ...]] = (
     "lock_sha256",
     "interpreter",
     "commit",
     "tree_clean",
-    "model",
     "effort",
     "claude_code_version",
     "registration_sha256",
@@ -870,10 +869,41 @@ RUN_RECORD_MEMBERS: Final[tuple[str, ...]] = (
 )
 
 
+def _level(document: Any, *keys: str) -> Any:
+    """`document[k0][k1]...`, a missing level or a non-mapping read as None."""
+    for key in keys:
+        if not isinstance(document, Mapping):
+            return None
+        document = document.get(key)
+    return document
+
+
+def model_rule(record: Mapping[str, Any]) -> bool:
+    """W27-R58's model rule on one `run.json` (registration §23.12, R-472). `model` is the
+    requested model and `pinned.model` the pin: when `model` is a string it is non-empty and
+    `pinned.model` equals it; `model` is null only in a canary attempt (`campaign` ends in
+    `/canary`), whose `pinned.model` is `session.init.model` when that is a non-empty string other
+    than `claude-sonnet-5`, and null otherwise."""
+    model = record.get("model")
+    pinned = _level(record, "pinned", "model")
+    if model is not None:
+        return isinstance(model, str) and model != "" and bool(pinned == model)
+    if not str(record.get("campaign", "")).endswith("/" + CANARY_DIR):
+        return False
+    init = _level(record, "session", "init", "model")
+    established = init if isinstance(init, str) and init and init != NOT_THE_MODEL else None
+    return bool(pinned == established)
+
+
 def a23(record: Mapping[str, Any]) -> dict[str, Any]:
-    """W27-A23 on one `run.json`: every member present; the digests 64 hex digits; the lock
-    hash non-empty; the interpreter's four fields; `tree_clean` a boolean."""
+    """W27-A23 on one `run.json` (restated, registration §23.12): every member present; the
+    digests 64 hex digits; the lock hash non-empty; the interpreter's four fields; `tree_clean` a
+    boolean; `model` present and W27-R58's model rule (`model_rule`)."""
     problems = [m for m in RUN_RECORD_MEMBERS if m not in record or record[m] in (None, "")]
+    if "model" not in record:
+        problems.append("model")
+    if not model_rule(record):
+        problems.append("model_rule")
     for member in RUN_RECORD_MEMBERS:
         if member.endswith("sha256") and not (
             isinstance(record.get(member), str) and len(record[member]) == 64

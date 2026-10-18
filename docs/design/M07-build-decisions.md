@@ -336,11 +336,33 @@ C_W move, the old digests go into this log (runbook (c)).
   attempt an infrastructure failure, so no canary could pass, contradicting `p6_states`/`p7_states` (attempt 01 null,
   passed). Alternative: a scorer exemption for an unpinned run (changes a scoring rule; §23 says none changes).
   Reversible by: reverting the `_unpinned` hunk of its commit. For the design lane's ruling round.
+  **Ruled (registration §23.12, R-472, `a230156`): accepted as built**; W27-A23 restated to check W27-R58's model rule
+  (WO-17b below).
 - Done (`1ed4a96`, `b71d86c`, `8a3b17e`): U14 text verbatim and its test (W27-A70…A73); `harness confirm` and P5
   (A74); `canaries` numbering, stop at the first failure, the cap, no `--model`, the pin from the directory, P6/P7
   (A76, A77: 11 and 6 registered states); `preflight.json` in `campaign`, P8, the new `run.json` members (A75);
   `order_check` and the `order` command (A78); the runbook in the new order. Stub dry run at tree `ac59800`
   (= `8a3b17e`; run from a clean temporary commit of the same tree): G14, P1–P8, `preflight.json` (registered
   members, passed), 45 stub runs + `campaign.json`, `order_check` (0 problems), G15 20/20, A23 (59 records) all PASS.
-- Note for M07.A51 (other branch): A23's `RUN_RECORD_MEMBERS` requires a non-empty `model`, which an unpinned canary
-  attempt records as null by §23.3; A23 is applied to campaign runs only (the dry run does so).
+- ~~Note for M07.A51 (other branch): A23's `RUN_RECORD_MEMBERS` requires a non-empty `model`, which an unpinned canary
+  attempt records as null by §23.3; A23 is applied to campaign runs only (the dry run does so).~~ Withdrawn: §23.12
+  restates A23 (the model rule replaces the non-empty `model`), and M07.A51 applies it to every `run.json`, `canary/`
+  included (M07 spec §21 addendum; WO-17b).
+
+## WO-17b — registration §23.12 build actions at `wp/M07-w27` (2026-10-18; no model call, nothing spent)
+
+Authority: registration §23.12 (R-472), M07 spec §21 addendum. No build decision was needed.
+- `harness.a23`: `model` leaves `RUN_RECORD_MEMBERS`; it must be present as a key, and `harness.model_rule` (W27-R58's
+  model rule, the generator's `ref_run_model` in code) must hold, else the problem `model_rule`. Kind `canary` iff
+  `campaign` ends in `/canary`; a missing `pinned` or `session.init` level reads as null.
+- W27-A79 in `tests/test_m06_w27_harness.py`: (a) the 11 `run_json_model_states` overlaid on the W27-A23 stub record,
+  passing ids R1, R2, R3, R4, R10; (b) one unpinned attempt through `harness.run` with `agent_config(None)` and the dry
+  run's stand-in canary `claude` (`dryrun.CANARY`, now a module constant): A23 passes, `model` null, `pinned.model` =
+  init = `STUB_MODEL`, no infrastructure failure; its copy with `pinned.model` null re-scores `pin_mismatch(model)`.
+- K read from `campaign_records/p6_symbols/K`; `_states_campaign` asserts K differs from HEAD.
+- `dryrun`: A23 on every `run.json` under the campaign directory, `canary/` included (keys are paths relative to it).
+- Stub dry run at tree `73c7fec` (a clean temporary commit of this commit's code; the archive linked file by file
+  under the ignored `evidence/M06/W27/artifacts/`, since a symlink in place of that directory is untracked and dirties
+  the tree for P8): G14, P1–P8, `preflight.json` (registered members, passed), 45 campaign runs, `order_check` (0
+  problems), G15 20/20, A23 PASS on 62 records (14 state runs, 45 campaign runs, 3 canary attempts; attempt 01
+  `model` null, `pinned.model` = `STUB_MODEL`).

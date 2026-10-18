@@ -18,8 +18,8 @@ from benchmarks.m06.w27 import harness, preflight, registration, sample, stubs
 
 #: Registration §23.6, W27-A77: the two model ids of `p7_states`.
 MODELS: Final[Mapping[str, str]] = {"M1": "claude-test-m1", "M2": "claude-test-m2"}
-#: W27-A76: "K is a fixed other 40-hex commit".
-K: Final[str] = "f" * 40
+#: W27-A76's K, "a fixed other 40-hex commit", as registered (§23.12, `p6_symbols`).
+K: Final[str] = registration.load()["campaign_records"]["p6_symbols"]["K"]
 NAME: Final[str] = "c"
 
 
