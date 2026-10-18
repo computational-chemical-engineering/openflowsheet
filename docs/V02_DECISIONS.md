@@ -1142,3 +1142,7 @@ Grep, don't read whole. Newest at the bottom.
   ceiling — stop before a run whose USD 5 cap could pass USD 45 (`8e6d80b`, revertible). Stub dry run: P1–P5, P8 pass;
   Claude Code 2.1.302. Stopped on four design questions (U14 text; A50 vs R31 order; R58/R56 record formats; re-canaries)
   → `specifier` launched. Model: registration l.378 settles it (CLI default read from the first canary's init, pinned).
+- W27 registration Amendment 4 `bbf1d01` (§23, R-467…471; gate 9856/59): U14 text (records only under
+  `runs/w27-m07-<hex>/`, A70–A73), draw before canaries with each record naming its predecessors' SHA-256 (M07.A50 restated
+  in M07 spec §21), `confirmation/confirmation.json` (empty set only) and `preflight.json`, ≤ 6 canary attempts (P6 11
+  states), model pinning without `--model` (P7 6 states). WO-17a launched (no spend).
