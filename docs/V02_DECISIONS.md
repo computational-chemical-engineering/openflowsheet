@@ -1185,3 +1185,7 @@ Grep, don't read whole. Newest at the bottom.
   N5 carry V17 across R-192, R-234, R-295 (no re-run). Dated acceptances N4 (V14 (b)) and N6 (M02 N1) follow the 0.2.0 verdict.
 - 2026-10-18 Launched: `specifier` ruling round 4 on the W27 verdict findings (F-7 blocks RC step 17) on `wp/M07-rulings4`;
   WO-8a (opus-engineer) on `wp/M07`: K (0.2.0 + O5 G10 re-takes), journey at K, record committed after K.
+- 2026-10-19 Ruling round 4 `be7a06d` (`wp/M07-rulings4`, M07 spec §22 Amendment 5, R-473/R-474; gate 9935/35): step 17 = 17a
+  campaign tree `95f9fcf2…` unchanged, 17b coverage to scratch, 17c `--carry-w27`, 17d aggregate on a copy == `4812910a…9e28`;
+  on the campaign login only, never CI (`unsupported` otherwise; L-A5-1); F-3 doc scope → build lane WO-10; F-1 → next
+  OpenIDAES registration (R02 unchanged through C); F-6 no action. Merge into wp/M07 after WO-8a.
