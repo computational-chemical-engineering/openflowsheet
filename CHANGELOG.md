@@ -114,8 +114,47 @@ the record of this gate and is written after `C_α`, has no row, R-320):
 
 ## v0.2.0 — unreleased
 
-*In development on `main`; nothing below is released. The section is finalised, with its gate
-table, at M07.*
+*In development on `main`; nothing below is released. The gate table is added to this section
+at the release candidate (M07).*
+
+### M01 — the Peng–Robinson route of the ammonia loop (W22)
+
+- **C1 property route.** Peng–Robinson with the light gases vapour-only, its root and phase
+  rules, an equilibrium-vapour flash, and the formation datum `PR-C1-ref-v1` (ADR 0026); the
+  parameters are cited and registered. The reactor boundary of the loop is ADR 0027.
+
+### M02 — the PyMRM reactor adapter (W21)
+
+- **External reactor as a unit model.** The pinned PyMRM reactor runs in an out-of-process child,
+  one per attempt, under a three-layer kill chain, with process-level experiment identity and an
+  exact cache of deterministic outcomes (ADR 0033); it runs inside a flowsheet solve (ADR 0034),
+  with model replacement and promotion as a checked commit (ADR 0035). Experiment records and
+  the coupled route are replay artifacts. A synthetic stand-in reactor ships for the default gate
+  and is listed as synthetic.
+
+### M03 — sensitivities, studies and the NLP bridge (W24, part)
+
+- **Parametric sensitivities and studies.** Parameters are pinned inputs; their derivative comes
+  from a bit-identical parametric twin and is issued only at a qualified regular root; sweeps and
+  the estimation example are studies over those parameters (ADR 0031).
+- **General NLP bridge.** A PyNumero gray box over the parametric twin solved by an audited
+  cyipopt, judged only on the re-solved, certified simulation (ADR 0032). It needs the optional
+  `nlp` extra and its licences (accepted by Frank 2026-10-16).
+
+### M04 — surrogate evidence (W23)
+
+- **Surrogates as evidence.** A registered uniform reference box, a plan registered before the
+  parent runs, joint split-conformal intervals, and promotion decided by an integer coverage test
+  (ADR 0036). The surrogate is a native unit pinned by its manifest's hash, promoted and rolled
+  back through the checked commit (ADR 0037); the `surrogate_study` job kind joins the contract.
+
+### M05 — the trust-region study of the C1 loop (W24)
+
+- **Trust-region adapter.** Pyomo's trust-region filter over a projection of the canonical
+  problem, with the audited Ipopt executable for its subproblems (ADR 0038); a conditional
+  scipy-only fallback is ADR 0040. The C1 study optimizes the reactor inlet temperature for
+  liquid NH₃ product; candidates are judged by parent checks and every true-model call is
+  accounted (ADR 0039).
 
 ### M06 — the diagnostic web shell (W26)
 
@@ -140,6 +179,29 @@ table, at M07.*
   `OPENFLOWSHEET_SKIP_WEB_TESTS=1`); every used operation over HTTP; a headless-Chromium test of
   every screen with a request recorder, Solve, a live and a cancelled job, and the downloads
   (skipped without a browser, required on CI's x86-64 leg).
+
+### M07 — the reference journey and the release gate (W25)
+
+- **Reference journey.** One decision (the reactor inlet temperature) taken through four rungs of
+  fidelity, with decisions compared by the parent's objective against its noise floor; W25 is
+  judged on reporting what happened, not on whether the decision changed (ADR 0041).
+- **The 0.2.0 gate.** `scripts/v0_2_gate.py` gains `v0.2-gate-v1`, which claims all seventeen
+  gates V11–V20 and W21–W27, each judged at its own candidate, with per-release acceptance of
+  failures (ADR 0042, proposed).
+
+### What it is not
+
+- not a sandbox
+- Linux only
+- reactor results reproduce from records (R3)
+- T_in 653.15-693.15 K, P 9-11 MPa, H2/N2 2.5-3.5, inerts 0.035-0.2, per-tube flow 0.5-2 x nominal
+- no empirical validation of the C1 loop
+- no global optimality
+- the optimization routes need the optional nlp extra
+- the stand-in reactor is synthetic
+- no external benchmark score
+- no CFD or Peclet refinement
+- no equilibrium-stage subsystem
 
 ## v0.1.1 — the single public repository; release by workflow; no change to the simulator
 
