@@ -1167,3 +1167,6 @@ Grep, don't read whole. Newest at the bottom.
   M07-build-decisions.md, both kept; gate 9923/35; CI 39136157258 green). C_W = `83f825d`, campaign `w27-m07-83f825d`:
   coverage 0/450, 0/82 CANDIDATE, G14 PASS; sample 45, canaries blind_synthesized_prommis_nanofiltration_membrane_schematic,
   mvo_variant_transcritical_co2_high_demand_flexible, variant_v4_cryst_n13_t338_y45_50; confirm written. Canaries launched.
+- 2026-10-18 W27 canaries: 3/3 passed at the first attempt; pinning attempt 01 init model `claude-sonnet-5-5` (CLI default of
+  the v17 setup-token login, R-471: nobody chooses), Claude Code 2.1.302; recorded spend USD-eq 0.233. Preflight P1–P8 pass.
+  45-run campaign launched (ceiling 45).

@@ -93,7 +93,8 @@ F5 education mode deferred.
 **W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
 (a) coverage 0/450 CANDIDATE, G14 PASS; (b) 45 drawn, canaries prommis NF / mvo CO2 / cryst n13; (b′) confirmation written;
-(c) canaries running. Then preflight → 45 runs (ceiling USD-equivalent 45, Max plan usage) → order → commit → `verdict`.
+(c) canaries 3/3 passed first attempt (pin `claude-sonnet-5-5`, the login's CLI default; Claude Code 2.1.302; USD-eq 0.23);
+(d) preflight P1–P8 pass; 45 runs running. Then (ceiling USD-equivalent 45, Max plan usage) → order → commit → `verdict`.
 
 **Queued for the 0.2.0 cut (Frank, 2026-10-18):** transient-readiness re-check (ADR 0008 Amendment 2), `architect`, brief
 `docs/briefs/ADR-0008-A2-readiness-recheck.md`; after M07 merges into main.
