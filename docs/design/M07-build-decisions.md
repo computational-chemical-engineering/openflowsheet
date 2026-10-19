@@ -691,3 +691,42 @@ push run 39224203477's `check (ubuntu-latest)` log under `ci-push/`; `records.js
 `step1-skips/`; no manifest beside either (no test requires one). `docs/v02-rc-record.md` (48 rows, every record cited
 once, written by `tools/make_record.py`; `v0_2_gate.rc_record_problems` → `[]`), `release/rc-trees/<C′>.json`
 (`--write-tree-record`). No file of `carry.journey_files` touched.
+
+## WO-8d — W21 (e): G11's experiment results kept and audited at C′; W21 (f)'s notes (2026-10-19)
+
+J78 [decision] Four build-lane choices, each isolated. (1) **Audit scope.** R-375 and the verdict draft scope the audit to
+blueprint §9.1's six items "against `experiment.schema.json`". Whole-record validation finds one deviation outside the
+six: `job_id` (result `produced_by.job_id`, attempt `job_id`) is `m02-g11v3-<label>` (`benchmarks/m02/g11_coverage_v3.py`,
+`ExperimentRunner(job_id=…)`, frozen at C′), which the schema's `^job-[0-9]{6,}$` refuses, in all 420 records. The
+schema calls the requesting job context. → reported apart as `context`, not failing the audit
+(`scripts/m07_g11_experiments_audit.py` `CONTEXT_FIELDS`). Alternative: fail the audit on it (then W21 (e) stays not met
+until the script or the schema moves, both frozen paths). Reversible by: `CONTEXT_FIELDS = ()`. **Question to the
+design lane** (batched for the verdict round): is the `job_id` pattern violation acceptable for G11's records, a defect
+of G11's script to fix at a re-cut, or a schema amendment? (2) **Element defects** follow `child.py`'s `element_defects`
+(§14.6 E2): keyed by exactly the elements present in the sent composition — the zero-inert corners carry H and N only
+(6 attempts); my first check demanded all four and was wrong, not the records. (3) **Record layout.** One collected
+record per run (`g11-experiments-run<k>.json`: RC provenance block, each point's request, result and attempts embedded
+as parsed with each store file's sha256) rather than ~630 store files: it carries A43's fields and keeps the cited set
+small; logs, handshakes and caches stay in the git-ignored keep directory (105 MB). Alternative: commit the store files
+as is. (4) **RC record**: step 16's CI half cited step 1's `check-ubuntu-latest.log` hash a second time (J77 said
+"every record cited once"); its sha256 cell now points at step 1's row, so the alpha's multiset check holds at C′.
+J79 [coverage] **G11 kept** (`tools/run_g11keep.sh`, RC worktree clean before and after, `ref-x86-64`, reactor
+environment from C′'s lock, OMP/OPENBLAS/MKL = 1, 8 workers as at step 12): exit 0, 1847 s. G11v3-1, -2, -3, -8, -11
+(0 differences), -12 met, `V5`, F2 `failed_certificate2` []. **S12.2, S12.3** (`tools/s12_check.py.txt` against
+`6fec822`'s record): all eight hold; 16 corners, 10 S1 points, 8 G11v3-8 points. **S12.4** (`m02_evidence_manifest.py:g11`):
+pass, 121 points per run, 2 runs, all equal. Every run's stage, acceptance and tube outlet equal step 12's G11 record
+(wall times aside). Per run: 121 points, 105 boundary (89 `ok`, 14 `S1`, 2 `certificate`), 16 direct (no store).
+J80 [coverage] **Audit**: 2 runs, 210 results, 210 attempts, 0 without a result; boundary, version, discretization,
+convergence, fluxes, cost, schema: 0 problems each; context (`job_id`): 420. Records: `g11-experiments-run1.json`
+`250739ee…` and `-run2.json` `11fd4fe9…` (gzip), the re-run's `g11-coverage-v3.json` `9ac1b0df…` and `.runs.json`
+`8c85a787…`; `records.json` 96 entries; RC record row added, `rc_record_problems` → `[]`. Tests:
+`tests/test_m07_rc_records.py` 11 passed (A43, A44, §8.3 checks, R-375), `tests/test_m07_g11_experiments_audit.py`
+11 passed (positive, seven negatives — six items and schema — the E2 key rule, the inlet binding, the CLI). Gate at the
+tree of `2d71de1` (run before `61f3b6b` and `2d71de1`, which together are that tree): `GATE PASS` 10004 passed,
+35 skipped, 192 deselected (1697 s); again before this log's commit, at `2d71de1` plus this log: the same counts (2642 s). Commits: `61f3b6b` (CHANGELOG `## v0.2.0` "What it is not" gains the alpha's sentence,
+quoted: the four statements of W21 (f)), `2d71de1` (records, audit, tests). No file of `carry.journey_files` or a D2.4
+`TREES` path touched; C′ not re-cut.
+
+### Handoff (WO-8d done)
+- Open: J78 (1) — the `job_id` question goes to the design lane with the verdict round; nothing else waits on it.
+- Not done here: the verdict's re-judgement of W21 (e) and (f) (design lane); no manifest status touched.
