@@ -1189,3 +1189,4 @@ Grep, don't read whole. Newest at the bottom.
   campaign tree `95f9fcf2…` unchanged, 17b coverage to scratch, 17c `--carry-w27`, 17d aggregate on a copy == `4812910a…9e28`;
   on the campaign login only, never CI (`unsupported` otherwise; L-A5-1); F-3 doc scope → build lane WO-10; F-1 → next
   OpenIDAES registration (R02 unchanged through C); F-6 no action. Merge into wp/M07 after WO-8a.
+- 2026-10-19 DECISION (session): the WO-7 verdict draft `0ca7943` is parked on local branch `wp/M07-verdict1`, not pushed — committing it alone reddens `tests/test_m07_ledger.py` until the ledger and M07's manifest exist. Alternative: push it red. Reversible by: cherry-pick `0ca7943`. W21 (e) FAIL (R-375 G11 results not kept) → WO-8d keeps and audits them at C′ (no re-cut).
