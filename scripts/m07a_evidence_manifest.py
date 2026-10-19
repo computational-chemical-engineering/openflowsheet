@@ -317,6 +317,111 @@ def _m_mr12_extras(inputs: Inputs) -> Part:
     return ("pass" if not new else "fail"), value
 
 
+#: MR-12 at the M07 release candidate (M07 spec §24.1 action 4, R-478): each extra declared since
+#: `v0.1.1` and the [A10] audit, inventory, RC check and recorded licence decision that close it.
+MR12_AUDITS: dict[str, dict[str, str]] = {
+    "nlp": {
+        "audit": "docs/m03-ipopt-audit.md",
+        "inventory": "benchmarks/m03/ipopt-inventory-x86_64.json",
+        "check": "a60.w24.nlp_tier_and_inventory",
+        "decision": "R-450",
+    }
+}
+#: Step 14's RC record, which carries each audit's inventory check (M07 spec §24.1).
+STEP14_RECORD = "step14/rc-step14.json"
+#: Step 9's three A30 summaries (M07a.A38's records).
+A30_SUMMARIES = (
+    "a30/t08-a30-x86_64.json",
+    "ci/rc-steps-ubuntu-latest/a30/t08-a30-x86_64.json",
+    "ci/rc-steps-ubuntu-24.04-arm/a30/t08-a30-aarch64.json",
+)
+#: S9.2 and S9.3: what each A30 summary's `measured_project_load` must say at the M07 RC.
+A30_NLP_EXTRA_MODULES = {
+    "openflowsheet.studies.nlp.greybox": "cyipopt",
+    "openflowsheet.studies.trust_region.projection": "pyomo",
+    "openflowsheet.studies.trust_region.trf": "pyomo",
+}
+A30_MODULES_WALKED = 182
+A30_MODULES_IMPORTED = 179
+
+
+def mr12_extras_v02(
+    commit: str,
+    new: Sequence[str],
+    show: Callable[[str], str | None],
+    step14: Mapping[str, Any],
+    summaries: Mapping[str, Mapping[str, Any] | None],
+) -> Part:
+    """MR-12 at the M07 RC (§24.1 action 4, S9.2–S9.4). `show(path)` is the file at `commit`, or
+    `None`. Every new extra needs an `MR12_AUDITS` entry (without one it fails, the alpha's rule);
+    for each entry both files exist at `commit`, step 14's record has the check `pass` and its
+    provenance names `commit`, and the register at `commit` has the decision's `## R-… — ` line.
+    Each A30 summary of step 9 says S9.2's `nlp_extra_modules` and S9.3's counts."""
+    register = show("docs/decision-register.md") or ""
+    provenance = step14.get("provenance") or {}
+    results = {entry.get("id"): entry.get("result") for entry in step14.get("checks", [])}
+    extras: dict[str, dict[str, Any]] = {}
+    ok = True
+    for extra in new:
+        audit = MR12_AUDITS.get(extra)
+        if audit is None:
+            extras[extra] = {"audit": None, "reason": "no MR12_AUDITS entry"}
+            ok = False
+            continue
+        files = {key: show(audit[key]) is not None for key in ("audit", "inventory")}
+        check = results.get(audit["check"])
+        decided = any(
+            line.startswith(f"## {audit['decision']} — ") for line in register.splitlines()
+        )
+        extras[extra] = {
+            **audit,
+            "files_at_commit": files,
+            "check_result": check,
+            "step14_commit": provenance.get("commit"),
+            "decision_in_register": decided,
+        }
+        ok = ok and all(files.values()) and check == "pass" and decided
+        ok = ok and provenance.get("commit") == commit
+    a30: dict[str, Any] = {}
+    for path, summary in summaries.items():
+        load = (summary or {}).get("measured_project_load", {})
+        said = {
+            "nlp_extra_modules": load.get("nlp_extra_modules"),
+            "modules_walked": load.get("modules_walked"),
+            "modules_imported": load.get("modules_imported"),
+            "solve_exit": load.get("solve_exit"),
+        }
+        a30[path] = said
+        ok = ok and said == {
+            "nlp_extra_modules": A30_NLP_EXTRA_MODULES,
+            "modules_walked": A30_MODULES_WALKED,
+            "modules_imported": A30_MODULES_IMPORTED,
+            "solve_exit": 0,
+        }
+    value = {"new_since_v0_1_1": list(new), "extras": extras, "a30_summaries": a30}
+    return ("pass" if ok and bool(summaries) else "fail"), value
+
+
+def _m_mr12_extras_v02(inputs: Inputs) -> Part:
+    """`mr12_extras_v02` at `inputs.commit`, from git and the committed RC records. Not in the
+    alpha's `SPECS`: the alpha's records stay judged by `_m_mr12_extras`."""
+    ours = _extras(t08._git("show", f"{inputs.commit}:pyproject.toml"))
+    theirs = _extras(t08._git("show", f"{V0_1_1}:pyproject.toml"))
+    new = sorted(set(ours) - set(theirs))
+
+    def show(path: str) -> str | None:
+        if not t08._git_ok("cat-file", "-e", f"{inputs.commit}:{path}"):
+            return None
+        return t08._git("show", f"{inputs.commit}:{path}")
+
+    def read(path: str) -> dict[str, Any] | None:
+        return _json(inputs, path) if (inputs.rc_dir / path).is_file() else None
+
+    step14 = read(STEP14_RECORD) or {}
+    summaries = {path: read(path) for path in A30_SUMMARIES}
+    return mr12_extras_v02(inputs.commit, new, show, step14, summaries)
+
+
 STEP12_CERTIFICATES = "step12/certificates"
 STEP12_BUNDLE = "g12-bundles/m02-g12-0/bundle/solution-certificate.json"
 
@@ -471,6 +576,7 @@ MEASURES: dict[str, Callable[[Inputs], Part]] = {
     "a43_version": _m_a43_version,
     "cp_bound": _m_cp_bound,
     "mr12_extras": _m_mr12_extras,
+    "mr12_extras_v02": _m_mr12_extras_v02,
     "mr11_step12": _m_mr11_step12,
     "provenance": _m_provenance,
     "envelope": _m_envelope,
