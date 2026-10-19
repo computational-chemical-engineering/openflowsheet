@@ -9457,6 +9457,9 @@ and `links_item` are the alpha's.
 
 **Watch for.** Any later edit to the alpha's tests fails A31 (b) until a ruling amends its exempt list.
 
+**Amended 2026-10-19 (R-475).** The exempt list has a fourth function, `test_a10_the_envelope_must_be_pinned_to_the_alpha`,
+whose edit is pinned to exactly the two pairs `A10_PINS_0_2_0`.
+
 ---
 
 ## R-462 — The gate set's re-judgement grammar and ADR name are derived from `clause` and `policy_adr`; `links_item` is a registered per-set field (alpha none, `v0.2-gate-v1` `V17 carry`), whose row must name every `m07a_rc.LINKS` register at the candidate
@@ -9505,6 +9508,10 @@ After the tag, the test is scoped to the tag commit (R-456).
 **Watch for.** If the skip predicate is ever changed to anything other than `GATE_SET.covers`, the scoping argument
 fails.
 
+**Amended 2026-10-19 (R-476), a partial reversal.** The title's "there a missing verdict document fails" is
+reversed. There the four tests skip, naming the document, and they are judged at the candidate. The scoping argument
+and this entry's rejection of "no skip" stand. The Watch-for is restated in R-476.
+
 ---
 
 ## R-464 — For 0.2.0 the journey runs at the cut commit K, is committed later without touching `carry.journey_files`, and is carried from K to C by identity; RC step 15's and 17's refusal texts are registered
@@ -9533,6 +9540,9 @@ journey at C`.
 - *Narrowing `carry.journey_files`:* it reopens R-453 to save an hour of free compute.
 
 **Watch for.** Any build action that touches `scripts/m07_journey.py` or the registration must land before K.
+
+**Amended 2026-10-19 (R-477).** K is the first commit whose tree holds all of O5's list. It may follow a version
+commit A, and its G10 records then name A.
 
 ---
 
@@ -9808,5 +9818,82 @@ Its recommended default has four parts:
 
 **Watch for.** A union with the topology's units can make an internal sub-block a unit. W27-A08 is the registered
 state that catches it.
+
+---
+
+## R-475 — `test_a10_the_envelope_must_be_pinned_to_the_alpha` is A31 (b)'s fourth exempt function, and its edit is pinned to the two pairs that undo 0.2.0's envelope pin
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 5 (build log J49, Q-K1) |
+| Normative text | `docs/derivations/M07-spec.md` §23.1 (restated A31 in §11 [A6]); ADR 0042 migration impact as amended |
+| Evidence | the K draft `c38e1ba`: `'v0.2-envelope-1' == 'v0.2-envelope-dev'` fails. The pairs' match counts in the envelope at `423ae9c`, `be7a06d` and `853e7e3` are 1/1/0/0, 0/0/0/0 and 0/0/1/1, and the result after the four pairs is the working form at all three (§23.1 table) |
+| Affected packages | M07 (A31 (b); a new `ast` test), V02 alpha (its test module) |
+
+**Decision.** The edit appends `("envelope_id: v0.2-envelope-1\n", "envelope_id: v0.2-envelope-dev\n")` and
+`("release: 0.2.0\n", "release: 0.2.0.dev0\n")` after the alpha's two pairs, and changes nothing else. A new test
+asserts that the function equals the tagged one once its loop's tuple is restored, and that the tuple is the tagged one
+plus exactly these two pairs.
+
+**Rejected alternatives, and why.**
+- *Undoing any pin by pattern:* it hides what is undone, and a later pin would pass without a ruling.
+- *Skipping the test at a covered version:* it is also an edit, and it drops the check where it matters.
+- *Leaving the failure:* K would be red with a known cause.
+
+**Watch for.** The next release's cut (0.2.x, 0.3.0) breaks `test_a10_…` the same way, and it needs its own ruling.
+
+---
+
+## R-476 — At a covered version the 0.2.0 ledger tests skip, naming the document, while `docs/reviews/V02-verdicts.md` is absent; they are judged at the candidate, where step 18 runs only after 5 passed and 0 skipped (partial reversal of R-463)
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 5 (build log J49, Q-K2) |
+| Normative text | `docs/derivations/M07-spec.md` §23.2, §8 [A6]; A3.3 as amended |
+| Evidence | `c38e1ba`: the four setup errors. WO-7 depends on RC steps 1–17 (§13), so under R-463 C itself is red. The gate without the document at 0.2.0, 0.2.0b1 and 0.2.0rc2 answers NO, with 22 reasons, the first `docs/reviews/V02-verdicts.md does not exist at the candidate`. Alpha precedent: §19.4, R-373, `9324a91` |
+| Affected packages | M07 (O1; RC step 1; step 18's precondition) |
+
+**Decision.** `at_c` skips if the version is not covered (S-UNCOV), and otherwise if the document is absent (S-ABSENT),
+in that order. Its fifth test pins four things: covered with the document judges; uncovered skips with the document
+present and with it absent; covered without the document skips with S-ABSENT. A new gate test pins the NO without the
+document. At C, step 1 is green with exactly these four skips. At the candidate (after WO-7 and the ledger) the module
+gives 5 passed and 0 skipped before step 18 is run for YES.
+
+This reverses R-463's half "at a covered version a missing document fails". What changed is that R-463 did not
+consider the RC order: the document cannot exist at C, so step 1 could never pass.
+
+**Rejected alternatives, and why.**
+- *R-463 unchanged:* C is red by construction, so RC step 1 cannot pass.
+- *No skip:* still rejected (R-463).
+- *Adding the ledger test only after the verdicts, as the alpha did:* the test already exists (O1). Removing it and
+  re-adding it is churn, and it leaves no executable check that the skip is the only path.
+
+**Watch for.** Each skip condition must be the negation of a condition the gate itself requires for YES, and must be
+pinned by a gate-side test: (i) `GATE_SET.covers`, with A30; (ii) the document's presence, with
+`test_o1_the_gate_refuses_a_candidate_without_its_verdict_document`. A third condition needs the same pairing.
+
+---
+
+## R-477 — The cut is two commits: A sets 0.2.0 and pins the envelope; K = A + the G10 re-take taken from A's clean tree; K is the journey commit, and A needs no journey
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 5 (build log J48, Q-K3) |
+| Normative text | `docs/derivations/M07-spec.md` §23.3, §23.4; A3.4 item 1 as amended |
+| Evidence | the draft: `853e7e3..c38e1ba` is 36 files, all under `benchmarks/m05/`. The five records state `run_commit` `853e7e3…` and `tree_clean: true`. Precedent E7 → E6 (`docs/design/V02-alpha-main-rulings.md`) |
+| Affected packages | M07 (WO-8a, the journey at K) |
+
+**Decision.** K is the first commit whose tree holds all of O5's list. The R-475/R-476 test commit F comes before A,
+and A is re-cut on F. The re-take must reproduce E6's counts. `git diff A K` lists only `benchmarks/m05/**`. Each
+record's `run_commit` is A. AM-23 at K gives 5 passed. A and K are merged, never squashed or rebased.
+
+**Rejected alternatives, and why.**
+- *One commit:* its records would name a commit outside its history, or record `tree_clean: false`.
+- *A as the cut:* a journey at A cannot carry, because `benchmarks/m05/**` is in `carry.journey_files`.
+
+**Watch for.** A squash of A into K makes every G10 record's `run_commit` unreachable.
 
 ---
