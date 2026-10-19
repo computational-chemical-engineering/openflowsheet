@@ -1,7 +1,11 @@
 # ADR 0038 — M05: the trust-region adapter is Pyomo 6.10.1's TRF over a projection compiled from the canonical `ProblemSpec`, with Python-callback ExternalFunctions and the audited Ipopt executable for its subproblems
 
-**Status:** Proposed, 2026-10-09. It is accepted when M05's evidence manifest is `tested` for the design note's gates
-G1–G4, G7, G12 and G13, and the design-lane review of WO-2–WO-4 has closed its must-fix items.
+**Status:** **Accepted, 2026-10-19** (design lane, M07 ruling round 6, M07 spec §24.4; register R-482). Proposed
+2026-10-09. The condition it was accepted on: M05's evidence manifest is `tested` for the design note's gates G1–G4,
+G7, G12 and G13, and the design-lane review of WO-2–WO-4 has closed its must-fix items. Met by
+`evidence/M05/56fb2fa…/manifest.json` (`tested`, 14/14 `pass`, M05.G1–G13 and G5b) and by `docs/reviews/M05-review.md`
+(one pass over WO-1…WO-9 at `7350684`; its one must-fix MF1 closed by `cdacc32`, R-432, with the re-take diff the
+review prescribed, `RETAKE-DIFF PASS`, 0 differences, build log S70; `cdacc32` is an ancestor of `56fb2fa`).
 **Author:** design lane (`architect`), M05.
 **Normative text:** `docs/design/M05-trust-region.md` §4 (probe), §5.1, §6 (binding) and §9.1–§9.3.
 **Register:** R-260 to R-266, R-271.

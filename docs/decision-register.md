@@ -9897,3 +9897,174 @@ record's `run_commit` is A. AM-23 at K gives 5 passed. A and K are merged, never
 **Watch for.** A squash of A into K makes every G10 record's `run_commit` unreachable.
 
 ---
+
+## R-478 — RC step 9 at C′: the A30 workload imports every module except the three registered `nlp`-extra modules, which must fail on cyipopt or pyomo and are recorded; MR-12 judges the `nlp` extra by its own audit and R-450
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J59, J62, J63; Q1) |
+| Normative text | `docs/derivations/M07-spec.md` §24.1 (S9.1–S9.6); §8 [A7] |
+| Evidence | `scripts/p03_binary_inventory.py:892-906` imports every walked module (182 at C) and stops at the first failure. Exactly `studies/nlp/greybox.py:60` (cyipopt), `studies/trust_region/projection.py:123` and `trf.py:86` (pyomo) import an `nlp`-extra distribution at module level. Extras are `dev`, `server` at `v0.1.1` and `dev`, `server`, `nlp` at C. `_m_mr12_extras` fails every new extra. T08 release spec l. 478; alpha MR-12 |
+| Affected packages | M07 (WO-8c, RC step 9); T08's A30 instrument |
+
+**Decision.** The workload walks every module. A registered module (`NLP_EXTRA_MODULES`, three names) must raise
+`ModuleNotFoundError` on a name in `NLP_EXTRA_IMPORTS` = (cyipopt, pyomo), and is recorded in
+`measured_project_load.nlp_extra_modules`. The workload fails in any of these cases:
+- a registered module imports;
+- a registered module fails another way;
+- a registered name is not walked;
+- an unregistered module fails.
+
+At C′, `modules_walked` is 182 and `modules_imported` is 179. MR-12 for `nlp` is judged by a new measure
+`mr12_extras_v02`, which needs: the audit and inventory present at C′, step 14's `a60.w24.nlp_tier_and_inventory`
+`pass` at C′, and R-450. The alpha's `_m_mr12_extras` stays byte-identical. An AST test keeps the registered list
+equal to the modules that import the extra.
+
+**Rejected alternatives, and why.**
+- *Import-guard the modules:* `src/**` is a journey file, so K would move; it also hides the dependency.
+- *Install the extra for A30:* contradicts MR-12's separation.
+- *Catch `ImportError`:* a silent success path.
+- *Accept the FAIL under D3:* it is an instrument defect, not a licence finding.
+
+**Watch for.** A new module that imports pyomo or cyipopt fails A30 until the list is extended by a register entry.
+Each entry removes a module from A30's measured half.
+
+---
+
+## R-479 — A failing T08.A30 fails CI's `rc-steps` job after its artifacts are uploaded; `a30.log` carries stderr
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J62; Q1) |
+| Normative text | `docs/derivations/M07-spec.md` §24.2 (CI.1, CI.2) |
+| Evidence | At C, both runners' `rc-steps` concluded `success`. `a30.log` held only `a30 exit status 1`, and the cause appeared only in the job log (`ci.yml:816-821`, `set +e`, stdout-only `tee`) |
+| Affected packages | M07 (WO-8c); the CI workflow |
+
+**Decision.** The A30 step pipes `2>&1` into `a30.log`. A last `if: always()` step, after the upload, fails the job
+unless `a30.log` has the line `a30 exit status 0`. Step 9's verdict is still read from the A30 summaries, not from the
+job conclusion.
+
+**Rejected alternatives, and why.**
+- *Keep reading the record only:* a green job on a failing A30 is a success signal with nothing behind it.
+- *Drop `set +e`:* the record must be written and uploaded before the job stops, which was T08's reason.
+
+**Watch for.** —
+
+---
+
+## R-480 — G11 at C′ is re-taken with `--d78` set to a registered extract of D78's recorded values and without `--previous-runs`; the verdict may not claim that D78's file was read
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J64; Q2) |
+| Normative text | `docs/derivations/M07-spec.md` §24.3 (S12.1–S12.5); generator `docs/derivations/scripts/m07_g11_d78_extract.py` (E1–E5) |
+| Evidence | `g11-exp.json` (`afa7325a…`) and the WO-12a′ raw runs (`0656f617…`) are lost. Four committed records (`benchmarks/m02/g11-coverage-v3.json` and the step-12 records of `e0e198e`, `cc73219`, `6fec822`) name `afa7325a…` and quote every value the script reads, identically. Measured in this round: the script's own `summarise`/`inertness`, fed the extract and no raw runs, reproduce every member of all three alpha step-12 summaries; the one exception is `G11v3-11.stage_steps_from` (`"points"`). Extract sha256 `a118c62a…` |
+| Affected packages | M07 (WO-8c, RC step 12); W21's G11 |
+
+**Decision.** At C′, G11 runs as at the alpha, except `--d78 docs/derivations/scripts/m07_g11_d78_extract.json` and no
+`--previous-runs` (D100's fallback, shown equivalent at the three alpha RCs). The record's D78-derived members must
+equal `6fec822`'s. The registered G11v3 clauses and tolerances are unchanged.
+
+**Rejected alternatives, and why.**
+- *Carry G11 from `6fec822`:* `src/openflowsheet/**` differs, there is no registered carry rule, and A43 requires
+  `commit` = C.
+- *Rebuild D78:* the patch is lost, so a rebuild would be a new experiment.
+- *Edit the script:* `benchmarks/m02/**` is a journey file, so K would move.
+- *`BLOCKED`:* the input can be reconstructed within the design lane's authority.
+
+**Watch for.** A later change to `g11_coverage_v3.py` that reads a further member of `--d78` breaks the extract's
+sufficiency. S12.1's test catches this in the default gate.
+
+---
+
+## R-481 — ADR 0031 and ADR 0032 (D1–D6, with Amendment 1) are Accepted; their conditions are met by M03's `tested` manifest, the review closure and R-450
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J57; Q3) |
+| Normative text | the two ADRs' Status lines; `docs/derivations/M07-spec.md` §24.4 |
+| Evidence | `evidence/M03/a35885b…/manifest.json`: `tested`, 52/52 `pass`. `docs/reviews/M03-review.md`: no must-fix in WO-1–WO-5, WO-2a or WO-5a; F1 `ca3d833` with CI 39007361803 green on both runners and `default-install`; F2 `15884bb`; A40 per Q1 `18882f1`. N1: R-450. The audit `docs/m03-ipopt-audit.md` passed. `a35885b` is an ancestor of C |
+| Affected packages | M03 (closed); M07 (§7.2's required ADRs) |
+
+**Decision.** Both move from Proposed to Accepted, 2026-10-19. ADR 0032's audit-failure clause does not apply, because
+the audit passed and N1 is recorded.
+
+**Rejected alternatives, and why.** *Waiting for Frank:* neither ADR's condition names him beyond N1, which is
+recorded. *A second review pass:* not required (R-410).
+
+**What it does not establish.** No `reviewed` status and no human sign-off. The manifest's `review` fields stay
+`pending`.
+
+**Watch for.** —
+
+---
+
+## R-482 — ADR 0038 and ADR 0039 are Accepted; their conditions are met by M05's `tested` manifest and the closed must-fix MF1
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J57; Q3) |
+| Normative text | the two ADRs' Status lines; `docs/derivations/M07-spec.md` §24.4 |
+| Evidence | `evidence/M05/56fb2fa…/manifest.json`: `tested`, 14/14 `pass` (G1–G13, G5b). `docs/reviews/M05-review.md`: one pass over WO-1…WO-9 at `7350684`; MF1 closed by `cdacc32` (R-432), `RETAKE-DIFF PASS`, 0 differences (M05 build log S70). `cdacc32` and `56fb2fa` are ancestors of C |
+| Affected packages | M05 (closed); M07 (§7.2's required ADRs) |
+
+**Decision.** Both move from Proposed to Accepted, 2026-10-19.
+
+**Rejected alternatives, and why.** *A second review pass over MF1:* the review prescribed its own proof, a 0-difference
+re-take diff, and the build log records it (R-410's reasoning).
+
+**What it does not establish.** No `reviewed` status and no human sign-off.
+
+**Watch for.** —
+
+---
+
+## R-483 — M07.A24 is judged for a journey record at its own commit and wherever its carry holds; elsewhere the opt-in replay test skips with a registered reason
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J55; Q4) |
+| Normative text | `docs/derivations/M07-spec.md` §24.5 (J.1) |
+| Evidence | J′'s (`974c395`) replay passes at `c4e8467` and diverges from `d3c72cb` on (`replay diverged: a cold execution at …`), because the version moves changed the request digests its archive is keyed by. K's (`2c508b5`) replay passes |
+| Affected packages | M07 (WO-8c; `tests/test_m07_journey_record.py`) |
+
+**Decision.** `test_a24_replay_reproduces_the_record_bitwise` skips a record when
+`m07.carry_identical(record["commit"], m07.JOURNEY_CARRY)` is false. The skip text names the commit, §24.5 and R-483.
+J′'s A24 stands as judged at J′. At C′, the test gives 1 passed and 1 skipped.
+
+**Rejected alternatives, and why.**
+- *Assert that J′ refuses:* this over-constrains, since a reproduction there would not be wrong.
+- *Leave the test red:* a known-red test hides the next real failure.
+- *Delete J′:* rejected by A3.5.
+
+**Watch for.** —
+
+---
+
+## R-484 — C = `c899c85` is superseded: the RC job runs steps 1–17 in full at a re-cut C′; nothing carries from C; K stays `2c508b5`
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (Q5) |
+| Normative text | `docs/derivations/M07-spec.md` §24.6 (RC.1–RC.3), §24.7 |
+| Evidence | Step 9 failed and step 12 did not pass at C (J59–J64). R-478–R-480 change `scripts/`, `tests/`, `.github/` and `docs/` only, with no file of `carry.journey_files`. Precedent: alpha §18.4 item 3 (all steps at the re-cut; M07a.A43 needs `commit` = C) |
+| Affected packages | M07 (WO-8c) |
+
+**Decision.** C′ descends from C, and `git diff c899c85 C′` touches none of `src`, `benchmarks`, `schemas`,
+`requirements.lock` or `pyproject.toml`. `--carry-journey 2c508b5 --rc C′` says carried, so no journey runs. Steps
+1–17 re-run at C′. C's records are kept under `evidence/M07/c899c85…/rc/`, never `tested`, with no RC record.
+
+**Rejected alternatives, and why.** *Carry steps from C by identity:* no registered determining-file sets exist for
+steps 1–14 or 16, the alpha's §4 rule 3 and A43 require records at C′, and the re-run costs only free compute.
+
+**Watch for.** Any build action that touches a journey file moves K and needs about an hour of journey (§23.3's
+conditions).
+
+---

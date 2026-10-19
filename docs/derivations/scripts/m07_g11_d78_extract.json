@@ -1,0 +1,222 @@
+{
+  "derived_from": [
+    {
+      "path": "benchmarks/m02/g11-coverage-v3.json",
+      "sha256": "140791db5dc3feca3ba7f8f5569ea90ac1fe7d30e7743f2884f7147faf195fee"
+    },
+    {
+      "path": "evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/rc/step12/g11-coverage-v3.json",
+      "sha256": "586fc599ea6611dfe7c28921cba4e8cf8ab2828a9a0afe74490d566d71434cb3"
+    },
+    {
+      "path": "evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/rc/step12/g11-coverage-v3.json",
+      "sha256": "5eb42c9356cd4ed2662955901185d34aa265f9a8a90fcbc6b9ec19c98f2cd4fe"
+    },
+    {
+      "path": "evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/rc/step12/g11-coverage-v3.json",
+      "sha256": "3c50d1636d9fa85b5818310e360a3848a72588f371ee07cbb6c2d8a2008c9f92"
+    }
+  ],
+  "format": "m07-g11-d78-extract-v1",
+  "generator": "docs/derivations/scripts/m07_g11_d78_extract.py",
+  "original": {
+    "path": "evidence/M02/wo12a-experiment/artifacts/g11-exp.json",
+    "sha256": "afa7325ac72124156e7750ddfb9e553a15e860386c05ba2d55c7a652fb85b2ce",
+    "state": "lost (M07 build log J64); not reproducible (uncommitted experiment patch)"
+  },
+  "points": [
+    {
+      "label": "B1-m05-T643.15",
+      "stage": "S1",
+      "stage_steps": {
+        "S1": 400
+      }
+    },
+    {
+      "label": "B2-corner-T653.15-P1.5e+07-r1-i0",
+      "stage": "S1",
+      "stage_steps": {
+        "S1": 400
+      }
+    },
+    {
+      "label": "B2-corner-T653.15-P1.5e+07-r4-i0",
+      "stage": "S1",
+      "stage_steps": {
+        "S1": 400
+      }
+    },
+    {
+      "label": "B2-corner-T653.15-P5e+06-r1-i0",
+      "stage": "nonpositive_flow"
+    },
+    {
+      "label": "B2-corner-T653.15-P5e+06-r4-i0",
+      "stage": "nonpositive_flow"
+    },
+    {
+      "label": "B2-corner-T693.15-P1.5e+07-r1-i0",
+      "stage": "nonpositive_flow"
+    },
+    {
+      "label": "B2-corner-T693.15-P1.5e+07-r4-i0",
+      "stage": "nonpositive_flow"
+    },
+    {
+      "label": "B2-corner-T693.15-P5e+06-r1-i0",
+      "stage": "nonpositive_flow"
+    },
+    {
+      "label": "B2-corner-T693.15-P5e+06-r4-i0",
+      "stage": "nonpositive_flow"
+    },
+    {
+      "label": "corner-T573.15-P1.5e+07-r1-i0",
+      "stage": "S1",
+      "stage_steps": {
+        "S1": 400
+      }
+    },
+    {
+      "label": "corner-T573.15-P1.5e+07-r1-i0.2",
+      "stage": "S1",
+      "stage_steps": {
+        "S1": 400
+      }
+    },
+    {
+      "label": "corner-T573.15-P1.5e+07-r4-i0",
+      "stage": "S1",
+      "stage_steps": {
+        "S1": 400
+      }
+    },
+    {
+      "label": "corner-T573.15-P1.5e+07-r4-i0.2",
+      "stage": "S1",
+      "stage_steps": {
+        "S1": 400
+      }
+    },
+    {
+      "label": "corner-T573.15-P5e+06-r1-i0",
+      "stage": "S1",
+      "stage_steps": {
+        "S1": 400
+      }
+    },
+    {
+      "label": "corner-T573.15-P5e+06-r1-i0.2",
+      "stage": null
+    },
+    {
+      "label": "corner-T573.15-P5e+06-r4-i0",
+      "stage": "S1",
+      "stage_steps": {
+        "S1": 400
+      }
+    },
+    {
+      "label": "corner-T573.15-P5e+06-r4-i0.2",
+      "stage": "S1",
+      "stage_steps": {
+        "S1": 400
+      }
+    },
+    {
+      "label": "corner-T773.15-P1.5e+07-r1-i0",
+      "stage": "nonpositive_flow"
+    },
+    {
+      "label": "corner-T773.15-P1.5e+07-r1-i0.2",
+      "stage": null
+    },
+    {
+      "label": "corner-T773.15-P1.5e+07-r4-i0",
+      "stage": "nonpositive_flow"
+    },
+    {
+      "label": "corner-T773.15-P1.5e+07-r4-i0.2",
+      "stage": null
+    },
+    {
+      "label": "corner-T773.15-P5e+06-r1-i0",
+      "stage": "certificate"
+    },
+    {
+      "label": "corner-T773.15-P5e+06-r1-i0.2",
+      "stage": "certificate"
+    },
+    {
+      "label": "corner-T773.15-P5e+06-r4-i0",
+      "stage": "nonpositive_flow"
+    },
+    {
+      "label": "corner-T773.15-P5e+06-r4-i0.2",
+      "stage": null
+    }
+  ],
+  "reads": "g11_coverage_v3.py reads `variant`, and each point's `label`, `stage` and `stage_steps.S1`; the other members of this file are provenance",
+  "self_claims": {
+    "E3": {
+      "S1_labels": [
+        "B1-m05-T643.15",
+        "B2-corner-T653.15-P1.5e+07-r1-i0",
+        "B2-corner-T653.15-P1.5e+07-r4-i0",
+        "corner-T573.15-P1.5e+07-r1-i0",
+        "corner-T573.15-P1.5e+07-r1-i0.2",
+        "corner-T573.15-P1.5e+07-r4-i0",
+        "corner-T573.15-P1.5e+07-r4-i0.2",
+        "corner-T573.15-P5e+06-r1-i0",
+        "corner-T573.15-P5e+06-r4-i0",
+        "corner-T573.15-P5e+06-r4-i0.2"
+      ],
+      "S1_steps": [
+        400
+      ],
+      "counts": {
+        "G11v3-8": 8,
+        "G11v3-8_nonpositive_flow": 6,
+        "S1": 10,
+        "labels": 25,
+        "nonpositive_flow_773": 3,
+        "old_corners": 16
+      }
+    },
+    "E4": {
+      "fallback_equal_at": [
+        {
+          "differences": 0,
+          "labels": 87,
+          "record": "evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/rc/step12/g11-coverage-v3.json",
+          "runs": 2
+        },
+        {
+          "differences": 0,
+          "labels": 87,
+          "record": "evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/rc/step12/g11-coverage-v3.json",
+          "runs": 2
+        },
+        {
+          "differences": 0,
+          "labels": 87,
+          "record": "evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/rc/step12/g11-coverage-v3.json",
+          "runs": 2
+        }
+      ],
+      "previous": {
+        "git": "bd446ab:benchmarks/m02/g11-coverage-v3.json",
+        "sha256": "fa1b02544f00a1ce02a203dc8cccc9d7bc5e35122a79cfe1506e355bb9729a90"
+      },
+      "previous_runs_lost_sha256": "0656f617241dbb770f4818b7674df52288eb02fe8da18d7bee13b8dbcb6a76c6"
+    }
+  },
+  "specification": "docs/derivations/M07-spec.md §24.3 (R-480)",
+  "variant": {
+    "file": "benchmarks/m02/variant-v3-experiment.json",
+    "registered": false,
+    "sha256": "97fc6ef9a8dcd6adf5ac03936d13bce153441925c0dbc4ddd67838c29f5c47d3",
+    "timeout_s": 600,
+    "variant_id": "pymrm-6089593-g2-nz800-s123-v3-experiment"
+  }
+}
