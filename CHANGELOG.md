@@ -196,6 +196,9 @@ at the release candidate (M07).*
 - reactor results reproduce from records (R3)
 - T_in 653.15-693.15 K, P 9-11 MPa, H2/N2 2.5-3.5, inerts 0.035-0.2, per-tube flow 0.5-2 x nominal
 - no empirical validation of the C1 loop
+- no reactor result has been compared with experimental data by this project: the group's
+  published comparison is the group's evidence, and every real-reactor number is the group's model
+  at the pin, a regression, whose discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13)
 - no global optimality
 - the optimization routes need the optional nlp extra
 - the stand-in reactor is synthetic
