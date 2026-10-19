@@ -49,6 +49,13 @@ def render(coverage: Mapping[str, Any], access: Mapping[str, Any]) -> str:
         "`benchmarks/m06/openidaes450/coverage.json`; do not edit by hand. Rules: "
         "`docs/derivations/M06-W27-registration.md` §5 (classification) and §12 (reporting).",
         "",
+        # M07 spec §22.3 (F-3, WO-10): so the Tier 0 record is not read as a campaign's coverage.
+        "Scope: this is M06's Tier 0 coverage, classified at the commit in the table below. "
+        "It is not the record of a W27 campaign. Each campaign records the coverage it ran "
+        "under in its own directory, `benchmarks/m06/openidaes450/runs/<campaign>/coverage.json`, "
+        "and the 0.2.0 release reports the coverage taken at the release candidate "
+        "(M07 RC step 17).",
+        "",
         f"**{sentence(coverage)}**",
         "",
         "## Snapshot",
