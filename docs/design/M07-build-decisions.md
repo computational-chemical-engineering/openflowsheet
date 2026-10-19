@@ -632,3 +632,24 @@ J71 [coverage] Action 5 (§24.5) `68befc2`: the A24 skip. Opt-in run (m05 `.venv
 commit: 1 passed (2c508b5), 1 skipped (974c395) with §24.5's text. J.1 proper is at C′ (next engineer). Gate 9982 passed.
 J72 [coverage] Action 6: the commit carrying J67–J72 is the re-cut **C′**; RC.1 is recorded in J73 after it.
 `git diff --name-only c899c85 68befc2 -- src benchmarks schemas requirements.lock pyproject.toml` is empty already.
+J73 [coverage] **C′ = `ce993651ce37c1343e771b276160bd6623e43500`** (gate 9982 passed, 35 skipped, 192 deselected).
+**RC.1** at C′: `git merge-base --is-ancestor c899c85 C′` exit 0; `git diff --name-only c899c85 C′ -- src benchmarks
+schemas requirements.lock pyproject.toml` empty (0 lines); `v0_2_gate.py --carry-journey 2c508b5 --rc C′` exit 0,
+"RC step 15: the journey at 2c508b5 carried". RC.2: C′ holds §24, R-478–R-484, the four Accepted ADRs, the extract and
+its generator, §24.1/§24.2/§24.3 action 1/§24.5's build actions; version `0.2.0`. Push CI at C′: run **39276061202**
+`success` (check on both runners, default-install, identity). Throwaway branch `throwaway/m07-ci2` left on the remote
+(run 39252474979 cites its head); delete it at will.
+
+### Handoff (WO-8c part 2: actions 7–8)
+- Branch `wp/M07`, C′ = `ce99365`; K = `2c508b5` stays. This J73 commit is a records-only descendant of C′.
+- Next: §24.7 action 7 — RC steps 1–17 at C′ as at C (J59 recipe: clean RC worktree `.claude/worktrees/rc-ce99365`,
+  `~/.cache/of-rc-c899c85/tools/` scripts re-pointed at C′; CI dispatch `rc_alpha` + `rc_distribution` at C′).
+  Step 12: G11 with `--d78 docs/derivations/scripts/m07_g11_d78_extract.json`, no `--previous-runs` (§24.3 action 2).
+  Step 15: `--carry-journey 2c508b5 --rc C′`, then `check`, `replay`. Step 17 as §22.2.
+- Conditions to read: S9.1–S9.4 (`mr12_extras_v02` in `scripts/m07a_evidence_manifest.py`), CI.1, S12.2–S12.5, J.1.
+- J.1 recipe: `OMP_NUM_THREADS=1 PYTHONPATH=src` m05 `.venv-nlp` python with
+  `.claude/worktrees/m05/.reference-downloads/m03-ipopt/nlp-test-tools` appended to `sys.path` in process, then
+  `pytest.main(["-m","pymrm","tests/test_m07_journey_record.py","-k","a24","-rs"])` (expect 1 passed, 1 skipped).
+- Then action 8: records commit after C′, C's evidence under `evidence/M07/c899c85…/rc/` (RC.3), `docs/v02-rc-record.md`
+  (step 9 row without "not measured"), `release/rc-trees/<C′>.json`.
+- A7-Q4: `modules_walked` ≠ 182 at C′ stops the RC (measured 182 at `7af34d5`, no `src/` change since C).
