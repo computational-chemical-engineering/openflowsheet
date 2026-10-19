@@ -1,7 +1,12 @@
 # ADR 0039 — M05: the C1 fixed-topology study optimizes the reactor inlet temperature for liquid NH₃ product; candidates are judged by parent checks at the decision tolerance; every true-model call is accounted
 
-**Status:** Proposed, 2026-10-09. It is accepted when M05's evidence manifest is `tested` for the design note's gates
-G5–G12 (G11 opt-in) and the design-lane review of WO-5–WO-9 has closed its must-fix items.
+**Status:** **Accepted, 2026-10-19** (design lane, M07 ruling round 6, M07 spec §24.4; register R-482). Proposed
+2026-10-09. The condition it was accepted on: M05's evidence manifest is `tested` for the design note's gates G5–G12
+(G11 opt-in) and the design-lane review of WO-5–WO-9 has closed its must-fix items. Met by
+`evidence/M05/56fb2fa…/manifest.json` (`tested`, 14/14 `pass`, M05.G1–G13 and G5b, G11 among them) and by
+`docs/reviews/M05-review.md` (one pass over WO-1…WO-9 at `7350684`; its one must-fix MF1 closed by `cdacc32`, R-432,
+with the re-take diff the review prescribed, `RETAKE-DIFF PASS`, 0 differences, build log S70; `cdacc32` is an ancestor
+of `56fb2fa`).
 **Author:** design lane (`architect`), M05.
 **Normative text:** `docs/design/M05-trust-region.md` §5.2–§5.3, §7, §8 and §9 (binding), §11 (claims).
 **Register:** R-267 to R-271, R-273.
