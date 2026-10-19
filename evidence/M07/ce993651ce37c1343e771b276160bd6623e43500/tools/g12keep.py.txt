@@ -1,0 +1,42 @@
+"""Run benchmarks/m02/g12_real_loop.py unchanged, keeping its scratch directories (B-WO10-6).
+
+    python g12keep.py <keep-dir> <g12_real_loop.py arguments...>
+
+Only the module's own `tempfile` name is replaced, by a shim whose `TemporaryDirectory(prefix=...)`
+makes `<keep-dir>/<prefix><n>` and does not remove it; every other module's `tempfile` is the
+standard one. The script's solve, replay and live rerun are otherwise exactly C's (M07 RC step 12, as the alpha's).
+"""
+
+from __future__ import annotations
+
+import importlib.util
+import itertools
+import sys
+import types
+from pathlib import Path
+
+keep = Path(sys.argv[1]).resolve()
+script = Path("benchmarks/m02/g12_real_loop.py").resolve()
+counter = itertools.count()
+
+
+class _Kept:
+    def __init__(self, prefix: str = "tmp", **_: object) -> None:
+        self.name = str(keep / f"{prefix}{next(counter)}")
+        Path(self.name).mkdir(parents=True, exist_ok=False)
+
+    def __enter__(self) -> str:
+        return self.name
+
+    def __exit__(self, *_: object) -> None:
+        return None
+
+
+spec = importlib.util.spec_from_file_location("g12_real_loop", script)
+assert spec is not None and spec.loader is not None
+module = importlib.util.module_from_spec(spec)
+sys.modules["g12_real_loop"] = module
+spec.loader.exec_module(module)
+module.tempfile = types.SimpleNamespace(TemporaryDirectory=_Kept)  # type: ignore[attr-defined]
+sys.argv = [str(script), *sys.argv[2:]]
+sys.exit(module.main())

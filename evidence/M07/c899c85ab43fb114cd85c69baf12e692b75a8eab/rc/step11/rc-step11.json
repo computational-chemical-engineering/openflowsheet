@@ -1,0 +1,44 @@
+{
+ "checks": [
+  {
+   "exit_code": 0,
+   "freeze_sha256": "94dfb7fb94245f4aaa8e23724e52f3642db91eb579f6ba904c65eaf0092d1539",
+   "id": "a40.crosscheck_exit",
+   "last_line": "external-crosscheck.json matches",
+   "record_sha256": "72a2732e5c22517786b1b2e1f2419de8223e88a959b001c3ee47aea56c408f39",
+   "result": "pass"
+  },
+  {
+   "exit_code": 0,
+   "id": "a40.idaes_exit",
+   "result": "pass"
+  },
+  {
+   "committed_sha256": "7dc5509621e45e3c398bb82535632d8e9b1b205d530ec24432439f80dc14f9be",
+   "differing_members": [
+    "inputs.reference_values_yaml_sha256"
+   ],
+   "freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+   "id": "a40.idaes_numbers_identical",
+   "rerun_sha256": "7e1d41dd0da62c1685c2ea422e7891bb216c2e01bebb2e7ece7de22d4360adb4",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "c899c85ab43fb114cd85c69baf12e692b75a8eab",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "external-records"
+}

@@ -1,0 +1,208 @@
+"""M07 WO-8c action 8: write docs/v02-rc-record.md (the alpha's §8.3 form, M07 spec §8, §24) from the
+committed records under evidence/M07/<C'>/rc/. Every sha256 cell is computed here from rc/records.json
+(the uncompressed record's hash); every record listed there is cited on exactly one row; the Result
+texts are what the records and logs say (build log J74-J77).
+
+    python make_record.py <repository root>
+"""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+C = "ce993651ce37c1343e771b276160bd6623e43500"
+ROOT = Path(sys.argv[1]).resolve()
+RC = ROOT / "evidence" / "M07" / C / "rc"
+INDEX = {f["path"]: f for f in json.loads((RC / "records.json").read_text("utf-8"))["files"]}
+CERTS = sorted(p for p in INDEX if p.startswith("step12/certificates/"))
+X, A = "CI x86-64", "CI aarch64"
+L = "local `ref-x86-64`"
+NLP = (
+    "`openflowsheet.studies.nlp.greybox` → `cyipopt`, `openflowsheet.studies.trust_region.projection` → "
+    "`pyomo`, `openflowsheet.studies.trust_region.trf` → `pyomo`"
+)
+
+ROWS: list[tuple[int, str, str, str, list[str]]] = [
+    (1, "T08.A41 (M07a.A30)", X,
+     "success (`check.sh: PASSED`; ruff check, ruff format, mypy, pytest exit 0; 9911 passed, 106 skipped, 192 "
+     "deselected); `tests/test_m07_ledger.py` 1 passed and 4 skipped, each naming `docs/reviews/V02-verdicts.md` "
+     "(§23.2)", ["ci/job-logs/check-ubuntu-latest.log"]),
+    (1, "T08.A41 (M07a.A30)", A,
+     "success (`check.sh: PASSED`; 9882 passed, 105 skipped, 192 deselected); the ledger's four skips the same",
+     ["ci/job-logs/check-ubuntu-24.04-arm.log"]),
+    (2, "T08.A42 (M07a.A31)", L,
+     "PASS (3/3): minus-t07 `24af004a…`, t07 key `887a2e62…` as registered (R-149); unchanged under the trial "
+     "version `0.1.0`", ["identity/rc-identity.json"]),
+    (2, "T08.A42 (M07a.A31)", "CI `ci-x86-64` (`rc-steps`)", "PASS (3/3); the same digests",
+     ["ci/rc-steps-ubuntu-latest/identity/rc-identity.json"]),
+    (2, "T08.A42 (M07a.A31)", "CI `ci-aarch64` (`rc-steps`)", "PASS (3/3); the same digests",
+     ["ci/rc-steps-ubuntu-24.04-arm/identity/rc-identity.json"]),
+    (2, "T08.A42 (cross-arch, G05)", "CI `identity`",
+     "success (\"G05: R0 structural identity equal across 2 platforms\")", ["ci/job-logs/identity.log"]),
+    (3, "T08.A43 (+A31 checks; M07a.A32)", "CI `dist`",
+     "PASS (8/8); `a43.version` `0.2.0` from `__version__`, `pyproject`, the sdist and the wheel METADATA; wheel "
+     "bytes equal across the two builds, sdist archive bytes differ with no differing member",
+     ["ci/rc-dist/t08-a43-dist.json"]),
+    (4, "T08.A44 (M07a.A33)", "CI x86-64 clean env",
+     "PASS (10/10); wheel `0.2.0`; CasADi = A30 digest `4be1571e…` and P03 per-file (2376 files); smoke solve "
+     "CONVERGED / VERIFIED, 136 checks", ["ci/rc-install-ubuntu-latest/install-ubuntu-latest.json"]),
+    (4, "T08.A44 (M07a.A33)", "CI aarch64 clean env",
+     "PASS (9/9); wheel `0.2.0`; CasADi = A30 digest `7a243303…`; smoke solve CONVERGED / VERIFIED, 136 checks",
+     ["ci/rc-install-ubuntu-24.04-arm/install-ubuntu-24.04-arm.json"]),
+    (4, "T08.A19 (b, c)", "CI x86-64, `--state installed`", "PASS (4/4)",
+     ["ci/rc-install-ubuntu-latest/lock-installed-ubuntu-latest.json"]),
+    (4, "T08.A19 (a, c)", "CI x86-64, `--state checkout`", "PASS (4/4); lock `ead4edf1…`",
+     ["ci/rc-install-ubuntu-latest/lock-checkout-ubuntu-latest.json"]),
+    (4, "T08.A19 (b, c)", "CI aarch64, `--state installed`", "PASS (4/4)",
+     ["ci/rc-install-ubuntu-24.04-arm/lock-installed-ubuntu-24.04-arm.json"]),
+    (4, "T08.A19 (a, c)", "CI aarch64, `--state checkout`", "PASS (4/4)",
+     ["ci/rc-install-ubuntu-24.04-arm/lock-checkout-ubuntu-24.04-arm.json"]),
+    (5, "T08.A45 write (M07a.A34)", "CI x86-64 `bundle-set`",
+     "success (job conclusion; the index carries no check list): `n_b` 52 (k05 5, g8 47), every entry exit 0; 49 "
+     "CONVERGED, 3 g8 runs with other registered outcomes (O3)", ["ci/rc-bundles/index.json"]),
+    (5, "T08.A45 replay, A14 C1–C3 (M07a.A34)", "CI fresh x86-64",
+     "PASS (8/8): same commit; `N_b` 52 = enumeration; every bundle `MATCH`, modes `exact_replay` 52; policy "
+     "`T08-numerical-policy-v2` (52); C1, C2 `MISMATCH` and C3 `MATCH` as expected; sets k05 5, g8 47",
+     ["ci/rc-replay-ubuntu-latest/replay-ubuntu-latest.json"]),
+    (5, "T08.A45 replay, A14 C1–C3 (M07a.A34)", A,
+     "PASS (8/8): every bundle `MATCH`, modes `compatible_reproduction` 52; policy `T08-numerical-policy-v2` (52); "
+     "C1, C2 `MISMATCH` and C3 `MATCH` as expected; sets k05 5, g8 47",
+     ["ci/rc-replay-ubuntu-24.04-arm/replay-ubuntu-24.04-arm.json"]),
+    (6, "T08.A46, A47 (S3) (M07a.A35)", L,
+     "PASS (7/7): N = 440, S = 434, F-BUDGET 3, F-FALSE-SUCCESS-CAUGHT 3, no F-CRASH or F-OTHER-ROOT; gate S ≥ 418; "
+     "none verified outside S3 (worst success ratio 0.0968); A33 0; T06 A34 same-class replay 28 of 28 MATCH; "
+     "registered runs untouched", ["ensemble/rc-ensemble-ref-x86-64.json"]),
+    (6, "(run file, report, replay)", "local", "—",
+     ["ensemble/rc-ref-x86-64.json", "ensemble/rc-ref-x86-64.report.txt", "ensemble/rc-ref-x86-64.replay.txt"]),
+    (6, "T08.A46, A47 (S3) (M07a.A35)", "CI `ci-aarch64`",
+     "PASS (7/7): N = 440, S = 434, F-BUDGET 4, F-FALSE-SUCCESS-CAUGHT 2, no F-CRASH or F-OTHER-ROOT; none verified "
+     "outside S3 (worst 0.0968); A33 0; replay 28 of 28 MATCH",
+     ["ci/rc-ensemble-ubuntu-24.04-arm/rc-ensemble-ci-aarch64.json"]),
+    (6, "(run file, report, replay)", "CI `ci-aarch64`", "—",
+     ["ci/rc-ensemble-ubuntu-24.04-arm/rc-ci-aarch64.json", "ci/rc-ensemble-ubuntu-24.04-arm/rc-ci-aarch64.report.txt",
+      "ci/rc-ensemble-ubuntu-24.04-arm/rc-ci-aarch64.replay.txt"]),
+    (7, "T08.A47, A48 (M07a.A36)", L,
+     "PASS (12/12): A47 T06.A02–A08, A16, A19, A20; A48 T06.A47, A50; 165 nodes passed, none missing or skipped",
+     ["corpus-ref-x86-64.json"]),
+    (7, "T08.A47, A48 (M07a.A36)", X, "PASS (12/12)", ["ci/rc-steps-ubuntu-latest/corpus-ubuntu-latest.json"]),
+    (7, "T08.A47, A48 (M07a.A36)", A, "PASS (12/12)", ["ci/rc-steps-ubuntu-24.04-arm/corpus-ubuntu-24.04-arm.json"]),
+    (8, "§5.3 chain + G16-b (M07a.A37)", L,
+     "PASS (8/8): c_3 (R-295) `455d01eb…`; served `383b4e2c…` = `D_2`; strip c_2 → `6c4375b4…` = `D_1`; strip c_1 → "
+     "`171dd768…` = `D_0`; with `v17-c2`'s texts `6d13e13d…` (R-137); the tools and their description files; G16-b "
+     "40 of 40 clean; records attributable", ["surface/rc-alpha-surface.json"]),
+    (8, "§5.3 chain + G16-b (M07a.A37)", X, "PASS (8/8); the same digests; 40 of 40 clean",
+     ["ci/rc-steps-ubuntu-latest/surface/rc-alpha-surface.json"]),
+    (8, "§5.3 chain + G16-b (M07a.A37)", A, "PASS (8/8); the same digests; 40 of 40 clean",
+     ["ci/rc-steps-ubuntu-24.04-arm/surface/rc-alpha-surface.json"]),
+    (9, "T08.A30 (M07a.A38; §24.1 S9.1–S9.4)", L,
+     "PASS (\"A30 PASS\"): over the default install and `server`; 266 distinct objects, required closure 150, no "
+     "undispositioned object in the closure, METIS not reached (S9.1); `modules_walked` 182, `modules_imported` "
+     f"179, `solve_exit` 0 (S9.3); `nlp_extra_modules` {NLP} (S9.2). These three `nlp`-extra modules are outside "
+     "A30's scope by MR-12 and are covered by step 14's inventory check and R-450: `mr12_extras_v02` at `C` gives "
+     "pass, new extras `[\"nlp\"]`, audit and inventory present, step 14's `a60.w24.nlp_tier_and_inventory` pass at "
+     "`C`, R-450 in the register (S9.4)",
+     ["a30/a30-inventory-x86_64.json", "a30/t08-a30-x86_64.json", "a30.log"]),
+    (9, "T08.A30 (M07a.A38; S9.1–S9.3, CI.1)", X,
+     "PASS (\"A30 PASS\"; `a30.log` ends `a30 exit status 0`, `rc-steps` success): 266 distinct objects, closure 150; "
+     "182 walked, 179 imported, solve exit 0; the same three `nlp_extra_modules`",
+     ["ci/rc-steps-ubuntu-latest/a30/a30-inventory-x86_64.json", "ci/rc-steps-ubuntu-latest/a30/t08-a30-x86_64.json",
+      "ci/rc-steps-ubuntu-latest/a30.log"]),
+    (9, "T08.A30 (M07a.A38; S9.1–S9.3, CI.1)", A,
+     "PASS (\"A30 PASS\"; `a30.log` ends `a30 exit status 0`, `rc-steps` success): 232 distinct objects, closure 147; "
+     "182 walked, 179 imported, solve exit 0; the same three `nlp_extra_modules`",
+     ["ci/rc-steps-ubuntu-24.04-arm/a30/a30-inventory-aarch64.json",
+      "ci/rc-steps-ubuntu-24.04-arm/a30/t08-a30-aarch64.json", "ci/rc-steps-ubuntu-24.04-arm/a30.log"]),
+    (10, "T08.A34 over steps 2, 6, 8 and 12 (MR-11; M07a.A39)", L,
+     "PASS (2/2): 77 certificates audited (72 of steps 2, 6, 8 and step 12's five coupled-route certificates), "
+     "0 violations", ["certificates-ref-x86-64.json"]),
+    (10, "(step 12's five kept certificates, R-348)", "local", "—", CERTS),
+    (10, "T08.A34 (M07a.A39)", "CI x86-64 `rc-steps`", "PASS (2/2): 72 audited, 0 violations",
+     ["ci/rc-steps-ubuntu-latest/certificates-ubuntu-latest.json"]),
+    (10, "T08.A34 (M07a.A39)", "CI aarch64 `rc-steps`", "PASS (2/2): 72 audited, 0 violations",
+     ["ci/rc-steps-ubuntu-24.04-arm/certificates-ubuntu-24.04-arm.json"]),
+    (10, "T08.A34 (M07a.A39)", "CI x86-64 clean install (step 4)", "PASS (2/2): 1 audited, 0 violations",
+     ["ci/rc-install-ubuntu-latest/certificates-ubuntu-latest.json"]),
+    (10, "T08.A34 (M07a.A39)", "CI aarch64 clean install (step 4)", "PASS (2/2): 1 audited, 0 violations",
+     ["ci/rc-install-ubuntu-24.04-arm/certificates-ubuntu-24.04-arm.json"]),
+    (10, "T08.A34 (M07a.A39)", "CI x86-64 bundle set (step 5)",
+     "PASS (2/2): 49 audited (of 52 bundles; the 3 unconverged G8 runs carry none), 0 violations",
+     ["ci/rc-bundle-set-certificates/rc-certificates.json"]),
+    (11, "M07a.A40", f"{L}, pinned environments",
+     "PASS (3/3): `external_crosscheck.py --check` exit 0 (\"external-crosscheck.json matches\"); IDAES re-run exit 0; "
+     "its numbers equal the committed record's, the one differing member `inputs.reference_values_yaml_sha256`",
+     ["step11/rc-step11.json"]),
+    (11, "(cross-check output, venv, IDAES record, venv)", "local", "—",
+     ["step11/external-crosscheck-check.stdout.txt", "step11/venv-xcheck.freeze.txt", "step11/idaes-conformance.json",
+      "step11/venv-idaes.freeze.txt"]),
+    (12, "M07a.A41 (M02 G10 (a)–(i), G11 (a)–(d), G12)",
+     f"{L}, reactor environment from `C`'s lock, one thread",
+     "PASS (6/6): environment built and verified (lock `032a050c…`); G10v3 met — A42 1.56 × 10⁻⁸, A45 3.84 × 10⁻⁸, "
+     "A46 5.06 × 10⁻⁵, A47 (a) bitwise, (b) 1.43 × 10⁻⁸; G11v3 met (S12.4): G11v3-1, -2, -3, -8, -11 and -12 met, "
+     "`G11v3-4_selected` `V5`, 121 points per run, 2 runs, all equal; G12 CONVERGED in 4 outer iterations, final "
+     "k 3, floor ratios 13.3 (T) and 65.3 (ξ); M02 tests with the reactor 570 passed",
+     ["step12/rc-step12.json"]),
+    (12, "§24.3 action 2 (S12.2, S12.3, S12.5)", "local",
+     "PASS (S12.2 and S12.3 hold, `tools/s12_check.py.txt`): `--d78` = `docs/derivations/scripts/"
+     "m07_g11_d78_extract.json`, sha256 `a118c62a50cb998733b171792347b5ff14f43e707a16b07e768ee316e5132bb0`, the "
+     "registered extract of D78's values, provenance `afa7325a…` (R-480); `d78.variant` = the alpha record's; "
+     "`--previous` = `bd446ab`'s `g11-coverage-v3.json` (`fa1b0254…`); `--previous-runs` omitted under D100's "
+     "fallback (generator E4, S12.1): `previous.runs_file` and `previous.runs_sha256` null, `G11v3-11."
+     "stage_steps_from` `points`; every `G11v3-3` corner's `d78_stage` (16), `G11v3-5.S1_as_D78`'s keys and "
+     "`d78_S1_steps` (10) and every `G11v3-8` point's `d78_stage` (8) equal `6fec822`'s step-12 record",
+     ["step12/g11-coverage-v3.json", "step12/d78-extract.sha256", "step12/archived-inputs.sha256"]),
+    (12, "(G10, G11 runs, G12, G12 edges, M02 tests, environment, host)", "local", "—",
+     ["step12/g10-adapter-halves-v3.json", "step12/g11-coverage-v3.runs.json", "step12/g12-real-loop-v3.json",
+      "step12/g12-real-loop-v3-edges.json", "step12/m02-tests.junit.xml", "step12/env-manifest.json",
+      "step12/host.txt"]),
+    (13, "W23 (M07.A60)", "local, project venv",
+     "PASS (3/3): `m04_reference.py --check` exit 0 (\"11943 claims passed\"); `m04_schema_fixtures.py` exit 0; "
+     "`tests/test_m04_*.py tests/test_evidence_manifests.py` 485 passed",
+     ["step13/rc-step13.json", "step13/m04-tests.junit.xml", "step13/step13-generator.log",
+      "step13/step13-fixtures.log"]),
+    (14, "W24 (M07.A60)", "local, m05's audited `nlp` environment, clean worktree at `C`",
+     "PASS (4/4): `m03_nlp_check.sh` 186 passed, 1 skipped, inventory `--check` exit 0 for both workloads (NLP-1, "
+     "Ipopt executable); M03/M05 all tiers 640 passed, 2 skipped; `m05_wo9_real.py --replay` \"REPLAY PASS REAL "
+     "differences=0\"; `m03_reference.py --check` exit 0",
+     ["step14/rc-step14.json", "step14/nlp.junit.xml", "step14/step14-nlp-check.log",
+      "step14/m03-m05-tests.junit.xml", "step14/step14-m05-real-replay.log", "step14/step14-m03-reference.log"]),
+    (15, "W25 (M07.A61)", "local; `check` and `replay` in the `nlp` environment",
+     "PASS (3/3): \"RC step 15: the journey at 2c508b5 carried\"; `check: ACCEPT`; `replay: bitwise`",
+     ["step15/rc-step15.json", "step15/step15-carry.log", "step15/step15-check.log", "step15/step15-replay.log"]),
+    (16, "W26 (M07.A60)", L,
+     "PASS (3/3): `tests/test_m06_*.py` with `OPENFLOWSHEET_REQUIRE_BROWSER=1` 661 passed; `node --test` 92 of 92; "
+     "W27 dry run \"A23 PASS (62 records)\"",
+     ["step16/rc-step16.json", "step16/m06-tests.junit.xml", "step16/step16-node.log", "step16/step16-dryrun.log"]),
+    (16, "W26, the browser test (M07.A60)", "CI x86-64 `check (ubuntu-latest)`",
+     "success: the job runs `tests/test_m06_*.py` with `OPENFLOWSHEET_REQUIRE_BROWSER=1` (the step-1 log above)",
+     []),
+    (17, "W27 (M07.A62; §22.2 17a–17d)", "local, fresh `$S` outside the repository",
+     "PASS (4/4): 17a tree `95f9fcf2c6a24084b823746959971fc5e183895a` = the judged record; 17b coverage at `C` exit 0; "
+     "17c \"RC step 17: the W27 campaign carried\" (`at-c.json` = `at-cw.json`, `3c0e08c7…`); 17d precheck and "
+     "`aggregate` exit 0, `diff -r` empty, `campaign.json` "
+     "`4812910abb2622b9192c01eae331fa2e97b3f523d78f73510b845c32f20f9e28`",
+     ["step17/rc-step17.json", "step17/step17a-tree.log", "step17/step17c-carry.log", "step17/step17d-diff.log",
+      "step17/step17d-sha256.log"]),
+    (17, "(carry members, coverage at `C`)", "local", "—",
+     ["step17/at-cw.json", "step17/at-c.json", "step17/coverage-at-C.json"]),
+]
+
+
+def row(step: int, assertion: str, where: str, result: str, paths: list[str]) -> str:
+    if not paths:
+        record, digest = "`ci/job-logs/check-ubuntu-latest.log`", f"`{INDEX['ci/job-logs/check-ubuntu-latest.log']['sha256']}`"
+    else:
+        record = ", ".join(f"`{p}`" for p in paths)
+        digest = ", ".join(f"`{INDEX[p]['sha256']}`" for p in paths)
+    return f"| {step} | {assertion} | {where} | {result} | {record} | {digest} |"
+
+
+cited = [p for *_, paths in ROWS for p in paths]
+assert len(cited) == len(set(cited)), "a record is cited twice"
+assert set(cited) == set(INDEX), sorted(set(INDEX) ^ set(cited))
+table = "\n".join(row(*r) for r in ROWS)
+template = (Path(__file__).with_name("rc-record.template.md")).read_text("utf-8")
+out = template.replace("@TABLE@", table).replace("@N@", str(len(INDEX)))
+(ROOT / "docs" / "v02-rc-record.md").write_text(out, encoding="utf-8")
+print(f"{len(ROWS)} rows, {len(INDEX)} records cited")

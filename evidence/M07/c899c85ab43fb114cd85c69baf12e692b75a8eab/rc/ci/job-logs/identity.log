@@ -1,0 +1,285 @@
+identity	Set up job	﻿2026-10-19T09:20:17.0225649Z Current runner version: '2.337.0'
+identity	Set up job	2026-10-19T09:20:17.0249243Z ##[group]Runner Image Provisioner
+identity	Set up job	2026-10-19T09:20:17.0250054Z Hosted Compute Agent
+identity	Set up job	2026-10-19T09:20:17.0250571Z Version: 20261012.601
+identity	Set up job	2026-10-19T09:20:17.0251172Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+identity	Set up job	2026-10-19T09:20:17.0251824Z Build Date: 2026-10-12T17:48:21Z
+identity	Set up job	2026-10-19T09:20:17.0252474Z Worker ID: {fb4a97ba-964c-4b44-b896-15a74f5a7ff8}
+identity	Set up job	2026-10-19T09:20:17.0253125Z Region: westus3
+identity	Set up job	2026-10-19T09:20:17.0253592Z Cloud: Azure
+identity	Set up job	2026-10-19T09:20:17.0254094Z ##[endgroup]
+identity	Set up job	2026-10-19T09:20:17.0255868Z ##[group]Operating System
+identity	Set up job	2026-10-19T09:20:17.0256511Z Ubuntu
+identity	Set up job	2026-10-19T09:20:17.0257008Z 24.04.5
+identity	Set up job	2026-10-19T09:20:17.0257452Z LTS
+identity	Set up job	2026-10-19T09:20:17.0257926Z ##[endgroup]
+identity	Set up job	2026-10-19T09:20:17.0258403Z ##[group]Runner Image
+identity	Set up job	2026-10-19T09:20:17.0258970Z Image: ubuntu-24.04
+identity	Set up job	2026-10-19T09:20:17.0259511Z Version: 20261012.334.1
+identity	Set up job	2026-10-19T09:20:17.0260456Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+identity	Set up job	2026-10-19T09:20:17.0261965Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+identity	Set up job	2026-10-19T09:20:17.0262848Z ##[endgroup]
+identity	Set up job	2026-10-19T09:20:17.0265730Z ##[group]GITHUB_TOKEN Permissions
+identity	Set up job	2026-10-19T09:20:17.0267995Z Actions: write
+identity	Set up job	2026-10-19T09:20:17.0268550Z ArtifactMetadata: write
+identity	Set up job	2026-10-19T09:20:17.0269081Z Attestations: write
+identity	Set up job	2026-10-19T09:20:17.0269658Z Checks: write
+identity	Set up job	2026-10-19T09:20:17.0270145Z CodeQuality: write
+identity	Set up job	2026-10-19T09:20:17.0270859Z Contents: write
+identity	Set up job	2026-10-19T09:20:17.0271374Z CopilotRequests: write
+identity	Set up job	2026-10-19T09:20:17.0271887Z Deployments: write
+identity	Set up job	2026-10-19T09:20:17.0272415Z Discussions: write
+identity	Set up job	2026-10-19T09:20:17.0272909Z Drives: write
+identity	Set up job	2026-10-19T09:20:17.0273371Z Issues: write
+identity	Set up job	2026-10-19T09:20:17.0273955Z Metadata: read
+identity	Set up job	2026-10-19T09:20:17.0274464Z Models: read
+identity	Set up job	2026-10-19T09:20:17.0275168Z Packages: write
+identity	Set up job	2026-10-19T09:20:17.0275722Z Pages: write
+identity	Set up job	2026-10-19T09:20:17.0276189Z PullRequests: write
+identity	Set up job	2026-10-19T09:20:17.0276747Z RepositoryProjects: write
+identity	Set up job	2026-10-19T09:20:17.0277317Z SecurityEvents: write
+identity	Set up job	2026-10-19T09:20:17.0277847Z Statuses: write
+identity	Set up job	2026-10-19T09:20:17.0278359Z VulnerabilityAlerts: read
+identity	Set up job	2026-10-19T09:20:17.0278891Z ##[endgroup]
+identity	Set up job	2026-10-19T09:20:17.0280921Z Secret source: Actions
+identity	Set up job	2026-10-19T09:20:17.0281775Z Cache mode: write
+identity	Set up job	2026-10-19T09:20:17.0282445Z Prepare workflow directory
+identity	Set up job	2026-10-19T09:20:17.0592974Z Prepare all required actions
+identity	Set up job	2026-10-19T09:20:17.0641476Z Getting action download info
+identity	Set up job	2026-10-19T09:20:17.3699998Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+identity	Set up job	2026-10-19T09:20:17.4869571Z Download action repository 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c' (SHA:3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c)
+identity	Set up job	2026-10-19T09:20:18.2207748Z Download action repository 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97' (SHA:5fda3b95a4ea91299a34e894583c3862153e4b97)
+identity	Set up job	2026-10-19T09:20:18.3821856Z Complete job name: identity
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	﻿2026-10-19T09:20:18.4648617Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4649809Z with:
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4650469Z   repository: computational-chemical-engineering/openflowsheet
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4654604Z   token: ***
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4655275Z   ssh-strict: true
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4655761Z   ssh-user: git
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4656244Z   persist-credentials: true
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4656784Z   clean: true
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4657271Z   sparse-checkout-cone-mode: true
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4657837Z   fetch-depth: 1
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4658307Z   fetch-tags: false
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4658784Z   show-progress: true
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4659273Z   lfs: false
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4659744Z   submodules: false
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4660231Z   set-safe-directory: true
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4660781Z   allow-unsafe-pr-checkout: false
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.4661611Z ##[endgroup]
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5622455Z Syncing repository: computational-chemical-engineering/openflowsheet
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5625379Z ##[group]Getting Git version info
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5626369Z Working directory is '/home/runner/work/openflowsheet/openflowsheet'
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5627724Z [command]/usr/bin/git version
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5688908Z git version 2.55.0
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5706594Z ##[endgroup]
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5717640Z Temporarily overriding HOME='/home/runner/work/_temp/e3da4e91-2815-46c0-a042-7d84587a1408' before making global git config changes
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5720789Z Adding repository directory to the temporary git global config as a safe directory
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5723917Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5765477Z Deleting the contents of '/home/runner/work/openflowsheet/openflowsheet'
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5768425Z ##[group]Determining repository object format
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5769803Z ##[endgroup]
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5770607Z ##[group]Initializing the repository
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5773733Z [command]/usr/bin/git init /home/runner/work/openflowsheet/openflowsheet
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5866717Z hint: Using 'master' as the name for the initial branch. This default branch name
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5868319Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5870184Z hint: to use in all of your new repositories, which will suppress this warning,
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5871678Z hint: call:
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5872543Z hint:
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5873538Z hint: 	git config --global init.defaultBranch <name>
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5874800Z hint:
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5876177Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5878012Z hint: 'development'. The just-created branch can be renamed via this command:
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5879550Z hint:
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5880414Z hint: 	git branch -m <name>
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5881338Z hint:
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5882504Z hint: Disable this message with "git config set advice.defaultBranchName false"
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5884783Z Initialized empty Git repository in /home/runner/work/openflowsheet/openflowsheet/.git/
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5887518Z [command]/usr/bin/git remote add origin https://github.com/computational-chemical-engineering/openflowsheet
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5920794Z ##[endgroup]
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5922301Z ##[group]Disabling automatic garbage collection
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5923824Z [command]/usr/bin/git config --local gc.auto 0
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5949693Z ##[endgroup]
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5951551Z ##[group]Setting up auth
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5952929Z Removing SSH command configuration
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5955200Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.5980711Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6270840Z Removing HTTP extra header
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6275802Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6301835Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6466355Z Removing includeIf entries pointing to credentials config files
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6471165Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6499309Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6669264Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-f61d591c-871c-4b96-85f6-afaefbb1fdaa.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6701383Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path /home/runner/work/_temp/git-credentials-f61d591c-871c-4b96-85f6-afaefbb1fdaa.config
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6726824Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-f61d591c-871c-4b96-85f6-afaefbb1fdaa.config
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6755549Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-f61d591c-871c-4b96-85f6-afaefbb1fdaa.config
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6779497Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-f61d591c-871c-4b96-85f6-afaefbb1fdaa.config
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6799198Z ##[endgroup]
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6800047Z ##[group]Fetching the repository
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:18.6805428Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c899c85ab43fb114cd85c69baf12e692b75a8eab:refs/remotes/origin/wp/M07
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9343384Z From https://github.com/computational-chemical-engineering/openflowsheet
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9344794Z  * [new ref]         c899c85ab43fb114cd85c69baf12e692b75a8eab -> origin/wp/M07
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9352642Z [command]/usr/bin/git branch --list --remote origin/wp/M07
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9373127Z   origin/wp/M07
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9380458Z [command]/usr/bin/git rev-parse refs/remotes/origin/wp/M07
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9397863Z c899c85ab43fb114cd85c69baf12e692b75a8eab
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9401051Z ##[endgroup]
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9401834Z ##[group]Determining the checkout info
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9406461Z ##[endgroup]
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9411193Z [command]/usr/bin/git sparse-checkout disable
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9450973Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9472711Z ##[group]Checking out the ref
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:20.9477698Z [command]/usr/bin/git checkout --progress --force -B wp/M07 refs/remotes/origin/wp/M07
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:21.2830375Z Switched to a new branch 'wp/M07'
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:21.2834274Z branch 'wp/M07' set up to track 'origin/wp/M07'.
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:21.2853996Z ##[endgroup]
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:21.2900313Z [command]/usr/bin/git log -1 --format=%H
+identity	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:21.2924251Z c899c85ab43fb114cd85c69baf12e692b75a8eab
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	﻿2026-10-19T09:20:21.3158516Z ##[group]Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.3158957Z with:
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.3159183Z   pattern: structural-identity-*
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.3159450Z   path: identities
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.3159674Z   merge-multiple: false
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.3159997Z   repository: computational-chemical-engineering/openflowsheet
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.3160344Z   run-id: 39224213490
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.3160565Z   skip-decompress: false
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.3160832Z   digest-mismatch: error
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.3161051Z ##[endgroup]
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.6903121Z Found 12 artifact(s)
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.6904214Z Filtering artifacts by pattern 'structural-identity-*'
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.6926908Z Preparing to download the following artifacts:
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.6928811Z - structural-identity-ubuntu-24.04-arm (ID: 12176286963, Size: 190001, Expected Digest: sha256:0764a9d68143bd3c951e8a1d7dcf612f4935ed0094c6aef36245943658961ed9)
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:21.6930155Z - structural-identity-ubuntu-latest (ID: 12176075055, Size: 190006, Expected Digest: sha256:b470d290a0ccee6acb50cf5c002d871a88a09ea2dbb4d133185950361559fd4f)
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.1471417Z Redirecting to blob download url: https://productionresultssa0.blob.core.windows.net/actions-results/2390161d-c360-453d-b009-3c4772ccbb18/workflow-job-run-97495671-1801-5cee-a545-eb539869a0df/artifacts/311b1d67c140c151d759f3e44d31a0a3b12b964419759907445c032ecb5d3121.zip
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.1473920Z Starting download of artifact to: /home/runner/work/openflowsheet/openflowsheet/identities/structural-identity-ubuntu-latest
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.1592974Z Redirecting to blob download url: https://productionresultssa0.blob.core.windows.net/actions-results/2390161d-c360-453d-b009-3c4772ccbb18/workflow-job-run-ee17e3a5-8bd3-50f5-9d41-edc3c71b41a3/artifacts/a8bd061afccd26c2a08b238dd0ca769d1ac2934954d09356bc80933e11ce2d67.zip
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.1594397Z Starting download of artifact to: /home/runner/work/openflowsheet/openflowsheet/identities/structural-identity-ubuntu-24.04-arm
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.3737288Z (node:2313) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.3739314Z (Use `node --trace-deprecation ...` to show where the warning was created)
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.5253934Z SHA256 digest of downloaded artifact is b470d290a0ccee6acb50cf5c002d871a88a09ea2dbb4d133185950361559fd4f
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.5254577Z Artifact download completed successfully.
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.5402038Z SHA256 digest of downloaded artifact is 0764a9d68143bd3c951e8a1d7dcf612f4935ed0094c6aef36245943658961ed9
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.5403171Z Artifact download completed successfully.
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.5403621Z Total of 2 artifact(s) downloaded
+identity	Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c	2026-10-19T09:20:22.5407397Z Download artifact has finished successfully
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	﻿2026-10-19T09:20:22.5553444Z ##[group]Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	2026-10-19T09:20:22.5553849Z with:
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	2026-10-19T09:20:22.5554052Z   python-version: 3.13
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	2026-10-19T09:20:22.5554279Z   check-latest: false
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	2026-10-19T09:20:22.5556919Z   token: ***
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	2026-10-19T09:20:22.5557135Z   update-environment: true
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	2026-10-19T09:20:22.5557388Z   allow-prereleases: false
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	2026-10-19T09:20:22.5557704Z   freethreaded: false
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	2026-10-19T09:20:22.5557966Z ##[endgroup]
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	2026-10-19T09:20:22.6692552Z ##[group]Installed versions
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	2026-10-19T09:20:22.6771949Z Successfully set up CPython (3.13.16)
+identity	Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	2026-10-19T09:20:22.6772724Z ##[endgroup]
+identity	Install the comparator's dependencies	﻿2026-10-19T09:20:22.6867820Z ##[group]Run python -m pip install -c requirements.lock pyyaml numpy
+identity	Install the comparator's dependencies	2026-10-19T09:20:22.6868421Z ^[[36;1mpython -m pip install -c requirements.lock pyyaml numpy^[[0m
+identity	Install the comparator's dependencies	2026-10-19T09:20:22.7154840Z shell: /usr/bin/bash -e {0}
+identity	Install the comparator's dependencies	2026-10-19T09:20:22.7155454Z env:
+identity	Install the comparator's dependencies	2026-10-19T09:20:22.7155750Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	Install the comparator's dependencies	2026-10-19T09:20:22.7156234Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+identity	Install the comparator's dependencies	2026-10-19T09:20:22.7156653Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	Install the comparator's dependencies	2026-10-19T09:20:22.7157036Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	Install the comparator's dependencies	2026-10-19T09:20:22.7157412Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	Install the comparator's dependencies	2026-10-19T09:20:22.7157800Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+identity	Install the comparator's dependencies	2026-10-19T09:20:22.7158118Z ##[endgroup]
+identity	Install the comparator's dependencies	2026-10-19T09:20:25.1055705Z Collecting pyyaml
+identity	Install the comparator's dependencies	2026-10-19T09:20:25.1548583Z   Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+identity	Install the comparator's dependencies	2026-10-19T09:20:25.3643899Z Collecting numpy
+identity	Install the comparator's dependencies	2026-10-19T09:20:25.3693674Z   Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (62 kB)
+identity	Install the comparator's dependencies	2026-10-19T09:20:25.3988344Z Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (759 kB)
+identity	Install the comparator's dependencies	2026-10-19T09:20:25.4135458Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 759.5/759.5 kB 67.6 MB/s  0:00:00
+identity	Install the comparator's dependencies	2026-10-19T09:20:25.4170352Z Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.1 MB)
+identity	Install the comparator's dependencies	2026-10-19T09:20:25.4963717Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.1/16.1 MB 210.5 MB/s  0:00:00
+identity	Install the comparator's dependencies	2026-10-19T09:20:25.6527547Z Installing collected packages: pyyaml, numpy
+identity	Install the comparator's dependencies	2026-10-19T09:20:27.4385399Z 
+identity	Install the comparator's dependencies	2026-10-19T09:20:27.4395438Z Successfully installed numpy-2.2.4 pyyaml-6.0.2
+identity	Compare the structural identity across platforms	﻿2026-10-19T09:20:27.4975138Z ##[group]Run python - <<'PY'
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4975511Z ^[[36;1mpython - <<'PY'^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4975767Z ^[[36;1mimport json, pathlib, sys^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4976165Z ^[[36;1mfound = sorted(pathlib.Path("identities").rglob("identity.json"))^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4976682Z ^[[36;1mif len(found) < 2:^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4977011Z ^[[36;1m    sys.exit(f"G05 needs two platforms; found {len(found)}")^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4977502Z ^[[36;1mdocuments = {path.parent.name: json.loads(path.read_text()) for path in found}^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4977927Z ^[[36;1mnames = sorted(documents)^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4978200Z ^[[36;1mfirst = documents[names[0]]^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4978469Z ^[[36;1mfailures = []^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4978706Z ^[[36;1msys.path.insert(0, "src")^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4979029Z ^[[36;1mfrom openflowsheet.run.compare import differences^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4979361Z ^[[36;1mfloats = {^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4979636Z ^[[36;1m    path.parent.name: json.loads(path.read_text())^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4980095Z ^[[36;1m    for path in pathlib.Path("identities").rglob("t02-floats.json")^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4980448Z ^[[36;1m}^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4980652Z ^[[36;1mif sorted(floats) != names:^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4981074Z ^[[36;1m    failures.append(f"t02-floats.json from {sorted(floats)}, identities from {names}")^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4981548Z ^[[36;1mfor name in names[1:]:^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4981802Z ^[[36;1m    other = documents[name]^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4982108Z ^[[36;1m    for key in sorted(set(first) | set(other)):^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4982438Z ^[[36;1m        if first.get(key) != other.get(key):^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4982786Z ^[[36;1m            failures.append(f"{key}: {names[0]} != {name}")^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4983154Z ^[[36;1m    if name in floats and names[0] in floats:^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4983448Z ^[[36;1m        failures += [^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4983729Z ^[[36;1m            f"{found} ({names[0]} vs {name})"^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4984029Z ^[[36;1m            for found in differences(^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4984316Z ^[[36;1m                floats[name],^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4984592Z ^[[36;1m                floats[names[0]],^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4984860Z ^[[36;1m                "t02_floats",^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4985404Z ^[[36;1m                # ADR 0025 W5: registered comparisons keep v1 (RC F4).^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4985794Z ^[[36;1m                policy_id="K04-numerical-policy-v1",^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4986106Z ^[[36;1m            )^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4986340Z ^[[36;1m        ]^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4986562Z ^[[36;1mfor name in names:^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4986878Z ^[[36;1m    print(f"{name}: {documents[name]['structural_sha256']}")^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4987224Z ^[[36;1mif failures:^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4987613Z ^[[36;1m    sys.exit("R0 structural artifacts differ across platforms:\n  " + "\n  ".join(failures))^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4988169Z ^[[36;1mprint(f"G05: R0 structural identity equal across {len(names)} platforms")^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.4988543Z ^[[36;1mPY^[[0m
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.5024211Z shell: /usr/bin/bash -e {0}
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.5024483Z env:
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.5024756Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.5025369Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.5025790Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.5026181Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.5026557Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.5026945Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.5027259Z ##[endgroup]
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.7357441Z structural-identity-ubuntu-24.04-arm: ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.7359167Z structural-identity-ubuntu-latest: ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+identity	Compare the structural identity across platforms	2026-10-19T09:20:27.7359883Z G05: R0 structural identity equal across 2 platforms
+identity	Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97	﻿2026-10-19T09:20:27.7707206Z Post job cleanup.
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	﻿2026-10-19T09:20:27.9040763Z Post job cleanup.
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:27.9840306Z [command]/usr/bin/git version
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:27.9873526Z git version 2.55.0
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:27.9913010Z Temporarily overriding HOME='/home/runner/work/_temp/a267306b-b8cc-4a21-ba18-2079ac653c74' before making global git config changes
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:27.9914107Z Adding repository directory to the temporary git global config as a safe directory
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:27.9917867Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:27.9944127Z Removing SSH command configuration
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:27.9951098Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:27.9980529Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0159154Z Removing HTTP extra header
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0164202Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0190448Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0369498Z Removing includeIf entries pointing to credentials config files
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0376546Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0402104Z includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0402801Z includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0403269Z includeif.gitdir:/github/workspace/.git.path
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0403645Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0409545Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0427662Z /home/runner/work/_temp/git-credentials-f61d591c-871c-4b96-85f6-afaefbb1fdaa.config
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0436901Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-f61d591c\-871c\-4b96\-85f6\-afaefbb1fdaa\.config
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0465458Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0482980Z /home/runner/work/_temp/git-credentials-f61d591c-871c-4b96-85f6-afaefbb1fdaa.config
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0498444Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-f61d591c\-871c\-4b96\-85f6\-afaefbb1fdaa\.config
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0523645Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0541538Z /github/runner_temp/git-credentials-f61d591c-871c-4b96-85f6-afaefbb1fdaa.config
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0549572Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-f61d591c\-871c\-4b96\-85f6\-afaefbb1fdaa\.config
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0576648Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0597012Z /github/runner_temp/git-credentials-f61d591c-871c-4b96-85f6-afaefbb1fdaa.config
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0602007Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-f61d591c\-871c\-4b96\-85f6\-afaefbb1fdaa\.config
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0629944Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+identity	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-19T09:20:28.0807968Z Removing credentials config '/home/runner/work/_temp/git-credentials-f61d591c-871c-4b96-85f6-afaefbb1fdaa.config'
+identity	Complete job	﻿2026-10-19T09:20:28.0935842Z Cleaning up orphan processes

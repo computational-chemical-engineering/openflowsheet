@@ -1,0 +1,48 @@
+{
+ "checks": [
+  {
+   "claims_line": "11943 claims passed",
+   "command": "python docs/derivations/scripts/m04_reference.py --check",
+   "exit_code": 0,
+   "id": "a60.w23.generator_check",
+   "result": "pass"
+  },
+  {
+   "command": "python scripts/m04_schema_fixtures.py",
+   "exit_code": 0,
+   "id": "a60.w23.schema_fixtures",
+   "last_line": "same surrogate_study_result/invalid/missing_verdict.json",
+   "result": "pass"
+  },
+  {
+   "command": "pytest -q -rs -p no:cacheprovider tests/test_m04_*.py tests/test_evidence_manifests.py",
+   "exit_code": 0,
+   "id": "a60.w23.tests",
+   "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 485
+   },
+   "junit_sha256": "9ee14bc66cf964c72afd1665ae3d99781e566ffd8656d68881adb7e3c3fda3a6",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "ce993651ce37c1343e771b276160bd6623e43500",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "w23-m04-records"
+}

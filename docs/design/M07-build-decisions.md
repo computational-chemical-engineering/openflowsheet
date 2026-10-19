@@ -653,3 +653,41 @@ its generator, §24.1/§24.2/§24.3 action 1/§24.5's build actions; version `0.
 - Then action 8: records commit after C′, C's evidence under `evidence/M07/c899c85…/rc/` (RC.3), `docs/v02-rc-record.md`
   (step 9 row without "not measured"), `release/rc-trees/<C′>.json`.
 - A7-Q4: `modules_walked` ≠ 182 at C′ stops the RC (measured 182 at `7af34d5`, no `src/` change since C).
+
+## WO-8c part 2 — Amendment 7 actions 7–8, the RC at C′ (2026-10-19)
+
+J74 [coverage] **Action 7, CI.** Ref `wp/M07-rc-ce99365` pushed at C′ (the alpha's `wp/V02-alpha-rc*` precedent; a
+dispatch needs a ref at C′, and `wp/M07` is ahead of it). Dispatch **39291243747** (`rc_alpha`, `rc_distribution`)
+`gh run watch --exit-status` exit 0: check ×2, identity, dist, clean-install ×2, bundle-set, bundle-replay ×2,
+rc-ensemble, rc-steps ×2, default-install all success. Push runs at C′: 39276061202, 39291243653 success. Step 1:
+x86-64 9911 passed, 106 skipped, 192 deselected; aarch64 9882 passed, 105 skipped; ledger 1 passed, 4 skipped (each
+naming `docs/reviews/V02-verdicts.md`, §23.2). Skip lines: `ci-x86-64.txt` 68 lines, 106 skips, `b8d28407…`;
+`ci-aarch64.txt` 71 lines, 105 skips, `338d361d…` (= C's). **CI.1**: both `rc-steps` success, `a30.log` ends
+`a30 exit status 0`.
+J75 [coverage] **Action 7, local** (`~/.cache/of-rc-ce99365/tools/run_local.sh`: C's, with G11 `--d78` = the extract,
+no `--previous-runs`, and step 14 = `run_step14.sh`), RC worktree `.claude/worktrees/rc-ce99365` clean at start,
+after venv, after the W27 hard links (`cp -al`, a real directory) and at end; 50 commands, every exit 0
+(19:06–20:40). Per step [s]: 2 identity PASS 3/3 (66) · 6 ensemble PASS 7/7, S 434, F-BUDGET 3, FSC 3 (81) · 7 corpus
+PASS 12/12, 165 nodes (21) · 8 surface PASS 8/8, G16-b 40/40 (71) · 9 a30 PASS (15) · 10 certificates PASS 2/2, 77,
+0 violations (2) · 11 PASS 3/3 (9) · 12 PASS 6/6: G10 (299), **G11 (2988) met, V5**, G12 (490), edges (583), m02 tests
+570 passed (114) · 13 PASS 3/3: 11943 claims, 485 passed · 14 PASS 4/4: nlp 186 passed 1 skipped, inventory `--check`
+×2 exit 0, all tiers 640 passed 2 skipped, `REPLAY PASS REAL differences=0`, m03 `--check` exit 0 · 15 PASS 3/3:
+carried, `check: ACCEPT`, `replay: bitwise` (24) · 16 PASS 3/3: 661 passed (REQUIRE_BROWSER=1), node 92/92, `A23 PASS
+(62 records)`; CI half = dispatch `check (ubuntu-latest)` (REQUIRE_BROWSER=1) · 17 PASS 4/4: tree `95f9fcf2…895a`,
+coverage exit 0, `RC step 17: the W27 campaign carried`, aggregate exit 0, `diff -r` empty, `campaign.json`
+`4812910a…9e28`.
+J76 [coverage] **Conditions.** S9.1: three A30 summaries `verdict.pass: true` (local, CI x86-64, CI aarch64). S9.2:
+`nlp_extra_modules` exactly {greybox: cyipopt, projection: pyomo, trf: pyomo} on all three. S9.3: walked 182, imported
+179, solve exit 0 on all three (A7-Q4 default holds). S9.4: `_m_mr12_extras_v02` at C′ over the committed records
+`pass` (new `["nlp"]`, files present, step 14 check pass with commit C′, R-450 present). S12.2 and S12.3 hold
+(`tools/s12_check.py`: extract `a118c62a…`, variant = alpha's, previous `fa1b0254…`, runs null, `points`; 16 corners,
+10 S1 points, 8 G11v3-8 points equal `6fec822`'s). S12.4: `m02.g11` pass, G11v3-1/-2/-3/-8/-11/-12 met, V5, 121
+points × 2 runs, all equal. G10 and G12 values equal `cc73219`'s (G12 differs in paths, hashes, `solve_wall_s` 271.7 vs
+126.7). **J.1**: m05 `.venv-nlp`, `OMP_NUM_THREADS=1`, `-m pymrm -k a24`: 1 passed, 1 skipped, the skip text exact.
+J77 [coverage] **Action 8.** `evidence/M07/<C′>/rc/` (92 records, 87 as is, 5 gzip: two ensemble run files, step 17's
+`at-cw`, `at-c`, `coverage-at-C`), `tools/` (as ran; `.py.txt`), `step1-skips/`; RC.3: `evidence/M07/c899c85…/rc/`
+(84 records by C′'s cited list where present at C — no A30 summaries, no G11 — plus step 17's, the certificates and
+push run 39224203477's `check (ubuntu-latest)` log under `ci-push/`; `records.json` `rc_record` null), its `tools/` and
+`step1-skips/`; no manifest beside either (no test requires one). `docs/v02-rc-record.md` (48 rows, every record cited
+once, written by `tools/make_record.py`; `v0_2_gate.rc_record_problems` → `[]`), `release/rc-trees/<C′>.json`
+(`--write-tree-record`). No file of `carry.journey_files` touched.

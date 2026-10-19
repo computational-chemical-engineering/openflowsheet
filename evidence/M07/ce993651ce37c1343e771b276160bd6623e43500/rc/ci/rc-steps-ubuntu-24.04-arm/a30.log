@@ -1,0 +1,4 @@
+wrote /home/runner/work/_temp/rc/a30/a30-inventory-aarch64.json (257607 bytes) and /home/runner/work/_temp/rc/a30/t08-a30-aarch64.json
+aarch64: 308 objects in 8 compiled distributions (casadi, cffi, cryptography, numpy, pydantic-core, pyyaml, rpds-py, scipy); required closure 147
+A30 PASS: {'undispositioned_in_required_closure': [], 'metis_reached_from_project_paths': [], 'pass': True}
+a30 exit status 0
