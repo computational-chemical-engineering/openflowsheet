@@ -523,3 +523,50 @@ J55 [finding, design lane] Opt-in `-m pymrm` (nlp env): `test_a24_replay_…[2c5
 `c4e8467` and fails already at `d3c72cb` (this WO's start), so not caused here; the alpha lineage (0.1.1 → 0.2.0a1 →
 0.2.0a2.dev0) moved the request digests J′'s archive is keyed by. Not in the default gate or CI. Default: leave; the
 design lane decides whether A24 is judged for J′ only at its own commit.
+
+## WO-8b — C and RC steps 1–17, part 1 (2026-10-19; no model call, nothing spent; HANDOFF, stopped at the context cap)
+
+J56 [coverage] WO-10 done in C: C = **`c899c85ab43fb114cd85c69baf12e692b75a8eab`** (`report.render` emits §22.3's Scope
+paragraph; `report --check` OK; the paragraph once; neither file in `carry.journey_files`). Gate at C: 9956 passed,
+35 skipped (29:02); ledger module 1 passed, 4 skipped S-ABSENT (§23.2). Pushed.
+J57 [finding] §7.2 at C (`v0_2_gate.py --rc HEAD --json`): the six packages' manifests qualify (M01–M06 `tested` at
+ancestors). Not met: ADR 0031, 0032 (M03), 0038, 0039 (M05) still `Proposed` although their packages are `tested`;
+0041/0042 follow the verdict/Frank's answers. Not fixed here (an ADR's acceptance is not the build lane's to set).
+J58 [coverage] CI at C: dispatch **39224213490** (`rc_alpha`, `rc_distribution`; steps 1–10), push **39224203477**
+(step 16's browser test = its `check (ubuntu-latest)` job). Both `gh run watch --exit-status` exit 0: dispatch — check
+(both runners), identity, dist, clean-install ×2, bundle-set, bundle-replay ×2, rc-steps ×2, rc-ensemble, default-install
+all success; push — check ×2, identity, default-install success. Artifacts and job logs not yet fetched.
+J59 [coverage] Local RC run: RC worktree `.claude/worktrees/rc-c899c85` (clean throughout), scratch
+`~/.cache/of-rc-c899c85/` (`tools/run_local.sh`, `run_step14.sh`, `m07_rc_external.py`, `write_carry.py`, `g12keep.py`,
+`collect_records.py`; `summary.txt`, `durations.txt` [s], `logs/`); records under the RC worktree's
+`evidence/M07/<C>/artifacts/rc/` (git-ignored), step 17's in `~/.cache/of-rc-c899c85/s17/` ($S). Per step:
+- 2 identity PASS (98 s) · 6 ensemble PASS (97 s) · 7 corpus PASS (30 s) · 8 surface PASS (89 s) · 10 local certificates PASS
+- 9 a30 **FAIL** (15 s): the A30 project workload imports every `openflowsheet` module; `studies/nlp/greybox.py:60`
+  `import cyipopt` (M03's optional NLP path, not in `requirements.lock`) → `ModuleNotFoundError`. New at C (M03 not in
+  the alpha's tree). CI `rc-steps` (which runs step 9 on both runners) concluded success: first read its downloaded
+  A30 record — if it says PASS, find why CI's workload differs from the local one before asking. **Q1 (design lane):** how A30's closure treats M03's optional NLP modules (exclude and cover by
+  the M03 inventory, or import-guard); any fix changes `scripts/`/`src/` and so needs a new C (and K? only if it touches
+  `src/openflowsheet/**`, a journey file).
+- 11 xcheck + IDAES PASS · 12 G10, G12, G12-edges, m02 tests PASS; **G11 BLOCKED**: the alpha's archived inputs lived
+  in the removed `worktrees/m02`; `--previous-v3`, `--previous` recovered byte-identical from git (`bd446ab`), but
+  `--d78` (`g11-exp.json`, sha256 afa7325a…) and `--previous-runs` (0656f617…) exist nowhere on disk or in git.
+  **Q2 (design lane):** re-take D78 (M02 wo12a experiment) or judge G11 otherwise. Default: none; step 12 not pass.
+- 13 W23 PASS: `m04_reference.py --check` (claims passed, every file byte-identical), `m04_schema_fixtures.py` exit 0,
+  `tests/test_m04_*.py tests/test_evidence_manifests.py` 485 passed.
+- 14 W24 attempt 1 discarded (RC venv's editable install left `src/openflowsheet.egg-info` → 18 distributions vs 17
+  recorded; exported OPENBLAS/MKL=1 entered NLP fixtures). Attempt 2 (`run_step14.sh`, clean worktree
+  `~/.cache/of-rc-c899c85/nlp-wt`, m05's `.venv-nlp`): `m03_nlp_check.sh` 186 passed, 1 skipped, both inventory
+  `--check` PASS; `m05_wo9_real.py --replay` `REPLAY PASS REAL differences=0`; `m03_reference.py --check` exit 0;
+  all-tier tests 641 passed, **1 failed** = `tests/test_m03_reference.py` run in the nlp env (no `mpmath`; it belongs to
+  the project env, where the generator `--check` passed). **Remaining:** drop that file from `step14-tests` in
+  `run_step14.sh` and re-run it (≈5 min); then `record-step14` must be all pass.
+- 15 W25 PASS: `RC step 15: the journey at 2c508b5 carried`; `check: ACCEPT`; `replay: bitwise` (19 s).
+- 16 W26 local PASS: `tests/test_m06_*.py` (REQUIRE_BROWSER=1) 661 passed; `node --test` exit 0; dry run `A23 PASS (62
+  records)`. CI half: the push run's browser job (J58).
+- 17 W27 PASS, 17a–17d: tree `95f9fcf2…895a`; coverage at C exit 0; `RC step 17: the W27 campaign carried`; precheck,
+  `aggregate` exit 0, `diff -r` empty, `campaign.json` `4812910a…9e28`.
+**Not done:** step 14's re-run (above); CI verdicts and `tools/fetch_ci.sh` (alpha's) into `artifacts/rc/ci/`; step 1
+skip lines (R-376); `collect_records.py` (retarget `C_ALPHA`/paths to M07 and `docs/v02-rc-record.md`) → commit
+`evidence/M07/<C>/rc/` + `tools/` (`.py.txt`); `docs/v02-rc-record.md` (alpha form; steps 9, 12 not passed);
+`release/rc-trees/<C>.json` (`v0_2_gate.py --rc C --write-tree-record`); records commit after C (no journey file),
+gate, push. Q1 and Q2 decide whether C must be re-cut.
