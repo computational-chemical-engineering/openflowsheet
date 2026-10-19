@@ -397,5 +397,10 @@ def test_a24_replay_reproduces_the_record_bitwise(
     journey: tuple[Path, dict[str, Any]], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     directory, record = journey
+    if not m07.carry_identical(record["commit"], m07.JOURNEY_CARRY):
+        pytest.skip(
+            f"A24 for {record['commit'][:7]} is judged at its own commit; its carry to this tree "
+            "does not hold (M07 §24.5, R-483)"
+        )
     monkeypatch.setenv("OMP_NUM_THREADS", record["environment"]["omp_num_threads"])
     assert m07.main(["replay", str(directory)]) == 0
