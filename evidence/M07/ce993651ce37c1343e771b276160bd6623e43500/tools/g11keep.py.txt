@@ -1,0 +1,76 @@
+"""Run benchmarks/m02/g11_coverage_v3.py unchanged, keeping each point's scratch directory (W21 (e), R-375).
+
+    python g11keep.py <keep-dir> <g11_coverage_v3.py arguments...>
+
+As tools/g12keep.py.txt keeps G12's (R-348): only the module's own `tempfile` name is replaced, by a
+shim whose `TemporaryDirectory(prefix=...)` makes `<keep-dir>/<run>/<prefix>` and does not remove
+it. Two things differ from G12 because G11 maps its points over a `spawn` process pool:
+
+- every worker re-runs this file as `__mp_main__` before it unpickles a point, so the same shim is
+  installed there (the module is loaded under the same name, the keep directory comes from the
+  environment);
+- the module's `ProcessPoolExecutor` name is replaced by a subclass that only sets `<run>`
+  (`run1`, `run2`, ...) in the environment before its workers start, and `after-runs` when the
+  pool closes, so each run's points and the timing repeats land apart.
+
+Every other module's names are the standard ones. A point's label is unique within a run, so
+`<prefix>` names one point. The script's points, summary and record are otherwise exactly C′'s.
+"""
+
+from __future__ import annotations
+
+import importlib.util
+import os
+import sys
+import types
+from concurrent.futures import ProcessPoolExecutor
+from pathlib import Path
+from typing import Any
+
+KEEP = "OPENFLOWSHEET_G11KEEP_DIR"
+RUN = "OPENFLOWSHEET_G11KEEP_RUN"
+
+if __name__ == "__main__":
+    os.environ[KEEP] = str(Path(sys.argv[1]).resolve())
+    os.environ[RUN] = "before-runs"
+script = Path("benchmarks/m02/g11_coverage_v3.py").resolve()
+
+
+class _Kept:
+    def __init__(self, prefix: str = "tmp", **_: object) -> None:
+        self.name = str(Path(os.environ[KEEP]) / os.environ[RUN] / prefix.rstrip("-"))
+        Path(self.name).mkdir(parents=True, exist_ok=False)
+
+    def __enter__(self) -> str:
+        return self.name
+
+    def __exit__(self, *_: object) -> None:
+        return None
+
+
+class _Runs(ProcessPoolExecutor):
+    runs = 0
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        _Runs.runs += 1
+        os.environ[RUN] = f"run{_Runs.runs}"
+        super().__init__(*args, **kwargs)
+
+    def __exit__(self, *args: Any) -> Any:
+        try:
+            return super().__exit__(*args)
+        finally:
+            os.environ[RUN] = "after-runs"
+
+
+spec = importlib.util.spec_from_file_location("g11_coverage_v3", script)
+assert spec is not None and spec.loader is not None
+module = importlib.util.module_from_spec(spec)
+sys.modules["g11_coverage_v3"] = module
+spec.loader.exec_module(module)
+module.tempfile = types.SimpleNamespace(TemporaryDirectory=_Kept)  # type: ignore[attr-defined]
+module.ProcessPoolExecutor = _Runs  # type: ignore[attr-defined]
+
+if __name__ == "__main__":
+    sys.argv = [str(script), *sys.argv[2:]]
+    sys.exit(module.main())
