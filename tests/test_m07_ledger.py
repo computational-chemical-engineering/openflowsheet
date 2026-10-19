@@ -8,12 +8,14 @@ so re-judged rows are read as the gate reads them); each claimed gate's `evidenc
 manifest, as the alpha's do; every cited manifest exists. All seventeen gates are claimed, so
 there is no "untouched" test.
 
-Read on the working tree at `C`: the tests judge when the working tree's version is one
-`v0.2-gate-v1` covers (0.2.0, 0.2.0bN, 0.2.0rcN), and there a missing verdict document fails.
-Between releases `main` carries a `.devN` version (R-460) and the verdict document does not exist
-yet, so each test skips and says so (build log J43). After 0.2.0 is released the ledger is read
-from its tag commit, as R-456 does for the alpha. The working tree's own ledger is covered for all
-27 gates by `tests/test_requirements_ledger.py`.
+Read on the working tree at `C`: the tests judge wherever the 0.2.0 gate could say YES, that is
+when the working tree's version is one `v0.2-gate-v1` covers (0.2.0, 0.2.0bN, 0.2.0rcN) and the
+verdict document exists. At a covered version without the document (C included: WO-7 writes it
+after the RC steps) each test skips and names the document (R-476); the gate itself refuses a
+candidate without it. The tests are judged at the candidate, after the verdicts. Between releases
+`main` carries a `.devN` version (R-460), so each test skips and says so (build log J43). After
+0.2.0 is released the ledger is read from its tag commit, as R-456 does for the alpha. The working
+tree's own ledger is covered for all 27 gates by `tests/test_requirements_ledger.py`.
 """
 
 from __future__ import annotations
@@ -40,13 +42,17 @@ RC = re.compile(r"^\*\*Release candidate:\*\* `([0-9a-f]{40})`", re.MULTILINE)
 
 def at_c(version: str) -> str:
     """The verdict document at `C`; a skip, naming the version, where the tree is not a 0.2.0
-    candidate."""
+    candidate, and naming the document where it does not exist yet (M07 spec §23.2, R-476)."""
     if not GATE_SET.covers.fullmatch(version):
         pytest.skip(
             f"the working tree's version {version} is not one {GATE_SET.name} covers: the 0.2.0 "
-            "ledger is judged at C (O1)"
+            "ledger is judged at the candidate (O1; M07 spec §23.2)"
         )
-    assert VERDICTS.is_file(), f"{GATE_SET.verdict_document} is missing at a {version} tree"
+    if not VERDICTS.is_file():
+        pytest.skip(
+            f"{GATE_SET.verdict_document} does not exist yet at this {version} tree: the 0.2.0 "
+            "ledger is judged at the candidate, after the verdicts (M07 spec §23.2)"
+        )
     return VERDICTS.read_text(encoding="utf-8")
 
 
@@ -55,16 +61,29 @@ def verdicts() -> str:
     return at_c(openflowsheet.__version__)
 
 
-def test_a_0_2_0_tree_without_its_verdict_document_fails(
+def test_the_ledger_is_judged_wherever_the_gate_could_say_yes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """The scope rule cannot hide a missing document at `C`: a covered version judges."""
-    monkeypatch.setattr(sys.modules[__name__], "VERDICTS", tmp_path / "absent.md")
-    for version in ("0.2.0", "0.2.0b1", "0.2.0rc2"):
-        with pytest.raises(AssertionError, match="is missing at a"):
+    """The skip predicate is "not covered, or no verdict document", in that order (R-476)."""
+    covered = ("0.2.0", "0.2.0b1", "0.2.0rc2")
+    uncovered = ("0.2.0a2.dev0", "0.2.0a1", "0.2.1.dev0")
+    module = sys.modules[__name__]
+    present = tmp_path / "V02-verdicts.md"
+    present.write_text("document\n", encoding="utf-8")
+    monkeypatch.setattr(module, "VERDICTS", present)
+    for version in covered:  # (a)
+        assert at_c(version) == "document\n"
+    for version in uncovered:  # (b)
+        with pytest.raises(pytest.skip.Exception, match="is not one v0.2-gate-v1 covers"):
             at_c(version)
-    for version in ("0.2.0a2.dev0", "0.2.0a1", "0.2.1.dev0"):
-        with pytest.raises(pytest.skip.Exception):
+    monkeypatch.setattr(module, "VERDICTS", tmp_path / "absent.md")
+    for version in covered:  # (c)
+        with pytest.raises(
+            pytest.skip.Exception, match=r"V02-verdicts\.md does not exist yet at this 0\.2\.0"
+        ):
+            at_c(version)
+    for version in uncovered:  # (d)
+        with pytest.raises(pytest.skip.Exception, match="is not one v0.2-gate-v1 covers"):
             at_c(version)
 
 

@@ -1029,12 +1029,15 @@ def test_a09_e_c_absent_refuses_with_7_4_s_reason() -> None:
 
 def test_a10_the_envelope_must_be_pinned_to_the_alpha() -> None:
     assert report()["envelope_problems"] == []
-    # The real envelope in its working form: since the cut pins it (MR-3), the pin is undone
-    # here so the fixture stays the file a gate that does not read the envelope would pass.
+    # The real envelope in its working form: since a cut pins it (MR-3 for the alpha, O5 for
+    # 0.2.0), each pin is undone here so the fixture stays the file a gate that does not read
+    # the envelope would pass.
     today = (REPO_ROOT / ENVELOPE).read_text(encoding="utf-8")
     for pinned, working in (
         ("envelope_id: v0.2-alpha-envelope-1\n", "envelope_id: v0.2-envelope-dev\n"),
         ("release: 0.2.0a1\n", "release: 0.2.0.dev0\n"),
+        ("envelope_id: v0.2-envelope-1\n", "envelope_id: v0.2-envelope-dev\n"),
+        ("release: 0.2.0\n", "release: 0.2.0.dev0\n"),
     ):
         today = today.replace(pinned, working, 1)
     assert yaml.safe_load(today)["envelope_id"] == "v0.2-envelope-dev"

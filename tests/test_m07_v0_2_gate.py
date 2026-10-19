@@ -263,6 +263,15 @@ def test_the_otherwise_passing_fixture_may_be_proposed() -> None:
     assert result["tag_may_be_proposed"], result["reasons"]
 
 
+@pytest.mark.parametrize("version", ["0.2.0", "0.2.0b1", "0.2.0rc2"])
+def test_o1_the_gate_refuses_a_candidate_without_its_verdict_document(version: str) -> None:
+    """The gate half of O1's scoping (M07 spec §23.2, R-476): the ledger test may skip at a
+    covered version without the verdict document because the gate cannot say YES there."""
+    result = report(files(verdicts=None), version=version)
+    assert result["tag_may_be_proposed"] is False
+    assert result["reasons"][0] == f"{VERDICTS} does not exist at the candidate"
+
+
 # -- M07.A30: the registry reproduces Table T-V ---------------------------------------------
 
 
@@ -303,14 +312,20 @@ def test_q_a3_1_the_reasons_name_the_set_s_specification() -> None:
     assert (V02.specification, V02.rc_section) == ("the M07 specification", "§8")
 
 
-#: The released alpha's tag commit (v0.2.0a1) and the three functions of its gate test that
-#: `039cbd8` edited, the only edits M07 spec §20 A3.1 (R-461) admits.
+#: The released alpha's tag commit (v0.2.0a1) and the four functions of its gate test that may
+#: differ from it: the three `039cbd8` edited (M07 spec §20 A3.1, R-461) and `test_a10_…`, whose
+#: edit is exactly the two pairs that undo 0.2.0's envelope pin (§23.1, R-475).
 ALPHA_TAG = "423ae9c54d903f9dcf0ea90fe9639222c1acbda4"
 ALPHA_TESTS = "tests/test_m07a_v0_2_gate.py"
 ALPHA_TESTS_EDITED = (
     "test_the_registry_is_the_specification_s",
     "test_a01_coverage_is_table_t1",
     "test_a12_main_on_an_uncovered_version",
+    "test_a10_the_envelope_must_be_pinned_to_the_alpha",
+)
+A10_PINS_0_2_0 = (
+    ("envelope_id: v0.2-envelope-1\n", "envelope_id: v0.2-envelope-dev\n"),
+    ("release: 0.2.0\n", "release: 0.2.0.dev0\n"),
 )
 
 
@@ -324,18 +339,43 @@ def _top_level(source: str) -> list[str]:
     ]
 
 
-def test_a31_b_the_alpha_s_tests_are_the_tagged_ones_but_the_three_edited() -> None:
-    tagged = subprocess.run(
+def _tagged_alpha_tests() -> str:
+    return subprocess.run(
         ["git", "show", f"{ALPHA_TAG}:{ALPHA_TESTS}"],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
         check=True,
     ).stdout
+
+
+def test_a31_b_the_alpha_s_tests_are_the_tagged_ones_but_the_four_edited() -> None:
+    tagged = _tagged_alpha_tests()
     now = (REPO_ROOT / ALPHA_TESTS).read_text(encoding="utf-8")
     for edited in ALPHA_TESTS_EDITED:
         assert f"edited {edited}" in _top_level(tagged)
     assert _top_level(now) == _top_level(tagged)
+
+
+def _a10(source: str) -> tuple[ast.FunctionDef, ast.For]:
+    """`test_a10_…` of a module and its only top-level `for` loop."""
+    (function,) = [
+        node
+        for node in ast.parse(source).body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "test_a10_the_envelope_must_be_pinned_to_the_alpha"
+    ]
+    (loop,) = [node for node in function.body if isinstance(node, ast.For)]
+    return function, loop
+
+
+def test_a31_b_test_a10_differs_from_the_tagged_one_only_by_the_0_2_0_pins() -> None:
+    """M07 spec §23.1 (R-475): the edit is the two pairs of `A10_PINS_0_2_0`, appended."""
+    tagged_def, tagged_for = _a10(_tagged_alpha_tests())
+    now_def, now_for = _a10((REPO_ROOT / ALPHA_TESTS).read_text(encoding="utf-8"))
+    assert ast.literal_eval(now_for.iter) == ast.literal_eval(tagged_for.iter) + A10_PINS_0_2_0
+    now_for.iter = tagged_for.iter
+    assert ast.dump(now_def) == ast.dump(tagged_def)
 
 
 def _fields(entry: v0_2_gate.GateSet) -> dict[str, Any]:
