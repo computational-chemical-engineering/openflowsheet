@@ -570,3 +570,42 @@ skip lines (R-376); `collect_records.py` (retarget `C_ALPHA`/paths to M07 and `d
 `evidence/M07/<C>/rc/` + `tools/` (`.py.txt`); `docs/v02-rc-record.md` (alpha form; steps 9, 12 not passed);
 `release/rc-trees/<C>.json` (`v0_2_gate.py --rc C --write-tree-record`); records commit after C (no journey file),
 gate, push. Q1 and Q2 decide whether C must be re-cut.
+J60 [coverage] Step 14 attempt 3 (`run_step14.sh`; `tests/test_m03_reference.py` dropped from `step14-tests` and from
+`m07_rc_external.py`'s command string: it needs `mpmath`, the project env's, where `m03_reference.py --check` exit 0):
+`m03_nlp_check.sh` 186 passed, 1 skipped, both inventory `--check` PASS; all-tier tests **640 passed, 2 skipped** (both
+"Pyomo is installed"); `REPLAY PASS REAL differences=0`; `record-step14` **w24-nlp-trf: PASS** (4/4; `rc-step14.json`
+ea1a64ef…). Attempt-2 logs kept in `~/.cache/of-rc-c899c85/attempt2-step14/`. RC worktree clean after.
+J61 [coverage] CI records: `tools/fetch_ci.sh 39224213490` (alpha's) → RC worktree `artifacts/rc/ci/` (12 artifacts,
+13 job logs). Step 1 `check`: x86-64 9883 passed, 108 skipped; aarch64 9856 passed, 105 skipped.
+J62 [finding] **Q1 premise false: step 9 FAILS on CI too.** `rc-steps-*/a30.log` on both runners is the one line
+`a30 exit status 1`; the job logs show `the project workload failed: … studies/nlp/greybox.py, line 60 … import cyipopt
+… ModuleNotFoundError` on both. `rc-steps` concludes success because `ci.yml:812-821` runs A30 under `set +e` and
+logs its exit status without raising (the T08 design: "a FAIL there is a licence reading … recorded, not hidden");
+no `a30/` summary was written. Same cause, same environment class (requirements.lock + `pip install -e .`, no `nlp`
+extra) in both places.
+J63 [finding] Q1 facts. The workload (`scripts/p03_binary_inventory.py:892-906`, unchanged since 5a35019) imports every
+module `pkgutil.walk_packages` yields (182 at C) and stops at the first failure. In the project env three fail:
+`studies.nlp.greybox` (cyipopt), `studies.trust_region.projection` and `.trf` (pyomo) — M03's and M05's optional `nlp`
+extra (`pyproject.toml:50-57`; ADR 0032 D5); CI hides the M05 two behind the first. cyipopt/pyomo are importable in
+neither CI nor the RC venv. Alpha trees (cc73219, e0e198e, 6fec822) have no `studies/` modules, so the alpha passed.
+Scope as written: T08.A30 "over every compiled distribution of the default install and the `server` extra" (T08
+release spec l.478); MR-12 (alpha spec l.215): "the default install and `server` (unchanged); and every extra that `C_α`
+declares and `v0.1.1` did not, through its own [A10] audit and Frank's recorded licence decision (M03's:
+`docs/m03-ipopt-audit.md` and M03 N1)"; M07a.A38 (l.865): "T08.A30 at `C_α` on both architectures, with zero
+undispositioned objects in a required closure; MR-12's rule for every extra new since `v0.1.1`". The measured
+workload's "import every openflowsheet module" therefore reaches modules whose closure MR-12 assigns to the `nlp` audit.
+J64 [finding] Q2 facts. No copy of `g11-exp.json` (afa7325a…) or `g11-coverage-v3.runs.json` (0656f617…): a SHA-256
+scan of every `*.json` > 1 KiB under `~/Codes`, `~/.cache`, the session scratch found neither; no commit in
+`git log --all` adds them; the alpha RC runs' artifacts (38667458248, 38772065394, 38813135468 and the identity runs)
+hold none (`ci.yml` never references them; step 12 is local). Provenance: D78 = an **uncommitted** experiment patch
+(`child-experiment.patch` 65426a9f…, also lost) on 1328da0's child, runner 8fe0ea58…, variant `…-v3-experiment`
+97fc6ef9… (M02 log D78). The runs file = `g11_coverage_v3.py` at `bd446ab` (WO-12a′; 2 runs, 589 s + 608 s, pool 12),
+which itself requires `--d78`. Neither is byte-reproducible: every point carries `wall_s`, `solve_s`, `startup_s` (the
+three alpha RC runs files differ: a5154500…, 3beb52bb…, ba60c066…). At C, `--previous-runs` is optional (falls back to
+`--previous`'s run-1 points, `stage_steps_from: points`); `--d78` is required and read for `stage`, `stage_steps.S1`
+and `variant`. Not re-taken: the D78 record needs the lost patch, the runs file needs the D78 record.
+J65 [coverage] Step 1 skip lines (R-376): `~/.cache/of-rc-c899c85/tools/step1_skips.sh` → `ci-x86-64.txt` 70 lines,
+108 skips, 867ba7dc7ff9c899d1fe1eaca53fd1e06e44839e00b26553cdb25ba6f715c973; `ci-aarch64.txt` 71 lines, 105 skips,
+338d361d6777584b53e1d14a2ff05f86d440b607fa4d0403115699fd95e460a2 (sums of `[n]` equal pytest's counts), held in
+`~/.cache/of-rc-c899c85/step1-skips/` until the records commit (destination `evidence/M07/<C>/step1-skips/`).
+J66 [coverage] Gate at 0335573 + J60–J65 (docs only): 9956 passed, 35 skipped, 192 deselected (38:48).
