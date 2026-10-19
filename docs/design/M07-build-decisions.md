@@ -609,3 +609,26 @@ J65 [coverage] Step 1 skip lines (R-376): `~/.cache/of-rc-c899c85/tools/step1_sk
 338d361d6777584b53e1d14a2ff05f86d440b607fa4d0403115699fd95e460a2 (sums of `[n]` equal pytest's counts), held in
 `~/.cache/of-rc-c899c85/step1-skips/` until the records commit (destination `evidence/M07/<C>/step1-skips/`).
 J66 [coverage] Gate at 0335573 + J60–J65 (docs only): 9956 passed, 35 skipped, 192 deselected (38:48).
+
+## WO-8c part 1 — Amendment 7 actions 1–6, the re-cut C′ (2026-10-19)
+
+J67 [coverage] Action 1 (§24.1 actions 1–3) `7af34d5`: `NLP_EXTRA_MODULES`/`NLP_EXTRA_IMPORTS`; `_WORKLOAD` takes JSON
+`sys.argv[1]` (`package`, `nlp_modules`, `nlp_imports`, `solve`); record members `modules_walked`, `modules_imported`,
+`nlp_extra_modules`, scoped workload text. S9.5 (a)–(d) + control and S9.6: `tests/test_p03_a30_workload.py` 6 passed.
+Project venv at `7af34d5`: walked 182, imported 179, solve_exit 0, S9.2's map exactly. Gate 9962 passed, 35 skipped.
+J68 [coverage] Action 2 (§24.1 action 4) `d445c5f`: `MR12_AUDITS`, `mr12_extras_v02` + `_m_mr12_extras_v02` in `MEASURES`;
+`git diff` removes no line (`_m_mr12_extras`, `SPECS` unchanged); `tests/test_m07a_rc_records.py` passes unchanged;
+`tests/test_m07_mr12_extras_v02.py` 16 passed (no entry, R-450 absent, step-14 check not pass/missing, other commit,
+file absent, S9.2/S9.3 off, summary missing, git-backed at HEAD). The commit message's "18 cases" is wrong: 16.
+Gate 9978 passed, 35 skipped.
+J69 [coverage] Action 3 (§24.2) `3338bd9`: `2>&1 | tee` and the last `if: always()` step. **CI.2**: branch
+`throwaway/m07-ci2` (`15eab4f` = `7af34d5` + the two CI edits + `NLP_EXTRA_MODULES = ()`), dispatch **39252474979**
+(`rc_alpha`): `rc-steps` concluded `failure` on both runners at "T08.A30 — the job fails when A30 did not pass", after
+`rc-steps-<runner>` uploaded; each `a30.log` has `ModuleNotFoundError: No module named 'cyipopt'` and ends
+`a30 exit status 1`. The run was then cancelled (the push run of `15eab4f` too). Gate 9978 passed, 35 skipped.
+J70 [coverage] Action 4 (§24.3 action 1) `3160e4c`: `tests/test_m07_g11_d78_extract.py` (i) `--check` and **S12.1** at
+e0e198e, cc73219, 6fec822: 4 passed; mutation (one S1 step +1 in the extract) fails all 4. Gate 9982 passed, 35 skipped.
+J71 [coverage] Action 5 (§24.5) `68befc2`: the A24 skip. Opt-in run (m05 `.venv-nlp`, J35 recipe, OMP=1) before the
+commit: 1 passed (2c508b5), 1 skipped (974c395) with §24.5's text. J.1 proper is at C′ (next engineer). Gate 9982 passed.
+J72 [coverage] Action 6: the commit carrying J67–J72 is the re-cut **C′**; RC.1 is recorded in J73 after it.
+`git diff --name-only c899c85 68befc2 -- src benchmarks schemas requirements.lock pyproject.toml` is empty already.
