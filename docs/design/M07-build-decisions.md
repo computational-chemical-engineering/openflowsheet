@@ -477,3 +477,49 @@ Nothing was committed to `wp/M07` except this entry; the journey has not run (it
 This entry's own gate (docs only, on `c50e6fb`): 29 failed, 9905 passed, 36 skipped, 1 error, all in
 `tests/test_m06_browser_smoke.py` (BrokenPipe, load average 29 from other work on the machine); that module alone at
 this tree: 31 passed.
+
+## WO-8a (resumed) — F, A, K and the journey at K (2026-10-19; no model call, nothing spent)
+
+J50 [coverage] F = `48db2d3` (§23.1 actions 1–3, §23.2 actions 1–4). Full gate 9939 passed, 35 skipped, 0 failed
+(38:53); a first gate at the same tests failed ruff E501 on a docstring line only (pytest 9939/35 green), re-wrapped.
+Ledger module at `0.2.0a2.dev0`: 1 passed, 4 skipped (S-UNCOV).
+
+J51 [coverage] A = `0fcf1ad` (re-cut of `853e7e3` on F, §23.3 condition 1). The draft's files re-applied; files that
+record a commit or a tree digest regenerated at A's build, not copied: `coverage.json` (`python -m
+benchmarks.m06.w27.coverage`, G14 PASS; rows, summary, `list_models` f070fbe0…, `registration_sha256` ee099a60… equal to
+the draft; snapshot `git_commit` F, `snapshot_sha256` 211cf4f1…) and `docs/m06-w27-coverage.md` (`report --check` OK);
+support matrix re-emitted, `--check` 0 problems. Full gate at the committed A: 9939 passed, 35 skipped, 0 failed
+(45:58); `test_a10_…` and both A31 (b) tests pass; ledger module 1 passed, 4 skipped (S-ABSENT). A first gate on the
+uncommitted tree had 2 failures that are the tree, not the code (`test_m06_w27_harness::…preflight…` expects P3 to fail
+because coverage's `git_commit` ≠ HEAD; `test_m07_journey::test_a21_…` reads `git diff HEAD` of `__init__.py`): both
+pass once committed. So A and K were committed locally, gated, then pushed (B-WO10-5's reason, J30's practice).
+
+J52 [coverage] G10 re-take at A's clean tree (§23.3 condition 2; 18 s), alpha-main's `.venv-nlp`, `OMP_NUM_THREADS=1`,
+`PYTHONNOUSERSITE=1`, `PYTHONPATH=src:<nlp-test-tools>`; `--digest-only --old-version 0.2.0a2.dev0`:
+  PASS tr-e2 changed-digests=41 version=4 · tr-e2-far 79/7 · tr-e2-fd 70/4 · loop-r 91/3 · loop-s 37/4; other=0,
+  environment=equal in all five. E6's counts exactly (A6-Q1 answered: reproduced; A6-Q2: the re-take is 18 s).
+  A first take without `PYTHONNOUSERSITE=1` gave the same counts but `environment=differs` (26 distributions, not 17:
+  seven docs/coverage packages in `~/.local` leaked in); discarded, not used.
+
+J53 [coverage] K = `2c508b5` = A + the 36 record files. `git diff --name-only A K`: 36 files, all `benchmarks/m05/**`;
+each re-taken record `run_commit` `0fcf1ad…`, `tree_clean: true`; `git merge-base --is-ancestor A K` exit 0. AM-23
+(`-m nlp tests/test_m05_g10_replay.py`, `.venv-nlp`): 5 passed at K. Full gate at K: 9939 passed, 35 skipped, 0 failed
+(40:19). `wp/M07-K-draft` deleted.
+
+J54 [coverage] The journey at K (A3.4 items 2–3; J37's recipe: clean tree, m05's `.venv-nlp`, `OMP_NUM_THREADS=1`,
+`PYTHONNOUSERSITE=1`, `PYTHONPATH=src`, `--m05-record benchmarks/m05/records/trust-region-study-real.json`): exit 0,
+3330 s; record and report `benchmarks/m07/journey/2c508b5…/` (this commit; no file of `carry.journey_files` changes).
+- decision `refined` at T* = 653.1500351610193 K, `BOUND_LOWER`; R0 `INDIFFERENT` (18 in-process); R1 `DECIDED` 653.15 K
+  `BOUND_LOWER` (cold 36, 1558 s); R2 `SURROGATE_NOT_PROMOTABLE`; R3 `DECISION_STABLE` (M05 re-run, `carry_identity_differs`
+  from `cdacc32`, cold 48, 1477 s; 14 distributions as J′'s); T* re-solve cold 4, 291 s; TC-1 `TC1_HOLDS`; pairs P01, P13.
+- Against J′'s record: 70 leaves differ, all walls, coupling/record/run digests, `commit`, `registration_sha256` and R3's
+  `m05_record` {path, sha256}; every other number bitwise equal.
+- `check` ACCEPT; `replay` (after commit; condition 5, J22): bitwise, 18 s; `OMP_NUM_THREADS=2` exit 2;
+  `tests/test_m07_journey_record.py` 39 passed (K and J′ parametrized); `v0_2_gate.py --rc HEAD --carry-journey K`:
+  `RC step 15: the journey at 2c508b5… carried`, exit 0.
+
+J55 [finding, design lane] Opt-in `-m pymrm` (nlp env): `test_a24_replay_…[2c508b5]` passes, but
+`test_a24_replay_…[974c395]` (J′) fails, `replay diverged: a cold execution at {…}`. Pre-existing: the J′ replay passes at
+`c4e8467` and fails already at `d3c72cb` (this WO's start), so not caused here; the alpha lineage (0.1.1 → 0.2.0a1 →
+0.2.0a2.dev0) moved the request digests J′'s archive is keyed by. Not in the default gate or CI. Default: leave; the
+design lane decides whether A24 is judged for J′ only at its own commit.
