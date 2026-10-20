@@ -140,7 +140,9 @@ SPECS: tuple[Spec, ...] = (
     Spec("A21", tests=(f"{_J}a21_*", f"{_R}a21_*")),
     Spec("A22", tests=(f"{_R}a22_*",)),
     Spec("A23", tests=(f"{_J}a23_*", f"{_R}a23_*")),
-    Spec("A24", tests=(f"{_J}a24_*", f"{_R}a24_*"), records=_verdicts(15)),
+    # The committed record's replay is RC step 15's (`a61.replay`, bitwise); its test in
+    # test_m07_journey_record.py is opt-in (`pymrm`) and is not run here.
+    Spec("A24", tests=(f"{_J}a24_*",), records=_verdicts(15)),
     Spec("A25", tests=(f"{_R}a25_*",)),
     Spec("A26", tests=(f"{_R}a26_*",)),
     *(Spec(f"A{n:02d}", tests=(f"{_G}a{n:02d}_*",)) for n in range(30, 39)),
@@ -342,7 +344,7 @@ def decide(spec: Spec, subject: str, judged_by: str, inputs: Inputs) -> dict[str
         value[name] = said
     if spec.id in AT_CANDIDATE and value.get("measured", {}).get("state") != "pending":
         value["judged_at"] = inputs.judged_at
-    description = re.sub(r"<([^<>]*)>", r"{\1}", subject)
+    description = _braced(subject)
     return {
         "id": f"M07.{spec.id}",
         "description": description,
@@ -422,6 +424,11 @@ def _artifact_rows(inputs: Inputs, artifacts: Path | None) -> list[dict[str, str
     return found
 
 
+def _braced(text: str) -> str:
+    """A record's `<K>`-style operand as `{K}`, as `decide` writes a description."""
+    return re.sub(r"<([^<>]*)>", r"{\1}", text)
+
+
 def _rc_commands(inputs: Inputs) -> list[dict[str, Any]]:
     """The commands RC steps 13–17 ran at C, as their records state them."""
     found = []
@@ -432,7 +439,7 @@ def _rc_commands(inputs: Inputs) -> list[dict[str, Any]]:
             if check.get("command"):
                 found.append(
                     {
-                        "cmd": f"{check['command']} (RC step {step} at C, {machine}; "
+                        "cmd": f"{_braced(check['command'])} (RC step {step} at C, {machine}; "
                         f"{check['id']}: {check['result']})",
                         "cwd": ".",
                         "exit_code": int(check.get("exit_code", 0)),
