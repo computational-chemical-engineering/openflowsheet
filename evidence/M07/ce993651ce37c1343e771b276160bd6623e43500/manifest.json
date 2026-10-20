@@ -1,0 +1,944 @@
+{
+ "work_package": "M07",
+ "commit": "ce993651ce37c1343e771b276160bd6623e43500",
+ "requirements": [
+  "D14",
+  "D17",
+  "D20"
+ ],
+ "status": "implemented",
+ "inputs": {
+  "case_id": "M07's acceptance at C: one check per assertion of docs/derivations/M07-spec.md §11 (9ea86b6c800386d54b380b653b6134543d9c5b52f8aa469e5d7b3aca113b69c9)",
+  "case_hash": "a6748b6d111f5e1da96bfe693c71262a7e2dff53d313bf4ca6811462449db59b",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "gh run view 39291243747 --json databaseId,headSha,conclusion,event,jobs,workflowName,url",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "96e44bb7d1ddf4bf1fe1dfc6b626cbd6336a03952e8995a6f00eef55da005555"
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=ARTIFACTS/t08-tests.junit.xml tests/test_m07_journey.py tests/test_m07_journey_record.py tests/test_m07_ledger.py tests/test_m07_v0_2_gate.py",
+   "cwd": ".",
+   "exit_code": 0,
+   "stdout_sha256": "a45755e68d197e10c9c30d29bf625f3dd9fe8915e475ce52525306949bdf3962"
+  },
+  {
+   "cmd": "python docs/derivations/scripts/m04_reference.py --check (RC step 13 at C, ref-x86-64; a60.w23.generator_check: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python scripts/m04_schema_fixtures.py (RC step 13 at C, ref-x86-64; a60.w23.schema_fixtures: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "pytest -q -rs -p no:cacheprovider tests/test_m04_*.py tests/test_evidence_manifests.py (RC step 13 at C, ref-x86-64; a60.w23.tests: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "scripts/m03_nlp_check.sh PREFIX CACHE -- -o junit_family=xunit1 --junitxml=... (RC step 14 at C, ref-x86-64; a60.w24.nlp_tier_and_inventory: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "nlp env: pytest -q -rs -p no:cacheprovider -m 'nlp or not nlp' tests/test_m05_*.py tests/test_m03_nlp_isolation.py tests/test_m03_nlp_greybox.py (RC step 14 at C, ref-x86-64; a60.w24.m03_m05_all_tiers: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "nlp env: python scripts/m05_wo9_real.py --replay (RC step 14 at C, ref-x86-64; a60.w24.m05_g10_real_replay: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python docs/derivations/scripts/m03_reference.py --check (RC step 14 at C, ref-x86-64; a60.w24.m03_reference_check: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python scripts/v0_2_gate.py --rc ce993651ce37c1343e771b276160bd6623e43500 --carry-journey 2c508b5 (RC step 15 at C, ref-x86-64; a61.carry_journey: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python scripts/m07_journey.py check benchmarks/m07/journey/{K} (RC step 15 at C, ref-x86-64; a61.check: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "nlp env, OMP_NUM_THREADS=1: python scripts/m07_journey.py replay benchmarks/m07/journey/{K} (RC step 15 at C, ref-x86-64; a61.replay: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "OPENFLOWSHEET_REQUIRE_BROWSER=1 pytest -q -rs -p no:cacheprovider tests/test_m06_*.py (RC step 16 at C, ref-x86-64; a60.w26.m06_tests: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "node --test --test-reporter=spec \"tests/web/*.test.mjs\" (RC step 16 at C, ref-x86-64; a60.w26.web_unit_tests: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python -m benchmarks.m06.w27.dryrun --out evidence/M06/W27/artifacts/dry-run/{C} (RC step 16 at C, ref-x86-64; a60.w26.w27_dry_run: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "git rev-parse ce993651ce37c1343e771b276160bd6623e43500:benchmarks/m06/openidaes450/runs/w27-m07-83f825d (RC step 17 at C, ref-x86-64; a62.17a_record_identity: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python -m benchmarks.m06.w27.coverage --out \"$S/coverage-at-C.json\" (RC step 17 at C, ref-x86-64; a62.17b_coverage_at_c: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "python scripts/v0_2_gate.py --rc ce993651ce37c1343e771b276160bd6623e43500 --carry-w27 \"$S/at-cw.json\" \"$S/at-c.json\" (RC step 17 at C, ref-x86-64; a62.17c_carry: pass)",
+   "cwd": ".",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/m07_evidence_manifest.py --commit ce993651ce37c1343e771b276160bd6623e43500 --ci-run 39291243747 (run at e45c3315f8709f3c546974b67866ca95dec5d719)",
+   "cwd": ".",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "M07.A00",
+   "description": "`m07_reference.py --check`",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a00_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A01",
+   "description": "The journey's grid equals the registration's",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a01_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A02",
+   "description": "The case twins differ only in the reactor pin; SPEC-S3-T = 673.15",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a02_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A03",
+   "description": "`m07_journey` rung decision on `fixtures.rung`",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a03_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A04",
+   "description": "indifference set on `fixtures.indifference`",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a04_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A05",
+   "description": "FE class on `fixtures.fe`",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a05_*"
+     ],
+     "nodes": 13,
+     "outcomes": {
+      "passed": 13
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A06",
+   "description": "TC-1 on `fixtures.tc1`",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a06_*"
+     ],
+     "nodes": 11,
+     "outcomes": {
+      "passed": 11
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A07",
+   "description": "bound activity on `fixtures.bound`",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a07_*"
+     ],
+     "nodes": 8,
+     "outcomes": {
+      "passed": 8
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A08",
+   "description": "R0 live: stand-in loop at the nine grid points",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a08_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A10",
+   "description": "`check` on the synthetic dry-run record (R1 played by the stand-in) accepts it; mutations (drop a section, change a J, delete §11's 7th sentence, add \"optimal\") are each rejected; a committed record is checked under the registration it records: accepted where the registration at its commit differs from the tree's in `gate` only, rejected for a wrong digest, an unknown commit, or a difference outside `gate` [A3.5]",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a10_*",
+      "tests/test_m07_journey_record.py::test_a10_*"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A11",
+   "description": "`render` twice gives identical bytes; twelve headings in order; §11 verbatim; bound phrase iff a decision is bound-active",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a11_*",
+      "tests/test_m07_journey_record.py::test_a10_a11_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A12",
+   "description": "honest-outcome fixtures (R1 `INCOMPLETE`, R3 `BUDGET_EXHAUSTED`, R2 `SURROGATE_NOT_PROMOTABLE`, bound-active, `TC1_CONTRADICTED`) are accepted and stated in their registered words; the same records without the statement are rejected",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a12_*"
+     ],
+     "nodes": 12,
+     "outcomes": {
+      "passed": 12
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A13",
+   "description": "budget: with a mock evaluator whose next call would exceed the rung budget, the rung stops `BUDGET_EXHAUSTED` before the call; `check` re-derives the stop [A1.2]",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a13_*"
+     ],
+     "nodes": 6,
+     "outcomes": {
+      "passed": 6
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A14",
+   "description": "no reactor environment: R1 and R3 `UNSUPPORTED(reactor_environment_unavailable)`, exit 3, record written, no decision rendered",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a14_*"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A15",
+   "description": "R2 reads M04's committed verdict: today `SURROGATE_NOT_PROMOTABLE`, reasons include `band_not_finite`, 0 evaluations; a PROMOTABLE fixture verdict makes R2 require nine surrogate evaluations; without an evaluator it is `UNSUPPORTED(surrogate_loop_unavailable)` [A1.3]",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a15_*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A20",
+   "description": "R1 real: nine grid records with J, e, §6.1 quantities, experiments and wall; within R1's budget or `BUDGET_EXHAUSTED`",
+   "result": "pass",
+   "value": {
+    "judged_by": "O",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey_record.py::test_a20_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A21",
+   "description": "R3: M05 REAL record carried (identity of `carry.journey_files`) or re-run; validates with M05's checker; statuses in M05's vocabulary [A1.6]",
+   "result": "pass",
+   "value": {
+    "judged_by": "O",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a21_*",
+      "tests/test_m07_journey_record.py::test_a21_*"
+     ],
+     "nodes": 34,
+     "outcomes": {
+      "passed": 34
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A22",
+   "description": "P01, P13 FE classes equal the reference function on the record's numbers",
+   "result": "pass",
+   "value": {
+    "judged_by": "O",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey_record.py::test_a22_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A23",
+   "description": "TC-1 and every bound activity equal the reference functions; P3 values present for every decision [A1.7]",
+   "result": "pass",
+   "value": {
+    "judged_by": "O",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a23_*",
+      "tests/test_m07_journey_record.py::test_a23_*"
+     ],
+     "nodes": 9,
+     "outcomes": {
+      "passed": 9
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A24",
+   "description": "`replay` reproduces every number of the record bitwise, without the reactor; refuses on a thread-setting mismatch [A1.7]",
+   "result": "pass",
+   "value": {
+    "judged_by": "O, R",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey.py::test_a24_*"
+     ],
+     "nodes": 7,
+     "outcomes": {
+      "passed": 7
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "step15/rc-step15.json": "passed True, checks {'pass': 3}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07.A25",
+   "description": "accounting: per-rung totals equal the store attributions; budgets respected [A1.4, A1.6, A1.7]",
+   "result": "pass",
+   "value": {
+    "judged_by": "O",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey_record.py::test_a25_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A26",
+   "description": "every decision in the record names a parent evaluation (run sha256)",
+   "result": "pass",
+   "value": {
+    "judged_by": "O",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey_record.py::test_a26_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A30",
+   "description": "registry: Table T-V reproduced by `gate_set_of`; no version covered twice",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_v0_2_gate.py::test_a30_*"
+     ],
+     "nodes": 31,
+     "outcomes": {
+      "passed": 31
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A31",
+   "description": "the alpha entry's behaviour unchanged [A3.1]: (a) AM-07 green (the alpha's `--markdown` output at its own candidate contained in the released section); (b) `tests/test_m07a_v0_2_gate.py` passes, and every top-level node of it equals the one at `423ae9c` except the three functions `039cbd8` edited and `test_a10_the_envelope_must_be_pinned_to_the_alpha`, which differs from the tagged function only by the two pairs `A10_PINS_0_2_0` appended to its loop's tuple [A6]; (c) the alpha entry's `clause` = the alpha's `CLAUSE`, `rejudged` = `REJUDGED_VALUE`, `adr` = `ADR 0028`, `links_item` none",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_v0_2_gate.py::test_a31_*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A32",
+   "description": "both entries' fields, `links_item` included [A3.2], equal `gate.gate_sets`",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_v0_2_gate.py::test_a32_*"
+     ],
+     "nodes": 3,
+     "outcomes": {
+      "passed": 3
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A33",
+   "description": "clause grammar: W23–W27 labels read under v0.2's grammar only; V11–W22 under both; W28, V10 under neither",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_v0_2_gate.py::test_a33_*"
+     ],
+     "nodes": 52,
+     "outcomes": {
+      "passed": 52
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A34",
+   "description": "decision items 1–12 for `v0.2-gate-v1`: a YES fixture, and for each item one NO fixture flipping only it",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_v0_2_gate.py::test_a34_*"
+     ],
+     "nodes": 13,
+     "outcomes": {
+      "passed": 13
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A35",
+   "description": "W24 `BLOCKED` on `M03 N1` blocks the tag; a FAIL without a D3 row refuses; an acceptance dated before `Judged` refuses",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_v0_2_gate.py::test_a35_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A36",
+   "description": "output: first line, 17 gate rows none \"not claimed\", last line `v0.2.0 tag may be proposed: YES` or `… NO (k reasons)`",
+   "result": "pass",
+   "value": {
+    "judged_by": "D, R",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_v0_2_gate.py::test_a36_*"
+     ],
+     "nodes": 4,
+     "outcomes": {
+      "passed": 4
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A37",
+   "description": "W27 carry check: equal triple → carried; any member different or missing → step 17 fails with exactly `W27 campaign surface differs between C_W and C`, the members listed apart; CLI `--carry-w27` exit 0 / 1 [A3.4]",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_v0_2_gate.py::test_a37_*"
+     ],
+     "nodes": 10,
+     "outcomes": {
+      "passed": 10
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A38",
+   "description": "journey carry check: equal `carry.journey_files` → carried; a changed file or an unknown commit → exactly `step 15 requires a re-run of the journey at C`, the files listed apart; CLI `--carry-journey` exit 0 / 1 [A3.4]",
+   "result": "pass",
+   "value": {
+    "judged_by": "D",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_v0_2_gate.py::test_a38_*"
+     ],
+     "nodes": 7,
+     "outcomes": {
+      "passed": 7
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    }
+   }
+  },
+  {
+   "id": "M07.A40",
+   "description": "`## v0.2.0` holds the eleven phrases verbatim",
+   "result": "pass",
+   "value": {
+    "judged_by": "R",
+    "measured": {
+     "phrases": 11,
+     "missing": []
+    },
+    "judged_at": "e45c3315f8709f3c546974b67866ca95dec5d719"
+   }
+  },
+  {
+   "id": "M07.A41",
+   "description": "`docs/reviews/V02-verdicts.md` has 17 rows; every clause label parses under v0.2's grammar",
+   "result": "unsupported",
+   "value": {
+    "judged_by": "R",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_ledger.py"
+     ],
+     "nodes": 5,
+     "outcomes": {
+      "passed": 1,
+      "skipped": 4
+     },
+     "failed": [],
+     "skipped": [
+      "tests/test_m07_ledger.py::test_every_cited_manifest_exists",
+      "tests/test_m07_ledger.py::test_every_claimed_gate_cites_m07_at_c",
+      "tests/test_m07_ledger.py::test_the_claimed_verdicts_are_the_documents",
+      "tests/test_m07_ledger.py::test_w21_and_w22_cite_their_packages_manifests"
+     ],
+     "missing": []
+    },
+    "measured": {
+     "state": "pending",
+     "reason": "docs/reviews/V02-verdicts.md does not exist (WO-7, after steps 1–17)"
+    }
+   }
+  },
+  {
+   "id": "M07.A42",
+   "description": "ADR 0042's D3 and Frank tables pass the alpha's cell rule",
+   "result": "unsupported",
+   "value": {
+    "judged_by": "R",
+    "measured": {
+     "state": "pending",
+     "reason": "no verdict document to date against"
+    }
+   }
+  },
+  {
+   "id": "M07.A43",
+   "description": "`evidence/M07/{C}/manifest.json` `tested`, listing A00–A62 with commands run",
+   "result": "fail",
+   "value": {
+    "judged_by": "R",
+    "measured": {
+     "other_checks": 39,
+     "not_pass": [
+      "M07.A41",
+      "M07.A42"
+     ],
+     "commands": 19
+    }
+   }
+  },
+  {
+   "id": "M07.A50",
+   "description": "W27 order at C_W by digest chain (registration §23.2): each record of `campaign_records.digest_chain` names the SHA-256 of the earlier records listed for it, each equal to the file's; the commit rule holds [A4]",
+   "result": "pass",
+   "value": {
+    "judged_by": "O",
+    "measured": {
+     "campaign": "benchmarks/m06/openidaes450/runs/w27-m07-83f825d",
+     "commit": "83f825dd787b175a8177038f840be1573176f1ab",
+     "problems": []
+    }
+   }
+  },
+  {
+   "id": "M07.A51",
+   "description": "W27 records complete per W27-R58 [A4]; spend within the approval",
+   "result": "pass",
+   "value": {
+    "judged_by": "O",
+    "measured": {
+     "run_records": 48,
+     "a23_failing": {},
+     "spend": {
+      "cost_basis": "subscription_estimate",
+      "runs": 48,
+      "total_cost_usd": 3.3790144999999994,
+      "uncosted": []
+     },
+     "ceiling_usd": 45.0
+    }
+   }
+  },
+  {
+   "id": "M07.A60",
+   "description": "RC steps 13, 14, 16 pass at C",
+   "result": "pass",
+   "value": {
+    "judged_by": "R",
+    "records": {
+     "rc_records": {
+      "step13/rc-step13.json": "passed True, checks {'pass': 3}, at C True",
+      "step14/rc-step14.json": "passed True, checks {'pass': 4}, at C True",
+      "step16/rc-step16.json": "passed True, checks {'pass': 3}, at C True",
+      "ci/job-logs/check-ubuntu-latest.log": "contains '=== check.sh: PASSED ===': True"
+     }
+    },
+    "ci": {
+     "ci_runs": [
+      39291243747
+     ],
+     "jobs": {
+      "check (ubuntu-latest)": "success"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07.A61",
+   "description": "RC step 15 [A3.4]: C contains the journey record of the cut commit K; `--carry-journey K --rc C` says carried; `check` and `replay` pass at C",
+   "result": "pass",
+   "value": {
+    "judged_by": "R",
+    "tests": {
+     "selectors": [
+      "tests/test_m07_journey_record.py::test_wo4_the_real_journey_is_committed"
+     ],
+     "nodes": 1,
+     "outcomes": {
+      "passed": 1
+     },
+     "failed": [],
+     "skipped": [],
+     "missing": []
+    },
+    "records": {
+     "rc_records": {
+      "step15/rc-step15.json": "passed True, checks {'pass': 3}, at C True"
+     }
+    }
+   }
+  },
+  {
+   "id": "M07.A62",
+   "description": "RC step 17 as §22.2 [A5]: record tree at C is §22.1's; coverage at C; W27 carry; `campaign.json` recomputed on a scratch copy equal to `4812910a…9e28`",
+   "result": "pass",
+   "value": {
+    "judged_by": "R",
+    "records": {
+     "rc_records": {
+      "step17/rc-step17.json": "passed True, checks {'pass': 4}, at C True"
+     }
+    }
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "docs/v02-rc-record.md",
+   "sha256": "6f95b3778ef6d19a33a140cb38848919034ebdf6ecaa4a2e26efaa0a5b92efe9",
+   "description": "the RC record at C (§8)"
+  },
+  {
+   "path": "evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/rc/records.json",
+   "sha256": "a6748b6d111f5e1da96bfe693c71262a7e2dff53d313bf4ca6811462449db59b",
+   "description": "the RC records: sha256, size and how each is kept"
+  },
+  {
+   "path": "release/rc-trees/ce993651ce37c1343e771b276160bd6623e43500.json",
+   "sha256": "23f698635c3247add3819ce30950fd756c02318f27f5074191f1b509dcc4b7e8",
+   "description": "the tree record of C"
+  },
+  {
+   "path": "evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/artifacts/t08-tests.junit.xml",
+   "sha256": "28a6ee945a18730b4e7361bc650ede48813f0951b0f779d1dbb2d0793f1be4e6",
+   "description": "the tests run here, per node (not committed)"
+  }
+ ],
+ "limitations": [
+  "Evidence class: numerical and software verification at M07's release candidate C (tests run here at a commit whose distribution trees equal C's; the RC records of steps 13-17 on ref-x86-64; CI), and W27's campaign records at C_W carried to C by step 17. Self-generated records are regression evidence, not empirical validation.",
+  "The design lane's verdicts on V11-V20 and W21-W27 are not judged here; M07.A40-A42 are judged at the candidate, after the verdicts and the ledger (§8 [A6], R-476).",
+  "Step 18 (`scripts/v0_2_gate.py --rc C`) is not run by this script; M07.A36 is judged here by its tests, and step 18's line is recorded in the build log.",
+  "M07.A41 is unsupported (pending): see its value.",
+  "M07.A42 is unsupported (pending): see its value.",
+  "M07.A43 is fail: see its value."
+ ],
+ "review": {
+  "numerical": "pending",
+  "process_model": "pending"
+ }
+}

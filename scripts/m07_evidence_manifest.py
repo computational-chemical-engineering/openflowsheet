@@ -390,6 +390,9 @@ def limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
         "judged at the candidate, after the verdicts and the ledger (§8 [A6], R-476).",
         "Step 18 (`scripts/v0_2_gate.py --rc C`) is not run by this script; M07.A36 is judged "
         "here by its tests, and step 18's line is recorded in the build log.",
+        "The 0.2.0 envelope (v0.2-envelope-1, at C′) does not classify the limitations or non-pass "
+        "checks of M07a's three manifests or of this manifest; both are left to the next harvest "
+        "(R-485).",
     ]
     for entry in entries:
         if entry["result"] != "pass":

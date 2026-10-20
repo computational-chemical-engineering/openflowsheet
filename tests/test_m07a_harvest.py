@@ -3,8 +3,9 @@
 The harvest covers every manifest under `evidence/`, T08's included (T08 Amendment R8 4): its 58
 limitations and 2 non-pass checks are classified E/S/P/B with pointers like every other manifest's
 (T08.A21's rule, `t08_support_matrix.check_a21`, run by `test_t08_w2_support_envelope.py`), and
-`HARVEST_EXCLUDED` excludes no manifest at `C_α`: it names only `evidence/M07a/`, M07a's own
-manifest, which is written after `C_α` and harvested by M07 (R-320). The harvest's size is held
+`HARVEST_EXCLUDED` excludes no manifest at `C_α`: it names `evidence/M07a/`, M07a's own
+manifest, which is written after `C_α` (R-320), and `evidence/M07/`, M07's own, which is written
+after C′; both belong to the next harvest (R-485). The harvest's size is held
 equal to `HARVEST_SIZE`, which M07a's manifest quotes at `C_α` (MR-5); a new manifest moves it,
 and this test with it.
 
@@ -29,6 +30,8 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: (23, 316, 29) at `C_α`; main's M02 follow-up, M03, M04 and M05 manifests moved it at the alpha's
 #: merge into main.
 HARVEST_SIZE = (31, 372, 33)
+#: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
+C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 
 
 def _kinds(keys: Iterable[tuple[str, str]]) -> Counter[str]:
@@ -49,9 +52,10 @@ def _candidates() -> set[str]:
 
 
 def test_m07a_a50_nothing_is_excluded_from_the_harvest_at_c_alpha() -> None:
-    """R-320: the exclusion is exactly M07a's own directory, and no manifest of the candidate is
-    under it — none in the working tree before the cut, none in `C_α`'s tree after it."""
-    assert matrix.HARVEST_EXCLUDED == ("evidence/M07a/",)
+    """R-320, R-485: the exclusion is exactly M07a's and M07's directories, and no manifest of a
+    candidate is under it — none in the working tree before the cut, none in `C_α`'s tree under
+    `evidence/M07a/` after it, none in C′'s tree under `evidence/M07/`."""
+    assert matrix.HARVEST_EXCLUDED == ("evidence/M07a/", "evidence/M07/")
     manifests = set(matrix._manifests())
     excluded = {path for path in manifests if path.startswith(matrix.HARVEST_EXCLUDED)}
     assert manifests - excluded == {path for path, _ in matrix.harvest_items()}
@@ -67,6 +71,14 @@ def test_m07a_a50_nothing_is_excluded_from_the_harvest_at_c_alpha() -> None:
             check=True,
         ).stdout
         assert listed == "", (candidate, listed)
+    listed = subprocess.run(
+        ["git", "ls-tree", "-r", "--name-only", C_PRIME, "--", "evidence/M07/"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    assert not [path for path in listed.splitlines() if path.endswith("/manifest.json")], listed
 
 
 def test_m07a_a50_t08s_manifest_is_harvested_in_full() -> None:
