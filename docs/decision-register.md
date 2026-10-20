@@ -10068,3 +10068,29 @@ steps 1–14 or 16, the alpha's §4 rule 3 and A43 require records at C′, and 
 conditions).
 
 ---
+
+## R-485 — The 0.2.0 harvest is C′'s: M07's own manifest, written after C′, is excluded like M07a's after `C_α`; M07a's manifests are deferred with it to the next harvest
+
+| | |
+| --- | --- |
+| Date | 2026-10-20 |
+| Decided by | design lane (`specifier`), M07 ruling round 7 (build log J83 (b)) |
+| Normative text | `docs/derivations/M07-spec.md` §25 (Amendment 8) |
+| Evidence | At `456e2f9` (no change since C′ = `ce99365` to `benchmarks/t08/`, the matrix script or the two tests): harvest (31, 372, 33), 405 envelope rows; C′'s tree holds 0 `evidence/M07/**/manifest.json`; with M07's manifest present, (32, 378, 36) and unmapped A21 items (J83). A31 (b) guards `tests/test_m07a_v0_2_gate.py` only. |
+| Affected packages | M07 (WO-8e: `HARVEST_EXCLUDED`, `test_m07a_a50_nothing_is_excluded…`, one manifest limitation); the next envelope's package (removes both exclusions, harvests M07a's and M07's manifests) |
+
+**Decision.** `HARVEST_EXCLUDED = ("evidence/M07a/", "evidence/M07/")`. `HARVEST_SIZE` and T08.A21's test are
+unchanged. The A50 test asserts the pair and that C′'s tree holds no M07 manifest. R-320's "M07 harvests M07a's
+manifest" is amended: deferred to the next harvest (default of A8-Q1, Frank's preference open). M07's manifest states
+the deferral as a limitation. A31 (b)'s exempt list is not amended.
+
+**Rejected alternatives, and why.**
+- *Moving `HARVEST_SIZE` to (32, 378, 36) and adding envelope rows for M07's items:* this edits the released envelope
+  after C′, which needs a re-cut (R-484).
+- *Scoping the harvest to `C_α`'s tree:* (31, 372, 33) is not `C_α`'s size, which was (23, 316, 29).
+- *Re-cutting C″ to harvest M07a's 42 items:* this costs a full RC for 0.2.0. It is left to Frank as A8-Q1.
+
+**Watch for.** `HARVEST_EXCLUDED` holding anything beyond these two after 0.2.0. The next envelope that still
+excludes either of them.
+
+---
