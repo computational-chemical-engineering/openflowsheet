@@ -1,0 +1,67 @@
+{
+ "checks": [
+  {
+   "command": "git rev-parse ce993651ce37c1343e771b276160bd6623e43500:benchmarks/m06/openidaes450/runs/w27-m07-83f825d",
+   "exit_code": 0,
+   "id": "a62.17a_record_identity",
+   "result": "pass",
+   "tree": "95f9fcf2c6a24084b823746959971fc5e183895a"
+  },
+  {
+   "command": "python -m benchmarks.m06.w27.coverage --out \"$S/coverage-at-C.json\"",
+   "coverage_at_c_sha256": "121186c1e43b937af57701b8856ee42784501e8867020bfc05984ca163629fb6",
+   "exit_code": 0,
+   "id": "a62.17b_coverage_at_c",
+   "list_models_sha256": "f070fbe0c67695765cdb3862031a18208af959a5b82de6911d1c99fcabea49b4",
+   "package_version": "0.2.0",
+   "result": "pass",
+   "snapshot_sha256": "178cd512fa85bd80f74417e84cea1a4a100daf38f2d59778aa85f0bc55a441d6"
+  },
+  {
+   "at_c_sha256": "3c0e08c73ade930179bea8b75b30d7adc46080d5859407c3a13e275ce05a9ee5",
+   "at_cw_sha256": "3c0e08c73ade930179bea8b75b30d7adc46080d5859407c3a13e275ce05a9ee5",
+   "command": "python scripts/v0_2_gate.py --rc ce993651ce37c1343e771b276160bd6623e43500 --carry-w27 \"$S/at-cw.json\" \"$S/at-c.json\"",
+   "exit_code": 0,
+   "id": "a62.17c_carry",
+   "line": "RC step 17: the W27 campaign carried",
+   "result": "pass",
+   "write_exit": 0
+  },
+  {
+   "campaign_json_sha256": "4812910abb2622b9192c01eae331fa2e97b3f523d78f73510b845c32f20f9e28",
+   "commands": [
+    "python -c 'import benchmarks.t07.v17.harness as h; h.operator_address()' > /dev/null",
+    "cp -a <dir> \"$S/w27-m07-83f825d\"",
+    "python -m benchmarks.m06.w27.harness --runs-root \"$S\" aggregate --campaign w27-m07-83f825d",
+    "diff -r \"$S/w27-m07-83f825d\" <dir>",
+    "sha256sum \"$S/w27-m07-83f825d/campaign.json\""
+   ],
+   "diff_output_bytes": 0,
+   "exits": {
+    "step17d-aggregate": 0,
+    "step17d-copy": 0,
+    "step17d-diff": 0,
+    "step17d-precheck": 0
+   },
+   "id": "a62.17d_recompute",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "ce993651ce37c1343e771b276160bd6623e43500",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "w27-campaign"
+}

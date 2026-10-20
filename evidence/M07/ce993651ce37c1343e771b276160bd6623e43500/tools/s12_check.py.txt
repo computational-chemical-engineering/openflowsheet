@@ -1,0 +1,48 @@
+"""M07 WO-8c: S12.2 and S12.3 (M07 spec §24.3) on step 12's G11 record at C' against 6fec822's
+committed step-12 record. Prints one line per condition and exits non-zero on any failure.
+
+    python s12_check.py <C' g11-coverage-v3.json> <6fec822's g11-coverage-v3.json> <extract>
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+ours, alpha = (json.loads(Path(p).read_text(encoding="utf-8")) for p in sys.argv[1:3])
+extract_sha = hashlib.sha256(Path(sys.argv[3]).read_bytes()).hexdigest()
+prev = ours["previous"]
+s122 = {
+    "d78.sha256": ours["d78"]["sha256"] == extract_sha == "a118c62a50cb998733b171792347b5ff14f43e707a16b07e768ee316e5132bb0",
+    "d78.variant": ours["d78"]["variant"] == alpha["d78"]["variant"],
+    "previous.sha256": prev["sha256"].startswith("fa1b0254"),
+    "previous.runs_file/runs_sha256 null": prev["runs_file"] is None and prev["runs_sha256"] is None,
+    "G11v3-11.stage_steps_from": ours["summary"]["G11v3-11"]["stage_steps_from"] == "points",
+}
+
+
+def corners(r):
+    return {k: c["d78_stage"] for k, c in r["summary"]["G11v3-3"]["corners"].items()}
+
+
+def s1(r):
+    pts = r["summary"]["G11v3-5"]["S1_as_D78"]["points"]
+    return {k: v["d78_S1_steps"] for k, v in pts.items()}
+
+
+def g8(r):
+    return {k: p["d78_stage"] for k, p in r["summary"]["G11v3-8"]["points"].items()}
+
+
+s123 = {
+    "G11v3-3.corners[*].d78_stage": corners(ours) == corners(alpha),
+    "G11v3-5.S1_as_D78.points d78_S1_steps": s1(ours) == s1(alpha),
+    "G11v3-8.points[*].d78_stage": g8(ours) == g8(alpha),
+}
+for name, block in (("S12.2", s122), ("S12.3", s123)):
+    for key, ok in block.items():
+        print(f"{name} {key}: {'holds' if ok else 'FAILS'}")
+print(f"counts: corners {len(corners(ours))}, S1 points {len(s1(ours))}, G11v3-8 points {len(g8(ours))}")
+raise SystemExit(0 if all(s122.values()) and all(s123.values()) else 1)

@@ -151,10 +151,12 @@ class AgentConfig:
     the flags that keep the operator's CLAUDE.md, memory and settings out of the session (D-Q7,
     canary ii). `operator_isolation` (§8 R6) gives the session its own empty Claude Code config
     directory and a token, so that the login's account, and with it the e-mail address, is not
-    in its context (module docstring).
+    in its context (module docstring). `model` None runs without `--model`, on Claude Code's
+    default (W27 registration §23.5); V17's own configurations always pin one, and `check`
+    refuses None.
     """
 
-    model: str
+    model: str | None
     effort: str
     max_turns: int
     max_turns_flag: bool
@@ -166,7 +168,11 @@ class AgentConfig:
 
     def check(self) -> None:
         """Spec §17 "watch for": a model alias instead of a pinned id."""
-        if self.model in MODEL_ALIASES or not self.model.startswith("claude-"):
+        if (
+            self.model is None
+            or self.model in MODEL_ALIASES
+            or not self.model.startswith("claude-")
+        ):
             raise HarnessError(f"--model {self.model!r} is not a pinned model id")
         if not self.effort:
             raise HarnessError("the effort is not pinned")
@@ -312,8 +318,7 @@ def command(config: AgentConfig, prompt: str, mcp_json: Path) -> list[str]:
         ALLOWED_TOOLS,
         "--permission-prompts",
         "none",
-        "--model",
-        config.model,
+        *(() if config.model is None else ("--model", config.model)),
         "--effort",
         config.effort,
         "--max-budget-usd",
@@ -662,12 +667,16 @@ def auto_memory_files(init: Mapping[str, Any] | None) -> list[str] | None:
 
 def session_checks(config: AgentConfig, init: Mapping[str, Any] | None) -> list[str]:
     """What the `init` message must show for a run to be in the registered configuration: the
-    pinned model, the existing login (no API key), the `procsim` server connected, and tools
-    from it only. A campaign stops at the first run that fails one (the run itself is kept)."""
+    pinned model (any model, when none was pinned), the existing login (no API key), the
+    `procsim` server connected, and tools from it only. A campaign stops at the first run that
+    fails one (the run itself is kept)."""
     if init is None:
         return ["no init message"]
     problems: list[str] = []
-    if init.get("model") != config.model:
+    if config.model is None:
+        if not isinstance(init.get("model"), str) or not init.get("model"):
+            problems.append("the init message names no model")
+    elif init.get("model") != config.model:
         problems.append(f"model {init.get('model')!r} is not {config.model!r}")
     if init.get("apiKeySource") != LOGIN_KEY_SOURCE:
         problems.append(f"apiKeySource {init.get('apiKeySource')!r} is not the existing login")

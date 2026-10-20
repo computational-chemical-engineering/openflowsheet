@@ -1,9 +1,12 @@
 # M06 W27 registration — the OpenIDAES-450 external agent benchmark adaptation
 
-**Status:** registered 2026-10-08, **before any W27 agent run**. Amended twice, also before any run: §20
+**Status:** registered 2026-10-08, **before any W27 agent run**. Amended four times, also before any run: §20
 (Amendment 1, 2026-10-08: one erratum and three scoring rules, W27-R59…R61, from the M06 review F5); §21 (Amendment 2,
 2026-10-09: the C1 model and provider rows, units judged on the serving route W27-R62, the v0.2 snapshot reading
-W27-R63, refusals W27-R24 (d)–(e), and the ruling on §20, which amends W27-R59). Design lane (`specifier`), M06 WO-15, branch
+W27-R63, refusals W27-R24 (d)–(e), and the ruling on §20, which amends W27-R59); §22 (Amendment 3, 2026-10-09:
+`c1.reactor_surrogate`); §23 (Amendment 4, 2026-10-18: the campaign's records, order, re-canaries and model pin,
+W27-R64…R68; addendum §23.12, 2026-10-18: the model members of an unpinned attempt's `run.json`, W27-A23
+restated, W27-A79). Design lane (`specifier`), M06 WO-15, branch
 `wp/M06-w27`. Brief: `docs/briefs/M06-W27-registration.md` (`1fb65c1`).
 **Machine-readable companion:** `benchmarks/m06/openidaes450/registration.json`, written by
 `docs/derivations/scripts/m06_w27_registration.py` from the tables in that script and from
@@ -351,6 +354,7 @@ exists, so it cannot be chosen against it. No RNG library is involved: SHA-256 r
 **W27-R31 (order and canaries).** Runs go in ascending `sha256(seed ‖ 0x00 ‖ "order" ‖ 0x00 ‖ case_id)`. The three
 canaries are the first three frame cases **not** in the sample by ascending
 `sha256(seed ‖ 0x00 ‖ "canary" ‖ 0x00 ‖ case_id)`. Canary runs are harness checks, not campaign data.
+*Amended (§23.2, §23.4):* the draw precedes the canaries; re-canaries as W27-R68.
 
 ## 7. Candidate confirmation (before any campaign run)
 
@@ -644,6 +648,8 @@ record that C was empty); `canary/` (three runs and their verdicts); per run `<o
 effort, Claude Code version, `tree_clean`, commit), `prompt.txt`, `transcript.jsonl`, `result.json`,
 `store-export.json`, `scores.json`; and `campaign.json` (W27-R53…R56 computed). A dirty-tree run is not
 evidence.
+*Amended (§23.3):* `confirmation/confirmation.json`, `preflight.json`, the canary layout of W27-R68, and the
+`run.json` members `sample_sha256`, `confirmation_sha256` / `preflight_sha256`.
 
 ## 14. Assertion catalogue
 
@@ -706,7 +712,7 @@ Expected values come from this document and the generator, which WO-16's code do
 | W27-A20 | `sample.json` re-drawn from `coverage.json` by W27-R26…R31 | byte-identical |
 | W27-A21 | the harness's card for every case | SHA-256 equal to `registration.json#/prompt/card/sha256_by_case` (450/450) |
 | W27-A22 | the harness's prompt for a case | `template.format(...)` with the registered markers; the footer's `{case_id}` filled; nothing else |
-| W27-A23 | `run.json` of a stub run | carries `lock_sha256` (non-empty), interpreter, commit, `tree_clean`, model id, effort, Claude Code version, and the four SHA-256 values of W27-R58 |
+| W27-A23 | `run.json` of a stub run | carries `lock_sha256` (non-empty), interpreter, commit, `tree_clean`, model id, effort, Claude Code version, and the four SHA-256 values of W27-R58. *Restated (§23.12):* the model id is W27-R58's model rule; an unpinned canary attempt records `model` null |
 | W27-A30 | stream check, temperature | T_ref = 350 K: 351.999 K passes, 352.001 K fails |
 | W27-A31 | stream check, pressure | P_ref = 1.0 × 10⁵ Pa: tolerance 1 100 Pa; 101 099 passes, 101 101 fails |
 | W27-A32 | stream check, flow | port flows n = (10, 30) mol/s: tolerance on the first 0.504 mol/s; 10.503 passes, 10.505 fails (an absolute term taken from the component's own flow, 0.501, would fail 10.503) |
@@ -858,6 +864,7 @@ reported metric, not an optimisation. Each was fixed in the table or the rule, n
   made at the campaign commit, G14 passing, W27-R24 not refusing; (P4) `sample.json` re-draws equal; (P5) §7
   done for every sampled candidate (or C empty, recorded); (P6) three canaries recorded and passed; (P7) model id
   and Claude Code version pinned from the canaries; (P8) clean committed tree, no campaign run directory yet.
+  *Amended (§23.3–§23.5):* P5, P6, P7 and P8 restated; `preflight.json` records the pass.
 - **WO-16f — scorer** (`benchmarks/m06/openidaes450/scorer.py`): W27-R37…R52, the decision table W27-R48, and
   `campaign.json` (W27-R53…R56). Tests: W27-A30…A34, A40 and the 18 states W27-S01…S18 (G15).
 - **WO-16g — G13–G15 evidence** in `evidence/M06/<commit>/manifest.json`; the generated report
@@ -1403,3 +1410,436 @@ A difference in any class or reason from `hypothetical_v02` stops the merge and 
 - That any surrogate is valid outside its training box, or is promoted. That is M04's verdict, read at use and not by
   W27.
 - Any coverage of v0.2. Coverage counts at M07, as in §21.9.
+
+## 23. Amendment 4: the campaign's records, its order, re-canaries and the model pin (2026-10-18, before any W27 run)
+
+**Source and authority.** Design lane (`specifier`), on `wp/M07-w27` @ `997060d`, as asked by
+`docs/briefs/W27-rulings-brief.md`. It answers the engineer's open items Q1–Q5 of the WO-5 readiness entry in
+`docs/design/M07-build-decisions.md`. Register entries R-467…R-471. Nothing has been spent and no real session has run:
+no path under `benchmarks/m06/openidaes450/runs/` is tracked or exists. It also restates M07.A50, M07 spec §9 and W27
+clause (c) of M07 spec §7.3, in M07 spec §21 (Amendment 4), which points here.
+
+**Facts read for this ruling** (each with the anchor that re-measures it):
+- **F-1.** `tests/test_t08_w2_unsupported.py::test_u14_…` (l.189–204) fails on any tracked `/runs/` path and on any
+  `run.json` or `campaign.json` under the adaptation directory. U14's text (`benchmarks/t08/support_envelope.yaml`
+  l.439–446) says that no comparison is run. R-194 says that U14 "is then rewritten with the campaign, not relaxed".
+- **F-2.** W27-R31 defines the canaries as the first frame cases *not* in the sample, so they cannot be named before the
+  draw. M07 §9 orders "canaries, draw", and M07.A50 checks that order "by record timestamps". W27 clause (c) of M07 §7.3
+  says "run before it". `coverage.json` and `sample.json` carry no timestamp, and `sample.json` cannot carry one, because
+  P4 and W27-A20 require a byte-identical re-draw (`benchmarks/m06/w27/sample.py` l.141–147). A50 was therefore not
+  checkable as written.
+- **F-3.** P5 (`benchmarks/m06/w27/preflight.py` l.172–193) passes on an empty C with no record at all. For a non-empty C
+  it reads `benchmarks/m06/openidaes450/confirmation/<case_id>.json`, a format that nothing registers. P8 (l.223–235)
+  counts every directory except `canary/` as a run, so a `confirmation/` directory fails it. The runbook records the
+  preflight only by shell redirection, and nothing shows that it passed before run 01 (W27-R56).
+- **F-4.** P6 (l.201–206) requires exactly three canary directories. `harness.canaries` (l.368–395) runs all three
+  without stopping at a failure, and the CLI requires `--model` for it (l.596). The runbook leaves "most recent model"
+  to the session.
+
+**What changes.**
+- U14's text and its test (W27-R64).
+- The order of the draw and the canaries, and its evidence: a digest chain instead of timestamps (W27-R65). W27-R31
+  stands as written.
+- Two new records: `confirmation/confirmation.json` (W27-R66) and `preflight.json` (W27-R67).
+- W27-R58 gains these records and four `run.json` members.
+- P5, P6, P7 and P8 are restated.
+- The re-canary layout and its cap (W27-R68).
+- W27-R33's model reading is made mechanical (§23.5).
+- `registration.json` gains the member `campaign_records` and amendment entry 4, and `generator_claims` gains
+  GC-A4-1…6. Every other member is byte-identical. `dry_illustration.json` changes in `registration_sha256` only.
+  Preflight P2's pins are re-taken in this commit.
+
+**What does not change.** Every classification and scoring rule and table. `case_facts.json`. The sample procedure and
+its seed (W27-R26…R31). The 45 runs, k = 1, and the agent configuration other than the model reading. The committed
+Tier 0 `coverage.json` is not re-taken. It records `registration_sha256` `ba627342…` of the registration before this
+amendment, and no member the classifier reads has changed. The campaign's own coverage at C_W records the amended
+digest.
+
+### 23.1 U14 rewritten with the campaign (W27-R64; R-194 restated by R-467)
+
+**U14's outcome, verbatim** (`support_envelope.yaml`). The capability line and the evidence line stay as they are:
+
+> No comparison with CRAFTS' reported rates, or with any other system, is made or claimed (W27-R57). v0.2 adapts
+> OpenIDAES-450 (R-175 to R-179) and runs one registered campaign at M07 (M06 W27 registration §23, R-467). Its
+> adaptation records lie under `benchmarks/m06/openidaes450/`, and its campaign records under
+> `benchmarks/m06/openidaes450/runs/<campaign>/` only. Nothing is registered in `benchmarks/registry.yaml`, and nothing
+> ships in the package (R-194, R-467).
+
+The capability itself, comparing with an external benchmark, stays unsupported. The campaign measures OpenFlowsheet's
+coverage and one model's behaviour on adapted cases, and W27-R57 forbids a comparison. So the row keeps its claim and
+moves only the location of the records.
+
+**The path rule** (`registration.json#/campaign_records/u14`). A tracked path violates **W27-A71** when it names
+`openidaes` or `crafts` (case-insensitive), starts with `src/` or `benchmarks/`, and does not start with
+`benchmarks/m06/openidaes450/`. It violates **W27-A72** when it starts with `benchmarks/m06/openidaes450/`, is a
+campaign record, and does not match `^benchmarks/m06/openidaes450/runs/w27-m07-[0-9a-f]{7,40}/[^/]`. A path is a
+campaign record when it contains `/runs/` or its basename is one of `campaign.json`, `confirmation.json`,
+`preflight.json`, `prompt.txt`, `result.json`, `run.json`, `sample.json`, `scores.json`, `store-export.json` or
+`transcript.jsonl`. `coverage.json` is not in that list, because M06's Tier 0 coverage stays at the top of the
+directory.
+
+**The test** keeps its name, so the envelope's evidence line is unchanged. It asserts W27-A70…A73 (§23.6). It reads the
+path states from `registration.json` and implements the rule itself, without importing the generator.
+
+**Rejected.**
+- *Narrowing the test to `registry.yaml` and `src/`.* R-194 already rejected this.
+- *A second U-row for the campaign.* The capability is the same.
+- *Allowing records anywhere under `runs/`.* A stray directory or a misspelt campaign would then pass.
+
+### 23.2 The order (W27-R65; W27-R31 stands; M07.A50 restated)
+
+**Ruling: the draw precedes the canaries.** The canaries are a function of the sample (W27-R31). The draw is a
+deterministic function of `coverage.json` and the seed, fixed at registration, so drawing first chooses nothing. The
+order at C_W, all under `runs/<campaign>/`:
+
+| # | Record | Written by |
+| --- | --- | --- |
+| 1 | `coverage.json` | `python -m benchmarks.m06.w27.coverage` |
+| 2 | `sample.json` | `python -m benchmarks.m06.w27.sample` |
+| 3 | `confirmation/confirmation.json` | `harness confirm` (W27-R66) |
+| 4 | `canary/<NN>-<case_id>/` | `harness canaries` (W27-R68) |
+| 5 | `preflight.json` | `harness campaign`, before run 01 (W27-R67) |
+| 6 | `<NN>-<case_id>/`, then `campaign.json` | `harness campaign` |
+
+**Evidence: a digest chain, not timestamps.** Each record names the SHA-256 of the bytes of earlier records
+(`registration.json#/campaign_records/digest_chain`):
+
+| Record | Names |
+| --- | --- |
+| `sample.json` | `coverage_sha256` |
+| `confirmation.json` | `coverage_sha256`, `sample_sha256` |
+| each counted canary `run.json` (W27-R68) | `coverage_sha256`, `sample_sha256`, `confirmation_sha256` |
+| `preflight.json` | `coverage_sha256`, `sample_sha256`, `confirmation_sha256`, `canaries[].run_json_sha256` |
+| each campaign `run.json` | `coverage_sha256`, `sample_sha256`, `preflight_sha256` |
+
+A record cannot name the digest of a file that did not yet exist, so an intact chain proves the order. A timestamp
+proves nothing that a clock setting could not fake, and two of these records cannot carry one (F-2). Every record after
+`coverage.json` names its immediate predecessor (GC-A4-2). **Commits:** `coverage.json`'s snapshot `git_commit`,
+`confirmation.json`, the counted canary attempts, `preflight.json` and every campaign `run.json` carry the commit C_W
+with `tree_clean` true.
+
+**C_W and the campaign's name.** C_W is the commit at which the campaign runs. The campaign's name is
+`w27-m07-<abbreviation>`, matching `^w27-m07-[0-9a-f]{7,40}$`, where the abbreviation is that of the commit at which the
+campaign's first `coverage.json` was taken. The name never changes. If a harness fix is committed after a canary
+attempt, C_W becomes the new HEAD. Records 1–3 are then re-made there, in place. Their `rows`, `cases`, `run_order` and
+`canaries` must equal the old ones; otherwise stop and go to the design lane. Canary attempts made at the old commit
+stay where they are (W27-R68).
+
+**Restated M07.A50** (M07 spec §11, [A4]): "W27 order at C_W by digest chain (registration §23.2): each record of
+`campaign_records.digest_chain` names the SHA-256 of the earlier records listed for it, and each named digest equals
+the file's; the commit rule holds". Expected: every link equal and every commit C_W. Tolerance: exact, SHA-256 of
+bytes. Gate O.
+
+**Rejected.**
+- *Keep "canaries, draw" and redefine W27-R31* so that the canaries are drawn from frame cases outside a sample not yet
+  drawn. No such set exists short of shrinking the frame (W27-R26), which would change the sample procedure after
+  registration.
+- *Compute the sample in memory before the canaries and write `sample.json` after them.* The record would then state
+  an order that did not happen.
+- *Timestamps.* See F-2.
+
+### 23.3 The confirmation and preflight records (W27-R66, W27-R67; W27-R58 amended)
+
+**W27-R66, `confirmation/confirmation.json`** (schema `w27-confirmation-v1`). It is written by
+`python -m benchmarks.m06.w27.harness confirm --campaign <c>` after the draw. Its members are exactly:
+- `schema`;
+- `campaign`;
+- `commit` (HEAD) and `tree_clean` (true; the harness refuses a dirty tree);
+- `coverage_sha256` and `sample_sha256`;
+- `candidates`: the sorted ids of the cases in `sample.json#/cases` whose `coverage.json` row has class `CANDIDATE`;
+- `empty`, which equals `candidates == []`.
+
+**A non-empty C is refused.** The writer exits 2 and writes nothing, with the message
+`confirmation: <k> sampled CANDIDATE case(s); §7's reference builds have no registered record (registration §23.3)`.
+A non-empty C at C_W is a stop for the design lane (runbook step (a)). §7's builds would then need a record format,
+and this amendment registers none, because C is measured empty.
+
+**P5 restated.** P5 passes iff:
+- the file exists;
+- its members are exactly the registered set, with schema `w27-confirmation-v1`;
+- `campaign` is the campaign's name and `commit` is HEAD;
+- both digests equal the files' digests;
+- `candidates` equals the recomputation;
+- `empty` is true.
+
+P5's per-candidate branch is removed, since it reads an unregistered format. A non-empty C fails P5 with the reason
+`non_empty_candidates`.
+
+**W27-R67, `preflight.json`** (schema `w27-preflight-v1`). It is written by the `campaign` command, and only by that
+command, after P1–P8 pass and before the directory of run 01 is created. It is written once and never on `--resume`,
+which reuses it. The standalone `preflight` command prints the verdicts and writes nothing. Its members are exactly:
+- `schema`, `campaign`, `commit` and `tree_clean`;
+- `registration_sha256`, `coverage_sha256`, `sample_sha256` and `confirmation_sha256`;
+- `canaries`: the three counted attempts in `sample.json#/canaries` order, each `{attempt: "<NN>-<case_id>", case_id,
+  run_json_sha256}`;
+- `model` and `claude_code_version`, the pins;
+- `checks`: P1–P8's verdict objects;
+- `passed`, which is true.
+
+A failing preflight writes nothing in `runs/`. A missing `preflight.json` therefore reads as "not passed", never as
+silence.
+
+**P8 restated.** P8 passes iff the tree is clean and `runs/<campaign>/` holds no direct child directory matching
+`^[0-9]{2}-.+$`, no `campaign.json` and no `preflight.json`. `canary/`, `confirmation/`, `coverage.json` and
+`sample.json` are expected there (GC-A4-4).
+
+**W27-R58 amended.**
+- R58's list gains `confirmation/confirmation.json` (it replaces "or a record that C was empty"), `preflight.json`, and
+  `canary/` laid out as W27-R68.
+- Every canary `run.json` gains `sample_sha256` and `confirmation_sha256`.
+- Every campaign `run.json` gains `sample_sha256` and `preflight_sha256`.
+- In every `run.json`, `model` is the *requested* model: null for an attempt run without `--model`. The model the
+  session actually used is in `session.init`.
+
+**Who reads these records.**
+- P5 reads `confirmation.json`.
+- M07.A50 reads the digest chain.
+- M07.A51 reads the completeness of R58 as amended.
+- G16 (W27-R56) reads `preflight.json`. Its term "the preflight passed before the first run" is *established* iff
+  `preflight.json` exists with `passed` true and every campaign `run.json`'s `preflight_sha256` equals its digest.
+  Otherwise the term is *not established*.
+
+### 23.4 Re-canaries (W27-R68; §17 Q3's default, made executable)
+
+**Layout.** Canary attempts live at `runs/<campaign>/canary/<NN>-<case_id>/`, with the same files as a campaign run.
+NN is the attempt number, 01…06. Attempts are numbered contiguously in the order they are made, across the three canary
+cases, and `run.json`'s `order` is NN. A re-canary is any attempt after the first three, made for any failure. There are
+at most 3 re-canaries, so 6 attempts (§17 Q3; more needs Frank; GC-A4-1). No attempt directory is ever deleted or
+reused. Every attempt counts toward spend.
+
+**The `canaries` command.** At HEAD it attempts the canary cases in `sample.json#/canaries` order, skipping any case
+that has already passed at HEAD. It stops at the first attempt that fails, with exit 1. It refuses to start attempt 07,
+with exit 2 and nothing launched, and the message `re-canary allowance exhausted (registration §17 Q3): Frank`.
+
+**P6 restated.** P6 passes iff all of the following hold:
+1. The attempt directories match `^0[1-6]-.+$` and are numbered 01…N contiguously, with N ≤ 6.
+2. Every attempt's case is one of the three canaries in `sample.json`.
+3. No attempt repeats a case that already passed at the same commit.
+4. For each canary case, its latest attempt (the *counted* attempt) passed (`canary_verdict`).
+5. Each counted attempt's `run.json` has `commit` = HEAD and `tree_clean` true.
+
+Attempts made at an earlier commit stay as records and are not counted. The three counted attempts must all have run
+at C_W, so that the canaries certify the code that runs the campaign.
+
+**Rejected.**
+- *Counting a canary that passed before a harness fix.* It certifies code the campaign does not run.
+- *Allowing a passed canary to be re-run.* Re-running a check until it gives the wanted answer is re-rolling.
+- *A fresh campaign directory per fix.* Spend and the cap would then have to add up across directories.
+
+### 23.5 The model (W27-R33 made mechanical; P7 restated). Item 5 of the brief: confirmed
+
+The registration reads the model "from the first canary's `init` message", so the first canary cannot be told which
+model to use. That reading is now the operational definition of "the most recent Claude model available at campaign
+time": the model that Claude Code at the pinned version selects by default on the campaign's login. The **pinning
+attempt** is the earliest canary attempt whose transcript has an `init` message carrying a model id. It, and every
+attempt before it, runs without `--model`. Every later attempt, and every campaign run, passes `--model <pin>`. The
+`canaries` command therefore takes no `--model` and reads the pin from the directory. If the pin would be
+`claude-sonnet-5`, the command stops with exit 2, and the question goes to Frank (§3 F1). In a canary run without
+`--model`, the session check on the model is that the init model is non-empty and not `claude-sonnet-5`.
+
+**P7 restated.** P7 passes iff all of the following hold:
+1. A pinning attempt exists.
+2. The pin given to the preflight equals that attempt's init model, and is not `claude-sonnet-5`.
+3. The pinning attempt and every earlier attempt recorded `model` null, and every later attempt recorded `model` = pin.
+4. Every counted attempt's init model equals the pin, and its init Claude Code version equals the pinned version.
+
+**Rejected.** *The session picks among the catalogue's newest ids* (the runbook's current text). The choice would be
+discretionary, made by the party being measured, and could be made against results.
+
+### 23.6 Assertions (build lane; WO-17a)
+
+All comparisons are exact: bytes, strings, booleans or SHA-256. No floating-point quantity is compared, so no tolerance
+or roundoff floor applies. Every state is registered in `registration.json#/campaign_records`, so the tests read their
+expectations as data.
+
+| Id | Assertion | Expected | Why |
+| --- | --- | --- | --- |
+| W27-A70 | `benchmarks/registry.yaml` contains neither `openidaes` nor `crafts`; `pyproject.toml` neither `openidaes` nor `benchmarks/m06`; `MANIFEST.in` neither `benchmarks` nor `openidaes` (all lower-cased) | all absent | not registered, not shipped (MANIFEST.in is new; today it holds only `prune tests`) |
+| W27-A71 | no tracked path violates W27-A71 (§23.1) | 0 violations | confinement to the adaptation directory |
+| W27-A72 | no tracked path violates W27-A72 | 0 violations | records only under `runs/<campaign>/` |
+| W27-A73 | the test's own predicate on `u14.path_states` (16 paths) | each path gives its `violates` value: 8 allowed, 2 W27-A71, 6 W27-A72 | today no `runs/` path is tracked, so A71 and A72 pass vacuously; A73 shows that the rule rejects |
+| W27-A74 | `confirm` and P5 at the committed Tier 0 coverage and its re-draw; then (b) a copy of that coverage with one frame case set to `CANDIDATE` with no reasons, re-drawn; (c) (a)'s record with the last hex digit of `sample_sha256` changed; (d) (a)'s record with `empty` false | (a) the record has exactly the registered members, `candidates` [], `empty` true and equal digests, and P5 passes; (b) exit 2, no file, P5 fails; (c) P5 fails; (d) P5 fails | the empty path, the refusal, a broken link, a lying flag |
+| W27-A75 | a stub campaign (`dryrun`); then a stray `01-x` directory; then `preflight.json` present with no run; then `canary/` and `confirmation/` present with no run | `preflight.json` has exactly the registered members and `passed` true, and each run's `preflight_sha256` equals its digest; the standalone `preflight` writes nothing; the stray directory fails P8, and no `preflight.json` and no run directory are written; `preflight.json` alone fails P8; `canary/` and `confirmation/` pass P8 | the record, its absence on failure, F-3's defect |
+| W27-A76 | P6 on the 11 states `p6_states`, built as stub canary attempts. A, B and C map to `sample.json#/canaries` in order. X is the first frame case by canary rank that is neither sampled nor a canary. HEAD is HEAD; K is a fixed other 40-hex commit | each state's `expected_pass`: S1, S2, S4 and S6 pass; S3, S5, S7, S8, S9, S10 and S11 fail | baseline; re-canary; latest attempt failed; superseded attempt; counted attempt at K; the whole allowance (6) against a seventh attempt; re-roll; a case that is no canary; gap; missing case |
+| W27-A77 | P7 on the 6 states `p7_states`, with M1 = `claude-test-m1` and M2 = `claude-test-m2` | T1 and T5 pass; T2, T3, T4 and T6 fail | pin from attempt 01; wrong pin; no `--model` after the pin; V17's model; attempt 01 without init; counted init differs |
+| W27-A78 | `order_check(campaign_dir)` (the function M07.A50's opt-in check calls) on the stub campaign; then `preflight.json` changed by one byte; then a counted canary's `sample_sha256` changed; then one run's `commit` changed | passes; then fails naming every run's `preflight_sha256`; then fails naming that canary; then fails naming that run | each link and the commit rule, one at a time |
+
+In each `p6_states` and `p7_states` entry, every attempt registers `n`, `case`, `commit`, `passed`, `model` (requested)
+and `init_model`.
+
+### 23.7 Self-claims (the generator refuses to emit when one fails)
+
+| Id | Claim |
+| --- | --- |
+| GC-A4-1 | 3 canaries + 3 re-canaries = 6, and `canary_attempt_pattern` admits exactly 01…06 |
+| GC-A4-2 | the digest chain covers `order` after `coverage`; every record names only earlier records, its immediate predecessor among them |
+| GC-A4-3 | the generator's `u14_violation` gives each of the 16 path states its registered value, and allowed, W27-A71 and W27-A72 all occur |
+| GC-A4-4 | `run_dir_pattern` matches `01-x` and `45-x` and matches none of `canary`, `confirmation`, `coverage.json`, `sample.json`, `preflight.json`, `campaign.json` |
+| GC-A4-5 | the generator's reference P6 (`ref_p6`) gives every `p6_states` entry its expectation, and both verdicts occur |
+| GC-A4-6 | every `p7_states` entry passes P6, the reference P7 (`ref_p7`) gives it its expectation, and both verdicts occur |
+
+### 23.8 Work orders and pins
+
+**Done in this commit (design lane).**
+- The generator, `registration.json` (`066feacb…3c18`), `dry_illustration.json` (`registration_sha256` only), and
+  `--check` passing.
+- Preflight P2's `REGISTERED_SHA256` re-taken for the three files.
+- M07 spec §21.
+
+**WO-17a, build lane, on `wp/M07-w27`, before any canary.**
+1. U14's text (§23.1) and its test, W27-A70…A73. `test_t08_w2_support_envelope` must stay green.
+2. `harness confirm`, and P5 restated (W27-A74).
+3. The `preflight.json` writer in `campaign`, P8 restated, and the new `run.json` members (W27-A75).
+4. `canaries`: attempt numbering, stop at the first failure, the cap, no `--model`, the pin read from the directory. P6
+   and P7 restated (W27-A76, A77).
+5. `order_check` (W27-A78), which M07.A50's opt-in check calls on the real campaign.
+6. The runbook: (a) coverage, (b) draw, (b′) `confirm`, (c) canaries, with the re-canary procedure, then (d). Remove
+   "re-canary is not implemented" and "most recent is the session's call".
+7. The full gate green. A stub dry run shows P1–P8 passing with `preflight.json` written.
+
+If a change needs a rule this section does not give, escalate it to the design lane; do not choose.
+
+### 23.9 What this amendment does not establish
+
+- That Claude Code's default model is the newest model released. It is the registered operational meaning, and the
+  report names the pinned id.
+- That a re-made `sample.json` after a C_W move equals the old one. This is checked only through P6 condition 2 and P3
+  at the new commit. The old `coverage.json` and `sample.json` are overwritten.
+- That the canaries test anything beyond `canary_verdict`'s four conditions. They are harness checks, not campaign
+  data (W27-R31).
+- Anything about a non-empty C, which is refused rather than handled.
+- Any campaign result. Nothing has run.
+
+### 23.10 Open questions, each with a default
+
+| # | Question | Kind | Default |
+| --- | --- | --- | --- |
+| A4-Q1 | Does Claude Code 2.1.302, under operator isolation and without `--model`, put a full model id (not an alias) in `init`? | **needs a fact**: canary attempt 01's `init` | if it is an alias, the `canaries` command stops and the design lane rules before attempt 02 |
+| A4-Q2 | Should the re-canary cap count attempts (6) or harness fixes? | **needs Frank** (spend) | attempts, as §17 Q3's default; reversible by one number in `campaign_records` before the first canary |
+| A4-Q3 | Should records superseded by a C_W move be kept? | **needs a fact**: whether any C_W move happens | overwritten in place (§23.2); if a move happens, the build log records the old digests |
+
+### 23.11 Findings (recorded, not acted on)
+
+- **FA4-1.** §22.3 reuses the ids W27-A20…A22, which §14.2 already gives to the re-draw, the card and the prompt.
+  `tests/test_m06_w27_coverage.py` l.434 disambiguates them in a comment. Nothing is renumbered here, because that would
+  break the byte-identity of pre-existing members. This amendment starts at W27-A70.
+- **FA4-2.** The header's status line said "amended twice". It now names §22 and §23.
+
+### 23.12 Addendum: the model members of a `run.json` (2026-10-18, before any W27 run)
+
+**Source and authority.** Design lane (`specifier`), on `wp/M07-w27` @ `fec8ca1`, as asked by
+`docs/briefs/W27-unpinned-brief.md`. Register entry R-472. It rules on the build decision of `b71d86c` (hunk
+`harness._unpinned`, build log entry WO-17a), restates W27-A23 and adds W27-A79. No canary has run and nothing has been
+spent.
+
+**Facts read for this ruling.**
+- **F-5.** `harness.run` (`benchmarks/m06/w27/harness.py` l.331–339) writes `model` and `pinned.model` as the
+  requested model. For an attempt without `--model`, both would be null. The scorer's W27-R51 check
+  (`scorer.py` l.863–864) reports `pin_mismatch(model)` when `pinned.model` is null or differs from the `init` model.
+  Without a rule, every unpinned attempt would fail. P7-T1 and P7-T5, which register a passing attempt run without
+  `--model`, could then never occur.
+- **F-6.** §23.3 registers `model` as the *requested* model, null without `--model`. P7 (`preflight.py` l.258–275)
+  reads `model` and the `init` model and never reads `pinned.model`. Only the scorer's pin check reads `pinned.model`.
+- **F-7.** `harness.a23` (l.857–892) requires every member of `RUN_RECORD_MEMBERS`, `model` among them, to be
+  non-null and non-empty. W27-A23's test applies it to one campaign stub run. M07.A51 reads the completeness of R58
+  over every record, canary attempts included. As written, A23 fails every unpinned attempt.
+- **F-8.** W27-A76 says that K is "a fixed other 40-hex commit". `p6_states` writes the symbol `K`, and
+  `tests/m06_w27_support.py` l.22 takes `"f" * 40`. The registration gives K no value.
+
+**Ruling (W27-R58 amended again; `registration.json#/campaign_records/run_json_added/pinned_model`).** The
+engineer's form is accepted. Every `run.json` carries three model members:
+- `model` is the requested model: the string passed as `--model`, or null for an attempt run without it (§23.3,
+  unchanged).
+- `pinned.model` is the pin the record is checked against. When `model` is a string, `pinned.model` equals it. When
+  `model` is null, `pinned.model` is `session.init.model` if that is a non-empty string other than `claude-sonnet-5`.
+  Otherwise it is null.
+- `session.init.model` is what the session reported (unchanged).
+
+`model` may be null only in a canary attempt, that is, a record whose `campaign` ends in `/canary`. The harness writes
+`<campaign>/canary` there. A campaign run with `model` null fails W27-A23. That a null `model` occurs only at or before
+the pinning attempt is P7 condition 3, which is unchanged.
+
+**What the scorer's pin check means for an unpinned attempt.** For the pinning attempt, the check compares the `init`
+model with itself, so it holds by construction. That is not a weakening, because nothing earlier exists to compare
+with. The pinning attempt's model is checked elsewhere: (i) by the session check (non-empty, not `claude-sonnet-5`,
+§23.5); (ii) by `model_pin`, which refuses an alias or `claude-sonnet-5` with exit 2 (A4-Q1); and (iii) by P7
+conditions 2–4, across the attempts and against the preflight's pin. An unpinned attempt with no `init` model, or
+with `claude-sonnet-5`, records `pinned.model` null. The scorer then reports `pin_mismatch(model)` or an earlier
+reason, and the attempt fails, which is the intended result. The scorer is unchanged, and no scoring rule changes.
+
+**W27-A23 restated.** The `run.json` of a stub campaign run carries `lock_sha256` (non-empty), the interpreter,
+`commit`, `tree_clean`, effort, the Claude Code version and the four SHA-256 values of W27-R58. Its `model`,
+`pinned.model` and `session.init.model` satisfy W27-R58's model rule. `harness.a23` applies this to any `run.json`,
+and M07.A51 applies it to every `run.json` under the campaign directory, `canary/` included.
+
+**K.** K is `"f" * 40`, registered at `campaign_records#/p6_symbols/K`. It is no commit of the repository. P6 compares
+a commit with HEAD only, so any K other than HEAD gives the same verdicts. The test reads K from the registration and
+asserts that K differs from HEAD.
+
+**W27-A79** (build lane). All comparisons are exact (strings, booleans, null), so no tolerance applies.
+
+| Part | Assertion | Expected | Why |
+| --- | --- | --- | --- |
+| (a) | `harness.a23` on the W27-A23 stub record, with each `run_json_model_states` entry overlaid: `campaign` becomes `<campaign>/canary` for kind `canary` and stays without that suffix for kind `campaign`; then `model`, `pinned.model` and `session.init.model` are overlaid, with M1 = `claude-test-m1` and M2 = `claude-test-m2` | each entry's `expected_pass`: R1, R2, R3, R4 and R10 pass; R5–R9 and R11 fail, each listing at least one problem | every other member is valid, so the model rule alone decides |
+| (b) | one unpinned attempt through the production `harness.run`, with `agent_config(None)`, the dry run's stub canary `claude` (`dryrun.py` l.58) and campaign `<x>/canary`; then a copy of its directory with `pinned.model` set to null, re-scored by `scorer.score` | `harness.a23` passes; `model` is null; `pinned.model` = `session.init.model` = `STUB_MODEL`; `scores.json#/infrastructure_failure` is null. The copy's `infrastructure_failure.reason` is `pin_mismatch(model)` | `_unpinned` writes what the rule requires, and without it the scorer fails the attempt (F-5) |
+
+**The registered states** (`campaign_records#/run_json_model_states`; fields kind, `model`, `pinned.model`, `init`).
+
+| Id | Kind | model | pinned | init | A23 | Why it is in the list |
+| --- | --- | --- | --- | --- | --- | --- |
+| R1 | campaign | M1 | M1 | M1 | pass | baseline: the pin is the requested model |
+| R2 | canary | null | M1 | M1 | pass | the pinning attempt (the engineer's form) |
+| R3 | canary | null | null | null | pass | an attempt before the pinning attempt (P7-T5's attempt 01) |
+| R4 | canary | null | null | `claude-sonnet-5` | pass | V17's default: the record is complete and holds no pin; the attempt fails in the scorer and `canaries` refuses |
+| R5 | campaign | null | M1 | M1 | fail | only a canary attempt may run without `--model`; differs from R2 in kind alone and from R1 in `model` alone |
+| R6 | canary | null | null | M1 | fail | the pin not recorded (the record before `b71d86c`); differs from R3 in `init` alone |
+| R7 | canary | null | M2 | M1 | fail | a recorded pin other than the `init` model |
+| R8 | canary | null | `claude-sonnet-5` | `claude-sonnet-5` | fail | V17's model recorded as a pin |
+| R9 | campaign | M1 | M2 | M1 | fail | a pin other than the requested model; differs from R1 in `pinned` alone |
+| R10 | campaign | M1 | M1 | M2 | pass | A23 is not the scorer: a complete record of a run that the scorer fails with `pin_mismatch(model)` |
+| R11 | campaign | "" | "" | M1 | fail | an empty requested model |
+
+**Self-claims (the generator refuses to emit when one fails).**
+
+| Id | Claim |
+| --- | --- |
+| GC-A4-7 | the reference rule `ref_run_model` gives every `run_json_model_states` entry its expectation; the entries are pairwise distinct; both verdicts occur; and each of kind, `model`, `pinned` and `init` alone changes the verdict in some pair of entries |
+| GC-A4-8 | K is 40 lower-case hex digits and is not the symbol `HEAD` |
+
+**Rejected.**
+- *`model` = the observed id, with a new `requested_model: null`.* It contradicts §23.3, P7 condition 3 as registered
+  and as built (`preflight.py` l.264 reads `model` as the requested model), and `p7_states`. It would restate P7 and
+  two registered members before the first canary, and `model` would mean different things in different records.
+- *A scorer exemption: skip the pin check when `model` is null.* It changes a scoring rule (§23, "What does not
+  change"). It would also let an unpinned record with no `init` model pass the pin check silently.
+- *`pinned.model` null and A23 unchanged.* Every unpinned attempt would fail `pin_mismatch(model)` and A23, so
+  P7-T1 and P7-T5 could never occur (F-5, F-7).
+
+**WO-17b (build lane, on `wp/M07-w27`, before any canary).**
+1. `harness.a23`: drop `model` from the non-empty check. Instead, `model` must be present as a key, and the model
+   rule must hold, with kind `canary` iff `str(record.get("campaign", "")).endswith("/" + CANARY_DIR)`, `pinned`
+   from `record["pinned"]["model"]` and `init` from `record["session"]["init"]["model"]` (a missing level reads as
+   null). When the rule fails, add the problem `model_rule`.
+2. W27-A79 (a) and (b) in `tests/test_m06_w27_harness.py`, beside W27-A23, reading the states from
+   `registration.load()["campaign_records"]["run_json_model_states"]`. Assert that there are 11 states and that the
+   passing ids are R1, R2, R3, R4 and R10.
+3. `tests/m06_w27_support.py`: K is read from `campaign_records["p6_symbols"]["K"]`, and `_states_campaign` asserts
+   `K != head()`.
+4. `dryrun.py` (l.114): apply A23 to every `run.json` under the campaign directory, `canary/` included.
+5. `harness._unpinned` stays as built. Its docstring cites §23.12 and R-472 instead of the build decision. The
+   build log marks the WO-17a decision as ruled and withdraws its note for M07.A51.
+6. The full gate is green.
+
+**Pins.** `registration.json`, `dry_illustration.json` (`registration_sha256` only) and preflight P2's
+`REGISTERED_SHA256` are re-taken in this commit. In `registration.json`, `amendments` (entry 4 gains `addenda`),
+`campaign_records` (`run_json_added.pinned_model`, `run_json_model_states`, `p6_symbols`) and `generator_claims`
+(GC-A4-7, GC-A4-8) change. Every other member is byte-identical.
+
+**What this addendum does not establish.**
+- That the pinning attempt's `init` carries a full model id. That is A4-Q1, a fact from attempt 01.
+- That Claude Code's default model is the newest model (§23.9 stands).
+- Anything about the scorer beyond W27-R51, which is unchanged. The scorer's pin check is satisfied by construction
+  for the pinning attempt and is not evidence about that attempt's model.
+- Any campaign result. Nothing has run.
+
+**Open questions.** None new. A4-Q1 stands.

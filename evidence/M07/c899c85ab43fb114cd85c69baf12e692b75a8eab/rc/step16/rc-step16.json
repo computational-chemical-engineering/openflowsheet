@@ -1,0 +1,48 @@
+{
+ "checks": [
+  {
+   "command": "OPENFLOWSHEET_REQUIRE_BROWSER=1 pytest -q -rs -p no:cacheprovider tests/test_m06_*.py",
+   "exit_code": 0,
+   "id": "a60.w26.m06_tests",
+   "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 661
+   },
+   "junit_sha256": "9b57e41eb660698c0d70a30d3430360fc8ccf9e6adec006b1a472bdb97141da1",
+   "result": "pass"
+  },
+  {
+   "command": "node --test --test-reporter=spec \"tests/web/*.test.mjs\"",
+   "exit_code": 0,
+   "id": "a60.w26.web_unit_tests",
+   "last_line": "\u2139 duration_ms 182.749243",
+   "result": "pass"
+  },
+  {
+   "command": "python -m benchmarks.m06.w27.dryrun --out evidence/M06/W27/artifacts/dry-run/<C>",
+   "exit_code": 0,
+   "id": "a60.w26.w27_dry_run",
+   "last_line": "A23 PASS (62 records)",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "c899c85ab43fb114cd85c69baf12e692b75a8eab",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "w26-web-shell"
+}

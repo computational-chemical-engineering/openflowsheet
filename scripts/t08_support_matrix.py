@@ -61,8 +61,9 @@ TOP_LEVEL: Final = ("envelope_id", "release", "axes", "unsupported", "limitation
 #: The envelope's id. R-193: v0.2's working envelope is `v0.2-envelope-dev`; v0.1's
 #: (`v0.1-envelope-1`) is the one at tag v0.1.1. Pinned at the alpha's candidate `C_α` as
 #: `v0.2-alpha-envelope-1` (V02 alpha release spec MR-3); returned at the alpha's merge into main,
-#: R-460.
-ENVELOPE_ID: Final = "v0.2-envelope-dev"
+#: R-460. Pinned at 0.2.0's cut commit K as `v0.2-envelope-1` (M07 spec §7.2; alpha-main rulings
+#: O5); the first D2.4 change after the tag returns it to `v0.2-envelope-dev`.
+ENVELOPE_ID: Final = "v0.2-envelope-1"
 #: The CI runners and the architecture each is (`.github/workflows/ci.yml`'s matrix).
 RUNNER_ARCHITECTURE: Final[Mapping[str, str]] = {
     "ubuntu-latest": "x86-64",
@@ -476,10 +477,11 @@ def text_sha256(item: str | Mapping[str, Any]) -> str:
 
 #: Manifests the harvest does not read. T08's own was excluded through v0.1 (written at T08 close,
 #: after `C`, so harvesting it into v0.1's envelope would have been circular); the alpha harvests
-#: it (V02 alpha release spec MR-3, T08 Amendment R8 4, FD-α7). M07a's own manifest is written
-#: after `C_α` and belongs to the next harvest (R-320, T08 Amendment R8 2's precedent): the
-#: exclusion excludes no manifest at `C_α`, and M07 removes it and harvests M07a's manifest.
-HARVEST_EXCLUDED: tuple[str, ...] = ("evidence/M07a/",)
+#: it (V02 alpha release spec MR-3, T08 Amendment R8 4, FD-α7). M07a's manifests (after `C_α`,
+#: R-320) and M07's own (after C′ = `ce99365`) belong to the next harvest (R-485).
+#: `evidence/M07/` excludes no manifest at C′; `evidence/M07a/` excludes M07a's, deferred from
+#: 0.2.0 by R-485.
+HARVEST_EXCLUDED: tuple[str, ...] = ("evidence/M07a/", "evidence/M07/")
 
 
 def harvest_items(

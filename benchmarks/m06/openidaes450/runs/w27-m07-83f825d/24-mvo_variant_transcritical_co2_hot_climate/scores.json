@@ -1,0 +1,191 @@
+{
+  "agent_false_verification": {
+    "count": 0,
+    "established": true,
+    "terms": {
+      "built_check_failed": 0,
+      "built_non_candidate": 0,
+      "built_unbacked": 0,
+      "false_claims": 0
+    }
+  },
+  "build": null,
+  "campaign": "w27-m07-83f825d",
+  "case_class": "NOT_STEADY_STATE_SIMULATION",
+  "case_id": "mvo_variant_transcritical_co2_hot_climate",
+  "claims": {
+    "false": 0,
+    "false_items": [],
+    "malformed": 0,
+    "true": 0
+  },
+  "cost": {
+    "cache_creation_input_tokens": 11010,
+    "cache_read_input_tokens": 31163,
+    "duplicate_experiments_by_content": 0,
+    "duplicate_experiments_by_request": 0,
+    "duration_api_ms": 6344,
+    "duration_ms": 6415,
+    "input_tokens": 4,
+    "job_wall_s": 0.0,
+    "jobs_submitted": {},
+    "num_turns": 2,
+    "output_tokens": 714,
+    "tool_calls": 1,
+    "total_cost_usd": 0.0543043,
+    "total_cost_usd_basis": "subscription_estimate"
+  },
+  "effects": {
+    "critical": [],
+    "critical_effects": 0,
+    "established": true,
+    "indeterminate": [],
+    "session_effects": 0,
+    "unauthorized": [],
+    "unauthorized_effects": 0
+  },
+  "final_answer": {
+    "job_id": null,
+    "parseable": true,
+    "revision_id": null,
+    "status": "limitation",
+    "unparseable_reason": null
+  },
+  "flags": {
+    "correct_build_stream_unjudged": false,
+    "map_defect_candidate": false
+  },
+  "harness_defects": [],
+  "infrastructure_failure": null,
+  "inputs": {
+    "coverage_sha256": "e1f2136c4700afaa462ad314c8fc7f4c3a6fcd229c4e2ee4c7a8e9fd55d31e15",
+    "registration_sha256": "ee099a60f9da6900325f54127f92e9eee926d2015f97b527843db482d6f0e52e",
+    "result_sha256": "ac10676831255c49b0933b45d9955c385ec4524e163f5fedb6a741a08069658e",
+    "run_sha256": "2a90aec46593f32d199267f925576db0b2df456e2fd5cc6b1776622b8ef0d2ad",
+    "store_export_sha256": "2c0aec8f6e4b40faefcd081b207b9b7f7110fb0271656f6b30f67027fab3880d",
+    "transcript_sha256": "d86a963794c9fef232402e9c530a1a8848871940effb0ade5de2418e91859c27"
+  },
+  "limitation": {
+    "correct": true,
+    "counts": {
+      "contradicted": 0,
+      "items": 8,
+      "judged": 8,
+      "malformed": 0,
+      "matched": 8,
+      "names_nothing": 0,
+      "unjudged": 0
+    },
+    "items": [
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      }
+    ]
+  },
+  "outcome": "CORRECT_LIMITATION",
+  "refused_attempts": {
+    "by_operation_code": {},
+    "count": 0,
+    "established": true
+  },
+  "schema": "w27-scores-v1",
+  "semantic": {
+    "api_rejection_rate": {
+      "denominator": 1,
+      "numerator": 0,
+      "rate": 0.0
+    },
+    "draft_commit_rate": {
+      "denominator": 0,
+      "numerator": 0,
+      "rate": null
+    },
+    "internal_errors": {
+      "jobs": 0,
+      "tool_results": 0
+    },
+    "limitation_items": {
+      "contradicted": 0,
+      "items": 8,
+      "judged": 8,
+      "malformed": 0,
+      "matched": 8,
+      "names_nothing": 0,
+      "unjudged": 0
+    },
+    "semantic_error_rate": {
+      "denominator": 8,
+      "numerator": 0,
+      "rate": 0.0
+    }
+  },
+  "store_export_present": true,
+  "system_false_verification": {
+    "certificates": [],
+    "count": 0,
+    "established": true,
+    "unjudged_verified": 0
+  },
+  "transcript_state": "intact"
+}

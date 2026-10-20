@@ -1,0 +1,167 @@
+{
+  "agent_false_verification": {
+    "count": 0,
+    "established": true,
+    "terms": {
+      "built_check_failed": 0,
+      "built_non_candidate": 0,
+      "built_unbacked": 0,
+      "false_claims": 0
+    }
+  },
+  "build": null,
+  "campaign": "w27-m07-83f825d",
+  "case_class": "UNIT_UNAVAILABLE",
+  "case_id": "watertap_anaerobic_digester_unit",
+  "claims": {
+    "false": 0,
+    "false_items": [],
+    "malformed": 0,
+    "true": 0
+  },
+  "cost": {
+    "cache_creation_input_tokens": 12331,
+    "cache_read_input_tokens": 31888,
+    "duplicate_experiments_by_content": 0,
+    "duplicate_experiments_by_request": 0,
+    "duration_api_ms": 6317,
+    "duration_ms": 6396,
+    "input_tokens": 4,
+    "job_wall_s": 0.0,
+    "jobs_submitted": {},
+    "num_turns": 3,
+    "output_tokens": 718,
+    "tool_calls": 2,
+    "total_cost_usd": 0.0597008,
+    "total_cost_usd_basis": "subscription_estimate"
+  },
+  "effects": {
+    "critical": [],
+    "critical_effects": 0,
+    "established": true,
+    "indeterminate": [],
+    "session_effects": 0,
+    "unauthorized": [],
+    "unauthorized_effects": 0
+  },
+  "final_answer": {
+    "job_id": null,
+    "parseable": true,
+    "revision_id": null,
+    "status": "limitation",
+    "unparseable_reason": null
+  },
+  "flags": {
+    "correct_build_stream_unjudged": false,
+    "map_defect_candidate": false
+  },
+  "harness_defects": [],
+  "infrastructure_failure": null,
+  "inputs": {
+    "coverage_sha256": "e1f2136c4700afaa462ad314c8fc7f4c3a6fcd229c4e2ee4c7a8e9fd55d31e15",
+    "registration_sha256": "ee099a60f9da6900325f54127f92e9eee926d2015f97b527843db482d6f0e52e",
+    "result_sha256": "e56e0b74d702111fef512930d14a43b272caadd6247a8a4d3391f8e43930a7e0",
+    "run_sha256": "fe9a5cfe398f82055753fef4b1bec64a9489a6440a2670093f9bca2387c15b43",
+    "store_export_sha256": "a57e178bfa32df961926feccb31f85d99757b8c26eff1b36276b8159d7b1751e",
+    "transcript_sha256": "6e0d9fd68823762fff4a4a71ac2a3a8c44446972440b1b13eae8769d697f47bb"
+  },
+  "limitation": {
+    "correct": true,
+    "counts": {
+      "contradicted": 0,
+      "items": 5,
+      "judged": 5,
+      "malformed": 0,
+      "matched": 2,
+      "names_nothing": 3,
+      "unjudged": 0
+    },
+    "items": [
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": false,
+        "names_nothing": true
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": false,
+        "names_nothing": true
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": false,
+        "names_nothing": true
+      }
+    ]
+  },
+  "outcome": "CORRECT_LIMITATION",
+  "refused_attempts": {
+    "by_operation_code": {},
+    "count": 0,
+    "established": true
+  },
+  "schema": "w27-scores-v1",
+  "semantic": {
+    "api_rejection_rate": {
+      "denominator": 2,
+      "numerator": 0,
+      "rate": 0.0
+    },
+    "draft_commit_rate": {
+      "denominator": 0,
+      "numerator": 0,
+      "rate": null
+    },
+    "internal_errors": {
+      "jobs": 0,
+      "tool_results": 0
+    },
+    "limitation_items": {
+      "contradicted": 0,
+      "items": 5,
+      "judged": 5,
+      "malformed": 0,
+      "matched": 2,
+      "names_nothing": 3,
+      "unjudged": 0
+    },
+    "semantic_error_rate": {
+      "denominator": 5,
+      "numerator": 3,
+      "rate": 0.6
+    }
+  },
+  "store_export_present": true,
+  "system_false_verification": {
+    "certificates": [],
+    "count": 0,
+    "established": true,
+    "unjudged_verified": 0
+  },
+  "transcript_state": "intact"
+}

@@ -46,8 +46,992 @@
         "W27-R14"
       ],
       "section": "§22"
+    },
+    {
+      "addenda": [
+        {
+          "assertions": [
+            "W27-A23",
+            "W27-A79"
+          ],
+          "date": "2026-10-18",
+          "rules": [
+            "W27-R58"
+          ],
+          "section": "§23.12"
+        }
+      ],
+      "date": "2026-10-18",
+      "number": 4,
+      "rules": [
+        "W27-R31",
+        "W27-R33",
+        "W27-R58",
+        "W27-R64",
+        "W27-R65",
+        "W27-R66",
+        "W27-R67",
+        "W27-R68"
+      ],
+      "section": "§23"
     }
   ],
+  "campaign_records": {
+    "campaign_name": "w27-m07-<abbreviated commit at which the campaign's first coverage.json was taken>; fixed for the campaign's life (W27-R65)",
+    "campaign_name_pattern": "^w27-m07-[0-9a-f]{7,40}$",
+    "canaries": 3,
+    "canary_attempt_pattern": "^0[1-6]-.+$",
+    "canary_attempts_max": 6,
+    "canary_dir": "canary",
+    "commit_rule": "coverage.json's snapshot git_commit, confirmation.json, the counted canary attempts, preflight.json and every campaign run.json carry commit C_W, tree_clean true",
+    "confirmation": {
+      "file": "confirmation/confirmation.json",
+      "members": [
+        "campaign",
+        "candidates",
+        "commit",
+        "coverage_sha256",
+        "empty",
+        "sample_sha256",
+        "schema",
+        "tree_clean"
+      ],
+      "non_empty": "refused: the writer writes nothing and exits non-zero; P5 fails",
+      "schema": "w27-confirmation-v1"
+    },
+    "digest": "SHA-256 of the file's bytes, lower-case hex",
+    "digest_chain": [
+      {
+        "file": "sample.json",
+        "names": {
+          "coverage_sha256": "coverage"
+        },
+        "record": "sample"
+      },
+      {
+        "file": "confirmation/confirmation.json",
+        "names": {
+          "coverage_sha256": "coverage",
+          "sample_sha256": "sample"
+        },
+        "record": "confirmation"
+      },
+      {
+        "file": "canary/<NN>-<case_id>/run.json, each counted attempt (W27-R68)",
+        "names": {
+          "confirmation_sha256": "confirmation",
+          "coverage_sha256": "coverage",
+          "sample_sha256": "sample"
+        },
+        "record": "canaries"
+      },
+      {
+        "file": "preflight.json",
+        "names": {
+          "canaries[].run_json_sha256": "canaries",
+          "confirmation_sha256": "confirmation",
+          "coverage_sha256": "coverage",
+          "sample_sha256": "sample"
+        },
+        "record": "preflight"
+      },
+      {
+        "file": "<NN>-<case_id>/run.json, every campaign run",
+        "names": {
+          "coverage_sha256": "coverage",
+          "preflight_sha256": "preflight",
+          "sample_sha256": "sample"
+        },
+        "record": "runs"
+      }
+    ],
+    "model_pin": "the pinning attempt is the earliest canary attempt whose transcript has an init message with a model id; it and every attempt before it run without --model (Claude Code's default); every later attempt and every campaign run passes --model <its init model>; claude-sonnet-5 is never pinned",
+    "order": [
+      "coverage",
+      "sample",
+      "confirmation",
+      "canaries",
+      "preflight",
+      "runs"
+    ],
+    "p6_states": [
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": true
+          }
+        ],
+        "expected_pass": true,
+        "id": "P6-S1",
+        "why": "three passes at HEAD"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": false
+          },
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 4,
+            "passed": true
+          }
+        ],
+        "expected_pass": true,
+        "id": "P6-S2",
+        "why": "one same-commit re-canary"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": false
+          }
+        ],
+        "expected_pass": false,
+        "id": "P6-S3",
+        "why": "the latest attempt of C failed"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "K",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": false
+          },
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 4,
+            "passed": true
+          }
+        ],
+        "expected_pass": true,
+        "id": "P6-S4",
+        "why": "a superseded attempt at K is kept and not counted"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "K",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "K",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "K",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": false
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 4,
+            "passed": true
+          }
+        ],
+        "expected_pass": false,
+        "id": "P6-S5",
+        "why": "A and B passed only at K, not at the campaign commit"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": false
+          },
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": false
+          },
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": false
+          },
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 4,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 5,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 6,
+            "passed": true
+          }
+        ],
+        "expected_pass": true,
+        "id": "P6-S6",
+        "why": "the whole allowance: six attempts"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": false
+          },
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": false
+          },
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": false
+          },
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 4,
+            "passed": false
+          },
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 5,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 6,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 7,
+            "passed": true
+          }
+        ],
+        "expected_pass": false,
+        "id": "P6-S7",
+        "why": "a seventh attempt"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 4,
+            "passed": true
+          }
+        ],
+        "expected_pass": false,
+        "id": "P6-S8",
+        "why": "a passed canary attempted again at the same commit"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "X",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 4,
+            "passed": true
+          }
+        ],
+        "expected_pass": false,
+        "id": "P6-S9",
+        "why": "an attempt on a case that is no canary"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 4,
+            "passed": true
+          }
+        ],
+        "expected_pass": false,
+        "id": "P6-S10",
+        "why": "attempt numbers not contiguous"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          }
+        ],
+        "expected_pass": false,
+        "id": "P6-S11",
+        "why": "C never attempted"
+      }
+    ],
+    "p6_symbols": {
+      "HEAD": "the campaign commit (in the tests, the clean HEAD)",
+      "K": "ffffffffffffffffffffffffffffffffffffffff"
+    },
+    "p7_states": [
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": true
+          }
+        ],
+        "expected_pass": true,
+        "id": "P7-T1",
+        "pin": "M1",
+        "why": "pinned from attempt 01, passed to the later attempts"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": true
+          }
+        ],
+        "expected_pass": false,
+        "id": "P7-T2",
+        "pin": "M2",
+        "why": "a pin other than the pinning attempt's init model"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": true
+          }
+        ],
+        "expected_pass": false,
+        "id": "P7-T3",
+        "pin": "M1",
+        "why": "an attempt after the pinning attempt ran without --model"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "claude-sonnet-5",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "claude-sonnet-5",
+            "model": "claude-sonnet-5",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "claude-sonnet-5",
+            "model": "claude-sonnet-5",
+            "n": 3,
+            "passed": true
+          }
+        ],
+        "expected_pass": false,
+        "id": "P7-T4",
+        "pin": "claude-sonnet-5",
+        "why": "Claude Code's default is V17's model"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": null,
+            "model": null,
+            "n": 1,
+            "passed": false
+          },
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 3,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 4,
+            "passed": true
+          }
+        ],
+        "expected_pass": true,
+        "id": "P7-T5",
+        "pin": "M1",
+        "why": "attempt 01 has no init message: attempt 02 pins"
+      },
+      {
+        "attempts": [
+          {
+            "case": "A",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": null,
+            "n": 1,
+            "passed": true
+          },
+          {
+            "case": "B",
+            "commit": "HEAD",
+            "init_model": "M1",
+            "model": "M1",
+            "n": 2,
+            "passed": true
+          },
+          {
+            "case": "C",
+            "commit": "HEAD",
+            "init_model": "M2",
+            "model": "M1",
+            "n": 3,
+            "passed": true
+          }
+        ],
+        "expected_pass": false,
+        "id": "P7-T6",
+        "pin": "M1",
+        "why": "a counted attempt's init model differs from the pin"
+      }
+    ],
+    "preflight": {
+      "canaries_item": [
+        "attempt",
+        "case_id",
+        "run_json_sha256"
+      ],
+      "file": "preflight.json",
+      "members": [
+        "campaign",
+        "canaries",
+        "checks",
+        "claude_code_version",
+        "commit",
+        "confirmation_sha256",
+        "coverage_sha256",
+        "model",
+        "passed",
+        "registration_sha256",
+        "sample_sha256",
+        "schema",
+        "tree_clean"
+      ],
+      "schema": "w27-preflight-v1",
+      "writer": "the campaign command only, after P1-P8 pass, before run 01; never on --resume"
+    },
+    "recanaries_max": 3,
+    "run_dir_pattern": "^[0-9]{2}-.+$",
+    "run_json_added": {
+      "campaign": [
+        "preflight_sha256",
+        "sample_sha256"
+      ],
+      "canary": [
+        "confirmation_sha256",
+        "sample_sha256"
+      ],
+      "model": "the requested model: null for an attempt run without --model",
+      "pinned_model": "§23.12: the pin the record is checked against. When model is a string, pinned.model equals it. When model is null (allowed only in a canary attempt, whose campaign ends in /canary), pinned.model is session.init.model if that is a non-empty string other than claude-sonnet-5, and null otherwise"
+    },
+    "run_json_model_states": [
+      {
+        "expected_pass": true,
+        "id": "R1",
+        "init_model": "M1",
+        "kind": "campaign",
+        "model": "M1",
+        "pinned_model": "M1",
+        "why": "a campaign run: the pin is the requested model"
+      },
+      {
+        "expected_pass": true,
+        "id": "R2",
+        "init_model": "M1",
+        "kind": "canary",
+        "model": null,
+        "pinned_model": "M1",
+        "why": "the pinning attempt: its init model is the pin"
+      },
+      {
+        "expected_pass": true,
+        "id": "R3",
+        "init_model": null,
+        "kind": "canary",
+        "model": null,
+        "pinned_model": null,
+        "why": "an attempt before the pinning attempt (P7-T5's 01)"
+      },
+      {
+        "expected_pass": true,
+        "id": "R4",
+        "init_model": "claude-sonnet-5",
+        "kind": "canary",
+        "model": null,
+        "pinned_model": null,
+        "why": "V17's default model: the record is complete and holds no pin; the attempt fails elsewhere"
+      },
+      {
+        "expected_pass": false,
+        "id": "R5",
+        "init_model": "M1",
+        "kind": "campaign",
+        "model": null,
+        "pinned_model": "M1",
+        "why": "only a canary attempt may run without --model"
+      },
+      {
+        "expected_pass": false,
+        "id": "R6",
+        "init_model": "M1",
+        "kind": "canary",
+        "model": null,
+        "pinned_model": null,
+        "why": "the pin is not recorded (the record before b71d86c)"
+      },
+      {
+        "expected_pass": false,
+        "id": "R7",
+        "init_model": "M1",
+        "kind": "canary",
+        "model": null,
+        "pinned_model": "M2",
+        "why": "a recorded pin other than the init model"
+      },
+      {
+        "expected_pass": false,
+        "id": "R8",
+        "init_model": "claude-sonnet-5",
+        "kind": "canary",
+        "model": null,
+        "pinned_model": "claude-sonnet-5",
+        "why": "V17's model recorded as a pin"
+      },
+      {
+        "expected_pass": false,
+        "id": "R9",
+        "init_model": "M1",
+        "kind": "campaign",
+        "model": "M1",
+        "pinned_model": "M2",
+        "why": "a pin other than the requested model"
+      },
+      {
+        "expected_pass": true,
+        "id": "R10",
+        "init_model": "M2",
+        "kind": "campaign",
+        "model": "M1",
+        "pinned_model": "M1",
+        "why": "A23 is not the scorer: a complete record of a run the scorer fails (pin_mismatch(model))"
+      },
+      {
+        "expected_pass": false,
+        "id": "R11",
+        "init_model": "M1",
+        "kind": "campaign",
+        "model": "",
+        "pinned_model": "",
+        "why": "an empty requested model"
+      }
+    ],
+    "runs_root": "benchmarks/m06/openidaes450/runs",
+    "section": "§23",
+    "u14": {
+      "adaptation": "benchmarks/m06/openidaes450/",
+      "campaign_path_pattern": "^benchmarks/m06/openidaes450/runs/w27-m07-[0-9a-f]{7,40}/[^/]",
+      "path_states": [
+        {
+          "path": "benchmarks/m06/openidaes450/coverage.json",
+          "violates": "",
+          "why": "M06's Tier 0 coverage stays where WO-14 put it"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/confirmation/idaes_feed_flash.py",
+          "violates": "",
+          "why": "§7's scripted build location"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/runs/w27-m07-997060d/coverage.json",
+          "violates": "",
+          "why": "the campaign's coverage at C_W"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/runs/w27-m07-997060d/sample.json",
+          "violates": "",
+          "why": "the campaign's draw"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/runs/w27-m07-997060d/confirmation/confirmation.json",
+          "violates": "",
+          "why": "W27-R66's record"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/runs/w27-m07-997060d/canary/01-idaes_feed_flash/run.json",
+          "violates": "",
+          "why": "a canary attempt (W27-R68)"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/runs/w27-m07-997060d/07-idaes_feed_flash/transcript.jsonl",
+          "violates": "",
+          "why": "a campaign run"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/runs/w27-m07-997060d/preflight.json",
+          "violates": "",
+          "why": "W27-R67's record"
+        },
+        {
+          "path": "src/openflowsheet/openidaes.py",
+          "violates": "W27-A71",
+          "why": "shipped code naming the benchmark"
+        },
+        {
+          "path": "benchmarks/t07/crafts/run.json",
+          "violates": "W27-A71",
+          "why": "a record outside the adaptation directory"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/run.json",
+          "violates": "W27-A72",
+          "why": "a run record outside runs/"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/sample.json",
+          "violates": "W27-A72",
+          "why": "a draw outside a campaign"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/runs/campaign.json",
+          "violates": "W27-A72",
+          "why": "no campaign directory"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/runs/w27-m07-XYZ1234/run.json",
+          "violates": "W27-A72",
+          "why": "campaign name not hex"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/runs/w27-m07-99706/run.json",
+          "violates": "W27-A72",
+          "why": "abbreviation under 7 digits"
+        },
+        {
+          "path": "benchmarks/m06/openidaes450/campaign/01-idaes_feed_flash/scores.json",
+          "violates": "W27-A72",
+          "why": "a record name outside runs/"
+        }
+      ],
+      "record_names": [
+        "campaign.json",
+        "confirmation.json",
+        "preflight.json",
+        "prompt.txt",
+        "result.json",
+        "run.json",
+        "sample.json",
+        "scores.json",
+        "store-export.json",
+        "transcript.jsonl"
+      ]
+    }
+  },
   "classes": [
     "ARTIFACT_INCOMPLETE",
     "NOT_STEADY_STATE_SIMULATION",
@@ -349,6 +1333,46 @@
     {
       "claim": "GC-TOL-3 flow (10, 30): 10.503 passes, 10.505 fails; an own-flow or no absolute term would fail 10.503",
       "detail": "",
+      "holds": true
+    },
+    {
+      "claim": "GC-A4-1 3 canaries + 3 re-canaries = 6 attempts; the pattern admits 01..06 only",
+      "detail": "max 6, admitted [1, 2, 3, 4, 5, 6]",
+      "holds": true
+    },
+    {
+      "claim": "GC-A4-2 every record after coverage names only earlier records, its predecessor among them, so the digests prove the whole order",
+      "detail": "chain ['sample', 'confirmation', 'canaries', 'preflight', 'runs']",
+      "holds": true
+    },
+    {
+      "claim": "GC-A4-3 the U14 path states classify as registered; allowed, W27-A71 and W27-A72 all occur",
+      "detail": "wrong []; kinds {'': 8, 'W27-A71': 2, 'W27-A72': 6}",
+      "holds": true
+    },
+    {
+      "claim": "GC-A4-4 the run-directory pattern matches 01-x and 45-x and no other campaign entry",
+      "detail": "P8's discrimination",
+      "holds": true
+    },
+    {
+      "claim": "GC-A4-5 P6 (W27-R68) gives each registered state its expectation; both verdicts occur",
+      "detail": "differ []",
+      "holds": true
+    },
+    {
+      "claim": "GC-A4-6 P7's model rule gives every registered state its expectation, every state P6-valid; both verdicts occur",
+      "detail": "differ []",
+      "holds": true
+    },
+    {
+      "claim": "GC-A4-7 the model rule (ref_run_model) gives every run_json_model_states entry its expectation; the states are pairwise distinct; both verdicts occur; each of kind, model, pinned and init alone changes the verdict in some pair",
+      "detail": "differ []; flips {'kind': [('R2', 'R5')], 'model': [('R1', 'R5')], 'pinned': [('R1', 'R9')], 'init': [('R3', 'R6')]}",
+      "holds": true
+    },
+    {
+      "claim": "GC-A4-8 K is 40 lower-case hex digits, so it is a commit-shaped string, and is not the symbol HEAD",
+      "detail": "K ffffffffffffffffffffffffffffffffffffffff",
       "holds": true
     }
   ],

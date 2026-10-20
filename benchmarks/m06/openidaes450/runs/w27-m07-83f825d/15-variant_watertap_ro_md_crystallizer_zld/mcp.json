@@ -1,0 +1,19 @@
+{
+ "mcpServers": {
+  "procsim": {
+   "args": [
+    "-m",
+    "openflowsheet.application.cli",
+    "serve-mcp",
+    "--project",
+    "/tmp/w27-work-w27-m07-83f825d/w27-m07-83f825d/15-variant_watertap_ro_md_crystallizer_zld/project"
+   ],
+   "command": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python",
+   "env": {
+    "OPENFLOWSHEET_TOKEN_FILE": "/tmp/w27-work-w27-m07-83f825d/w27-m07-83f825d/15-variant_watertap_ro_md_crystallizer_zld/secret/token",
+    "PYTHONPATH": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m07/src"
+   },
+   "type": "stdio"
+  }
+ }
+}

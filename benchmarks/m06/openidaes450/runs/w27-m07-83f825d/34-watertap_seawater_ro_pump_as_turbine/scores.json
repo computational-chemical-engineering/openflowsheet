@@ -1,0 +1,279 @@
+{
+  "agent_false_verification": {
+    "count": 0,
+    "established": true,
+    "terms": {
+      "built_check_failed": 0,
+      "built_non_candidate": 0,
+      "built_unbacked": 0,
+      "false_claims": 0
+    }
+  },
+  "build": null,
+  "campaign": "w27-m07-83f825d",
+  "case_class": "UNIT_UNAVAILABLE",
+  "case_id": "watertap_seawater_ro_pump_as_turbine",
+  "claims": {
+    "false": 0,
+    "false_items": [],
+    "malformed": 0,
+    "true": 0
+  },
+  "cost": {
+    "cache_creation_input_tokens": 16144,
+    "cache_read_input_tokens": 35701,
+    "duplicate_experiments_by_content": 0,
+    "duplicate_experiments_by_request": 0,
+    "duration_api_ms": 11018,
+    "duration_ms": 11118,
+    "input_tokens": 4,
+    "job_wall_s": 0.0,
+    "jobs_submitted": {},
+    "num_turns": 3,
+    "output_tokens": 1056,
+    "tool_calls": 2,
+    "total_cost_usd": 0.07871410000000001,
+    "total_cost_usd_basis": "subscription_estimate"
+  },
+  "effects": {
+    "critical": [],
+    "critical_effects": 0,
+    "established": true,
+    "indeterminate": [],
+    "session_effects": 0,
+    "unauthorized": [],
+    "unauthorized_effects": 0
+  },
+  "final_answer": {
+    "job_id": null,
+    "parseable": true,
+    "revision_id": null,
+    "status": "limitation",
+    "unparseable_reason": null
+  },
+  "flags": {
+    "correct_build_stream_unjudged": false,
+    "map_defect_candidate": false
+  },
+  "harness_defects": [],
+  "infrastructure_failure": null,
+  "inputs": {
+    "coverage_sha256": "e1f2136c4700afaa462ad314c8fc7f4c3a6fcd229c4e2ee4c7a8e9fd55d31e15",
+    "registration_sha256": "ee099a60f9da6900325f54127f92e9eee926d2015f97b527843db482d6f0e52e",
+    "result_sha256": "5965f2bbe490be70e685bb6b37e294cf03ebd6bbebbc98bf1ba2f602595666f6",
+    "run_sha256": "4b8f16d6df7663a5ed47fd55739bab261bfa08eee51ca578b4193ff203372602",
+    "store_export_sha256": "08e2d64c674d6911163cc4457f7b707580e632092a48a86bc5c86cb91b9fae28",
+    "transcript_sha256": "b60714b783c7817c681bdc6774a416ee197c0d2c9bdd5fd97cf305cdf2234d63"
+  },
+  "limitation": {
+    "correct": true,
+    "counts": {
+      "contradicted": 1,
+      "items": 19,
+      "judged": 19,
+      "malformed": 0,
+      "matched": 18,
+      "names_nothing": 0,
+      "unjudged": 0
+    },
+    "items": [
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": true,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": false,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      },
+      {
+        "contradicted": false,
+        "item": null,
+        "judged": true,
+        "malformed": false,
+        "matched": true,
+        "names_nothing": false
+      }
+    ]
+  },
+  "outcome": "CORRECT_LIMITATION",
+  "refused_attempts": {
+    "by_operation_code": {},
+    "count": 0,
+    "established": true
+  },
+  "schema": "w27-scores-v1",
+  "semantic": {
+    "api_rejection_rate": {
+      "denominator": 2,
+      "numerator": 0,
+      "rate": 0.0
+    },
+    "draft_commit_rate": {
+      "denominator": 0,
+      "numerator": 0,
+      "rate": null
+    },
+    "internal_errors": {
+      "jobs": 0,
+      "tool_results": 0
+    },
+    "limitation_items": {
+      "contradicted": 1,
+      "items": 19,
+      "judged": 19,
+      "malformed": 0,
+      "matched": 18,
+      "names_nothing": 0,
+      "unjudged": 0
+    },
+    "semantic_error_rate": {
+      "denominator": 19,
+      "numerator": 1,
+      "rate": 0.05263157894736842
+    }
+  },
+  "store_export_present": true,
+  "system_false_verification": {
+    "certificates": [],
+    "count": 0,
+    "established": true,
+    "unjudged_verified": 0
+  },
+  "transcript_state": "intact"
+}

@@ -1,0 +1,381 @@
+"""M07 WO-8b: the `t08-rc-v1` records of the 0.2.0 RC job's local steps 11-17 (M07 spec §8; steps
+11 and 12 are the alpha's, V02 alpha release spec §8.2, M07a.A40, A41, A43, judged exactly as the
+alpha's `m07a_rc_external.py` judged them, check ids unchanged; steps 13-17 are M07.A60-A62).
+
+Steps 11 and 12 run M01's and M02's own scripts, whose records carry no `commit` or `tree_clean`.
+This script, run from outside the tree against the RC worktree at `C`, reads those records and
+the exit codes of the commands that wrote them (`run_local.sh`'s summary), judges them by the
+rules the M01 and M02 manifests already use (M01: `scripts/m01_evidence_manifest.py`'s `_idaes`
+comparison; M02: `scripts/m02_evidence_manifest.py`'s `g10`, `g11`, `g12`, imported, not
+restated), and writes one `t08-rc-v1` record per step through `t08_rc.finish`, so each carries
+`commit`, `tree_clean`, the lock's SHA-256 and the machine class.
+
+Steps 13-17 run their packages' own commands (`run_local.sh`); their records judge those
+commands' exit codes, junit totals and registered output lines. Step 17's record is written into
+its `$S` (§22.2: nothing under the repository is written).
+
+    <rc venv>/bin/python m07_rc_external.py <step> --rc <rc worktree> --commit C --summary <summary.txt>
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import re
+import sys
+import xml.etree.ElementTree as ElementTree
+from pathlib import Path
+from typing import Any
+
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def exit_codes(summary: Path) -> dict[str, int]:
+    """The last exit code of each label in `run_local.sh`'s summary."""
+    codes: dict[str, int] = {}
+    for line in summary.read_text(encoding="utf-8").splitlines():
+        match = re.match(r"^(\S+) exit (\d+) :: ", line)
+        if match:
+            codes[match[1]] = int(match[2])
+    return codes
+
+
+def differences(a: Any, b: Any, path: str = "") -> list[str]:
+    """`m01_evidence_manifest._differences`, as a list."""
+    import m01_evidence_manifest  # noqa: PLC0415
+
+    return sorted(m01_evidence_manifest._differences(a, b, path))
+
+
+def step11(rc: Path, out_dir: Path, codes: dict[str, int], t08_rc: Any) -> int:
+    checks: list[dict[str, Any]] = []
+    stdout = (out_dir / "external-crosscheck-check.stdout.txt").read_text(encoding="utf-8")
+    t08_rc.check(
+        checks,
+        "a40.crosscheck_exit",
+        codes.get("step11-xcheck") == 0,
+        exit_code=codes.get("step11-xcheck"),
+        last_line=stdout.strip().splitlines()[-1] if stdout.strip() else "",
+        record_sha256=sha256(rc / "benchmarks/m01/external-crosscheck.json"),
+        freeze_sha256=sha256(out_dir / "venv-xcheck.freeze.txt"),
+    )
+    committed_path = rc / "benchmarks/m01/idaes-conformance.json"
+    rerun_path = out_dir / "idaes-conformance.json"
+    ran = codes.get("step11-idaes") == 0 and rerun_path.exists()
+    t08_rc.check(checks, "a40.idaes_exit", ran, exit_code=codes.get("step11-idaes"))
+    differing = (
+        differences(
+            json.loads(committed_path.read_text(encoding="utf-8")),
+            json.loads(rerun_path.read_text(encoding="utf-8")),
+        )
+        if ran
+        else None
+    )
+    inputs_only = differing is not None and all(
+        re.fullmatch(r"inputs\.[A-Za-z0-9_]+_sha256", member) for member in differing
+    )
+    t08_rc.check(
+        checks,
+        "a40.idaes_numbers_identical",
+        inputs_only,
+        differing_members=differing,
+        committed_sha256=sha256(committed_path),
+        rerun_sha256=sha256(rerun_path) if rerun_path.exists() else None,
+        freeze_sha256=sha256(out_dir / "venv-idaes.freeze.txt"),
+    )
+    return int(
+        t08_rc.finish(
+            out_dir / "rc-step11.json",
+            "external-records",
+            checks,
+            provenance={**t08_rc.provenance(), "machine_class": t08_rc.machine_class()},
+        )
+    )
+
+
+def _junit(path: Path) -> dict[str, int]:
+    totals = {"tests": 0, "failures": 0, "errors": 0, "skipped": 0}
+    for suite in ElementTree.parse(path).getroot().iter("testsuite"):
+        for key in totals:
+            totals[key] += int(suite.get(key, "0"))
+    return totals
+
+
+def step12(rc: Path, out_dir: Path, codes: dict[str, int], t08_rc: Any) -> int:
+    import m02_evidence_manifest as m02  # noqa: PLC0415
+
+    m02.M02 = out_dir  # the records this step wrote, judged by M02's own functions
+    checks: list[dict[str, Any]] = []
+    lock = rc / "src/openflowsheet/adapters/pymrm/reactor-env.lock"
+    manifest = json.loads((out_dir / "env-manifest.json").read_text(encoding="utf-8"))
+    t08_rc.check(
+        checks,
+        "a41.environment_from_c_alpha_lock",
+        codes.get("reactor-build") == 0
+        and codes.get("reactor-verify") == 0
+        and manifest.get("lock_sha256") == sha256(lock),
+        build_exit=codes.get("reactor-build"),
+        verify_exit=codes.get("reactor-verify"),
+        lock_sha256=sha256(lock),
+        env_manifest={k: manifest.get(k) for k in sorted(manifest) if k != "packages"},
+    )
+    for gate, labels, judge in (
+        ("g10", ("step12-g10",), m02.g10),
+        ("g11", ("step12-g11",), m02.g11),
+        ("g12", ("step12-g12", "step12-g12-edges"), m02.g12),
+    ):
+        exits = {label: codes.get(label) for label in labels}
+        try:
+            value, ok = judge()
+        except (OSError, KeyError, ValueError, TypeError) as error:
+            value, ok = {"error": f"{type(error).__name__}: {error}"}, False
+        t08_rc.check(
+            checks,
+            f"a41.{gate}",
+            all(code == 0 for code in exits.values()) and ok,
+            exits=exits,
+            judged_by=f"scripts/m02_evidence_manifest.py:{gate}",
+            value=value,
+        )
+    g10 = json.loads((out_dir / "g10-adapter-halves-v3.json").read_text(encoding="utf-8"))
+    environment = g10.get("environment", {})
+    t08_rc.check(
+        checks,
+        "a41.one_thread_environment_recorded",
+        environment.get("threads") == "OMP/OPENBLAS/MKL_NUM_THREADS=1"
+        and all(environment.get(key) for key in ("python", "platform", "packages", "cpu_model")),
+        environment=environment,
+    )
+    junit = out_dir / "m02-tests.junit.xml"
+    totals = _junit(junit) if junit.exists() else None
+    t08_rc.check(
+        checks,
+        "a41.m02_tests_with_reactor",
+        codes.get("step12-m02-tests") == 0
+        and totals is not None
+        and totals["failures"] == totals["errors"] == 0,
+        exit_code=codes.get("step12-m02-tests"),
+        junit=totals,
+        command="pytest -q -p no:cacheprovider -m 'pymrm or not pymrm' tests/test_m02_*.py",
+    )
+    return int(
+        t08_rc.finish(
+            out_dir / "rc-step12.json",
+            "reactor-evidence",
+            checks,
+            provenance={**t08_rc.provenance(), "machine_class": t08_rc.machine_class()},
+        )
+    )
+
+
+def _log(logs: Path, label: str) -> str:
+    path = logs / f"{label}.log"
+    return path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
+
+
+def _last(text: str) -> str:
+    lines = [line for line in text.strip().splitlines() if line.strip()]
+    return lines[-1] if lines else ""
+
+
+def _tests(checks: list[dict[str, Any]], t08_rc: Any, check_id: str, codes: dict[str, int],
+           label: str, junit: Path, command: str) -> None:
+    totals = _junit(junit) if junit.exists() else None
+    t08_rc.check(
+        checks,
+        check_id,
+        codes.get(label) == 0 and totals is not None and totals["failures"] == totals["errors"] == 0,
+        exit_code=codes.get(label),
+        junit=totals,
+        junit_sha256=sha256(junit) if junit.exists() else None,
+        command=command,
+    )
+
+
+def _exit(checks: list[dict[str, Any]], t08_rc: Any, check_id: str, codes: dict[str, int],
+          label: str, logs: Path, **value: Any) -> None:
+    t08_rc.check(
+        checks, check_id, codes.get(label) == 0, exit_code=codes.get(label),
+        last_line=_last(_log(logs, label)), **value
+    )
+
+
+def _finish(t08_rc: Any, out: Path, step: str, checks: list[dict[str, Any]]) -> int:
+    return int(
+        t08_rc.finish(
+            out, step, checks,
+            provenance={**t08_rc.provenance(), "machine_class": t08_rc.machine_class()},
+        )
+    )
+
+
+def step13(rc: Path, out: Path, codes: dict[str, int], t08_rc: Any, logs: Path, c: str) -> int:
+    """W23 (M07.A60): M04's committed records re-checked at C."""
+    checks: list[dict[str, Any]] = []
+    text = _log(logs, "step13-generator")
+    t08_rc.check(
+        checks, "a60.w23.generator_check",
+        codes.get("step13-generator") == 0 and "claims passed" in text and "differs" not in text,
+        exit_code=codes.get("step13-generator"),
+        claims_line=next((x for x in text.splitlines() if "claims passed" in x), None),
+        command="python docs/derivations/scripts/m04_reference.py --check",
+    )
+    _exit(checks, t08_rc, "a60.w23.schema_fixtures", codes, "step13-fixtures", logs,
+          command="python scripts/m04_schema_fixtures.py")
+    _tests(checks, t08_rc, "a60.w23.tests", codes, "step13-tests", out / "m04-tests.junit.xml",
+           "pytest -q -rs -p no:cacheprovider tests/test_m04_*.py tests/test_evidence_manifests.py")
+    return _finish(t08_rc, out / "rc-step13.json", "w23-m04-records", checks)
+
+
+def step14(rc: Path, out: Path, codes: dict[str, int], t08_rc: Any, logs: Path, c: str) -> int:
+    """W24 (M07.A60): M03 nlp tier A35-A42, M05 G1-G10, G12, G13, audited environment."""
+    checks: list[dict[str, Any]] = []
+    text = _log(logs, "step14-nlp-check")
+    t08_rc.check(
+        checks, "a60.w24.nlp_tier_and_inventory",
+        codes.get("step14-nlp-check") == 0
+        and "--- pytest -m nlp: exit 0" in text
+        and "--- inventory --check: exit 0" in text
+        and "--- inventory --check (trsp-exe): exit 0" in text,
+        exit_code=codes.get("step14-nlp-check"),
+        junit=_junit(out / "nlp.junit.xml") if (out / "nlp.junit.xml").exists() else None,
+        command="scripts/m03_nlp_check.sh PREFIX CACHE -- -o junit_family=xunit1 --junitxml=...",
+    )
+    _tests(checks, t08_rc, "a60.w24.m03_m05_all_tiers", codes, "step14-tests",
+           out / "m03-m05-tests.junit.xml",
+           "nlp env: pytest -q -rs -p no:cacheprovider -m 'nlp or not nlp' tests/test_m05_*.py "
+           "tests/test_m03_nlp_isolation.py tests/test_m03_nlp_greybox.py")
+    real = _log(logs, "step14-m05-real-replay")
+    t08_rc.check(
+        checks, "a60.w24.m05_g10_real_replay",
+        codes.get("step14-m05-real-replay") == 0 and "REPLAY PASS REAL differences=0" in real,
+        exit_code=codes.get("step14-m05-real-replay"), last_line=_last(real),
+        command="nlp env: python scripts/m05_wo9_real.py --replay",
+    )
+    _exit(checks, t08_rc, "a60.w24.m03_reference_check", codes, "step14-m03-reference", logs,
+          command="python docs/derivations/scripts/m03_reference.py --check")
+    return _finish(t08_rc, out / "rc-step14.json", "w24-nlp-trf", checks)
+
+
+def step15(rc: Path, out: Path, codes: dict[str, int], t08_rc: Any, logs: Path, c: str) -> int:
+    """W25 (M07.A61): the journey of K carried to C by identity; check and replay at C."""
+    checks: list[dict[str, Any]] = []
+    line = _last(_log(logs, "step15-carry"))
+    t08_rc.check(
+        checks, "a61.carry_journey",
+        codes.get("step15-carry") == 0 and line.startswith("RC step 15: ") and line.endswith(" carried"),
+        exit_code=codes.get("step15-carry"), line=line,
+        command=f"python scripts/v0_2_gate.py --rc {c} --carry-journey 2c508b5",
+    )
+    _exit(checks, t08_rc, "a61.check", codes, "step15-check", logs,
+          command="python scripts/m07_journey.py check benchmarks/m07/journey/<K>")
+    _exit(checks, t08_rc, "a61.replay", codes, "step15-replay", logs,
+          command="nlp env, OMP_NUM_THREADS=1: python scripts/m07_journey.py replay benchmarks/m07/journey/<K>")
+    return _finish(t08_rc, out / "rc-step15.json", "w25-journey", checks)
+
+
+def step16(rc: Path, out: Path, codes: dict[str, int], t08_rc: Any, logs: Path, c: str) -> int:
+    """W26 (M07.A60): M06 G1-G15 at C (local half; the browser test on CI x86-64 is C's push run)."""
+    checks: list[dict[str, Any]] = []
+    _tests(checks, t08_rc, "a60.w26.m06_tests", codes, "step16-tests", out / "m06-tests.junit.xml",
+           "OPENFLOWSHEET_REQUIRE_BROWSER=1 pytest -q -rs -p no:cacheprovider tests/test_m06_*.py")
+    _exit(checks, t08_rc, "a60.w26.web_unit_tests", codes, "step16-node", logs,
+          command='node --test --test-reporter=spec "tests/web/*.test.mjs"')
+    _exit(checks, t08_rc, "a60.w26.w27_dry_run", codes, "step16-dryrun", logs,
+          command="python -m benchmarks.m06.w27.dryrun --out evidence/M06/W27/artifacts/dry-run/<C>")
+    return _finish(t08_rc, out / "rc-step16.json", "w26-web-shell", checks)
+
+
+def step17(rc: Path, out: Path, codes: dict[str, int], t08_rc: Any, logs: Path, c: str) -> int:
+    """W27 (M07.A62): §22.2's 17a-17d; the record holds what §22.2 "The record" lists."""
+    checks: list[dict[str, Any]] = []
+    tree = _last(_log(logs, "step17a-tree"))
+    t08_rc.check(
+        checks, "a62.17a_record_identity",
+        codes.get("step17a-tree") == 0 and tree == "95f9fcf2c6a24084b823746959971fc5e183895a",
+        exit_code=codes.get("step17a-tree"), tree=tree,
+        command=f"git rev-parse {c}:benchmarks/m06/openidaes450/runs/w27-m07-83f825d",
+    )
+    coverage_path = out / "coverage-at-C.json"
+    coverage = json.loads(coverage_path.read_text(encoding="utf-8")) if coverage_path.exists() else {}
+    t08_rc.check(
+        checks, "a62.17b_coverage_at_c",
+        codes.get("step17b-coverage") == 0 and coverage_path.exists(),
+        exit_code=codes.get("step17b-coverage"),
+        coverage_at_c_sha256=sha256(coverage_path) if coverage_path.exists() else None,
+        snapshot_sha256=coverage.get("snapshot_sha256"),
+        list_models_sha256=coverage.get("list_models_sha256"),
+        package_version=coverage.get("snapshot", {}).get("package_version"),
+        command='python -m benchmarks.m06.w27.coverage --out "$S/coverage-at-C.json"',
+    )
+    line = _last(_log(logs, "step17c-carry"))
+    t08_rc.check(
+        checks, "a62.17c_carry",
+        codes.get("step17c-write") == 0 and codes.get("step17c-carry") == 0
+        and line == "RC step 17: the W27 campaign carried",
+        write_exit=codes.get("step17c-write"), exit_code=codes.get("step17c-carry"), line=line,
+        at_cw_sha256=sha256(out / "at-cw.json") if (out / "at-cw.json").exists() else None,
+        at_c_sha256=sha256(out / "at-c.json") if (out / "at-c.json").exists() else None,
+        command=f'python scripts/v0_2_gate.py --rc {c} --carry-w27 "$S/at-cw.json" "$S/at-c.json"',
+    )
+    campaign = out / "w27-m07-83f825d/campaign.json"
+    recomputed = sha256(campaign) if campaign.exists() else None
+    diff = _log(logs, "step17d-diff")
+    t08_rc.check(
+        checks, "a62.17d_recompute",
+        all(codes.get(x) == 0 for x in ("step17d-precheck", "step17d-copy", "step17d-aggregate", "step17d-diff"))
+        and diff.strip() == ""
+        and recomputed == "4812910abb2622b9192c01eae331fa2e97b3f523d78f73510b845c32f20f9e28",
+        exits={x: codes.get(x) for x in ("step17d-precheck", "step17d-copy", "step17d-aggregate", "step17d-diff")},
+        diff_output_bytes=len(diff.strip()),
+        campaign_json_sha256=recomputed,
+        commands=[
+            "python -c 'import benchmarks.t07.v17.harness as h; h.operator_address()' > /dev/null",
+            'cp -a <dir> "$S/w27-m07-83f825d"',
+            'python -m benchmarks.m06.w27.harness --runs-root "$S" aggregate --campaign w27-m07-83f825d',
+            'diff -r "$S/w27-m07-83f825d" <dir>',
+            'sha256sum "$S/w27-m07-83f825d/campaign.json"',
+        ],
+    )
+    return _finish(t08_rc, out / "rc-step17.json", "w27-campaign", checks)
+
+
+LATER = {"step13": step13, "step14": step14, "step15": step15, "step16": step16, "step17": step17}
+
+
+STEPS = ("step11", "step12", "step13", "step14", "step15", "step16", "step17")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("step", choices=STEPS)
+    parser.add_argument("--rc", type=Path, required=True)
+    parser.add_argument("--commit", required=True)
+    parser.add_argument("--summary", type=Path, required=True)
+    parser.add_argument("--logs", type=Path, help="run_local.sh's log directory (steps 13-17)")
+    parser.add_argument("--s17", type=Path, help="step 17's $S")
+    arguments = parser.parse_args()
+    rc = arguments.rc.resolve()
+    sys.path.insert(0, str(rc / "scripts"))
+    import t08_rc  # noqa: PLC0415
+
+    if t08_rc.git("rev-parse", "HEAD").strip() != arguments.commit:
+        print(f"refused: {rc} is not at {arguments.commit}", file=sys.stderr)
+        return 2
+    out_dir = rc / "evidence/M07" / arguments.commit / "artifacts/rc" / arguments.step
+    codes = exit_codes(arguments.summary)
+    if arguments.step in ("step11", "step12"):
+        run = step11 if arguments.step == "step11" else step12
+        return run(rc, out_dir, codes, t08_rc)
+    if arguments.step == "step17":
+        out_dir = arguments.s17
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return LATER[arguments.step](rc, out_dir, codes, t08_rc, arguments.logs, arguments.commit)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

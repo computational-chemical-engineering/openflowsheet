@@ -1,0 +1,1616 @@
+check (ubuntu-latest)	UNKNOWN STEP	﻿2026-10-19T08:38:29.7959386Z Current runner version: '2.337.0'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7983902Z ##[group]Runner Image Provisioner
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7984844Z Hosted Compute Agent
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7985442Z Version: 20261012.601
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7986426Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7987207Z Build Date: 2026-10-12T17:48:21Z
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7987921Z Worker ID: {3ad77902-ef9b-4960-9dc2-682794508124}
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7988672Z Region: eastus
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7989219Z Cloud: Azure
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7989751Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7991307Z ##[group]Operating System
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7991986Z Ubuntu
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7992890Z 24.04.5
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7993432Z LTS
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7994118Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7994758Z ##[group]Runner Image
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7995386Z Image: ubuntu-24.04
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7995980Z Version: 20261012.334.1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7997275Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7998898Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.7999904Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8003041Z ##[group]GITHUB_TOKEN Permissions
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8005658Z Actions: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8006379Z ArtifactMetadata: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8007039Z Attestations: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8007634Z Checks: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8008204Z CodeQuality: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8008761Z Contents: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8009368Z CopilotRequests: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8010016Z Deployments: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8010631Z Discussions: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8011194Z Drives: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8011724Z Issues: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8012427Z Metadata: read
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8013022Z Models: read
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8014155Z Packages: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8015122Z Pages: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8015704Z PullRequests: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8016420Z RepositoryProjects: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8017084Z SecurityEvents: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8017697Z Statuses: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8018288Z VulnerabilityAlerts: read
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8018884Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8021375Z Secret source: Actions
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8022361Z Cache mode: write
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8023777Z Prepare workflow directory
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8404191Z Prepare all required actions
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:29.8451172Z Getting action download info
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.0575048Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.1685851Z Download action repository 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97' (SHA:5fda3b95a4ea91299a34e894583c3862153e4b97)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.2410726Z Download action repository 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020' (SHA:820762786026740c76f36085b0efc47a31fe5020)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.4042719Z Download action repository 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a' (SHA:043fb46d1a93c77aae656e7c1c64a875d1fc6a0a)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.5738330Z Complete job name: check (ubuntu-latest)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6514551Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6515663Z with:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6516097Z   fetch-depth: 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6516707Z   repository: computational-chemical-engineering/openflowsheet
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6520578Z   token: ***
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6521041Z   ssh-strict: true
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6521482Z   ssh-user: git
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6521935Z   persist-credentials: true
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6522433Z   clean: true
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6522884Z   sparse-checkout-cone-mode: true
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6523412Z   fetch-tags: false
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6524048Z   show-progress: true
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6524501Z   lfs: false
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6524917Z   submodules: false
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6525374Z   set-safe-directory: true
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6526134Z   allow-unsafe-pr-checkout: false
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6526938Z env:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6527364Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6527841Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6528325Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.6528769Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7488208Z Syncing repository: computational-chemical-engineering/openflowsheet
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7490663Z ##[group]Getting Git version info
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7491700Z Working directory is '/home/runner/work/openflowsheet/openflowsheet'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7492864Z [command]/usr/bin/git version
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7564224Z git version 2.55.0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7585335Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7595335Z Temporarily overriding HOME='/home/runner/work/_temp/6c12e158-eb3a-463b-9609-e8b7c12a9007' before making global git config changes
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7600530Z Adding repository directory to the temporary git global config as a safe directory
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7602762Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7651113Z Deleting the contents of '/home/runner/work/openflowsheet/openflowsheet'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7654809Z ##[group]Determining repository object format
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7656754Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7658736Z ##[group]Initializing the repository
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7662337Z [command]/usr/bin/git init /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7782350Z hint: Using 'master' as the name for the initial branch. This default branch name
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7783780Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7784801Z hint: to use in all of your new repositories, which will suppress this warning,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7785567Z hint: call:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7786276Z hint:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7787141Z hint: 	git config --global init.defaultBranch <name>
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7787831Z hint:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7788867Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7790077Z hint: 'development'. The just-created branch can be renamed via this command:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7791303Z hint:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7792005Z hint: 	git branch -m <name>
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7792907Z hint:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7794304Z hint: Disable this message with "git config set advice.defaultBranchName false"
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7796188Z Initialized empty Git repository in /home/runner/work/openflowsheet/openflowsheet/.git/
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7804765Z [command]/usr/bin/git remote add origin https://github.com/computational-chemical-engineering/openflowsheet
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7848083Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7849487Z ##[group]Disabling automatic garbage collection
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7851660Z [command]/usr/bin/git config --local gc.auto 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7883015Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7885413Z ##[group]Setting up auth
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7886493Z Removing SSH command configuration
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7889856Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.7925082Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.8291604Z Removing HTTP extra header
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.8297856Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.8330002Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.8550025Z Removing includeIf entries pointing to credentials config files
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.8555448Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.8583443Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.8840175Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-29f045f7-4171-408b-b3ee-61e5c4f825d5.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.8885866Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path /home/runner/work/_temp/git-credentials-29f045f7-4171-408b-b3ee-61e5c4f825d5.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.8923247Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-29f045f7-4171-408b-b3ee-61e5c4f825d5.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.9033373Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-29f045f7-4171-408b-b3ee-61e5c4f825d5.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.9037848Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-29f045f7-4171-408b-b3ee-61e5c4f825d5.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.9041649Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.9043029Z ##[group]Fetching the repository
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:30.9045685Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0182943Z From https://github.com/computational-chemical-engineering/openflowsheet
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0195328Z  * [new branch]      main              -> origin/main
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0196749Z  * [new branch]      wp/M02            -> origin/wp/M02
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0198120Z  * [new branch]      wp/M02-closeout   -> origin/wp/M02-closeout
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0200824Z  * [new branch]      wp/M02-followup   -> origin/wp/M02-followup
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0202348Z  * [new branch]      wp/M02-wo14       -> origin/wp/M02-wo14
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0204012Z  * [new branch]      wp/M03            -> origin/wp/M03
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0205427Z  * [new branch]      wp/M04            -> origin/wp/M04
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0206927Z  * [new branch]      wp/M04-ci         -> origin/wp/M04-ci
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0208259Z  * [new branch]      wp/M05            -> origin/wp/M05
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0209628Z  * [new branch]      wp/M05-rulings2   -> origin/wp/M05-rulings2
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0211133Z  * [new branch]      wp/M06-build      -> origin/wp/M06-build
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0212561Z  * [new branch]      wp/M06-wo17       -> origin/wp/M06-wo17
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0214195Z  * [new branch]      wp/M07            -> origin/wp/M07
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0215664Z  * [new branch]      wp/M07-rulings4   -> origin/wp/M07-rulings4
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0217231Z  * [new branch]      wp/M07-rulings5   -> origin/wp/M07-rulings5
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0218656Z  * [new branch]      wp/M07-w27        -> origin/wp/M07-w27
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0219990Z  * [new branch]      wp/M07-wo6        -> origin/wp/M07-wo6
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0221808Z  * [new branch]      wp/V02-alpha-gate -> origin/wp/V02-alpha-gate
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0223987Z  * [new branch]      wp/V02-alpha-main -> origin/wp/V02-alpha-main
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0226251Z  * [new branch]      wp/V02-alpha-rc1  -> origin/wp/V02-alpha-rc1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0228137Z  * [new branch]      wp/V02-alpha-rc2  -> origin/wp/V02-alpha-rc2
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0229912Z  * [new branch]      wp/adr-acceptance -> origin/wp/adr-acceptance
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0231691Z  * [new branch]      wp/test-hardening -> origin/wp/test-hardening
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0233260Z  * [new tag]         v0.1.0            -> v0.1.0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0235165Z  * [new tag]         v0.1.1            -> v0.1.1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0236493Z  * [new tag]         v0.2.0a1          -> v0.2.0a1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0239556Z [command]/usr/bin/git branch --list --remote origin/wp/M07
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0241166Z   origin/wp/M07
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0244084Z [command]/usr/bin/git rev-parse refs/remotes/origin/wp/M07
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0251406Z c899c85ab43fb114cd85c69baf12e692b75a8eab
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0262751Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0263974Z ##[group]Determining the checkout info
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0265019Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0265587Z [command]/usr/bin/git sparse-checkout disable
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0312621Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0344290Z ##[group]Checking out the ref
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.0349077Z [command]/usr/bin/git checkout --progress --force -B wp/M07 refs/remotes/origin/wp/M07
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4387683Z Switched to a new branch 'wp/M07'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4391301Z branch 'wp/M07' set up to track 'origin/wp/M07'.
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4432552Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4475242Z [command]/usr/bin/git log -1 --format=%H
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4500301Z c899c85ab43fb114cd85c69baf12e692b75a8eab
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4869829Z ##[group]Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4871661Z with:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4872644Z   python-version: 3.13
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4874046Z   check-latest: false
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4884297Z   token: ***
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4885345Z   update-environment: true
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4886535Z   allow-prereleases: false
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4887718Z   freethreaded: false
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4888780Z env:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4889733Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4890859Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4891883Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.4892873Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6052984Z ##[group]Installed versions
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6147472Z Successfully set up CPython (3.13.16)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6150414Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6301069Z ##[group]Run python -m pip install --upgrade pip
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6302516Z ^[[36;1mpython -m pip install --upgrade pip^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6304277Z ^[[36;1mpython -m pip install -r requirements.lock^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6643423Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6644886Z env:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6645812Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6646905Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6647917Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6649152Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6650865Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6652529Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6654196Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6655715Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6657304Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:32.6658642Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.0788329Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (26.2.1)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.7239905Z Collecting annotated-types==0.8.0 (from -r requirements.lock (line 5))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.7690693Z   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.7887472Z Collecting anyio==4.15.1 (from -r requirements.lock (line 6))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.7915903Z   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.8038368Z Collecting attrs==26.1.0 (from -r requirements.lock (line 7))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.8065637Z   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.8586415Z Collecting casadi==3.8.0 (from -r requirements.lock (line 8))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.8619831Z   Downloading casadi-3.8.0-cp311-abi3-manylinux_2_28_x86_64.whl.metadata (2.2 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.8760182Z Collecting certifi==2026.7.22 (from -r requirements.lock (line 9))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.8791918Z   Downloading certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.9734785Z Collecting cffi==2.1.1 (from -r requirements.lock (line 10))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.9767860Z   Downloading cffi-2.1.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.9902292Z Collecting click==8.5.0 (from -r requirements.lock (line 11))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:35.9929771Z   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.1594125Z Collecting cryptography==50.0.1 (from -r requirements.lock (line 12))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.1623236Z   Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.3 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.1723411Z Collecting h11==0.16.0 (from -r requirements.lock (line 13))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.1748024Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.1880506Z Collecting httpcore==1.0.9 (from -r requirements.lock (line 14))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.1907351Z   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2072472Z Collecting httpx==0.28.1 (from -r requirements.lock (line 15))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2098385Z   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2196087Z Collecting httpx-sse==0.4.3 (from -r requirements.lock (line 16))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2222860Z   Downloading httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2340590Z Collecting idna==3.20 (from -r requirements.lock (line 17))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2366773Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2463559Z Collecting iniconfig==2.3.0 (from -r requirements.lock (line 18))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2489728Z   Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2661833Z Collecting jsonschema==4.26.0 (from -r requirements.lock (line 19))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2689328Z   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2817934Z Collecting jsonschema-specifications==2025.9.1 (from -r requirements.lock (line 20))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2844644Z   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.2991925Z Collecting mcp==1.30.0 (from -r requirements.lock (line 21))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.3017912Z   Downloading mcp-1.30.0-py3-none-any.whl.metadata (9.3 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.3149746Z Collecting mpmath==1.3.0 (from -r requirements.lock (line 22))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.3176833Z   Downloading mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.4149945Z Collecting mypy==1.15.0 (from -r requirements.lock (line 23))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.4183391Z   Downloading mypy-1.15.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl.metadata (2.1 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.4276551Z Collecting mypy_extensions==1.1.0 (from -r requirements.lock (line 24))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.4303341Z   Downloading mypy_extensions-1.1.0-py3-none-any.whl.metadata (1.1 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.6115006Z Collecting numpy==2.2.4 (from -r requirements.lock (line 25))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.6156395Z   Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (62 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.6383689Z Collecting packaging==26.3 (from -r requirements.lock (line 26))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.6411504Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.6515225Z Collecting pluggy==1.6.0 (from -r requirements.lock (line 27))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.6542459Z   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.6640810Z Collecting pycparser==3.0 (from -r requirements.lock (line 28))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.6669501Z   Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.7561859Z Collecting pydantic==2.13.5 (from -r requirements.lock (line 29))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.7588890Z   Downloading pydantic-2.13.5-py3-none-any.whl.metadata (110 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.7750746Z Collecting pydantic-settings==2.15.0 (from -r requirements.lock (line 30))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:36.7776825Z   Downloading pydantic_settings-2.15.0-py3-none-any.whl.metadata (3.9 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.4191692Z Collecting pydantic_core==2.46.5 (from -r requirements.lock (line 31))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.4221905Z   Downloading pydantic_core-2.46.5-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.6 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.4363977Z Collecting PyJWT==2.15.0 (from -r requirements.lock (line 32))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.4389426Z   Downloading pyjwt-2.15.0-py3-none-any.whl.metadata (3.5 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.4615204Z Collecting pytest==8.3.5 (from -r requirements.lock (line 33))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.4642050Z   Downloading pytest-8.3.5-py3-none-any.whl.metadata (7.6 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.4780076Z Collecting python-dotenv==1.2.3 (from -r requirements.lock (line 34))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.4806035Z   Downloading python_dotenv-1.2.3-py3-none-any.whl.metadata (29 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.4932265Z Collecting python-multipart==0.0.32 (from -r requirements.lock (line 35))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.4961380Z   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.5283342Z Collecting PyYAML==6.0.2 (from -r requirements.lock (line 36))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.5310611Z   Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.5475732Z Collecting referencing==0.37.0 (from -r requirements.lock (line 37))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.5502642Z   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.7884684Z Collecting rpds-py==2026.6.3 (from -r requirements.lock (line 38))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:37.7928575Z   Downloading rpds_py-2026.6.3-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.0966948Z Collecting ruff==0.12.11 (from -r requirements.lock (line 39))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.1010313Z   Downloading ruff-0.12.11-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (25 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.2135238Z Collecting scipy==1.15.3 (from -r requirements.lock (line 40))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.2169941Z   Downloading scipy-1.15.3-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (61 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.2463325Z Collecting sse-starlette==3.4.11 (from -r requirements.lock (line 41))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.2489685Z   Downloading sse_starlette-3.4.11-py3-none-any.whl.metadata (15 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.2703263Z Collecting starlette==1.7.0 (from -r requirements.lock (line 42))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.2730733Z   Downloading starlette-1.7.0-py3-none-any.whl.metadata (6.6 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.2885021Z Collecting types-jsonschema==4.26.0.20260518 (from -r requirements.lock (line 43))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.2919657Z   Downloading types_jsonschema-4.26.0.20260518-py3-none-any.whl.metadata (1.8 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.3051147Z Collecting types-PyYAML==6.0.12.20260906 (from -r requirements.lock (line 44))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.3077273Z   Downloading types_pyyaml-6.0.12.20260906-py3-none-any.whl.metadata (1.8 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.3167807Z Collecting typing-inspection==0.4.4 (from -r requirements.lock (line 45))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.3193801Z   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.3329847Z Collecting typing_extensions==4.16.0 (from -r requirements.lock (line 46))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.3357216Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.3551671Z Collecting uvicorn==0.54.0 (from -r requirements.lock (line 47))
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.3578425Z   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.4128500Z Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.4176716Z Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.4226930Z Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.4327545Z Downloading casadi-3.8.0-cp311-abi3-manylinux_2_28_x86_64.whl (90.1 MB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.9682157Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.1/90.1 MB 169.0 MB/s  0:00:00
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.9711462Z Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.9761670Z Downloading cffi-2.1.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.9812608Z Downloading click-8.5.0-py3-none-any.whl (125 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:38.9863167Z Downloading cryptography-50.0.1-cp311-abi3-manylinux_2_34_x86_64.whl (4.7 MB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0016514Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 342.0 MB/s  0:00:00
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0044004Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0240278Z Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0287646Z Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0332973Z Downloading httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0378948Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0424140Z Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0466757Z Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0514467Z Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0557714Z Downloading mcp-1.30.0-py3-none-any.whl (234 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0619179Z Downloading pydantic-2.13.5-py3-none-any.whl (472 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0682312Z Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0729850Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.2/536.2 kB 106.9 MB/s  0:00:00
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.0769205Z Downloading mypy-1.15.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl (12.4 MB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.1324385Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 227.9 MB/s  0:00:00
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.1352334Z Downloading mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.1425720Z Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.1 MB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2161285Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.1/16.1 MB 222.2 MB/s  0:00:00
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2189976Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2246297Z Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2290517Z Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2337025Z Downloading pydantic_settings-2.15.0-py3-none-any.whl (69 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2384082Z Downloading pydantic_core-2.46.5-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2497632Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 208.8 MB/s  0:00:00
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2525464Z Downloading pyjwt-2.15.0-py3-none-any.whl (33 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2580943Z Downloading pytest-8.3.5-py3-none-any.whl (343 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2648342Z Downloading python_dotenv-1.2.3-py3-none-any.whl (22 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2691292Z Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2737076Z Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (759 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2799498Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 759.5/759.5 kB 142.7 MB/s  0:00:00
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2824685Z Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2868655Z Downloading rpds_py-2026.6.3-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (365 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.2943988Z Downloading ruff-0.12.11-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (13.2 MB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.3479889Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.2/13.2 MB 255.0 MB/s  0:00:00
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.3530205Z Downloading scipy-1.15.3-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (37.3 MB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.5185304Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 37.3/37.3 MB 226.7 MB/s  0:00:00
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.5222562Z Downloading sse_starlette-3.4.11-py3-none-any.whl (17 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.5270901Z Downloading starlette-1.7.0-py3-none-any.whl (78 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.5319310Z Downloading types_jsonschema-4.26.0.20260518-py3-none-any.whl (16 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.5363891Z Downloading types_pyyaml-6.0.12.20260906-py3-none-any.whl (21 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.5409404Z Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.5452403Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.5497231Z Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:39.9267601Z Installing collected packages: mpmath, typing_extensions, types-PyYAML, ruff, rpds-py, PyYAML, python-multipart, python-dotenv, PyJWT, pycparser, pluggy, packaging, numpy, mypy_extensions, iniconfig, idna, httpx-sse, h11, click, certifi, attrs, annotated-types, uvicorn, typing-inspection, scipy, referencing, pytest, pydantic_core, mypy, httpcore, cffi, casadi, anyio, types-jsonschema, starlette, pydantic, jsonschema-specifications, httpx, cryptography, sse-starlette, pydantic-settings, jsonschema, mcp
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.0020815Z 
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.0069409Z Successfully installed PyJWT-2.15.0 PyYAML-6.0.2 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 casadi-3.8.0 certifi-2026.7.22 cffi-2.1.1 click-8.5.0 cryptography-50.0.1 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.20 iniconfig-2.3.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 mcp-1.30.0 mpmath-1.3.0 mypy-1.15.0 mypy_extensions-1.1.0 numpy-2.2.4 packaging-26.3 pluggy-1.6.0 pycparser-3.0 pydantic-2.13.5 pydantic-settings-2.15.0 pydantic_core-2.46.5 pytest-8.3.5 python-dotenv-1.2.3 python-multipart-0.0.32 referencing-0.37.0 rpds-py-2026.6.3 ruff-0.12.11 scipy-1.15.3 sse-starlette-3.4.11 starlette-1.7.0 types-PyYAML-6.0.12.20260906 types-jsonschema-4.26.0.20260518 typing-inspection-0.4.4 typing_extensions-4.16.0 uvicorn-0.54.0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1464200Z ##[group]Run python -m pip install -e .
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1464577Z ^[[36;1mpython -m pip install -e .^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1528059Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1528310Z env:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1528510Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1528746Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1528959Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1529250Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1529708Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1530153Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1530541Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1530928Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1531318Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.1531638Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.4830883Z Obtaining file:///home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:51.4851605Z   Installing build dependencies: started
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:52.1930137Z   Installing build dependencies: finished with status 'done'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:52.1936469Z   Checking if build backend supports build_editable: started
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:52.5434247Z   Checking if build backend supports build_editable: finished with status 'done'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:52.5442290Z   Getting requirements to build editable: started
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:52.9071918Z   Getting requirements to build editable: finished with status 'done'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:52.9082144Z   Preparing editable metadata (pyproject.toml): started
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1187152Z   Preparing editable metadata (pyproject.toml): finished with status 'done'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1262558Z Requirement already satisfied: numpy==2.2.4 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from openflowsheet==0.2.0) (2.2.4)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1268069Z Requirement already satisfied: scipy==1.15.3 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from openflowsheet==0.2.0) (1.15.3)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1273122Z Requirement already satisfied: pyyaml==6.0.2 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from openflowsheet==0.2.0) (6.0.2)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1278250Z Requirement already satisfied: jsonschema==4.26.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from openflowsheet==0.2.0) (4.26.0)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1283060Z Requirement already satisfied: casadi==3.8.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from openflowsheet==0.2.0) (3.8.0)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1299691Z Requirement already satisfied: attrs>=22.2.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.2.0) (26.1.0)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1305158Z Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.2.0) (2025.9.1)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1310525Z Requirement already satisfied: referencing>=0.28.4 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.2.0) (0.37.0)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1316101Z Requirement already satisfied: rpds-py>=0.25.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from jsonschema==4.26.0->openflowsheet==0.2.0) (2026.6.3)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1436779Z Building wheels for collected packages: openflowsheet
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.1444488Z   Building editable for openflowsheet (pyproject.toml): started
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.4115716Z   Building editable for openflowsheet (pyproject.toml): finished with status 'done'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.4123071Z   Created wheel for openflowsheet: filename=openflowsheet-0.2.0-0.editable-py3-none-any.whl size=9504 sha256=635a9462f7ff52813d4c43f4956f662360d20c54a82a23c2a7ce533ad68841c1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.4126157Z   Stored in directory: /tmp/pip-ephem-wheel-cache-1y987zq0/wheels/a7/db/0c/5f8b449f4c702dd78421b0a446805b4c04aac2a354d996fc33
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.4150005Z Successfully built openflowsheet
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.4566507Z Installing collected packages: openflowsheet
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.4671071Z Successfully installed openflowsheet-0.2.0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5239889Z ##[group]Run python -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5240572Z ^[[36;1mpython -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5241048Z ^[[36;1mpython scripts/t07_licence_inventory.py^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5302300Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5302553Z env:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5302752Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5302980Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5303187Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5303461Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5323305Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5324271Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5324718Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5325110Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5325563Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:53.5325884Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7460768Z annotated-types 0.8.0: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7461396Z anyio 4.15.1: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7461869Z attrs 26.1.0: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7462316Z certifi 2026.7.22: MPL-2.0 (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7462802Z cffi 2.1.1: MIT-0 (compiled) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7463268Z click 8.5.0: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7464328Z cryptography 50.0.1: Apache-2.0 OR BSD-3-Clause (compiled) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7464960Z h11 0.16.0: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7465525Z httpcore 1.0.9: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7466007Z httpx 0.28.1: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7466491Z httpx-sse 0.4.3: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7466919Z idna 3.20: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7467387Z jsonschema 4.26.0: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7467907Z jsonschema-specifications 2025.9.1: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7468478Z mcp 1.30.0: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7468896Z pycparser 3.0: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7469386Z pydantic 2.13.5: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7469835Z pydantic-core 2.46.5: MIT (compiled) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7470688Z pydantic-settings 2.15.0: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7471171Z pyjwt 2.15.0: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7471606Z python-dotenv 1.2.3: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7472153Z python-multipart 0.0.32: Apache-2.0 (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7472688Z referencing 0.37.0: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7473139Z rpds-py 2026.6.3: MIT (compiled) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7474022Z sse-starlette 3.4.11: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7474568Z starlette 1.7.0: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7475064Z typing-extensions 4.16.0: PSF-2.0 (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7475581Z typing-inspection 0.4.4: MIT (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7476066Z uvicorn 0.54.0: BSD-3-Clause (pure) ok
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7476712Z G19: 29 distributions, no GPL-family, unresolved or unlisted licence
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7695279Z ##[group]Run actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7695695Z with:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7695903Z   node-version: 22
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7696113Z   check-latest: false
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7698421Z   token: ***
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7698633Z   package-manager-cache: true
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7698866Z env:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7699053Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7699271Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7699471Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7699731Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7700157Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7700571Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7700941Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7701307Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7701720Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.7702037Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.8950847Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:54.8952930Z ##[group]Environment details
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3144798Z node: v22.23.3
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3145271Z npm: 10.9.9
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3145624Z yarn: 1.22.22
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3146429Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3284455Z ##[group]Run if [ "ubuntu-latest" = "ubuntu-latest" ]; then
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3284964Z ^[[36;1mif [ "ubuntu-latest" = "ubuntu-latest" ]; then^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3285336Z ^[[36;1m  export OPENFLOWSHEET_REQUIRE_BROWSER=1^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3285825Z ^[[36;1m  OPENFLOWSHEET_BROWSER="$(command -v google-chrome || command -v chromium || true)"^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3286297Z ^[[36;1m  export OPENFLOWSHEET_BROWSER^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3286566Z ^[[36;1mfi^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3286766Z ^[[36;1m./scripts/check.sh^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3353285Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3353773Z env:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3353987Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3354223Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3354450Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3354735Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3355171Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3355667Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3356060Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3356467Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3356857Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3357203Z   PYTEST_ADDOPTS: -rs
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3357418Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.3482985Z === ruff check: ruff check . ===
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.7138938Z All checks passed!
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.7157248Z --- ruff check: exit 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:55.7157841Z === ruff format: ruff format --check . ===
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:56.1635208Z 745 files already formatted
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:56.1639779Z --- ruff format: exit 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:38:56.1640582Z === mypy: mypy ===
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:39:31.0115360Z Success: no issues found in 233 source files
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:39:31.0399534Z --- mypy: exit 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:39:31.0401749Z === pytest: pytest -q -rs ===
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:17.8710294Z ........................................................................ [  0%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:17.9276734Z ........................................................................ [  1%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:19.6202332Z ........................................................................ [  2%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:19.7682469Z ........................................................................ [  2%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:19.8955928Z ............................................................ssssss...... [  3%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:20.4729859Z .........sssssssssssss.................................................. [  4%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:20.7543062Z ........................................................................ [  5%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:21.1504775Z ........................................................................ [  5%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:21.3611415Z ........................................................................ [  6%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:21.5450901Z ........................................................................ [  7%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:21.6488939Z ........................................................................ [  7%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:22.0056568Z ........................................................................ [  8%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:25.2186490Z ........................................................................ [  9%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:25.6230260Z ........................................................................ [ 10%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:40:31.4260688Z ........................................................................ [ 10%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:41:48.9327930Z ........................................................................ [ 11%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:41:51.3330333Z ........................................................................ [ 12%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:42:51.0711181Z ......................................................................s. [ 12%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:42:55.1238443Z ........................................................................ [ 13%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:42:56.1382497Z ........................................................................ [ 14%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:42:56.1903080Z ........................................................................ [ 15%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:43:24.1296096Z ........................................................................ [ 15%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:43:54.5158807Z ........................................................................ [ 16%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:43:55.9731961Z ........................................................................ [ 17%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:44:10.1758931Z ........................................................................ [ 18%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:44:38.4124063Z ........................................................................ [ 18%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:44:42.7668232Z ........................................................................ [ 19%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:44:46.6135485Z ........................................................................ [ 20%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:44:47.9490601Z ........................................................................ [ 20%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:45:06.6054267Z ........................................................................ [ 21%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:46:13.9351671Z ........................................................................ [ 22%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:46:28.6658553Z ........................................................................ [ 23%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:46:48.9212801Z ........................................................................ [ 23%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:48:49.7715301Z ....................................s................................... [ 24%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:49:17.1177833Z ........................................................................ [ 25%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:50:08.1022978Z ........................................................................ [ 25%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:50:38.5728049Z ........................................................................ [ 26%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:50:38.7107683Z ........................................................................ [ 27%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:50:39.5179380Z ........................................................................ [ 28%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:50:40.5320812Z ........................................................................ [ 28%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:50:41.0755791Z ........................................................................ [ 29%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:50:41.6917586Z ........................................................................ [ 30%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:51:14.1679568Z ........................................................................ [ 30%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:51:14.2520322Z ........................................................................ [ 31%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:51:24.6672387Z ........................................................................ [ 32%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:51:26.7143948Z ........................................................................ [ 33%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:51:35.1075289Z .....................................ss.........sssss..s.s...s.......... [ 33%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:51:50.7363313Z .................ssssssssssssssss....................................... [ 34%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:52:00.0306181Z ........................................................................ [ 35%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:52:00.3387962Z ........................................................................ [ 36%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:52:13.4518007Z ........................................................................ [ 36%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:52:32.1074488Z ........................................................................ [ 37%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:53:53.2831266Z ........................................................................ [ 38%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:53:53.6181196Z ..............................ssss...................................... [ 38%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:53:53.8073465Z ........................................................................ [ 39%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:53:58.1029423Z ........................................................................ [ 40%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:53:59.2071943Z ........................................................................ [ 41%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:00.3418044Z ........................................................................ [ 41%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:07.5448357Z ........................................................................ [ 42%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:09.5779482Z ........................................................................ [ 43%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:11.1312358Z ........................................................................ [ 43%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:15.1229246Z ........................................................................ [ 44%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:15.1728489Z ........................................................................ [ 45%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:15.2630651Z ........................................................................ [ 46%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:17.6298066Z ........................................................................ [ 46%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:23.5726595Z ........................................................................ [ 47%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:28.2119718Z ........................................................................ [ 48%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:45.1211975Z ........................................................................ [ 49%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:54:58.3481142Z ........................................................................ [ 49%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:11.7604890Z ........................................................................ [ 50%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:22.9523111Z ........................................................................ [ 51%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:35.8784842Z ........................................................................ [ 51%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:41.1077332Z ........................................................................ [ 52%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:43.9745039Z ........................................................................ [ 53%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:44.1868477Z ........................................................................ [ 54%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:44.4759752Z ........................................................................ [ 54%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:44.5855844Z ........................................................................ [ 55%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:47.5390185Z ........................................................................ [ 56%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:48.7474528Z ........................................................................ [ 56%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:54.5026006Z ........................................................................ [ 57%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:56.6747073Z ........................................................................ [ 58%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:55:58.0034639Z ........................................................................ [ 59%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:56:34.5934830Z ........................................................................ [ 59%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:56:41.6794674Z ........................................................................ [ 60%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:56:49.5837256Z ........................................................................ [ 61%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:56:58.2953853Z ........................................................................ [ 61%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:57:04.4313951Z ........................................................................ [ 62%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:57:21.2974296Z ........................................................................ [ 63%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:57:42.0160137Z ........................................................................ [ 64%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:57:42.8364464Z ........................................................................ [ 64%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:57:46.5634685Z ........................................................................ [ 65%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:57:52.1041800Z ........................................................................ [ 66%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:58:03.8795867Z ........................................................................ [ 67%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:58:08.2523228Z ........................................................................ [ 67%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:58:13.9497639Z ............................s........................................... [ 68%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:58:21.2809757Z ........................................................................ [ 69%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:58:25.8739935Z ...........s.............s.............................................. [ 69%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:58:39.5282758Z ........................................................................ [ 70%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:58:42.9820746Z ........................................................................ [ 71%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:58:50.1051163Z ........................................................................ [ 72%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:58:57.5267434Z ........................................................................ [ 72%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:58:58.8178446Z ........................................................................ [ 73%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T08:59:07.7081306Z ........................................................................ [ 74%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:00:04.0797675Z ...................................................................sssss [ 74%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:00:36.0490090Z ssssssssssss..sssssssssss............................................... [ 75%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:04:49.1177472Z ........................................................................ [ 76%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:05:16.7114894Z ........................................................................ [ 77%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:09:45.0205114Z ........................................................................ [ 77%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:13:03.3682300Z ........................................................................ [ 78%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:13:11.6144098Z ........................................................................ [ 79%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:13:11.7202299Z ........................................................................ [ 79%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:15:13.7127249Z ........................................................................ [ 80%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:15:13.7567563Z ........................................................................ [ 81%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:15:19.4663440Z ........................................................................ [ 82%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:15:46.9520640Z ........................................................................ [ 82%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:15:52.6426577Z ........................................................................ [ 83%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:16:22.9377353Z ........................................................................ [ 84%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:16:43.6755197Z ........................................................................ [ 85%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:16:57.3883335Z ........................................................................ [ 85%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:17:34.6509735Z ........................................................................ [ 86%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:17:56.7311047Z ........................................................................ [ 87%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:18:34.8063001Z ........................................................................ [ 87%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:18:37.7060383Z ........................................................................ [ 88%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:21:09.4627470Z ........................................................................ [ 89%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:22:08.2085338Z ........................................................................ [ 90%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:22:11.5683548Z ........................................................................ [ 90%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:22:22.1649331Z ........................................................................ [ 91%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:22:34.0097964Z ........................................................................ [ 92%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:22:36.1398608Z ........................................................................ [ 92%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:22:39.2637722Z ........................................................................ [ 93%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:22:41.8249617Z ........................................................................ [ 94%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:22:47.0603210Z .....................................................sssssssssssss...... [ 95%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:22:47.6620899Z ........................................................................ [ 95%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:23:08.8755934Z ...........s.s............ssssss........................................ [ 96%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:25:41.1651062Z .........................s.............................................. [ 97%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:37.4065805Z ........................................................................ [ 98%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:39.0910966Z ........................................................................ [ 98%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:39.1573921Z ........................................................................ [ 99%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5545986Z .................ss....................................                  [100%]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5547360Z =============================== warnings summary ===============================
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5548366Z tests/test_m06_wo4_serving.py:38
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5550342Z   /home/runner/work/openflowsheet/openflowsheet/tests/test_m06_wo4_serving.py:38: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5551481Z     from starlette.testclient import TestClient
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5551752Z 
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5552110Z -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5552764Z =========================== short test summary info ============================
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5554349Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): b44dea0e96eb61f42f34249eee69a20d1ddb6a8a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5556136Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 1baaf033be114e4e44bf982ecee8716b0f040519 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5558165Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): c806f83fd3fb0e71967235000fb517fc1c26efd4 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5559932Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5561340Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): b0a7fe766c35f6491dfc53ecab3101199d221850 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5562688Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): cda68cd446be27992051d43422336ad5f9430fe8 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5564184Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 07a7ff01fd2767f7ad34a6442c5a817536ac0a6d is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5565657Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 05406c803a95e8c154476607c5c3db6de84f78e4 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5567516Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 507dccfaa46fa905b651ba96de65c2ea8c9f3ca1 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5568874Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 449cf3d6618f301242e07083d6f7d1c127566ac4 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5570230Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 00a71f4562b7bd80441df50cf64b53064d832b78 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5571765Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): b68585f775cc2b009ae1b130eebb865150cf943c is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5573339Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 6ac24be9da572a90b198ba91b81d603f082cfa74 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5574978Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5576334Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 91ac0103c1040175560d74d9afa2a091a8d25b2d is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5577710Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): ba9a27b422834138daeff98481072c65db8b3744 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5579073Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): ebec629d63e32fb1984b56ad31372c960cd0ae2f is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5580438Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 5f3d3ea25e8349b83c8f8382df3c793532971ca4 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5581797Z SKIPPED [11] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5584033Z SKIPPED [1] tests/test_k05_schemas.py:143: the fixture records platform ('x86_64', 'Linux', '3.13.5', 'scipy-openblas'), this run is ('x86_64', 'Linux', '3.13.16', 'scipy-openblas'): certificate floats are not promised bitwise across platforms (ADR 0007, blueprint §8.3)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5585539Z SKIPPED [1] tests/test_m04_prewarm.py:111: A40 names max_workers = 4 and R-250 caps it at the physical cores (2 here); checked on a host with 4 or more (E39)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5586598Z SKIPPED [1] tests/test_m06_w27_coverage.py:878: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5587328Z SKIPPED [1] tests/test_m06_w27_coverage.py:884: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5588034Z SKIPPED [1] tests/test_m06_w27_harness.py:108: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5588732Z SKIPPED [1] tests/test_m06_w27_harness.py:138: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5589414Z SKIPPED [1] tests/test_m06_w27_harness.py:161: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5590092Z SKIPPED [1] tests/test_m06_w27_harness.py:180: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5590779Z SKIPPED [1] tests/test_m06_w27_harness.py:214: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5591468Z SKIPPED [1] tests/test_m06_w27_harness.py:316: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5592147Z SKIPPED [1] tests/test_m06_w27_harness.py:335: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5592827Z SKIPPED [1] tests/test_m06_w27_harness.py:450: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5593505Z SKIPPED [14] tests/test_m06_w27_scorer.py:243: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5594441Z SKIPPED [1] tests/test_m06_w27_scorer.py:251: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5595146Z SKIPPED [1] tests/test_m06_w27_scorer.py:265: pinned archive absent (scripts/m06_w27_acquire.py)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5596412Z SKIPPED [1] tests/test_m07_ledger.py:102: docs/reviews/V02-verdicts.md does not exist yet at this 0.2.0 tree: the 0.2.0 ledger is judged at the candidate, after the verdicts (M07 spec §23.2)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5597915Z SKIPPED [1] tests/test_m07_ledger.py:111: docs/reviews/V02-verdicts.md does not exist yet at this 0.2.0 tree: the 0.2.0 ledger is judged at the candidate, after the verdicts (M07 spec §23.2)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5599524Z SKIPPED [1] tests/test_m07_ledger.py:118: docs/reviews/V02-verdicts.md does not exist yet at this 0.2.0 tree: the 0.2.0 ledger is judged at the candidate, after the verdicts (M07 spec §23.2)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5601049Z SKIPPED [1] tests/test_m07_ledger.py:129: docs/reviews/V02-verdicts.md does not exist yet at this 0.2.0 tree: the 0.2.0 ledger is judged at the candidate, after the verdicts (M07 spec §23.2)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5602103Z SKIPPED [1] tests/test_t06_w28_records.py:120: generate writes on ref-x86-64 only (A97 (b) checks the refusal)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5603091Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): f636452 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5604492Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 6018ebccbe99a3e9d19cf4f966d10dc292195170 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5605829Z SKIPPED [1] tests/test_t07_evidence_manifest.py:202: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5607070Z SKIPPED [1] tests/test_t07_evidence_manifest.py:215: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5608308Z SKIPPED [1] tests/test_t07_evidence_manifest.py:221: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5609533Z SKIPPED [1] tests/test_t07_evidence_manifest.py:231: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5610760Z SKIPPED [1] tests/test_t07_evidence_manifest.py:240: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5612129Z SKIPPED [6] tests/test_t07_evidence_manifest.py:252: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5613364Z SKIPPED [1] tests/test_t07_evidence_manifest.py:279: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5614762Z SKIPPED [3] tests/test_t07_evidence_manifest.py:296: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5615992Z SKIPPED [1] tests/test_t07_evidence_manifest.py:309: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5617210Z SKIPPED [1] tests/test_t07_evidence_manifest.py:319: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5618444Z SKIPPED [1] tests/test_t07_evidence_manifest.py:370: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5619672Z SKIPPED [1] tests/test_t07_evidence_manifest.py:392: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5620896Z SKIPPED [1] tests/test_t07_evidence_manifest.py:411: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5622119Z SKIPPED [1] tests/test_t07_evidence_manifest.py:426: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5623339Z SKIPPED [1] tests/test_t07_evidence_manifest.py:438: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5624688Z SKIPPED [1] tests/test_t07_evidence_manifest.py:449: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5626028Z SKIPPED [4] tests/test_t07_evidence_manifest.py:463: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5627280Z SKIPPED [1] tests/test_t07_evidence_manifest.py:489: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5628792Z SKIPPED [1] tests/test_t08_evidence_manifest.py:101: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5630337Z SKIPPED [1] tests/test_t08_evidence_manifest.py:108: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5631862Z SKIPPED [1] tests/test_t08_evidence_manifest.py:114: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5633373Z SKIPPED [1] tests/test_t08_evidence_manifest.py:125: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5635129Z SKIPPED [1] tests/test_t08_evidence_manifest.py:133: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5636565Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 30243f9c9956fb7ec6970f62156f864cd35d0aa0 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5637925Z SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 9f5f29d7063ae5102c535d94d5f18f20db6480c2 is not in this repository's history
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5639158Z SKIPPED [6] tests/test_t08_ptc_r1_diagnostic.py:43: no committed PTC-R1 results for ci-x86-64 on this CPU model
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5639757Z SKIPPED [1] tests/test_t08_w1_ledger.py:87: not in A02
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:26:58.5640266Z 9885 passed, 106 skipped, 192 deselected, 1 warning in 2846.92s (0:47:26)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.4720010Z --- pytest: exit 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.4720847Z === node --test: web_tests ===
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.5864845Z TAP version 13
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6695377Z # Subtest: a GET carries path parameters encoded and the other members as query text
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6734844Z ok 1 - a GET carries path parameters encoded and the other members as query text
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6735969Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6794402Z   duration_ms: 2.862356
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6802273Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6834416Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6835423Z # Subtest: a POST carries the other members as a JSON body, never in the URL
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6836610Z ok 2 - a POST carries the other members as a JSON body, never in the URL
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6837419Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6837877Z   duration_ms: 0.447239
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6838376Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6838812Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6839565Z # Subtest: buildRequest refuses what the route table does not allow
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6840606Z ok 3 - buildRequest refuses what the route table does not allow
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6841347Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6841777Z   duration_ms: 0.878908
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6842268Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6842701Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6843511Z # Subtest: a 2xx document is returned; a non-2xx answer is the server's ApiError
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6844956Z ok 4 - a 2xx document is returned; a non-2xx answer is the server's ApiError
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6845809Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6846265Z   duration_ms: 1.271604
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6846783Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6847179Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6847804Z # Subtest: a 401 clears the stored token; no token means no request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6849039Z ok 5 - a 401 clears the stored token; no token means no request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6849707Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6850101Z   duration_ms: 0.623719
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6850528Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6850915Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6851629Z # Subtest: a non-2xx answer without an error document becomes internal_error
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6852661Z ok 6 - a non-2xx answer without an error document becomes internal_error
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6853378Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6853977Z   duration_ms: 0.493926
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6854421Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6854810Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6855610Z # Subtest: the cache holds the listed operations and nothing else, never an error
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6856793Z ok 7 - the cache holds the listed operations and nothing else, never an error
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6857568Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6857969Z   duration_ms: 1.558632
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6858426Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.6858838Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7845175Z # Subtest: raw: exact bytes, checked against the registered SHA-256
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7864017Z ok 8 - raw: exact bytes, checked against the registered SHA-256
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7874654Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7894501Z   duration_ms: 26.038891
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7895347Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7896624Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7897595Z # Subtest: raw: without crypto.subtle (an insecure context) the digest is unchecked
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7898586Z ok 9 - raw: without crypto.subtle (an insecure context) the digest is unchecked
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7898993Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7899193Z   duration_ms: 2.138952
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7899417Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7899602Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7899989Z # Subtest: readWhole reassembles the document from the server's own views
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7900873Z ok 10 - readWhole reassembles the document from the server's own views
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7901233Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7901426Z   duration_ms: 39.070925
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7901654Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7901865Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7902234Z # Subtest: readWhole refuses a document whose hash changes between views
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7902843Z ok 11 - readWhole refuses a document whose hash changes between views
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7903483Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7923962Z   duration_ms: 6.984575
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7924406Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7924721Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7925186Z # Subtest: readWhole stops at its request budget
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7925821Z ok 12 - readWhole stops at its request budget
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7926280Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7926598Z   duration_ms: 59.413248
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7926962Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7927269Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7927922Z # Subtest: isMarker recognises exactly the projection's marker of its own pointer
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7928795Z ok 13 - isMarker recognises exactly the projection's marker of its own pointer
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7929210Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7929407Z   duration_ms: 0.216636
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7929638Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7929830Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7930219Z # Subtest: followJob waits until the job has ended, advancing after_sequence
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7930783Z ok 14 - followJob waits until the job has ended, advancing after_sequence
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7931147Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7931340Z   duration_ms: 0.594945
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7931554Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.7931740Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8089588Z # Subtest: the token lives in sessionStorage, and in localStorage only when remembered
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8104862Z ok 15 - the token lives in sessionStorage, and in localStorage only when remembered
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8144319Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8144891Z   duration_ms: 1.601202
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8145451Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8145916Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8146855Z # Subtest: storage that refuses or is missing leaves the token in memory for the page
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8148480Z ok 16 - storage that refuses or is missing leaves the token in memory for the page
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8149336Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8149804Z   duration_ms: 0.455174
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8150312Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8150763Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8151484Z # Subtest: the boot token is stored and removed from the address
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8152455Z ok 17 - the boot token is stored and removed from the address
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8153149Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8153819Z   duration_ms: 1.279369
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8154366Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8154834Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8155843Z # Subtest: the sign-in view: a password field without autocomplete, remember opt-in, the message
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8157274Z ok 18 - the sign-in view: a password field without autocomplete, remember opt-in, the message
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8158189Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8158745Z   duration_ms: 2.911229
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8159310Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8159802Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8160676Z # Subtest: a request api.js builds decodes back to its operation and members
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8161890Z ok 19 - a request api.js builds decodes back to its operation and members
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8162697Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8163183Z   duration_ms: 3.110853
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8163934Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8164468Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8165442Z # Subtest: every revision, structure and bundle listing reads whole from the recorded views
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8167060Z ok 20 - every revision, structure and bundle listing reads whole from the recorded views
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8167960Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8168437Z   duration_ms: 110.201219
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8168979Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8169440Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8170486Z # Subtest: the hostile revision's text arrives as text, its U+202E replaced by the server
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8172124Z ok 21 - the hostile revision's text arrives as text, its U+202E replaced by the server
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8172975Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8173447Z   duration_ms: 1.217833
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8174622Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8175119Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8175926Z # Subtest: an unrecorded request fails, naming it
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8176764Z ok 22 - an unrecorded request fails, naming it
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8177401Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8177881Z   duration_ms: 0.814136
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8178421Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8178891Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8179820Z # Subtest: a refusal is recorded per principal and arrives as the server's ApiError
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8181105Z ok 23 - a refusal is recorded per principal and arrives as the server's ApiError
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8181942Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8182418Z   duration_ms: 0.47969
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8182935Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8183428Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8184596Z # Subtest: the header names project, principal, rights and server version
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8185752Z ok 24 - the header names project, principal, rights and server version
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8186528Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8186994Z   duration_ms: 3.196964
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8187519Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8187982Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8188596Z # Subtest: the theme cycles system, light, dark
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8189389Z ok 25 - the theme cycles system, light, dark
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8190002Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8190461Z   duration_ms: 0.345928
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8190969Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8191480Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8192225Z # Subtest: the error panel shows the server's ApiError as it came
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8193218Z ok 26 - the error panel shows the server's ApiError as it came
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8194157Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8194621Z   duration_ms: 0.844183
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8195150Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8195600Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8196315Z # Subtest: an unknown route says so; fatal text names the error
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8197273Z ok 27 - an unknown route says so; fatal text names the error
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8198186Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8198671Z   duration_ms: 1.727569
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8199176Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8199629Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8264775Z # Subtest: h returns a plain tree; strings stay strings, numbers become text, nulls vanish
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8266385Z ok 28 - h returns a plain tree; strings stay strings, numbers become text, nulls vanish
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8284534Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8285150Z   duration_ms: 2.721743
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8285874Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8286458Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8287396Z # Subtest: h refuses elements, attributes and links outside the whitelists
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8288732Z ok 29 - h refuses elements, attributes and links outside the whitelists
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8289673Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8290272Z   duration_ms: 1.339782
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8290906Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8291477Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8292481Z # Subtest: event handlers only on interactive elements and only the five events
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8293957Z ok 30 - event handlers only on interactive elements and only the five events
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8294913Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8295466Z   duration_ms: 0.724037
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8296056Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8296618Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8297604Z # Subtest: SVG elements take the SVG attribute list and nothing from HTML's event rules
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8298958Z ok 31 - SVG elements take the SVG attribute list and nothing from HTML's event rules
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8299856Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8300366Z   duration_ms: 0.437039
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8300907Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8301388Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8302291Z # Subtest: mount creates elements, sanitized text nodes and sanitized attributes
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8304197Z ok 32 - mount creates elements, sanitized text nodes and sanitized attributes
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8305111Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8305689Z   duration_ms: 3.217062
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8306338Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8306915Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8307842Z # Subtest: SVG trees are created in the SVG namespace, children included
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8309086Z ok 33 - SVG trees are created in the SVG namespace, children included
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8309964Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8310528Z   duration_ms: 0.366988
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8311157Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8311710Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8312411Z # Subtest: replace empties the parent first
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8313249Z ok 34 - replace empties the parent first
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8314227Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8314803Z   duration_ms: 0.489748
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8315428Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8315995Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8316935Z # Subtest: only trees h made are trees: a parsed or forged {t, p, c} is refused
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8318282Z ok 35 - only trees h made are trees: a parsed or forged {t, p, c} is refused
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8319238Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8319851Z   duration_ms: 0.984676
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8320493Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.8321067Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9345225Z # Subtest: G7: the NET-02 run has 27 trace events and two attempts with their counter deltas
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9364980Z ok 36 - G7: the NET-02 run has 27 trace events and two attempts with their counter deltas
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9424149Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9444696Z   duration_ms: 3.721017
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9445458Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9445971Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9446957Z # Subtest: the attempt model reproduces the server's attempt tree, correctors excluded
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9448281Z ok 37 - the attempt model reproduces the server's attempt tree, correctors excluded
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9449103Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9449580Z   duration_ms: 2.981871
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9450071Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9450512Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9451466Z # Subtest: an attempt opened and never closed is listed with no outcome; counters subtract by name
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9453229Z ok 38 - an attempt opened and never closed is listed with no outcome; counters subtract by name
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9454367Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9454887Z   duration_ms: 0.435707
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9455420Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9455875Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9456820Z # Subtest: trace rows read the recorded members; absent members stay absent; filters and pages
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9458180Z ok 39 - trace rows read the recorded members; absent members stay absent; filters and pages
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9459036Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9459490Z   duration_ms: 3.320796
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9459999Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9460442Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9461407Z # Subtest: G7: the NET-02 certificate is VERIFIED with 144 checks and 3 near-threshold limitations
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9462816Z ok 40 - G7: the NET-02 certificate is VERIFIED with 144 checks and 3 near-threshold limitations
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9463894Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9464387Z   duration_ms: 1.801858
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9464964Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9465494Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9466452Z # Subtest: rule 2: the scaled residual is value / reference of a residual check only
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9467805Z ok 41 - rule 2: the scaled residual is value / reference of a residual check only
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9468734Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9469262Z   duration_ms: 2.29476
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9469869Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9470436Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9471525Z # Subtest: rule 3: a phase split's vapour fraction is vapor_total / (vapor_total + liquid_total)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9473103Z ok 42 - rule 3: a phase split's vapour fraction is vapor_total / (vapor_total + liquid_total)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9474301Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9475188Z   duration_ms: 1.108068
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9475802Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9476347Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9477392Z # Subtest: the structure index joins rows, columns, matching, blocks and certificates
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9478820Z ok 43 - the structure index joins rows, columns, matching, blocks and certificates
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9479969Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9480691Z   duration_ms: 31.680148
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9481444Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9496804Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9498561Z # Subtest: an unroutable revision carries the validation's structural report
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9499773Z ok 44 - an unroutable revision carries the validation's structural report
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9500558Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9501038Z   duration_ms: 21.577917
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9501563Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9502022Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9503025Z # Subtest: G7: the stream and unit tables join the revision, the column index and the run's state
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9504792Z ok 45 - G7: the stream and unit tables join the revision, the column index and the run's state
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9505775Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9506244Z   duration_ms: 9.274168
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9506765Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9507228Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9508198Z # Subtest: without a solution state every value is undefined; a binder-only connection is kept
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9509620Z ok 46 - without a solution state every value is undefined; a binder-only connection is kept
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9510500Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9510976Z   duration_ms: 0.430597
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9511494Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9511967Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9512912Z # Subtest: a unit panel lists the model's ports, pins, required and zero; empty is not applicable
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9514542Z ok 47 - a unit panel lists the model's ports, pins, required and zero; empty is not applicable
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9515516Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9516090Z   duration_ms: 0.32531
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9516656Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9517200Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9518178Z # Subtest: G5: the revision comparison reads before/after values of each changed path
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9519772Z ok 48 - G5: the revision comparison reads before/after values of each changed path
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9520765Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9521315Z   duration_ms: 4.507351
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9521945Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9522481Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9523946Z # Subtest: rule 4: Δ = b − a and |Δ| / max(|a|, |b|), 0 when both are 0, sorted descending
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9525439Z ok 49 - rule 4: Δ = b − a and |Δ| / max(|a|, |b|), 0 when both are 0, sorted descending
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9526350Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9526904Z   duration_ms: 1.239724
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9527521Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9528051Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9529213Z # Subtest: the run identity rows compare strings for equality and say what a version mismatch means
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9530880Z ok 50 - the run identity rows compare strings for equality and say what a version mismatch means
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9531928Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9532497Z   duration_ms: 0.683401
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9533139Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9533953Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9534995Z # Subtest: history rows link revision, job and cancel effects and read the rest as text
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9536479Z ok 51 - history rows link revision, job and cancel effects and read the rest as text
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9537451Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9538014Z   duration_ms: 0.668583
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9538634Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9539155Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9540242Z # Subtest: rule 6: a revision's expected revision is its parent; its jobs are filtered by request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9541900Z ok 52 - rule 6: a revision's expected revision is its parent; its jobs are filtered by request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9543008Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9543809Z   duration_ms: 1.224225
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9544858Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9545435Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9546674Z # Subtest: G7: the NET-02 layout has §6.1's layers and the recycle S6 as its one back edge
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9548290Z ok 53 - G7: the NET-02 layout has §6.1's layers and the recycle S6 as its one back edge
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9549274Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9549866Z   duration_ms: 2.408135
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9550496Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9551061Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9551951Z # Subtest: layout: a cycle without a source and a dangling connection
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9553154Z ok 54 - layout: a cycle without a source and a dangling connection
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9554220Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9554750Z   duration_ms: 0.289071
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9555363Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9555866Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9614672Z # Subtest: parseHash splits the route path from its query
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9644382Z ok 55 - parseHash splits the route path from its query
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9665139Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9674742Z   duration_ms: 1.235706
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9677287Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9677895Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9678807Z # Subtest: matchRoute matches whole patterns and decodes values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9679871Z ok 56 - matchRoute matches whole patterns and decodes values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9680719Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9681240Z   duration_ms: 1.412719
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9681802Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9682479Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9683443Z # Subtest: link encodes values and query; withoutToken strips the boot token
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9685061Z ok 57 - link encodes values and query; withoutToken strips the boot token
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9685889Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9686425Z   duration_ms: 2.664676
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9687032Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:00.9687592Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0744872Z # Subtest: project: every revision and the first page of jobs, hostile text as text
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0746672Z ok 58 - project: every revision and the first page of jobs, hostile text as text
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0747337Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0747548Z   duration_ms: 28.615171
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0747793Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0748381Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0748839Z # Subtest: revision overview: header, validation, runs, flowsheet, tables as written
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0749493Z ok 59 - revision overview: header, validation, runs, flowsheet, tables as written
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0749891Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0750085Z   duration_ms: 23.829088
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0750312Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0750505Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0750868Z # Subtest: revision overview: Solve is greyed without the execute right
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0751403Z ok 60 - revision overview: Solve is greyed without the execute right
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0751739Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0751926Z   duration_ms: 8.053569
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0752140Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0752328Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0752773Z # Subtest: the hostile revision's title renders as text with U+FFFD, never as markup
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0753379Z ok 61 - the hostile revision's title renders as text with U+FFFD, never as markup
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0754254Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0754619Z   duration_ms: 13.34972
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0755027Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0755368Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0756588Z # Subtest: Solve sends §6.1's body under one key, reused on retry, fresh when the dialog reopens
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0758035Z ok 62 - Solve sends §6.1's body under one key, reused on retry, fresh when the dialog reopens
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0758783Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0759120Z   duration_ms: 1.129918
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0759514Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0759860Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0760683Z # Subtest: validation: an unroutable revision shows the validation's report under its reason
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0761945Z ok 63 - validation: an unroutable revision shows the validation's report under its reason
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0763012Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0763341Z   duration_ms: 27.338257
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0764005Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0764338Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0765210Z # Subtest: validation: a routed revision links its certified redundant rows to the equation view
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0766579Z ok 64 - validation: a routed revision links its certified redundant rows to the equation view
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0767346Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0767665Z   duration_ms: 24.487142
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0768060Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.0768380Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1273206Z # Subtest: G7: the certificate shows VERIFIED, 144 checks by category and 3 near-threshold flags
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1275096Z ok 65 - G7: the certificate shows VERIFIED, 144 checks by category and 3 near-threshold flags
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1276167Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1276688Z   duration_ms: 74.623303
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1277417Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1278384Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1439666Z # Subtest: a run without a certificate says so
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1440297Z ok 66 - a run without a certificate says so
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1440763Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1441096Z   duration_ms: 17.08571
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1441470Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1441778Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1520262Z # Subtest: G7: the A02-352 failure bundle — outcome, replay identity, counters, a labelled hypothesis
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1521346Z ok 67 - G7: the A02-352 failure bundle — outcome, replay identity, counters, a labelled hypothesis
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1521964Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1522282Z   duration_ms: 7.881905
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1522619Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1522921Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1524048Z # Subtest: a converged run has no failure bundle and says so
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1525258Z ok 68 - a converged run has no failure bundle and says so
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1526089Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1526663Z   duration_ms: 0.675676
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1527328Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1527868Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1755301Z # Subtest: G7: streams and units show U-HEAT.Q short and full, with its rows link
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1756978Z ok 69 - G7: streams and units show U-HEAT.Q short and full, with its rows link
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1784216Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1814222Z   duration_ms: 17.484032
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1832299Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1832715Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1894958Z # Subtest: a run without a solution state says so and shows the best checkpoint's identity
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1899099Z ok 70 - a run without a solution state says so and shows the best checkpoint's identity
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1899908Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1900287Z   duration_ms: 16.830757
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1900727Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.1901104Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2094866Z # Subtest: G7: the NET-02 run — summary, 2 attempts with deltas and totals, 27 trace rows, files
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2096300Z ok 71 - G7: the NET-02 run — summary, 2 attempts with deltas and totals, 27 trace rows, files
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2097069Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2097442Z   duration_ms: 59.735222
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2097844Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2098192Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2098919Z # Subtest: the trace filters by kind and attempt and pages the filtered rows
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2099946Z ok 72 - the trace filters by kind and attempt and pages the filtered rows
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2100560Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2100880Z   duration_ms: 33.258227
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2101264Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2101578Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2102336Z # Subtest: a live run follows wait_job from its last event, draws each answer, then reloads
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2103471Z ok 73 - a live run follows wait_job from its last event, draws each answer, then reloads
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2104335Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2104670Z   duration_ms: 5.304946
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2105046Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2105728Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2106225Z # Subtest: Cancel is greyed without the execute right
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2106928Z ok 74 - Cancel is greyed without the execute right
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2107464Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2107788Z   duration_ms: 0.94444
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2108157Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2108467Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2109180Z # Subtest: the equation view of a revision row: incidence, matched column, block, DOF
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2110249Z ok 75 - the equation view of a revision row: incidence, matched column, block, DOF
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2110883Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2111199Z   duration_ms: 32.848378
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2111561Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2111865Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2112520Z # Subtest: ?column= lists the rows incident on a column, the matched row first
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2114057Z ok 76 - ?column= lists the rows incident on a column, the matched row first
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2114765Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2115119Z   duration_ms: 21.409238
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2115529Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2115859Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2116630Z # Subtest: G7: the equation view at a run shows the run's values and the check on its row
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2117773Z ok 77 - G7: the equation view at a run shows the run's values and the check on its row
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2118477Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2118837Z   duration_ms: 28.47692
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2119236Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2119583Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2120426Z # Subtest: the consistency guard: a different equation structure disables the equation index
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2121654Z ok 78 - the consistency guard: a different equation structure disables the equation index
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2122418Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2122755Z   duration_ms: 0.36239
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2123127Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2124057Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2124864Z # Subtest: G5: the revision comparison shows the server's diff and the before/after values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2126044Z ok 79 - G5: the revision comparison shows the server's diff and the before/after values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2126745Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2127070Z   duration_ms: 5.372363
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2127437Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2127998Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2128635Z # Subtest: a coarse change without elements reads 'order changed only'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2129465Z ok 80 - a coarse change without elements reads 'order changed only'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2129817Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2130006Z   duration_ms: 0.666099
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2130227Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2130502Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2131180Z # Subtest: the scenario view displays differences and never judges them (R-174)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2132144Z ok 81 - the scenario view displays differences and never judges them (R-174)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2132747Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2133022Z   duration_ms: 14.429063
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2133383Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2133899Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2134631Z # Subtest: a scenario with a failed run says it has no state and that the structures differ
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2135673Z ok 82 - a scenario with a failed run says it has no state and that the structures differ
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2136360Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2136674Z   duration_ms: 6.697247
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2137052Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2137402Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2138289Z # Subtest: G6: the history shows the caller's own rows; other principals are greyed without policy
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2139658Z ok 83 - G6: the history shows the caller's own rows; other principals are greyed without policy
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2140457Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2140818Z   duration_ms: 3.629085
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2141222Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2141573Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2142259Z # Subtest: G6: all principals with policy; refused rows show their code
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2143262Z ok 84 - G6: all principals with policy; refused rows show their code
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2144452Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2144813Z   duration_ms: 2.96046
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2145215Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2145567Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2146388Z # Subtest: G6: without policy, all principals is refused and the refusal is shown
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2147543Z ok 85 - G6: without policy, all principals is refused and the refusal is shown
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2148249Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2148608Z   duration_ms: 0.688471
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2149012Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2149364Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2150195Z # Subtest: history detail: a commit's expected revision, element diff and validation now
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2151426Z ok 86 - history detail: a commit's expected revision, element diff and validation now
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2152189Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2152548Z   duration_ms: 5.985462
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2152945Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2153288Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2154285Z # Subtest: history detail: a solve's request, status, outcome and verification
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2155437Z ok 87 - history detail: a solve's request, status, outcome and verification
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2156139Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2156510Z   duration_ms: 2.042169
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2156942Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2157299Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2157885Z # Subtest: a bundle member as a JSON tree, digest-checked
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2158681Z ok 88 - a bundle member as a JSON tree, digest-checked
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2159241Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2159601Z   duration_ms: 6.275115
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2160019Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2160379Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2161193Z # Subtest: sanitize replaces each forbidden code point one for one and keeps the rest
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2162416Z ok 89 - sanitize replaces each forbidden code point one for one and keeps the rest
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2163181Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2163527Z   duration_ms: 5.970294
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2164151Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2164468Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2165251Z # Subtest: fmt: null is a dash, integers exact, short is 6 significant digits, full round-trips
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2166789Z ok 90 - fmt: null is a dash, integers exact, short is 6 significant digits, full round-trips
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2167599Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2167924Z   duration_ms: 0.604253
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2168317Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2168664Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2169418Z # Subtest: status: every listed label has its tone; unlisted labels are failures
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2170510Z ok 91 - status: every listed label has its tone; unlisted labels are failures
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2171198Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2171509Z   duration_ms: 1.406107
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2171898Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2172243Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2172914Z # Subtest: a pill carries glyph, word and tone, never hue alone
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2174127Z ok 92 - a pill carries glyph, word and tone, never hue alone
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2174750Z   ---
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2175106Z   duration_ms: 4.980228
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2175508Z   type: 'test'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2175870Z   ...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2176188Z 1..92
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2176517Z # tests 92
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2176853Z # suites 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2177194Z # pass 92
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2177528Z # fail 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2177870Z # cancelled 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2178215Z # skipped 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2178570Z # todo 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2178937Z # duration_ms 658.197677
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2211710Z --- node --test: exit 0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2212049Z === check.sh: PASSED ===
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2250862Z ##[group]Run PYTHONPATH=. python scripts/k05_structural_identity.py --out identity.json
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2251607Z ^[[36;1mPYTHONPATH=. python scripts/k05_structural_identity.py --out identity.json^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2313767Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2314076Z env:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2314300Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2314572Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2314987Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2315311Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2315848Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2316364Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2316814Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2317271Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2317776Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:01.2318167Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9311594Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9319276Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9320559Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9321250Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9322503Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9325311Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9326580Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9327655Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9328127Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9328606Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9328987Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9329402Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9330444Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9331666Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9332870Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 52.114475231324604 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9334091Z Function H_S3_vapor (0x560ceff8ac90)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9334778Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 52.1145, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9335393Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9344962Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9346207Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9346875Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9348106Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9349234Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9350435Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9351483Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9351960Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9352454Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9352853Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9353232Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9354484Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9355736Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9356995Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 231.0572376156623 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9358042Z Function H_S3_vapor (0x560ceff8ac90)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9358727Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 231.057, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9432752Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9438794Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9440056Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9440721Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9441989Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9443426Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9444920Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9445984Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9446469Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9446956Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9447329Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9447707Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9448772Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9450030Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9451280Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 52.11447523132466 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9452335Z Function H_S3_vapor (0x560ceff8ac90)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9453029Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 52.1145, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9453934Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9456442Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9457695Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9458355Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9459553Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9460680Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9461890Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9462931Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9463403Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9464194Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9464594Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9465006Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9466036Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9467284Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9468551Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 219.87331496664123 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9469634Z Function H_S3_vapor (0x560ceff8ac90)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:04.9470331Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 219.873, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2387847Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2394703Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2396026Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2396690Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2397936Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2399095Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2400327Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2401403Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2401903Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2402426Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2402824Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2403241Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2405031Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2406341Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2407590Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132852 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2408657Z Function H_S3_vapor (0x560ceffb0410)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2409372Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2424638Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2435314Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2436138Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2436515Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2437622Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2438572Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2439214Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2439773Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2440030Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2440288Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2440489Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2440698Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2441239Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2441875Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2442524Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132852 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2443082Z Function H_S3_vapor (0x560ceffb0410)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2443455Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2443961Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2444595Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2445216Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2445559Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2446163Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2446727Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2447335Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2447869Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2448111Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2448367Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2448564Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2448767Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2449284Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2450156Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2451067Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132852 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2451611Z Function H_S3_vapor (0x560ceffb0410)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2451977Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2452323Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2455975Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2457034Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2457396Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2458032Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2458614Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2459446Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2460002Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2460250Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2460513Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2460713Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2460921Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2463905Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2465212Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2466227Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132852 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2467001Z Function H_S3_vapor (0x560ceffb0410)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2467377Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2468511Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2474204Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2475352Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2475698Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2476332Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2476931Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2477566Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2478115Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2478398Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2478663Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2478868Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2479076Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2479603Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2480247Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2480913Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132852 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2481468Z Function H_S3_vapor (0x560ceffb0410)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2481834Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2487099Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2492505Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2493764Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2494353Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2495441Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2496356Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2509428Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2510312Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2510701Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2511130Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2511467Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2511803Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2512730Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2514114Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2515199Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132858 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2516105Z Function H_S3_vapor (0x560ceffb0410)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2516694Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2517248Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2518235Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2519443Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2519824Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2520462Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2521049Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2521663Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2522343Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2522597Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2522862Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2523061Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2523268Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2524246Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2525409Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2526572Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132864 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2527585Z Function H_S3_vapor (0x560ceffb0410)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2528234Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2528912Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2532291Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2533305Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2533930Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2534575Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2535156Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2535785Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2536353Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2536619Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2536882Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2537091Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2537302Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2537841Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2538485Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2539141Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132875 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2539693Z Function H_S3_vapor (0x560ceffb0410)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2540058Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2544940Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2550270Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2551358Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2551754Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2552388Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2553015Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2554111Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2554867Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2555132Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2555396Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2555599Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2555804Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2556344Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2556987Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2557815Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132909 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2558390Z Function H_S3_vapor (0x560ceffb0410)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2558756Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2564974Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2570512Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2571527Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2572064Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2572702Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2573270Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2574269Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2575231Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2575588Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2575859Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2576060Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2576267Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2576792Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2577447Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2578112Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404132972 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2578675Z Function H_S3_vapor (0x560ceffb0410)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2579034Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2583901Z Traceback (most recent call last):
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2589628Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/compile/casadi_backend.py", line 226, in eval
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2590701Z     return [ca.DM(list(self.block.values(inputs)))]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2591141Z                        ~~~~~~~~~~~~~~~~~^^^^^^^^
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2591777Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 190, in values
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2592355Z     result = self._request(state, ())
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2592972Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 171, in _request
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2593710Z     return _unwrap(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2594039Z         self._provider.evaluate_phase(
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2594298Z     ...<8 lines>...
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2594499Z         self._block_id,
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2594808Z     )
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2595671Z   File "/home/runner/work/openflowsheet/openflowsheet/src/openflowsheet/models/syn001/blocks.py", line 46, in _unwrap
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2596572Z     raise DomainError(f"{block_id}: {result.message}")
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2597228Z openflowsheet.compile.spec.DomainError: H_S3_vapor: temperature 84.07911404133097 K outside [280.0, 440.0] K
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2597786Z Function H_S3_vapor (0x560ceffb0410)
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:07.2598144Z Input 0 (i0): [1.29778, 1.5464, 1.79502, 84.0791, 100000]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.4416171Z structural_sha256 = ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.4416971Z events = 8, checks = 136
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5813938Z ##[group]Run PYTHONPATH=. python scripts/t02_identity.py --floats-out t02-floats.json
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5814598Z ^[[36;1mPYTHONPATH=. python scripts/t02_identity.py --floats-out t02-floats.json^[[0m
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5876969Z shell: /usr/bin/bash -e {0}
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5877222Z env:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5877415Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5877656Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5877865Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5878133Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5878579Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5879010Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5879408Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5879792Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5880190Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:27:58.5880546Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2310761Z ##[group]Run actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2311349Z with:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2311573Z   name: structural-identity-ubuntu-latest
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2311874Z   path: identity.json
+check (ubuntu-latest)	UNKNOWN STEP	t02-floats.json
+check (ubuntu-latest)	UNKNOWN STEP	
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2312142Z   if-no-files-found: error
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2312372Z   compression-level: 6
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2312582Z   overwrite: false
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2312789Z   include-hidden-files: false
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2313020Z   archive: true
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2313202Z env:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2313379Z   OPENBLAS_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2313853Z   OMP_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2314062Z   MKL_NUM_THREADS: 1
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2314323Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2314749Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2315163Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2315585Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2315962Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2316335Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.2316658Z ##[endgroup]
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.3758531Z Multiple search paths detected. Calculating the least common ancestor of all paths
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.3785085Z The least common ancestor is /home/runner/work/openflowsheet/openflowsheet. This will be the root directory of the artifact
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.3807902Z With the provided path, there will be 2 files uploaded
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.3842711Z Artifact name is valid!
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.3843360Z Root directory input is valid!
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.5906780Z Uploading artifact: structural-identity-ubuntu-latest.zip
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.5949481Z Beginning upload of artifact content to blob storage
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.7186925Z Uploaded bytes 190002
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.7348708Z Finished uploading artifact content to blob storage!
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.7350113Z SHA256 digest of uploaded artifact is 683ef11b40c1fd4d80f81fee412f84f45575485a8e354510c6b3d220cbd7b308
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.7351327Z Finalizing artifact upload
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.9871539Z Artifact structural-identity-ubuntu-latest successfully finalized. Artifact ID 12175074227
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.9873301Z Artifact structural-identity-ubuntu-latest has been successfully uploaded! Final size is 190002 bytes. Artifact ID is 12175074227
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:00.9876051Z Artifact download URL: https://github.com/computational-chemical-engineering/openflowsheet/actions/runs/39224203477/artifacts/12175074227
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.0042336Z Post job cleanup.
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.1262757Z Post job cleanup.
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.2585847Z Post job cleanup.
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.3383209Z [command]/usr/bin/git version
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.3427136Z git version 2.55.0
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.3460371Z Temporarily overriding HOME='/home/runner/work/_temp/35ada751-b38a-41a1-ad53-81adc14ce2db' before making global git config changes
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.3461454Z Adding repository directory to the temporary git global config as a safe directory
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.3465906Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.3494812Z Removing SSH command configuration
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.3501261Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.3534450Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.3764653Z Removing HTTP extra header
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.3765547Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.3800026Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4020743Z Removing includeIf entries pointing to credentials config files
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4027495Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4051082Z includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4052530Z includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4053947Z includeif.gitdir:/github/workspace/.git.path
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4054969Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4062023Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4083348Z /home/runner/work/_temp/git-credentials-29f045f7-4171-408b-b3ee-61e5c4f825d5.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4094201Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-29f045f7\-4171\-408b\-b3ee\-61e5c4f825d5\.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4128021Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4149603Z /home/runner/work/_temp/git-credentials-29f045f7-4171-408b-b3ee-61e5c4f825d5.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4165414Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-29f045f7\-4171\-408b\-b3ee\-61e5c4f825d5\.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4196971Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4218080Z /github/runner_temp/git-credentials-29f045f7-4171-408b-b3ee-61e5c4f825d5.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4225631Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-29f045f7\-4171\-408b\-b3ee\-61e5c4f825d5\.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4257261Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4278503Z /github/runner_temp/git-credentials-29f045f7-4171-408b-b3ee-61e5c4f825d5.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4288879Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-29f045f7\-4171\-408b\-b3ee\-61e5c4f825d5\.config
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4321232Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4547411Z Removing credentials config '/home/runner/work/_temp/git-credentials-29f045f7-4171-408b-b3ee-61e5c4f825d5.config'
+check (ubuntu-latest)	UNKNOWN STEP	2026-10-19T09:28:01.4686326Z Cleaning up orphan processes

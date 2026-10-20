@@ -21,8 +21,12 @@ cover; each test asserts what the code does today and nothing more.
 
 from __future__ import annotations
 
+import json
+import re
 import subprocess
+from collections import Counter
 from pathlib import Path
+from typing import Any
 
 import pytest
 from t07_corpus import CORPUS
@@ -186,17 +190,50 @@ def test_u13_no_mode_b_artifact_is_tracked() -> None:
     assert not any("wheelhouse" in path.lower().split("/") for path in _tracked())
 
 
+def _u14_violation(path: str, table: dict[str, Any]) -> str:
+    """Registration §23.1's path rule, implemented here and not imported from the generator:
+    `W27-A71` (confinement to the adaptation directory), `W27-A72` (campaign records only under
+    `runs/<campaign>/`) or "" (allowed)."""
+    adaptation = str(table["adaptation"])
+    lowered = path.lower()
+    if (
+        ("openidaes" in lowered or "crafts" in lowered)
+        and path.startswith(("src/", "benchmarks/"))
+        and not path.startswith(adaptation)
+    ):
+        return "W27-A71"
+    record = "/runs/" in path or path.rsplit("/", 1)[-1] in set(table["record_names"])
+    if path.startswith(adaptation) and record:
+        if re.match(str(table["campaign_path_pattern"]), path) is None:
+            return "W27-A72"
+    return ""
+
+
 def test_u14_no_external_benchmark_comparison_is_registered() -> None:
-    # R-194: v0.2's W27 adaptation records (R-175 to R-179) live under one directory and nowhere
-    # else; no comparison is run, registered with the benchmarks, or shipped in the package.
+    # R-194, restated by R-467 (M06 W27 registration §23.1): the adaptation records lie under one
+    # directory, the campaign's records under `runs/<campaign>/` only; nothing is registered with
+    # the benchmarks or shipped in the package. The path states are read as data.
+    registration = ROOT / "benchmarks" / "m06" / "openidaes450" / "registration.json"
+    table = json.loads(registration.read_text(encoding="utf-8"))["campaign_records"]["u14"]
+    # W27-A70: not registered, not shipped.
     registry = (ROOT / "benchmarks" / "registry.yaml").read_text(encoding="utf-8").lower()
     assert "openidaes" not in registry
     assert "crafts" not in registry
-    adaptation = "benchmarks/m06/openidaes450/"
-    named = [p for p in _tracked() if "openidaes" in p.lower() or "crafts" in p.lower()]
-    shipped = [p for p in named if p.startswith(("src/", "benchmarks/"))]
-    assert all(p.startswith(adaptation) for p in shipped), shipped
-    assert not any(Path(p).name in {"run.json", "campaign.json"} or "/runs/" in p for p in shipped)
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8").lower()
     assert "openidaes" not in pyproject
     assert "benchmarks/m06" not in pyproject
+    manifest = (ROOT / "MANIFEST.in").read_text(encoding="utf-8").lower()
+    assert "benchmarks" not in manifest
+    assert "openidaes" not in manifest
+    # W27-A71, A72: no tracked path violates either rule.
+    violations = {p: _u14_violation(p, table) for p in _tracked()}
+    assert [p for p, v in violations.items() if v == "W27-A71"] == []
+    assert [p for p, v in violations.items() if v == "W27-A72"] == []
+    # W27-A73: the rule rejects; each registered path state gives its registered value.
+    states = table["path_states"]
+    assert len(states) == 16
+    assert {s["path"]: _u14_violation(s["path"], table) for s in states} == {
+        s["path"]: s["violates"] for s in states
+    }
+    counts = Counter(s["violates"] for s in states)
+    assert counts == {"": 8, "W27-A71": 2, "W27-A72": 6}

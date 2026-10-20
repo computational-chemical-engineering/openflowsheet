@@ -46,7 +46,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 # --------------------------------------------------------------------------------------------
 # Plugin types CasADi exposes a `load_<type>` function for. A plugin of a type absent from this
@@ -886,30 +886,100 @@ def _closure_of(
     return seen
 
 
+# The `nlp` extra's modules (M07 spec §24.1, R-478). Each imports a distribution of the extra at
+# module level, so in the default install it cannot load and A30's measured half has nothing to
+# measure in it; MR-12 gives its closure to `docs/m03-ipopt-audit.md` and R-450. The list is
+# pinned both ways by `tests/test_p03_a30_workload.py` (S9.6); extending it takes a register entry.
+NLP_EXTRA_MODULES: Final = (
+    "openflowsheet.studies.nlp.greybox",
+    "openflowsheet.studies.trust_region.projection",
+    "openflowsheet.studies.trust_region.trf",
+)
+# The import names of the `nlp` extra's compiled or solver-bearing distributions.
+NLP_EXTRA_IMPORTS: Final = ("cyipopt", "pyomo")
+
 # The measured half of "unreachable from every project path": a child interpreter does what the
 # project does — imports every `openflowsheet` module and both bindings, solves SYN-001-nominal
-# through the CLI — and reports every object mapped from `site-packages`.
+# through the CLI — and reports every object mapped from `site-packages`. A registered `nlp`-extra
+# module must fail to import on one of the extra's own names, and that failure is recorded; any
+# other outcome fails the workload. `sys.argv[1]` is JSON: `package`, `nlp_modules`, `nlp_imports`,
+# `solve` (production passes `openflowsheet` and `true`; tests run a synthetic package without the
+# solve).
 _WORKLOAD = r"""
 import importlib, json, pkgutil, sys, tempfile
-import openflowsheet
-for module in pkgutil.walk_packages(openflowsheet.__path__, "openflowsheet."):
-    importlib.import_module(module.name)
-from openflowsheet.application import cli
-with tempfile.TemporaryDirectory() as scratch:
-    status = cli.main(["solve", "SYN-001-nominal", "--out", scratch + "/bundle"])
+spec = json.loads(sys.argv[1])
+package = importlib.import_module(spec["package"])
+registered = set(spec["nlp_modules"])
+nlp_imports = set(spec["nlp_imports"])
+walked = set()
+imported = 0
+nlp_extra = {}
+for module in pkgutil.walk_packages(package.__path__, spec["package"] + "."):
+    walked.add(module.name)
+    if module.name not in registered:
+        importlib.import_module(module.name)
+        imported += 1
+        continue
+    try:
+        importlib.import_module(module.name)
+    except ModuleNotFoundError as exc:
+        missing = (exc.name or "").split(".")[0]
+        if missing not in nlp_imports:
+            raise
+        nlp_extra[module.name] = missing
+    else:
+        raise SystemExit(
+            "the nlp extra is importable in the A30 environment: " + module.name
+            + "; A30 measures the default install and the server extra"
+        )
+for module in sorted(registered - walked):
+    raise SystemExit("registered nlp-extra module " + module + " is not an openflowsheet module")
+status = None
+if spec["solve"]:
+    from openflowsheet.application import cli
+    with tempfile.TemporaryDirectory() as scratch:
+        status = cli.main(["solve", "SYN-001-nominal", "--out", scratch + "/bundle"])
 mapped = set()
 with open("/proc/self/maps", encoding="utf-8") as handle:
     for line in handle:
         fields = line.rstrip("\n").split(None, 5)  # the path may contain spaces
         if len(fields) == 6 and "site-packages/" in fields[5]:
             mapped.add(fields[5].split("site-packages/", 1)[1])
-print(json.dumps({"solve_exit": status, "mapped": sorted(mapped)}))
+print(json.dumps({
+    "solve_exit": status,
+    "modules_walked": len(walked),
+    "modules_imported": imported,
+    "nlp_extra_modules": dict(sorted(nlp_extra.items())),
+    "mapped": sorted(mapped),
+}))
 """
+
+
+def workload_argument(
+    package: str = "openflowsheet",
+    nlp_modules: tuple[str, ...] = NLP_EXTRA_MODULES,
+    nlp_imports: tuple[str, ...] = NLP_EXTRA_IMPORTS,
+    *,
+    solve: bool = True,
+) -> str:
+    """`_WORKLOAD`'s `sys.argv[1]`."""
+    return json.dumps(
+        {
+            "package": package,
+            "nlp_modules": list(nlp_modules),
+            "nlp_imports": list(nlp_imports),
+            "solve": solve,
+        }
+    )
 
 
 def measured_project_load() -> dict[str, Any]:
     completed = subprocess.run(
-        [sys.executable, "-c", _WORKLOAD], capture_output=True, text=True, check=False, cwd=ROOT
+        [sys.executable, "-c", _WORKLOAD, workload_argument()],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=ROOT,
     )
     if completed.returncode != 0:
         raise SystemExit(f"the project workload failed:\n{completed.stderr[-2000:]}")
@@ -1060,9 +1130,13 @@ def a30_inventory(pyproject: Path, lock: Path) -> dict[str, Any]:
             "objects": sorted(required),
         },
         "measured_project_load": {
-            "workload": "import every openflowsheet module and both bindings; "
-            "openflowsheet solve SYN-001-nominal",
+            "workload": "import every openflowsheet module and both bindings except the nlp "
+            "extra's (MR-12: their closure is docs/m03-ipopt-audit.md's); openflowsheet solve "
+            "SYN-001-nominal",
             "solve_exit": measured["solve_exit"],
+            "modules_walked": measured["modules_walked"],
+            "modules_imported": measured["modules_imported"],
+            "nlp_extra_modules": measured["nlp_extra_modules"],
             "mapped": sorted(loaded),
         },
         "metis": {

@@ -265,8 +265,10 @@ def test_the_otherwise_passing_fixture_may_be_proposed() -> None:
 
 
 def test_the_registry_is_the_specification_s() -> None:
-    """§7.1 and the generator's targets: one gate set, its pattern, claims and inputs."""
-    assert [entry.name for entry in v0_2_gate.GATE_SETS] == [TARGETS["gate_set"]] == [SET]
+    """§7.1 and the generator's targets: the alpha's gate set, its pattern, claims and inputs. It
+    is the registry's first entry; M07 adds `v0.2-gate-v1` beside it (M07 spec §7.2, build log
+    J40), whose own tests are `tests/test_m07_v0_2_gate.py`."""
+    assert v0_2_gate.GATE_SETS[0].name == TARGETS["gate_set"] == SET
     assert ALPHA.covers.pattern == TARGETS["covers"]
     assert list(CLAIMED) == TARGETS["claimed"] and list(UNCLAIMED) == TARGETS["not_claimed"]
     assert ALPHA.envelope_id == TARGETS["envelope_id"]
@@ -287,6 +289,9 @@ def test_the_registry_is_the_specification_s() -> None:
 
 @pytest.mark.parametrize(("version", "covered"), TRUTH["T1_coverage"].items())
 def test_a01_coverage_is_table_t1(version: str, covered: bool) -> None:
+    assert bool(ALPHA.covers.fullmatch(version)) is covered
+    if not covered and v0_2_gate.gate_set_of(version) is not None:
+        return  # covered by M07's `v0.2-gate-v1` (M07.A30, Table T-V; build log J40)
     result = report(files(envelope=envelope(release=version)), version=version)
     output = v0_2_gate.text(result)
     assert result["tag_may_be_proposed"] is covered, result["reasons"]
@@ -1024,12 +1029,15 @@ def test_a09_e_c_absent_refuses_with_7_4_s_reason() -> None:
 
 def test_a10_the_envelope_must_be_pinned_to_the_alpha() -> None:
     assert report()["envelope_problems"] == []
-    # The real envelope in its working form: since the cut pins it (MR-3), the pin is undone
-    # here so the fixture stays the file a gate that does not read the envelope would pass.
+    # The real envelope in its working form: since a cut pins it (MR-3 for the alpha, O5 for
+    # 0.2.0), each pin is undone here so the fixture stays the file a gate that does not read
+    # the envelope would pass.
     today = (REPO_ROOT / ENVELOPE).read_text(encoding="utf-8")
     for pinned, working in (
         ("envelope_id: v0.2-alpha-envelope-1\n", "envelope_id: v0.2-envelope-dev\n"),
         ("release: 0.2.0a1\n", "release: 0.2.0.dev0\n"),
+        ("envelope_id: v0.2-envelope-1\n", "envelope_id: v0.2-envelope-dev\n"),
+        ("release: 0.2.0\n", "release: 0.2.0.dev0\n"),
     ):
         today = today.replace(pinned, working, 1)
     assert yaml.safe_load(today)["envelope_id"] == "v0.2-envelope-dev"
@@ -1218,12 +1226,13 @@ def test_a12_main_exit_codes_on_a_scratch_repository(
 def test_a12_main_on_an_uncovered_version(
     scratch: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    rc = _commit(scratch, {"pyproject.toml": '[project]\nname = "p"\nversion = "0.2.0"\n'}, "C")
+    # 0.2.1, not 0.2.0: M07's `v0.2-gate-v1` covers 0.2.0 (M07.A30; build log J40).
+    rc = _commit(scratch, {"pyproject.toml": '[project]\nname = "p"\nversion = "0.2.1"\n'}, "C")
     code, out, _ = _main(capsys, "--rc", rc)
     assert code == 1
     assert out == (
-        "version 0.2.0 is not covered by a registered v0.2 gate set\n"
-        "v0.2.0 tag may be proposed: NO (1 reasons)\n"
+        "version 0.2.1 is not covered by a registered v0.2 gate set\n"
+        "v0.2.1 tag may be proposed: NO (1 reasons)\n"
     )
 
 

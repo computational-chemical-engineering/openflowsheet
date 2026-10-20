@@ -7590,6 +7590,150 @@ limit.
 
 ---
 
+## R-331 — M07's journey: one decision (SPEC-S3-T), four rungs — stand-in, PyMRM v3, M04 surrogate only if PROMOTABLE, M05's REAL study
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §4.1–§4.3; ADR 0041 D1 |
+| Evidence | R-364 (M04 NOT_PROMOTABLE); M05 §7.6; no equilibrium reactor in the repository |
+| Affected packages | M07 |
+
+**Decision.** R0 = `c1.reactor_standin` and R1 = `c1.reactor` v3 on the nine-point grid 653.15 + 5k K; R2 records `SURROGATE_NOT_PROMOTABLE` with zero evaluations today; R3 = M05 `c1-trf-study-v1` REAL (stage A skipped).
+
+**Rejected alternatives, and why.** A dense grid (cost); a journey without M05 (the plan names refinement); an equilibrium rung (no model; spec §15 N3).
+
+**Watch for.** —
+
+## R-332 — Before/after decisions are compared by the parent's objective at both decisions against the sum of M05 noise floors (five FE classes, TC-1, bound activity)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §4.4; ADR 0041 D2 |
+| Evidence | registration `fixtures` (dyadic, boundaries exact) |
+| Affected packages | M07 |
+
+**Decision.** FE precedence NOT_DETERMINED, WORSE, UNCHANGED (|Δt| ≤ 0.5 K), CHANGED, WITHIN_RESOLUTION; TC-1 against the best verified R1 grid point; the journey's decision is R3's T* only if PARENT_LOCAL_EVIDENCE and TC1_HOLDS, else the grid best.
+
+**Rejected alternatives, and why.** Each rung judged by its own objective (the stand-in's is flat by construction); a decision from R0 or R2.
+
+**Watch for.** —
+
+## R-333 — R0's rung tolerance is 1e-12 relative, 8e3 above the measured 1.19e-16 spread; R0's J 0.46705958492513017 mol/s is a regression fixture
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §3 F2, §4.4.1; M07.A08 |
+| Evidence | measured at `wp/M07` e35b16d; GC-R0-1…3 |
+| Affected packages | M07 |
+
+**Decision.** INDIFFERENT is the closed-form expectation (ξ = 0.25 n_N2, T_out = T_in, fixed TP flash); the value is regression only; guard 0.40 < J ≤ 0.4975 (N balance).
+
+**Rejected alternatives, and why.** Treating the measured J as a reference value.
+
+**Watch for.** —
+
+## R-334 — W25 is met by eight reporting clauses (a)–(h); a changed decision, a converged study, an interior decision and a promotable surrogate are not required; TC1_CONTRADICTED is a limitation and a finding, not a FAIL
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §5; ADR 0041 D3 |
+| Evidence | blueprint §14.4 bullet 5 |
+| Affected packages | M07 |
+
+**Decision.** PASS iff all clauses hold; FAIL is missing or wrong evidence (replay mismatch, label disagreeing with the reference function, decision from R0/R2, unreported overrun, missing §11).
+
+**Rejected alternatives, and why.** Judging W25 on the outcome (the blueprint names the honest negatives).
+
+**Watch for.** —
+
+## R-335 — Budget `M07-budget-v1`: R0 0/600 s, R1 60/5400 s, R2 0/1200 s, R3 400/14400 s (M05's REAL); checked before each evaluation; exhaustion reported
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §4.5; ADR 0041 D4 |
+| Evidence | G12 walls 361.5/165.2/95.8 s, 4 experiments each; GC-COST-1, GC-BUDGET-1 |
+| Affected packages | M07 |
+
+**Decision.** R1's budget is at least 1.5 × the measured worst case for nine points.
+
+**Rejected alternatives, and why.** Unbounded R1; retrying after exhaustion.
+
+**Watch for.** —
+
+## R-336 — No job operation for the journey (closes M05 N-F7); one script `scripts/m07_journey.py`
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §4.6; ADR 0041 D5 |
+| Evidence | plan §2.1 frozen |
+| Affected packages | M07 |
+
+**Decision.** The journey composes existing application calls.
+
+**Rejected alternatives, and why.** An additive job operation (extends a frozen interface for one script).
+
+**Watch for.** —
+
+## R-337 — Reactor-dependent journey evidence carries between commits only by byte-identity of the registered determining files, else it is re-run; W27's campaign carries from C_W to C only if the served tool list, `list_models` and coverage rows are equal
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §4.6, §9; RC steps 15, 17 |
+| Evidence | G12 live re-run bitwise |
+| Affected packages | M07 |
+
+**Decision.** `carry.journey_files`, `carry.w27`; a differing W27 surface stops for Frank (money).
+
+**Rejected alternatives, and why.** Unconditional re-run at C (up to 5 h); carrying without an identity check.
+
+**Watch for.** —
+
+## R-338 — `v0.2-gate-v1` claims V11–V20 and W21–W27 for 0.2.0, 0.2.0bN, 0.2.0rcN; W24 BLOCKED on M03 N1 blocks the tag
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §7; ADR 0042 D1, D2 |
+| Evidence | registration `gate`; Table T-V 29 rows |
+| Affected packages | M07 |
+
+**Decision.** Frank items: Claim set, V17 carry, M02 N1, M03 N1; rejudge_waits adds (W24, M03 N1).
+
+**Rejected alternatives, and why.** Leaving W24 unclaimed (kept as Frank's alternative); carrying alpha acceptances.
+
+**Watch for.** —
+
+## R-339 — The gate script's clause grammar becomes a per-gate-set field; the alpha entry's value is its current CLAUSE, so its behaviour is byte-identical
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 |
+| Normative text | `docs/derivations/M07-spec.md` §7.2; ADR 0042 D4; M07.A31, A33 |
+| Evidence | alpha `scripts/v0_2_gate.py` @ 758a902 l.105 |
+| Affected packages | M07 |
+
+**Decision.** W23–W27 labels parse only under v0.2's grammar.
+
+**Rejected alternatives, and why.** Widening the module grammar (changes how the alpha reads stray W23–W27 tokens).
+
+**Watch for.** —
+
 ## R-340 — ADR 0027 is Accepted, with Amendments 1–4 (its acceptance condition is met by M01's and M02's `tested` manifests)
 
 | | |
@@ -8729,6 +8873,133 @@ name it.
 
 ---
 
+## R-420 — A missing noise floor is a value not determined: the pair is FE_NOT_DETERMINED, TC-1 is TC1_NOT_APPLICABLE (B never replaced), and no floor is read as 0
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.1 (J3); §4.4.3, §4.4.5 |
+| Evidence | GC-TC1-NULL: tc1-08 gives NOT_APPLICABLE/663 vs CONTRADICTED (e_B = 0) and HOLDS/653 (B skipped); tc1-09 gives NOT_APPLICABLE vs HOLDS (e* = 0) |
+| Affected packages | M07 |
+
+**Decision.** Interim confirmed. TC-1 is evaluated on R3's candidate values, not on P13's nulled `t_after`. `tc1.missing` names what is absent. M05's `noise_floor` returning None gives a null e_k.
+
+**Rejected alternatives, and why.** A separate label `TC1_NOT_DETERMINED`: `missing` already says what is absent, and a null floor fails W25 (e) whatever the label. Reading null as 0, or skipping B for a lesser point with a floor: each invents an answer.
+
+**Watch for.** `m05_parent_extras`' `e = 0.0 if floor is None` (defect, unreachable today).
+
+## R-421 — The budget's "would exceed" uses the largest per-evaluation cost seen in the rung (R1's cold prior: G12's 4 per loop); grid order; `check` re-derives the stop
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.2 (J4); §4.5 |
+| Evidence | Build log J4; G12 `experiments_per_loop` = 4 |
+| Affected packages | M07 |
+
+**Decision.** Interim confirmed. A point's `wall_s` includes its parent extras. `check` re-derives the NOT_EVALUATED(budget) points, the spent totals and the outcome from the recorded costs.
+
+**Rejected alternatives, and why.** A fixed worst-case estimate (G12's 361.5 s), which ties the stop to another machine's clock. Stopping only once over the cap, which permits an overrun by design.
+
+**Watch for.** Wall summation order (left to right, binary64) must match between the journey and `check`.
+
+## R-422 — `UNSUPPORTED(surrogate_loop_unavailable)` is registered: R2 under a PROMOTABLE verdict with no surrogate loop is a written, checkable refusal; W25 (a) is then not met (FAIL, not BLOCKED)
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.3 (J5); §4.6; ADR 0041 D6 (Amendment 1) |
+| Evidence | R-364: today's verdict is NOT_PROMOTABLE, so the path is dormant |
+| Affected packages | M07 |
+
+**Decision.** Third unsupported reason; exit 3; `check` accepts the record; the journey's decision is unaffected.
+
+**Rejected alternatives, and why.** An error with no record (silence). BLOCKED (reserved for evidence outside both lanes).
+
+**Watch for.** —
+
+## R-423 — Only out-of-process executions are cold reactor experiments; each grid point records `experiments` {cold, store_hit, in_process}, and Σ cold = the rung's spent cold
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.4 (J6); §6.1 |
+| Evidence | R0 live: 2 stand-in executions per point recorded as `cold` against a budget of 0 under the interim |
+| Affected packages | M07 |
+
+**Decision.** Charging rule confirmed; record replaced. Identities: cold + in_process = coupling executions (M05's `coupling_counts` split by unit kind); Σ cold = `budget.spent.cold`.
+
+**Rejected alternatives, and why.** Charging every execution and raising R0's budget: bills the synthetic rung and blurs W25 (g)'s reactor count.
+
+**Watch for.** —
+
+## R-424 — §6.1's state mapping confirmed; `extrapolated` counts the last coupling iteration only; A08 gains closed-form checks of X_pass, flows and duties
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.5 (J7); §6.1; A08; GC-R0-4 |
+| Evidence | R0 live (wp/M07 94819ea): X_pass − 0.25 = −2⁻⁵⁴; flow spreads 0.0; Q steps ≥ 640.4/616.5 W; iteration 0 extrapolated, final within domain |
+| Affected packages | M07 |
+
+**Decision.** |X_pass − 0.25| ≤ 2.5e-13 (4.5e3 above the floor); n_recycle, n_purge_NH3 spread ≤ 1e-12 rel; Q_preheater > 0 increasing, Q_flash < 0 decreasing in T.
+
+**Rejected alternatives, and why.** Counting all iterations: it reports the initial-guess excursion as an extrapolated result of a certified state that rests on none.
+
+**Watch for.** AQ1: confirm that the last iteration is the accepted one.
+
+## R-425 — R3's input is named by content (schema, study id, REAL budget, T* revision = c1-loop-real.json edited at T*, tracked), not by path; carry anchor; accounting copied, never defaulted
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.6 (J8); §4.6; A21; FD-3 |
+| Evidence | M05 LOOP-R record (wp/M05 5961915): no `budgets.wall_s`, no commit, `cold_used` = 63 = 40 + 23 |
+| Affected packages | M07 |
+
+**Decision.** A failed condition gives UNSUPPORTED(m05_study_unavailable) plus a limitation. Anchor: the record's commit, else M05's tested manifest listing its sha256, else re-run. Cold = `cold_used`; wall = M05's recorded wall or the journey's measurement, else null.
+
+**Rejected alternatives, and why.** Auto-discovery under `benchmarks/m05/` (ambiguous). Reconstructing wall from per-solve walls (undercounts).
+
+**Watch for.** The interim's two silent defaults (wall 0.0 from a missing key; `carried_from` = `"rerun"` for every carried record). AQ2, AQ3.
+
+## R-426 — P3 values at R3's decision come from a journey re-solve of T* with M05's `C1Parent.solve`, required to reproduce J* bitwise; every decision's constraints carry `margin`; OMP_NUM_THREADS=1 recorded and required
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.7 (J9); W25 (c); A23, A24 |
+| Evidence | M05's P3 record holds only {n, violated, worst_scaled_violation}; M05 runs need one OpenMP thread (digits change with the thread count) |
+| Affected packages | M07 |
+
+**Decision.** `t_star_resolve` cost is counted in the journey totals and not gated. A J* mismatch nulls the values with a limitation. `replay` refuses on a thread-setting mismatch.
+
+**Rejected alternatives, and why.** Changing M05's record schema (not M07's authority). Accepting M05's summary for R3 only (W25 (c) asks for values and margins).
+
+**Watch for.** —
+
+## R-427 — The journey's grid-only decision is R1's rung decision; the fallback reason is TC-1's outcome when R3's status is PARENT_LOCAL_EVIDENCE
+
+| | |
+| --- | --- |
+| Date | 2026-10-16 |
+| Decided by | design lane (`specifier`), M07 Amendment 1 (build-lane ruling round 1) |
+| Normative text | `docs/derivations/M07-spec.md` §18 A1.8 (J11); §4.4.7 |
+| Evidence | An INDIFFERENT R1 with exact ties: the literal rule picks 653.15 K (bound-active) while R1 decided 673.15 K |
+| Affected packages | M07 |
+
+**Decision.** Differs from "best verified point" only when R1 is INDIFFERENT. INSUFFICIENT_EVIDENCE iff R1's decision is null.
+
+**Rejected alternatives, and why.** The literal "best verified grid point": it reports a bound-active decision from differences the parent cannot resolve.
+
+**Watch for.** —
 ## R-430 — §7.4's at-bound distance stays 1e-6 as a classification; G8 and G9 stop gating Ipopt's offset
 
 | | |
@@ -8910,6 +9181,99 @@ re-judgement names it as a build-lane finding.
 
 ---
 
+## R-452 — The journey's bound activity is judged at the decision tolerance δ_T = 0.5 K, not at 10⁻⁶ scaled
+
+| | |
+| --- | --- |
+| Date | 2026-10-17 |
+| Decided by | design lane (`reviewer`), M07 review of WO-1/WO-4 (build log J29 c) |
+| Normative text | `docs/derivations/M07-spec.md` §19 A2.1 (replaces §4.4.6's tolerance); ADR 0041 D2 as amended |
+| Evidence | Record at J = `1623633`: T* − 653.15 K = 3.516e-5 K (1.758e-6 scaled); M05 re-run `poll[0].clipped` true; J(T*) − J(653.15) = −8.17e-9 against ε = 3.71e-6; R-430 (the REAL offset 1.76e-6); `docs/reviews/M07-review.md` MF1 |
+| Affected packages | M07 (A07, A11, A23; the journey record is re-taken) |
+
+**Decision.** A decision is `BOUND_LOWER` or `BOUND_UPPER` when it lies within δ_T of that bound. The registration sets
+`bound_tol_scaled` = δ_T / 20, and the formula is unchanged. Grid decisions do not change. R3's T* and a refined decision
+at Ipopt's barrier offset read bound-active and carry the bound phrase.
+
+**Rejected alternatives, and why.**
+- *10⁻⁶ scaled, M05 §7.4's distance.* M05's review found it blind to Ipopt's offset (R-430). It labels the headline
+  decision INTERIOR and drops the bound phrase.
+- *M05's two-clause G9 criterion.* It reads M05's poll structure and means nothing for grid decisions.
+- *Snapping T* to the bound.* R-430: it moves the candidate off TRF's point.
+
+**Watch for.** A future interior stationary point within 0.5 K of a bound now carries the bound phrase. That is
+intended: the journey cannot tell it from the bound.
+
+---
+
+## R-453 — The carry sets name the files that compute the carried result: `carry.r3_files` (M05's REAL entry point, its imports, the schema) and `carry.journey_files` (plus the journey's script and registration)
+
+| | |
+| --- | --- |
+| Date | 2026-10-17 |
+| Decided by | design lane (`reviewer`), M07 review (a finding, not a build-log item) |
+| Normative text | `docs/derivations/M07-spec.md` §19 A2.2 (amends §4.6 and A1.6 item 2); ADR 0041 D5 as amended |
+| Evidence | M05's REAL configuration lives in `scripts/m05_wo9_real.py` and `scripts/m05_wo8_runs.py`, which import from `tests/support/`; none is in the registered carry set; none changed in `cdacc32..1623633` (today's record is unaffected); `docs/reviews/M07-review.md` MF2 |
+| Affected packages | M07 (R3's carry, RC step 15, A21, A38) |
+
+**Decision.** R3 carries only if `carry.r3_files` are byte-equal between the anchor and J. That set is the old six
+entries, M05's REAL entry point with its `scripts/` and `tests/support/` import closure (generator self-claim
+GC-CARRY-1), and `schemas/trust-region-study.schema.json`. The journey carries from J to C only if
+`carry.journey_files` are byte-equal: that set is `carry.r3_files` plus `scripts/m07_journey.py` and
+`benchmarks/m07/registration.json`.
+
+**Rejected alternatives, and why.**
+- *`scripts/**`.* Unrelated edits would force re-runs.
+- *Relying on `replay` at C.* `replay` never re-runs M05's study.
+- *One list for both carries.* Journey edits would force R3 re-runs.
+
+**Watch for.** A new import in M05's REAL script. GC-CARRY-1 makes the generator refuse until the list follows.
+
+---
+
+## R-454 — R3's re-run: `R3:carry_identity_differs` registered; condition 5 judged on the committed re-run record; `m05_record.offered` states the record offered and why it was not carried
+
+| | |
+| --- | --- |
+| Date | 2026-10-17 |
+| Decided by | design lane (`reviewer`), M07 review (build log J22) |
+| Normative text | `docs/derivations/M07-spec.md` §19 A2.3 (adds to A1.6 items 2 and 3) |
+| Evidence | `scripts/m07_journey.py` `r3_rung` (re-run path, condition 5 waived at run time); `tests/test_m07_journey_record.py` A21 applies condition 5 to the committed re-run record; `docs/reviews/M07-review.md` SF2 |
+| Affected packages | M07 |
+
+**Decision.** The refusal code and the run-time waiver of condition 5 stand as built. A re-run record is W25 evidence only
+once it is committed with the journey; A21 and `replay` check it there. On a re-run the record names the offered M05
+record (path, sha256, anchor) and the reason it was not carried.
+
+**Rejected alternatives, and why.** Judging condition 5 at run time against a commit that does not exist yet, which is
+circular.
+
+**Watch for.** A re-run record left uncommitted while the journey record is cited.
+
+---
+
+## R-455 — `replay` takes from the record exactly the measured members and run-time digests listed in A2.4, re-derives everything else, and replays a journey-produced M05 re-run with M05's REAL replay
+
+| | |
+| --- | --- |
+| Date | 2026-10-17 |
+| Decided by | design lane (`reviewer`), M07 review (build log J27) |
+| Normative text | `docs/derivations/M07-spec.md` §19 A2.4 (interprets §6.4 and A24) |
+| Evidence | `scripts/m07_journey.py` `_settle`, `_replay_r3`, `_rederive`; the R3 re-run's coupling digests differ from M05's record only through `cache_hit` and attempts; replay at `c1f104f` bitwise, 13.4 s; `docs/reviews/M07-review.md` SF1 |
+| Affected packages | M07 (A24, A61), M05 (`m05_wo9_real.compare` gains a `stem` keyword; behaviour unchanged) |
+
+**Decision.** "Every number" means every number that is a function of the stored experiment records, the M05 record,
+the case files and the registration. `replay` takes these from the record: walls, coupling digests, experiment counts
+(once the served total matches), R3's carry label, `offered`, a re-run's wall, and refusal codes. A re-run M05 record is
+replayed by M05's REAL replay and must show no difference.
+
+**Rejected alternatives, and why.** Re-deriving the per-point count split from the archive: the archive does not link
+attempts to points, and A25 pins the totals by kind.
+
+**Watch for.** The list growing without an amendment.
+
+---
+
 ## R-456 — The alpha's ledger (A64) and changelog (A52) tests judge the record 0.2.0a1 released, read at the tag commit `423ae9c`; their universal halves stay on the working tree
 
 | | |
@@ -9069,5 +9433,664 @@ A new test enforces the rule:
   it.
 
 **Watch for.** The 0.2.0 cut sets `0.2.0`, pins `v0.2-envelope-1`, and re-takes G10 and W27 in the same commit.
+
+---
+
+## R-461 — M07.A31 restated beside A30: the alpha's behaviour stays byte-identical (AM-07), and its test module differs from the released one only in the three functions that assumed it was the only gate set
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M07 ruling round after WO-3 (build log J40) |
+| Normative text | `docs/derivations/M07-spec.md` §20 A3.1 (restated A31 in §11); ADR 0042 D4 and migration impact as amended |
+| Evidence | `039cbd8`: the one change to `tests/test_m07a_v0_2_gate.py` since `423ae9c`, in three functions (the registry's length; T1 rows 0.2.0, 0.2.0b1, 0.2.0rc1; the uncovered case moved to 0.2.1); AM-07 green at `271f70d` |
+| Affected packages | M07 (A31; a new `ast` test), V02 alpha (its test module, now under A31 (b)) |
+
+**Decision.** A30 stands. A31 = (a) AM-07 green; (b) the alpha's test module passes, and every top-level node equals
+the one at `423ae9c` except the three named functions (`ast.dump`); (c) the alpha entry's `clause`, `rejudged`, `adr`
+and `links_item` are the alpha's.
+
+**Rejected alternatives, and why.**
+- *A31 as written:* it cannot hold beside A30.
+- *"Edited only where they asserted the registry's size":* T1's rows asserted coverage, not size.
+- *A second registry for `gate_set_of`:* it still breaks the T1 and 0.2.0 cases, and it duplicates the registry.
+
+**Watch for.** Any later edit to the alpha's tests fails A31 (b) until a ruling amends its exempt list.
+
+**Amended 2026-10-19 (R-475).** The exempt list has a fourth function, `test_a10_the_envelope_must_be_pinned_to_the_alpha`,
+whose edit is pinned to exactly the two pairs `A10_PINS_0_2_0`.
+
+---
+
+## R-462 — The gate set's re-judgement grammar and ADR name are derived from `clause` and `policy_adr`; `links_item` is a registered per-set field (alpha none, `v0.2-gate-v1` `V17 carry`), whose row must name every `m07a_rc.LINKS` register at the candidate
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M07 ruling round after WO-3 (build log J39, J41) |
+| Normative text | `docs/derivations/M07-spec.md` §20 A3.2, §7.2 (`links_item` row), A3.7 G7 and G10 (GC-SET-3); ADR 0042 D4 |
+| Evidence | `0d5dbfb` (tests l.295–296: the alpha's derived values equal its constants); `d4680b7` (whole-id match; R-2950 and AR-295 refused); R-457 O3 |
+| Affected packages | M07 (A32 compares `links_item`; the registration is regenerated by A3.7) |
+
+**Decision.** J39 is kept as properties, not fields. J41's switch is registered: `gate.gate_sets.<set>.links_item`,
+which must be none or one of the set's `frank_items` (GC-SET-3). The registers are read with `ast` from the candidate's
+`scripts/m07a_rc.py`.
+
+**Rejected alternatives, and why.**
+- *Module-level grammar and ADR name:* W24's registered wait could never be listed, and the 0.2.0 report would name
+  ADR 0028.
+- *An unregistered `links_item`, or a check keyed on the set's name:* a switch that changes a release gate's answer
+  belongs in the registration.
+
+**Watch for.** A surface link added before C must also be added to ADR 0042's `V17 carry` default before Frank
+answers.
+
+---
+
+## R-463 — The 0.2.0 ledger test (O1) judges only where `v0.2-gate-v1` covers the working tree's version, and there a missing verdict document fails; on a `.devN` head it skips and names the version
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M07 ruling round after WO-3 (build log J43) |
+| Normative text | `docs/derivations/M07-spec.md` §20 A3.3; alpha-main rulings O1, R-456, R-460 |
+| Evidence | `8a4c4e0`: `tests/test_m07_ledger.py`; its fifth test pins three covered versions failing and three uncovered versions skipping |
+| Affected packages | M07 (O1) |
+
+**Decision.** Correct scoping, not a weakening: the skip predicate is the gate's own choice of gate set, so at every
+version where the 0.2.0 gate could say YES the tests judge. No per-gate package citation is required for W23–W27.
+After the tag, the test is scoped to the tag commit (R-456).
+
+**Rejected alternatives, and why.**
+- *No skip:* the test stays red on `main` until C.
+- *Per-package citations for W23–W27:* no ruling asks for them.
+
+**Watch for.** If the skip predicate is ever changed to anything other than `GATE_SET.covers`, the scoping argument
+fails.
+
+**Amended 2026-10-19 (R-476), a partial reversal.** The title's "there a missing verdict document fails" is
+reversed. There the four tests skip, naming the document, and they are judged at the candidate. The scoping argument
+and this entry's rejection of "no skip" stand. The Watch-for is restated in R-476.
+
+---
+
+## R-464 — For 0.2.0 the journey runs at the cut commit K, is committed later without touching `carry.journey_files`, and is carried from K to C by identity; RC step 15's and 17's refusal texts are registered
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M07 ruling round after WO-3 (build log J42; brief item 5) |
+| Normative text | `docs/derivations/M07-spec.md` §20 A3.4; §8 step 15, A37, A38, A61 as restated |
+| Evidence | J42: `--rc HEAD --carry-journey 974c395` → re-run (3 `src` files, 36 M05 files). `__version__` is in `src/openflowsheet/**`, which is in `carry.journey_files`. `benchmarks` is in D2.4 `TREES`. `benchmarks/m07/journey/**` is not in `carry.journey_files` |
+| Affected packages | M07 (WO-8, RC step 15), V02 release |
+
+**Decision.**
+1. K is the commit that sets `0.2.0` with O5's re-takes. The journey runs at K, and its record is committed later.
+2. C contains that record, and `--carry-journey K --rc C` must say carried.
+3. A change to `carry.journey_files` between K and C moves K.
+4. Nothing is re-taken before K.
+5. The J′ record stays WO-4's record. W25 at C cites K's record.
+
+The refusal texts are exact: `W27 campaign surface differs between C_W and C` and `step 15 requires a re-run of the
+journey at C`.
+
+**Rejected alternatives, and why.**
+- *"Re-run at C" literally:* the record's own commit would change C's D2.4 tree.
+- *A re-take at a J″ now:* it cannot carry past the cut.
+- *Narrowing `carry.journey_files`:* it reopens R-453 to save an hour of free compute.
+
+**Watch for.** Any build action that touches `scripts/m07_journey.py` or the registration must land before K.
+
+**Amended 2026-10-19 (R-477).** K is the first commit whose tree holds all of O5's list. It may follow a version
+commit A, and its G10 records then name A.
+
+---
+
+## R-465 — RC step 17's assertion is M07.A62 (the registration's A53 was wrong); a committed journey record is checked under the registration it records, accepted where that registration differs from the tree's in `gate` only
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M07 ruling round after WO-3 (build log finding F1) |
+| Normative text | `docs/derivations/M07-spec.md` §20 A3.5, A3.7 (G8, G9 GC-RC-2; states S1–S4); A10 as restated |
+| Evidence | Trial (reverted): with the delta, the registration differs from J′'s in `gate` only, and `test_a10_a11…[974c395]` fails on the digest. The journey script reads only `journey`, `report` and `carry`. Expected digest after the delta: `85e56dd5…282506b`. R-147's pattern |
+| Affected packages | M07 (generator, registration, `scripts/m07_journey.py` `check`) |
+
+**Decision.** The generator gives step 17 M07.A62, and GC-RC-2 ties `RC_STEPS` to §8's table and the catalogue.
+`check` accepts the record's digest if it matches either:
+- the tree's registration; or
+- the registration at the record's commit, provided it equals the tree's once `gate` is removed from both.
+
+Otherwise `check` refuses with one of two exact texts.
+
+**Rejected alternatives, and why.**
+- *Re-take the journey after every gate-only change:* an hour each, for a label.
+- *Leave A53:* the RC job would cite an id that does not exist.
+- *Delete or skip the J′ record:* a skip reads as success.
+- *Regenerate in a docs-only commit:* the default gate would be red until `check` changes.
+
+**Watch for.** Carry stays file identity (R-453): a gate-only change still breaks a carry.
+
+---
+
+## R-466 — ADR 0042's tables take the gate's headers (`Frank's acceptance`, `Frank's answer`), and its `V17 carry` default names R-192, R-234 and R-295; the gate's column names do not change
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M07 ruling round after WO-3 (build log finding F2) |
+| Normative text | `docs/adr/0042-v0.2.0-release-policy.md` (amended while Proposed); `docs/derivations/M07-spec.md` §20 A3.6, §15 N5 |
+| Evidence | `frank_table` (`scripts/v0_2_gate.py` l.470) found neither table before the edit and finds both after it; `link_registers(scripts/m07a_rc.py)` = R-192, R-234, R-295, all named in the row |
+| Affected packages | M07 (WO-6 keeps the headers; A42) |
+
+**Decision.** The ADR conforms to the gate. Its `V17 carry` default now names every link registered today.
+
+**Rejected alternatives, and why.**
+- *Teach the gate the ADR's headers:* this changes how the alpha entry reads (A31), or needs a third per-set field.
+
+**Watch for.** WO-6 adds rows only.
+
+---
+
+## R-467 — U14 is rewritten with the W27 campaign: still no comparison, records only under `runs/<campaign>/`
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M06 W27 registration Amendment 4 (§23.1, W27-R64), on the WO-5 readiness item Q1 |
+| Normative text | `docs/derivations/M06-W27-registration.md` §23.1; `benchmarks/t08/support_envelope.yaml` U14 (text given verbatim in §23.1); `registration.json#/campaign_records/u14` |
+| Evidence | W27-A70…A73 (`tests/test_t08_w2_unsupported.py::test_u14_…`, WO-17a); GC-A4-3 |
+| Affected packages | M06 (W27), M07 |
+
+**Decision.** This supersedes R-194's clause "no run or campaign record exists"; R-194's other clauses stand. U14 keeps
+its claim that no comparison with CRAFTS or any other system is made (W27-R57). Campaign records may exist only under
+`benchmarks/m06/openidaes450/runs/w27-m07-<hex 7–40>/`. Every other R-194 check stays: the registry, `src/`, the
+adaptation directory and `pyproject.toml`. `MANIFEST.in` is added. A registered set of path states shows that the rule
+rejects; without it the test would pass vacuously before the campaign.
+
+**Rejected alternatives, and why.**
+- *Narrowing the test to `registry.yaml` and `src/`.* R-194 rejected it.
+- *A new U-row for the campaign.* The capability is the same.
+- *Allowing any path under `runs/`.* A stray or misnamed directory would pass.
+
+**Watch for.** A second campaign (M07 N7) needs no change. Its directory follows the same pattern.
+
+---
+
+## R-468 — W27's draw precedes its canaries, and the order is proved by a digest chain, not by timestamps (M07.A50 restated)
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), registration §23.2 (W27-R65) and M07 spec §21, on the readiness item Q2 |
+| Normative text | registration §23.2; `registration.json#/campaign_records/{order,digest_chain,commit_rule}`; M07 spec §9, §7.3 W27 (c) and M07.A50 [A4] |
+| Evidence | GC-A4-2; W27-A78 (`order_check`), which M07.A50 calls |
+| Affected packages | M06 (W27), M07 (WO-17) |
+
+**Decision.** The order is coverage, draw, confirmation, canaries, preflight, runs, all at C_W. W27-R31 stands as
+written. Each record names the SHA-256 of earlier records, its predecessor among them. The campaign keeps the name it
+was given at its first coverage. A harness fix moves C_W, and records 1–3 are then re-made there.
+
+**Rejected alternatives, and why.**
+- *Keeping "canaries, draw" by redefining W27-R31.* This needs a smaller frame, which would change the sample
+  procedure after registration.
+- *Writing `sample.json` after the canaries although it was computed before them.* The record would state a false
+  order.
+- *Timestamps.* `coverage.json` and `sample.json` carry none, and `sample.json` cannot carry one, because its re-draw
+  must be byte-identical.
+
+**Watch for.** A C_W move overwrites records 1–3. If one happens, the build log records the old digests (A4-Q3).
+
+---
+
+## R-469 — W27's confirmation and preflight records: `confirmation/confirmation.json` (an empty C only) and `preflight.json`, written by the harness before run 01
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), registration §23.3 (W27-R66, W27-R67, W27-R58 amended), on the readiness item Q3 |
+| Normative text | registration §23.3; `registration.json#/campaign_records/{confirmation,preflight,run_json_added}` |
+| Evidence | W27-A74 (P5), W27-A75 (P8 and the writer); GC-A4-4 |
+| Affected packages | M06 (W27), M07 (M07.A51, G16) |
+
+**Decision.**
+- `harness confirm` writes the confirmation record for an empty C and refuses a non-empty C (exit 2, no file).
+- `harness campaign` writes `preflight.json` once, after P1–P8 pass and before run 01. A failing preflight writes
+  nothing. The standalone `preflight` command writes nothing.
+- P5 and P8 are restated: a `confirmation/` directory no longer fails P8.
+- Campaign `run.json` files carry `sample_sha256` and `preflight_sha256`. Canary `run.json` files carry `sample_sha256`
+  and `confirmation_sha256`.
+- G16's preflight term is established only through `preflight.json`.
+
+**Rejected alternatives, and why.**
+- *Shell-redirected preflight output.* Nothing then ties it to the runs.
+- *A record format for §7's builds now.* C is measured empty, and a format registered without a case would be a guess.
+- *P5 passing an empty C with no record.* Silence would read as success.
+
+**Watch for.** A non-empty C at C_W: stop, and the design lane registers §7's record.
+
+---
+
+## R-470 — W27 re-canaries: at most six numbered attempts in `canary/`, the three counted attempts all at C_W, and no re-run of a passed canary
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), registration §23.4 (W27-R68; §17 Q3's default made executable), on the readiness item Q4 |
+| Normative text | registration §23.4; `registration.json#/campaign_records/{canary_attempt_pattern,recanaries_max,canary_attempts_max,p6_states}` |
+| Evidence | GC-A4-1, GC-A4-5; W27-A76 (11 states) |
+| Affected packages | M06 (W27), M07 (WO-17) |
+
+**Decision.**
+- Attempts are named `canary/<NN>-<case_id>/`, NN 01…06, contiguous across the three cases.
+- The `canaries` command skips cases already passed at HEAD, stops at the first failure, and refuses attempt 07.
+- P6 passes iff each canary case's latest attempt passed at HEAD with a clean tree, no case was re-run after passing
+  at the same commit, and every attempt is on a canary case.
+- Attempts at an earlier commit are kept and counted in spend, but they do not count toward P6.
+
+**Rejected alternatives, and why.**
+- *Counting a canary that passed before a harness fix.* It certifies code the campaign does not run.
+- *Re-running a passed canary.* That re-rolls a check.
+- *One campaign directory per fix.* Spend and the cap would then have to add up across directories.
+
+**Watch for.** Frank may count fixes instead of attempts (A4-Q2). That change is one number in `campaign_records`,
+made before the first canary.
+
+---
+
+## R-471 — W27's model is Claude Code's default, read from the pinning canary attempt's `init`, and pinned by exact id with `--model` for every later attempt and run
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), registration §23.5 (W27-R33 made mechanical), confirming the brief's item 5 (readiness item Q5) |
+| Normative text | registration §23.5; `registration.json#/campaign_records/model_pin`, `p7_states` |
+| Evidence | GC-A4-6; W27-A77 (6 states) |
+| Affected packages | M06 (W27), M07 (WO-17) |
+
+**Decision.** The pinning attempt is the earliest canary attempt whose `init` carries a model id. It, and every
+attempt before it, runs without `--model`. Every later attempt and every run passes `--model <pin>`. `claude-sonnet-5`
+is never pinned; the harness stops and the question goes to Frank. P7 is restated to check this rule.
+
+**Rejected alternatives, and why.** *The session chooses among the catalogue's newest ids* (the runbook's text until
+now). The choice would be discretionary, made by the party being measured, and could be made after seeing results.
+
+**Watch for.** A4-Q1. If `init` reports an alias rather than a full id, the design lane rules before attempt 02.
+
+---
+
+## R-472 — An unpinned W27 canary attempt records `model` null and its `init` model as `pinned.model`; W27-A23 and M07.A51 read that rule
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), registration §23.12 (Amendment 4 addendum), ruling on the build decision of `b71d86c` (`harness._unpinned`, build log WO-17a) |
+| Normative text | registration §23.12; `registration.json#/campaign_records/run_json_added/pinned_model`, `run_json_model_states`, `p6_symbols`; M07 spec §21 (addendum) |
+| Evidence | GC-A4-7, GC-A4-8; W27-A79 (11 states, and one production-harness attempt) |
+| Affected packages | M06 (W27), M07 (WO-17, M07.A51) |
+
+**Decision.** In every `run.json`, `model` is the requested model, and null for an attempt run without `--model`.
+`pinned.model` equals `model` when `model` is a string. When `model` is null, `pinned.model` is `session.init.model`
+if that is a non-empty id other than `claude-sonnet-5`, and null otherwise. `model` may be null only in a canary
+attempt, that is, a record whose `campaign` ends in `/canary`. W27-A23 is restated to check this rule, and M07.A51
+applies it to every record, `canary/` included. The scorer is unchanged: for the pinning attempt its pin check holds by
+construction, and that attempt's model is checked by the session check, by `model_pin` and by P7. W27-A76's K is
+registered as `"f" * 40`.
+
+**Rejected alternatives, and why.** *Record the observed id in `model`, with a new `requested_model`.* It contradicts
+§23.3, P7 condition 3 and `p7_states` as registered and built. *Exempt unpinned runs from the scorer's pin check.* It
+changes a scoring rule, and it would let a record with no `init` model pass silently. *Leave `pinned.model` null.*
+Every unpinned attempt would fail, and the registered P7 states P7-T1 and P7-T5 could never occur.
+
+**Watch for.** A4-Q1 (an alias in `init`) is still open. If the scorer or P7 ever reads `pinned.model` as evidence
+about the pinning attempt's model, that is circular, and the design lane must be told.
+
+---
+
+## R-473 — M07 RC step 17 runs on the campaign operator's login, never on CI; the W27 identifier term carries to C by record identity; `campaign.json` is recomputed on a scratch copy and cited by SHA-256
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M07 spec §22 (Amendment 5), ruling on the W27 verdict's F-7 and L-W27-1 (`docs/reviews/W27-verdict-83f825d.md`) |
+| Normative text | M07 spec §22.1, §22.2; §8 step 17 and §11 M07.A62 [A5] |
+| Evidence | GC-W27-1, GC-W27-2 (`docs/derivations/scripts/m07_reference.py`, output unchanged); the rehearsal of 17a–17d at `c50e6fb` (§22.2) |
+| Affected packages | M07 (WO-8, M07.A62), M06 (W27 record `w27-m07-83f825d`) |
+
+**Decision.** Step 17 runs in WO-8 on the login that ran the campaign. It uses a clean checkout of C, the project
+environment, and `CLAUDE_CONFIG_DIR` unset. Every file it writes goes into a fresh directory outside the repository.
+- **17a:** the git tree of the campaign directory at C is `95f9fcf2…895a`, the tree at `89cd931` and at `c50e6fb`.
+- **17b:** coverage at C goes to a scratch `--out`, never M06's committed file.
+- **17c:** `v0_2_gate.py --carry-w27` compares the three members that §22.2 defines.
+  `served_tool_list_sha256` is `tool_descriptions_sha256()`, recorded as `campaign.json#/surface`. `list_models` is
+  compared through `list_models_sha256`. The coverage rows are `coverage.json#/rows`.
+- **17d:** `harness aggregate` runs on a copy, and `diff -r` against the record is empty. `campaign.json` is
+  `4812910a…9e28`.
+
+The address is read by `operator_address()`, and never passed, written or logged. If the harness refuses the address
+as unreadable, step 17 is `unsupported`, which is not a pass. W27-R56's identifier term carries by record identity
+(17a), whichever login recomputes, and the recomputing login is not recorded (L-A5-1). The campaign's aggregate is
+always cited by its full SHA-256, because the superseded file shares its schema id.
+
+**Rejected alternatives, and why.**
+- *Run on CI or on any login, with a new `aggregate` mode that leaves out the address and carries the term from the
+  record.* It needs new harness code and produces a hybrid document that is not a recompute.
+- *Record the address or its hash.* R6.6 forbids it, and the hash can be reversed by guessing.
+- *Carry `campaign.json` by identity alone.* It loses the check that the aggregation code at C reproduces the judged
+  bytes.
+- *Recompute in place.* It dirties C.
+- *A `benchmarks/m07/registration.json` member.* That file is a journey carry file, so changing it after K forces
+  the journey to be re-run at C.
+
+**Watch for.**
+- A change to any file of the campaign directory now fails GC-W27-2 in the gate. It needs a new verdict and an
+  amendment, not a re-pin.
+- If the aggregation code changes between `89cd931` and C, 17d fails by design.
+
+---
+
+## R-474 — W27-R02 stands for every coverage under the W27 registration, step 17's at C included; the "a case's own `units.json` can hide a unit" fix (F-1) goes to the next OpenIDAES-450 registration
+
+| | |
+| --- | --- |
+| Date | 2026-10-18 |
+| Decided by | design lane (`specifier`), M07 spec §22.4 (Amendment 5), ruling on the W27 verdict's F-1 |
+| Normative text | M07 spec §22.4; W27 registration W27-R02 (unchanged) |
+| Evidence | the verdict's F-1: 5 of 138 comparable `units.json` cases omit a non-boundary topology kind, and only `official_idaes_skeleton_pervaporation` (run 26) loses its only unavailable process unit |
+| Affected packages | M06 (W27), M07 (step 17), the OpenIDAES-450 split registration (`docs/briefs/OpenIDAES-split-registration.md`) |
+
+**Decision.** W27-R02 is not amended under the W27 registration. Amending it would change at least run 26's coverage
+row, and with it step 17's `coverage_rows` carry, and it would change the basis of a campaign already scored. Run 26's
+`WRONG_LIMITATION` stands. The first registration after `w27-m07-83f825d` that classifies OpenIDAES-450 carries the
+fix. The split registration is expected to be that one.
+
+Its recommended default has four parts:
+- A case's units are the `units.json` units together with each non-boundary `topology.json#/units` unit whose kind no
+  `units.json` entry has.
+- Each unit taken from the topology is marked so in its reason.
+- W27-A08's case keeps exactly one unit reason.
+- If the split stratifies by blocking class, it states which R02 its strata use.
+
+**Rejected alternatives, and why.**
+- *A flag alone (`map_defect_candidate`).* It leaves the wrong class in place.
+- *Amending R02 now.* It breaks step 17's carry and re-bases a scored campaign.
+- *Re-scoring run 26.* The verdict rejected it.
+
+**Watch for.** A union with the topology's units can make an internal sub-block a unit. W27-A08 is the registered
+state that catches it.
+
+---
+
+## R-475 — `test_a10_the_envelope_must_be_pinned_to_the_alpha` is A31 (b)'s fourth exempt function, and its edit is pinned to the two pairs that undo 0.2.0's envelope pin
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 5 (build log J49, Q-K1) |
+| Normative text | `docs/derivations/M07-spec.md` §23.1 (restated A31 in §11 [A6]); ADR 0042 migration impact as amended |
+| Evidence | the K draft `c38e1ba`: `'v0.2-envelope-1' == 'v0.2-envelope-dev'` fails. The pairs' match counts in the envelope at `423ae9c`, `be7a06d` and `853e7e3` are 1/1/0/0, 0/0/0/0 and 0/0/1/1, and the result after the four pairs is the working form at all three (§23.1 table) |
+| Affected packages | M07 (A31 (b); a new `ast` test), V02 alpha (its test module) |
+
+**Decision.** The edit appends `("envelope_id: v0.2-envelope-1\n", "envelope_id: v0.2-envelope-dev\n")` and
+`("release: 0.2.0\n", "release: 0.2.0.dev0\n")` after the alpha's two pairs, and changes nothing else. A new test
+asserts that the function equals the tagged one once its loop's tuple is restored, and that the tuple is the tagged one
+plus exactly these two pairs.
+
+**Rejected alternatives, and why.**
+- *Undoing any pin by pattern:* it hides what is undone, and a later pin would pass without a ruling.
+- *Skipping the test at a covered version:* it is also an edit, and it drops the check where it matters.
+- *Leaving the failure:* K would be red with a known cause.
+
+**Watch for.** The next release's cut (0.2.x, 0.3.0) breaks `test_a10_…` the same way, and it needs its own ruling.
+
+---
+
+## R-476 — At a covered version the 0.2.0 ledger tests skip, naming the document, while `docs/reviews/V02-verdicts.md` is absent; they are judged at the candidate, where step 18 runs only after 5 passed and 0 skipped (partial reversal of R-463)
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 5 (build log J49, Q-K2) |
+| Normative text | `docs/derivations/M07-spec.md` §23.2, §8 [A6]; A3.3 as amended |
+| Evidence | `c38e1ba`: the four setup errors. WO-7 depends on RC steps 1–17 (§13), so under R-463 C itself is red. The gate without the document at 0.2.0, 0.2.0b1 and 0.2.0rc2 answers NO, with 22 reasons, the first `docs/reviews/V02-verdicts.md does not exist at the candidate`. Alpha precedent: §19.4, R-373, `9324a91` |
+| Affected packages | M07 (O1; RC step 1; step 18's precondition) |
+
+**Decision.** `at_c` skips if the version is not covered (S-UNCOV), and otherwise if the document is absent (S-ABSENT),
+in that order. Its fifth test pins four things: covered with the document judges; uncovered skips with the document
+present and with it absent; covered without the document skips with S-ABSENT. A new gate test pins the NO without the
+document. At C, step 1 is green with exactly these four skips. At the candidate (after WO-7 and the ledger) the module
+gives 5 passed and 0 skipped before step 18 is run for YES.
+
+This reverses R-463's half "at a covered version a missing document fails". What changed is that R-463 did not
+consider the RC order: the document cannot exist at C, so step 1 could never pass.
+
+**Rejected alternatives, and why.**
+- *R-463 unchanged:* C is red by construction, so RC step 1 cannot pass.
+- *No skip:* still rejected (R-463).
+- *Adding the ledger test only after the verdicts, as the alpha did:* the test already exists (O1). Removing it and
+  re-adding it is churn, and it leaves no executable check that the skip is the only path.
+
+**Watch for.** Each skip condition must be the negation of a condition the gate itself requires for YES, and must be
+pinned by a gate-side test: (i) `GATE_SET.covers`, with A30; (ii) the document's presence, with
+`test_o1_the_gate_refuses_a_candidate_without_its_verdict_document`. A third condition needs the same pairing.
+
+---
+
+## R-477 — The cut is two commits: A sets 0.2.0 and pins the envelope; K = A + the G10 re-take taken from A's clean tree; K is the journey commit, and A needs no journey
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 5 (build log J48, Q-K3) |
+| Normative text | `docs/derivations/M07-spec.md` §23.3, §23.4; A3.4 item 1 as amended |
+| Evidence | the draft: `853e7e3..c38e1ba` is 36 files, all under `benchmarks/m05/`. The five records state `run_commit` `853e7e3…` and `tree_clean: true`. Precedent E7 → E6 (`docs/design/V02-alpha-main-rulings.md`) |
+| Affected packages | M07 (WO-8a, the journey at K) |
+
+**Decision.** K is the first commit whose tree holds all of O5's list. The R-475/R-476 test commit F comes before A,
+and A is re-cut on F. The re-take must reproduce E6's counts. `git diff A K` lists only `benchmarks/m05/**`. Each
+record's `run_commit` is A. AM-23 at K gives 5 passed. A and K are merged, never squashed or rebased.
+
+**Rejected alternatives, and why.**
+- *One commit:* its records would name a commit outside its history, or record `tree_clean: false`.
+- *A as the cut:* a journey at A cannot carry, because `benchmarks/m05/**` is in `carry.journey_files`.
+
+**Watch for.** A squash of A into K makes every G10 record's `run_commit` unreachable.
+
+---
+
+## R-478 — RC step 9 at C′: the A30 workload imports every module except the three registered `nlp`-extra modules, which must fail on cyipopt or pyomo and are recorded; MR-12 judges the `nlp` extra by its own audit and R-450
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J59, J62, J63; Q1) |
+| Normative text | `docs/derivations/M07-spec.md` §24.1 (S9.1–S9.6); §8 [A7] |
+| Evidence | `scripts/p03_binary_inventory.py:892-906` imports every walked module (182 at C) and stops at the first failure. Exactly `studies/nlp/greybox.py:60` (cyipopt), `studies/trust_region/projection.py:123` and `trf.py:86` (pyomo) import an `nlp`-extra distribution at module level. Extras are `dev`, `server` at `v0.1.1` and `dev`, `server`, `nlp` at C. `_m_mr12_extras` fails every new extra. T08 release spec l. 478; alpha MR-12 |
+| Affected packages | M07 (WO-8c, RC step 9); T08's A30 instrument |
+
+**Decision.** The workload walks every module. A registered module (`NLP_EXTRA_MODULES`, three names) must raise
+`ModuleNotFoundError` on a name in `NLP_EXTRA_IMPORTS` = (cyipopt, pyomo), and is recorded in
+`measured_project_load.nlp_extra_modules`. The workload fails in any of these cases:
+- a registered module imports;
+- a registered module fails another way;
+- a registered name is not walked;
+- an unregistered module fails.
+
+At C′, `modules_walked` is 182 and `modules_imported` is 179. MR-12 for `nlp` is judged by a new measure
+`mr12_extras_v02`, which needs: the audit and inventory present at C′, step 14's `a60.w24.nlp_tier_and_inventory`
+`pass` at C′, and R-450. The alpha's `_m_mr12_extras` stays byte-identical. An AST test keeps the registered list
+equal to the modules that import the extra.
+
+**Rejected alternatives, and why.**
+- *Import-guard the modules:* `src/**` is a journey file, so K would move; it also hides the dependency.
+- *Install the extra for A30:* contradicts MR-12's separation.
+- *Catch `ImportError`:* a silent success path.
+- *Accept the FAIL under D3:* it is an instrument defect, not a licence finding.
+
+**Watch for.** A new module that imports pyomo or cyipopt fails A30 until the list is extended by a register entry.
+Each entry removes a module from A30's measured half.
+
+---
+
+## R-479 — A failing T08.A30 fails CI's `rc-steps` job after its artifacts are uploaded; `a30.log` carries stderr
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J62; Q1) |
+| Normative text | `docs/derivations/M07-spec.md` §24.2 (CI.1, CI.2) |
+| Evidence | At C, both runners' `rc-steps` concluded `success`. `a30.log` held only `a30 exit status 1`, and the cause appeared only in the job log (`ci.yml:816-821`, `set +e`, stdout-only `tee`) |
+| Affected packages | M07 (WO-8c); the CI workflow |
+
+**Decision.** The A30 step pipes `2>&1` into `a30.log`. A last `if: always()` step, after the upload, fails the job
+unless `a30.log` has the line `a30 exit status 0`. Step 9's verdict is still read from the A30 summaries, not from the
+job conclusion.
+
+**Rejected alternatives, and why.**
+- *Keep reading the record only:* a green job on a failing A30 is a success signal with nothing behind it.
+- *Drop `set +e`:* the record must be written and uploaded before the job stops, which was T08's reason.
+
+**Watch for.** —
+
+---
+
+## R-480 — G11 at C′ is re-taken with `--d78` set to a registered extract of D78's recorded values and without `--previous-runs`; the verdict may not claim that D78's file was read
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J64; Q2) |
+| Normative text | `docs/derivations/M07-spec.md` §24.3 (S12.1–S12.5); generator `docs/derivations/scripts/m07_g11_d78_extract.py` (E1–E5) |
+| Evidence | `g11-exp.json` (`afa7325a…`) and the WO-12a′ raw runs (`0656f617…`) are lost. Four committed records (`benchmarks/m02/g11-coverage-v3.json` and the step-12 records of `e0e198e`, `cc73219`, `6fec822`) name `afa7325a…` and quote every value the script reads, identically. Measured in this round: the script's own `summarise`/`inertness`, fed the extract and no raw runs, reproduce every member of all three alpha step-12 summaries; the one exception is `G11v3-11.stage_steps_from` (`"points"`). Extract sha256 `a118c62a…` |
+| Affected packages | M07 (WO-8c, RC step 12); W21's G11 |
+
+**Decision.** At C′, G11 runs as at the alpha, except `--d78 docs/derivations/scripts/m07_g11_d78_extract.json` and no
+`--previous-runs` (D100's fallback, shown equivalent at the three alpha RCs). The record's D78-derived members must
+equal `6fec822`'s. The registered G11v3 clauses and tolerances are unchanged.
+
+**Rejected alternatives, and why.**
+- *Carry G11 from `6fec822`:* `src/openflowsheet/**` differs, there is no registered carry rule, and A43 requires
+  `commit` = C.
+- *Rebuild D78:* the patch is lost, so a rebuild would be a new experiment.
+- *Edit the script:* `benchmarks/m02/**` is a journey file, so K would move.
+- *`BLOCKED`:* the input can be reconstructed within the design lane's authority.
+
+**Watch for.** A later change to `g11_coverage_v3.py` that reads a further member of `--d78` breaks the extract's
+sufficiency. S12.1's test catches this in the default gate.
+
+---
+
+## R-481 — ADR 0031 and ADR 0032 (D1–D6, with Amendment 1) are Accepted; their conditions are met by M03's `tested` manifest, the review closure and R-450
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J57; Q3) |
+| Normative text | the two ADRs' Status lines; `docs/derivations/M07-spec.md` §24.4 |
+| Evidence | `evidence/M03/a35885b…/manifest.json`: `tested`, 52/52 `pass`. `docs/reviews/M03-review.md`: no must-fix in WO-1–WO-5, WO-2a or WO-5a; F1 `ca3d833` with CI 39007361803 green on both runners and `default-install`; F2 `15884bb`; A40 per Q1 `18882f1`. N1: R-450. The audit `docs/m03-ipopt-audit.md` passed. `a35885b` is an ancestor of C |
+| Affected packages | M03 (closed); M07 (§7.2's required ADRs) |
+
+**Decision.** Both move from Proposed to Accepted, 2026-10-19. ADR 0032's audit-failure clause does not apply, because
+the audit passed and N1 is recorded.
+
+**Rejected alternatives, and why.** *Waiting for Frank:* neither ADR's condition names him beyond N1, which is
+recorded. *A second review pass:* not required (R-410).
+
+**What it does not establish.** No `reviewed` status and no human sign-off. The manifest's `review` fields stay
+`pending`.
+
+**Watch for.** —
+
+---
+
+## R-482 — ADR 0038 and ADR 0039 are Accepted; their conditions are met by M05's `tested` manifest and the closed must-fix MF1
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J57; Q3) |
+| Normative text | the two ADRs' Status lines; `docs/derivations/M07-spec.md` §24.4 |
+| Evidence | `evidence/M05/56fb2fa…/manifest.json`: `tested`, 14/14 `pass` (G1–G13, G5b). `docs/reviews/M05-review.md`: one pass over WO-1…WO-9 at `7350684`; MF1 closed by `cdacc32` (R-432), `RETAKE-DIFF PASS`, 0 differences (M05 build log S70). `cdacc32` and `56fb2fa` are ancestors of C |
+| Affected packages | M05 (closed); M07 (§7.2's required ADRs) |
+
+**Decision.** Both move from Proposed to Accepted, 2026-10-19.
+
+**Rejected alternatives, and why.** *A second review pass over MF1:* the review prescribed its own proof, a 0-difference
+re-take diff, and the build log records it (R-410's reasoning).
+
+**What it does not establish.** No `reviewed` status and no human sign-off.
+
+**Watch for.** —
+
+---
+
+## R-483 — M07.A24 is judged for a journey record at its own commit and wherever its carry holds; elsewhere the opt-in replay test skips with a registered reason
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (build log J55; Q4) |
+| Normative text | `docs/derivations/M07-spec.md` §24.5 (J.1) |
+| Evidence | J′'s (`974c395`) replay passes at `c4e8467` and diverges from `d3c72cb` on (`replay diverged: a cold execution at …`), because the version moves changed the request digests its archive is keyed by. K's (`2c508b5`) replay passes |
+| Affected packages | M07 (WO-8c; `tests/test_m07_journey_record.py`) |
+
+**Decision.** `test_a24_replay_reproduces_the_record_bitwise` skips a record when
+`m07.carry_identical(record["commit"], m07.JOURNEY_CARRY)` is false. The skip text names the commit, §24.5 and R-483.
+J′'s A24 stands as judged at J′. At C′, the test gives 1 passed and 1 skipped.
+
+**Rejected alternatives, and why.**
+- *Assert that J′ refuses:* this over-constrains, since a reproduction there would not be wrong.
+- *Leave the test red:* a known-red test hides the next real failure.
+- *Delete J′:* rejected by A3.5.
+
+**Watch for.** —
+
+---
+
+## R-484 — C = `c899c85` is superseded: the RC job runs steps 1–17 in full at a re-cut C′; nothing carries from C; K stays `2c508b5`
+
+| | |
+| --- | --- |
+| Date | 2026-10-19 |
+| Decided by | design lane (`specifier`), M07 ruling round 6 (Q5) |
+| Normative text | `docs/derivations/M07-spec.md` §24.6 (RC.1–RC.3), §24.7 |
+| Evidence | Step 9 failed and step 12 did not pass at C (J59–J64). R-478–R-480 change `scripts/`, `tests/`, `.github/` and `docs/` only, with no file of `carry.journey_files`. Precedent: alpha §18.4 item 3 (all steps at the re-cut; M07a.A43 needs `commit` = C) |
+| Affected packages | M07 (WO-8c) |
+
+**Decision.** C′ descends from C, and `git diff c899c85 C′` touches none of `src`, `benchmarks`, `schemas`,
+`requirements.lock` or `pyproject.toml`. `--carry-journey 2c508b5 --rc C′` says carried, so no journey runs. Steps
+1–17 re-run at C′. C's records are kept under `evidence/M07/c899c85…/rc/`, never `tested`, with no RC record.
+
+**Rejected alternatives, and why.** *Carry steps from C by identity:* no registered determining-file sets exist for
+steps 1–14 or 16, the alpha's §4 rule 3 and A43 require records at C′, and the re-run costs only free compute.
+
+**Watch for.** Any build action that touches a journey file moves K and needs about an hour of journey (§23.3's
+conditions).
+
+---
+
+## R-485 — The 0.2.0 harvest is C′'s: M07's own manifest, written after C′, is excluded like M07a's after `C_α`; M07a's manifests are deferred with it to the next harvest
+
+| | |
+| --- | --- |
+| Date | 2026-10-20 |
+| Decided by | design lane (`specifier`), M07 ruling round 7 (build log J83 (b)) |
+| Normative text | `docs/derivations/M07-spec.md` §25 (Amendment 8) |
+| Evidence | At `456e2f9` (no change since C′ = `ce99365` to `benchmarks/t08/`, the matrix script or the two tests): harvest (31, 372, 33), 405 envelope rows; C′'s tree holds 0 `evidence/M07/**/manifest.json`; with M07's manifest present, (32, 378, 36) and unmapped A21 items (J83). A31 (b) guards `tests/test_m07a_v0_2_gate.py` only. |
+| Affected packages | M07 (WO-8e: `HARVEST_EXCLUDED`, `test_m07a_a50_nothing_is_excluded…`, one manifest limitation); the next envelope's package (removes both exclusions, harvests M07a's and M07's manifests) |
+
+**Decision.** `HARVEST_EXCLUDED = ("evidence/M07a/", "evidence/M07/")`. `HARVEST_SIZE` and T08.A21's test are
+unchanged. The A50 test asserts the pair and that C′'s tree holds no M07 manifest. R-320's "M07 harvests M07a's
+manifest" is amended: deferred to the next harvest (default of A8-Q1, Frank's preference open). M07's manifest states
+the deferral as a limitation. A31 (b)'s exempt list is not amended.
+
+**Rejected alternatives, and why.**
+- *Moving `HARVEST_SIZE` to (32, 378, 36) and adding envelope rows for M07's items:* this edits the released envelope
+  after C′, which needs a re-cut (R-484).
+- *Scoping the harvest to `C_α`'s tree:* (31, 372, 33) is not `C_α`'s size, which was (23, 316, 29).
+- *Re-cutting C″ to harvest M07a's 42 items:* this costs a full RC for 0.2.0. It is left to Frank as A8-Q1.
+
+**Watch for.** `HARVEST_EXCLUDED` holding anything beyond these two after 0.2.0. The next envelope that still
+excludes either of them.
 
 ---

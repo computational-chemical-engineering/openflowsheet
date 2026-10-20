@@ -1,0 +1,10 @@
+{
+  "campaign": "w27-m07-83f825d",
+  "candidates": [],
+  "commit": "83f825dd787b175a8177038f840be1573176f1ab",
+  "coverage_sha256": "e1f2136c4700afaa462ad314c8fc7f4c3a6fcd229c4e2ee4c7a8e9fd55d31e15",
+  "empty": true,
+  "sample_sha256": "33f146ece4fec078b8a464059f27d7256439941d6340de214352efb37b1a92bf",
+  "schema": "w27-confirmation-v1",
+  "tree_clean": true
+}

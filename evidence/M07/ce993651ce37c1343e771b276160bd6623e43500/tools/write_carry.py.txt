@@ -1,0 +1,33 @@
+"""M07 WO-8b, RC step 17c (M07 spec §22.2, "The carry members"): write `$S/at-cw.json` from the
+committed campaign record and `$S/at-c.json` from C, member by member as §22.2's table defines them.
+
+    python write_carry.py <checkout of C> <$S>
+"""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+rc, s = Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve()
+record = rc / "benchmarks/m06/openidaes450/runs/w27-m07-83f825d"
+campaign = json.loads((record / "campaign.json").read_text(encoding="utf-8"))
+coverage = json.loads((record / "coverage.json").read_text(encoding="utf-8"))
+coverage_at_c = json.loads((s / "coverage-at-C.json").read_text(encoding="utf-8"))
+sys.path.insert(0, str(rc))
+from benchmarks.t07.v17 import harness  # noqa: E402
+
+at_cw = {
+    "served_tool_list_sha256": campaign["surface"]["tool_descriptions_sha256"],
+    "list_models": coverage["list_models_sha256"],
+    "coverage_rows": coverage["rows"],
+}
+at_c = {
+    "served_tool_list_sha256": harness.tool_descriptions_sha256(),
+    "list_models": coverage_at_c["list_models_sha256"],
+    "coverage_rows": coverage_at_c["rows"],
+}
+for name, document in (("at-cw.json", at_cw), ("at-c.json", at_c)):
+    (s / name).write_text(json.dumps(document, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+print("wrote", s / "at-cw.json", s / "at-c.json")

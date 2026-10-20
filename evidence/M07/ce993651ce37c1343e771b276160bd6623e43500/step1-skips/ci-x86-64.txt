@@ -1,0 +1,68 @@
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): b44dea0e96eb61f42f34249eee69a20d1ddb6a8a is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 1baaf033be114e4e44bf982ecee8716b0f040519 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): c806f83fd3fb0e71967235000fb517fc1c26efd4 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): bf3d9eef3698e364ceb9d1aaafb80e6ed16b5e29 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): b0a7fe766c35f6491dfc53ecab3101199d221850 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): cda68cd446be27992051d43422336ad5f9430fe8 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 07a7ff01fd2767f7ad34a6442c5a817536ac0a6d is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 05406c803a95e8c154476607c5c3db6de84f78e4 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 507dccfaa46fa905b651ba96de65c2ea8c9f3ca1 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 449cf3d6618f301242e07083d6f7d1c127566ac4 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 00a71f4562b7bd80441df50cf64b53064d832b78 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): b68585f775cc2b009ae1b130eebb865150cf943c is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 6ac24be9da572a90b198ba91b81d603f082cfa74 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 53cd23b29d3701e3a464fa1edaa455a9a1d6fbf5 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 91ac0103c1040175560d74d9afa2a091a8d25b2d is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): ba9a27b422834138daeff98481072c65db8b3744 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): ebec629d63e32fb1984b56ad31372c960cd0ae2f is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 5f3d3ea25e8349b83c8f8382df3c793532971ca4 is not in this repository's history
+SKIPPED [11] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+SKIPPED [1] tests/test_k05_schemas.py:143: the fixture records platform ('x86_64', 'Linux', '3.13.5', 'scipy-openblas'), this run is ('x86_64', 'Linux', '3.13.16', 'scipy-openblas'): certificate floats are not promised bitwise across platforms (ADR 0007, blueprint §8.3)
+SKIPPED [1] tests/test_m04_prewarm.py:111: A40 names max_workers = 4 and R-250 caps it at the physical cores (2 here); checked on a host with 4 or more (E39)
+SKIPPED [1] tests/test_m06_w27_coverage.py:878: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m06_w27_coverage.py:884: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m06_w27_harness.py:108: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m06_w27_harness.py:138: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m06_w27_harness.py:161: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m06_w27_harness.py:180: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m06_w27_harness.py:214: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m06_w27_harness.py:316: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m06_w27_harness.py:335: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m06_w27_harness.py:450: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [14] tests/test_m06_w27_scorer.py:243: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m06_w27_scorer.py:251: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m06_w27_scorer.py:265: pinned archive absent (scripts/m06_w27_acquire.py)
+SKIPPED [1] tests/test_m07_ledger.py:102: docs/reviews/V02-verdicts.md does not exist yet at this 0.2.0 tree: the 0.2.0 ledger is judged at the candidate, after the verdicts (M07 spec §23.2)
+SKIPPED [1] tests/test_m07_ledger.py:111: docs/reviews/V02-verdicts.md does not exist yet at this 0.2.0 tree: the 0.2.0 ledger is judged at the candidate, after the verdicts (M07 spec §23.2)
+SKIPPED [1] tests/test_m07_ledger.py:118: docs/reviews/V02-verdicts.md does not exist yet at this 0.2.0 tree: the 0.2.0 ledger is judged at the candidate, after the verdicts (M07 spec §23.2)
+SKIPPED [1] tests/test_m07_ledger.py:129: docs/reviews/V02-verdicts.md does not exist yet at this 0.2.0 tree: the 0.2.0 ledger is judged at the candidate, after the verdicts (M07 spec §23.2)
+SKIPPED [1] tests/test_t06_w28_records.py:120: generate writes on ref-x86-64 only (A97 (b) checks the refusal)
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): f636452 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 6018ebccbe99a3e9d19cf4f966d10dc292195170 is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:202: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:215: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:221: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:231: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:240: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [6] tests/test_t07_evidence_manifest.py:252: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:279: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [3] tests/test_t07_evidence_manifest.py:296: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:309: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:319: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:370: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:392: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:411: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:426: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:438: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:449: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [4] tests/test_t07_evidence_manifest.py:463: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t07_evidence_manifest.py:489: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): fbd322a is not in this repository's history
+SKIPPED [1] tests/test_t08_evidence_manifest.py:101: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+SKIPPED [1] tests/test_t08_evidence_manifest.py:108: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+SKIPPED [1] tests/test_t08_evidence_manifest.py:114: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+SKIPPED [1] tests/test_t08_evidence_manifest.py:125: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+SKIPPED [1] tests/test_t08_evidence_manifest.py:133: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 67c66d98587f23bd7dfe8da28a8facccc92da21e is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 30243f9c9956fb7ec6970f62156f864cd35d0aa0 is not in this repository's history
+SKIPPED [1] tests/conftest.py:45: pre-0.1.0 development history is archived in openflowsheet-dev (R-150): 9f5f29d7063ae5102c535d94d5f18f20db6480c2 is not in this repository's history
+SKIPPED [6] tests/test_t08_ptc_r1_diagnostic.py:43: no committed PTC-R1 results for ci-x86-64 on this CPU model
+SKIPPED [1] tests/test_t08_w1_ledger.py:87: not in A02

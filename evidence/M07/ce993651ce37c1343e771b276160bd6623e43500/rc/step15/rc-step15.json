@@ -1,0 +1,42 @@
+{
+ "checks": [
+  {
+   "command": "python scripts/v0_2_gate.py --rc ce993651ce37c1343e771b276160bd6623e43500 --carry-journey 2c508b5",
+   "exit_code": 0,
+   "id": "a61.carry_journey",
+   "line": "RC step 15: the journey at 2c508b5 carried",
+   "result": "pass"
+  },
+  {
+   "command": "python scripts/m07_journey.py check benchmarks/m07/journey/<K>",
+   "exit_code": 0,
+   "id": "a61.check",
+   "last_line": "check: ACCEPT",
+   "result": "pass"
+  },
+  {
+   "command": "nlp env, OMP_NUM_THREADS=1: python scripts/m07_journey.py replay benchmarks/m07/journey/<K>",
+   "exit_code": 0,
+   "id": "a61.replay",
+   "last_line": "replay: bitwise",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "ce993651ce37c1343e771b276160bd6623e43500",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "w25-journey"
+}

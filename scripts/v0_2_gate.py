@@ -2,9 +2,12 @@
 
 V02 alpha release spec §7 (`docs/derivations/V02-alpha-release-spec.md`); ADR 0028. One script for
 the 0.2 line (`release.yml` resolves `scripts/v<major>_<minor>_gate.py`). It holds a registry of
-**gate sets**, each covering the versions its pattern fullmatches; today the only one is
-`v0.2-alpha-gate-v1`, which covers `0.2.0aN` (N ≥ 1, canonical) and claims V11–V20, W21 and W22.
-A version that no set covers is refused, and nothing else is read. It judges nothing: every
+**gate sets**, each covering the versions its pattern fullmatches: `v0.2-alpha-gate-v1` covers
+`0.2.0aN` (N ≥ 1, canonical) and claims V11–V20, W21 and W22; `v0.2-gate-v1` (M07 spec §7,
+`docs/derivations/M07-spec.md`; ADR 0042) covers 0.2.0, 0.2.0bN and 0.2.0rcN and claims all
+seventeen. Each set reads its own clause grammar, verdict document, policy ADR, RC record and
+manifests; what follows names the alpha's. A version that no set covers is refused, and nothing
+else is read. It judges nothing: every
 verdict is read from where the design lane records it, and decides whether a tag `v<version>` may
 be **proposed** to Frank (the tag is his, ADR 0021 D5).
 
@@ -60,6 +63,7 @@ if the verdict document is malformed or `C` cannot be found.
 from __future__ import annotations
 
 import argparse
+import ast
 import datetime
 import json
 import re
@@ -98,10 +102,13 @@ MANIFEST_STATUSES: Final = ("tested", "reviewed")
 LEDGER: Final = "docs/requirements.yaml"
 ENVELOPE: Final = "benchmarks/t08/support_envelope.yaml"
 ADR_DIRECTORY: Final = "docs/adr"
+#: The surface chain's links (R-457): `LINKS` there, each a `Link(name, register, …)`.
+LINKS_MODULE: Final = "scripts/m07a_rc.py"
 #: T08.A03's verdict table (Amendment R3 §R3.3), reused by §6.3: its headers, in order.
 HEADERS: Final = ("Gate", "Verdict", "Failing clauses", "Travelling limitations", "Basis")
 NONE: Final = "—"
 
+#: The alpha's clause grammar (V11–V20, W21, W22): `v0.2-alpha-gate-v1`'s `clause` (M07.A31).
 CLAUSE: Final = re.compile(r"\b(?:V(?:1[1-9]|20)|W2[12]) \([a-z0-9]+\)")
 LIMITATION: Final = re.compile(r"\bL(?:\d{2}|-[A-Z]+-\d+)\b")
 DATE: Final = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -113,12 +120,19 @@ RELEASE_CANDIDATE: Final = "**Release candidate:**"
 RELEASE_CANDIDATE_VALUE: Final = re.compile(r"\*\*Release candidate:\*\* `([0-9a-f]{40})`")
 JUDGED: Final = "**Judged:**"
 JUDGED_VALUE: Final = re.compile(r"\*\*Judged:\*\* (\d{4}-\d{2}-\d{2})(?![0-9])")
-#: §19.2 item 3 (Table T8): the re-judgement line, stripped, fullmatches `REJUDGED_VALUE`.
+#: §19.2 item 3 (Table T8): the re-judgement line, stripped, fullmatches `REJUDGED_VALUE` (the
+#: alpha's; a gate set reads its own, `GateSet.rejudged`, built from its `clause`).
 REJUDGED: Final = "**Re-judged:**"
 REJUDGED_VALUE: Final = re.compile(
     r"\*\*Re-judged:\*\* (\d{4}-\d{2}-\d{2}) "
     r"\(((?:V(?:1[1-9]|20)|W2[12])(?:, (?:V(?:1[1-9]|20)|W2[12]))*)\)"
 )
+#: How a gate set's reasons name its specification and its RC step table, by evidence package
+#: (M07 spec §20 Q-A3-1): `M07a` is the alpha's text byte for byte (A31).
+_SPECIFICATION_TEXTS: Final = {
+    "M07a": ("the alpha specification", "§8.2"),
+    "M07": ("the M07 specification", "§8"),
+}
 
 
 @dataclass(frozen=True)
@@ -129,6 +143,9 @@ class GateSet:
     covers: re.Pattern[str]
     claimed: tuple[str, ...]
     not_claimed: tuple[str, ...]
+    #: The clause grammar `Gnn (x)` of this set's gates (M07 spec §7.2): every clause the
+    #: verdict document and the policy ADR's D3 table name is read with it.
+    clause: re.Pattern[str]
     policy_adr: str
     verdict_document: str
     rc_record: str
@@ -144,10 +161,46 @@ class GateSet:
     frank_items: tuple[str, ...]
     #: The gates a re-judgement may list, each with the answer it waits on (§19.2 item 2).
     rejudge_waits: tuple[tuple[str, str], ...]
+    #: The Frank item whose row in the policy ADR must name the register entry of every link of
+    #: the surface chain (`LINKS_MODULE`, read at the candidate; R-457, M07 obligation O3), or
+    #: `None` when the set reads no links (the alpha, whose record is its own). Registered as
+    #: `gate.gate_sets.<set>.links_item` (M07 spec §20 A3.2, R-462; GC-SET-3).
+    links_item: str | None = None
 
     @property
     def gates(self) -> tuple[str, ...]:
         return (*self.claimed, *self.not_claimed)
+
+    @property
+    def specification(self) -> str:
+        """The specification a non-acceptance answer is sent to amend, from `evidence_package`
+        (M07 spec §20 Q-A3-1): the alpha's text byte for byte, "the M07 specification" for M07."""
+        return _SPECIFICATION_TEXTS[self.evidence_package][0]
+
+    @property
+    def rc_section(self) -> str:
+        """The section of the RC job's step table that RC-record reasons cite, from
+        `evidence_package` (§20 Q-A3-1): the alpha's §8.2, M07's §8."""
+        return _SPECIFICATION_TEXTS[self.evidence_package][1]
+
+    @property
+    def adr(self) -> str:
+        """The policy ADR as the report names it, `ADR <number>` (ADR 0028 for the alpha; M07
+        §7.1: ADR 0042 in its place for 0.2.0)."""
+        return "ADR " + Path(self.policy_adr).name.split("-", 1)[0]
+
+    @property
+    def rejudged(self) -> re.Pattern[str]:
+        """Table T8's re-judgement line over this set's gate ids: `REJUDGED_VALUE` with the gate
+        alternation of the set's `clause` (for the alpha it is `REJUDGED_VALUE` itself)."""
+        prefix, suffix = r"\b(?:", r") \([a-z0-9]+\)"
+        pattern = self.clause.pattern
+        if not (pattern.startswith(prefix) and pattern.endswith(suffix)):
+            raise ValueError(f"{self.name}: clause {pattern!r} is not {prefix}<gates>{suffix}")
+        gate = f"(?:{pattern[len(prefix) : -len(suffix)]})"
+        return re.compile(
+            rf"\*\*Re-judged:\*\* (\d{{4}}-\d{{2}}-\d{{2}}) \(({gate}(?:, {gate})*)\)"
+        )
 
 
 #: The registry (§7.1). M07 adds `v0.2-gate-v1` for 0.2.0 beside this entry.
@@ -157,6 +210,7 @@ GATE_SETS: Final = (
         covers=re.compile(r"0\.2\.0a[1-9][0-9]*"),
         claimed=(*(f"V{n}" for n in range(11, 21)), "W21", "W22"),
         not_claimed=("W23", "W24", "W25", "W26", "W27"),
+        clause=CLAUSE,
         policy_adr="docs/adr/0028-v0.2-pre-release-policy.md",
         verdict_document="docs/reviews/V02-alpha-verdicts.md",
         rc_record="docs/v02-alpha-rc-record.md",
@@ -169,6 +223,48 @@ GATE_SETS: Final = (
         frank_items=("N3", "V17 carry", "M02 N1"),
         # MR-7, F-α2, F-α3: V13 and V17 wait on `V17 carry`, W21 on `M02 N1`.
         rejudge_waits=(("V13", "V17 carry"), ("V17", "V17 carry"), ("W21", "M02 N1")),
+    ),
+    # M07 spec §7.2 (registration `gate.gate_sets`): 0.2.0, 0.2.0bN and 0.2.0rcN claim all
+    # seventeen gates (§15 N1), each judged at its own candidate, under ADR 0042.
+    GateSet(
+        name="v0.2-gate-v1",
+        covers=re.compile(r"0\.2\.0(?:(?:b|rc)[1-9][0-9]*)?"),
+        claimed=(*(f"V{n}" for n in range(11, 21)), *(f"W{n}" for n in range(21, 28))),
+        not_claimed=(),
+        clause=re.compile(r"\b(?:V(?:1[1-9]|20)|W2[1-7]) \([a-z0-9]+\)"),
+        policy_adr="docs/adr/0042-v0.2.0-release-policy.md",
+        verdict_document="docs/reviews/V02-verdicts.md",
+        rc_record="docs/v02-rc-record.md",
+        rc_steps=tuple(range(1, 18)),
+        rc_last_step=18,
+        evidence_package="M07",
+        packages=("M01", "M02", "M03", "M04", "M05", "M06"),
+        envelope_id="v0.2-envelope-1",
+        required_adrs=(
+            "0022",
+            "0026",
+            "0027",
+            "0030",
+            "0031",
+            "0032",
+            "0033",
+            "0034",
+            "0035",
+            "0036",
+            "0037",
+            "0038",
+            "0039",
+            "0041",
+            "0042",
+        ),
+        frank_items=("Claim set", "V17 carry", "M02 N1", "M03 N1"),
+        rejudge_waits=(
+            ("V13", "V17 carry"),
+            ("V17", "V17 carry"),
+            ("W21", "M02 N1"),
+            ("W24", "M03 N1"),
+        ),
+        links_item="V17 carry",
     ),
 )
 
@@ -212,12 +308,12 @@ class VerdictDocument:
     rejudged: Rejudgement | None = None
 
 
-def _ids_outside_their_column(cell: str) -> list[str]:
-    return [*CLAUSE.findall(cell), *LIMITATION.findall(cell)]
+def _ids_outside_their_column(cell: str, gate_set: GateSet) -> list[str]:
+    return [*gate_set.clause.findall(cell), *LIMITATION.findall(cell)]
 
 
 def _failing_clauses(
-    where: str, gate: str, verdict: str, cell: str
+    where: str, gate: str, verdict: str, cell: str, gate_set: GateSet
 ) -> tuple[tuple[str, ...], tuple[str, ...]]:
     """The `Failing clauses` cell: a FAIL's clauses, or a BLOCKED's `clause: missing input`."""
     where = f"{where}, {gate}, Failing clauses"
@@ -232,10 +328,10 @@ def _failing_clauses(
     for entry in (part.strip() for part in cell.split(";" if verdict == "BLOCKED" else ",")):
         clause, _, missing = entry.partition(":") if verdict == "BLOCKED" else (entry, "", "")
         clause, missing = clause.strip(), missing.strip()
-        if not CLAUSE.fullmatch(clause) or not clause.startswith(gate + " "):
+        if not gate_set.clause.fullmatch(clause) or not clause.startswith(gate + " "):
             raise ValueError(f"{where}: {entry!r} is not one of {gate}'s clauses as `Gnn (x)`")
         if verdict == "BLOCKED":
-            if not missing or _ids_outside_their_column(missing):
+            if not missing or _ids_outside_their_column(missing, gate_set):
                 raise ValueError(
                     f"{where}: {entry!r} names its missing input, and no clause or envelope id"
                 )
@@ -290,7 +386,7 @@ def _rejudgement(
     if len(lines) > 1:
         raise ValueError(f"{where} has {len(lines)} `{REJUDGED}` lines, not at most 1")
     (line,) = lines
-    found = REJUDGED_VALUE.fullmatch(line)
+    found = gate_set.rejudged.fullmatch(line)
     if found is None:
         raise ValueError(f"{where}: {line!r} is not `{REJUDGED} YYYY-MM-DD (G, …)`")
     try:
@@ -359,12 +455,12 @@ def verdict_document(text: str, gate_set: GateSet, rc: str) -> VerdictDocument:
         _, word, failing, travelling, basis = cells
         if word not in VERDICTS:
             raise ValueError(f"{where}, {gate}: verdict {word!r} is not one of {VERDICTS}")
-        if _ids_outside_their_column(basis):
+        if _ids_outside_their_column(basis, gate_set):
             raise ValueError(
-                f"{where}, {gate}, Basis: holds {_ids_outside_their_column(basis)}; "
+                f"{where}, {gate}, Basis: holds {_ids_outside_their_column(basis, gate_set)}; "
                 "clauses and envelope ids belong in their own columns"
             )
-        clauses, blocked = _failing_clauses(where, gate, word, failing)
+        clauses, blocked = _failing_clauses(where, gate, word, failing, gate_set)
         found[gate] = VerdictRow(
             verdict=word,
             clauses=clauses,
@@ -446,7 +542,7 @@ def policy(
             problems.append(f"{where}: D3: {why}")
     else:
         for first, cell in d3:
-            if not CLAUSE.fullmatch(first):
+            if not gate_set.clause.fullmatch(first):
                 continue
             if first in accepted:
                 problems.append(f"{where}: D3 lists {first} twice")
@@ -465,7 +561,7 @@ def policy(
             elif (date := acceptance_date(cells[0])) is None:
                 frank.append(
                     f"Frank's answer to {item} is not an acceptance of the default; "
-                    "amend the alpha specification for it"
+                    f"amend {gate_set.specification} for it"
                 )
             elif judged is None or date < judged:
                 frank.append(
@@ -525,11 +621,14 @@ def rc_record_problems(text: str | None, rc: str, gate_set: GateSet) -> list[str
         if int(step) in gate_set.rc_steps and outcome in ("failed", "unstated"):
             said = "failed" if outcome == "failed" else "not stated as passed"
             problems.append(
-                f"§8.2 step {step} ({_bare(cells[1])}, {_bare(cells[2])}): {said} in {where}"
+                f"{gate_set.rc_section} step {step} ({_bare(cells[1])}, {_bare(cells[2])}): "
+                f"{said} in {where}"
             )
     for required in gate_set.rc_steps:
         if "passed" not in outcomes.get(required, []):
-            problems.append(f"§8.2 step {required}: no row of {where} states that it passed")
+            problems.append(
+                f"{gate_set.rc_section} step {required}: no row of {where} states that it passed"
+            )
     return problems
 
 
@@ -625,6 +724,72 @@ def status_line(text: str) -> str | None:
     return next((line for line in text.splitlines() if line.startswith("**Status:**")), None)
 
 
+def _register(link: ast.expr) -> str | None:
+    """The register entry of one `Link(name, register, …)` call, or `None` if it is not one."""
+    if (
+        isinstance(link, ast.Call)
+        and isinstance(link.func, ast.Name)
+        and link.func.id == "Link"
+        and len(link.args) >= 2
+        and isinstance(link.args[1], ast.Constant)
+        and isinstance(link.args[1].value, str)
+    ):
+        return link.args[1].value
+    return None
+
+
+def link_registers(text: str) -> tuple[str, ...]:
+    """The register entry of each link in `LINKS_MODULE`'s `LINKS`, in order: the second
+    argument of every `Link(…)` in the module-level assignment to `LINKS`. A module without
+    such a non-empty tuple is a `ValueError`."""
+    for node in ast.parse(text).body:
+        if isinstance(node, ast.Assign) and len(node.targets) == 1:
+            target, value = node.targets[0], node.value
+        elif isinstance(node, ast.AnnAssign):
+            target, value = node.target, node.value
+        else:
+            continue
+        if isinstance(target, ast.Name) and target.id == "LINKS":
+            registers = (
+                [_register(link) for link in value.elts] if isinstance(value, ast.Tuple) else []
+            )
+            if registers and None not in registers:
+                return tuple(register for register in registers if register is not None)
+            break
+    raise ValueError(f"{LINKS_MODULE} has no `LINKS = (Link(name, register, …), …)`")
+
+
+def links_problems(
+    policy_text: str | None, module_text: str | None, gate_set: GateSet
+) -> list[str]:
+    """M07 obligation O3 (R-457): the policy ADR's row for `gate_set.links_item` names the
+    register entry of every link in `LINKS_MODULE` at the candidate, each as a whole id. A
+    missing ADR, decisions table or row is `policy`'s refusal and is not repeated here."""
+    item = gate_set.links_item
+    if item is None:
+        return []
+    if module_text is None:
+        return [f"{LINKS_MODULE} does not exist at the candidate: {item}'s links cannot be read"]
+    try:
+        registers = link_registers(module_text)
+    except (SyntaxError, ValueError) as error:
+        return [f"{item}: {error}"]
+    rows = [
+        " | ".join(cells)
+        for header, table in _tables(policy_text or "")
+        if "frank's answer" in [_bare(cell).lower() for cell in header]
+        for cells in table
+        if cells and _bare(cells[0]) == item
+    ]
+    if len(rows) != 1:
+        return []
+    return [
+        f"{item} does not name {register}"
+        for register in registers
+        if not re.search(rf"(?<![\w-]){re.escape(register)}(?![\w-])", rows[0])
+    ]
+
+
 def adr_problems(files: Mapping[str, str], gate_set: GateSet) -> list[str]:
     """§7.2 item 7: every required ADR exists once and its status line starts `Status: Accepted`
     (Table T5)."""
@@ -708,7 +873,7 @@ def judge_gate(
             elif judged is None or date < judged:
                 line.problems.append(
                     f"{clause}: accepted {date.isoformat()}, before the verdict's "
-                    f"{_verdict_dates(judged, rejudged)} (D2.3; ADR 0028 D2)"
+                    f"{_verdict_dates(judged, rejudged)} (D2.3; {gate_set.adr} D2)"
                 )
             elif rejudged is not None and gate in rejudged.gates and date < rejudged.date:
                 line.problems.append(
@@ -718,7 +883,9 @@ def judge_gate(
             else:
                 line.accepted[clause] = cell
         if unaccepted:
-            line.problems.append(f"FAIL clause not accepted in ADR 0028 D3: {unaccepted} (D2.3)")
+            line.problems.append(
+                f"FAIL clause not accepted in {gate_set.adr} D3: {unaccepted} (D2.3)"
+            )
     return line
 
 
@@ -798,7 +965,7 @@ def build(
         reasons.insert(0, f"{gate_set.verdict_document} does not exist at the candidate")
     if rc_version != version:
         reasons.append(
-            f"C's version {rc_version} is not the candidate's version {version} (ADR 0028 D4)"
+            f"C's version {rc_version} is not the candidate's version {version} ({gate_set.adr} D4)"
         )
     if differences is None:
         # Review F3: a caller that does not run the tree check gets no YES (D2.4 fails closed).
@@ -811,7 +978,11 @@ def build(
     )
     envelope = envelope_problems(envelope_text, gate_set, version)
     adrs = adr_problems(files, gate_set)
-    for group in (record, manifests, envelope, adrs, found.problems, found.frank):
+    frank = [
+        *found.frank,
+        *links_problems(files.get(gate_set.policy_adr), files.get(LINKS_MODULE), gate_set),
+    ]
+    for group in (record, manifests, envelope, adrs, found.problems, frank):
         reasons.extend(group)
     return {
         "gate_set": gate_set.name,
@@ -843,7 +1014,7 @@ def build(
         "manifest_problems": manifests,
         "envelope_problems": envelope,
         "adr_problems": adrs,
-        "frank_problems": found.problems + found.frank,
+        "frank_problems": found.problems + frank,
         "tag_may_be_proposed": not reasons,
         "reasons": reasons,
     }
@@ -857,7 +1028,13 @@ def _verdict_word(entry: Mapping[str, Any]) -> str:
     return str(entry["ledger"]) if entry["ledger"] else "no verdict"
 
 
-def _notes(entry: Mapping[str, Any]) -> str:
+def _adr(report: Mapping[str, Any]) -> str:
+    """The policy ADR of the report's gate set, as the report names it."""
+    (gate_set,) = [entry for entry in GATE_SETS if entry.name == report["gate_set"]]
+    return gate_set.adr
+
+
+def _notes(entry: Mapping[str, Any], adr: str) -> str:
     notes = []
     if entry["failing_clauses"]:
         notes.append("failing: " + ", ".join(entry["failing_clauses"]))
@@ -865,9 +1042,7 @@ def _notes(entry: Mapping[str, Any]) -> str:
         notes.append("blocked: " + "; ".join(entry["blocked_clauses"]))
     for clause, acceptance in entry["accepted_fail_clauses"].items():
         date = DATE.search(acceptance)
-        notes.append(
-            f"{clause} FAIL, accepted by Frank {date.group(0) if date else ''} (ADR 0028 D3)"
-        )
+        notes.append(f"{clause} FAIL, accepted by Frank {date.group(0) if date else ''} ({adr} D3)")
     if entry["limitations"]:
         notes.append("limitations: " + ", ".join(entry["limitations"]))
     return "; ".join(notes)
@@ -880,7 +1055,7 @@ def markdown(report: Mapping[str, Any]) -> str:
     ]
     for entry in report["gates"]:
         if entry["claimed"]:
-            word, notes = _verdict_word(entry), _notes(entry) or NONE
+            word, notes = _verdict_word(entry), _notes(entry, _adr(report)) or NONE
         else:
             word, notes = "not claimed", NONE
         lines.append(f"| {entry['gate']} | {word} | {entry['requirement']} | {notes} |")
@@ -908,7 +1083,7 @@ def text(report: Mapping[str, Any]) -> str:
             out.append(f"{entry['gate']}  {_not_claimed(report)}")
             continue
         out.append(f"{entry['gate']}  {_verdict_word(entry):<11}{entry['requirement']}")
-        notes = _notes(entry)
+        notes = _notes(entry, _adr(report))
         if notes:
             out.append(f"      {notes}")
         for problem in entry["problems"]:
@@ -936,7 +1111,8 @@ def text(report: Mapping[str, Any]) -> str:
     out.append("envelope (§7.2 item 6): " + _summary(report["envelope_problems"], "pinned"))
     out.append("ADRs (§7.2 item 7): " + _summary(report["adr_problems"], "every one Accepted"))
     out.append(
-        "Frank's answers (ADR 0028): " + _summary(report["frank_problems"], "every one accepted")
+        f"Frank's answers ({_adr(report)}): "
+        + _summary(report["frank_problems"], "every one accepted")
     )
     gates = tuple(entry["gate"] for entry in report["gates"])
     for reason in report["reasons"]:
@@ -944,6 +1120,59 @@ def text(report: Mapping[str, Any]) -> str:
             out.append(f"  - {reason}")
     out.append(_last_line(report))
     return "\n".join(out) + "\n"
+
+
+# -- the carries of RC steps 15 and 17 (M07 spec §4.6, §9; A37, A38) ---------------------------
+
+#: §9: RC step 17 fails with this when the W27 campaign does not carry from C_W to C.
+W27_SURFACE_DIFFERS: Final = "W27 campaign surface differs between C_W and C"
+#: §8 step 15, A38: the journey does not carry from J to C and must be re-run at C.
+JOURNEY_RERUN: Final = "step 15 requires a re-run of the journey at C"
+
+
+@dataclass(frozen=True)
+class Carry:
+    """A carry check's answer: carried, or the reason it is not and what differs."""
+
+    carried: bool
+    reason: str | None = None
+    differs: tuple[str, ...] = ()
+
+    def line(self, step: int, what: str) -> str:
+        if self.carried:
+            return f"RC step {step}: {what} carried"
+        return f"RC step {step}: {self.reason} (differs: {', '.join(self.differs)})"
+
+
+def w27_carry(at_cw: Mapping[str, Any], at_c: Mapping[str, Any], members: Sequence[str]) -> Carry:
+    """RC step 17 (M07 §9): the W27 campaign stands at C iff every member of the registration's
+    `gate.w27_carry` (`served_tool_list_sha256`, the `list_models` result, the coverage rows) is
+    equal at C_W and at C. A member missing on either side differs."""
+    missing = object()
+    differs = tuple(
+        member
+        for member in members
+        if at_cw.get(member, missing) is missing
+        or at_c.get(member, missing) is missing
+        or at_cw[member] != at_c[member]
+    )
+    return Carry(True) if not differs else Carry(False, W27_SURFACE_DIFFERS, differs)
+
+
+def journey_carry(journey: str, rc: str) -> Carry:
+    """RC step 15 (M07 §4.6, A38): the journey recorded at commit J carries to C iff every file
+    of the registration's `carry.journey_files` is byte-equal at J and at C; else step 15
+    requires a re-run at C. The pathspecs are `m07_journey.carry_paths`, the journey's own
+    reading of its registration in this tree (the RC job's tree is C). A J or C that git does
+    not know does not carry."""
+    import m07_journey  # noqa: PLC0415 (only the carry check needs the journey's registration)
+
+    paths = m07_journey.carry_paths(m07_journey.JOURNEY_CARRY)
+    unknown = tuple(commit for commit in (journey, rc) if not has_commit(commit))
+    if unknown:
+        return Carry(False, JOURNEY_RERUN, tuple(f"{commit} is not a commit" for commit in unknown))
+    changed = git("diff", "--name-only", journey, rc, "--", *paths).decode("utf-8").split()
+    return Carry(True) if not changed else Carry(False, JOURNEY_RERUN, tuple(changed))
 
 
 # -- reading the candidate ---------------------------------------------------------------------
@@ -974,6 +1203,7 @@ def files_at(candidate: str, rc: str, gate_set: GateSet) -> dict[str, str]:
         gate_set.policy_adr,
         gate_set.verdict_document,
         gate_set.rc_record,
+        *([LINKS_MODULE] if gate_set.links_item is not None else []),
         f"evidence/{gate_set.evidence_package}/{rc}/manifest.json",
         *(
             path
@@ -1009,6 +1239,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help=f"write {RC_TREES}/<C>.json for --rc C, which must be in the repository (R-151)",
     )
+    output.add_argument(
+        "--carry-journey",
+        metavar="J",
+        help="RC step 15: does the journey recorded at J carry to --rc C? (M07 §4.6, A38)",
+    )
+    output.add_argument(
+        "--carry-w27",
+        nargs=2,
+        metavar=("AT_C_W", "AT_C"),
+        help="RC step 17: JSON files of the W27 carry members at C_W and at C (M07 §9, A37)",
+    )
     arguments = parser.parse_args(argv)
 
     try:
@@ -1022,6 +1263,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             path.write_text(json.dumps(tree_record(rc), indent=1, sort_keys=True) + "\n", "utf-8")
             print(f"wrote {RC_TREES / path.name}")
             return 0
+        if arguments.carry_journey is not None or arguments.carry_w27 is not None:
+            if arguments.carry_journey is not None:
+                carry = journey_carry(arguments.carry_journey, rc)
+                print(carry.line(15, f"the journey at {arguments.carry_journey}"))
+            else:
+                import m07_journey  # noqa: PLC0415
+
+                at_cw, at_c = (
+                    json.loads(Path(name).read_text("utf-8")) for name in arguments.carry_w27
+                )
+                carry = w27_carry(at_cw, at_c, m07_journey.REG["gate"]["w27_carry"])
+                print(carry.line(17, "the W27 campaign"))
+            return 0 if carry.carried else 1
         candidate = git("rev-parse", f"{arguments.candidate}^{{commit}}").decode().strip()
         version = version_at(candidate)
         gate_set = gate_set_of(version)

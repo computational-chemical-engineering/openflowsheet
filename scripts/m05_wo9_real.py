@@ -323,17 +323,18 @@ def write(real: RealRun) -> None:
     STEM.with_suffix(".experiments.json").write_bytes(real.archive)
 
 
-def compare(real: RealRun) -> list[str]:
-    """G10's REAL part (F-20): the replay from the record against the committed files."""
+def compare(real: RealRun, *, stem: Path = STEM) -> list[str]:
+    """G10's REAL part (F-20): the replay from the record against the committed files at `stem`
+    (M05's record by default; M07's journey passes its R3 re-run's, M07 spec A2.4)."""
     found = list(real.diverged)
-    recorded = json.loads(STEM.with_suffix(".json").read_text(encoding="utf-8"))
+    recorded = json.loads(stem.with_suffix(".json").read_text(encoding="utf-8"))
     found += replay.real_replay_differences(recorded, real.run.record)
     found += replay.served_ledger_differences(
-        json.loads(STEM.with_suffix(".ledger.json").read_bytes()), json.loads(real.run.ledger)
+        json.loads(stem.with_suffix(".ledger.json").read_bytes()), json.loads(real.run.ledger)
     )
-    if STEM.with_suffix(".store.json").read_bytes() != real.run.store:
+    if stem.with_suffix(".store.json").read_bytes() != real.run.store:
         found.append("store: the replay added or lost attempt records")
-    directory = STEM.with_suffix(".coupling")
+    directory = stem.with_suffix(".coupling")
     found += replay.persisted_violations(recorded, directory)
     for solve_id, data in real.run.couplings.items():
         persisted = directory / f"{solve_id}.json"

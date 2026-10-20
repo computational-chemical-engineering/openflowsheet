@@ -1,6 +1,6 @@
 # ADR 0031 — M03: parameters are pinned inputs, their derivative comes from a bit-identical parametric twin, and a sensitivity is issued only at a qualified regular root; sweeps and the estimation example are studies over those parameters
 
-**Status:** Proposed, 2026-10-08; Amendment 1 the same day (below). Accepted when M03's evidence manifest is `tested` for A01–A30, A42 and A43–A46 of the specification and the design-lane review of WO-1 to WO-5, WO-2a and WO-5a has closed its must-fix items.
+**Status:** **Accepted, 2026-10-19**, with Amendment 1 (design lane, M07 ruling round 6, M07 spec §24.4; register R-481). Proposed 2026-10-08. The condition it was accepted on: M03's evidence manifest is `tested` for A01–A30, A42 and A43–A46 of the specification and the design-lane review of WO-1 to WO-5, WO-2a and WO-5a has closed its must-fix items. Met by `evidence/M03/a35885b…/manifest.json` (`tested`, 52/52 `pass`, M03.A01–A30, A42–A46 and `M03.ci_both_runners` among them) and by `docs/reviews/M03-review.md` (no must-fix in WO-1 to WO-5, WO-2a or WO-5a; its one must-fix F1 closed by `ca3d833`, with CI run 39007361803 green on both runners and `default-install`, as its closure section requires).
 **Date:** 2026-10-08
 **Author:** design lane (`specifier`); brief `docs/briefs/M03-specification.md`.
 **Normative text:** `docs/derivations/M03-studies-spec.md` §2–§7, §10, §11 (A01–A30, A42); machine-readable expectations `benchmarks/m03/reference_values.json` from `docs/derivations/scripts/m03_reference.py`.

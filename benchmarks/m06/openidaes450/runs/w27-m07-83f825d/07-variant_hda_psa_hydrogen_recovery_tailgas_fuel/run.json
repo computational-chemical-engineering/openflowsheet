@@ -1,0 +1,193 @@
+{
+ "agent_configuration": {
+  "claude": "claude",
+  "effort": "high",
+  "isolation": [
+   "--setting-sources",
+   ""
+  ],
+  "max_budget_usd": 5.0,
+  "max_turns": 60,
+  "max_turns_flag": true,
+  "model": "claude-sonnet-5-5",
+  "operator_isolation": true,
+  "wall_cap_s": 1800.0
+ },
+ "campaign": "w27-m07-83f825d",
+ "card_sha256": "e912d25a87021c0e79c346df9629ed12588b370196ba262755aac12804843544",
+ "case_class": "UNIT_UNAVAILABLE",
+ "case_id": "variant_hda_psa_hydrogen_recovery_tailgas_fuel",
+ "claude_code_version": "2.1.302 (Claude Code)",
+ "command": [
+  "claude",
+  "-p",
+  "<prompt.txt>",
+  "--output-format",
+  "stream-json",
+  "--verbose",
+  "--mcp-config",
+  "/tmp/w27-work-w27-m07-83f825d/w27-m07-83f825d/07-variant_hda_psa_hydrogen_recovery_tailgas_fuel/mcp.json",
+  "--strict-mcp-config",
+  "--tools",
+  "",
+  "--allowedTools",
+  "mcp__procsim__*",
+  "--permission-prompts",
+  "none",
+  "--model",
+  "claude-sonnet-5-5",
+  "--effort",
+  "high",
+  "--max-budget-usd",
+  "5",
+  "--no-session-persistence",
+  "--setting-sources",
+  "",
+  "--max-turns",
+  "60"
+ ],
+ "commit": "83f825dd787b175a8177038f840be1573176f1ab",
+ "cost_basis": "subscription_estimate",
+ "coverage_sha256": "e1f2136c4700afaa462ad314c8fc7f4c3a6fcd229c4e2ee4c7a8e9fd55d31e15",
+ "effort": "high",
+ "environment_keys": [
+  "CLAUDE_CODE_OAUTH_TOKEN",
+  "CLAUDE_CONFIG_DIR",
+  "HOME",
+  "LANG",
+  "LOGNAME",
+  "PATH",
+  "TERM",
+  "USER"
+ ],
+ "infrastructure_failure": null,
+ "interpreter": {
+  "executable": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python",
+  "implementation": "CPython",
+  "platform": "Linux-6.12.111+deb13-amd64-x86_64-with-glibc2.41",
+  "version": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]"
+ },
+ "lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+ "model": "claude-sonnet-5-5",
+ "operator_identifier_hits": 0,
+ "operator_identifier_hits_by_file": {
+  "result.json": 0,
+  "stderr.txt": 0,
+  "store-export.json": 0,
+  "transcript.jsonl": 0
+ },
+ "order": 7,
+ "pinned": {
+  "claude_code_version": "2.1.302",
+  "effort": "high",
+  "model": "claude-sonnet-5-5"
+ },
+ "preflight_sha256": "56dc325ea04617a29f59b17c14f7d94693e916e803fa8a40c258086086c3d02f",
+ "prompt_sha256": "12f95fb51d04cf267c1f7b1d9579b7307c51edf32a1cf8c184fd9755569eb45d",
+ "registration_sha256": "ee099a60f9da6900325f54127f92e9eee926d2015f97b527843db482d6f0e52e",
+ "sample_sha256": "33f146ece4fec078b8a464059f27d7256439941d6340de214352efb37b1a92bf",
+ "session": {
+  "auto_memory_files": [],
+  "checks": [],
+  "ended_at": "2026-10-18T15:24:02+00:00",
+  "init": {
+   "agents": [
+    "claude",
+    "Explore",
+    "general-purpose",
+    "Plan",
+    "statusline-setup"
+   ],
+   "apiKeySource": "none",
+   "claude_code_version": "2.1.302",
+   "mcp_servers": [
+    {
+     "name": "procsim",
+     "source": "dynamic",
+     "status": "connected"
+    }
+   ],
+   "memory_paths": {
+    "auto": "/tmp/w27-work-w27-m07-83f825d/w27-m07-83f825d/07-variant_hda_psa_hydrogen_recovery_tailgas_fuel/claude-config/projects/-tmp-w27-work-w27-m07-83f825d-w27-m07-83f825d-07-variant-hda-psa-hydrogen-recovery-tailgas-fuel-cwd/memory/"
+   },
+   "model": "claude-sonnet-5-5",
+   "output_style": "default",
+   "permissionMode": "default",
+   "plugins": [
+    {
+     "name": "cc-plugin-agents-md",
+     "path": "builtin",
+     "source": "cc-plugin-agents-md@builtin"
+    },
+    {
+     "name": "cc-plugin-telemetry",
+     "path": "builtin",
+     "source": "cc-plugin-telemetry@builtin"
+    },
+    {
+     "name": "cc-plugin-plugin-authoring",
+     "path": "builtin",
+     "source": "cc-plugin-plugin-authoring@builtin"
+    }
+   ],
+   "skills": [
+    "deep-research",
+    "design",
+    "design-sync",
+    "dataviz",
+    "update-config",
+    "verify",
+    "debug",
+    "code-review",
+    "simplify",
+    "batch",
+    "fewer-permission-prompts",
+    "doctor",
+    "loop",
+    "schedule",
+    "claude-api",
+    "workflow-authoring",
+    "run",
+    "run-skill-generator",
+    "plugin-authoring"
+   ],
+   "tools": [
+    "mcp__procsim__cancel_job",
+    "mcp__procsim__commit_change",
+    "mcp__procsim__diff_revisions",
+    "mcp__procsim__get_artifact",
+    "mcp__procsim__get_job",
+    "mcp__procsim__get_job_result",
+    "mcp__procsim__get_project",
+    "mcp__procsim__get_revision",
+    "mcp__procsim__inspect_structure",
+    "mcp__procsim__list_job_events",
+    "mcp__procsim__list_jobs",
+    "mcp__procsim__list_models",
+    "mcp__procsim__list_revisions",
+    "mcp__procsim__preview_change",
+    "mcp__procsim__submit_job",
+    "mcp__procsim__validate_revision",
+    "mcp__procsim__wait_job"
+   ]
+  },
+  "returncode": 0,
+  "started_at": "2026-10-18T15:23:48+00:00",
+  "stopped": null,
+  "turns_counted": 2,
+  "wall_s": 13.74
+ },
+ "session_principal": "agent-w27",
+ "session_start": {
+  "audit_seq": 2,
+  "job_ordinal": 0,
+  "revision_ordinal": 0
+ },
+ "sha256": {
+  "task_text": "12f95fb51d04cf267c1f7b1d9579b7307c51edf32a1cf8c184fd9755569eb45d",
+  "tool_descriptions": "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+  "transcript": "acd330ed642368e056a030c7a795bcd3b1ad3e386809fc4caa9328e6e6e5072a"
+ },
+ "snapshot_sha256": "a0982136d084b5ed04b8fb369a99a558a511b3194532bf8faced61bb1b6f7aaf",
+ "tree_clean": true
+}

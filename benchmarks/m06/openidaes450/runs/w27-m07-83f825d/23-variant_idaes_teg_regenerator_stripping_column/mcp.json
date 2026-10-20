@@ -1,0 +1,19 @@
+{
+ "mcpServers": {
+  "procsim": {
+   "args": [
+    "-m",
+    "openflowsheet.application.cli",
+    "serve-mcp",
+    "--project",
+    "/tmp/w27-work-w27-m07-83f825d/w27-m07-83f825d/23-variant_idaes_teg_regenerator_stripping_column/project"
+   ],
+   "command": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python",
+   "env": {
+    "OPENFLOWSHEET_TOKEN_FILE": "/tmp/w27-work-w27-m07-83f825d/w27-m07-83f825d/23-variant_idaes_teg_regenerator_stripping_column/secret/token",
+    "PYTHONPATH": "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m07/src"
+   },
+   "type": "stdio"
+  }
+ }
+}

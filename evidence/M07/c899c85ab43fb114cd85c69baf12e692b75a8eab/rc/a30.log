@@ -1,0 +1,18 @@
+the project workload failed:
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    importlib.import_module(module.name)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-c899c85/src/openflowsheet/studies/nlp/greybox.py", line 60, in <module>
+    import cyipopt
+ModuleNotFoundError: No module named 'cyipopt'
+

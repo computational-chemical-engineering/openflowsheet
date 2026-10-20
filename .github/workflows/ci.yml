@@ -817,7 +817,7 @@ jobs:
         if: always()
         run: |
           set +e
-          python scripts/p03_binary_inventory.py --a30 --out "$OUT/a30" --summary-dir "$OUT/a30" | tee "$OUT/a30.log"
+          python scripts/p03_binary_inventory.py --a30 --out "$OUT/a30" --summary-dir "$OUT/a30" 2>&1 | tee "$OUT/a30.log"
           echo "a30 exit status ${PIPESTATUS[0]}" | tee -a "$OUT/a30.log"
 
       - name: T08.A34 — audit the certificates these steps emitted
@@ -830,6 +830,10 @@ jobs:
           name: rc-steps-${{ matrix.runner }}
           path: ${{ runner.temp }}/rc/
           if-no-files-found: error
+
+      - name: T08.A30 — the job fails when A30 did not pass
+        if: always()
+        run: grep -qx "a30 exit status 0" "$OUT/a30.log" || { echo "::error::T08.A30 did not pass; see a30.log in rc-steps-${{ matrix.runner }}"; exit 1; }
 
   rc-ensemble:
     # T08.A46 (step 6): the registered ensemble (`T06-ens-v1`, the committed starts,

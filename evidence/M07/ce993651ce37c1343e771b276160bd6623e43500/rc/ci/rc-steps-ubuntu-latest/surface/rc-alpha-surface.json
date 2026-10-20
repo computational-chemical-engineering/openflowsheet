@@ -1,0 +1,352 @@
+{
+ "chain": [
+  {
+   "expected": "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+   "found": "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+   "item": 1,
+   "link": "c_3",
+   "pass": true,
+   "register": "R-295"
+  },
+  {
+   "expected": "383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403",
+   "found": "383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403",
+   "item": 2,
+   "link": "c_3",
+   "pass": true,
+   "register": "R-295"
+  },
+  {
+   "expected": "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9",
+   "found": "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9",
+   "item": 2,
+   "link": "c_2",
+   "pass": true,
+   "register": "R-234"
+  },
+  {
+   "expected": "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14",
+   "found": "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14",
+   "item": 2,
+   "link": "c_1",
+   "pass": true,
+   "register": "R-192"
+  },
+  {
+   "expected": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d",
+   "found": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d",
+   "item": 3,
+   "link": null,
+   "pass": true,
+   "register": "R-137"
+  }
+ ],
+ "checks": [
+  {
+   "expected": "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+   "found": "455d01eb2f420032b27358798e6b331a0120aa1857f02ce3cb7851647849e125",
+   "id": "a37.item1.c_3_r295",
+   "result": "pass"
+  },
+  {
+   "expected": "383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403",
+   "found": "383b4e2c004810663a3e3f80c591730bc95894e35736619eacac0f51e51b5403",
+   "id": "a37.item2.c_3_r295",
+   "result": "pass"
+  },
+  {
+   "expected": "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9",
+   "found": "6c4375b478d71c12b1211c17fafe7e58e9dfc0a05e11def2106799a6917631c9",
+   "id": "a37.item2.c_2_r234",
+   "result": "pass"
+  },
+  {
+   "expected": "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14",
+   "found": "171dd768efcfb24f65d79d83a4f157dcfd1436935bf5106a247b84f3040e4d14",
+   "id": "a37.item2.c_1_r192",
+   "result": "pass"
+  },
+  {
+   "expected": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d",
+   "found": "6d13e13d660521c1a39dc245d5237c974a4273b0c3eeadb02d44538ba2669a4d",
+   "id": "a37.item3.r137",
+   "result": "pass"
+  },
+  {
+   "id": "a37.item4.tools_and_files",
+   "problems": [],
+   "result": "pass"
+  },
+  {
+   "clean": 40,
+   "id": "a37.g16b_clean",
+   "not_clean": [],
+   "result": "pass",
+   "runs": 40
+  },
+  {
+   "id": "a16.g16b_records_attributable",
+   "result": "pass"
+  }
+ ],
+ "first_failure": null,
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "ce993651ce37c1343e771b276160bd6623e43500",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": true,
+  "machine_class": "ci-x86-64",
+  "python": "3.13.16",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "runs": [
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T01",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T02",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T03",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T04",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T05",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T06",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T07",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T08",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T09",
+   "transport": "mcp"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "python"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "cli"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "http"
+  },
+  {
+   "attributable": true,
+   "clean": true,
+   "task": "V17-T10",
+   "transport": "mcp"
+  }
+ ],
+ "step": "surface-alpha"
+}
