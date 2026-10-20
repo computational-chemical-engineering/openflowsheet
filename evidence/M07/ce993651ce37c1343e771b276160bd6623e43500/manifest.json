@@ -6,9 +6,9 @@
   "D17",
   "D20"
  ],
- "status": "implemented",
+ "status": "tested",
  "inputs": {
-  "case_id": "M07's acceptance at C: one check per assertion of docs/derivations/M07-spec.md §11 (9ea86b6c800386d54b380b653b6134543d9c5b52f8aa469e5d7b3aca113b69c9)",
+  "case_id": "M07's acceptance at C: one check per assertion of docs/derivations/M07-spec.md §11 (90a3b3e88e963cedb5395e202ce835a09dece3c2f4340e5060685c3d60d0586d)",
   "case_hash": "a6748b6d111f5e1da96bfe693c71262a7e2dff53d313bf4ca6811462449db59b",
   "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
  },
@@ -23,7 +23,7 @@
    "cmd": "PYTHONPATH=src:. .venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=ARTIFACTS/t08-tests.junit.xml tests/test_m07_journey.py tests/test_m07_journey_record.py tests/test_m07_ledger.py tests/test_m07_v0_2_gate.py",
    "cwd": ".",
    "exit_code": 0,
-   "stdout_sha256": "a45755e68d197e10c9c30d29bf625f3dd9fe8915e475ce52525306949bdf3962"
+   "stdout_sha256": "0455990a115305a1b2bba47259f8031c4cfd4177c3c59edf2b13c83d8d904027"
   },
   {
    "cmd": "python docs/derivations/scripts/m04_reference.py --check (RC step 13 at C, ref-x86-64; a60.w23.generator_check: pass)",
@@ -106,7 +106,7 @@
    "exit_code": 0
   },
   {
-   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/m07_evidence_manifest.py --commit ce993651ce37c1343e771b276160bd6623e43500 --ci-run 39291243747 (run at e45c3315f8709f3c546974b67866ca95dec5d719)",
+   "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/m07_evidence_manifest.py --commit ce993651ce37c1343e771b276160bd6623e43500 --ci-run 39291243747 (run at cdc7a88da46a03367cc0943a39a1c5e62f596916)",
    "cwd": ".",
    "exit_code": 0
   }
@@ -751,13 +751,13 @@
      "phrases": 11,
      "missing": []
     },
-    "judged_at": "e45c3315f8709f3c546974b67866ca95dec5d719"
+    "judged_at": "cdc7a88da46a03367cc0943a39a1c5e62f596916"
    }
   },
   {
    "id": "M07.A41",
    "description": "`docs/reviews/V02-verdicts.md` has 17 rows; every clause label parses under v0.2's grammar",
-   "result": "unsupported",
+   "result": "pass",
    "value": {
     "judged_by": "R",
     "tests": {
@@ -766,48 +766,48 @@
      ],
      "nodes": 5,
      "outcomes": {
-      "passed": 1,
-      "skipped": 4
+      "passed": 5
      },
      "failed": [],
-     "skipped": [
-      "tests/test_m07_ledger.py::test_every_cited_manifest_exists",
-      "tests/test_m07_ledger.py::test_every_claimed_gate_cites_m07_at_c",
-      "tests/test_m07_ledger.py::test_the_claimed_verdicts_are_the_documents",
-      "tests/test_m07_ledger.py::test_w21_and_w22_cite_their_packages_manifests"
-     ],
+     "skipped": [],
      "missing": []
     },
     "measured": {
-     "state": "pending",
-     "reason": "docs/reviews/V02-verdicts.md does not exist (WO-7, after steps 1–17)"
-    }
+     "rows": 17,
+     "verdicts": {
+      "FAIL": 1,
+      "PASS": 16
+     },
+     "judged": "2026-10-20"
+    },
+    "judged_at": "cdc7a88da46a03367cc0943a39a1c5e62f596916"
    }
   },
   {
    "id": "M07.A42",
    "description": "ADR 0042's D3 and Frank tables pass the alpha's cell rule",
-   "result": "unsupported",
+   "result": "pass",
    "value": {
     "judged_by": "R",
     "measured": {
-     "state": "pending",
-     "reason": "no verdict document to date against"
-    }
+     "d3_accepted": [
+      "V14 (b)"
+     ],
+     "problems": [],
+     "frank": []
+    },
+    "judged_at": "cdc7a88da46a03367cc0943a39a1c5e62f596916"
    }
   },
   {
    "id": "M07.A43",
    "description": "`evidence/M07/{C}/manifest.json` `tested`, listing A00–A62 with commands run",
-   "result": "fail",
+   "result": "pass",
    "value": {
     "judged_by": "R",
     "measured": {
      "other_checks": 39,
-     "not_pass": [
-      "M07.A41",
-      "M07.A42"
-     ],
+     "not_pass": [],
      "commands": 19
     }
    }
@@ -925,7 +925,7 @@
   },
   {
    "path": "evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/artifacts/t08-tests.junit.xml",
-   "sha256": "28a6ee945a18730b4e7361bc650ede48813f0951b0f779d1dbb2d0793f1be4e6",
+   "sha256": "712b5694776014d829c2fb6fb04605afa808bc35e69720a06dbc54330f16d8b0",
    "description": "the tests run here, per node (not committed)"
   }
  ],
@@ -933,9 +933,7 @@
   "Evidence class: numerical and software verification at M07's release candidate C (tests run here at a commit whose distribution trees equal C's; the RC records of steps 13-17 on ref-x86-64; CI), and W27's campaign records at C_W carried to C by step 17. Self-generated records are regression evidence, not empirical validation.",
   "The design lane's verdicts on V11-V20 and W21-W27 are not judged here; M07.A40-A42 are judged at the candidate, after the verdicts and the ledger (§8 [A6], R-476).",
   "Step 18 (`scripts/v0_2_gate.py --rc C`) is not run by this script; M07.A36 is judged here by its tests, and step 18's line is recorded in the build log.",
-  "M07.A41 is unsupported (pending): see its value.",
-  "M07.A42 is unsupported (pending): see its value.",
-  "M07.A43 is fail: see its value."
+  "The 0.2.0 envelope (v0.2-envelope-1, at C′) does not classify the limitations or non-pass checks of M07a's three manifests or of this manifest; both are left to the next harvest (R-485)."
  ],
  "review": {
   "numerical": "pending",

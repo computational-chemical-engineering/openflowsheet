@@ -1,7 +1,6 @@
 # ADR 0041 — M07: the reference journey takes one decision through four rungs, compares decisions by the parent's objective against its noise floor, and W25 is met by honest reporting, not by a changed decision
 
-**Status:** Proposed, 2026-10-16. Accepted when M07's evidence manifest is `tested` for M07.A00–A26 and the design-lane
-review of the journey's work orders (WO-1, WO-4) is recorded.
+**Status:** **Accepted, 2026-10-20** — its own condition holds: M07's evidence manifest `evidence/M07/ce993651…/manifest.json` is `tested` (M07.A00–A26 among its checks) at the release candidate C′ = `ce99365`, and the design-lane review of WO-1/WO-4 is recorded (M07 spec §19, Amendment 2). Marked by the build lane. (Proposed 2026-10-16.)
 **Author:** design lane (`specifier`), M07; brief `docs/briefs/M07-specification.md` with the 2026-10-16 updates.
 **Normative text:** `docs/derivations/M07-spec.md` §3–§6, §11; reference `benchmarks/m07/registration.json`
 (`docs/derivations/scripts/m07_reference.py`, `--check`).
