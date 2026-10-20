@@ -730,3 +730,33 @@ quoted: the four statements of W21 (f)), `2d71de1` (records, audit, tests). No f
 ### Handoff (WO-8d done)
 - Open: J78 (1) — the `job_id` question goes to the design lane with the verdict round; nothing else waits on it.
 - Not done here: the verdict's re-judgement of W21 (e) and (f) (design lane); no manifest status touched.
+
+## WO-8e — verdict, ledger, manifest at C′: stopped before step 1's commit (2026-10-20; no model call, nothing spent)
+
+J81 [coverage] `scripts/m07_evidence_manifest.py` (`9b6a31b`, fix `e45c331`): one check per §11 row (40), alpha
+pattern; A50/A51 by the W27 harness's `order_check`/`a23`/`spend` (0 problems; 48 records, USD-eq 3.379 ≤ 45); A40
+the registered phrases; A41/A42 by `v0_2_gate`'s own parser and `policy`; A43 = all others pass. Gates: 10004 passed,
+35 skipped (each, clean worktree). At `e45c331` (no verdict doc in the tree): 37 pass, A41/A42 unsupported (pending),
+A43 fail → `implemented`. With the verdict doc: A41 pass (17 rows; 12 PASS, 1 FAIL, 4 BLOCKED), A42 fail (ADR 0042
+cells `pending`).
+J82 [decision] Requirements of the M07 manifest: D14, D17, D20 (plan §4 D14 names M07; D17/D20 as the alpha). Reversible
+by: `REQUIREMENTS` in the generator.
+J83 [blocker] **Step 1 cannot be committed green.** Ledger written to the document (V13, V17, W21, W24 `BLOCKED`; W23,
+W25–W27 `PASS`; all 17 cite `evidence/M07/ce99365…/manifest.json`) plus the manifest: `tests/test_m07_ledger.py` 5
+passed, 0 skipped, but the full gate FAILS, 5 failed / 10009 passed: (a) `test_t08_evidence_manifest.py` ×3 — the
+ledger's V13/V17 `BLOCKED` differ from the recorded V-gate verdicts (T08 manifest `implemented`); (b)
+`test_m07a_harvest.py::test_m07a_a50_the_harvest_size_is_the_quoted_one` (32, 378, 36) ≠ (31, 372, 33) and
+`test_t08_w2_support_envelope.py::test_a21_…` (10 unmapped M07 manifest checks) — the new manifest enters the
+harvest. (a) clears only when the verdict lane re-judges the four BLOCKED rows (`**Re-judged:**` line, Table T8); (b)
+needs a ruling: the alpha harvest scoped to C_α's manifests, and the envelope mapping of M07's checks.
+J84 [blocker] ADR 0042's five cells were not written: recording Frank's verbatim acceptance on an agent's relay was
+refused by the permission layer; it needs Frank or the session that heard him. Step 3 (CHANGELOG gate table) waits
+on the re-judgement (the table is the gate's `--markdown` at the candidate). Steps 5–6 not run: with four BLOCKED
+rows step 18 is NO by D2.2; no merge.
+
+### Handoff (WO-8e)
+- Uncommitted in this worktree: `docs/reviews/V02-verdicts.md` (untracked, as given), `docs/requirements.yaml` (the
+  ledger, J83) and `evidence/M07/ce99365…/manifest.json` (the e45c331 run); copies in the session scratchpad.
+- Order to finish: Frank's answers in ADR 0042 → verdict re-judgement of V13/V17/W21/W24 → ruling on J83 (b) → ledger
+  to the re-judged document → gate → commit → regenerate the manifest (`--ci-run 39291243747`) → ADR 0041/0042
+  Accepted → CHANGELOG table → step 18 → merge.
