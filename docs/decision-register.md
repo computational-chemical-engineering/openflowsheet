@@ -62,6 +62,8 @@ relaxes no release gate. Blueprint §2.2 stands; a transient capability still re
 
 **Amendment 1 (2026-09-26; normative text: ADR 0008 "Amendment 1"; brief `docs/briefs/ADR-0008-A1-transient-readiness.md`).** Re-examined at ~37 000 lines against C1–C8 and two added candidates. **Adopted now:** the manifests' energy holdup stays the internal energy `U`, and the rigid SYN-001 vessels' dynamic energy rows are their steady rows; R-032's enthalpy content is a PTC pseudo-holdup no physical-time integrator may use (tests U1, U2); T04 finding F2's proposal to relabel the manifests "enthalpy content" is declined. **Constraint on T07 (J1–J3, J5 binding; J4, J6 recommended):** job outputs are a list of typed references, output events stream before the job ends, the operation is a closed request discriminator, and consumers ignore artifact and event kinds they do not know. **Registered for the first transient package, no code now:** holdup states in `x` in conservative form, so the physical mass matrix is a constant selection and `U = Σ_π H^π − P V` is an algebraic row; a dynamic unit is a separate model id sharing kernels, with the steady modules and kernels gated unchanged; property `v`, consistent with `h` and `lnK`, in a new provider, with `u = h − P v` formed in the unit layer; non-reversing pressure-driven flow in nTP-v1, liquid-full incompressible vessels being index 2; a phase change inside a step is an event; an explicit row→holdup-column map, absent when empty. **Excluded pending an ADR amending U1:** an isobaric free-volume vessel holding `H`. **Rejected:** a `dynamic` mode on the steady models; a `schedule` member now; a differential marker on variables; the `M(x) ẋ` form for physical time. No schema, Protocol, fixture or digest changed.
 
+**Amendment 2 (proposed 2026-10-21; normative text: ADR 0008 "Amendment 2"; brief `docs/briefs/ADR-0008-A2-readiness-recheck.md`; entries R-495–R-499).** Readiness was re-checked at the 0.2.0 cut (`main` `3c10e97`) against D1–D4 and Amendment 1. **Verdict: still additive; no lock-in point.** Nine findings. **Tests, done:** the readiness pins now reach every model id `MODEL_BUILDERS` can bind. That includes the external C1 reactor, its stand-in and its surrogate, which U1 used to skip or never walk. The 24 `holdup_balance` rows are registered, and the C1 units are pinned to conserve what their SYN-001 namesakes conserve (E1–E3; 44 → 55 passed). **Text:** the M01 stand-in's `C1RX-mole` statement is a recorded D3.3 erratum (R-497). An external model in a transient problem is either quasi-steady or model exchange; co-simulation is excluded (X11, R-498). X4's empty-diff set is every self-hashing module (24 at 0.2.0), and J5 binds the web shell (R-499). **Work orders:** C1 row-by-row accumulation and D4.3 sign tests (WO-B1); a web-shell unknown-kind test (WO-B2). **Open for Frank:** Q-B1 (later holdup units rigid; default yes), Q-B2 (co-simulation ever; default no). No schema, Protocol, fixture or digest changed.
+
 **Watch for.** A future session implementing PTC's `M` as a central diagonal recipe over the
 assembled system. That is the specific regression this entry exists to prevent.
 
@@ -10308,5 +10310,132 @@ flowsheet populations. The split is reproducible and not secret. The sizes are r
 - *Claiming general coverage from the held-out half.* The families overlap entirely.
 
 **Watch for.** Release notes that drop "within OpenIDAES-450".
+
+---
+
+## R-495 — ADR 0008 Amendment 2: v0.2 keeps a later transient capability additive; nine findings, no lock-in
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`architect`), package C1; proposed, Frank's acceptance pending (A2 status) |
+| Normative text | `docs/adr/0008-transient-extension-readiness.md` "Amendment 2" |
+| Brief | `docs/briefs/ADR-0008-A2-readiness-recheck.md` |
+| Evidence | `tests/test_adr_0008_transient_readiness.py`: 44 passed at `3c10e97`, 55 at `d09f54a`; `git diff --stat 3c10e97 -- src schemas tests/fixtures benchmarks evidence` empty |
+| Affected packages | C1; the first transient package (TX) |
+
+**Decision.** Judged at `main` `3c10e97`, the v0.2 additions introduce no lock-in point. These are unchanged:
+- the boundary (`compiled.py:163-172`);
+- the external evaluation, which takes a tube inlet only (`models/c1/boundary.py:259-267`);
+- the experiment identity, which is exact over its inputs.
+
+Job operations and artifact kinds grew additively within J1–J3 and J5. The findings are F1–F9: three tests done, one
+erratum, two work orders, two TX constraints and one "none".
+
+**Rejected alternative.** Waiting until the transient package to re-check. By then the C1 and surrogate declarations
+would be hashed into more certified identities.
+
+**Watch for.** A v0.3 model kind that is bindable but outside `DECLARATION_PACKAGES`. E1 fails on it, as intended.
+
+---
+
+## R-496 — The readiness pins reach every bindable model: discovery anchored to `MODEL_BUILDERS`, 24 registered holdup rows, conservation signatures
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`architect`), package C1 |
+| Normative text | ADR 0008 A2.1 F1–F3, A2.3 |
+| Evidence | `d09f54a`: E1, E2 (6 namesake pairs), E3 (3 reactor ids), E1b/E2b. Mutation: under the old `MODEL_ID`-only rule E1 flags `models.c1.reactor`; under the old `models`-only walk it flags `c1.reactor_surrogate` |
+| Affected packages | Any package adding a model id, a declaring module or a `holdup_balance` row |
+
+**Decision.** U1's discovery reads `MODEL_ID` and `MODEL_IDS` in every module that defines `EQUATIONS` under
+`openflowsheet.models` and `openflowsheet.studies.surrogate`. A declaring module U1 cannot read is a failure. Every
+`MODEL_BUILDERS` id must be read.
+
+`REGISTERED_HOLDUP_ROWS` grows from 12 to 24 and keeps superset semantics. The six C1 units must keep their SYN-001
+namesakes' conservation signature: the multiset of (kind, holdup symbol, holdup dimension, row dimension) over the
+balance rows. The three C1 reactor ids must each hold `N_i` and `U`.
+
+**Rejected alternatives.**
+- Walking all of `openflowsheet`: optional extras fail to import.
+- Equality semantics for the holdup rows.
+- A per-row C1 classification table like M1.
+
+**Watch for.** A model module that names its id some third way. Extend `module_model_ids`; never skip the module.
+
+---
+
+## R-497 — Erratum: the M01 stand-in's `C1RX-mole` statement is written outflow minus inflow (ADR 0008 D3.3); the module is not edited
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`architect`), package C1 |
+| Normative text | ADR 0008 A2.1 F4 |
+| Evidence | `models/c1/reactor_standin.py:108-109` (`n_out,i - n_in,i - nu_i xi = 0`, `holdup_balance`). In-flowsheet rows for both ids are `models/c1/reactor.py:117-119` (`n_in,i + nu_i xi - n_out,i`), built through `_c1_reactor` (`revision_binding.py:1496-1499`). `ReactorStandin` has no `contribute` |
+| Affected packages | Whichever package next re-pins the stand-in variant; WO-B1 |
+
+**Decision.** The statement is a D3.3 erratum in a declaration that no residual implements. The module is unchanged:
+its bytes are the stand-in variant's pinned artifact (R-310's precedent). A correction is made only when a later
+package re-pins the stand-in. The executable orientation check of the rows that enter a compiled problem is WO-B1 (D4.3).
+
+**Rejected alternative.** Editing the statement now. That moves the pinned artifact hash for a text-only correction.
+
+**Watch for.** Any code that reads a manifest's `statement` to derive a residual sign. Signs come from implemented rows
+and `row_accumulation`.
+
+---
+
+## R-498 — External models in a transient problem: quasi-steady or model exchange; co-simulation excluded pending an ADR revising D2.3 (X11)
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`architect`), package C1; binds TX on Frank's acceptance of ADR 0008 A2 (Q-B2) |
+| Normative text | ADR 0008 A2.2 X11 |
+| Evidence | `adapters/external/protocol.py:4, :16`; ADR 0033 `:78` (pure function of the request), `:106` (warm start rejected, R-224); `models/c1/reactor.py:117-183` |
+| Affected packages | TX; any ADR admitting a dynamic external model |
+
+**Decision.** An ADR 0033 external model is a memoryless map. TX admits an external unit in two forms:
+- **(a) quasi-steady:** no holdup column, refused unless the run declares it (X8). The coupled route's cost is
+  measured first (X9), and the surrogate is the in-process equivalent.
+- **(b) model exchange:** internal states are columns of `x`, enter the request and `experiment_key`, and are never
+  integrated inside the child. This needs a new request and protocol version under an ADR.
+
+Co-simulation, where the child integrates and keeps state, is excluded. Admitting it needs an ADR revising D2.3. A
+dynamic C1 reactor that includes the bed's heat capacity is a different model (U–H.6).
+
+**Rejected alternatives.**
+- Recording nothing: the shortcut of hidden state behind the exact cache stays open.
+- Reserving a protocol member now: a member without semantics, the reason A1 C7 rejected `schedule`.
+
+**Watch for.** A "stateful child" or warm-start proposal for an external model. It is the excluded form.
+
+---
+
+## R-499 — X4's empty-diff set is every self-hashing module (24 at 0.2.0); J5 binds the web shell; a frozen surrogate's coefficients are backend form
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`architect`), package C1; X4′ and J5's widening bind on Frank's acceptance of ADR 0008 A2 |
+| Normative text | ADR 0008 A2.1 F6, F8, F9; A2.2 |
+| Evidence | `grep -l __file__` over `models/`, `studies/surrogate/`, `thermo/`: 13 SYN-001 and 8 C1 model modules, `studies/surrogate/reactor.py`, `thermo/syn001.py`, `thermo/pr_c1.py`. Web shell `apps/web/js/screens/job.js:53, :102-111, :249-254` does not depend on kinds. `studies/surrogate/reactor.py:22-27` |
+| Affected packages | TX (X4′); the web shell's next change (J5, WO-B2) |
+
+**Decision.**
+- **X4′:** across TX's merge, the self-hashing modules have an empty diff. The shared kernels are either unchanged or
+  pass every SYN-001 and C1 pin unmodified. A1's paths under `src/process_runtime/` read as `src/openflowsheet/`.
+- **J5:** its consumer rule binds every shipped consumer, the web shell included.
+- **Surrogate coefficients:** a frozen surrogate's coefficients identify it through `model_version`. They are backend
+  form under D4.1, not pinned inputs.
+
+**Rejected alternatives.**
+- Keeping A1's list of twelve modules: it misses the certified C1 product.
+- Leaving J5 to T07's consumers only.
+- Requiring surrogate coefficients in `parameter_ids`: that moves every surrogate `model_version` for no transient gain.
+
+**Watch for.** A web-shell change that branches on `kind` without a fallback.
 
 ---
