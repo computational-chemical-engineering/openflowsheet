@@ -32,3 +32,7 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
   needed.
 - DECISION: record location → `benchmarks/c2/openidaes450_split.json` (package-id convention) (D-11). Alternative:
   next to W27's data. Reversible by: moving it with the generator constant.
+- DECISION (build lane): evidence manifest for C1/C2/C3 → none; `schemas/evidence-manifest.schema.json`'s
+  `work_package` pattern `^[PKTMSR][0-9]{2}[a-z]?$` admits no `C` id, and the schema is frozen. These packages merge
+  on the full gate read and CI green on both architectures (the user's queue rule: "tested manifest where the package
+  has one"). Alternative: an ADR widening the pattern. Reversible by: that ADR and retro-manifests.

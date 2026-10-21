@@ -350,6 +350,11 @@ point is involved, so there is no roundoff floor, and any difference is a defect
 - **Exposure is complete only with respect to committed files at `f397467`.** Disclosure: on 2026-10-18 a session
   computed gap frequencies over all 450 cases, in chat. They were not committed, and no development used them (the
   brief). The held-out half is therefore not unseen by that session.
+- **Build-lane disclosure (2026-10-21, this cloud session, before the draw).** While preparing briefs, the build
+  lane printed, in-session and uncommitted, the eight most frequent unavailable components over all 450 rows of
+  W27's `coverage.json` (H2O, CO2, NaCl, O2, benzene, toluene, CO, an unidentified `solute`). These are
+  all-case counts, not development counts; L01 must not use them and re-derives its priorities from the
+  development half alone.
 - **What this session read.** This session read the families and classes of all cases, scanned committed files for
   case-id tokens, and read the unit facts of the two exposed cases of SPLIT-A13. It computed nothing else per
   held-out case.
