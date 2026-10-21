@@ -17,3 +17,7 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
   uniqueness test over the prose cannot pass without the edit. Needs a ruling: (i) edit the prose and re-take the P2
   pin in one commit (a campaign-record decision for the workstation), or (ii) leave the prose and keep the
   disambiguation comment at `tests/test_m06_w27_coverage.py:434` (FA4-1, §23.11, already records the clash).
+- DECISION (build lane, after the skip): (c) → option (ii): no edit. The registration already records the clash
+  (§23.11, FA4-1) and the test disambiguates (`tests/test_m06_w27_coverage.py:434`); editing the prose would move
+  preflight P2's pinned hash, a campaign record. Any later W27-successor registration takes fresh ids. Alternative:
+  option (i), edit + re-take P2 on the workstation. Reversible by: doing (i).
