@@ -29,8 +29,8 @@ archive and no network.
 
 | Input | Path | SHA-256 | Fields read |
 | --- | --- | --- | --- |
-| W27 coverage (W27-R02 basis) | `benchmarks/m06/openidaes450/coverage.json` | `b69626c7e908218e70f8726534a00c964674b2cbda7f582c8650ed939e48e3ba` | `rows[].case_id`, `rows[].family`, `rows[].class` |
-| W27 case facts | `benchmarks/m06/openidaes450/case_facts.json` | `0ca8cffa146865971dd2a2d445b699cf484965cc052f7f37d8f6554c669e38f7` | `cases[].case_id`; and for SPLIT-A13 only `unit_source`, `units[].key`, `units[].topology_kind`, `topology_kinds` of the two cases named there; the key set of every case (SPLIT-R13's fact check) |
+| W27 coverage (W27-R02 basis) | `benchmarks/m06/openidaes450/coverage.json` | `b69626c7e908218e70f8726534a00c964674b2cbda7f582c8650ed939e48e3ba` | `rows[].case_id`, `rows[].family`, `rows[].class`; `snapshot.git_commit`, `snapshot_sha256` (recorded) |
+| W27 case facts | `benchmarks/m06/openidaes450/case_facts.json` | `0ca8cffa146865971dd2a2d445b699cf484965cc052f7f37d8f6554c669e38f7` | `cases[].case_id`, `source.archive_sha256` (recorded); and for SPLIT-A13 only `unit_source`, `units[].key`, `units[].topology_kind`, `topology_kinds` of the two cases named there; the key set of every case (SPLIT-R13's fact check) |
 | W27 sample | `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/sample.json` | `33f146ece4fec078b8a464059f27d7256439941d6340de214352efb37b1a92bf` | `cases`, `canaries`, `excluded` |
 
 The generator reads no `reasons`, `units`, `components` or `packages` field of `coverage.json`. Stratification needs
@@ -76,8 +76,8 @@ states, classifier tests, stubs, specs and reviews. Each row gives the first fil
 Matching is by whole token: a case id counts as named only where it is a maximal run of `[A-Za-z0-9_]`, so
 `watertap_adm1` is not matched inside a longer id. The one excluded case (`watertap_metab`, `ARTIFACT_INCOMPLETE`) is
 also named, in `sample.json#/excluded`. It is outside the frame and in neither half. The list is frozen in the
-generator. Its completeness at `f397467` is checked by SPLIT-A09, which finds no held-out id in any committed file
-outside the allowlist.
+generator. Its completeness is checked at every commit by SPLIT-A09, which finds no held-out id in any committed
+file outside the allowlist (bar §8.3's recorded contamination).
 
 **SPLIT-R05 (seed and ranks).** The seed is fixed before the draw. It is not a free choice: it embeds the full hash
 of the brief commit, which the build lane made before this session began.
@@ -135,8 +135,9 @@ the frame). A release-gate score may report held-out *class counts* and the scor
 which units, components or methods are missing in held-out cases.
 
 **SPLIT-R10 (where held-out ids may appear).** A held-out id may appear in a committed file only if:
-(a) the file is one of the twelve pre-split all-case data files listed in the generator (`ALL_CASE_FILES`): the six
-under `benchmarks/m06/openidaes450/` that hold every case, `runs/w27-m07-83f825d/coverage.json`, and M07's six
+(a) the file is one of the twelve pre-split all-case data files listed in the generator (`ALL_CASE_FILES`): the five
+at the top of `benchmarks/m06/openidaes450/` that hold every case (`access_report`, `case_facts`, `coverage`,
+`dry_illustration`, `registration`), `runs/w27-m07-83f825d/coverage.json`, and M07's six
 `rc/step17/{at-c,at-cw,coverage-at-C}.json.gz`; or
 (b) the file's path has a directory segment named `heldout`. Release-gate outputs that carry held-out rows go there.
 
@@ -242,7 +243,8 @@ exit code 2 and a message that names the violated rule and never a held-out id, 
    `"case"`; all odd strata rounded down; and exposure not forced. Each mutant must change the held-out set, so the
    commitment is shown to distinguish the rule from its likeliest slips;
 8. the F-1 fact check of SPLIT-R13 fails, or SPLIT-A13's two kind-level states do not hold;
-9. the record would contain a held-out id, or any key named `reasons`, `units`, `components` or `packages`.
+9. the record would contain a held-out id, or any key named `reasons`, `units`, `components` or `packages`;
+10. a `contaminated` entry is not the hash of a held-out case (SPLIT-R11).
 
 ## 8. Results (first draw, 2026-10-21; commit `c0649a7`)
 
