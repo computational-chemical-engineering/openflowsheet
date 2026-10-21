@@ -30,6 +30,8 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
 - DECISION: a `BandError` (bisection budget, provider refusal) in the initializer propagates as an exception; only `band_temperature`'s `below`/`above` is `tbar_outside_domain`. Alternative: a new cause code. Reversible by: catching it in `kremser_initial`.
 - DECISION: `declared_problem`'s label → `"syn001.cascade"`, a placeholder for float evaluation only; the compiled label (identity) is WO-2's. Reversible by: WO-2.
 - DECISION: §4.6 outcome → derived from the swapped energy rows evaluated by `compile.reference` at the closed-form state (not read off `Q_j*`); the answer carries the `ZERO_FLOW` system's residuals. Alternative: compare `Q_j*` to zero directly. Reversible by: `dormant_answer`.
+- DECISION: the `tbar_outside_domain` test stubs `band_temperature` → SYN-001 cannot reach the branch (its band temperature lies in about [298, 428] K over the whole domain: pure A at 0.5 bar, pure C at 2 bar), so the test checks only the mapping of `below`/`above` to the typed failure. Alternative: a shifted test provider. Reversible by: replacing the stub.
+- DECISION: WO-1 tests → `tests/test_s01_cascade_wo1.py`, pinned to `s01_reference.json` by its SHA-256 (`4c1a24f6…`). Alternative: no pin. Reversible by: dropping `test_the_reference_is_the_registered_one`.
 
 ### Design-lane questions
 
