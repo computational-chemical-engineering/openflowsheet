@@ -59,6 +59,7 @@ import os
 import platform
 import subprocess
 import sys
+import sysconfig
 import tempfile
 from collections import Counter
 from collections.abc import Callable, Iterable, Mapping, Sequence
@@ -301,14 +302,33 @@ def _installed_casadi_files() -> dict[str, str]:
     }
 
 
+def interpreter_paths() -> list[Path]:
+    """The running interpreter's own library directories (stdlib, platstdlib, purelib, platlib),
+    resolved. A virtual environment inside the checkout puts `purelib` under `ROOT`."""
+    names = ("stdlib", "platstdlib", "purelib", "platlib")
+    paths = sysconfig.get_paths()
+    return [Path(paths[name]).resolve() for name in names if name in paths]
+
+
+def outside_the_checkout(entries: Iterable[str]) -> list[str]:
+    """`entries` (a `sys.path`) without the checkout's own: every entry under `ROOT` goes, except
+    one inside the interpreter's own library directories, which hold its site-packages (and with
+    them the installed package's metadata) when the virtual environment lives in the checkout."""
+    own = interpreter_paths()
+    kept: list[str] = []
+    for entry in entries:
+        resolved = Path(entry or ".").resolve()
+        if not resolved.is_relative_to(ROOT) or any(resolved.is_relative_to(p) for p in own):
+            kept.append(entry)
+    return kept
+
+
 def step_install_check(arguments: argparse.Namespace) -> int:
     """Run with the clean environment's interpreter, from a directory outside the checkout."""
     import importlib.metadata as metadata  # noqa: PLC0415
 
     checks: list[dict[str, Any]] = []
-    sys.path[:] = [
-        entry for entry in sys.path if not Path(entry or ".").resolve().is_relative_to(ROOT)
-    ]
+    sys.path[:] = outside_the_checkout(sys.path)
     import openflowsheet  # noqa: PLC0415
 
     location = Path(openflowsheet.__file__).resolve()

@@ -17,6 +17,7 @@ import platform
 import shutil
 import subprocess
 import sys
+import sysconfig
 from pathlib import Path
 from typing import Any
 
@@ -97,3 +98,28 @@ def test_the_install_check_record_carries_the_machine_class(tmp_path: Path) -> N
 
 def test_the_dist_record_class_is_the_same_function() -> None:
     assert t08_dist.machine_class() == t08_rc.machine_class()
+
+
+def test_the_install_check_strip_keeps_the_interpreters_site_packages_and_drops_the_checkout() -> (
+    None
+):
+    """C3 (b): a virtual environment inside the checkout keeps its `purelib`; every other entry
+    under the checkout (`src/`, the root, a relative entry) goes, so an editable install inside
+    the tree still fails `a44.outside_the_tree`."""
+    purelib = Path(sysconfig.get_paths()["purelib"]).resolve()
+    outside = "/usr/lib/elsewhere"
+    entries = [
+        str(t08_rc.ROOT / "src"),
+        str(t08_rc.ROOT),
+        "",
+        str(purelib),
+        str(t08_rc.ROOT / "scripts"),
+        outside,
+    ]
+    kept = t08_rc.outside_the_checkout(entries)
+    assert str(purelib) in kept
+    assert outside in kept
+    assert str(t08_rc.ROOT / "src") not in kept
+    assert str(t08_rc.ROOT / "scripts") not in kept
+    assert str(t08_rc.ROOT) not in kept
+    assert purelib in t08_rc.interpreter_paths()
