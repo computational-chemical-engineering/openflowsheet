@@ -99,7 +99,7 @@ purposes are `"stratum"`, `"case"` and `"added"`.
 
 No compensation happens across strata: a shortfall stays in its stratum and is recorded.
 
-**SPLIT-R07 (the record).** The generator writes `benchmarks/openidaes450_split/split.json` (schema
+**SPLIT-R07 (the record).** The generator writes `benchmarks/c2/openidaes450_split.json` (schema
 `openidaes450-split-v1`), canonical JSON (sorted keys, two-space indent, UTF-8, trailing newline). It holds:
 - the seed text and the hash idiom;
 - the pinned inputs with their SHA-256, the archive SHA-256 from `case_facts.json#/source`, and the snapshot
@@ -141,8 +141,8 @@ under `benchmarks/m06/openidaes450/` that hold every case, `runs/w27-m07-83f825d
 (b) the file's path has a directory segment named `heldout`. Release-gate outputs that carry held-out rows go there.
 
 Development agents do not open the files of (a) or (b) except through a filter that drops non-development rows. The
-build lane provides that filter (§11 Q-3). Until it exists, development reads only `split.json`, `sample.json`, the
-W27 run directories and the development rows that a script prints after filtering by `split.json#/development`.
+build lane provides that filter (§11 Q-3). Until it exists, development reads only `openidaes450_split.json`, `sample.json`, the
+W27 run directories and the development rows that a script prints after filtering by `openidaes450_split.json#/development`.
 
 Mechanical consumers compute the held-out list in memory: the generator, the SPLIT-A09 test, and release-gate
 scorers. They never print a held-out id. A failure message identifies a held-out id by the first 12 hex digits of
@@ -150,10 +150,13 @@ scorers. They never print a held-out id. A failure message identifies a held-out
 
 **SPLIT-R11 (contamination).** If a held-out case is exposed after the split, the split is not redrawn and the case
 is not moved. Exposure means it is named outside SPLIT-R10's allowlist, or a development agent reads its content.
-The case is recorded in `split.json#/contaminated` as `sha256(id)` (hex) with the date and the cause, by an amendment
+The case is recorded in `openidaes450_split.json#/contaminated` as `sha256(id)` (hex) with the date and the cause, by an amendment
 to this registration and a register entry. It stays held-out, is scored at release gates, and is reported in a
 separate line, outside the held-out headline. Deleting the mention to make SPLIT-A09 pass is not a remedy. The
-contamination is recorded, and SPLIT-A09 then tolerates that id. Today the list is empty.
+contamination is recorded, and SPLIT-A09 then tolerates that id, in the files the entry names only.
+
+*Amended at the first draw (2026-10-21).* The list holds one entry (§8.3). The text above was written expecting it
+to be empty.
 
 ## 5. Re-split policy
 
@@ -200,7 +203,7 @@ carries `from_topology: true`. A reason built from it carries `source=topology` 
   `openidaes450-case-facts-v2`), next to W27's. W27's `case_facts.json` is not rewritten: `coverage.json` pins its
   SHA-256.
 
-Until then `split.json#/f1/status` is `"awaiting_facts"`. The generator verifies the status: it refuses if any case
+Until then `openidaes450_split.json#/f1/status` is `"awaiting_facts"`. The generator verifies the status: it refuses if any case
 in `case_facts.json` already carries `topology_units`.
 
 **The state R02-F1 must keep (W27-A08, restated).** At kind level, the facts above suffice to check two cases, both
@@ -225,7 +228,7 @@ The recommended default is the fallback, as registered above.
 
 **SPLIT-R14 (generator and refusals).** `docs/derivations/scripts/c2_openidaes450_split.py`, run as
 `PYTHONPATH=src python docs/derivations/scripts/c2_openidaes450_split.py --emit | --check`. `--check` regenerates in
-memory and compares the result byte for byte with the committed `split.json`. The generator refuses to emit, with
+memory and compares the result byte for byte with the committed `openidaes450_split.json`. The generator refuses to emit, with
 exit code 2 and a message that names the violated rule and never a held-out id, when:
 1. an input's SHA-256 differs from its pin (SPLIT-R01/R12);
 2. the case-id sets of `coverage.json` and `case_facts.json` differ, or either has duplicate ids;
@@ -240,3 +243,176 @@ exit code 2 and a message that names the violated rule and never a held-out id, 
    commitment is shown to distinguish the rule from its likeliest slips;
 8. the F-1 fact check of SPLIT-R13 fails, or SPLIT-A13's two kind-level states do not hold;
 9. the record would contain a held-out id, or any key named `reasons`, `units`, `components` or `packages`.
+
+## 8. Results (first draw, 2026-10-21; commit `c0649a7`)
+
+### 8.1 Sizes
+
+| Quantity | Value |
+| --- | --- |
+| Cases / frame / excluded | 450 / 449 / 1 (`watertap_metab`, `ARTIFACT_INCOMPLETE`) |
+| Exposed (forced development) | 65 = 45 sample + 3 canaries + 17 named |
+| **Development** | **225** |
+| **Held-out** | **224**. The headline is **223**: one case is contaminated (§8.3) |
+| Strata / odd strata | 17 / 9 |
+| Frame-wide target held-out | 225 = ⌈449/2⌉ |
+| Shortfall | 1, in stratum `pareto\|COMPONENT_UNAVAILABLE` (*n* = 1, and its one case is exposed) |
+| Held-out commitment | `08b81669d5e15c4d1e9d99a0bca2b458ea5d46cfe71a521d32c3fba33daaea91` |
+| Record SHA-256 | given by register entry R-486 |
+
+### 8.2 Strata (W27-R02 classes)
+
+UU = `UNIT_UNAVAILABLE`, NSS = `NOT_STEADY_STATE_SIMULATION`, CU = `COMPONENT_UNAVAILABLE`.
+
+| Family | Class | *n* | exposed | odd_rank | target | held-out | development | shortfall |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| dispatches | NSS | 7 | 1 | 7 | 3 | 3 | 4 | 0 |
+| dispatches | UU | 4 | 1 | – | 2 | 2 | 2 | 0 |
+| gtep | NSS | 21 | 2 | 4 | 11 | 11 | 10 | 0 |
+| idaes | CU | 16 | 6 | – | 8 | 8 | 8 | 0 |
+| idaes | NSS | 7 | 0 | 8 | 4 | 4 | 3 | 0 |
+| idaes | UU | 165 | 28 | 3 | 82 | 82 | 83 | 0 |
+| mvo | NSS | 18 | 3 | – | 9 | 9 | 9 | 0 |
+| pareto | CU | 1 | 1 | 0 | 1 | 0 | 1 | 1 |
+| pareto | NSS | 1 | 1 | 5 | 0 | 0 | 1 | 0 |
+| pareto | UU | 2 | 0 | – | 1 | 1 | 1 | 0 |
+| prommis | NSS | 2 | 1 | – | 1 | 1 | 1 | 0 |
+| prommis | UU | 23 | 2 | 6 | 12 | 12 | 11 | 0 |
+| reaktoro | UU | 6 | 1 | – | 3 | 3 | 3 | 0 |
+| reflo | NSS | 1 | 0 | 2 | 1 | 1 | 0 | 0 |
+| reflo | UU | 18 | 2 | – | 9 | 9 | 9 | 0 |
+| watertap | NSS | 8 | 0 | – | 4 | 4 | 4 | 0 |
+| watertap | UU | 149 | 16 | 1 | 74 | 74 | 75 | 0 |
+
+These are class counts, which coverage.json already publishes for all 450 cases. The table contains no frequency of
+missing units, components or methods (SPLIT-R09).
+
+### 8.3 Contamination found at the first draw (SPLIT-R11 applied to this document)
+
+SPLIT-A09 failed at the first draw. A held-out id appeared in this registration. SPLIT-R04's text, committed before
+the draw (`0211372`), used it as the example of whole-token matching. At that time nobody knew which half it would
+fall in. No content of the case was read, but the name says what kind of model it is. Under SPLIT-R11 it is recorded
+as contaminated:
+- `sha256(id)` begins `c87ac13adc32`;
+- the cause is recorded;
+- the one file allowed to name it is this one.
+
+It stays held-out, is scored at release gates, and is reported outside the headline. The mention is kept, not
+deleted. The generator refuses if a contamination entry is not a held-out case.
+
+*Lesson, binding on later amendments.* Prose in this repository names only development or excluded cases. An example
+id is chosen from the exposed list.
+
+## 9. Assertions (for the build-lane test; implemented in `tests/test_c2_openidaes450_split.py`)
+
+**Tolerances.** Every assertion is exact. The quantities are integers, id strings and SHA-256 digests. No floating
+point is involved, so there is no roundoff floor, and any difference is a defect.
+
+**Where the expected values come from.**
+- The validation is the identities and an independent re-implementation of SPLIT-R02…R06. The test writes it from
+  this text and shares no code with the generator.
+- The sizes (225/224/1/65) and the commitment are regression values from the first draw. They pin the draw; they
+  do not validate it.
+
+| Id | Assertion | Expected | Why this state, and what it catches |
+| --- | --- | --- | --- |
+| SPLIT-A01 | Regenerating from the committed inputs gives the committed record byte for byte (`--check`) | exit 0, identical bytes | catches drift in the generator, the inputs or the canonical form |
+| SPLIT-A02 | One changed byte in `coverage.json` is refused | `SPLIT-R01/R12` refusal | a silent re-split on an archive change |
+| SPLIT-A03 | development ∪ held-out ∪ excluded = the 450, pairwise disjoint; development ∪ held-out = frame | sizes (225, 224, 1), frame 449, excluded = {`watertap_metab`} | a dropped or double-assigned case |
+| SPLIT-A04 | exposed = sample ∪ canaries ∪ the 17 named; exposed ⊆ development | 65 = 45 + 3 + 17; sources counted per kind | an exposed case in held-out (Frank's rule) |
+| SPLIT-A05 | an independent re-implementation gives the same development ids and the same commitment | equal | a generator that drifts from this text |
+| SPLIT-A06 | per stratum: `target = ⌊n/2⌋ + [odd_rank even]`, `held_out = min(target, n − exposed)`, `development = n − held_out`, `shortfall = target − held_out`; with no shortfall, \|n − 2·held_out\| ≤ 1; `odd_rank` is 0…8 over the odd strata only; \|2·Σtarget − 449\| ≤ 1 | Σtarget 225; the only shortfall is `pareto\|COMPONENT_UNAVAILABLE` (1, 1, 1) | a wrong rounding, a lost alternation, a compensation across strata |
+| SPLIT-A07 | `held_out_ids()` equals the independent held-out set, and its commitment equals the record's | equal | a scorer reading a different set from the committed one |
+| SPLIT-A08 | `seed_text` is the registered string; `rank("case","x")` equals `sha256(seed ‖ 0x00 ‖ "case" ‖ 0x00 ‖ "x")` and differs from `rank("order","x")` | equal / different | a changed seed, separator or purpose |
+| SPLIT-A09 | No held-out id appears as a whole token in any tracked file (`.gz` decompressed) outside SPLIT-R10's allowlist, except a contaminated id in the files its entry names; more than 1000 files are scanned | no hit; a failure names only `sha256(id)[:12]` | a held-out leak (SPLIT-R10). The non-vanishing state was observed at the first draw (§8.3) |
+| SPLIT-A10 | The record names no held-out id and has no `reasons`, `units`, `components` or `packages` key | none | gap data, or held-out ids, entering the record |
+| SPLIT-A11 | The strata are (family, class) of `coverage.json` minus `ARTIFACT_INCOMPLETE`; `strata_basis` is `W27-R02` | 17 strata whose *n* equal an independent recount | strata taken from another classification |
+| SPLIT-A12 | `f1.status` is `awaiting_facts`, and no case has `topology_units`; adding one makes the generator refuse | `SPLIT-R13` refusal | applying R02-F1 without its facts, or keeping "awaiting" after they arrive |
+| SPLIT-A13 | Kind-level R02-F1 adds nothing to `blind_synthesized_hda_flash` (its coverage row keeps exactly one unit reason, `PressureChanger`) and exactly `SkeletonUnitModel` to `official_idaes_skeleton_pervaporation` | {} and {`SkeletonUnitModel`} | W27-A08 restated (the vanishing state) next to F-1's hidden unit (the non-vanishing state); a wrong boundary set or a missing fallback changes one of them |
+| SPLIT-A14 | Each mutant changes the held-out commitment: purpose `"order"`, odd strata all rounded down, exposure not forced | three different digests | a commitment that cannot tell the rule from its slips |
+| SPLIT-A15 | Inconsistent inputs are refused: a named id that is no case (R14.3); a named id outside the frame (R14.3); a changed `sample.json#/excluded` (R14.4); different id sets (R14.2) | the named refusal | a placeholder success on bad input |
+| SPLIT-A16 | `contaminated` holds exactly the §8.3 entry; it is a held-out case; the headline is held-out − 1 | one entry (`c87ac13adc32…`), headline 223 | contamination dropped, or moved into development |
+| SPLIT-A17 | `--check`'s output names no held-out id | none | a debug print leaking held-out ids |
+
+## 10. What this registration does not establish
+
+- **No claim beyond OpenIDAES-450's population.** Both halves draw on the same nine families and the same archive
+  authors and generators, and many cases are variants of one another. A development/held-out gap measures
+  generalisation *within* this suite. A claim about other flowsheet populations needs an independent second suite.
+- **No secrecy.** Anyone can recompute the split from public inputs and a public seed. The commitment pins the
+  held-out list; it does not hide it. W27's `coverage.json` publishes every case's blocking reasons, held-out cases
+  included. Protection is the recorded rules (SPLIT-R08…R11) and the leak guard (SPLIT-A09). It is not access
+  control.
+- **The leak guard covers committed files only.** It cannot see an agent reading held-out rows of the all-case files
+  or of the archive, or ids in chat that was never committed.
+- **Exposure is complete only with respect to committed files at `f397467`.** Disclosure: on 2026-10-18 a session
+  computed gap frequencies over all 450 cases, in chat. They were not committed, and no development used them (the
+  brief). The held-out half is therefore not unseen by that session.
+- **What this session read.** This session read the families and classes of all cases, scanned committed files for
+  case-id tokens, and read the unit facts of the two exposed cases of SPLIT-A13. It computed nothing else per
+  held-out case.
+- **Strata are a balance device, not a classification claim.** They use W27-R02's classes. A case that R02-F1 would
+  reclassify sits in its R02 stratum. Other covariates are not balanced and no balance is claimed for them:
+  `in_full82`, `model_type`, `unit_source`, the residual check.
+- **No claim about R02-F1's effect on any held-out case.** R02-F1 is registered, not applied. Its kind-level check
+  covers two development cases only.
+- **The sizes are not optimal in any sense,** and the 225/224 numbers are regression values, not validation.
+
+## 11. Open questions (each with a recommended default; work proceeds on the default)
+
+- **Q-1 (needs Frank's preference).** What does a release gate score on the held-out half?
+  - Default: the coverage classification of every held-out case under R02-F1 (no spend), reported beside the
+    development half with the gap.
+  - An agent campaign over held-out cases happens only when a release registration registers one. It draws from the
+    held-out half with its own seed.
+  - Logged in `docs/FRANK_QUESTIONS.md`.
+- **Q-2 (needs Frank's preference).** Should the 17 named cases (SPLIT-R04 (c)) count as development? Frank's rule
+  named only W27's drawn cases.
+  - Default: yes (DECISION D-6). Reversing it needs a v2 registration before any held-out score is reported.
+  - Logged in `docs/FRANK_QUESTIONS.md`.
+- **Q-3 (build lane, has a test).** The development filter of SPLIT-R10.
+  - Default: a script that writes an all-case file's development rows to stdout, filtered by
+    `openidaes450_split.json#/development/case_ids`.
+  - Acceptance: its output holds no held-out id (the SPLIT-A09 token check) and exactly the development rows.
+- **Q-4 (needs a fact).** Is R02-F1's class-name fallback right? This is measured on the workstation's next facts run,
+  on development cases only (§6).
+  - Default: the fallback, as registered.
+
+## 12. Decisions (also in `docs/C2_DECISIONS.md`)
+
+- DECISION D-1: split ratio → per-stratum halves; odd strata alternate up and down by stratum rank; no compensation
+  across strata. Alternative: a global largest-remainder allocation, or 60/40. Reversible by: a v2 registration
+  before any held-out score is reported.
+- DECISION D-2: which R02 the strata use → W27-R02 as committed in `coverage.json`. Using R02-F1 needs facts that are
+  absent, and would mean computing unit availability for held-out cases. Alternative: R02-F1 classes. Reversible by:
+  a v2 registration (the strata are fixed at the draw).
+- DECISION D-3: seed source → a fixed string embedding the full hash of the brief commit (`f397467…`), committed
+  before the draw. Alternative: the archive's SHA-256, or a free string. Reversible by: a v2 registration.
+- DECISION D-4: dynamic cases → in the frame as their own class strata. Alternative: exclude them. Reversible by: a
+  v2 registration.
+- DECISION D-5: incomplete cases → excluded from both halves and listed; a repaired one is an added case under
+  SPLIT-R12. `watertap_metab` is already named, so it would be development. Alternative: assign now. Reversible by:
+  an amendment.
+- DECISION D-6: what counts as exposed → W27's 45 cases and 3 canaries, plus the 17 cases named in committed non-data
+  files at `f397467`. Alternative: only the 48. Reversible by: a v2 registration before any held-out score is
+  reported.
+- DECISION D-7: protection → recorded rules; held-out ids never in clear outside the allowlist; the record carries a
+  commitment; a leak-guard test. Alternative: list the held-out ids in clear, with a rule alone. Reversible by:
+  adding the ids to the record (one-way).
+- DECISION D-8: re-split policy → never redraw; changes go by amendment (removed, changed and added cases);
+  added cases take a seeded per-case coin. Alternative: redraw on every archive change. Reversible by: a new
+  registration.
+- DECISION D-9: F-1 → registered as R02-F1 with a class-name fallback. Its facts (`topology_units`) wait for the
+  workstation, in a new `case_facts-v2.json`. Alternative: the topology_kind-only rule, or a flag. Reversible by: an
+  amendment after Q-4's measurement.
+- DECISION D-10: the contamination found at the first draw → recorded under SPLIT-R11. The mention is kept and the
+  headline is 223. Alternative: edit the example out and say nothing, which SPLIT-R11 forbids. Reversible by: none
+  needed.
+- DECISION D-11: where the record lives → `benchmarks/c2/openidaes450_split.json`, by the package-id convention of
+  `benchmarks/`. Alternative: next to W27's data. Reversible by: a move together with the generator constant.
+
+## 13. Register entries
+
+R-486 (the split and its record), R-487 (strata on W27-R02), R-488 (exposure), R-489 (seed), R-490 (protection and
+contamination), R-491 (re-split policy), R-492 (R02-F1), R-493 (dynamic and incomplete cases), R-494 (non-claims and
+the second-suite requirement).
