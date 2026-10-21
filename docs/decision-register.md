@@ -10094,3 +10094,110 @@ the deferral as a limitation. A31 (b)'s exempt list is not amended.
 excludes either of them.
 
 ---
+
+---
+
+## R-505 — S01's cascade is a unit-layer subsystem that calls `solve_region` unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), S01 specification |
+| Normative text | `docs/derivations/S01-spec.md` §2, §4, §7, §16 |
+| Evidence | `region.py:1666` takes a compiled problem, `LiftedSplit`s, `ZeroFlowForm`s and an opening state; generator `s01_reference.py --check` (127 claims) |
+| Affected packages | S01 (WO-1 to WO-3), S02 |
+
+**Decision.** Each stage is one PH-type lifted split with a lifted mixed inflow `m_j` as its feed. The phase contract is
+`T05b-phase-contract-v2`, and S01 writes no controller. DOF is `2N + n_in(C + 2)`.
+
+**Rejected alternatives, and why.**
+- *A cascade-specific attempt controller:* ADR 0005 D4 requires one decision function.
+- *Widening `LiftedSplit.feed`:* this moves a registered digest.
+
+**Watch for.** Open question §15.1 (pre-solve through `solve_region`).
+
+---
+
+## R-506 — S01's continuation starts from an isothermal pre-solve root, an exact ADR 0010 D2 easy endpoint
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), S01 specification |
+| Normative text | `docs/derivations/S01-spec.md` §6, §7 |
+| Evidence | `ref.cases.*.presolve` (all five flowing cases two-phase at `T̄`) |
+| Affected packages | S01, S02 |
+
+**Decision.** The pipeline is: the analytic initializer `s01-kremser-cmo-v1`, then the isothermal pre-solve
+`s01-isothermal-presolve-v1` giving `x⁰`, then the target, then recovery edge 3 continuing `Q* ` from `Q⁰ = Q(x⁰)`. No ADR
+0043 is needed.
+
+**Rejected alternatives, and why.**
+- *A K-value/CMO model homotopy:* its λ < 1 levels are not real flowsheets, and it needs an ADR.
+
+**Watch for.** Pre-solve failures (`INITIALIZATION_FAILED`) on non-registered specs.
+
+---
+
+## R-507 — S01 zero flow: the label is the liquid inlet's temperature; partial dormancy is not claimed
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), S01 specification (Frank question Q-S01-1, default yes) |
+| Normative text | `docs/derivations/S01-spec.md` §4.3, §4.6, §4.7, A13, A14, A19 |
+| Evidence | `ref.dormant` |
+| Affected packages | S01 |
+
+**Decision.**
+- `T_label(j) = T_{j−1}`, and `T_top` for j = 1.
+- All-dormant cascades are answered in closed form.
+- A nonzero dormant duty gives `zero_flow_conflict`.
+- Partial dormancy carries a no-false-success assertion only.
+
+**Rejected alternatives, and why.**
+- *A structural-dormancy opening rule:* stage dormancy is a solution property, not a graph property.
+
+**Watch for.** S02 cases with dry or empty stages.
+
+---
+
+## R-508 — S01 tolerances and the independent reference
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), S01 specification |
+| Normative text | `docs/derivations/S01-spec.md` §10, §11 |
+| Evidence | `ref.fd_floor_C2` (2.9e-11 at h = 1e-6), `ref.sensitivity` (Poynting 8e-3 K, reversed duties 1.787 K) |
+| Affected packages | S01 |
+
+**Decision.**
+- The state tolerance is flows rel 1e-6 + 1e-9 mol/s, T 1e-4 K and Q 1e-2 W. WO-2 measures the achieved deviation, and the
+  tolerance must stay ≥ 10× that measurement.
+- The A10 Jacobian check uses scaled central differences with tolerance 1e-6.
+- The expectations come from a 7-unknown, mole-fraction formulation at 50 digits.
+
+**Rejected alternatives, and why.**
+- *Comparing with the implementation's own output:* that is a regression fixture, not validation.
+
+**Watch for.** A measured deviation above 1e-5 K, which means amend, not relax.
+
+---
+
+## R-509 — S01 inlets are declared single-phase; no inlet-to-stage pressure relation
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), S01 specification |
+| Normative text | `docs/derivations/S01-spec.md` §3, §5 (R5–R6), §16 |
+| Evidence | — |
+| Affected packages | S01, S02 (feed conventions) |
+
+**Decision.** A two-phase inlet is `unsupported(two_phase_inlet)`. An inlet's enthalpy is taken at its own `(T, P)`.
+
+**Rejected alternatives, and why.**
+- *Lifting an inlet split:* the cost has no S01 use case.
+
+**Watch for.** S02 feed-stage conventions.
