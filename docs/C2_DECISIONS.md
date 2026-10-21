@@ -36,3 +36,9 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
   `work_package` pattern `^[PKTMSR][0-9]{2}[a-z]?$` admits no `C` id, and the schema is frozen. These packages merge
   on the full gate read and CI green on both architectures (the user's queue rule: "tested manifest where the package
   has one"). Alternative: an ADR widening the pattern. Reversible by: that ADR and retro-manifests.
+- DECISION (build lane, CI): D-11 reversed → the record moves to `benchmarks/m06/openidaes450/split.json`. CI run
+  39688818107 failed W27-A71 (`tests/test_t08_w2_unsupported.py:230`, R-194/R-467): a tracked path naming `openidaes`
+  under `benchmarks/` must lie in the adaptation directory `benchmarks/m06/openidaes450/`. `split.json` is not a
+  registered record name and not under `runs/`, so W27-A72 holds. The record's bytes and SHA-256 are unchanged (it
+  does not name its own path). Alternative: amend U14 (a W27 registration change). Reversible by: moving it back with
+  a U14 amendment.

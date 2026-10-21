@@ -99,7 +99,7 @@ purposes are `"stratum"`, `"case"` and `"added"`.
 
 No compensation happens across strata: a shortfall stays in its stratum and is recorded.
 
-**SPLIT-R07 (the record).** The generator writes `benchmarks/c2/openidaes450_split.json` (schema
+**SPLIT-R07 (the record).** The generator writes `benchmarks/m06/openidaes450/split.json` (schema
 `openidaes450-split-v1`), canonical JSON (sorted keys, two-space indent, UTF-8, trailing newline). It holds:
 - the seed text and the hash idiom;
 - the pinned inputs with their SHA-256, the archive SHA-256 from `case_facts.json#/source`, and the snapshot
@@ -142,8 +142,8 @@ at the top of `benchmarks/m06/openidaes450/` that hold every case (`access_repor
 (b) the file's path has a directory segment named `heldout`. Release-gate outputs that carry held-out rows go there.
 
 Development agents do not open the files of (a) or (b) except through a filter that drops non-development rows. The
-build lane provides that filter (§11 Q-3). Until it exists, development reads only `openidaes450_split.json`, `sample.json`, the
-W27 run directories and the development rows that a script prints after filtering by `openidaes450_split.json#/development`.
+build lane provides that filter (§11 Q-3). Until it exists, development reads only `benchmarks/m06/openidaes450/split.json`, `sample.json`, the
+W27 run directories and the development rows that a script prints after filtering by `benchmarks/m06/openidaes450/split.json#/development`.
 
 Mechanical consumers compute the held-out list in memory: the generator, the SPLIT-A09 test, and release-gate
 scorers. They never print a held-out id. A failure message identifies a held-out id by the first 12 hex digits of
@@ -151,7 +151,7 @@ scorers. They never print a held-out id. A failure message identifies a held-out
 
 **SPLIT-R11 (contamination).** If a held-out case is exposed after the split, the split is not redrawn and the case
 is not moved. Exposure means it is named outside SPLIT-R10's allowlist, or a development agent reads its content.
-The case is recorded in `openidaes450_split.json#/contaminated` as `sha256(id)` (hex) with the date and the cause, by an amendment
+The case is recorded in `benchmarks/m06/openidaes450/split.json#/contaminated` as `sha256(id)` (hex) with the date and the cause, by an amendment
 to this registration and a register entry. It stays held-out, is scored at release gates, and is reported in a
 separate line, outside the held-out headline. Deleting the mention to make SPLIT-A09 pass is not a remedy. The
 contamination is recorded, and SPLIT-A09 then tolerates that id, in the files the entry names only.
@@ -204,7 +204,7 @@ carries `from_topology: true`. A reason built from it carries `source=topology` 
   `openidaes450-case-facts-v2`), next to W27's. W27's `case_facts.json` is not rewritten: `coverage.json` pins its
   SHA-256.
 
-Until then `openidaes450_split.json#/f1/status` is `"awaiting_facts"`. The generator verifies the status: it refuses if any case
+Until then `benchmarks/m06/openidaes450/split.json#/f1/status` is `"awaiting_facts"`. The generator verifies the status: it refuses if any case
 in `case_facts.json` already carries `topology_units`.
 
 **The state R02-F1 must keep (W27-A08, restated).** At kind level, the facts above suffice to check two cases, both
@@ -229,7 +229,7 @@ The recommended default is the fallback, as registered above.
 
 **SPLIT-R14 (generator and refusals).** `docs/derivations/scripts/c2_openidaes450_split.py`, run as
 `PYTHONPATH=src python docs/derivations/scripts/c2_openidaes450_split.py --emit | --check`. `--check` regenerates in
-memory and compares the result byte for byte with the committed `openidaes450_split.json`. The generator refuses to emit, with
+memory and compares the result byte for byte with the committed `benchmarks/m06/openidaes450/split.json`. The generator refuses to emit, with
 exit code 2 and a message that names the violated rule and never a held-out id, when:
 1. an input's SHA-256 differs from its pin (SPLIT-R01/R12);
 2. the case-id sets of `coverage.json` and `case_facts.json` differ, or either has duplicate ids;
@@ -379,7 +379,7 @@ point is involved, so there is no roundoff floor, and any difference is a defect
   - Logged in `docs/FRANK_QUESTIONS.md`.
 - **Q-3 (build lane, has a test).** The development filter of SPLIT-R10.
   - Default: a script that writes an all-case file's development rows to stdout, filtered by
-    `openidaes450_split.json#/development/case_ids`.
+    `benchmarks/m06/openidaes450/split.json#/development/case_ids`.
   - Acceptance: its output holds no held-out id (the SPLIT-A09 token check) and exactly the development rows.
 - **Q-4 (needs a fact).** Is R02-F1's class-name fallback right? This is measured on the workstation's next facts run,
   on development cases only (§6).
@@ -415,8 +415,10 @@ point is involved, so there is no roundoff floor, and any difference is a defect
 - DECISION D-10: the contamination found at the first draw → recorded under SPLIT-R11. The mention is kept and the
   headline is 223. Alternative: edit the example out and say nothing, which SPLIT-R11 forbids. Reversible by: none
   needed.
-- DECISION D-11: where the record lives → `benchmarks/c2/openidaes450_split.json`, by the package-id convention of
-  `benchmarks/`. Alternative: next to W27's data. Reversible by: a move together with the generator constant.
+- DECISION D-11 (amended by the build lane, 2026-10-21): where the record lives → `benchmarks/m06/openidaes450/split.json`,
+  W27's adaptation directory, because U14's W27-A71 (R-194, R-467) confines every tracked `benchmarks/` path naming
+  `openidaes` to it; the first choice, `benchmarks/c2/openidaes450_split.json`, failed CI run 39688818107. The bytes are
+  unchanged. Alternative: a U14 amendment. Reversible by: that amendment and a move with the generator constant.
 
 ## 13. Register entries
 

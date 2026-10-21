@@ -26,7 +26,7 @@ from typing import Any, Final
 ROOT: Final = Path(__file__).resolve().parents[3]
 REGISTRATION: Final = "docs/derivations/C2-OpenIDAES-450-split-registration.md"
 GENERATOR: Final = "docs/derivations/scripts/c2_openidaes450_split.py"
-OUT: Final = "benchmarks/c2/openidaes450_split.json"
+OUT: Final = "benchmarks/m06/openidaes450/split.json"
 SCHEMA: Final = "openidaes450-split-v1"
 
 # SPLIT-R05: fixed before the draw; embeds the brief commit made before this package's session.

@@ -10102,7 +10102,7 @@ excludes either of them.
 | Date | 2026-10-21 |
 | Decided by | design lane (`specifier`), package C2, on Frank's request of 2026-10-18 |
 | Normative text | `docs/derivations/C2-OpenIDAES-450-split-registration.md` SPLIT-R01…R07, R14; §8 |
-| Evidence | `benchmarks/c2/openidaes450_split.json` (SHA-256 `ee940a7ee2c6a2128f12fdc25c4e9906ff66607a5ce4e0bb975c00a935adf6cd`); held-out commitment `08b81669d5e15c4d1e9d99a0bca2b458ea5d46cfe71a521d32c3fba33daaea91`; generator `docs/derivations/scripts/c2_openidaes450_split.py --check`; `tests/test_c2_openidaes450_split.py` (SPLIT-A01…A17) |
+| Evidence | `benchmarks/m06/openidaes450/split.json` (SHA-256 `ee940a7ee2c6a2128f12fdc25c4e9906ff66607a5ce4e0bb975c00a935adf6cd`); held-out commitment `08b81669d5e15c4d1e9d99a0bca2b458ea5d46cfe71a521d32c3fba33daaea91`; generator `docs/derivations/scripts/c2_openidaes450_split.py --check`; `tests/test_c2_openidaes450_split.py` (SPLIT-A01…A17) |
 | Affected packages | every package that targets OpenIDAES coverage or agent scores; release gates |
 
 **Decision.** Within each (family, class) stratum, half the cases are held out. The odd strata alternate between

@@ -24,7 +24,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "docs/derivations/scripts/c2_openidaes450_split.py"
-RECORD = ROOT / "benchmarks/c2/openidaes450_split.json"
+RECORD = ROOT / "benchmarks/m06/openidaes450/split.json"
 COVERAGE = ROOT / "benchmarks/m06/openidaes450/coverage.json"
 FACTS = ROOT / "benchmarks/m06/openidaes450/case_facts.json"
 SAMPLE = ROOT / "benchmarks/m06/openidaes450/runs/w27-m07-83f825d/sample.json"
