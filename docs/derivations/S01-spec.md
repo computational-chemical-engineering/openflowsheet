@@ -2,7 +2,7 @@
 
 Design lane (`specifier`), 2026-10-21. Package S01 (plan v1.2 §4.5, `docs/implementation-plan.md:281`), brief
 `docs/briefs/S01-specification.md`. Reference generator `docs/derivations/scripts/s01_reference.py` (mpmath, 50 digits;
-`--check` re-derives 127 claims and byte-compares `s01_reference.json`). Decisions are logged in `docs/S01_DECISIONS.md` and
+`--check` re-derives 153 claims and byte-compares `s01_reference.json`). Decisions are logged in `docs/S01_DECISIONS.md` and
 registered as R-505 to R-509.
 
 ## 0. Authority and scope
@@ -207,13 +207,13 @@ Every flowing case is checked in the generator:
 | A10 | Compiled Jacobian vs central differences at `x_K` and C2's root. Step `h = 1e-6·max(1, |x|)`; compare `D_r⁻¹ J D_x` with `D_x` = (1 mol/s, 100 K, 1e5 Pa, 1e4 W) and `D_r` the row-kind scales | agree | 1e-6. Measured generator floor at this step: 2.9e-11 (`ref.fd_floor_C2`); a wrong ∂lnK/∂P sign is O(1) after `D_x` |
 | A11 | C4 converges to (2P, L, L) with ≥ 1 restart caused by disappearance | `ref.cases.C4` | state tolerance; signature exact |
 | A12 | C5 converges to (VAPOR, 2P) | `ref.cases.C5` | as A11 |
-| A13 | D1: dormant answer without Newton iterations | flows `+0.0` (sign bit checked), `T_j = 330`, branch `ZERO_FLOW` | exact |
-| A14 | D2 conflict | outcome and cause string | exact |
+| A13 | D1 (`ref.dormant.D1`): dormant answer without Newton iterations | `outcome` `CONVERGED`; `signature` `ZERO_FLOW` ×3; `stages[*].T` = 330 K (the label chain from `inlets`' `T_top`, not the vapour inlet's 380 K); every flow `+0.0` with the sign bit checked (ADR 0001 D3.1) | exact |
+| A14 | D2 conflict (`ref.dormant.D2`) | `outcome` `SPECIFICATION_CONFLICT`; `cause` `zero_flow_conflict(<cascade>:stage:2:energy)` with `<cascade>` the unit id; `swapped_energy` = (0, 50, 0) W | exact |
 | A15 | R1–R6 refusals | §5 codes | exact |
 | A16 | R7, both signs; C1 as registered passes | `infeasible_spec(energy_outside_domain)` | exact |
 | A17 | C2 with edge 3 forced from `x⁰`: dyadic λ, `p⁰ = Q⁰` (`ref` presolve Q), λ = 1 instance equals the target's `(model_version, constants_sha256)`, final root `same_root = SAME` as A06 | — | `Q⁰` abs 1e-2 W; rest exact |
 | A18 | C2 from four perturbed openings (`T̄ ± 10` K; initializer flows ×0.5, ×2) | `CONVERGED`, `SAME` as A06 | exact |
-| A19 | Partial-dormancy probe: N = 3, side liquid feed only at stage 3, Q = 0 | a §4.5 outcome, or a root passing §8 with stages 1–2 `ZERO_FLOW`, `T_3 = 340` K | never an unaccepted `CONVERGED` |
+| A19 | Partial-dormancy probe (`ref.partial_dormancy`): N = 3, `top` and `bottom` dormant (330 K, 380 K), liquid side feed `(0.2, 0.5, 0.3)` mol/s at 340 K only at stage 3, Q = 0. It passes §5 (generator claims R5 and R7) | a §4.5 outcome other than a §5 refusal, or a `CONVERGED` root that passes §8. Under signature (`ZERO_FLOW`, `ZERO_FLOW`, `LIQUID`) the root is unique and analytic and passes §8 (generator claims): stage 3 a liquid pass-through, `T = (330, 330, 340)` K, so a root with that signature equals `ref.partial_dormancy.target` | never an unaccepted `CONVERGED`; `target` within state tolerance; outcome exact |
 | A20 | C2 solved twice | identical final `state_sha256` and records | exact |
 
 ## 11. Generator
@@ -221,7 +221,7 @@ Every flowing case is checked in the generator:
 `s01_reference.py` is independent of the implementation: it uses 7 unknowns per stage, mole-fraction equilibrium, its own
 damped Newton with complex-step derivatives, and an equal-step duty path in the registered signature. It shares only
 SYN-001's closed forms and §6's initializer definition. Every numeric claim in this document is a generator claim
-(`ref.claims`, 127). `--check` refuses to emit when one fails.
+(`ref.claims`, 153). `--check` refuses to emit when one fails.
 
 ## 12. Work orders (`opus-engineer`, about 120k context each)
 
@@ -258,7 +258,7 @@ SYN-001's closed forms and §6's initializer definition. Every numeric claim in 
 - **No S02 scope:** no condenser, reboiler, reflux, product-rate or temperature specifications, and no stage-indexing
   conventions beyond §1.
 - **No uniqueness or global convergence.** No claim beyond the registered cases and A18's four perturbations.
-- **No partial-dormancy convergence** (A19 asserts only "no false success").
+- **No partial-dormancy convergence** (A19 asserts no false success; the analytic root it registers is not claimed reachable).
 - **No two-phase inlets.**
 - **No inside-out or rate-based method.**
 - **No sensitivities.**

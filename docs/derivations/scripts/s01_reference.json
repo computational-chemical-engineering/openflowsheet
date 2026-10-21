@@ -1436,24 +1436,409 @@
   ]
  },
  "dormant": {
-  "N": 3,
-  "inlets_all_zero": true,
-  "T_top": "330.0",
-  "T_stage": [
-   "330.0",
-   "330.0",
-   "330.0"
-  ],
-  "flows": "+0.0 everywhere",
-  "conflict": {
+  "D1": {
+   "N": 3,
+   "P": [
+    "100000",
+    "100000",
+    "100000"
+   ],
+   "Q": [
+    "0",
+    "0",
+    "0"
+   ],
+   "inlets": [
+    {
+     "stage": 1,
+     "phase": "LIQUID",
+     "n": [
+      "0",
+      "0",
+      "0"
+     ],
+     "T": "330.0",
+     "P": "100000.0"
+    },
+    {
+     "stage": 3,
+     "phase": "VAPOR",
+     "n": [
+      "0",
+      "0",
+      "0"
+     ],
+     "T": "380.0",
+     "P": "100000.0"
+    }
+   ],
+   "signature": [
+    "ZERO_FLOW",
+    "ZERO_FLOW",
+    "ZERO_FLOW"
+   ],
+   "stages": [
+    {
+     "stage": 1,
+     "regime": "ZERO_FLOW",
+     "T": "330.0",
+     "T_label": "T_top",
+     "P": "100000.0",
+     "Q": "0",
+     "l": [
+      "0",
+      "0",
+      "0"
+     ],
+     "v": [
+      "0",
+      "0",
+      "0"
+     ],
+     "L": "0",
+     "V": "0",
+     "m": [
+      "0",
+      "0",
+      "0"
+     ]
+    },
+    {
+     "stage": 2,
+     "regime": "ZERO_FLOW",
+     "T": "330.0",
+     "T_label": "T_1",
+     "P": "100000.0",
+     "Q": "0",
+     "l": [
+      "0",
+      "0",
+      "0"
+     ],
+     "v": [
+      "0",
+      "0",
+      "0"
+     ],
+     "L": "0",
+     "V": "0",
+     "m": [
+      "0",
+      "0",
+      "0"
+     ]
+    },
+    {
+     "stage": 3,
+     "regime": "ZERO_FLOW",
+     "T": "330.0",
+     "T_label": "T_2",
+     "P": "100000.0",
+     "Q": "0",
+     "l": [
+      "0",
+      "0",
+      "0"
+     ],
+     "v": [
+      "0",
+      "0",
+      "0"
+     ],
+     "L": "0",
+     "V": "0",
+     "m": [
+      "0",
+      "0",
+      "0"
+     ]
+    }
+   ],
+   "swapped_energy": [
+    "0",
+    "0",
+    "0"
+   ],
+   "outcome": "CONVERGED",
+   "cause": null
+  },
+  "D2": {
+   "N": 3,
+   "P": [
+    "100000",
+    "100000",
+    "100000"
+   ],
    "Q": [
     "0",
     "50",
     "0"
    ],
+   "inlets": [
+    {
+     "stage": 1,
+     "phase": "LIQUID",
+     "n": [
+      "0",
+      "0",
+      "0"
+     ],
+     "T": "330.0",
+     "P": "100000.0"
+    },
+    {
+     "stage": 3,
+     "phase": "VAPOR",
+     "n": [
+      "0",
+      "0",
+      "0"
+     ],
+     "T": "380.0",
+     "P": "100000.0"
+    }
+   ],
+   "signature": [
+    "ZERO_FLOW",
+    "ZERO_FLOW",
+    "ZERO_FLOW"
+   ],
+   "stages": [
+    {
+     "stage": 1,
+     "regime": "ZERO_FLOW",
+     "T": "330.0",
+     "T_label": "T_top",
+     "P": "100000.0",
+     "Q": "0",
+     "l": [
+      "0",
+      "0",
+      "0"
+     ],
+     "v": [
+      "0",
+      "0",
+      "0"
+     ],
+     "L": "0",
+     "V": "0",
+     "m": [
+      "0",
+      "0",
+      "0"
+     ]
+    },
+    {
+     "stage": 2,
+     "regime": "ZERO_FLOW",
+     "T": "330.0",
+     "T_label": "T_1",
+     "P": "100000.0",
+     "Q": "50.0",
+     "l": [
+      "0",
+      "0",
+      "0"
+     ],
+     "v": [
+      "0",
+      "0",
+      "0"
+     ],
+     "L": "0",
+     "V": "0",
+     "m": [
+      "0",
+      "0",
+      "0"
+     ]
+    },
+    {
+     "stage": 3,
+     "regime": "ZERO_FLOW",
+     "T": "330.0",
+     "T_label": "T_2",
+     "P": "100000.0",
+     "Q": "0",
+     "l": [
+      "0",
+      "0",
+      "0"
+     ],
+     "v": [
+      "0",
+      "0",
+      "0"
+     ],
+     "L": "0",
+     "V": "0",
+     "m": [
+      "0",
+      "0",
+      "0"
+     ]
+    }
+   ],
+   "swapped_energy": [
+    "0",
+    "50.0",
+    "0"
+   ],
    "outcome": "SPECIFICATION_CONFLICT",
    "cause": "zero_flow_conflict(<cascade>:stage:2:energy)"
   }
+ },
+ "partial_dormancy": {
+  "N": 3,
+  "P": [
+   "100000",
+   "100000",
+   "100000"
+  ],
+  "Q": [
+   "0",
+   "0",
+   "0"
+  ],
+  "inlets": [
+   {
+    "stage": 1,
+    "phase": "LIQUID",
+    "n": [
+     "0",
+     "0",
+     "0"
+    ],
+    "T": "330.0",
+    "P": "100000.0"
+   },
+   {
+    "stage": 3,
+    "phase": "VAPOR",
+    "n": [
+     "0",
+     "0",
+     "0"
+    ],
+    "T": "380.0",
+    "P": "100000.0"
+   },
+   {
+    "stage": 3,
+    "phase": "LIQUID",
+    "n": [
+     "0.2",
+     "0.5",
+     "0.3"
+    ],
+    "T": "340.0",
+    "P": "100000.0"
+   }
+  ],
+  "signature": [
+   "ZERO_FLOW",
+   "ZERO_FLOW",
+   "LIQUID"
+  ],
+  "target": [
+   {
+    "stage": 1,
+    "regime": "ZERO_FLOW",
+    "T": "330.0",
+    "T_label": "T_top",
+    "P": "100000.0",
+    "Q": "0",
+    "l": [
+     "0",
+     "0",
+     "0"
+    ],
+    "v": [
+     "0",
+     "0",
+     "0"
+    ],
+    "L": "0",
+    "V": "0",
+    "m": [
+     "0",
+     "0",
+     "0"
+    ]
+   },
+   {
+    "stage": 2,
+    "regime": "ZERO_FLOW",
+    "T": "330.0",
+    "T_label": "T_1",
+    "P": "100000.0",
+    "Q": "0",
+    "l": [
+     "0",
+     "0",
+     "0"
+    ],
+    "v": [
+     "0",
+     "0",
+     "0"
+    ],
+    "L": "0",
+    "V": "0",
+    "m": [
+     "0",
+     "0",
+     "0"
+    ]
+   },
+   {
+    "stage": 3,
+    "regime": "LIQUID",
+    "T": "340.0",
+    "T_label": null,
+    "P": "100000.0",
+    "Q": "0",
+    "l": [
+     "0.2",
+     "0.5",
+     "0.3"
+    ],
+    "v": [
+     "0",
+     "0",
+     "0"
+    ],
+    "L": "1.0",
+    "V": "0",
+    "m": [
+     "0.2",
+     "0.5",
+     "0.3"
+    ]
+   }
+  ],
+  "admissibility_margin": {
+   "3": "0.3282864697709274754038965"
+  },
+  "precheck": {
+   "H_in": "4000.0",
+   "H_lo": "-2000.0",
+   "H_hi": "44500.0"
+  },
+  "products": {
+   "top_vapour": [
+    "0",
+    "0",
+    "0"
+   ],
+   "bottom_liquid": [
+    "0.2",
+    "0.5",
+    "0.3"
+   ]
+  },
+  "accepted_by_section_8": true
  },
  "fd_floor_C2": {
   "1e-04": "9.51e-09",
@@ -1565,6 +1950,32 @@
   "R7: C1 with Q_1 = +200 kW exceeds the all-vapour-at-T_max bound",
   "R7b: C1 with Q_1 = -200 kW is below the all-liquid-at-T_min bound",
   "C1 as registered passes the precheck",
+  "D1: no vapour-carrying stage, so a top-down sweep solves the declared rows",
+  "D1: every ZERO_FLOW stage's inflow is exactly zero (the dormancy test holds)",
+  "D1: label chain T_j = T_top = 330 K at every stage, not the vapour inlet's 380 K",
+  "D1: pinned columns zero; declared rows = free stage columns = 18",
+  "D1: every declared row (mix, label, P and Q specifications) is exactly zero",
+  "D1: each swapped energy row equals Q_j* (every enthalpy flow vanishes)",
+  "D2: no vapour-carrying stage, so a top-down sweep solves the declared rows",
+  "D2: every ZERO_FLOW stage's inflow is exactly zero (the dormancy test holds)",
+  "D2: label chain T_j = T_top = 330 K at every stage, not the vapour inlet's 380 K",
+  "D2: pinned columns zero; declared rows = free stage columns = 18",
+  "D2: every declared row (mix, label, P and Q specifications) is exactly zero",
+  "D2: each swapped energy row equals Q_j* (every enthalpy flow vanishes)",
+  "D1: every Q_j* = 0, so §4.6 answers CONVERGED",
+  "D2: Q_2* = 50 W leaves stage 2's swapped energy row at 50 W: SPECIFICATION_CONFLICT",
+  "A19: no vapour-carrying stage, so a top-down sweep solves the declared rows",
+  "A19: every ZERO_FLOW stage's inflow is exactly zero (the dormancy test holds)",
+  "A19: stages 1-2 take T_top = 330 K, not the side feed's 340 K or the vapour inlet's 380 K",
+  "A19: stage 3 is a liquid pass-through, T_3 = 340 K (the side feed's temperature)",
+  "A19: stage 3 energy row: H_in = 4000 W, T-slope -C_P L_3 = -100 W/K, so T_3 is unique",
+  "A19: pinned columns zero; declared rows = free stage columns = 22",
+  "A19: every declared row vanishes at the analytic root",
+  "A19: every stage T inside the SYN-001 domain",
+  "A19 stage 3: subcooled liquid, sum x K < 0.98 (passes spec §8)",
+  "A19: the side feed is an admissible liquid (spec §5 R5 passes)",
+  "A19: the energy precheck passes (spec §5 R7 does not refuse)",
+  "A19: overall component and energy closure",
   "central differences at h = 1e-6 max(1,|x|) agree with the exact Jacobian to < 1e-6",
   "C3_reversed_duties pre-solve stage 1: T inside the SYN-001 domain",
   "C3_reversed_duties pre-solve stage 1: two-phase with every flow > 1e-4 mol/s",

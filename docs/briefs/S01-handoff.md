@@ -7,9 +7,10 @@ Done (branch `wp/S01`; commits 8bc23bf and 73000b0; not pushed):
 - `docs/S01_DECISIONS.md` (+9 lines), `docs/decision-register.md` R-505 to R-509, and `docs/FRANK_QUESTIONS.md` Q-S01-1.
 
 Gaps I stopped at, each small, for a fresh `specifier` pass or the WO-1 engineer's first ruling round:
-1. A19's side feed is described only in prose. Register it in the generator: `(0.2, 0.5, 0.3)` mol/s, 340 K, `P_r`, liquid,
-   stage 3, N = 3. Its root is analytic (stage 3 a liquid pass-through, `T_3 = 340`).
-2. D1 and D2 (`ref.dormant`) are written as static values, not derived. Add a claim deriving the label chain.
+1. **Closed (close-out pass, brief `S01-spec-closeout.md`).** A19's case is registered as `ref.partial_dormancy`; its analytic
+   root under (`ZERO_FLOW`, `ZERO_FLOW`, `LIQUID`), `T = (330, 330, 340)` K, passes §8 by generator claims.
+2. **Closed (same pass).** `ref.dormant.D1`/`D2` are derived: closed-form state, label chain, declared rows, swapped energy
+   rows, outcome and cause. `--check` now passes 153 claims (127 + 26). Spec rows A13, A14 and A19 cite the keys.
 3. A10's floor is measured on the generator's formulation with float-rounded outputs. WO-2 must re-measure it on the
    compiled Jacobian, and §10 must be amended if the floor exceeds 1e-8.
 4. Open questions §15.1 and §15.2 need facts from WO-2 and WO-3.

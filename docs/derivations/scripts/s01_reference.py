@@ -13,8 +13,10 @@ derivatives, and then evaluates the implementation's division-free rows at its r
 
 What it produces (spec §11): the Kremser endpoint of the initializer (S01.A02), the initializer
 and the isothermal pre-solve root of every flowing case (A03-A04), the target roots and their
-signatures (A05-A07, A11-A12), the dormant closed form (A13), the energy-domain precheck bounds
-(A16), and the measured central-difference floor that sets A10's tolerance.
+signatures (A05-A07, A11-A12), the dormant closed form with its label chain, outcome and cause
+(A13-A14), the analytic root of the partial-dormancy probe and its spec §8 test (A19), the
+energy-domain precheck bounds (A16), and the measured central-difference floor that sets A10's
+tolerance.
 
     python docs/derivations/scripts/s01_reference.py --check
     python docs/derivations/scripts/s01_reference.py --emit <path of the committed JSON>
@@ -606,19 +608,282 @@ def precheck_section() -> dict[str, Any]:
     }
 
 
-def dormant_section() -> dict[str, Any]:
-    t_top = mpf(330)
+# -- dormant stages (spec §4.2-§4.6) and the A19 partial-dormancy probe -------------------------
+# Dormant inlets carry C2's top/bottom states with zero flow.  T_top (330 K) differs from the vapour
+# inlet's 380 K (DECISION 4's rejected label) and from A19's side feed 340 K, so a label taken from
+# the wrong stream, or from the stage below, changes a registered temperature.
+DORMANT_TOP = inlet(("0", "0", "0"), "330", "100000", "LIQUID", 1)
+DORMANT_BOTTOM = inlet(("0", "0", "0"), "380", "100000", "VAPOR", 3)
+DORMANT_CASES: dict[str, dict[str, Any]] = {
+    "D1": {"N": 3, "P": ["100000"] * 3, "Q": ["0", "0", "0"]},
+    "D2": {"N": 3, "P": ["100000"] * 3, "Q": ["0", "50", "0"]},
+}
+A19_CASE: dict[str, Any] = {
+    "N": 3,
+    "P": ["100000"] * 3,
+    "Q": ["0"] * 3,
+    "side": inlet(("0.2", "0.5", "0.3"), "340", "100000", "LIQUID", 3),
+    "signature": ["ZERO_FLOW", "ZERO_FLOW", "LIQUID"],
+}
+PINNED = {
+    "TWO_PHASE": (),
+    "LIQUID": ("v", "V"),
+    "VAPOR": ("l", "L"),
+    "ZERO_FLOW": ("l", "v", "L", "V"),
+}
+
+
+def closed_form_state(case: dict[str, Any], sig: Sequence[str]) -> dict[str, Any]:
+    """Spec §4.3/§4.6 and §10 A19: the root of the declared rows under a signature with no vapour.
+
+    With no TWO_PHASE or VAPOR stage every vapour stream is pinned to zero, so stage j's inflow is
+    the liquid from j-1 plus its own inlets and a top-down sweep is exact.  A ZERO_FLOW stage pins
+    its flows and takes T_label(j) = T_{j-1} (T_top for j = 1).  A LIQUID stage passes its inflow
+    through (mix, mole, Ldef) and its energy row is linear in T_j:
+    Q_j + H_in - sum_i l_ij [C_P (T_j - T_ref) + v_i (P_j - P_ref)] = 0.
+    """
+    n_st, p, q = case["N"], case["Pm"], case["Qm"]
+    claim(
+        all(reg in ("ZERO_FLOW", "LIQUID") for reg in sig),
+        f"{case['name']}: no vapour-carrying stage, so a top-down sweep solves the declared rows",
+    )
+    zero = [mpf(0)] * NC
+    liq, v, m = [list(zero) for _ in range(n_st)], [list(zero) for _ in range(n_st)], []
+    t: list[Any] = [mpf(0)] * n_st
+    big_l, big_v, label, slope = [mpf(0)] * n_st, [mpf(0)] * n_st, [], []
+    t_top = next(f["T"] for f in case["inlets"] if f["stage"] == 1 and f["phase"] == "LIQUID")
+    dormant_ok = True
+    for j in range(n_st):
+        comp, h_in = stage_inflow(case, j, liq, v, t, p)
+        m.append(list(comp))
+        if sig[j] == "ZERO_FLOW":
+            dormant_ok = dormant_ok and all(a == 0 for a in comp) and h_in == 0
+            t[j] = t_top if j == 0 else t[j - 1]
+            label.append("T_top" if j == 0 else f"T_{j}")
+            slope.append(None)
+        else:
+            liq[j] = list(comp)
+            big_l[j] = sum(
+                f["n"][i] for f in case["inlets"] if f["stage"] == j + 1 for i in range(NC)
+            )
+            if j > 0:
+                big_l[j] += big_l[j - 1]
+            poynting = sum(liq[j][i] * V_MOL[i] for i in range(NC)) * (p[j] - P_REF)
+            t[j] = T_REF + (q[j] + h_in - poynting) / (C_P * big_l[j])
+            label.append(None)
+            slope.append(-C_P * big_l[j])
+    claim(
+        dormant_ok,
+        f"{case['name']}: every ZERO_FLOW stage's inflow is exactly zero (the dormancy test holds)",
+    )
     return {
-        "N": 3,
-        "inlets_all_zero": True,
-        "T_top": s(t_top),
-        "T_stage": [s(t_top)] * 3,
-        "flows": "+0.0 everywhere",
-        "conflict": {
-            "Q": ["0", "50", "0"],
-            "outcome": "SPECIFICATION_CONFLICT",
-            "cause": "zero_flow_conflict(<cascade>:stage:2:energy)",
-        },
+        "l": liq,
+        "v": v,
+        "m": m,
+        "L": big_l,
+        "V": big_v,
+        "T": t,
+        "t_top": t_top,
+        "label": label,
+        "slope": slope,
+    }
+
+
+def declared_rows(case: dict[str, Any], st: dict[str, Any], sig: Sequence[str]) -> dict[str, Any]:
+    """The implementation's rows of spec §2 at `st`, after §4.2's pins, drops and label swaps.
+
+    Returns the declared rows by id, plus the swapped-out energy rows of ZERO_FLOW stages (under
+    `swapped`), whose values decide §4.5/§4.6's SPECIFICATION_CONFLICT.
+    """
+    n_st, p = case["N"], case["Pm"]
+    liq, v, t = st["l"], st["v"], st["T"]
+    rows: dict[str, Any] = {}
+    swapped: dict[str, Any] = {}
+    pinned, pins_ok = 0, True
+    for j in range(n_st):
+        u, reg = f"<cascade>:stage:{j + 1}", sig[j]
+        cols = {"l": liq[j], "v": v[j], "L": [st["L"][j]], "V": [st["V"][j]]}
+        for name in PINNED[reg]:
+            pins_ok = pins_ok and all(a == 0 for a in cols[name])
+            pinned += len(cols[name])
+        comp, h_in = stage_inflow(case, j, liq, v, t, p)
+        for i in range(NC):
+            rows[f"{u}:mix:{i}"] = comp[i] - st["m"][j][i]
+        if reg != "ZERO_FLOW":
+            for i in range(NC):
+                rows[f"{u}:mole:{i}"] = st["m"][j][i] - v[j][i] - liq[j][i]
+        if reg == "TWO_PHASE":
+            for i in range(NC):
+                rows[f"{u}:eq:{i}"] = (
+                    v[j][i] * st["L"][j] - k_val(t[j], p[j], i) * liq[j][i] * st["V"][j]
+                )
+        if reg in ("TWO_PHASE", "LIQUID"):
+            rows[f"{u}:Ldef"] = st["L"][j] - sum(liq[j])
+        if reg in ("TWO_PHASE", "VAPOR"):
+            rows[f"{u}:Vdef"] = st["V"][j] - sum(v[j])
+        energy = (
+            case["Qm"][j]
+            + h_in
+            - h_stream(v[j], t[j], p[j], "VAPOR")
+            - h_stream(liq[j], t[j], p[j], "LIQUID")
+        )
+        if reg == "ZERO_FLOW":
+            rows[f"{u}:label"] = t[j] - (t[j - 1] if j > 0 else st["t_top"])
+            swapped[f"{u}:energy"] = energy
+        else:
+            rows[f"{u}:energy"] = energy
+        rows[f"{u}:P_spec"] = p[j] - mpf(case["P"][j])
+        rows[f"{u}:Q_spec"] = case["Qm"][j] - mpf(case["Q"][j])
+    claim(
+        pins_ok and len(rows) == 14 * n_st - pinned,
+        f"{case['name']}: pinned columns zero; declared rows = free stage columns = {len(rows)}",
+    )
+    return {"rows": rows, "swapped": swapped}
+
+
+def stage_record(case: dict[str, Any], st: dict[str, Any], j: int, sig: Sequence[str]):
+    return {
+        "stage": j + 1,
+        "regime": sig[j],
+        "T": s(st["T"][j]),
+        "T_label": st["label"][j],
+        "P": s(case["Pm"][j]),
+        "Q": s(case["Qm"][j]),
+        "l": [s(a) for a in st["l"][j]],
+        "v": [s(a) for a in st["v"][j]],
+        "L": s(st["L"][j]),
+        "V": s(st["V"][j]),
+        "m": [s(a) for a in st["m"][j]],
+    }
+
+
+def dormant_case(name: str, spec: dict[str, Any]) -> dict[str, Any]:
+    """Spec §4.6: every inlet dormant; label chain, outcome and cause derived, not written."""
+    case = dict(spec, name=name, inlets=[DORMANT_TOP, DORMANT_BOTTOM])
+    case["Pm"], case["Qm"] = [mpf(x) for x in case["P"]], [mpf(x) for x in case["Q"]]
+    sig = ["ZERO_FLOW"] * case["N"]
+    st = closed_form_state(case, sig)
+    t_top, t_bot = DORMANT_TOP["T"], DORMANT_BOTTOM["T"]
+    claim(
+        all(tj == t_top for tj in st["T"]) and t_top == 330 and t_bot != t_top,
+        f"{name}: label chain T_j = T_top = 330 K at every stage, not the vapour inlet's 380 K",
+    )
+    ev = declared_rows(case, st, sig)
+    claim(
+        all(r == 0 for r in ev["rows"].values()),
+        f"{name}: every declared row (mix, label, P and Q specifications) is exactly zero",
+    )
+    energy = list(ev["swapped"].values())
+    claim(
+        all(energy[j] == case["Qm"][j] for j in range(case["N"])),
+        f"{name}: each swapped energy row equals Q_j* (every enthalpy flow vanishes)",
+    )
+    bad = [j for j in range(case["N"]) if energy[j] != 0]
+    outcome = "SPECIFICATION_CONFLICT" if bad else "CONVERGED"
+    cause = f"zero_flow_conflict(<cascade>:stage:{bad[0] + 1}:energy)" if bad else None
+    return {
+        "N": case["N"],
+        "P": case["P"],
+        "Q": case["Q"],
+        "inlets": [inlet_record(f) for f in case["inlets"]],
+        "signature": sig,
+        "stages": [stage_record(case, st, j, sig) for j in range(case["N"])],
+        "swapped_energy": [s(a) for a in energy],
+        "outcome": outcome,
+        "cause": cause,
+    }
+
+
+def inlet_record(f: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "stage": f["stage"],
+        "phase": f["phase"],
+        "n": [s(a) for a in f["n"]],
+        "T": s(f["T"]),
+        "P": s(f["P"]),
+    }
+
+
+def dormant_section() -> dict[str, Any]:
+    out = {name: dormant_case(name, spec) for name, spec in DORMANT_CASES.items()}
+    claim(
+        out["D1"]["outcome"] == "CONVERGED" and out["D1"]["cause"] is None,
+        "D1: every Q_j* = 0, so §4.6 answers CONVERGED",
+    )
+    claim(
+        out["D2"]["outcome"] == "SPECIFICATION_CONFLICT"
+        and out["D2"]["cause"] == "zero_flow_conflict(<cascade>:stage:2:energy)",
+        "D2: Q_2* = 50 W leaves stage 2's swapped energy row at 50 W: SPECIFICATION_CONFLICT",
+    )
+    return out
+
+
+def partial_dormancy_section() -> dict[str, Any]:
+    """Spec §10 A19: the analytic root under (ZERO_FLOW, ZERO_FLOW, LIQUID) and its §8 test.
+
+    Stage 2 dormant forces m_2 = l_1 + v_3 = 0, so v_3 = 0 and stage 3 receives only the side feed.
+    Under this signature the declared rows are linear and the energy row's T-slope is -C_P L_3 != 0,
+    so the root is unique: stage 3 is a liquid pass-through at the feed's 340 K, stages 1-2 take
+    T_top = 330 K.  Spec §8 then asks: declared rows within tolerance, T in the domain, and R-007
+    admissibility of the LIQUID stage.
+    """
+    side = A19_CASE["side"]
+    case = dict(A19_CASE, name="A19", inlets=[DORMANT_TOP, DORMANT_BOTTOM, side])
+    case["Pm"], case["Qm"] = [mpf(x) for x in case["P"]], [mpf(x) for x in case["Q"]]
+    sig, n_st = case["signature"], case["N"]
+    st = closed_form_state(case, sig)
+    t = st["T"]
+    claim(
+        t[0] == t[1] == DORMANT_TOP["T"] == 330
+        and len({t[0], side["T"], DORMANT_BOTTOM["T"]}) == 3,
+        "A19: stages 1-2 take T_top = 330 K, not the side feed's 340 K or the vapour inlet's 380 K",
+    )
+    claim(
+        abs(t[2] - 340) < mpf("1e-45") and t[2] == side["T"],
+        "A19: stage 3 is a liquid pass-through, T_3 = 340 K (the side feed's temperature)",
+    )
+    h_in3 = stage_inflow(case, 2, st["l"], st["v"], t, case["Pm"])[1]
+    claim(
+        abs(h_in3 - 4000) < mpf("1e-45") and st["slope"][2] == -100,
+        "A19: stage 3 energy row: H_in = 4000 W, T-slope -C_P L_3 = -100 W/K, so T_3 is unique",
+    )
+    ev = declared_rows(case, st, sig)
+    worst = max(abs(r) for r in ev["rows"].values())
+    claim(worst < mpf("1e-45"), "A19: every declared row vanishes at the analytic root")
+    # spec §8: domain, R-007 admissibility of the LIQUID stage (at m_3, T_3, P_3)
+    claim(all(T_MIN <= tj <= T_MAX for tj in t), "A19: every stage T inside the SYN-001 domain")
+    z3 = [a / sum(st["m"][2]) for a in st["m"][2]]
+    bubble = sum(z3[i] * k_val(t[2], case["Pm"][2], i) for i in range(NC))
+    claim(bubble < mpf("0.98"), "A19 stage 3: subcooled liquid, sum x K < 0.98 (passes spec §8)")
+    zf = [a / sum(side["n"]) for a in side["n"]]
+    bubble_in = sum(zf[i] * k_val(side["T"], side["P"], i) for i in range(NC))
+    claim(bubble_in <= 1, "A19: the side feed is an admissible liquid (spec §5 R5 passes)")
+    tot = [sum(f["n"][i] for f in case["inlets"]) for i in range(NC)]
+    h_star = sum(h_stream(f["n"], f["T"], f["P"], f["phase"]) for f in case["inlets"]) + sum(
+        case["Qm"]
+    )
+    h_lo = sum(tot[i] * h_liq(T_MIN, case["Pm"][-1], i) for i in range(NC))
+    h_hi = sum(tot[i] * h_vap(T_MAX, i) for i in range(NC))
+    claim(h_lo < h_star < h_hi, "A19: the energy precheck passes (spec §5 R7 does not refuse)")
+    out_l, out_v = st["l"][-1], st["v"][0]
+    claim(
+        all(tot[i] == out_l[i] + out_v[i] for i in range(NC))
+        and h_star
+        == h_stream(out_v, t[0], case["Pm"][0], "VAPOR")
+        + h_stream(out_l, t[-1], case["Pm"][-1], "LIQUID"),
+        "A19: overall component and energy closure",
+    )
+    return {
+        "N": n_st,
+        "P": case["P"],
+        "Q": case["Q"],
+        "inlets": [inlet_record(f) for f in case["inlets"]],
+        "signature": sig,
+        "target": [stage_record(case, st, j, sig) for j in range(n_st)],
+        "admissibility_margin": {"3": s(1 - bubble)},
+        "precheck": {"H_in": s(h_star), "H_lo": s(h_lo), "H_hi": s(h_hi)},
+        "products": {"top_vapour": [s(a) for a in out_v], "bottom_liquid": [s(a) for a in out_l]},
+        "accepted_by_section_8": True,
     }
 
 
@@ -691,6 +956,7 @@ def build() -> dict[str, Any]:
     doc["dof"] = dof_section()
     doc["precheck"] = precheck_section()
     doc["dormant"] = dormant_section()
+    doc["partial_dormancy"] = partial_dormancy_section()
     doc["fd_floor_C2"] = fd_floor(CASES["C2"])
     doc["sensitivity"] = sensitivity_section()
     doc["claims"] = list(CLAIMS)
