@@ -10,6 +10,13 @@ This repository implements the agent-native open process simulator. The work is 
 - `docs/design-history/` is archival. It is not a source of additional obligations.
 - Do not re-plan, reopen architecture, or survey alternative technologies. A departure from the blueprint or plan requires an ADR under `docs/adr/` stating reason, affected requirements, migration impact, and acceptance evidence.
 
+## Cloud sessions
+
+A cloud session (fresh clone) has no OpenIDAES-450 archive, no V17 login token (never copy it, R-116), no nlp or
+reactor environment, and no `~/.claude`. Take only the work `docs/CLOUD_WORK.md` lists as cloud packages. Leave
+release-candidate runs, W27/V17 campaigns and nlp/reactor re-takes to the workstation. The agent roles are in
+`.claude/agents/`.
+
 ## Session start
 
 1. Read `CLAUDE.md`, then `docs/progress.md` (if present), `docs/decision-register.md`, the latest `evidence/<package>/*/manifest.json`, and any open ADRs.
