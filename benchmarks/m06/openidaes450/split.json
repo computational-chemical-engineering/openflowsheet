@@ -1,0 +1,761 @@
+{
+  "archive_sha256": "6d42c02fdc7e8e4c81c861d77fd5b546198a2bfd7d9c87212c97149e50ea4526",
+  "contaminated": [
+    {
+      "cause": "named before the draw as the whole-token matching example in SPLIT-R04's text (commit 0211372); found by SPLIT-A09 at the first draw; no case content was read",
+      "date": "2026-10-21",
+      "sha256": "c87ac13adc32bcd5f48aa846d3f511e12d5e4f8efef1bad090a0be6be7a45721",
+      "where": [
+        "docs/derivations/C2-OpenIDAES-450-split-registration.md"
+      ]
+    }
+  ],
+  "coverage_snapshot": {
+    "git_commit": "48db2d30be672b758562a39fd1551c82445f6642",
+    "snapshot_sha256": "211cf4f17037c3d901d8b1b42756b14d71249de8da129c35d55b44f4cddfe152"
+  },
+  "development": {
+    "case_ids": [
+      "blind_synthesized_anaerobic_digester_unit",
+      "blind_synthesized_boron_removal_unit",
+      "blind_synthesized_bped_unit",
+      "blind_synthesized_coag_floc_unit",
+      "blind_synthesized_electrodialysis_conc_recirc",
+      "blind_synthesized_gac_unit",
+      "blind_synthesized_hda_flash",
+      "blind_synthesized_methanol_recycle",
+      "blind_synthesized_mvc_single_stage",
+      "blind_synthesized_prommis_crusher_unit",
+      "blind_synthesized_prommis_hydrogen_decrepitation_furnace",
+      "blind_synthesized_prommis_leach_flowsheet",
+      "blind_synthesized_prommis_membrane_cascade_flowsheet",
+      "blind_synthesized_prommis_nanofiltration_membrane_schematic",
+      "blind_synthesized_prommis_nanofiltration_ui_flowsheet",
+      "blind_synthesized_prommis_nf_brine_advanced_costing",
+      "blind_synthesized_prommis_ree_oxalate_roaster",
+      "blind_synthesized_prommis_simplified_uky_flowsheet",
+      "blind_synthesized_prommis_superstructure_pathway_npv",
+      "blind_synthesized_prommis_uky_ui_flowsheet",
+      "blind_synthesized_ro_no_energy_recovery",
+      "blind_synthesized_ro_pressure_exchanger",
+      "blind_synthesized_subcritical_power_plant",
+      "blind_synthesized_watertap_electroNP_bsm2_no_bioP",
+      "dispatches_nuclear_double_loop",
+      "dispatches_ultra_supercritical_plant",
+      "dispatches_usc_tes_charge_superstructure",
+      "dispatches_usc_tes_integrated",
+      "dispatches_wind_battery_pem_tank_turbine",
+      "dispatches_wind_pem_double_loop",
+      "gtep_v2_123bus_high_growth_coal_transition",
+      "gtep_v2_9bus_generation_storage_expansion",
+      "gtep_v2_9bus_generation_transmission_coexpansion",
+      "gtep_v2_9bus_storage_only_investment",
+      "idaes_bfb_methane_combustion",
+      "idaes_co2_membrane_1d",
+      "idaes_drum_1d",
+      "idaes_dynamic_feedwater_heater",
+      "idaes_dynamic_tga",
+      "idaes_feed_flash",
+      "idaes_heat_exchanger_2d",
+      "idaes_mscontactor",
+      "idaes_ngcc_soec",
+      "idaes_shell_and_tube_1d",
+      "idaes_soc_pid_control",
+      "idaes_temperature_swing_adsorption",
+      "idaes_valve",
+      "mvo_official_transcritical_co2_surrogate_gbdt",
+      "mvo_v2_full_compressor_limited_221",
+      "mvo_v2_full_flexible_333",
+      "mvo_v2_full_standardized_111",
+      "mvo_v2_hot_climate_weighted",
+      "mvo_variant_transcritical_co2_high_capacity",
+      "mvo_variant_transcritical_co2_high_demand_flexible",
+      "mvo_variant_transcritical_co2_high_demand_standardized",
+      "mvo_variant_transcritical_co2_hot_climate",
+      "ngcc_gas_turbine_subflowsheet",
+      "ngcc_hrsg_subflowsheet",
+      "ngcc_steam_turbine_subflowsheet",
+      "ngfc_atr",
+      "official_btx_flash_canary",
+      "official_gtep_123bus_coal",
+      "official_gtep_123bus_resilience_week",
+      "official_gtep_5bus_resource_adequacy",
+      "official_gtep_5bus_three_stage",
+      "official_gtep_9bus_candidate_expansion",
+      "official_gtep_texas_2000",
+      "official_idaes_eg_cstr_flowsheet",
+      "official_idaes_eg_pfr_flowsheet",
+      "official_idaes_eg_stoichiometric_flowsheet",
+      "official_idaes_hx1d_unit",
+      "official_idaes_pz_afs_carbon_capture",
+      "official_idaes_rsofc_soec_mode",
+      "official_idaes_skeleton_pervaporation",
+      "official_idaes_smr_equilibrium_flowsheet",
+      "official_idaes_smr_gibbs_flowsheet",
+      "official_ngcc",
+      "official_subcritical_boiler",
+      "pareto_integrated_mvr",
+      "pareto_operational_network",
+      "pareto_produced_water_network",
+      "prommis_dynamic_mixer_settler",
+      "reaktoro_biogas_combustion",
+      "reaktoro_redox_tracking",
+      "reaktoro_simple_ion_exchange",
+      "reflo_air_stripping_0d",
+      "reflo_chemical_softening",
+      "reflo_crystallizer_effect",
+      "reflo_deep_well_injection",
+      "reflo_kbhdp_soa",
+      "reflo_kbhdp_zld",
+      "variant_ammonia_recovery_storage_scrubber_recycle",
+      "variant_dispatches_pem_oxygen_coproduct_methanation",
+      "variant_hda_distillation_heat_pump",
+      "variant_hda_methanol_steam_level_integration",
+      "variant_hda_once_through_single_flash",
+      "variant_hda_once_through_two_flash",
+      "variant_hda_psa_hydrogen_recovery_tailgas_fuel",
+      "variant_hda_psa_tailgas_furnace_heat_recovery",
+      "variant_idaes_ammonia_synthesis_intercool_condense",
+      "variant_idaes_bfb_staged_air_flue_gas_recycle",
+      "variant_idaes_boiler_biomass_cofire_fgr",
+      "variant_idaes_btx_extractive_distillation_solvent_recycle",
+      "variant_idaes_co2_membrane_two_stage_recycle",
+      "variant_idaes_dac_co2_electroreduction_methanation",
+      "variant_idaes_ethanol_water_pervaporation_polish",
+      "variant_idaes_hx2d_pcm_thermal_buffer",
+      "variant_idaes_hx_lumped_a40_ua15_cf70",
+      "variant_idaes_hx_lumped_a65_ua80_cf75",
+      "variant_idaes_hx_lumped_a80_ua50_cf90",
+      "variant_idaes_hx_lumped_compact_crossflow",
+      "variant_idaes_hx_ntu_e55_a70",
+      "variant_idaes_hx_ntu_e60_a80",
+      "variant_idaes_hx_ntu_e75_a110",
+      "variant_idaes_hx_ntu_e80_a120",
+      "variant_idaes_hx_ntu_e85_a160",
+      "variant_idaes_iapws_pump_dp200k_eff75",
+      "variant_idaes_iapws_pump_dp600k_eff75",
+      "variant_idaes_iapws_pump_dp800k_eff85",
+      "variant_idaes_mea_absorber_flash_regeneration",
+      "variant_idaes_methanation_co2_recycle",
+      "variant_idaes_natural_gas_glycol_dehydration",
+      "variant_idaes_ngcc_supplementary_firing_district_heat",
+      "variant_idaes_propane_propylene_heat_pump",
+      "variant_idaes_pz_capture_lean_vapor_recompression",
+      "variant_idaes_pz_solvent_reclaimer_degradation_purge",
+      "variant_idaes_rsofc_hydrogen_storage_heat_cascade",
+      "variant_idaes_sour_gas_zno_claus_tailgas",
+      "variant_idaes_supercritical_double_reheat_feedwater_split",
+      "variant_idaes_teg_dehydration_flash_regeneration",
+      "variant_idaes_teg_regenerator_stripping_column",
+      "variant_idaes_tsa_water_co2_coadsorption",
+      "variant_idaes_vsa_co2_dual_bed",
+      "variant_idaes_zno_h2s_guard_regeneration",
+      "variant_methanol_capture_electrolysis_heat_integration",
+      "variant_methanol_reaction_water_condense_reheat",
+      "variant_methanol_water_nrtl_partial_condensation",
+      "variant_natural_gas_compressor_heat_teg_regeneration",
+      "variant_natural_gas_hydrate_inhibitor_slug_recovery",
+      "variant_prommis_copper_leach_sxew_raffinate_recycle",
+      "variant_prommis_copper_sxew_raffinate",
+      "variant_prommis_evaporation_pond_staged_salt_harvest",
+      "variant_prommis_li_mg_nf_diafiltration",
+      "variant_prommis_lithium_carbonate_seed_recycle",
+      "variant_prommis_lithium_magnesium_nf_cascade",
+      "variant_prommis_lithium_nf_bped_crystallization",
+      "variant_prommis_lithium_sx_solvent_wash",
+      "variant_prommis_ndfeb_hydrogen_recycle_magnetic_classification",
+      "variant_prommis_nickel_cobalt_staged_ph_separation",
+      "variant_prommis_ree_leach_sx_acid_recycle_small",
+      "variant_prommis_sx_scrub_strip_organic_recycle",
+      "variant_reaktoro_lithium_brine_borate_then_carbonate",
+      "variant_reflo_air_stripping_offgas_gac_polishing",
+      "variant_reflo_crystallizer_mother_liquor_recycle",
+      "variant_reflo_multi_effect_crystallizer_mvr_heat_integrated",
+      "variant_reflo_nacl_seeded_cooling_crystallization",
+      "variant_v4_cryst_n10p5119_t333_y45_45",
+      "variant_v4_cryst_n11_t333_y40_35",
+      "variant_v4_cryst_n12_t323_y30_50",
+      "variant_v4_cryst_n13_t338_y45_50",
+      "variant_v4_cryst_n14_t328_y35_50",
+      "variant_v4_cryst_n16_t333_y55_35",
+      "variant_v4_cryst_n8_t338_y50_40",
+      "variant_v4_cryst_n9_t323_y35_40",
+      "variant_v4_gac_replace_45_20",
+      "variant_v4_gac_replace_50_10",
+      "variant_v4_gac_replace_50_15",
+      "variant_v4_gac_replace_50_20",
+      "variant_v4_gac_replace_55_10",
+      "variant_v4_gac_replace_60_10",
+      "variant_v4_gac_replace_70_15",
+      "variant_v4_ro_f08_s30_p22_10_a70_100",
+      "variant_v4_ro_f09_s20_p19_09_a70_100",
+      "variant_v4_ro_f09_s25_p20_10_a75_110",
+      "variant_v4_ro_f10_s25_p21_10_a75_110",
+      "variant_v4_ro_f11_s20_p21_10_a85_120",
+      "variant_v4_ro_f12_s20_p23_11_a95_130",
+      "variant_v4_ro_f12_s30_p25_12_a100_140",
+      "variant_watertap_ad_digestate_ammonia_stripping",
+      "variant_watertap_adm1_biogas_water_scrubbing",
+      "variant_watertap_adm1_two_stage_acidogenic_methanogenic",
+      "variant_watertap_ammonia_membrane_contactor_heat_recovery",
+      "variant_watertap_asm1_clarifier_only_ras",
+      "variant_watertap_asm1_step_feed_internal_recycle",
+      "variant_watertap_asm2d_sidestream_struvite",
+      "variant_watertap_biogas_co2_water_scrubber",
+      "variant_watertap_bped_acid_base_product_recycle",
+      "variant_watertap_bped_ix_brine_acid_base_recovery",
+      "variant_watertap_bsm2p_centrate_struvite_recovery",
+      "variant_watertap_ed_concentrate_recycle_purge",
+      "variant_watertap_ed_metathesis_sulfate_control",
+      "variant_watertap_ed_nitrate_concentrate_recycle",
+      "variant_watertap_ed_organic_acid_recovery",
+      "variant_watertap_electronp_nutrient_polishing",
+      "variant_watertap_gac_biological_regeneration_loop",
+      "variant_watertap_gac_lead_lag",
+      "variant_watertap_ix_ammonium_regeneration",
+      "variant_watertap_ix_nitrate_selective_brine_recovery",
+      "variant_watertap_mother_liquor_recycle_crystallization",
+      "variant_watertap_ro_boron_polishing_second_pass",
+      "variant_watertap_ro_md_crystallizer_zld",
+      "variant_watertap_ro_nf_softening_pretreatment",
+      "variant_watertap_two_stage_crystallization",
+      "variant_watertap_wrrf_equalization_bnr",
+      "watertap_anaerobic_digester_unit",
+      "watertap_asm1",
+      "watertap_bped_unit",
+      "watertap_bsm2",
+      "watertap_bsm2_p_extension",
+      "watertap_coagulation_flocculation_unit",
+      "watertap_crystallization",
+      "watertap_dye_desalination",
+      "watertap_electrodialysis_conc_recirc",
+      "watertap_flex_desal",
+      "watertap_generic_desalination_train",
+      "watertap_modified_adm1_translators",
+      "watertap_modified_asm2d",
+      "watertap_modular_bped_tea",
+      "watertap_nf_dspmde_base",
+      "watertap_nf_dspmde_with_bypass",
+      "watertap_oaro_multi",
+      "watertap_ro_no_energy_recovery",
+      "watertap_ro_pump_as_turbine",
+      "watertap_ro_with_energy_recovery",
+      "watertap_seawater_ro_pump_as_turbine"
+    ],
+    "count": 225
+  },
+  "exposed": {
+    "cases": [
+      {
+        "case_id": "blind_synthesized_coag_floc_unit",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "blind_synthesized_gac_unit",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "blind_synthesized_hda_flash",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "blind_synthesized_methanol_recycle",
+        "source": "named:docs/derivations/T08-release-spec.md@f397467"
+      },
+      {
+        "case_id": "blind_synthesized_prommis_nanofiltration_membrane_schematic",
+        "source": "w27_canary"
+      },
+      {
+        "case_id": "blind_synthesized_prommis_superstructure_pathway_npv",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "blind_synthesized_prommis_uky_ui_flowsheet",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "blind_synthesized_ro_pressure_exchanger",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "blind_synthesized_subcritical_power_plant",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "dispatches_nuclear_double_loop",
+        "source": "named:docs/reviews/W27-verdict-83f825d.md@f397467"
+      },
+      {
+        "case_id": "dispatches_ultra_supercritical_plant",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "idaes_feed_flash",
+        "source": "named:benchmarks/m06/w27/stubs.py@f397467"
+      },
+      {
+        "case_id": "idaes_ngcc_soec",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "idaes_temperature_swing_adsorption",
+        "source": "named:docs/reviews/W27-verdict-83f825d.md@f397467"
+      },
+      {
+        "case_id": "mvo_variant_transcritical_co2_high_demand_flexible",
+        "source": "w27_canary"
+      },
+      {
+        "case_id": "mvo_variant_transcritical_co2_high_demand_standardized",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "mvo_variant_transcritical_co2_hot_climate",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "ngcc_gas_turbine_subflowsheet",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "ngfc_atr",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "official_btx_flash_canary",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "official_gtep_5bus_resource_adequacy",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "official_gtep_5bus_three_stage",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "official_idaes_eg_pfr_flowsheet",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "official_idaes_eg_stoichiometric_flowsheet",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "official_idaes_skeleton_pervaporation",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "official_idaes_smr_equilibrium_flowsheet",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "official_idaes_smr_gibbs_flowsheet",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "pareto_operational_network",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "pareto_produced_water_network",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "reaktoro_redox_tracking",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "reflo_crystallizer_effect",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "reflo_kbhdp_zld",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_dispatches_pem_oxygen_coproduct_methanation",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_hda_once_through_single_flash",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "variant_hda_psa_hydrogen_recovery_tailgas_fuel",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_hda_psa_tailgas_furnace_heat_recovery",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_idaes_ammonia_synthesis_intercool_condense",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "variant_idaes_boiler_biomass_cofire_fgr",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_idaes_hx_lumped_a65_ua80_cf75",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_idaes_hx_ntu_e55_a70",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_idaes_hx_ntu_e60_a80",
+        "source": "named:benchmarks/m06/w27/stubs.py@f397467"
+      },
+      {
+        "case_id": "variant_idaes_iapws_pump_dp200k_eff75",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "variant_idaes_methanation_co2_recycle",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_idaes_rsofc_hydrogen_storage_heat_cascade",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_idaes_teg_regenerator_stripping_column",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_idaes_vsa_co2_dual_bed",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_idaes_zno_h2s_guard_regeneration",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_methanol_water_nrtl_partial_condensation",
+        "source": "named:docs/derivations/M06-W27-registration.md@f397467"
+      },
+      {
+        "case_id": "variant_natural_gas_compressor_heat_teg_regeneration",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_natural_gas_hydrate_inhibitor_slug_recovery",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_prommis_lithium_carbonate_seed_recycle",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_prommis_lithium_nf_bped_crystallization",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_v4_cryst_n11_t333_y40_35",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_v4_cryst_n13_t338_y45_50",
+        "source": "w27_canary"
+      },
+      {
+        "case_id": "variant_v4_cryst_n16_t333_y55_35",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_v4_ro_f12_s30_p25_12_a100_140",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_watertap_adm1_two_stage_acidogenic_methanogenic",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_watertap_ammonia_membrane_contactor_heat_recovery",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_watertap_bped_acid_base_product_recycle",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_watertap_ed_metathesis_sulfate_control",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "variant_watertap_ro_md_crystallizer_zld",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "watertap_anaerobic_digester_unit",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "watertap_modified_asm2d",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "watertap_modular_bped_tea",
+        "source": "w27_sample"
+      },
+      {
+        "case_id": "watertap_seawater_ro_pump_as_turbine",
+        "source": "w27_sample"
+      }
+    ],
+    "count": 65
+  },
+  "f1": {
+    "boundary_kinds": [
+      "Feed",
+      "Product"
+    ],
+    "kind_level_states": {
+      "blind_synthesized_hda_flash": [],
+      "official_idaes_skeleton_pervaporation": [
+        "SkeletonUnitModel"
+      ]
+    },
+    "lacking": "topology_units: [{id, kind}] per case, in case_facts-v2.json",
+    "rule": "SPLIT-R13 (R02-F1)",
+    "status": "awaiting_facts"
+  },
+  "frame": {
+    "excluded": [
+      "watertap_metab"
+    ],
+    "size": 449
+  },
+  "generator": "docs/derivations/scripts/c2_openidaes450_split.py",
+  "hash": "sha256(seed_text \\x00 purpose \\x00 id), lowercase hex, ascending",
+  "held_out": {
+    "commitment": "08b81669d5e15c4d1e9d99a0bca2b458ea5d46cfe71a521d32c3fba33daaea91",
+    "commitment_rule": "sha256 of the UTF-8 sorted held-out ids, each followed by \\n",
+    "count": 224
+  },
+  "inputs": {
+    "case_facts": {
+      "path": "benchmarks/m06/openidaes450/case_facts.json",
+      "sha256": "0ca8cffa146865971dd2a2d445b699cf484965cc052f7f37d8f6554c669e38f7"
+    },
+    "coverage": {
+      "path": "benchmarks/m06/openidaes450/coverage.json",
+      "sha256": "b69626c7e908218e70f8726534a00c964674b2cbda7f582c8650ed939e48e3ba"
+    },
+    "sample": {
+      "path": "benchmarks/m06/openidaes450/runs/w27-m07-83f825d/sample.json",
+      "sha256": "33f146ece4fec078b8a464059f27d7256439941d6340de214352efb37b1a92bf"
+    }
+  },
+  "registration": "docs/derivations/C2-OpenIDAES-450-split-registration.md",
+  "schema": "openidaes450-split-v1",
+  "seed_text": "OpenIDAES-450-split-v1/f39746770dd7f3f1ad96f75dbac8d29b4deef4f7",
+  "strata": [
+    {
+      "class": "NOT_STEADY_STATE_SIMULATION",
+      "development": 4,
+      "exposed": 1,
+      "family": "dispatches",
+      "held_out": 3,
+      "n": 7,
+      "odd_rank": 7,
+      "shortfall": 0,
+      "target": 3
+    },
+    {
+      "class": "UNIT_UNAVAILABLE",
+      "development": 2,
+      "exposed": 1,
+      "family": "dispatches",
+      "held_out": 2,
+      "n": 4,
+      "odd_rank": null,
+      "shortfall": 0,
+      "target": 2
+    },
+    {
+      "class": "NOT_STEADY_STATE_SIMULATION",
+      "development": 10,
+      "exposed": 2,
+      "family": "gtep",
+      "held_out": 11,
+      "n": 21,
+      "odd_rank": 4,
+      "shortfall": 0,
+      "target": 11
+    },
+    {
+      "class": "COMPONENT_UNAVAILABLE",
+      "development": 8,
+      "exposed": 6,
+      "family": "idaes",
+      "held_out": 8,
+      "n": 16,
+      "odd_rank": null,
+      "shortfall": 0,
+      "target": 8
+    },
+    {
+      "class": "NOT_STEADY_STATE_SIMULATION",
+      "development": 3,
+      "exposed": 0,
+      "family": "idaes",
+      "held_out": 4,
+      "n": 7,
+      "odd_rank": 8,
+      "shortfall": 0,
+      "target": 4
+    },
+    {
+      "class": "UNIT_UNAVAILABLE",
+      "development": 83,
+      "exposed": 28,
+      "family": "idaes",
+      "held_out": 82,
+      "n": 165,
+      "odd_rank": 3,
+      "shortfall": 0,
+      "target": 82
+    },
+    {
+      "class": "NOT_STEADY_STATE_SIMULATION",
+      "development": 9,
+      "exposed": 3,
+      "family": "mvo",
+      "held_out": 9,
+      "n": 18,
+      "odd_rank": null,
+      "shortfall": 0,
+      "target": 9
+    },
+    {
+      "class": "COMPONENT_UNAVAILABLE",
+      "development": 1,
+      "exposed": 1,
+      "family": "pareto",
+      "held_out": 0,
+      "n": 1,
+      "odd_rank": 0,
+      "shortfall": 1,
+      "target": 1
+    },
+    {
+      "class": "NOT_STEADY_STATE_SIMULATION",
+      "development": 1,
+      "exposed": 1,
+      "family": "pareto",
+      "held_out": 0,
+      "n": 1,
+      "odd_rank": 5,
+      "shortfall": 0,
+      "target": 0
+    },
+    {
+      "class": "UNIT_UNAVAILABLE",
+      "development": 1,
+      "exposed": 0,
+      "family": "pareto",
+      "held_out": 1,
+      "n": 2,
+      "odd_rank": null,
+      "shortfall": 0,
+      "target": 1
+    },
+    {
+      "class": "NOT_STEADY_STATE_SIMULATION",
+      "development": 1,
+      "exposed": 1,
+      "family": "prommis",
+      "held_out": 1,
+      "n": 2,
+      "odd_rank": null,
+      "shortfall": 0,
+      "target": 1
+    },
+    {
+      "class": "UNIT_UNAVAILABLE",
+      "development": 11,
+      "exposed": 2,
+      "family": "prommis",
+      "held_out": 12,
+      "n": 23,
+      "odd_rank": 6,
+      "shortfall": 0,
+      "target": 12
+    },
+    {
+      "class": "UNIT_UNAVAILABLE",
+      "development": 3,
+      "exposed": 1,
+      "family": "reaktoro",
+      "held_out": 3,
+      "n": 6,
+      "odd_rank": null,
+      "shortfall": 0,
+      "target": 3
+    },
+    {
+      "class": "NOT_STEADY_STATE_SIMULATION",
+      "development": 0,
+      "exposed": 0,
+      "family": "reflo",
+      "held_out": 1,
+      "n": 1,
+      "odd_rank": 2,
+      "shortfall": 0,
+      "target": 1
+    },
+    {
+      "class": "UNIT_UNAVAILABLE",
+      "development": 9,
+      "exposed": 2,
+      "family": "reflo",
+      "held_out": 9,
+      "n": 18,
+      "odd_rank": null,
+      "shortfall": 0,
+      "target": 9
+    },
+    {
+      "class": "NOT_STEADY_STATE_SIMULATION",
+      "development": 4,
+      "exposed": 0,
+      "family": "watertap",
+      "held_out": 4,
+      "n": 8,
+      "odd_rank": null,
+      "shortfall": 0,
+      "target": 4
+    },
+    {
+      "class": "UNIT_UNAVAILABLE",
+      "development": 75,
+      "exposed": 16,
+      "family": "watertap",
+      "held_out": 74,
+      "n": 149,
+      "odd_rank": 1,
+      "shortfall": 0,
+      "target": 74
+    }
+  ],
+  "strata_basis": "W27-R02",
+  "totals": {
+    "cases": 450,
+    "contaminated": 1,
+    "development": 225,
+    "excluded": 1,
+    "exposed": 65,
+    "frame": 449,
+    "held_out": 224,
+    "held_out_headline": 223,
+    "odd_strata": 9,
+    "shortfall": 1,
+    "strata": 17,
+    "target_held_out": 225
+  }
+}

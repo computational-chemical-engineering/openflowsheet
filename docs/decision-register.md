@@ -10094,3 +10094,219 @@ the deferral as a limitation. A31 (b)'s exempt list is not amended.
 excludes either of them.
 
 ---
+
+## R-486 — OpenIDAES-450 is split once, before any OpenIDAES-targeted development: 225 development, 224 held-out, 1 excluded, stratified by family × class
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), package C2, on Frank's request of 2026-10-18 |
+| Normative text | `docs/derivations/C2-OpenIDAES-450-split-registration.md` SPLIT-R01…R07, R14; §8 |
+| Evidence | `benchmarks/m06/openidaes450/split.json` (SHA-256 `ee940a7ee2c6a2128f12fdc25c4e9906ff66607a5ce4e0bb975c00a935adf6cd`); held-out commitment `08b81669d5e15c4d1e9d99a0bca2b458ea5d46cfe71a521d32c3fba33daaea91`; generator `docs/derivations/scripts/c2_openidaes450_split.py --check`; `tests/test_c2_openidaes450_split.py` (SPLIT-A01…A17) |
+| Affected packages | every package that targets OpenIDAES coverage or agent scores; release gates |
+
+**Decision.** Within each (family, class) stratum, half the cases are held out. The odd strata alternate between
+rounding up and down, in the order of a seeded hash. Within a stratum, the held-out cases are the first unexposed
+cases by SHA-256 rank, and exposed cases are always development. The record lists the development ids in clear and
+commits to the held-out ids by hash. The development half drives gap analysis, unit and property selection, and
+prompt and tool tuning. The held-out half is scored only at release gates, reported separately, with the gap.
+
+**Rejected alternatives, and why.**
+- *A global largest-remainder allocation, or 60/40.* It is more machinery for no better balance; the default was
+  ~50/50.
+- *Compensating a stratum's shortfall in another stratum.* It breaks the per-stratum balance. There is one
+  shortfall, of one case.
+
+**Watch for.** Any edit to the generator's constants or to a pinned input. Either makes `--check` fail, and the
+remedy is SPLIT-R12, never a re-emit.
+
+---
+
+## R-487 — The split's strata use W27-R02 as committed in `coverage.json`, not R02-F1
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-2) |
+| Normative text | SPLIT-R03; SPLIT-A11 |
+| Evidence | R02-F1's facts are absent from `case_facts.json` (SPLIT-R13). Deriving R02-F1 classes would mean judging unit availability for held-out cases |
+| Affected packages | C2; any later reclassification |
+
+**Decision.** The strata are fixed at the draw from W27-R02's committed classes. A later reclassification under
+R02-F1 moves no case between halves. This answers R-474's fourth part: the split says which R02 its strata use.
+
+**Rejected alternatives, and why.**
+- *R02-F1 strata.* The facts are absent, and the rule would require a held-out gap computation.
+- *Waiting for the workstation's facts run.* The brief says the split is not blocked.
+
+**Watch for.** A request to "re-stratify" once R02-F1's facts exist. That is a re-split (R-491).
+
+---
+
+## R-488 — Exposed cases are development: W27's 45 drawn cases, its 3 canaries, and 17 cases named in committed non-data files at `f397467`
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | Frank (the 45; 2026-10-18), the session brief (the canaries), design lane `specifier` C2 (the 17; D-6) |
+| Normative text | SPLIT-R04; SPLIT-A04 |
+| Evidence | A whole-token scan of the tracked files at `f397467` outside the twelve all-case data files. It found 66 named cases: 48 from W27, 17 others, and the excluded case. The test SPLIT-A09 keeps this complete |
+| Affected packages | C2; development packages (they may cite these 65) |
+
+**Decision.** A case that development has already read is a development case. The 17 are registered test states,
+classifier tests and stubs, and cases discussed in specs and reviews.
+
+**Rejected alternatives, and why.**
+- *Only the 48 of Frank's rule.* The other 17 have had their content read and discussed in committed text, so
+  holding them out would not test generalisation. Frank's preference is asked (`docs/FRANK_QUESTIONS.md`, C2-Q2).
+
+**Watch for.** A later "exposed" addition. After the draw, exposure of a held-out case is contamination (R-490), not
+a move to development.
+
+---
+
+## R-489 — The split's seed embeds the brief commit's hash and was committed before the draw
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-3) |
+| Normative text | SPLIT-R05; SPLIT-A08 |
+| Evidence | `seed_text = "OpenIDAES-450-split-v1/f39746770dd7f3f1ad96f75dbac8d29b4deef4f7"`. The rules and seed were committed in `0211372`; the first draw was committed in `c0649a7`. The SHA-256 rank idiom is W27-R29's |
+| Affected packages | C2 |
+
+**Decision.** The seed is fixed text containing a commit hash that predates the session. It is not chosen.
+
+**Rejected alternatives, and why.**
+- *The archive's SHA-256.* It would tie the seed to an archive version, and SPLIT-R12 keeps assignments across
+  archive changes.
+- *A free string.* It can be shopped.
+
+**Watch for.** Any second seed. A redraw needs a v2 registration (R-491).
+
+---
+
+## R-490 — Held-out protection is a recorded rule plus a leak guard; held-out ids appear in clear only in the twelve all-case data files and in `heldout/` directories; contamination is recorded, never hidden
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-7, D-10) |
+| Normative text | SPLIT-R08…R11; SPLIT-A09, A10, A16, A17 |
+| Evidence | The first draw's SPLIT-A09 found one held-out id in the registration's own pre-draw text. It is recorded as contaminated (`c87ac13adc32…`); the headline is 223 |
+| Affected packages | every development package (no held-out gap frequencies; read all-case files only through a development filter); release gates; the build lane (the filter, §11 Q-3) |
+
+**Decision.**
+- No gap frequency over held-out cases, ever.
+- Feature choices cite development cases or general library goals.
+- Mechanical consumers compute the held-out list in memory and name a case only by `sha256(id)[:12]`.
+- A held-out case exposed after the draw stays held-out. It is recorded by hash, and reported outside the headline.
+
+**Rejected alternatives, and why.**
+- *Held-out ids in clear in the record.* Case ids describe their content. A development agent reading the record
+  would see them.
+- *Secrecy.* It is impossible with public data. The registration says so (§10).
+- *Editing out a leaked mention.* It hides the contamination.
+
+**Watch for.**
+- A future all-case artifact, such as a full coverage at a release gate, committed outside a `heldout/` directory.
+  SPLIT-A09 fails on it.
+- Prose that names a case as an example.
+
+---
+
+## R-491 — No re-split: archive changes go by amendment; a redraw needs a v2 registration that voids v1's held-out evidence
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-5, D-8) |
+| Normative text | SPLIT-R12; SPLIT-A02 |
+| Evidence | The generator pins its three inputs by SHA-256 and refuses on any change |
+| Affected packages | whoever re-acquires or repairs the archive |
+
+**Decision.**
+- A removed case is dropped.
+- A changed case keeps its half.
+- An added case is development if it was exposed first. Otherwise it is held-out iff `rank("added", id)` begins with
+  0–7.
+- A repaired `watertap_metab` is development, since it is already named.
+- New families or a re-based suite need a new registration.
+
+**Rejected alternatives, and why.**
+- *Redraw on every change.* It moves development-exposed cases into held-out and voids earlier held-out scores.
+
+**Watch for.** A `--emit` run after an input changed. It is refused by design. Do not update the pins without the
+amendment.
+
+---
+
+## R-492 — R02-F1: W27-R02's successor for classifications under the split registration (F-1 / R-474 taken up); awaits `topology_units` from the workstation
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-9), taking up R-474 and M07 spec §22.4 |
+| Normative text | SPLIT-R13; SPLIT-A12, A13 |
+| Evidence | `case_facts.json` (`w27-case-facts-v1`) has only the set of topology kinds for a `units.json` case; it has no topology unit ids. At kind level, `blind_synthesized_hda_flash` gains no group (W27-A08 kept) and `official_idaes_skeleton_pervaporation` gains `SkeletonUnitModel` (F-1's hidden unit) |
+| Affected packages | the workstation's next `facts` run (writes `case_facts-v2.json` with `topology_units: [{id, kind}]`; W27's file is unchanged); development gap analysis; release-gate scoring |
+
+**Decision.**
+- A `units.json` case gains one `topology:<k>` group for each non-boundary topology kind *k* (boundary: Feed,
+  Product) that no R02 group covers.
+- A kind is covered by a group whose `topology_kind` is *k*, or whose `idaes:` key subject is *k* (the class-name
+  fallback).
+- The added group is named by the topology ids and marked `from_topology` / `source=topology`.
+- W27, step 17 and v0.2's scores are untouched (R-474).
+
+**Rejected alternatives, and why.**
+- *The topology_kind-only rule.* An entry whose name matches no topology id would make every one of its kinds look
+  missing.
+- *A flag* (R-474).
+- *Applying the rule now at kind level.* The groups could not be named, and W27-R40's aliases need the ids.
+
+**Watch for.** The workstation measurement (§11 Q-4, development cases only). Also an internal sub-block becoming a
+unit; SPLIT-A13 is the registered state for it.
+
+---
+
+## R-493 — Dynamic cases are in the split as their own strata; the incomplete case is excluded from both halves
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-4, D-5) |
+| Normative text | SPLIT-R02 |
+| Evidence | 65 `NOT_STEADY_STATE_SIMULATION` cases fall in 8 strata, 33 of them held out. There is 1 `ARTIFACT_INCOMPLETE` case |
+| Affected packages | release gates (correct limitation reporting on dynamic cases is scored) |
+
+**Decision.** Correct limitation reporting is part of what the suite scores. Dynamic support is also a plausible
+later goal whose held-out evidence should exist from the start. The incomplete case cannot be scored.
+
+**Rejected alternatives, and why.**
+- *Excluding dynamic cases.* It would leave no held-out evidence for limitation reporting or for later dynamic
+  support.
+
+**Watch for.** A development package tuning dynamic-case limitation messages on held-out cases.
+
+---
+
+## R-494 — The split's non-claims: generalisation within OpenIDAES-450's nine families only; broader claims need an independent second suite
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (from the brief's open list) |
+| Normative text | registration §10 |
+| Evidence | Both halves draw on the same 9 families and generators, and the case ids show many variants of one another. `coverage.json` publishes every case's reasons. On 2026-10-18 all-450 gap frequencies were computed in chat (not committed, not used) |
+| Affected packages | any report or release note quoting a held-out score |
+
+**Decision.** A held-out score is reported as generalisation within this suite. It is not validated against other
+flowsheet populations. The split is reproducible and not secret. The sizes are regression values.
+
+**Rejected alternatives, and why.**
+- *Claiming general coverage from the held-out half.* The families overlap entirely.
+
+**Watch for.** Release notes that drop "within OpenIDAES-450".
+
+---
