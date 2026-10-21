@@ -54,8 +54,16 @@ Token usage is a constraint. These rules cut it without dropping a review, a gat
   summary line; the failing lines only on failure; full log in a file). Read a log only on failure, by `grep`/`tail`.
   Start long runs in the background and wait for the one completion notice; no polling.
 - **Short reports, 200–300 words.** Full detail goes into the package's build-decisions log in the repository.
-- **Unchanged:** one design-lane spec or design pass and one `reviewer` pass per package, the full gate before every
-  commit, and decisions recorded in the register.
+- **Gate by risk, not by commit (Frank, 2026-10-22; replaces "the full gate before every commit").**
+  - Docs-only commits (`docs/`, ADRs, briefs, state and log files, `.claude/`) need no local gate. CI checks them on
+    push. Where a committed generator covers the text, run its `--check`.
+  - Code, test, schema or benchmark commits run the tests they touch locally. A work-package branch may be pushed
+    without the full suite.
+  - The full gate (`scripts/gate.sh`) runs once before a branch merges into `main`, and before any release-candidate
+    cut or tag. Its result is read before the merge is pushed.
+  - CI must be green on both architectures before a branch merges into `main`.
+- **Unchanged:** one design-lane spec or design pass and one `reviewer` pass per package, and decisions recorded in the
+  register.
 
 ## Branch and merge discipline
 

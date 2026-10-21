@@ -41,6 +41,7 @@ is Frank's call.
 
 Read `CLAUDE.md`, then `docs/V02_STATE.md` (position) and this file. Run **one agent at a time**. Each package gets a
 brief file under `docs/briefs/` (question, facts with `file:line`, exit test). Cap agent context at about 120k, and
-keep reports to 150 words or fewer. Run `scripts/gate.sh` before each commit, in the background, and read only its
+keep reports to 150 words or fewer. Gate by risk, as `CLAUDE.md` says: docs need no local gate, and code runs the
+tests it touches. Run the full `scripts/gate.sh` once before merging into `main`, in the background, and read only its
 summary line. Push the branch `wp/<ID>` and let CI judge both architectures. Merge to `main` only with a `tested`
 manifest where the package has one.
