@@ -157,3 +157,20 @@ def test_the_command_line_fails_a_broken_record(
     monkeypatch.setattr(sys, "argv", ["m07_g11_experiments_audit.py", *arguments])
     assert audit.main() == 1
     assert capsys.readouterr().out.splitlines()[0].endswith(": FAIL")
+
+
+def test_a_boundary_point_relabelled_direct_is_a_structural_problem() -> None:
+    """Verdict F8: with the runs file given, a point's `path` is the runs file's, so a boundary
+    point relabelled `direct` with its experiment removed no longer passes."""
+    record = _record("g11-experiments-run1.json")
+    runs = json.loads((EXPERIMENTS / "g11-coverage-v3.runs.json").read_text("utf-8"))
+    clean = audit.audit([record], _variant(), runs)
+    assert clean["structural"] == []
+    target = next(p for p in record["points"] if p["experiments"] is not None)
+    target["path"] = "direct"
+    target["experiments"] = None
+    report = audit.audit([record], _variant(), runs)
+    assert report["passed"] is False
+    assert report["structural"] == [
+        f"run 1 {target['label']}: path direct is not the runs file's boundary"
+    ]

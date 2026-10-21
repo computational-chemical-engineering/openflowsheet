@@ -29,8 +29,8 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 - [x] Frank's K_NH₃ decision (R-152), the order (R-153), the dossier statement
 - [x] `ci.yml` actions pinned by SHA (`67029fa`; 44 lines; inputs checked against the new majors; test added)
 - [x] T08 close-out review (`docs/reviews/T08-closeout-review.md`): all five confirmed, no must-fix; F1/F2/N1/N2/N5 applied as T08 spec Amendment R8
-- [ ] **F3 hand-on:** T08's own manifest (58 limitations, 16 without L/U id; A70, B23) is an input to v0.2's support-envelope harvest
-- [ ] Schema `$id` move (deferred to v0.2 by ADR; R-149) — with M01's or M06's first schema change
+- [x] **F3 hand-on:** T08's own manifest (58 limitations, 16 without L/U id; A70, B23) is an input to v0.2's support-envelope harvest. Closed since the alpha: the manifest is in the harvest (`tests/test_m07a_harvest.py:1-10`, `:28`, `:85`; `scripts/t08_support_matrix.py:478-482`). Ticked by C3 (d)
+- [ ] Schema `$id` move (R-149, `docs/decision-register.md:3470`; R-185, `:4245`) — not done in v0.2 and not in C3: it changes every schema's identity, a frozen interface (CLAUDE.md: only by a design-lane ADR). v0.3 backlog; trigger: the first v0.3 schema change, with the ADR written then
 
 ## Open inputs (M01, dossier `needs_fact`)
 
