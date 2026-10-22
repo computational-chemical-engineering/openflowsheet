@@ -75,6 +75,7 @@ from openflowsheet.models.syn001.cascade_solve import (
 )
 from openflowsheet.models.syn001.cascade_solve import FD_COLUMN_SCALE as CASCADE_FD_SCALE
 from openflowsheet.models.syn001.column import (
+    INVERSE_KINDS,
     MODEL_ID,
     PHI_INITIAL,
     RATIO_KINDS,
@@ -92,6 +93,7 @@ from openflowsheet.models.syn001.column import (
     regime_form,
     slot_column,
     slot_row_id,
+    specified_quantity,
     validate,
 )
 from openflowsheet.models.syn001.saturation_band import band_temperature
@@ -596,7 +598,8 @@ def overall_closure(
 def spec_values(spec: ColumnSpec, state: Mapping[str, float]) -> dict[str, float]:
     """`ref.cases.*.spec_values` at a state: `Q_1`, `Q_N`, and per present end its ratio and
     rate (reflux ratio `L_1/V_1` or `Σ r/D`, distillate `V_1` or `D`; boil-up ratio
-    `V_N/L_N`, bottoms `L_N`)."""
+    `V_N/L_N`, bottoms `L_N`); per inverse end (S06) `<end>_<kind>`, its quantity of
+    `specified_quantity`."""
     unit, count = spec.unit_id, spec.stage_count
     values = {
         "condenser_duty": float(state[stage_duty_id(unit, 1)]),
@@ -615,6 +618,10 @@ def spec_values(spec: ColumnSpec, state: Mapping[str, float]) -> dict[str, float
         bottoms = float(state[liquid_total_id(unit, count)])
         values["boilup_ratio"] = float(state[vapor_total_id(unit, count)]) / bottoms
         values["bottoms_rate"] = bottoms
+    for end in spec.ends():
+        given = spec.end_specification(end)
+        if given is not None and given.kind in INVERSE_KINDS:
+            values[f"{end}_{given.kind}"] = specified_quantity(spec, end, state)
     return values
 
 
