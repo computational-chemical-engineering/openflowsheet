@@ -92,7 +92,7 @@
    "purge": "none",
    "splitter": "none"
   },
-  "coupling_record_sha256": "78c601b07c0ea453ad68d72bb1bcab0dac173ce7bd53b199478984528c0bc933",
+  "coupling_record_sha256": "6d36c92c0c28f5f195931dffaef96543ed3347cb4c803955a6493ec3b6fc6352",
   "experiments": {
    "executions": 9,
    "store_hits": 0
@@ -100,7 +100,7 @@
   "limitations": [
    "synthetic"
   ],
-  "wall_s": 0.823084050003672
+  "wall_s": 0.5395636409521103
  },
  "stage_a": {
   "executed": false,
@@ -496,7 +496,7 @@
       "purge": "none",
       "splitter": "none"
      },
-     "coupling_record_sha256": "5f501ee2bb4ab875d49c65002700f730e8ac2d545ddd4690acf19e45041ef46f",
+     "coupling_record_sha256": "817863510e5806ff9cfee359f696a09218fcb760fc3ce05b7017fe28af225e75",
      "experiments": {
       "executions": 7,
       "store_hits": 0
@@ -504,7 +504,7 @@
      "limitations": [
       "synthetic"
      ],
-     "wall_s": 0.6565527929924428
+     "wall_s": 0.4471653609070927
     },
     {
      "check_id": "cand-C1-poll-preheater.T_spec-plus",
@@ -533,7 +533,7 @@
       "purge": "none",
       "splitter": "none"
      },
-     "coupling_record_sha256": "aae7d8ec58c61f4fdbebf7895a346f16384904011f14c440f9f20f678c2713b8",
+     "coupling_record_sha256": "88b7c08240456c7c09de123146dd53a120e98179092e90cc71e673a4a909cc6a",
      "experiments": {
       "executions": 7,
       "store_hits": 0
@@ -541,7 +541,7 @@
      "limitations": [
       "synthetic"
      ],
-     "wall_s": 0.655347932013683
+     "wall_s": 0.4402423939900473
     }
    ]
   }
@@ -666,25 +666,25 @@
   }
  },
  "artifacts": {
-  "ledger": "3b080430536e1e1fcf71f78b6b99e58420ebad2c9a1ce01f492158323bf0d189",
+  "ledger": "7d23e1ab28972655d9d2deb12b729186a7583a32f085034ed39b1170aa202a18",
   "coupled_runs": [
    {
     "check_id": "S0",
-    "sha256": "78c601b07c0ea453ad68d72bb1bcab0dac173ce7bd53b199478984528c0bc933"
+    "sha256": "6d36c92c0c28f5f195931dffaef96543ed3347cb4c803955a6493ec3b6fc6352"
    },
    {
     "check_id": "cand-C1-P1",
-    "sha256": "5f501ee2bb4ab875d49c65002700f730e8ac2d545ddd4690acf19e45041ef46f"
+    "sha256": "817863510e5806ff9cfee359f696a09218fcb760fc3ce05b7017fe28af225e75"
    },
    {
     "check_id": "cand-C1-poll-preheater.T_spec-plus",
-    "sha256": "aae7d8ec58c61f4fdbebf7895a346f16384904011f14c440f9f20f678c2713b8"
+    "sha256": "88b7c08240456c7c09de123146dd53a120e98179092e90cc71e673a4a909cc6a"
    }
   ]
  },
  "provenance": {
-  "run_commit": "0fcf1ad69ac2659d8b21670dfd91125d63fb9305",
+  "run_commit": "15c0413f57545fdc2da203c5d36c628ca918339d",
   "tree_clean": true,
-  "wall_s": 2.9456349249812774
+  "wall_s": 2.027089233044535
  }
 }
