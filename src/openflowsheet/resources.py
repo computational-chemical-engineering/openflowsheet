@@ -7,12 +7,13 @@ registered numerical policy (`benchmarks/k04/reference_values.yaml`, ADR 0007 D2
 (`benchmarks/syn001/reference_values.yaml`, the CLI's `solve <case>`), since M01 the five C1
 component records the provider `pr-c1-v1` reads (`benchmarks/m01/components.yaml`, M01 spec §3),
 since M02 the external addendum whose `compare` rules a coupled replay reads
-(`benchmarks/m02/numerical_policy_external.yaml`, register R-317 (b)), and the diagnostic web
-shell's static files (`apps/web/`, served by `serve-http --ui`; M06, ADR 0030 D2). Each has
-exactly one copy in the repository, at the path its registration names. Until T08 they were found
-by walking up from a module's `__file__` to the repository root, which an installed wheel does
-not have (T08 release spec §12 Q1, FD5): `openflowsheet solve SYN-001-nominal` from a wheel
-failed on import of `run/compare.py`, because the policy was not on disk.
+(`benchmarks/m02/numerical_policy_external.yaml`, register R-317 (b)), since L01 the nine records
+of the library route `pr-lib-v1` (`benchmarks/l01/components.yaml`, ADR 0043 D3), and the
+diagnostic web shell's static files (`apps/web/`, served by `serve-http --ui`; M06, ADR 0030 D2).
+Each has exactly one copy in the repository, at the path its registration names. Until T08 they
+were found by walking up from a module's `__file__` to the repository root, which an installed
+wheel does not have (T08 release spec §12 Q1, FD5): `openflowsheet solve SYN-001-nominal` from a
+wheel failed on import of `run/compare.py`, because the policy was not on disk.
 
 `_data/` inside the package mirrors the repository paths with **symbolic links** to those single
 copies — `_data/schemas` → `schemas/`, `_data/benchmarks/k04/reference_values.yaml` →
@@ -42,6 +43,8 @@ PACKAGED: Final[tuple[str, ...]] = (
     "benchmarks/syn001/reference_values.yaml",
     "benchmarks/t08/numerical_policy_v2.yaml",
     "benchmarks/m01/components.yaml",
+    # L01 (ADR 0043 D3): the library route `pr-lib-v1`'s records.
+    "benchmarks/l01/components.yaml",
     "benchmarks/m02/numerical_policy_external.yaml",
     "web",
 )

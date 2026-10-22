@@ -90,9 +90,9 @@ def test_every_packaged_file_reads_the_repository_bytes() -> None:
     expected = _repository_files()
     # Every registered schema, and every packaged path that is a file rather than a directory.
     assert sum(1 for r in expected if r.startswith("schemas/")) == len(_registry())
-    # Four before M02; M02 (R-317 (b)) added the external addendum. (Not a schema count: the
-    # packaged single files, which `PACKAGED` lists.)
-    assert sum(1 for r in expected if r in PACKAGED) == 5
+    # Four before M02; M02 (R-317 (b)) added the external addendum, L01 (ADR 0043 D3) the library
+    # records. (Not a schema count: the packaged single files, which `PACKAGED` lists.)
+    assert sum(1 for r in expected if r in PACKAGED) == 6
     for relative, data in expected.items():
         assert packaged(relative).read_bytes() == data, relative
     assert sorted(

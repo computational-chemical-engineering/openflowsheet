@@ -356,11 +356,12 @@ def test_a31_readme_states_casadi_is_lgpl() -> None:
 # policy of ADR 0025), byte copies of the repository files (`openflowsheet.resources`; T08.A43
 # compares the bytes). Since M01 (spec §3.5, §15 Q-N4's default) it also includes the five C1
 # component records, published constants with their citations and rights, which the provider
-# `pr-c1-v1` reads at run time; the reference tools' data stays out.
+# `pr-c1-v1` reads at run time; since L01 (ADR 0043 D3) the nine records of the library route
+# `pr-lib-v1`, of the same kind; the reference tools' data stays out.
 SHIPPED_DATA = re.compile(
     r"^(src/)?openflowsheet/(py\.typed|application/bindings/descriptions/([a-z_]+\.md|REVIEW\.json)"
     r"|_data/schemas/[a-z0-9-]+\.schema\.json|_data/benchmarks/(k04|syn001)/reference_values\.yaml"
-    r"|_data/benchmarks/t08/numerical_policy_v2\.yaml|_data/benchmarks/m01/components\.yaml"
+    r"|_data/benchmarks/t08/numerical_policy_v2\.yaml|_data/benchmarks/(m01|l01)/components\.yaml"
     # M02 (register R-317 (b)): the external addendum whose `compare` rules a coupled replay reads.
     r"|_data/benchmarks/m02/numerical_policy_external\.yaml"
     # M02 design note §3.1: the registered variants and their registry (the project's own data).
