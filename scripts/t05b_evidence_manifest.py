@@ -1647,9 +1647,13 @@ def _b05() -> tuple[bool, dict[str, Any], dict[str, Any]]:
 
 def _p1_scan_policies() -> dict[str, Any]:
     """`test_t05b_literal.test_b06_no_registered_policy_names_v2`'s scan, measured: every
-    `phase_contract=` keyword in `src`, `scripts`, `benchmarks`, `tests` outside the two
-    exemptions; the keywords in `t05b_support.py`; the committed documents spelling v2."""
-    exempt = (ROOT / "tests" / "test_t05b_literal.py", literal_fixtures.T05B_V2_SOURCE)
+    `phase_contract=` keyword in `src`, `scripts`, `benchmarks`, `tests` outside the registered
+    exemptions (this test file and every source in `V2_SOURCES`; spec §6.6 as amended, D1,
+    R-560); the keywords in `t05b_support.py`; the committed documents spelling v2."""
+    exempt = (
+        ROOT / "tests" / "test_t05b_literal.py",
+        *(source for source, *_ in literal_fixtures.V2_SOURCES),
+    )
     sources = literal_fixtures._sources()
     offenders: list[str] = []
     for path in sources:
@@ -2195,7 +2199,8 @@ DESCRIPTIONS.update(
         "`T05b-phase-contract-v2` and refuses `T03-phase-contract-v2`, `T02-interim`, the "
         "empty string, `None`, `1` and absence; `PhaseContract` is exactly the two literals and "
         "`SolvePolicy` defaults to v1; both committed policy fixtures are v1; no source outside "
-        "the two exemptions passes `phase_contract=`, `t05b_support.py` constructs v2 once "
+        "the registered exemptions (spec §6.6 as amended, R-560) passes `phase_contract=`, "
+        "`t05b_support.py` constructs v2 once "
         "(`T05b-v2`), and no committed fixture or benchmark spells v2; the policy fixtures "
         "regenerate byte for byte, and every schema fixture a generator emits (K03, K04, K05, "
         "T04) regenerates identically (R-015).",
