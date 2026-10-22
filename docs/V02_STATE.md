@@ -92,16 +92,29 @@ F5 education mode deferred.
 
 ## Next action
 
-**Cloud queue (2026-10-22).** Frank (2026-10-22): the session may fast-forward and merge into `main` (standing,
-under CLAUDE.md's merge rules). `main` = C1 + C2 + C3 (`wp/C-merge`, gate PASS `904f265`, CI 39694853666) + S01
-(merge `7dcdf2a`; manifest `evidence/S01/465240a…` tested; gate PASS `9a02bbc`, CI 39711291222).
-- **L01 not merge-ready** (`wp/L01` `8738766`): blockers (1) the evidence schema admits no `L` id; (2)
-  `test_a20_the_axes_equal_the_code` — the envelope does not list `pr-lib-v1`; (3) rights for the nine records
-  (L01-Q4); (4) the development-half re-take (WO-3) waits for a W27 amendment (L01-Q1); projection only.
-- **S02** (`wp/S02`): specification done (16 assertions, four cases, R-530…R-535). **Next: S02 WO-1…WO-3, one
-  `reviewer` pass, gate, merge.** Then C4 (M07a's unharvested envelope rows).
-- Open for the design lane: T05b §6.6 vs S01's registered v2 policy (B06 second exemption); S01 L-rows now or in S02.
-- Questions for Frank: `docs/FRANK_QUESTIONS.md` (C2, C1, S01 on `main`; L01-Q1…Q4 on `wp/L01`; Q-S02-1…3 on `wp/S02`).
+**Handoff (2026-10-22, end of the cloud session).** Frank (2026-10-22): the session may fast-forward and merge into
+`main` under CLAUDE.md's merge rules (full gate read, CI green on both architectures, `tested` manifest where the
+package has one; C-items and ruling rounds carry none, R-565).
+
+On `main`: C1, C2, C3 (gate `904f265`), S01 (merge `7dcdf2a`, manifest `evidence/S01/465240a…` tested), S02
+(merge `768aa14`, manifest `evidence/S02/1810dde…` tested; ADR 0044 Proposed), C4 + C7 (`9b09ed2`: harvest has no
+exclusions; version `0.3.0.dev0`, envelope `v0.2-envelope-dev`; W27 coverage re-taken; C2 split Amendment 1 R-555).
+D1 (rulings R-560…R-565, WO-D1-A) and S04 (formerly L01; `pr-lib-v1` vapour-only PR route for H2O, CO2, O2, C2H6,
+C3H8; manifest `evidence/S04/5c29fbf…` tested; rulings R-566…R-569; WO-D1-B/C) are on `wp/S04` and merge together
+after their gate and CI (see the session's last commits on `main`).
+
+**Next actions (in order):**
+1. If `main` does not yet contain `wp/S04`: run `scripts/gate.sh` on `wp/S04`'s head, check CI on both architectures,
+   then merge `wp/S04` into `main` (it contains `wp/D1`).
+2. Workstation-only: the G10 and REAL re-takes at `0.3.0.dev0` (`docs/C7_DECISIONS.md`, nlp/reactor environments);
+   ADR 0044's acceptance scan (S02 review, R-550); C2's F-1 facts (`facts` stage, archive).
+3. Frank's answers in `docs/FRANK_QUESTIONS.md`, in particular L01-Q4 (rights for the nine `pr-lib-v1` records before
+   any release ships them), L01-Q1 (who amends W27 so S04's development-half coverage re-take can be measured; only
+   a projection exists: CANDIDATE 0→0, COMPONENT 9→6, ROUTE 0→3), C2-Q1/Q2, the C2 split's Q-5, Q-S02-1…3.
+4. Next work packages: S02's implementation is done; S03 (two independent column references) is workstation work
+   (`docs/CLOUD_WORK.md` L4). A liquid-capable property method (IAPWS-95, L01-Q3) is the main lever for OpenIDAES
+   coverage and needs Frank's scope decision.
+- Open for the design lane: D08 in `docs/requirements.yaml` does not list S04; ADR 0044 acceptance conditions.
 
 **History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
