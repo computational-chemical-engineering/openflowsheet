@@ -53,3 +53,11 @@ Questions only Frank can answer (scope, value judgments). Each carries the defau
   starting point leads to, and S02 records both without choosing. Should a later package add a rule for which steady state a
   duty-specified column returns (for example, "the one reached by continuation from the starting estimate")? **Default: no
   rule now; both states registered and the multiplicity disclosed** (S02 §18.4, R-549).
+
+## D1 ruling round (2026-10-22)
+
+- **D1-Q1.** Your queue rule says a package merges "with a tested manifest where the package has one". D1 reads it as
+  follows: the cloud C-items and design-lane ruling rounds carry no manifest and merge on the full gate plus CI on both
+  architectures, recorded in the merge message. Anything with plan-level code and claims carries one; L01 is
+  renumbered S04 for that, because the manifest schema admits no `L` id and `L01` is also a support-matrix row.
+  **No answer needed unless you object** (`docs/reviews/D1-rulings.md` Q6, R-565).

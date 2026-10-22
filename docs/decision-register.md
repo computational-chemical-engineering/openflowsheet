@@ -11176,3 +11176,128 @@ ADR 0005 D4).
 
 **Watch for.** The first re-take that changes a class (Q-5: refuse, as registered, or limit the trigger to the case
 set and family).
+
+---
+
+## R-560 — T05b §6.6 is a registered list of v2 roots; `s01-default-v1` stays in `cascade_solve.py`
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), D1 ruling round Q1 |
+| Normative text | `docs/derivations/T05b-limitations-spec.md` §6.6 (Amendment D1) and the B06 row; `docs/reviews/D1-rulings.md` Q1 |
+| Evidence | B06 `V2_SOURCES` (`tests/test_t05b_literal.py:103-117`); S02 spec §0 adds no root; `scripts/t05b_evidence_manifest.py:1652` exempts only `policies.py` |
+| Affected packages | T05b (B06), S01, every later package registering a v2 policy |
+
+**Decision.** v2 roots, the policies that spell `phase_contract`, are the rows of §6.6's table: `T05b-v2` and
+`s01-default-v1`. Each is constructed once, in its listed source. A `replace` derivation inherits v2 and is registered
+by its own ADR or spec. A new root is added in one commit, together with its spec, a register entry, a table row and a
+`V2_SOURCES` row. B06 checks the table (D1-A01), and the T05b manifest scan reads `V2_SOURCES` (D1-A02).
+
+**Rejected alternatives, and why.**
+- *Moving `s01-default-v1` into `application/policies.py`:* it would offer a library-only policy on the revision
+  routes, which changes the application contract (`REGISTERED_POLICY_IDS` is held equal to `benchmarks/registry.yaml`).
+- *Building it as `replace(T05B_V2, …)`:* this evades B06's keyword scan instead of registering the policy.
+
+**Watch for.** An unregistered `replace` derivation is not caught by B06 (D1-O1).
+
+---
+
+## R-561 — Library-only capabilities stay E → U04; L-rows come with the binding, pinned by a tripwire
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), D1 ruling round Q2 (S01 WO-5 QUESTION on A21) |
+| Normative text | `docs/derivations/T08-release-spec.md` §5.7 (Amendment D1); `docs/reviews/D1-rulings.md` Q2 |
+| Evidence | At `9b09ed2`: 30 harvest items point to U04 (18 S01, 12 S02, none elsewhere), each note naming `syn001.cascade` / `syn001.column`; neither id among `MODEL_BUILDERS`' 22 |
+| Affected packages | S01, S02, the package that binds either model |
+
+**Decision.** No L-rows are written now. The package that binds `syn001.cascade` or `syn001.column` into
+`MODEL_BUILDERS` writes their L-rows and reclassifies the model's U04 items in the same commit. D1-A03's test fails if
+either id is bound while those items stand. This extends R-535 to S01.
+
+**Rejected alternatives, and why.**
+- *S01/S02 L-rows now:* the rows would state limits of a capability that the matrix calls unsupported (U04).
+
+---
+
+## R-562 — M07a.A61's pending items are S to the verdict documents (C4-Q1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), D1 ruling round Q3 |
+| Normative text | `docs/reviews/D1-rulings.md` Q3; T08 release spec §5.7 (S by a document that did not exist) |
+| Evidence | Each item reads "M07a.A61 is unsupported (pending)"; `docs/reviews/V02-alpha-verdicts.md` is absent at `7f4f6e0` (`cc73219`'s manifest commit) and stated absent in the other two; A61's criterion expects V14 (b) `FAIL` (V02 alpha spec line 877) |
+| Affected packages | C4 (harvest rows unchanged) |
+
+**Decision.** C4's S classification stands. The user-facing fact, PTC experimental and V14 (b) FAIL, is L01, which
+T08's harvest already carries.
+
+**Rejected alternatives, and why.**
+- *E → L01:* the items state no limitation, so a pending state would read as one.
+
+---
+
+## R-563 — The working envelope keeps `v0.2-envelope-dev` / `0.2.0.dev0` until v0.3's release-policy ADR
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), D1 ruling round Q4 (C7-Q1) |
+| Normative text | `docs/RELEASING.md` "After a tag"; `docs/reviews/D1-rulings.md` Q4; R-193, R-460, R-475 |
+| Evidence | Renaming breaks `test_a10_…` (`tests/test_m07a_v0_2_gate.py:1030-1048`), whose edit R-475, M07.A31 (b) (`tests/test_m07_v0_2_gate.py:327, 372-378`) and Accepted ADR 0042's migration impact fix at two pairs; `release.yml` and the gate refuse `.devN` |
+| Affected packages | C7, the v0.3 release package |
+
+**Decision.** Keep the working form. Its id and label are a fixed token for `main`'s unreleased working envelope; this
+replaces the gloss "v0.2 under development" in R-460's rulings text. v0.3's release-policy ADR decides three things
+together: the 0.3.0 pin, the working form after it (default: version-free, D1-O2), and A10's pairs.
+
+**Rejected alternatives, and why.**
+- *`v0.3-envelope-dev` / `0.3.0.dev0` now:* it amends an accepted ADR's acceptance evidence and the frozen alpha test
+  twice, now and again at the cut, for a label that nothing releases.
+
+---
+
+## R-564 — The 0.2.0 ledger tests read the ledger at the tag commit `5c82b4c` (O1 after the tag)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), D1 ruling round Q5 (C7-Q2) |
+| Normative text | `docs/derivations/M07-spec.md` §26 (Amendment 9); O1 (`docs/design/V02-alpha-main-rulings.md`); R-456 |
+| Evidence | At `0.3.0.dev0` all four judging tests skip (S-UNCOV); ledger and `V02-verdicts.md` have no diff between `5c82b4c` and `9b09ed2`; CI `fetch-depth: 0` |
+| Affected packages | M07 (records), D1 (WO-D1-A item 4) |
+
+**Decision.** R-456's split, applied to 0.2.0: the ledger is read at the tag, and the verdicts and manifests are read
+from the working tree. `at_c` and its predicate test are retired, which supersedes R-476 after the tag. A new test
+pins the tag commit. Expected result: 5 passed, 0 skipped.
+
+**Rejected alternatives, and why.**
+- *Leaving the skips:* the released record would have no executable check, which R-456 rejected.
+
+---
+
+## R-565 — C-items and ruling rounds carry no manifest; L01 is renumbered S04
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), D1 ruling round Q6 |
+| Normative text | `docs/reviews/D1-rulings.md` Q6; `docs/CLOUD_WORK.md` (queue rule) |
+| Evidence | `^[PKTMSR][0-9]{2}[a-z]?$` (`schemas/evidence-manifest.schema.json:23`); `^[PKTMSR][0-9]{2}$` in the ledger and model-manifest schemas; `L01` is also an envelope row id; L01's draft manifest `docs/briefs/L01-WOR-manifest-draft.json` (`wp/L01` `8738766`) |
+| Affected packages | C1–C7, D1, L01 (now S04) |
+
+**Decision.**
+- C-items and ruling rounds merge on the read full gate and green CI on both architectures, recorded in the merge
+  message, without a manifest.
+- L01's id becomes S04 for its manifest (`evidence/S04/`, `work_package`), its check ids (`S04.<label>`) and its
+  branch (`wp/S04`).
+- Files, labels, generators and hashes keep `L01`. The alias is stated in the L01 spec header.
+- The S04 manifest is harvested normally (WO-D1-B).
+
+**Rejected alternatives, and why.**
+- *An ADR widening the pattern:* three frozen schemas share it. `L` would make `L01` mean both a package and a support
+  row, and `C` ids have one digit.
+- *A full rename:* it would move registered bytes for a label (D1-O3).

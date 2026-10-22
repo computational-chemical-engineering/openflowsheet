@@ -154,7 +154,9 @@ refused as not covered until M07 registers the 0.2.0 gate set.
 that sorts after the tagged version, and returns the envelope to its working form
 (`v0.2-envelope-dev`, `release: 0.2.0.dev0`, R-193). After `0.2.0a1`, `main` carries
 `0.2.0a2.dev0`; `0.2.0.dev0` would sort before the release it follows. After `0.2.0`, `main` carries
-`0.3.0.dev0` (C7), with the envelope again in its working form. The version is set in
+`0.3.0.dev0` (C7), with the envelope again in its working form. The working form's id and label are a fixed token for `main`'s
+unreleased working envelope, not "v0.2 under development"; they stay until v0.3's release-policy ADR names the
+0.3.0 pin and its successor together with M07a.A10's pairs (D1, R-563). The version is set in
 `pyproject.toml`, `src/openflowsheet/__init__.py`, the two `project_summary` fixtures and
 `tests/test_m06_w27_coverage.py`, and W27's `coverage.json` is re-taken at that build. A version
 string that names a release identifies that release's D2.4 tree and nothing else
