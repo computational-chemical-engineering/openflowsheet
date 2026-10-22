@@ -124,7 +124,7 @@ def cited(node: str) -> tuple[str, ...]:
 
 def verdict(citing: Sequence[Node]) -> tuple[str, dict[str, Any]]:
     not_passed = [
-        {"node": item.node, "outcome": item.outcome, "message": text(item.message[:600])}
+        {"node": text(item.node), "outcome": item.outcome, "message": text(item.message[:600])}
         for item in citing
         if item.outcome != "passed"
     ]
@@ -132,7 +132,7 @@ def verdict(citing: Sequence[Node]) -> tuple[str, dict[str, Any]]:
         "judged_by": "tests",
         "nodes": len(citing),
         "outcomes": dict(sorted(Counter(item.outcome for item in citing).items())),
-        "selectors": [item.node for item in citing],
+        "selectors": [text(item.node) for item in citing],
         "not_passed": not_passed,
     }
     return ("pass" if citing and not not_passed else "fail"), value
