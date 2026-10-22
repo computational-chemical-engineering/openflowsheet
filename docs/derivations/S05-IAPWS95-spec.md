@@ -623,3 +623,14 @@ This section amends the text above. Where the two disagree, this section governs
   - the coefficient file is unpackaged;
   - Tables 6–8 are not compared;
   - ADR 0045 stays Proposed, and nothing is `released` until C10-Q1 is answered.
+
+**Note, 2026-10-22 (design lane, `reviewer`; R-600; review, "Ruling on the WO-S05-3 departure").** This note governs
+the R-595 and A22 bullets above.
+- **§3.5 and §4.4.** Both clauses are tested on the raw Newton correction at the current iterate, before the safeguard,
+  whether or not the Newton point lies in the bracket. The answer is that Newton point, never the iterate or a midpoint.
+  After a safeguard bisection, "the previous Newton step" is the raw correction that left the bracket. After a
+  bisection forced by ∂p/∂ρ ≤ 0, it is ∞. A Newton step leaves the bracket only by crossing its far end, so the root
+  then lies within that step. "A bisection step never satisfies either clause" stands.
+- **§6.1 A22.** "The measured floor is ≤ 5e-16" holds only where the residual is not noise-dominated (for example
+  400 K, 1e7 Pa). In the liquid near T_t the computed residual is rounding noise over hundreds of ulp: the envelope is
+  7.2e-14 at 273.16 K, 10^5.3 Pa, and the worst answer on the dense grid is 3.4e-14. The bound 1e-12 is unchanged.

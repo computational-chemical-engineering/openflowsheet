@@ -149,3 +149,27 @@ while spec §6.2 and `C10_DECISIONS.md` say 1e-7.
 
 Acceptance: the five xfails XPASS→removed, A17 has no xfail, A29 passes 8/8, and A22 carries the root residual. The
 `reviewer` checks only the WO-S05-3 diff (F1's rule). It is not a second full pass.
+
+## Ruling on the WO-S05-3 departure from F1 clause 2, 2026-10-22 (design lane, `reviewer`; R-600)
+
+**Accepted.** `_bracketed_density` at `e3182e1` tests both clauses of R-595 on the raw Newton correction before the
+safeguard, whether or not the Newton point lies in the bracket, and returns that Newton point, never a midpoint.
+F1 clause 2's "a Newton step that stayed inside the bracket" is withdrawn.
+- *Why the literal clause is wrong.* Its purpose was to keep a bisection midpoint from being returned. At the cold
+  liquid's rounding floor (≈ 20ε in density units at 300 K, 1e5 Pa, above 4ε) the bracket closes to adjacent doubles,
+  and every later Newton step leaves it, so the literal rule cycles to `MAX_ITERATIONS`: registered `L_ambient` and
+  228 dense-grid states come back `not_converged`. That is a refusal of answerable states.
+- *Why the departure is sound.* The current iterate is one end of the bracket. With ∂p/∂ρ > 0, the correction points
+  into the bracket, so it leaves only by crossing the far end. Then the bracket (the sign change) is narrower than the
+  correction, and the root is within it. A midpoint therefore follows only a step at least as large as the bracket, and
+  `previous` (that raw step) bounds the midpoint's distance to the root. The ∂p/∂ρ ≤ 0 bisection resets `previous`
+  to ∞. The F1 failure, a stale `previous` paired with a far midpoint, cannot recur, and the answer is always a Newton
+  point whose correction is ≤ √ε. The binding guarantee is A22's root residual on every answer and on the dense grid
+  (0 of 10 980 above 1e-12 at `9e0bad4`).
+- *3.4e-14 against F2's "≤ 5e-16".* F2's floor was wrong for the cold liquid. Re-measured at `9e0bad4`: at
+  273.16 K and 10^5.3 Pa, the computed root residual over ±300 ulp around the answer changes sign 61 times, and its
+  envelope is 7.2e-14. The answer's 3.4e-14 is inside that envelope, so no double is demonstrably closer to the root.
+  At 400 K and 1e7 Pa there is one sign change and the floor is 4e-16. Nothing changes in code or tests:
+  `ROOT_TOL = 1e-12` is ≥ 13× above the worst measured envelope and 1000× below the 1e-9 error A22 must catch. The
+  spec §14 sentence is corrected (R-600).
+- S05 tests at `9e0bad4`: 378 passed, 1 skipped. No work order.

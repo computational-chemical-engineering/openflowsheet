@@ -11928,6 +11928,8 @@ CoolProp's.
   - or the previous Newton step is ≤ √ε and the current Newton step is ≥ it and is itself ≤ √ε.
 - A bisection step never converges.
 - A22 asserts the root residual |p(M/v, T) − P| / (ρ ∂p/∂ρ) ≤ 1e-12 at every answer, and on a 180 × 61 grid.
+- *Amended by R-600 (2026-10-22):* both clauses are tested on the raw Newton correction before the safeguard,
+  inside the bracket or not, and the answer is always that Newton point. The floor is up to about 7e-14, not 5e-16.
 
 **Rejected alternatives, and why.**
 - *A Σ|terms| floor estimate.* It is not needed, because the root-residual test guards the outcome.
@@ -12023,5 +12025,36 @@ CoolProp's.
 
 **Rejected alternatives, and why.**
 - *Passing with F1 as a limitation.* Wrong values answered `ok` are a placeholder success path.
+
+---
+
+## R-600 — S05 Newton convergence: R-595's floor clause is tested on the raw Newton correction before the safeguard (amends R-595)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`); rules on the build lane's WO-S05-3 QUESTION (`docs/C10_DECISIONS.md`, R-595 clause 2) |
+| Normative text | spec §14, note of 2026-10-22; `docs/reviews/S05-review.md`, "Ruling on the WO-S05-3 departure" |
+| Evidence | `e3182e1` and `9e0bad4`. With the literal clause, `L_ambient` and 228 of 10 980 dense-grid states return `not_converged`. With this rule, 0 of 10 980 have a root residual > 1e-12, and the worst is 3.4e-14. Around 273.16 K, 10^5.3 Pa the residual's noise envelope over ±300 ulp is 7.2e-14 (61 sign changes). S05 tests: 378 passed, 1 skipped |
+| Affected packages | S05 |
+
+**Decision.**
+- Both of R-595's clauses are tested on the raw Newton correction at the current iterate, before the bracket
+  safeguard, whether or not the Newton point lies in the bracket.
+- The answer is always that Newton point, never the iterate or a midpoint.
+- `previous` is the last raw Newton correction. It is ∞ after a bisection forced by ∂p/∂ρ ≤ 0.
+- Review F1 clause 2's "stayed inside the bracket" is withdrawn.
+- F2's and spec §14's "measured floor ≤ 5e-16" is corrected: the floor is up to about 7e-14 for the liquid near T_t.
+  `ROOT_TOL = 1e-12` is unchanged.
+
+**Reasons.**
+- The in-bracket condition existed only to keep a midpoint from being returned. Returning only Newton points does that
+  directly.
+- A Newton step leaves the bracket only by crossing its far end. The root then lies within that step.
+- At the cold liquid's rounding floor (about 20ε, above 4ε) the literal clause cycles to `MAX_ITERATIONS`.
+
+**Rejected alternatives, and why.**
+- *The literal clause.* It refuses answerable states, including the registered `L_ambient`.
+- *Tightening `ROOT_TOL` toward 5e-16.* The cold liquid's computed residual is rounding noise above that value.
 
 ---
