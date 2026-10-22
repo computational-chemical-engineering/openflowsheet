@@ -16,7 +16,11 @@ covers every line that computes a `pr-lib-v1` value. The expectations they are j
 A vapour takes the **largest** admissible root of the cubic and is refused, in this order,
 `vapour_root_metastable` when three roots exist and the smallest has the lower G^dep/RT
 (ADR 0026 D2's guard), and `vapour_root_liquid_like` when the chosen root has v < (Z_c/B_c)·b_mix
-(R-523: ADR 0026 D2's single-root liquid test with the mixture's b). Both only refuse.
+(R-523: ADR 0026 D2's single-root liquid test with the mixture's b), and then `vapour_unstable`
+when a pure-component trial phase i (0 < y_i < 1) has tangent-plane distance
+tm_i = ln φ_i^pure − ln y_i − ln φ_i(y) < −10⁻¹⁰, ln φ_i^pure taken at the pure fluid's stable root
+(spec §12.3, R-540; for a pure fluid it is D2's guard). All three only refuse. A VAPOR answer is
+certified stable against pure-component trial phases only, not against a mixed liquid.
 
 **Derivatives are analytic**: the root is differentiated implicitly through the cubic, and the
 n-derivatives are the derivatives in the mole fractions projected onto the simplex,
@@ -222,6 +226,9 @@ T_REF: Final = 298.15
 #: v_c/b = Z_c/B_c of the PR cubic's triple root (M01 spec §4.3, 20 digits; ADR 0026 D2): the
 #: liquid-like guard's bound (spec §4.2, R-523).
 V_C_OVER_B: Final = 3.951373035591441433
+#: The `vapour_unstable` threshold on a pure-component trial phase's tangent-plane distance tm_i
+#: (spec §12.3, R-540): 10³ above tm's rounding error (about 1e-13).
+TM_THRESHOLD: Final = -1.0e-10
 
 #: The declared domain, inclusive: C1's box (spec §4.2).
 T_MIN: Final = 200.0
@@ -627,6 +634,27 @@ def _vapour_root(mix: _Mixture) -> tuple[float, str | None]:
     return largest, None
 
 
+def _pure_trial_tm(mix: _Mixture, z: float) -> tuple[float, int] | None:
+    """The most negative tangent-plane distance of a pure-component trial phase, and its index.
+
+    tm_i = ln φ_i^pure(T, P) − ln y_i − ln φ_i(T, P, y; Z) over the components with 0 < y_i < 1,
+    ln φ_i^pure being the smallest ln φ_i over the admissible roots of the pure-i cubic (its stable
+    root: a pure phase has G^dep/RT = ln φ). None when no component qualifies (a pure fluid,
+    whose stability D2's guard has already settled). Spec §12.3, R-540.
+    """
+    mixture_ln_phi = _ln_phi(mix, z)
+    worst: tuple[float, int] | None = None
+    for i, yi in enumerate(mix.y):
+        if not 0.0 < yi < 1.0:
+            continue
+        pure = _mixture(mix.temperature, mix.pressure, tuple(float(k == i) for k in range(NC)))
+        stable = min(_ln_phi(pure, root)[i] for root in admissible_roots(pure.big_a, pure.big_b))
+        tm = stable - math.log(yi) - mixture_ln_phi[i]
+        if worst is None or tm < worst[0]:
+            worst = (tm, i)
+    return worst
+
+
 def real_roots(temperature: float, pressure: float, n: Sequence[float]) -> tuple[float, ...]:
     """The admissible roots Z > B, ascending, of the composition n/n_tot at (T, P)."""
     total = sum(n)
@@ -693,7 +721,13 @@ class PrLibProvider:
                 "flash_unsupported; no phase split is computed.",
                 "A vapour takes the largest cubic root and is refused vapour_root_metastable "
                 "where three roots exist and the smallest is the stable one, and "
-                "vapour_root_liquid_like where the root's molar volume is below (Z_c/B_c) b_mix.",
+                "vapour_root_liquid_like where the root's molar volume is below (Z_c/B_c) b_mix, "
+                "and vapour_unstable where a pure-component trial phase has tangent-plane "
+                "distance below -1e-10 (spec §12.3).",
+                "No full phase-stability test: a VAPOR answer is certified stable only against "
+                "pure-component trial phases. A vapour unstable only towards a mixed liquid (e.g. "
+                "a C2H6-C3H8 condensate with no component supersaturated on its own) is not "
+                "detected; dew points also carry the k_ij = 0 error (ADR 0026 D3).",
                 "Within about 1e-14 (relative, in P) of a spinodal the cubic has a near-double "
                 "root: only candidates that are roots to rounding are kept, and the pair comes "
                 "from the deflated quadratic, so a complex pair leaves one root; such states' "
@@ -747,6 +781,14 @@ class PrLibProvider:
                 "unsupported",
                 f"vapour_root_liquid_like: the largest root has v/b_mix = "
                 f"{z * R * t / (p * mix.b_m)!r} < Z_c/B_c = {V_C_OVER_B!r} at {t!r} K, {p!r} Pa",
+            )
+        worst = _pure_trial_tm(mix, z)
+        if worst is not None and worst[0] < TM_THRESHOLD:
+            tm, i = worst
+            return _refused(
+                "unsupported",
+                f"vapour_unstable: pure-{COMPONENTS[i]} trial phase tm = {tm!r} < 0 "
+                f"at {t!r} K, {p!r} Pa",
             )
 
         everything = _values(mix, z)

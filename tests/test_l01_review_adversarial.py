@@ -6,8 +6,8 @@
   mixture that is not a stability test: `pr-lib-v1` answers `ok` VAPOR where PR itself says the
   vapour is unstable to a pure-component liquid trial phase (tangent-plane distance tm_i < 0),
   e.g. a cooled syngas whose water fugacity is ~100x that of pure liquid water. R-540 adds the
-  refusal `vapour_unstable`; the provider half of those tests is a strict xfail until the fix
-  work order lands it, the independent half (tm from this file's own transcription) passes now.
+  refusal `vapour_unstable` (landed by WO-L01-R); the independent half of those tests computes tm
+  from this file's own transcription, the provider half asserts the refusal and its component.
 * **S-2.** The liquid-like guard on a mixture: a pair of states whose classification flips if
   b_mix is replaced by the smallest or the largest b_i of the components present.
 
@@ -100,6 +100,20 @@ def _min_tm(temperature: float, pressure: float, n: tuple[float, ...]) -> float:
     return worst
 
 
+def _worst(temperature: float, pressure: float, n: tuple[float, ...]) -> str:
+    """The component whose pure trial phase has the most negative tm_i."""
+    total = sum(n)
+    y = [value / total for value in n]
+    _, ln_phi, _ = _phase(temperature, pressure, y)
+    tms = {}
+    for i, yi in enumerate(y):
+        if 0.0 < yi < 1.0:
+            pure = [1.0 if k == i else 0.0 for k in range(len(y))]
+            _, pure_ln_phi, _ = _phase(temperature, pressure, pure)
+            tms[COMPONENTS[i]] = min(row[i] for row in pure_ln_phi) - math.log(yi) - ln_phi[-1][i]
+    return min(tms, key=lambda c: tms[c])
+
+
 def _flows(**named: float) -> tuple[float, ...]:
     return tuple(named.get(c, 0.0) for c in COMPONENTS)
 
@@ -150,17 +164,23 @@ def test_m1_the_registered_admitted_states_are_stable_to_every_pure_trial_phase(
     assert _min_tm(*ADMITTED[sid]) >= 0.04
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="L01 review M-1 / R-540: pr-lib-v1 answers ok where PR's own pure-trial tangent-plane "
-    "distance is negative; the fix work order adds the refusal vapour_unstable",
-)
 @pytest.mark.parametrize("sid", list(UNSTABLE))
 def test_m1_an_unstable_vapour_is_refused_vapour_unstable(sid: str) -> None:
     result = _evaluate(*UNSTABLE[sid])
     assert result.status == "unsupported", (result.status, result.values)
     assert result.message.startswith("vapour_unstable:"), result.message
     assert result.values == {} and result.phase_signature is None
+    # The refusal names the component whose pure trial phase this file's transcription finds the
+    # most negative tm for.
+    assert result.message.startswith(f"vapour_unstable: pure-{_worst(*UNSTABLE[sid])} "), (
+        result.message
+    )
+
+
+@pytest.mark.parametrize("sid", list(ADMITTED))
+def test_m1_the_registered_admitted_states_stay_admitted(sid: str) -> None:
+    result = _evaluate(*ADMITTED[sid])
+    assert result.status == "ok", result.message
 
 
 #: S-2: (T, P, n, expected code); the test derives v/b for b_mix, the smallest and the largest b_i.
