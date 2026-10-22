@@ -574,3 +574,52 @@ these groups:
 | Tsat admission bound 1e-7 | §6.2 | R-586 |
 | saturation-only requests skip the phase check | §3.5 | R-592 |
 | rights | §9, §10 | R-594 |
+
+## 14. Amendment, 2026-10-22 (design lane, `reviewer`; `docs/reviews/S05-review.md`, R-595…R-599)
+
+This section amends the text above. Where the two disagree, this section governs.
+
+- **§3.5 and §4.4, the convergence rule (R-595).** A Newton iteration has converged when its relative correction is
+  ≤ 4ε, and that includes a correction that rounds to zero at the current iterate. The test is made on the Newton
+  correction **before** any bracket safeguard. The iteration has also converged at its residual floor when both of
+  these hold:
+  - the previous Newton step was ≤ √ε = 2⁻²⁶;
+  - the current Newton step is not smaller than the previous one, and is itself ≤ √ε.
+
+  A bisection (safeguard) step never satisfies either clause. *Reason:* the measured failure in which a bisection
+  midpoint was accepted as converged (review F1: 700 K, 1e8 Pa, VAPOR answered with ρ off by 26 %).
+- **§3.5, p_σ (R-596).** "p_σ = p(ρ', T)" becomes **p_σ = p(ρ'', T)**. Both sides equal p_σ at the root. The liquid side
+  is amplified by (ρ/p)(∂p/∂ρ)_T ≈ 3e6 at T_t. Measured against ref: 5.4e-8 from the liquid side and ≤ 1.6e-14 from the
+  vapour side at 273.16 K.
+- **§3.1, Z at a solved root (R-596).** At a density root solved for a given (T, P), the value of Z, and the Z inside
+  `lnphi_H2O`, is **P/(ρ R_s T)**. Its T and P partials remain the jet's, which is the same function on the branch.
+  On the (T, ρ) path (`phi_states`, the saturation slope), Z = 1 + δφʳ_δ. Because Z then equals Pv/(RT) identically,
+  Z no longer witnesses the root.
+- **§6.1 A22 (R-595).** Every answer also satisfies |p(M/v, T) − P| / (ρ(∂p/∂ρ)_T) ≤ 1e-12, with p and ∂p/∂ρ taken
+  from `phi_jet`. The measured floor is ≤ 5e-16. The same check runs on a dense grid of 180 T × 61 P.
+- **§6.3 A17's stencils (R-597).** FD_TOL = 1e-10 is unchanged. The step h = 1e-6·x stays the default, with three
+  exceptions:
+  - (a) **NC states:** h = 1e-7·x. Truncation (h³/3)|f‴| was measured at 1.25e-9 at 1e-6·x, and a 10× margin needs
+    h ≤ 2e-7·x.
+  - (b) **A coordinate at a box edge:** the inward one-sided stencil
+    |s(−3f₀ + 4f₁ − f₂) − 2h f′| ≤ FD_TOL·max(|f₀|, |f₁|, |f₂|, s_f), with f_k = f(x + k s h). Truncation is
+    (2/3)h³|f‴|.
+  - (c) **Band probes:** h_P = (ε_σ/4)·P and h_T = (ε_σ/4)/|d ln p_σ/dT|.
+
+  Measured: ≤ 5.7e-13 at NC, ≤ 2.8e-13 at the corners, and ≤ 1.3e-14 at the band probes. No case is dropped.
+- **§6.1 A29 m5 (R-598).** m5 becomes "T_c replaced by 647.0 K in step 2 of §4.2", which A15 catches: the `NC_liquid`
+  control is refused. The former m5 is an equivalent mutant by construction (§4.3: p_σ on (647.0 K, T_c) lies inside
+  the box).
+- **§6.1 A04 / Q-5 (R-598).** The bound stays at 1e-11·max(|ref|, 1). The measured provider floor is ≤ 6.8e-13, and
+  CoolProp's third partials agree with ref to 6.8e-13. Admitting the third partials in `s05_reference.py` is a
+  design-lane follow-up, and it does not block `tested`.
+- **§6.2 Tsat admission (R-598).** The admission bound is **2e-7**, as in `s05_crosscheck.py` `ADMISSION_BOUNDS`, not
+  1e-7. iapws's worst is 1.03e-8, and C11's 10× margin needs a bound ≥ 1.03e-7. A09 still holds the implementation
+  at 1e-9.
+- **§4.5 row 4.** `out_of_domain` also covers a negative or non-finite flow (nTP-v1's domain).
+- **§12, limitations (R-599).** The manifest states that:
+  - the IAPWS terms of use were not read (iapws.org was refused, 2026-10-22);
+  - the rights row is `unresolved`;
+  - the coefficient file is unpackaged;
+  - Tables 6–8 are not compared;
+  - ADR 0045 stays Proposed, and nothing is `released` until C10-Q1 is answered.

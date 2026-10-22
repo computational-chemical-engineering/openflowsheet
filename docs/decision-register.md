@@ -11910,3 +11910,118 @@ single-phase case unserved.
 CoolProp's.
 
 ---
+
+## R-595 — S05 Newton convergence: a sub-ulp correction is converged; stagnation only for Newton steps ≤ √ε (review F1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S05 review; rules on the build lane's Q-floor question |
+| Normative text | spec §14 (amends §3.5, §4.4, §6.1 A22); `docs/reviews/S05-review.md` F1, F2, ruling 1 |
+| Evidence | `tests/test_s05_review_adversarial.py`: 700 K, 1e8 Pa, VAPOR is answered `ok` with ρ = 480.66 against 651.77 kg/m³ (h +2947 J/mol). 99 of 10 980 dense-grid states are wrong. A22 passed over two of them |
+| Affected packages | S05 (WO-S05-3) |
+
+**Decision.**
+- Converged means one of two things:
+  - the Newton correction is ≤ 4ε relative, including a correction that rounds to zero, tested before the bracket
+    safeguard;
+  - or the previous Newton step is ≤ √ε and the current Newton step is ≥ it and is itself ≤ √ε.
+- A bisection step never converges.
+- A22 asserts the root residual |p(M/v, T) − P| / (ρ ∂p/∂ρ) ≤ 1e-12 at every answer, and on a 180 × 61 grid.
+
+**Rejected alternatives, and why.**
+- *A Σ|terms| floor estimate.* It is not needed, because the root-residual test guards the outcome.
+- *The literal 4ε rule.* The Maxwell solve never meets it at 273.16 K or at 647.0 K.
+
+---
+
+## R-596 — S05: p_σ from the vapour side; Z = P/(ρ R_s T) at a solved root (spec §3.1, §3.5 amended)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S05 review, rulings 2 and 3 |
+| Normative text | spec §14 |
+| Evidence | Against ref at 273.16 K: the liquid side's p_σ is off by 5.4e-8, the vapour side's by ≤ 1.6e-14. With 1 + δφʳ_δ, \|lnφ_L − lnφ_V\| = 5.4e-8, against A10's 1e-8 (`C10_DECISIONS.md`, WO-S05-1) |
+| Affected packages | S05 |
+
+**Decision.**
+- p_σ = p(ρ'', T).
+- At a density root solved for a given (T, P), Z and the ln Z inside `lnphi_H2O` are P/(ρ R_s T), and their partials
+  stay the jet's. On the branch they are the same function.
+- Consequence: Z no longer witnesses the root, so the root-residual check of R-595 does that job.
+
+**Rejected alternatives, and why.**
+- *The spec's literal liquid side and 1 + δφʳ_δ.* With them, A08 fails at 273.16 and 275 K, and A10 fails as well.
+
+---
+
+## R-597 — S05 A17: stencils amended at NC, at the box edges and at the band probes; FD_TOL = 1e-10 unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S05 review, ruling 4 (Q-6) |
+| Normative text | spec §14 (amends §6.3) |
+| Evidence | The review's probe: ≤ 5.7e-13 at NC with h = 1e-7·x, ≤ 2.8e-13 at the corners one-sided, and ≤ 1.3e-14 at the band probes with ε_σ-scaled steps. The NC truncation was measured at 1.25e-9 with h = 1e-6·x, and it falls 8× per halving of h |
+| Affected packages | S05 (WO-S05-3) |
+
+**Decision.**
+- **NC states:** h = 1e-7·x. A 10× margin needs h ≤ 2e-7·x.
+- **A coordinate at a box edge:** the inward 3-point stencil, −3f₀ + 4f₁ − f₂.
+- **Band probes:** h_P = (ε_σ/4)·P and h_T = (ε_σ/4)/|d ln p_σ/dT|.
+- All 21 xfails become ordinary cases, and the tolerance is unchanged.
+
+**Rejected alternatives, and why.**
+- *Loosening FD_TOL.* No derivation shows that the registered value is wrong. Only the stencil was outside §6.3's
+  "away from the box" argument.
+- *Dropping the cases.* That is forbidden.
+
+---
+
+## R-598 — S05 A29 m5 restated; A04 (Q-5) bound kept at 1e-11; Tsat admission bound text is 2e-7
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S05 review, rulings 5 and 6, and F4 |
+| Normative text | spec §14 (amends §6.1 A04, A29 and §6.2) |
+| Evidence | The new m5 (`temperature >= T_C` → `temperature > T_SIGMA_MAX` in `_rule`) refuses `NC_liquid`, so A15 catches it. A04's measured floor is ≤ 6.8e-13. CoolProp's `d3alphar` agrees with ref to 6.8e-13. iapws's Tsat is at worst 1.03e-8 |
+| Affected packages | S05 |
+
+**Decision.**
+- m5 becomes "T_c replaced by 647.0 K in step 2" (→ A15). The old m5 is an equivalent mutant by construction.
+- A04 stays at 1e-11·max(|ref|, 1). Generator admission of the third partials is a design-lane follow-up.
+- The Tsat admission bound is 2e-7, the code's value, because C11's margin needs it.
+
+**Rejected alternatives, and why.**
+- *Dropping m5.* That loses the coverage of step 3.
+- *An assertion on the flash's `route` message.* It is not a contract field.
+
+---
+
+## R-599 — S05 review verdict: not yet `tested` (one must-fix); rights statement required in the manifest
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S05 review; C10-Q1 and C10-Q2 stay Frank's |
+| Normative text | `docs/reviews/S05-review.md`; spec §14 (§12 limitations) |
+| Evidence | S05 tests at `7a7e346` plus the adversarial file: 169 passed, 1 skipped, 27 xfailed. F1 to F4 and N1 to N5 are in the review |
+| Affected packages | S05; ADR 0045 acceptance |
+
+**Decision.**
+- WO-S05-3 (R-595 to R-598, and F3) precedes the `tested` manifest.
+- The `reviewer` then checks only that diff.
+- The manifest must state:
+  - the IAPWS terms of use were not read (iapws.org was refused, 2026-10-22);
+  - the rights row is `unresolved`;
+  - the coefficient file is unpackaged;
+  - Tables 6–8 are not compared;
+  - ADR 0045 remains Proposed, and nothing is `released` until C10-Q1 is answered;
+  - `reviewed` covers numerics, not rights.
+
+**Rejected alternatives, and why.**
+- *Passing with F1 as a limitation.* Wrong values answered `ok` are a placeholder success path.
+
+---

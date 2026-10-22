@@ -53,3 +53,11 @@ Build lane (`opus-engineer`), WO-S05-2, 2026-10-22.
 - DECISION: A30's two `not_converged` codes → probed by starving Newton (`MAX_ITERATIONS = 0`, cold saturation cache, both restored after), at 700 K/1e7 Pa VAPOR (`density_not_converged`) and `Psat` at 451.25 K (`saturation_not_converged`); controls are the same requests unstarved. §4.5's code lists are parsed from the spec (10 `evaluate_phase` codes with their statuses, 6 `flash` codes) and must equal the probe table's. `flash`'s own `saturation_not_converged` path is not in §4.5's flash list and has no probe.
 - MEASURED (A22): 22 temperatures × 8 pressures × 2 phases: no `not_converged`, every refusal `phase_not_stable`, every state answers at least one phase, (∂v/∂P)_T < 0 and cp > 0 at every answer.
 - MEASURED: `s05_reference.py --check` → `2848 claims passed`, JSON byte-identical, 4 min 46 s.
+
+Design lane (`reviewer`), S05 review, 2026-10-22 (`docs/reviews/S05-review.md`; spec §14; R-595…R-599).
+
+- RULING (Q-floor): accepted with conditions → a ≤ 4ε or zero-rounded Newton correction is converged before the safeguard; stagnation only for Newton steps with previous and current ≤ √ε; never a bisection step (R-595; review F1: 700 K/1e8 Pa VAPOR answered with ρ off 26 %).
+- RULING (p_σ side; Z at a root): both accepted → spec §3.5 p_σ = p(ρ'', T); §3.1 Z = P/(ρ R_s T) at a solved root (R-596). Z no longer witnesses the root; A22 gains the root residual (R-595).
+- RULING (Q-6, A17): FD_TOL = 1e-10 kept; stencils amended → NC h = 1e-7·x, inward one-sided at box edges, ε_σ-scaled steps at band probes; the 21 xfails become cases (R-597).
+- RULING (A29 m5): restated → "T_c replaced by 647.0 K in step 2" (→ A15; verified); the old m5 is equivalent by construction (R-598). Q-5: A04 stays 1e-11 (floor ≤ 6.8e-13). Tsat admission text is 2e-7 (R-598).
+- RULING (rights): C10-Q1 stays Frank's; the manifest states the IAPWS terms are unread and the rights row `unresolved` (R-599). Fix work order WO-S05-3 in the review.
