@@ -50,7 +50,7 @@ import json
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass
-from functools import cache
+from functools import cache, lru_cache
 from pathlib import Path
 from typing import Final, NamedTuple
 
@@ -586,6 +586,13 @@ class _Saturation:
     iterations: int
 
 
+#: Spec §10 Q-3: the median `evaluate_phase` at `L_ambient` measured 2.6 ms (> 1 ms), so the
+#: Maxwell solve is cached on the exact double T (no quantization; a pure function of T and the
+#: coefficients). Bounded, and thread-safe as `functools.lru_cache` is.
+_SATURATION_CACHE_SIZE: Final = 1024
+
+
+@lru_cache(maxsize=_SATURATION_CACHE_SIZE)
 def _saturation(temperature: float) -> _Saturation | None:
     """Maxwell's conditions (I8) by two-variable Newton in (δ', δ''), T < T_c; `None` if not
     converged in `MAX_ITERATIONS` or if an iterate leaves ρ' > ρ_c > ρ'' (spec §3.5)."""

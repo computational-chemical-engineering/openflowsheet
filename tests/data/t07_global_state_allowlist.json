@@ -164,6 +164,13 @@
     },
     {
       "file": "thermo/iapws95.py",
+      "line": "@lru_cache(maxsize=_SATURATION_CACHE_SIZE)",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "S05 (WO-S05-1, spec §10 Q-3): the Maxwell saturation solve, a pure function of the exact double T and the coefficient file, cached on exact T (no quantization) because evaluate_phase measured 2.6 ms > 1 ms at L_ambient; bounded at 1024 entries; functools.lru_cache is thread-safe."
+    },
+    {
+      "file": "thermo/iapws95.py",
       "line": "@cache",
       "patterns": ["cache"],
       "occurrences": 3,
