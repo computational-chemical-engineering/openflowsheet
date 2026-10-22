@@ -268,9 +268,12 @@ def found_limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
         "package's generator. The mapping and the verdict are the design lane's.",
         "scripts/gate.sh was not run by this generator (it runs once before merge into main); "
         "S06.gate is unsupported here.",
-        "Review: the design lane's reviewer pass and the human numerical and process-model "
-        "review are pending; this manifest claims neither. Open questions: Q-S06-WO1-1, "
-        "Q-S06-WO2-1 (docs/C11_DECISIONS.md); Frank's Q-S06-1, Q-S06-2.",
+        "Review: the design lane's reviewer pass (docs/reviews/S06-review.md, 2026-10-23: "
+        "should-fix F1-F4, rulings R-608 to R-610 in spec §17) is applied in this commit; "
+        "the review fields stay pending for the design lane to set, and the human numerical and "
+        "process-model review is pending; this manifest claims neither. Q-S06-WO1-1 and "
+        "Q-S06-WO2-1 are ruled (§17.1, §17.2); Frank answered Q-S06-1 (no warning for now) and "
+        "Q-S06-2 (typed failure) on 2026-10-23.",
         "The reference agreement is numerical verification against a 50-digit generator that "
         "shares SYN-001, S02's endpoint and §5's rules, not empirical validation.",
     ]
