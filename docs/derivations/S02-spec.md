@@ -2,7 +2,7 @@
 
 Design lane (`specifier`), 2026-10-22. Package S02 (plan v1.2 §4.5, `docs/implementation-plan.md:282`; X31 `:357`), brief
 `docs/briefs/S02-specification.md`. Base: S01 (`docs/derivations/S01-spec.md` with Amendment 1, §17). Reference generator
-`docs/derivations/scripts/s02_reference.py` (mpmath, 50 digits; `--check` re-derives 906 claims and byte-compares
+`docs/derivations/scripts/s02_reference.py` (mpmath, 50 digits; `--check` re-derives 1064 claims (906 before §18.7 WO-G) and byte-compares
 `s02_reference.json`; about 3 minutes). Decisions: `docs/S02_DECISIONS.md`, register R-530 to R-535. **Amended 2026-10-22
 by §17** (Amendment 1, ruling round 1 on WO-1's questions; R-536 to R-539): §0, §2.2, §2.3, §10, §12; **and by §18**
 (Amendment 2: §7.3 replaced by the bubble-point easy endpoint, ADR 0044, A05–A07, A13, A14, A20–A22; R-546 to R-549).
@@ -320,7 +320,7 @@ claim fails.
 ## 13. Evidence manifest check list
 
 - `status: tested` requires a passing test for each of A01–A16, citing its id.
-- `s02_reference.py --check` passes at the manifest commit (906 claims, JSON byte-identical).
+- `s02_reference.py --check` passes at the manifest commit (1064 claims since §18.7 WO-G, JSON byte-identical).
 - `ruff check` and `ruff format --check` are clean; `scripts/gate.sh` passes before merge.
 - The deviation measurement (§10), A10's measured floor and P1's actual outcome are recorded with their commit.
 - §14 is listed verbatim as limitations. `reviewed` is set only by the `reviewer`.
