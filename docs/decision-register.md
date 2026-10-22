@@ -10878,3 +10878,96 @@ form or a typed outcome.
 - *An ADR for the column contract:* nothing frozen moves.
 
 **Watch for.** If review finds the ratio row or the bubble row needs a new kind, an ADR is required.
+
+---
+
+## R-536 — S02 `φ` is `dimensionless`: a column-only scaling kind with nominal 1
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 ruling round 1 (Q-S02-WO1-1) |
+| Normative text | `docs/derivations/S02-spec.md` §17 item 1, A17 |
+| Evidence | `Scaling.from_kinds` refuses M2's `phi` (WO-1); `docs/interfaces-frozen.md` lists neither `QuantityKind` nor the nominal table; no hash reads `REGISTERED_NOMINALS`; `s02_reference.py --check` passes unchanged |
+| Affected packages | S02 (WO-2), K03 (table entry), K04 (unchanged; guarded) |
+
+**Decision.** `QuantityKind` gains `dimensionless` and `REGISTERED_NOMINALS` gains `dimensionless: 1.0`, as a column kind
+only: `Scaling.from_kinds` refuses a row of that kind. `KIND_TOLERANCE`, K04's tolerance table, `SCALE_PROVENANCE` and
+`benchmarks/registry.yaml` are unchanged. `φ` gets no bound; the flow bounds on `r` and `d` imply `φ ∈ [0, 1]`.
+
+**Rejected alternatives, and why.**
+- *Reformulate with a molar_flow reflux total `R`:* it changes C rows' form and kind and every registered M2 Jacobian claim
+  to avoid one table entry.
+- *Declare `φ` `molar_flow`:* wrong nominal (3) and a lower bound by kind that is not `φ`'s.
+- *Carry it in `registry.yaml` `scales`:* those are SYN-001 families' physical nominals; S02's numbers are in
+  `s02_reference.json`, which already holds `D_x(φ) = 1`.
+
+**Watch for.** R-043's warning stands for row kinds: a `dimensionless` row, a tolerance for it, or a K04 table entry moves
+`check_policy_sha256` and needs an ADR.
+
+---
+
+## R-537 — S02 stage-1 ZERO_FLOW label without a `top` inlet: the first present inlet's temperature
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 ruling round 1 (Q-S02-WO1-2) |
+| Normative text | `docs/derivations/S02-spec.md` §17 item 2 (replaces §2.3's `T_1⁰`), A18 |
+| Evidence | frozen `ZeroFlowForm.label` names a column (`orchestrator/region.py:227`, `orchestrator/splits.py:560-566`); §5 S6 and S10 guarantee a present inlet |
+| Affected packages | S02 (WO-2) |
+
+**Decision.** `label_source(spec, 1)` without a `top` inlet is the temperature column of `spec.inlets()[0]`; with a `top`
+inlet it stays `T_top` (S01 §4.3). `ProfileLabel` is withdrawn. §3's count and `ref.dof` do not move.
+
+**Rejected alternatives, and why.**
+- *(a) A pinned column `T0` with row `T0 − T_1⁰*`:* adds a column and row to every partial-condenser declaration for an
+  unclaimed regime, moves `ref.dof`, and puts an iterative band-temperature result into `constants_sha256`.
+- *(b) A constant label:* widens the frozen `ZeroFlowForm` (T05b §7.2, ADR 0012 D4 (c)) for a regime S02 does not claim.
+- *The inlet nearest the top:* also cycle-free, but needs a tie rule; the first of `inlets()` is already ordered.
+
+**Watch for.** A label value cited as a dormant condenser's temperature. It is a label, not a claim.
+
+---
+
+## R-538 — S02 total-condenser accumulation: two `holdup_balance` rows, the rest `algebraic`
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 ruling round 1 (Q-S02-WO1-3) |
+| Normative text | `docs/derivations/S02-spec.md` §17 item 3, A19; ADR 0008 D3.1–D3.5 |
+| Evidence | `models/syn001/column.py` declarations at WO-1 (`b78f349`) |
+| Affected packages | S02 (WO-2), T04's PTC `M` pattern |
+
+**Decision.** Confirmed as implemented: `COL-tc-bal` (`N_i`, mol) and `COL-tc-energy` (`U`, J) are `holdup_balance`,
+written `Σ in − Σ out + sources`; `COL-tc-split`, `-Ddef`, `-bubble`, `-P` and the slot rows are `algebraic`. A19 fixes
+the overall row signs, which no root can see.
+
+**Rejected alternatives, and why.**
+- *`zero_holdup_balance`:* the reflux drum is a vessel, not a junction (ADR 0008 D3.1).
+- *`COL-tc-split` as a balance:* it is a constitutive split of one liquid; the drum's balance is `COL-tc-bal`.
+
+**Watch for.** A subcooled condenser or a drum with vapour holdup is a different model with its own declarations.
+
+---
+
+## R-539 — S02 ruling round 1 needs no ADR; ADR 0044 stays free
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 ruling round 1 |
+| Normative text | `docs/derivations/S02-spec.md` §17 |
+| Evidence | `docs/interfaces-frozen.md` (§1, §2 and its ADR 0001/0008 clause) is untouched; `ref.dof` and all 906 generator claims unchanged |
+| Affected packages | S02 |
+
+**Decision.** None of R-536 to R-538 changes a frozen interface, a schema, a registered value, a row kind, a tolerance, a
+policy or an identity, so no ADR is written. R-535 stands.
+
+**Rejected alternatives, and why.**
+- *An ADR for the new scaling kind:* the frozen list does not carry `QuantityKind`, and ADR 0001's kind list already has
+  `dimensionless`.
+
+**Watch for.** Option (b) of R-537, any row kind or tolerance for `dimensionless`, or a `registry.yaml` change: each needs
+ADR 0044.

@@ -3,13 +3,15 @@
 Design lane (`specifier`), 2026-10-22. Package S02 (plan v1.2 §4.5, `docs/implementation-plan.md:282`; X31 `:357`), brief
 `docs/briefs/S02-specification.md`. Base: S01 (`docs/derivations/S01-spec.md` with Amendment 1, §17). Reference generator
 `docs/derivations/scripts/s02_reference.py` (mpmath, 50 digits; `--check` re-derives 906 claims and byte-compares
-`s02_reference.json`; about 3 minutes). Decisions: `docs/S02_DECISIONS.md`, register R-530 to R-535.
+`s02_reference.json`; about 3 minutes). Decisions: `docs/S02_DECISIONS.md`, register R-530 to R-535. **Amended 2026-10-22
+by §17** (Amendment 1, ruling round 1 on WO-1's questions; R-536 to R-539): §0, §2.2, §2.3, §10, §12.
 
 ## 0. Authority and scope
 
 Normative for S02. It composes with everything S01 composes with (ADR 0001, 0005, 0008 D3, 0010 D2–D3, 0012 D1–D4, 0018)
 and with S01 itself, and reopens none of them. It changes no frozen interface (`docs/interfaces-frozen.md`): the new rows are
-additive row builders, the new column `φ` is of an existing kind (`dimensionless`), no row of a new kind is added (so
+additive row builders, the new column `φ` is of ADR 0001's existing quantity kind `dimensionless` (the scaling table carries
+it as a column-only kind with nominal 1, §17 item 1), no row of a new kind is added (so
 `region.KIND_TOLERANCE` is unchanged), the phase contract and `solve_region` are called unchanged, and S01's registered policy
 `s01-default-v1` is reused (no new v2 policy, so T05b §6.6 gains no further exemption). **No ADR is needed** (DECISION 8).
 Provider: SYN-001 only. PR routes are vapour-only (ADR 0026, ADR 0043 Proposed) and cannot form a stage.
@@ -80,13 +82,16 @@ Columns (2C + 5): `r_i`, `d_i` (molar_flow), `φ` (dimensionless), `D` (molar_fl
 | slot | §2.1 | — |
 
 Stage 2's liquid inflow is `r` at `(T_c, P_c)` in place of `l_1`. `bubble` is division-free; it is degenerate when `V_2 = 0`
-(every `T_c` satisfies it), which is why §8 requires `V_2 > 0`. `φ` has FD column scale 1.
+(every `T_c` satisfies it), which is why §8 requires `V_2 > 0`. `φ` has FD column scale 1, its registered nominal
+(§17 item 1).
 
 ### 2.3 Absent inlets
 
 A column with a condenser has no `top` inlet; one with a reboiler has no `bottom` inlet. **Absent** means no inlet columns and
 rows, not a dormant inlet (`ref.dof` counts only present inlets). S01's ZERO_FLOW label `T_label(1) = T_top` (S01 §4.3) becomes
-`T_1⁰` (§6's profile value, a constant) when there is no `top` inlet; a label of `T_2` would make a cycle with stage 2's label.
+the temperature column of the first present inlet in `ColumnSpec.inlets()` order when there is no `top` inlet (§17 item 2,
+replacing the constant `T_1⁰`, which the frozen `ZeroFlowForm` cannot carry); a label of `T_2` would make a cycle with stage 2's
+label.
 
 ## 3. DOF and admissible specification sets
 
@@ -305,7 +310,7 @@ claim fails.
 
 **WO-2: compile and solve.**
 - §7's pre-solve with slot substitution, the target, edge 3 over the replaced slots only, §8 acceptance, products.
-- Closes A05–A10, A13, A15, A16. Records the deviation measurement and A10's floor.
+- Closes A05–A10, A13, A15, A16 and §17's A17–A19 (with §17's code changes). Records the deviation measurement and A10's floor.
 
 **WO-3: phases, perturbations, evidence.**
 - A11's probes on the compiled Jacobian; P1 (A12, recording the outcome and the attempt list); A14.
@@ -351,4 +356,93 @@ claim fails.
 
 ## 16. Decisions
 
-See `docs/S02_DECISIONS.md` (DECISION lines 2–9) and register R-530 to R-535.
+See `docs/S02_DECISIONS.md` (DECISION lines 2–9; RULING lines of ruling round 1) and register R-530 to R-539.
+
+## 17. Amendment 1 (2026-10-22, design lane `specifier`): ruling round 1 on WO-1's questions
+
+Brief `docs/briefs/S02-ruling-1.md`; questions Q-S02-WO1-1 to Q-S02-WO1-3 (`docs/S02_DECISIONS.md`); register R-536 to R-539.
+Each item replaces the text it names. **No count, root, registered value or generator claim moves:** `ref.dof` stays M1 103,
+M2 100, M3 75, M4 75, and `s02_reference.json` is not re-emitted (`--check` passes unchanged at this amendment's commit). No
+frozen interface, schema, row kind, tolerance, policy or identity moves, so no ADR is written and ADR 0044 stays free (R-539).
+
+1. **`φ`'s kind is `dimensionless`, a column-only scaling kind with nominal 1 (Q-S02-WO1-1, R-536).**
+   - *Finding.* §0's "existing kind" was half right. `dimensionless` is an existing ADR 0001 D1.3 quantity kind
+     (`schemas/quantity.schema.json`, `units`), but not a scaling kind: `compile.spec.QuantityKind` and
+     `numerics.scaling.REGISTERED_NOMINALS` lack it, so `Scaling.from_kinds` refuses M2's `<U>.stage.1.phi` (WO-1, measured).
+   - *Ruling.* `QuantityKind` gains `"dimensionless"` and `REGISTERED_NOMINALS` gains `"dimensionless": 1.0`. It is a
+     **column kind only**: `Scaling.from_kinds` refuses a *row* declared `dimensionless` with `ScaleUnavailableError` naming
+     the row, so `region.KIND_TOLERANCE`, K04's tolerance table and every `check_policy_sha256` stay as they are, and "no row
+     kind" is executed rather than asserted in prose. `SCALE_PROVENANCE` is unchanged; the new entry's comment cites this item.
+   - *Why 1.* A pure number's unit is 1, and §2.2 and A10 already fix `D_x(φ) = 1`. `φ` needs no bound of its own: at any
+     state where the rows hold, `r_i = φ·v_i2 ≥ 0` and `d_i = (1 − φ)·v_i2 ≥ 0` with `V_2 > 0` (§8) give `φ ∈ [0, 1]`, and
+     `r`, `d` carry the `molar_flow` lower bound 0 in `solve_region`. It gets none.
+   - *Why not reformulate.* Replacing `φ` by the reflux total `R` (molar_flow), with rows `r_i·V_2 − R·v_i2` of kind
+     `molar_flow_squared`, avoids the new entry but changes C rows' form and kind, every registered M2 and V-M2 Jacobian
+     claim and WO-1's builders, to save one table entry. The `φ` form is linear in `r` and bilinear in `(φ, v)`: the simpler.
+   - *Frozen or registered?* Neither. `docs/interfaces-frozen.md` freezes the three protocols, the schema list, ADR 0001
+     D1–D5 and ADR 0008 D1–D3; `QuantityKind` and the nominal table are not on it, and ADR 0001's kind list does not grow.
+     No registered value moves. SYN-001 §9 and `benchmarks/registry.yaml` `scales` hold the SYN-001 families' physical
+     nominals (no family has a pure-number column), and **`registry.yaml` does not carry the entry**: S02's registered
+     numbers live in `s02_reference.json`, which already carries A10's `D_x(φ) = 1`. No hash reads the nominal table, and no
+     existing problem declares a `dimensionless` column, so every existing `Scaling` is unchanged entry by entry. R-043's
+     warning is against a kind that moves `check_policy_sha256`; a column-only kind cannot (R-536).
+
+2. **Stage 1's `ZERO_FLOW` label without a `top` inlet is the first present inlet's temperature (Q-S02-WO1-2, R-537).**
+   Replaces §2.3's `T_1⁰`.
+   - *Ruling.* Neither option (a) nor (b). Without a `top` inlet, `label_source(spec, 1)` is
+     `temperature_id(inlet_stream(U, spec.inlets()[0].port))`: the temperature column of the first present inlet in
+     `ColumnSpec.inlets()` order (`top`, `bottom`, then the side feeds in declaration order). With a `top` inlet that is
+     `T_top`, so S01 §4.3 is unchanged. M1's stage-1 label is the `feed` inlet's temperature and M4's the `bottom` inlet's.
+     `ProfileLabel` is withdrawn; `label_source` always returns a column id, and `ColumnRegimeForm.label` maps onto the
+     frozen `ZeroFlowForm.label` unchanged.
+   - *Existence.* Every column that passes §5 with a partial condenser has a present inlet: with `reboiler = none`, S6
+     requires `bottom`; with a reboiler, S10 refuses `F = 0`, which includes the column with no present inlet. The one input
+     that would reach a label without a column is refused `invalid_spec(no_feed)` before any form is built (A18).
+   - *No cycle.* An inlet's temperature column is fixed by its own inlet row and is no split's temperature, so the chain
+     `T_j → T_{j−1} → … → T_1 → T_inlet` ends.
+   - *Why not (a)*, a pinned column `T0` with row `T0 − T_1⁰*`. It adds a column and a row to every partial-condenser
+     declaration for a regime the spec never claims (partial dormancy, S01 §14), moves §3's count and `ref.dof` (M1 104,
+     M4 76), and makes a compiled parameter the output of §6's band-temperature solve, so `constants_sha256` would depend on
+     an iterative libm computation whose last bit may differ between the two CI architectures. `ZeroFlowForm` keeps its label
+     row out of the compiled declaration for this reason (its docstring; T05b spec §7.2).
+   - *Why not (b)*, a constant label. `ZeroFlowForm.label` and `splits.check_agreement` name a column (T05b spec §7.2,
+     ADR 0012 D4 (c)); widening them takes an ADR for a regime S02 does not claim.
+   - *What the value is.* A label pins an unclaimed regime's otherwise free temperature to a finite, cycle-free column so the
+     attempt's system is square and the attempt ends typed. It carries no physics, and nothing in `s02_reference.json` reads
+     it.
+
+3. **The total condenser's accumulation is confirmed (Q-S02-WO1-3, R-538).** The reflux drum holds liquid, so its two
+   conservation rows are `holdup_balance` (ADR 0008 D3.1): `COL-tc-bal` accumulates `N_i` (mol; row mol/s) and
+   `COL-tc-energy` accumulates `U` (J; row W), which meets D3.2's dimension rule. Both are written `Σ in − Σ out + sources`
+   (D3.3): `v_i2 − r_i − d_i`, and `Q_c + Ḣ^V(v_2, T_2) − Ḣ^L(r) − Ḣ^L(d)` with `Q_c` positive into the drum. Not
+   `zero_holdup_balance`: a drum is a vessel, not a junction. `COL-tc-split` (a constitutive split of one liquid, not a
+   balance), `COL-tc-Ddef` (a definition), `COL-tc-bubble` (an equilibrium condition), `COL-tc-P` and the slot rows
+   `COL-reflux-ratio`, `COL-boilup-ratio`, `COL-distillate-rate`, `COL-bottoms-rate`, `COL-duty` (specifications) are
+   `algebraic`. S01's `CAS-*` declarations are unchanged. A root cannot see a row's overall sign (it is invariant under
+   `F_row → −F_row`); the relative signs inside each row are fixed by A06's root (a wrong one moves `Q_c` by `O(Ḣ)`), and the
+   overall sign, which PTC's `M` reads (D3.4–D3.5), by A19.
+
+4. **Assertions added** (§10's conventions; WO-2 closes them).
+
+| Id | Assertion | Expected | Tolerance |
+| --- | --- | --- | --- |
+| A17 | `φ`'s kind and scale. On M2, `variable_kinds[<U>.stage.1.phi] == "dimensionless"`; `Scaling.from_spec` builds for M2 and for V-M2's two sets, with `column[phi] == 1.0` and every other entry equal to `REGISTERED_NOMINALS` of its declared kind; `REGISTERED_NOMINALS` is K03's five entries, unchanged, plus `"dimensionless": 1.0` (`test_k03_scaling`'s literal extended, not loosened); `"dimensionless"` is a key of neither `KIND_TOLERANCE` nor K04's tolerance table, and the `check_policy_sha256` values existing tests pin still pass; a `ProblemSpec` declaring one row `dimensionless` raises `ScaleUnavailableError` naming that row; WO-1's strict xfail `test_a01_phi_is_declared_dimensionless` becomes a plain pass | as stated | exact |
+| A18 | Stage-1 label. The stage-1 `ZERO_FLOW` label is `(label_row_id(U, 1), T_1, T_feed)` on M1 and `(…, T_bottom)` on M4; M3's is `T_top`; M2's stage-2 label is `T_c`; `label_source` returns a column id of the declaration for every stage of M1–M4; the zero-flow-form agreement check (`splits.py`, the `zero_flow_form_disagrees` branch) accepts every stage's form of M1–M4; on M1 at `x_K` with stage 1 `ZERO_FLOW` and every other stage `TWO_PHASE`, the attempt's system is square and its label row's residual is `T_1 − T_feed` (one IEEE subtraction); a partial-condenser, partial-reboiler column with no inlet is refused `invalid_spec(no_feed)` before any form is built | as stated | exact |
+| A19 | Condenser accumulation and sign. M2's compiled `row_accumulation` is `holdup_balance` on exactly the `COL-tc-bal` and `COL-tc-energy` rows among the `COL-*` rows and `algebraic` on the rest (`CAS-*` rows as S01 declares). At the trial state `v_2 = (0.5, 0.375, 0.25)`, `r = (0.125, 0.0625, 0.03125)`, `d = (0.25, 0.0625, 0.03125)` mol/s, `COL-tc-bal` is `(+0.125, +0.25, +0.1875)` mol/s. At `Q_c = 1000` W with `v_2 = r = d = 0` (any `T_2`, `T_c` in the band, `P_c = P_1*`), `COL-tc-energy` is `+1000.0` W | as stated | exact |
+
+*Tolerances.* A17 and A18 are structural, plus one correctly rounded subtraction that the expectation repeats: floor 0. A19's
+operands are dyadic with at most five significant bits, so every difference is exact in binary64 (floor 0); a dropped `r` or
+`d`, a flipped sign or a permuted component index changes some entry by at least 0.03125 mol/s, because the three expected
+entries are distinct and nonzero. The duty case is `Q_c` plus products of zero flows with finite enthalpies, each `±0`, so
+it is `Q_c` exactly; a flipped row sign gives `−1000`. A non-finite value there is a zero-flow defect (ADR 0001 D3), not a
+tolerance question.
+
+5. **What this amendment does not establish.** The stage-1 label value is not a claim about a dormant condenser's
+   temperature; partial dormancy stays unclaimed (S01 §14, §14 here). The `dimensionless` nominal is registered for `φ` only
+   as a column scale; no row kind, tolerance or certificate bound exists for it, and a later package that needs a
+   dimensionless *row* needs its own ruling (and, through K04's table, an ADR). No open question is added.
+
+6. **Code changes WO-2 makes** (not made here): `compile/spec.py` (`QuantityKind`), `numerics/scaling.py` (the entry and
+   the column-only refusal), `models/syn001/column.py` (declare `φ`'s kind; `label_source`; withdraw `ProfileLabel`),
+   and the tests of A17–A19, with `tests/test_k03_scaling.py`'s literal extended. They touch scaling and phase-form code,
+   so the package's `reviewer` pass covers them (CLAUDE.md, lane rule).
