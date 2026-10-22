@@ -57,7 +57,7 @@ from openflowsheet.thermo.syn001 import Syn001Provider
 
 REFERENCE_PATH = REPO_ROOT / "docs" / "derivations" / "scripts" / "s02_reference.json"
 #: The reference this module was written against; a re-emitted reference must be re-read here.
-REFERENCE_SHA256 = "62296289aee9c95facaaa36ffefd05807d437645c5b6beeb0f70da62f18579a4"
+REFERENCE_SHA256 = "9a6d262ad3d36b377388a644f1d9a37849668e81d289c457aef0ed1a58bb8dbf"
 REFERENCE: dict[str, Any] = json.loads(REFERENCE_PATH.read_bytes())
 
 UNIT = "S02"

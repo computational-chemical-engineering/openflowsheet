@@ -11,7 +11,9 @@ division-free specification rows and total-condenser block (spec §2-§3). This 
 ``(l_i, v_i, T, Q)``, equilibrium and ratio specifications in quotient form, the total condenser
 reduced to ``(phi, T_c, Q_c)`` -- by its own damped Newton with complex-step derivatives, follows
 spec §7's straight specification path in equal steps, and then evaluates the implementation's
-division-free rows at its root as a claim.
+division-free rows at its root as a claim. Amendment 2 (spec §18, WO-G) adds §18.2's bubble-point
+easy endpoint by its own sweeps (stopped at 1e-30 K) and V-M2 (duty, duty)'s second root R2; those
+keys and claims are appended after the earlier ones, which stay byte-identical.
 
     python docs/derivations/scripts/s02_reference.py --check
     python docs/derivations/scripts/s02_reference.py --emit <path of the committed JSON>
@@ -642,7 +644,7 @@ def solve_case(name: str) -> tuple[dict[str, Any], dict[str, Any]]:
             "sigma_min": mp.nstr(smin, 6),
         }
     )
-    return out, {"x": x, "st": st, "slots": tgt, "sig": stage_sig}
+    return out, {"x": x, "st": st, "slots": tgt, "sig": stage_sig, "init": init}
 
 
 def phase_case() -> dict[str, Any]:
@@ -747,8 +749,11 @@ def singular_pairs(m1: dict[str, Any], m3: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-def variants(name: str, sol: dict[str, Any], sets: Sequence[tuple[str, str]]) -> dict[str, Any]:
-    case, st, out = CASES[name], sol["st"], {}
+def variant_slots(
+    name: str, sol: dict[str, Any], cond_kind: str, reb_kind: str
+) -> tuple[dict[int, tuple[str, Any]], dict[str, list[str]]]:
+    """Spec §9's variant set: both end slots take their value at the base case's root."""
+    case, st = CASES[name], sol["st"]
     n_st = case["N"]
     value_of = {
         "reflux_ratio": (1, "RR"),
@@ -756,14 +761,20 @@ def variants(name: str, sol: dict[str, Any], sets: Sequence[tuple[str, str]]) ->
         "boilup_ratio": (n_st, "BR"),
         "bottoms_rate": (n_st, "B"),
     }
+    slots = dict(sol["slots"])
+    spec = {}
+    for end, kind in (("condenser", cond_kind), ("reboiler", reb_kind)):
+        j, slot = value_of.get(kind, (1 if end == "condenser" else n_st, "Q"))
+        value = slot_value(case, st, j, slot)
+        slots[j] = (slot, value)
+        spec[end] = [kind, s(value)]
+    return slots, spec
+
+
+def variants(name: str, sol: dict[str, Any], sets: Sequence[tuple[str, str]]) -> dict[str, Any]:
+    case, out = CASES[name], {}
     for cond_kind, reb_kind in sets:
-        slots = dict(sol["slots"])
-        spec = {}
-        for end, kind in (("condenser", cond_kind), ("reboiler", reb_kind)):
-            j, slot = value_of.get(kind, (1 if end == "condenser" else n_st, "Q"))
-            value = slot_value(case, st, j, slot)
-            slots[j] = (slot, value)
-            spec[end] = [kind, s(value)]
+        slots, spec = variant_slots(name, sol, cond_kind, reb_kind)
         smin = sigma_min(case, sol["x"], slots, sol["sig"])
         key = f"{cond_kind}+{reb_kind}"
         if (cond_kind, reb_kind) == ("distillate_rate", "bottoms_rate"):
@@ -811,6 +822,225 @@ def refusal_section() -> dict[str, Any]:
     return {"feed_360K_bubble_margin": mp.nstr(hot, 6)}
 
 
+# -- spec §18.2 (Amendment 2): the easy endpoint s02-bubble-point-v1, constructed (WO-G) ----------
+VARIANT_SETS: dict[str, list[tuple[str, str]]] = {
+    "M1": [
+        ("duty", "duty"),
+        ("reflux_ratio", "bottoms_rate"),
+        ("distillate_rate", "boilup_ratio"),
+        ("reflux_ratio", "duty"),
+        ("distillate_rate", "bottoms_rate"),
+    ],
+    "M2": [
+        ("duty", "duty"),
+        ("distillate_rate", "boilup_ratio"),
+        ("distillate_rate", "bottoms_rate"),
+    ],
+}
+SINGULAR_SET = ("distillate_rate", "bottoms_rate")  # spec §5 S3: not admissible, no endpoint
+SWEEP_MAX = 500  # spec §18.2 step 3: the sweep budget; the generator refuses beyond it
+SWEEP_STOP = mpf("1e-30")  # spec §18.7 WO-G: the generator stops at max |dT| <= 1e-30 K
+SWEEP_STOP_IMPL = mpf("1e-9")  # spec §18.2 step 3d: the implementation's stop (count recorded)
+START_SHIFT = mpf(5)  # spec §18.6 A14: sweep start T0 +- 5 K
+# Two runs that each stop at |dT| <= 1e-30 K with last-sweep contraction q <= 0.55 (measured, M4)
+# sit within q/(1-q) * 1e-30 <= 1.3e-30 K of the fixed point, so within 2.5e-30 K of each other;
+# a different fixed point would differ by far more than the emitted 25 digits resolve (1e-22 K).
+SAME_FIXED_POINT = mpf("1e-29")
+# spec §18.1 item 3: V-M2 (duty, duty)'s second root R2, to the six digits the spec quotes
+R2_SEED = {"D": "0.274431", "phi": "0.775456", "T_c": "321.583"}
+
+
+def sweep_flows(
+    case: dict[str, Any], temps: dict[int, Any], rho: dict[int, Any], phi: Any
+) -> tuple[dict[int, list[Any]], dict[int, list[Any]]]:
+    """Spec §18.2 step 3b: per component, §6 step 4's tridiagonal with S_ij = K_ij rho_j."""
+    p, inl, eqs, n_st = case["P"], case["inlets"], eq_stages(case), case["N"]
+    liq = {j: [mpf(0)] * NC for j in eqs}
+    vap = {j: [mpf(0)] * NC for j in eqs}
+    for i in range(NC):
+        sr = {j: k_val(temps[j], p[j - 1], i) * rho[j] for j in eqs}
+        diag = [-(1 + sr[j]) for j in eqs]
+        if is_total(case):
+            diag[0] += phi * sr[2]
+        col = thomas(
+            [mpf(1)] * len(eqs),
+            diag,
+            [sr[j + 1] if j + 1 <= n_st else mpf(0) for j in eqs],
+            [-sum(f["n"][i] for f in inl if f["stage"] == j) for j in eqs],
+        )
+        for k, j in enumerate(eqs):
+            liq[j][i], vap[j][i] = col[k], sr[j] * col[k]
+    return liq, vap
+
+
+def bubble_temperature(n: Sequence[Any], p: Any) -> Any:
+    """Spec §18.2 step 3c: ADR 0012 D1's band temperature at beta = 0, inside SYN-001's domain."""
+    t = rr_temperature(n, 0, p)
+    if not T_MIN < t < T_MAX:
+        raise SystemExit(f"bubble_point_outside_domain: {mp.nstr(t, 8)} K at {p} Pa")
+    return t
+
+
+def end_ratios(
+    case: dict[str, Any], init: dict[str, Any], slots: dict[int, tuple[str, Any]]
+) -> tuple[dict[int, Any], Any]:
+    """Spec §18.2 step 1: CMO stage ratios (floors included), the end overrides, and phi."""
+    eqs, n_st = eq_stages(case), case["N"]
+    rho = {j: init["V_cmo"][j - 1] / init["L_cmo"][j - 1] for j in eqs}
+    if case["condenser"] == "partial" and slots[1][0] == "RR":
+        rho[1] = 1 / slots[1][1]
+    if case["reboiler"] == "partial" and slots[n_st][0] == "BR":
+        rho[n_st] = slots[n_st][1]
+    phi = None
+    if is_total(case):
+        phi = slots[1][1] / (1 + slots[1][1]) if slots[1][0] == "RR" else PHI0
+    return rho, phi
+
+
+def bubble_point(
+    case: dict[str, Any],
+    init: dict[str, Any],
+    slots: dict[int, tuple[str, Any]],
+    shift: Any = 0,
+) -> dict[str, Any]:
+    """Spec §18.2 steps 2-5, with the generator's stop SWEEP_STOP in place of 1e-9 K."""
+    eqs, n_st, p = eq_stages(case), case["N"], case["P"]
+    rho, phi = end_ratios(case, init, slots)
+    temps = {j: init["profile"][j - 1] + shift for j in eqs}
+    sweeps_impl = None
+    for sweep in range(1, SWEEP_MAX + 1):
+        liq, _ = sweep_flows(case, temps, rho, phi)
+        new = {j: bubble_temperature(liq[j], p[j - 1]) for j in eqs}
+        delta = max(abs(new[j] - temps[j]) for j in eqs)
+        temps = new
+        if sweeps_impl is None and delta <= SWEEP_STOP_IMPL:
+            sweeps_impl = sweep
+        if delta <= SWEEP_STOP:
+            break
+    else:
+        raise SystemExit(f"{case['name']}: sweeps_exhausted")
+    liq, vap = sweep_flows(case, temps, rho, phi)  # step 4: final flows at the stopped T
+    st: dict[str, Any] = {"l": liq, "v": vap, "T": temps, "Q": {}}
+    st["Q"] = {j: mpf(0) for j in range(1, n_st + 1)}
+    if is_total(case):
+        st["phi"], st["Tc"] = phi, bubble_temperature(vap[2], p[0])
+    # step 5: every Q from its energy row, which is linear in Q with slope 1 (as in §6 step 7)
+    two = ["TWO_PHASE"] * n_st
+    f0 = residual(case, pack(case, st), {j: ("Q", mpf(0)) for j in range(1, n_st + 1)}, two)
+    row = 0
+    for j in eqs:
+        st["Q"][j] = -f0[row + 2 * NC] * SCALE_Q
+        row += 2 * NC + 2
+    if is_total(case):
+        st["Q"][1] = -f0[row + 1] * SCALE_Q
+    return {"st": st, "rho": rho, "sweeps": sweep, "sweeps_impl": sweeps_impl}
+
+
+def bubble_point_entry(
+    label: str, case: dict[str, Any], init: dict[str, Any], slots: dict[int, tuple[str, Any]]
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """The registered x0 of one specification set, with its two-phase and start-shift claims."""
+    bp = bubble_point(case, init, slots)
+    st = bp["st"]
+    check_state(f"{label} bubble_point", case, st, ["TWO_PHASE"] * case["N"])
+    worst = mpf(0)
+    for shift in (START_SHIFT, -START_SHIFT):
+        other = bubble_point(case, init, slots, shift)["st"]
+        worst = max([worst] + [abs(other["T"][j] - st["T"][j]) for j in st["T"]])
+    claim(
+        worst < SAME_FIXED_POINT,
+        f"{label} bubble_point: sweeps from T0 + 5 K and T0 - 5 K reach the same fixed point"
+        " within 1e-29 K",
+    )
+    out = record(case, st)
+    out["rho"] = {str(j): s(r) for j, r in sorted(bp["rho"].items())}
+    if is_total(case):
+        out["phi"], out["T_c"] = s(st["phi"]), s(st["Tc"])
+    out["sweeps"] = bp["sweeps"]
+    out["sweeps_to_1e-9_K"] = bp["sweeps_impl"]
+    return out, st
+
+
+def continued_slots(
+    case: dict[str, Any], st: dict[str, Any], tgt: dict[int, tuple[str, Any]]
+) -> dict[str, dict[str, str]]:
+    """Spec §18.2 / §7.5: ratio slots hold at x0; every other slot is continued from p0 = its
+    variable at x0 toward its target value."""
+    return {
+        str(j): {"kind": kind, "p0": s(slot_value(case, st, j, kind)), "target": s(value)}
+        for j, (kind, value) in sorted(tgt.items())
+        if kind not in ("RR", "BR")
+    }
+
+
+def second_root(
+    m2: dict[str, Any], x0_state: dict[str, Any], slots: dict[int, tuple[str, Any]]
+) -> dict[str, Any]:
+    """Spec §18.1 item 3: V-M2 (duty, duty)'s second regular root R2. Seed: the generator's Newton
+    from V-M2 (duty, duty)'s bubble-point x0 with the condenser slot set to R2's six-digit
+    distillate rate (D = 0.274431, reboiler duty unchanged); then Newton at both duties."""
+    case, label = CASES["M2"], "V-M2 duty+duty second root R2"
+    two = ["TWO_PHASE"] * case["N"]
+    seed_slots = dict(slots)
+    seed_slots[1] = ("D", mpf(R2_SEED["D"]))
+    seed = newton(lambda y: residual(case, y, seed_slots, two), pack(case, x0_state))
+    x = newton(lambda y: residual(case, y, slots, two), seed)
+    st = unpack(case, x)
+    claim(
+        max(abs(r) for r in residual(case, x, slots, two)) < NEWTON_TOL,
+        f"{label}: a root of the generator's rows below 1e-40",
+    )
+    claim(
+        implementation_rows_max(case, st, slots, two) < mpf("1e-38"),
+        f"{label}: the implementation's division-free rows vanish below 1e-38",
+    )
+    check_state(label, case, st, two)
+    closures(label, case, st)
+    smin = sigma_min(case, x, slots, two)
+    claim(smin > SIGMA_REGULAR, f"{label}: regular, sigma_min > 1e-4")
+    dist, phi, tc = slot_value(case, st, 1, "D"), st["phi"], st["Tc"]
+    claim(
+        abs(dist - mpf(R2_SEED["D"])) <= mpf("5e-7")
+        and abs(phi - mpf(R2_SEED["phi"])) <= mpf("5e-7")
+        and abs(tc - mpf(R2_SEED["T_c"])) <= mpf("5e-4"),
+        f"{label}: rounds to spec §18.1's six digits (D 0.274431, phi 0.775456, T_c 321.583 K)",
+    )
+    m2_st = m2["st"]
+    claim(
+        abs(tc - m2_st["Tc"]) > 5 and abs(dist - slot_value(case, m2_st, 1, "D")) > mpf("0.1"),
+        f"{label}: differs from M2's root by more than 5 K in T_c and 0.1 mol/s in D",
+    )
+    out = record(case, st)
+    out.update(
+        {
+            "spec_values": spec_values(case, st),
+            "sigma_min": mp.nstr(smin, 6),
+            "seed": dict(R2_SEED),
+        }
+    )
+    return out
+
+
+def amendment_2(doc: dict[str, Any], sols: dict[str, dict[str, Any]]) -> None:
+    """Spec §18.7 WO-G: additive keys; every claim here is appended after all earlier ones."""
+    for name in ("M1", "M2", "M3", "M4"):
+        case, tgt = CASES[name], sols[name]["slots"]
+        entry, st = bubble_point_entry(name, case, sols[name]["init"], tgt)
+        doc["cases"][name]["bubble_point"] = entry
+        doc["cases"][name]["bubble_point_continued"] = continued_slots(case, st, tgt)
+    for name, sets in VARIANT_SETS.items():
+        case = CASES[name]
+        for cond_kind, reb_kind in sets:
+            if (cond_kind, reb_kind) == SINGULAR_SET:
+                continue
+            key = f"{cond_kind}+{reb_kind}"
+            slots, _ = variant_slots(name, sols[name], cond_kind, reb_kind)
+            entry, st = bubble_point_entry(f"V-{name} {key}", case, sols[name]["init"], slots)
+            doc["variants"][name][key]["bubble_point"] = entry
+            if (name, key) == ("M2", "duty+duty"):
+                doc["variants"][name][key]["second_root"] = second_root(sols["M2"], st, slots)
+
+
 def build() -> dict[str, Any]:
     doc: dict[str, Any] = {
         "generator": "docs/derivations/scripts/s02_reference.py",
@@ -826,29 +1056,11 @@ def build() -> dict[str, Any]:
         claim(doc["dof"][name]["columns"] == doc["dof"][name]["rows"], f"{name}: square")
     doc["phase_case"] = {"P1": phase_case()}
     doc["variants"] = {
-        "M1": variants(
-            "M1",
-            sols["M1"],
-            [
-                ("duty", "duty"),
-                ("reflux_ratio", "bottoms_rate"),
-                ("distillate_rate", "boilup_ratio"),
-                ("reflux_ratio", "duty"),
-                ("distillate_rate", "bottoms_rate"),
-            ],
-        ),
-        "M2": variants(
-            "M2",
-            sols["M2"],
-            [
-                ("duty", "duty"),
-                ("distillate_rate", "boilup_ratio"),
-                ("distillate_rate", "bottoms_rate"),
-            ],
-        ),
+        name: variants(name, sols[name], sets) for name, sets in VARIANT_SETS.items()
     }
     doc["singular_pairs"] = singular_pairs(sols["M1"], sols["M3"])
     doc["refusals"] = refusal_section()
+    amendment_2(doc, sols)  # spec §18 (WO-G): additive keys, claims appended after all others
     doc["claims"] = list(CLAIMS)
     doc["claim_count"] = len(CLAIMS)
     return doc
