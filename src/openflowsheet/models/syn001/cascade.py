@@ -307,6 +307,9 @@ class CascadeFailure:
     outcome: FailureOutcome
     cause: str
     message: str = ""
+    #: Stable `code(detail)` notices that do not change the outcome (S02 C8: the duty-only
+    #: multiplicity warning); empty for every S01 failure.
+    warnings: tuple[str, ...] = ()
 
 
 # -- names ---------------------------------------------------------------------------------------

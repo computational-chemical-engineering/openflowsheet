@@ -81,6 +81,7 @@ from openflowsheet.models.syn001.column import (
     ColumnSpec,
     ProfileInitial,
     _initial_state,
+    column_warnings,
     declared_rows,
     distillate_id,
     distillate_total_id,
@@ -792,6 +793,8 @@ class ColumnSolution:
     result: RegionResult
     recovered_from: RegionResult | None = None
     final_sha256: str | None = None
+    #: C8: stable `code(detail)` notices (`column_warnings`); not part of any `state_sha256`.
+    warnings: tuple[str, ...] = ()
 
 
 def continuation(spec: ColumnSpec, profile: Sequence[float]) -> Continuation:
@@ -906,16 +909,20 @@ def solve_column(
     specification holds (spec §18.6 A14); `max_sweeps` is §18.2's cap (A22). A failed endpoint
     returns its typed `CascadeFailure` before any region solve. A `CONVERGED` answer that fails §8
     raises `AcceptanceDefectError`.
+
+    C8: every `ColumnSolution` and `CascadeFailure` for a duty-only specification carries
+    `column_warnings(spec)`; the dormant answer has no ends and none.
     """
+    warnings = column_warnings(spec)
     refused = validate(spec, provider, DECLARATION_CONTEXT)
     if refused is not None:
-        return refused
+        return replace(refused, warnings=warnings)
     if all(float(a) == 0.0 for inlet in spec.inlets() for a in inlet.state.n):
         # Only a column without ends reaches here (§5 S10): S01 §4.6's closed form.
         return dormant_answer(_as_cascade(spec), provider, DECLARATION_CONTEXT)
     initial = profile_initial(spec, provider, DECLARATION_CONTEXT)
     if isinstance(initial, CascadeFailure):
-        return initial
+        return replace(initial, warnings=warnings)
     endpoint = bubble_point_endpoint(
         spec,
         provider,
@@ -925,7 +932,7 @@ def solve_column(
         max_sweeps=max_sweeps,
     )
     if isinstance(endpoint, CascadeFailure):
-        return endpoint
+        return replace(endpoint, warnings=warnings)
 
     target = compile_column(spec, provider)
     order = target.spec.variable_ids
@@ -950,6 +957,7 @@ def solve_column(
         result=result,
         recovered_from=recovered_from,
         final_sha256=state_sha256(dict(result.state), order),
+        warnings=warnings,
     )
 
 
