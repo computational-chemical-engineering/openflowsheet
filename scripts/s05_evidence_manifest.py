@@ -85,8 +85,17 @@ LIBRARY_ONLY = (
     "registered in the T08 envelope's LIBRARY_ONLY_PROVIDERS and its scanned_providers (spec §8 "
     "F-2). Coverage counts are unchanged."
 )
+#: Ruling 8 of docs/reviews/S05-review.md (R-599; spec §14, §12): the rights statement.
+RIGHTS = (
+    "Rights (C10-Q1, R-599): the IAPWS terms of use for R6-95 were not read (iapws.org refused, "
+    "2026-10-22); the rights row is `unresolved`. benchmarks/s05/iapws95_coefficients.json is "
+    "unpackaged (A26), so `iapws95-v1` runs only from a source checkout; Tables 6-8 are not "
+    "compared; ADR 0045 remains Proposed. There is no `released` status and no wheel carrying the "
+    "coefficients until C10-Q1 is answered, and `reviewed` would cover numerics only, not rights."
+)
 #: Spec §12's limitations, with the cross-check's provenance (§12 `commands`).
 SPEC_LIMITATIONS = (
+    RIGHTS,
     LIBRARY_ONLY,
     "The R6-95(2018) Tables 6-8 are not compared (C10-Q1, spec §10 Q-1): the coefficients and the "
     "admitted values equal two independent transcriptions (CoolProp 8.0.0, iapws 1.5.5) and a "
@@ -248,10 +257,12 @@ def found_limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
         "interfaces-frozen.md gain IAPWS95-ref-v1) is the design lane's amendment, not made here.",
         "scripts/gate.sh was not run by this generator (it runs once before merge into main); "
         "S05.gate is unsupported here.",
-        "Review: the design lane's reviewer pass and the human numerical and process-model "
-        "review are pending; this manifest claims neither. WO-S05-1's and WO-S05-2's open "
-        "QUESTION lines in docs/C10_DECISIONS.md (Q-floor, the p_sigma side, Z at a root, A17's "
-        "step under Q-6, A29's m5) go to that review.",
+        "Review: the design lane's reviewer pass (docs/reviews/S05-review.md, R-595…R-599) ruled "
+        "WO-S05-1's and WO-S05-2's questions, and WO-S05-3 applied the rulings; the reviewer's "
+        "check of the WO-S05-3 diff and the human numerical and process-model review are pending, "
+        "and this manifest claims neither. WO-S05-3's open QUESTION in docs/C10_DECISIONS.md "
+        "(R-595 clause 2: the floor clause tested before the bracket safeguard) goes to that "
+        "check.",
     ]
     for entry in entries:
         if entry["result"] == "pass" or entry["id"] == "S05.gate":
