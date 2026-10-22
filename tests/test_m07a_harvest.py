@@ -36,8 +36,9 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: `465240a…`, `tested`, 12 and 1 each), all kept as every package keeps its superseded manifests,
 #: moved it at S01's merge; S02's manifests (`66377ba…`, `implemented`, 14 and 2; `1810dde…`,
 #: `tested`, 13 and 1) move it on `wp/S02`; the post-0.2.0 harvest (C4, R-485's next harvest)
-#: adds M07a's three manifests (24 and 18) and M07's at C′ (4 and 0).
-HARVEST_SIZE = (40, 468, 62)
+#: adds M07a's three manifests (24 and 18) and M07's at C′ (4 and 0); S04's manifest (`5c29fbf…`,
+#: `tested`, 4 and 1) moves it on `wp/S04` (D1 R-565 (4)).
+HARVEST_SIZE = (41, 472, 63)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.

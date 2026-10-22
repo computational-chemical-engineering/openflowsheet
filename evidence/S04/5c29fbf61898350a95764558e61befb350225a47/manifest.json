@@ -1,0 +1,385 @@
+{
+  "work_package": "S04",
+  "commit": "5c29fbf61898350a95764558e61befb350225a47",
+  "requirements": [
+    "D08"
+  ],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S04 (L01) registered states of benchmarks/l01/reference_values.yaml (V1L, V2L, P1; the A17–A20 guard states incl. A20_P_low; the M-1 states; the S-2 pair) and the nine records of benchmarks/l01/components.yaml; case_hash is reference_values.yaml's SHA-256",
+    "case_hash": "5cfa0e57d85334563ff8ac386e93f893ec2f77e473b8a4ed84bd1b8d2cbb0152",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "OFS_L01_SOURCES_PYTHON=/home/user/venv-l01-sources/bin/python PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S04/5c29fbf61898350a95764558e61befb350225a47/artifacts/s04-tests.junit.xml tests/test_adr_0008_transient_readiness.py tests/test_l01_provider.py tests/test_l01_records.py tests/test_l01_review_adversarial.py tests/test_m01_flash.py tests/test_m01_idaes_conformance.py tests/test_m01_provider.py tests/test_m01_reactor_boundary.py tests/test_m01_reactor_probe_record.py tests/test_m01_records.py tests/test_m01_reference_values.py tests/test_t08_w2_inventory.py tests/test_t08_w2_support_envelope.py tests/test_t08_w4_package_data.py tests/test_m06_w27_coverage.py::test_committed_coverage_json_is_g14_and_this_builds_classification",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "959fa8ae269a3dc568b83096f1b9a0ed04c9deb00b7beca2aadbafbfc2434629"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/l01_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "d9de90318358e1d3eb832e35bfc73b761dc0b3d49a8653f5b72daaacef9cfea9"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/user/venv-l01-sources/bin/python benchmarks/l01/components_crosscheck.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "89a4102cc4b11c9a107f087ac687efbb27a5452820e1d29640cffcf32d5e09e8"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python scripts/t08_support_matrix.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "775d5fe5fd00080ce832de2da28ffc956116f6ba28b7b4b162f394e30ac957cb"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/ruff check src tests benchmarks/l01 docs/derivations/scripts/l01_reference.py scripts/s04_evidence_manifest.py scripts/t08_support_matrix.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/ruff format --check src tests benchmarks/l01 docs/derivations/scripts/l01_reference.py scripts/s04_evidence_manifest.py scripts/t08_support_matrix.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "3e0e2e4b468f1a4577c8fc56c1eafe0cbd9b87918aab4744b1aa7f4c6591bf64"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/mypy",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "67c1fa05cea8c3ad5897b8463b839116cc5fe4f5b0848938fb6859daf2ea9d78"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S04.WOR-1",
+      "description": "M-1 / R-540 (L01 spec §12.3): `pr-lib-v1` refuses vapour_unstable at the review's three states, naming the component with the most negative tm of the independent float transcription (tests/test_l01_review_adversarial.py); the five registered admitted mixtures stay ok. The provider's tm and the transcription's are recorded per state.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 16,
+        "outcomes": {
+          "passed": 16
+        },
+        "selectors": [
+          "tests/test_l01_review_adversarial.py::test_m1_the_states_are_unstable_in_pr_itself[H2O_0.6_N2_0.4_330K_1bar]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_states_are_unstable_in_pr_itself[syngas_313K_30bar]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_states_are_unstable_in_pr_itself[C3H8_0.5_N2_0.5_250K_1MPa]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_registered_admitted_states_are_stable_to_every_pure_trial_phase[V1L]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_registered_admitted_states_are_stable_to_every_pure_trial_phase[V2L]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_registered_admitted_states_are_stable_to_every_pure_trial_phase[A19_400K]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_registered_admitted_states_are_stable_to_every_pure_trial_phase[C1V]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_registered_admitted_states_are_stable_to_every_pure_trial_phase[C1W]",
+          "tests/test_l01_review_adversarial.py::test_m1_an_unstable_vapour_is_refused_vapour_unstable[H2O_0.6_N2_0.4_330K_1bar]",
+          "tests/test_l01_review_adversarial.py::test_m1_an_unstable_vapour_is_refused_vapour_unstable[syngas_313K_30bar]",
+          "tests/test_l01_review_adversarial.py::test_m1_an_unstable_vapour_is_refused_vapour_unstable[C3H8_0.5_N2_0.5_250K_1MPa]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_registered_admitted_states_stay_admitted[V1L]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_registered_admitted_states_stay_admitted[V2L]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_registered_admitted_states_stay_admitted[A19_400K]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_registered_admitted_states_stay_admitted[C1V]",
+          "tests/test_l01_review_adversarial.py::test_m1_the_registered_admitted_states_stay_admitted[C1W]"
+        ],
+        "not_passed": [],
+        "measured": {
+          "H2O_0.6_N2_0.4_330K_1bar": {
+            "provider_message": "vapour_unstable: pure-H2O trial phase tm = -1.3450117894404052 < 0 at 330.0 K, 100000.0 Pa",
+            "provider_component": "H2O",
+            "provider_tm": -1.3450117894404052,
+            "transcription_component": "H2O",
+            "transcription_tm": -1.3450117894404017
+          },
+          "syngas_313K_30bar": {
+            "provider_message": "vapour_unstable: pure-H2O trial phase tm = -4.61615718469919 < 0 at 313.15 K, 3000000.0 Pa",
+            "provider_component": "H2O",
+            "provider_tm": -4.61615718469919,
+            "transcription_component": "H2O",
+            "transcription_tm": -4.6161571846991905
+          },
+          "C3H8_0.5_N2_0.5_250K_1MPa": {
+            "provider_message": "vapour_unstable: pure-C3H8 trial phase tm = -0.6241766596291018 < 0 at 250.0 K, 1000000.0 Pa",
+            "provider_component": "C3H8",
+            "provider_tm": -0.6241766596291018,
+            "transcription_component": "C3H8",
+            "transcription_tm": -0.6241766596290994
+          }
+        }
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S04.WOR-2",
+      "description": "l01_reference.py --check: 46 claims hold and reference_values.yaml matches; tests/test_l01_provider.py's generator node (CLAIM_COUNT 46) passed",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/l01_reference.py --check",
+        "exit_code": 0,
+        "verdict_line_found": true,
+        "nodes": {
+          "judged_by": "tests",
+          "nodes": 1,
+          "outcomes": {
+            "passed": 1
+          },
+          "selectors": [
+            "tests/test_l01_provider.py::test_the_generator_rederives_every_claim_and_the_committed_bytes"
+          ],
+          "not_passed": []
+        }
+      },
+      "expected": "exit code 0, the verdict line, and the node passed"
+    },
+    {
+      "id": "S04.A12",
+      "description": "R-528 (L01 spec §12.1): |c_p − c_p,CoolProp|/c_p ≤ 2 % at 300/600/900 K for all nine records; components_crosscheck.py --check matches under the pinned sources; every A12 node passed with OFS_L01_SOURCES_PYTHON set (the retrieval re-run executed, not skipped)",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/user/venv-l01-sources/bin/python benchmarks/l01/components_crosscheck.py --check",
+        "exit_code": 0,
+        "nodes": {
+          "judged_by": "tests",
+          "nodes": 29,
+          "outcomes": {
+            "passed": 29
+          },
+          "selectors": [
+            "tests/test_l01_records.py::test_a12_the_cp_range_is_200_to_1000_k_exactly[H2]",
+            "tests/test_l01_records.py::test_a12_the_cp_range_is_200_to_1000_k_exactly[N2]",
+            "tests/test_l01_records.py::test_a12_the_cp_range_is_200_to_1000_k_exactly[Ar]",
+            "tests/test_l01_records.py::test_a12_the_cp_range_is_200_to_1000_k_exactly[CH4]",
+            "tests/test_l01_records.py::test_a12_the_cp_range_is_200_to_1000_k_exactly[H2O]",
+            "tests/test_l01_records.py::test_a12_the_cp_range_is_200_to_1000_k_exactly[CO2]",
+            "tests/test_l01_records.py::test_a12_the_cp_range_is_200_to_1000_k_exactly[O2]",
+            "tests/test_l01_records.py::test_a12_the_cp_range_is_200_to_1000_k_exactly[C2H6]",
+            "tests/test_l01_records.py::test_a12_the_cp_range_is_200_to_1000_k_exactly[C3H8]",
+            "tests/test_l01_records.py::test_a12_the_crosscheck_record_is_of_these_bytes_and_these_pins",
+            "tests/test_l01_records.py::test_a12_every_value_is_the_retrieval_sources_value[H2]",
+            "tests/test_l01_records.py::test_a12_every_value_is_the_retrieval_sources_value[N2]",
+            "tests/test_l01_records.py::test_a12_every_value_is_the_retrieval_sources_value[Ar]",
+            "tests/test_l01_records.py::test_a12_every_value_is_the_retrieval_sources_value[CH4]",
+            "tests/test_l01_records.py::test_a12_every_value_is_the_retrieval_sources_value[H2O]",
+            "tests/test_l01_records.py::test_a12_every_value_is_the_retrieval_sources_value[CO2]",
+            "tests/test_l01_records.py::test_a12_every_value_is_the_retrieval_sources_value[O2]",
+            "tests/test_l01_records.py::test_a12_every_value_is_the_retrieval_sources_value[C2H6]",
+            "tests/test_l01_records.py::test_a12_every_value_is_the_retrieval_sources_value[C3H8]",
+            "tests/test_l01_records.py::test_a12_ideal_gas_cp_within_two_percent_of_coolprop[H2]",
+            "tests/test_l01_records.py::test_a12_ideal_gas_cp_within_two_percent_of_coolprop[N2]",
+            "tests/test_l01_records.py::test_a12_ideal_gas_cp_within_two_percent_of_coolprop[Ar]",
+            "tests/test_l01_records.py::test_a12_ideal_gas_cp_within_two_percent_of_coolprop[CH4]",
+            "tests/test_l01_records.py::test_a12_ideal_gas_cp_within_two_percent_of_coolprop[H2O]",
+            "tests/test_l01_records.py::test_a12_ideal_gas_cp_within_two_percent_of_coolprop[CO2]",
+            "tests/test_l01_records.py::test_a12_ideal_gas_cp_within_two_percent_of_coolprop[O2]",
+            "tests/test_l01_records.py::test_a12_ideal_gas_cp_within_two_percent_of_coolprop[C2H6]",
+            "tests/test_l01_records.py::test_a12_ideal_gas_cp_within_two_percent_of_coolprop[C3H8]",
+            "tests/test_l01_records.py::test_a12_the_retrieval_script_reproduces_its_record_or_says_why_not"
+          ],
+          "not_passed": []
+        }
+      },
+      "expected": "exit code 0 and every A12 node passed"
+    },
+    {
+      "id": "S04.A01",
+      "description": "L01.A01 with R-541 (L01 spec §12.5): nine records in the registered order; benchmarks/l01/components.yaml not packaged before WO-L01-3",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_l01_records.py::test_a01_nine_records_in_the_registered_order",
+          "tests/test_l01_records.py::test_a01_the_records_are_not_packaged_before_wo_l01_3"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S04.A22",
+      "description": "L01.A22 as amended (L01 spec §13.2, R-566): the 18 C1/W27 files no registered procedure rewrites hash as pinned; L01 is absent from W27's committed coverage (w27_absence_problems, with its two negative controls) and from the live SELECTABLE_BASES; pr_c1's identity unchanged; the W27 pin test passes unmodified",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_l01_records.py::test_a22_the_c1_files_are_byte_identical_to_the_l01_base",
+          "tests/test_l01_records.py::test_a22_l01_is_absent_from_w27s_coverage",
+          "tests/test_l01_records.py::test_a22_the_live_build_does_not_select_pr_lib_v1",
+          "tests/test_l01_records.py::test_a22_pr_c1_describes_the_same_identity",
+          "tests/test_l01_records.py::test_a22_the_library_module_does_not_reach_into_pr_c1",
+          "tests/test_m06_w27_coverage.py::test_committed_coverage_json_is_g14_and_this_builds_classification"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "T08.A32",
+      "description": "R-529 (L01 spec §12.4): every component record is synthetic or a vetted real record of VETTED_RECORD_FILES (M01's five, L01's nine) with identifiers, rights statements, provenance and its file's retrieval equality; no third-party data in the sdist or wheel; the envelope's statement",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel",
+          "tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_rights",
+          "tests/test_t08_w2_inventory.py::test_a32_the_envelope_states_reference_data_and_openidaes_are_not_distributed"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S04.envelope",
+      "description": "T08.A20–A23 at this commit with the providers axis as amended (T08 release spec §5.7 Amendment S04, R-568): tests/test_t08_w2_support_envelope.py passes and t08_support_matrix.py --check reports 0 problems",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python scripts/t08_support_matrix.py --check",
+        "exit_code": 0,
+        "zero_problems": true,
+        "nodes": {
+          "judged_by": "tests",
+          "nodes": 32,
+          "outcomes": {
+            "passed": 32
+          },
+          "selectors": [
+            "tests/test_t08_w2_support_envelope.py::test_the_envelope_has_spec_5_1s_form",
+            "tests/test_t08_w2_support_envelope.py::test_a20_the_axes_equal_the_code",
+            "tests/test_t08_w2_support_envelope.py::test_a20_a_changed_axis_is_caught[unit_models-members-‹lambda›]",
+            "tests/test_t08_w2_support_envelope.py::test_a20_a_changed_axis_is_caught[unit_models-synthetic_members-‹lambda›0]",
+            "tests/test_t08_w2_support_envelope.py::test_a20_a_changed_axis_is_caught[unit_models-synthetic_members-‹lambda›1]",
+            "tests/test_t08_w2_support_envelope.py::test_a20_a_changed_axis_is_caught[solve_policies-members-‹lambda›]",
+            "tests/test_t08_w2_support_envelope.py::test_a20_a_changed_axis_is_caught[components-members-‹lambda›]",
+            "tests/test_t08_w2_support_envelope.py::test_a20_a_changed_axis_is_caught[specifications-unit_spellings-‹lambda›]",
+            "tests/test_t08_w2_support_envelope.py::test_a20_a_changed_axis_is_caught[interfaces-operations-‹lambda›]",
+            "tests/test_t08_w2_support_envelope.py::test_a20_a_changed_axis_is_caught[property_model-providers-‹lambda›]",
+            "tests/test_t08_w2_support_envelope.py::test_a20_a_changed_axis_is_caught[platforms-lock_sha256-‹lambda›]",
+            "tests/test_t08_w2_support_envelope.py::test_a22_every_row_names_a_typed_outcome_and_a_test_node",
+            "tests/test_t08_w2_support_envelope.py::test_a22_every_evidence_reference_resolves",
+            "tests/test_t08_w2_support_envelope.py::test_a22_the_unsupported_rows_test_nodes_pass",
+            "tests/test_t08_w2_support_envelope.py::test_an_unbound_provider_is_rendered_apart_from_the_axes_with_its_limitation",
+            "tests/test_t08_w2_support_envelope.py::test_a23_the_matrix_regenerates_byte_for_byte",
+            "tests/test_t08_w2_support_envelope.py::test_a21_every_item_is_classified_once_and_resolves",
+            "tests/test_t08_w2_support_envelope.py::test_a21_a_bad_harvest_is_caught[unmapped]",
+            "tests/test_t08_w2_support_envelope.py::test_a21_a_bad_harvest_is_caught[twice]",
+            "tests/test_t08_w2_support_envelope.py::test_a21_a_bad_harvest_is_caught[dangling]",
+            "tests/test_t08_w2_support_envelope.py::test_a21_a_bad_harvest_is_caught[hash]",
+            "tests/test_t08_w2_support_envelope.py::test_a21_a_bad_harvest_is_caught[class]",
+            "tests/test_t08_w2_support_envelope.py::test_a21_a_bad_harvest_is_caught[P-pointer]",
+            "tests/test_t08_w2_support_envelope.py::test_a21_a_bad_harvest_is_caught[E-dangling]",
+            "tests/test_t08_w2_support_envelope.py::test_a21_a_bad_harvest_is_caught[E-empty]",
+            "tests/test_t08_w2_support_envelope.py::test_a21_a_bad_harvest_is_caught[B-dangling]",
+            "tests/test_t08_w2_support_envelope.py::test_a21_a_bad_harvest_is_caught[S-not-pass]",
+            "tests/test_t08_w2_support_envelope.py::test_a21_a_bad_harvest_is_caught[S-missing-doc]",
+            "tests/test_t08_w2_support_envelope.py::test_m04_and_m05_harvest_rows_map_to_l49_not_the_alphas_l43",
+            "tests/test_t08_w2_support_envelope.py::test_d1_the_library_only_models_are_unbound_with_their_u04_items",
+            "tests/test_t08_w2_support_envelope.py::test_d1_binding_a_library_only_model_trips_the_wire",
+            "tests/test_t08_w2_support_envelope.py::test_d1_a_u04_item_that_loses_its_model_id_trips_the_wire"
+          ],
+          "not_passed": []
+        }
+      },
+      "expected": "exit code 0, 0 problem(s), and every node passed"
+    },
+    {
+      "id": "S04.WOR-targeted",
+      "description": "The targeted battery (tests/test_l01_*.py, test_t08_w2_inventory.py, test_t08_w4_package_data.py, test_m01_*.py, test_adr_0008_transient_readiness.py, test_t08_w2_support_envelope.py and the W27 pin node) with OFS_L01_SOURCES_PYTHON set: every node passed",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 544,
+        "outcomes": {
+          "passed": 544
+        },
+        "not_passed": [],
+        "exit_code": 0
+      },
+      "expected": "every node passed, exit code 0"
+    },
+    {
+      "id": "S04.ruff",
+      "description": "ruff check is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/ruff check src tests benchmarks/l01 docs/derivations/scripts/l01_reference.py scripts/s04_evidence_manifest.py scripts/t08_support_matrix.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S04.format",
+      "description": "ruff format --check is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/ruff format --check src tests benchmarks/l01 docs/derivations/scripts/l01_reference.py scripts/s04_evidence_manifest.py scripts/t08_support_matrix.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S04.mypy",
+      "description": "mypy (the project's configuration) is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/mypy",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S04.gate",
+      "description": "scripts/gate.sh passes before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; the full gate runs once before merge (CLAUDE.md)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S04/5c29fbf61898350a95764558e61befb350225a47/artifacts/s04-tests.junit.xml",
+      "sha256": "d4c4a533d50db55a8fc4dbefc6e19237df0b68c171396b744bf0e5e05de20431",
+      "description": "JUnit report of the S04 test battery (ignored; kept by hash)"
+    },
+    {
+      "path": "benchmarks/l01/reference_values.yaml",
+      "sha256": "5cfa0e57d85334563ff8ac386e93f893ec2f77e473b8a4ed84bd1b8d2cbb0152",
+      "description": "50-digit reference, 46 claims"
+    },
+    {
+      "path": "benchmarks/l01/components-crosscheck.json",
+      "sha256": "681678c249a6a301804acdd539d9927552ae468c3dad7ad85600ba6d7d93fc67",
+      "description": "retrieval and cross-check record, A12 at 2 % over nine"
+    },
+    {
+      "path": "benchmarks/l01/components.yaml",
+      "sha256": "2e01ade0bc00799563fc60032099dee865f951300fca1c7822b4bb1d23f4183a",
+      "description": "the nine `pr-lib-v1` records"
+    },
+    {
+      "path": "docs/derivations/L01-spec.md",
+      "sha256": "f32119ad3544fcdd55a531cbdb1c35dc5831ea38d68ce396986b7605385d9422",
+      "description": "the L01 specification (S04's), through Amendment 2 (§13)"
+    }
+  ],
+  "limitations": [
+    "Scope: WO-L01-R (docs/reviews/L01-review.md M-1, M-2, M-3, S-1, S-2, N-6) and the S04 ruling's C1 and C2 (D1 §7, R-566, R-568); numerical verification of `pr-lib-v1` against independent 50-digit and float transcriptions, not empirical validation. The review's not-examined items (l01_projection.py, the re-take WO-L01-3, the dagger literature values Q-5) are untouched.",
+    "`pr-lib-v1` is library-only until WO-L01-3 (L01 spec §13.4, R-569): it is not in revision_binding.SELECTABLE_BASES, so a revision cannot select it; a record_source of benchmarks/l01/components.yaml selects SYN-001's basis and the library's components are refused components_unsupported.",
+    "vapour_unstable certifies a VAPOR answer of `pr-lib-v1` stable against pure-component trial phases only; a vapour unstable only towards a mixed liquid is not detected (L01 spec §12.3, §9 as corrected).",
+    "Rights: T08.A32 checks that each `pr-lib-v1` record's rights statements exist; their correctness and whether the records ship are Frank's (L01-Q4). The records are not packaged (R-541)."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

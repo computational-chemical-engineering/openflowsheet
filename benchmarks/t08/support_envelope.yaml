@@ -4530,3 +4530,38 @@ harvest:
   to:
   - check:M07a.A64
   note: M07a.A64 pending (ledger did not cite this manifest, WO-11); passes at C_α² = cc73219
+- manifest: evidence/S04/5c29fbf61898350a95764558e61befb350225a47/manifest.json
+  item: limitations[0]
+  sha256: 51246ac27807c7d3cf7ecb8ff7db45855e61a0d8df6ccd0fa7ecdf4995acae6a
+  class: E
+  to:
+  - U02
+  note: S04's `pr-lib-v1` is library-only (not in SELECTABLE_BASES, U02); numerical verification against 50-digit and float transcriptions, not empirical validation (R-569)
+- manifest: evidence/S04/5c29fbf61898350a95764558e61befb350225a47/manifest.json
+  item: limitations[1]
+  sha256: 6a99d526ffbdf67ec71a86526b385eb0b50cf245d4fc37f6012dd6bf5623a8c5
+  class: E
+  to:
+  - U02
+  note: S04's `pr-lib-v1` is library-only until WO-L01-3; a revision cannot select it, its components are refused components_unsupported through SYN-001's basis (U02, R-569)
+- manifest: evidence/S04/5c29fbf61898350a95764558e61befb350225a47/manifest.json
+  item: limitations[2]
+  sha256: 5d2c4fd38fbf0c2358c03e9d2d0dbd1d64eb09700fa6bf44252e13b55d6d4654
+  class: E
+  to:
+  - U02
+  note: S04's `pr-lib-v1` is library-only (U02); its vapour_unstable test covers pure-component trial phases only (R-540, R-569)
+- manifest: evidence/S04/5c29fbf61898350a95764558e61befb350225a47/manifest.json
+  item: limitations[3]
+  sha256: db091ac4c3d3d8afe18917c3817b78bb417db469a74a8d0f58d67ef30215fc39
+  class: E
+  to:
+  - U02
+  note: S04's `pr-lib-v1` is library-only (U02); its records' rights are Frank's (L01-Q4) and the records are not packaged (R-541, R-569)
+- manifest: evidence/S04/5c29fbf61898350a95764558e61befb350225a47/manifest.json
+  item: checks[11]
+  check_id: S04.gate
+  sha256: 8b90058e38bcbe8d18e1e9065e728bab7d3d9fa09755979e8d6d01589ed29f77
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
