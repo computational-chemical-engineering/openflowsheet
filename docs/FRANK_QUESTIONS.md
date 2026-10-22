@@ -49,6 +49,7 @@ Questions only Frank can answer (scope, value judgments). Each carries the defau
 - **L01-Q4. May the new `pr-lib-v1` component records ship in the wheel?** T08.A32
   (`tests/test_t08_w2_inventory.py:459`) allows only synthetic records or the vetted M01 records with a rights
   statement in the distribution. L01's nine records (values from chemicals/ATcT, Cantera `nasa_gas.yaml`, JANAF,
-  CoolProp cross-checks) have no vetted rights row yet. **Default:** they stay in the repository only
-  (`benchmarks/l01/`), not in the package data, until a rights review adds them to the inventory; T08.A32 is not
-  amended. Shipping them is a distribution decision for you.
+  CoolProp cross-checks) have no vetted rights row yet. A32 checks every non-synthetic record in the repository, not
+  only packaged ones, so L01 also needs a design-lane amendment of T08.A32; until then `wp/L01` fails A32 and is not
+  merged. **Default:** nothing from L01 is released until a rights review vets the nine records and the design lane
+  amends A32; shipping them is a distribution decision for you.
