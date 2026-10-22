@@ -163,6 +163,13 @@
       "justification": "S04 (L01 WO-2, ADR 0043): the same three nullary functions of immutable inputs as pr_c1.py, each computed once per process: load_records (the pr-lib-v1 records' bytes, parsed and checked), parameters (the Peng-Robinson parameters, a pure function of those records) and _implementation_sha256 (the module source's SHA-256, the W0.5 pattern)."
     },
     {
+      "file": "thermo/iapws95.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 3,
+      "justification": "S05 (WO-S05-1, ADR 0045): three nullary functions of immutable inputs, each computed once per process: load_coefficients (the IAPWS-95 coefficient file's bytes, hash-checked and parsed), _tsat_bounds (p_sigma at 273.16 K and 647.0 K, a pure function of those coefficients) and _implementation_sha256 (the module source's SHA-256, the W0.5 pattern)."
+    },
+    {
       "file": "models/c1/reactor_standin.py",
       "line": "@cache",
       "patterns": ["cache"],
