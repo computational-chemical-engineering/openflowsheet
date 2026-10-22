@@ -32,12 +32,12 @@ n-derivatives are the derivatives in the mole fractions projected onto the simpl
 `pr-lib-v1` n-vector: H2, N2, Ar, CH4 (copied verbatim from C1's file, one datum per substance),
 then H2O, CO2, O2, C2H6, C3H8, each value with its primary reference (spec §4.1, ADR 0043 D6). The
 format, the units and the reference convention are C1's (`benchmarks/m01/components.yaml`,
-unchanged). The package carries the file's bytes as package data (`openflowsheet.resources`), so a
-checkout and an installed wheel read the same records. `load_records` refuses a file whose order,
-units or reference convention are off the registration, with a `RecordError` naming the defect, and
-hands over the parsed floats unchanged (bitwise). `data_sha256` is the SHA-256 of the file's bytes;
-`implementation_sha256` that of this module's source, which holds the loader as well as the closed
-forms.
+unchanged). The file is not package data until WO-L01-3, after the rights review L01-Q4 (spec
+§12.5, R-541): `load_records` reads a source checkout's single copy. It refuses a file whose
+order, units or reference convention are off the registration, with a `RecordError` naming the
+defect, and hands over the parsed floats unchanged (bitwise). `data_sha256` is the SHA-256 of the
+file's bytes; `implementation_sha256` that of this module's source, which holds the loader as well
+as the closed forms.
 
 **Every refusal is typed** (spec §4.2): `status` `unsupported` or `out_of_domain`, and a `message`
 that begins with the reason code and a colon. No refusal carries values.
@@ -70,7 +70,8 @@ from openflowsheet.thermo import (
     StreamState,
 )
 
-#: The records' repository path, one of `openflowsheet.resources.PACKAGED` (spec §4.1).
+#: The records' repository path (spec §4.1); not in `openflowsheet.resources.PACKAGED` until
+#: WO-L01-3 (spec §12.5, R-541).
 RECORDS_PATH: Final = "benchmarks/l01/components.yaml"
 
 #: The identity order of every `pr-lib-v1` n-vector (spec §4.1, L01.A01).

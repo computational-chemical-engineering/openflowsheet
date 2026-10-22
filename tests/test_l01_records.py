@@ -91,13 +91,18 @@ def test_a01_nine_records_in_the_registered_order() -> None:
     assert DOCUMENT["record_schema"] == "schemas/component-record.schema.json"
 
 
-def test_a01_the_package_mirror_is_the_single_repository_copy() -> None:
+def test_a01_the_records_are_not_packaged_before_wo_l01_3() -> None:
+    # Spec §12.5 (R-541): until WO-L01-3, after Frank's L01-Q4, the file is not in `PACKAGED`, has
+    # no `_data` copy, and `load_records` reads the source checkout's single copy.
     data = RECORDS.read_bytes()
     assert RECORDS_PATH == "benchmarks/l01/components.yaml"
-    assert RECORDS_PATH in PACKAGED
-    link = REPO_ROOT / "src" / "openflowsheet" / "_data" / RECORDS_PATH
-    assert link.is_symlink() and link.resolve() == RECORDS.resolve()
-    assert packaged(RECORDS_PATH).read_bytes() == data
+    assert RECORDS_PATH not in PACKAGED
+    copy = REPO_ROOT / "src" / "openflowsheet" / "_data" / RECORDS_PATH
+    assert not copy.exists() and not copy.is_symlink()
+    with pytest.raises(KeyError):
+        packaged(RECORDS_PATH)
+    checkout = pr_lib._checkout_records()
+    assert checkout is not None and checkout.resolve() == RECORDS.resolve()
     assert load_records().sha256 == hashlib.sha256(data).hexdigest()
 
 
