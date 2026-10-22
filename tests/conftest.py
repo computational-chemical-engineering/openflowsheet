@@ -20,6 +20,8 @@ ARCHIVED_HISTORY = "pre-0.1.0 development history is archived in openflowsheet-d
 PUBLIC_ROOT = "5a350199f1334e52cfd789109a0e1dc944ef328c"
 #: 0.2.0a1 as released: the commit tagged `v0.2.0a1` (2026-10-17; release run 39045791146), R-456.
 ALPHA_TAG_COMMIT = "423ae9c54d903f9dcf0ea90fe9639222c1acbda4"
+#: 0.2.0 as released: the commit tagged `v0.2.0` (2026-10-20), R-564.
+RELEASE_0_2_0_COMMIT = "5c82b4cc40dd4fefd3dbce45352910006e5dee13"
 
 
 def _git_ok(*arguments: str) -> bool:

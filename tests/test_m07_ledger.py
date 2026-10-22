@@ -8,83 +8,38 @@ so re-judged rows are read as the gate reads them); each claimed gate's `evidenc
 manifest, as the alpha's do; every cited manifest exists. All seventeen gates are claimed, so
 there is no "untouched" test.
 
-Read on the working tree at `C`: the tests judge wherever the 0.2.0 gate could say YES, that is
-when the working tree's version is one `v0.2-gate-v1` covers (0.2.0, 0.2.0bN, 0.2.0rcN) and the
-verdict document exists. At a covered version without the document (C included: WO-7 writes it
-after the RC steps) each test skips and names the document (R-476); the gate itself refuses a
-candidate without it. The tests are judged at the candidate, after the verdicts. Between releases
-`main` carries a `.devN` version (R-460), so each test skips and says so (build log J43). After
-0.2.0 is released the ledger is read from its tag commit, as R-456 does for the alpha. The working
-tree's own ledger is covered for all 27 gates by `tests/test_requirements_ledger.py`.
+Since the release these are checks of a past release (M07 spec §26, R-564; O1's post-release
+clause): the ledger is read as 0.2.0 released it, from the tag commit `RELEASE_0_2_0_COMMIT`,
+while the verdict document and the cited manifests stay read from the working tree, so a rewrite
+of the released verdicts or a deleted release record on `main` is caught against the released
+ledger (R-456). The working tree's own ledger is covered for all 27 gates by
+`tests/test_requirements_ledger.py`.
 """
 
 from __future__ import annotations
 
 import re
+import subprocess
 import sys
-from pathlib import Path
 from typing import Any
 
 import pytest
 import yaml
-from conftest import REPO_ROOT
-
-import openflowsheet
+from conftest import RELEASE_0_2_0_COMMIT, REPO_ROOT
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
+import v0_1_gate  # noqa: E402
 import v0_2_gate  # noqa: E402
 
-LEDGER = REPO_ROOT / "docs" / "requirements.yaml"
+LEDGER = "docs/requirements.yaml"
 (GATE_SET,) = [entry for entry in v0_2_gate.GATE_SETS if entry.name == "v0.2-gate-v1"]
 VERDICTS = REPO_ROOT / GATE_SET.verdict_document
 RC = re.compile(r"^\*\*Release candidate:\*\* `([0-9a-f]{40})`", re.MULTILINE)
 
 
-def at_c(version: str) -> str:
-    """The verdict document at `C`; a skip, naming the version, where the tree is not a 0.2.0
-    candidate, and naming the document where it does not exist yet (M07 spec §23.2, R-476)."""
-    if not GATE_SET.covers.fullmatch(version):
-        pytest.skip(
-            f"the working tree's version {version} is not one {GATE_SET.name} covers: the 0.2.0 "
-            "ledger is judged at the candidate (O1; M07 spec §23.2)"
-        )
-    if not VERDICTS.is_file():
-        pytest.skip(
-            f"{GATE_SET.verdict_document} does not exist yet at this {version} tree: the 0.2.0 "
-            "ledger is judged at the candidate, after the verdicts (M07 spec §23.2)"
-        )
-    return VERDICTS.read_text(encoding="utf-8")
-
-
 @pytest.fixture
 def verdicts() -> str:
-    return at_c(openflowsheet.__version__)
-
-
-def test_the_ledger_is_judged_wherever_the_gate_could_say_yes(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """The skip predicate is "not covered, or no verdict document", in that order (R-476)."""
-    covered = ("0.2.0", "0.2.0b1", "0.2.0rc2")
-    uncovered = ("0.2.0a2.dev0", "0.2.0a1", "0.2.1.dev0")
-    module = sys.modules[__name__]
-    present = tmp_path / "V02-verdicts.md"
-    present.write_text("document\n", encoding="utf-8")
-    monkeypatch.setattr(module, "VERDICTS", present)
-    for version in covered:  # (a)
-        assert at_c(version) == "document\n"
-    for version in uncovered:  # (b)
-        with pytest.raises(pytest.skip.Exception, match="is not one v0.2-gate-v1 covers"):
-            at_c(version)
-    monkeypatch.setattr(module, "VERDICTS", tmp_path / "absent.md")
-    for version in covered:  # (c)
-        with pytest.raises(
-            pytest.skip.Exception, match=r"V02-verdicts\.md does not exist yet at this 0\.2\.0"
-        ):
-            at_c(version)
-    for version in uncovered:  # (d)
-        with pytest.raises(pytest.skip.Exception, match="is not one v0.2-gate-v1 covers"):
-            at_c(version)
+    return VERDICTS.read_text(encoding="utf-8")
 
 
 def rc(text: str) -> str:
@@ -92,8 +47,15 @@ def rc(text: str) -> str:
     return found
 
 
+def git(*arguments: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(["git", *arguments], cwd=REPO_ROOT, capture_output=True, text=True)
+
+
 def ledger() -> dict[str, dict[str, Any]]:
-    entries = yaml.safe_load(LEDGER.read_text(encoding="utf-8"))["gates"]
+    """The ledger as 0.2.0 released it (R-564)."""
+    shown = git("show", f"{RELEASE_0_2_0_COMMIT}:{LEDGER}")
+    assert shown.returncode == 0, shown.stderr
+    entries = yaml.safe_load(shown.stdout)["gates"]
     found = {entry["id"]: entry for entry in entries}
     assert len(found) == len(entries), "a gate id is listed twice"
     return found
@@ -135,3 +97,14 @@ def test_every_cited_manifest_exists(verdicts: str) -> None:
         if not (REPO_ROOT / path).is_file()
     ]
     assert missing == []
+
+
+def test_the_tag_commit_is_0_2_0() -> None:
+    """`RELEASE_0_2_0_COMMIT` is in `HEAD`'s history and declares 0.2.0; where the tag `v0.2.0`
+    is fetched, it resolves to that commit (R-564)."""
+    assert git("merge-base", "--is-ancestor", RELEASE_0_2_0_COMMIT, "HEAD").returncode == 0
+    assert v0_1_gate.version_at(RELEASE_0_2_0_COMMIT) == "0.2.0"
+    tag = git("rev-parse", "--verify", "--quiet", "refs/tags/v0.2.0^{commit}")
+    if tag.returncode != 0:
+        pytest.skip("the tag v0.2.0 is not fetched here; the commit and its version are checked")
+    assert tag.stdout.strip() == RELEASE_0_2_0_COMMIT
