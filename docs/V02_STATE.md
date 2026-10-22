@@ -115,8 +115,9 @@ recovery / stage-temperature specifications). S04's measured development-half re
 version 2 (L01 spec WO-L01-3).
 
 **Next actions (in order):**
-1. Workstation-only: the G10 and REAL re-takes at `0.3.0.dev0` (`docs/C7_DECISIONS.md`, nlp/reactor environments);
-   ADR 0044's acceptance scan (S02 review, R-550); C2's F-1 facts (`facts` stage, archive).
+1. WS1 done (`docs/C7_DECISIONS.md`): G10 re-take and REAL replay at `0.3.0.dev0` pass; ADR 0044 scan and Frank's
+   bit-identity condition recorded (flip to Accepted needs only (3): the merge gate and CI written into C2); C2's
+   `case_facts-v2.json` blocked (parked on `wp/WS1-f1`): trips SPLIT-A09 and W27's P2 pin; needs a registration amendment.
 2. Frank's answers in `docs/FRANK_QUESTIONS.md`, in particular L01-Q4 (rights for the nine `pr-lib-v1` records before
    any release ships them), L01-Q1 (who amends W27 so S04's development-half coverage re-take can be measured; only
    a projection exists: CANDIDATE 0→0, COMPONENT 9→6, ROUTE 0→3), C2-Q1/Q2, the C2 split's Q-5, Q-S02-1…3.
