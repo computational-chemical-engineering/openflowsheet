@@ -503,6 +503,8 @@ closed_form:
       status_or_reason: vapour_root_metastable
       real_root_count: 3
       largest_root_v_over_b_mix: 1411.54
+      min_pure_trial_tm: -1.80354
+      min_pure_trial_tm_component: H2O
     A19_400K:
       T_K: 400.0
       P_Pa: 100000.0
@@ -520,6 +522,8 @@ closed_form:
       status_or_reason: ok
       real_root_count: 3
       largest_root_v_over_b_mix: 1718.62
+      min_pure_trial_tm: 0.0512831
+      min_pure_trial_tm_component: H2O
     A19_C3H8:
       T_K: 300.0
       P_Pa: 1500000.0
@@ -582,6 +586,116 @@ closed_form:
       - 0.02
       why: P above 30 MPa
       status_or_reason: out_of_domain
+    A20_P_low:
+      T_K: 700.0
+      P_Pa: 9900.0
+      n_mol_s:
+      - 0.3
+      - 0.04
+      - 0.01
+      - 0.18
+      - 0.3
+      - 0.1
+      - 0.02
+      - 0.03
+      - 0.02
+      why: P below 10 kPa
+      status_or_reason: out_of_domain
+    M1_H2O_N2_330K:
+      T_K: 330.0
+      P_Pa: 100000.0
+      n_mol_s:
+      - 0.0
+      - 0.4
+      - 0.0
+      - 0.0
+      - 0.6
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      why: water partial pressure above PR's P_sat with a single root of the mixture
+      status_or_reason: vapour_unstable
+      real_root_count: 3
+      largest_root_v_over_b_mix: 1299.29
+      min_pure_trial_tm: -1.34501
+      min_pure_trial_tm_component: H2O
+    M1_syngas_313K:
+      T_K: 313.15
+      P_Pa: 3000000.0
+      n_mol_s:
+      - 0.45
+      - 0.15
+      - 0.0
+      - 0.02
+      - 0.3
+      - 0.08
+      - 0.0
+      - 0.0
+      - 0.0
+      why: a reformer outlet cooled to 40 C at 30 bar
+      status_or_reason: vapour_unstable
+      real_root_count: 1
+      largest_root_v_over_b_mix: 41.3872
+      min_pure_trial_tm: -4.61616
+      min_pure_trial_tm_component: H2O
+    M1_C3H8_N2_250K:
+      T_K: 250.0
+      P_Pa: 1000000.0
+      n_mol_s:
+      - 0.0
+      - 0.5
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.5
+      why: propane partial pressure above PR's P_sat
+      status_or_reason: vapour_unstable
+      real_root_count: 1
+      largest_root_v_over_b_mix: 46.2971
+      min_pure_trial_tm: -0.624177
+      min_pure_trial_tm_component: C3H8
+    S2_CH4_C2H6_15MPa:
+      T_K: 350.0
+      P_Pa: 15000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.5
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.5
+      - 0.0
+      why: dense mixture admitted at v/b_mix above Z_c/B_c
+      status_or_reason: ok
+      real_root_count: 1
+      largest_root_v_over_b_mix: 4.1334
+      min_pure_trial_tm: 0.61442
+      min_pure_trial_tm_component: C2H6
+    S2_CH4_C2H6_20MPa:
+      T_K: 350.0
+      P_Pa: 20000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.5
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.5
+      - 0.0
+      why: the same mixture refused at v/b_mix below Z_c/B_c
+      status_or_reason: vapour_root_liquid_like
+      real_root_count: 1
+      largest_root_v_over_b_mix: 3.1591
+      min_pure_trial_tm: 0.62241
+      min_pure_trial_tm_component: C2H6
   saturation:
     water_T_b_at_101325_Pa_K: 374.5260511084349
     water_P_sat_at_330_K_Pa: 15482.236016440465
@@ -668,6 +782,52 @@ generator_claims:
 - id: GUARD-A20_P_high
   holds: true
   statement: A20_P_high (P above 30 MPa) gives out_of_domain (got out_of_domain)
+- id: GUARD-A20_P_low
+  holds: true
+  statement: A20_P_low (P below 10 kPa) gives out_of_domain (got out_of_domain)
+- id: GUARD-M1_H2O_N2_330K
+  holds: true
+  statement: M1_H2O_N2_330K (water partial pressure above PR's P_sat with a single root of the mixture) gives vapour_unstable
+    (got vapour_unstable)
+- id: GUARD-M1_syngas_313K
+  holds: true
+  statement: M1_syngas_313K (a reformer outlet cooled to 40 C at 30 bar) gives vapour_unstable (got vapour_unstable)
+- id: GUARD-M1_C3H8_N2_250K
+  holds: true
+  statement: M1_C3H8_N2_250K (propane partial pressure above PR's P_sat) gives vapour_unstable (got vapour_unstable)
+- id: GUARD-S2_CH4_C2H6_15MPa
+  holds: true
+  statement: S2_CH4_C2H6_15MPa (dense mixture admitted at v/b_mix above Z_c/B_c) gives ok (got ok)
+- id: GUARD-S2_CH4_C2H6_20MPa
+  holds: true
+  statement: S2_CH4_C2H6_20MPa (the same mixture refused at v/b_mix below Z_c/B_c) gives vapour_root_liquid_like (got vapour_root_liquid_like)
+- id: TM-ADMIT-V1L
+  holds: true
+  statement: 'V1L: every pure-component trial phase has tm >= 0.04 (min 1.186)'
+- id: TM-ADMIT-V2L
+  holds: true
+  statement: 'V2L: every pure-component trial phase has tm >= 0.04 (min 0.1052)'
+- id: TM-ADMIT-A19_400K
+  holds: true
+  statement: 'A19_400K: every pure-component trial phase has tm >= 0.04 (min 0.05128)'
+- id: TM-ADMIT-S2_CH4_C2H6_15MPa
+  holds: true
+  statement: 'S2_CH4_C2H6_15MPa: every pure-component trial phase has tm >= 0.04 (min 0.6144)'
+- id: TM-UNSTABLE-M1_H2O_N2_330K
+  holds: true
+  statement: 'M1_H2O_N2_330K: a pure-component trial phase has tm <= -0.5 (-1.345)'
+- id: TM-UNSTABLE-M1_syngas_313K
+  holds: true
+  statement: 'M1_syngas_313K: a pure-component trial phase has tm <= -0.5 (-4.616)'
+- id: TM-UNSTABLE-M1_C3H8_N2_250K
+  holds: true
+  statement: 'M1_C3H8_N2_250K: a pure-component trial phase has tm <= -0.5 (-0.6242)'
+- id: S2-FLIP-S2_CH4_C2H6_15MPa
+  holds: true
+  statement: 'S2_CH4_C2H6_15MPa: one root, v/b_mix = 4.133 vs Z_c/B_c; the largest b_i refuses it'
+- id: S2-FLIP-S2_CH4_C2H6_20MPa
+  holds: true
+  statement: 'S2_CH4_C2H6_20MPa: one root, v/b_mix = 3.159 vs Z_c/B_c; the smallest b_i admits it'
 - id: A17-TB
   holds: true
   statement: 'PR places water''s saturation at 101325 Pa at 374.5261 K (spec: 374.53 K)'

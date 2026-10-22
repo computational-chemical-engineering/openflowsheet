@@ -47,7 +47,7 @@ PHASE_STATES: Mapping[str, Any] = CLOSED["phase_states"]
 GUARD_STATES: Mapping[str, Any] = CLOSED["guard_states"]
 CONTEXT = EvaluationContext(model_version="l01-provider", constants_sha256="0" * 64)
 PROVIDER = PrLibProvider()
-CLAIM_COUNT = 31
+CLAIM_COUNT = 46
 
 
 def _rel(value: float, expected: float) -> float:
@@ -289,7 +289,43 @@ GUARDS: dict[str, tuple[float, float, tuple[float, ...], str, str]] = {
     "A20_T_low": (199.5, 5.0e6, V1L_FLOWS, "out_of_domain", "out_of_domain"),
     "A20_T_high": (1000.5, 5.0e6, V1L_FLOWS, "out_of_domain", "out_of_domain"),
     "A20_P_high": (700.0, 3.1e7, V1L_FLOWS, "out_of_domain", "out_of_domain"),
+    "A20_P_low": (700.0, 9.9e3, V1L_FLOWS, "out_of_domain", "out_of_domain"),
+    # Spec §12.3 (R-540, review M-1): unstable to a pure-component trial phase.
+    "M1_H2O_N2_330K": (
+        330.0,
+        1.0e5,
+        _mixture(H2O=0.6, N2=0.4),
+        "unsupported",
+        "vapour_unstable",
+    ),
+    "M1_syngas_313K": (
+        313.15,
+        3.0e6,
+        _mixture(H2=0.45, N2=0.15, CH4=0.02, H2O=0.30, CO2=0.08),
+        "unsupported",
+        "vapour_unstable",
+    ),
+    "M1_C3H8_N2_250K": (
+        250.0,
+        1.0e6,
+        _mixture(C3H8=0.5, N2=0.5),
+        "unsupported",
+        "vapour_unstable",
+    ),
+    # Spec §12.3 (review S-2): the liquid-like guard's mixture pair.
+    "S2_CH4_C2H6_15MPa": (350.0, 1.5e7, _mixture(CH4=0.5, C2H6=0.5), "ok", ""),
+    "S2_CH4_C2H6_20MPa": (
+        350.0,
+        2.0e7,
+        _mixture(CH4=0.5, C2H6=0.5),
+        "unsupported",
+        "vapour_root_liquid_like",
+    ),
 }
+
+
+def test_a17_a20_the_registered_guard_states_are_the_tests() -> None:
+    assert set(GUARD_STATES) == set(GUARDS)
 
 
 @pytest.mark.parametrize("gid", list(GUARDS))
@@ -310,6 +346,13 @@ def test_a17_a20_guard_and_domain_states(gid: str) -> None:
         assert result.phase_signature == "VAPOR"
     else:
         _assert_refused(result, status, code)
+    if code == "vapour_unstable":
+        # The 50-digit reference's most negative pure trial phase is the one the refusal names.
+        component = registered["min_pure_trial_tm_component"]
+        assert registered["min_pure_trial_tm"] <= -0.5
+        assert result.message.startswith(f"vapour_unstable: pure-{component} trial phase"), (
+            result.message
+        )
 
 
 def test_a17_the_bracket_straddles_prs_water_boiling_point() -> None:

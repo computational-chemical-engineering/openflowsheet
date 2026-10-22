@@ -51,6 +51,7 @@ T0 = mpf("298.15")
 SQ2 = mp.sqrt(2)
 DOMAIN_T = (mpf(200), mpf(1000))
 DOMAIN_P = (mpf("1e4"), mpf("3e7"))
+TM_THRESHOLD = mpf("-1e-10")  # spec section 12.3 (R-540): the vapour_unstable threshold
 
 CLAIMS: list[dict[str, Any]] = []
 
@@ -222,6 +223,9 @@ def vapour(comps: Sequence[Comp], temp: mpf, pres: mpf, n: Sequence[mpf]) -> dic
     v = zr * R * temp / pres
     if v < VC_OVER_B * mx.bm:
         raise UnsupportedError("vapour_root_liquid_like")
+    tms = pure_trial_tm(comps, temp, pres, y, mx.ln_phi(zr))
+    if tms and min(tms.values()) < TM_THRESHOLD:
+        raise UnsupportedError("vapour_unstable")
     out: dict[str, Any] = {
         "Z": zr,
         "v": v,
@@ -233,6 +237,34 @@ def vapour(comps: Sequence[Comp], temp: mpf, pres: mpf, n: Sequence[mpf]) -> dic
     out["_roots"] = rs
     out["_v_over_b"] = v / mx.bm
     return out
+
+
+def pure_trial_tm(
+    comps: Sequence[Comp], temp: mpf, pres: mpf, y: Sequence[mpf], ln_phi_y: Sequence[mpf]
+) -> dict[str, mpf]:
+    """Spec section 12.3 (R-540): the tangent-plane distance of each pure-component trial phase.
+
+    Michelsen's tm(w) = sum_k w_k [ln w_k + ln phi_k(w) - ln y_k - ln phi_k(y)] at w = e_i is
+    tm_i = ln phi_i(e_i) - ln y_i - ln phi_i(y), with ln phi_i(e_i) at the pure fluid's stable
+    root (the one with the least G^dep/RT = ln phi_i). Only components with 0 < y_i < 1 enter.
+    """
+    out: dict[str, mpf] = {}
+    for i, yi in enumerate(y):
+        if not 0 < yi < 1:
+            continue
+        unit = [mpf(1) if k == i else mpf(0) for k in range(NC)]
+        pure = Mix(comps, temp, pres, unit)
+        stable = min(pure.ln_phi(zr)[i] for zr in pure.roots())
+        out[ORDER[i]] = stable - mp.log(yi) - ln_phi_y[i]
+    return out
+
+
+def trial_tms(comps: Sequence[Comp], temp: mpf, pres: mpf, n: Sequence[mpf]) -> dict[str, mpf]:
+    """`pure_trial_tm` at the largest root of the composition n, with no guard applied."""
+    total = sum(n)
+    y = [ni / total for ni in n]
+    mx = Mix(comps, temp, pres, y)
+    return pure_trial_tm(comps, temp, pres, y, mx.ln_phi(mx.roots()[-1]))
 
 
 def roots_and_vb(comps: Sequence[Comp], temp: mpf, pres: mpf, n: Sequence[mpf]) -> tuple[int, mpf]:
@@ -360,7 +392,56 @@ GUARD_STATES: list[tuple[str, mpf, mpf, list[mpf], str, str]] = [
     ("A20_T_low", m("199.5"), m("5e6"), STATES["V1L"]["n"], "out_of_domain", "T below 200 K"),
     ("A20_T_high", m("1000.5"), m("5e6"), STATES["V1L"]["n"], "out_of_domain", "T above 1000 K"),
     ("A20_P_high", m(700), m("3.1e7"), STATES["V1L"]["n"], "out_of_domain", "P above 30 MPa"),
+    ("A20_P_low", m(700), m("9.9e3"), STATES["V1L"]["n"], "out_of_domain", "P below 10 kPa"),
+    # Spec section 12.3 (R-540, review M-1): vapours PR itself finds unstable to a pure trial phase.
+    (
+        "M1_H2O_N2_330K",
+        m(330),
+        m("1e5"),
+        flows(H2O="0.6", N2="0.4"),
+        "vapour_unstable",
+        "water partial pressure above PR's P_sat with a single root of the mixture",
+    ),
+    (
+        "M1_syngas_313K",
+        m("313.15"),
+        m("3e6"),
+        flows(H2="0.45", N2="0.15", CH4="0.02", H2O="0.30", CO2="0.08"),
+        "vapour_unstable",
+        "a reformer outlet cooled to 40 C at 30 bar",
+    ),
+    (
+        "M1_C3H8_N2_250K",
+        m(250),
+        m("1e6"),
+        flows(C3H8="0.5", N2="0.5"),
+        "vapour_unstable",
+        "propane partial pressure above PR's P_sat",
+    ),
+    # Spec section 12.3 (review S-2): the liquid-like guard on a mixture, a pair that flips if
+    # b_mix is replaced by the smallest or the largest b_i present.
+    (
+        "S2_CH4_C2H6_15MPa",
+        m(350),
+        m("1.5e7"),
+        flows(CH4="0.5", C2H6="0.5"),
+        "ok",
+        "dense mixture admitted at v/b_mix above Z_c/B_c",
+    ),
+    (
+        "S2_CH4_C2H6_20MPa",
+        m(350),
+        m("2e7"),
+        flows(CH4="0.5", C2H6="0.5"),
+        "vapour_root_liquid_like",
+        "the same mixture refused at v/b_mix below Z_c/B_c",
+    ),
 ]
+
+#: Spec section 12.3: the registered admitted mixtures whose pure-trial tm is claimed >= 0.04, and
+#: the states claimed unstable at tm <= -0.5.
+TM_ADMITTED = ("V1L", "V2L", "A19_400K", "S2_CH4_C2H6_15MPa")
+TM_UNSTABLE = ("M1_H2O_N2_330K", "M1_syngas_313K", "M1_C3H8_N2_250K")
 
 
 def status_of(comps: Sequence[Comp], temp: mpf, pres: mpf, n: Sequence[mpf]) -> str:
@@ -463,7 +544,49 @@ def build() -> dict[str, Any]:
             count, vb = roots_and_vb(comps, temp, pres, n)
             entry["real_root_count"] = count
             entry["largest_root_v_over_b_mix"] = nstr(vb, 6)
+            tms = trial_tms(comps, temp, pres, n)
+            if tms:
+                worst = min(tms, key=lambda c: tms[c])
+                entry["min_pure_trial_tm"] = nstr(tms[worst], 6)
+                entry["min_pure_trial_tm_component"] = worst
         guard_states[gid] = entry
+
+    # Spec section 12.3 (R-540): the pure-trial tangent-plane distances of the registered states.
+    states_by_id = {g[0]: (g[1], g[2], g[3]) for g in GUARD_STATES}
+    states_by_id.update({sid: (st["T"], st["P"], st["n"]) for sid, st in STATES.items()})
+    for sid in TM_ADMITTED:
+        tm = min(trial_tms(comps, *states_by_id[sid]).values())
+        claim(
+            f"TM-ADMIT-{sid}",
+            tm >= mpf("0.04"),
+            f"{sid}: every pure-component trial phase has tm >= 0.04 (min {mp.nstr(tm, 4)})",
+        )
+    for sid in TM_UNSTABLE:
+        tm = min(trial_tms(comps, *states_by_id[sid]).values())
+        claim(
+            f"TM-UNSTABLE-{sid}",
+            tm <= mpf("-0.5"),
+            f"{sid}: a pure-component trial phase has tm <= -0.5 ({mp.nstr(tm, 4)})",
+        )
+    # S-2: the pair's classification flips if b_mix is replaced by the smallest or largest b_i.
+    for sid, admitted in (("S2_CH4_C2H6_15MPa", True), ("S2_CH4_C2H6_20MPa", False)):
+        temp, pres, n = states_by_id[sid]
+        total = sum(n)
+        mx = Mix(comps, temp, pres, [ni / total for ni in n])
+        rs = mx.roots()
+        v = rs[-1] * R * temp / pres
+        present = [comps[i].b for i in range(NC) if n[i] > 0]
+        if admitted:
+            flips = v / mx.bm >= VC_OVER_B * mpf("1.02") and v / max(present) < VC_OVER_B
+            variant = "the largest b_i refuses it"
+        else:
+            flips = v / mx.bm <= VC_OVER_B * mpf("0.98") and v / min(present) > VC_OVER_B
+            variant = "the smallest b_i admits it"
+        claim(
+            f"S2-FLIP-{sid}",
+            len(rs) == 1 and flips,
+            f"{sid}: one root, v/b_mix = {mp.nstr(v / mx.bm, 4)} vs Z_c/B_c; {variant}",
+        )
 
     # A17: PR's normal boiling point of water and the bracket's margins.
     def pure(index: int) -> list[mpf]:
