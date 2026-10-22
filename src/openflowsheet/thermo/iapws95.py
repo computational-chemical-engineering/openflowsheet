@@ -571,7 +571,7 @@ def _ancillary_pressure(temperature: float) -> float:
 
 @dataclass(frozen=True)
 class _Saturation:
-    """The converged coexisting densities at T and p_σ = p(ρ', T)."""
+    """The converged coexisting densities at T and p_σ = p(ρ'', T)."""
 
     temperature: float
     rho_l: float
@@ -604,9 +604,11 @@ def _saturation(temperature: float) -> _Saturation | None:
             return None
         step = max(abs(step_l) / dl, abs(step_v) / dv)
         if _converged(step, previous):
-            rho_l = dl * RHO_C
+            # p_σ from the vapour: p(ρ', T) is ill-conditioned at low T, where Z' ≈ 5e-6 is a
+            # difference of O(1) terms (C10_DECISIONS, WO-S05-1); at the root both are p_σ.
+            rho_v = dv * RHO_C
             return _Saturation(
-                temperature, rho_l, dv * RHO_C, _pressure(temperature, rho_l)[0], iteration
+                temperature, dl * RHO_C, rho_v, _pressure(temperature, rho_v)[0], iteration
             )
         previous = step
     return None
