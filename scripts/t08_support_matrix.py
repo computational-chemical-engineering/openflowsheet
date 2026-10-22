@@ -8,8 +8,11 @@ evidence tree:
   their transports), the models of `MODEL_BUILDERS` (SYN-001's thirteen and, since M02's join,
   the eight C1 models, R-280) and which of them are synthetic only, the offered policies
   (`APPLICATION_POLICIES`), the unit spellings of `CONVERSION_ROWS` *and* of ADR 0016's table, the
-  providers of `openflowsheet.thermo` (by `PROVIDER_ID`), the provider's components and domain,
-  and the platform facts (the lock's hash, the CI matrix's Python and architectures).
+  selectable providers (the provider ids of `revision_binding.SELECTABLE_BASES`; spec §5.7
+  Amendment S04, R-568; the modules of `openflowsheet.thermo` that define `PROVIDER_ID` are
+  reported as `scanned_providers`, and a scanned provider outside the axis is library-only), the
+  provider's components and domain, and the platform facts (the lock's hash, the CI matrix's
+  Python and architectures).
 - **T08.A21** — the harvest: every `limitations[]` entry and every non-`pass` check of every
   manifest under `evidence/` is classified exactly once (E, S, P or B), each keyed by manifest
   path, list and index and the SHA-256 of its text; an unmapped item, a dangling pointer or a
@@ -113,7 +116,8 @@ def _adr_0016_spellings() -> list[list[str]]:
     return sorted([kind, unit] for kind, unit in found)
 
 
-def _providers() -> list[str]:
+def _scanned_providers() -> list[str]:
+    """The `PROVIDER_ID`s of `openflowsheet.thermo`'s modules: selectable or library-only."""
     import openflowsheet.thermo as thermo
 
     found = set()
@@ -150,7 +154,7 @@ def code_facts() -> dict[str, Any]:
     from openflowsheet.adapters import variants
     from openflowsheet.application.operations import OPERATIONS
     from openflowsheet.application.policies import APPLICATION_POLICIES
-    from openflowsheet.application.revision_binding import MODEL_BUILDERS
+    from openflowsheet.application.revision_binding import MODEL_BUILDERS, SELECTABLE_BASES
     from openflowsheet.thermo.syn001 import Syn001Provider
     from openflowsheet.units import CONVERSION_ROWS
 
@@ -163,7 +167,8 @@ def code_facts() -> dict[str, Any]:
         "policies": sorted(APPLICATION_POLICIES),
         "unit_spellings": sorted([kind, unit] for kind, unit in CONVERSION_ROWS),
         "adr_0016_spellings": _adr_0016_spellings(),
-        "providers": _providers(),
+        "providers": sorted({basis.provider_id for basis in SELECTABLE_BASES}),
+        "scanned_providers": _scanned_providers(),
         "components": list(described.components),
         "reference_convention": described.reference_convention,
         "temperature_K": list(described.domain["T"]),

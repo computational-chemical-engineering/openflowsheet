@@ -68,6 +68,9 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
     assert len(facts["models"]) == 22
     assert facts["synthetic_models"] == ["c1.reactor_standin"]
     assert facts["providers"] == ["pr-c1-v1", "syn001"]  # M01 adds `pr-c1-v1` (ADR 0026)
+    # The axis is the selectable providers (spec §5.7 Amendment S04, R-568); the module scan also
+    # finds S04's library-only `pr-lib-v1` (R-569).
+    assert facts["scanned_providers"] == ["pr-c1-v1", "pr-lib-v1", "syn001"]
     assert facts["unit_spellings"] == facts["adr_0016_spellings"]
 
 
