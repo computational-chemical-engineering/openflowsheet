@@ -3,7 +3,8 @@
 Design lane (`specifier`), 2026-10-21. Package S01 (plan v1.2 §4.5, `docs/implementation-plan.md:281`), brief
 `docs/briefs/S01-specification.md`. Reference generator `docs/derivations/scripts/s01_reference.py` (mpmath, 50 digits;
 `--check` re-derives 153 claims and byte-compares `s01_reference.json`). Decisions are logged in `docs/S01_DECISIONS.md` and
-registered as R-505 to R-509.
+registered as R-505 to R-509. **Amended 2026-10-22 by §17** (Amendment 1, the review's rulings; R-510 to R-518): §1, §4.5,
+§4.6, §5 R5/R7, §7.1, §7.3, §8, §10 (state tolerance, A05, A10, A18).
 
 ## 0. Authority and scope
 
@@ -284,3 +285,76 @@ SYN-001's closed forms and §6's initializer definition. Every numeric claim in 
 - DECISION: β̄ clamp → [0.1, 0.9] and CMO floor 0.1·F. Alternative: unclamped (the pre-solve degenerates at β̄ ∈ {0, 1}). Reversible by: changing two constants and re-emitting `ref`.
 - DECISION: inlet pressure vs stage pressure → no relation in S01 (enthalpy at the inlet's own state). Alternative: an equality row. Reversible by: S02's feed conventions.
 - DECISION: ADR 0043 → not needed (no ADR or frozen interface changes). Alternative: an ADR for the pre-solve. Reversible by: writing it if review disagrees.
+
+## 17. Amendment 1 (2026-10-22, design lane `reviewer`): rulings of the S01 review
+
+Review `docs/reviews/S01-review.md`; register R-510 to R-518. Each item replaces the text it names. No generator claim
+moves and `s01_reference.json` is not re-emitted. Items 5–7 change tolerances or a step rule; each comes with the
+derivation that shows the registered value was wrong. None of them was chosen to make a test pass.
+
+1. **§5 refusals are validation results, not solve outcomes (R-510).** `INVALID_SPECIFICATION` is S01's refusal
+   category. It is not a `SolveOutcome`, and none is added (§4.5 stands). R6 keeps `CAPABILITY_UNAVAILABLE`, which T02
+   §7.4's `PlanRefusal` already carries before any evaluation. A refusal (`CascadeFailure`) never enters a trace, a
+   `RegionResult` or an outcome field. A binding that exposes the cascade maps `INVALID_SPECIFICATION` to its existing
+   invalid-request error (`models.SpecificationError`).
+2. **R7's scope (R-511).** R7 applies only when `F > 0`. With every inlet dormant, its interval is `[0, 0]` and it would
+   refuse exactly when `Σ_j Q_j* ≠ 0`. That set is contained in §4.6's conflict set (any dormant stage whose energy row
+   fails), and §4.6 also names the stage. §7.1 therefore reads: R1–R6; then §4.6 if every inlet is dormant; else R7.
+3. **Admissibility is R-007 (R-512).** In R5 and §8, "R-007 admissibility" means `tp_state.single_phase_admissible`:
+   intensive, `τ_T = 1e-6 K`, temperature-degenerate streams admitted. The bubble/dew sum tests in parentheses are
+   struck.
+   - R5 judges a flowing inlet at its own `(n, T, P)` in its declared phase.
+   - §8 judges a `LIQUID` stage's outlet `l_j` (a `VAPOR` stage's `v_j`) at `(T_j, P_j)`, not `m_j`. That outlet is
+     the stream whose enthalpy the energy row writes single-phase, and it is what the region's K03 §8.2 screen judged.
+   - Outside `τ_T` of saturation, R-007 and the sum test agree: SYN-001's `K` does not depend on composition and rises
+     with T, so `Σ z K ≤ 1 ⟺ T ≤ T_bub`.
+   - At the boundary the sum test refuses the canonical saturated feed. A top inlet at the upper adjacent double of its
+     bubble temperature (`Σ zK − 1 = 2.2e-16`) is refused by R5, while R-007 admits it (equivalent error 1.8e-14 K).
+4. **Inlet phases (R-513).** §1 reads: `top` enters stage 1 and `bottom` enters stage N, each in its declared phase.
+   The registered cases use a liquid `top` and a vapour `bottom`. Rows, initializer (§6.2, §6.4) and generator are
+   phase-generic, so there is no refusal. §4.3's label stays `T_top` whatever the phase of `top`.
+5. **State tolerance, flows (R-514).** §10's flow term becomes `|Δ| ≤ 1e-6·|ref| + 3.1e-7 mol/s`, where
+   `3.1e-7 = 10·τ_flow`. The T (1e-4 K) and Q (1e-2 W) terms are unchanged.
+   - *Derivation.* ADR 0018 D2 bounds the distance a `newton_refined` root may keep from the exact root. The terminal
+     chord correction `c = −Ĵ⁻¹F̂` estimates `x* − x`, and the core refines unless every `|c_j| ≤ τ_kind(j)`. The
+     registered promise is therefore `|x_j − x*_j| ≲ τ_kind(j)`: 3.1e-8 mol/s and 1e-6 K, up to the chord's own error
+     (≤ 1 %, or a factor 3.1 at near-singular states).
+   - The old floor of 1e-9 mol/s sits 31× below that promise. No conforming run can be held to it, and a pass under it
+     depends on Newton happening to overshoot the promise.
+   - §10's "about 1e-9 of a 50-digit root" is struck. The margin of ten is the one ADR 0007 D2.4 and ADR 0018 D2 use,
+     so the 10× rule now holds by construction: the error stays ≤ τ_kind, or refinement fires.
+   - Measured: C4's pre-solve error of 3.80e-9 mol/s becomes 0.012 of the tolerance (before: 0.454).
+   - Detection power is unchanged. Every registered defect class shows in T (≥ 1e-3 K against 1e-4 K), and the
+     relative term still governs flows ≥ 0.31 mol/s.
+6. **A05 (R-515).** The tolerance becomes T abs `1e-5 K` (10·τ_T) and flows abs `3.1e-7 mol/s` (10·τ_flow), replacing
+   1e-7 K and rel 1e-8.
+   - *Derivation.* The rationale "both are root-finders on the same rows" bounds their difference by the sum of the two
+     promises. The cascade's is `τ_kind` (item 5). `ph_state`'s is measured at 1e-13 K against `ref`.
+   - 1e-7 K asserted 10× more than the cascade's core promises. Measured: 9.77e-7 K, ρ = 0.98 of `τ_T`, so the margin
+     is 10.2×.
+   - A dropped Poynting term (8e-3 K) is still caught 800× over.
+7. **A10's step (R-516).** The step becomes `h_j = 1e-6·max(D_x(j), |x_j|)`, with `D_x` as in A10. The tolerance 1e-6
+   is unchanged. The measured floor must be ≤ 1e-8 at both points, which is the comparison's resolution: 100× under
+   the tolerance.
+   - *Derivation.* Central differences carry a rounding error of about `ε·|Ḣ|/h_j` in row units, or
+     `ε·|Ḣ|·D_x(j)/(h_j·D_r)` scaled.
+   - The old rule `h = 1e-6·max(1, |x|)` makes the scaled step `h_j/D_x(j)` 1e-10 for `Q_j = 0` (`D_x = 1e4 W`),
+     against 1e-6 to 4e-6 for every other column. The `(Q_j, energy_j)` entries were therefore rounding-dominated
+     10⁴× beyond the rest: 3.39e-8 measured, at an exact entry of +1.
+   - With a uniform scaled step the floor is 5.9e-11 everywhere, the same order as the generator's 2.9e-11.
+   - The old rule tested the difference quotient, not the Jacobian.
+8. **A18's openings (R-517).** "`T̄ ± 10 K`" means the pre-solve's isothermal level: `x⁰` becomes the isothermal root at
+   `T̄ ± 10 K`. The flow openings (`×0.5`, `×2`) perturb `x_K` as before.
+   - The pre-solve has one root for a given `T̄`. Perturbing only `x_K`'s columns therefore leaves `x⁰`, and with it the
+     whole target path, unchanged. Measured: `x⁰` within 3.7e-9 (scaled) of A06's, and the same 3 target iterations.
+     A18 then tested only the pre-solve's basin.
+   - Measured under this reading: both shifts converge, 2P ×3, in 4 target iterations, at 4.5e-10 (scaled) from A06's
+     root. A18 keeps the four existing openings and adds these two.
+9. **"Holds" for a swapped energy row (R-518).** In §4.5 and §4.6, a dormant stage's swapped `energy_j` holds when
+   `|Q_j*| ≤ τ_heat_rate` (`KIND_TOLERANCE`, T05b §7.8 (iv) 2), the rule `solve_region` applies to the same row. The
+   parenthetical "(`Q_j* ≠ 0`)" and §4.6's "every `Q_j* = 0`" are replaced. D1 and D2 (0 W and 50 W) are unchanged.
+10. **§7.3 as built (no register entry; it confirms WO-2's logged build decision).** The pre-solve's stages are TP-type.
+    Its opening is `x_K` as projected by the TP closure (`projected(...)`), and the region's screen picks the opening
+    signature. A converged pre-solve that is not all `TWO_PHASE` ends
+    `initialization_failed(s01-isothermal-presolve-v1, not_two_phase)`. DECISION 2 is untouched: `x⁰` is still an
+    exact root of `H(·, 0)`.

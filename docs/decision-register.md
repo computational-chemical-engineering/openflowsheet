@@ -10201,3 +10201,204 @@ excludes either of them.
 - *Lifting an inlet split:* the cost has no S01 use case.
 
 **Watch for.** S02 feed-stage conventions.
+
+---
+
+## R-510 — S01 refusals are validation results, not solve outcomes
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S01 review (WO-1 question 1) |
+| Normative text | `docs/derivations/S01-spec.md` §17.1 (amends §5) |
+| Evidence | `orchestrator/trace.py:28` (`SolveOutcome` has no `INVALID_SPECIFICATION`); T02 §7.4 `PlanRefusal` precedent |
+| Affected packages | S01, S02 (binding) |
+
+**Decision.**
+- `INVALID_SPECIFICATION` is S01's refusal category.
+- No `SolveOutcome` value is added.
+- R6 stays `CAPABILITY_UNAVAILABLE`.
+- A `CascadeFailure` never enters a trace, a `RegionResult` or an outcome field.
+- A binding maps the refusal to its invalid-request error.
+
+**Rejected alternatives, and why.**
+- *A new `SolveOutcome`:* it changes a frozen interface (ADR needed) to describe a request that was never solved.
+- *Raising `SpecificationError` inside S01:* §5 wants a typed refusal with a code, which tests can assert.
+
+**Watch for.** S02's binding surfacing `CascadeFailure.outcome` as if it were a `SolveOutcome`.
+
+---
+
+## R-511 — S01 R7 applies only to a flowing cascade
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S01 review (WO-1 question 2) |
+| Normative text | `docs/derivations/S01-spec.md` §17.2 (amends §5 R7, §7.1) |
+| Evidence | A14 (D2: `Σ Q* = 50 W` would be refused by R7 before §4.6 names stage 2) |
+| Affected packages | S01 |
+
+**Decision.**
+- Validation order is R1–R6.
+- If every inlet is dormant, §4.6 answers.
+- Otherwise R7 runs.
+- With `F = 0`, R7's refusal set (`Σ Q* ≠ 0`) is contained in §4.6's, and §4.6 names the stage.
+
+**Rejected alternatives, and why.**
+- *R7 first:* it refuses D2 untyped by stage, and it misses `Q* = (50, 0, −50)`.
+
+**Watch for.** —
+
+---
+
+## R-512 — S01 admissibility is R-007, at the inlet and at a single-phase stage's outlet
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S01 review (WO-1 question 3) |
+| Normative text | `docs/derivations/S01-spec.md` §17.3 (amends §5 R5, §8) |
+| Evidence | Review probe E1: a top inlet 1 ulp above its bubble temperature is refused by the sum test (`Σ zK − 1 = 2.2e-16`) and admitted by R-007 (1.8e-14 K). `region._admissible` judges the outlet at `≤ 1 + 1e-12`. |
+| Affected packages | S01, S02 (saturated feeds) |
+
+**Decision.**
+- R5 is `tp_state.single_phase_admissible` on the inlet at its own `(n, T, P)` and declared phase.
+- §8 is the same test on a `LIQUID` stage's `l_j` (a `VAPOR` stage's `v_j`) at `(T_j, P_j)`.
+- The bubble/dew sum tests are struck. They agree with R-007 outside `τ_T` of saturation.
+
+**Rejected alternatives, and why.**
+- *The sum test `≤ 1`:* it refuses saturated feeds by rounding. On `m_j` it can also refuse a state the region's own
+  screen accepted, which turns a boundary root into `AcceptanceDefectError`.
+
+**Watch for.** Feeds specified at their computed bubble or dew temperature in S02.
+
+---
+
+## R-513 — S01 `top` and `bottom` may declare either phase
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S01 review (WO-1 question 4) |
+| Normative text | `docs/derivations/S01-spec.md` §17.4 (amends §1) |
+| Evidence | Rows, initializer and generator are phase-generic (`cascade.py` CMO sums read the declared phase) |
+| Affected packages | S01, S02 (feed conventions) |
+
+**Decision.**
+- No refusal: a vapour `top` or a liquid `bottom` is accepted.
+- §4.3's label stays `T_top`.
+
+**Rejected alternatives, and why.**
+- *Refusing them:* nothing in the equations depends on the nominal phases, so a refusal would only take away a
+  legitimate specification.
+
+**Watch for.** No registered case covers a vapour `top`.
+
+---
+
+## R-514 — S01 state tolerance: the flow floor is 10·τ_flow (amends R-508)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S01 review (WO-2 question 5) |
+| Normative text | `docs/derivations/S01-spec.md` §17.5 (amends §10) |
+| Evidence | ADR 0018 D2 (refinement unless every `|c_j| ≤ τ_kind`, `τ_flow = 3.1e-8 mol/s`). WO-2 measured C4's pre-solve at 3.80e-9 mol/s, 0.454 of the old tolerance and 0.012 of the new. |
+| Affected packages | S01 |
+
+**Decision.** The flow term is `1e-6·|ref| + 3.1e-7 mol/s`. T and Q are unchanged.
+
+**Why the registered value was wrong.** The solver's registered promise is `|x − x*|_j ≲ τ_kind(j)`. A floor of 1e-9 sits
+31× below it, so a pass under it was luck. The 10× rule now holds by construction.
+
+**Rejected alternatives, and why.**
+- *A tighter pre-solve (`τ/100`):* it buys `x⁰` accuracy that nothing downstream uses, and it adds a policy.
+
+**Watch for.** —
+
+---
+
+## R-515 — S01 A05 tolerance is 10·τ_kind
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S01 review (WO-2 question 6) |
+| Normative text | `docs/derivations/S01-spec.md` §17.6 (amends A05) |
+| Evidence | WO-2 measured C1's T 9.77e-7 K from `ph_state` (ρ = 0.98 of `τ_T`); `ph_state` vs `ref` is 1e-13 K |
+| Affected packages | S01 |
+
+**Decision.** A05: T abs 1e-5 K, flows abs 3.1e-7 mol/s.
+
+**Why the registered value was wrong.** Two root-finders agree only to the sum of their promises. The cascade's promise is
+`τ_T = 1e-6 K` (ADR 0018 D2), and 1e-7 K asserted 10× more than that.
+
+**Rejected alternatives, and why.**
+- *Refining C1 further:* not a policy S01 registers.
+
+**Watch for.** —
+
+---
+
+## R-516 — S01 A10 differences use a step uniform in scaled coordinates
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S01 review (WO-2 question 7) |
+| Normative text | `docs/derivations/S01-spec.md` §17.7 (amends A10) |
+| Evidence | WO-2: floor 3.385e-8 only at `(Q_j, energy_j)` with `h = 1e-6 W`, 5.9e-11 everywhere with `h = 1e-6·max(D_x, |x|)` |
+| Affected packages | S01 |
+
+**Decision.**
+- The step is `h_j = 1e-6·max(D_x(j), |x_j|)`.
+- The tolerance stays 1e-6.
+- The floor must be ≤ 1e-8 at both points.
+
+**Why the registered rule was wrong.** At `Q = 0` the old rule's scaled step is 1e-10 against about 1e-6 elsewhere. The
+rounding term `ε·|Ḣ|·D_x/(h·D_r)` was then 10⁴× inflated, so the check measured the quotient, not `J`.
+
+**Rejected alternatives, and why.**
+- *Raising the floor to 1e-7:* it would hide a real 1e-7 Jacobian error behind rounding.
+
+**Watch for.** —
+
+---
+
+## R-517 — S01 A18's `T̄ ± 10 K` shifts the pre-solve level
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S01 review (finding) |
+| Normative text | `docs/derivations/S01-spec.md` §17.8 (amends A18) |
+| Evidence | Review probe E2. The four implemented openings give `x⁰` within 3.7e-9 (scaled) of A06's and the same 3 target iterations. A shifted `T̄` gives a new `x⁰`, 4 iterations, and the same root (4.5e-10). |
+| Affected packages | S01 |
+
+**Decision.** The two T openings shift the pre-solve's `T̄`. The flow openings perturb `x_K`. A18 runs all six.
+
+**Rejected alternatives, and why.**
+- *Perturbing only `x_K`:* the pre-solve's unique root erases the perturbation, so the target path is never perturbed.
+
+**Watch for.** —
+
+---
+
+## R-518 — S01 a dormant stage's swapped energy row holds within its kind tolerance
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S01 review (finding; a decision on consistency) |
+| Normative text | `docs/derivations/S01-spec.md` §17.9 (amends §4.5, §4.6) |
+| Evidence | `region.py:2401` (`|value| ≤ KIND_TOLERANCE`) against `cascade.py` `dormant_answer` (`value != 0.0`) |
+| Affected packages | S01 |
+
+**Decision.** §4.6 refuses a dormant stage only when `|Q_j*| > τ_heat_rate`. D1 and D2 are unchanged.
+
+**Rejected alternatives, and why.**
+- *Exact zero:* the same row would then be judged by two rules, depending on whether the closed form or
+  `solve_region` reached it.
+
+**Watch for.** —
