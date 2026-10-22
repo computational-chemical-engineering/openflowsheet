@@ -44,7 +44,9 @@ from openflowsheet.models import (
 from openflowsheet.models.rows import specification_row
 from openflowsheet.models.syn001 import TEMPERATURE
 from openflowsheet.models.syn001.cascade import (
-    MODEL_ID,
+    MODEL_ID as CASCADE_MODEL_ID,
+)
+from openflowsheet.models.syn001.cascade import (
     CascadeFailure,
     CascadeSpec,
     DormantAnswer,
@@ -240,7 +242,7 @@ def presolve_rows(rows: Contribution, spec: CascadeSpec, tbar: float) -> Contrib
                 equation_id=row,
                 build=specification_row(stage_temperature_id(unit, stage), parameter),
                 accumulation="algebraic",
-                origin=origin(MODEL_ID, "CAS-presolve-T"),
+                origin=origin(CASCADE_MODEL_ID, "CAS-presolve-T"),
             )
         )
         row_kinds[row] = "temperature"
