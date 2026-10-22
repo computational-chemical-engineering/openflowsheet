@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import ast
 import importlib
+import re
 import sys
 import typing
 from pathlib import Path
@@ -107,6 +108,7 @@ T05B_V2_SOURCE = REPO_ROOT / "src" / "openflowsheet" / "application" / "policies
 #: named exemption (S01 WO-5, `docs/S01_DECISIONS.md`); every other file stays held to v1.
 S01_V2_SOURCE = REPO_ROOT / "src" / "openflowsheet" / "models" / "syn001" / "cascade_solve.py"
 #: The registered constructions of v2 outside this file: (source, module, policy name, policy id).
+#: Equal to the table in spec §6.6 as amended (D1, R-560); a new root takes a row in both.
 V2_SOURCES = (
     (T05B_V2_SOURCE, "t05b_support", "POLICY_V2", "T05b-v2"),
     (
@@ -118,10 +120,44 @@ V2_SOURCES = (
 )
 
 
+T05B_SPEC = REPO_ROOT / "docs" / "derivations" / "T05b-limitations-spec.md"
+_REGISTER_OPEN, _REGISTER_CLOSE = "<!-- B06-V2-REGISTER -->", "<!-- /B06-V2-REGISTER -->"
+
+
+def _spec_v2_register(text: str) -> set[tuple[str, str]]:
+    """The (policy id, source) pairs of spec §6.6's v2-root table: between the two register
+    markers, every row whose first cell is back-ticked, its first two back-ticked cells."""
+    body = text.split(_REGISTER_OPEN, 1)[1].split(_REGISTER_CLOSE, 1)[0]
+    pairs: set[tuple[str, str]] = set()
+    for line in body.splitlines():
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if not cells or not (cells[0].startswith("`") and cells[0].endswith("`")):
+            continue
+        ticked = re.findall(r"`([^`]+)`", line)
+        pairs.add((ticked[0], ticked[1]))
+    return pairs
+
+
+def test_b06_the_v2_register_is_the_specs() -> None:
+    """Spec §6.6 as amended (D1, R-560) registers the v2 roots in a table; `V2_SOURCES` is that
+    table, as (policy id, repository-relative source) pairs, equal as sets. Negative control: the
+    same parse of the text with the `s01-default-v1` row removed is a different set."""
+    text = T05B_SPEC.read_text(encoding="utf-8")
+    code = {(i, source.relative_to(REPO_ROOT).as_posix()) for source, _, _, i in V2_SOURCES}
+    assert _spec_v2_register(text) == code
+    lines = text.splitlines(keepends=True)
+    kept = [line for line in lines if not line.startswith("| `s01-default-v1` |")]
+    assert len(kept) == len(lines) - 1
+    without = _spec_v2_register("".join(kept))
+    assert without != code
+    assert without == {pair for pair in code if pair[0] != "s01-default-v1"}
+
+
 def test_b06_no_registered_policy_names_v2() -> None:
     """No code constructs or replaces a policy with a `phase_contract` other than the default,
     and no committed document outside this package's evidence spells v2: every registered
-    policy — SYN-001's, T02–T04's fixtures and tests, T05's `T05-W13` — stays v1 (spec §6.6).
+    policy — SYN-001's, T02–T04's fixtures and tests, T05's `T05-W13` — stays v1, except the
+    v2 roots of spec §6.6 as amended (D1, R-560; `test_b06_the_v2_register_is_the_specs`).
     Three exemptions: this file, which constructs v2 to show the schema accepts it; the T05b
     cases' own policy `T05b-v2` (`t05b_support.POLICY_V2`), constructed once in
     `T05B_V2_SOURCE`; and S01's registered policy `s01-default-v1` (S01 spec §4, §7; R-505),
