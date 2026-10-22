@@ -425,6 +425,7 @@ def _records(answer: CascadeSolution, trace: Trace) -> list[str]:
     return [
         repr(answer.presolve_summary),
         answer.initial_sha256,
+        answer.opening_sha256,
         str(answer.presolve_sha256),
         str(answer.final_sha256),
         repr([dict(item) for item in answer.result.branch_provenance]),

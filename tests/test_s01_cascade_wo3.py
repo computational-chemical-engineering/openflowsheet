@@ -17,6 +17,7 @@ from test_s01_cascade_wo1 import REFERENCE, UNIT, _spec
 from test_s01_cascade_wo2 import PROVIDER, Q_ABS, deviation, solved
 
 import openflowsheet.models.syn001.cascade_solve as solve_module
+from openflowsheet.canonical import state_sha256
 from openflowsheet.models.syn001.cascade import (
     CascadeFailure,
     is_dormant,
@@ -237,6 +238,31 @@ def test_a18_c2_from_a_perturbed_opening_is_the_a06_root(label: str) -> None:
     assert answer.signature == ("TWO_PHASE",) * 3
     unperturbed = solved("C2").presolve.branch_provenance[0]["opening_state_sha256"]
     assert answer.presolve.branch_provenance[0]["opening_state_sha256"] != unperturbed
+    # Review N2: the record is the opening's hash, not `x_K`'s.
+    order = compile_cascade(spec, PROVIDER).spec.variable_ids
+    assert answer.opening_sha256 == state_sha256(opening, order) != answer.initial_sha256
+    assert solved("C2").opening_sha256 == solved("C2").initial_sha256
+    assert compare_with_a06(answer) == "SAME"
+
+
+@pytest.mark.parametrize("shift", [10.0, -10.0], ids=["Tbar+10K", "Tbar-10K"])
+def test_a18_c2_from_a_shifted_presolve_level_is_the_a06_root(shift: float) -> None:
+    """A18 (spec §17.8, R-517): `T̄ ± 10 K` is the pre-solve's isothermal level, so `x⁰` is the
+    isothermal root at `T̄ ± 10 K`: it differs from A06's pre-solve root by more than 1 K in
+    every stage `T`, and the target from it converges, 2P ×3, to a root `SAME` as A06's."""
+    spec = _spec(REFERENCE["cases"]["C2"])
+    initial = kremser_initial(spec, PROVIDER, DECLARATION_CONTEXT)
+    assert not isinstance(initial, CascadeFailure)
+    answer = solve_cascade(spec, PROVIDER, tbar=initial.tbar + shift)
+    assert isinstance(answer, CascadeSolution)
+    assert answer.presolve_summary.outcome == "CONVERGED"
+    reference = solved("C2").presolve.state
+    for j in range(1, spec.stage_count + 1):
+        column = stage_temperature_id(UNIT, j)
+        assert abs(answer.presolve.state[column] - reference[column]) > 1.0
+    assert answer.presolve_sha256 != solved("C2").presolve_sha256
+    assert answer.outcome == "CONVERGED"
+    assert answer.signature == ("TWO_PHASE",) * 3
     assert compare_with_a06(answer) == "SAME"
 
 

@@ -50,7 +50,6 @@ from openflowsheet.models.syn001.cascade import (
     DormantAnswer,
     KremserInitial,
     _enthalpy_flow,
-    _k_values,
     _parameter,
     _phase,
     declared_problem,
@@ -72,6 +71,7 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
+from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.orchestrator.execution import Region
 from openflowsheet.orchestrator.homotopy import Continuation
 from openflowsheet.orchestrator.recovery import eo_recovery_due, recovered_provenance
@@ -87,7 +87,7 @@ from openflowsheet.orchestrator.region import (
     solve_region,
 )
 from openflowsheet.orchestrator.trace import GlobalizationPolicy, SolvePolicy, Trace
-from openflowsheet.thermo import PropertyProvider
+from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 #: Spec §7.3's registered pre-solve.
 PRESOLVE_ID: Final = "s01-isothermal-presolve-v1"
@@ -422,23 +422,23 @@ def admissibility(
     provider: PropertyProvider,
     state: Mapping[str, float],
     stage: int,
-    regime: Regime,
-) -> float:
-    """Spec §5 R5's sum test at `(m_j, T_j, P_j)`: `Σ z K` (LIQUID) or `Σ z/K` (VAPOR); the stage
-    is admissible when it is `≤ 1` (the form WO-1 implements; see its R5 question)."""
+    regime: Phase,
+) -> tuple[bool, str]:
+    """Spec §8's admissibility of a single-phase stage, R-007 (spec §17.3, R-512):
+    `tp_state.single_phase_admissible` on the stage's outlet in its phase, `l_j` (LIQUID) or
+    `v_j` (VAPOR), at `(T_j, P_j)` -- the stream whose enthalpy the energy row writes
+    single-phase, as the region's K03 §8.2 screen judges it. `(admissible, detail)`."""
     unit, components = spec.unit_id, spec.components
-    feed = [float(state[mixed_id(unit, stage, c)]) for c in components]
-    k = _k_values(
-        provider,
-        DECLARATION_CONTEXT,
-        components,
-        float(state[stage_temperature_id(unit, stage)]),
-        float(state[stage_pressure_id(unit, stage)]),
+    outlet = liquid_id if regime == "LIQUID" else vapor_id
+    stream = StreamState(
+        n=tuple(float(state[outlet(unit, stage, c)]) for c in components),
+        temperature=float(state[stage_temperature_id(unit, stage)]),
+        pressure=float(state[stage_pressure_id(unit, stage)]),
     )
-    total = sum(feed)
-    if regime == "LIQUID":
-        return sum(a / total * ki for a, ki in zip(feed, k, strict=True))
-    return sum(a / total / ki for a, ki in zip(feed, k, strict=True))
+    admissible, _, error, status, message = single_phase_admissible(
+        provider, stream, regime, components, DECLARATION_CONTEXT
+    )
+    return admissible, (f"equivalent temperature error {error!r} K" if status == "ok" else message)
 
 
 def acceptance_failures(
@@ -467,9 +467,10 @@ def acceptance_failures(
                 if not state[total] > 0.0:
                     failures.append(f"TWO_PHASE stage {stage}: {total} = {state[total]!r}")
         elif regime in ("LIQUID", "VAPOR"):
-            criterion = admissibility(spec, provider, state, stage, regime)
-            if not criterion <= 1.0:
-                failures.append(f"{regime} stage {stage} inadmissible: criterion {criterion!r}")
+            phase: Phase = "LIQUID" if regime == "LIQUID" else "VAPOR"
+            admissible, detail = admissibility(spec, provider, state, stage, phase)
+            if not admissible:
+                failures.append(f"{regime} stage {stage} inadmissible: {detail}")
     return tuple(failures)
 
 
@@ -553,6 +554,9 @@ class CascadeSolution:
     initial: KremserInitial
     #: `x_K` and `x⁰` hashes (ADR 0008 D2, over the target's column order).
     initial_sha256: str
+    #: The hash of the state the pre-solve actually opened from: `opening` when one is given,
+    #: else `x_K` (equal to `initial_sha256`), over the same column order (spec §7.7, review N2).
+    opening_sha256: str
     presolve_sha256: str | None
     presolve: RegionResult
     presolve_summary: PresolveSummary
@@ -623,12 +627,14 @@ def solve_cascade(
     *,
     policy: SolvePolicy = S01_DEFAULT_V1,
     opening: Mapping[str, float] | None = None,
+    tbar: float | None = None,
     trace: Trace | None = None,
 ) -> CascadeSolution | CascadeFailure | DormantAnswer:
     """Spec §7, steps 1–5, and §8 on a `CONVERGED` answer.
 
-    `opening` replaces `x_K` as the pre-solve's start (spec §10 A18's perturbed openings); the
-    pre-solve's `T̄` is the initializer's either way. A `CONVERGED` answer that fails §8 raises
+    `opening` replaces `x_K` as the pre-solve's start, and `tbar` replaces the initializer's `T̄`
+    as the pre-solve's isothermal level (spec §10 A18's perturbed openings; spec §17.8, R-517).
+    Both default to the initializer's. A `CONVERGED` answer that fails §8 raises
     `AcceptanceDefectError`.
     """
     refused = validate(spec, provider, DECLARATION_CONTEXT)
@@ -644,8 +650,10 @@ def solve_cascade(
     order = target.spec.variable_ids
     start = dict(initial.state) if opening is None else {n: float(opening[n]) for n in order}
     initial_sha = state_sha256(dict(initial.state), order)
+    opening_sha = state_sha256(start, order)
 
-    pre = compile_cascade(spec, provider, "presolve", tbar=initial.tbar)
+    level = initial.tbar if tbar is None else float(tbar)
+    pre = compile_cascade(spec, provider, "presolve", tbar=level)
     presolve = run_region(
         pre, provider, start, PRESOLVE_POLICY, initializer_source=initial.initializer
     )
@@ -668,6 +676,7 @@ def solve_cascade(
             state=dict(presolve.state),
             initial=initial,
             initial_sha256=initial_sha,
+            opening_sha256=opening_sha,
             presolve_sha256=None,
             presolve=presolve,
             presolve_summary=summary,
@@ -695,6 +704,7 @@ def solve_cascade(
         state=dict(result.state),
         initial=initial,
         initial_sha256=initial_sha,
+        opening_sha256=opening_sha,
         presolve_sha256=summary.state_sha256,
         presolve=presolve,
         presolve_summary=summary,

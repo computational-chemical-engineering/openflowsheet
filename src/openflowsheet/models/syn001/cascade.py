@@ -75,8 +75,9 @@ from openflowsheet.models.syn001.tp_state import (
     enthalpy_block_id,
     enthalpy_flow,
     lnk_block_id,
+    single_phase_admissible,
 )
-from openflowsheet.orchestrator.region import Regime
+from openflowsheet.orchestrator.region import KIND_TOLERANCE, Regime
 from openflowsheet.thermo import Phase, PropertyProvider, PropertyRequest, StreamState
 
 MODEL_ID: Final = "syn001.cascade"
@@ -524,23 +525,26 @@ def validate(
                 f"{unit}: inlet {inlet.port} declared {inlet.state.phase!r}; S01 takes a declared "
                 "LIQUID or VAPOR inlet only",
             )
-    # R5
+    # R5: R-007 admissibility (spec §17.3, R-512), the inlet at its own `(n, T, P)` in its
+    # declared phase.
     for inlet in inlets:
         state = inlet.state
         if _is_dormant(state):
             continue
-        k = _k_values(provider, context, components, state.temperature, state.pressure)
-        total = sum(state.n)
-        if state.phase == "LIQUID":
-            criterion = sum(a / total * ki for a, ki in zip(state.n, k, strict=True))
-        else:
-            criterion = sum(a / total / ki for a, ki in zip(state.n, k, strict=True))
-        if not criterion <= 1.0:
+        phase: Phase = "LIQUID" if state.phase == "LIQUID" else "VAPOR"
+        admissible, _, error, status, message = single_phase_admissible(
+            provider,
+            StreamState(n=state.n, temperature=state.temperature, pressure=state.pressure),
+            phase,
+            components,
+            context,
+        )
+        if not admissible:
+            detail = f"equivalent temperature error {error!r} K" if status == "ok" else message
             return CascadeFailure(
                 "INVALID_SPECIFICATION",
                 f"inadmissible_inlet({inlet.port}, {state.phase})",
-                f"{unit}: inlet {inlet.port} is not an admissible {state.phase} "
-                f"(criterion {criterion!r} > 1)",
+                f"{unit}: inlet {inlet.port} is not an admissible {state.phase} ({detail})",
             )
     # R7
     if is_dormant(spec):
@@ -1172,8 +1176,9 @@ def dormant_answer(
 
     Every stage `ZERO_FLOW`, every flow `+0.0`, `T_j` by the label chain (`T_top` down the
     cascade), `P_j = P_j*`, `Q_j = Q_j*`. The outcome is derived from the swapped energy rows,
-    not from the duties: `CONVERGED` when each is zero, else `SPECIFICATION_CONFLICT`,
-    `zero_flow_conflict(<energy row>)` at the first stage where one is not.
+    not from the duties: `CONVERGED` when each is within `KIND_TOLERANCE["heat_rate"]` (R-518),
+    else `SPECIFICATION_CONFLICT`, `zero_flow_conflict(<energy row>)` at the first stage where
+    one is not.
     """
     unit, components = spec.unit_id, spec.components
     count = spec.stage_count
@@ -1206,7 +1211,10 @@ def dormant_answer(
         build = balance_row((temperature,), (label,))
         residuals[row_name] = float(build(values, {}, {}, _NO_ALGEBRA))
     swapped = tuple(declared[form.swapped] for form in forms)
-    conflict = next((j for j, value in enumerate(swapped) if value != 0.0), None)
+    # A swapped energy row holds within its kind tolerance, the rule `solve_region` applies to the
+    # same row (spec §17.9, R-518; T05b §7.8 (iv) 2).
+    tolerance = KIND_TOLERANCE["heat_rate"]
+    conflict = next((j for j, value in enumerate(swapped) if not abs(value) <= tolerance), None)
     state = {name: values[name] for name in problem.variable_ids}
     zero_flow: Regime = "ZERO_FLOW"
     signature = tuple(zero_flow for _ in range(count))
