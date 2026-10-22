@@ -11599,3 +11599,112 @@ exposure, and a merged `main` would carry them into the next wheel against L01-Q
 **Watch for.** WO-L01-3 restores the four edits only after Frank has answered L01-Q4.
 
 ---
+
+## R-566 — L01.A22 no longer pins `coverage.json`'s bytes; it asserts that L01 is absent from W27's coverage, committed and live
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S04 ruling Q1, brief `docs/briefs/S04-ruling.md` |
+| Normative text | `docs/derivations/L01-spec.md` §13.1–13.3 (Amendment 2), which replaces L01.A22; `docs/reviews/D1-rulings.md` §7, WO-D1-C |
+| Evidence | Measured at `e46eb97`: over the 19 `PINNED` paths, `git diff b843941` moves only `coverage.json` (3 lines: `snapshot.git_commit`, `snapshot.package_version`, `snapshot_sha256`; `b69626c7…` → `aa89cdd6…`), from C7's `f85fcd7` through the merge `0c277b0`; `git log --first-parent --no-merges b843941..e46eb97` over those paths and `benchmarks/m06/` is empty; rows and summary equal blob `dea968a2…`; the routes are `syn001` and `pr-c1-v1`; the bytes hold no `pr-lib-v1` and no `benchmarks/l01/` |
+| Affected packages | S04 (L01), and WO-L01-3, which retires (b) and (c) |
+
+**Decision.**
+- `coverage.json` leaves `PINNED`. The other 18 pins stand.
+- A22 (b) asserts on the committed file. `w27_absence_problems` returns `[]` when the bytes hold neither `pr-lib-v1`
+  nor `benchmarks/l01/` and the route provider ids include `pr-c1-v1` (the control) but not `pr-lib-v1`.
+- A22 (c) asserts the same of the live build: `SELECTABLE_BASES` includes `pr-c1-v1` and not `pr-lib-v1`.
+- W27's pin test carries (b) over to the build.
+- Two negative controls are registered: an appended `pr-lib-v1` route gives exactly 2 problems, and a removed
+  `pr-c1-v1` route gives exactly 1.
+
+**Rejected alternatives, and why.**
+- *R-555's pattern (read the base blob from history and require equal rows, summary and snapshot apart from the
+  re-take fields).* A22 stays on `main` after the merge. Every later package that legitimately moves W27's rows or
+  routes, such as a model binding, would then have to amend L01's spec. That is the re-pin-at-each-change coupling
+  R-555 rejected. It also needs git history for a property that C2's SPLIT-A18 and A19 already check.
+- *Drop the pin and assert that L01's commits do not touch the file.* This needs history in the test, and
+  first-parent ancestry inverts once S04 merges into `main`. It is kept only as review-time clause (f).
+- *Re-pin to `aa89cdd6…`.* It would fail again at the next bump (R-460).
+
+**Watch for.** WO-L01-3 must replace (b) and (c) in the same commit that makes `pr-lib-v1` selectable.
+
+---
+
+## R-567 — A package byte-pins only files that no registered procedure rewrites; a re-taken file is checked by an invariant of its own
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S04 ruling Q1 |
+| Normative text | `docs/derivations/L01-spec.md` §13.1; R-460, R-555 |
+| Evidence | C2's split (R-555) and L01.A22 failed in the same way on the same re-take of `coverage.json`. C7's re-take moved none of the other 18 A22 pins |
+| Affected packages | Every package whose test pins a W27 or other re-taken file |
+
+**Decision.** A test may pin the bytes of a file only if no registered procedure rewrites that file. Today the only
+such procedure is W27's `coverage.json` re-take at each version bump (R-460).
+- For a re-taken file, the owner's pin test holds its content. For W27 that is
+  `test_committed_coverage_json_is_g14_and_this_builds_classification`.
+- A package that does not own the file asserts its own invariant on it, as L01 does with absence (R-566) or C2 with
+  read fields (R-555). It never asserts the file's bytes.
+
+**Rejected alternatives, and why.**
+- *Leave each case to its package.* Two packages have now failed in the same way. The rule costs one sentence.
+
+**Watch for.** A procedure that starts rewriting `registration.json`, `case_facts.json` or a snapshot file. Its
+byte pins then fall under this rule.
+
+---
+
+## R-568 — T08.A20's providers axis is the provider ids of `SELECTABLE_BASES`; a provider module outside it is library-only and registered
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S04 ruling Q2 |
+| Normative text | `docs/derivations/T08-release-spec.md` §5.2 (property-model row), §5.7 Amendment S04, and §9's T08.A20 row (amended); `docs/reviews/D1-rulings.md` §7, WO-D1-C |
+| Evidence | At `e46eb97`, `check_a20` reports `envelope ['pr-c1-v1', 'syn001'] != code ['pr-c1-v1', 'pr-lib-v1', 'syn001']`. `_providers()` scans `thermo` modules for `PROVIDER_ID`, while `{b.provider_id for b in SELECTABLE_BASES}` = `{'pr-c1-v1', 'syn001'}` |
+| Affected packages | T08 (A20), S04, and every later package that adds a provider module |
+
+**Decision.**
+- A20's `providers` code fact is the selectable set, the analogue of `MODEL_BUILDERS` for models. The module scan
+  remains a separate fact, `scanned_providers`.
+- `LIBRARY_ONLY_PROVIDERS = {"pr-lib-v1": "S04"}` registers the scanned ids that are not selectable.
+- A tripwire fails when a registered id is selectable, when a scanned id is neither selectable nor registered, when a
+  registered id is not scanned, or when a registered id's U02 harvest items are missing or lack its note.
+
+**Rejected alternatives, and why.**
+- *List `pr-lib-v1` in the axis*, as a provider row or as an `other_basis_providers` row. The axes state what is
+  supported, and an `other_basis_providers` row needs an L-row. R-561 refuses to write rows for a capability the
+  matrix calls unsupported.
+- *Exclude it by rule without a registry.* A new provider module would then pass unseen, which is silence read as
+  success.
+
+---
+
+## R-569 — A library-only provider's limitations are E → U02 with a typed outcome; its axis row and L-rows come with the selection
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S04 ruling Q2 |
+| Normative text | T08 release spec §5.7 Amendment S04; `docs/derivations/L01-spec.md` §13.4 |
+| Evidence | Measured at `e46eb97`: `component_basis({"component_set": {"record_source": "benchmarks/l01/components.yaml"}}).provider_id == "syn001"`, and `canonical_components` refuses `[H2O, N2]` and `[H2, N2, Ar, CH4, H2O]` with `RevisionError` `unsupported: components_unsupported`. The draft S04 manifest carries a `pr-lib-v1` scope limitation (`vapour_unstable` checks pure-component trial phases only) |
+| Affected packages | S04 (its WO-D1-B harvest), and WO-L01-3 |
+
+**Decision.**
+- S04's limitations about `pr-lib-v1` are harvested E → `U02`, each with a note naming `` `pr-lib-v1` `` and
+  `library-only`. No L-row is written.
+- U02's outcome gains the sentence on the `record_source` route, together with a test of that typed refusal and a
+  control: the C1 path selects `pr-c1-v1`.
+- WO-L01-3's selection commit adds the axis row with its `other_basis_providers` entry, writes the L-rows, reclassifies
+  the U02 items and removes the registration. This extends R-561 from models to providers.
+
+**Rejected alternatives, and why.**
+- *U04.* That row is about model ids. A library-only provider has no model, so a note there would misdescribe the
+  refusal.
+- *U01 alone.* U01 gives the outcome a user sees, but its capability is the component set, not the provider.
+  U02 names the provider and now cites U01's refusal.
+
+---

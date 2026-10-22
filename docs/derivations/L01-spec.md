@@ -1,6 +1,6 @@
 # L01 specification — component-library gaps on the OpenIDAES-450 development half (Water first)
 
-**Status:** Proposed, 2026-10-22; **amended** 2026-10-22 by the `reviewer` (§12: A12 bound and scope, `vapour_unstable`, T08.A32, packaging). **Author:** design lane (`specifier`), package L01, branch `wp/L01`.
+**Status:** Proposed, 2026-10-22; **amended** 2026-10-22 by the `reviewer` (§12: A12 bound and scope, `vapour_unstable`, T08.A32, packaging). **Amended** again 2026-10-22 by the `specifier` (§13, S04 ruling: A22's W27 clause and the library-only provider; R-566, R-567, R-569). **Author:** design lane (`specifier`), package L01, branch `wp/L01`.
 **Decision record:** ADR 0043 (Proposed); register R-520…R-527; `docs/L01_DECISIONS.md`.
 **Generator:** `docs/derivations/scripts/l01_projection.py` (`--emit`, `--check`) → `l01_projection.json` beside it.
 Every number in §3 and §6 is that record's, and the generator refuses to emit when a claim of §7 stops being true.
@@ -553,3 +553,90 @@ Until then the provider reads the checkout copy (`load_records`'s fallback). L01
 WO-L01-3, `benchmarks/l01/components.yaml` is not in `PACKAGED` and has no `_data` copy". The reason is that nothing
 packaged can reach the records before exposure, and L01-Q4's default is that nothing from L01 is released before the
 rights review.
+
+## 13. Amendment 2 (2026-10-22, design lane `specifier`, S04 ruling; `docs/briefs/S04-ruling.md`; R-566, R-567, R-569)
+
+This section supersedes the text it names. Every other part of the document is unchanged. Every assertion below is an
+exact comparison of strings, sets or SHA-256 values; no tolerance applies.
+
+### 13.1 Why A22 changed (measured at `e46eb97`, `wp/S04` = `wp/L01` + `wp/D1`)
+
+- `git diff b843941 e46eb97` over the 19 paths of `PINNED` in `tests/test_l01_records.py` changes one file,
+  `benchmarks/m06/openidaes450/coverage.json`, in 3 lines: `snapshot.git_commit`, `snapshot.package_version` and the
+  top-level `snapshot_sha256`. Its SHA-256 goes from `b69626c7…` to `aa89cdd6…`. The change is C7's W27 re-take
+  `f85fcd7` (R-460), which reached the S04 line through the merge `0c277b0`.
+- `git log --first-parent --no-merges b843941..e46eb97 -- <the 19 paths> benchmarks/m06/` is empty, so no commit on
+  the L01 line touches these files.
+- The re-taken file's `rows` and `summary` equal those at the base, blob `dea968a2…`, which is the blob C2 pins
+  (R-555). Its snapshot routes are `syn001` and `pr-c1-v1`, and its bytes contain neither `pr-lib-v1` nor
+  `benchmarks/l01/`.
+
+A22's byte pin therefore failed for a cause that is not L01's. R-460 rewrites W27's `coverage.json` at every version
+bump, so a byte pin held by a package that does not own the file fails at every bump. R-555 removed the same failure
+from C2. The rule is R-567: a package byte-pins only files that no registered procedure rewrites.
+
+### 13.2 L01.A22 as amended (R-566)
+
+Replace L01.A22 with:
+
+- **L01.A22** — L01 moves no C1 or W27 identity.
+  - (a) The 18 files of §4.4 that no registered procedure rewrites hash to their `PINNED` SHA-256 values, which are
+    unchanged. These are `benchmarks/m01/components.yaml`, `thermo/pr_c1.py`, `thermo/conventions.py`, the 13
+    `models/c1/*.py`, `case_facts.json` and `registration.json`. `models/c1/` holds exactly the pinned modules, and the
+    packaged C1 records hash as `benchmarks/m01/components.yaml`. `coverage.json` leaves `PINNED`.
+  - (b) L01's absence from W27's committed coverage. A helper `w27_absence_problems(data: bytes) -> list[str]`
+    reports:
+    - `pr-lib-v1` occurring in the bytes;
+    - `benchmarks/l01/` occurring in the bytes;
+    - `pr-lib-v1` among `[r["provider_id"] for r in snapshot["routes"]]`;
+    - `pr-c1-v1` absent from that list. This is the control: it shows that the list is populated and that it is the
+      list `pr-lib-v1` would join.
+    The helper returns `[]` on the committed `coverage.json`.
+  - (c) L01's absence from the live build. `{b.provider_id for b in revision_binding.SELECTABLE_BASES}` contains
+    `pr-c1-v1` and does not contain `pr-lib-v1`. W27's snapshot reads that table (W27-R63). The W27 pin test
+    `test_committed_coverage_json_is_g14_and_this_builds_classification` holds the live snapshot equal to the
+    committed one, apart from `git_commit`, so it carries (b) over to the build.
+  - (d) `pr_c1.describe()`'s two SHA-256 values equal the pinned ones. This clause is unchanged.
+  - (e) The M01, M02, M05 and W27 pin tests pass unmodified. This clause is unchanged.
+  - (f) Review-time, not a test: `git log --first-parent --no-merges b843941..HEAD -- <(a)'s 18 files>
+    benchmarks/m06/` is empty on `wp/S04`. A merge from `main` may bring a registered re-take, and that re-take is not
+    L01's. The command was measured empty at `e46eb97`.
+- **Negative controls, in the test:**
+  - The committed document with a route `{"provider_id": "pr-lib-v1", "components": [], "model_ids": []}` appended,
+    serialized with `json.dumps`, gives exactly 2 problems: the bytes and the route.
+  - The document with the `pr-c1-v1` route removed gives exactly 1 problem: the control.
+- **What (b) and (c) catch:**
+  - a W27 re-take on a build that exposes `pr-lib-v1`, caught by (b);
+  - exposure without a re-take, caught by (c) and by the W27 pin test;
+  - a hand edit of the rows, caught by the W27 pin test, whose re-classification must reproduce them.
+- **What they deliberately do not catch:** a re-take that moves only `git_commit`, `package_version` and
+  `snapshot_sha256`. Those fields are not identity (R-460, R-555).
+
+### 13.3 Validity and retirement
+
+(b) and (c) hold until WO-L01-3, which runs only after W27 Amendment 3 (F-1). The commit that adds `pr-lib-v1` to
+`SELECTABLE_BASES` replaces (b) and (c) with the identity statement that W27 Amendment 3 registers. The same commit
+takes the steps of §13.4.
+
+### 13.4 Addition to §4.3: until WO-L01-3, `pr-lib-v1` is a library-only provider (R-569)
+
+`pr-lib-v1` is a library-only provider under T08 release spec §5.7, Amendment S04.
+- S04's limitations about it are harvested E → `U02`, each with a note that names `` `pr-lib-v1` `` and
+  `library-only`. No L-row is written for it.
+- A revision cannot select it. `record_source: benchmarks/l01/components.yaml` selects SYN-001's basis, whose
+  `provider_id` is `syn001`, and the library's components are then refused `RevisionError` `components_unsupported`
+  (kind `unsupported`). This was measured at `e46eb97` for `[H2O, N2]` and for `[H2, N2, Ar, CH4, H2O]`.
+
+The commit of WO-L01-3 that adds the `SELECTABLE_BASES` entry also does the following:
+- adds `pr-lib-v1` to the envelope's `property_model.providers`, with an `other_basis_providers` row that carries its
+  limitation L-row and a caveat;
+- writes its L-rows;
+- reclassifies S04's `U02` items;
+- removes `pr-lib-v1` from `LIBRARY_ONLY_PROVIDERS`.
+
+### 13.5 What this amendment does not establish
+
+- It does not rule F-1, W27 Amendment 3, L01-Q1, L01-Q4 or the timing of WO-L01-3.
+- (b) is not a check of W27's content. W27's rows and classes are held by W27's own tests and by C2's SPLIT-A18 and
+  A19 (R-555), not by L01.
+- C2's strict pins on `case_facts.json` and `sample.json` stand.

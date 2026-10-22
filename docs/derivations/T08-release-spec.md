@@ -184,7 +184,7 @@ The envelope is a machine-readable file, `benchmarks/t08/support_envelope.yaml`,
 
 | Axis | v0.1 statement | Source of truth the check compares with |
 | --- | --- | --- |
-| Property model | SYN-001 only: ideal vapour, incompressible ideal liquid, VLE; reference convention `SYN-001-ref-v1` (a formation datum, ADR 0011 D2); no critical region, no extra phase | `thermo/` providers = {`syn001`} |
+| Property model | SYN-001 only: ideal vapour, incompressible ideal liquid, VLE; reference convention `SYN-001-ref-v1` (a formation datum, ADR 0011 D2); no critical region, no extra phase | `thermo/` providers = {`syn001`}; *amended 2026-10-22 (S04, R-568)*: the provider ids of `revision_binding.SELECTABLE_BASES` (§5.7, Amendment S04) |
 | Components | exactly the three pseudo-components {A, B, C}, declared in any of the six orders and mapped onto the provider's order at binding (T06 A59–A61, R-076); a proper subset, an extra, an unknown or a repeated component is refused `components_unsupported` (U01) — a mixture without one of them is declared with all three and that component's flows exactly zero (ADR 0001 D3); `synthetic: true`; no real identity *(amended 2026-10-01, review 2 Ruling 2)* | provider component set; `canonical_components` |
 | Domain | 280–440 K, 50–200 kPa (the provider's predicate) | provider domain |
 | Unit models | the thirteen of `MODEL_BUILDERS` (§4.2), each with its registered limitations *(amended 2026-09-29, T08 build-first §E.4)* | `MODEL_BUILDERS` |
@@ -294,6 +294,34 @@ The executable half of T08.A33 is a bijection: every fallback label, `eo_recover
 `harvest` lists every `limitations[]` entry and every non-`pass` check of every manifest under `evidence/` (today 18 manifests; P00–K06 carry 87 limitations, T01–T07 carry 145), each keyed by manifest path, index and the SHA-256 of its text, and classified exactly once: **E** (user-facing; points to one or more L-rows of §5.5 or U-rows of §5.3), **S** (superseded or closed; points to the closing test node or passing manifest check, or to a document only when the closing fact is that document's existence and it did not exist when the item was written — a status inside a document that already existed is closed by a test asserting it), **P** (provenance or process note needing no closure; stays in its manifest), **B** (an open defect or follow-up not closed in v0.1; points to a backlog id of §6.3). A compound item takes the first applicable class in the order E, B, S, P; its pointers name a row for every user-facing part, and an E item may also carry the backlog ids of its B parts. A defect handed on is never P: it is S when closed, E when a user can reach it, else B. *(amended 2026-10-01, review 2 Ruling 4)* The check fails on an unmapped item, a dangling pointer, or a changed text hash. The build lane drafts the classification; the design-lane `reviewer` checks it (a misfiled E-as-P hides a limitation).
 
 *Amendment D1 (2026-10-22, design lane `specifier`, R-561).* **Library-only capabilities.** A capability whose model id is not in `revision_binding.MODEL_BUILDERS` cannot be reached by a user, so its scope limitations are E → `U04`, and the note names the model id as library-only. No L-row is written for it. The package that binds the model writes its L-rows and reclassifies that model's U04 items in the same commit. A test in `tests/test_t08_w2_support_envelope.py` (D1-A03) holds the registered library-only ids (`syn001.cascade` from S01, `syn001.column` from S02) unbound while their U04 items stand. It fails when one is bound.
+
+*Amendment S04 (2026-10-22, design lane `specifier`, S04 ruling, R-568, R-569).* **The providers axis and library-only providers.**
+
+- **The axis (R-568).** `property_model.providers` lists the providers a revision can select. That set is
+  `{b.provider_id for b in revision_binding.SELECTABLE_BASES}`, the analogue for providers of `MODEL_BUILDERS`. T08.A20
+  compares the axis with that set. It no longer compares with the modules of `openflowsheet.thermo` that define
+  `PROVIDER_ID`.
+- **Library-only.** A module of `openflowsheet.thermo` whose `PROVIDER_ID` is not selectable is library-only, and it is
+  in no axis.
+  - It is registered in `LIBRARY_ONLY_PROVIDERS` in `tests/test_t08_w2_support_envelope.py`, together with the
+    package whose harvest items name it. Today that is `{"pr-lib-v1": "S04"}`.
+  - A scanned id that is neither selectable nor registered fails the test, so a provider module cannot ship
+    unaccounted for.
+- **Classification (R-569).** Its scope limitations are E → `U02`, each with a note that names the id in back-ticks and
+  `library-only`. No L-row is written for it.
+  - The row is not U04. U04 is about a model id not in `MODEL_BUILDERS`, and a library-only provider has no model.
+  - The user-facing failure is typed. A `record_source` that no selectable basis reads selects SYN-001's basis, so the
+    provider's components are refused `components_unsupported` (U01's binding outcome, T06 A60).
+  - U02's `outcome` gains one sentence saying so, and its `evidence` gains the test node that asserts it.
+- **Binding the provider.** The commit that makes such a provider selectable does five things:
+  - adds it to the axis with an `other_basis_providers` row, carrying a limitation L-row and a caveat as
+    `check_structure` requires;
+  - writes its L-rows;
+  - reclassifies its package's `U02` items;
+  - removes it from `LIBRARY_ONLY_PROVIDERS`;
+  - re-takes W27's coverage under W27's rules.
+
+  The test fails when a registered library-only provider is selectable.
 
 ---
 
@@ -472,7 +500,7 @@ Tolerance column: **exact** means equality of integers, strings, hashes or sets;
 | T08.A17 | CLI `replay --rerun` on (a) a revision-built bundle, (b) a K05 bundle whose `run_id` is no registered case | (a) reruns the recorded route, `MATCH`, exit 0; (b) `NOT_RUN`, reason `rerun_unsupported(no_revision_document)`, nothing rerun, exit 1 | exact | test |
 | T08.A18 | `src/process_runtime/application/bindings/descriptions/REVIEW.json` | for each of the 17 operations both reviews (`design-lane`, `human`) are `reviewed`, with `reviewed_by` and `reviewed_at` set, at the recorded hash, which equals the served text's | exact | test |
 | T08.A19 | The lock lookup. States: (a) the source checkout at `C`; (b) the RC wheel installed (`--no-deps`, dependencies at the lock's versions) into a virtual environment inside a scratch directory that also holds an unrelated file named `requirements.lock`; (c) a `SYN-001-nominal` bundle written by (b)'s CLI, replayed by (b) and by (a) | (a) `RunManifest` `lock_sha256` = `ead4edf1…`; (b) `lock_sha256` = `""` — the stray file is not read; (c) both replays `inspected_archived_results`, verdict `NOT_RUN`, the reason naming the dependency set unknown (on both sides from (b); on the archive's side from (a)); never `MATCH`; no exception *(added 2026-10-01, Amendment R3 5)* | exact. (a) catches a fix that empties the hash everywhere; (b) the parent-directory walk; (c) a silent `MATCH` | ci |
-| T08.A20 | `support_envelope.yaml` against the code | operations = the 20 of `OPERATIONS`; models = the 13 of `MODEL_BUILDERS` *(amended 2026-09-29, T08 build-first §E.4)*; policies = the offered list; unit spellings = ADR 0016's table; providers = {`syn001`}; components = {A, B, C} | exact set equality | test |
+| T08.A20 | `support_envelope.yaml` against the code | operations = the 20 of `OPERATIONS`; models = the 13 of `MODEL_BUILDERS` *(amended 2026-09-29, T08 build-first §E.4)*; policies = the offered list; unit spellings = ADR 0016's table; providers = the provider ids of `revision_binding.SELECTABLE_BASES` *(amended 2026-10-22, S04, R-568; was {`syn001`}; a library-only provider is registered, §5.7 Amendment S04)*; components = {A, B, C} | exact set equality | test |
 | T08.A21 | The harvest (§5.7) over P00–T07's manifests (§5.7; `HARVEST_PACKAGES`); T08's own manifest, written after `C`, is the next harvest's *(amended 2026-10-06, Amendment R8 2)* | every limitation and non-pass check classified exactly once (E/S/P/B), every pointer resolves, every text hash current | exact | test |
 | T08.A22 | Every `unsupported` row | names a typed outcome and a test node that exists and passes at `C` | exact | test |
 | T08.A23 | `docs/support-matrix.md` | regenerates byte for byte from the YAML | exact | test |

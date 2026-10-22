@@ -253,3 +253,87 @@ assertion below is an exact comparison of strings, sets or counts. No tolerance 
 - Item 4: `tests/test_m07_ledger.py` gives 5 passed, 0 skipped (the `v0.2.0` tag is fetched here; the tag test skips where it is not). Negative control (constant = `ALPHA_TAG_COMMIT`, not committed): 3 failed (`test_the_claimed_verdicts_are_the_documents`, `test_every_claimed_gate_cites_m07_at_c`, `test_the_tag_commit_is_0_2_0`), 2 passed. §26.4 expected only the cites test to fail; the alpha's verdict set also differs from 0.2.0's, so the verdict-equality test fails as well. Not an issue for the check.
 - Full touched run: 894 passed, 3 deselected (tests/test_t05b_*, test_t08_w2_*, test_m07_*); ruff and mypy clean.
 - Not done: spec §26.3 item 1's optional import of the constant in `test_v02_main_version.py` and `test_m07a_harvest.py` (literals kept).
+
+## 7. S04 ruling round and WO-D1-C (design lane `specifier`, 2026-10-22; brief `docs/briefs/S04-ruling.md`)
+
+After `main` was merged into `wp/S04`, two tests failed. Each failure is ruled here. The normative text is in the L01
+spec §13 (Amendment 2) and in the T08 release spec §5.7 (Amendment S04) together with its §5.2 and §9 A20 rows.
+
+- **Q7 — L01.A22 and `coverage.json` (R-566, R-567).** `coverage.json` leaves `PINNED`. A22 asserts instead that
+  L01 is absent from W27's coverage, both committed and live. Reason: R-460 rewrites the file at every version bump.
+  C7's `f85fcd7` moved 3 lines and none of the other 18 pins, and no commit on the L01 line touches it. R-555's
+  history pattern would make every later W27 change amend L01's spec.
+- **Q8 — T08.A20's providers axis (R-568, R-569).** The axis is `{b.provider_id for b in SELECTABLE_BASES}`. A scanned
+  provider module outside that set is library-only and registered (`{"pr-lib-v1": "S04"}`), and its limitations are
+  E → `U02`, with the typed refusal `components_unsupported` through SYN-001's basis. Listing it in the axis would claim
+  support; R-561 refuses rows for unreachable capabilities.
+
+**WO-D1-C** (`sonnet-implementer`, on `wp/S04`; one isolated commit per item; run only the touched tests). Every
+assertion is an exact comparison of strings, sets, counts or SHA-256 values, so no tolerance or floor applies.
+The order is C1, then C2, then WO-D1-B items 1–2, then C3, then WO-D1-B item 3.
+
+1. **C1 (Q7), in `tests/test_l01_records.py`.**
+   - Remove `benchmarks/m06/openidaes450/coverage.json` from `PINNED`, which leaves 18 entries. Cite "L01 spec §13.2
+     (R-566)" in the A22 comments.
+   - Add `w27_absence_problems(data: bytes) -> list[str]`, which reports the four conditions of §13.2 (b).
+   - Add `test_a22_l01_is_absent_from_w27s_coverage`. It asserts `[]` on the committed bytes, and checks two controls
+     built from a deep copy that is serialized with `json.dumps`: an appended route
+     `{"provider_id": "pr-lib-v1", "components": [], "model_ids": []}` gives exactly 2 problems, and removing the
+     `pr-c1-v1` route gives exactly 1.
+   - Add `test_a22_the_live_build_does_not_select_pr_lib_v1`. It asserts that
+     `{b.provider_id for b in revision_binding.SELECTABLE_BASES}` contains `"pr-c1-v1"` and not `"pr-lib-v1"`.
+   - Run `tests/test_l01_records.py` and `tests/test_m06_w27_coverage.py::test_committed_coverage_json_is_g14_and_this_builds_classification`,
+     with the second unmodified.
+2. **C2 (Q8), in `scripts/t08_support_matrix.py`.**
+   - `code_facts()["providers"]` becomes `sorted({b.provider_id for b in revision_binding.SELECTABLE_BASES})`.
+   - Keep the module scan as `code_facts()["scanned_providers"]`, and update the module docstring (line 11).
+   - In `test_a20_the_axes_equal_the_code`, keep `facts["providers"] == ["pr-c1-v1", "syn001"]` and add
+     `facts["scanned_providers"] == ["pr-c1-v1", "pr-lib-v1", "syn001"]`. `check_a20` must return `[]`.
+   - The envelope does not change in this item.
+3. **WO-D1-B items 1–2 as amended.**
+   - Take the S04 manifest at a commit after C1 and C2.
+   - Drop the draft limitation "`test_a20_the_axes_equal_the_code` fails on wp/L01 …". It no longer holds.
+   - Cite A22 as amended (§13.2).
+   - Harvest the limitations about `pr-lib-v1`, among them the `vapour_unstable` scope limitation, as E → `["U02"]`.
+     Each note names `` `pr-lib-v1` `` and `library-only` (R-569).
+4. **C3 (Q8), after item 3 of this list.**
+   - In `tests/test_t08_w2_support_envelope.py`, add `LIBRARY_ONLY_PROVIDERS = {"pr-lib-v1": "S04"}` and
+     `library_only_provider_problems(selectable, scanned, harvest) -> list[str]`. It reports:
+     - (a) a registered id that is in `selectable`;
+     - (b) a scanned id that is neither selectable nor registered;
+     - (c) a registered id that is not scanned;
+     - (d) an `evidence/<pkg>/` item with `U02` in `to` whose note lacks `` `<id>` `` or `library-only`;
+     - (e) a registered package with no `U02` item.
+
+     Each message names the id and cites "(S04, R-568, R-569)".
+   - Assertions: `[]` on the live sets and the envelope's harvest, and exactly 1 problem for each of five controls:
+     - `pr-lib-v1` added to `selectable`;
+     - `pr-ghost-v1` added to `scanned`;
+     - `pr-lib-v1` removed from `scanned`;
+     - one S04 `U02` note stripped of the id (a deep copy);
+     - all S04 `U02` items removed.
+   - In `tests/test_t08_w2_unsupported.py`, add `test_u02_a_library_only_providers_records_are_refused_typed`:
+     - `component_basis({"component_set": {"record_source": "benchmarks/l01/components.yaml"}}).provider_id == "syn001"`;
+     - `canonical_components(["H2O", "N2"], basis)` raises `RevisionError` matching `components_unsupported`;
+     - the control: `pr_c1.RECORDS_PATH` selects `"pr-c1-v1"`.
+   - Append this sentence to U02's `outcome` in `support_envelope.yaml`: "A `record_source` that no selectable basis
+     reads selects SYN-001's basis, so another provider's components are refused `components_unsupported` (U01);
+     `pr-lib-v1` is library-only this way (R-569)." Add that test node to U02's `evidence`, then re-emit
+     `docs/support-matrix.md`.
+5. **Done when** the following all pass, with ruff and mypy clean:
+   - `pytest tests/test_l01_records.py tests/test_t08_w2_support_envelope.py tests/test_t08_w2_unsupported.py tests/test_m06_w27_coverage.py`;
+   - `scripts/t08_support_matrix.py --check`, with 0 problems.
+
+   Record the measured counts in the S04 build-decisions log. The review is folded into S04's single `reviewer` pass.
+
+**What this round does not establish.** It does not rule F-1, W27 Amendment 3, WO-L01-3's timing, or L01-Q1 and
+L01-Q4. It writes no test or production code. No frozen interface, schema or ADR changes, and no registered hash
+moves. A22's (b) and (c) assert L01's absence only; they say nothing about W27's content.
+
+**Open questions (each with a default).**
+- **S04-O1 (needs a fact).** Does any registered procedure rewrite `registration.json`, `case_facts.json` or a W27
+  snapshot file at a bump? Measure with `git log` over those paths across the version bumps. Default: no. C7's re-take
+  moved only `coverage.json`, and if one does, R-567 applies.
+- **S04-O2 (finding; needs the user's preference at the v0.3 release review).** U02's capability, "Any property
+  method other than SYN-001", has been stale since M02 because `pr-c1-v1` is supported on the C1 models. Default:
+  leave it until the v0.3 envelope review. The added outcome sentence is accurate meanwhile.
