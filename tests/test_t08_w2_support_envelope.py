@@ -319,3 +319,97 @@ def test_d1_a_u04_item_that_loses_its_model_id_trips_the_wire(envelope: dict[str
     # no vacuous pass: a harvest with the package's U04 items removed is also a problem
     stripped = [i for i in envelope["harvest"] if "U04" not in (i.get("to") or [])]
     assert len(library_only_problems(revision_binding.MODEL_BUILDERS, stripped)) == 2
+
+
+# -- C3: the library-only providers (T08 release spec §5.7 Amendment S04; R-568, R-569) --------
+
+#: The provider modules of `openflowsheet.thermo` that no revision can select, and the package
+#: whose harvest items name each under U02. The commit that makes one selectable removes it here,
+#: adds it to the providers axis and reclassifies its package's U02 items (L01 spec §13.4).
+LIBRARY_ONLY_PROVIDERS = {"pr-lib-v1": "S04"}
+
+
+def library_only_provider_problems(
+    selectable: Any, scanned: Any, harvest: list[dict[str, Any]]
+) -> list[str]:
+    """Why `LIBRARY_ONLY_PROVIDERS` no longer holds: (a) a registered id that is selectable;
+    (b) a scanned id neither selectable nor registered; (c) a registered id not scanned; (d) an
+    item of its package's manifests with U02 in `to` whose note lacks the id in back-ticks or
+    `library-only`; (e) a registered package with no U02 item (no vacuous pass)."""
+    suffix = "(S04, R-568, R-569)"
+    problems: list[str] = []
+    for provider_id in sorted(set(scanned) - set(selectable) - set(LIBRARY_ONLY_PROVIDERS)):
+        problems.append(
+            f"{provider_id} is a provider module that is neither selectable nor registered "
+            f"library-only {suffix}"
+        )
+    for provider_id, package in LIBRARY_ONLY_PROVIDERS.items():
+        if provider_id in selectable:
+            problems.append(
+                f"{provider_id} is selectable: add it to the providers axis with its L-rows, "
+                f"reclassify {package}'s U02 items and unregister it {suffix}"
+            )
+        if provider_id not in scanned:
+            problems.append(f"{provider_id} is registered library-only but not scanned {suffix}")
+        items = [
+            entry
+            for entry in harvest
+            if entry["manifest"].startswith(f"evidence/{package}/")
+            and "U02" in (entry.get("to") or [])
+        ]
+        if not items:
+            problems.append(f"{provider_id}: {package} has no U02 item in the harvest {suffix}")
+        for entry in items:
+            note = entry.get("note") or ""
+            if f"`{provider_id}`" not in note or "library-only" not in note:
+                problems.append(
+                    f"{provider_id}: {entry['manifest']} {entry['item']} is U02 without "
+                    f"`{provider_id}` and library-only in its note {suffix}"
+                )
+    return problems
+
+
+def _selectable() -> set[str]:
+    return {basis.provider_id for basis in revision_binding.SELECTABLE_BASES}
+
+
+def test_c3_the_library_only_providers_are_unselectable_with_their_u02_items(
+    envelope: dict[str, Any], facts: dict[str, Any]
+) -> None:
+    scanned = set(facts["scanned_providers"])
+    assert library_only_provider_problems(_selectable(), scanned, envelope["harvest"]) == []
+
+
+@pytest.mark.parametrize(
+    ("control", "named"),
+    [
+        ("selectable", "pr-lib-v1"),
+        ("ghost", "pr-ghost-v1"),
+        ("unscanned", "pr-lib-v1"),
+        ("note", "pr-lib-v1"),
+        ("no_u02", "pr-lib-v1"),
+    ],
+)
+def test_c3_each_broken_condition_is_one_problem(
+    envelope: dict[str, Any], facts: dict[str, Any], control: str, named: str
+) -> None:
+    selectable, scanned = _selectable(), set(facts["scanned_providers"])
+    harvest = copy.deepcopy(envelope["harvest"])
+    s04_u02 = [
+        item
+        for item in harvest
+        if item["manifest"].startswith("evidence/S04/") and "U02" in (item.get("to") or [])
+    ]
+    if control == "selectable":
+        selectable |= {"pr-lib-v1"}
+    elif control == "ghost":
+        scanned |= {"pr-ghost-v1"}
+    elif control == "unscanned":
+        scanned -= {"pr-lib-v1"}
+    elif control == "note":
+        s04_u02[0]["note"] = s04_u02[0]["note"].replace("`pr-lib-v1`", "the library provider")
+    else:
+        harvest = [item for item in harvest if item not in s04_u02]
+    problems = library_only_provider_problems(selectable, scanned, harvest)
+    assert len(problems) == 1, problems
+    assert named in problems[0] and "(S04, R-568, R-569)" in problems[0]

@@ -323,10 +323,14 @@ unsupported:
     capability: Any property method other than SYN-001
     outcome: >-
       Not representable: a revision has no property-method member, so naming one is `SCHEMA-01`
-      INVALID; a model of another package is `model_unsupported(<id>)` at binding.
+      INVALID; a model of another package is `model_unsupported(<id>)` at binding. A
+      `record_source` that no selectable basis reads selects SYN-001's basis, so another
+      provider's components are refused `components_unsupported` (U01); `pr-lib-v1` is
+      library-only this way (R-569).
     evidence:
       - tests/test_t08_w2_unsupported.py::test_u02_a_property_method_member_is_a_schema_refusal
       - tests/test_t08_w2_unsupported.py::test_u02_a_model_of_another_property_package_is_model_unsupported
+      - tests/test_t08_w2_unsupported.py::test_u02_a_library_only_providers_records_are_refused_typed
 
   - id: U03
     capability: A state outside 280–440 K or 50–200 kPa

@@ -39,6 +39,12 @@ from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.application.revision_binding import bind_revision_flowsheet
 from openflowsheet.application.types import schema_errors
 from openflowsheet.application.validation import validate
+from openflowsheet.models.revision_flowsheet import (
+    RevisionError,
+    canonical_components,
+    component_basis,
+)
+from openflowsheet.thermo import pr_c1
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -68,6 +74,18 @@ def test_u02_a_model_of_another_property_package_is_model_unsupported() -> None:
         "unsupported",
         "model_unsupported(peng_robinson.tp_heater)",
     )
+
+
+def test_u02_a_library_only_providers_records_are_refused_typed() -> None:
+    # T08 release spec §5.7 Amendment S04, L01 spec §13.4 (R-569): a record_source no selectable
+    # basis reads selects SYN-001's basis, which refuses `pr-lib-v1`'s components typed (U01).
+    basis = component_basis({"component_set": {"record_source": "benchmarks/l01/components.yaml"}})
+    assert basis.provider_id == "syn001"
+    with pytest.raises(RevisionError, match="components_unsupported"):
+        canonical_components(["H2O", "N2"], basis)
+    # Control: the C1 records select the C1 basis.
+    c1 = component_basis({"component_set": {"record_source": pr_c1.RECORDS_PATH}})
+    assert c1.provider_id == "pr-c1-v1"
 
 
 def test_u05_validate_for_optimization_is_unsupported(
