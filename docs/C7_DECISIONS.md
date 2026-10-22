@@ -22,3 +22,9 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
   v0.3) or does R-193's `v0.2-envelope-dev` / `0.2.0.dev0` stay the working form until v0.3's cut? The latter is
   what the code and tests now require. A new id touches R-193's scope, `WORKING_ENVELOPE`, and A10's frozen edit (R-475,
   A31 (b)). Default applied: keep `v0.2-envelope-dev`.
+- Re-take W27 (R-460 "re-take W27's coverage"), needed: at `954fde3`
+  `test_committed_coverage_json_is_g14_and_this_builds_classification` fails (`package_version` `0.3.0.dev0` !=
+  committed `0.2.0`). `python -m benchmarks.m06.w27.coverage` then `python -m benchmarks.m06.w27.report` at
+  `954fde3` (committed `case_facts.json`; no archive needed): only `snapshot.git_commit` (`48db2d3` → `954fde3`),
+  `snapshot.package_version` and `snapshot_sha256` (`211cf4f1…` → `5e36f8ef…`) move; rows, summary and
+  `list_models_sha256` `f070fbe0…` unchanged; G14 PASS (450/450 rows). As `4b909af` did after E7.
