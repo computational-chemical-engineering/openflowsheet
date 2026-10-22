@@ -47,3 +47,12 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
   and require the working copy's (`case_id`, `family`, `class`) multiset to equal it; no history means an explicit
   refusal. `split.json` is byte-identical. Alternative: re-pin per re-take; a frozen copy; a read-field digest pin.
   Reversible by: an amendment.
+- DECISION (Amendment 2, 2026-10-23, R-581, D-13): who writes `case_facts-v2.json` → C2's own script
+  `docs/derivations/scripts/c2_openidaes450_facts_v2.py`, reusing W27's reading helpers by import; W27's generator and
+  its preflight pins unchanged; the expected file is WS1's bytes with `source.generator` substituted (`4f5c5a65…`).
+  Alternative: WS1's stage in W27's generator with a re-pin; a stage in C9's version 2 generator or in the split
+  generator. Reversible by: an amendment moving the writer.
+- DECISION (Amendment 2, 2026-10-23, R-582, D-14): how SPLIT-A09 admits it → one exact `ALL_CASE_FILES` entry; the
+  split generator pins the file and checks seven identities and the unit-level F-1 states (items 13–15); `f1.status`
+  `facts_committed`; `split.json` changes in `f1` only (`a556e417…`). Alternative: a `heldout/` path; a split pair of
+  files; a pattern entry. Reversible by: an amendment.
