@@ -59,7 +59,7 @@ from openflowsheet.thermo.syn001 import Syn001Provider
 
 REFERENCE_PATH = REPO_ROOT / "docs" / "derivations" / "scripts" / "s06_reference.json"
 #: The reference this module was written against; a re-emitted reference must be re-read here.
-REFERENCE_SHA256 = "a8ff5bb3c70b4156dc1f08aa6c385394c57f448215e61771784518b543cce810"
+REFERENCE_SHA256 = "c6391195b6c8c184693b674f96dbf41eb89f25cfa16d29fe966dff648320264c"
 REFERENCE: dict[str, Any] = json.loads(REFERENCE_PATH.read_bytes())
 
 UNIT = "S06"
@@ -344,22 +344,9 @@ def _refusal_spec(name: str) -> ColumnSpec:
     return _from_reference(record["base"], record["spec"], record["feed"])
 
 
-#: QUESTION (docs/C11_DECISIONS.md, Q-S06-WO1-1): the registered I3 probe's feed (0.5, 0.5, 0) at
-#: M1's feed state (340 K, 1.04 bar, declared LIQUID) is above its bubble point, so S01's R5,
-#: which precedes S06's rules, answers it first. Measured: `inadmissible_inlet(feed, LIQUID)`
-#: (Σ z_i K_i ≈ 1.10 at 340 K). `test_a02_i3_with_an_admissible_feed` shows I3 itself.
-I3_MISS = "inadmissible_inlet(feed, LIQUID)"
-PROBES = [
-    pytest.param(
-        name,
-        marks=pytest.mark.xfail(
-            strict=True, reason=f"Q-S06-WO1-1: R5 answers first, measured {I3_MISS}"
-        ),
-    )
-    if name == "I3-absent"
-    else name
-    for name in sorted(REFERENCE["refusals"])
-]
+#: Every refusal probe is at its base's inlet state and passes S01's R5 there (S06 §17.1, R-608):
+#: the provider below answers inside R5, so a probe R5 refused would fail here.
+PROBES = sorted(REFERENCE["refusals"])
 
 
 @pytest.mark.parametrize("name", PROBES)
@@ -394,25 +381,6 @@ def test_a02_refusal_probes(name: str, monkeypatch: pytest.MonkeyPatch) -> None:
     assert isinstance(answer, CascadeFailure), answer
     assert answer.outcome == "INVALID_SPECIFICATION"
     assert answer.cause == expected
-
-
-def test_a02_the_i3_probe_meets_r5_first() -> None:
-    """The measured value behind the I3 strict xfail: the registered probe at M1's feed state
-    answers R5's code."""
-    failure = validate(_refusal_spec("I3-absent"), PROVIDER, CONTEXT)
-    assert isinstance(failure, CascadeFailure)
-    assert failure.cause == I3_MISS
-
-
-def test_a02_i3_with_an_admissible_feed() -> None:
-    """Not a registered probe: the I3 probe with its feed declared at 320 K (an admissible
-    liquid; `Σ z_i K_i ≈ 0.62` there) answers `infeasible_spec(absent_component:reboiler)`."""
-    spec = _refusal_spec("I3-absent")
-    feed = spec.sides[0]
-    cold = replace(feed, state=replace(feed.state, temperature=320.0))
-    failure = validate(replace(spec, sides=(cold,)), PROVIDER, CONTEXT)
-    assert isinstance(failure, CascadeFailure)
-    assert failure.cause == "infeasible_spec(absent_component:reboiler)"
 
 
 @pytest.mark.parametrize("end", [CONDENSER, REBOILER])

@@ -618,8 +618,8 @@ PROBES: list[tuple[str, str, tuple[str, ...], dict[str, tuple[str, Any, Any]], s
     (
         "I3-absent",
         "M1",
-        ("0.5", "0.5", "0"),
-        {"condenser": ("reflux_ratio", None, "2"), "reboiler": ("recovery", 2, "0.9")},
+        ("0", "0.5", "0.5"),
+        {"condenser": ("reflux_ratio", None, "2"), "reboiler": ("recovery", 0, "0.9")},
         "infeasible_spec(absent_component:reboiler)",
     ),
     (
