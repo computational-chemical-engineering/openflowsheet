@@ -2,6 +2,21 @@
 
 Questions only Frank can answer (scope, value judgments). Each carries the default that unattended work proceeds on.
 
+## Answers — Frank, 2026-10-22: "accept all recommendations"
+
+Recommendations as put to Frank (session, 2026-10-22); each answer below is now the decision.
+- **C2-Q1:** default; coverage classification of the held-out half at every release gate; agent campaigns only when a release registration asks, sampled from the held-out half; any OpenIDAES agent-score claim comes from the held-out half.
+- **C2-Q2:** yes — the 17 exposed cases are development (65 exposed, 225 development, 224 held-out).
+- **Q-B1:** yes (rigid vessels). **Q-B2:** no co-simulation; a later ADR revising D2.3 is required to allow it.
+- **Q-S01-1, Q-S02-1, Q-S02-3:** defaults. **Q-S02-2:** defaults, and purity / recovery / stage-temperature specifications are the next column package.
+- **Q-S02-3 follow-up (ADR 0044):** no objection, on condition that ADR 0044's acceptance shows every other unit's results unchanged (bit-identical at the old configuration) by the new recovery path.
+- **Q-S02-4:** no selection rule; both states registered and disclosed; add a "multiple steady states possible" warning to every duty-only column specification (new build item).
+- **D1-Q1:** no objection.
+- **L01-Q1:** a small separate design-lane package (W27 Amendment 3: one route per method relaxed; `Co`/`CO` case clash fixed), applied to the next release's W27 registration; v0.2's W27 stays unchanged.
+- **L01-Q2:** accepted (already built).
+- **L01-Q3:** IAPWS-95 is the next property method, as a planned v0.3 addition with its own ADR (design lane first), not as benchmark tuning.
+- **L01-Q4:** no release ships the nine `pr-lib-v1` records until a per-source rights check (JANAF/NIST, NASA via Cantera, Cantera, CoolProp, `chemicals`, ATcT citation) and an attribution file exist and the design lane amends T08.A32; then they may ship.
+
 ## C2 — OpenIDAES-450 development / held-out split (2026-10-21)
 
 - **C2-Q1. What should a release gate score on the held-out half?**
