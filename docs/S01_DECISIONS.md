@@ -72,6 +72,11 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
 
 **Evidence (WO-3).** `evidence/S01/ea125486b10476de107e8a37ba05c56718cef1d8/manifest.json`, from `scripts/s01_evidence_manifest.py` at `ea12548`: status `implemented` (20/26 checks pass). A01–A03, A07–A09, A11–A20 pass; A04, A05, A06, A10 fail only on WO-2's four strict xfails (the questions below); `S01.A04-A06-deviation` fails (worst 0.454 of the state tolerance, C4/C5 pre-solve); generator `--check`, ruff, format, mypy pass; `S01.gate` unsupported (not run). Note: the margin test's name cites A04 and A06, so A06 is held by the C4/C5 pre-solve margin although C2's own root is at 7.3e-4 of its tolerance.
 
+### WO-4 build decisions (`opus-engineer`, 2026-10-22; review fixes, spec §17)
+
+- R-514/R-515 (WO-4 item 1): the state tolerance's flow floor is `FLOW_ABS = 10 * FLOW_TOLERANCE` (3.1e-7 mol/s, imported); A05 is T abs 1e-5 K and flows abs `10 * FLOW_TOLERANCE`. `MARGIN_SHORT` and the A05 xfail are removed; the margin test still asserts ≤ 0.1. Measured: worst C4 pre-solve 0.013 of the tolerance (was 0.454), C5 pre-solve 0.0025; A05 9.77e-7 K and 9.06e-9 mol/s (both 10.2× and 34× under).
+- R-516 (WO-4 item 2): `_fd_errors` steps `h = 1e-6·max(D_x, |x|)` (`FD_COLUMN_SCALE`). The floor xfail is removed. Measured floor 5.90e-11 at C2's `x_K` and at its root (worst entry `(inlet.top.T, inlet:top:T)`); `(Q_j, energy_j)` 1.6e-11 to 2.0e-11 (was 3.39e-8). `test_a10_where_the_c2_root_floor_sits` now holds that measured floor (every entry ≤ 1e-10) and the exact `+1` entries.
+
 ### Design-lane questions
 
 - QUESTION: §5 has refusals carry `INVALID_SPECIFICATION`, which is not a `SolveOutcome` value, and §4.5 says "no new outcome values". WO-1 returns it as `CascadeFailure.outcome` (a local literal, outside `SolveOutcome`). How must WO-2 surface it — a `SolveOutcome`, an application error, or a raised `SpecificationError`?

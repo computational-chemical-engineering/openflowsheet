@@ -54,8 +54,9 @@ from openflowsheet.thermo.syn001 import Syn001Provider
 PROVIDER = Syn001Provider()
 CASES = ("C1", "C2", "C3", "C4", "C5")
 
-# Spec §10's state tolerance.
-FLOW_REL, FLOW_ABS, T_ABS, Q_ABS = 1e-6, 1e-9, 1e-4, 1e-2
+# Spec §10's state tolerance; its flow floor is 10·τ_flow (spec §17.5, R-514).
+FLOW_REL, T_ABS, Q_ABS = 1e-6, 1e-4, 1e-2
+FLOW_ABS = 10 * FLOW_TOLERANCE
 
 
 _SOLVED: dict[str, CascadeSolution] = {}
@@ -153,29 +154,8 @@ def test_a04_the_presolve_root_and_q0(case: str) -> None:
     assert max(worst.values()) <= 1.0, worst
 
 
-#: Spec §10: the state tolerance must stay ≥ 10× the measured deviation. The measurements at
-#: which it does not (WO-2, logged as a design-lane question):
-MARGIN_SHORT: dict[tuple[str, str], str] = {
-    ("C4", "presolve"): "S01.stage.2.v.B off by 3.80e-9 mol/s = 0.454 of its tolerance (2.2x)",
-    ("C5", "presolve"): "S01.stage.1.l.B off by 6.08e-10 mol/s = 0.115 of its tolerance (8.7x)",
-}
-
-
 @pytest.mark.parametrize(
-    ("case", "which"),
-    [
-        pytest.param(
-            case,
-            which,
-            marks=(
-                [pytest.mark.xfail(strict=True, reason=MARGIN_SHORT[(case, which)])]
-                if (case, which) in MARGIN_SHORT
-                else []
-            ),
-        )
-        for case in CASES
-        for which in ("presolve", "target")
-    ],
+    ("case", "which"), [(case, which) for case in CASES for which in ("presolve", "target")]
 )
 def test_a04_a06_the_state_tolerance_is_ten_times_the_deviation(case: str, which: str) -> None:
     """Spec §10 ("needs a fact"): the measured maximum deviation, in units of the state
@@ -200,6 +180,10 @@ def test_a04_a_failed_presolve_is_initialization_failed(monkeypatch: pytest.Monk
 
 
 # -- A05: N = 1 is the PH flash ------------------------------------------------------------------
+
+
+# A05's tolerance (spec §17.6, R-515): 10·τ_T and 10·τ_flow.
+A05_T_ABS, A05_FLOW_ABS = 1e-5, 10 * FLOW_TOLERANCE
 
 
 def _c1_ph_state() -> Any:
@@ -229,30 +213,23 @@ def test_a05_c1_is_the_ph_flash_branch() -> None:
     assert solved("C1").signature == ("TWO_PHASE",) == tuple(REFERENCE["cases"]["C1"]["signature"])
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "measured (WO-2): C1's T is 9.77e-7 K from ph_state and from ref, flows rel 4.8e-8 "
-        "(l_A off 9.06e-9 mol/s); A05 registers 1e-7 K and rel 1e-8. newton_refined stops once "
-        "its chord correction is under tau_T = 1e-6 K. QUESTION in docs/S01_DECISIONS.md"
-    ),
-)
 def test_a05_c1_equals_ph_state_and_ref_within_the_registered_tolerance() -> None:
-    """A05: C1 equals `ph_state(m_1, P_r, H*)` and `ref`: T abs 1e-7 K, flows rel 1e-8."""
+    """A05: C1 equals `ph_state(m_1, P_r, H*)` and `ref`: T abs 1e-5 K (10·τ_T), flows abs
+    10·τ_flow (spec §17.6, R-515)."""
     closure = _c1_ph_state()
     state = solved("C1").state
     record = REFERENCE["cases"]["C1"]["target"][0]
     temperature = state[stage_temperature_id(UNIT, 1)]
-    assert abs(temperature - closure.temperature) <= 1e-7
-    assert abs(temperature - float(record["T"])) <= 1e-7
+    assert abs(temperature - closure.temperature) <= A05_T_ABS
+    assert abs(temperature - float(record["T"])) <= A05_T_ABS
     for i, c in enumerate("ABC"):
         for column, kernel, expected in (
             (liquid_id, closure.split.liquid.n[i], record["l"][i]),
             (vapor_id, closure.split.vapor.n[i], record["v"][i]),
         ):
             value = state[column(UNIT, 1, c)]
-            assert abs(value - kernel) <= 1e-8 * abs(kernel)
-            assert abs(value - float(expected)) <= 1e-8 * abs(float(expected))
+            assert abs(value - kernel) <= A05_FLOW_ABS
+            assert abs(value - float(expected)) <= A05_FLOW_ABS
 
 
 def test_a05_c1_is_within_the_state_tolerance_of_ref() -> None:
@@ -351,7 +328,8 @@ def test_a09_section_8_refuses_a_state_off_the_root() -> None:
 
 
 def _fd_errors(spec: CascadeSpec, state: Any) -> dict[tuple[str, str], float]:
-    """Spec §10 A10: `D_r⁻¹ J D_x` against central differences at `h = 1e-6·max(1, |x|)`, per
+    """Spec §10 A10: `D_r⁻¹ J D_x` against central differences at `h = 1e-6·max(D_x, |x|)`
+    (spec §17.7, R-516: a uniform scaled step), per
     entry, relative to `max(1, |exact|)` (the generator's `fd_floor` measure); the worst entry of
     each column, keyed `(column, row)`. Also checks the compiled ids are the declared ones."""
     target = compile_cascade(spec, PROVIDER)
@@ -370,7 +348,7 @@ def _fd_errors(spec: CascadeSpec, state: Any) -> dict[tuple[str, str], float]:
     d_r = np.array([REGISTERED_NOMINALS[problem.row_kinds[n]] for n in problem.equation_ids])
     errors: dict[tuple[str, str], float] = {}
     for column in range(len(x)):
-        h = 1e-6 * max(1.0, abs(x[column]))
+        h = 1e-6 * max(d_x[column], abs(x[column]))
         up, down = x.copy(), x.copy()
         up[column] += h
         down[column] -= h
@@ -386,14 +364,14 @@ def _fd_errors(spec: CascadeSpec, state: Any) -> dict[tuple[str, str], float]:
     return errors
 
 
-#: Spec §10 A10's tolerance, and the floor above which §10 must be amended (the S01 design-step
-#: handoff, gap 3). The measurements are logged in docs/S01_DECISIONS.md.
+#: Spec §10 A10's tolerance, and the floor it must clear at both points: the comparison's
+#: resolution, 100× under the tolerance (spec §17.7, R-516). Measurements in docs/S01_DECISIONS.md.
 FD_TOLERANCE = 1e-6
 FD_FLOOR = 1e-8
 
 
 def test_a10_the_compiled_jacobian_at_the_initializer() -> None:
-    """A10 at C2's `x_K`: within 1e-6, and the floor under 1e-8 (measured 2.0e-9)."""
+    """A10 at C2's `x_K`: within 1e-6, and the floor under 1e-8 (measured 5.90e-11)."""
     spec = _spec(REFERENCE["cases"]["C2"])
     initial = kremser_initial(spec, PROVIDER, DECLARATION_CONTEXT)
     assert isinstance(initial, KremserInitial)
@@ -403,36 +381,29 @@ def test_a10_the_compiled_jacobian_at_the_initializer() -> None:
 
 
 def test_a10_the_compiled_jacobian_at_the_c2_root_is_within_tolerance() -> None:
-    """A10 at C2's root, at the registered 1e-6 (measured 3.39e-8)."""
+    """A10 at C2's root, at the registered 1e-6 (measured 5.90e-11)."""
     spec = _spec(REFERENCE["cases"]["C2"])
     assert max(_fd_errors(spec, solved("C2").state).values()) <= FD_TOLERANCE
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "measured (WO-2): the floor at C2's root is 3.385e-8 > 1e-8, at the three (Q_j, energy_j) "
-        "entries: Q_j = 0 there, so h = 1e-6 W against energy rows of ~1e4 W (rounding); the "
-        "compiled entry is exactly 1. Every other entry <= 5.9e-11. Handoff gap 3: §10 is to be "
-        "amended; QUESTION in docs/S01_DECISIONS.md"
-    ),
-)
 def test_a10_the_fd_floor_at_the_c2_root_is_below_1e_8() -> None:
-    """Handoff gap 3: the FD floor on the compiled Jacobian at C2's root is below 1e-8."""
+    """Handoff gap 3, closed by R-516: the FD floor on the compiled Jacobian at C2's root is below
+    1e-8 (measured 5.90e-11)."""
     spec = _spec(REFERENCE["cases"]["C2"])
     assert max(_fd_errors(spec, solved("C2").state).values()) <= FD_FLOOR
 
 
 def test_a10_where_the_c2_root_floor_sits() -> None:
-    """The diagnosis behind the xfail above, held as a fact: only the `(Q_j, energy_j)` entries
-    exceed 1e-8, and there the compiled derivative is exactly `+1` (`energy_j`'s source term)."""
+    """The measured floor under R-516's step, held as a fact. Under the old step `1e-6·max(1, |x|)`
+    the `(Q_j, energy_j)` entries carried 3.39e-8 of rounding; with a uniform scaled step they
+    measure 1.6e-11 to 2.0e-11, and no entry exceeds 1e-10 (worst 5.90e-11). The compiled
+    `(Q_j, energy_j)` derivative is exactly `+1` (`energy_j`'s source term)."""
     spec = _spec(REFERENCE["cases"]["C2"])
     state = solved("C2").state
     errors = _fd_errors(spec, state)
-    above = sorted(key for key, value in errors.items() if value > FD_FLOOR)
-    assert above == [
-        (stage_duty_id(UNIT, j), f"S01:stage:{j}:energy") for j in range(1, spec.stage_count + 1)
-    ]
+    assert max(errors.values()) <= 1e-10, max(errors.values())
+    for j in range(1, spec.stage_count + 1):
+        assert errors[(stage_duty_id(UNIT, j), f"S01:stage:{j}:energy")] <= 1e-10
     target = compile_cascade(spec, PROVIDER)
     x = np.array([state[name] for name in target.spec.variable_ids], dtype=np.float64)
     result = target.compiled.jacobian(x, target.context())
