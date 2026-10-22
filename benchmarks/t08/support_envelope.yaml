@@ -4186,3 +4186,347 @@ harvest:
   class: P
   to: []
   note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/manifest.json
+  item: limitations[0]
+  sha256: f8056ff7ac24d4c3955c50029e367cf286e8c6d46d997c22afc061180e5cc63c
+  class: P
+  to: []
+  note: evidence class at C′; W27 records carried from C_W; self-generated records are regression evidence
+- manifest: evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/manifest.json
+  item: limitations[1]
+  sha256: 5fd7d819ff3441df2e2d13277fa9a032e74f6f99e8fa43a1c5c5830ddeaaac0d
+  class: S
+  to:
+  - check:M07.A40
+  - check:M07.A41
+  - check:M07.A42
+  - doc:docs/reviews/V02-verdicts.md
+  note: verdicts on V11-V20 and W21-W27 at C′ are V02-verdicts.md's (V14 FAIL on (b) travels as L01); M07.A40-A42 pass in this manifest
+- manifest: evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/manifest.json
+  item: limitations[2]
+  sha256: a1ad7bc9d12684813f7bd9cc1e956825dc2ae7384c80181d42d1d8a2feb015ba
+  class: P
+  to: []
+  note: step 18 (v0_2_gate.py --rc C′) recorded in the build log, not by the generator; M07.A36 passes by its tests
+- manifest: evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/manifest.json
+  item: limitations[3]
+  sha256: a9c556d3eec0aec8ab6c6ee710bf63eb7ace5e613fdbf6e141697371eae3bbc5
+  class: S
+  to:
+  - tests/test_t08_w2_support_envelope.py::test_a21_every_item_is_classified_once_and_resolves
+  - tests/test_m07a_harvest.py::test_c4_the_post_0_2_0_harvest_reads_m07a_and_m07
+  note: 'R-485''s deferral closed by the post-0.2.0 harvest (C4): M07a''s and M07''s items are classified here; 0.2.0''s envelope as released (v0.2-envelope-1 at C′) stays as released'
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: limitations[0]
+  sha256: 444744fa32c49f9d9442335d621d88fb1f2df2ce8adb2309023f74db79b5788e
+  class: P
+  to: []
+  note: evidence class at the alpha candidate; verdicts (A60-A63) and ledger (A64) judged apart
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: limitations[1]
+  sha256: f6c53159104c63dc4c773b2c5e567a2166b87f06127685c2e3c6bb3a18d6d27a
+  class: P
+  to: []
+  note: step 13 (v0_2_gate.py --rc C_α) not run by the generator; M07a.A12 passes by its fixture tests
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: limitations[2]
+  sha256: 0674a3842246a4c6392919f26df52461880777e67ca0339e3eba16666ce8363c
+  class: S
+  to:
+  - check:M07a.A52
+  note: M07a.A52 unsupported before step 5 (two skips); passes at C_α² = cc73219 (10 of 10)
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: limitations[3]
+  sha256: 2827b759d1a45f60ac230b5459a80446b6e0dc1dd7115154405726f0fd8916af
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts-6fec822.md
+  - doc:docs/reviews/V02-alpha-verdicts.md
+  note: M07a.A60 pending at this candidate; the verdict document exists, judged at C_α¹ (V02-alpha-verdicts-6fec822.md, superseded with its candidate by R-370) and afresh at C_α² = cc73219
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: limitations[4]
+  sha256: 5e103f998398769af9714122415002dcb0366fea575f334f8fd40e60d8a543b5
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts-6fec822.md §V14
+  - doc:docs/reviews/V02-alpha-verdicts.md §V14
+  note: 'M07a.A61 pending at this candidate; judged at C_α¹ (V02-alpha-verdicts-6fec822.md, superseded with its candidate by R-370) and afresh at C_α² = cc73219: V11-V20 PASS except V14 FAIL on (b), PTC experimental (L01), releasable under ADR 0028 D3'
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: limitations[5]
+  sha256: 2cb9ee193d52c212967e616f2e0057b78d036c6fa2ef927f1f85a9c4b90655a8
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts-6fec822.md §W21
+  - doc:docs/reviews/V02-alpha-verdicts.md §W21
+  note: 'M07a.A62 pending at this candidate; judged at C_α¹ (V02-alpha-verdicts-6fec822.md, superseded with its candidate by R-370) and afresh at C_α² = cc73219: W21 PASS (re-judged 2026-10-17)'
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: limitations[6]
+  sha256: e3afebdf476d653502db1a82e3bc689e9a5bb09a1469a9694e62290f3ab5cf51
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts-6fec822.md §W22
+  - doc:docs/reviews/V02-alpha-verdicts.md §W22
+  note: 'M07a.A63 pending at this candidate; judged at C_α¹ (V02-alpha-verdicts-6fec822.md, superseded with its candidate by R-370) and afresh at C_α² = cc73219: W22 PASS'
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: limitations[7]
+  sha256: f732f9f9a94a3e070845746c5e4afa29ee9b9cc5d74ff9067f78d3ee5fbe0693
+  class: S
+  to:
+  - check:M07a.A64
+  note: M07a.A64 pending (ledger did not cite this manifest, WO-11); passes at C_α² = cc73219
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: checks[36]
+  check_id: M07a.A52
+  sha256: 32fdefc942dd712270ca7a19a5ee586d9c700aae315ea0c4cae68d42e65be111
+  class: S
+  to:
+  - check:M07a.A52
+  note: M07a.A52 unsupported before step 5 (two skips); passes at C_α² = cc73219 (10 of 10)
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: checks[38]
+  check_id: M07a.A60
+  sha256: a332906332e874bb86dd2c0e15ee956fd0e567ec5f13461239c3abb432528ca2
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts-6fec822.md
+  - doc:docs/reviews/V02-alpha-verdicts.md
+  note: M07a.A60 pending at this candidate; the verdict document exists, judged at C_α¹ (V02-alpha-verdicts-6fec822.md, superseded with its candidate by R-370) and afresh at C_α² = cc73219
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: checks[39]
+  check_id: M07a.A61
+  sha256: 778285be6e9f5911a98fc2745d13f10d6c7fbcad94acafc4c25278d270aeb177
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts-6fec822.md §V14
+  - doc:docs/reviews/V02-alpha-verdicts.md §V14
+  note: 'M07a.A61 pending at this candidate; judged at C_α¹ (V02-alpha-verdicts-6fec822.md, superseded with its candidate by R-370) and afresh at C_α² = cc73219: V11-V20 PASS except V14 FAIL on (b), PTC experimental (L01), releasable under ADR 0028 D3'
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: checks[40]
+  check_id: M07a.A62
+  sha256: c3833e40accbd852f2ddb3e692d111b95ee179627c286bbf5b1c05535b5a69c2
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts-6fec822.md §W21
+  - doc:docs/reviews/V02-alpha-verdicts.md §W21
+  note: 'M07a.A62 pending at this candidate; judged at C_α¹ (V02-alpha-verdicts-6fec822.md, superseded with its candidate by R-370) and afresh at C_α² = cc73219: W21 PASS (re-judged 2026-10-17)'
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: checks[41]
+  check_id: M07a.A63
+  sha256: ae6f321397f189435de80e00a02532f67d9feb6d4a8ccf9189b79e3db4f6f4e2
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts-6fec822.md §W22
+  - doc:docs/reviews/V02-alpha-verdicts.md §W22
+  note: 'M07a.A63 pending at this candidate; judged at C_α¹ (V02-alpha-verdicts-6fec822.md, superseded with its candidate by R-370) and afresh at C_α² = cc73219: W22 PASS'
+- manifest: evidence/M07a/6fec82232e1c47308a5e1d67338058f352992800/manifest.json
+  item: checks[42]
+  check_id: M07a.A64
+  sha256: b58dc89fc7caac314bc42b115b9b92070a0ea4a1bd4e05b834ca37812735f1db
+  class: S
+  to:
+  - check:M07a.A64
+  note: M07a.A64 pending (ledger did not cite this manifest, WO-11); passes at C_α² = cc73219
+- manifest: evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
+  item: limitations[0]
+  sha256: f1345498dc16a32f24c94a7e4bb739189bfee74a6cdd5e4ec0162c53276fd77e
+  class: P
+  to: []
+  note: evidence class at the alpha candidate; verdicts (A60-A63) and ledger (A64) judged apart
+- manifest: evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
+  item: limitations[1]
+  sha256: f6c53159104c63dc4c773b2c5e567a2166b87f06127685c2e3c6bb3a18d6d27a
+  class: P
+  to: []
+  note: step 13 (v0_2_gate.py --rc C_α) not run by the generator; M07a.A12 passes by its fixture tests
+- manifest: evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
+  item: limitations[2]
+  sha256: 2827b759d1a45f60ac230b5459a80446b6e0dc1dd7115154405726f0fd8916af
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md
+  note: M07a.A60 pending at this candidate; the verdict document exists, judged at C_α² = cc73219
+- manifest: evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
+  item: limitations[3]
+  sha256: 5e103f998398769af9714122415002dcb0366fea575f334f8fd40e60d8a543b5
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §V14
+  note: 'M07a.A61 pending at this candidate; judged at C_α² = cc73219: V11-V20 PASS except V14 FAIL on (b), PTC experimental (L01), releasable under ADR 0028 D3'
+- manifest: evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
+  item: limitations[4]
+  sha256: 2cb9ee193d52c212967e616f2e0057b78d036c6fa2ef927f1f85a9c4b90655a8
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §W21
+  note: 'M07a.A62 pending at this candidate; judged at C_α² = cc73219: W21 PASS (re-judged 2026-10-17)'
+- manifest: evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
+  item: limitations[5]
+  sha256: e3afebdf476d653502db1a82e3bc689e9a5bb09a1469a9694e62290f3ab5cf51
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §W22
+  note: 'M07a.A63 pending at this candidate; judged at C_α² = cc73219: W22 PASS'
+- manifest: evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
+  item: checks[39]
+  check_id: M07a.A60
+  sha256: b996f7738821e1e7034c4d3d8ae3efcf08b08379dcaac11c110470e3e4d235fa
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md
+  note: M07a.A60 pending at this candidate; the verdict document exists, judged at C_α² = cc73219
+- manifest: evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
+  item: checks[40]
+  check_id: M07a.A61
+  sha256: 6fc4f49d628003048ee94860e44239558362ec0c71b0cbaa98ceda0e5ad25670
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §V14
+  note: 'M07a.A61 pending at this candidate; judged at C_α² = cc73219: V11-V20 PASS except V14 FAIL on (b), PTC experimental (L01), releasable under ADR 0028 D3'
+- manifest: evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
+  item: checks[41]
+  check_id: M07a.A62
+  sha256: e6ed65ecad89c26039f4d44ba520b5478287849ef1de25ef9de92d86b20352c8
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §W21
+  note: 'M07a.A62 pending at this candidate; judged at C_α² = cc73219: W21 PASS (re-judged 2026-10-17)'
+- manifest: evidence/M07a/cc73219a77f6a54579c8acb151ed6fae228c8a4c/manifest.json
+  item: checks[42]
+  check_id: M07a.A63
+  sha256: 5a55843469386e2c286feb7654b8142482670a5ecc10a58573e6db37ecf22dfc
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §W22
+  note: 'M07a.A63 pending at this candidate; judged at C_α² = cc73219: W22 PASS'
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: limitations[0]
+  sha256: 444744fa32c49f9d9442335d621d88fb1f2df2ce8adb2309023f74db79b5788e
+  class: P
+  to: []
+  note: evidence class at the alpha candidate; verdicts (A60-A63) and ledger (A64) judged apart
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: limitations[1]
+  sha256: f6c53159104c63dc4c773b2c5e567a2166b87f06127685c2e3c6bb3a18d6d27a
+  class: P
+  to: []
+  note: step 13 (v0_2_gate.py --rc C_α) not run by the generator; M07a.A12 passes by its fixture tests
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: limitations[2]
+  sha256: 5215d30999d9d885f90aa8f5c1ad0f6f54cf1d6f71cf3fd7e26211dd61365b14
+  class: S
+  to:
+  - check:M07a.A39
+  note: 'M07a.A39 fail at e0e198e: ref-x86-64 certificates record 1 of 2 checks failed (R-345 code defect, R-346); fixed in the re-cut C_α¹ (R-349), passes at 6fec822 and cc73219'
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: limitations[3]
+  sha256: 4f5e64acc11e7e85b23b87c5fc32db0fc9a4e9eb7a7e501d3d441ac544185bc1
+  class: S
+  to:
+  - check:M07a.A43
+  note: 'M07a.A43 fail at e0e198e: 13 RC records carried no machine class; R-347 adds it, passes at 6fec822 and cc73219'
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: limitations[4]
+  sha256: 0674a3842246a4c6392919f26df52461880777e67ca0339e3eba16666ce8363c
+  class: S
+  to:
+  - check:M07a.A52
+  note: M07a.A52 unsupported before step 5 (two skips); passes at C_α² = cc73219 (10 of 10)
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: limitations[5]
+  sha256: 2827b759d1a45f60ac230b5459a80446b6e0dc1dd7115154405726f0fd8916af
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md
+  note: M07a.A60 pending at this candidate; the verdict document exists, e0e198e superseded by the re-cut (R-349), no verdict there (R-346); judged at C_α² = cc73219
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: limitations[6]
+  sha256: 5e103f998398769af9714122415002dcb0366fea575f334f8fd40e60d8a543b5
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §V14
+  note: 'M07a.A61 pending at this candidate; e0e198e superseded by the re-cut (R-349), no verdict there (R-346); judged at C_α² = cc73219: V11-V20 PASS except V14 FAIL on (b), PTC experimental (L01), releasable under ADR 0028 D3'
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: limitations[7]
+  sha256: 2cb9ee193d52c212967e616f2e0057b78d036c6fa2ef927f1f85a9c4b90655a8
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §W21
+  note: 'M07a.A62 pending at this candidate; e0e198e superseded by the re-cut (R-349), no verdict there (R-346); judged at C_α² = cc73219: W21 PASS (re-judged 2026-10-17)'
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: limitations[8]
+  sha256: e3afebdf476d653502db1a82e3bc689e9a5bb09a1469a9694e62290f3ab5cf51
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §W22
+  note: 'M07a.A63 pending at this candidate; e0e198e superseded by the re-cut (R-349), no verdict there (R-346); judged at C_α² = cc73219: W22 PASS'
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: limitations[9]
+  sha256: f732f9f9a94a3e070845746c5e4afa29ee9b9cc5d74ff9067f78d3ee5fbe0693
+  class: S
+  to:
+  - check:M07a.A64
+  note: M07a.A64 pending (ledger did not cite this manifest, WO-11); passes at C_α² = cc73219
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: checks[28]
+  check_id: M07a.A39
+  sha256: 7b053546c654c3d24d57d93692a9ddbb9c7eb5b874786f430920fe4f0ac05e30
+  class: S
+  to:
+  - check:M07a.A39
+  note: 'M07a.A39 fail at e0e198e: ref-x86-64 certificates record 1 of 2 checks failed (R-345 code defect, R-346); fixed in the re-cut C_α¹ (R-349), passes at 6fec822 and cc73219'
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: checks[32]
+  check_id: M07a.A43
+  sha256: 334c6c3e6bd7d7db2ee607f0b1e67ad3fd84ba548ecbe3ebc6589f8edc4f097f
+  class: S
+  to:
+  - check:M07a.A43
+  note: 'M07a.A43 fail at e0e198e: 13 RC records carried no machine class; R-347 adds it, passes at 6fec822 and cc73219'
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: checks[36]
+  check_id: M07a.A52
+  sha256: 32fdefc942dd712270ca7a19a5ee586d9c700aae315ea0c4cae68d42e65be111
+  class: S
+  to:
+  - check:M07a.A52
+  note: M07a.A52 unsupported before step 5 (two skips); passes at C_α² = cc73219 (10 of 10)
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: checks[38]
+  check_id: M07a.A60
+  sha256: a332906332e874bb86dd2c0e15ee956fd0e567ec5f13461239c3abb432528ca2
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md
+  note: M07a.A60 pending at this candidate; the verdict document exists, e0e198e superseded by the re-cut (R-349), no verdict there (R-346); judged at C_α² = cc73219
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: checks[39]
+  check_id: M07a.A61
+  sha256: 778285be6e9f5911a98fc2745d13f10d6c7fbcad94acafc4c25278d270aeb177
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §V14
+  note: 'M07a.A61 pending at this candidate; e0e198e superseded by the re-cut (R-349), no verdict there (R-346); judged at C_α² = cc73219: V11-V20 PASS except V14 FAIL on (b), PTC experimental (L01), releasable under ADR 0028 D3'
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: checks[40]
+  check_id: M07a.A62
+  sha256: c3833e40accbd852f2ddb3e692d111b95ee179627c286bbf5b1c05535b5a69c2
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §W21
+  note: 'M07a.A62 pending at this candidate; e0e198e superseded by the re-cut (R-349), no verdict there (R-346); judged at C_α² = cc73219: W21 PASS (re-judged 2026-10-17)'
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: checks[41]
+  check_id: M07a.A63
+  sha256: ae6f321397f189435de80e00a02532f67d9feb6d4a8ccf9189b79e3db4f6f4e2
+  class: S
+  to:
+  - doc:docs/reviews/V02-alpha-verdicts.md §W22
+  note: 'M07a.A63 pending at this candidate; e0e198e superseded by the re-cut (R-349), no verdict there (R-346); judged at C_α² = cc73219: W22 PASS'
+- manifest: evidence/M07a/e0e198e4632224612671db5b07445639d272d6da/manifest.json
+  item: checks[42]
+  check_id: M07a.A64
+  sha256: 64411cf2d1479aa217e2c9a851bdb61b88e63009b1b36e2f74fb6d2f08c5929e
+  class: S
+  to:
+  - check:M07a.A64
+  note: M07a.A64 pending (ledger did not cite this manifest, WO-11); passes at C_α² = cc73219
