@@ -350,10 +350,11 @@ def status(entries: Sequence[Mapping[str, Any]]) -> str:
 
 def found_limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
     items = [
-        "Requirement X31 is supplied in part: S02 gives the four matched column cases, the "
-        "invalid specifications and the phase case against this package's generator; X31's two "
-        "independent references and perturbation studies are S03's (§14). Its verdict is the "
-        "design lane's.",
+        "requirements is empty: the schema takes D/A requirement ids and none lists S02; "
+        "S02 supplies part of X31's evidence (docs/requirements.yaml: owners S02, S03) — the "
+        "four matched column cases, the invalid specifications and the phase case against this "
+        "package's generator; X31's two independent references and perturbation studies are "
+        "S03's (§14). The mapping and the verdict are the design lane's.",
         "ADR 0044 (edge 3 after a restart that ends LINEAR_SOLVE_FAILED) is Proposed until this "
         "manifest is tested and the reviewer has read it (§18.9); the decisions it rests on are "
         "R-546 to R-549. A20's clause that the full gate moves no registered outcome outside S02 "
@@ -458,7 +459,7 @@ def build(commit: str) -> dict[str, Any]:
     manifest: dict[str, Any] = {
         "work_package": "S02",
         "commit": commit,
-        "requirements": ["X31"],
+        "requirements": [],
         "status": status(entries),
         "inputs": {
             "case_id": "S02 acceptance: docs/derivations/S02-spec.md §10, §17 and §18.6 "
