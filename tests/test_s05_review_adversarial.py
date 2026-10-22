@@ -4,8 +4,8 @@
 "converged". When Newton's correction is below half an ulp of ρ, the new iterate equals the bracket
 end that was just set, so the safeguard bisects. The step is then far above the previous one, and
 `_converged`'s stagnation clause accepts it. The provider answers `ok` with a density that is off by
-10-130 %. The strict xfails below are the failing states. They turn into failures (XPASS) once
-WO-S05-3 fixes the solver, and the build lane then removes the marks.
+10-130 %. The cases below were strict xfails on the failing states; WO-S05-3 fixed the solver and
+removed the marks (R-595), so they now pass as ordinary cases.
 
 The check is the root residual in density units, |p(ρ, T) − P| / (ρ (∂p/∂ρ)_T), where ρ = M/v is
 taken from the provider's own answer. p and (∂p/∂ρ)_T come from `phi_jet`, the tested surface (A03).
@@ -24,8 +24,6 @@ from openflowsheet.thermo import iapws95 as w
 CONTEXT = EvaluationContext(model_version="s05-review", constants_sha256="0" * 64)
 PROVIDER = w.Iapws95Provider()
 ROOT_TOL = 1e-12
-
-_F1 = "R-595 / review F1: a bisection midpoint accepted as converged; remove when WO-S05-3 lands"
 
 
 def root_residual(t: float, p: float, phase: Phase) -> float:
@@ -46,20 +44,19 @@ CASES = [
     pytest.param(600.0, 1.0e8, "LIQUID", id="control-600K-1e8-LIQUID"),
     pytest.param(500.0, 1.0e8, "LIQUID", id="control-500K-1e8-LIQUID"),
     pytest.param(660.0, 1.0e8, "VAPOR", id="control-660K-1e8-VAPOR"),
-    # A22's own grid: answered ok, (dv/dP)_T < 0 and cp > 0, yet off by 83 % and 53 % in ρ.
+    # A22's own grid: answered ok, (dv/dP)_T < 0 and cp > 0, yet off by 83 % and 53 % in ρ before
+    # WO-S05-3.
     pytest.param(
         700.0,
         1.0e8,
         "VAPOR",
         id="A22grid-700K-1e8",
-        marks=pytest.mark.xfail(strict=True, reason=_F1),
     ),
     pytest.param(
         750.0,
         1.0e8,
         "VAPOR",
         id="A22grid-750K-1e8",
-        marks=pytest.mark.xfail(strict=True, reason=_F1),
     ),
     # Dense-grid finds (99 of 10 980 states; 97 LIQUID below T_c, 10^3..10^8 Pa).
     pytest.param(
@@ -67,21 +64,18 @@ CASES = [
         1.0e8,
         "LIQUID",
         id="grid-599.79K-1e8-LIQUID",
-        marks=pytest.mark.xfail(strict=True, reason=_F1),
     ),
     pytest.param(
         631.1966386554623,
         63095734.44801943,
         "LIQUID",
         id="grid-631.20K-6.3e7-LIQUID",
-        marks=pytest.mark.xfail(strict=True, reason=_F1),
     ),
     pytest.param(
         659.0872881355932,
         1.0e8,
         "VAPOR",
         id="grid-659.09K-1e8-VAPOR",
-        marks=pytest.mark.xfail(strict=True, reason=_F1),
     ),
 ]
 

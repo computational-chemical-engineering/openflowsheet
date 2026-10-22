@@ -118,8 +118,11 @@ FLOOR_ONSET: Final = 2.0**-26
 
 
 def _converged(step: float, previous: float) -> bool:
-    """Spec §3.5's rule on relative steps: ≤ 4ε, or no longer shrinking once below √ε."""
-    return step <= STEP_TOLERANCE or (previous <= FLOOR_ONSET and step >= previous)
+    """Spec §14's rule (R-595) on two consecutive relative *Newton* corrections: `step` ≤ 4ε
+    (a correction that rounds to zero included), or, at the residual floor, `previous` ≤ √ε and
+    `previous` ≤ `step` ≤ √ε. A bisection step is never passed here; the caller passes
+    `previous = inf` after one."""
+    return step <= STEP_TOLERANCE or previous <= step <= FLOOR_ONSET
 
 
 PHASE_PROPERTIES: Final[tuple[str, ...]] = ("h", "s", "v", "Z", "cp", "lnphi_H2O")
@@ -676,7 +679,12 @@ def _bracketed_density(
     temperature: float, pressure: float, low: float, high: float, start: float
 ) -> float | None:
     """Safeguarded Newton on p(ρ, T) = P in (low, high]: bisection whenever a step leaves the
-    bracket; converged by `_converged`. p(low) < P ≤ p(high) is the caller's."""
+    bracket. Only a Newton correction converges, and `_converged` tests it before the safeguard
+    (spec §14, R-595), so a bisection midpoint is never an answer. The floor clause, too, is
+    tested before the safeguard: where the residual's rounding noise exceeds 4ε (the liquid at
+    300 K, 1e5 Pa: ≈ 3e-15) the bracket closes to adjacent doubles and every later Newton step
+    leaves it; a correction ≤ √ε that leaves the bracket bounds the root within itself by the
+    sign change (C10_DECISIONS, WO-S05-3). p(low) < P ≤ p(high) is the caller's."""
     rho, previous = start, math.inf
     for _ in range(MAX_ITERATIONS):
         p, p_rho = _pressure(temperature, rho)
@@ -687,13 +695,14 @@ def _bracketed_density(
             low = rho
         else:
             high = rho
-        new = rho - residual / p_rho if p_rho > 0.0 else -1.0
-        if not low < new < high:
-            new = 0.5 * (low + high)
+        if not p_rho > 0.0:
+            rho, previous = 0.5 * (low + high), math.inf
+            continue
+        new = rho - residual / p_rho
         step = abs(new - rho) / rho
         if _converged(step, previous):
             return new
-        rho, previous = new, step
+        rho, previous = (new if low < new < high else 0.5 * (low + high)), step
     return None
 
 
