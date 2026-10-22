@@ -28,3 +28,16 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
   `954fde3` (committed `case_facts.json`; no archive needed): only `snapshot.git_commit` (`48db2d3` → `954fde3`),
   `snapshot.package_version` and `snapshot_sha256` (`211cf4f1…` → `5e36f8ef…`) move; rows, summary and
   `list_models_sha256` `f070fbe0…` unchanged; G14 PASS (450/450 rows). As `4b909af` did after E7.
+- BLOCKED (nlp environment): the G10 re-take (R-458; rulings E6/O5). The five in-process G10 records under
+  `benchmarks/m05/records/` embed `openflowsheet==0.2.0` in their experiment fingerprints, so `-m nlp
+  tests/test_m05_g10_replay.py` (5 tests; deselected by default, not run here) is expected to fail on digests at
+  `0.3.0.dev0`. This session has no `.venv-nlp`. Workstation step: in `.venv-nlp`, `OMP_NUM_THREADS=1`, re-run
+  TR-E2, TR-E2-FAR, TR-E2-FD, LOOP-R, LOOP-S at `f85fcd7` or later; prove with
+  `scripts/m05_retake_diff.py --digest-only --old-version 0.2.0` (expected counts as E6/K: `version=` 4/7/4/3/4,
+  changed digests 41/79/70/91/37); then AM-23 (5 passed) and an M05 build-log S-entry.
+- BLOCKED (reactor environment): rulings Q1, `scripts/m05_wo9_real.py --replay` at the new version (about 25 min).
+  By code reading it does not move with the version (F4); not measured here.
+- QUESTION: at `0.3.0.dev0`, R-476's predicate makes the four ledger tests in `tests/test_m07_ledger.py` skip ("not
+  one v0.2-gate-v1 covers"). At `0.2.0` they ran. Rulings O1 says that after 0.2.0 is released the ledger "is scoped
+  to its tag commit, as R-456 does here". That scoping is not in C7's brief and is not done. Default: leave it to a
+  follow-up package (M07 owner), with the skips counted as skips, not passes.
