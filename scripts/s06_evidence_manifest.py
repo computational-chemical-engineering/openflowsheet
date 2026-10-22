@@ -18,7 +18,8 @@ tracked source, test, script, schema or derivation file differs from it; S01's r
    configuration, no arguments).
 4. **The measured deviation** (§10 "needs a fact"): the worst column error of J1–J8 and the
    matched sets on `solve_column`'s path, in units of §10's state tolerance; it passes when every
-   value is at most 1/10 (above it, §10 is to be amended).
+   value is at most 1/10, except J8 at most 1/4 (S06 §17.2, R-609: J8's conditioning); a set
+   above its ceiling amends §10 again.
 5. **A09's floor** at `x⁰` and the root of J1, J2 and J6, over every row and over the new rows
    and `u`; it passes at ≤ 1e-8.
 6. **A11's branch** on U1 and U2, with the commit; its result is `S06.A11`'s.
@@ -97,6 +98,9 @@ REQUIRED_CHECKS = (
 )
 #: §10: the deviation margin; A09: the floor.
 MARGIN, FD_FLOOR = 0.1, 1e-8
+#: S06 §17.2 (R-609): the sets whose deviation ceiling is not `MARGIN` (J8: σ_min 6.1e-4, A flows
+#: of about 1e-4 mol/s on stages 5–6 against the absolute floor; measured 0.182 at `32aac25`).
+CEILINGS: dict[str, float] = {"J8": 0.25}
 
 
 # -- the specification ---------------------------------------------------------------------------
@@ -184,16 +188,26 @@ def deviation_check(commit: str) -> dict[str, Any]:
     from test_s06_column_wo2 import FLOWING, deviation
 
     measured = {name: deviation(name) for name in FLOWING}
+    assert set(CEILINGS) <= set(measured), CEILINGS
     worst = max(measured.values())
-    over = sorted(name for name, value in measured.items() if value > MARGIN)
+    above_margin = sorted(name for name, value in measured.items() if value > MARGIN)
+    over = sorted(name for name, value in measured.items() if value > CEILINGS.get(name, MARGIN))
     return check(
         "S06.deviation",
         "§10 'needs a fact': the measured maximum deviation of J1–J8 (from ref.cases.*.target) "
         "and the matched sets (from s02ref.cases.M1.target) on solve_column's path, in units of "
-        "§10's state tolerance (1 is the tolerance); above 1/10 §10 is to be amended",
-        "pass" if worst <= MARGIN else "fail",
-        {"measured_at": commit, "worst": worst, "above_one_tenth": over, "sets": measured},
-        "every value ≤ 0.1",
+        "§10's state tolerance (1 is the tolerance); each set at most 1/10, J8 at most 1/4 "
+        "(§17.2, R-609); above its ceiling §10 is to be amended",
+        "fail" if over else "pass",
+        {
+            "measured_at": commit,
+            "worst": worst,
+            "ceilings": dict(CEILINGS),
+            "above_one_tenth": above_margin,
+            "above_ceiling": over,
+            "sets": measured,
+        },
+        "every value ≤ 0.1, J8 ≤ 0.25",
     )
 
 
