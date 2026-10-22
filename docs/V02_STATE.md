@@ -103,6 +103,17 @@ D1 (rulings R-560…R-565, WO-D1-A; gate PASS `92d9d6d`, CI 39776387190) and S04
 vapour-only PR route for H2O, CO2, O2, C2H6, C3H8, library-only; manifest `evidence/S04/5c29fbf…` tested; rulings
 R-566…R-569; gate PASS `4e41f44`, 10493 passed; CI 39793267612) are on `main` (`4e41f44`).
 
+**Cloud queue C8–C12 (2026-10-22, Frank's answers).** C8 (duty-only column warning
+`multiple_steady_states_possible(duty_only)`), C9 (W27 registration version 2 for the next release:
+`docs/derivations/W27-registration-v2.md`, classifier behind `registration_version`, v1 byte-identical; review
+`docs/reviews/C9-review.md`, R-570…R-574, R-580) and C12's build step (`docs/l01-rights-check.md`,
+`docs/attributions/pr-lib-v1.md`) are merged together (`wp/C-merge2`). **C12's design step is blocked:** six sources
+are `unresolved` because the cloud proxy refuses their terms pages — check them on the workstation, then the design
+lane rules on the A32 questions (`docs/l01-rights-check.md` §5); the `pr-lib-v1` records do not ship before that.
+**Next cloud packages:** C10 (IAPWS-95: ADR, derivation and test spec, implementation), then C11 (column purity /
+recovery / stage-temperature specifications). S04's measured development-half re-take can now be built on C9's
+version 2 (L01 spec WO-L01-3).
+
 **Next actions (in order):**
 1. Workstation-only: the G10 and REAL re-takes at `0.3.0.dev0` (`docs/C7_DECISIONS.md`, nlp/reactor environments);
    ADR 0044's acceptance scan (S02 review, R-550); C2's F-1 facts (`facts` stage, archive).
