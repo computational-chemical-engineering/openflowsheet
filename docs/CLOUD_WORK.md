@@ -27,6 +27,16 @@ is Frank's call.
 | C5 | design / `specifier`, then build | **v0.3 S01**: countercurrent equilibrium-stage subsystem (derivation, DOF, energy/phase coupling, initializer, Newton continuation), then its implementation and tests | Plan §4.5 S01 exit | Frank starts it. Pure-Python numerics on the existing property providers |
 | C6 | as C5 | **v0.3 S02**: MESH column conventions, four matched cases, invalid-spec/phase tests | Plan §4.5 S02 exit | After S01 |
 
+**Next cloud queue (Frank's answers, 2026-10-22; C1–C6, C7, D1 and S04 are done and on `main`):**
+
+| ID | Lane / agent | Work | Exit |
+| --- | --- | --- | --- |
+| C8 | build / `sonnet-implementer` | A "multiple steady states possible" warning on every duty-only column specification (Q-S02-4) | Tests and the full gate |
+| C9 | design / `specifier` | W27 Amendment 3 for the NEXT release's registration: allow more than one route per method; fix the `Co`/`CO` case clash (L01-Q1). v0.2's W27 stays unchanged | Registration, generator `--check` |
+| C10 | design / `specifier`, then build | **IAPWS-95** as a planned v0.3 addition: an ADR (use case, affected requirements, acceptance), a derivation and test spec against the published IAPWS tables, then the implementation (L01-Q3) | Plan-level manifest `tested` |
+| C11 | design, then build | Column specifications by purity, recovery and stage temperature: the next column package (Q-S02-2) | Plan-level manifest `tested` |
+| C12 | build, then design | Rights check of each source for the nine `pr-lib-v1` records, an attribution file, then the design lane amends T08.A32 (L01-Q4). Release only after that | Rights rows vetted; A32 amended |
+
 ## Local-only packages (Frank's workstation)
 
 | ID | Work | Why local |
