@@ -1,0 +1,722 @@
+{
+  "work_package": "S01",
+  "commit": "ea125486b10476de107e8a37ba05c56718cef1d8",
+  "requirements": [],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "S01 acceptance: docs/derivations/S01-spec.md §10 A01–A20 against docs/derivations/scripts/s01_reference.json, check list §13",
+    "case_hash": "4c1a24f68a2beccdfc000af699bb342bf0a200bd7ecaee989934302ef7d81930",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S01/ea125486b10476de107e8a37ba05c56718cef1d8/artifacts/s01-tests.junit.xml tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_evidence_manifest.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "3e821e1368b15534b4a9863b53837496e261b50b3d774ed7526981ad5b84bd76"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/s01_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "77444686f5a75cb9da1b0cf65393b0d235b681de3cd65f5b093fd6e2e0d0e204"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/ruff check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/cascade_solve.py tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_evidence_manifest.py scripts/s01_evidence_manifest.py docs/derivations/scripts/s01_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/ruff format --check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/cascade_solve.py tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_evidence_manifest.py scripts/s01_evidence_manifest.py docs/derivations/scripts/s01_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "8e93d18ae56550d4eef2feac77e6630617c7e169246e56e39c75d58b46167985"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/mypy",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "2ca750b2e4c411a0619986f3bea93e1d208d2ea1980cf8d32fc0994cfb6a2417"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S01.A01",
+      "description": "Declared column and row counts for C1–C5",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 25,
+        "outcomes": {
+          "passed": 25
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo1.py::test_a01_declared_counts_and_ids[C1]",
+          "tests/test_s01_cascade_wo1.py::test_a01_declared_counts_and_ids[C2]",
+          "tests/test_s01_cascade_wo1.py::test_a01_declared_counts_and_ids[C3]",
+          "tests/test_s01_cascade_wo1.py::test_a01_declared_counts_and_ids[C4]",
+          "tests/test_s01_cascade_wo1.py::test_a01_declared_counts_and_ids[C5]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[TWO_PHASE-C1]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[TWO_PHASE-C2]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[TWO_PHASE-C3]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[TWO_PHASE-C4]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[TWO_PHASE-C5]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[LIQUID-C1]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[LIQUID-C2]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[LIQUID-C3]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[LIQUID-C4]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[LIQUID-C5]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[VAPOR-C1]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[VAPOR-C2]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[VAPOR-C3]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[VAPOR-C4]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[VAPOR-C5]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[ZERO_FLOW-C1]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[ZERO_FLOW-C2]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[ZERO_FLOW-C3]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[ZERO_FLOW-C4]",
+          "tests/test_s01_cascade_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[ZERO_FLOW-C5]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.dof` (exact integers); per regime, pinned = dropped; row ids unique",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S01.A02",
+      "description": "Initializer equals Kremser at the four `ref.kremser` entries (built through the public initializer with `K` injected)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo1.py::test_a02_the_initializer_reaches_the_kremser_closed_form[N1_VL1.5]",
+          "tests/test_s01_cascade_wo1.py::test_a02_the_initializer_reaches_the_kremser_closed_form[N2_VL1.5]",
+          "tests/test_s01_cascade_wo1.py::test_a02_the_initializer_reaches_the_kremser_closed_form[N3_VL1.0]",
+          "tests/test_s01_cascade_wo1.py::test_a02_the_initializer_reaches_the_kremser_closed_form[N5_VL1.5]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.kremser.*.l`",
+      "tolerance": "rel 1e-12: Thomas in double ~1e-15; a wrong boundary moves O(1)"
+    },
+    {
+      "id": "S01.A03",
+      "description": "Initializer on C1–C5: `β̄`, `T̄`, `L_cmo`, `V_cmo`, `l`, `v`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo1.py::test_a03_the_initializer_on_the_registered_cases[C1]",
+          "tests/test_s01_cascade_wo1.py::test_a03_the_initializer_on_the_registered_cases[C2]",
+          "tests/test_s01_cascade_wo1.py::test_a03_the_initializer_on_the_registered_cases[C3]",
+          "tests/test_s01_cascade_wo1.py::test_a03_the_initializer_on_the_registered_cases[C4]",
+          "tests/test_s01_cascade_wo1.py::test_a03_the_initializer_on_the_registered_cases[C5]",
+          "tests/test_s01_cascade_wo1.py::test_a03_tbar_outside_the_domain_is_a_typed_failure"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.*.initializer`",
+      "tolerance": "`T̄` abs 1e-8 K (band bisection to adjacent doubles); flows rel 1e-10"
+    },
+    {
+      "id": "S01.A04",
+      "description": "Pre-solve root and `Q⁰` for C1–C5",
+      "result": "fail",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 16,
+        "outcomes": {
+          "passed": 14,
+          "xfailed": 2
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo2.py::test_a04_the_presolve_root_and_q0[C1]",
+          "tests/test_s01_cascade_wo2.py::test_a04_the_presolve_root_and_q0[C2]",
+          "tests/test_s01_cascade_wo2.py::test_a04_the_presolve_root_and_q0[C3]",
+          "tests/test_s01_cascade_wo2.py::test_a04_the_presolve_root_and_q0[C4]",
+          "tests/test_s01_cascade_wo2.py::test_a04_the_presolve_root_and_q0[C5]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C1-presolve]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C1-target]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C2-presolve]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C2-target]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C3-presolve]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C3-target]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C4-presolve]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C4-target]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C5-presolve]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C5-target]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a_failed_presolve_is_initialization_failed"
+        ],
+        "not_passed": [
+          {
+            "node": "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C4-presolve]",
+            "outcome": "xfailed",
+            "message": "S01.stage.2.v.B off by 3.80e-9 mol/s = 0.454 of its tolerance (2.2x)"
+          },
+          {
+            "node": "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C5-presolve]",
+            "outcome": "xfailed",
+            "message": "S01.stage.1.l.B off by 6.08e-10 mol/s = 0.115 of its tolerance (8.7x)"
+          }
+        ]
+      },
+      "expected": "`ref.cases.*.presolve`",
+      "tolerance": "state tolerance"
+    },
+    {
+      "id": "S01.A05",
+      "description": "C1 equals `ph_state(m_1, P_r, H*)` (`ph_kernel.py:250`) and `ref`",
+      "result": "fail",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 2,
+          "xfailed": 1
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo2.py::test_a05_c1_is_the_ph_flash_branch",
+          "tests/test_s01_cascade_wo2.py::test_a05_c1_equals_ph_state_and_ref_within_the_registered_tolerance",
+          "tests/test_s01_cascade_wo2.py::test_a05_c1_is_within_the_state_tolerance_of_ref"
+        ],
+        "not_passed": [
+          {
+            "node": "tests/test_s01_cascade_wo2.py::test_a05_c1_equals_ph_state_and_ref_within_the_registered_tolerance",
+            "outcome": "xfailed",
+            "message": "measured (WO-2): C1's T is 9.77e-7 K from ph_state and from ref, flows rel 4.8e-8 (l_A off 9.06e-9 mol/s); A05 registers 1e-7 K and rel 1e-8. newton_refined stops once its chord correction is under tau_T = 1e-6 K. QUESTION in docs/S01_DECISIONS.md"
+          }
+        ]
+      },
+      "expected": "same branch; T abs 1e-7 K; flows rel 1e-8",
+      "tolerance": "both are root-finders on the same rows"
+    },
+    {
+      "id": "S01.A06",
+      "description": "C2 root",
+      "result": "fail",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 15,
+        "outcomes": {
+          "passed": 13,
+          "xfailed": 2
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C1-presolve]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C1-target]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C2-presolve]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C2-target]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C3-presolve]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C3-target]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C4-presolve]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C4-target]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C5-presolve]",
+          "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C5-target]",
+          "tests/test_s01_cascade_wo2.py::test_a06_the_nominal_cascade",
+          "tests/test_s01_cascade_wo3.py::test_a18_c2_from_a_perturbed_opening_is_the_a06_root[Tbar+10K]",
+          "tests/test_s01_cascade_wo3.py::test_a18_c2_from_a_perturbed_opening_is_the_a06_root[Tbar-10K]",
+          "tests/test_s01_cascade_wo3.py::test_a18_c2_from_a_perturbed_opening_is_the_a06_root[flows*0.5]",
+          "tests/test_s01_cascade_wo3.py::test_a18_c2_from_a_perturbed_opening_is_the_a06_root[flows*2]"
+        ],
+        "not_passed": [
+          {
+            "node": "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C4-presolve]",
+            "outcome": "xfailed",
+            "message": "S01.stage.2.v.B off by 3.80e-9 mol/s = 0.454 of its tolerance (2.2x)"
+          },
+          {
+            "node": "tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C5-presolve]",
+            "outcome": "xfailed",
+            "message": "S01.stage.1.l.B off by 6.08e-10 mol/s = 0.115 of its tolerance (8.7x)"
+          }
+        ]
+      },
+      "expected": "`ref.cases.C2.target`, signature 2P ×3",
+      "tolerance": "state tolerance"
+    },
+    {
+      "id": "S01.A07",
+      "description": "C3 root; duty list reversed gives a different T profile",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo2.py::test_a07_the_side_fed_cascade_and_its_reversed_duties"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.C3.target`",
+      "tolerance": "state tolerance; reversed run differs by > 0.1 K"
+    },
+    {
+      "id": "S01.A08",
+      "description": "Overall component and energy closure at every converged case",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 5,
+        "outcomes": {
+          "passed": 5
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo2.py::test_a08_overall_closure[C1]",
+          "tests/test_s01_cascade_wo2.py::test_a08_overall_closure[C2]",
+          "tests/test_s01_cascade_wo2.py::test_a08_overall_closure[C3]",
+          "tests/test_s01_cascade_wo2.py::test_a08_overall_closure[C4]",
+          "tests/test_s01_cascade_wo2.py::test_a08_overall_closure[C5]"
+        ],
+        "not_passed": []
+      },
+      "expected": "0",
+      "tolerance": "`n_rows·τ_kind`"
+    },
+    {
+      "id": "S01.A09",
+      "description": "Every accepted state passes §8 (all declared rows, admissibility)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo2.py::test_a09_every_accepted_state_passes_section_8[C1]",
+          "tests/test_s01_cascade_wo2.py::test_a09_every_accepted_state_passes_section_8[C2]",
+          "tests/test_s01_cascade_wo2.py::test_a09_every_accepted_state_passes_section_8[C3]",
+          "tests/test_s01_cascade_wo2.py::test_a09_every_accepted_state_passes_section_8[C4]",
+          "tests/test_s01_cascade_wo2.py::test_a09_every_accepted_state_passes_section_8[C5]",
+          "tests/test_s01_cascade_wo2.py::test_a09_section_8_refuses_a_state_off_the_root"
+        ],
+        "not_passed": []
+      },
+      "expected": "pass",
+      "tolerance": "kind tolerances"
+    },
+    {
+      "id": "S01.A10",
+      "description": "Compiled Jacobian vs central differences at `x_K` and C2's root. Step `h = 1e-6·max(1, |x|)`; compare `D_r⁻¹ J D_x` with `D_x` = (1 mol/s, 100 K, 1e5 Pa, 1e4 W) and `D_r` the row-kind scales",
+      "result": "fail",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 3,
+          "xfailed": 1
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo2.py::test_a10_the_compiled_jacobian_at_the_initializer",
+          "tests/test_s01_cascade_wo2.py::test_a10_the_compiled_jacobian_at_the_c2_root_is_within_tolerance",
+          "tests/test_s01_cascade_wo2.py::test_a10_the_fd_floor_at_the_c2_root_is_below_1e_8",
+          "tests/test_s01_cascade_wo2.py::test_a10_where_the_c2_root_floor_sits"
+        ],
+        "not_passed": [
+          {
+            "node": "tests/test_s01_cascade_wo2.py::test_a10_the_fd_floor_at_the_c2_root_is_below_1e_8",
+            "outcome": "xfailed",
+            "message": "measured (WO-2): the floor at C2's root is 3.385e-8 > 1e-8, at the three (Q_j, energy_j) entries: Q_j = 0 there, so h = 1e-6 W against energy rows of ~1e4 W (rounding); the compiled entry is exactly 1. Every other entry ≤ 5.9e-11. Handoff gap 3: §10 is to be amended; QUESTION in docs/S01_DECISIONS.md"
+          }
+        ]
+      },
+      "expected": "agree",
+      "tolerance": "1e-6. Measured generator floor at this step: 2.9e-11 (`ref.fd_floor_C2`); a wrong ∂lnK/∂P sign is O(1) after `D_x`"
+    },
+    {
+      "id": "S01.A11",
+      "description": "C4 converges to (2P, L, L) with ≥ 1 restart caused by disappearance",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo3.py::test_a11_a12_the_registered_single_phase_stages_are_reached[C4]",
+          "tests/test_s01_cascade_wo3.py::test_a11_a12_the_registered_single_phase_stages_are_reached[C5]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.C4`",
+      "tolerance": "state tolerance; signature exact"
+    },
+    {
+      "id": "S01.A12",
+      "description": "C5 converges to (VAPOR, 2P)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo3.py::test_a11_a12_the_registered_single_phase_stages_are_reached[C4]",
+          "tests/test_s01_cascade_wo3.py::test_a11_a12_the_registered_single_phase_stages_are_reached[C5]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.C5`",
+      "tolerance": "as A11"
+    },
+    {
+      "id": "S01.A13",
+      "description": "D1 (`ref.dormant.D1`): dormant answer without Newton iterations",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo1.py::test_a13_every_inlet_dormant_converges_in_closed_form"
+        ],
+        "not_passed": []
+      },
+      "expected": "`outcome` `CONVERGED`; `signature` `ZERO_FLOW` ×3; `stages[*].T` = 330 K (the label chain from `inlets`' `T_top`, not the vapour inlet's 380 K); every flow `+0.0` with the sign bit checked (ADR 0001 D3.1)",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S01.A14",
+      "description": "D2 conflict (`ref.dormant.D2`)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo1.py::test_a14_a_duty_into_a_dormant_stage_is_a_specification_conflict"
+        ],
+        "not_passed": []
+      },
+      "expected": "`outcome` `SPECIFICATION_CONFLICT`; `cause` `zero_flow_conflict(‹cascade›:stage:2:energy)` with `‹cascade›` the unit id; `swapped_energy` = (0, 50, 0) W",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S01.A15",
+      "description": "R1–R6 refusals",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 27,
+        "outcomes": {
+          "passed": 27
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R1-bool]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R1-float]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R1-negative]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R1-zero]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R2-inf]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R2-nan]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R2-negative]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R3-inlet-P]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R3-inlet-T]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R3-inlet-T-nan]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R3-stage-P]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R4-above]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R4-below]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R4-twice]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R5-liquid]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R5-vapour]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R6-side]",
+          "tests/test_s01_cascade_wo1.py::test_a15_refusals[R6-top]",
+          "tests/test_s01_cascade_wo1.py::test_a15_the_r5_and_r6_boundaries",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[C1]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[C2]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[C3]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[C4]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[C5]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[D1]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[D2]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[A19]"
+        ],
+        "not_passed": []
+      },
+      "expected": "§5 codes",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S01.A16",
+      "description": "R7, both signs; C1 as registered passes",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 11,
+        "outcomes": {
+          "passed": 11
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[C1]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[C2]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[C3]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[C4]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[C5]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[D1]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[D2]",
+          "tests/test_s01_cascade_wo1.py::test_a15_a16_every_registered_case_passes_section_5[A19]",
+          "tests/test_s01_cascade_wo1.py::test_a16_the_energy_precheck_refuses_both_signs[200000]",
+          "tests/test_s01_cascade_wo1.py::test_a16_the_energy_precheck_refuses_both_signs[-200000]",
+          "tests/test_s01_cascade_wo1.py::test_a16_the_energy_precheck_bounds_are_the_registered_ones"
+        ],
+        "not_passed": []
+      },
+      "expected": "`infeasible_spec(energy_outside_domain)`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S01.A17",
+      "description": "C2 with edge 3 forced from `x⁰`: dyadic λ, `p⁰ = Q⁰` (`ref` presolve Q), λ = 1 instance equals the target's `(model_version, constants_sha256)`, final root `same_root = SAME` as A06",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo3.py::test_a17_forced_edge_3_from_the_presolve_root"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "`Q⁰` abs 1e-2 W; rest exact"
+    },
+    {
+      "id": "S01.A18",
+      "description": "C2 from four perturbed openings (`T̄ ± 10` K; initializer flows ×0.5, ×2)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo3.py::test_a18_c2_from_a_perturbed_opening_is_the_a06_root[Tbar+10K]",
+          "tests/test_s01_cascade_wo3.py::test_a18_c2_from_a_perturbed_opening_is_the_a06_root[Tbar-10K]",
+          "tests/test_s01_cascade_wo3.py::test_a18_c2_from_a_perturbed_opening_is_the_a06_root[flows*0.5]",
+          "tests/test_s01_cascade_wo3.py::test_a18_c2_from_a_perturbed_opening_is_the_a06_root[flows*2]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`CONVERGED`, `SAME` as A06",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S01.A19",
+      "description": "Partial-dormancy probe (`ref.partial_dormancy`): N = 3, `top` and `bottom` dormant (330 K, 380 K), liquid side feed `(0.2, 0.5, 0.3)` mol/s at 340 K only at stage 3, Q = 0. It passes §5 (generator claims R5 and R7)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo3.py::test_a19_the_registered_root_passes_section_8",
+          "tests/test_s01_cascade_wo3.py::test_a19_the_partial_dormancy_probe_is_never_a_false_success"
+        ],
+        "not_passed": []
+      },
+      "expected": "a §4.5 outcome other than a §5 refusal, or a `CONVERGED` root that passes §8. Under signature (`ZERO_FLOW`, `ZERO_FLOW`, `LIQUID`) the root is unique and analytic and passes §8 (generator claims): stage 3 a liquid pass-through, `T = (330, 330, 340)` K, so a root with that signature equals `ref.partial_dormancy.target`",
+      "tolerance": "never an unaccepted `CONVERGED`; `target` within state tolerance; outcome exact"
+    },
+    {
+      "id": "S01.A20",
+      "description": "C2 solved twice",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s01_cascade_wo2.py::test_a20_c2_solved_twice_is_identical"
+        ],
+        "not_passed": []
+      },
+      "expected": "identical final `state_sha256` and records",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S01.generator",
+      "description": "§13: s01_reference.py --check re-derives every claim and byte-compares s01_reference.json",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/s01_reference.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S01.ruff",
+      "description": "§13: ruff check is clean on S01's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/ruff check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/cascade_solve.py tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_evidence_manifest.py scripts/s01_evidence_manifest.py docs/derivations/scripts/s01_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S01.format",
+      "description": "§13: ruff format --check is clean on S01's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/ruff format --check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/cascade_solve.py tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_evidence_manifest.py scripts/s01_evidence_manifest.py docs/derivations/scripts/s01_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S01.mypy",
+      "description": "mypy (the project's configuration) is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/mypy",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S01.A04-A06-deviation",
+      "description": "§10/§13: the measured maximum deviation of every pre-solve and target root from ref, per column class, in units of §10's state tolerance (1 is the tolerance); §10 requires the tolerance to be at least 10x the measurement",
+      "result": "fail",
+      "value": {
+        "measured_at": "ea125486b10476de107e8a37ba05c56718cef1d8",
+        "worst": 0.4544358563193928,
+        "below_10x_margin": [
+          "C4.presolve",
+          "C5.presolve"
+        ],
+        "cases": {
+          "C1": {
+            "presolve": {
+              "flow": 6.208617469799305e-10,
+              "T": 0.0,
+              "Q": 4.547473508864641e-11
+            },
+            "target": {
+              "flow": 0.047968100755618165,
+              "T": 0.009774712452781387,
+              "Q": 0.0
+            }
+          },
+          "C2": {
+            "presolve": {
+              "flow": 0.0034944758802394307,
+              "T": 0.0,
+              "Q": 0.003716520026841863
+            },
+            "target": {
+              "flow": 0.0007332842919203778,
+              "T": 6.720767942169914e-05,
+              "Q": 0.0
+            }
+          },
+          "C3": {
+            "presolve": {
+              "flow": 1.962928657425294e-05,
+              "T": 0.0,
+              "Q": 9.398752354172757e-06
+            },
+            "target": {
+              "flow": 2.460458538702996e-06,
+              "T": 4.439471013029106e-07,
+              "Q": 8.758115402030107e-45
+            }
+          },
+          "C4": {
+            "presolve": {
+              "flow": 0.4544358563193928,
+              "T": 5.684341886080801e-10,
+              "Q": 0.019159506018695538
+            },
+            "target": {
+              "flow": 0.00013962936207703142,
+              "T": 3.0202613743313123e-05,
+              "Q": 0.0
+            }
+          },
+          "C5": {
+            "presolve": {
+              "flow": 0.11515373483440883,
+              "T": 0.0,
+              "Q": 0.0025410214220755734
+            },
+            "target": {
+              "flow": 2.595807699180115e-06,
+              "T": 4.61000126961153e-07,
+              "Q": 0.0
+            }
+          }
+        }
+      },
+      "expected": "every value ≤ 0.1"
+    },
+    {
+      "id": "S01.gate",
+      "description": "§13: scripts/gate.sh passes before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; the full gate runs once before merge (CLAUDE.md)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S01/ea125486b10476de107e8a37ba05c56718cef1d8/artifacts/s01-tests.junit.xml",
+      "sha256": "e239b91e4a0707ec04c5a95317aa1f5573a9970422cab3134866b04dc19a768f",
+      "description": "JUnit report of the S01 test run (ignored; kept by hash)"
+    },
+    {
+      "path": "docs/derivations/scripts/s01_reference.json",
+      "sha256": "4c1a24f68a2beccdfc000af699bb342bf0a200bd7ecaee989934302ef7d81930",
+      "description": "the design lane's 50-digit reference values (ref)"
+    },
+    {
+      "path": "docs/derivations/S01-spec.md",
+      "sha256": "f92e8ac939aa088172212c9a08d22fcb3a1209d56eba10b3d6a92b303ffb5d80",
+      "description": "the S01 specification the checks are read from (§10, §13, §14)"
+    }
+  ],
+  "limitations": [
+    "**Synthetic data only.** No real-chemistry or column validation; SYN-001 is a fixture.",
+    "**No S02 scope:** no condenser, reboiler, reflux, product-rate or temperature specifications, and no stage-indexing conventions beyond §1.",
+    "**No uniqueness or global convergence.** No claim beyond the registered cases and A18's four perturbations.",
+    "**No partial-dormancy convergence** (A19 asserts no false success; the analytic root it registers is not claimed reachable).",
+    "**No two-phase inlets.**",
+    "**No inside-out or rate-based method.**",
+    "**No sensitivities.**",
+    "**The generator's agreement validates the transcription of SYN-001**, not the property model.",
+    "requirements is empty: no docs/requirements.yaml entry lists S01 among its packages; the D/A mapping of S01 is the design lane's to register.",
+    "scripts/gate.sh was not run by this generator (it runs once before merge into main, in the integration worktree); S01.gate is unsupported here.",
+    "Review is pending: numerical and process-model review are the design lane's and the human reviewer's; this manifest does not claim either.",
+    "The reference agreement is numerical verification against an independent 50-digit generator, not empirical validation.",
+    "S01.A04 is fail: tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C4-presolve] xfailed; tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C5-presolve] xfailed (open design-lane questions in docs/S01_DECISIONS.md)",
+    "S01.A05 is fail: tests/test_s01_cascade_wo2.py::test_a05_c1_equals_ph_state_and_ref_within_the_registered_tolerance xfailed (open design-lane questions in docs/S01_DECISIONS.md)",
+    "S01.A06 is fail: tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C4-presolve] xfailed; tests/test_s01_cascade_wo2.py::test_a04_a06_the_state_tolerance_is_ten_times_the_deviation[C5-presolve] xfailed (open design-lane questions in docs/S01_DECISIONS.md)",
+    "S01.A10 is fail: tests/test_s01_cascade_wo2.py::test_a10_the_fd_floor_at_the_c2_root_is_below_1e_8 xfailed (open design-lane questions in docs/S01_DECISIONS.md)",
+    "S01.A04-A06-deviation is fail: see its value (open design-lane questions in docs/S01_DECISIONS.md)"
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
