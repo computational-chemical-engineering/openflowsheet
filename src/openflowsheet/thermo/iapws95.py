@@ -469,16 +469,17 @@ class _Dual:
         q = other / self.v
         return _Dual(q, -q * self.d / self.v, -q * self.t / self.v)
 
-    def log1p(self) -> _Dual:
-        scale = 1.0 / (1.0 + self.v)
-        return _Dual(math.log1p(self.v), self.d * scale, self.t * scale)
+    def log(self) -> _Dual:
+        return _Dual(math.log(self.v), self.d / self.v, self.t / self.v)
 
 
 #: Property id -> (value, d/dT at constant P, d/dP at constant T).
 _Answer = dict[str, tuple[float, float, float]]
 
 
-def _at(temperature: float, density: float) -> tuple[_Answer, float]:
+def _at(
+    temperature: float, density: float, root_pressure: float | None = None
+) -> tuple[_Answer, float]:
     """The six phase properties at (T, ρ) with their (T, P) derivatives, and p (spec §3.1, §3.3).
 
     Every quantity is a `_Dual` in (δ, τ); (∂/∂T)_ρ = −(τ/T)∂/∂τ, (∂/∂ρ)_T = (1/ρ_c)∂/∂δ, and the
@@ -500,6 +501,11 @@ def _at(temperature: float, density: float) -> tuple[_Answer, float]:
 
     delta_phir_d = delta * phir_d
     z = 1.0 + delta_phir_d
+    if root_pressure is not None:
+        # At a solved root Z ≡ P/(ρ R_s T); that quotient is exact to rounding, while 1 + δφʳ_δ
+        # is a difference of O(1) terms when Z ≪ 1 (dense liquid at low P: Z' = 4.9e-6 at the
+        # triple point). The partials stay the jet's (C10_DECISIONS, WO-S05-1).
+        z = _Dual(root_pressure / (density * R_S * temperature), z.d, z.t)
     tau_phi_t = tau * (phi0_t + phir_t)
     values = {
         "h": R * temp * (1.0 + tau_phi_t + delta_phir_d),
@@ -511,7 +517,7 @@ def _at(temperature: float, density: float) -> tuple[_Answer, float]:
         * (z - delta * tau * phir_dt)
         * (z - delta * tau * phir_dt)
         / (1.0 + 2.0 * delta_phir_d + delta * delta * phir_dd),
-        "lnphi_H2O": phir + delta_phir_d - delta_phir_d.log1p(),
+        "lnphi_H2O": phir + delta_phir_d - z.log(),
     }
     pressure = (RHO_C * R_S) * delta * temp * z
     by_t = -tau_v / temperature  # dτ/dT at constant ρ
@@ -894,7 +900,7 @@ class Iapws95Provider:
                     "not_converged",
                     f"density_not_converged: {request.phase} at {t!r} K, {p!r} Pa",
                 )
-            answer, _ = _at(t, rho)
+            answer, _ = _at(t, rho, p)
         if "Psat" in asked:
             if saturation is None or saturation.temperature != t:
                 saturation = _saturation(t)
