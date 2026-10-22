@@ -3881,3 +3881,95 @@ harvest:
   class: P
   to: []
   note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[0]
+  sha256: f970cc1af3c60a916812b3d9f658653957a3fc7181393b676036744124c37e27
+  class: E
+  to:
+  - L18
+  note: synthetic; no real-chemistry or column validation
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[1]
+  sha256: 8fcdd93e10a077e828430e7da6bb960c72247b368359d3c7ad062e0c805f454e
+  class: E
+  to:
+  - U04
+  note: S01's cascade (`syn001.cascade`) is library-only, not in MODEL_BUILDERS (U04); no S02 scope
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[2]
+  sha256: 841f05823aaaa4047f6087bb0fb146271f83c319c83baea84989250324c5778e
+  class: E
+  to:
+  - U04
+  - L19
+  - L20
+  note: S01's cascade (`syn001.cascade`) is library-only, not in MODEL_BUILDERS (U04); no uniqueness or global convergence
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[3]
+  sha256: 2b3c1a3060b693f0134db755471b961e0a3aa4f28112213f499cd81f72061173
+  class: E
+  to:
+  - U04
+  - L20
+  note: S01's cascade (`syn001.cascade`) is library-only, not in MODEL_BUILDERS (U04); partial dormancy ends typed, not converged (A19)
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[4]
+  sha256: c13361af6ea4ea70b4c44201b1a720b133b8d7814359f1827912f93f7eb74172
+  class: E
+  to:
+  - U04
+  note: S01's cascade (`syn001.cascade`) is library-only, not in MODEL_BUILDERS (U04); inlets single-phase only (R-509)
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[5]
+  sha256: 5ec81d2ba1bef63c878126e8aef7158a389f8f0294bef3fa8ff13bc50cacc72a
+  class: E
+  to:
+  - U04
+  note: S01's cascade (`syn001.cascade`) is library-only, not in MODEL_BUILDERS (U04); no inside-out or rate-based method
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[6]
+  sha256: 387ab737624ca39eeb8267c7f9d7cb9e62b13f1e4223093b1f5ea42588bd578a
+  class: E
+  to:
+  - U04
+  - U05
+  note: S01's cascade (`syn001.cascade`) is library-only, not in MODEL_BUILDERS (U04); no sensitivities (U05)
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[7]
+  sha256: cf68ed64f4485bb39145ed727b15da98ec8cda994ba617f14032e05f3c4f50b1
+  class: E
+  to:
+  - L18
+  note: generator agreement is transcription, not property-model validation
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[8]
+  sha256: a26d865fef1b93ae6086424d6db0c6b076892c1dbe55abf5527e0036ba3bd6b6
+  class: P
+  to: []
+  note: requirements empty; S01's D/A mapping is the design lane's to register
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[9]
+  sha256: 82be5e8bb75f889a893a268dfc1b3dca3ca34b8b506b70b608776d686baaafdb
+  class: P
+  to: []
+  note: gate runs once before merge, not by the generator; process note
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[10]
+  sha256: 4169a559f8189ecaf9a9a657ccf1bb28d38016439eccf090c3a371ed534da066
+  class: P
+  to: []
+  note: review pending
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: limitations[11]
+  sha256: 885f4bc99ba988295cb827e004700538ce238f2db283009f4c3172d420c868fa
+  class: E
+  to:
+  - L18
+  note: numerical verification against a 50-digit generator, not empirical validation
+- manifest: evidence/S01/465240a415cbb28a6f14342efed5635c5a8e80e3/manifest.json
+  item: checks[25]
+  check_id: S01.gate
+  sha256: 206d9e420829a5ece6cba84294a6a5f1c88ee88f77c33332c12a3c7593783d68
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
