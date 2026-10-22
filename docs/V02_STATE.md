@@ -92,7 +92,20 @@ F5 education mode deferred.
 
 ## Next action
 
-**W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
+**Cloud queue (2026-10-22, overnight session; branches pushed, none on `main` yet):**
+- **C1, C2, C3 done** and merged together on `wp/C-merge` `904f265` (main ← C2 ← C1 ← C3): full gate PASS at
+  `904f265` (9944 passed, 104 skipped); CI 39694853666 green on both architectures. Updating `main` is a fast-forward
+  to `904f265`; the session's permission check refused the push to `main`, so **Frank (or a session allowed to push
+  `main`) fast-forwards it.** C1/C2/C3 carry no evidence manifest (the schema's `work_package` pattern admits no `C`
+  id; `docs/C2_DECISIONS.md`). Decisions: `docs/C1_DECISIONS.md`, `docs/C2_DECISIONS.md`, `docs/C3_DECISIONS.md`.
+  Questions: `docs/FRANK_QUESTIONS.md`.
+- **S01** (`wp/S01`): spec, WO-1…WO-4, one `reviewer` pass (fix first → WO-4 done); manifest
+  `evidence/S01/a3eaf09…/manifest.json` computes `tested` with `S01.gate` unsupported. Next: merge `main` (after the
+  C fast-forward) into `wp/S01`, run `scripts/gate.sh`, re-take the manifest with the gate result, CI, merge.
+- **L01** (`wp/L01`, from `wp/C-merge`): specification running/next; then `opus-engineer` work orders and a
+  development-half coverage re-take. **S02**: specification only, if time remains.
+
+**History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
 (a) coverage 0/450 CANDIDATE, G14 PASS; (b) 45 drawn, canaries prommis NF / mvo CO2 / cryst n13; (b′) confirmation written;
 (c) canaries 3/3 passed first attempt (pin `claude-sonnet-5-5`, the login's CLI default; Claude Code 2.1.302; USD-eq 0.23);
