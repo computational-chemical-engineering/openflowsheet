@@ -40,7 +40,6 @@ from openflowsheet.models.syn001.column import (
     ColumnSpec,
     EndSpecification,
     ProfileInitial,
-    ProfileLabel,
     declared_rows,
     distillate_id,
     distillate_total_id,
@@ -178,7 +177,7 @@ ROW_ID = re.compile(
 @pytest.mark.parametrize("case", [*CASES, "P1"])
 def test_a01_declared_counts_and_ids(case: str) -> None:
     """A01: columns = rows = `ref.dof` (P1 has M3's), unique well-formed ids, a kind for every row
-    and for every column but `phi` (see the strict xfail below)."""
+    and for every column (`phi`'s is A17's `dimensionless`, §17 item 1)."""
     expected = REFERENCE["dof"]["M3" if case == "P1" else case]
     spec = SPECS[case]
     rows = declared_rows(spec, PROVIDER, CONTEXT)
@@ -196,8 +195,7 @@ def test_a01_declared_counts_and_ids(case: str) -> None:
         name for name in row_ids if not ROW_ID.match(name)
     ]
     assert set(rows.row_kinds) == set(row_ids)
-    untyped = set(rows.variable_ids) - set(rows.variable_kinds)
-    assert untyped == ({reflux_fraction_id(UNIT)} if spec.total_condenser else set())
+    assert set(rows.variable_ids) == set(rows.variable_kinds)
     # Every stage carries exactly one slot row: S01's `Q` or a column specification (§2.1).
     for stage in range(1, spec.stage_count + 1):
         mine = [name for name in row_ids if re.match(rf"^{UNIT}:stage:{stage}:(Q|spec:.*)$", name)]
@@ -205,18 +203,11 @@ def test_a01_declared_counts_and_ids(case: str) -> None:
     declared_problem(rows)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Q-S02-WO1-1: spec §0 calls `phi`'s kind `dimensionless` 'an existing kind', but "
-        "`compile.spec.QuantityKind` and `numerics.scaling.REGISTERED_NOMINALS` have no "
-        "`dimensionless`; measured: `phi` has no declared kind (docs/S02_DECISIONS.md)"
-    ),
-)
 def test_a01_phi_is_declared_dimensionless() -> None:
-    """A01 / §2.2: the total condenser's `phi` column is of kind `dimensionless`."""
+    """A01 / §2.2, A17 (§17 item 1, Q-S02-WO1-1 ruled): the total condenser's `phi` column is of
+    kind `dimensionless`. WO-1's strict xfail, now a plain pass."""
     rows = declared_rows(SPECS["M2"], PROVIDER, CONTEXT)
-    assert rows.variable_kinds.get(reflux_fraction_id(UNIT)) == "dimensionless"  # type: ignore[comparison-overlap]
+    assert rows.variable_kinds.get(reflux_fraction_id(UNIT)) == "dimensionless"
 
 
 #: §2.1's slot rows of each case, `(stage, kind, row kind)`.
@@ -392,7 +383,7 @@ def test_a01_energy_rows_read_the_stated_streams(case: str) -> None:
 @pytest.mark.parametrize("regime", REGIMES)
 def test_a01_each_regime_pins_as_many_columns_as_it_drops_rows(case: str, regime: str) -> None:
     """A01: per regime and equilibrium stage, pinned = dropped, all declared; the `ZERO_FLOW`
-    label is §2.3's (a column, or the profile's `T_1⁰` without a `top` inlet)."""
+    label is §2.3's as amended (a column; the first present inlet's temperature at stage 1)."""
     spec = SPECS[case]
     rows = declared_rows(spec, PROVIDER, CONTEXT)
     row_ids = {equation.equation_id for equation in rows.equations}
@@ -415,7 +406,8 @@ def test_a01_each_regime_pins_as_many_columns_as_it_drops_rows(case: str, regime
         elif spec.top is not None:
             assert source == temperature_id(inlet_stream(UNIT, "top"))
         else:
-            assert source == ProfileLabel(1)
+            assert source == temperature_id(inlet_stream(UNIT, spec.inlets()[0].port))
+            assert source in rows.variable_ids
     if spec.total_condenser:
         with pytest.raises(ValueError, match="not an equilibrium stage"):
             regime_form(spec, 1, regime)  # type: ignore[arg-type]

@@ -28,7 +28,11 @@ from openflowsheet.compiled import RowAccumulation
 #: product of two flows; K03's specification §4.2 scales it by the square of the flow nominal.
 #: A kind is *declared* by the unit that owns the variable or authors the row, never inferred
 #: from the shape of an id: an id convention that drifts would silently mis-scale a column.
-QuantityKind = Literal["molar_flow", "molar_flow_squared", "temperature", "pressure", "heat_rate"]
+#: `dimensionless` is ADR 0001 D1.3's pure-number kind, a **column kind only** (S02 spec §17
+#: item 1, R-536): S02's reflux fraction `phi`. No row may be declared with it.
+QuantityKind = Literal[
+    "molar_flow", "molar_flow_squared", "temperature", "pressure", "heat_rate", "dimensionless"
+]
 
 #: A backend expression. Deliberately `Any`: this module must not name a backend's type, and
 #: parameterizing every signature over a TypeVar would buy nothing a reader can act on, because

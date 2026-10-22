@@ -401,23 +401,18 @@ def slot_column(spec: ColumnSpec, end: str, kind: str) -> str:
     raise ValueError(f"{kind!r} is not a variable - parameter slot")
 
 
-@dataclass(frozen=True)
-class ProfileLabel:
-    """§2.3: the `ZERO_FLOW` label of stage 1 without a `top` inlet is the constant `T_1⁰` of the
-    §6 profile, not a column. See the design-lane question in `docs/S02_DECISIONS.md`: the
-    orchestrator's `ZeroFlowForm.label` names a column."""
-
-    stage: int
-
-
-def label_source(spec: ColumnSpec, stage: int) -> str | ProfileLabel:
-    """S01 §4.3 with §2.3: `T_{j−1}` for j > 1 (with a total condenser stage 2's is `T_c`), the
-    `top` inlet's temperature for j = 1 when there is one, else the profile's `T_1⁰`."""
+def label_source(spec: ColumnSpec, stage: int) -> str:
+    """S01 §4.3 with §2.3 as amended (§17 item 2, R-537): `T_{j−1}` for j > 1 (with a total
+    condenser stage 2's is `T_c`); for j = 1 the temperature column of the first present inlet in
+    `ColumnSpec.inlets()` order, which is `T_top` when there is a `top` inlet. Always a column id.
+    A column with no present inlet has none; §5 refuses it (S6, S10) before any form is built, so
+    asking here is misuse."""
     if stage > 1:
         return stage_temperature_id(spec.unit_id, stage - 1)
-    if spec.top is not None:
-        return temperature_id(inlet_stream(spec.unit_id, TOP))
-    return ProfileLabel(stage)
+    inlets = spec.inlets()
+    if not inlets:
+        raise ValueError(f"{spec.unit_id}: stage 1 has no label without a present inlet (§5 S10)")
+    return temperature_id(inlet_stream(spec.unit_id, inlets[0].port))
 
 
 # -- spec §5: validation -------------------------------------------------------------------------
@@ -861,8 +856,8 @@ def declared_rows(
             column(reflux_id(unit, c), "molar_flow")
         for c in components:
             column(distillate_id(unit, c), "molar_flow")
-        # `phi` is dimensionless: `QuantityKind` has no such kind (design-lane question).
-        column(reflux_fraction_id(unit), None)
+        # `phi` is a pure number: the column-only kind `dimensionless`, nominal 1 (§17 item 1).
+        column(reflux_fraction_id(unit), "dimensionless")
         column(distillate_total_id(unit), "molar_flow")
         column(stage_temperature_id(unit, 1), "temperature")
         column(stage_pressure_id(unit, 1), "pressure")
@@ -1106,13 +1101,13 @@ def _inflow(spec: ColumnSpec, stage: int, c: str) -> tuple[str, ...]:
 class ColumnRegimeForm:
     """S01's `RegimeForm` for an equilibrium stage of a column: what the stage pins and drops in
     one regime. In `ZERO_FLOW` the energy row is `swapped` for the label row `(row id, T_j,
-    source)`, `source` a column id or §2.3's `ProfileLabel`."""
+    source)`, `source` the column id `label_source` names."""
 
     regime: Regime
     pinned: tuple[str, ...]
     dropped: tuple[str, ...]
     swapped: str = ""
-    label: tuple[str, str, str | ProfileLabel] | None = None
+    label: tuple[str, str, str] | None = None
 
 
 def regime_form(spec: ColumnSpec, stage: int, regime: Regime) -> ColumnRegimeForm:
@@ -1344,7 +1339,6 @@ __all__ = [
     "ColumnSpec",
     "EndSpecification",
     "ProfileInitial",
-    "ProfileLabel",
     "declared_rows",
     "distillate_id",
     "distillate_total_id",

@@ -44,7 +44,13 @@ REGISTERED_NOMINALS: Final[Mapping[QuantityKind, float]] = {
     "temperature": 100.0,
     "pressure": 1.0e5,
     "heat_rate": 1.0e5,
+    # S02 spec §17 item 1 (R-536): a pure number's unit is 1. A column kind only (`COLUMN_ONLY`).
+    "dimensionless": 1.0,
 }
+
+#: Kinds a column may carry but a row may not (S02 spec §17 item 1): a row of such a kind would
+#: need a tolerance `region.KIND_TOLERANCE` and K04's table do not have.
+COLUMN_ONLY: Final[frozenset[QuantityKind]] = frozenset({"dimensionless"})
 
 SCALE_PROVENANCE: Final = (
     "docs/derivations/SYN-001.md §9 (registered physical nominals; benchmarks/registry.yaml "
@@ -110,6 +116,7 @@ class Scaling:
     ) -> Scaling:
         undeclared: list[str] = []
         unnominated: list[str] = []
+        column_only: list[str] = []
         column: dict[str, float] = {}
         row: dict[str, float] = {}
         kinds: dict[str, QuantityKind] = {}
@@ -123,6 +130,9 @@ class Scaling:
                 if kind is None:
                     undeclared.append(name)
                     continue
+                if target is row and kind in COLUMN_ONLY:
+                    column_only.append(f"{name} ({kind})")
+                    continue
                 nominal = nominals.get(kind)
                 if nominal is None:
                     unnominated.append(f"{name} ({kind})")
@@ -130,12 +140,14 @@ class Scaling:
                 target[name] = float(nominal)
                 kinds[name] = kind
 
-        if undeclared or unnominated:
+        if undeclared or unnominated or column_only:
             parts = []
             if undeclared:
                 parts.append(f"no declared quantity kind: {sorted(undeclared)}")
             if unnominated:
                 parts.append(f"no registered nominal for the declared kind: {sorted(unnominated)}")
+            if column_only:
+                parts.append(f"a row of a column-only kind: {sorted(column_only)}")
             raise ScaleUnavailableError(
                 "SCALE_UNAVAILABLE. "
                 + "; ".join(parts)
