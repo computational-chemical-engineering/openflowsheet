@@ -43,8 +43,11 @@ from openflowsheet.models.syn001.column import (
     column_warnings,
     declared_rows,
     distillate_id,
+    distillate_total_id,
     purity_flow_id,
+    purity_reference,
     purity_reference_parameter,
+    reflux_id,
     saturation_temperature,
     slot_column,
     stage_band,
@@ -632,6 +635,44 @@ def test_a04_temperature_row() -> None:
     assert rows[f"{UNIT}:stage:7:spec:temperature"] == Fraction(TRIAL["temperature_slot"])
     assert rows[f"{UNIT}:stage:1:spec:purity_definition"] == Fraction(TRIAL["purity_definition"])
     assert rows[f"{UNIT}:stage:1:spec:purity"] == Fraction(TRIAL["purity_slot"])
+
+
+def test_a04_purity_at_a_total_condenser() -> None:
+    """A04 / S06 §17.4: on M2's structure (total condenser) with condenser purity of A 0.75 and
+    reboiler bottoms rate 0.55, at a state whose columns are distinct dyadic values, the purity
+    definition row is `F·d_A − u·D` exactly and differs from the top vapour's `F·v_2,A − u·V_2`
+    and the reflux's `F·r_A − u·Σ r`. The feed is (1/4, 1/2, 3/8) so that `F` = 9/8 is dyadic
+    and not 1. The row form does not depend on admissibility; this set is refused by I6 (no top
+    product holds `d_A = 0.75 D` with `D = F − 0.55`), so `validate` is not asked."""
+    spec = replace(
+        BASES["M2"],
+        sides=(_feed((0.25, 0.5, 0.375)),),
+        condenser_spec=EndSpecification("purity", 0.75, component="A"),
+    )
+    assert spec.reboiler_spec == EndSpecification("bottoms_rate", 0.55)
+    rows = declared_rows(spec, PROVIDER, CONTEXT)
+    state: dict[str, float] = {}
+    for k, name in enumerate(rows.variable_ids):
+        kind = rows.variable_kinds[name]
+        base = {"temperature": 300.0, "pressure": 1.0e5, "heat_rate": 1.0e3}.get(kind, 0.0)
+        state[name] = base + (k + 1) / 128
+    assert len(set(state.values())) == len(state)
+    total = Fraction(purity_reference(spec))
+    assert total == Fraction(9, 8)
+    u = Fraction(state[purity_flow_id(UNIT, 1)])
+
+    def definition(part: str, whole: Fraction) -> Fraction:
+        return total * Fraction(state[part]) - u * whole
+
+    expected = definition(distillate_id(UNIT, "A"), Fraction(state[distillate_total_id(UNIT)]))
+    top_vapour = definition(vapor_id(UNIT, 2, "A"), Fraction(state[vapor_total_id(UNIT, 2)]))
+    reflux = definition(
+        reflux_id(UNIT, "A"), sum(Fraction(state[reflux_id(UNIT, c)]) for c in COMPONENTS)
+    )
+    assert expected not in (top_vapour, reflux)
+    values = row_values(declared_problem(rows), state)
+    assert values[f"{UNIT}:stage:1:spec:purity_definition"] == expected
+    assert values[f"{UNIT}:stage:1:spec:purity"] == u - Fraction(3, 4) * total
 
 
 def test_a04_spec_values_carry_the_inverse_quantities() -> None:
