@@ -11148,3 +11148,31 @@ guaranteed to terminate.
 ADR 0005 D4).
 
 **Watch for.** Any column phase case whose regular signature is a block other than all-2P.
+
+## R-555 — C2 Amendment 1: a re-taken `coverage.json` is read at its pinned content from git history; the working copy must keep the read fields
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C2 Amendment 1 (D-12), brief `docs/briefs/C2-amendment-1.md` |
+| Normative text | `docs/derivations/C2-OpenIDAES-450-split-registration.md` §14; SPLIT-R01, R12, R14 items 11–12 (amended); SPLIT-A18, A19 |
+| Evidence | Generator `--check` byte-identical with the working copy at `aa89cdd6…` (pin `b69626c7…`); `split.json` SHA-256 `ee940a7e…` unchanged (R-486); `tests/test_c2_openidaes450_split.py` (SPLIT-A01…A19) |
+| Affected packages | C2, C7 and every later version bump or merge build that re-takes W27's coverage |
+
+**Decision.**
+- When the working copy of `coverage.json` no longer has the pinned SHA-256, the generator reads git blob
+  `dea968a2…` (its content at `0fcf1ad`) and checks that blob against the SHA-256 pin.
+- The working copy's multiset of (`case_id`, `family`, `class`) must equal the pinned content's. Drift is refused
+  (`SPLIT-R12/A1`, counts only) and triggers a SPLIT-R12 amendment.
+- Without history the refusal is explicit (`SPLIT-R01/A1`). There is no fallback to the working copy.
+- `case_facts.json` and `sample.json` keep the strict pin. The record is unchanged.
+
+**Rejected alternatives, and why.**
+- *Re-pin at each re-take.* It needs an amendment at every bump and changes the record's pin and `coverage_snapshot`
+  each time. It also attests read-field equality in prose instead of checking it.
+- *A committed frozen copy.* It duplicates a 2.5 MB all-case file into the allowlist and W27-A71's path rule.
+- *A read-field digest pin.* The record's `coverage_snapshot` would move at every re-take, and the original bytes
+  would go unchecked.
+
+**Watch for.** The first re-take that changes a class (Q-5: refuse, as registered, or limit the trigger to the case
+set and family).

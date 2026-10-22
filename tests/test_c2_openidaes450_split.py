@@ -314,3 +314,112 @@ def test_a17_generator_output_names_no_held_out_case(drawn):
     text = (out.getvalue() + err.getvalue()).encode()
     assert "byte-identical" in out.getvalue()
     assert not (set(t.decode() for t in TOKEN.findall(text)) & drawn[2])
+
+
+# Amendment 1 (2026-10-22, R-555): a re-taken coverage.json is read at its pinned content.
+EXPOSED_EXAMPLE = "blind_synthesized_hda_flash"  # exposed (SPLIT-R04 c); prose names only these
+
+
+@pytest.fixture(scope="module")
+def pinned_coverage():
+    raw = gen.git_blob(ROOT, gen.PINNED_BLOBS["coverage"])
+    assert raw is not None, "Amendment 1 needs the repository's history (a full clone)"
+    return raw
+
+
+def _triples(raw: bytes):
+    return sorted((r["case_id"], r["family"], r["class"]) for r in json.loads(raw)["rows"])
+
+
+def _working(pinned: bytes, edit) -> dict[str, bytes]:
+    cov = json.loads(pinned)
+    edit(cov)
+    raw = {name: (ROOT / path).read_bytes() for name, (path, _) in gen.INPUTS.items()}
+    raw["coverage"] = json.dumps(cov, indent=2).encode()
+    return raw
+
+
+def _retake(cov):
+    cov["snapshot"]["git_commit"] = "0" * 40
+    cov["snapshot_sha256"] = "f" * 64
+
+
+def _no_fetch(root, oid):
+    raise AssertionError("an unmoved input must not be read from history")
+
+
+def test_a18_a_retaken_coverage_is_read_at_its_pinned_content(record, pinned_coverage):
+    pin = gen.INPUTS["coverage"][1]
+    assert (
+        hashlib.sha256(pinned_coverage).hexdigest() == pin == record["inputs"]["coverage"]["sha256"]
+    )
+    # the working copy's read fields equal the pinned ones (whatever else a re-take moved)
+    assert len(_triples(pinned_coverage)) == 450
+    assert _triples(COVERAGE.read_bytes()) == _triples(pinned_coverage)
+
+    # a version re-take: only the snapshot fields move; the draw reads the pinned bytes
+    working = _working(pinned_coverage, _retake)
+    assert hashlib.sha256(working["coverage"]).hexdigest() != pin
+    raw = gen.pinned_inputs(working)
+    assert raw["coverage"] == pinned_coverage
+    rec, _ = gen.build(raw)
+    assert gen.render(rec) == RECORD.read_bytes()
+    assert (
+        rec["coverage_snapshot"]["git_commit"]
+        == json.loads(pinned_coverage)["snapshot"]["git_commit"]
+    )
+    # an unmoved working copy is used as is: no history is needed
+    unmoved = dict(working, coverage=pinned_coverage)
+    assert gen.pinned_inputs(unmoved, fetch=_no_fetch) == unmoved
+
+
+def _set(case_id, field, value):
+    def edit(cov):
+        next(r for r in cov["rows"] if r["case_id"] == case_id)[field] = value
+
+    return edit
+
+
+def _drop(case_id):
+    def edit(cov):
+        cov["rows"] = [r for r in cov["rows"] if r["case_id"] != case_id]
+
+    return edit
+
+
+def _add(cov):
+    cov["rows"].append(
+        {"case_id": "a19_added_case", "family": "idaes", "class": "UNIT_UNAVAILABLE"}
+    )
+
+
+@pytest.mark.parametrize(
+    ("edit", "counts"),
+    [
+        (_set(EXPOSED_EXAMPLE, "class", "COMPONENT_UNAVAILABLE"), "removed 0, added 0, changed 1"),
+        (_set(EXPOSED_EXAMPLE, "family", "watertap"), "removed 0, added 0, changed 1"),
+        (_drop(EXPOSED_EXAMPLE), "removed 1, added 0, changed 0"),
+        (_add, "removed 0, added 1, changed 0"),
+    ],
+    ids=["class", "family", "removed", "added"],
+)
+def test_a19_read_field_drift_is_refused(pinned_coverage, edit, counts):
+    working = _working(pinned_coverage, edit)
+    with pytest.raises(gen.SplitRefusedError) as exc:
+        gen.pinned_inputs(working)
+    assert exc.value.rule == "SPLIT-R12/A1"
+    assert f"({counts}, duplicate rows 0)" in str(exc.value)
+    ids = {r[0] for r in _triples(pinned_coverage)} | {"a19_added_case"}
+    assert not ({t.decode() for t in TOKEN.findall(str(exc.value).encode())} & ids)
+
+
+def test_a19_missing_history_is_an_explicit_refusal(pinned_coverage, tmp_path):
+    working = _working(pinned_coverage, _retake)
+    assert gen.git_blob(ROOT, "0" * 40) is None
+    assert gen.git_blob(tmp_path, gen.PINNED_BLOBS["coverage"]) is None
+    with pytest.raises(gen.SplitRefusedError) as exc:
+        gen.pinned_inputs(working, root=tmp_path)
+    assert exc.value.rule == "SPLIT-R01/A1"
+    with pytest.raises(gen.SplitRefusedError) as exc:
+        gen.pinned_inputs(working, fetch=lambda root, oid: pinned_coverage[:-2] + b" \n")
+    assert exc.value.rule == "SPLIT-R01/R12"
