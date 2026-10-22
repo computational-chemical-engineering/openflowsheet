@@ -20,3 +20,23 @@ WO-C9-1 (build lane, `opus-engineer`, commits 9fb2426, d5da151):
 - DECISION: a `bool` registration version → `ValueError` (W27v2-R01 accepts only 1 or 2). Alternative: accept `True` as 1. Reversible by: dropping the `isinstance` check.
 - DECISION: three W27v2-R08 refusal tests beyond §5.2 (exact spelling despite `case_distinct`; an entry covers only its CAS RNs; no duplicates in (c)), read off the rule text. They catch a mutant the 17 states miss (`case_distinct` exempting a spelling wholesale). Alternative: states only. Reversible by: deleting the test; design lane may register them as states.
 - DECISION: W27v2-A18 → checked by `git diff main -- tests/test_m06_w27_coverage.py` (empty) in the manifest, not as a test (CI clones may lack `main`). Alternative: a test shelling out to git. Reversible by: adding it.
+- DECISION: WO-C9-1's `evidence/C9/<commit>/manifest.json` → not committed. `schemas/evidence-manifest.schema.json` (frozen, §2.2) admits only `^[PKTMSR][0-9]{2}[a-z]?$` work packages and `[DA]nn` requirements, so `tests/test_evidence_manifests.py` fails on it, and `docs/CLOUD_WORK.md:57` says C-items have no manifest (they merge on the read full gate and CI, recorded in the merge commit). The acceptance record is below instead. Alternative: file it under a plan id (none is assigned to C9) or amend the schema (an ADR). Reversible by: writing the manifest once C9 takes a plan id.
+
+WO-C9-1 acceptance at e3f3ca844ccbf1107ad1363df55161a2595ae81c (status: tested; review pending; full gate not run here, the caller runs it):
+- `.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_c9_w27_v2.py` → exit 0
+- `.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_m06_w27_campaign_records.py tests/test_m06_w27_coverage.py tests/test_m06_w27_harness.py tests/test_m06_w27_registration.py tests/test_m06_w27_scorer.py tests/test_c2_openidaes450_split.py tests/test_c9_w27_v2.py` → exit 0
+- `.venv/bin/python docs/derivations/scripts/w27_registration_v2.py --check` → exit 0
+- `.venv/bin/python -c "from benchmarks.m06.w27 import coverage,facts,registration;import json,sys;c=json.loads(registration.COVERAGE_JSON.read_bytes());sys.exit(registration.dump(coverage.coverage_document(facts.load_facts(),c['snapshot']))!=registration.COVERAGE_JSON.read_bytes())"` → exit 0
+- `git diff main -- tests/test_m06_w27_coverage.py` → exit 0
+- `.venv/bin/ruff check .` → exit 0
+- `.venv/bin/ruff format --check .` → exit 0
+- `.venv/bin/mypy` → exit 0
+- W27v2-A18: pass — tests/test_m06_w27_coverage.py unmodified against main, and green {"diff_bytes": 0}
+- W27v2-A19: pass — the 17 states of section 5.2 through the production classifier (test_a19_registered_state) {"states": 17}
+- W27v2-A20: pass — version 2 on the development cases (filtered to split.json#/development first) at the committed snapshot equals every committed row, whole
+- W27v2-A21: pass — coverage_document version 2 for H2 at S2: schema, registration_version, registration_v2_sha256, units_judged_on, version 1 members kept
+- W27v2-A22: pass — CLI --registration-version 2 with no --out, the committed coverage.json, or a relative path to it: exit 2 naming SPLIT-R10, coverage.json bytes unchanged, no snapshot built and nothing classified
+- C9.GEN: pass — w27_registration_v2.py --check
+- C9.V1-BYTES: pass — version 1 byte-identity: coverage_document at the committed snapshot equals coverage.json's bytes; every registered state under the v1 and v1+lib tables gives the same SHA-256 before (f578dc7) and after (9fb2426) the change {"state_hash_file_sha256_before": "1776953a8beed8a2d5666d012e58d70e024da78bf34157619301133d8e97e213", "state_hash_file_sha256_after": "1776953a8beed8a2d5666d012e58d70e024da78bf34157619301133d8e97e213"}
+- C9.TESTS: pass — test counts {"new_file": {"passed": 31}, "touched_tests": {"passed": 194, "skipped": 26}}
+- C9.LINT: pass — ruff check, ruff format --check, mypy
