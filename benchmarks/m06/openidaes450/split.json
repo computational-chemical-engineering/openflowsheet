@@ -514,15 +514,28 @@
       "Feed",
       "Product"
     ],
+    "facts": {
+      "path": "benchmarks/m06/openidaes450/case_facts-v2.json",
+      "schema": "openidaes450-case-facts-v2",
+      "sha256": "4f5c5a65fe1b310e04b7e311464e4d87ba90ed4bfa7a90c240cde397cd0114ef",
+      "writer": "docs/derivations/scripts/c2_openidaes450_facts_v2.py"
+    },
     "kind_level_states": {
       "blind_synthesized_hda_flash": [],
       "official_idaes_skeleton_pervaporation": [
         "SkeletonUnitModel"
       ]
     },
-    "lacking": "topology_units: [{id, kind}] per case, in case_facts-v2.json",
     "rule": "SPLIT-R13 (R02-F1)",
-    "status": "awaiting_facts"
+    "status": "facts_committed",
+    "unit_level_states": {
+      "blind_synthesized_hda_flash": {},
+      "official_idaes_skeleton_pervaporation": {
+        "topology:SkeletonUnitModel": [
+          "pervap"
+        ]
+      }
+    }
   },
   "frame": {
     "excluded": [
