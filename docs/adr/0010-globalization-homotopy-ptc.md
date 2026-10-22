@@ -48,6 +48,8 @@ A replay under a policy without `globalization` is refused (ADR 0005 D1's preced
 
 ### D3. Recovery edge 3: EO globalization failure → specification continuation (T04 §5)
 
+*Amended 2026-10-23 by ADR 0044 (Accepted): `LINEAR_SOLVE_FAILED` is also a trigger when attempt 0 of the failed region solve ended in a globalization failure (ADR 0044 D1, as narrowed by R-550). The trigger list below is otherwise unchanged.*
+
 - **Trigger.** A region solve (a `solve_eo` step, or a merged region) whose terminal outcome is one of `LINE_SEARCH_FAILED`, `STAGNATION`, `BOUND_BLOCKED`, `BUDGET_EXHAUSTED(newton_iterations | ptc_steps)`, `PTC_STALLED`, `ACTIVE_SET_CYCLING`, `ATTEMPTS_EXHAUSTED`. Not: `CONVERGED`, `LINEAR_SOLVE_FAILED` (rank; blueprint §7.7's own row), `EVALUATION_ERROR`, `BUDGET_EXHAUSTED(property_calls)`, `CHECKPOINT_INCOMPATIBLE`, `INITIALIZATION_FAILED`, `CAPABILITY_UNAVAILABLE`, `PTC_MAPPING_INVALID`, `HOMOTOPY_STALLED`.
 - **Preconditions.** `eo_recovery = "homotopy"`; the region has a continuation parameter (else `unsupported(no_continuation_parameter)` is recorded and the failed outcome stands); the edge has not fired for this step in this solve.
 - **Action.** One new region solve of the same region whose attempt 0 runs the homotopy core from the failed solve's item-0 opening state in its opening signature, with a fresh contract state (used signatures, attempt count) — the merge edge's precedent (ADR 0009). Its `branch_provenance` continues the failed solve's list densely; its first item has `opening_source = "eo_recovery_start"`.

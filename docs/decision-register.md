@@ -11006,7 +11006,7 @@ endpoint. The profile root `ref.cases.*.presolve` stays registered as a second e
 | --- | --- |
 | Date | 2026-10-22 |
 | Decided by | design lane (`architect`), S02 Amendment 2 |
-| Normative text | `docs/adr/0044-edge3-after-restart-into-singular-signature.md` (Proposed); S02 spec §18.3 |
+| Normative text | `docs/adr/0044-edge3-after-restart-into-singular-signature.md` (Accepted 2026-10-23, Frank; conditions (1)–(4) and Frank's bit-identity condition met, WS1 evidence and merge gate at `05288372`); S02 spec §18.3 |
 | Evidence | forced edge 3 reaches `ref.target` on 10 of 10 S02 cases; without D1, M2, V-M1 (RR,B), (D,BR) and M1 from the profile root end `LINEAR_SOLVE_FAILED`; full suite with D1 patched: no registered outcome outside S01/S02 moves; five S01/S02 tests move (one intended xfail flip, four stub signatures) — ADR 0044 C2 |
 | Affected packages | S02, S01, T04 |
 
