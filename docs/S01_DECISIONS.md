@@ -70,6 +70,8 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
 
 **Measured (WO-3).** Forced edge 3 on C2: the target converged (3 iterations); the homotopy from `x⁰` accepted λ = 0, 1/4, 3/4, 1 (no rejection; corrector iterations 0, 3, 3, 2); `Q⁰` vs `ref` presolve ≤ 3.7e-5 W; the recovered root is `SAME` as A06's (scaled distance 3.6e-8). A18: all four perturbed openings converge 2P ×3, `SAME` as A06's (pre-solve iterations 6, 5, 2, 2; one target attempt each).
 
+**Evidence (WO-3).** `evidence/S01/ea125486b10476de107e8a37ba05c56718cef1d8/manifest.json`, from `scripts/s01_evidence_manifest.py` at `ea12548`: status `implemented` (20/26 checks pass). A01–A03, A07–A09, A11–A20 pass; A04, A05, A06, A10 fail only on WO-2's four strict xfails (the questions below); `S01.A04-A06-deviation` fails (worst 0.454 of the state tolerance, C4/C5 pre-solve); generator `--check`, ruff, format, mypy pass; `S01.gate` unsupported (not run). Note: the margin test's name cites A04 and A06, so A06 is held by the C4/C5 pre-solve margin although C2's own root is at 7.3e-4 of its tolerance.
+
 ### Design-lane questions
 
 - QUESTION: §5 has refusals carry `INVALID_SPECIFICATION`, which is not a `SolveOutcome` value, and §4.5 says "no new outcome values". WO-1 returns it as `CascadeFailure.outcome` (a local literal, outside `SolveOutcome`). How must WO-2 surface it — a `SolveOutcome`, an application error, or a raised `SpecificationError`?
