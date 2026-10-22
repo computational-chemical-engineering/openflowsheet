@@ -355,16 +355,19 @@ def found_limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
         "four matched column cases, the invalid specifications and the phase case against this "
         "package's generator; X31's two independent references and perturbation studies are "
         "S03's (§14). The mapping and the verdict are the design lane's.",
-        "ADR 0044 (edge 3 after a restart that ends LINEAR_SOLVE_FAILED) is Proposed until this "
-        "manifest is tested and the reviewer has read it (§18.9); the decisions it rests on are "
-        "R-546 to R-549. A20's clause that the full gate moves no registered outcome outside S02 "
-        "is not measured here: the design lane's patched-suite run (commit 927bddb) records it, "
-        "and scripts/gate.sh runs before merge.",
+        "ADR 0044 (edge 3 after a restart that ends LINEAR_SOLVE_FAILED, D1 narrowed to an "
+        "attempt 0 that ended in a core globalization failure, §19 item 1) is Proposed until "
+        "R-550's conditions hold: this manifest tested, scripts/gate.sh green on the merge "
+        "candidate with CI green on both architectures and C2 rewritten from that run, and a "
+        "workstation scan of registered step records logged; the decisions it rests on are "
+        "R-546 to R-550. A20's clause that the full gate moves no registered outcome outside S02 "
+        "is not measured here.",
         "scripts/gate.sh was not run by this generator (it runs once before merge into main); "
         "S02.gate is unsupported here.",
-        "Review is pending: numerical and process-model review are the design lane's and the "
-        "human reviewer's; this manifest does not claim either. Open questions for the review: "
-        "Q-S02-WOG-1 and Q-S02-WO2b-1 (docs/S02_DECISIONS.md).",
+        "Review: the design lane's reviewer pass is docs/reviews/S02-review.md (rulings R-550 to "
+        "R-554); its fix work order items 1-3 are in this commit. The reviewer's check of those "
+        "fixes and the human numerical and process-model review are pending; this manifest "
+        "claims neither.",
         "The reference agreement is numerical verification against a 50-digit generator that "
         "shares SYN-001 and the §6/§18.2 definitions, not empirical validation.",
     ]
