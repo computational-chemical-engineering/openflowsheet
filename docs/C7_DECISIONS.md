@@ -48,3 +48,16 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
 - DONE (WS1 item 2, rulings Q1): `scripts/m05_wo9_real.py --replay` at `5a6b811` (`0.3.0.dev0`, clean tree,
   alpha-main's `.venv-nlp`, OMP 1): `REPLAY PASS REAL differences=0`, exit 0. Confirms F4 (REAL's fingerprint carries no
   version) by measurement.
+- DONE (WS1 item 3, ADR 0044 condition (4) and Frank's condition; numbers in the ADR's status paragraph). Method: a
+  `sitecustomize.py` on `PYTHONPATH` installs a meta-path hook that wraps `orchestrator.recovery.eo_recovery_due` in
+  every process; `ADR44_LOG` logs each `LINEAR_SOLVE_FAILED` call (`PYTEST_CURRENT_TEST`, attempts, value);
+  `ADR44_MODE=old` returns ADR 0010 D3's `False`. Full suite in both modes (29 + 30 min) and `-m "nlp or pymrm"` in
+  `.venv-nlp`. Static scan: every tracked JSON/JSONL, every `LINEAR_SOLVE_FAILED` value with its enclosing `attempts`.
+- DECISION: what "registered step records" scans → every tracked JSON/JSONL record (static) plus every
+  `eo_recovery_due` call the registered tests make while replaying them (dynamic). Alternative: only campaign step
+  records. Reversible by: re-scanning a narrower set; the counts can only fall.
+- DECISION: ADR 0044 stays Proposed in this commit; (3) needs the merge gate and CI recorded in C2. Alternative: flip
+  now. Reversible by: the flip after the merge gate.
+- NOTE: the `pymrm` tier's `tests/test_m02_pymrm_env.py::test_the_environment_verifies_against_its_pins` fails in
+  alpha-main's `.venv-nlp` (package list differs from the pins); not ADR 0044 (no `LINEAR_SOLVE_FAILED` call in that
+  tier) and not a WS1 item. The M07a A50 harvest test fails while the real W27 archive copy sits in the worktree.
