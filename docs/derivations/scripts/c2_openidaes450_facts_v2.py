@@ -60,15 +60,11 @@ def extract_facts_v2(archive: Path) -> dict[str, Any]:
         topo = w27._load(case_root / name / "topology.json")
         topo = topo if isinstance(topo, dict) else {}
         units = [u for u in topo.get("units") or [] if isinstance(u, dict)]
-        cases.append(
-            {
-                "case_id": name,
-                "topology_units": sorted(
-                    ({"id": str(u.get("id")), "kind": str(u.get("kind"))} for u in units),
-                    key=lambda u: (u["id"], u["kind"]),
-                ),
-            }
+        topology_units: list[dict[str, str]] = sorted(
+            ({"id": str(u.get("id")), "kind": str(u.get("kind"))} for u in units),
+            key=lambda u: (u["id"], u["kind"]),
         )
+        cases.append({"case_id": name, "topology_units": topology_units})
     return {
         "schema": SCHEMA,
         "source": {
