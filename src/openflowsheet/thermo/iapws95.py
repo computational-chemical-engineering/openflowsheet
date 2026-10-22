@@ -110,6 +110,17 @@ RHO_MAX: Final = 1250.0
 #: Newton's declared iteration bound and its convergence rule: relative steps ≤ 4ε (spec §3.5).
 MAX_ITERATIONS: Final = 50
 STEP_TOLERANCE: Final = 4.0 * 2.0**-52
+#: √ε. Once Newton's relative step is this small, quadratic convergence makes the next step
+#: ε-sized unless rounding stops it; a step that then fails to shrink means the residuals are at
+#: their floor, which is converged too (C10_DECISIONS, WO-S05-1: the 4ε step alone is not
+#: reachable where the residual's rounding floor is above it, e.g. Maxwell at 273.16 K and 647.0 K).
+FLOOR_ONSET: Final = 2.0**-26
+
+
+def _converged(step: float, previous: float) -> bool:
+    """Spec §3.5's rule on relative steps: ≤ 4ε, or no longer shrinking once below √ε."""
+    return step <= STEP_TOLERANCE or (previous <= FLOOR_ONSET and step >= previous)
+
 
 PHASE_PROPERTIES: Final[tuple[str, ...]] = ("h", "s", "v", "Z", "cp", "lnphi_H2O")
 SATURATION_PROPERTIES: Final[tuple[str, ...]] = ("Psat", "Tsat")
@@ -577,6 +588,7 @@ def _saturation(temperature: float) -> _Saturation | None:
     tau = T_C / temperature
     dl = 1.0 + sum(b * theta**e for b, e in _ANC_RHO_L)
     dv = math.exp(sum(c * theta**e for c, e in _ANC_RHO_V))
+    previous = math.inf
     for iteration in range(1, MAX_ITERATIONS + 1):
         rl, rv = _residual_jet(tau, dl, coefficients), _residual_jet(tau, dv, coefficients)
         kl = 1.0 + 2.0 * dl * rl.d + dl * dl * rl.dd
@@ -590,11 +602,13 @@ def _saturation(temperature: float) -> _Saturation | None:
         dl, dv = dl + step_l, dv + step_v
         if not dl > 1.0 > dv > 0.0:
             return None
-        if abs(step_l) <= STEP_TOLERANCE * dl and abs(step_v) <= STEP_TOLERANCE * dv:
+        step = max(abs(step_l) / dl, abs(step_v) / dv)
+        if _converged(step, previous):
             rho_l = dl * RHO_C
             return _Saturation(
                 temperature, rho_l, dv * RHO_C, _pressure(temperature, rho_l)[0], iteration
             )
+        previous = step
     return None
 
 
@@ -616,15 +630,18 @@ def _tsat(pressure: float) -> tuple[float, float] | None:
         else:
             high = middle
     temperature = 0.5 * (low + high)
+    previous = math.inf
     for _ in range(MAX_ITERATIONS):
         saturation = _saturation(temperature)
         if saturation is None:
             return None
         slope = _saturation_slope(saturation)
         step = (saturation.pressure - pressure) / slope
-        if abs(step) <= STEP_TOLERANCE * temperature:
+        relative = abs(step) / temperature
+        if _converged(relative, previous):
             return temperature, 1.0 / slope
         temperature -= step
+        previous = relative
     return None
 
 
@@ -644,8 +661,8 @@ def _bracketed_density(
     temperature: float, pressure: float, low: float, high: float, start: float
 ) -> float | None:
     """Safeguarded Newton on p(ρ, T) = P in (low, high]: bisection whenever a step leaves the
-    bracket; converged when the relative step is ≤ 4ε. p(low) < P ≤ p(high) is the caller's."""
-    rho = start
+    bracket; converged by `_converged`. p(low) < P ≤ p(high) is the caller's."""
+    rho, previous = start, math.inf
     for _ in range(MAX_ITERATIONS):
         p, p_rho = _pressure(temperature, rho)
         residual = p - pressure
@@ -658,9 +675,10 @@ def _bracketed_density(
         new = rho - residual / p_rho if p_rho > 0.0 else -1.0
         if not low < new < high:
             new = 0.5 * (low + high)
-        if abs(new - rho) <= STEP_TOLERANCE * rho:
+        step = abs(new - rho) / rho
+        if _converged(step, previous):
             return new
-        rho = new
+        rho, previous = new, step
     return None
 
 
@@ -669,7 +687,7 @@ def _metastable_density(
 ) -> float | None:
     """Newton from the saturated density, accepted only while it stays in (low, high] (spec
     §4.4's band roots)."""
-    rho = start
+    rho, previous = start, math.inf
     for _ in range(MAX_ITERATIONS):
         p, p_rho = _pressure(temperature, rho)
         if not p_rho > 0.0:
@@ -677,9 +695,10 @@ def _metastable_density(
         new = rho - (p - pressure) / p_rho
         if not low < new <= high:
             return None
-        if abs(new - rho) <= STEP_TOLERANCE * rho:
+        step = abs(new - rho) / rho
+        if _converged(step, previous):
             return new
-        rho = new
+        rho, previous = new, step
     return None
 
 
