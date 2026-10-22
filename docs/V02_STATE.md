@@ -92,18 +92,16 @@ F5 education mode deferred.
 
 ## Next action
 
-**Cloud queue (2026-10-22, overnight session; branches pushed, none on `main` yet):**
-- **C1, C2, C3 done** and merged together on `wp/C-merge` `904f265` (main ← C2 ← C1 ← C3): full gate PASS at
-  `904f265` (9944 passed, 104 skipped); CI 39694853666 green on both architectures. Updating `main` is a fast-forward
-  to `904f265`; the session's permission check refused the push to `main`, so **Frank (or a session allowed to push
-  `main`) fast-forwards it.** C1/C2/C3 carry no evidence manifest (the schema's `work_package` pattern admits no `C`
-  id; `docs/C2_DECISIONS.md`). Decisions: `docs/C1_DECISIONS.md`, `docs/C2_DECISIONS.md`, `docs/C3_DECISIONS.md`.
-  Questions: `docs/FRANK_QUESTIONS.md`.
-- **S01** (`wp/S01`): spec, WO-1…WO-4, one `reviewer` pass (fix first → WO-4 done); manifest
-  `evidence/S01/a3eaf09…/manifest.json` computes `tested` with `S01.gate` unsupported. Next: merge `main` (after the
-  C fast-forward) into `wp/S01`, run `scripts/gate.sh`, re-take the manifest with the gate result, CI, merge.
-- **L01** (`wp/L01`, from `wp/C-merge`): specification running/next; then `opus-engineer` work orders and a
-  development-half coverage re-take. **S02**: specification only, if time remains.
+**Cloud queue (2026-10-22).** Frank (2026-10-22): the session may fast-forward and merge into `main` (standing,
+under CLAUDE.md's merge rules). `main` = C1 + C2 + C3 (`wp/C-merge`, gate PASS `904f265`, CI 39694853666) + S01
+(merge `7dcdf2a`; manifest `evidence/S01/465240a…` tested; gate PASS `9a02bbc`, CI 39711291222).
+- **L01 not merge-ready** (`wp/L01` `8738766`): blockers (1) the evidence schema admits no `L` id; (2)
+  `test_a20_the_axes_equal_the_code` — the envelope does not list `pr-lib-v1`; (3) rights for the nine records
+  (L01-Q4); (4) the development-half re-take (WO-3) waits for a W27 amendment (L01-Q1); projection only.
+- **S02** (`wp/S02`): specification done (16 assertions, four cases, R-530…R-535). **Next: S02 WO-1…WO-3, one
+  `reviewer` pass, gate, merge.** Then C4 (M07a's unharvested envelope rows).
+- Open for the design lane: T05b §6.6 vs S01's registered v2 policy (B06 second exemption); S01 L-rows now or in S02.
+- Questions for Frank: `docs/FRANK_QUESTIONS.md` (C2, C1, S01 on `main`; L01-Q1…Q4 on `wp/L01`; Q-S02-1…3 on `wp/S02`).
 
 **History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
