@@ -5,7 +5,7 @@
 # Pinned at the alpha's candidate `C_α` as `v0.2-alpha-envelope-1`, release 0.2.0a1 (V02 alpha
 # release spec MR-3); returned to the working form at the alpha's merge into `main` (R-460).
 # Pinned at 0.2.0's cut commit K as `v0.2-envelope-1`, release 0.2.0 (M07 spec §7.2; alpha-main
-# rulings O5); the first D2.4 change on `main` after the tag returns it to the working form.
+# rulings O5); returned to the working form by the first D2.4 change after the tag (R-460, C7).
 #
 # Machine-readable source of `docs/support-matrix.md`, which `scripts/t08_support_matrix.py --emit`
 # renders and `--check` holds to this file byte for byte (T08.A23). `--check` also compares the
@@ -23,8 +23,8 @@
 #   starts across runs" is no longer true; the GUESS-role half stands.
 # - L18 onward are rows the harvest (W2.2) needed that §5.5's seed does not carry.
 
-envelope_id: v0.2-envelope-1
-release: 0.2.0
+envelope_id: v0.2-envelope-dev
+release: 0.2.0.dev0
 
 axes:
   - id: property_model
