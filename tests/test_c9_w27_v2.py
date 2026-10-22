@@ -69,6 +69,21 @@ def test_a19_registered_state(state: dict[str, Any]) -> None:
     assert triples(row) == expected["reasons"]
 
 
+def test_r06_details_are_sorted_by_provider_id_not_snapshot_order() -> None:
+    """W27v2-R06: S2r lists its routes in the reverse of S2's order, so a join in snapshot order
+    gives `pr-lib-v1` before `pr-c1-v1`; A07's expectation is the provider-id order."""
+    s2, s2r = V2["snapshots"]["S2"], V2["snapshots"]["S2r"]
+    ids = [r["provider_id"] for r in s2r["routes"]]
+    assert ids != sorted(ids) and ids == [r["provider_id"] for r in reversed(s2["routes"])]
+    state = next(s for s in STATES if s["id"] == "W27v2-A07")
+    case = V2["cases"][state["case"]]
+    table = provider_table(state["provider_table"])
+    row = coverage.classify_case(case, s2r, table, registration_version=2)
+    assert row["class"] == state["expected"]["class"]
+    assert row["units_judged_on"] == state["expected"]["units_judged_on"]
+    assert triples(row) == state["expected"]["reasons"]
+
+
 def test_a19_the_states_are_the_registered_seventeen() -> None:
     assert [s["id"] for s in STATES] == [f"W27v2-A{n:02d}" for n in range(1, 18)]
 
@@ -219,7 +234,9 @@ def _no_classification(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(module, name, forbidden)
 
 
-@pytest.mark.parametrize("out", ["absent", "committed", "committed-relative"])
+@pytest.mark.parametrize(
+    "out", ["absent", "committed", "committed-relative", "not-heldout", "heldout-as-filename"]
+)
 def test_a22_cli_refuses_v2_onto_the_committed_record(
     out: str, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], tmp_path: Path
 ) -> None:
@@ -231,6 +248,10 @@ def test_a22_cli_refuses_v2_onto_the_committed_record(
     elif out == "committed-relative":
         monkeypatch.chdir(tmp_path)
         argv += ["--out", os.path.relpath(registration.COVERAGE_JSON, tmp_path)]
+    elif out == "not-heldout":  # R-580
+        argv += ["--out", str(tmp_path / "v2.json")]
+    elif out == "heldout-as-filename":  # a segment of the directory, not the file name
+        argv += ["--out", str(tmp_path / "heldout")]
     assert coverage.main(argv) == 2
     assert "SPLIT-R10" in capsys.readouterr().err
     assert registration.COVERAGE_JSON.read_bytes() == before
@@ -249,6 +270,10 @@ def test_cli_writes_v2_to_another_path_and_v1_to_its_default(
     out_v2.parent.mkdir()
     argv = ["--registration-version", "2", "--snapshot", str(tmp_path / "S2.json")]
     assert coverage.main([*argv, "--out", str(out_v2)]) == 1
+    stdout_v2 = capsys.readouterr().out  # R-580: no class counts over all 450 or the full 82
+    assert str(out_v2) in stdout_v2 and "G14 FAIL" in stdout_v2
+    for banned in ("all 450", "full 82", "summary", "classes"):
+        assert banned not in stdout_v2
     written = json.loads(out_v2.read_bytes())
     assert (written["schema"], written["registration_version"]) == ("w27-coverage-v2", 2)
     assert written["rows"][0]["units_judged_on"] == "pr-c1-v1"

@@ -55,6 +55,11 @@ SPLIT_R10_REFUSAL: Final[str] = (
     "coverage.json; pass --out to another path (W27v2-R09, C2 SPLIT-R10: a record over every "
     "case holds held-out ids and goes under a heldout/ path)"
 )
+#: R-580: version 2's refusal of an output path outside a `heldout/` directory.
+HELDOUT_PATH_REFUSAL: Final[str] = (
+    "registration version 2 writes a record over every case, held-out ids included; --out must "
+    "have a directory segment named heldout (C2 SPLIT-R10 (b), SPLIT-R11; R-580)"
+)
 
 
 class RefusalError(Exception):
@@ -911,6 +916,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         # W27v2-R09: refused before any snapshot is built or case classified.
         print(f"REFUSED: {SPLIT_R10_REFUSAL}", file=sys.stderr)
         return 2
+    if version == 2 and args.out is not None and "heldout" not in args.out.resolve().parent.parts:
+        # R-580: also before any snapshot is built or case classified.
+        print(f"REFUSED: {HELDOUT_PATH_REFUSAL}", file=sys.stderr)
+        return 2
     out: Path = registration.COVERAGE_JSON if args.out is None else args.out
     try:
         snap = (
@@ -922,9 +931,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     verdict = g14(document)
     out.write_bytes(registration.dump(document))
+    print(f"wrote {out}: snapshot {document['snapshot_sha256']}")
+    if version == 2:
+        # R-580: no class counts over all 450 or the full 82 (SPLIT-R08).
+        print(f"  G14 {'PASS' if verdict['passed'] else 'FAIL'}")
+        return 0 if verdict["passed"] else 1
     classes = document["summary"]["all_450"]["classes"]
     full82 = document["summary"]["full82"]["classes"]
-    print(f"wrote {out}: snapshot {document['snapshot_sha256']}")
     print(f"  all 450: {classes}")
     print(f"  full 82: {full82}")
     print(f"  G14 {'PASS' if verdict['passed'] else 'FAIL'}: {verdict}")
