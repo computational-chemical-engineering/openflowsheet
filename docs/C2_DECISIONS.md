@@ -56,3 +56,23 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
   split generator pins the file and checks seven identities and the unit-level F-1 states (items 13–15); `f1.status`
   `facts_committed`; `split.json` changes in `f1` only (`a556e417…`). Alternative: a `heldout/` path; a split pair of
   files; a pattern entry. Reversible by: an amendment.
+- TESTED (WO-C2-A2, Amendment 2, 2026-10-23, branch `wp/C2-A2`; status `tested`, not reviewed). Workstation, real
+  archive present (hard-linked, ignored). Commands and digests, from the repository root:
+  `python -I docs/derivations/scripts/c2_openidaes450_facts_v2.py --emit` → `case_facts-v2.json` SHA-256
+  `4f5c5a65fe1b310e04b7e311464e4d87ba90ed4bfa7a90c240cde397cd0114ef` (170,687 bytes, 452 lines), equal to §15.6's
+  derivation from WS1's blob `7b0686e` (which also printed `57d43acb…` and tail `fb0e0fe3…`); no Q-6. `--check`
+  exit 0. `PYTHONPATH=src python docs/derivations/scripts/c2_openidaes450_split.py --emit` → `split.json` SHA-256
+  `a556e417a8063dbf06242890667e7f5bd4056128cea552c49a81bf40c9cd755c` (25,115 bytes); `--check` exit 0. W27's
+  `python -I docs/derivations/scripts/m06_w27_registration.py facts --check` byte-identical (`0ca8cffa…`).
+  Tests: `tests/test_c2_openidaes450_split.py` 40 passed, 0 skipped (SPLIT-A25 (a) ran and passed);
+  `test_m06_w27_harness.py`, `test_c9_w27_v2.py`, `test_l01_records.py` 157 passed, 1 skipped (L01's retrieval
+  re-run, distributions off the pins; not this package). ruff and mypy clean.
+- BUILD DECISION (WO-C2-A2): how item 14 is callable below the pin → two module functions, `f1_identities(facts,
+  facts_v2)` (item 14) and `f1_unit_level_states(facts, facts_v2)` (item 15); `read_inputs` adds the working copy's
+  bytes under `F1_KEY` when the file exists, and `build` applies item 13 to them. `SplitRefusedError` gains an
+  optional `label`, so an item-14 refusal reads `SPLIT-R13/A2 <label>: <n> case(s)` exactly; `binding` counts
+  failed fields (`<n> field(s)`), since it is not a per-case identity. Alternative: a `build` keyword that skips the
+  pin. Reversible by: one commit (`7b3f1dc9`).
+- BUILD DECISION (WO-C2-A2): SPLIT-A18 builds its `raw` from the three `INPUTS` only; it now also supplies the
+  facts-v2 working copy, as `read_inputs` does (item 13 would otherwise refuse). SPLIT-A20 parses a facts file's
+  first line by closing it with `]}`. Reversible by: test edits in `87d86c83`.

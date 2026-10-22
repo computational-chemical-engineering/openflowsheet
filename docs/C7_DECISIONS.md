@@ -61,7 +61,10 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
 - NOTE: the `pymrm` tier's `tests/test_m02_pymrm_env.py::test_the_environment_verifies_against_its_pins` fails in
   alpha-main's `.venv-nlp` (package list differs from the pins); not ADR 0044 (no `LINEAR_SOLVE_FAILED` call in that
   tier) and not a WS1 item. The M07a A50 harvest test fails while the real W27 archive copy sits in the worktree.
-- BLOCKED (WS1 item 4, design lane; parked on branch `wp/WS1-f1` @ `7b5c07f`, reverted here). `case_facts-v2.json`
+- UNBLOCKED (2026-10-23; C2 Amendment 2, R-581/R-582, done by WO-C2-A2 on `wp/C2-A2`: C2's own writer,
+  `case_facts-v2.json` `4f5c5a65…` from the archive, one exact A09 entry, `f1.status` `facts_committed`; W27's
+  generator and pins unchanged; see `docs/C2_DECISIONS.md`). Was: BLOCKED (WS1 item 4, design lane; parked on
+  branch `wp/WS1-f1` @ `7b5c07f`, reverted here). `case_facts-v2.json`
   was written (450 cases, 3,725 topology units, sha256 `57d43acb…`, kind sets equal to v1's `topology_kinds`; v1
   `facts --check` and split `--check` byte-identical) by a `facts-v2` stage added to the W27 generator. The full gate
   at `6c2364e` then failed 2 registered assertions, both caused by it: (1) SPLIT-A09 (`tests/test_c2_openidaes450_split.py:176`)
