@@ -1086,10 +1086,12 @@ def solve_target(
 ) -> tuple[RegionResult, RegionResult | None, dict[int, Regime]]:
     """Spec §7 steps 4–5 and §8 from an easy endpoint `x⁰`: the target under `policy`, edge 3
     on its triggers (continuing the slots §7.3 replaced at `profile`), and acceptance of a
-    `CONVERGED` answer (`AcceptanceDefectError` on a failure). S06 §8 item 3 is decided first:
-    a `CONVERGED` answer whose `temperature`-specified stage is single-phase raises
-    `UnsupportedAnswerError` (never a success, and not a defect). Returns the final result, the
-    failed solve edge 3 recovered from (or `None`), and the final regimes by stage."""
+    `CONVERGED` answer (`AcceptanceDefectError` on a failure). S06 §8 item 3 is decided after
+    the defect clauses (S06 §17.3, R-610): a defect-free `CONVERGED` answer whose
+    `temperature`-specified stage is single-phase raises `UnsupportedAnswerError` (never a
+    success, and not a defect); a defective one is a defect whatever the regime. Returns the
+    final result, the failed solve edge 3 recovered from (or `None`), and the final regimes by
+    stage."""
     state = {name: float(x0[name]) for name in target.spec.variable_ids}
     result = run_region(
         target, provider, state, policy, initializer_source=PRESOLVE_ID, trace=trace
@@ -1102,15 +1104,15 @@ def solve_target(
         result = recover(spec, profile, target, provider, result, policy, trace)
     regimes = regimes_of(spec, result.attempts[-1].signature) if result.attempts else {}
     if result.outcome == "CONVERGED":
+        failures = acceptance_failures(spec, provider, target.spec, result.state, regimes)
+        if failures:
+            raise AcceptanceDefectError(failures)
         stage = single_phase_specified_stage(spec, regimes)
         if stage is not None:
             raise UnsupportedAnswerError(
                 f"unsupported(temperature_specification_on_single_phase_stage:{stage})",
                 f"{spec.unit_id} stage {stage} is {regimes[stage]} at the CONVERGED state",
             )
-        failures = acceptance_failures(spec, provider, target.spec, result.state, regimes)
-        if failures:
-            raise AcceptanceDefectError(failures)
     return result, recovered_from, regimes
 
 

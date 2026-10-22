@@ -697,14 +697,29 @@ def _stubbed(monkeypatch: pytest.MonkeyPatch, spec: ColumnSpec, stage: int, regi
 
 
 def test_a14_a_single_phase_specified_stage_is_unsupported(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A14 / §8 item 3: J5 with stage 5 single-phase at a `CONVERGED` (stubbed) result is
+    """A14 / §8 item 3: J5 with stage 5 single-phase at a `CONVERGED` (stubbed) result that
+    passes every defect clause (`acceptance_failures` stubbed to `()`, S06 §17.3) is
     `CAPABILITY_UNAVAILABLE` `unsupported(temperature_specification_on_single_phase_stage:5)`,
     never a success and not a defect."""
     _stubbed(monkeypatch, J_CASES["J5"], 5, "LIQUID")
+    monkeypatch.setattr(solve_module, "acceptance_failures", lambda *_: ())
     answer = solve_column(J_CASES["J5"], PROVIDER)
     assert isinstance(answer, CascadeFailure), answer
     assert answer.outcome == "CAPABILITY_UNAVAILABLE"
     assert answer.cause == "unsupported(temperature_specification_on_single_phase_stage:5)"
+
+
+def test_a14_a_defective_single_phase_specified_stage_is_a_defect(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A14 / S06 §17.3 (R-610): J5's stubbed state, not a root, with stage 5 `LIQUID` fails
+    both §8 item 3 and the defect clauses; the defect is the answer, never the scope limit."""
+    _stubbed(monkeypatch, J_CASES["J5"], 5, "LIQUID")
+    with pytest.raises(AcceptanceDefectError) as raised:
+        solve_column(J_CASES["J5"], PROVIDER)
+    assert any(failure.startswith("row ") for failure in raised.value.failures), (
+        raised.value.failures
+    )
 
 
 def test_a14_a_vapour_end_under_purity_is_a_defect(monkeypatch: pytest.MonkeyPatch) -> None:
