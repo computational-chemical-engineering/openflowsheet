@@ -41,3 +41,10 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
   one v0.2-gate-v1 covers"). At `0.2.0` they ran. Rulings O1 says that after 0.2.0 is released the ledger "is scoped
   to its tag commit, as R-456 does here". That scoping is not in C7's brief and is not done. Default: leave it to a
   follow-up package (M07 owner), with the skips counted as skips, not passes.
+- DONE (WS1 item 1, `5a6b811`): the G10 re-take at `0.3.0.dev0` from the clean tree at `15c0413` (alpha-main's
+  `.venv-nlp`, OMP 1). `--digest-only --old-version 0.2.0`: PASS ×5, `version=` 4/7/4/3/4, changed digests
+  41/79/70/91/37, other=0, environment equal (the expected counts exactly). AM-23 (`-m nlp
+  tests/test_m05_g10_replay.py`): 5 passed. Records tests (m05 replay/basis/wo8/wo9/study record, m07 journey): 369 passed.
+- DONE (WS1 item 2, rulings Q1): `scripts/m05_wo9_real.py --replay` at `5a6b811` (`0.3.0.dev0`, clean tree,
+  alpha-main's `.venv-nlp`, OMP 1): `REPLAY PASS REAL differences=0`, exit 0. Confirms F4 (REAL's fingerprint carries no
+  version) by measurement.
