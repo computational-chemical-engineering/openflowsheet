@@ -4,7 +4,8 @@ Design lane (`specifier`), 2026-10-22. Package S02 (plan v1.2 §4.5, `docs/imple
 `docs/briefs/S02-specification.md`. Base: S01 (`docs/derivations/S01-spec.md` with Amendment 1, §17). Reference generator
 `docs/derivations/scripts/s02_reference.py` (mpmath, 50 digits; `--check` re-derives 906 claims and byte-compares
 `s02_reference.json`; about 3 minutes). Decisions: `docs/S02_DECISIONS.md`, register R-530 to R-535. **Amended 2026-10-22
-by §17** (Amendment 1, ruling round 1 on WO-1's questions; R-536 to R-539): §0, §2.2, §2.3, §10, §12.
+by §17** (Amendment 1, ruling round 1 on WO-1's questions; R-536 to R-539): §0, §2.2, §2.3, §10, §12; **and by §18**
+(Amendment 2: §7.3 replaced by the bubble-point easy endpoint, ADR 0044, A05–A07, A13, A14, A20–A22; R-546 to R-549).
 
 ## 0. Authority and scope
 
@@ -446,3 +447,208 @@ tolerance question.
    the column-only refusal), `models/syn001/column.py` (declare `φ`'s kind; `label_source`; withdraw `ProfileLabel`),
    and the tests of A17–A19, with `tests/test_k03_scaling.py`'s literal extended. They touch scaling and phase-form code,
    so the package's `reviewer` pass covers them (CLAUDE.md, lane rule).
+
+## 18. Amendment 2 (2026-10-22, design lane `architect`): the easy endpoint by bubble-point sweeps; edge 3 after a restart into a singular signature
+
+Brief `docs/briefs/S02-design-presolve.md`; questions Q-S02-WO2-1 to Q-S02-WO2-3 (`docs/S02_DECISIONS.md`); register R-546 to
+R-549; **ADR 0044 (Proposed)** amends ADR 0010 D3's trigger set. Replaces §7.3, §7.6's pre-solve records and §10's A05, A06,
+A07, A13, A14 as stated below; adds A20–A22. §6 (the initializer, A04) is unchanged. §0's "No ADR is needed"
+(R-535, R-539) is superseded in exactly one respect: ADR 0044 (§18.3); rows, kinds, schemas and policies stay as §0 says. Scratch measurements:
+`scratchpad/s02-design/` of the design session (not committed); every number below was measured on `47eb3aa`'s code.
+
+### 18.1 Finding
+
+1. **The Newton pre-solve has no basin around `x_K`.** §6's `x_K` solves the component balances at CMO stage ratios but not the
+   bubble condition: `Σ_i K_ij x_ij ≠ 1` on every stage (0.72–0.88 on M1's stages 1–3). TP projection of `x_K` at the profile
+   therefore opens single-phase stages (M1 `V,V,V,2P×4`, rank 90 of 91 because stage 1 VAPOR under RR is §4.2's singularity;
+   M3 `2P,L,L,L,L`), and an unprojected all-2P opening (PH-type, measured) is driven by the bounded Newton step to
+   `BOUND_BLOCKED` within 3 iterations (M1: `T_1` 351 → 373 K, the wrong way; the root has 344.7 K). No opening rule for
+   the *same Newton problem* fixes this: the problem is a coupled TP column whose iterates leave the two-phase region.
+2. **The target walks into singular signatures after a globalization failure.** From any easy endpoint, a full Newton step
+   that crosses a flow bound ends attempt 0 `BOUND_BLOCKED`; the contract reads it as a disappearance and restarts in a
+   signature that §4.2 or §4.3 proves singular (M1 from `ref…presolve`: `(L,L,2P×5)`, rank 94 of 95; M2 from §18.2's endpoint:
+   `(2P×5,V)`, a bottoms-rate reboiler with no liquid). The terminal outcome is then `LINEAR_SOLVE_FAILED`, which ADR 0010 D3
+   excludes, so edge 3 never runs — although forced edge 3 reaches `ref.target` every time (10 of 10 cases and variants).
+   Which outcome ends the walk depends on the opening's last bits: V-M2 `(D, BR)` ends `LINEAR_SOLVE_FAILED` from the
+   endpoint stopped at 1e-12 K and `ACTIVE_SET_CYCLING` (a trigger) from the same endpoint stopped at 1e-9 K.
+3. **Multiplicity.** V-M2 `(duty, duty)` has a second regular root `R2` at M2's duties: `D = 0.274431`, `φ = 0.775456`,
+   `T_c = 321.583 K` (M2: 0.45, 0.6, 329.816 K), all six stages two-phase, scaled `σ_min` (implementation's scaling) 2.1e-4
+   against 1.7e-4 at M2's root. The solve path of §18.2 returns `R2` (plain Newton, 5 iterations). Which root a `(duty, duty)`
+   column returns depends on the easy endpoint (with every stage ratio ×2, it returns M2's root via edge 3).
+
+### 18.2 Decision A — §7.3 is replaced: the easy endpoint `s02-bubble-point-v1` (constructed, not solved)
+
+The pre-solve's only job (S01 DECISION 2, ADR 0010 D2) is an all-two-phase state `x⁰` that satisfies **every target row except
+the continued `variable − parameter` slot rows**. With composition-independent `K` (SYN-001), such a state is constructed by
+bubble-point sweeps at fixed stage ratios (Wang–Henke's inner loop without its energy step): component balances are linear for
+fixed `S_ij = K_ij ρ_j`, and the bubble condition fixes `T_j`. Energy is activated last, by the duties' continuation (§7.5) or
+directly by the target's Newton (§7.4) — the blueprint's staged activation and continuation (`blueprint-v3.1.md:600`).
+
+**Algorithm** (normative; `j` over equilibrium stages, `i` over components; all inputs from §6, which is unchanged):
+
+1. **Stage ratios.** `ρ_j = V_j^cmo / L_j^cmo` (§6 step 3, floors included). Overrides by the end specification:
+   partial condenser under `reflux_ratio` RR*: `ρ_1 = 1/RR*`; partial reboiler under `boilup_ratio` BR*: `ρ_N = BR*`; total
+   condenser: `φ = RR*/(1 + RR*)` under `reflux_ratio`, else `φ = φ⁰ = 1/2` (§7.3's former `Σ r − D` substitute, kept).
+2. **Start.** `T_j^(0) = T_j⁰`, §6's profile (A04's values; plus `profile_shift` for A14).
+3. **Sweep** `k = 1 … 500`:
+   a. `K_ij = K_i(T_j^(k−1), P_j*)` (the rows' `LnKBlock` values, `cascade._k_values`).
+   b. Per component, the tridiagonal of §6 step 4 with `S_ij = K_ij ρ_j` (total condenser: first diagonal
+      `−(1 + S_i2) + φ S_i2`), solved by `thomas`; `l_ij` its solution, `v_ij = S_ij l_ij`.
+   c. `T_j^(k)` = the bubble temperature of `l_j` at `P_j*`: `saturation_band.band_temperature(provider, l_j, P_j*, β = 0)`
+      (ADR 0012 D1's bisection; at β = 0 its function is `Σ l_ij (K_ij − 1)`). A position other than `inside` ends
+      `initialization_failed(s02-bubble-point-v1, bubble_point_outside_domain)`.
+   d. Stop when `max_j |T_j^(k) − T_j^(k−1)| ≤ 1e-9 K`. After sweep 500 without stopping:
+      `initialization_failed(s02-bubble-point-v1, sweeps_exhausted)`.
+4. **Final flows.** Steps 3a–3b once more at the stopped `T^(k)`, so the balances hold to rounding at the returned `T`.
+5. **State `x⁰`.** §6 steps 5–6 (`_initial_state`) with `T_j = T_j^(k)`; at a total condenser `φ` from step 1 and
+   `T_c` = the bubble temperature of `v_2` at `P_1*` (step 3c's call); `L, V, D` as sums, `m` from `mix`, every `Q` from its
+   energy row. `p⁰` of each continued slot = its variable at `x⁰` (§7.5, unchanged).
+
+**Why it is an exact easy endpoint.** With `v_ij = K_ij ρ_j l_ij`: `V_j = ρ_j L_j s_j`, `s_j = Σ_i K_ij x_ij`, so the
+equilibrium row is `v_ij L_j − K_ij l_ij V_j = K_ij ρ_j l_ij L_j (1 − s_j)`, zero at the bubble temperature; a ratio end has
+`L_1 − RR*·V_1 = L_1 (1 − s_1)` and `V_N − BR*·L_N = BR* L_N (s_N − 1)`, zero likewise; balances, `mix`, definitions, the
+total condenser's bubble, split and balance rows and every energy row hold by construction. The residual left is
+`O(|ΔT_last| · ∂s/∂T)`: measured worst row over all ten cases ≤ 1.3e-11 (W, an energy row), under every kind tolerance.
+**Two-phase by construction:** the tridiagonal's matrix is a nonsingular column-diagonally-dominant irreducible M-matrix up to
+sign (S01 §6's argument; the total condenser's diagonal `1 + (1 − φ)S_i2` keeps it), so `l_ij > 0` and `v_ij > 0` for every
+component present in some inlet, on every stage; the target's PH-type splits open `TWO_PHASE` unprojected (T05b §6.4).
+
+**Measured** (scratch, `47eb3aa`): sweeps to 1e-9 K: M1 25, M2 21, M3 30, M4 39, V-M1 21–26, V-M2 21–27; start `±5 K` reaches
+the same fixed point within 4e-13 K; stage ratios ×0.5 / ×2 converge in 15–96 sweeps. Cost: under 0.1 s per case.
+
+**Withdrawn:** the Newton pre-solve `s02-profile-presolve-v1`, its policy object and `COL-presolve-T` leave the solve path.
+`ref.cases.*.presolve` (the profile root) stays registered as a **second easy endpoint** for A06b/A13b (it is a root of
+`H(·,0)` too). `initializer_source` of the target is `s02-bubble-point-v1`. No new `SolvePolicy`: T05b B06 is untouched.
+
+**Records (replaces §7.6's pre-solve items):** `x_K`'s and `x⁰`'s `state_sha256`, the sweep count, the last
+`max |ΔT|`, `ρ` per stage and `φ`, the continued slot ids with `p⁰`.
+
+**Rejected.** (a) *An opening rule for the Newton pre-solve* (two-phase opening signature, band projection at the profile):
+measured, the unprojected all-2P opening still ends `BOUND_BLOCKED` on M1; the profile pins `T_j` where `x_K`'s stage feeds are
+single-phase. (b) *More pre-solve attempts* (default `max_attempts`): M1 still `LINEAR_SOLVE_FAILED`; with PH-type also,
+`ACTIVE_SET_CYCLING`. (c) *Continuation inside the pre-solve* from the bubble-point state to the linear profile: reaches the
+registered `x⁰` but runs the homotopy as a primary method through edge 3's recovery API (records would claim a recovery that
+never failed) and ends farther from the target (M1 profile root `T_2 = 354.7 K`, target 341.0 K). (d) *A spec-consistent CMO*
+(D from the RR/BR balance): would start closer, but needs a latent-heat closure for duty ends and was not needed (§18.5).
+
+### 18.3 Decision B — edge 3 runs after `LINEAR_SOLVE_FAILED` in a restart (ADR 0044); the contract does not learn the block rule
+
+**Answer to Q-S02-WO2-2 and Q-S02-3.** ADR 0010 D3 excluded `LINEAR_SOLVE_FAILED` because a rank-deficient system is not
+helped by continuation. That holds for the signature the homotopy runs in — item 0's opening. A `LINEAR_SOLVE_FAILED` that ends
+an attempt **opened by a contract restart** (attempt index ≥ 1) belongs to a signature the contract chose after a
+globalization failure of attempt 0; it says nothing about item 0's signature, which edge 3 re-enters. It is the same conversion
+of a globalization failure into a restart that made D3 include `ACTIVE_SET_CYCLING` and `ATTEMPTS_EXHAUSTED`. ADR 0044 adds:
+*`LINEAR_SOLVE_FAILED` is a trigger iff the failed region solve ran more than one attempt.* Nothing else changes (count 1,
+item-0 opening, frozen signature, records, `HOMOTOPY_STALLED` if the physics really changed phase — P1 measures exactly that).
+
+**Not the block rule in the contract.** (1) It would not cover the measured cases: M2's, V-M1 `(RR, B)`'s and `(D, BR)`'s
+restarts are §4.2's end-stage singularity under a rate or ratio specification, not a §4.3 pair. (2) It is cascade structure; a
+model-specific screen inside ADR 0005 D4's single decision function is what R-533 already declined. (3) A generic numerical
+rank screen on proposed restarts would rewrite the terminal outcome to the proposing attempt's, hiding the singular attempt;
+ADR 0044 keeps the honest terminal record and only widens when recovery runs.
+
+### 18.4 Decision C — A07's comparison (Q-S02-WO2-3) and the second root
+
+- `same_root` is a within-problem identity (T03 §8.3): across specification sets the constants and rows differ and
+  `NOT_COMPARABLE` is the correct answer. **A07 compares each set's root to `ref.cases.<case>.target` by the state
+  tolerance**; `same_root = SAME` is asserted only between runs of one problem (A13, A14).
+- V-M2 `(duty, duty)` returns `R2` (§18.1 item 3). §15.3's rule applies: not dropped, §9 amended — the generator registers
+  `R2` (WO-G), A07 asserts `R2` for that set and A21 asserts the multiplicity. §14 gains: *a `(duty, duty)` column may have
+  several regular roots; which one is returned depends on the easy endpoint; no root-selection claim is made.*
+
+### 18.5 Measured outcomes (scratch, `47eb3aa` + ADR 0044's trigger; deviation = worst column / its state tolerance)
+
+| Case | from §18.2's `x⁰` | path | deviation | from `ref…presolve` (A06b) |
+| --- | --- | --- | --- | --- |
+| M1 | CONVERGED 2P×7 | attempt 0 `BOUND_BLOCKED` → `ACTIVE_SET_CYCLING` → edge 3 | 3.0e-6 | edge 3 after `LINEAR_SOLVE_FAILED` (ADR 0044), 2.4e-8 |
+| M2 | CONVERGED 2P×6 | `BOUND_BLOCKED` → `(2P×5,V)` `LINEAR_SOLVE_FAILED` → edge 3 (ADR 0044) | 1.7e-7 | plain, 1.1e-6 |
+| M3 | CONVERGED 2P×5 | plain, 4 iterations | 8.5e-3 | edge 3 after `ACTIVE_SET_CYCLING`, 4.0e-8 |
+| M4 | CONVERGED 2P×5 | plain, 6 iterations | 4.9e-6 | plain, 7.5e-3 |
+| V-M1 duty+duty / RR+duty | CONVERGED | edge 3 after `ACTIVE_SET_CYCLING` | 2.3e-8 / 4.4e-7 | — |
+| V-M1 RR+B / D+BR | CONVERGED | edge 3 after `LINEAR_SOLVE_FAILED` (ADR 0044) | 1.0e-6 / 3.4e-7 | — |
+| V-M2 D+BR | CONVERGED | edge 3 (`ACTIVE_SET_CYCLING` at the 1e-9 K stop; `LINEAR_SOLVE_FAILED` at 1e-12 K) | 5.6e-8 | — |
+| V-M2 duty+duty | CONVERGED at `R2` | plain, 5 iterations | `R2` (§18.1) | — |
+| P1 | `HOMOTOPY_STALLED` (`homotopy_stalled(BOUND_BLOCKED)`) | `2P×5 BOUND_BLOCKED` → `(2P,L,2P,2P,2P)` `LINE_SEARCH_FAILED` → `ACTIVE_SET_CYCLING` → edge 3 | A12's typed branch | — |
+
+Without ADR 0044: M2, V-M1 `(RR, B)`, `(D, BR)` end `LINEAR_SOLVE_FAILED` from §18.2's `x⁰`, and M1 from the profile root.
+A14's perturbations on M1: start ±5 K → identical `x⁰`; ratios ×0.5 → 1.1e-3, ×2 → 2.0e-5 (both edge 3). Over all ten
+cases the ratio perturbations converge to `ref` (largest 0.16, V-M1 duty+duty ×0.5), except V-M2 duty+duty ×0.5 → `R2`.
+Every deviation under 1/10 of a tolerance on the registered (unperturbed) path: no §10 amendment.
+
+### 18.6 Assertions (replacing or adding to §10; tolerances as §10 unless stated)
+
+| Id | Assertion | Expected | Tolerance |
+| --- | --- | --- | --- |
+| A05 | §18.2 on M1–M4 and the five admissible variants: `x⁰`, `ρ`, `φ`; every target row except the continued slots within its kind tolerance at `x⁰`; every stage `L, V > 0`; continued slot ids and `p⁰`; sweep count ≤ 500 (recorded, not asserted exactly: libm may move a last bit across architectures) | `ref.cases.*.bubble_point`, `.bubble_point_continued`; `ref.variants.*.*.bubble_point` | state tolerance; `p⁰` Q abs 1e-2 W, rates rel 1e-6; ids exact |
+| A06 | M1–M4 through `solve_column`: outcome, signature 2P×n, products, `spec_values`, root | `ref.cases.*.target`, `.signature`, `.spec_values` | state tolerance; signature exact |
+| A06b | Steps 4–5 from the registered profile endpoint `ref.cases.*.presolve` (WO-2's tests; M1's strict xfail flips under ADR 0044) | `ref.cases.*.target` | state tolerance |
+| A07 | V-M1 ×4 and V-M2 `(D, BR)` through `solve_column` return `ref.cases.<case>.target`; V-M2 `(duty, duty)` returns `R2`. No cross-set `same_root` | `ref.cases.*.target`; `ref.variants.M2.duty+duty.second_root` | state tolerance |
+| A13 | Edge 3 on `solve_column`'s own path (M1 after `ACTIVE_SET_CYCLING`, M2 after `LINEAR_SOLVE_FAILED`, no forcing): dyadic λ, `p⁰ = ref.cases.*.bubble_point_continued`, ratio rows untouched at every λ, λ = 1 identity equal to the target's, final `SAME` as a second run | — | `p⁰` as A05; rest exact |
+| A13b | WO-2's forced edge 3 from `ref.cases.*.presolve` (unchanged, `p⁰ = ref.cases.*.continued`) | — | as §10 A13 |
+| A14 | M1 from four perturbed endpoints: sweep start `T⁰ ± 5 K` (`x⁰` equal to A05's within 1e-8 K and the same final `state_sha256`); every stage ratio not held by a ratio specification ×0.5 and ×2 (`x⁰` differs; target `CONVERGED`, deviation within the state tolerance, `same_root = SAME` with A06's run) | as stated | as stated |
+| A20 | ADR 0044's trigger. `eo_recovery_due` table: every D3 trigger unchanged; `LINEAR_SOLVE_FAILED` due iff the failed solve ran ≥ 2 attempts; every other non-trigger never due. On M2's path: `recovered_from.outcome == "LINEAR_SOLVE_FAILED"`, `len(recovered_from.attempts) ≥ 2`, recovery `CONVERGED`. The full gate shows no registered outcome outside S02 moved (§18.8 item 1) | as stated | exact |
+| A21 | Multiplicity: V-M2 `(duty, duty)`'s returned root equals `R2`, differs from M2's root by more than 5 K in `T_c` and by more than 0.1 mol/s in `D`, and both are regular (generator `σ_min` claims) | `ref.variants.M2.duty+duty.second_root` | state tolerance |
+| A22 | Typed construction failures, before any region solve: with `band_temperature` stubbed to answer `below` at one stage, M1 ends `initialization_failed(s02-bubble-point-v1, bubble_point_outside_domain)`; with `max_sweeps = 1`, `initialization_failed(s02-bubble-point-v1, sweeps_exhausted)`; neither calls `solve_region` (stubbed to raise) | as stated | exact |
+
+A12 is unchanged; its measured branch is the typed one (`HOMOTOPY_STALLED`, attempt records naming `2P×5` and
+`(2P,L,2P,2P,2P)`), recorded in WO-3's manifest; `(2P,L,2P,2P,2P)` breaks §4.3's block rule and feeds R-533.
+
+### 18.7 Work orders
+
+**WO-G (design lane `specifier`; generator, additive re-emission).** `s02_reference.py` gains §18.2 at 50 digits
+(`rr_temperature(·, 0, P)` for the bubble temperature, its own `thomas`; stop at `max|ΔT| ≤ 1e-30 K`): keys
+`cases.*.bubble_point` (per stage `T, l, v, Q, L, V`; `ρ`, `φ`, `T_c`, sweeps), `cases.*.bubble_point_continued`,
+`variants.<case>.<set>.bubble_point` for the five admissible sets, and `variants.M2.duty+duty.second_root` (Newton in the
+generator's formulation seeded with §18.1's six-digit `R2`; claims: root, regular `σ_min > 1e-4`, all 2P with `L, V > 1e-3`,
+`|T_c − T_c(M2)| > 5 K`). Claims: every `x⁰` two-phase, the §18.2 identity (every non-continued row `< 1e-40`), the ±5 K start
+reaches the same fixed point. Existing keys and values stay byte-identical; `claim_count` grows; `--check` passes; the new
+SHA-256 goes into `tests/test_s02_column_wo1.py::REFERENCE_SHA256`.
+
+**WO-2b (build lane, `opus-engineer`, ~100k).** Depends on ADR 0044's text (this commit) and, for A05/A07's `R2`/A13's
+`p⁰`/A21/A22, on WO-G; everything else can start now.
+1. `models/syn001/column_solve.py`: `bubble_point_endpoint(spec, provider, initial, *, profile_shift=0.0,
+   ratio_scale=1.0, max_sweeps=500)` → `BubblePointEndpoint(state, rho, phi, sweeps, last_delta)` or `CascadeFailure` (§18.2);
+   `solve_column` uses it in place of the Newton pre-solve; `opening=` is withdrawn, `profile_shift`/`ratio_scale` are the A14
+   hooks. `PRESOLVE_ID = "s02-bubble-point-v1"`; `PRESOLVE_POLICY`, `presolve_rows`' use in the path and the TP closure
+   variant go (keep `slots`/`continuation`). `ColumnSolution` drops `presolve`/`presolve_summary` for the §18.2 records.
+2. ADR 0044's trigger: `orchestrator/recovery.py` `eo_recovery_due(outcome, budget, attempts)`; the three call sites
+   (`executor.py:864`, `cascade_solve.py:691`, `column_solve.py:746`) pass `len(result.attempts)`. Scratch measured the patched
+   full suite (§18.8 item 1).
+3. Tests: A05–A07, A06b, A13, A13b, A14, A20–A22 (§18.6); WO-2's strict xfails flip to plain passes or are deleted with their
+   replacement named in the build log; the A05 profile-root tests stay as A06b's precondition.
+4. Acceptance: `pytest tests/test_s02_* tests/test_s01_* tests/test_t04_* tests/test_t03_*` green; ruff/format/mypy clean;
+   the full gate before merge (CLAUDE.md). Records the measured sweep counts and deviations in `docs/S02_DECISIONS.md`.
+
+**WO-3** is unchanged except A14 (now §18.6's) and the manifest listing ADR 0044 and R-546 to R-549.
+
+### 18.8 Open questions (each with a default)
+
+1. *Needs a fact.* Does ADR 0044 move a registered outcome outside S02? **Measured** on the scratch-patched suite: see
+   R-547's evidence line. **Default:** if a registered test moves, it is re-registered in ADR 0044's C-section with its new
+   outcome (as ADR 0010 C3 did), never relaxed.
+2. *Needs a fact.* Bit-identity of `x⁰` across x86-64/aarch64 (libm `exp`/`log` in `K`): **Default:** A05 by tolerance,
+   A15 within one machine; K05's identity comparison covers the target's final state as before.
+3. *Needs a fact.* Convergence of the sweeps beyond SYN-001's registered columns (wide-boiling, many stages, non-ideal `K`):
+   **Default:** not claimed (§18.9); `sweeps_exhausted` is the typed outcome; a later package with composition-dependent `K`
+   needs its own easy endpoint.
+4. *Needs the user's preference.* Root selection for `(duty, duty)` columns (§18.1 item 3). **Default:** no selection rule;
+   register `R2`, disclose in §14. A later package may add a continuation-first path if a root-selection requirement appears.
+
+### 18.9 What this does not establish
+
+The sweeps' convergence is measured on the ten registered columns only; no contraction proof is offered. `x⁰` is not a
+physical column (duties free, CMO stage ratios). ADR 0044 is `Proposed` until S02's manifest is `tested` and the reviewer has
+read it. Uniqueness: §14, now with §18.1 item 3's counterexample.
+
+### 18.10 Decisions
+
+- DECISION: S02 easy endpoint → bubble-point sweeps at fixed CMO stage ratios (`s02-bubble-point-v1`, §18.2), replacing the
+  Newton profile pre-solve. Alternative: an opening rule or more attempts for the Newton pre-solve (measured failing on M1).
+  Reversible by: restoring §7.3 and the `s02-profile-presolve-v1` policy object (the profile root stays registered).
+- DECISION: `LINEAR_SOLVE_FAILED` after a restart → edge-3 trigger (ADR 0044). Alternative: teach the contract the block rule
+  (does not cover §4.2's end-stage singularity; model structure in ADR 0005 D4). Reversible by: withdrawing ADR 0044 (one
+  predicate in `recovery.py`).
+- DECISION: A07's comparison → state tolerance against `ref.target`; `same_root` only within one problem. Alternative:
+  `same_root` across sets (T03 §8.3 says `NOT_COMPARABLE`). Reversible by: a T03 amendment defining cross-set comparison.
+- DECISION: V-M2 `(duty, duty)` → register the second root `R2` and assert it. Alternative: drop the set (§15.3 forbids) or
+  tune the endpoint until it returns M2's root (fragile). Reversible by: a root-selection rule in a later package.

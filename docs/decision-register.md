@@ -10971,3 +10971,88 @@ policy or an identity, so no ADR is written. R-535 stands.
 
 **Watch for.** Option (b) of R-537, any row kind or tolerance for `dimensionless`, or a `registry.yaml` change: each needs
 ADR 0044.
+
+---
+
+## R-546 — S02 easy endpoint: bubble-point sweeps at fixed stage ratios replace the Newton pre-solve
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`architect`), S02 Amendment 2 |
+| Normative text | `docs/derivations/S02-spec.md` §18.2 (replaces §7.3) |
+| Evidence | scratch measurement on `47eb3aa`: the sweeps converge on all ten cases and variants (21–39 sweeps to 1e-9 K), worst non-continued row at the endpoint ≤ 1.3e-11, start ±5 K reaches the same point within 4e-13 K; the Newton pre-solve failed on every case (WO-2) |
+| Affected packages | S02 (WO-G, WO-2b, WO-3) |
+
+**Decision.** `x⁰` is constructed, not solved: per component the §6 tridiagonal at `S_ij = K_ij ρ_j` (CMO ratios, with
+`ρ_1 = 1/RR*`, `ρ_N = BR*`, `φ = RR*/(1+RR*)` at ratio ends), then each stage at the bubble temperature of its liquid, swept
+to a fixed point. It satisfies every target row except the continued `variable − parameter` slots (ADR 0010 D2's easy
+endpoint) and is two-phase on every stage by the M-matrix argument. Energy is activated by the target's Newton or edge 3.
+
+**Rejected alternatives, and why.**
+- *An opening rule or more attempts for the Newton profile pre-solve:* measured failing on M1 (`BOUND_BLOCKED`,
+  `LINEAR_SOLVE_FAILED`, `ACTIVE_SET_CYCLING`).
+- *Continuation from the bubble-point state to the linear profile:* runs a homotopy as a primary method through the recovery
+  API, and ends farther from the target.
+
+**Watch for.** A composition-dependent `K` (non-ideal provider) breaks the linear inner step; that package needs its own
+endpoint. The profile root `ref.cases.*.presolve` stays registered as a second endpoint (A06b).
+
+---
+
+## R-547 — Edge 3 after a restart that ends `LINEAR_SOLVE_FAILED` (ADR 0044); the contract keeps no block rule
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`architect`), S02 Amendment 2 |
+| Normative text | `docs/adr/0044-edge3-after-restart-into-singular-signature.md` (Proposed); S02 spec §18.3 |
+| Evidence | forced edge 3 reaches `ref.target` on 10 of 10 S02 cases; without D1, M2, V-M1 (RR,B), (D,BR) and M1 from the profile root end `LINEAR_SOLVE_FAILED`; full suite on `47eb3aa` with D1 patched: see S02_DECISIONS.md, "ADR 0044 suite" |
+| Affected packages | S02, S01, T04 |
+
+**Decision.** `LINEAR_SOLVE_FAILED` is an edge-3 trigger when the failed region solve ran two or more attempts; in attempt 0
+it stays excluded. The phase contract is unchanged (Q-S02-3's default).
+
+**Rejected alternatives, and why.**
+- *The block rule in the contract:* the measured restarts are mostly §4.2's end-stage singularity, which it does not cover.
+- *A numerical-rank screen on restarts:* rewrites the terminal outcome.
+- *`max_attempts = 1` in the target:* disables legitimate phase changes.
+
+**Watch for.** A registered outcome elsewhere that was `LINEAR_SOLVE_FAILED` after a restart under `eo_recovery = homotopy`.
+
+---
+
+## R-548 — S02 A07 compares across specification sets by the state tolerance; `same_root` only within one problem
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`architect`), ruling on Q-S02-WO2-3 |
+| Normative text | `docs/derivations/S02-spec.md` §18.4 |
+| Evidence | T03 §8.3 returns `NOT_COMPARABLE` when constants and rows differ |
+| Affected packages | S02 |
+
+**Decision.** A07 asserts each set's root against `ref.cases.<case>.target` within the state tolerance; `same_root = SAME`
+is asserted only between runs of one problem (A13, A14).
+
+**Rejected alternatives, and why.** *`same_root` across sets:* undefined by T03 §8.3; widening it is a T03 change.
+
+---
+
+## R-549 — V-M2 `(duty, duty)` has a second regular root; it is registered and asserted, not dropped
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`architect`), S02 Amendment 2 |
+| Normative text | `docs/derivations/S02-spec.md` §18.1 item 3, §18.4, A07, A21 |
+| Evidence | measured: `R2` with `D = 0.274431`, `φ = 0.775456`, `T_c = 321.583 K`, all 2P, scaled `σ_min` 2.1e-4 (M2's root 1.7e-4 in the same scaling); the generator certifies it in WO-G |
+| Affected packages | S02 (WO-G, WO-2b); FRANK_QUESTIONS Q-S02-4 |
+
+**Decision.** §15.3's rule: the set is kept; A07 asserts the root the solve path returns (`R2`), A21 asserts the
+multiplicity; §14 discloses that a `(duty, duty)` column may have several roots and no root-selection claim is made.
+
+**Rejected alternatives, and why.** *Dropping the set:* §15.3 forbids. *Tuning the endpoint until M2's root comes back:*
+measured fragile (stage ratios ×2 return M2's root, ×1 and ×0.5 return `R2`).
+
+**Watch for.** A root-selection requirement (Q-S02-4) would make this a continuation-first path.

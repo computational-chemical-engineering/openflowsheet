@@ -43,3 +43,13 @@ Questions only Frank can answer (scope, value judgments). Each carries the defau
   on a boiling stage). The current phase-switching logic may try them and then stop with a reported failure — never a false
   answer. Fixing that means changing the shared phase logic, which affects every unit. Should S02 leave it, record the
   measured behaviour, and let S03 decide? **Default: yes** (§4.3, R-533).
+- **Q-S02-3, follow-up (Amendment 2, 2026-10-22).** Measured: the column solver does walk into such patterns after an
+  overshooting Newton step and then stops with a "singular matrix" failure, although a gentler route (continuation) reaches
+  the answer every time. The shared phase logic is left as it is (your default); instead the gentler route is now also tried
+  after that particular failure (ADR 0044, which touches the shared recovery rule for every unit). No answer needed unless you
+  object.
+- **Q-S02-4.** A column specified by its two heat duties can have two different valid steady states (measured: the
+  total-condenser case M2 at its own duties has a second one with a much smaller distillate). The solver returns whichever its
+  starting point leads to, and S02 records both without choosing. Should a later package add a rule for which steady state a
+  duty-specified column returns (for example, "the one reached by continuation from the starting estimate")? **Default: no
+  rule now; both states registered and the multiplicity disclosed** (S02 §18.4, R-549).
