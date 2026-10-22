@@ -11948,3 +11948,54 @@ generator's column formulation and S02's endpoint, and adds quotient-form invers
 exact refusal test. The matched sets take their inverse values from S02's registered M1 root and must return it.
 
 **Rejected.** *A stand-alone copy of S02's column code.* Duplicated and liable to drift.
+
+## R-608 — S06's I3 probe is at M1's feed state with A absent, not at a new feed temperature
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`reviewer`), S06 review (Q-S06-WO1-1) |
+| Normative text | `docs/derivations/S06-spec.md` §17.1 (replaces §9's I3 probe) |
+| Evidence | `docs/C11_DECISIONS.md` Q-S06-WO1-1: the old probe measured `inadmissible_inlet(feed, LIQUID)` (Σ z_i K_i ≈ 1.10) |
+| Affected packages | S06 |
+
+**Decision.** The I3 probe is feed (0, 0.5, 0.5) mol/s, reboiler recovery of A 0.9, condenser RR 2, at M1's feed state.
+It is admissible because M1's own admissible feed dominates it (`K_A > K_B > K_C`). Every refusal probe is at its base's
+inlet state and passes S01's R5 and S02's S1–S10 there. A02 checks this.
+
+**Rejected.** *Registering a 320 K feed temperature for the old probe* (the build lane's proposal). That needs a feed-state
+field the generator would carry and never use, and it breaks the rule that each probe is at its base's state.
+
+## R-609 — S06 §10: J8's measured deviation 0.182 of the state tolerance is recorded, with a 1/4 ceiling
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`reviewer`), S06 review (Q-S06-WO2-1) |
+| Normative text | `docs/derivations/S06-spec.md` §17.2 |
+| Evidence | `docs/C11_DECISIONS.md` WO-2 MEASURED and Q-S06-WO2-1 (commit `32aac25`); J8 `σ_min` 0.000610732 (§9) |
+| Affected packages | S06 |
+
+**Decision.** §10's measurement is answered: worst 0.182 (J8, `stage.6.m.A`), explained by J8's conditioning. The
+state tolerance is unchanged. The manifest's deviation check is ≤ 1/10 for every set except J8, whose ceiling is 1/4.
+
+**Rejected.** *Loosening the state tolerance* (nothing is wrong with the answer). *Replacing J8* (it is the near-total
+recovery case). *Classing the deviation as backlog and leaving `S06.deviation` failing* (a measured, explained fact
+would then block `tested` permanently).
+
+## R-610 — S06 §8 item 3 (single-phase specified stage) is decided only after every defect clause passes
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`reviewer`), S06 review |
+| Normative text | `docs/derivations/S06-spec.md` §17.3 (replaces §8 item 3's second sentence); A14 |
+| Evidence | `docs/reviews/S06-review.md` F1; `column_solve.py` `solve_target` at `6053c73` decides item 3 first |
+| Affected packages | S06 |
+
+**Decision.** A `CONVERGED` state that fails S02 §8 or S06 §8 items 1, 2 or 4 is a defect, whatever the specified stage's
+regime. `unsupported(temperature_specification_on_single_phase_stage:<s>)` is returned only for a state that has no
+defect.
+
+**Rejected.** *Item 3 before the defect clauses* (WO-2's order, chosen so a stubbed non-root makes A14 observable). It
+reports an implementation fault as a scope limit.

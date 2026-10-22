@@ -385,3 +385,68 @@ table, an ADR (S02 §17 item 5; R-043's warning about `check_policy_sha256`); (b
 reflux-ratio form) continued from `p⁰ = n_c⁰/P⁰` — ADR 0010 D2 admits only `variable − parameter` rows and
 `homotopy.level_values` reads `p⁰` from one column. S06 needs neither: §2's `u` gives the same path within the existing
 rules. If a later package wants ratio-form continuation generally, that is an ADR 0010 amendment for the design lane.
+
+## 17. Amendment 1 (2026-10-23, design lane `reviewer`): review rulings
+
+Review `docs/reviews/S06-review.md`; questions Q-S06-WO1-1 and Q-S06-WO2-1 (`docs/C11_DECISIONS.md`); register R-608 to
+R-610. Each item replaces or adds to the text it names. No frozen interface, row, row kind, tolerance, policy or identity
+moves, so no ADR is written. Frank's answers stand: Q-S06-1 (no multiplicity warning, §7.4) and Q-S06-2 (no second
+endpoint; the high-purity endpoint failure stays a typed result and a §14 item).
+
+### 17.1 The I3 probe (Q-S06-WO1-1; R-608) — replaces §9's "I3 (feed (0.5, 0.5, 0), recovery of C)"
+
+The registered probe was above its bubble point at M1's feed state (Σ z_i K_i ≈ 1.10 at 340 K, 1.04 bar), so S01's R5
+answered first. **The probe becomes feed (0, 0.5, 0.5) mol/s with reboiler `recovery` of A (index 0) 0.9**, condenser
+`reflux_ratio` 2, at M1's feed state (340 K, 1.04 bar, declared `LIQUID`); expected code unchanged,
+`infeasible_spec(absent_component:reboiler)`. *Why it is admissible, without a computation:* with `K_A > K_B > K_C > 0`
+(§4), `0.5 K_B + 0.5 K_C < 0.3 K_A + 0.4 K_B + 0.3 K_C` because `0.3 K_A > 0.1 K_B + 0.2 K_C`; the right side is M1's
+own feed, which is an admissible liquid at that state (S02's registered M1). It violates I3 only: RR passes S4; A is
+declared, 0.9 ∈ (0, 1).
+
+Rule for every refusal probe: **it is at its base's inlet state and passes S01's R5 and S02's S1–S10 there**; the
+generator does not model R5, so A02's test is where that is checked (a probe that R5 answers fails A02).
+
+Work order (build lane): change the probe's row in `s06_reference.py`, re-emit `s06_reference.json`, record `--check`'s
+new claim count and the JSON's SHA-256 in `docs/C11_DECISIONS.md`; remove the strict xfail on `I3-absent`; delete the
+unregistered 320 K companion test or keep it as unregistered.
+
+### 17.2 §10 "needs a fact" answered (Q-S06-WO2-1; R-609)
+
+Measured on `solve_column`'s path at `32aac25` (worst column / its state tolerance): **J8 0.182** (`stage.6.m.A`; next
+`stage.5.m.A` 0.164); V-reflux_ratio+temperature 0.017; V-purity+purity 0.014; J4 0.010; every other set < 0.01. J8 is
+above §10's 1/10 margin. *Reason:* conditioning, not a defect. J8's root has the smallest registered `σ_min`
+(0.000610732; J1–J7 ≥ 0.00136), and its A flows on stages 5–6 are of order 1e-4 mol/s, where the state tolerance is its
+absolute part 3.1e-7 mol/s. The `newton_refined` promise `τ_kind` bounds residuals; a residual within `τ_kind` moves the
+state by up to about `τ_kind/σ_min` along the near-singular direction, so "10× under the tolerance" (§10, *Above the
+floor*) holds for well-conditioned roots and is not implied at J8's. **The state tolerance is unchanged** and A06 passes
+(≤ 1).
+
+The manifest's deviation check becomes: every set ≤ 1/10, **except J8 ≤ 1/4** (a ceiling about 1.4× the measured value,
+for cross-architecture differences in Newton's stopping point). A set above its ceiling amends §10 again (S02 §10's rule).
+
+### 17.3 §8 item 3 is decided after the defect clauses (R-610) — replaces §8 item 3's second sentence
+
+A `CONVERGED` state is first checked against S02 §8 (with its §17–§19) and items 1, 2 and 4 here. **A failure of any of
+them is a defect (`AcceptanceDefectError`), whatever the regime of the specified stage.** Only a state with no defect
+whose `temperature`-specified stage is not `TWO_PHASE` is answered `CAPABILITY_UNAVAILABLE`
+`unsupported(temperature_specification_on_single_phase_stage:<s>)`. Never a success either way. A genuine single-phase
+root passes every defect clause (item 2 skips the specified end stage; S01 §8 asks admissibility of a single-phase stage,
+not two phases), so the order changes only the answer on a state that is both defective and out of scope. That state is
+an implementation fault, and reporting it as a scope limit hides it.
+
+A14 changes with it: the unsupported probe stubs `acceptance_failures` to `()` (or uses a state that passes it); a third
+probe — J5's stubbed non-root state with stage 5 `LIQUID` — must raise `AcceptanceDefectError`.
+
+### 17.4 Assertions strengthened (clauses added; no id, value or tolerance moves)
+
+- **A04** gains: on M2's structure (total condenser) with condenser `purity` of A 0.75 and reboiler `bottoms_rate` 0.55, at
+  a state whose columns are distinct dyadic values, the purity definition row equals `F·d_A − u·D` exactly (computed in
+  the test from the dyadic operands) and differs from `F·v_1,A − u·V_1` and `F·r_A − u·Σ r`. A purity at a total
+  condenser is offered (§1) and no J or V case declares one.
+- **A05** gains: each V-set's `x⁰` is within the state tolerance of its twin's `ref.cases.<twin>.bubble_point`
+  (V-(purity A, BR) ↔ J1, V-(RR, temperature 6) ↔ J3, V-(purity A, purity C) and V-(recovery A, recovery B) ↔ J4,
+  `u` excluded for the last), because §6's endpoint reads no inverse target. Measured at `6053c73`: the V-sets' `x⁰`
+  equal their twins' bit for bit on every common column; the worst deviation from the twin's reference is 1.8e-5 of a tolerance.
+- **A11** gains: at the λ state, each continued slot's column equals `p(λ) = p* + (1 − λ)(p⁰ − p*)` within its slot
+  row's kind tolerance. The test's rebuild of the λ state mirrors `lambda_state` and cannot catch a wrong source by
+  itself. Measured at `6053c73`: U1 0.0 and U2 1.1e-16 at every continued slot.
