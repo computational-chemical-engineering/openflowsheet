@@ -17,6 +17,8 @@ from typing import Any
 
 import pytest
 
+from openflowsheet.application import revision_binding
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -250,3 +252,67 @@ def test_m04_and_m05_harvest_rows_map_to_l49_not_the_alphas_l43(envelope: dict[s
     assert any("L49" in (entry.get("to") or []) for entry in rows)
     (l43,) = (row for row in envelope["limitations"] if row["id"] == "L43")
     assert " ".join(l43["text"].split()).startswith("The Anderson recycle")
+
+
+# -- D1-A03: the library-only tripwire (D1, R-561) --------------------------------------------
+
+#: The syn001 models that are library-only: package whose harvest items name them under U04.
+#: The package that binds either model writes its L-rows and reclassifies its U04 items.
+LIBRARY_ONLY = {"syn001.cascade": "S01", "syn001.column": "S02"}
+
+
+def library_only_problems(builders: Any, harvest: list[dict[str, Any]]) -> list[str]:
+    """Why `LIBRARY_ONLY` no longer holds: (a) a library-only id in `builders`; (b) an item of
+    its package's manifests with U04 in `to` whose note lacks the id in back-ticks and
+    `library-only`; (c) a package with no U04 item (no vacuous pass)."""
+    problems: list[str] = []
+    for model_id, package in LIBRARY_ONLY.items():
+        suffix = "bound: add its L-rows and reclassify its U04 items (D1, R-561)"
+        if model_id in builders:
+            problems.append(f"{model_id} is in MODEL_BUILDERS; {suffix}")
+        items = [
+            entry
+            for entry in harvest
+            if entry["manifest"].startswith(f"evidence/{package}/")
+            and "U04" in (entry.get("to") or [])
+        ]
+        if not items:
+            problems.append(f"{model_id}: {package} has no U04 item in the harvest; {suffix}")
+        for entry in items:
+            note = entry.get("note") or ""
+            if f"`{model_id}`" not in note or "library-only" not in note:
+                problems.append(
+                    f"{model_id}: {entry['manifest']} {entry['item']} is U04 without "
+                    f"`{model_id}` and library-only in its note; {suffix}"
+                )
+    return problems
+
+
+def test_d1_the_library_only_models_are_unbound_with_their_u04_items(
+    envelope: dict[str, Any],
+) -> None:
+    assert library_only_problems(revision_binding.MODEL_BUILDERS, envelope["harvest"]) == []
+
+
+def test_d1_binding_a_library_only_model_trips_the_wire(envelope: dict[str, Any]) -> None:
+    bound = {**revision_binding.MODEL_BUILDERS, "syn001.cascade": object()}
+    problems = library_only_problems(bound, envelope["harvest"])
+    assert len(problems) == 1
+    assert "syn001.cascade" in problems[0]
+    assert "bound: add its L-rows and reclassify its U04 items (D1, R-561)" in problems[0]
+
+
+def test_d1_a_u04_item_that_loses_its_model_id_trips_the_wire(envelope: dict[str, Any]) -> None:
+    mutated = copy.deepcopy(envelope["harvest"])
+    entry = next(
+        item
+        for item in mutated
+        if item["manifest"].startswith("evidence/S01/") and "U04" in (item.get("to") or [])
+    )
+    entry["note"] = entry["note"].replace("`syn001.cascade`", "the cascade")
+    problems = library_only_problems(revision_binding.MODEL_BUILDERS, mutated)
+    assert len(problems) == 1
+    assert "syn001.cascade" in problems[0]
+    # no vacuous pass: a harvest with the package's U04 items removed is also a problem
+    stripped = [i for i in envelope["harvest"] if "U04" not in (i.get("to") or [])]
+    assert len(library_only_problems(revision_binding.MODEL_BUILDERS, stripped)) == 2
