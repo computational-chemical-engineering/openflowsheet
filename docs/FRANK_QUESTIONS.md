@@ -106,3 +106,19 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
   only packaged ones, so L01 also needs a design-lane amendment of T08.A32; until then `wp/L01` fails A32 and is not
   merged. **Default:** nothing from L01 is released until a rights review vets the nine records and the design lane
   amends A32; shipping them is a distribution decision for you.
+
+## S06 (C11) — column inverse specifications (design lane `specifier`, 2026-10-22)
+
+- **Q-S06-1. Should a column with a purity, recovery or temperature specification carry a "multiple steady
+  states possible" warning, as duty-only columns do (C8)?** No registered S06 set shows a second root, and S06
+  claims no uniqueness for any set (`docs/derivations/S06-spec.md` §7.4, §14). Warning on every inverse set would
+  make the warning say "no uniqueness claim", which is true of every column. **Default:** no new warning; C8's
+  duty-only rule unchanged. A later measured second root under an inverse set adds a warning code for that class.
+- **Q-S06-2. Is a high-purity endpoint failure acceptable as a typed result for now?** S06 reuses S02's
+  bubble-point endpoint unchanged. When the endpoint already sits near total recovery of the specified component
+  (U1: bottoms recovery of C 0.9996 at the endpoint), the endpoint is ill-conditioned and the continuation fails at
+  its first step, although a regular root exists (M2's); and a total condenser whose reflux fraction is free can see
+  the straight path cross negative reflux (U2). The answer is then `inverse_specification_not_reached`,
+  typed and checkable, never a false success. Fixing it needs a second easy endpoint for inverse specifications
+  (a new algorithm and its own measurements). **Default:** yes, typed result and a §14 limitation; a follow-on
+  package only if you want such inverse specifications to solve unattended.
