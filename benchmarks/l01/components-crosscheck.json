@@ -467,11 +467,15 @@
   }
  },
  "a12_cp_within_bound": {
+  "H2": true,
+  "N2": true,
+  "Ar": true,
+  "CH4": true,
   "H2O": true,
   "CO2": true,
   "O2": true,
   "C2H6": true,
-  "C3H8": false
+  "C3H8": true
  },
  "literature": {
   "H2O": {

@@ -28,7 +28,8 @@ Three parts, for all nine records (the four copied from C1 are re-derived too):
 2. **Cross-check** (stated deviations, not gates): CoolProp 8.0.0's critical point, its acentric
    factor (as stated and by definition, -log10(P_sat(0.7 T_c)/P_c) - 1); the ideal-gas c_p against
    CoolProp's reference-EOS ideal part at 298.15, 300, 600 and 900 K (L01.A12 bounds 300/600/900 K
-   at 0.5 %) and against JANAF (thermo method JANAF); formation enthalpies against JANAF.
+   at 2 % for all nine records, spec section 12.1, R-528) and against JANAF (thermo method
+   JANAF); formation enthalpies against JANAF.
 3. **Literature** (spec section 10 Q-5): each dagger value of the literature table beside the
    record and the independent machine-readable values above. This corroborates the transcriptions;
    it does not replace the printed sources Q-5 names.
@@ -72,9 +73,10 @@ COOLPROP_NAME = {
 }
 NEW = ("H2O", "CO2", "O2", "C2H6", "C3H8")
 CP_TEMPERATURES = (298.15, 300.0, 600.0, 900.0)
-#: L01.A12: |c_p - c_p,CoolProp| / c_p at these temperatures, each <= 0.5 %.
+#: L01.A12 (spec section 12.1, R-528): |c_p - c_p,CoolProp| / c_p at these temperatures, each
+#: <= 2 %, for every record of the file.
 A12_TEMPERATURES = ("300.0", "600.0", "900.0")
-A12_BOUND = 0.005
+A12_BOUND = 0.02
 R_GAS = 8.31446261815324
 SKIPPED = 3
 
@@ -311,11 +313,9 @@ def build() -> dict[str, Any]:
         if not all(out["retrieval"][cid]["equal"].values()):
             failures.append(cid)
         out["crosscheck"][cid] = _crosscheck(r, mods)
+        dev = out["crosscheck"][cid]["cp_rel_dev_vs_coolprop_ideal_gas"]
+        out["a12_cp_within_bound"][cid] = all(abs(dev[t]) <= A12_BOUND for t in A12_TEMPERATURES)
         if cid in NEW:
-            dev = out["crosscheck"][cid]["cp_rel_dev_vs_coolprop_ideal_gas"]
-            out["a12_cp_within_bound"][cid] = all(
-                abs(dev[t]) <= A12_BOUND for t in A12_TEMPERATURES
-            )
             out["literature"][cid] = _literature(r, literature[cid], out["crosscheck"][cid], mods)
     out["retrieval_all_equal"] = not failures
     out["retrieval_failures"] = failures

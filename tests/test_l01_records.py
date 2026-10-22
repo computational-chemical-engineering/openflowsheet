@@ -333,30 +333,17 @@ def test_a12_every_value_is_the_retrieval_sources_value(component: str) -> None:
     assert component not in CROSS["retrieval_failures"]
 
 
-@pytest.mark.parametrize(
-    "component",
-    [
-        pytest.param(
-            name,
-            marks=pytest.mark.xfail(
-                strict=True,
-                reason="L01.A12 fails for C3H8: 0.577 % from CoolProp's ideal-gas c_p at 600 K "
-                "against the registered 0.5 % (NASA fit -0.23 % from TRC there); open for the "
-                "design lane (docs/L01_DECISIONS.md); the bound is not changed here",
-            ),
-        )
-        if name == "C3H8"
-        else name
-        for name in NEW
-    ],
-)
-def test_a12_ideal_gas_cp_within_half_a_percent_of_coolprop(component: str) -> None:
+@pytest.mark.parametrize("component", NINE)
+def test_a12_ideal_gas_cp_within_two_percent_of_coolprop(component: str) -> None:
+    # Spec §12.1 (R-528): 2 %, every record of the file; the floor is the NASA-fit vs reference-EOS
+    # ideal-part disagreement on correct data (CH4 +0.68 % at 900 K), the closest swap 6.5 %.
     deviation = CROSS["crosscheck"][component]["cp_rel_dev_vs_coolprop_ideal_gas"]
-    assert {t: abs(deviation[t]) <= 0.005 for t in ("300.0", "600.0", "900.0")} == {
+    assert {t: abs(deviation[t]) <= 0.02 for t in ("300.0", "600.0", "900.0")} == {
         "300.0": True,
         "600.0": True,
         "900.0": True,
     }, deviation
+    assert CROSS["a12_cp_within_bound"][component] is True
 
 
 def _pins_present() -> bool:
