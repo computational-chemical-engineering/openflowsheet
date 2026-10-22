@@ -48,3 +48,4 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
 ### Review fixes (build lane `opus-engineer`, 2026-10-23; `docs/reviews/S06-review.md`, spec §17, R-608 to R-610)
 
 - DONE (F1, R-610): §8 item 3 is now decided after the defect clauses in `solve_target`; this reverses WO-2's "§8 item 3's place" decision by the design-lane ruling. A14's unsupported probe stubs `acceptance_failures` to `()`; a new probe (J5's stubbed non-root, stage 5 `LIQUID`) raises `AcceptanceDefectError`.
+- DONE (F2, §17.4 A11): A11 checks every continued slot's column at the λ state against `p(λ) = p* + (1 − λ)(p⁰ − p*)` (p* the target's pinned parameter, p⁰ from `answer.continued`) per slot-row kind tolerance; `zip(strict=True)`. Measured: U1 0.0, U2 3.6e-9 of the tolerance (1.1e-16 absolute), 7 slots each.

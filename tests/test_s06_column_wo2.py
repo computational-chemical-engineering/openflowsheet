@@ -595,9 +595,29 @@ def _lambda_state(answer: ColumnSolution) -> dict[str, float]:
     trial = [t for t in record.trials if t.accepted and t.lambda_value == record.lambda_reached][-1]
     state = dict(failed.opening[0])
     state.update(
-        zip(record.variable_ids, (float(v) for v in trial.corrector.result.x), strict=False)
+        zip(record.variable_ids, (float(v) for v in trial.corrector.result.x), strict=True)
     )
     return state
+
+
+def _continued_slots_at_lambda(spec: ColumnSpec, answer: ColumnSolution) -> dict[str, float]:
+    """S06 §17.4's A11 clause, independent of how the λ state was rebuilt: at the last accepted
+    λ, every continued slot's column against `p(λ) = p* + (1 − λ)(p⁰ − p*)`, as a fraction of
+    its slot row's kind tolerance (`p*` the target's pinned parameter, `p⁰` A05's)."""
+    record = answer.result.homotopy
+    assert record is not None
+    state = _lambda_state(answer)
+    target = compile_column(spec, PROVIDER).spec
+    remaining = float(1 - record.lambda_reached)
+    replaced = [s for s in slots(spec, answer.initial.profile) if s.parameter]
+    assert sorted(s.parameter for s in replaced) == sorted(answer.continued)
+    errors: dict[str, float] = {}
+    for slot in replaced:
+        target_value = target.parameters[slot.parameter]
+        p_lambda = target_value + remaining * (answer.continued[slot.parameter] - target_value)
+        tolerance = KIND_TOLERANCE[target.row_kinds[slot.target_row]]
+        errors[slot.variable] = abs(state[slot.variable] - p_lambda) / tolerance
+    return errors
 
 
 @pytest.mark.parametrize("name", sorted(U_SETS))
@@ -618,6 +638,9 @@ def test_a11_the_unreached_sets(name: str) -> None:
     ends = _inverse_ends(spec)
     assert [u.end for u in answer.unreached] == ends
     state = _lambda_state(answer) if answer.unreached[0].lambda_reached is not None else None
+    if state is not None:
+        errors = _continued_slots_at_lambda(spec, answer)
+        assert max(errors.values()) <= 1.0, errors
     for entry, end in zip(answer.unreached, ends, strict=True):
         given = spec.end_specification(end)
         assert given is not None
