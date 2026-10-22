@@ -541,6 +541,22 @@ def validate(
     return None
 
 
+#: C8 (Frank, Q-S02-4): the notice on every duty-only column specification. Spec §18.1 item 3 and
+#: §14: a `(duty, duty)` column may have several regular roots, and no root-selection claim is made.
+MULTIPLE_STEADY_STATES_WARNING: Final = "multiple_steady_states_possible(duty_only)"
+
+
+def column_warnings(spec: ColumnSpec) -> tuple[str, ...]:
+    """C8: the warnings a column answer carries, decided from the specification alone. A column
+    is duty-only when it has at least one end and every end's specification is of kind `duty`
+    (the §5 R7 condition, which a column without ends satisfies vacuously and gets no warning)."""
+    ends = spec.ends()
+    given = tuple(spec.end_specification(end) for end in ends)
+    if ends and all(found is not None and found.kind == "duty" for found in given):
+        return (MULTIPLE_STEADY_STATES_WARNING,)
+    return ()
+
+
 def _specification(spec: ColumnSpec, end: str) -> EndSpecification:
     found = spec.end_specification(end)
     if found is None:
@@ -1331,6 +1347,7 @@ __all__ = [
     "EQUATIONS",
     "INITIALIZER_ID",
     "MODEL_ID",
+    "MULTIPLE_STEADY_STATES_WARNING",
     "NOT_OFFERED",
     "PHI_INITIAL",
     "PROFILE_BETAS",
@@ -1341,6 +1358,7 @@ __all__ = [
     "ColumnSpec",
     "EndSpecification",
     "ProfileInitial",
+    "column_warnings",
     "declared_rows",
     "distillate_id",
     "distillate_total_id",
