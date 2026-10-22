@@ -2326,3 +2326,63 @@ reverted to the one-element tuple, the same two tests fail as in J83. Log both r
 - That M07a's or M07's limitations are true or false of 0.2.0. They are unclassified, not dismissed.
 - Any verdict, the re-judgement of J83 (a), ADR 0042's cells, or any human sign-off.
 - That the harvest covers manifests at any commit other than C′.
+
+## 26. Amendment 9 — after the 0.2.0 tag: the ledger tests read the released ledger (2026-10-22, D1)
+
+**Author:** design lane (`specifier`), D1 ruling round Q5 (`docs/reviews/D1-rulings.md`; R-564). It carries out O1's
+post-release clause and §23.2's "After the tag", which were decided and not done.
+
+### 26.1 Facts
+
+At `0.3.0.dev0`, `at_c` skips all four judging tests (S-UNCOV, C7-Q2), so 0.2.0's ledger has no executable check.
+`docs/requirements.yaml` and `docs/reviews/V02-verdicts.md` have no diff between the tag `v0.2.0` (`5c82b4c`, version
+`0.2.0`) and HEAD `9b09ed2`. CI fetches full history (`fetch-depth: 0`).
+
+### 26.2 Ruling (R-564): R-456's split, applied to 0.2.0
+
+- **Read at the tag.** The ledger is read as 0.2.0 released it, by `git show <TAG>:docs/requirements.yaml`.
+- **Read from the working tree.** The verdict document and the cited manifests are read from the working tree, so a
+  rewritten released verdict, or a deleted release record on `main`, is caught against the released ledger.
+- **Retired.** §23.2's build actions 1, 2 and 4 (the `at_c` predicate, its test and its docstring paragraph) are
+  retired.
+- **Historical.** §23.2's step-1 and candidate rules are historical records of 0.2.0's RC.
+- **Kept.** Build action 3, the gate's own O1 test, stays.
+
+### 26.3 Build actions (WO-D1-A item 4; one commit)
+
+1. **`tests/conftest.py`.** Beside `ALPHA_TAG_COMMIT`, add:
+
+   ```python
+   #: 0.2.0 as released: the commit tagged `v0.2.0` (2026-10-20), R-564.
+   RELEASE_0_2_0_COMMIT = "5c82b4cc40dd4fefd3dbce45352910006e5dee13"
+   ```
+
+   `tests/test_v02_main_version.py` and `tests/test_m07a_harvest.py` may import it in place of their literals.
+2. **`tests/test_m07_ledger.py`.**
+   - `ledger()` returns `gates(git show RELEASE_0_2_0_COMMIT:docs/requirements.yaml)` and asserts return code 0.
+   - The `verdicts` fixture returns `VERDICTS.read_text()` with no skip.
+   - `at_c` and `test_the_ledger_is_judged_wherever_the_gate_could_say_yes` are deleted.
+   - The other four tests are unchanged.
+3. **Same module, new test `test_the_tag_commit_is_0_2_0`.**
+   - `git merge-base --is-ancestor RELEASE_0_2_0_COMMIT HEAD` returns 0.
+   - `v0_1_gate.version_at(RELEASE_0_2_0_COMMIT) == "0.2.0"`.
+   - Where `refs/tags/v0.2.0` resolves, it equals the constant.
+   - These are the alpha's `test_the_tag_commit_is_0_2_0a1`, transposed.
+4. **The module docstring.** Replace the paragraph "Read on the working tree at `C`" with R-564's split and cite this
+   section.
+
+### 26.4 Assertions
+
+| id | assertion | expected | tolerance |
+| --- | --- | --- | --- |
+| D1-A04 | `pytest tests/test_m07_ledger.py` at the WO commit (version `0.3.0.dev0`) | 5 passed, 0 skipped | exact counts |
+| D1-A04-N | negative control, run once and not committed: the constant set to `ALPHA_TAG_COMMIT` | `test_every_claimed_gate_cites_m07_at_c` fails, because the alpha's ledger cites no `evidence/M07/` manifest | exact (fails) |
+
+Why the negative control cannot pass by accident: at `423ae9c`, `evidence/M07/` did not exist.
+
+### 26.5 What this amendment does not establish
+
+- A re-judgement of any 0.2.0 verdict.
+- A ledger check for a later release. That release's gate set brings its own ledger module.
+- That `scripts/m07_evidence_manifest.py`'s A41 mapping, a C′-time generator, still describes the module. It is not
+  re-run.

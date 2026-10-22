@@ -42,3 +42,8 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
   registered record name and not under `runs/`, so W27-A72 holds. The record's bytes and SHA-256 are unchanged (it
   does not name its own path). Alternative: amend U14 (a W27 registration change). Reversible by: moving it back with
   a U14 amendment.
+- DECISION (Amendment 1, 2026-10-22, R-555, D-12): a version re-take of a pinned input (`coverage.json` at
+  `0.3.0.dev0`, `f85fcd7`) → read the pinned content from git history by blob id, check it against the SHA-256 pin,
+  and require the working copy's (`case_id`, `family`, `class`) multiset to equal it; no history means an explicit
+  refusal. `split.json` is byte-identical. Alternative: re-pin per re-take; a frozen copy; a read-field digest pin.
+  Reversible by: an amendment.

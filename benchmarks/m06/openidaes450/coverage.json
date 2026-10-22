@@ -91723,7 +91723,7 @@
   "schema": "w27-coverage-v1",
   "snapshot": {
     "basis": "built by benchmarks.m06.w27.snapshot from the build at git_commit",
-    "git_commit": "48db2d30be672b758562a39fd1551c82445f6642",
+    "git_commit": "954fde362963e359c3705cfbcdaba03efabd16c1",
     "list_models_sha256": "f070fbe0c67695765cdb3862031a18208af959a5b82de6911d1c99fcabea49b4",
     "models": [
       {
@@ -91793,7 +91793,7 @@
         "model_id": "syn001.valve"
       }
     ],
-    "package_version": "0.2.0",
+    "package_version": "0.3.0.dev0",
     "routes": [
       {
         "components": [
@@ -91919,7 +91919,7 @@
     "routes_per_revision": 1,
     "schema": "w27-registry-snapshot-v1"
   },
-  "snapshot_sha256": "211cf4f17037c3d901d8b1b42756b14d71249de8da129c35d55b44f4cddfe152",
+  "snapshot_sha256": "5e36f8efab318492788dbee732a616c65f93d7d0778eecaf0a8ce70d4a1ca470",
   "summary": {
     "all_450": {
       "by_family": {

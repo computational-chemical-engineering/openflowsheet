@@ -323,11 +323,11 @@ def test_a09_the_trigger_set_is_section_5_1s() -> None:
         "ATTEMPTS_EXHAUSTED",
     }
     for outcome in get_args(SolveOutcome):
-        assert eo_recovery_due(outcome, None) == (outcome in triggers), outcome
-    assert eo_recovery_due("BUDGET_EXHAUSTED", "newton_iterations")
-    assert eo_recovery_due("BUDGET_EXHAUSTED", "ptc_steps")
-    assert not eo_recovery_due("BUDGET_EXHAUSTED", "property_calls")
-    assert not eo_recovery_due("BUDGET_EXHAUSTED", "homotopy_steps")
+        assert eo_recovery_due(outcome, None, attempts=(outcome,)) == (outcome in triggers), outcome
+    assert eo_recovery_due("BUDGET_EXHAUSTED", "newton_iterations", attempts=("BUDGET_EXHAUSTED",))
+    assert eo_recovery_due("BUDGET_EXHAUSTED", "ptc_steps", attempts=("BUDGET_EXHAUSTED",))
+    assert not eo_recovery_due("BUDGET_EXHAUSTED", "property_calls", attempts=("BUDGET_EXHAUSTED",))
+    assert not eo_recovery_due("BUDGET_EXHAUSTED", "homotopy_steps", attempts=("BUDGET_EXHAUSTED",))
     for outcome in (
         "CONVERGED",
         "LINEAR_SOLVE_FAILED",
@@ -339,7 +339,7 @@ def test_a09_the_trigger_set_is_section_5_1s() -> None:
         "PTC_MAPPING_INVALID",
         "HOMOTOPY_STALLED",
     ):
-        assert not eo_recovery_due(outcome, None), outcome
+        assert not eo_recovery_due(outcome, None, attempts=(outcome,)), outcome
 
 
 def test_a09_hom_u_a_region_without_a_promoted_specification_is_unsupported() -> None:

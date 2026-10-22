@@ -10,14 +10,18 @@ identically (R-015) — the policy fixtures byte for byte here, the rest by
 `test_k03_schemas.py` and `test_t04_schemas.py`, whose generators run unchanged.
 
 v2's rules are W6's (§6.2–§6.5) and W7's (§7); the T05b cases run them under the policy
-`T05b-v2` (`t05b_support.POLICY_V2`, spec §6.6), the one registered construction of v2 outside
-this file — in `openflowsheet.application.policies.T05B_V2` since T07 W3a moved it into `src`
-(W0 flag E6).
+`T05b-v2` (`t05b_support.POLICY_V2`, spec §6.6), a registered construction of v2 outside this
+file — in `openflowsheet.application.policies.T05B_V2` since T07 W3a moved it into `src` (W0 flag
+E6). The other is S01's registered `s01-default-v1` (S01 spec §4, §7; R-505), in
+`openflowsheet.models.syn001.cascade_solve.S01_DEFAULT_V1` (S01 WO-5; a design-lane question in
+`docs/S01_DECISIONS.md`).
 """
 
 from __future__ import annotations
 
 import ast
+import importlib
+import re
 import sys
 import typing
 from pathlib import Path
@@ -98,33 +102,86 @@ def _sources() -> list[Path]:
 #: Spec §6.6: the T05b cases' policy `T05b-v2` is constructed in exactly one place — the
 #: application's policy registry since T07 W3a (design note §12.2, W0 flag E6).
 T05B_V2_SOURCE = REPO_ROOT / "src" / "openflowsheet" / "application" / "policies.py"
+#: S01 spec §4 item 4 and §7 item 6 (register R-505): S01's cascade solves under its own
+#: registered policy `s01-default-v1` — the registered EO default with phase contract v2 and
+#: `eo_core = "newton_refined"` — constructed once, as `cascade_solve.S01_DEFAULT_V1`. A second
+#: named exemption (S01 WO-5, `docs/S01_DECISIONS.md`); every other file stays held to v1.
+S01_V2_SOURCE = REPO_ROOT / "src" / "openflowsheet" / "models" / "syn001" / "cascade_solve.py"
+#: The registered constructions of v2 outside this file: (source, module, policy name, policy id).
+#: Equal to the table in spec §6.6 as amended (D1, R-560); a new root takes a row in both.
+V2_SOURCES = (
+    (T05B_V2_SOURCE, "t05b_support", "POLICY_V2", "T05b-v2"),
+    (
+        S01_V2_SOURCE,
+        "openflowsheet.models.syn001.cascade_solve",
+        "S01_DEFAULT_V1",
+        "s01-default-v1",
+    ),
+)
+
+
+T05B_SPEC = REPO_ROOT / "docs" / "derivations" / "T05b-limitations-spec.md"
+_REGISTER_OPEN, _REGISTER_CLOSE = "<!-- B06-V2-REGISTER -->", "<!-- /B06-V2-REGISTER -->"
+
+
+def _spec_v2_register(text: str) -> set[tuple[str, str]]:
+    """The (policy id, source) pairs of spec §6.6's v2-root table: between the two register
+    markers, every row whose first cell is back-ticked, its first two back-ticked cells."""
+    body = text.split(_REGISTER_OPEN, 1)[1].split(_REGISTER_CLOSE, 1)[0]
+    pairs: set[tuple[str, str]] = set()
+    for line in body.splitlines():
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if not cells or not (cells[0].startswith("`") and cells[0].endswith("`")):
+            continue
+        ticked = re.findall(r"`([^`]+)`", line)
+        pairs.add((ticked[0], ticked[1]))
+    return pairs
+
+
+def test_b06_the_v2_register_is_the_specs() -> None:
+    """Spec §6.6 as amended (D1, R-560) registers the v2 roots in a table; `V2_SOURCES` is that
+    table, as (policy id, repository-relative source) pairs, equal as sets. Negative control: the
+    same parse of the text with the `s01-default-v1` row removed is a different set."""
+    text = T05B_SPEC.read_text(encoding="utf-8")
+    code = {(i, source.relative_to(REPO_ROOT).as_posix()) for source, _, _, i in V2_SOURCES}
+    assert _spec_v2_register(text) == code
+    lines = text.splitlines(keepends=True)
+    kept = [line for line in lines if not line.startswith("| `s01-default-v1` |")]
+    assert len(kept) == len(lines) - 1
+    without = _spec_v2_register("".join(kept))
+    assert without != code
+    assert without == {pair for pair in code if pair[0] != "s01-default-v1"}
 
 
 def test_b06_no_registered_policy_names_v2() -> None:
     """No code constructs or replaces a policy with a `phase_contract` other than the default,
     and no committed document outside this package's evidence spells v2: every registered
-    policy — SYN-001's, T02–T04's fixtures and tests, T05's `T05-W13` — stays v1 (spec §6.6).
-    Two exemptions: this file, which constructs v2 to show the schema accepts it, and the T05b
+    policy — SYN-001's, T02–T04's fixtures and tests, T05's `T05-W13` — stays v1, except the
+    v2 roots of spec §6.6 as amended (D1, R-560; `test_b06_the_v2_register_is_the_specs`).
+    Three exemptions: this file, which constructs v2 to show the schema accepts it; the T05b
     cases' own policy `T05b-v2` (`t05b_support.POLICY_V2`), constructed once in
-    `T05B_V2_SOURCE`."""
+    `T05B_V2_SOURCE`; and S01's registered policy `s01-default-v1` (S01 spec §4, §7; R-505),
+    constructed once in `S01_V2_SOURCE`. Each exempt source constructs exactly one policy with a
+    `phase_contract`, and that policy is v2 under its registered id."""
+    exempt = {source for source, *_ in V2_SOURCES}
     offenders: list[str] = []
     for path in _sources():
-        if path.name == Path(__file__).name or path == T05B_V2_SOURCE:
+        if path.name == Path(__file__).name or path in exempt:
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if isinstance(node, ast.keyword) and node.arg == "phase_contract":
                 offenders.append(f"{path.relative_to(REPO_ROOT)}:{node.value.lineno}")
     assert offenders == []
-    constructed = [
-        node
-        for node in ast.walk(ast.parse(T05B_V2_SOURCE.read_text(encoding="utf-8")))
-        if isinstance(node, ast.keyword) and node.arg == "phase_contract"
-    ]
-    assert len(constructed) == 1
-    from t05b_support import POLICY_V2
-
-    assert (POLICY_V2.policy_id, POLICY_V2.phase_contract) == ("T05b-v2", V2)
+    for source, module, name, policy_id in V2_SOURCES:
+        constructed = [
+            node
+            for node in ast.walk(ast.parse(source.read_text(encoding="utf-8")))
+            if isinstance(node, ast.keyword) and node.arg == "phase_contract"
+        ]
+        assert len(constructed) == 1, source
+        policy = getattr(importlib.import_module(module), name)
+        assert (policy.policy_id, policy.phase_contract) == (policy_id, V2), source
     documents = [
         path
         for root in ("tests/fixtures", "benchmarks")

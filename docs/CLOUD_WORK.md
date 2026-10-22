@@ -44,4 +44,6 @@ brief file under `docs/briefs/` (question, facts with `file:line`, exit test). C
 keep reports to 150 words or fewer. Gate by risk, as `CLAUDE.md` says: docs need no local gate, and code runs the
 tests it touches. Run the full `scripts/gate.sh` once before merging into `main`, in the background, and read only its
 summary line. Push the branch `wp/<ID>` and let CI judge both architectures. Merge to `main` only with a `tested`
-manifest where the package has one.
+manifest where the package has one. C-items and design-lane ruling rounds (D1, …) have none: they merge on the read full gate and
+CI green on both architectures, recorded in the merge commit message. A C-item that is or becomes a plan package takes
+that id and its manifest (C5 = S01, C6 = S02); L01 is renumbered S04 for its manifest (D1, R-565).

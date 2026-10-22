@@ -7,7 +7,9 @@ on 2026-10-18 (`docs/briefs/OpenIDAES-split-registration.md`). Register entries 
 *development* cases and which are *held-out* cases, and the rules that keep the held-out cases out of development.
 It also registers the successor of W27-R02 (finding F-1, R-474) for classifications made under it (§6). It changes
 nothing in the W27 registration, in `coverage.json`, in step 17's carry or in v0.2's released scores. It decides no
-v0.3 scope. Rules are `SPLIT-R01…R14`; assertions are `SPLIT-A01…A17` (§9).
+v0.3 scope. Rules are `SPLIT-R01…R14`; assertions are `SPLIT-A01…A19` (§9; A18–A19 added by Amendment 1).
+
+**Amendments.** Amendment 1 (2026-10-22, R-555, §14): a re-taken `coverage.json` is read at its pinned content.
 
 **Order of record.** The rules and the seed (§§1–7) were committed before the generator first drew the split. The
 results (§8) were added in a later commit. The git history of this file is the evidence of that order.
@@ -35,6 +37,9 @@ archive and no network.
 
 The generator reads no `reasons`, `units`, `components` or `packages` field of `coverage.json`. Stratification needs
 only the class. If any input's SHA-256 differs from the pin, the generator refuses (SPLIT-R12).
+
+*Amended 2026-10-22 (Amendment 1, §14).* The pin of `coverage.json` pins the content the draw reads. When the working
+copy has moved on, that content is read from git history, and the working copy must keep the pinned read fields.
 
 ## 3. The split
 
@@ -175,6 +180,10 @@ rule. The change is then handled by an amendment, not a re-draw:
 A full re-split needs a new registration, a new seed and a register entry stating that v1's held-out evidence is
 void. The recommended default is never; prefer an independent suite.
 
+*Amended 2026-10-22 (Amendment 1, §14).* A re-take of `coverage.json` that keeps every row's `case_id`, `family` and
+`class` is not a change under this rule: the draw reads the pinned content from git history. A re-take that changes
+any of them is refused (`SPLIT-R12/A1`) and is this rule's amendment trigger.
+
 ## 6. W27-R02 and F-1 under this registration
 
 **SPLIT-R13 (the R02 successor, "R02-F1"; R-474's default, made precise).** It governs every OpenIDAES-450
@@ -245,6 +254,15 @@ exit code 2 and a message that names the violated rule and never a held-out id, 
 8. the F-1 fact check of SPLIT-R13 fails, or SPLIT-A13's two kind-level states do not hold;
 9. the record would contain a held-out id, or any key named `reasons`, `units`, `components` or `packages`;
 10. a `contaminated` entry is not the hash of a held-out case (SPLIT-R11).
+
+*Amended 2026-10-22 (Amendment 1, §14).* Item 1 applies to the content the draw reads: for `coverage.json` that is
+the working copy if it has the pinned SHA-256, and otherwise git blob `PINNED_BLOBS["coverage"]`, whose SHA-256 must
+equal the pin. Two refusals are added:
+
+11. the working copy of `coverage.json` has moved on and its read fields differ from the pinned content's
+    (`SPLIT-R12/A1`; the message gives counts only);
+12. the working copy of `coverage.json` has moved on and the pinned content cannot be read from git history
+    (`SPLIT-R01/A1`; no fallback to the working copy).
 
 ## 8. Results (first draw, 2026-10-21; commit `c0649a7`)
 
@@ -319,7 +337,7 @@ point is involved, so there is no roundoff floor, and any difference is a defect
 | Id | Assertion | Expected | Why this state, and what it catches |
 | --- | --- | --- | --- |
 | SPLIT-A01 | Regenerating from the committed inputs gives the committed record byte for byte (`--check`) | exit 0, identical bytes | catches drift in the generator, the inputs or the canonical form |
-| SPLIT-A02 | One changed byte in `coverage.json` is refused | `SPLIT-R01/R12` refusal | a silent re-split on an archive change |
+| SPLIT-A02 | One changed byte in the `coverage.json` content the draw reads is refused (Amendment 1: the content `read_inputs` returns, not the working copy) | `SPLIT-R01/R12` refusal | a silent re-split on an archive change |
 | SPLIT-A03 | development ∪ held-out ∪ excluded = the 450, pairwise disjoint; development ∪ held-out = frame | sizes (225, 224, 1), frame 449, excluded = {`watertap_metab`} | a dropped or double-assigned case |
 | SPLIT-A04 | exposed = sample ∪ canaries ∪ the 17 named; exposed ⊆ development | 65 = 45 + 3 + 17; sources counted per kind | an exposed case in held-out (Frank's rule) |
 | SPLIT-A05 | an independent re-implementation gives the same development ids and the same commitment | equal | a generator that drifts from this text |
@@ -335,6 +353,8 @@ point is involved, so there is no roundoff floor, and any difference is a defect
 | SPLIT-A15 | Inconsistent inputs are refused: a named id that is no case (R14.3); a named id outside the frame (R14.3); a changed `sample.json#/excluded` (R14.4); different id sets (R14.2) | the named refusal | a placeholder success on bad input |
 | SPLIT-A16 | `contaminated` holds exactly the §8.3 entry; it is a held-out case; the headline is held-out − 1 | one entry (`c87ac13adc32…`), headline 223 | contamination dropped, or moved into development |
 | SPLIT-A17 | `--check`'s output names no held-out id | none | a debug print leaking held-out ids |
+| SPLIT-A18 | (Amendment 1) git blob `PINNED_BLOBS["coverage"]` has the pinned SHA-256 and 450 rows, and the working copy's (`case_id`, `family`, `class`) multiset equals it. A working copy whose snapshot fields moved yields the pinned bytes and the committed record byte for byte, with the pinned `coverage_snapshot`. A working copy that has the pin is used without reading history | equal; identical bytes; history not read | a re-take breaking the split, or moving the record's provenance to the latest build; the unmoved state (no history read) is asserted beside the moved one |
+| SPLIT-A19 | (Amendment 1, negative controls) one development case's `class` changed; its `family` changed; its row removed; a row added: each is refused. Without history (not a repository; an absent object) the refusal is explicit, and a blob with the wrong SHA-256 is refused | `SPLIT-R12/A1` with counts (removed, added, changed) = (0,0,1), (0,0,1), (1,0,0), (0,1,0), duplicate rows 0, and no case id in the message; `SPLIT-R01/A1`; `SPLIT-R01/R12` | a drift check that is never reached, compares the wrong fields, or leaks an id; silence read as success when history is missing |
 
 ## 10. What this registration does not establish
 
@@ -364,6 +384,10 @@ point is involved, so there is no roundoff floor, and any difference is a defect
 - **No claim about R02-F1's effect on any held-out case.** R02-F1 is registered, not applied. Its kind-level check
   covers two development cases only.
 - **The sizes are not optimal in any sense,** and the 225/224 numbers are regression values, not validation.
+- **Amendment 1 does not establish** that a re-take's other fields (reasons, units, components, packages, versions)
+  are unchanged, or that they matter to nothing else. It says only that the split does not read them. It does not make
+  the split reproducible from a checkout without history once `coverage.json` has moved on; that case is refused.
+  It does not cover `case_facts.json` or `sample.json`, which keep the strict pin.
 
 ## 11. Open questions (each with a recommended default; work proceeds on the default)
 
@@ -384,6 +408,14 @@ point is involved, so there is no roundoff floor, and any difference is a defect
 - **Q-4 (needs a fact).** Is R02-F1's class-name fallback right? This is measured on the workstation's next facts run,
   on development cases only (§6).
   - Default: the fallback, as registered.
+- **Q-5 (needs Frank's preference; Amendment 1).** Should a `class` change in a re-take refuse? The first capability
+  that makes a unit or component available will reclassify cases, and SPLIT-R12/A1 will then refuse until an
+  amendment records the change. The strata are fixed at the draw either way (SPLIT-R13), so the split itself is safe
+  under both answers.
+  - Default: refuse, as SPLIT-R12 registers ("the amendment records the changed field"). The amendment gives counts,
+    and names held-out cases by `sha256(id)[:12]` only.
+  - Alternative: refuse only on a changed `case_id` set or `family`, and leave class changes to release-gate scoring.
+    Revisit at the first class-changing re-take.
 
 ## 12. Decisions (also in `docs/C2_DECISIONS.md`)
 
@@ -420,8 +452,62 @@ point is involved, so there is no roundoff floor, and any difference is a defect
   `openidaes` to it; the first choice, `benchmarks/c2/openidaes450_split.json`, failed CI run 39688818107. The bytes are
   unchanged. Alternative: a U14 amendment. Reversible by: that amendment and a move with the generator constant.
 
+- DECISION D-12 (Amendment 1, 2026-10-22): a re-taken `coverage.json` → read at its pinned content from git
+  history (by blob id); the working copy must keep every row's `case_id`, `family` and `class`; no history means an
+  explicit refusal. `case_facts.json` and `sample.json` keep the strict pin. Alternative: re-pin at every re-take, a
+  committed frozen copy, or a read-field digest pin (§14). Reversible by: an amendment.
+
 ## 13. Register entries
 
 R-486 (the split and its record), R-487 (strata on W27-R02), R-488 (exposure), R-489 (seed), R-490 (protection and
 contamination), R-491 (re-split policy), R-492 (R02-F1), R-493 (dynamic and incomplete cases), R-494 (non-claims and
-the second-suite requirement).
+the second-suite requirement). R-555 (Amendment 1: a re-taken pinned input is read at its pinned content).
+
+## 14. Amendment 1 (2026-10-22; R-555): a re-taken pinned input
+
+**Trigger.** C7 re-took W27's `coverage.json` at `0.3.0.dev0` (`f85fcd7`), as G14 requires at every version bump
+(`docs/C7_DECISIONS.md`). Only `package_version`, `snapshot.git_commit` and `snapshot_sha256` moved. The file's
+SHA-256 became `aa89cdd6…` against the pin `b69626c7…`, so the generator refused under SPLIT-R12 and SPLIT-A01, A07 and
+A17 failed. Eleven commits have written this file so far. Re-takes recur at every version bump and every merge build.
+
+**Ruling: read the pinned content from history, and check the read fields of the working copy.**
+- **Pinned content.** If the working copy of `coverage.json` has the pinned SHA-256, the generator reads it.
+  Otherwise it reads git blob `dea968a285c0243b582db19f1ef9fec1c21c2867`. That is the file's content at `0fcf1ad`,
+  the content the draw was made from. The bytes must have the pinned SHA-256 (refusal `SPLIT-R01/R12`). The blob id
+  only locates the content; the SHA-256 remains the pin.
+- **Read-field check.** The working copy's multiset of (`case_id`, `family`, `class`) over `rows` must equal the pinned
+  content's. If it does not, the generator refuses with `SPLIT-R12/A1`. The message gives counts only (removed,
+  added, changed, duplicate rows) and names no case. That refusal is SPLIT-R12's amendment trigger, and SPLIT-R12's
+  removed, changed and added cases apply. Row order is not checked, because the draw does not depend on it: strata
+  are keyed and sorted, and candidates are ranked.
+- **Unsupported.** If the working copy has moved on and the blob cannot be read (no git, not a repository, a shallow
+  clone, an absent object), the generator refuses with `SPLIT-R01/A1`. It never falls back to the working copy. CI
+  checks out with full history (`fetch-depth: 0`, `.github/workflows/ci.yml:81,161`).
+- **Scope.** Only `coverage.json` is covered. `case_facts.json` and `sample.json` are not re-taken (§6: W27's
+  `case_facts.json` is never rewritten), and they keep the strict refusal. Reading a pinned blob of `case_facts.json`
+  would also hide the arrival of `topology_units` from SPLIT-R13's fact check.
+- **The record is unchanged.** `inputs.coverage.sha256` and `coverage_snapshot` (`48db2d3…`, `211cf4f1…`) describe
+  the content the split was drawn from, not the latest re-take. `split.json` is byte-identical: SHA-256
+  `ee940a7ee2c6a2128f12fdc25c4e9906ff66607a5ce4e0bb975c00a935adf6cd` (R-486), commitment unchanged.
+
+**Why this candidate.**
+- It is the only candidate that keeps the record, its SHA-256 and its provenance fixed through every future re-take.
+- It needs no design pass at a version bump. Re-pinning would need an amendment and a register entry at every bump,
+  and each one would attest in prose that the read fields are unchanged. The generator here checks it at every run.
+- The bytes the draw read stay reproducible and are still checked against the original pin.
+
+**Rejected.**
+- *(b) Re-pin at each re-take.* The record (`inputs.coverage.sha256`, `coverage_snapshot`) changes at every bump. Its
+  `coverage_snapshot` would then name a build the split was not drawn at. The recurring prose attestation could also
+  absorb a real class change unnoticed.
+- *(c1) A committed frozen copy of the pinned file.* It duplicates a 2.5 MB all-case file holding held-out rows, which
+  SPLIT-R10's allowlist and W27-A71's path rule would both have to admit.
+- *(c2) A pin of the read-field projection instead of the file.* It needs no git. But the record reads
+  `coverage_snapshot` from the file, so the record would change at every re-take unless the snapshot were frozen as
+  constants, and the draw's original bytes would no longer be checked.
+
+**Cost accepted.** A checkout without history cannot regenerate the split once `coverage.json` has moved on. It gets
+an explicit refusal.
+
+**Evidence.** Generator `--check` is byte-identical with the working copy at `aa89cdd6…`. SPLIT-A18 and A19 are in
+`tests/test_c2_openidaes450_split.py`. A class-changing re-take is open as Q-5 (§11).

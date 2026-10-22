@@ -92,7 +92,18 @@ F5 education mode deferred.
 
 ## Next action
 
-**W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
+**Cloud queue (2026-10-22).** Frank (2026-10-22): the session may fast-forward and merge into `main` (standing,
+under CLAUDE.md's merge rules). `main` = C1 + C2 + C3 (`wp/C-merge`, gate PASS `904f265`, CI 39694853666) + S01
+(merge `7dcdf2a`; manifest `evidence/S01/465240a…` tested; gate PASS `9a02bbc`, CI 39711291222).
+- **L01 not merge-ready** (`wp/L01` `8738766`): blockers (1) the evidence schema admits no `L` id; (2)
+  `test_a20_the_axes_equal_the_code` — the envelope does not list `pr-lib-v1`; (3) rights for the nine records
+  (L01-Q4); (4) the development-half re-take (WO-3) waits for a W27 amendment (L01-Q1); projection only.
+- **S02** (`wp/S02`): specification done (16 assertions, four cases, R-530…R-535). **Next: S02 WO-1…WO-3, one
+  `reviewer` pass, gate, merge.** Then C4 (M07a's unharvested envelope rows).
+- Open for the design lane: T05b §6.6 vs S01's registered v2 policy (B06 second exemption); S01 L-rows now or in S02.
+- Questions for Frank: `docs/FRANK_QUESTIONS.md` (C2, C1, S01 on `main`; L01-Q1…Q4 on `wp/L01`; Q-S02-1…3 on `wp/S02`).
+
+**History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
 (a) coverage 0/450 CANDIDATE, G14 PASS; (b) 45 drawn, canaries prommis NF / mvo CO2 / cryst n13; (b′) confirmation written;
 (c) canaries 3/3 passed first attempt (pin `claude-sonnet-5-5`, the login's CLI default; Claude Code 2.1.302; USD-eq 0.23);

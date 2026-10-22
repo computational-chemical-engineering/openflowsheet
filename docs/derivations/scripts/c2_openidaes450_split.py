@@ -10,6 +10,12 @@ Run (repository root):
 
 `--check` regenerates in memory and compares byte for byte with the committed record. A refusal
 (SPLIT-R14) exits 2 and names the rule; no message ever prints a held-out case id (SPLIT-R10).
+
+Amendment 1 (2026-10-22, R-555): `coverage.json` is re-taken at every version bump. When its
+working copy no longer has the pinned SHA-256, the draw reads the pinned content from git history
+(by its blob id), and the working copy's read fields (`case_id`, `family`, `class` of every row)
+must still equal the pinned ones; drift is a SPLIT-R12 amendment trigger. Without the history the
+generator refuses (SPLIT-R01/A1); it never falls back to the working copy.
 """
 
 from __future__ import annotations
@@ -17,8 +23,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import sys
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
@@ -51,6 +58,15 @@ INPUTS: Final[Mapping[str, tuple[str, str]]] = {
         "33f146ece4fec078b8a464059f27d7256439941d6340de214352efb37b1a92bf",
     ),
 }
+
+# Amendment 1 (R-555): the git blob id (SHA-1 object id) of each re-taken input's pinned content.
+# A locator only: the bytes it yields must still have the SPLIT-R01 SHA-256. `case_facts.json` and
+# `sample.json` are not re-taken and keep the strict SPLIT-R01 refusal.
+PINNED_BLOBS: Final[Mapping[str, str]] = {
+    "coverage": "dea968a285c0243b582db19f1ef9fec1c21c2867",
+}
+# Amendment 1: the fields of `coverage.json` rows the draw reads (SPLIT-R01).
+READ_FIELDS: Final = ("case_id", "family", "class")
 
 # SPLIT-R04 (c): cases named in committed non-data files at f397467; first file naming each.
 NAMED_EXPOSED: Final[Mapping[str, str]] = {
@@ -148,8 +164,78 @@ def commitment(ids: Iterable[str]) -> str:
     return hashlib.sha256("".join(i + "\n" for i in sorted(ids)).encode("utf-8")).hexdigest()
 
 
+def git_blob(root: Path, oid: str) -> bytes | None:
+    """Amendment 1: a blob's bytes from the repository's object store, or None when they cannot be
+    read here (no git, not a repository, a shallow clone, a missing object)."""
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(root), "cat-file", "blob", oid],
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return None
+    return proc.stdout if proc.returncode == 0 else None
+
+
+def read_field_rows(raw: bytes) -> list[tuple[str, ...]]:
+    """Amendment 1: the read fields of every `coverage.json` row, as a sorted multiset."""
+    return sorted(tuple(str(r[f]) for f in READ_FIELDS) for r in json.loads(raw)["rows"])
+
+
+def _drift(pinned: list[tuple[str, ...]], working: list[tuple[str, ...]]) -> str:
+    """Counts only: a drift message never names a case (SPLIT-R10)."""
+    p = {row[0]: row[1:] for row in pinned}
+    w = {row[0]: row[1:] for row in working}
+    removed = len(p.keys() - w.keys())
+    added = len(w.keys() - p.keys())
+    changed = sum(1 for c in p.keys() & w.keys() if p[c] != w[c])
+    duplicated = (len(pinned) - len(p)) + (len(working) - len(w))
+    return f"removed {removed}, added {added}, changed {changed}, duplicate rows {duplicated}"
+
+
+def pinned_inputs(
+    working: Mapping[str, bytes],
+    *,
+    root: Path = ROOT,
+    pins: Mapping[str, tuple[str, str]] = INPUTS,
+    blobs: Mapping[str, str] = PINNED_BLOBS,
+    fetch: Callable[[Path, str], bytes | None] = git_blob,
+) -> dict[str, bytes]:
+    """Amendment 1 (SPLIT-R12): the pinned content of each input. A re-taken input whose working
+    copy moved on is read from git history; its working copy must keep the pinned read fields."""
+    out = dict(working)
+    for name, oid in blobs.items():
+        path, sha = pins[name]
+        if hashlib.sha256(working[name]).hexdigest() == sha:
+            continue
+        pinned = fetch(root, oid)
+        if pinned is None:
+            raise SplitRefusedError(
+                "SPLIT-R01/A1",
+                f"{path} has moved on from its pin and its pinned content (git blob {oid}) cannot"
+                " be read here; Amendment 1 needs the repository's history (a full clone)",
+            )
+        got = hashlib.sha256(pinned).hexdigest()
+        if got != sha:
+            raise SplitRefusedError(
+                "SPLIT-R01/R12", f"git blob {oid} has SHA-256 {got}, pinned {sha}; see SPLIT-R12"
+            )
+        before, now = read_field_rows(pinned), read_field_rows(working[name])
+        if before != now:
+            raise SplitRefusedError(
+                "SPLIT-R12/A1",
+                f"{path}: the read fields {'/'.join(READ_FIELDS)} differ from the pinned content"
+                f" ({_drift(before, now)}); amend the registration under SPLIT-R12",
+            )
+        out[name] = pinned
+    return out
+
+
 def read_inputs(root: Path = ROOT) -> dict[str, bytes]:
-    return {name: (root / path).read_bytes() for name, (path, _) in INPUTS.items()}
+    """The pinned content of the three inputs (SPLIT-R01; Amendment 1 for a re-taken input)."""
+    working = {name: (root / path).read_bytes() for name, (path, _) in INPUTS.items()}
+    return pinned_inputs(working, root=root)
 
 
 @dataclass(frozen=True)
