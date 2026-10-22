@@ -83,10 +83,14 @@ from openflowsheet.models.syn001.column import (
     ProfileInitial,
     _initial_state,
     column_warnings,
+    component_feeds,
     declared_rows,
     distillate_id,
     distillate_total_id,
+    inverse_parameter,
+    product_total_id,
     profile_initial,
+    purity_reference,
     ratio_parameter,
     reflux_fraction_id,
     reflux_id,
@@ -99,7 +103,7 @@ from openflowsheet.models.syn001.column import (
 from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.orchestrator.execution import Region
-from openflowsheet.orchestrator.homotopy import Continuation
+from openflowsheet.orchestrator.homotopy import Continuation, HomotopyRecord
 from openflowsheet.orchestrator.recovery import (
     eo_recovery_due,
     recovered_provenance,
@@ -115,7 +119,7 @@ from openflowsheet.orchestrator.region import (
     RegionResult,
     ZeroFlowForm,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
+from openflowsheet.orchestrator.trace import SolvePolicy, Trace, fraction_string
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 #: Spec §18.2's registered easy endpoint, the target's `initializer_source`.
@@ -149,12 +153,19 @@ PRESOLVE_EQUATIONS: Final[tuple[DeclaredEquation, ...]] = (
 #: Spec §10 A10's column scales `D_x`: S01's, plus `D_x(phi) = 1` (§2.2).
 FD_COLUMN_SCALE: Final[Mapping[QuantityKind, float]] = {**CASCADE_FD_SCALE, "dimensionless": 1.0}
 
-#: `ref.cases.*.continued`'s kind letter of each continued slot.
+#: `ref.cases.*.continued`'s kind letter of each continued slot (S06 §12: an inverse slot's is
+#: `T`, `N` or `U`, the letter of the column it pins).
 CONTINUED_KIND: Final[Mapping[str, str]] = {
     "duty": "Q",
     "distillate_rate": "D",
     "bottoms_rate": "B",
+    "temperature": "T",
+    "recovery": "N",
+    "purity": "U",
 }
+
+#: S06 §8 item 4: the binary64 slack on a recovery's and a purity's bound, `2⁻⁵²`.
+QUOTIENT_SLACK: Final = 2.0**-52
 
 #: `ref.cases.*.presolve_slots`'s kind letter of a kept ratio row.
 RATIO_LETTER: Final[Mapping[str, str]] = {"reflux_ratio": "RR", "boilup_ratio": "BR"}
@@ -473,8 +484,9 @@ def acceptance_failures(
 ) -> tuple[str, ...]:
     """Spec §8: S01 §8 (every row of the final signature within `KIND_TOLERANCE`, every pinned
     column zero, `V_j, L_j > 0` on a `TWO_PHASE` stage, R-007 admissibility on a single-phase
-    one), plus items 1–5. Item 1 is the first clause, over the declared S02 rows. Empty when the
-    answer is accepted."""
+    one), plus items 1–5. Item 1 is the first clause, over the declared S02 rows (S06 §8 item 1:
+    the inverse rows are among them). S06 §8 items 2 and 4 are the defect clauses below; item 3
+    is not a defect (`single_phase_specified_stage`). Empty when the answer is accepted."""
     failures: list[str] = []
     residuals, pinned = system_residuals(spec, declared, state, regimes)
     for row, value in residuals.items():
@@ -495,11 +507,15 @@ def acceptance_failures(
             admissible, detail = _admissibility(spec, provider, state, stage, phase)
             if not admissible:
                 failures.append(f"{regime} stage {stage} inadmissible: {detail}")
-    # Item 2: a partial end stage under a ratio or rate specification is TWO_PHASE (§4.2).
+    # Item 2: a partial end stage under a ratio or rate specification is TWO_PHASE (§4.2); S06
+    # §8 item 2: also under `purity`, `recovery` or a `temperature` of another stage. A
+    # `temperature` of the end stage itself is S06 §8 item 3's, not a defect.
     for end in spec.ends():
         given = spec.end_specification(end)
         stage = spec.end_stage(end)
         if spec.end_kind(end) == "partial" and given is not None and given.kind != "duty":
+            if given.kind == "temperature" and given.stage == stage:
+                continue
             if regimes[stage] != "TWO_PHASE":
                 failures.append(f"§8.2: {end} stage {stage} under {given.kind} is {regimes[stage]}")
     # Item 3: a total condenser needs V_2 > 0 and 0 < phi < 1 (§2.2).
@@ -519,7 +535,61 @@ def acceptance_failures(
             value = state[column]
             if column in held and value == 0.0 and math.copysign(1.0, value) < 0.0:
                 failures.append(f"§8.5: product {port} column {column} is -0.0")
+    # S06 §8 item 4: every inverse quantity meets its target within the bound its rows imply.
+    for end in spec.ends():
+        given = spec.end_specification(end)
+        if given is None or given.kind not in INVERSE_KINDS:
+            continue
+        quantity = specified_quantity(spec, end, state)
+        bound = target_bound(spec, end, state)
+        if not abs(quantity - given.value) <= bound:
+            failures.append(
+                f"S06 §8.4: {end} {given.kind} = {quantity!r}, target {given.value!r}, "
+                f"bound {bound!r}"
+            )
     return tuple(failures)
+
+
+def target_bound(spec: ColumnSpec, end: str, state: Mapping[str, float]) -> float:
+    """S06 §8 item 4: the bound the rows imply on `|q − q*|` at `state`: `τ_T` (temperature),
+    `τ_mf / F_c + 2⁻⁵²` (recovery), `(τ_mf + τ_eq / P) / F + 2⁻⁵²` (purity), with the kind
+    tolerances of `KIND_TOLERANCE` and `P` the end's product total at `state`."""
+    given = spec.end_specification(end)
+    assert given is not None and given.kind in INVERSE_KINDS, "an inverse end"
+    if given.kind == "temperature":
+        return KIND_TOLERANCE["temperature"]
+    tau_mf, tau_eq = KIND_TOLERANCE["molar_flow"], KIND_TOLERANCE["molar_flow_squared"]
+    assert given.component is not None, "validate first"
+    if given.kind == "recovery":
+        feed = component_feeds(spec)[spec.components.index(given.component)]
+        return tau_mf / feed + QUOTIENT_SLACK
+    total = float(state[product_total_id(spec, end)])
+    return (tau_mf + tau_eq / total) / purity_reference(spec) + QUOTIENT_SLACK
+
+
+def single_phase_specified_stage(spec: ColumnSpec, regimes: Mapping[int, Regime]) -> int | None:
+    """S06 §8 item 3: the first stage (condenser end first) a `temperature` specification names
+    whose regime is not `TWO_PHASE`, else `None`. A total condenser's `T_c` has no regime: its
+    rows make it a bubble temperature."""
+    for end in spec.ends():
+        given = spec.end_specification(end)
+        if given is None or given.kind != "temperature":
+            continue
+        assert given.stage is not None, "validate first"
+        regime = regimes.get(given.stage)
+        if regime is not None and regime != "TWO_PHASE":
+            return given.stage
+    return None
+
+
+class UnsupportedAnswerError(RuntimeError):
+    """S06 §8 item 3: a `CONVERGED` state the specification's scope does not offer — answered
+    `CAPABILITY_UNAVAILABLE` with `cause`, never a success and not a defect."""
+
+    def __init__(self, cause: str, detail: str) -> None:
+        super().__init__(f"{cause}: {detail}")
+        self.cause = cause
+        self.detail = detail
 
 
 # -- spec §1.7: products, §2: overall closure (A08), spec values (A06) ---------------------------
@@ -776,6 +846,138 @@ def bubble_point_endpoint(
     return BubblePointEndpoint(state, rho, phi, sweeps, delta)
 
 
+# -- S06 §7.3 and §7.5: inverse records and the unreached report ----------------------------------
+
+
+@dataclass(frozen=True)
+class InverseRecord:
+    """S06 §7.5: one inverse slot's records: its end, kind and attribute (component name or
+    stage), the user's value (`x*`, `r*`, `T*`), the pinned parameter's id and value (`π*`,
+    `ν*`, `T*`), `F` (purity) or `F_c` (recovery) as formed (`None` for a temperature), and at
+    `x⁰` the specified quantity `q⁰` and the slot column's value `p⁰`."""
+
+    end: str
+    kind: str
+    attribute: str | int
+    value: float
+    parameter_id: str
+    parameter: float
+    reference: float | None
+    q0: float
+    p0: float
+
+
+def _attribute(spec: ColumnSpec, end: str) -> str | int:
+    given = spec.end_specification(end)
+    assert given is not None
+    attribute = given.stage if given.kind == "temperature" else given.component
+    assert attribute is not None, "validate first"
+    return attribute
+
+
+def inverse_ends(spec: ColumnSpec) -> tuple[str, ...]:
+    """The ends whose specification is an inverse kind, condenser first."""
+    return tuple(
+        end
+        for end in spec.ends()
+        if (given := spec.end_specification(end)) is not None and given.kind in INVERSE_KINDS
+    )
+
+
+def inverse_records(spec: ColumnSpec, x0: Mapping[str, float]) -> tuple[InverseRecord, ...]:
+    """S06 §7.5 at the easy endpoint `x⁰`, one record per inverse end."""
+    found: list[InverseRecord] = []
+    for end in inverse_ends(spec):
+        given = spec.end_specification(end)
+        assert given is not None
+        variable = slot_column(spec, end, given.kind)
+        reference: float | None = None
+        if given.kind == "purity":
+            reference = purity_reference(spec)
+        elif given.kind == "recovery":
+            reference = component_feeds(spec)[spec.components.index(str(_attribute(spec, end)))]
+        found.append(
+            InverseRecord(
+                end=end,
+                kind=given.kind,
+                attribute=_attribute(spec, end),
+                value=given.value,
+                parameter_id=_parameter(variable),
+                parameter=inverse_parameter(spec, end),
+                reference=reference,
+                q0=specified_quantity(spec, end, x0),
+                p0=float(x0[variable]),
+            )
+        )
+    return tuple(found)
+
+
+@dataclass(frozen=True)
+class UnreachedSpecification:
+    """S06 §7.3: an inverse target a non-`CONVERGED` answer did not reach. `lambda_reached` is
+    edge 3's last accepted λ (ADR 0010's exact dyadic string) and `value` the specified quantity
+    at that λ's state; both `None` when edge 3 did not run or accepted no λ. A report, never an
+    infeasibility claim."""
+
+    code: str
+    end: str
+    kind: str
+    attribute: str | int
+    target: float
+    lambda_reached: str | None
+    value: float | None
+
+
+def lambda_state(failed: RegionResult, record: HomotopyRecord) -> dict[str, float] | None:
+    """The state edge 3 accepted at `record.lambda_reached`: the failed solve's item-0 opening
+    (the recovery's start, its pins included) with the accepted corrector's `x` over the
+    attempt's free columns. `None` when no λ was accepted (the easy endpoint stalled)."""
+    if failed.opening is None:
+        return None
+    accepted = [
+        trial
+        for trial in record.trials
+        if trial.accepted and trial.lambda_value == record.lambda_reached
+    ]
+    if not accepted:
+        return None
+    state = {name: float(value) for name, value in failed.opening[0].items()}
+    x = accepted[-1].corrector.result.x
+    for position, name in enumerate(record.variable_ids):
+        state[name] = float(x[position])
+    return state
+
+
+def unreached_specifications(
+    spec: ColumnSpec, result: RegionResult, recovered_from: RegionResult | None
+) -> tuple[UnreachedSpecification, ...]:
+    """S06 §7.3: per inverse end, the report on a non-`CONVERGED` answer (empty otherwise)."""
+    if result.outcome == "CONVERGED":
+        return ()
+    reached: str | None = None
+    state: dict[str, float] | None = None
+    if recovered_from is not None and result.homotopy is not None:
+        state = lambda_state(recovered_from, result.homotopy)
+        if state is not None:
+            reached = fraction_string(result.homotopy.lambda_reached)
+    found: list[UnreachedSpecification] = []
+    for end in inverse_ends(spec):
+        given = spec.end_specification(end)
+        assert given is not None
+        found.append(
+            UnreachedSpecification(
+                code=f"inverse_specification_not_reached({given.kind}:{end})",
+                end=end,
+                kind=given.kind,
+                attribute=_attribute(spec, end),
+                target=given.value,
+                lambda_reached=reached,
+                value=None if state is None else specified_quantity(spec, end, state),
+            )
+        )
+    return tuple(found)
+
+
 # -- spec §7: the solve path ---------------------------------------------------------------------
 
 
@@ -802,6 +1004,10 @@ class ColumnSolution:
     final_sha256: str | None = None
     #: C8: stable `code(detail)` notices (`column_warnings`); not part of any `state_sha256`.
     warnings: tuple[str, ...] = ()
+    #: S06 §7.5: one record per inverse end, condenser first.
+    inverse: tuple[InverseRecord, ...] = ()
+    #: S06 §7.3: per inverse end on a non-`CONVERGED` answer; empty on a `CONVERGED` one.
+    unreached: tuple[UnreachedSpecification, ...] = ()
 
 
 def continuation(spec: ColumnSpec, profile: Sequence[float]) -> Continuation:
@@ -880,7 +1086,9 @@ def solve_target(
 ) -> tuple[RegionResult, RegionResult | None, dict[int, Regime]]:
     """Spec §7 steps 4–5 and §8 from an easy endpoint `x⁰`: the target under `policy`, edge 3
     on its triggers (continuing the slots §7.3 replaced at `profile`), and acceptance of a
-    `CONVERGED` answer (`AcceptanceDefectError` on a failure). Returns the final result, the
+    `CONVERGED` answer (`AcceptanceDefectError` on a failure). S06 §8 item 3 is decided first:
+    a `CONVERGED` answer whose `temperature`-specified stage is single-phase raises
+    `UnsupportedAnswerError` (never a success, and not a defect). Returns the final result, the
     failed solve edge 3 recovered from (or `None`), and the final regimes by stage."""
     state = {name: float(x0[name]) for name in target.spec.variable_ids}
     result = run_region(
@@ -894,6 +1102,12 @@ def solve_target(
         result = recover(spec, profile, target, provider, result, policy, trace)
     regimes = regimes_of(spec, result.attempts[-1].signature) if result.attempts else {}
     if result.outcome == "CONVERGED":
+        stage = single_phase_specified_stage(spec, regimes)
+        if stage is not None:
+            raise UnsupportedAnswerError(
+                f"unsupported(temperature_specification_on_single_phase_stage:{stage})",
+                f"{spec.unit_id} stage {stage} is {regimes[stage]} at the CONVERGED state",
+            )
         failures = acceptance_failures(spec, provider, target.spec, result.state, regimes)
         if failures:
             raise AcceptanceDefectError(failures)
@@ -915,7 +1129,9 @@ def solve_column(
     `profile_shift` (K) moves the sweeps' start and `ratio_scale` the stage ratios no
     specification holds (spec §18.6 A14); `max_sweeps` is §18.2's cap (A22). A failed endpoint
     returns its typed `CascadeFailure` before any region solve. A `CONVERGED` answer that fails §8
-    raises `AcceptanceDefectError`.
+    raises `AcceptanceDefectError`; one S06 §8 item 3 does not offer is the `CascadeFailure`
+    `CAPABILITY_UNAVAILABLE` with its cause. S06: `inverse` holds §7.5's records and `unreached`
+    §7.3's report.
 
     C8: every `ColumnSolution` and `CascadeFailure` for a duty-only specification carries
     `column_warnings(spec)`; the dormant answer has no ends and none.
@@ -947,9 +1163,14 @@ def solve_column(
     profile = tuple(t + float(profile_shift) for t in initial.profile)
     replaced = [slot for slot in slots(spec, initial.profile) if slot.parameter]
     continued = {slot.parameter: x0[slot.variable] for slot in replaced}
-    result, recovered_from, regimes = solve_target(
-        spec, provider, target, x0, initial.profile, policy=policy, trace=trace
-    )
+    try:
+        result, recovered_from, regimes = solve_target(
+            spec, provider, target, x0, initial.profile, policy=policy, trace=trace
+        )
+    except UnsupportedAnswerError as unsupported:
+        return CascadeFailure(
+            "CAPABILITY_UNAVAILABLE", unsupported.cause, unsupported.detail, warnings=warnings
+        )
     return ColumnSolution(
         outcome=result.outcome,
         cause=result.message if result.outcome != "CONVERGED" else "",
@@ -965,6 +1186,8 @@ def solve_column(
         recovered_from=recovered_from,
         final_sha256=state_sha256(dict(result.state), order),
         warnings=warnings,
+        inverse=inverse_records(spec, x0),
+        unreached=unreached_specifications(spec, result, recovered_from),
     )
 
 
@@ -974,18 +1197,25 @@ __all__ = [
     "MAX_SWEEPS",
     "PRESOLVE_EQUATIONS",
     "PRESOLVE_ID",
+    "QUOTIENT_SLACK",
     "RATIO_LETTER",
     "S02_TARGET_POLICY",
     "SWEEP_TOLERANCE",
     "BubblePointEndpoint",
     "Closure",
     "ColumnSolution",
+    "InverseRecord",
     "Slot",
+    "UnreachedSpecification",
+    "UnsupportedAnswerError",
     "acceptance_failures",
     "bubble_point_endpoint",
     "closure_types",
     "compile_column",
     "continuation",
+    "inverse_ends",
+    "inverse_records",
+    "lambda_state",
     "lifted_splits",
     "model_label",
     "overall_closure",
@@ -995,6 +1225,7 @@ __all__ = [
     "products",
     "recover",
     "regimes_of",
+    "single_phase_specified_stage",
     "singular_pairs",
     "slots",
     "solve_column",
@@ -1004,5 +1235,7 @@ __all__ = [
     "stage_ratios",
     "sweep_flows",
     "system_residuals",
+    "target_bound",
+    "unreached_specifications",
     "zero_flow_forms",
 ]

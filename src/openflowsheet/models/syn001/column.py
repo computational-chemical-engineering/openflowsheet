@@ -1705,8 +1705,9 @@ def _initial_state(
     phi: float = PHI_INITIAL,
 ) -> dict[str, float]:
     """§6 steps 5–6: `T_j = T_j⁰`, `P_j = P_j*`; at a total condenser `φ = φ⁰`, `T_c = T_1⁰`,
-    `r = φ⁰ v_2`, `d = v_2 − r`, `D = Σ d`; totals as sums; `m` from `mix`; every `Q` from its
-    energy row. S02 §18.2 step 5 passes its own `T` as `profile` and its `φ`."""
+    `r = φ⁰ v_2`, `d = v_2 − r`, `D = Σ d`; totals as sums; per `purity` end (S06 §6)
+    `u = F·n_c / P`; `m` from `mix`; every `Q` from its energy row. S02 §18.2 step 5 passes its
+    own `T` as `profile` and its `φ`."""
     unit, components = spec.unit_id, spec.components
     values = _inlet_columns(spec)
     stages = spec.equilibrium_stages()
@@ -1731,6 +1732,15 @@ def _initial_state(
         values[stage_temperature_id(unit, 1)] = profile[0]
         values[stage_pressure_id(unit, 1)] = float(spec.pressures[0])
         values[stage_duty_id(unit, 1)] = 0.0
+    for end in spec.ends():
+        given = spec.end_specification(end)
+        if given is not None and given.kind == "purity":
+            # S06 §6: `u⁰ = fl(F·n_c⁰ / P⁰)`, so the definition row holds to one rounding.
+            assert given.component is not None, "validate first"
+            flow = values[product_flow_id(spec, end, given.component)]
+            values[purity_flow_id(unit, spec.end_stage(end))] = (
+                purity_reference(spec) * flow / values[product_total_id(spec, end)]
+            )
     for stage in stages:
         for c in components:
             total = 0.0
