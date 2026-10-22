@@ -86,11 +86,26 @@ def code_of(result: PropertyResult | FlashResult) -> str:
 
 GRID_T = (273.16, *(float(t) for t in range(300, 1251, 50)), 1273.15)
 GRID_P = (1.0e2, 1.0e3, 1.0e4, 1.0e5, 1.0e6, 1.0e7, 1.0e8, 3.0e7)
+#: Spec §14 (R-595): the root residual in density units at every answer; measured worst 3.4e-14
+#: on the dense grid below (273.16 K liquid, its rounding floor; docs/C10_DECISIONS.md, WO-S05-3).
+ROOT_TOL = 1e-12
+
+
+def root_residual(t: float, p: float, v: float) -> float:
+    """|p(M/v, T) − P| / (ρ (∂p/∂ρ)_T), with p and ∂p/∂ρ from `phi_jet` (A03's surface)."""
+    rho = w.M / v
+    delta = rho / w.RHO_C
+    _, res = w.phi_jet(w.T_C / t, delta)
+    rt = w.R_S * t
+    pressure = rho * rt * (1.0 + delta * res.d)
+    slope = rt * (1.0 + 2.0 * delta * res.d + delta * delta * res.dd)
+    return abs(pressure - p) / (rho * slope)
 
 
 def grid_problems(t: float) -> list[str]:
     """Why the grid row at `t` breaks A22: a `not_converged`, a refusal other than
-    `phase_not_stable`, an answer with (∂v/∂P)_T ≥ 0 or cp ≤ 0, or a state that answers no phase."""
+    `phase_not_stable`, an answer with (∂v/∂P)_T ≥ 0 or cp ≤ 0 or a root residual above
+    `ROOT_TOL`, or a state that answers no phase."""
     problems: list[str] = []
     for p in GRID_P:
         answered = []
@@ -106,6 +121,8 @@ def grid_problems(t: float) -> list[str]:
                 problems.append(f"{where}: dv/dP = {result.derivatives['v']['P']!r}")
             if not result.values["cp"] > 0.0:
                 problems.append(f"{where}: cp = {result.values['cp']!r}")
+            if not (residual := root_residual(t, p, result.values["v"])) <= ROOT_TOL:
+                problems.append(f"{where}: root residual {residual!r}")
         if not answered:
             problems.append(f"{t} K, {p} Pa: no phase answered")
     return problems
@@ -120,6 +137,61 @@ def test_a22_the_grid_is_the_specs() -> None:
 @pytest.mark.parametrize("t", GRID_T)
 def test_a22_robustness_grid(t: float) -> None:
     assert grid_problems(t) == []
+
+
+#: Spec §14 (R-595): the review's dense grid, 180 T × 61 P (`docs/reviews/S05-review.md` F1), on
+#: which the unfixed solver answered 99 states `ok` off their root: 120 T on [T_t, 646.9 K], 60 T
+#: on [648.5 K, T_max], and ten P per decade over [P_min, P_max], spaced as `numpy.linspace`
+#: and `numpy.logspace` space them (start + k·step, the end point exact).
+
+
+def _linspace(start: float, stop: float, n: int) -> tuple[float, ...]:
+    step = (stop - start) / (n - 1)
+    return (*(start + k * step for k in range(n - 1)), stop)
+
+
+DENSE_T = (*_linspace(w.T_MIN, 646.9, 120), *_linspace(648.5, w.T_MAX, 60))
+DENSE_P = tuple(10.0**x for x in _linspace(2.0, 8.0, 61))
+
+
+def dense_problems(t: float) -> list[str]:
+    """Every answer of the dense row at `t` whose root residual exceeds `ROOT_TOL`."""
+    problems = []
+    for p in DENSE_P:
+        for phase in PHASES:
+            result = ev(t, p, phase, ("v",), ())
+            if result.status == "ok":
+                if not (residual := root_residual(t, p, result.values["v"])) <= ROOT_TOL:
+                    problems.append(f"{t} K, {p} Pa, {phase}: root residual {residual!r}")
+    return problems
+
+
+def test_a22_the_dense_grid_is_the_reviews() -> None:
+    assert len(DENSE_T) == 180 and len(set(DENSE_T)) == 180 and len(DENSE_P) == 61
+    assert DENSE_T[0] == w.T_MIN and DENSE_T[-1] == w.T_MAX
+    assert DENSE_P[0] == w.P_MIN and DENSE_P[-1] == w.P_MAX
+    assert {599.7899159663866, 631.1966386554623, 659.0872881355932} <= set(DENSE_T)
+    assert 63095734.44801943 in DENSE_P
+
+
+@pytest.mark.parametrize("t", DENSE_T)
+def test_a22_dense_grid_root_residual(t: float) -> None:
+    assert dense_problems(t) == []
+
+
+def test_a22_a_wrong_root_is_caught(monkeypatch: pytest.MonkeyPatch) -> None:
+    """No vacuous pass: a density off by 1e-9 relative fails the root residual."""
+    real = PROVIDER.evaluate_phase
+
+    def shifted(request: PropertyRequest, context: EvaluationContext) -> PropertyResult:
+        result = real(request, context)
+        if result.status == "ok":
+            result.values["v"] *= 1.0 + 1e-9
+        return result
+
+    monkeypatch.setattr(PROVIDER, "evaluate_phase", shifted)
+    assert any("root residual" in problem for problem in grid_problems(500.0))
+    assert any("root residual" in problem for problem in dense_problems(500.0))
 
 
 def test_a22_a_broken_stability_sign_is_caught(monkeypatch: pytest.MonkeyPatch) -> None:
