@@ -10439,3 +10439,193 @@ dynamic C1 reactor that includes the bed's heat capacity is a different model (U
 **Watch for.** A web-shell change that branches on `kind` without a fallback.
 
 ---
+
+## R-520 — L01 admission rule: a component enters the library only where an existing method serves a development case
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), package L01; binds on Frank's acceptance of ADR 0043 |
+| Normative text | ADR 0043 D1; `docs/derivations/L01-spec.md` §3 (R-A, R-B) |
+| Evidence | `docs/derivations/scripts/l01_projection.py` SC-6; `l01_projection.json#/dispositions` (development ids only) |
+| Affected packages | L01; any later component-library package |
+
+**Decision.** A component is admitted iff it is a W27 `chemical`, it is unavailable, and some development case lists it
+whose non-reaction packages are all `cubic_pr`, each declaring phases within {vapor}. Every other component is
+recorded as `needs new method: <methods>` and stopped. A component whose record W27-R24 refuses is stopped (R-B).
+
+**Rejected alternatives.**
+- Admitting by case count alone. W27-R16 is method-blind, so this inflates availability where nothing serves the case.
+- Counting over all 450 cases. That breaks the C2 rules.
+
+**Watch for.** A later package that adds a record "because it is common" without a serving development case.
+
+---
+
+## R-521 — L01 dispositions: H2O, CO2, O2, C2H6, C3H8 admitted vapour-only; CO stopped; IAPWS-95 is the largest missing method
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), package L01 |
+| Normative text | L01 spec §3 |
+| Evidence | `l01_projection.json#/dispositions`: water 150 development cases, 3 of them vapour-PR-only; iapws95 is the only method in 8 water cases and appears beside others in 16 more; watertap_aqueous in 50 |
+| Affected packages | L01; the next method package (spec Q-3) |
+
+**Decision.** In development-blocking order:
+- water, CO2, O2, propane and ethane are admitted as vapour-only `cubic_pr` components;
+- NaCl, benzene, toluene, MEA, methanol, sulfuric acid, ethylene glycol and ethylene oxide need new methods and are
+  stopped;
+- CO is servable but stopped (R-526 F-2);
+- C4H10 is unidentified, and ions are never available.
+
+Liquid water needs a new method: IAPWS-95, or a PR liquid-mixture regime.
+
+**Rejected alternatives.** A pure-water PR liquid regime. It is a new regime, no development case asks for it, and PR
+is not IAPWS-95.
+
+**Watch for.** A claim that L01 "adds water" without the qualifier *vapour only*.
+
+---
+
+## R-522 — New components go into a separate route `pr-lib-v1`; the C1 records, module and models stay byte-identical
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), package L01 |
+| Normative text | ADR 0043 D3, D4; L01 spec §4.1, §4.4; L01.A02, A14, A22 |
+| Evidence | `pr_c1.py:67-70` (`RECORDS_PATH`, the five-component `COMPONENTS`), `:720-722` (both SHA-256 values in `describe`); `revision_flowsheet.py:129-132` (basis by `record_source`) |
+| Affected packages | L01 WO-1…3; W27 (F-1) |
+
+**Decision.**
+- The new file `benchmarks/l01/components.yaml` holds H2, N2, Ar and CH4 copied verbatim from C1, and then the five new
+  records.
+- The new provider `pr-lib-v1` uses ADR 0026's method unchanged, with the reference convention `PR-C1-ref-v1` shared
+  across both routes.
+- No committed identity moves. `pr-lib-v1`'s two SHA-256 values are new.
+
+**Rejected alternatives.**
+- Extending C1's file and module. It moves `pr-c1-v1`'s hashes and every C1 n-vector, and with them the journey,
+  the M02/M05 dumps and the W27 snapshots.
+- A new convention name for an identical datum.
+
+**Watch for.** Any edit to `pr_c1.py`, `benchmarks/m01/components.yaml` or `models/c1/*` on `wp/L01`. L01.A22 fails
+on it.
+
+---
+
+## R-523 — The library's vapour rule adds the refusal `vapour_root_liquid_like` (v < (Z_c/B_c)·b_mix)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), package L01; reviewed with WO-L01-2 |
+| Normative text | ADR 0043 D5; L01 spec §4.2; L01.A17–A19 |
+| Evidence | Specifier's double-precision closed form: pure H2O at 300 K and 5 MPa has a single root with v/b = 1.12, and pure CO2 at 250 K and 5 MPa has v/b = 1.52. C1's light-gas rule would label both vapour |
+| Affected packages | L01 WO-2 |
+
+**Decision.** The vapour rule takes the largest root, then applies two refusals in order:
+- ADR 0026 D2's `vapour_root_metastable`;
+- `vapour_root_liquid_like` when v < (Z_c/B_c)·b_mix. This is D2's pure single-root liquid test, applied with the
+  mixture's b. It only refuses.
+
+**Rejected alternatives.**
+- C1's light-gas rule alone. It labels compressed liquid water as vapour.
+- A pseudo-critical (Kay) temperature test. It is less tied to the existing pure rule.
+
+**Watch for.** A unit that relies on the library for states near water's dew line. Those states are refused, not
+evaluated.
+
+---
+
+## R-524 — The library's values come from C1's sources and tools; a missing species stops its component
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), package L01 |
+| Normative text | ADR 0043 D6; L01 spec §4.1; L01.A07–A12 |
+| Evidence | `benchmarks/m01/components.yaml:1-15` (the sources and retrieval tools of C1). chemicals, Cantera and CoolProp are not installed in the cloud venv (checked 2026-10-22) |
+| Affected packages | L01 WO-1 |
+
+**Decision.** The sources are:
+- T_c, P_c, ω: the reference-EOS values, retrieved with chemicals 1.5.2 `HEOS`;
+- Δ_fH°: ATcT 1.112, retrieved with `ATCT_G`;
+- c_p: the NASA TM-4513 low-range NASA-7 set, from Cantera 3.2.0;
+- the cross-check is against CoolProp 8.0.0.
+
+A species absent from a source is stopped with `needs a fact`. The † literature expectations are transcriptions that
+are still to be verified (spec Q-5). A failure amends the spec, and the test is not bent.
+
+**Rejected alternatives.** Substituting another source per species without a ruling.
+
+**Watch for.** A record value without its provenance string.
+
+---
+
+## R-525 — L01 measures coverage on development ids only, with W27's classifier in a dedicated re-take; never with W27's CLI
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), package L01 |
+| Normative text | L01 spec §6; L01.A23–A26 |
+| Evidence | `benchmarks/m06/w27/coverage.py:596` (`--out` defaults to the committed `coverage.json`), `:612` (prints the all-450 counts) |
+| Affected packages | L01 WO-3; any package that re-takes coverage after C2 |
+
+**Decision.**
+- The re-take filters to development ids before anything else and writes `evidence/L01/<commit>/retake.json`. It never
+  writes W27's files and never prints an all-case count.
+- Before W27 can judge two routes of one method, the re-take's typed `REFUSED` is the registered result (L01.A24).
+- The projection is UNIT 184 / NOT_STEADY 32 / COMPONENT 6 / ROUTE 3 / CANDIDATE 0, against UNIT 184 / NOT_STEADY 32 /
+  COMPONENT 9 before.
+
+**Rejected alternatives.** The brief's `python -m benchmarks.m06.w27.coverage` (F-3).
+
+**Watch for.** Any post-C2 coverage command whose stdout includes `all 450`.
+
+---
+
+## R-526 — Findings for W27 (not written by L01): one route per method blocks `pr-lib-v1`; the casefold spelling check blocks CO
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), package L01; the remedy is for a W27 Amendment 3 (spec Q-1) |
+| Normative text | L01 spec §8 F-1, F-2 |
+| Evidence | `l01_projection.json#/two_route_refusals` (SC-11); SC-13: adding CO is refused with `archive spellings of registry chemicals not aliased ['Co->630-08-0']`; `coverage.py:170-181` (casefold), `:192-197` (shared method) |
+| Affected packages | W27 (amendment); L01 WO-3 |
+
+**Decision.** L01 does not amend W27. A W27 Amendment 3 would make three changes:
+- add `pr-lib-v1 → cubic_pr` and a `PROVIDER_LINES` entry;
+- replace W27-R24 (d) with a rule that a method group is served iff some route serves it, with units judged on the
+  serving route that has the fewest unit reasons (ties by provider id);
+- make the spelling check of W27-R24 (c) case-sensitive for formulas.
+
+**Rejected alternatives.**
+- Bending the harness inside L01, for example with a private `provider_methods` override or by dropping CO's formula.
+  This is rule 6.
+
+**Watch for.** A snapshot over a build with `pr-lib-v1` classified by anything other than an amended W27.
+
+---
+
+## R-527 — L01's non-claims: no development case becomes runnable; no liquid water; no state above 1000 K
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), package L01 |
+| Normative text | L01 spec §9; ADR 0043 "does not establish" |
+| Evidence | SC-9, SC-10: projected CANDIDATE 0 → 0; the three class changes are the IAPWS-95 pump variants moving from COMPONENT to ROUTE |
+| Affected packages | L01; any report that cites L01 |
+
+**Decision.** L01's evidence is about record and provider correctness and re-attribution, not coverage gain. Steam
+cycles, liquid water and reformer outlets (> 1000 K) are not representable through L01.
+
+**Rejected alternatives.** Reporting the 220 removed component reasons as "progress" without the class table.
+
+**Watch for.** A summary that says "water available" without the qualifier *vapour only, 200–1000 K*.
+
+---
