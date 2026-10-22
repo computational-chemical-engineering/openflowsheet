@@ -30,13 +30,14 @@ Route (RC-02): Huber, Lemmon, Bell and McLinden, "The NIST REFPROP Database for 
 Accurate Properties of Industrially Important Fluids", Industrial & Engineering Chemistry Research 61 (2022) 15449-72,
 doi:10.1021/acs.iecr.2c01427, as cited by `chemicals` 1.5.2 `acentric.py`.
 
-## Ideal-gas heat capacities: NASA TM-4513 (1993) (RC-03) — unresolved
+## Ideal-gas heat capacities: NASA TM-4513 (1993) (RC-03) — permitted with conditions
 
 The b_k of every record are the low-range (200-1000 K) NASA-7 coefficients scaled by 1000^k. Citation:
 McBride, Gordon and Reno, "Coefficients for Calculating Thermodynamic and Transport Properties of
 Individual Species", NASA Report TM-4513, October 1993, https://ntrs.nasa.gov/citations/19940013151.
 Species notes as recorded in each record's `provenance` (e.g. `L 8/89`, `TPIS89`). The records state "NASA TM-4513
-is a work of the United States Government"; the NTRS record was not reachable to confirm it.
+is a work of the United States Government"; the NTRS record (read 2026-10-22, workstation) gives "Copyright:
+Work of the US Gov. Public Use Permitted." Condition: cite the report as above.
 
 ## Formation enthalpies: ATcT 1.112 (RC-05) — unresolved
 
