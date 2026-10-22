@@ -12,8 +12,9 @@ division-free specification rows and total-condenser block (spec §2-§3). This 
 reduced to ``(phi, T_c, Q_c)`` -- by its own damped Newton with complex-step derivatives, follows
 spec §7's straight specification path in equal steps, and then evaluates the implementation's
 division-free rows at its root as a claim. Amendment 2 (spec §18, WO-G) adds §18.2's bubble-point
-easy endpoint by its own sweeps (stopped at 1e-30 K) and V-M2 (duty, duty)'s second root R2; those
-keys and claims are appended after the earlier ones, which stay byte-identical.
+easy endpoint by its own sweeps (stopped at 1e-42 K, spec §19 item 2) and V-M2 (duty, duty)'s
+second root R2; those keys and claims are appended after the earlier ones, which stay
+byte-identical, and the §18.2 identity's ten claims (§19 item 2) after those.
 
     python docs/derivations/scripts/s02_reference.py --check
     python docs/derivations/scripts/s02_reference.py --emit <path of the committed JSON>
@@ -839,13 +840,19 @@ VARIANT_SETS: dict[str, list[tuple[str, str]]] = {
 }
 SINGULAR_SET = ("distillate_rate", "bottoms_rate")  # spec §5 S3: not admissible, no endpoint
 SWEEP_MAX = 500  # spec §18.2 step 3: the sweep budget; the generator refuses beyond it
-SWEEP_STOP = mpf("1e-30")  # spec §18.7 WO-G: the generator stops at max |dT| <= 1e-30 K
+SWEEP_STOP = mpf("1e-42")  # spec §19 item 2 (R-551): the generator stops at max |dT| <= 1e-42 K
 SWEEP_STOP_IMPL = mpf("1e-9")  # spec §18.2 step 3d: the implementation's stop (count recorded)
 START_SHIFT = mpf(5)  # spec §18.6 A14: sweep start T0 +- 5 K
-# Two runs that each stop at |dT| <= 1e-30 K with last-sweep contraction q <= 0.55 (measured, M4)
-# sit within q/(1-q) * 1e-30 <= 1.3e-30 K of the fixed point, so within 2.5e-30 K of each other;
+# Two runs that each stop at |dT| <= 1e-42 K with last-sweep contraction q <= 0.55 (measured, M4)
+# sit within q/(1-q) * 1e-42 <= 1.3e-42 K of the fixed point, so well within 1e-29 K of each other;
 # a different fixed point would differ by far more than the emitted 25 digits resolve (1e-22 K).
 SAME_FIXED_POINT = mpf("1e-29")
+# spec §19 item 2 (R-551): at x0 every non-continued row vanishes below this. The rows are
+# O(|dT_last| * ds/dT * L), about 1e-3 * |dT_last| <= 1e-45 at SWEEP_STOP; 50 digits resolve T to
+# about 4e-48 K.
+IDENTITY_TOL = mpf("1e-40")
+#: The §18.2 identity's worst row per endpoint, in emission order; claimed after all other claims.
+IDENTITY: list[tuple[str, Any]] = []
 # spec §18.1 item 3: V-M2 (duty, duty)'s second root R2, to the six digits the spec quotes
 R2_SEED = {"D": "0.274431", "phi": "0.775456", "T_c": "321.583"}
 
@@ -952,6 +959,14 @@ def bubble_point_entry(
         f"{label} bubble_point: sweeps from T0 + 5 K and T0 - 5 K reach the same fixed point"
         " within 1e-29 K",
     )
+    # spec §19 item 2: the ratio slots at their values, every continued slot at its p0 (the
+    # variable at x0), so the continued rows vanish by construction and the rest by §18.2.
+    at_x0 = {
+        j: (kind, value if kind in ("RR", "BR") else slot_value(case, st, j, kind))
+        for j, (kind, value) in slots.items()
+    }
+    rows = residual(case, pack(case, st), at_x0, ["TWO_PHASE"] * case["N"])
+    IDENTITY.append((label, max(abs(r) for r in rows)))
     out = record(case, st)
     out["rho"] = {str(j): s(r) for j, r in sorted(bp["rho"].items())}
     if is_total(case):
@@ -1023,6 +1038,7 @@ def second_root(
 
 def amendment_2(doc: dict[str, Any], sols: dict[str, dict[str, Any]]) -> None:
     """Spec §18.7 WO-G: additive keys; every claim here is appended after all earlier ones."""
+    IDENTITY.clear()
     for name in ("M1", "M2", "M3", "M4"):
         case, tgt = CASES[name], sols[name]["slots"]
         entry, st = bubble_point_entry(name, case, sols[name]["init"], tgt)
@@ -1039,6 +1055,12 @@ def amendment_2(doc: dict[str, Any], sols: dict[str, dict[str, Any]]) -> None:
             doc["variants"][name][key]["bubble_point"] = entry
             if (name, key) == ("M2", "duty+duty"):
                 doc["variants"][name][key]["second_root"] = second_root(sols["M2"], st, slots)
+    # spec §19 item 2 (R-551): the §18.2 identity on all ten endpoints, appended last.
+    for label, worst in IDENTITY:
+        claim(
+            worst < IDENTITY_TOL,
+            f"{label} bubble_point: the §18.2 identity, every non-continued row at x0 below 1e-40",
+        )
 
 
 def build() -> dict[str, Any]:

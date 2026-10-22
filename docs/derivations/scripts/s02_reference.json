@@ -596,7 +596,7 @@
      "6": "0.5",
      "7": "1.5"
     },
-    "sweeps": 69,
+    "sweeps": 94,
     "sweeps_to_1e-9_K": 25
    },
    "bubble_point_continued": {
@@ -1216,7 +1216,7 @@
     },
     "phi": "0.6",
     "T_c": "321.1231085331275030288254",
-    "sweeps": 56,
+    "sweeps": 76,
     "sweeps_to_1e-9_K": 21
    },
    "bubble_point_continued": {
@@ -1703,7 +1703,7 @@
      "4": "1.0",
      "5": "1.0"
     },
-    "sweeps": 88,
+    "sweeps": 121,
     "sweeps_to_1e-9_K": 30
    },
    "bubble_point_continued": {
@@ -2185,7 +2185,7 @@
      "4": "1.0",
      "5": "1.0"
     },
-    "sweeps": 118,
+    "sweeps": 163,
     "sweeps_to_1e-9_K": 39
    },
    "bubble_point_continued": {
@@ -2437,7 +2437,7 @@
       "6": "0.5",
       "7": "0.5"
      },
-     "sweeps": 58,
+     "sweeps": 78,
      "sweeps_to_1e-9_K": 22
     }
    },
@@ -2594,7 +2594,7 @@
       "6": "0.5",
       "7": "0.5"
      },
-     "sweeps": 56,
+     "sweeps": 75,
      "sweeps_to_1e-9_K": 21
     }
    },
@@ -2751,7 +2751,7 @@
       "6": "0.5",
       "7": "1.5"
      },
-     "sweeps": 74,
+     "sweeps": 99,
      "sweeps_to_1e-9_K": 26
     }
    },
@@ -2908,7 +2908,7 @@
       "6": "0.5",
       "7": "0.5"
      },
-     "sweeps": 56,
+     "sweeps": 75,
      "sweeps_to_1e-9_K": 21
     }
    },
@@ -3081,7 +3081,7 @@
      },
      "phi": "0.5",
      "T_c": "321.3499686973518067958478",
-     "sweeps": 56,
+     "sweeps": 77,
      "sweeps_to_1e-9_K": 21
     },
     "second_root": {
@@ -3386,7 +3386,7 @@
      },
      "phi": "0.5",
      "T_c": "321.0311322166921162720969",
-     "sweeps": 74,
+     "sweeps": 101,
      "sweeps_to_1e-9_K": 27
     }
    },
@@ -4523,7 +4523,17 @@
   "V-M2 distillate_rate+boilup_ratio bubble_point: stage 7 temperature in the SYN-001 domain",
   "V-M2 distillate_rate+boilup_ratio bubble_point: stage 7 2P, L and V > 1e-3",
   "V-M2 distillate_rate+boilup_ratio bubble_point: total condenser T in domain, 0 < phi < 1",
-  "V-M2 distillate_rate+boilup_ratio bubble_point: sweeps from T0 + 5 K and T0 - 5 K reach the same fixed point within 1e-29 K"
+  "V-M2 distillate_rate+boilup_ratio bubble_point: sweeps from T0 + 5 K and T0 - 5 K reach the same fixed point within 1e-29 K",
+  "M1 bubble_point: the §18.2 identity, every non-continued row at x0 below 1e-40",
+  "M2 bubble_point: the §18.2 identity, every non-continued row at x0 below 1e-40",
+  "M3 bubble_point: the §18.2 identity, every non-continued row at x0 below 1e-40",
+  "M4 bubble_point: the §18.2 identity, every non-continued row at x0 below 1e-40",
+  "V-M1 duty+duty bubble_point: the §18.2 identity, every non-continued row at x0 below 1e-40",
+  "V-M1 reflux_ratio+bottoms_rate bubble_point: the §18.2 identity, every non-continued row at x0 below 1e-40",
+  "V-M1 distillate_rate+boilup_ratio bubble_point: the §18.2 identity, every non-continued row at x0 below 1e-40",
+  "V-M1 reflux_ratio+duty bubble_point: the §18.2 identity, every non-continued row at x0 below 1e-40",
+  "V-M2 duty+duty bubble_point: the §18.2 identity, every non-continued row at x0 below 1e-40",
+  "V-M2 distillate_rate+boilup_ratio bubble_point: the §18.2 identity, every non-continued row at x0 below 1e-40"
  ],
- "claim_count": 1064
+ "claim_count": 1074
 }

@@ -12,7 +12,7 @@ tracked source, test, script, schema or derivation file differs from it; S01's r
    passed: a failure, an error, a skip or an expected failure (a strict xfail holding a measured
    miss) leaves it `fail`. **A16** ("S01's 20 assertions still pass") is judged by the S01 nodes:
    every S01 node passed and each of S01's A01–A20 is cited by one.
-2. **The reference generator's `--check`** (§13: 1064 claims, JSON byte-identical).
+2. **The reference generator's `--check`** (§13: 1074 claims, JSON byte-identical).
 3. **`ruff check`, `ruff format --check`** on S02's files and **`mypy`** (the project's own
    configuration, no arguments).
 4. **The measured deviation** (§10 "needs a fact", §18.5): the worst column error of every
@@ -427,7 +427,7 @@ def build(commit: str) -> dict[str, Any]:
 
     entries = assertion_checks(rows, nodes(junit))
     tool_text = {
-        "S02.generator": "§13: s02_reference.py --check re-derives every claim (1064) and "
+        "S02.generator": "§13: s02_reference.py --check re-derives every claim (1074) and "
         "byte-compares s02_reference.json",
         "S02.ruff": "§13: ruff check is clean on S02's files",
         "S02.format": "§13: ruff format --check is clean on S02's files",
