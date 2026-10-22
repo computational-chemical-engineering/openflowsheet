@@ -91,10 +91,10 @@ MUTATIONS: tuple[Mutation, ...] = (
     ),
     Mutation(
         "m5",
-        "647.0 K replaced by T_c in step 3 of the phase rule",
+        "T_c replaced by 647.0 K in step 2 of the phase rule (R-598)",
         "A15",
         (f"{TESTS}::test_a15_supercritical_label_and_the_647_edge",),
-        (("    if temperature > T_SIGMA_MAX:\n", "    if temperature > T_C:\n"),),
+        (("    if temperature >= T_C:\n", "    if temperature > T_SIGMA_MAX:\n"),),
     ),
     Mutation(
         "m6",

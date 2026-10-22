@@ -321,12 +321,6 @@ def test_a28_no_test_imports_the_cross_check_or_its_libraries() -> None:
 # -- A29: the mutation battery ---------------------------------------------------------------------
 
 MUTATIONS = _script("s05_mutations")
-#: Measured misses, held as strict xfails until the design lane rules (docs/C10_DECISIONS.md).
-MUTATION_MISSES = {
-    "m5": "equivalent on A15's probes: for T in (647.0 K, T_c) step 4's answered sets equal step "
-    "3's outside the near_critical box, since p_sigma(T) lies in [2.20e7, 2.22e7] Pa there "
-    "(C10_DECISIONS, WO-S05-2)",
-}
 
 
 def test_a29_every_edit_applies_once_and_the_mutations_are_the_specs() -> None:
@@ -359,9 +353,7 @@ def test_a29_the_control_run_passes(tmp_path: Path) -> None:
 
 def _mutation_cases() -> Iterator[Any]:
     for mutation in MUTATIONS.MUTATIONS:
-        reason = MUTATION_MISSES.get(mutation.id)
-        marks = [pytest.mark.xfail(strict=True, reason=reason)] if reason else []
-        yield pytest.param(mutation.id, id=mutation.id, marks=marks)
+        yield pytest.param(mutation.id, id=mutation.id)
 
 
 @pytest.mark.parametrize("mutation_id", _mutation_cases())
