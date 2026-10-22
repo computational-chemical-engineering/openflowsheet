@@ -386,101 +386,79 @@ def test_a21_contract_refusals() -> None:
 
 FD_TOL = 1e-10
 FD_STEP = 1e-6
+#: Spec §14 (R-597a): NC's step; the 1e-6·x stencil's truncation was measured at 1.25e-9.
+FD_STEP_NC = 1e-7
 
 
 def fd_scale(x: str, t: float) -> float:
     return {"h": w.R * t, "s": w.R, "cp": w.R, "Z": 1.0, "lnphi_H2O": 1.0, "v": 0.0}[x]
 
 
-def fd_ratios(t: float, p: float, phase: Phase, wrt: str) -> dict[str, float]:
-    """|f(x+h) − f(x−h) − 2h f′(x)| / max(|f(x±h)|, s_f) per property; raises on a refusal."""
+def fd_stencil(t: float, p: float, wrt: str, kind: str) -> tuple[float, float]:
+    """Spec §14 (R-597): the step h and the side s of the stencil in `wrt` (s = 0 central; ±1 the
+    inward one-sided stencil at a box edge, R-597b). `kind` is "nc" (R-597a), "band" (R-597c:
+    h_P = (ε_σ/4)·P, h_T = (ε_σ/4)/|d ln p_σ/dT| from the provider's own Psat) or "tp"."""
+    x, low, high = (t, w.T_MIN, w.T_MAX) if wrt == "T" else (p, w.P_MIN, w.P_MAX)
+    side = 1.0 if x == low else -1.0 if x == high else 0.0
+    if kind == "band":
+        if wrt == "P":
+            return w.EPS_SIGMA / 4.0 * p, side
+        psat = ev(t, 1.0e5, "LIQUID", ("Psat",), ("T", "P", "n_H2O"))
+        assert psat.status == "ok", psat.message
+        slope = psat.derivatives["Psat"]["T"] / psat.values["Psat"]
+        return w.EPS_SIGMA / 4.0 / abs(slope), side
+    return (FD_STEP_NC if kind == "nc" else FD_STEP) * x, side
+
+
+def fd_ratios(
+    t: float, p: float, phase: Phase, wrt: str, h: float, side: float
+) -> dict[str, float]:
+    """Per property, the central |f(x+h) − f(x−h) − 2h f′| / max(|f(x±h)|, s_f), or at a box edge
+    the inward |s(−3f₀ + 4f₁ − f₂) − 2h f′| / max(|f₀|, |f₁|, |f₂|, s_f) with f_k = f(x + k s h);
+    raises on a refusal."""
+
+    def at(k: float) -> PropertyResult:
+        return ev(t + k * h, p, phase) if wrt == "T" else ev(t, p + k * h, phase)
+
     centre = ev(t, p, phase)
-    h = FD_STEP * (t if wrt == "T" else p)
-    up = ev(t + h, p, phase) if wrt == "T" else ev(t, p + h, phase)
-    down = ev(t - h, p, phase) if wrt == "T" else ev(t, p - h, phase)
-    for result in (centre, up, down):
+    first, second = (at(1.0), at(-1.0)) if side == 0.0 else (at(side), at(2.0 * side))
+    for result in (centre, first, second):
         if result.status != "ok":
-            raise AssertionError(f"a central step is refused: {result.message}")
+            raise AssertionError(f"a stencil point is refused: {result.message}")
     ratios = {}
     for x in SIX:
-        f_up, f_down = up.values[x], down.values[x]
-        miss = abs(f_up - f_down - 2.0 * h * centre.derivatives[x][wrt])
-        ratios[x] = miss / max(abs(f_up), abs(f_down), fd_scale(x, t))
+        f0, f1, f2 = centre.values[x], first.values[x], second.values[x]
+        slope = 2.0 * h * centre.derivatives[x][wrt]
+        if side == 0.0:
+            miss, scale = abs(f1 - f2 - slope), max(abs(f1), abs(f2), fd_scale(x, t))
+        else:
+            miss = abs(side * (-3.0 * f0 + 4.0 * f1 - f2) - slope)
+            scale = max(abs(f0), abs(f1), abs(f2), fd_scale(x, t))
+        ratios[x] = miss / scale
     return ratios
 
 
-#: Cases whose central step leaves what the provider answers (the domain box, or the band for a
-#: metastable phase), so spec §6.3's stencil cannot be formed there: a measured miss, recorded as
-#: a QUESTION in docs/C10_DECISIONS.md, never dropped.
-_EDGE = "a central step of 1e-6·x leaves the domain box"
-_BAND_EDGE = "a central step of 1e-6·x leaves the eps_sigma band for this phase"
-FD_UNREACHABLE = {
-    ("L_corner", "T"): _EDGE,
-    ("L_corner", "P"): _EDGE,
-    ("V_corner", "T"): _EDGE,
-    ("V_corner", "P"): _EDGE,
-    ("SC_corner", "T"): _EDGE,
-    ("SC_corner", "P"): _EDGE,
-    ("SC_ideal", "T"): _EDGE,
-    ("SC_ideal", "P"): _EDGE,
-    # Measured: the cp miss is truncation, falling 8x per halving of the step (1.25e-9, 1.56e-10,
-    # 1.95e-11 at 1e-6, 5e-7, 2.5e-7 for NC_vapour; 4.11e-10, 5.16e-11, 6.23e-12 for NC_liquid);
-    # the derivative itself meets A06 at 1e-8. Spec §6.3's truncation bound holds away from the
-    # box only (Q-6, docs/C10_DECISIONS.md).
-    ("NC_vapour", "T"): "near-critical truncation: cp miss 1.25e-9 > FD_TOL (Q-6)",
-    ("NC_liquid", "T"): "near-critical truncation: cp miss 4.11e-10 > FD_TOL (Q-6)",
-}
-
-
 def fd_cases() -> list[Any]:
+    """Every §5.2 state and every answered band phase, in T and in P: no case is dropped (R-597)."""
     cases = []
     for name in TP_STATES:
         for wrt in ("T", "P"):
             t, p, phase = tp(name)
-            reason = FD_UNREACHABLE.get((name, wrt))
-            marks = [pytest.mark.xfail(strict=True, reason=reason)] if reason else []
-            cases.append(pytest.param(t, p, phase, wrt, id=f"{name}-{wrt}", marks=marks))
+            kind = "nc" if name in NC else "tp"
+            cases.append(pytest.param(t, p, phase, wrt, kind, id=f"{name}-{wrt}"))
     for key, probe in BAND.items():
         for phase in probe["answered"]:
             for wrt in ("T", "P"):
-                reason = BAND_FD_UNREACHABLE.get((key, phase, wrt))
-                marks = [pytest.mark.xfail(strict=True, reason=reason)] if reason else []
-                cases.append(
-                    pytest.param(
-                        BAND_T,
-                        float(probe["P"]),
-                        phase,
-                        wrt,
-                        id=f"band_{key}-{phase}-{wrt}",
-                        marks=marks,
-                    )
-                )
+                p = float(probe["P"])
+                case_id = f"band_{key}-{phase}-{wrt}"
+                cases.append(pytest.param(BAND_T, p, phase, wrt, "band", id=case_id))
     return cases
 
 
-#: Measured: every band probe's T step moves ln(P/p_σ) by about 1e-5 ≫ eps_sigma, and the P step
-#: by 1e-6 = eps_sigma, so the stepped state leaves the band on one side for these phases.
-BAND_FD_UNREACHABLE: dict[tuple[str, str, str], str] = {
-    (key, phase, wrt): _BAND_EDGE
-    for key, phase, wrt in (
-        ("out_lo", "VAPOR", "T"),
-        ("in_lo", "LIQUID", "T"),
-        ("in_lo", "LIQUID", "P"),
-        ("in_lo", "VAPOR", "T"),
-        ("at", "LIQUID", "T"),
-        ("at", "LIQUID", "P"),
-        ("at", "VAPOR", "T"),
-        ("in_hi", "LIQUID", "T"),
-        ("in_hi", "VAPOR", "T"),
-        ("in_hi", "VAPOR", "P"),
-        ("out_hi", "LIQUID", "T"),
-    )
-}
-
-
-@pytest.mark.parametrize(("t", "p", "phase", "wrt"), fd_cases())
-def test_a17_central_differences(t: float, p: float, phase: Phase, wrt: str) -> None:
-    ratios = fd_ratios(t, p, phase, wrt)
+@pytest.mark.parametrize(("t", "p", "phase", "wrt", "kind"), fd_cases())
+def test_a17_finite_differences(t: float, p: float, phase: Phase, wrt: str, kind: str) -> None:
+    h, side = fd_stencil(t, p, wrt, kind)
+    ratios = fd_ratios(t, p, phase, wrt, h, side)
     assert max(ratios.values()) <= FD_TOL, ratios
 
 
