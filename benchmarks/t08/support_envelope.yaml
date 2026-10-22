@@ -769,7 +769,7 @@ limitations:
       per-parameter provenance and retrieval equality (M01 spec §3.5, R-158).
     evidence:
       - tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel
-      - tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_vetted_m01_record_with_rights
+      - tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_rights
       - doc:docs/adr/0006-distribution-data-rights.md §D1
   - id: L41
     text: >-

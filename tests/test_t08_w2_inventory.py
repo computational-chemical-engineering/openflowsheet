@@ -420,53 +420,100 @@ def _component_records() -> list[tuple[str, dict[str, Any]]]:
     return found
 
 
-#: M01 spec §3.5 (R-158): the only real (`synthetic: false`) records the repository may hold, each
-#: vetted by M01.A02's retrieval equality in `benchmarks/m01/external-crosscheck.json`.
-M01_RECORDS = "benchmarks/m01/components.yaml"
-M01_COMPONENTS = ("H2", "N2", "NH3", "Ar", "CH4")
-M01_CROSSCHECK = REPO_ROOT / "benchmarks" / "m01" / "external-crosscheck.json"
+def _m01_vetted(vetting: dict[str, Any], component: str, path: str) -> bool:
+    """M01.A02's retrieval equality (M01 spec §3.5, R-158), unchanged."""
+    del path
+    entry = vetting["retrieval"][component]
+    return bool(
+        all(entry["equal"].values())
+        and entry["nasa7_low_range_equal"]
+        and entry["identifiers_equal"]
+    )
 
 
-def test_a32_every_component_record_is_synthetic_or_a_vetted_m01_record_with_rights() -> None:
-    """T08.A32 as amended by M01 spec §3.5 (R-158): amended for real records, not relaxed.
+def _l01_vetted(vetting: dict[str, Any], component: str, path: str) -> bool:
+    """L01.A12's retrieval equality, of these bytes (L01 spec §12.4 (iv), R-529)."""
+    equal = vetting["retrieval"][component]["equal"]
+    return (
+        len(equal) == 13
+        and all(flag is True for flag in equal.values())
+        and vetting["retrieval_all_equal"] is True
+        and component not in vetting["retrieval_failures"]
+        and vetting["records_sha256"] == sha256_of(REPO_ROOT / path)
+    )
+
+
+#: T08.A32's vetted record files (M01 spec §3.5, R-158; L01 spec §12.4, R-529): the only files
+#: whose real (`synthetic: false`) records the repository may hold, each with its registered ids,
+#: the JSON that vets them and the retrieval predicate (iv). Adding a file takes a design-lane
+#: amendment that names its vetting.
+VETTED_RECORD_FILES: dict[str, tuple[tuple[str, ...], Path, Any]] = {
+    "benchmarks/m01/components.yaml": (
+        ("H2", "N2", "NH3", "Ar", "CH4"),
+        REPO_ROOT / "benchmarks" / "m01" / "external-crosscheck.json",
+        _m01_vetted,
+    ),
+    "benchmarks/l01/components.yaml": (
+        ("H2", "N2", "Ar", "CH4", "H2O", "CO2", "O2", "C2H6", "C3H8"),
+        REPO_ROOT / "benchmarks" / "l01" / "components-crosscheck.json",
+        _l01_vetted,
+    ),
+}
+
+
+def test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_rights() -> None:
+    """T08.A32 as amended by M01 spec §3.5 (R-158) and L01 spec §12.4 (R-529): amended for real
+    records, not relaxed.
 
     A `synthetic: true` record keeps the v0.1 rule unchanged (it validates and states its rights).
-    A `synthetic: false` record must (i) be one of the five records of
-    `benchmarks/m01/components.yaml`, (ii) carry `identifiers` with `cas`, `inchi` and `inchikey`,
-    (iii) carry non-empty `rights.source` and `rights.redistribution` and a `provenance` on every
-    parameter and on the molecular weight, and (iv) be covered by M01.A02's retrieval equality.
+    A `synthetic: false` record must (i) resolve, as a symlink resolves to its single copy, to a
+    file of `VETTED_RECORD_FILES` and carry one of its ids, (ii) carry `identifiers` with `cas`,
+    `inchi` and `inchikey`, (iii) carry non-empty `rights.source` and `rights.redistribution` and a
+    `provenance` on every parameter and on the molecular weight, (iv) be covered by its file's
+    retrieval equality, and (v) where its id is in more than one vetted file, be the same whole
+    mapping in each. The real (file, id) pairs are the registry's, each once. Whether the rights
+    statements are correct, and whether the records ship, is not decided here (L01-Q4, M01 Q-N4).
     """
     validator = validator_for("component_record")
     records = _component_records()
     assert {(path, record["id"]) for path, record in records} >= {
         ("benchmarks/syn001/components.yaml", component) for component in ("A", "B", "C")
     }
-    retrieval = load_json(M01_CROSSCHECK)["retrieval"]
+    vettings = {
+        path: load_json(json_path) for path, (_, json_path, _) in VETTED_RECORD_FILES.items()
+    }
     real = []
+    by_id: dict[str, dict[str, dict[str, Any]]] = {}
     for path, record in records:
         where = (path, record["id"])
         assert [error.message for error in validator.iter_errors(record)] == [], where
         rights = record["rights"]
-        assert rights["source"].strip() and rights["redistribution"].strip(), where
+        assert rights["source"].strip() and rights["redistribution"].strip(), where  # (iii)
         if record["synthetic"] is True:
             continue
         assert record["synthetic"] is False, where
-        # The package-data link `src/openflowsheet/_data/benchmarks/m01/components.yaml` is the
+        # A package-data link (`src/openflowsheet/_data/benchmarks/m01/components.yaml`) is the
         # same single copy (`openflowsheet.resources`), not a second record.
         linked = (REPO_ROOT / path).is_symlink()
         single = (REPO_ROOT / path).resolve().relative_to(REPO_ROOT.resolve()).as_posix()
-        assert single == M01_RECORDS and record["id"] in M01_COMPONENTS, where  # (i)
+        assert single in VETTED_RECORD_FILES, where  # (i)
+        ids, _, vetted = VETTED_RECORD_FILES[single]
+        assert record["id"] in ids, where
         if not linked:
-            real.append(where)
+            real.append((single, record["id"]))
+            by_id.setdefault(record["id"], {})[single] = record
         identifiers = record["identifiers"]
         assert all(identifiers.get(key, "").strip() for key in ("cas", "inchi", "inchikey")), where
         quantities = [record["molecular_weight"], *record["parameters"].values()]
         assert all(str(quantity.get("provenance", "")).strip() for quantity in quantities), where
-        vetted = retrieval[record["id"]]  # (iv)
-        assert all(vetted["equal"].values()) and vetted["nasa7_low_range_equal"], where
-        assert vetted["identifiers_equal"], where
+        assert vetted(vettings[single], record["id"], single), where  # (iv)
+    for component, copies in by_id.items():  # (v): one datum per substance
+        first = next(iter(copies.values()))
+        assert all(copy == first for copy in copies.values()), (component, sorted(copies))
     assert len(real) == len(set(real)), "a real record appears twice"
-    assert set(real) == {(M01_RECORDS, component) for component in M01_COMPONENTS}
+    assert set(real) == {
+        (path, component) for path, (ids, _, _) in VETTED_RECORD_FILES.items() for component in ids
+    }
 
 
 def test_a32_the_envelope_states_reference_data_and_openidaes_are_not_distributed() -> None:
