@@ -4688,3 +4688,96 @@ harvest:
   class: P
   to: []
   note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[0]
+  sha256: 68c8ca81cc60ac2081c4eb85fee63fe299ef3e2168081688bd3d85228e629651
+  class: E
+  to:
+  - L18
+  note: synthetic; no real-chemistry or column validation
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[1]
+  sha256: 9d67f154bd998114a7b377e2b6576beb69350fa5939f5109ba2147ad3271de08
+  class: E
+  to:
+  - L18
+  note: no independent column reference; the V-sets match S02's root, the same lineage; X31's independent references are S03's
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[2]
+  sha256: 4f0a6943b7879b4ee1055a7f9a7f6cd4c1e18def06a887d120470b1e006d60eb
+  class: E
+  to:
+  - U04
+  - L20
+  note: S06's inverse column specifications (`syn001.column`) are library-only, not in MODEL_BUILDERS (U04); no feasibility decision beyond the exact band and mass-balance refusals; an unreached target is not infeasibility
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[3]
+  sha256: bcbfd19ca5cf974e6a654c37cbeb230491356fb7e35a3bfa9b72d5075266fe0c
+  class: E
+  to:
+  - U04
+  - L20
+  note: S06's inverse column specifications (`syn001.column`) are library-only, not in MODEL_BUILDERS (U04); no convergence claim beyond the registered straight paths (U1, U2 end typed)
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[4]
+  sha256: 5b378ce6edcdb5bc6389724b3b46774084e6adde78e2748d015d1b642dd878d5
+  class: E
+  to:
+  - U04
+  - L19
+  note: S06's inverse column specifications (`syn001.column`) are library-only, not in MODEL_BUILDERS (U04); no uniqueness or root-selection claim; no multiplicity study of inverse sets
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[5]
+  sha256: c9205464f36333820bcb2fa51eb1c88317791eb1c28d4b048245defcce0c408e
+  class: E
+  to:
+  - U04
+  - L19
+  note: S06's inverse column specifications (`syn001.column`) are library-only, not in MODEL_BUILDERS (U04); admissibility claimed only at the registered roots; no single-phase specified stage
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[6]
+  sha256: 91b88e0bc0b0c29f0cec226084f0106aee3082bfa910aee4800e50c82118e228
+  class: E
+  to:
+  - U04
+  note: S06's inverse column specifications (`syn001.column`) are library-only, not in MODEL_BUILDERS (U04); no flowsheet binding of F, F_c, nu*, pi*
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[7]
+  sha256: 57a81bd03fc41357943fa1b2052f20a2277308ad1268d89bab8bb115aa53effa
+  class: E
+  to:
+  - U04
+  - U05
+  note: S06's inverse column specifications (`syn001.column`) are library-only, not in MODEL_BUILDERS (U04); no inside-out, rate-based or sensitivity results (U05); no side draws, pump-arounds or efficiencies
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[8]
+  sha256: 2bb63585a752430b77944434656a0a01b4addc175194f3a5c3c554bfaae9c9cf
+  class: P
+  to: []
+  note: requirements empty; S06's D/A mapping (part of X31) is the design lane's to register
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[9]
+  sha256: 31ef44157422563849cf05bec091859629cffb20b25f575921f1dab7f23ab71c
+  class: P
+  to: []
+  note: gate runs once before merge, not by the generator; process note
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[10]
+  sha256: 9af397ab67b41905d53d6e2b9abc65f315544ea08d022678401eada641ba12f8
+  class: P
+  to: []
+  note: design-lane review applied (F1-F4, R-608 to R-610); review fields pending; Frank answered Q-S06-1, Q-S06-2
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: limitations[11]
+  sha256: 4ebfe21c1890afb52b63d5ed9a3b09a5a54419e29e450287d300bd7960c4112f
+  class: E
+  to:
+  - L18
+  note: numerical verification against a 50-digit generator, not empirical validation
+- manifest: evidence/S06/ad264a237c02c0b199ba8f734d5d66d882de5ddf/manifest.json
+  item: checks[24]
+  check_id: S06.gate
+  sha256: 9add6cc7a77ee4d7a7c8fc509abbb15b6af1fbc568f7f769aa769a3d6099c640
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
