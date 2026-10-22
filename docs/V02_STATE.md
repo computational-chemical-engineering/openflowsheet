@@ -99,11 +99,19 @@ F5 education mode deferred.
   `main`) fast-forwards it.** C1/C2/C3 carry no evidence manifest (the schema's `work_package` pattern admits no `C`
   id; `docs/C2_DECISIONS.md`). Decisions: `docs/C1_DECISIONS.md`, `docs/C2_DECISIONS.md`, `docs/C3_DECISIONS.md`.
   Questions: `docs/FRANK_QUESTIONS.md`.
-- **S01** (`wp/S01`): spec, WO-1…WO-4, one `reviewer` pass (fix first → WO-4 done); manifest
-  `evidence/S01/a3eaf09…/manifest.json` computes `tested` with `S01.gate` unsupported. Next: merge `main` (after the
-  C fast-forward) into `wp/S01`, run `scripts/gate.sh`, re-take the manifest with the gate result, CI, merge.
-- **L01** (`wp/L01`, from `wp/C-merge`): specification running/next; then `opus-engineer` work orders and a
-  development-half coverage re-take. **S02**: specification only, if time remains.
+- **S01 merge-ready** (`wp/S01` `f819e5b`, contains `wp/C-merge`): spec, WO-1…WO-5, one `reviewer` pass (fix
+  first; rulings R-510…R-518); manifest `evidence/S01/465240a…/manifest.json` `tested`; gate PASS at `9a02bbc`
+  (10100 passed); CI 39711291222 green. Next: after `main` = `wp/C-merge`, fast-forward `main` to `wp/S01`.
+  Open for the design lane: T05b §6.6 vs S01's registered v2 policy (B06 second exemption), S01 L-rows now or in S02.
+- **L01 not merge-ready** (`wp/L01` `8738766`): ADR 0043 (Proposed), spec, WO-1, WO-2, review (3 must-fix) and
+  WO-L01-R done; 509 L01 tests pass. Blockers: (1) the evidence schema admits no `L` id (no manifest); (2)
+  `test_a20_the_axes_equal_the_code` fails — the envelope does not list `pr-lib-v1`; (3) rights for the nine
+  records (L01-Q4); (4) the development-half coverage re-take (WO-3) waits for a W27 amendment (L01-Q1) — only a
+  projection exists (COMPONENT 9→6, ROUTE 0→3, CANDIDATE 0→0).
+- **S02 specification done** (`wp/S02` `580f06f`, from `wp/S01`): `docs/derivations/S02-spec.md`, 16 assertions,
+  four matched cases, reference generator (906 claims), R-530…R-535, Q-S02-1…3. Next: its work orders (build lane).
+- Questions for Frank: `docs/FRANK_QUESTIONS.md` on each branch (C2-Q1/Q2, Q-B1/B2 on `wp/C-merge`; Q-S01-1 on
+  `wp/S01`; L01-Q1…Q4 on `wp/L01`; Q-S02-1…3 on `wp/S02`).
 
 **History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
