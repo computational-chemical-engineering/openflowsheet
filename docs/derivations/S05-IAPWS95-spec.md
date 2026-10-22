@@ -330,6 +330,96 @@ The generator claims these answered sets and registers each answered phase's val
 | derivative input `n_N2`; property `g`; `n = (1.0, 0.0)`; `n = (0.0,)` | codes 1, 2, 3, 5 | the same request at `L_ambient` with valid fields |
 | flash `PH`; flash with derivatives `("T",)` | unsupported_specification; flash_derivatives_unsupported | flash `TP` at `L_ambient` |
 
+## 6. Assertions
+
+### 6.1 The assertions
+
+Expectations are keys of `s05_reference.json`; "ref" below means that file. The test file is
+`tests/test_s05_iapws95.py` (WO-S05-1) together with `tests/test_s05_envelope.py` (WO-S05-2). NC means the two
+§5.2 states `NC_*`, whose bounds are multiplied by 100 (§6.2).
+
+| id | assertion | expectation | tolerance |
+| --- | --- | --- | --- |
+| A01 | The provider's coefficient file is byte-identical to the generator's. The module constants R_s, M, T_c, ρ_c, p_c and T_t equal §2.1's bitwise | SHA-256 `b9e93877…abbe6ed` | exact |
+| A02 | `describe()`: id `iapws95-v1`, convention `IAPWS95-ref-v1`, `nTP-v1`, components `("H2O",)`, phases `("LIQUID","VAPOR")`, properties = the 8 ids, flashes `("TP",)`, derivative_order `{T:1, P:1, n_H2O:1}`, the domain of §4.1, `numerical_limitations` naming `near_critical` and ε_σ | §2, §4 | exact |
+| A03 | `phi_jet` at §5.1's three states, orders ≤ 2, φ° and φʳ | ref `phi_states.*` | \|Δ\| ≤ 1e-12·max(\|ref\|, 1) |
+| A04 | `phi_jet` third partials of φʳ at `R6_500` and `R6_647` | ref `phi_states.*_ddd` and the other third-order keys | \|Δ\| ≤ 1e-11·max(\|ref\|, 1) (Q-5) |
+| A05 | `evaluate_phase` at §5.2's eleven states in their phase: h, s, v, Z, cp and lnphi_H2O | ref `tp_states` | h: 1e-8·R·T absolute; s: 1e-8·R absolute; v: 1e-9 relative; Z, cp: 1e-8 relative; lnphi: 1e-8 absolute. NC ×100 |
+| A06 | The same states' T and P derivatives of all six | ref `d*_dT`, `d*_dP` | 1e-8 relative; NC ×100 |
+| A07 | Every `n_H2O` derivative is present and equals 0.0. As a control, the T derivatives at the same state are non-zero | 0.0 | exact |
+| A08 | `Psat` at §5.3's five temperatures, and dPsat/dT. dPsat/dP is 0.0 | ref `saturation.*.Psat`, `dPsat_dT` | 2e-9 relative; slope 1e-8 relative |
+| A09 | `Tsat` at §5.3's three pressures, and dTsat/dP. dTsat/dT is 0.0 | ref `tsat` | 1e-9 relative; slope 1e-8 relative |
+| A10 | Maxwell: at each `Psat` temperature, LIQUID and VAPOR at P = the provider's own Psat(T) are both `ok`. \|lnφ_L − lnφ_V\| is small, and h_V − h_L matches ref | ref `h_v − h_l` | lnφ: 1e-8 absolute; Δh: 1e-9 relative (1e-6 at 647.0 K) |
+| A11 | Clausius–Clapeyron (I9) on the provider's own answers: dPsat/dT = (s_V − s_L)/(v_V − v_L) | itself | 1e-8 relative (1e-6 at 647.0 K) |
+| A12 | The datum: at 273.16 K and P = Psat(273.16 K), LIQUID has \|h − Pv\| ≤ 1e-6 J/mol and \|s\| ≤ 1e-8 J/(mol·K). As a control, the same quantities at 450 K exceed 1000 J/mol and 10 J/(mol·K) | ref `datum` | as stated |
+| A13 | The band probes of §5.4: the answered sets and the values; the refused phase is `phase_not_stable:` | ref `band.probes` | as A05 |
+| A14 | `near_critical:` probes of §5.5, for both phases and for the flash, each with its control | §5.5 | exact codes |
+| A15 | The supercritical label and the (647.0 K, T_c) rule: the §5.5 `phase_not_stable` probes and their controls | §5.5 | exact codes |
+| A16 | The four domain-edge probes of §5.5 → `out_of_domain`, for `evaluate_phase`, `Psat`, `Tsat` and `flash`. Controls at the exact bounds are `ok` | §5.5 | exact codes |
+| A17 | Value/derivative consistency: the provider's T and P derivatives against central differences of its own values (step 1e-6·x) at §5.2's states and the band probes | itself | value units, FD_TOL = 1e-10 (§6.3, Q-6) |
+| A18 | `no_saturation:` probes of §5.5, with controls | §5.5 | exact codes |
+| A19 | A saturation-only request skips the phase check, and the same request with `h` added does not (§5.5) | §5.5 | exact codes |
+| A20 | Flash: single-phase outcomes at §5.2's states (vapour fraction, outlets, zero stream, `phase_signature`, empty `k_values`); `tp_flash_degenerate:` at band `in_lo`; dormant → `ZERO_FLOW`; `PH` and derivative refusals | §4.5 | exact |
+| A21 | Contract refusals 1, 2, 3 and 5 of §4.5, with controls | §4.5 | exact codes |
+| A22 | Robustness grid: T ∈ {273.16, 300, 350, …, 1250, 1273.15} × P ∈ {1e2, 1e3, …, 1e8} plus 3·10⁷. Every non-refused phase is `ok`, `not_converged` never occurs, and every answer has (∂v/∂P)_T < 0 and cp > 0 | none (stability) | exact |
+| A23 | Determinism: two calls give bitwise-equal results. Every result, refusals included, carries the provider id and the convention; `achieved_accuracy` is `exact-double` | itself | bitwise |
+| A24 | `implementation_sha256` = SHA-256 of `iapws95.py`'s bytes; `data_sha256` = the A01 hash | files | exact |
+| A25 | Library-only: absent from `SELECTABLE_BASES`; registered in `LIBRARY_ONLY_PROVIDERS` and `scanned_providers` (F-2); U02's note names `iapws95-v1` | R-568, R-569 | exact |
+| A26 | Packaging hold: no `PACKAGED` entry covers `benchmarks/s05/`, and a built wheel holds no `iapws95_coefficients.json` | R-594 | exact |
+| A27 | Generator facts: ref's `coefficients_sha256` equals A01's hash, `claim_count` ≥ 300, and `--check` passed (manifest command) | ref | exact |
+| A28 | Independence: the AST of `s05_reference.py` imports only the standard library and mpmath. No test imports `s05_crosscheck.py`, CoolProp or iapws | files | exact |
+| A29 | Mutation battery, where each mutation must fail the named assertion: (m1) drop Gaussian term 54 → A03 at `R6_647`; (m2) flip the sign of n°₃ → A03; (m3) CODATA R → A05; (m4) ε_σ = 0 → A13; (m5) 647.0 K replaced by T_c in step 3 → A15; (m6) omit the `n_H2O` derivative → A07; (m7) a zero third-order jet → A06 (dcp); (m8) take ln((δ−1)²) at δ = 1 → A03 at `delta_one` | named | each fails |
+| A30 | Coverage: every code of §4.5 has a probe, and every probe has an answered control (the test's probe table is checked against the code list) | §4.5 | exact |
+
+### 6.2 Admission and value bounds: floor and margin
+
+- **The floor of a double-precision evaluation.** A value is a sum of 56 terms with cancellation, so its error is
+  about ε·Σ|terms| ≈ 1e-14 relative. A density root solved to 4ε relative adds κ·4ε, with κ = (ρ/X)(∂X/∂ρ)_T · p/(ρ(∂p/∂ρ)_T),
+  which is O(1–100) away from the critical point.
+- **The measured floor.** CoolProp 8.0.0 and iapws 1.5.5 against the 50-digit values: the worst per quantity is in
+  ref `agreement`, and the generator refuses to emit if any exceeds its bound (C3).
+- **The bounds.** They are those of `s05_crosscheck.py` `ADMISSION_BOUNDS`, and A05/A06/A08 use the same numbers. Each
+  sits at least 10× above the measured worst; this is claim C3, and the generator refuses to emit otherwise. The
+  measured worsts:
+  - φ: 4e-14;
+  - Psat: 1.0e-10;
+  - h, s, Z, lnφ: up to 4.9e-10 (CoolProp's TP solve);
+  - v and ρ: 1.2e-13;
+  - cp: 3e-10;
+  - the derivatives: 3e-10;
+  - Tsat: 1.0e-8 (iapws);
+  - NC: 4.3e-8.
+  iapws alone agrees to about 2e-12 on every TP value.
+- **What the bounds must catch.** The smallest error worth catching is a dropped or mis-signed term. That changes φʳ
+  by more than 1e-5 at `R6_647` (Gaussian, non-analytic) and at `delta_one` (non-analytic, ≈ 3e-5). CODATA R shifts
+  v at fixed (T, P) by 9e-6. A wrong branch is O(1). So every bound sits at least 3 decades below the smallest error
+  worth catching.
+- **The two widened bounds.**
+  - Near-critical states (NC) take 100× the bounds: CoolProp's solve at 647.05 K, 21.9 MPa disagrees by 4.3e-8 in cp
+    and the derivatives (measured), because conditioning grows as the density solve approaches the box.
+  - `Tsat`'s admission bound is 1e-7, because iapws's inverse solve is loose (C10_DECISIONS). The implementation is
+    held to 1e-9 (A09), which CoolProp meets (see `agreement`).
+
+### 6.3 Central differences (A17): step, stencil and floor
+
+- **The stencil.** It is central and second-order, with step h = 1e-6·x for x ∈ {T, P}.
+- **The assertion is in value units:**
+  |f(x+h) − f(x−h) − 2h·f′(x)| ≤ FD_TOL · max(|f(x+h)|, |f(x−h)|, s_f),
+  with s_f = R·T for h, R for s and cp, and 1 for Z and lnφ (v uses |v|).
+- **The bound's terms.**
+  - Truncation is (h³/3)|f‴|, which is ≤ 1e-16·s_f away from the box.
+  - Roundoff is 2·(the value error). That error is about 1e-14·s_f for a density solve converged to 4ε (§4.4); iapws
+    1.5.5's measured value agreement is ≤ 2e-12·s_f away from NC.
+  - So **FD_TOL = 1e-10** keeps a margin of ≥ 50× over iapws-level value noise.
+- **What it catches.** A derivative wrong by relative δ is caught once δ > FD_TOL·max(|f|, s_f)/(2·10⁻⁶·|x f′|): about
+  5e-5 for h(T) and cp, and weaker for Z(P) at dilute states, where |Z|/|P Z′| ≈ 1e3. A06 (against ref, at 1e-8) is
+  the primary derivative check, and A17 is the backstop at non-reference states.
+- **The measured CoolProp floor.** CoolProp 8.0.0's central differences are recorded in ref `fd_floor.measured_CoolProp`
+  for information. It is 1e-4 to 1e-3 relative in the P derivatives, because its density solve is noisy at about
+  1e-10. **An implementation with such a solve fails A17 by design**, because §4.4 requires a 4ε solve. If WO-S05-1
+  measures its own floor above 1e-11, the tolerance is re-set by the design lane (Q-6). It is never loosened by the
+  harness.
+
 ## 7. Generator self-claims (each one executable; the generator refuses to emit if any fails)
 
 `s05_reference.py` records every claim's text in `claims`, and their number in `claim_count`. The claims fall into
@@ -361,8 +451,8 @@ these groups:
   - φʳ and its first partials are non-zero at `delta_one`, which has δ = 1 exactly.
 - **C10 — Brackets.** (∂p/∂ρ)_T > 0 at 41 points per bracket (§4.4), and p(1250 kg/m³, T) > 100 MPa, at every grid
   temperature. The last subcritical grid temperature is below T_c ≤ the first supercritical one.
-- **C11 — The floor's margin.** For each derivative quantity, the measured central-difference floor of CoolProp 8.0.0
-  at step 1e-6·x, times 10, is ≤ the tolerance of S05.A17.
+- **C11 — The admission margin.** For every `agreement` entry, the worst disagreement × 10 is ≤ its bound. The
+  CoolProp central-difference floor is recorded, not claimed (§6.3).
 
 `s05_crosscheck.py` refuses to write when any of these fails:
 - CoolProp's `Water` string does not have its recorded hash;
@@ -414,6 +504,11 @@ these groups:
   added only if the measured time exceeds 1 ms.
 - **Q-4, needs the user's preference.** Should `g`, `cv` or the speed of sound be exposed? *Default:* no; they are
   additive ids for a later spec.
+
+- **Q-6, needs a fact.** What is A17's floor for the provider itself? *Settling measurement:* WO-S05-1 records, per
+  quantity, max |f(x+h) − f(x−h) − 2h f′| / max(|f|, s_f) over §5.2 and writes it in `docs/S05_DECISIONS.md`.
+  *Default:* FD_TOL = 1e-10. A floor above 1e-11 is escalated, and the tolerance is never loosened by the harness.
+- **Q-5, needs a fact.** What is the floor of A04 (the third partials of φʳ)? The generator admits only orders ≤ 2. *Settling measurement:* add CoolProp's `d3alphar_*` agreement (already present in `s05_crosscheck.json`) to `admit`. *Default:* 1e-11·max(|ref|, 1), which is 10× A03's bound, because the third partials multiply each term by at most d·(d−1)·(d−2) ≤ 6·5·4 relative to the value.
 
 ## 11. Work orders (`opus-engineer`, about 120k context each)
 

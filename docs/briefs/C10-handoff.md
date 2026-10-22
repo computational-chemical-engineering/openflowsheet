@@ -1,27 +1,29 @@
-# C10 handoff — specifier stopped at the context cap (2026-10-22)
+# C10 handoff — second specifier pass (2026-10-22)
 
-**Done:** read the brief, CLAUDE.md, `thermo/__init__.py`, `pr_c1.py` header, ADR 0043/0026 D4/0001 D5/0012 D1–D3, L01-spec §3/§5 pattern,
-R-565. Eleven `DECISION:` lines in `docs/C10_DECISIONS.md` (id S05, sources, generator layout, coefficients, `IAPWS95-ref-v1`,
-domain, phase rule, properties, flash, root bracket, rights). C10-Q1/Q2 appended to `docs/FRANK_QUESTIONS.md`.
-**Not written:** ADR 0045, `docs/derivations/S05-IAPWS95-spec.md`, generators and their JSON, register R-585…R-594.
+**Done (on `wp/C10`):**
+- ADR 0045 (Proposed).
+- `docs/derivations/S05-IAPWS95-spec.md`, §0–§13: derivation, domain, phase rule, brackets, refusal table, registered
+  states, S05.A01–A30 with tolerances, self-claims, findings F-1…F-3, non-claims, Q-1…Q-6, WO-S05-1/2, manifest list.
+- Register R-585…R-594, and five amending DECISION lines in `docs/C10_DECISIONS.md`.
 
-**Measured facts (do not re-measure):**
-- iapws.org: proxy CONNECT 403. The release tables cannot be read, so use two-implementation agreement.
-- CoolProp 8.0.0 is at `/home/user/venv-l01-sources/bin/python` (MIT). `CP.get_fluid_param_string('Water','JSON')`: sha256
-  `a10a0da6…0dec4586`. EOS keys: `alpha0` (Lead a1/a2, LogTau 3.00632, 5 Planck–Einstein) and `alphar` (Power, Gaussian,
-  NonAnalytic); `gas_constant` 8.314371357587; `molar_mass` 0.018015268; reducing T 647.096 K, p 22064000 Pa, ρ 17873.72799560906 mol/m³.
-- `iapws` 1.5.5 is in the scratch venv `/tmp/claude-0/-home-user-openflowsheet/2d2da80b-dab5-573b-9a3f-ceefc20b228b/scratchpad/venv-iapws`
-  (GPL-3; `IAPWS95` "revised release of 2016"). It has the same n°1 and n°2 as CoolProp and R 8.314371357587, and carries no verification tables.
+**Generators:**
+- `s05_crosscheck.py` (scratch venv `…/scratchpad/venv-iapws`, which now also holds CoolProp 8.0.0 and mpmath 1.3.0;
+  run with `-I`). It writes `s05_iapws95_coefficients.json` (SHA-256 `b9e93877…`) and `s05_crosscheck.json`, and
+  its `--check` passes.
+- `s05_reference.py` (project venv, about 5 minutes) writes `s05_reference.json`. Its claims cover admission with a
+  10× margin, identities I1–I9, the datum, the box, the band, and the bracket grid at 31 temperatures.
 
-**Next agent (specifier, fresh, ~120k):**
-1. Write `s05_crosscheck.py` (scratch venv with both packages; `--check`). It transcribes the coefficients to
-   `s05_iapws95_coefficients.json`, asserts they equal iapws's exactly, and evaluates the states with both implementations.
-2. Write `s05_reference.py` (mpmath 50 digits; `--check`). It covers the R6-95 Table-6 points (500 K, 838.025 kg/m³; 647 K, 358 kg/m³)
-   for φ°/φʳ and the derivatives, about 8 single-phase (T,P) states across both branches and the supercritical region, and saturation at
-   275, 450, 625 and 647.0 K. It emits the 9-digit roundings for the pending Table 6–8 check, and refuses to emit if the cross-check
-   disagrees or any self-claim in the decisions fails.
-3. Write the spec (§ order as L01-spec), with assertions S05.A01…: coefficients bitwise; φ derivatives; p, h, s, cp, lnφ, v and Z by
-   state; the T/P/n derivatives by central differences, with the measured floor; Maxwell (equal p and g); the Psat
-   Clausius–Clapeyron slope; every typed refusal with a control; the ε_σ band; and `tp_flash_degenerate`.
-   Add two work orders of about 120k each, the manifest check list and the non-claims (no IF97, no transport, no binding, no W27).
-4. Write ADR 0045 (pattern ADR 0043) and the register R-585…R-594 (format as R-569). Copy the DECISION lines into the spec.
+**Measured (do not re-measure):**
+- Worst agreements: φ 4e-14; TP values 4.9e-10 (CoolProp) and 2e-12 (iapws); NC states 4.3e-8 (CoolProp; hence the
+  ×100 factor); iapws's Tsat is loose at 1e-8; |Z − 1| at `SC_ideal` is 6.3e-8.
+- CoolProp's central-difference floor at step 1e-6 is 1e-4 to 1e-3, from solver noise. So A17 is in value units with
+  FD_TOL = 1e-10 (Q-6).
+
+**Remaining gaps:**
+- Q-1: the R6-95 Tables 6–8 comparison and the rights (C10-Q1).
+- Q-5: admission of the third-order φ partials.
+- Q-6: the provider's own FD floor (WO-S05-1 measures it).
+- F-1: the ADR 0001 D5 / `interfaces-frozen.md` line is to be written on acceptance.
+- `reviewer` pass on this spec (build-lane review for coverage and packaging).
+
+**Next:** the build lane runs WO-S05-1 (provider plus A01–A21, A23–A24), then WO-S05-2 (A22, A25–A30, manifest).

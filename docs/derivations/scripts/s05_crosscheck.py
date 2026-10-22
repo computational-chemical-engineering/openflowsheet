@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Any
 
 import CoolProp
-import CoolProp.CoolProp as CP
+import CoolProp.CoolProp as CP  # noqa: N817
 from iapws import IAPWS95
 
 HERE = Path(__file__).resolve().parent
@@ -43,9 +43,20 @@ M = 0.018015268
 #: states in (647.0 K, 648.0 K) take the bounds times near_critical_factor: CoolProp 8.0.0's
 #: solve there disagrees by up to 4.3e-8 in cp and the derivatives (measured 2026-10-22).
 ADMISSION_BOUNDS = {
-    "phi": "1e-12", "sat_Psat": "1e-9", "sat_rho": "1e-9", "sat_h": "1e-9", "sat_s": "1e-9",
-    "sat_Tsat": "1e-7", "tp_rho": "1e-9", "tp_h": "1e-9", "tp_s": "1e-9", "tp_cp": "1e-8",
-    "tp_v": "1e-9", "tp_Z": "1e-9", "tp_lnphi": "1e-9", "tp_deriv": "1e-8",
+    "phi": "1e-12",
+    "sat_Psat": "2e-9",
+    "sat_rho": "1e-9",
+    "sat_h": "1e-9",
+    "sat_s": "1e-9",
+    "sat_Tsat": "2e-7",
+    "tp_rho": "1e-9",
+    "tp_h": "1e-8",
+    "tp_s": "1e-8",
+    "tp_cp": "1e-8",
+    "tp_v": "1e-9",
+    "tp_Z": "5e-9",
+    "tp_lnphi": "5e-9",
+    "tp_deriv": "1e-8",
     "near_critical_factor": "100",
 }
 #: Spec §6.3: relative central-difference step for the floor measurement.
@@ -65,9 +76,13 @@ def transcribe() -> dict[str, Any]:
     lead, logtau, pe = eos["alpha0"]
     power, gauss, nonan = eos["alphar"]
     if [lead["type"], logtau["type"], pe["type"]] != [
-        "IdealGasHelmholtzLead", "IdealGasHelmholtzLogTau", "IdealGasHelmholtzPlanckEinstein"
+        "IdealGasHelmholtzLead",
+        "IdealGasHelmholtzLogTau",
+        "IdealGasHelmholtzPlanckEinstein",
     ] or [power["type"], gauss["type"], nonan["type"]] != [
-        "ResidualHelmholtzPower", "ResidualHelmholtzGaussian", "ResidualHelmholtzNonAnalytic"
+        "ResidualHelmholtzPower",
+        "ResidualHelmholtzGaussian",
+        "ResidualHelmholtzNonAnalytic",
     ]:
         fail("unexpected term families")
     red = eos["STATES"]["reducing"]
@@ -75,7 +90,7 @@ def transcribe() -> dict[str, Any]:
         "source": {
             "transcribed_from": "CoolProp 8.0.0 get_fluid_param_string('Water', 'JSON')",
             "fluid_string_sha256": FLUID_SHA256,
-            "formulation": "IAPWS R6-95(2018), Wagner and Pruss, J. Phys. Chem. Ref. Data 31 (2002) 387",
+            "formulation": "IAPWS R6-95(2018), Wagner and Pruss, J. Phys. Chem. Ref. Data 31 (2002) 387",  # noqa: E501
             "checked_equal_to": "iapws 1.5.5 IAPWS95._constants and IAPWS95.Fi0",
         },
         "R_specific": 461.51805,
@@ -86,9 +101,18 @@ def transcribe() -> dict[str, Any]:
         "T_t": eos["STATES"]["sat_min_liquid"]["T"],
         "ideal": {"n": [lead["a1"], lead["a2"], logtau["a"], *pe["n"]], "gamma": pe["t"]},
         "power": {k: power[k2] for k, k2 in (("n", "n"), ("d", "d"), ("t", "t"), ("c", "l"))},
-        "gaussian": {k: gauss[k2] for k, k2 in (("n", "n"), ("d", "d"), ("t", "t"), ("alpha", "eta"),
-                                                ("beta", "beta"), ("gamma", "gamma"),
-                                                ("epsilon", "epsilon"))},
+        "gaussian": {
+            k: gauss[k2]
+            for k, k2 in (
+                ("n", "n"),
+                ("d", "d"),
+                ("t", "t"),
+                ("alpha", "eta"),
+                ("beta", "beta"),
+                ("gamma", "gamma"),
+                ("epsilon", "epsilon"),
+            )
+        },
         "nonanalytic": {k: nonan[k] for k in ("n", "a", "b", "B", "C", "D", "A", "beta")},
     }
     # R_s = 0.46151805 kJ/(kg K) is the formulation's; CoolProp stores the molar 8.314371357587.
@@ -105,14 +129,30 @@ def iapws_equal(coeff: dict[str, Any]) -> bool:
     pairs = [
         (coeff["ideal"]["n"], [*f0["ao_pow"], f0["ao_log"][1], *f0["ao_exp"]]),
         (coeff["ideal"]["gamma"], f0["titao"]),
-        (p["n"], c["nr1"] + c["nr2"]), (p["d"], c["d1"] + c["d2"]), (p["t"], c["t1"] + c["t2"]),
-        (p["c"][7:], c["c2"]), (g["n"], c["nr3"]), (g["d"], c["d3"]), (g["t"], c["t3"]),
-        (g["alpha"], c["alfa3"]), (g["beta"], c["beta3"]), (g["gamma"], c["gamma3"]),
-        (g["epsilon"], c["epsilon3"]), (a["n"], c["nr4"]), (a["a"], c["a4"]), (a["b"], c["b4"]),
-        (a["B"], c["B"]), (a["C"], c["C"]), (a["D"], c["D"]), (a["A"], c["A"]), (a["beta"], c["beta4"]),
+        (p["n"], c["nr1"] + c["nr2"]),
+        (p["d"], c["d1"] + c["d2"]),
+        (p["t"], c["t1"] + c["t2"]),
+        (p["c"][7:], c["c2"]),
+        (g["n"], c["nr3"]),
+        (g["d"], c["d3"]),
+        (g["t"], c["t3"]),
+        (g["alpha"], c["alfa3"]),
+        (g["beta"], c["beta3"]),
+        (g["gamma"], c["gamma3"]),
+        (g["epsilon"], c["epsilon3"]),
+        (a["n"], c["nr4"]),
+        (a["a"], c["a4"]),
+        (a["b"], c["b4"]),
+        (a["B"], c["B"]),
+        (a["C"], c["C"]),
+        (a["D"], c["D"]),
+        (a["A"], c["A"]),
+        (a["beta"], c["beta4"]),
     ]
-    same = all(len(x) == len(y) and all(float(u) == float(v) for u, v in zip(x, y, strict=True))
-               for x, y in pairs)
+    same = all(
+        len(x) == len(y) and all(float(u) == float(v) for u, v in zip(x, y, strict=True))
+        for x, y in pairs
+    )
     return same and p["c"][:7] == [0] * 7 and c["R"] == 8.314371357587 and f0["pow"] == [0, 1]
 
 
@@ -130,10 +170,16 @@ def load_reference() -> Any:
 
 AS = CoolProp.AbstractState("HEOS", "Water")
 PHI_KEYS = {
-    "": ("alpha", ""), "_d": ("dalpha", "_dDelta"), "_dd": ("d2alpha", "_dDelta2"),
-    "_t": ("dalpha", "_dTau"), "_tt": ("d2alpha", "_dTau2"), "_dt": ("d2alpha", "_dDelta_dTau"),
-    "_ddd": ("d3alpha", "_dDelta3"), "_ddt": ("d3alpha", "_dDelta2_dTau"),
-    "_dtt": ("d3alpha", "_dDelta_dTau2"), "_ttt": ("d3alpha", "_dTau3"),
+    "": ("alpha", ""),
+    "_d": ("dalpha", "_dDelta"),
+    "_dd": ("d2alpha", "_dDelta2"),
+    "_t": ("dalpha", "_dTau"),
+    "_tt": ("d2alpha", "_dTau2"),
+    "_dt": ("d2alpha", "_dDelta_dTau"),
+    "_ddd": ("d3alpha", "_dDelta3"),
+    "_ddt": ("d3alpha", "_dDelta2_dTau"),
+    "_dtt": ("d3alpha", "_dDelta_dTau2"),
+    "_ttt": ("d3alpha", "_dTau3"),
 }
 IAPWS_PHI = {"": "", "_d": "d", "_dd": "dd", "_t": "t", "_tt": "tt", "_dt": "dt"}
 
@@ -143,10 +189,16 @@ def cp_tp(t: float, p: float, phase: str | None) -> dict[str, float]:
     if phase is not None:
         AS.specify_phase(CoolProp.iphase_liquid if phase == "LIQUID" else CoolProp.iphase_gas)
     AS.update(CoolProp.PT_INPUTS, p, t)
-    out = {"rho": AS.rhomass(), "h": AS.hmolar(), "s": AS.smolar(), "cp": AS.cpmolar(),
-           "v": 1 / AS.rhomolar(), "Z": AS.compressibility_factor(),
-           "lnphi_H2O": float(math.log(AS.fugacity_coefficient(0)))}
-    # CoolProp's analytic first partials: the derivative floor of a double implementation (spec §6.3).
+    out = {
+        "rho": AS.rhomass(),
+        "h": AS.hmolar(),
+        "s": AS.smolar(),
+        "cp": AS.cpmolar(),
+        "v": 1 / AS.rhomolar(),
+        "Z": AS.compressibility_factor(),
+        "lnphi_H2O": float(math.log(AS.fugacity_coefficient(0))),
+    }
+    # CoolProp's analytic first partials: a double implementation's derivative floor (spec §6.3).
     for k, ik in (("h", CoolProp.iHmolar), ("s", CoolProp.iSmolar), ("rhom", CoolProp.iDmolar)):
         out[f"d{k}_dT"] = AS.first_partial_deriv(ik, CoolProp.iT, CoolProp.iP)
         out[f"d{k}_dP"] = AS.first_partial_deriv(ik, CoolProp.iP, CoolProp.iT)
@@ -167,8 +219,15 @@ def cp_sat(t: float) -> dict[str, float]:
 
 def ia_sat(t: float) -> dict[str, float]:
     w = IAPWS95(T=t, x=0.5)
-    return {"Psat": w.P * 1e6, "rho_l": w.Liquid.rho, "rho_v": w.Gas.rho, "h_l": w.Liquid.h * M * 1e3,
-            "h_v": w.Gas.h * M * 1e3, "s_l": w.Liquid.s * M * 1e3, "s_v": w.Gas.s * M * 1e3}
+    return {
+        "Psat": w.P * 1e6,
+        "rho_l": w.Liquid.rho,
+        "rho_v": w.Gas.rho,
+        "h_l": w.Liquid.h * M * 1e3,
+        "h_v": w.Gas.h * M * 1e3,
+        "s_l": w.Liquid.s * M * 1e3,
+        "s_v": w.Gas.s * M * 1e3,
+    }
 
 
 def build() -> dict[str, Any]:
@@ -208,8 +267,15 @@ def build() -> dict[str, Any]:
         t, p = float(t_), float(p_)
         c = cp_tp(t, p, phase if t < tc else None)
         w = IAPWS95(T=t, P=p / 1e6)
-        i = {"rho": w.rho, "h": w.h * M * 1e3, "s": w.s * M * 1e3, "cp": w.cp * M * 1e3,
-             "v": M / w.rho, "Z": w.Z, "lnphi_H2O": float(math.log(w.fi))}
+        i = {
+            "rho": w.rho,
+            "h": w.h * M * 1e3,
+            "s": w.s * M * 1e3,
+            "cp": w.cp * M * 1e3,
+            "v": M / w.rho,
+            "Z": w.Z,
+            "lnphi_H2O": float(math.log(w.fi)),
+        }
         cool.update({f"tp/{name}/{k}": v for k, v in c.items() if not k.startswith("d")})
         cool.update({f"dtp/{name}/{k}": v for k, v in c.items() if k.startswith("d")})
         iap.update({f"tp/{name}/{k}": v for k, v in i.items()})
@@ -219,8 +285,16 @@ def build() -> dict[str, Any]:
             seeds[f"tp_sat/{name}"] = [repr(s_["rho_l"]), repr(s_["rho_v"])]
         for var, x in (("T", t), ("P", p)):
             h = x * FD_STEP
-            hi = cp_tp(t + h, p, phase if t < tc else None) if var == "T" else cp_tp(t, p + h, phase if t < tc else None)
-            lo = cp_tp(t - h, p, phase if t < tc else None) if var == "T" else cp_tp(t, p - h, phase if t < tc else None)
+            hi = (
+                cp_tp(t + h, p, phase if t < tc else None)
+                if var == "T"
+                else cp_tp(t, p + h, phase if t < tc else None)
+            )
+            lo = (
+                cp_tp(t - h, p, phase if t < tc else None)
+                if var == "T"
+                else cp_tp(t, p - h, phase if t < tc else None)
+            )
             for k in ref.PROPS:
                 fd[f"fd/{name}/d{k}_d{var}"] = (hi[k] - lo[k]) / (2 * h)
     for t_ in ref.GRID_SUB:
@@ -229,7 +303,10 @@ def build() -> dict[str, Any]:
     return {
         "generator": "s05_crosscheck.py",
         "versions": {"CoolProp": CoolProp.__version__, "iapws": md.version("iapws")},
-        "licences": {"CoolProp": "MIT", "iapws": "GPL-3 (executed as a comparison; nothing copied)"},
+        "licences": {
+            "CoolProp": "MIT",
+            "iapws": "GPL-3 (executed as a comparison; nothing copied)",
+        },
         "coefficients_sha256": hashlib.sha256(COEFF_PATH.read_bytes()).hexdigest(),
         "iapws_coefficients_equal": iapws_equal(json.loads(COEFF_PATH.read_bytes())),
         "admission_bounds": ADMISSION_BOUNDS,

@@ -1,6 +1,7 @@
 """Design-lane reference generator for the S05 specification (IAPWS-95 pure water, ADR 0045).
 
-Everything here follows from the closed-form Helmholtz function of ``docs/derivations/S05-IAPWS95-spec.md``
+Everything here follows from the closed-form Helmholtz function of
+``docs/derivations/S05-IAPWS95-spec.md``
 §2, evaluated with mpmath at 50 significant digits over the committed coefficient file
 ``s05_iapws95_coefficients.json``. It imports nothing from ``openflowsheet`` or ``benchmarks``.
 
@@ -49,13 +50,29 @@ DIGITS = 25
 #: (name, T [K], rho [kg/m3], why). Spec §5.1.
 PHI_STATES: tuple[tuple[str, str, str, str], ...] = (
     ("R6_500", "500", "838.025", "R6-95 Table 6 point 1, liquid-like; every phi term is non-zero"),
-    ("R6_647", "647", "358", "R6-95 Table 6 point 2, near-critical; the non-analytic terms are large"),
-    ("delta_one", "700", "322", "delta = 1 exactly: |delta-1|^q vanishes with its derivatives (spec §3.2)"),
+    (
+        "R6_647",
+        "647",
+        "358",
+        "R6-95 Table 6 point 2, near-critical; the non-analytic terms are large",
+    ),
+    (
+        "delta_one",
+        "700",
+        "322",
+        "delta = 1 exactly: |delta-1|^q vanishes with its derivatives (spec §3.2)",
+    ),
 )
 #: (name, T [K], P [Pa], answered phase, why). Spec §5.2.
 TP_STATES: tuple[tuple[str, str, str, str, str], ...] = (
     ("L_ambient", "300", "1.0e5", "LIQUID", "the common liquid; Z << 1, lnphi << 0"),
-    ("L_corner", "273.16", "1.0e8", "LIQUID", "domain corner T_min, P_max; densest registered liquid"),
+    (
+        "L_corner",
+        "273.16",
+        "1.0e8",
+        "LIQUID",
+        "domain corner T_min, P_max; densest registered liquid",
+    ),
     ("L_hot", "600", "2.0e7", "LIQUID", "hot compressed liquid, large dv/dT"),
     ("V_dilute", "400", "1.0e4", "VAPOR", "dilute vapour; Z - 1 small but non-zero"),
     ("V_nearsat", "500", "2.0e6", "VAPOR", "vapour at 0.76 p_sigma; strongly non-ideal"),
@@ -63,7 +80,13 @@ TP_STATES: tuple[tuple[str, str, str, str, str], ...] = (
     ("SC_dense", "700", "3.0e7", "VAPOR", "supercritical, liquid-like density, labelled VAPOR"),
     ("SC_corner", "1273.15", "1.0e8", "VAPOR", "domain corner T_max, P_max"),
     ("SC_ideal", "1273.15", "1.0e2", "VAPOR", "domain corner T_max, P_min; nearly ideal gas"),
-    ("NC_vapour", "647.05", "2.19e7", "VAPOR", "T in (647.0 K, T_c), just below the near_critical box"),
+    (
+        "NC_vapour",
+        "647.05",
+        "2.19e7",
+        "VAPOR",
+        "T in (647.0 K, T_c), just below the near_critical box",
+    ),
     ("NC_liquid", "647.05", "2.23e7", "LIQUID", "T in (647.0 K, T_c), just above the box"),
 )
 #: Saturation temperatures [K] (spec §5.3).
@@ -72,8 +95,13 @@ SAT_T: tuple[str, ...] = ("273.16", "275", "450", "625", "647")
 SAT_P: tuple[str, ...] = ("101325", "1.0e6", "1.0e7")
 #: Band probes at 450 K: P = p_sigma(450 K) * exp(k * EPS_SIGMA) (spec §4.2).
 BAND_T = "450"
-BAND_K: tuple[tuple[str, str], ...] = (("out_lo", "-2"), ("in_lo", "-0.5"), ("at", "0"),
-                                       ("in_hi", "0.5"), ("out_hi", "2"))
+BAND_K: tuple[tuple[str, str], ...] = (
+    ("out_lo", "-2"),
+    ("in_lo", "-0.5"),
+    ("at", "0"),
+    ("in_hi", "0.5"),
+    ("out_hi", "2"),
+)
 
 # -- the phase rule's constants (C10_DECISIONS, spec §4) ------------------------------------------
 
@@ -84,10 +112,11 @@ BOX_T = (mpf(float("647.0")), mpf(float("648.0")))
 BOX_P = (mpf(float("2.20e7")), mpf(float("2.22e7")))
 RHO_LIQ_MAX = mpf(float("1250"))
 
-#: Spec §6.3: the relative tolerance of S05.A17's central difference (step 1e-6 x), and the margin
-#: the measured floor of a double implementation (CoolProp 8.0.0) must keep below it.
-FD_TOL = "PENDING"
-FD_MARGIN = 10
+#: Spec §6.3 / Q-6: S05.A17's default tolerance in value units. CoolProp 8.0.0's central-difference
+#: floor is recorded for information only: its solver noise (about 1e-10) is not a 4-eps solve.
+FD_TOL = "1e-10 value units (spec §6.3, Q-6)"
+#: Spec §6.2: every admission bound sits at least this factor above the measured worst agreement.
+ADMISSION_MARGIN = 10
 FLOOR: dict[str, Any] = {}
 
 CLAIMS: list[str] = []
@@ -113,13 +142,17 @@ def s(x: Any, digits: int = DIGITS) -> str:
 
 def load_coefficients() -> dict[str, Any]:
     raw = COEFF_PATH.read_bytes()
-    claim(COEFF_SHA256 == "PENDING" or hashlib.sha256(raw).hexdigest() == COEFF_SHA256,
-          "the coefficient file's SHA-256 equals the recorded one")
+    claim(
+        COEFF_SHA256 == "PENDING" or hashlib.sha256(raw).hexdigest() == COEFF_SHA256,
+        "the coefficient file's SHA-256 equals the recorded one",
+    )
     c = json.loads(raw, parse_float=mpf, parse_int=mpf)
     claim([len(c["ideal"]["n"]), len(c["ideal"]["gamma"])] == [8, 5], "8 n0 and 5 gamma0")
     claim(all(len(v) == 51 for v in c["power"].values()), "51 power terms (7 with c = 0)")
-    claim([x for x in c["power"]["c"][:7]] == [0] * 7 and min(c["power"]["c"][7:]) >= 1,
-          "power terms 1-7 carry no exponential, 8-51 do")
+    claim(
+        [x for x in c["power"]["c"][:7]] == [0] * 7 and min(c["power"]["c"][7:]) >= 1,
+        "power terms 1-7 carry no exponential, 8-51 do",
+    )
     claim(all(len(v) == 3 for v in c["gaussian"].values()), "3 Gaussian terms")
     claim(all(len(v) == 2 for v in c["nonanalytic"].values()), "2 non-analytic terms")
     return c
@@ -143,13 +176,15 @@ def phir(tau: Any, delta: Any) -> Any:
     out = mpf(0)
     for n, dd, t, c in zip(p["n"], p["d"], p["t"], p["c"], strict=True):
         term = n * delta**dd * tau**t
-        out += term * mp.exp(-delta**c) if c else term
-    for n, dd, t, al, be, ga, ep in zip(g["n"], g["d"], g["t"], g["alpha"], g["beta"], g["gamma"],
-                                        g["epsilon"], strict=True):
+        out += term * mp.exp(-(delta**c)) if c else term
+    for n, dd, t, al, be, ga, ep in zip(
+        g["n"], g["d"], g["t"], g["alpha"], g["beta"], g["gamma"], g["epsilon"], strict=True
+    ):
         out += n * delta**dd * tau**t * mp.exp(-al * (delta - ep) ** 2 - be * (tau - ga) ** 2)
     sq = (delta - 1) ** 2
-    for n, aa, b, bb, cc, dd, aa_, be in zip(a["n"], a["a"], a["b"], a["B"], a["C"], a["D"], a["A"],
-                                             a["beta"], strict=True):
+    for n, aa, b, bb, cc, dd, aa_, be in zip(
+        a["n"], a["a"], a["b"], a["B"], a["C"], a["D"], a["A"], a["beta"], strict=True
+    ):
         theta = (1 - tau) + aa_ * sq ** (1 / (2 * be))
         big = theta**2 + bb * sq**aa
         psi = mp.exp(-cc * sq - dd * (tau - 1) ** 2)
@@ -192,19 +227,25 @@ def pressure(t: Any, rho: Any) -> Any:
 
 def dp_drho(t: Any, rho: Any) -> Any:
     tau, delta = T_C / t, rho / RHO_C
-    return R_S * t * (1 + 2 * delta * dphi(phir, tau, delta, 0, 1) + delta**2 * dphi(phir, tau, delta, 0, 2))
+    return (
+        R_S
+        * t
+        * (1 + 2 * delta * dphi(phir, tau, delta, 0, 1) + delta**2 * dphi(phir, tau, delta, 0, 2))
+    )
 
 
 def rho_root(t: Any, p: Any, seed: Any, check: bool = True) -> Any:
     rho = mp.findroot(lambda r: pressure(t, r) / p - 1, mpf(seed), tol=mpf(10) ** (-2 * mp.dps + 8))
     if check:
-        claim(dp_drho(t, rho) > 0 and rel(pressure(t, rho), p) < mpf(10) ** (4 - mp.dps),
-              f"the root at {s(t, 8)} K, {s(p, 8)} Pa converged with dp/drho > 0")
+        claim(
+            dp_drho(t, rho) > 0 and rel(pressure(t, rho), p) < mpf(10) ** (4 - mp.dps),
+            f"the root at {s(t, 8)} K, {s(p, 8)} Pa converged with dp/drho > 0",
+        )
     return rho
 
 
 def cdiff(f: Callable[[Any], dict[str, Any]], x: Any) -> dict[str, Any]:
-    """Central difference at 110 digits with h = 1e-45 relative: truncation ~1e-90, roundoff ~1e-65."""
+    """Central difference at 110 digits, h = 1e-45 relative: truncation ~1e-90, roundoff ~1e-65."""
     with mp.workdps(110):
         h = abs(x) * mpf("1e-45")
         fp, fm = f(x + h), f(x - h)
@@ -268,12 +309,21 @@ def rel(a: Any, b: Any) -> Any:
     return abs(a - b) / max(abs(b), mpf("1e-300"))
 
 
-def admit(section: str, key: str, value: Any, cross: dict[str, Any], bound: str,
-          agreement: dict[str, Any], scale: Any = None) -> None:
+def admit(
+    section: str,
+    key: str,
+    value: Any,
+    cross: dict[str, Any],
+    bound: str,
+    agreement: dict[str, Any],
+    scale: Any = None,
+) -> None:
     """Claim CoolProp and iapws agree with ``value`` within ``bound`` (relative, or absolute in
     units of ``scale``) and record the worst disagreement per (section, quantity)."""
     q = key.split("/")[-1]
-    worst = agreement.setdefault(f"{section}/{q}", {"bound": bound, "CoolProp": "0.0", "iapws": "0.0"})
+    worst = agreement.setdefault(
+        f"{section}/{q}", {"bound": bound, "CoolProp": "0.0", "iapws": "0.0"}
+    )
     for impl in ("CoolProp", "iapws"):
         other = cross[impl].get(key)
         if other is None:
@@ -286,17 +336,37 @@ def admit(section: str, key: str, value: Any, cross: dict[str, Any], bound: str,
 def build() -> dict[str, Any]:
     cross = json.loads(CROSS_PATH.read_text(encoding="utf-8"))
     claim(cross["versions"] == {"CoolProp": "8.0.0", "iapws": "1.5.5"}, "cross-check versions")
-    claim(cross["coefficients_sha256"] == hashlib.sha256(COEFF_PATH.read_bytes()).hexdigest(),
-          "the cross-check ran on the committed coefficient file")
-    claim(cross["iapws_coefficients_equal"] is True, "iapws 1.5.5 carries the same coefficients exactly")
+    claim(
+        cross["coefficients_sha256"] == hashlib.sha256(COEFF_PATH.read_bytes()).hexdigest(),
+        "the cross-check ran on the committed coefficient file",
+    )
+    claim(
+        cross["iapws_coefficients_equal"] is True,
+        "iapws 1.5.5 carries the same coefficients exactly",
+    )
     agreement: dict[str, Any] = {}
     bounds = cross["admission_bounds"]
-    doc: dict[str, Any] = {"generator": "s05_reference.py", "mp_dps": mp.dps, "digits": DIGITS,
-                           "coefficients_sha256": cross["coefficients_sha256"], "R_molar": s(R)}
+    doc: dict[str, Any] = {
+        "generator": "s05_reference.py",
+        "mp_dps": mp.dps,
+        "digits": DIGITS,
+        "coefficients_sha256": cross["coefficients_sha256"],
+        "R_molar": s(R),
+    }
 
     # §5.1 phi and its derivatives at (T, rho)
-    names = {(0, 0): "", (0, 1): "_d", (0, 2): "_dd", (1, 0): "_t", (2, 0): "_tt", (1, 1): "_dt",
-             (0, 3): "_ddd", (1, 2): "_ddt", (2, 1): "_dtt", (3, 0): "_ttt"}
+    names = {
+        (0, 0): "",
+        (0, 1): "_d",
+        (0, 2): "_dd",
+        (1, 0): "_t",
+        (2, 0): "_tt",
+        (1, 1): "_dt",
+        (0, 3): "_ddd",
+        (1, 2): "_ddt",
+        (2, 1): "_dtt",
+        (3, 0): "_ttt",
+    }
     phi_out: dict[str, Any] = {}
     for name, t_, rho_, why in PHI_STATES:
         t, rho = d(t_), d(rho_)
@@ -306,21 +376,37 @@ def build() -> dict[str, Any]:
             if i + j == 3 and name == "delta_one":
                 continue  # |delta-1|^(10/3) is only C^3 there; mp.diff's third order is not exact
             for label, f in (("phi0", phi0), ("phir", phir)):
-                if label == "phi0" and (i, j) not in ((0, 0), (0, 1), (0, 2), (1, 0), (2, 0), (1, 1)):
+                if label == "phi0" and (i, j) not in (
+                    (0, 0),
+                    (0, 1),
+                    (0, 2),
+                    (1, 0),
+                    (2, 0),
+                    (1, 1),
+                ):
                     continue
                 val = dphi(f, tau, delta, i, j) if not (label == "phi0" and i and j) else mpf(0)
                 row[label + suf] = s(val)
                 if (i + j) <= 2:
                     row[label + suf + "_9"] = mp.nstr(val, 9)
-                    admit("phi", f"phi/{name}/{label}{suf}", val, cross, bounds["phi"], agreement,
-                          scale=max(abs(val), mpf(1)))
+                    admit(
+                        "phi",
+                        f"phi/{name}/{label}{suf}",
+                        val,
+                        cross,
+                        bounds["phi"],
+                        agreement,
+                        scale=max(abs(val), mpf(1)),
+                    )
         props = at_rho(t, rho)
         for k in ("p", "h", "s", "cp", "lnphi_H2O"):
             row[k] = s(props[k])
         phi_out[name] = row
     claim(abs(mpf(phi_out["delta_one"]["delta"]) - 1) == 0, "delta_one has delta = 1 exactly")
-    claim(all(mpf(phi_out["delta_one"]["phir" + suf]) != 0 for suf in ("", "_d", "_dd", "_t")),
-          "phir and its derivatives stay non-zero at delta = 1 (only the |delta-1|^q factors vanish)")
+    claim(
+        all(mpf(phi_out["delta_one"]["phir" + suf]) != 0 for suf in ("", "_d", "_dd", "_t")),
+        "phir and its derivatives stay non-zero at delta = 1 (only the |delta-1|^q factors vanish)",
+    )
     doc["phi_states"] = phi_out
 
     # §5.3 saturation, first, since the phase rule needs p_sigma
@@ -334,24 +420,44 @@ def build() -> dict[str, Any]:
         liq, vap = sat["liq"], sat["vap"]
         cc = (vap["s"] - liq["s"]) / (vap["v"] - liq["v"])
         claim(rel(cc, slope) < mpf("1e-20"), f"Clausius-Clapeyron holds at {t_} K")
-        claim(rel(liq["lnphi_H2O"], vap["lnphi_H2O"]) < mpf("1e-30") or abs(liq["lnphi_H2O"] - vap["lnphi_H2O"]) < mpf("1e-35"),
-              f"lnphi_L = lnphi_V at {t_} K")
+        claim(
+            rel(liq["lnphi_H2O"], vap["lnphi_H2O"]) < mpf("1e-30")
+            or abs(liq["lnphi_H2O"] - vap["lnphi_H2O"]) < mpf("1e-35"),
+            f"lnphi_L = lnphi_V at {t_} K",
+        )
         claim(sat["rho_l"] > RHO_C > sat["rho_v"], f"rho' > rho_c > rho'' at {t_} K")
-        row = {"T": t_, "Psat": s(sat["psat"]), "dPsat_dT": s(slope), "rho_l": s(sat["rho_l"]),
-               "rho_v": s(sat["rho_v"])}
+        row = {
+            "T": t_,
+            "Psat": s(sat["psat"]),
+            "dPsat_dT": s(slope),
+            "rho_l": s(sat["rho_l"]),
+            "rho_v": s(sat["rho_v"]),
+        }
         for ph, pr in (("l", liq), ("v", vap)):
             for k in PROPS:
                 row[f"{k}_{ph}"] = s(pr[k])
         for k in ("Psat", "rho_l", "rho_v", "h_l", "h_v", "s_l", "s_v"):
             scale = R if k[0] == "s" else (R * t if k[0] == "h" else None)
-            admit("sat", f"sat/{t_}/{k}", mpf(row[k]), cross, bounds["sat_" + k.split("_")[0]], agreement, scale)
+            admit(
+                "sat",
+                f"sat/{t_}/{k}",
+                mpf(row[k]),
+                cross,
+                bounds["sat_" + k.split("_")[0]],
+                agreement,
+                scale,
+            )
         sat_out[t_] = row
     tt = sat_out["273.16"]
     u_t = mpf(tt["h_l"]) - mpf(tt["Psat"]) * mpf(tt["v_l"])
-    claim(abs(u_t) < mpf("1e-6") and abs(mpf(tt["s_l"])) < mpf("1e-8"),
-          "datum: u' and s' vanish at the triple point to the rounding of n0_1, n0_2")
-    claim(abs(mpf(sat_out["450"]["h_l"])) > 1000 and abs(mpf(sat_out["450"]["s_l"])) > 10,
-          "control: h' and s' do not vanish at 450 K")
+    claim(
+        abs(u_t) < mpf("1e-6") and abs(mpf(tt["s_l"])) < mpf("1e-8"),
+        "datum: u' and s' vanish at the triple point to the rounding of n0_1, n0_2",
+    )
+    claim(
+        abs(mpf(sat_out["450"]["h_l"])) > 1000 and abs(mpf(sat_out["450"]["s_l"])) > 10,
+        "control: h' and s' do not vanish at 450 K",
+    )
     doc["datum"] = {"u_l_triple": s(u_t, 6), "s_l_triple": s(mpf(tt["s_l"]), 6)}
     doc["saturation"] = sat_out
 
@@ -360,7 +466,7 @@ def build() -> dict[str, Any]:
         p = d(p_)
         t0 = mpf(cross["seeds"][f"tsat/{p_}"][0])
         SEEDS["sat_seed"] = tuple(mpf(x) for x in cross["seeds"][f"tsat/{p_}"][1:])
-        t = mp.findroot(lambda x: psat(x) / p - 1, t0, tol=mpf(10) ** (-2 * mp.dps + 10))
+        t = mp.findroot(lambda x, p=p: psat(x) / p - 1, t0, tol=mpf(10) ** (-2 * mp.dps + 10))
         slope = cdiff(lambda x: {"p": psat(x)}, t)["p"]
         tsat_out[p_] = {"P": p_, "Tsat": s(t), "dTsat_dP": s(1 / slope)}
         admit("sat", f"tsat/{p_}/Tsat", t, cross, bounds["sat_Tsat"], agreement)
@@ -371,7 +477,10 @@ def build() -> dict[str, Any]:
     p647 = psat(T_SIGMA_MAX)
     pc_eos = pressure(T_C, RHO_C)
     claim(p647 > BOX_P[0], "p_sigma(647.0 K) > 22.0 MPa")
-    claim(BOX_T[0] < T_C < BOX_T[1] and BOX_P[0] <= C["p_c"] <= BOX_P[1], "the critical point is in the box")
+    claim(
+        BOX_T[0] < T_C < BOX_T[1] and BOX_P[0] <= C["p_c"] <= BOX_P[1],
+        "the critical point is in the box",
+    )
     claim(rel(pc_eos, C["p_c"]) < mpf("1e-5"), "p(rho_c, T_c) = 22.064 MPa within 1e-5")
     doc["critical"] = {"p_eos_at_rhoc_Tc": s(pc_eos), "psat_647": s(p647)}
 
@@ -387,17 +496,24 @@ def build() -> dict[str, Any]:
             vals = tp_values(d(BAND_T), p, seed)
             row[ph] = {k2: s(vals[k2]) for k2 in (*PROPS, "rho")}
         band[label] = row
-    claim([band[x]["answered"] for x, _ in BAND_K] == [["VAPOR"], ["LIQUID", "VAPOR"], ["LIQUID", "VAPOR"],
-                                                      ["LIQUID", "VAPOR"], ["LIQUID"]],
-          "band: out_lo vapour only, in_lo/at/in_hi both, out_hi liquid only")
+    claim(
+        [band[x]["answered"] for x, _ in BAND_K]
+        == [["VAPOR"], ["LIQUID", "VAPOR"], ["LIQUID", "VAPOR"], ["LIQUID", "VAPOR"], ["LIQUID"]],
+        "band: out_lo vapour only, in_lo/at/in_hi both, out_hi liquid only",
+    )
     at_ = band["at"]
-    claim(abs(mpf(at_["LIQUID"]["lnphi_H2O"]) - mpf(at_["VAPOR"]["lnphi_H2O"])) < mpf("1e-14"),
-          "at P = p_sigma (as a double) both roots have equal lnphi to 1e-14")
+    claim(
+        abs(mpf(at_["LIQUID"]["lnphi_H2O"]) - mpf(at_["VAPOR"]["lnphi_H2O"])) < mpf("1e-14"),
+        "at P = p_sigma (as a double) both roots have equal lnphi to 1e-14",
+    )
     for ph, k in (("LIQUID", "-1"), ("VAPOR", "1")):
         p = p647 * mp.exp(mpf(k) * EPS_SIGMA)
         seed = cross["seeds"]["sat/647"][0 if ph == "LIQUID" else 1]
         r = rho_root(T_SIGMA_MAX, p, seed)
-        claim((r > RHO_C) == (ph == "LIQUID"), f"the metastable {ph} root exists at 647.0 K at the band edge")
+        claim(
+            (r > RHO_C) == (ph == "LIQUID"),
+            f"the metastable {ph} root exists at 647.0 K at the band edge",
+        )
     doc["band"] = {"T": BAND_T, "eps_sigma": "1e-6", "probes": band}
 
     # §5.2 single-phase states: values, (T, P) derivatives, and the identities of spec §3.4
@@ -416,19 +532,34 @@ def build() -> dict[str, Any]:
         sec, fac = ("tp_nc", mpf(bounds["near_critical_factor"])) if nc else ("tp", mpf(1))
 
         def bound(key: str) -> str:
-            return mp.nstr(mpf(bounds[key]) * fac, 3)
+            return mp.nstr(mpf(bounds[key]) * fac, 3)  # noqa: B023
 
-        by_t = cdiff(lambda x: tp_values(x, p, vals["rho"], False), t)
-        by_p = cdiff(lambda x: tp_values(t, x, vals["rho"], False), p)
+        r0 = vals["rho"]
+        by_t = cdiff(lambda x, p=p, r0=r0: tp_values(x, p, r0, False), t)
+        by_p = cdiff(lambda x, t=t, r0=r0: tp_values(t, x, r0, False), p)
         for k in PROPS:
             row[k] = s(vals[k])
             row[f"d{k}_dT"], row[f"d{k}_dP"] = s(by_t[k]), s(by_p[k])
             if k in ("h", "s", "cp", "v", "Z"):
-                admit(sec, f"tp/{name}/{k}", vals[k], cross, bound("tp_" + k), agreement,
-                      scale=R * t if k == "h" else (R if k == "s" else None))
+                admit(
+                    sec,
+                    f"tp/{name}/{k}",
+                    vals[k],
+                    cross,
+                    bound("tp_" + k),
+                    agreement,
+                    scale=R * t if k == "h" else (R if k == "s" else None),
+                )
         for k in ("h", "s", "v"):
             for var, src in (("T", by_t), ("P", by_p)):
-                admit(sec + "d", f"dtp/{name}/d{k}_d{var}", src[k], cross, bound("tp_deriv"), agreement)
+                admit(
+                    sec + "d",
+                    f"dtp/{name}/d{k}_d{var}",
+                    src[k],
+                    cross,
+                    bound("tp_deriv"),
+                    agreement,
+                )
                 fd = mpf(cross["CoolProp_fd"][f"fd/{name}/d{k}_d{var}"])
                 key = f"d{k}_d{var}"
                 FLOOR[key] = max(FLOOR.get(key, mpf(0)), rel(fd, src[k]))
@@ -438,8 +569,15 @@ def build() -> dict[str, Any]:
                 key = f"d{k}_d{var}"
                 FLOOR[key] = max(FLOOR.get(key, mpf(0)), rel(fd, src[k]))
         admit(sec, f"tp/{name}/rho", vals["rho"], cross, bound("tp_rho"), agreement)
-        admit(sec, f"tp/{name}/lnphi_H2O", vals["lnphi_H2O"], cross, bound("tp_lnphi"), agreement,
-              scale=mpf(1))
+        admit(
+            sec,
+            f"tp/{name}/lnphi_H2O",
+            vals["lnphi_H2O"],
+            cross,
+            bound("tp_lnphi"),
+            agreement,
+            scale=mpf(1),
+        )
         cp, z, v = vals["cp"], vals["Z"], vals["v"]
         h_res = R * t * ((T_C / t) * dphi(phir, T_C / t, vals["rho"] / RHO_C, 1, 0) + z - 1)
         tol = mpf("1e-20")
@@ -455,33 +593,70 @@ def build() -> dict[str, Any]:
             claim(rel(lhs, rhs) < tol, f"{name}: {text} to 1e-20")
         claim(by_p["v"] < 0 and cp > 0, f"{name}: mechanically and thermally stable")
         tp_out[name] = row
-    claim(len({(r["T"], r["P"]) for r in tp_out.values()}) == len(tp_out), "TP states pairwise distinct")
+    claim(
+        len({(r["T"], r["P"]) for r in tp_out.values()}) == len(tp_out),
+        "TP states pairwise distinct",
+    )
     for k in ("h", "s", "v", "Z", "cp", "lnphi_H2O"):
-        claim(len({tp_out[n][f"d{k}_dP"] for n in tp_out}) == len(tp_out), f"d{k}/dP pairwise distinct")
-    claim(abs(mpf(tp_out["SC_ideal"]["Z"]) - 1) > 10 * mpf(bounds["tp_Z"])
-          and abs(mpf(tp_out["SC_ideal"]["lnphi_H2O"])) > 10 * mpf(bounds["tp_lnphi"]),
-          "SC_ideal: |Z - 1| and |lnphi| exceed 10x their bounds (an ideal-gas answer fails)")
+        claim(
+            len({tp_out[n][f"d{k}_dP"] for n in tp_out}) == len(tp_out),
+            f"d{k}/dP pairwise distinct",
+        )
+    claim(
+        abs(mpf(tp_out["SC_ideal"]["Z"]) - 1) > 10 * mpf(bounds["tp_Z"])
+        and abs(mpf(tp_out["SC_ideal"]["lnphi_H2O"])) > 10 * mpf(bounds["tp_lnphi"]),
+        "SC_ideal: |Z - 1| and |lnphi| exceed 10x their bounds (an ideal-gas answer fails)",
+    )
     doc["tp_states"] = tp_out
-    doc["fd_floor"] = {"step": cross["fd_step"], "tolerance": FD_TOL,
-                       "measured_CoolProp": {k: s(v, 3) for k, v in sorted(FLOOR.items())}}
-    for k, v in FLOOR.items():
-        claim(v * FD_MARGIN <= mpf(FD_TOL), f"the measured central-difference floor of {k} sits "
-              f"{FD_MARGIN}x below the tolerance {FD_TOL}")
+    doc["fd_floor"] = {
+        "step": cross["fd_step"],
+        "tolerance": FD_TOL,
+        "measured_CoolProp": {k: s(v, 3) for k, v in sorted(FLOOR.items())},
+    }
 
     # §4.4 bracket claims over the grid (dp/drho > 0) at 20 digits
     doc["brackets"] = brackets(cross)
+    for key, row in agreement.items():
+        worst = max(mpf(row["CoolProp"]), mpf(row["iapws"]))
+        claim(
+            worst * ADMISSION_MARGIN <= mpf(row["bound"]),
+            f"{key}: the bound {row['bound']} sits {ADMISSION_MARGIN}x above the worst agreement",
+        )
     doc["agreement"] = agreement
     doc["claims"] = list(CLAIMS)
     doc["claim_count"] = len(CLAIMS)
     return doc
 
 
-#: The bracket grid (spec §4.4): below T_c the band-extended branch brackets bounded by the saturated
+#: The bracket grid (spec §4.4): below T_c the band-extended branch brackets bounded by the
+#: saturated
 #: densities (647.05 K lies in (647.0 K, T_c), where Psat is not answered but bounds the brackets);
 #: at and above T_c the single bracket (0, 1250] kg/m3.
-GRID_SUB: tuple[str, ...] = ("273.16", "280", "300", "320", "340", "360", "380", "400", "420", "440",
-                             "460", "480", "500", "520", "540", "560", "580", "600", "620", "640",
-                             "645", "647", "647.05")
+GRID_SUB: tuple[str, ...] = (
+    "273.16",
+    "280",
+    "300",
+    "320",
+    "340",
+    "360",
+    "380",
+    "400",
+    "420",
+    "440",
+    "460",
+    "480",
+    "500",
+    "520",
+    "540",
+    "560",
+    "580",
+    "600",
+    "620",
+    "640",
+    "645",
+    "647",
+    "647.05",
+)
 GRID_SUPER: tuple[str, ...] = ("647.1", "647.5", "648", "650", "700", "800", "1000", "1273.15")
 
 
@@ -502,13 +677,17 @@ def brackets(cross: dict[str, Any]) -> dict[str, Any]:
             sat = saturation(t, *(mpf(x) for x in cross["seeds"][f"grid/{t_}"]))
             hi_v = rho_root(t, sat["psat"] * mp.exp(EPS_SIGMA), sat["rho_v"], False)
             lo_l = rho_root(t, sat["psat"] * mp.exp(-EPS_SIGMA), sat["rho_l"], False)
-            claim(sat["rho_v"] < hi_v < RHO_C < lo_l < sat["rho_l"], f"band-edge roots on their branches at {t_} K")
+            claim(
+                sat["rho_v"] < hi_v < RHO_C < lo_l < sat["rho_l"],
+                f"band-edge roots on their branches at {t_} K",
+            )
             count += grid_claims(t, ((hi_v / 40, hi_v), (lo_l, RHO_LIQ_MAX)), t_)
-        claim(d(GRID_SUB[-1]) < T_C <= d(GRID_SUPER[0]), "the grid's last subcritical T is below T_c")
+        claim(
+            d(GRID_SUB[-1]) < T_C <= d(GRID_SUPER[0]), "the grid's last subcritical T is below T_c"
+        )
         for t_ in GRID_SUPER:
             count += grid_claims(d(t_), ((RHO_LIQ_MAX / 60, RHO_LIQ_MAX),), t_)
-    return {"points": count, "T_subcritical": list(GRID_SUB),
-            "T_supercritical": list(GRID_SUPER)}
+    return {"points": count, "T_subcritical": list(GRID_SUB), "T_supercritical": list(GRID_SUPER)}
 
 
 def encode(document: dict[str, Any]) -> bytes:
@@ -517,8 +696,11 @@ def encode(document: dict[str, Any]) -> bytes:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
-    parser.add_argument("--check", action="store_true",
-                        help="re-derive every claim and compare with the committed file")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="re-derive every claim and compare with the committed file",
+    )
     parser.add_argument("--emit", metavar="PATH", help="write the reference JSON")
     args = parser.parse_args(argv)
     if not (args.check or args.emit):
