@@ -295,8 +295,10 @@ def test_a13_edge_3_on_solve_columns_own_path(monkeypatch: pytest.MonkeyPatch, c
 
 @pytest.mark.parametrize("shift", [-5.0, 5.0])
 def test_a14_a_shifted_sweep_start_reaches_the_same_endpoint(shift: float) -> None:
-    """A14: the sweeps from `T⁰ ± 5 K` give A05's `x⁰` within 1e-8 K; the target converges within
-    the state tolerance of `ref.target`, `same_root = SAME` with A06's run."""
+    """A14 (§19 item 3, R-552): the sweeps from `T⁰ ± 5 K` give A05's `x⁰` within 1e-8 K; the
+    target converges within the state tolerance of `ref.target`, `same_root = SAME` with A06's
+    run. The "same final `state_sha256`" clause is withdrawn: the stopped sweep lies within
+    1.2e-9 K of the fixed point on start-dependent bits (measured: `docs/S02_DECISIONS.md`)."""
     spec, base = SPECS["M1"], solved("M1")
     answer = solve_column(spec, PROVIDER, profile_shift=shift)
     assert isinstance(answer, ColumnSolution) and answer.outcome == "CONVERGED"
@@ -306,34 +308,6 @@ def test_a14_a_shifted_sweep_start_reaches_the_same_endpoint(shift: float) -> No
     worst = deviation("M1", answer.state)
     assert max(worst.values()) <= 1.0, worst
     assert _same(spec, answer, base) == "SAME"
-
-
-#: Measured (WO-2b, `docs/S02_DECISIONS.md` Q-S02-WO2b-1): x⁰ from the shifted start is not
-#: bit-identical (91 columns differ; max |ΔT| 2.3e-10 K, −5 K; 1.4e-10 K, +5 K; sweeps 24 / 25
-#: against 25), so the answer differs in the last bits (max 1.1e-11 / 3.6e-12; `SAME`).
-SHIFT_MEASURED = {
-    -5.0: "x⁰ max |ΔT| 2.28e-10 K, answer max |Δx| 1.09e-11",
-    5.0: "x⁰ max |ΔT| 1.36e-10 K, answer max |Δx| 3.64e-12",
-}
-
-
-@pytest.mark.parametrize(
-    "shift",
-    [
-        pytest.param(
-            shift,
-            marks=pytest.mark.xfail(
-                strict=True, reason=f"Q-S02-WO2b-1, measured: {SHIFT_MEASURED[shift]}"
-            ),
-        )
-        for shift in (-5.0, 5.0)
-    ],
-)
-def test_a14_a_shifted_sweep_start_gives_the_same_final_state_sha256(shift: float) -> None:
-    """A14's last clause as written: the same final `state_sha256` as A06's run."""
-    answer = solve_column(SPECS["M1"], PROVIDER, profile_shift=shift)
-    assert isinstance(answer, ColumnSolution)
-    assert answer.final_sha256 == solved("M1").final_sha256
 
 
 @pytest.mark.parametrize("scale", [0.5, 2.0])
