@@ -2,6 +2,7 @@
 
 **Status:** Proposed, 2026-10-22; **amended** 2026-10-22 by the `reviewer` (§12: A12 bound and scope, `vapour_unstable`, T08.A32, packaging). **Amended** again 2026-10-22 by the `specifier` (§13, S04 ruling: A22's W27 clause and the library-only provider; R-566, R-567, R-569). **Author:** design lane (`specifier`), package L01, branch `wp/L01`.
 **Decision record:** ADR 0043 (Proposed); register R-520…R-527; `docs/L01_DECISIONS.md`.
+**Package id S04 (D1, R-565).** Manifest check ids are `S04.<label>` for this spec's `L01.<label>`.
 **Generator:** `docs/derivations/scripts/l01_projection.py` (`--emit`, `--check`) → `l01_projection.json` beside it.
 Every number in §3 and §6 is that record's, and the generator refuses to emit when a claim of §7 stops being true.
 
