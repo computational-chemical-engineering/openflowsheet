@@ -30,3 +30,16 @@ Questions only Frank can answer (scope, value judgments). Each carries the defau
   the bottom stage with nothing entering from above) is not claimed to converge. S01 promises only that the solver reports a
   typed failure or a checked root, never a false success (`docs/derivations/S01-spec.md` §4.7, A19). Is that acceptable for
   S01, with the capability left to a later package if a column case needs it? **Default: yes.**
+
+## S02 (2026-10-22)
+
+- **Q-S02-1.** S02's total condenser always returns its liquid exactly at the boiling point (saturated). A condenser that
+  cools the liquid further (subcooled reflux) and a reboiler that vaporizes everything are not offered; asking for them gives
+  an "unsupported" answer. Is that acceptable for S02? **Default: yes** (`docs/derivations/S02-spec.md` §1).
+- **Q-S02-2.** The column can be specified by reflux ratio, boil-up ratio, distillate or bottoms rate, or duties. It cannot
+  yet be specified by a product purity, a component recovery or a stage temperature (the specifications engineers often
+  want, but which need extra checks). Should these wait for a later package? **Default: yes** (§3).
+- **Q-S02-3.** The math shows that some phase patterns in a column cannot be solved (for example a fully liquid stage sitting
+  on a boiling stage). The current phase-switching logic may try them and then stop with a reported failure — never a false
+  answer. Fixing that means changing the shared phase logic, which affects every unit. Should S02 leave it, record the
+  measured behaviour, and let S03 decide? **Default: yes** (§4.3, R-533).

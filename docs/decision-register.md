@@ -10745,3 +10745,136 @@ rounding term `ε·|Ḣ|·D_x/(h·D_r)` was then 10⁴× inflated, so the check 
   `solve_region` reached it.
 
 **Watch for.** —
+
+---
+
+## R-530 — S02 column conventions: numbering, end units, products, pressure profile
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification |
+| Normative text | `docs/derivations/S02-spec.md` §1, §2.2, §2.3 |
+| Evidence | generator `s02_reference.py --check` (906 claims); `ref.dof` |
+| Affected packages | S02 (WO-1 to WO-3), S03 |
+
+**Decision.** Stages are numbered top to bottom, and N counts the condenser (stage 1) and the reboiler (stage N). Partial ends
+are S01 equilibrium stages with an absent inlet. The total condenser is a saturated-liquid block of 2C + 5 columns and rows.
+The pressure profile is explicit and non-decreasing downward.
+
+**Rejected alternatives, and why.**
+- *Ends outside the count:* every registered column tool and textbook table counts them in.
+- *Subcooled total condenser, total reboiler:* each needs its own slot kind. They are `unsupported` (Q-S02-1).
+
+**Watch for.** §2.3's ZERO_FLOW label `T_1⁰` when there is no `top` inlet.
+
+---
+
+## R-531 — S02 specification slots and the admissible specification sets
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification |
+| Normative text | `docs/derivations/S02-spec.md` §2.1, §3, §5 S2–S5 |
+| Evidence | `ref.variants`: (D, B) has `σ_min` 2.2e-41 / 9.1e-42; the other registered sets are ≥ 2.4e-3 |
+| Affected packages | S02, S03 |
+
+**Decision.** One slot row per non-`none` end: RR, D or Q_c at the condenser, and BR, B or Q_r at the reboiler. (D, B) is
+refused as structurally redundant. Inverse specifications are `unsupported`.
+
+**Rejected alternatives, and why.**
+- *Solving (D, B) when `D* + B* = F`:* the Jacobian is singular at every state.
+- *Inverse specifications now:* their admissibility depends on the state (Q-S02-2).
+
+**Watch for.** An unregistered pair at another state is not claimed regular.
+
+---
+
+## R-532 — S02 solve path: profile pre-solve, ratio rows held, edge 3 on `variable − parameter` slots only
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification |
+| Normative text | `docs/derivations/S02-spec.md` §6, §7 |
+| Evidence | generator: pre-solves two-phase and regular for M1–M4; straight paths two-phase at 16 steps |
+| Affected packages | S02 (WO-2) |
+
+**Decision.** The pre-solve replaces every `variable − parameter` slot with `T_j − T_j⁰`, on a linear profile between the
+band temperatures `T(0.1)` at `P_1*` and `T(0.9)` at `P_N*`. On a total condenser the substitute is `Σr − D`. Ratio rows are
+kept at their targets and never continued.
+
+**Rejected alternatives, and why.**
+- *S01's isothermal pre-solve:* it puts a partial condenser at its dew point and a partial reboiler at its bubble point,
+  both on the phase boundary.
+- *Lifting ratios as dimensionless variables:* this needs a row kind `KIND_TOLERANCE` lacks.
+
+**Watch for.** §15.3: each spec-set variant has its own pre-solve.
+
+---
+
+## R-533 — Cascade signatures: singular adjacent pairs and the block rule (finding on the phase contract)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification (derivation; a finding, not a contract change) |
+| Normative text | `docs/derivations/S02-spec.md` §4.2, §4.3, §8 item 4 |
+| Evidence | `ref.singular_pairs`: `‖Jδ‖/‖δ‖ ≤ 5.2e-53`, `σ_min ≤ 4.4e-41` at three probes |
+| Affected packages | S02, S03; T05b / ADR 0005 owners |
+
+**Decision.** A pair (LIQUID over a vapour-emitting stage), or (a liquid-emitting stage over VAPOR), has an internal
+circulation null vector at every state. A regular cascade signature therefore reads `VAPOR^a TWO_PHASE^b LIQUID^c`. S02
+asserts it on the compiled Jacobian (A11) and in acceptance. The v2 contract is not changed. P1 asserts either the closed
+form or a typed outcome.
+
+**Rejected alternatives, and why.**
+- *An S02 signature screen around `solve_region`:* it would be a second decision function, against ADR 0005 D4.
+
+**Watch for.** P1's measured outcome (Q-S02-3). If the contract cannot reach block signatures, S03 or an ADR decides.
+
+---
+
+## R-534 — S02 cases, tolerances and the independent reference
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification |
+| Normative text | `docs/derivations/S02-spec.md` §9, §10, §11 |
+| Evidence | `s02_reference.json` (906 claims) |
+| Affected packages | S02 |
+
+**Decision.**
+- Four matched column cases: M1 (partial/partial, RR/BR), M2 (total/partial, RR/B), M3 (stripper, Q_r) and M4 (refluxed
+  absorber, D).
+- The phase case P1 (all-liquid closed form).
+- Spec-set variants V-M1 and V-M2, which must return the same root.
+- S01's amended state tolerance (R-514).
+- Assertions A01–A16.
+
+**Rejected alternatives, and why.**
+- *A stripper with a liquid top over a two-phase section as the phase case:* that signature is singular (R-533).
+
+**Watch for.** The A10 floor for the new rows, and the deviation measurement.
+
+---
+
+## R-535 — S02 needs no ADR and stays library-only
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification |
+| Normative text | `docs/derivations/S02-spec.md` §0; `docs/S02_DECISIONS.md` |
+| Evidence | no frozen interface, row kind, contract or policy changes |
+| Affected packages | S02 |
+
+**Decision.** ADR 0044 is not used. S02 adds additive row builders and reuses `s01-default-v1`. The column is not bound into
+`MODEL_BUILDERS`, and support-envelope L-rows wait for the binding package.
+
+**Rejected alternatives, and why.**
+- *An ADR for the column contract:* nothing frozen moves.
+
+**Watch for.** If review finds the ratio row or the bubble row needs a new kind, an ADR is required.
