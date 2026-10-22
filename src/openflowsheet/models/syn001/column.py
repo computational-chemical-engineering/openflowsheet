@@ -1279,10 +1279,12 @@ def _initial_state(
     liquid: Mapping[int, list[float]],
     vapor: Mapping[int, list[float]],
     profile: tuple[float, ...],
+    *,
+    phi: float = PHI_INITIAL,
 ) -> dict[str, float]:
     """§6 steps 5–6: `T_j = T_j⁰`, `P_j = P_j*`; at a total condenser `φ = φ⁰`, `T_c = T_1⁰`,
     `r = φ⁰ v_2`, `d = v_2 − r`, `D = Σ d`; totals as sums; `m` from `mix`; every `Q` from its
-    energy row."""
+    energy row. S02 §18.2 step 5 passes its own `T` as `profile` and its `φ`."""
     unit, components = spec.unit_id, spec.components
     values = _inlet_columns(spec)
     stages = spec.equilibrium_stages()
@@ -1298,11 +1300,11 @@ def _initial_state(
     if spec.total_condenser:
         distillate: list[float] = []
         for i, c in enumerate(components):
-            reflux = PHI_INITIAL * vapor[2][i]
+            reflux = phi * vapor[2][i]
             values[reflux_id(unit, c)] = reflux
             values[distillate_id(unit, c)] = vapor[2][i] - reflux
             distillate.append(vapor[2][i] - reflux)
-        values[reflux_fraction_id(unit)] = PHI_INITIAL
+        values[reflux_fraction_id(unit)] = phi
         values[distillate_total_id(unit)] = sum(distillate)
         values[stage_temperature_id(unit, 1)] = profile[0]
         values[stage_pressure_id(unit, 1)] = float(spec.pressures[0])

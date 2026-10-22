@@ -4,10 +4,10 @@ Expectations are values of `docs/derivations/scripts/s02_reference.json` (the de
 50-digit generator), codes and rules of `docs/derivations/S02-spec.md`, or arithmetic done here.
 Each test names the assertion of §10 / §17 it closes.
 
-Measured (WO-2, `docs/S02_DECISIONS.md` Q-S02-WO2-1): §7.3's pre-solve from `x_K` does not
-converge on any registered case, so every assertion read through `solve_column` from `x_K` is a
-strict xfail carrying its measured outcome. Steps 4–5 (target, edge 3, §8) are tested from the
-generator's own pre-solve root `x⁰` (`ref.cases.*.presolve`), an independent expectation.
+Steps 4–5 (target, edge 3, §8) are tested here from the registered profile endpoint
+`ref.cases.*.presolve` (§18.6 A06b, A13b), an independent expectation. WO-2's strict xfails on
+§7.3's Newton pre-solve (Q-S02-WO2-1) are replaced by §18.2's endpoint, tested through
+`solve_column` in `test_s02_column_wo2b.py` (A05, A06, A07; `docs/S02_DECISIONS.md` WO-2b).
 """
 
 from __future__ import annotations
@@ -26,6 +26,7 @@ from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.models.syn001 import FLOW_TOLERANCE
 from openflowsheet.models.syn001.cascade import (
+    declared_problem,
     label_row_id,
     liquid_id,
     liquid_total_id,
@@ -39,6 +40,7 @@ from openflowsheet.models.syn001.cascade import (
 )
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
 from openflowsheet.models.syn001.column import (
+    ColumnSpec,
     _inflow,
     _inlet_columns,
     declared_rows,
@@ -55,13 +57,13 @@ from openflowsheet.models.syn001.column_solve import (
     DECLARATION_CONTEXT,
     FD_COLUMN_SCALE,
     PRESOLVE_ID,
-    PRESOLVE_POLICY,
     S02_TARGET_POLICY,
     ColumnSolution,
     acceptance_failures,
     compile_column,
     continuation,
     overall_closure,
+    presolve_rows,
     products,
     singular_pairs,
     slots,
@@ -89,9 +91,13 @@ def ref_state(case: str, which: str = "presolve") -> dict[str, float]:
     """`ref.cases.<case>.<which>` mapped onto the implementation's columns: the generator's
     `(l, v, T, Q)` per equilibrium stage and `(φ, r, d, T_c, Q_c)` at a total condenser; `P_j`
     pinned at `P_j*`, `L, V, D` their sums as recorded, `m` from the `mix` rows, inlets as given."""
-    spec = SPECS[case]
+    return stages_state(SPECS[case], REFERENCE["cases"][case][which]["stages"])
+
+
+def stages_state(spec: ColumnSpec, stages: list[dict[str, Any]]) -> dict[str, float]:
+    """`ref_state`'s mapping of a recorded `stages` list onto `spec`'s columns."""
     values = _inlet_columns(spec)
-    for record in REFERENCE["cases"][case][which]["stages"]:
+    for record in stages:
         j = record["stage"]
         if record.get("kind") == "total_condenser":
             for c, r, d in zip("ABC", record["reflux"], record["distillate"], strict=True):
@@ -118,8 +124,12 @@ def deviation(case: str, state: Any) -> dict[str, float]:
     """The worst error of `state` against `ref.cases.<case>.target`, each column in units of its
     own state tolerance (≤ 1 passes): flows (`l, v, L, V`, and `r, d` at a total condenser),
     `T`, `Q`, and `φ` (a ratio: rel 1e-6)."""
+    return deviation_from(SPECS[case], ref_state(case, "target"), state)
+
+
+def deviation_from(spec: ColumnSpec, expected: dict[str, float], state: Any) -> dict[str, float]:
+    """`deviation` against any expected state of `spec` (e.g. `stages_state` of a record)."""
     worst = {"flow": 0.0, "T": 0.0, "Q": 0.0, "ratio": 0.0}
-    expected = ref_state(case, "target")
     for name, target in expected.items():
         if name.endswith((".T", ".Q", ".phi")) or ".n." in name or ".flow." in name:
             continue
@@ -127,14 +137,14 @@ def deviation(case: str, state: Any) -> dict[str, float]:
             continue
         error = abs(state[name] - target)
         worst["flow"] = max(worst["flow"], error / (FLOW_REL * abs(target) + FLOW_ABS))
-    for j in range(1, SPECS[case].stage_count + 1):
+    for j in range(1, spec.stage_count + 1):
         for key, column, tolerance in (
             ("T", stage_temperature_id, T_ABS),
             ("Q", stage_duty_id, Q_ABS),
         ):
             name = column(UNIT, j)
             worst[key] = max(worst[key], abs(state[name] - expected[name]) / tolerance)
-    if SPECS[case].total_condenser:
+    if spec.total_condenser:
         phi = reflux_fraction_id(UNIT)
         worst["ratio"] = abs(state[phi] - expected[phi]) / (FLOW_REL * abs(expected[phi]))
     return worst
@@ -163,28 +173,20 @@ FROM_X0 = CASES
 
 
 def test_the_policies_are_s01s_registered_ones() -> None:
-    """Spec §0, §7.3–§7.4: the target runs S01's `s01-default-v1` (the object itself); the
-    pre-solve is S01's pre-solve policy under `s02-profile-presolve-v1` (no `phase_contract`
-    keyword here, T05b B06)."""
+    """Spec §0, §7.4, §18.2: the target runs S01's `s01-default-v1` (the object itself); the easy
+    endpoint `s02-bubble-point-v1` is constructed, so no pre-solve policy exists (T05b B06)."""
     assert S02_TARGET_POLICY is S01_DEFAULT_V1
-    assert PRESOLVE_POLICY.policy_id == PRESOLVE_ID == "s02-profile-presolve-v1"
-    assert PRESOLVE_POLICY.max_attempts == 1
-    assert PRESOLVE_POLICY.globalization.eo_recovery == "none"
-    assert PRESOLVE_POLICY.phase_contract == S01_DEFAULT_V1.phase_contract
+    assert PRESOLVE_ID == "s02-bubble-point-v1"
+    assert not hasattr(solve_module, "PRESOLVE_POLICY")
 
 
 @pytest.mark.parametrize("case", CASES)
 def test_the_region_is_square_with_one_split_per_equilibrium_stage(case: str) -> None:
     spec = SPECS[case]
-    profile = [float(t) for t in REFERENCE["cases"][case]["initializer"]["profile"]]
     target = compile_column(spec, PROVIDER)
-    pre = compile_column(spec, PROVIDER, "presolve", profile=profile)
-    for compiled in (target, pre):
-        assert compiled.region.square
-        assert len(compiled.splits) == len(spec.equilibrium_stages())
-    assert target.spec.variable_ids == pre.spec.variable_ids
-    assert set(target.types.values()) == {"PH"} and set(pre.types.values()) == {"TP"}
-    assert target.compiled.metadata.model_version != pre.compiled.metadata.model_version
+    assert target.region.square
+    assert len(target.splits) == len(spec.equilibrium_stages())
+    assert set(target.types.values()) == {"PH"}
 
 
 # -- A05: the pre-solve ---------------------------------------------------------------------------
@@ -220,64 +222,18 @@ def test_a05_the_slot_substitutions_are_refs(case: str) -> None:
 
 @pytest.mark.parametrize("case", CASES)
 def test_a05_the_presolve_rows_hold_at_the_generators_x0(case: str) -> None:
-    """A05: the pre-solve's rows — every replaced slot as `T_j − T_j⁰` (or `Σ r − 1·D`), every
-    ratio kept at its target — vanish at the generator's `x⁰` within their kind tolerances."""
+    """A06b's precondition: the profile endpoint's rows (§7.3, withdrawn from the path) — every
+    replaced slot as `T_j − T_j⁰` (or `Σ r − 1·D`), every ratio kept at its target — vanish at
+    `ref.cases.*.presolve` within their kind tolerances."""
     spec = SPECS[case]
     profile = [float(t) for t in REFERENCE["cases"][case]["initializer"]["profile"]]
-    pre = compile_column(spec, PROVIDER, "presolve", profile=profile)
-    values = row_values(pre.spec, ref_state(case))
-    worst = {row: abs(v) / KIND_TOLERANCE[pre.spec.row_kinds[row]] for row, v in values.items()}
+    rows = presolve_rows(declared_rows(spec, PROVIDER, DECLARATION_CONTEXT), spec, profile)
+    pre = declared_problem(rows)
+    values = row_values(pre, ref_state(case))
+    worst = {row: abs(v) / KIND_TOLERANCE[pre.row_kinds[row]] for row, v in values.items()}
     assert max(worst.values()) <= 1.0, max(worst.items(), key=lambda item: item[1])
     kept = [s for s in slots(spec, profile) if not s.parameter]
     assert all(s.row in values for s in kept)
-
-
-#: Measured at WO-2 (`docs/S02_DECISIONS.md` Q-S02-WO2-1): §7.3's pre-solve from `x_K`.
-PRESOLVE_MEASURED = {
-    "M1": "LINEAR_SOLVE_FAILED (opening V,V,V,2P,2P,2P,2P; structurally singular, rank 90 of 91)",
-    "M2": "ATTEMPTS_EXHAUSTED (one attempt, phase update required)",
-    "M3": "ATTEMPTS_EXHAUSTED (opening 2P,L,L,L,L; phase update required)",
-    "M4": "ATTEMPTS_EXHAUSTED (one attempt, phase update required)",
-}
-
-
-@pytest.mark.parametrize(
-    "case",
-    [
-        pytest.param(
-            case,
-            marks=pytest.mark.xfail(
-                strict=True, reason=f"Q-S02-WO2-1, measured: {PRESOLVE_MEASURED[case]}"
-            ),
-        )
-        for case in CASES
-    ],
-)
-def test_a05_the_presolve_root(case: str) -> None:
-    """A05: §7.3's pre-solve from `x_K` converges, every stage TWO_PHASE, to `ref.presolve`."""
-    answer = solve_column(SPECS[case], PROVIDER)
-    assert isinstance(answer, ColumnSolution)
-    assert answer.presolve_summary.outcome == "CONVERGED"
-    assert max(deviation_presolve(case, answer.presolve.state).values()) <= 1.0
-
-
-def deviation_presolve(case: str, state: Any) -> dict[str, float]:
-    expected = ref_state(case)
-    return {
-        name: abs(state[name] - target) / (T_ABS if name.endswith(".T") else Q_ABS)
-        for name, target in expected.items()
-        if name.endswith((".T", ".Q"))
-    }
-
-
-@pytest.mark.parametrize("case", CASES)
-def test_a05_a_failed_presolve_is_a_typed_initialization_failure(case: str) -> None:
-    """The measured pre-solve failure ends typed, never as a success (§7.3)."""
-    answer = solve_column(SPECS[case], PROVIDER)
-    assert isinstance(answer, ColumnSolution)
-    assert answer.outcome == "INITIALIZATION_FAILED" and answer.result is None
-    assert answer.cause.startswith(f"initialization_failed({PRESOLVE_ID}, ")
-    assert answer.presolve_summary.outcome != "CONVERGED"
 
 
 # -- A06, A08, A09: the target from x⁰ -------------------------------------------------------------
@@ -289,16 +245,22 @@ def test_a06_the_target_root_from_the_generators_x0(case: str) -> None:
     signature exact (`SATURATED_LIQUID` is the total condenser's, which is not a split), its
     products and `spec_values`."""
     result, _, regimes = from_x0(case)
-    record = REFERENCE["cases"][case]
     assert result.outcome == "CONVERGED"
+    assert_a06(case, result.state, regimes)
+
+
+def assert_a06(case: str, state: Any, regimes: dict[int, Any]) -> None:
+    """A06's checks of a `CONVERGED` answer: signature exact, root within the state tolerance,
+    products and `spec_values` as `ref.cases.<case>`."""
+    record = REFERENCE["cases"][case]
     assert list(regimes.values()) == [s for s in record["signature"] if s != "SATURATED_LIQUID"]
-    worst = deviation(case, result.state)
+    worst = deviation(case, state)
     assert max(worst.values()) <= 1.0, worst
-    ports = products(SPECS[case], result.state)
+    ports = products(SPECS[case], state)
     for port, key in (("distillate", "top_product"), ("bottoms", "bottom_product")):
         for actual, expected in zip(ports[port], record["target"][key], strict=True):
             assert abs(actual - float(expected)) <= FLOW_REL * abs(float(expected)) + FLOW_ABS
-    values = spec_values(SPECS[case], result.state)
+    values = spec_values(SPECS[case], state)
     for key, expected in record["spec_values"].items():
         target = float(expected)
         if key.endswith("duty"):
@@ -315,19 +277,6 @@ def test_a06b_m1_recovers_after_linear_solve_failed_in_a_restart() -> None:
     assert failed is not None and failed.outcome == "LINEAR_SOLVE_FAILED"
     assert len(failed.attempts) >= 2
     assert result.outcome == "CONVERGED" and result.homotopy is not None
-
-
-@pytest.mark.parametrize(
-    "case",
-    [
-        pytest.param(c, marks=pytest.mark.xfail(strict=True, reason="Q-S02-WO2-1 (A05)"))
-        for c in CASES
-    ],
-)
-def test_a06_the_target_root_through_solve_column(case: str) -> None:
-    """A06 through §7 from `x_K`."""
-    answer = solve_column(SPECS[case], PROVIDER)
-    assert isinstance(answer, ColumnSolution) and answer.outcome == "CONVERGED"
 
 
 @pytest.mark.parametrize("case", FROM_X0)
@@ -381,31 +330,6 @@ def test_a09_section_8_items_refuse_what_they_name() -> None:
         m3, PROVIDER, compile_column(m3, PROVIDER).spec, {**from_x0("M3")[0].state, **zeros}, lv
     )
     assert any(f.startswith("§8.5: product distillate") for f in found)
-
-
-# -- A07: the matched specification sets ---------------------------------------------------------
-
-
-@pytest.mark.parametrize(
-    ("case", "variant"),
-    [
-        pytest.param(
-            c,
-            v,
-            marks=pytest.mark.xfail(
-                strict=True,
-                reason="Q-S02-WO2-1: the variant's own §7.3 pre-solve fails (measured; DECISIONS)",
-            ),
-        )
-        for c in ("M1", "M2")
-        for v in REFERENCE["variants"][c]
-        if v != "distillate_rate+bottoms_rate"
-    ],
-)
-def test_a07_each_matched_set_returns_the_a06_root(case: str, variant: str) -> None:
-    answer = solve_column(_variant(case, variant), PROVIDER)
-    assert isinstance(answer, ColumnSolution) and answer.outcome == "CONVERGED"
-    assert max(deviation(case, answer.state).values()) <= 1.0
 
 
 # -- A10: the compiled Jacobian ------------------------------------------------------------------
@@ -484,8 +408,11 @@ def _dyadic(value: Fraction) -> bool:
 
 
 @pytest.mark.parametrize("case", ["M1", "M2"])
-def test_a13_forced_edge_3_from_x0(monkeypatch: pytest.MonkeyPatch, case: str) -> None:
-    """A13: edge 3 forced from `x⁰`: `p⁰ = ref.continued` (Q abs 1e-2 W, rates rel 1e-6); every
+def test_a13b_forced_edge_3_from_the_profile_endpoint(
+    monkeypatch: pytest.MonkeyPatch, case: str
+) -> None:
+    """A13b (§10 A13, unchanged): edge 3 forced from the profile endpoint `ref.cases.*.presolve`:
+    `p⁰ = ref.continued` (Q abs 1e-2 W, rates rel 1e-6); every
     re-binding names exactly the continued parameters (the ratio rows' `RR*`, `BR*` never move);
     dyadic λ; the λ = 1 instance is the target's; the final root is A06's (M2: `same_root` SAME
     against the unforced root; M1, whose unforced target fails, within the state tolerance of
@@ -544,16 +471,17 @@ def _records(result: RegionResult, trace: Trace) -> list[str]:
 
 @pytest.mark.parametrize("case", ["M1", "M2"])
 def test_a15_solved_twice_is_identical(monkeypatch: pytest.MonkeyPatch, case: str) -> None:
-    """A15: §7 twice (from `x_K`: the typed pre-solve answer) and steps 4–5 twice from `x⁰`
-    (M1 with edge 3 forced, since its unforced target fails): identical `state_sha256`, states
-    and records."""
+    """A15: §7 twice through `solve_column` (identical `x⁰`, answer, `state_sha256`) and steps
+    4–5 twice from the profile endpoint (M1 with edge 3 forced, A13b): identical states and
+    records."""
     spec = SPECS[case]
     first, second = solve_column(spec, PROVIDER), solve_column(spec, PROVIDER)
     assert isinstance(first, ColumnSolution) and isinstance(second, ColumnSolution)
-    assert (first.presolve_summary, first.opening_sha256) == (
-        second.presolve_summary,
-        second.opening_sha256,
+    assert (first.endpoint_sha256, first.final_sha256) == (
+        second.endpoint_sha256,
+        second.final_sha256,
     )
+    assert first.state == second.state and first.outcome == "CONVERGED"
     if case == "M1":
         monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget, attempts: True)
     profile = [float(t) for t in REFERENCE["cases"][case]["initializer"]["profile"]]
