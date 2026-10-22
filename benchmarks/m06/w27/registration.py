@@ -20,6 +20,9 @@ ROOT: Final[Path] = Path(__file__).resolve().parents[3]
 #: The adaptation's records (R-194: the only tracked directory that names the benchmark).
 RECORDS: Final[Path] = ROOT / "benchmarks" / "m06" / "openidaes450"
 REGISTRATION_JSON: Final[Path] = RECORDS / "registration.json"
+#: Registration version 2 (`docs/derivations/W27-registration-v2.md`, W27v2-R01): the tables that
+#: replace or extend version 1's when a caller selects version 2. Read as data, like version 1's.
+REGISTRATION_V2_JSON: Final[Path] = RECORDS / "registration_v2.json"
 CASE_FACTS_JSON: Final[Path] = RECORDS / "case_facts.json"
 ACCESS_JSON: Final[Path] = RECORDS / "access_report.json"
 PROVENANCE_JSON: Final[Path] = RECORDS / "provenance.json"
@@ -40,6 +43,14 @@ ARCHIVE_DIR: Final[Path] = ARTIFACTS / "extracted" / "OpenIDAES-450-demo"
 def load() -> Mapping[str, Any]:
     """`registration.json`, parsed once per process."""
     document: Mapping[str, Any] = json.loads(REGISTRATION_JSON.read_bytes())
+    return document
+
+
+@functools.cache
+def load_v2() -> Mapping[str, Any]:
+    """`registration_v2.json`, parsed once per process (W27v2-R01). Its generator
+    `docs/derivations/scripts/w27_registration_v2.py` is never imported."""
+    document: Mapping[str, Any] = json.loads(REGISTRATION_V2_JSON.read_bytes())
     return document
 
 
@@ -69,6 +80,18 @@ def classes() -> tuple[str, ...]:
     return tuple(str(c) for c in load()["classes"])
 
 
-def provider_methods() -> dict[str, str]:
-    """W27-R19's table (a test may add a test-only provider to a copy, W27-A02)."""
+def provider_methods(version: int = 1) -> dict[str, str]:
+    """W27-R19's table (a test may add a test-only provider to a copy, W27-A02); with
+    `version=2`, W27v2-R02's table, which replaces it."""
+    if version == 2:
+        return {str(k): str(v) for k, v in load_v2()["tables"]["provider_methods"].items()}
+    if version != 1:
+        raise ValueError(f"registration version {version!r} is not 1 or 2")
     return {str(k): str(v) for k, v in load()["routes"]["provider_methods"].items()}
+
+
+def case_distinct() -> dict[str, frozenset[str]]:
+    """W27v2-R08's reviewed table: each spelling, and the CAS RNs of the registry chemicals it is
+    judged distinct from. An entry gives the spelling no identity (W27-R15 still classifies it)."""
+    table: Mapping[str, Mapping[str, Any]] = load_v2()["tables"]["case_distinct"]
+    return {str(k): frozenset(str(c) for c in v["distinct_from"]) for k, v in table.items()}
