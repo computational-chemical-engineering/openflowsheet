@@ -1,0 +1,705 @@
+{
+  "work_package": "S06",
+  "commit": "be4ea9897c06ea8f56bc966155b3836ab6f0d233",
+  "requirements": [],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "S06 acceptance: docs/derivations/S06-spec.md §10 (A01–A16) against docs/derivations/scripts/s06_reference.json, check list §13",
+    "case_hash": "a8ff5bb3c70b4156dc1f08aa6c385394c57f448215e61771784518b543cce810",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S06/be4ea9897c06ea8f56bc966155b3836ab6f0d233/artifacts/s06-tests.junit.xml tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_cascade_wo4.py tests/test_s01_evidence_manifest.py tests/test_s01_review_adversarial.py tests/test_s02_column_wo1.py tests/test_s02_column_wo2.py tests/test_s02_column_wo2b.py tests/test_s02_column_wo3.py tests/test_s02_evidence_manifest.py tests/test_s06_column_wo1.py tests/test_s06_column_wo2.py tests/test_s06_evidence_manifest.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "6683019338f22ad0db4bbbe58f63ca3d3f16e3498c7b73e237868bfd052941bb"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/s06_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "f000a0c20b8d905cc004086d18d278f72c489286b0156ac8da50ab10ee15c9d7"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/s02_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "2c32f3aecc64457784d8ab0b0b35977517ca3e7d40b4746dba24240be2fc800c"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/ruff check src/openflowsheet/models/rows.py src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_solve.py tests/test_s06_column_wo1.py tests/test_s06_column_wo2.py tests/test_s06_evidence_manifest.py scripts/s06_evidence_manifest.py docs/derivations/scripts/s06_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/ruff format --check src/openflowsheet/models/rows.py src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_solve.py tests/test_s06_column_wo1.py tests/test_s06_column_wo2.py tests/test_s06_evidence_manifest.py scripts/s06_evidence_manifest.py docs/derivations/scripts/s06_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "2ce9758b9f8abd876ec3e76c589e099e8b05377b1e7ea2331e81ee80f07bdff8"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/mypy",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "67c1fa05cea8c3ad5897b8463b839116cc5fe4f5b0848938fb6859daf2ea9d78"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S06.A01",
+      "description": "Columns = rows for J1–J8 and the V-sets; `u` and its definition row present exactly on `purity` ends; row ids unique",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 20,
+        "outcomes": {
+          "passed": 20
+        },
+        "selectors": [
+          "tests/test_s06_column_wo1.py::test_a01_dof[J1]",
+          "tests/test_s06_column_wo1.py::test_a01_dof[J2]",
+          "tests/test_s06_column_wo1.py::test_a01_dof[J3]",
+          "tests/test_s06_column_wo1.py::test_a01_dof[J4]",
+          "tests/test_s06_column_wo1.py::test_a01_dof[J5]",
+          "tests/test_s06_column_wo1.py::test_a01_dof[J6]",
+          "tests/test_s06_column_wo1.py::test_a01_dof[J7]",
+          "tests/test_s06_column_wo1.py::test_a01_dof[J8]",
+          "tests/test_s06_column_wo1.py::test_a01_dof[V-M1-purity+boilup_ratio]",
+          "tests/test_s06_column_wo1.py::test_a01_dof[V-M1-purity+purity]",
+          "tests/test_s06_column_wo1.py::test_a01_dof[V-M1-recovery+recovery]",
+          "tests/test_s06_column_wo1.py::test_a01_dof[V-M1-reflux_ratio+temperature]",
+          "tests/test_s06_column_wo1.py::test_a01_inverse_slot_rows[J1]",
+          "tests/test_s06_column_wo1.py::test_a01_inverse_slot_rows[J2]",
+          "tests/test_s06_column_wo1.py::test_a01_inverse_slot_rows[J3]",
+          "tests/test_s06_column_wo1.py::test_a01_inverse_slot_rows[J4]",
+          "tests/test_s06_column_wo1.py::test_a01_inverse_slot_rows[J5]",
+          "tests/test_s06_column_wo1.py::test_a01_inverse_slot_rows[J6]",
+          "tests/test_s06_column_wo1.py::test_a01_inverse_slot_rows[J7]",
+          "tests/test_s06_column_wo1.py::test_a01_inverse_slot_rows[J8]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.*.dof`, `ref.matched.*.dof`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S06.A02",
+      "description": "Every `ref.refusals` probe gives its code before any evaluation (provider and `solve_region` stubbed to raise); `mole_fraction` at either end is `unsupported(specification:mole_fraction)`; every J, V and U set passes validation",
+      "result": "fail",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 49,
+        "outcomes": {
+          "passed": 48,
+          "xfailed": 1
+        },
+        "selectors": [
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I1-component]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I1-stage]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I2-purity-one]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I2-recovery-zero]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I2-temperature-nan]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I3-absent]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I4-above]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I4-below]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I5-purity]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I5-recovery]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I5-temperature]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I6-boundary]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I6-inside]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I6-purity-purity]",
+          "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I6-purity-recovery]",
+          "tests/test_s06_column_wo1.py::test_a02_the_i3_probe_meets_r5_first",
+          "tests/test_s06_column_wo1.py::test_a02_i3_with_an_admissible_feed",
+          "tests/test_s06_column_wo1.py::test_a02_not_offered[mole_fraction-condenser]",
+          "tests/test_s06_column_wo1.py::test_a02_not_offered[mole_fraction-reboiler]",
+          "tests/test_s06_column_wo1.py::test_a02_not_offered[reflux_rate-condenser]",
+          "tests/test_s06_column_wo1.py::test_a02_not_offered[reflux_rate-reboiler]",
+          "tests/test_s06_column_wo1.py::test_a02_not_offered[boilup_rate-condenser]",
+          "tests/test_s06_column_wo1.py::test_a02_not_offered[boilup_rate-reboiler]",
+          "tests/test_s06_column_wo1.py::test_a02_not_offered[distillate_to_feed_ratio-condenser]",
+          "tests/test_s06_column_wo1.py::test_a02_not_offered[distillate_to_feed_ratio-reboiler]",
+          "tests/test_s06_column_wo1.py::test_a02_attribute_and_value_clauses[direct-with-component]",
+          "tests/test_s06_column_wo1.py::test_a02_attribute_and_value_clauses[direct-with-stage]",
+          "tests/test_s06_column_wo1.py::test_a02_attribute_and_value_clauses[purity-without-component]",
+          "tests/test_s06_column_wo1.py::test_a02_attribute_and_value_clauses[recovery-infinite]",
+          "tests/test_s06_column_wo1.py::test_a02_attribute_and_value_clauses[recovery-with-stage]",
+          "tests/test_s06_column_wo1.py::test_a02_attribute_and_value_clauses[temperature-negative]",
+          "tests/test_s06_column_wo1.py::test_a02_attribute_and_value_clauses[temperature-stage-bool]",
+          "tests/test_s06_column_wo1.py::test_a02_attribute_and_value_clauses[temperature-stage-zero]",
+          "tests/test_s06_column_wo1.py::test_a02_attribute_and_value_clauses[temperature-with-component]",
+          "tests/test_s06_column_wo1.py::test_a02_s06_rules_follow_s02s",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[J1]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[J2]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[J3]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[J4]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[J5]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[J6]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[J7]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[J8]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[U1]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[U2]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[V-M1-purity+boilup_ratio]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[V-M1-purity+purity]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[V-M1-recovery+recovery]",
+          "tests/test_s06_column_wo1.py::test_a02_every_registered_set_passes[V-M1-reflux_ratio+temperature]"
+        ],
+        "not_passed": [
+          {
+            "node": "tests/test_s06_column_wo1.py::test_a02_refusal_probes[I3-absent]",
+            "outcome": "xfailed",
+            "message": "Q-S06-WO1-1: R5 answers first, measured inadmissible_inlet(feed, LIQUID)"
+          }
+        ]
+      },
+      "expected": "`ref.refusals.*.expected`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S06.A03",
+      "description": "The band: the implementation's `T_sat,i(P)` at `P = 1.00 … 1.06` bar",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 8,
+        "outcomes": {
+          "passed": 8
+        },
+        "selectors": [
+          "tests/test_s06_column_wo1.py::test_a03_saturation_temperatures[100000]",
+          "tests/test_s06_column_wo1.py::test_a03_saturation_temperatures[101000]",
+          "tests/test_s06_column_wo1.py::test_a03_saturation_temperatures[102000]",
+          "tests/test_s06_column_wo1.py::test_a03_saturation_temperatures[103000]",
+          "tests/test_s06_column_wo1.py::test_a03_saturation_temperatures[104000]",
+          "tests/test_s06_column_wo1.py::test_a03_saturation_temperatures[105000]",
+          "tests/test_s06_column_wo1.py::test_a03_saturation_temperatures[106000]",
+          "tests/test_s06_column_wo1.py::test_a03_stage_band_is_over_the_present_components"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.band`",
+      "tolerance": "1e-9 K abs (floor: a few roundings of T ≈ 400 K, ≤ 1e-12 K)"
+    },
+    {
+      "id": "S06.A04",
+      "description": "Rows at the dyadic trial state `ref.trial_rows.state` (feed (0.25, 0.5, 0.25), F = 1, on M1's structure; two declarations: condenser purity of B 0.75 with reboiler recovery of C 0.5, and the same condenser with reboiler temperature of stage 6 at 360.5 K; both pass §5; other columns arbitrary): the purity definition, purity slot, recovery slot and temperature slot residuals",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s06_column_wo1.py::test_a04_the_trial_values_are_distinct",
+          "tests/test_s06_column_wo1.py::test_a04_purity_and_recovery_rows",
+          "tests/test_s06_column_wo1.py::test_a04_temperature_row",
+          "tests/test_s06_column_wo1.py::test_a04_spec_values_carry_the_inverse_quantities"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.trial_rows` (−3/64, −1/4, 1/16, 3/4)",
+      "tolerance": "exact (floor 0: dyadic operands, generator-claimed short). A permuted component gives one of `…_other_components` (claimed distinct), a wrong stage `temperature_slot_other_stage`, a flipped sign the negative"
+    },
+    {
+      "id": "S06.A05",
+      "description": "§6 on J1–J8 and the V-sets: `x⁰` (S02's endpoint at the CMO end ratio), `u⁰`, every continued slot id and `p⁰` (inverse slots: `T_s⁰`, `n_c⁰`, `u⁰`), every non-continued target row within its kind tolerance at `x⁰`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 24,
+        "outcomes": {
+          "passed": 24
+        },
+        "selectors": [
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[J1]",
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[J2]",
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[J3]",
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[J4]",
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[J5]",
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[J6]",
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[J7]",
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[J8]",
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[V-M1-purity+boilup_ratio]",
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[V-M1-purity+purity]",
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[V-M1-recovery+recovery]",
+          "tests/test_s06_column_wo2.py::test_a05_the_endpoint[V-M1-reflux_ratio+temperature]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[J1]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[J2]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[J3]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[J4]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[J5]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[J6]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[J7]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[J8]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[V-M1-purity+boilup_ratio]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[V-M1-purity+purity]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[V-M1-recovery+recovery]",
+          "tests/test_s06_column_wo2.py::test_a05_the_continued_slots_and_p0[V-M1-reflux_ratio+temperature]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.*.bubble_point`, `.continued`; `ref.matched.*.continued`",
+      "tolerance": "state tolerance; `p⁰`: T 1e-4 K, flows rel 1e-6; ids exact"
+    },
+    {
+      "id": "S06.A06",
+      "description": "J1–J8 through `solve_column`: `CONVERGED`, all stages `TWO_PHASE`, root, products, `spec_values`, and §8 item 4",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 8,
+        "outcomes": {
+          "passed": 8
+        },
+        "selectors": [
+          "tests/test_s06_column_wo2.py::test_a06_the_registered_cases[J1]",
+          "tests/test_s06_column_wo2.py::test_a06_the_registered_cases[J2]",
+          "tests/test_s06_column_wo2.py::test_a06_the_registered_cases[J3]",
+          "tests/test_s06_column_wo2.py::test_a06_the_registered_cases[J4]",
+          "tests/test_s06_column_wo2.py::test_a06_the_registered_cases[J5]",
+          "tests/test_s06_column_wo2.py::test_a06_the_registered_cases[J6]",
+          "tests/test_s06_column_wo2.py::test_a06_the_registered_cases[J7]",
+          "tests/test_s06_column_wo2.py::test_a06_the_registered_cases[J8]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.*.target`, `.spec_values`, `.inverse_values`",
+      "tolerance": "state tolerance; §8.4's bounds"
+    },
+    {
+      "id": "S06.A07",
+      "description": "The V-sets through `solve_column` return S02's registered root",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s06_column_wo2.py::test_a07_each_matched_set_returns_s02s_root[V-M1-purity+boilup_ratio]",
+          "tests/test_s06_column_wo2.py::test_a07_each_matched_set_returns_s02s_root[V-M1-purity+purity]",
+          "tests/test_s06_column_wo2.py::test_a07_each_matched_set_returns_s02s_root[V-M1-recovery+recovery]",
+          "tests/test_s06_column_wo2.py::test_a07_each_matched_set_returns_s02s_root[V-M1-reflux_ratio+temperature]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`s02ref.cases.M1.target`",
+      "tolerance": "state tolerance"
+    },
+    {
+      "id": "S06.A08",
+      "description": "Overall component and energy closure, and §8 items 1–4, at every converged J and V answer",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 16,
+        "outcomes": {
+          "passed": 16
+        },
+        "selectors": [
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[J1]",
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[J2]",
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[J3]",
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[J4]",
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[J5]",
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[J6]",
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[J7]",
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[J8]",
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[V-M1-purity+boilup_ratio]",
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[V-M1-purity+purity]",
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[V-M1-recovery+recovery]",
+          "tests/test_s06_column_wo2.py::test_a08_closure_and_section_8[V-M1-reflux_ratio+temperature]",
+          "tests/test_s06_column_wo2.py::test_a08_the_bounds_are_section_8s",
+          "tests/test_s06_column_wo2.py::test_a08_item_4_refuses_what_it_names[J3-reboiler-S06.stage.6.T-2e-06]",
+          "tests/test_s06_column_wo2.py::test_a08_item_4_refuses_what_it_names[J2-condenser-S06.stage.1.d.A-1e-06]",
+          "tests/test_s06_column_wo2.py::test_a08_item_4_refuses_what_it_names[J1-condenser-S06.stage.1.v.A-1e-06]"
+        ],
+        "not_passed": []
+      },
+      "expected": "0; pass",
+      "tolerance": "`n_rows·τ_kind`; as §8"
+    },
+    {
+      "id": "S06.A09",
+      "description": "Compiled Jacobian vs central differences at `x⁰` and the root of J1 (`u`, definition row), J2 (recovery on `d`), J6 (`T_c` slot); step `h_j = 1e-6·max(D_x(j), |x_j|)` (R-516)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_s06_column_wo2.py::test_a09_the_compiled_jacobian[x0-J1]",
+          "tests/test_s06_column_wo2.py::test_a09_the_compiled_jacobian[x0-J2]",
+          "tests/test_s06_column_wo2.py::test_a09_the_compiled_jacobian[x0-J6]",
+          "tests/test_s06_column_wo2.py::test_a09_the_compiled_jacobian[root-J1]",
+          "tests/test_s06_column_wo2.py::test_a09_the_compiled_jacobian[root-J2]",
+          "tests/test_s06_column_wo2.py::test_a09_the_compiled_jacobian[root-J6]"
+        ],
+        "not_passed": []
+      },
+      "expected": "agree",
+      "tolerance": "1e-6 scaled. Floor needs a fact: WO-2 measures it for the new rows and records it; it must be ≤ 1e-8 (S02's A10 rule)"
+    },
+    {
+      "id": "S06.A10",
+      "description": "Edge 3 carries the inverse slots: forced from `x⁰` on J1, J4 and J6 (S02 A13b's harness), the continuation's `parameter_ids` are exactly the replaced slots including each inverse slot's parameter, `p⁰` equals A05's, every λ < 1 level differs from the target only at those ids, λ dyadic, and the recovery is `CONVERGED` at `ref.cases.*.target`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_s06_column_wo2.py::test_a10_forced_edge_3_from_x0[J1]",
+          "tests/test_s06_column_wo2.py::test_a10_forced_edge_3_from_x0[J4]",
+          "tests/test_s06_column_wo2.py::test_a10_forced_edge_3_from_x0[J6]"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "`p⁰` as A05; root state tolerance; rest exact"
+    },
+    {
+      "id": "S06.A11",
+      "description": "U1 and U2 through `solve_column`, each: **either** `CONVERGED` at `s02ref.cases.M2.target` passing §8, **or** a non-`CONVERGED` outcome whose `unreached` holds one entry per inverse end with its code, and, where `lambda_reached` is not `None`, `value` equal **bit for bit** to the quantity recomputed by §7.3's formula from the state of that λ. Never an unaccepted `CONVERGED`, never an empty `unreached` on a failure. The branch taken is recorded",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s06_column_wo2.py::test_a11_the_unreached_sets[U1]",
+          "tests/test_s06_column_wo2.py::test_a11_the_unreached_sets[U2]"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact; root state tolerance"
+    },
+    {
+      "id": "S06.A12",
+      "description": "Warnings: `column_warnings` is `()` for J1–J8, the V-sets, U1 and U2; S02/C8's duty-only cases still carry `multiple_steady_states_possible(duty_only)`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 15,
+        "outcomes": {
+          "passed": 15
+        },
+        "selectors": [
+          "tests/test_s06_column_wo1.py::test_a12_warnings",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[J1]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[J2]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[J3]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[J4]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[J5]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[J6]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[J7]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[J8]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[U1]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[U2]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[V-M1-purity+boilup_ratio]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[V-M1-purity+purity]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[V-M1-recovery+recovery]",
+          "tests/test_s06_column_wo2.py::test_a12_no_warning_on_the_answers[V-M1-reflux_ratio+temperature]"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S06.A13",
+      "description": "Records (§7.5): for J1, J2, J3 the recorded `x*`/`r*`/`T*`, `ν*`/`π*` equal `fl(r*·F_c)`/`fl(x*·F)` with `F`, `F_c` summed in `inlets()` order; `q⁰`, `p⁰` as A05",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 9,
+        "outcomes": {
+          "passed": 9
+        },
+        "selectors": [
+          "tests/test_s06_column_wo1.py::test_a13_pinned_parameters[J1]",
+          "tests/test_s06_column_wo1.py::test_a13_pinned_parameters[J2]",
+          "tests/test_s06_column_wo1.py::test_a13_pinned_parameters[J3]",
+          "tests/test_s06_column_wo1.py::test_a13_pinned_parameters[J4]",
+          "tests/test_s06_column_wo1.py::test_a13_pinned_parameters[J7]",
+          "tests/test_s06_column_wo1.py::test_a13_pinned_parameters[J8]",
+          "tests/test_s06_column_wo2.py::test_a13_the_records[J1]",
+          "tests/test_s06_column_wo2.py::test_a13_the_records[J2]",
+          "tests/test_s06_column_wo2.py::test_a13_the_records[J3]"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact for the binary64 formation; `q⁰`, `p⁰` as A05"
+    },
+    {
+      "id": "S06.A14",
+      "description": "Phase scope (§8 item 3): J5 with its target state forced so that stage 5 is single-phase at a `CONVERGED` result (a stubbed region result) is answered `unsupported(temperature_specification_on_single_phase_stage:5)`; J1 with stage 1 `VAPOR` in a stubbed `CONVERGED` result is a defect",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s06_column_wo2.py::test_a14_a_single_phase_specified_stage_is_unsupported",
+          "tests/test_s06_column_wo2.py::test_a14_a_vapour_end_under_purity_is_a_defect"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S06.A15",
+      "description": "J1 and J6 solved twice: identical `state_sha256` and records",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s06_column_wo2.py::test_a15_solved_twice_is_identical[J1]",
+          "tests/test_s06_column_wo2.py::test_a15_solved_twice_is_identical[J6]"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S06.A16",
+      "description": "S02's A01–A22 (with §17–§19) and S01's suite still pass on `wp/C11`",
+      "result": "pass",
+      "value": {
+        "judged_by": "the S02 and S01 suites",
+        "nodes": 325,
+        "outcomes": {
+          "passed": 325
+        },
+        "not_passed": [],
+        "s02_nodes": 187,
+        "s01_nodes": 138,
+        "s02_assertions_uncited": [],
+        "s01_assertions_uncited": []
+      },
+      "expected": "S02, S01 suites",
+      "tolerance": "as registered"
+    },
+    {
+      "id": "S06.generator",
+      "description": "§13: s06_reference.py --check re-derives every claim (3110) and byte-compares s06_reference.json",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/s06_reference.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S06.s02-generator",
+      "description": "§13: s02_reference.py --check still passes",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/s02_reference.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S06.ruff",
+      "description": "§13: ruff check is clean on S06's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/ruff check src/openflowsheet/models/rows.py src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_solve.py tests/test_s06_column_wo1.py tests/test_s06_column_wo2.py tests/test_s06_evidence_manifest.py scripts/s06_evidence_manifest.py docs/derivations/scripts/s06_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S06.format",
+      "description": "§13: ruff format --check is clean on S06's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/ruff format --check src/openflowsheet/models/rows.py src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_solve.py tests/test_s06_column_wo1.py tests/test_s06_column_wo2.py tests/test_s06_evidence_manifest.py scripts/s06_evidence_manifest.py docs/derivations/scripts/s06_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S06.mypy",
+      "description": "§13: mypy (the project's configuration) is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/mypy",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S06.deviation",
+      "description": "§10 'needs a fact': the measured maximum deviation of J1–J8 (from ref.cases.*.target) and the matched sets (from s02ref.cases.M1.target) on solve_column's path, in units of §10's state tolerance (1 is the tolerance); above 1/10 §10 is to be amended",
+      "result": "fail",
+      "value": {
+        "measured_at": "be4ea9897c06ea8f56bc966155b3836ab6f0d233",
+        "worst": 0.18244244467161372,
+        "above_one_tenth": [
+          "J8"
+        ],
+        "sets": {
+          "J1": 9.318004144404423e-08,
+          "J2": 2.3233587853610516e-05,
+          "J3": 2.00956509006128e-08,
+          "J4": 0.010177095828112215,
+          "J5": 1.0223687204350956e-06,
+          "J6": 2.2509993868879974e-07,
+          "J7": 7.085763210124598e-06,
+          "J8": 0.18244244467161372,
+          "V-M1-purity+boilup_ratio": 7.759003562946648e-07,
+          "V-M1-purity+purity": 0.01420022967318402,
+          "V-M1-recovery+recovery": 0.003103702397311281,
+          "V-M1-reflux_ratio+temperature": 0.01699499989626929
+        }
+      },
+      "expected": "every value ≤ 0.1"
+    },
+    {
+      "id": "S06.A09-floor",
+      "description": "§10 A09 / §13: the measured floor of D_r⁻¹ J D_x against central differences at h = 1e-6·max(D_x, |x|) (R-516), at x⁰ and the root of J1, J2 and J6, over every row and over the new rows (inverse slots, purity definition) and u; it must be ≤ 1e-8",
+      "result": "pass",
+      "value": {
+        "measured_at": "be4ea9897c06ea8f56bc966155b3836ab6f0d233",
+        "worst": 6.380451722520775e-11,
+        "points": {
+          "J1 x0": {
+            "worst": 6.380451722520775e-11,
+            "worst_new_rows_and_u": 9.585221505403752e-12
+          },
+          "J1 root": {
+            "worst": 6.380451722520775e-11,
+            "worst_new_rows_and_u": 9.585221505403752e-12
+          },
+          "J2 x0": {
+            "worst": 6.380451722520775e-11,
+            "worst_new_rows_and_u": 3.333999742949345e-13
+          },
+          "J2 root": {
+            "worst": 6.380451722520775e-11,
+            "worst_new_rows_and_u": 8.918477067965114e-12
+          },
+          "J6 x0": {
+            "worst": 6.380451722520775e-11,
+            "worst_new_rows_and_u": 5.4648285896519155e-11
+          },
+          "J6 root": {
+            "worst": 6.380451722520775e-11,
+            "worst_new_rows_and_u": 5.903455502220822e-11
+          }
+        }
+      },
+      "expected": "≤ 1e-8"
+    },
+    {
+      "id": "S06.A11-branch",
+      "description": "§13 / A11: the branch solve_column took on U1 and U2 (CONVERGED at s02ref's M2 root, or a typed outcome with its unreached report); the result is S06.A11's",
+      "result": "pass",
+      "value": {
+        "measured_at": "be4ea9897c06ea8f56bc966155b3836ab6f0d233",
+        "U1": {
+          "outcome": "HOMOTOPY_STALLED",
+          "cause": "homotopy_stalled(STAGNATION)",
+          "recovered_from": "STAGNATION",
+          "lambda_reached": "1/128",
+          "unreached": [
+            {
+              "code": "inverse_specification_not_reached(temperature:condenser)",
+              "lambda_reached": "1/128",
+              "value": 321.4161107439508
+            },
+            {
+              "code": "inverse_specification_not_reached(recovery:reboiler)",
+              "lambda_reached": "1/128",
+              "value": 0.9994888029837923
+            }
+          ]
+        },
+        "U2": {
+          "outcome": "HOMOTOPY_STALLED",
+          "cause": "homotopy_stalled(BOUND_BLOCKED)",
+          "recovered_from": "BOUND_BLOCKED",
+          "lambda_reached": "95/1024",
+          "unreached": [
+            {
+              "code": "inverse_specification_not_reached(recovery:condenser)",
+              "lambda_reached": "95/1024",
+              "value": 0.6338863759592985
+            }
+          ]
+        }
+      },
+      "expected": "either branch of A11"
+    },
+    {
+      "id": "S06.gate",
+      "description": "§13: scripts/gate.sh passes before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; the full gate runs once before merge (CLAUDE.md)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S06/be4ea9897c06ea8f56bc966155b3836ab6f0d233/artifacts/s06-tests.junit.xml",
+      "sha256": "614a46f3cd3e47239919e9a2e1a6f575ac7a456ab143b0afc6f86bfd3cd5dd6d",
+      "description": "JUnit report of the S06, S02 and S01 test run (ignored; kept by hash)"
+    },
+    {
+      "path": "docs/derivations/scripts/s06_reference.json",
+      "sha256": "a8ff5bb3c70b4156dc1f08aa6c385394c57f448215e61771784518b543cce810",
+      "description": "the design lane's 50-digit reference values (ref)"
+    },
+    {
+      "path": "docs/derivations/S06-spec.md",
+      "sha256": "0c8ce35722e9e188d21ec34c0e8f0be862a56076de8b7e2328f8a86dfdfe5cbc",
+      "description": "the S06 specification the checks are read from (§10, §13, §14)"
+    },
+    {
+      "path": "docs/C11_DECISIONS.md",
+      "sha256": "13ceb1ec11a14c2ab3c38d14b54b3bd0016c74dcdc7703275dd38d0eff1ab4ed",
+      "description": "the build and design decisions of C11/S06, with the measured facts and open questions"
+    }
+  ],
+  "limitations": [
+    "**Synthetic data only.** SYN-001 is ideal, three-component, azeotrope-free, with composition-independent `K`. Nothing here validates an inverse specification against real chemistry, plant data or another simulator. Real-chemistry columns need a liquid-capable property method (out of scope).",
+    "**No independent column reference.** J1–J8 are matched against this generator, which shares SYN-001, S02's endpoint and §5's rules with the implementation; the V-sets are matched against S02's registered M1 root, the same lineage. The independent references of X31 are S03's.",
+    "**No feasibility decision beyond §5.** I4 and I6 are necessary conditions. A target that passes them may be unreachable for this column (finite stages, energy), and an unreached target (§7.3) is not evidence of infeasibility: U1 and U2 have regular roots the path from S02's endpoint does not reach.",
+    "**No convergence claim beyond the registered paths.** S02's endpoint is ill-conditioned when it already holds the specified component almost entirely in one product (U1), and a straight path from it can cross an unphysical region (U2: negative reflux at a total condenser whose `φ` is free). Only J1–J8's and the V-sets' straight paths are measured; Q-S06-2.",
+    "**No uniqueness or root-selection claim** for any set, inverse or not; no multiplicity study of inverse sets (§7.4).",
+    "**No admissibility claim** for an unregistered set or a registered set at another state; no single-phase specified stage (§4 item 3).",
+    "**No flowsheet binding.** `F`, `F_c`, `ν*` and `π*` are formed from the column's own pinned inlets; a column bound into a flowsheet (MODEL_BUILDERS, out of scope) whose feed is a solved stream needs a ruling on these rows first.",
+    "**No rate-based, inside-out or sensitivity results**; no side draws, pump-arounds or efficiencies (S02 §14).",
+    "requirements is empty: the schema takes D/A requirement ids and none lists S06; S06 extends S02's part of X31's evidence with inverse column specifications against this package's generator. The mapping and the verdict are the design lane's.",
+    "scripts/gate.sh was not run by this generator (it runs once before merge into main); S06.gate is unsupported here.",
+    "Review: the design lane's reviewer pass and the human numerical and process-model review are pending; this manifest claims neither. Open questions: Q-S06-WO1-1, Q-S06-WO2-1 (docs/C11_DECISIONS.md); Frank's Q-S06-1, Q-S06-2.",
+    "The reference agreement is numerical verification against a 50-digit generator that shares SYN-001, S02's endpoint and §5's rules, not empirical validation.",
+    "S06.A02 is fail: tests/test_s06_column_wo1.py::test_a02_refusal_probes[I3-absent] xfailed (open design-lane questions in docs/C11_DECISIONS.md)",
+    "S06.deviation is fail: see its value (open design-lane questions in docs/C11_DECISIONS.md)"
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
