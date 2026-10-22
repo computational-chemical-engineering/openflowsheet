@@ -36,7 +36,7 @@ def test_section_14_is_read_verbatim() -> None:
 
 def _lower() -> list[Node]:
     s01 = [_node(f"tests/test_s01_x.py::test_a{n[1:]}_x") for n in S01_ASSERTIONS]
-    s02 = [_node(f"tests/test_s02_x.py::test_{n.lower()}_x") for n in S02_ASSERTIONS]
+    s02 = [_node(f"tests/test_s02_x.py::test_{n.lower()}_x") for n in S02_ASSERTIONS if n != "A16"]
     return [*s01, *s02]
 
 

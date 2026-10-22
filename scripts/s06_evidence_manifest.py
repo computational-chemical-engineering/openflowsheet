@@ -10,8 +10,8 @@ tracked source, test, script, schema or derivation file differs from it; S01's r
    `S06.Axx` passes only if at least one S06 node cites it and every node citing it passed: a
    failure, an error, a skip or an expected failure (a strict xfail holding a measured miss)
    leaves it `fail`. **A16** ("S02's A01–A22 and S01's suite still pass") is judged by the S02
-   and S01 nodes: every one passed, each of S02's registered assertions is cited by an S02 node
-   and each of S01's A01–A20 by an S01 node.
+   and S01 nodes: every one passed, each of S02's registered assertions but its A16 (S01's
+   suite) is cited by an S02 node, and each of S01's A01–A20 by an S01 node.
 2. **The reference generators' `--check`** (§13: `s06_reference.py`, 3110 claims, JSON
    byte-identical; `s02_reference.py` still passes).
 3. **`ruff check`, `ruff format --check`** on S06's files and **`mypy`** (the project's own
@@ -122,15 +122,16 @@ def limitations_of_the_spec(document: str) -> list[str]:
 
 
 def lower_suites(tests: Sequence[Node]) -> tuple[str, dict[str, Any]]:
-    """A16: every S02 and S01 node passed, each of S02's registered assertions is cited by an
-    S02 node and each of S01's A01–A20 by an S01 node."""
+    """A16: every S02 and S01 node passed, each of S02's registered assertions but A16 (which is
+    S01's suite) is cited by an S02 node, and each of S01's A01–A20 by an S01 node."""
     s01 = [item for item in tests if item.node.startswith("tests/test_s01_")]
     s02 = [item for item in tests if item.node.startswith("tests/test_s02_")]
     result, value = _verdict([*s02, *s01])
     s02_uncited = [
         identifier
         for identifier in S02_ASSERTIONS
-        if not any(identifier in cited(item.node) for item in s02)
+        if identifier != "A16"  # S02's A16 is S01's suite, judged by the S01 nodes below
+        and not any(identifier in cited(item.node) for item in s02)
     ]
     s01_uncited = [
         identifier
