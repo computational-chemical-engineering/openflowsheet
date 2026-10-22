@@ -61,16 +61,12 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
 - NOTE: the `pymrm` tier's `tests/test_m02_pymrm_env.py::test_the_environment_verifies_against_its_pins` fails in
   alpha-main's `.venv-nlp` (package list differs from the pins); not ADR 0044 (no `LINEAR_SOLVE_FAILED` call in that
   tier) and not a WS1 item. The M07a A50 harvest test fails while the real W27 archive copy sits in the worktree.
-- DONE (WS1 item 4, C2 registration l.206-216): `m06_w27_registration.py facts-v2 --emit` (`python -I`, real archive
-  copy via `cp -al`) wrote `benchmarks/m06/openidaes450/case_facts-v2.json` (sha256 `57d43acb…`): 450 cases, 3,725
-  topology units, every case's kind set equal to its `case_facts.json` `topology_kinds`; `facts --check` on
-  `case_facts.json` byte-identical (`0ca8cffa…`); `facts-v2 --check` OK; split generator `--check` byte-identical.
-  The two W27-A08 cases: `blind_synthesized_hda_flash` C101/F101/F102/H101/M101/R101/S101;
-  `official_idaes_skeleton_pervaporation` adds `pervap` (`SkeletonUnitModel`), F-1's hidden unit.
-- DECISION: v2's writer → a `facts-v2` stage of the W27 generator ("the workstation's facts stage", registration
-  l.212), `case_facts.json` untouched. v2's shape → `{schema, source{archive, access report, case_facts_v1 sha256,
-  generator}, cases[{case_id, topology_units[{id, kind}] sorted by id}]}`, one case per line; only the lacking fact,
-  bound to v1 by hash. Alternative: v1's fields plus `topology_units`. Reversible by: reverting this commit.
-- STOPPED (design lane): `split.json#/f1/status` stays `"awaiting_facts"`. The registration gives no next status, and
-  the generator hard-codes it (`c2_openidaes450_split.py:443-446`); consuming v2 for R02-F1 is "amend the registration
-  for R02-F1" (SPLIT-R13).
+- BLOCKED (WS1 item 4, design lane; parked on branch `wp/WS1-f1` @ `7b5c07f`, reverted here). `case_facts-v2.json`
+  was written (450 cases, 3,725 topology units, sha256 `57d43acb…`, kind sets equal to v1's `topology_kinds`; v1
+  `facts --check` and split `--check` byte-identical) by a `facts-v2` stage added to the W27 generator. The full gate
+  at `6c2364e` then failed 2 registered assertions, both caused by it: (1) SPLIT-A09 (`tests/test_c2_openidaes450_split.py:176`)
+  — v2 names every held-out case id and is not in `c2_openidaes450_split.ALL_CASE_FILES`; (2) W27 P2
+  (`tests/test_m06_w27_harness.py:314`) — the generator's SHA-256 is pinned (`preflight.REGISTERED_SHA256`). Fixing
+  either is a registration change (A09's allowlist; the writer's location or a W27 re-pin), not done by the build
+  lane. Needed from the design lane: an amendment naming v2's writer and adding v2 to A09's allowlist; then
+  `wp/WS1-f1` is re-applied (or re-done) and `f1/status` moved as the amendment says.

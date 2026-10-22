@@ -13,11 +13,6 @@ Three stages, three committed files under ``benchmarks/m06/openidaes450/``:
     of the case card the prompt carries (§9). It reads JSON and CSV only; it never imports or
     executes anything from the archive (``sources/`` and every ``.py`` are never opened). Run it
     with ``python -I`` (the archive is untrusted data).
-``facts-v2``
-    The same reading, for the fact ``case_facts.json`` lacks (C2 split registration, R02-F1):
-    each case's topology units as ``[{"id", "kind"}]`` sorted by id, written to the new
-    ``case_facts-v2.json`` (schema ``openidaes450-case-facts-v2``). ``case_facts.json`` is never
-    rewritten by it (``coverage.json`` pins its SHA-256).
 ``registration``
     Writes ``registration.json`` from the tables below and ``case_facts.json`` (the completeness
     claims need the archive's keys). It needs neither the archive nor ``openflowsheet``.
@@ -40,7 +35,6 @@ Run from the repository root::
         --snapshot-live
     PYTHONPATH=src python docs/derivations/scripts/m06_w27_registration.py --check
     python -I docs/derivations/scripts/m06_w27_registration.py facts --check
-    python -I docs/derivations/scripts/m06_w27_registration.py facts-v2 --emit   # or --check
 
 ``--check`` (no stage) re-derives ``registration.json`` and ``dry_illustration.json`` from the
 committed ``case_facts.json`` and the stored snapshot and requires them byte-identical; it needs
@@ -66,7 +60,6 @@ from typing import Any, Final
 ROOT: Final = Path(__file__).resolve().parents[3]
 BENCH: Final = ROOT / "benchmarks" / "m06" / "openidaes450"
 FACTS_JSON: Final = BENCH / "case_facts.json"
-FACTS_V2_JSON: Final = BENCH / "case_facts-v2.json"
 REGISTRATION_JSON: Final = BENCH / "registration.json"
 DRY_JSON: Final = BENCH / "dry_illustration.json"
 ACCESS_JSON: Final = BENCH / "access_report.json"
@@ -1372,40 +1365,6 @@ def extract_facts(archive: Path) -> dict[str, Any]:
         "source": {
             "archive_sha256": json.loads(PROVENANCE_JSON.read_bytes())["archive"]["sha256"],
             "access_report_sha256": _sha256_file(ACCESS_JSON),
-            "generator": "docs/derivations/scripts/m06_w27_registration.py",
-        },
-        "cases": cases,
-    }
-
-
-def extract_facts_v2(archive: Path) -> dict[str, Any]:
-    """C2 split registration (R02-F1): every case's topology units, `[{"id", "kind"}]` sorted by
-    id, read from `topology.json` as `extract_facts` reads it; `case_facts.json` bound by hash."""
-    access = json.loads(ACCESS_JSON.read_bytes())
-    case_root = archive / "cases"
-    names = sorted(p.name for p in case_root.iterdir() if p.is_dir())
-    if names != sorted(row["case_id"] for row in access["rows"]):
-        raise SystemExit("facts-v2: the archive's case directories are not the access report's 450")
-    cases = []
-    for name in names:
-        topo = _load(case_root / name / "topology.json")
-        topo = topo if isinstance(topo, dict) else {}
-        units = [u for u in topo.get("units") or [] if isinstance(u, dict)]
-        cases.append(
-            {
-                "case_id": name,
-                "topology_units": sorted(
-                    ({"id": str(u.get("id")), "kind": str(u.get("kind"))} for u in units),
-                    key=lambda u: (u["id"], u["kind"]),
-                ),
-            }
-        )
-    return {
-        "schema": "openidaes450-case-facts-v2",
-        "source": {
-            "archive_sha256": json.loads(PROVENANCE_JSON.read_bytes())["archive"]["sha256"],
-            "access_report_sha256": _sha256_file(ACCESS_JSON),
-            "case_facts_v1_sha256": _sha256_file(FACTS_JSON),
             "generator": "docs/derivations/scripts/m06_w27_registration.py",
         },
         "cases": cases,
@@ -3984,7 +3943,7 @@ def check_all() -> bool:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("stage", nargs="?", choices=("facts", "facts-v2", "registration", "dry"))
+    parser.add_argument("stage", nargs="?", choices=("facts", "registration", "dry"))
     parser.add_argument("--emit", action="store_true")
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--snapshot-live", action="store_true")
@@ -3994,20 +3953,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not args.check:
             parser.error("without a stage, only --check")
         return 0 if check_all() else 1
-    if args.stage in ("facts", "facts-v2"):
-        target = FACTS_JSON if args.stage == "facts" else FACTS_V2_JSON
+    if args.stage == "facts":
         if not (args.archive / "cases").is_dir():
             print(
-                f"NOT CHECKED: archive absent at {args.archive}; {target.name} is not verified "
+                f"NOT CHECKED: archive absent at {args.archive}; case_facts.json is not verified "
                 "(run scripts/m06_w27_acquire.py)"
             )
             return 2
-        extract = extract_facts if args.stage == "facts" else extract_facts_v2
-        fresh = dump_facts(extract(args.archive))
+        fresh = dump_facts(extract_facts(args.archive))
         if args.check:
-            return 0 if _compare(target, fresh) else 1
+            return 0 if _compare(FACTS_JSON, fresh) else 1
         if args.emit:
-            _write(target, fresh)
+            _write(FACTS_JSON, fresh)
         return 0
     facts = json.loads(FACTS_JSON.read_bytes())
     if args.stage == "registration":
