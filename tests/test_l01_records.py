@@ -11,6 +11,7 @@ record bytes it was made from, and re-runs the script where the source packages 
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import importlib.metadata
 import json
@@ -26,6 +27,7 @@ import yaml
 from conftest import REPO_ROOT
 from test_schemas_p01 import validator_for
 
+from openflowsheet.application import revision_binding
 from openflowsheet.resources import PACKAGED, packaged
 from openflowsheet.thermo import pr_c1, pr_lib
 from openflowsheet.thermo.pr_lib import (
@@ -379,7 +381,10 @@ def test_a12_the_retrieval_script_reproduces_its_record_or_says_why_not() -> Non
 
 # =================================================================== L01.A22 (the record files)
 
-#: SHA-256 at b843941 (the L01 base) of the C1 files §4.4 lists as unchanged.
+#: SHA-256 at b843941 (the L01 base) of the C1 files §4.4 lists as unchanged. `coverage.json` is
+#: not pinned: R-460 rewrites it at every version bump, so L01 asserts only its own absence from
+#: it (L01 spec §13.2 (b), R-566; a package byte-pins only files that no registered procedure
+#: rewrites, R-567).
 PINNED = {
     "benchmarks/m01/components.yaml": (
         "6f154f7fbc3f4bef9fe3cb2048983cc19ad13c6b43f40d29fa944e9b719f05b9"
@@ -432,9 +437,6 @@ PINNED = {
     "benchmarks/m06/openidaes450/case_facts.json": (
         "0ca8cffa146865971dd2a2d445b699cf484965cc052f7f37d8f6554c669e38f7"
     ),
-    "benchmarks/m06/openidaes450/coverage.json": (
-        "b69626c7e908218e70f8726534a00c964674b2cbda7f582c8650ed939e48e3ba"
-    ),
     "benchmarks/m06/openidaes450/registration.json": (
         "ee099a60f9da6900325f54127f92e9eee926d2015f97b527843db482d6f0e52e"
     ),
@@ -447,6 +449,7 @@ def _sha256(path: Path) -> str:
 
 def test_a22_the_c1_files_are_byte_identical_to_the_l01_base() -> None:
     models = sorted((REPO_ROOT / "src" / "openflowsheet" / "models" / "c1").glob("*.py"))
+    assert len(PINNED) == 18  # L01 spec §13.2 (a) (R-566)
     listed = {p for p in PINNED if p.startswith("src/openflowsheet/models/c1/")}
     assert {p.relative_to(REPO_ROOT).as_posix() for p in models} == listed
     assert {p: _sha256(REPO_ROOT / p) for p in PINNED} == PINNED
@@ -454,6 +457,48 @@ def test_a22_the_c1_files_are_byte_identical_to_the_l01_base() -> None:
         hashlib.sha256(packaged(pr_c1.RECORDS_PATH).read_bytes()).hexdigest()
         == PINNED["benchmarks/m01/components.yaml"]
     )
+
+
+COVERAGE = REPO_ROOT / "benchmarks" / "m06" / "openidaes450" / "coverage.json"
+
+
+def w27_absence_problems(data: bytes) -> list[str]:
+    """L01 spec §13.2 (b) (R-566): the four conditions of L01's absence from W27's coverage."""
+    problems = []
+    if b"pr-lib-v1" in data:
+        problems.append("coverage bytes contain `pr-lib-v1`")
+    if b"benchmarks/l01/" in data:
+        problems.append("coverage bytes contain `benchmarks/l01/`")
+    routes = [r["provider_id"] for r in json.loads(data)["snapshot"]["routes"]]
+    if "pr-lib-v1" in routes:
+        problems.append("`pr-lib-v1` is a W27 snapshot route")
+    if "pr-c1-v1" not in routes:
+        problems.append("control: `pr-c1-v1` is not a W27 snapshot route")
+    return problems
+
+
+def test_a22_l01_is_absent_from_w27s_coverage() -> None:
+    # L01 spec §13.2 (b) (R-566), with its two negative controls on deep copies.
+    data = COVERAGE.read_bytes()
+    assert w27_absence_problems(data) == []
+    document = json.loads(data)
+    exposed = copy.deepcopy(document)
+    exposed["snapshot"]["routes"].append(
+        {"provider_id": "pr-lib-v1", "components": [], "model_ids": []}
+    )
+    assert len(w27_absence_problems(json.dumps(exposed).encode())) == 2
+    emptied = copy.deepcopy(document)
+    emptied["snapshot"]["routes"] = [
+        r for r in emptied["snapshot"]["routes"] if r["provider_id"] != "pr-c1-v1"
+    ]
+    assert len(w27_absence_problems(json.dumps(emptied).encode())) == 1
+
+
+def test_a22_the_live_build_does_not_select_pr_lib_v1() -> None:
+    # L01 spec §13.2 (c) (R-566): W27's snapshot reads this table (W27-R63).
+    selectable = {b.provider_id for b in revision_binding.SELECTABLE_BASES}
+    assert "pr-c1-v1" in selectable
+    assert "pr-lib-v1" not in selectable
 
 
 def test_a22_pr_c1_describes_the_same_identity() -> None:
