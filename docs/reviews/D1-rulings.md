@@ -244,3 +244,12 @@ assertion below is an exact comparison of strings, sets or counts. No tolerance 
   stops recurring. A10's pairs are ruled together with it.
 - **D1-O3 (needs a fact).** Does a full rename of L01's files and labels to S04 move registered bytes? This matters only
   if the L01 lane wants the rename. Default: alias only (R-565).
+
+## 6. WO-D1-A build log (build lane, 2026-10-22)
+
+- Item 1 (`bba7ebf`): `test_b06_the_v2_register_is_the_specs`; in-test negative control (row removed gives a different set).
+- Item 2 (`60ec28b`): measured `_p1_scan_policies()["offenders"] == []` at the commit (was `["src/openflowsheet/models/syn001/cascade_solve.py:107"]`); sources_scanned 723; negative control, a probe `scripts/zz_probe.py` with `phase_contract=` is reported as `scripts/zz_probe.py:1` (file removed).
+- Item 3: `library_only_problems` and three tests in `tests/test_t08_w2_support_envelope.py` (32 passed in the file); S01 18 and S02 12 U04 items all carry their id and `library-only`.
+- Item 4: `tests/test_m07_ledger.py` gives 5 passed, 0 skipped (the `v0.2.0` tag is fetched here; the tag test skips where it is not). Negative control (constant = `ALPHA_TAG_COMMIT`, not committed): 3 failed (`test_the_claimed_verdicts_are_the_documents`, `test_every_claimed_gate_cites_m07_at_c`, `test_the_tag_commit_is_0_2_0`), 2 passed. §26.4 expected only the cites test to fail; the alpha's verdict set also differs from 0.2.0's, so the verdict-equality test fails as well. Not an issue for the check.
+- Full touched run: 894 passed, 3 deselected (tests/test_t05b_*, test_t08_w2_*, test_m07_*); ruff and mypy clean.
+- Not done: spec §26.3 item 1's optional import of the constant in `test_v02_main_version.py` and `test_m07a_harvest.py` (literals kept).
