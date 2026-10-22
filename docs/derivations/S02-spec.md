@@ -5,7 +5,8 @@ Design lane (`specifier`), 2026-10-22. Package S02 (plan v1.2 §4.5, `docs/imple
 `docs/derivations/scripts/s02_reference.py` (mpmath, 50 digits; `--check` re-derives 1064 claims (906 before §18.7 WO-G) and byte-compares
 `s02_reference.json`; about 3 minutes). Decisions: `docs/S02_DECISIONS.md`, register R-530 to R-535. **Amended 2026-10-22
 by §17** (Amendment 1, ruling round 1 on WO-1's questions; R-536 to R-539): §0, §2.2, §2.3, §10, §12; **and by §18**
-(Amendment 2: §7.3 replaced by the bubble-point easy endpoint, ADR 0044, A05–A07, A13, A14, A20–A22; R-546 to R-549).
+(Amendment 2: §7.3 replaced by the bubble-point easy endpoint, ADR 0044, A05–A07, A13, A14, A20–A22; R-546 to R-549). **And by §19** (Amendment 3, review rulings: ADR 0044 D1 narrowed, A14's shift clause, WO-G's stop;
+R-550 to R-554).
 
 ## 0. Authority and scope
 
@@ -653,3 +654,41 @@ read it. Uniqueness: §14, now with §18.1 item 3's counterexample.
   `same_root` across sets (T03 §8.3 says `NOT_COMPARABLE`). Reversible by: a T03 amendment defining cross-set comparison.
 - DECISION: V-M2 `(duty, duty)` → register the second root `R2` and assert it. Alternative: drop the set (§15.3 forbids) or
   tune the endpoint until it returns M2's root (fragile). Reversible by: a root-selection rule in a later package.
+
+## 19. Amendment 3 (2026-10-22, design lane `reviewer`): review rulings
+
+Review `docs/reviews/S02-review.md`; register R-550 to R-554. Each item replaces the text it names. No row, kind, root
+or registered value moves. The generator's re-emission (item 2) changes only `sweeps` at the generator's stop, the claim
+list (appended) and the JSON SHA-256.
+
+1. **ADR 0044 D1, narrowed (R-550).** §18.3's predicate and §18.6 A20 now read: *`LINEAR_SOLVE_FAILED` is a trigger iff the
+   failed region solve ran two or more attempts **and its attempt 0 ended in a core globalization failure*** (solver
+   outcome `LINE_SEARCH_FAILED`, `STAGNATION`, `BOUND_BLOCKED`, `PTC_STALLED`, or `BUDGET_EXHAUSTED` of a core budget).
+   *Why:* §18.3's argument holds only when item 0's signature was left for a globalization reason. A restart after a
+   `CONVERGED` attempt 0 is a physical correction; item 0's signature is known wrong there, and ADR 0010 D3's rank
+   reason applies (`tests/test_t05b_dormancy.py:720` shows such a solve). Measured: attempt 0 is `BOUND_BLOCKED` on every
+   S02 path that relies on the ADR, so no S02 result moves. A20's table gains `(CONVERGED, LINEAR_SOLVE_FAILED)` → not
+   due and `(BOUND_BLOCKED, LINEAR_SOLVE_FAILED)` → due. ADR 0044 stays `Proposed` until the conditions in R-550 hold.
+2. **§18.7 WO-G's stop is 1e-42 K, and the §18.2 identity claim is `< 1e-40` (Q-S02-WOG-1, R-551).** *Derivation:* the
+   non-continued rows at the stop are `O(|ΔT_last|·∂s/∂T·L)`, about `1e-3·|ΔT_last|`. At the old 1e-30 K stop they are
+   1.1e-33 to 8.4e-33 (measured, WO-G), so a `< 1e-40` claim was wrong for that stop. At 1e-42 K they are ≤ 8.1e-45
+   (measured). 50 digits resolve `T` to about 4e-48 K, which leaves six orders of margin. The emitted 25-digit values do
+   not change. The claim goes on all ten endpoints.
+3. **A14's shift clause (Q-S02-WO2b-1, R-552)** replaces §18.6's: *sweep start `T⁰ ± 5 K`: `x⁰` within 1e-8 K of A05's,
+   target `CONVERGED`, deviation within the state tolerance, `same_root = SAME` with A06's run.* The "same final
+   `state_sha256`" clause and §18.5's "identical `x⁰`" are withdrawn. *Derivation:* the sweep is a contraction with
+   last-sweep factor `c ≤ 0.54` (M1 0.18; WO-G). The stopped iterate therefore lies within `c/(1−c)·1e-9 K ≤ 1.2e-9 K`
+   of the fixed point, on a side and at bits that depend on the start, so two starts agree within `2.4e-9 K < 1e-8 K`
+   but not bit for bit. Newton from openings that differ in the last bits ends with different last bits. Bit identity
+   holds only where it can be derived: the same input twice (A15, A13).
+4. **Six variant sets (R-553).** §18.6 A05's and §18.7's "five admissible variants" read **six**: V-M1 ×4 and V-M2
+   `(D, BR)`, `(duty, duty)`. The last is A07's `R2` endpoint, and A05 covers all ten endpoints.
+5. **R-533 / Q-S02-3 (R-554).** §15.5's default is confirmed: S02 does not teach the contract the block rule. P1's
+   measured outcome (`HOMOTOPY_STALLED`; attempt 1 `(2P, L, 2P, 2P, 2P)` breaks §4.3's rule) is the fact R-533 was
+   waiting for, and it goes to S03. §14's "no phase-transition robustness" stands.
+6. **§4.3 / §8 item 4.** Singular pairs are judged on **literally adjacent** equilibrium stages. A `ZERO_FLOW` stage in
+   between pins `l_j = v_{j+2} = 0` and carries no circulation. "Ignoring `ZERO_FLOW`" applies only to reading the block
+   rule, and dormancy stays unclaimed.
+
+**Work orders:** `docs/reviews/S02-review.md`, "Build-lane fix work order", items 1–4. **Does not establish:** anything
+beyond §14 and §18.9. The acceptance conditions in R-550 are not yet met.

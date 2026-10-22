@@ -1,7 +1,10 @@
 # ADR 0044 — Recovery edge 3 after a restart that ends `LINEAR_SOLVE_FAILED`
 
-**Status:** Proposed 2026-10-22. Accepted when S02's manifest (`evidence/S02/<commit>/manifest.json`) is `tested` with A20
-passing and the package's `reviewer` pass has read this ADR.
+**Status:** Proposed 2026-10-22. **Review 2026-10-22 (S02 `reviewer`, R-550): stays Proposed.** It becomes Accepted when
+(1) D1 is narrowed as below and A20 is extended (S02 spec §19 item 1); (2) S02's manifest is `tested`;
+(3) `scripts/gate.sh` has passed on the merge candidate (a git checkout), CI is green on both architectures, and C2 records that run in
+place of the git-less snapshot; and (4) a workstation scan of registered step records for `LINEAR_SOLVE_FAILED` with ≥ 2 attempts
+is logged. The reviewer has read this ADR.
 **Date:** 2026-10-22
 **Author:** design lane (`architect`), S02 Amendment 2
 **Amends:** ADR 0010 D3 (the trigger set only). ADR 0005 D4 (the decision function) is **not** changed.
@@ -27,7 +30,9 @@ root on all ten S02 cases and variants (S02 §18.5). The terminal outcome is not
 ## Decision
 
 **D1. Trigger.** ADR 0010 D3's trigger set gains: `LINEAR_SOLVE_FAILED` **when the failed region solve ran two or more
-attempts** (its final attempt was opened by a contract restart). `LINEAR_SOLVE_FAILED` ending attempt 0 stays excluded: that
+attempts** (its final attempt was opened by a contract restart). **Narrowed by review (R-550):** and the failed solve's attempt 0 ended in a core
+globalization failure (`LINE_SEARCH_FAILED`, `STAGNATION`, `BOUND_BLOCKED`, `PTC_STALLED`, or `BUDGET_EXHAUSTED` of a core budget). A
+restart after a `CONVERGED` attempt 0 is a physical correction. Item 0's signature is known wrong there, and D3's rank reason applies. `LINEAR_SOLVE_FAILED` ending attempt 0 stays excluded: that
 is the signature the homotopy would run in, and D3's "rank" reason applies to it unchanged.
 
 **D2. Everything else in D3 is unchanged:** `eo_recovery = "homotopy"` precondition, a continuation parameter required

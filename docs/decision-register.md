@@ -11056,3 +11056,95 @@ multiplicity; §14 discloses that a `(duty, duty)` column may have several roots
 measured fragile (stage ratios ×2 return M2's root, ×1 and ×0.5 return `R2`).
 
 **Watch for.** A root-selection requirement (Q-S02-4) would make this a continuation-first path.
+
+## R-550 — ADR 0044 narrowed: `LINEAR_SOLVE_FAILED` triggers edge 3 only after an attempt 0 that ended in a globalization failure; stays Proposed
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S02 review |
+| Normative text | `docs/derivations/S02-spec.md` §19 item 1; ADR 0044 D1 and Status; `docs/reviews/S02-review.md` M1, S1 |
+| Evidence | measured: on all S02 paths that recover after `LINEAR_SOLVE_FAILED` (M2, V-M1 `(RR, B)`, `(D, BR)`), attempt 0's solver outcome is `BOUND_BLOCKED`; T05b DZ-12's negative control shows a two-attempt solve `(CONVERGED, LINEAR_SOLVE_FAILED)` that the unnarrowed predicate would send to edge 3 |
+| Affected packages | S02, S01 (`cascade_solve`), T04 (`recovery.py`, `executor.py`) |
+
+**Decision.** The trigger needs ≥ 2 attempts **and** an attempt 0 that ended `LINE_SEARCH_FAILED`, `STAGNATION`,
+`BOUND_BLOCKED`, `PTC_STALLED`, or `BUDGET_EXHAUSTED` of a core budget. ADR 0044 stays Proposed. It becomes Accepted when
+four conditions hold: the narrowing has landed with A20 extended; S02's manifest is `tested`; `scripts/gate.sh` is green
+on the merge candidate (a git checkout) with CI green on both architectures, and C2 is rewritten from that run; and a
+workstation scan of registered step records is logged.
+
+**Rejected alternatives, and why.** *Accept as written:* the predicate also fires after physical phase corrections,
+where item 0's signature is known wrong and ADR 0010 D3's rank reason holds. *Accept on the git-less suite:* 240 tests
+did not run there.
+
+**Watch for.** Any registered outcome that moves under the narrowed predicate is listed in C2 before acceptance.
+
+## R-551 — S02 generator: stop at 1e-42 K and claim the §18.2 identity at 1e-40
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S02 review (Q-S02-WOG-1) |
+| Normative text | `docs/derivations/S02-spec.md` §19 item 2 |
+| Evidence | WO-G measured: rows 1.1e-33 to 8.4e-33 at a 1e-30 K stop, ≤ 8.1e-45 at 1e-42 K; values unchanged to 30 digits |
+| Affected packages | S02 (generator, `REFERENCE_SHA256`) |
+
+**Decision.** The residual scales with the stop (`O(|ΔT_last|·∂s/∂T·L)`), so the registered `< 1e-40` was wrong for a
+1e-30 K stop. The stop moves to 1e-42 K, and the claim is emitted on all ten endpoints.
+
+**Rejected alternatives, and why.** *Keep 1e-30 K and claim `< 1e-30`:* this also holds, but it sits ten orders closer
+to the residual, so it is a weaker test that the construction leaves no structural residual.
+
+**Watch for.** Generator `sweeps` values change; `sweeps_to_1e-9_K` does not.
+
+## R-552 — S02 A14: a shifted sweep start is not bit-identical; the sha clause is withdrawn
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S02 review (Q-S02-WO2b-1) |
+| Normative text | `docs/derivations/S02-spec.md` §19 item 3 |
+| Evidence | measured (WO-2b): `x⁰` max ΔT 2.28e-10 / 1.36e-10 K; answer max Δx 1.09e-11 / 3.64e-12; `SAME` |
+| Affected packages | S02 |
+
+**Decision.** At a `1e-9 K` stop with contraction `c ≤ 0.54`, the stopped iterate depends on the start within 1.2e-9 K.
+Bit identity cannot be derived, so the clause goes. The 1e-8 K clause, `CONVERGED`, the state tolerance and `SAME` stay.
+A15 keeps bit identity for the same input run twice.
+
+**Rejected alternatives, and why.** *Stop on an exact fixed point:* the bisection-limited map may cycle and is not
+guaranteed to terminate.
+
+**Watch for.** Nothing; this is a spec erratum.
+
+## R-553 — S02 registers six variant endpoints (V-M1 ×4, V-M2 ×2), not five
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S02 review |
+| Normative text | `docs/derivations/S02-spec.md` §19 item 4 |
+| Evidence | `ref.variants.*.*.bubble_point` has six keys; A05 runs ten endpoints |
+| Affected packages | S02 |
+
+**Decision.** Six. V-M2 `(duty, duty)` is admissible and is A07's `R2` endpoint.
+
+**Rejected alternatives, and why.** *Five (drop its key):* A07 would run an endpoint that is not registered.
+
+**Watch for.** Nothing.
+
+## R-554 — R-533 / Q-S02-3: the contract learns no block rule in S02; P1's measured typed outcome goes to S03
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S02 review |
+| Normative text | `docs/derivations/S02-spec.md` §19 item 5, §15.5 |
+| Evidence | P1: `HOMOTOPY_STALLED`; attempt 1 `(2P, L, 2P, 2P, 2P)` breaks §4.3's block rule (WO-3, `474e4b5`) |
+| Affected packages | S02, S03, T05b (contract) |
+
+**Decision.** §15.5's default is confirmed. R-533 stays open, now with the measured fact, and S03 decides.
+
+**Rejected alternatives, and why.** *Decide it in S02:* that would put contract structure into a model package (R-533,
+ADR 0005 D4).
+
+**Watch for.** Any column phase case whose regular signature is a block other than all-2P.
