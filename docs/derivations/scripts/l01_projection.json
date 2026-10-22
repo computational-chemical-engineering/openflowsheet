@@ -1,0 +1,2650 @@
+{
+  "before": {
+    "classes": {
+      "ARTIFACT_INCOMPLETE": 0,
+      "CANDIDATE": 0,
+      "COMPONENT_UNAVAILABLE": 9,
+      "NOT_STEADY_STATE_SIMULATION": 32,
+      "PROPERTY_ROUTE_UNAVAILABLE": 0,
+      "UNIT_UNAVAILABLE": 184
+    },
+    "component_reasons_by_subject": {
+      "ADM1": 1,
+      "ADM1 liquid and vapor components": 1,
+      "ADM1 soluble and particulate components": 2,
+      "ASM2d": 1,
+      "Al": 4,
+      "Al2O3": 4,
+      "Al_o": 2,
+      "BTEX": 2,
+      "B[OH]3": 1,
+      "B[OH]4_-": 1,
+      "C2H6": 4,
+      "C3H8": 4,
+      "C4H10": 4,
+      "CH3OH": 4,
+      "CO": 6,
+      "CO2": 38,
+      "CO3--": 1,
+      "COD": 3,
+      "Ca": 4,
+      "Ca++": 1,
+      "Ca2+": 2,
+      "CaO": 4,
+      "CaSO4": 1,
+      "Ca_2+": 2,
+      "Ca_o": 2,
+      "Ce": 4,
+      "Ce2O3": 2,
+      "Cl": 2,
+      "Cl-": 8,
+      "Cl_-": 8,
+      "Co": 2,
+      "Co2+": 1,
+      "CoOH2": 1,
+      "Cu": 1,
+      "Cu++": 1,
+      "Cu2+": 1,
+      "DOC": 1,
+      "Dy": 4,
+      "Dy2O3": 2,
+      "Fe": 5,
+      "Fe+++": 2,
+      "Fe2O3": 4,
+      "Fe3+": 2,
+      "Fe_o": 2,
+      "Fe_rich_alloy": 1,
+      "GAC": 1,
+      "Gd": 4,
+      "Gd2O3": 2,
+      "H": 1,
+      "H+": 2,
+      "H2O": 139,
+      "H2S": 3,
+      "H2SO4": 3,
+      "HCO3_-": 7,
+      "HCl": 1,
+      "HSO4": 1,
+      "H_+": 3,
+      "K_+": 2,
+      "La": 4,
+      "La2O3": 2,
+      "Li": 2,
+      "Li+": 7,
+      "Li2CO3": 3,
+      "Li_+": 2,
+      "MEA": 6,
+      "MEACOO_-": 5,
+      "MEA_+": 5,
+      "Mg": 2,
+      "Mg++": 3,
+      "Mg2+": 2,
+      "Mg_2+": 4,
+      "NH4": 4,
+      "NH4+": 3,
+      "NO3": 2,
+      "NO3-": 2,
+      "NOx": 1,
+      "N_product": 1,
+      "Na+": 8,
+      "NaCl": 29,
+      "NaOH": 2,
+      "Na_+": 7,
+      "Nd": 6,
+      "Nd2Fe14B": 1,
+      "Nd2O3": 2,
+      "NdFeB": 1,
+      "Nd_rich_alloy": 1,
+      "Ni2+": 1,
+      "NiOH2": 1,
+      "None": 39,
+      "O2": 16,
+      "OH-": 3,
+      "OH_-": 3,
+      "PO4": 2,
+      "PO4---": 1,
+      "P_product": 1,
+      "Pr": 4,
+      "Pr2O3": 2,
+      "REE oxalate": 2,
+      "REE oxides": 2,
+      "REE+++": 1,
+      "REE3+": 1,
+      "REE_o": 2,
+      "REO": 2,
+      "SO2": 2,
+      "SO4": 4,
+      "SO4_2-": 2,
+      "S_A": 1,
+      "S_ALK": 4,
+      "S_F": 1,
+      "S_I": 5,
+      "S_IC": 2,
+      "S_IN": 2,
+      "S_N2": 1,
+      "S_ND": 4,
+      "S_NH": 4,
+      "S_NH4": 1,
+      "S_NO": 4,
+      "S_NO3": 1,
+      "S_O": 4,
+      "S_O2": 1,
+      "S_PO4": 1,
+      "S_S": 4,
+      "S_aa": 2,
+      "S_ac": 2,
+      "S_bu": 2,
+      "S_ch4": 4,
+      "S_co2": 2,
+      "S_fa": 2,
+      "S_h2": 4,
+      "S_pro": 2,
+      "S_su": 2,
+      "S_va": 2,
+      "Sc": 4,
+      "Sc2O3": 2,
+      "Sludge": 2,
+      "Sm": 4,
+      "Sm2O3": 2,
+      "TDS": 6,
+      "TEG": 4,
+      "TSS": 2,
+      "VFA": 1,
+      "VOC": 1,
+      "X": 1,
+      "X_AUT": 1,
+      "X_BA": 4,
+      "X_BH": 4,
+      "X_H": 1,
+      "X_I": 5,
+      "X_ND": 4,
+      "X_P": 4,
+      "X_PAO": 1,
+      "X_PHA": 1,
+      "X_PP": 1,
+      "X_S": 5,
+      "X_c": 2,
+      "X_ch": 2,
+      "X_li": 2,
+      "X_pr": 2,
+      "Y": 4,
+      "Y2O3": 2,
+      "ZnO": 1,
+      "ZnS": 1,
+      "acetate": 1,
+      "acid": 4,
+      "activated_carbon": 1,
+      "adsorbent": 1,
+      "air": 3,
+      "ammonium_salt": 2,
+      "ammonium_sulfate": 1,
+      "anions": 1,
+      "ash": 1,
+      "base": 1,
+      "benzene": 15,
+      "benzene_vapor": 1,
+      "biomass": 4,
+      "borate": 2,
+      "boric_acid": 1,
+      "carbonate": 1,
+      "cations": 1,
+      "coal": 1,
+      "digestate": 1,
+      "dye": 1,
+      "electricity": 4,
+      "ethanol": 1,
+      "ethylene_glycol": 4,
+      "ethylene_oxide": 3,
+      "extractant": 5,
+      "flue_gas": 3,
+      "heat": 7,
+      "heat_stable_salt": 1,
+      "heat_stable_salts": 1,
+      "hitec_salt": 1,
+      "hydrate": 1,
+      "inerts": 4,
+      "ionic_impurity": 1,
+      "methanol": 2,
+      "natural_gas": 1,
+      "oxalate": 1,
+      "oxygen": 2,
+      "phase_change_material": 1,
+      "phosphate": 1,
+      "piperazine": 2,
+      "primary air": 1,
+      "process_fluid": 1,
+      "propane": 1,
+      "propionate": 1,
+      "propylene": 1,
+      "raw coal": 1,
+      "resin": 1,
+      "salt": 3,
+      "salt_crystal": 3,
+      "secondary air": 1,
+      "selective_solvent": 1,
+      "solar_salt": 2,
+      "soluble_impurity": 1,
+      "solute": 9,
+      "solvent": 1,
+      "steam": 3,
+      "struvite": 2,
+      "substrate": 1,
+      "sulfur": 1,
+      "sulfuric_acid": 3,
+      "tds": 3,
+      "therminol66": 1,
+      "toluene": 14,
+      "tss": 1,
+      "water": 9,
+      "water_steam": 1,
+      "water_vapor": 4,
+      "zeolite": 1
+    },
+    "reason_kinds": {
+      "COMPONENT_UNAVAILABLE": 832,
+      "NOT_STEADY_STATE_SIMULATION": 32,
+      "PROPERTY_ROUTE_UNAVAILABLE": 314,
+      "UNIT_UNAVAILABLE": 621
+    }
+  },
+  "dispositions": [
+    {
+      "cas": "7732-18-5",
+      "development_cases": 150,
+      "disposition": "admit: cubic_pr vapour (pr-lib-v1)",
+      "method_groups": {
+        "activity_coefficient": 1,
+        "aqueous_apparent_species": 5,
+        "biochemical": 5,
+        "conservation_only": 50,
+        "cubic_pr": 3,
+        "cubic_pr+iapws95": 1,
+        "cubic_pr+iapws95+ideal_gas": 3,
+        "hydrometallurgy_solids": 1,
+        "hydrometallurgy_solids+ideal_gas": 3,
+        "iapws95": 8,
+        "iapws95+ideal_gas": 4,
+        "iapws95+ideal_vle": 6,
+        "iapws95+pseudo_property+specialty_fluid": 1,
+        "iapws95+specialty_fluid": 1,
+        "ideal_gas": 3,
+        "ideal_liquid": 4,
+        "unidentified": 1,
+        "watertap_aqueous": 50
+      },
+      "methods": [
+        "activity_coefficient",
+        "aqueous_apparent_species",
+        "biochemical",
+        "conservation_only",
+        "cubic_pr",
+        "hydrometallurgy_solids",
+        "iapws95",
+        "ideal_gas",
+        "ideal_liquid",
+        "ideal_vle",
+        "pseudo_property",
+        "specialty_fluid",
+        "unidentified",
+        "watertap_aqueous"
+      ],
+      "names": [
+        "H2O",
+        "steam",
+        "water",
+        "water_vapor"
+      ],
+      "vapour_pr_cases": [
+        "ngfc_atr",
+        "official_idaes_smr_equilibrium_flowsheet",
+        "official_idaes_smr_gibbs_flowsheet"
+      ]
+    },
+    {
+      "cas": "124-38-9",
+      "development_cases": 38,
+      "disposition": "admit: cubic_pr vapour (pr-lib-v1)",
+      "method_groups": {
+        "aqueous_apparent_species": 5,
+        "conservation_only": 18,
+        "cubic_pr": 3,
+        "cubic_pr+iapws95": 1,
+        "cubic_pr+iapws95+ideal_gas": 3,
+        "hydrometallurgy_solids+ideal_gas": 3,
+        "iapws95+ideal_gas": 3,
+        "ideal_gas": 1,
+        "unidentified": 1
+      },
+      "methods": [
+        "aqueous_apparent_species",
+        "conservation_only",
+        "cubic_pr",
+        "hydrometallurgy_solids",
+        "iapws95",
+        "ideal_gas",
+        "unidentified"
+      ],
+      "names": [
+        "CO2"
+      ],
+      "vapour_pr_cases": [
+        "ngfc_atr",
+        "official_idaes_smr_equilibrium_flowsheet",
+        "official_idaes_smr_gibbs_flowsheet"
+      ]
+    },
+    {
+      "cas": "7647-14-5",
+      "development_cases": 29,
+      "disposition": "needs new method: conservation_only, watertap_aqueous",
+      "method_groups": {
+        "conservation_only": 3,
+        "watertap_aqueous": 26
+      },
+      "methods": [
+        "conservation_only",
+        "watertap_aqueous"
+      ],
+      "names": [
+        "NaCl"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "7782-44-7",
+      "development_cases": 18,
+      "disposition": "admit: cubic_pr vapour (pr-lib-v1)",
+      "method_groups": {
+        "conservation_only": 5,
+        "cubic_pr": 1,
+        "cubic_pr+iapws95": 1,
+        "cubic_pr+iapws95+ideal_gas": 3,
+        "hydrometallurgy_solids+ideal_gas": 3,
+        "iapws95+ideal_gas": 3,
+        "ideal_gas": 2
+      },
+      "methods": [
+        "conservation_only",
+        "cubic_pr",
+        "hydrometallurgy_solids",
+        "iapws95",
+        "ideal_gas"
+      ],
+      "names": [
+        "O2",
+        "oxygen"
+      ],
+      "vapour_pr_cases": [
+        "ngfc_atr"
+      ]
+    },
+    {
+      "cas": "71-43-2",
+      "development_cases": 15,
+      "disposition": "needs new method: conservation_only, iapws95, ideal_vle",
+      "method_groups": {
+        "conservation_only": 4,
+        "iapws95+ideal_vle": 6,
+        "ideal_vle": 5
+      },
+      "methods": [
+        "conservation_only",
+        "iapws95",
+        "ideal_vle"
+      ],
+      "names": [
+        "benzene"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "108-88-3",
+      "development_cases": 14,
+      "disposition": "needs new method: conservation_only, iapws95, ideal_vle",
+      "method_groups": {
+        "conservation_only": 3,
+        "iapws95+ideal_vle": 6,
+        "ideal_vle": 5
+      },
+      "methods": [
+        "conservation_only",
+        "iapws95",
+        "ideal_vle"
+      ],
+      "names": [
+        "toluene"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "141-43-5",
+      "development_cases": 6,
+      "disposition": "needs new method: aqueous_apparent_species, conservation_only",
+      "method_groups": {
+        "aqueous_apparent_species": 5,
+        "conservation_only": 1
+      },
+      "methods": [
+        "aqueous_apparent_species",
+        "conservation_only"
+      ],
+      "names": [
+        "MEA"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "630-08-0",
+      "development_cases": 6,
+      "disposition": "stopped: W27-R24 (c): the archive spelling 'Co' (cobalt) casefolds to the record's 'CO'",
+      "method_groups": {
+        "conservation_only": 2,
+        "cubic_pr": 3,
+        "ideal_gas+ideal_vle": 1
+      },
+      "methods": [
+        "conservation_only",
+        "cubic_pr",
+        "ideal_gas",
+        "ideal_vle"
+      ],
+      "names": [
+        "CO"
+      ],
+      "vapour_pr_cases": [
+        "ngfc_atr",
+        "official_idaes_smr_equilibrium_flowsheet",
+        "official_idaes_smr_gibbs_flowsheet"
+      ]
+    },
+    {
+      "cas": "67-56-1",
+      "development_cases": 6,
+      "disposition": "needs new method: activity_coefficient, conservation_only, ideal_gas, ideal_vle",
+      "method_groups": {
+        "activity_coefficient": 1,
+        "conservation_only": 4,
+        "ideal_gas+ideal_vle": 1
+      },
+      "methods": [
+        "activity_coefficient",
+        "conservation_only",
+        "ideal_gas",
+        "ideal_vle"
+      ],
+      "names": [
+        "CH3OH",
+        "methanol"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "7664-93-9",
+      "development_cases": 6,
+      "disposition": "needs new method: conservation_only, ideal_liquid",
+      "method_groups": {
+        "conservation_only": 3,
+        "ideal_liquid": 3
+      },
+      "methods": [
+        "conservation_only",
+        "ideal_liquid"
+      ],
+      "names": [
+        "H2SO4",
+        "sulfuric_acid"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "74-98-6",
+      "development_cases": 5,
+      "disposition": "admit: cubic_pr vapour (pr-lib-v1)",
+      "method_groups": {
+        "conservation_only": 1,
+        "cubic_pr": 1,
+        "cubic_pr+iapws95": 1,
+        "cubic_pr+iapws95+ideal_gas": 2
+      },
+      "methods": [
+        "conservation_only",
+        "cubic_pr",
+        "iapws95",
+        "ideal_gas"
+      ],
+      "names": [
+        "C3H8",
+        "propane"
+      ],
+      "vapour_pr_cases": [
+        "ngfc_atr"
+      ]
+    },
+    {
+      "cas": "107-21-1",
+      "development_cases": 4,
+      "disposition": "needs new method: ideal_liquid",
+      "method_groups": {
+        "ideal_liquid": 4
+      },
+      "methods": [
+        "ideal_liquid"
+      ],
+      "names": [
+        "ethylene_glycol"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "112-27-6",
+      "development_cases": 4,
+      "disposition": "needs new method: conservation_only",
+      "method_groups": {
+        "conservation_only": 4
+      },
+      "methods": [
+        "conservation_only"
+      ],
+      "names": [
+        "TEG"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "1305-78-8",
+      "development_cases": 4,
+      "disposition": "needs new method: hydrometallurgy_solids, ideal_gas",
+      "method_groups": {
+        "hydrometallurgy_solids": 2,
+        "hydrometallurgy_solids+ideal_gas": 2
+      },
+      "methods": [
+        "hydrometallurgy_solids",
+        "ideal_gas"
+      ],
+      "names": [
+        "CaO"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "1309-37-1",
+      "development_cases": 4,
+      "disposition": "needs new method: hydrometallurgy_solids, ideal_gas",
+      "method_groups": {
+        "hydrometallurgy_solids": 2,
+        "hydrometallurgy_solids+ideal_gas": 2
+      },
+      "methods": [
+        "hydrometallurgy_solids",
+        "ideal_gas"
+      ],
+      "names": [
+        "Fe2O3"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "1344-28-1",
+      "development_cases": 4,
+      "disposition": "needs new method: hydrometallurgy_solids, ideal_gas",
+      "method_groups": {
+        "hydrometallurgy_solids": 2,
+        "hydrometallurgy_solids+ideal_gas": 2
+      },
+      "methods": [
+        "hydrometallurgy_solids",
+        "ideal_gas"
+      ],
+      "names": [
+        "Al2O3"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "74-84-0",
+      "development_cases": 4,
+      "disposition": "admit: cubic_pr vapour (pr-lib-v1)",
+      "method_groups": {
+        "cubic_pr": 1,
+        "cubic_pr+iapws95": 1,
+        "cubic_pr+iapws95+ideal_gas": 2
+      },
+      "methods": [
+        "cubic_pr",
+        "iapws95",
+        "ideal_gas"
+      ],
+      "names": [
+        "C2H6"
+      ],
+      "vapour_pr_cases": [
+        "ngfc_atr"
+      ]
+    },
+    {
+      "cas": "554-13-2",
+      "development_cases": 3,
+      "disposition": "needs new method: conservation_only",
+      "method_groups": {
+        "conservation_only": 3
+      },
+      "methods": [
+        "conservation_only"
+      ],
+      "names": [
+        "Li2CO3"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "75-21-8",
+      "development_cases": 3,
+      "disposition": "needs new method: ideal_liquid",
+      "method_groups": {
+        "ideal_liquid": 3
+      },
+      "methods": [
+        "ideal_liquid"
+      ],
+      "names": [
+        "ethylene_oxide"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "7783-06-4",
+      "development_cases": 3,
+      "disposition": "needs new method: conservation_only",
+      "method_groups": {
+        "conservation_only": 3
+      },
+      "methods": [
+        "conservation_only"
+      ],
+      "names": [
+        "H2S"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "110-85-0",
+      "development_cases": 2,
+      "disposition": "needs new method: conservation_only",
+      "method_groups": {
+        "conservation_only": 2
+      },
+      "methods": [
+        "conservation_only"
+      ],
+      "names": [
+        "piperazine"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "1310-73-2",
+      "development_cases": 2,
+      "disposition": "needs new method: conservation_only",
+      "method_groups": {
+        "conservation_only": 2
+      },
+      "methods": [
+        "conservation_only"
+      ],
+      "names": [
+        "NaOH"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "7446-09-5",
+      "development_cases": 2,
+      "disposition": "needs new method: iapws95, ideal_gas",
+      "method_groups": {
+        "iapws95+ideal_gas": 2
+      },
+      "methods": [
+        "iapws95",
+        "ideal_gas"
+      ],
+      "names": [
+        "SO2"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "115-07-1",
+      "development_cases": 1,
+      "disposition": "needs new method: conservation_only",
+      "method_groups": {
+        "conservation_only": 1
+      },
+      "methods": [
+        "conservation_only"
+      ],
+      "names": [
+        "propylene"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "64-17-5",
+      "development_cases": 1,
+      "disposition": "needs new method: conservation_only",
+      "method_groups": {
+        "conservation_only": 1
+      },
+      "methods": [
+        "conservation_only"
+      ],
+      "names": [
+        "ethanol"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "7647-01-0",
+      "development_cases": 1,
+      "disposition": "needs new method: conservation_only",
+      "method_groups": {
+        "conservation_only": 1
+      },
+      "methods": [
+        "conservation_only"
+      ],
+      "names": [
+        "HCl"
+      ],
+      "vapour_pr_cases": []
+    },
+    {
+      "cas": "7778-18-9",
+      "development_cases": 1,
+      "disposition": "needs new method: conservation_only",
+      "method_groups": {
+        "conservation_only": 1
+      },
+      "methods": [
+        "conservation_only"
+      ],
+      "names": [
+        "CaSO4"
+      ],
+      "vapour_pr_cases": []
+    }
+  ],
+  "inputs": {
+    "benchmarks/m01/components.yaml": "6f154f7fbc3f4bef9fe3cb2048983cc19ad13c6b43f40d29fa944e9b719f05b9",
+    "case_facts.json": "0ca8cffa146865971dd2a2d445b699cf484965cc052f7f37d8f6554c669e38f7",
+    "coverage.json": "b69626c7e908218e70f8726534a00c964674b2cbda7f582c8650ed939e48e3ba",
+    "registration.json": "ee099a60f9da6900325f54127f92e9eee926d2015f97b527843db482d6f0e52e",
+    "split.json": "ee940a7ee2c6a2128f12fdc25c4e9906ff66607a5ce4e0bb975c00a935adf6cd"
+  },
+  "library": {
+    "atomic_weights_g_per_mol": {
+      "Ar": "39.948",
+      "C": "12.0107",
+      "H": "1.00794",
+      "N": "14.0067",
+      "O": "15.9994"
+    },
+    "copied_from_c1": [
+      "H2",
+      "N2",
+      "Ar",
+      "CH4"
+    ],
+    "new": [
+      {
+        "cas": "7732-18-5",
+        "elements": {
+          "H": 2,
+          "O": 1
+        },
+        "formula": "H2O",
+        "id": "H2O",
+        "molar_mass_kg_per_mol": "0.01801528",
+        "name": "water",
+        "phases": [
+          "vapor"
+        ]
+      },
+      {
+        "cas": "124-38-9",
+        "elements": {
+          "C": 1,
+          "O": 2
+        },
+        "formula": "CO2",
+        "id": "CO2",
+        "molar_mass_kg_per_mol": "0.0440095",
+        "name": "carbon dioxide",
+        "phases": [
+          "vapor"
+        ]
+      },
+      {
+        "cas": "7782-44-7",
+        "elements": {
+          "O": 2
+        },
+        "formula": "O2",
+        "id": "O2",
+        "molar_mass_kg_per_mol": "0.0319988",
+        "name": "oxygen",
+        "phases": [
+          "vapor"
+        ]
+      },
+      {
+        "cas": "74-84-0",
+        "elements": {
+          "C": 2,
+          "H": 6
+        },
+        "formula": "C2H6",
+        "id": "C2H6",
+        "molar_mass_kg_per_mol": "0.03006904",
+        "name": "ethane",
+        "phases": [
+          "vapor"
+        ]
+      },
+      {
+        "cas": "74-98-6",
+        "elements": {
+          "C": 3,
+          "H": 8
+        },
+        "formula": "C3H8",
+        "id": "C3H8",
+        "molar_mass_kg_per_mol": "0.04409562",
+        "name": "propane",
+        "phases": [
+          "vapor"
+        ]
+      }
+    ],
+    "provider_id": "pr-lib-v1",
+    "stopped": {
+      "630-08-0": "W27-R24 (c): the archive spelling 'Co' (cobalt) casefolds to the record's 'CO'"
+    }
+  },
+  "literature": {
+    "C2H6": {
+      "Pc": "4872200",
+      "Tc": "305.322",
+      "cp298": "52.49",
+      "dHf": "-83800",
+      "omega": "0.0995",
+      "src": "Buecker and Wagner, JPCRD 35 (2006) 205 critical point; Pittam and Pilcher (1972) dHf; Chao, Wilhoit and Hall (1973) cp"
+    },
+    "C3H8": {
+      "Pc": "4251200",
+      "Tc": "369.89",
+      "cp298": "73.60",
+      "dHf": "-104700",
+      "omega": "0.1521",
+      "src": "Lemmon, McLinden and Wagner, J. Chem. Eng. Data 54 (2009) 3141 critical point; Prosen and Rossini (1945) dHf; Chao, Wilhoit and Hall (1973) cp"
+    },
+    "CO2": {
+      "Pc": "7377300",
+      "Tc": "304.1282",
+      "cp298": "37.129",
+      "dHf": "-393510",
+      "omega": "0.22394",
+      "src": "Span and Wagner, JPCRD 25 (1996) 1509 critical point; CODATA key values dHf; JANAF 4th ed. cp"
+    },
+    "H2O": {
+      "Pc": "22064000",
+      "Tc": "647.096",
+      "cp298": "33.59",
+      "dHf": "-241826",
+      "omega": "0.3443",
+      "src": "IAPWS-95 (Wagner and Pruss, JPCRD 31 (2002) 387) critical point; CODATA key values (Cox, Wagman, Medvedev 1989) dHf; JANAF 4th ed. (Chase 1998) cp"
+    },
+    "O2": {
+      "Pc": "5043000",
+      "Tc": "154.581",
+      "cp298": "29.376",
+      "dHf": "0",
+      "omega": "0.0222",
+      "src": "Schmidt and Wagner, Fluid Phase Equilib. 19 (1985) 175 critical point; element in its reference state (dHf = 0 by definition); JANAF 4th ed. cp"
+    }
+  },
+  "projection": {
+    "after": {
+      "classes": {
+        "ARTIFACT_INCOMPLETE": 0,
+        "CANDIDATE": 0,
+        "COMPONENT_UNAVAILABLE": 6,
+        "NOT_STEADY_STATE_SIMULATION": 32,
+        "PROPERTY_ROUTE_UNAVAILABLE": 3,
+        "UNIT_UNAVAILABLE": 184
+      },
+      "component_reasons_by_subject": {
+        "ADM1": 1,
+        "ADM1 liquid and vapor components": 1,
+        "ADM1 soluble and particulate components": 2,
+        "ASM2d": 1,
+        "Al": 4,
+        "Al2O3": 4,
+        "Al_o": 2,
+        "BTEX": 2,
+        "B[OH]3": 1,
+        "B[OH]4_-": 1,
+        "C4H10": 4,
+        "CH3OH": 4,
+        "CO": 6,
+        "CO3--": 1,
+        "COD": 3,
+        "Ca": 4,
+        "Ca++": 1,
+        "Ca2+": 2,
+        "CaO": 4,
+        "CaSO4": 1,
+        "Ca_2+": 2,
+        "Ca_o": 2,
+        "Ce": 4,
+        "Ce2O3": 2,
+        "Cl": 2,
+        "Cl-": 8,
+        "Cl_-": 8,
+        "Co": 2,
+        "Co2+": 1,
+        "CoOH2": 1,
+        "Cu": 1,
+        "Cu++": 1,
+        "Cu2+": 1,
+        "DOC": 1,
+        "Dy": 4,
+        "Dy2O3": 2,
+        "Fe": 5,
+        "Fe+++": 2,
+        "Fe2O3": 4,
+        "Fe3+": 2,
+        "Fe_o": 2,
+        "Fe_rich_alloy": 1,
+        "GAC": 1,
+        "Gd": 4,
+        "Gd2O3": 2,
+        "H": 1,
+        "H+": 2,
+        "H2S": 3,
+        "H2SO4": 3,
+        "HCO3_-": 7,
+        "HCl": 1,
+        "HSO4": 1,
+        "H_+": 3,
+        "K_+": 2,
+        "La": 4,
+        "La2O3": 2,
+        "Li": 2,
+        "Li+": 7,
+        "Li2CO3": 3,
+        "Li_+": 2,
+        "MEA": 6,
+        "MEACOO_-": 5,
+        "MEA_+": 5,
+        "Mg": 2,
+        "Mg++": 3,
+        "Mg2+": 2,
+        "Mg_2+": 4,
+        "NH4": 4,
+        "NH4+": 3,
+        "NO3": 2,
+        "NO3-": 2,
+        "NOx": 1,
+        "N_product": 1,
+        "Na+": 8,
+        "NaCl": 29,
+        "NaOH": 2,
+        "Na_+": 7,
+        "Nd": 6,
+        "Nd2Fe14B": 1,
+        "Nd2O3": 2,
+        "NdFeB": 1,
+        "Nd_rich_alloy": 1,
+        "Ni2+": 1,
+        "NiOH2": 1,
+        "None": 39,
+        "OH-": 3,
+        "OH_-": 3,
+        "PO4": 2,
+        "PO4---": 1,
+        "P_product": 1,
+        "Pr": 4,
+        "Pr2O3": 2,
+        "REE oxalate": 2,
+        "REE oxides": 2,
+        "REE+++": 1,
+        "REE3+": 1,
+        "REE_o": 2,
+        "REO": 2,
+        "SO2": 2,
+        "SO4": 4,
+        "SO4_2-": 2,
+        "S_A": 1,
+        "S_ALK": 4,
+        "S_F": 1,
+        "S_I": 5,
+        "S_IC": 2,
+        "S_IN": 2,
+        "S_N2": 1,
+        "S_ND": 4,
+        "S_NH": 4,
+        "S_NH4": 1,
+        "S_NO": 4,
+        "S_NO3": 1,
+        "S_O": 4,
+        "S_O2": 1,
+        "S_PO4": 1,
+        "S_S": 4,
+        "S_aa": 2,
+        "S_ac": 2,
+        "S_bu": 2,
+        "S_ch4": 4,
+        "S_co2": 2,
+        "S_fa": 2,
+        "S_h2": 4,
+        "S_pro": 2,
+        "S_su": 2,
+        "S_va": 2,
+        "Sc": 4,
+        "Sc2O3": 2,
+        "Sludge": 2,
+        "Sm": 4,
+        "Sm2O3": 2,
+        "TDS": 6,
+        "TEG": 4,
+        "TSS": 2,
+        "VFA": 1,
+        "VOC": 1,
+        "X": 1,
+        "X_AUT": 1,
+        "X_BA": 4,
+        "X_BH": 4,
+        "X_H": 1,
+        "X_I": 5,
+        "X_ND": 4,
+        "X_P": 4,
+        "X_PAO": 1,
+        "X_PHA": 1,
+        "X_PP": 1,
+        "X_S": 5,
+        "X_c": 2,
+        "X_ch": 2,
+        "X_li": 2,
+        "X_pr": 2,
+        "Y": 4,
+        "Y2O3": 2,
+        "ZnO": 1,
+        "ZnS": 1,
+        "acetate": 1,
+        "acid": 4,
+        "activated_carbon": 1,
+        "adsorbent": 1,
+        "air": 3,
+        "ammonium_salt": 2,
+        "ammonium_sulfate": 1,
+        "anions": 1,
+        "ash": 1,
+        "base": 1,
+        "benzene": 15,
+        "benzene_vapor": 1,
+        "biomass": 4,
+        "borate": 2,
+        "boric_acid": 1,
+        "carbonate": 1,
+        "cations": 1,
+        "coal": 1,
+        "digestate": 1,
+        "dye": 1,
+        "electricity": 4,
+        "ethanol": 1,
+        "ethylene_glycol": 4,
+        "ethylene_oxide": 3,
+        "extractant": 5,
+        "flue_gas": 3,
+        "heat": 7,
+        "heat_stable_salt": 1,
+        "heat_stable_salts": 1,
+        "hitec_salt": 1,
+        "hydrate": 1,
+        "inerts": 4,
+        "ionic_impurity": 1,
+        "methanol": 2,
+        "natural_gas": 1,
+        "oxalate": 1,
+        "phase_change_material": 1,
+        "phosphate": 1,
+        "piperazine": 2,
+        "primary air": 1,
+        "process_fluid": 1,
+        "propionate": 1,
+        "propylene": 1,
+        "raw coal": 1,
+        "resin": 1,
+        "salt": 3,
+        "salt_crystal": 3,
+        "secondary air": 1,
+        "selective_solvent": 1,
+        "solar_salt": 2,
+        "soluble_impurity": 1,
+        "solute": 9,
+        "solvent": 1,
+        "struvite": 2,
+        "substrate": 1,
+        "sulfur": 1,
+        "sulfuric_acid": 3,
+        "tds": 3,
+        "therminol66": 1,
+        "toluene": 14,
+        "tss": 1,
+        "water_steam": 1,
+        "zeolite": 1
+      },
+      "reason_kinds": {
+        "COMPONENT_UNAVAILABLE": 612,
+        "NOT_STEADY_STATE_SIMULATION": 32,
+        "PROPERTY_ROUTE_UNAVAILABLE": 314,
+        "UNIT_UNAVAILABLE": 621
+      }
+    },
+    "reading": "hypothetical: the new records admitted vapour-only by the one cubic_pr route (pr-c1-v1's route in the 0.2.0 snapshot); W27-R62 unit reasons of served cases are not projected",
+    "transitions": [
+      {
+        "case_id": "blind_synthesized_boron_removal_unit",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_bped_unit",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_coag_floc_unit",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_electrodialysis_conc_recirc",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_gac_unit",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_mvc_single_stage",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_prommis_leach_flowsheet",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_prommis_nanofiltration_ui_flowsheet",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_prommis_nf_brine_advanced_costing",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_prommis_ree_oxalate_roaster",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_prommis_simplified_uky_flowsheet",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_prommis_uky_ui_flowsheet",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_ro_no_energy_recovery",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_ro_pressure_exchanger",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_subcritical_power_plant",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "blind_synthesized_watertap_electroNP_bsm2_no_bioP",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "dispatches_nuclear_double_loop",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "oxygen",
+          "water"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "dispatches_ultra_supercritical_plant",
+        "class_after": "NOT_STEADY_STATE_SIMULATION",
+        "class_before": "NOT_STEADY_STATE_SIMULATION",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "dispatches_usc_tes_charge_superstructure",
+        "class_after": "NOT_STEADY_STATE_SIMULATION",
+        "class_before": "NOT_STEADY_STATE_SIMULATION",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "dispatches_usc_tes_integrated",
+        "class_after": "NOT_STEADY_STATE_SIMULATION",
+        "class_before": "NOT_STEADY_STATE_SIMULATION",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "dispatches_wind_battery_pem_tank_turbine",
+        "class_after": "NOT_STEADY_STATE_SIMULATION",
+        "class_before": "NOT_STEADY_STATE_SIMULATION",
+        "component_reasons_removed": [
+          "oxygen",
+          "water"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "idaes_co2_membrane_1d",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "idaes_drum_1d",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "idaes_dynamic_feedwater_heater",
+        "class_after": "NOT_STEADY_STATE_SIMULATION",
+        "class_before": "NOT_STEADY_STATE_SIMULATION",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "idaes_heat_exchanger_2d",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "idaes_ngcc_soec",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "C2H6",
+          "C3H8",
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "idaes_shell_and_tube_1d",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "idaes_soc_pid_control",
+        "class_after": "NOT_STEADY_STATE_SIMULATION",
+        "class_before": "NOT_STEADY_STATE_SIMULATION",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "idaes_temperature_swing_adsorption",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "idaes_valve",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "ngcc_gas_turbine_subflowsheet",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "C2H6",
+          "C3H8",
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "ngcc_hrsg_subflowsheet",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "ngcc_steam_turbine_subflowsheet",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "ngfc_atr",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "C2H6",
+          "C3H8",
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "official_idaes_eg_cstr_flowsheet",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "water"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "official_idaes_eg_pfr_flowsheet",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "water"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "official_idaes_eg_stoichiometric_flowsheet",
+        "class_after": "COMPONENT_UNAVAILABLE",
+        "class_before": "COMPONENT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "water"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "official_idaes_hx1d_unit",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "official_idaes_skeleton_pervaporation",
+        "class_after": "COMPONENT_UNAVAILABLE",
+        "class_before": "COMPONENT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "water"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "official_idaes_smr_equilibrium_flowsheet",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "official_idaes_smr_gibbs_flowsheet",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "official_ngcc",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "C2H6",
+          "C3H8",
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "official_subcritical_boiler",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "pareto_produced_water_network",
+        "class_after": "COMPONENT_UNAVAILABLE",
+        "class_before": "COMPONENT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "water"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "reflo_crystallizer_effect",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "reflo_kbhdp_soa",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_ammonia_recovery_storage_scrubber_recycle",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_dispatches_pem_oxygen_coproduct_methanation",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_hda_distillation_heat_pump",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "water_vapor"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_hda_methanol_steam_level_integration",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O",
+          "steam"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_bfb_staged_air_flue_gas_recycle",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_boiler_biomass_cofire_fgr",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_co2_membrane_two_stage_recycle",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_dac_co2_electroreduction_methanation",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_ethanol_water_pervaporation_polish",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O",
+          "water_vapor"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_hx_lumped_a40_ua15_cf70",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_hx_lumped_a65_ua80_cf75",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_hx_lumped_a80_ua50_cf90",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_hx_lumped_compact_crossflow",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_hx_ntu_e55_a70",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_hx_ntu_e60_a80",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_hx_ntu_e75_a110",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_hx_ntu_e80_a120",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_hx_ntu_e85_a160",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_iapws_pump_dp200k_eff75",
+        "class_after": "PROPERTY_ROUTE_UNAVAILABLE",
+        "class_before": "COMPONENT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_iapws_pump_dp600k_eff75",
+        "class_after": "PROPERTY_ROUTE_UNAVAILABLE",
+        "class_before": "COMPONENT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_iapws_pump_dp800k_eff85",
+        "class_after": "PROPERTY_ROUTE_UNAVAILABLE",
+        "class_before": "COMPONENT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_mea_absorber_flash_regeneration",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_methanation_co2_recycle",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_natural_gas_glycol_dehydration",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_ngcc_supplementary_firing_district_heat",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "steam"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_propane_propylene_heat_pump",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "propane"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_pz_capture_lean_vapor_recompression",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_pz_solvent_reclaimer_degradation_purge",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_rsofc_hydrogen_storage_heat_cascade",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_sour_gas_zno_claus_tailgas",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_supercritical_double_reheat_feedwater_split",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O",
+          "steam"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_teg_dehydration_flash_regeneration",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_teg_regenerator_stripping_column",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_tsa_water_co2_coadsorption",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_idaes_vsa_co2_dual_bed",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_methanol_capture_electrolysis_heat_integration",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O",
+          "O2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_methanol_reaction_water_condense_reheat",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_methanol_water_nrtl_partial_condensation",
+        "class_after": "COMPONENT_UNAVAILABLE",
+        "class_before": "COMPONENT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "water"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_natural_gas_compressor_heat_teg_regeneration",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_natural_gas_hydrate_inhibitor_slug_recovery",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_prommis_evaporation_pond_staged_salt_harvest",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_prommis_li_mg_nf_diafiltration",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_prommis_lithium_magnesium_nf_cascade",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_prommis_lithium_nf_bped_crystallization",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_reflo_air_stripping_offgas_gac_polishing",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_reflo_crystallizer_mother_liquor_recycle",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_reflo_multi_effect_crystallizer_mvr_heat_integrated",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O",
+          "water_vapor"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_reflo_nacl_seeded_cooling_crystallization",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_cryst_n10p5119_t333_y45_45",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_cryst_n11_t333_y40_35",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_cryst_n12_t323_y30_50",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_cryst_n13_t338_y45_50",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_cryst_n14_t328_y35_50",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_cryst_n16_t333_y55_35",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_cryst_n8_t338_y50_40",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_cryst_n9_t323_y35_40",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_gac_replace_45_20",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_gac_replace_50_10",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_gac_replace_50_15",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_gac_replace_50_20",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_gac_replace_55_10",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_gac_replace_60_10",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_gac_replace_70_15",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_ro_f08_s30_p22_10_a70_100",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_ro_f09_s20_p19_09_a70_100",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_ro_f09_s25_p20_10_a75_110",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_ro_f10_s25_p21_10_a75_110",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_ro_f11_s20_p21_10_a85_120",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_ro_f12_s20_p23_11_a95_130",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_v4_ro_f12_s30_p25_12_a100_140",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_ad_digestate_ammonia_stripping",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_adm1_biogas_water_scrubbing",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_adm1_two_stage_acidogenic_methanogenic",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_ammonia_membrane_contactor_heat_recovery",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_asm1_clarifier_only_ras",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_asm1_step_feed_internal_recycle",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_asm2d_sidestream_struvite",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_biogas_co2_water_scrubber",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "CO2",
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_bped_acid_base_product_recycle",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_bped_ix_brine_acid_base_recovery",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_bsm2p_centrate_struvite_recovery",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_ed_concentrate_recycle_purge",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_ed_metathesis_sulfate_control",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_ed_nitrate_concentrate_recycle",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_ed_organic_acid_recovery",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "water"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_gac_biological_regeneration_loop",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_gac_lead_lag",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_ix_ammonium_regeneration",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_ix_nitrate_selective_brine_recovery",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_mother_liquor_recycle_crystallization",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_ro_boron_polishing_second_pass",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_ro_md_crystallizer_zld",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O",
+          "water_vapor"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_ro_nf_softening_pretreatment",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_two_stage_crystallization",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "variant_watertap_wrrf_equalization_bnr",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_asm1",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_bped_unit",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_bsm2",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_bsm2_p_extension",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_coagulation_flocculation_unit",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_crystallization",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_dye_desalination",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_electrodialysis_conc_recirc",
+        "class_after": "NOT_STEADY_STATE_SIMULATION",
+        "class_before": "NOT_STEADY_STATE_SIMULATION",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_generic_desalination_train",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_nf_dspmde_base",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_nf_dspmde_with_bypass",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_oaro_multi",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_ro_no_energy_recovery",
+        "class_after": "NOT_STEADY_STATE_SIMULATION",
+        "class_before": "NOT_STEADY_STATE_SIMULATION",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_ro_pump_as_turbine",
+        "class_after": "NOT_STEADY_STATE_SIMULATION",
+        "class_before": "NOT_STEADY_STATE_SIMULATION",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_ro_with_energy_recovery",
+        "class_after": "NOT_STEADY_STATE_SIMULATION",
+        "class_before": "NOT_STEADY_STATE_SIMULATION",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      },
+      {
+        "case_id": "watertap_seawater_ro_pump_as_turbine",
+        "class_after": "UNIT_UNAVAILABLE",
+        "class_before": "UNIT_UNAVAILABLE",
+        "component_reasons_removed": [
+          "H2O"
+        ],
+        "reasons_added": []
+      }
+    ]
+  },
+  "schema": "l01-projection-v1",
+  "scope": "development half only (C2 split, 225 ids); no held-out row is read",
+  "tolerance": {
+    "Pc_rel": "0.001",
+    "Tc_K": "0.01",
+    "cp_hydrocarbon_rel": "0.01",
+    "cp_inorganic_rel": "0.005",
+    "dHf_hydrocarbon_J": "600",
+    "dHf_inorganic_J": "250",
+    "omega_abs": "0.003"
+  },
+  "two_route_refusals": [
+    "unregistered provider ids ['pr-lib-v1']",
+    "routes sharing a method ['cubic_pr']"
+  ]
+}
