@@ -88,6 +88,26 @@ def drawn():
     return _independent_draw()
 
 
+def _blob(oid: str) -> bytes:
+    out = subprocess.run(
+        ["git", "cat-file", "blob", oid], cwd=ROOT, capture_output=True, check=False
+    )
+    assert out.returncode == 0, f"git blob {oid} is not readable here; this needs the history"
+    return out.stdout
+
+
+RECORD_BEFORE_BLOB = "17632cea3ac9e3ebe23076bade2fc6bf9c29948c"  # split.json before Amendment 2
+
+
+@pytest.fixture(scope="module")
+def record_before():
+    raw = _blob(RECORD_BEFORE_BLOB)
+    assert hashlib.sha256(raw).hexdigest() == (
+        "ee940a7ee2c6a2128f12fdc25c4e9906ff66607a5ce4e0bb975c00a935adf6cd"
+    )
+    return json.loads(raw)
+
+
 def test_a01_check_is_byte_identical():
     rec, _ = gen.build(gen.read_inputs())
     assert gen.render(rec) == RECORD.read_bytes()
@@ -225,16 +245,22 @@ def test_a11_strata_are_the_committed_w27_r02_classes(record):
     assert len(record["strata"]) == 17
 
 
-def test_a12_f1_awaits_facts_and_refuses_once_they_exist(record):
+def test_a12_f1_facts_committed_and_item_8_still_refuses(record, record_before):
     facts = json.loads(FACTS.read_bytes())
-    assert record["f1"]["status"] == "awaiting_facts"
+    assert record["f1"]["status"] == "facts_committed"
     assert not any("topology_units" in c for c in facts["cases"])
     facts["cases"][0]["topology_units"] = []
     raw = gen.read_inputs()
     raw["case_facts"] = json.dumps(facts).encode()
+    del raw[gen.F1_KEY]  # item 8 must refuse before item 13 sees the absent facts file
     with pytest.raises(gen.SplitRefusedError) as exc:
         gen.build(raw, pins={})
     assert exc.value.rule == "SPLIT-R13"
+    assert set(record) == set(record_before)
+    assert {k: v for k, v in record.items() if k != "f1"} == {
+        k: v for k, v in record_before.items() if k != "f1"
+    }
+    assert record["f1"] != record_before["f1"]
 
 
 def test_a13_f1_kind_level_states():
@@ -362,6 +388,7 @@ def test_a18_a_retaken_coverage_is_read_at_its_pinned_content(record, pinned_cov
     assert hashlib.sha256(working["coverage"]).hexdigest() != pin
     raw = gen.pinned_inputs(working)
     assert raw["coverage"] == pinned_coverage
+    raw[gen.F1_KEY] = (ROOT / gen.F1_FACTS[0]).read_bytes()  # Amendment 2's item 13 reads it
     rec, _ = gen.build(raw)
     assert gen.render(rec) == RECORD.read_bytes()
     assert (
@@ -423,3 +450,231 @@ def test_a19_missing_history_is_an_explicit_refusal(pinned_coverage, tmp_path):
     with pytest.raises(gen.SplitRefusedError) as exc:
         gen.pinned_inputs(working, fetch=lambda root, oid: pinned_coverage[:-2] + b" \n")
     assert exc.value.rule == "SPLIT-R01/R12"
+
+
+# Amendment 2 (2026-10-23, R-581/R-582): case_facts-v2.json, its writer and its admission.
+FACTS_V2 = ROOT / "benchmarks/m06/openidaes450/case_facts-v2.json"
+WRITER = ROOT / "docs/derivations/scripts/c2_openidaes450_facts_v2.py"
+FACTS_V2_SHA256 = "4f5c5a65fe1b310e04b7e311464e4d87ba90ed4bfa7a90c240cde397cd0114ef"
+WS1_BLOB = "7b0686e195ae6685fa1b0738a3dbbd674d21cc02"  # case_facts-v2.json at 7b5c07f
+WS1_SHA256 = "57d43acbee1c0952e43c0a5410783fd0dba8c1a4b4e38a74e31f8b57cbb33494"
+TAIL_SHA256 = "fb0e0fe31c6cd42d294e916ff87fd0038af03406d7ff6474dcd3930a5645724d"
+FIRST_DEVELOPMENT = "blind_synthesized_anaerobic_digester_unit"
+ARCHIVE_PRESENT = (
+    ROOT / "evidence/M06/W27/artifacts/extracted/OpenIDAES-450-demo" / "cases"
+).is_dir()
+
+
+def _head(raw: bytes) -> dict:
+    """The first line of a facts file (everything but the cases), closed and parsed."""
+    return json.loads(raw.split(b"\n", 1)[0] + b"]}")
+
+
+def _all_ids() -> set[str]:
+    return {c["case_id"] for c in json.loads(FACTS.read_bytes())["cases"]}
+
+
+def _refusal(raw_v2: bytes | None) -> gen.SplitRefusedError:
+    raw = gen.read_inputs()
+    raw.pop(gen.F1_KEY, None)
+    if raw_v2 is not None:
+        raw[gen.F1_KEY] = raw_v2
+    with pytest.raises(gen.SplitRefusedError) as exc:
+        gen.build(raw)
+    return exc.value
+
+
+def test_a20_facts_v2_is_pinned_and_is_ws1s_content(record):
+    data = FACTS_V2.read_bytes()
+    assert hashlib.sha256(data).hexdigest() == FACTS_V2_SHA256
+    assert record["f1"]["facts"] == {
+        "path": "benchmarks/m06/openidaes450/case_facts-v2.json",
+        "schema": "openidaes450-case-facts-v2",
+        "sha256": FACTS_V2_SHA256,
+        "writer": "docs/derivations/scripts/c2_openidaes450_facts_v2.py",
+    }
+    old = _blob(WS1_BLOB)
+    assert hashlib.sha256(old).hexdigest() == WS1_SHA256
+    tail = data.split(b"\n", 1)[1]
+    assert tail == old.split(b"\n", 1)[1]
+    assert hashlib.sha256(tail).hexdigest() == TAIL_SHA256
+    before, after = _head(old), _head(data)
+    assert before["source"].pop("generator") == "docs/derivations/scripts/m06_w27_registration.py"
+    assert (
+        after["source"].pop("generator") == "docs/derivations/scripts/c2_openidaes450_facts_v2.py"
+    )
+    assert before == after
+    flipped = bytearray(data)
+    flipped[len(data) // 2] ^= 0x01
+    assert _refusal(bytes(flipped)).rule == "SPLIT-R13/A2"
+    assert _refusal(None).rule == "SPLIT-R13/A2"
+
+
+def _a21_edit(n: int, doc: dict) -> None:
+    i = next(k for k, c in enumerate(doc["cases"]) if c["case_id"] == FIRST_DEVELOPMENT)
+    units = doc["cases"][i]["topology_units"]
+    if n == 1:
+        units[0]["kind"] = "A21Kind"
+    elif n == 2:
+        del doc["cases"][i]
+    elif n == 3:
+        units[0], units[1] = units[1], units[0]
+    elif n == 4:
+        units.append(dict(units[-1]))
+    elif n == 5:
+        doc["source"]["case_facts_v1_sha256"] = "0" * 64
+    elif n == 6:
+        doc["cases"][i]["x"] = 1
+    else:
+        units[0]["id"] = 7
+
+
+@pytest.mark.parametrize(
+    ("edit", "label"),
+    [
+        (1, "kind_sets"),
+        (2, "case_ids"),
+        (3, "unit_order"),
+        (4, "unit_ids"),
+        (5, "binding"),
+        (6, "case_keys"),
+        (7, "unit_form"),
+    ],
+)
+def test_a21_each_identity_is_reached(record, edit, label):
+    facts = json.loads(FACTS.read_bytes())
+    doc = json.loads(FACTS_V2.read_bytes())
+    assert record["development"]["case_ids"][0] == FIRST_DEVELOPMENT
+    case = next(c for c in doc["cases"] if c["case_id"] == FIRST_DEVELOPMENT)
+    assert len(case["topology_units"]) == 4
+    assert "A21Kind" not in {u["kind"] for c in doc["cases"] for u in c["topology_units"]}
+    gen.f1_identities(facts, doc)  # the committed pair passes
+    _a21_edit(edit, doc)
+    with pytest.raises(gen.SplitRefusedError) as exc:
+        gen.f1_identities(facts, doc)
+    assert exc.value.rule == "SPLIT-R13/A2"
+    assert exc.value.label == label
+    assert str(exc.value).startswith(f"SPLIT-R13/A2 {label}: ")
+    assert not ({t.decode() for t in TOKEN.findall(str(exc.value).encode())} & _all_ids())
+
+
+def test_a22_f1_unit_level_states(record):
+    by_v1 = {c["case_id"]: c for c in json.loads(FACTS.read_bytes())["cases"]}
+    doc = json.loads(FACTS_V2.read_bytes())
+    by_v2 = {c["case_id"]: c for c in doc["cases"]}
+    registered = {
+        "blind_synthesized_hda_flash": {},
+        "official_idaes_skeleton_pervaporation": {"topology:SkeletonUnitModel": ["pervap"]},
+    }
+    assert record["f1"]["unit_level_states"] == registered
+    for case_id, groups in registered.items():
+        kinds = sorted(k.removeprefix("topology:") for k in groups)
+        assert kinds == record["f1"]["kind_level_states"][case_id]
+
+    def groups_of(case_id):
+        """§6 from the registration text, sharing no code with the generator."""
+        v1 = by_v1[case_id]
+        assert v1["unit_source"] == "units.json"
+        covered = {u.get("topology_kind") for u in v1["units"]}
+        covered |= {u["key"].removeprefix("idaes:") for u in v1["units"]}
+        units = by_v2[case_id]["topology_units"]
+        added = {u["kind"] for u in units} - {"Feed", "Product"} - covered
+        return {f"topology:{k}": [u["id"] for u in units if u["kind"] == k] for k in added}
+
+    assert {c: groups_of(c) for c in registered} == registered
+    assert len(by_v2["official_idaes_skeleton_pervaporation"]["topology_units"]) == 6
+    facts = json.loads(FACTS.read_bytes())
+    for u in by_v2["official_idaes_skeleton_pervaporation"]["topology_units"]:
+        if u["id"] == "pervap":
+            u["id"] = "pervap2"
+    gen.f1_identities(facts, doc)
+    with pytest.raises(gen.SplitRefusedError) as exc:
+        gen.f1_unit_level_states(facts, doc)
+    assert exc.value.rule == "SPLIT-R13"
+
+
+TWELVE = (
+    "benchmarks/m06/openidaes450/access_report.json",
+    "benchmarks/m06/openidaes450/case_facts.json",
+    "benchmarks/m06/openidaes450/coverage.json",
+    "benchmarks/m06/openidaes450/dry_illustration.json",
+    "benchmarks/m06/openidaes450/registration.json",
+    "benchmarks/m06/openidaes450/runs/w27-m07-83f825d/coverage.json",
+    *(
+        f"evidence/M07/{c}/rc/step17/{name}"
+        for c in (
+            "c899c85ab43fb114cd85c69baf12e692b75a8eab",
+            "ce993651ce37c1343e771b276160bd6623e43500",
+        )
+        for name in ("at-c.json.gz", "at-cw.json.gz", "coverage-at-C.json.gz")
+    ),
+)
+
+
+def test_a23_one_exact_path_admits_the_facts_file(record, drawn):
+    entries = gen.ALL_CASE_FILES
+    assert len(TWELVE) == 12
+    assert set(entries) == set(TWELVE) | {"benchmarks/m06/openidaes450/case_facts-v2.json"}
+    assert len(entries) == len(set(entries)) == 13
+    tracked = set(_tracked())
+    for entry in entries:
+        assert not any(ch in entry for ch in "*?[") and not entry.endswith("/")
+        assert entry in tracked and (ROOT / entry).is_file() and not (ROOT / entry).is_symlink()
+    held = {c.encode() for c in drawn[2]}
+    found = set(TOKEN.findall(FACTS_V2.read_bytes())) & held
+    assert len(found) == record["held_out"]["count"] == 224
+
+
+def test_a24_w27_preflight_pins_hold():
+    from benchmarks.m06.w27 import preflight
+
+    pins = preflight.REGISTERED_SHA256
+    assert len(pins) == 3
+    for path, sha in pins.items():
+        assert hashlib.sha256(Path(path).read_bytes()).hexdigest() == sha, str(path)
+
+
+def _writer(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, "-I", str(WRITER), *args], cwd=ROOT, capture_output=True, text=True
+    )
+
+
+@pytest.mark.skipif(not ARCHIVE_PRESENT, reason="pinned archive absent")
+def test_a25a_writer_reproduces_the_committed_file_from_the_archive():
+    out = _writer("--check")
+    assert out.returncode == 0, out.stdout + out.stderr
+    assert f"sha256 {FACTS_V2_SHA256}" in out.stdout
+
+
+def test_a25b_writer_without_archive_is_not_checked(tmp_path):
+    before = hashlib.sha256(FACTS_V2.read_bytes()).hexdigest()
+    out = _writer("--check", "--archive", str(tmp_path))
+    assert out.returncode == 2
+    assert out.stdout.startswith("NOT CHECKED:")
+    assert hashlib.sha256(FACTS_V2.read_bytes()).hexdigest() == before == FACTS_V2_SHA256
+
+
+def test_a25c_writer_regression_on_a_synthetic_archive(tmp_path):
+    """A regression of the writer's canonical form and self-claims, not a validation."""
+    doc = json.loads(FACTS_V2.read_bytes())
+
+    def build_archive(root: Path, docs: dict) -> None:
+        for case in docs["cases"]:
+            d = root / "cases" / case["case_id"]
+            d.mkdir(parents=True)
+            (d / "topology.json").write_text(json.dumps({"units": case["topology_units"]}))
+
+    good = tmp_path / "good"
+    build_archive(good, doc)
+    out = _writer("--check", "--archive", str(good))
+    assert out.returncode == 0, out.stdout + out.stderr
+    next(c for c in doc["cases"] if c["case_id"] == FIRST_DEVELOPMENT)["topology_units"][0][
+        "kind"
+    ] = "A25Kind"
+    bad = tmp_path / "bad"
+    build_archive(bad, doc)
+    out = _writer("--check", "--archive", str(bad))
+    assert out.returncode == 2
+    text = (out.stdout + out.stderr).encode()
+    assert not ({t.decode() for t in TOKEN.findall(text)} & _all_ids())
