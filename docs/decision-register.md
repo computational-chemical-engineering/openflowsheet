@@ -11007,7 +11007,7 @@ endpoint. The profile root `ref.cases.*.presolve` stays registered as a second e
 | Date | 2026-10-22 |
 | Decided by | design lane (`architect`), S02 Amendment 2 |
 | Normative text | `docs/adr/0044-edge3-after-restart-into-singular-signature.md` (Proposed); S02 spec §18.3 |
-| Evidence | forced edge 3 reaches `ref.target` on 10 of 10 S02 cases; without D1, M2, V-M1 (RR,B), (D,BR) and M1 from the profile root end `LINEAR_SOLVE_FAILED`; full suite on `47eb3aa` with D1 patched: see S02_DECISIONS.md, "ADR 0044 suite" |
+| Evidence | forced edge 3 reaches `ref.target` on 10 of 10 S02 cases; without D1, M2, V-M1 (RR,B), (D,BR) and M1 from the profile root end `LINEAR_SOLVE_FAILED`; full suite with D1 patched: no registered outcome outside S01/S02 moves; five S01/S02 tests move (one intended xfail flip, four stub signatures) — ADR 0044 C2 |
 | Affected packages | S02, S01, T04 |
 
 **Decision.** `LINEAR_SOLVE_FAILED` is an edge-3 trigger when the failed region solve ran two or more attempts; in attempt 0

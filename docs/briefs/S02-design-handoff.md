@@ -18,9 +18,8 @@ Next executable actions, in order:
 2. WO-2b (build lane): §18.7 items 1–4 — can start now except A05, A07's `R2`, A13's `p⁰`, A21 (need WO-G).
 3. WO-3 as amended (A14 per §18.6).
 
-Pending fact: the full suite with ADR 0044's predicate patched in (scratch snapshot of `47eb3aa`, `pytest tests`,
-`test_t07_evidence_manifest.py` uncollectable outside git). If its result is not in `docs/S02_DECISIONS.md` ("ADR 0044
-suite"), WO-2b's full gate is the measurement; a moved registered outcome goes into ADR 0044 C2 before acceptance.
+ADR 0044 suite (measured): no registered outcome outside S01/S02 moves; WO-2b must give the `eo_recovery_due` stubs in
+`tests/test_s01_cascade_wo3.py:125` and `tests/test_s02_column_wo2.py:475,559` a third argument (ADR 0044 C2).
 
 Scratch code (not committed): `bp.py` (sweeps), `adr44.py` (target with the predicate), `perturb.py` (A14),
 `sigma.py` (R2's σ_min) under the design session's scratchpad `s02-design/`.

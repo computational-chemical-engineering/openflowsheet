@@ -58,9 +58,9 @@ policy field or identity changes; `solve-event`'s `eo_recovery` (`taken`/`unsupp
 ## Consequences
 
 - C1. **Code:** `recovery.py` and three call sites (S02 WO-2b). No schema migration, no fixture regeneration.
-- C2. **Re-registrations:** none expected. Evidence: the repository's full suite run on `47eb3aa` with D1 patched in (scratch
-  snapshot, design session) — result in R-547's evidence line. Any registered outcome that does move is listed here with its
-  new outcome before acceptance, as ADR 0010 C3 did; none is relaxed.
+- C2. **Re-registrations: none.** Measured: full suite (`pytest tests`, 10,159 run, 51 min) on a git-less snapshot of `7302536` with D1 patched in: every failure and error outside S01/S02 (85 failed, 155 errors: changelog, ledger, campaign and V17 record tests that need git or ignored artifacts) is identical on the unpatched snapshot; D1 moves exactly five tests — S02 A06 M1-from-`x⁰` (a strict xfail that now passes, intended) and four tests whose `eo_recovery_due` stub has the old two-argument signature (S02 A13 M1/M2, A15 M1; S01 `test_a17_forced_edge_3_from_the_presolve_root`), a mechanical stub update. WO-2b updates the four stubs to the three-argument signature
+  (no expectation changes) and flips the xfail. Any registered outcome that moves later is listed here before acceptance,
+  as ADR 0010 C3 did; none is relaxed.
 - C3. **Register:** R-547.
 - C4. **ADR 0010** gains a pointer to this ADR in its D3 when this ADR is accepted (build lane, documentation).
 

@@ -612,8 +612,8 @@ SHA-256 goes into `tests/test_s02_column_wo1.py::REFERENCE_SHA256`.
    hooks. `PRESOLVE_ID = "s02-bubble-point-v1"`; `PRESOLVE_POLICY`, `presolve_rows`' use in the path and the TP closure
    variant go (keep `slots`/`continuation`). `ColumnSolution` drops `presolve`/`presolve_summary` for the §18.2 records.
 2. ADR 0044's trigger: `orchestrator/recovery.py` `eo_recovery_due(outcome, budget, attempts)`; the three call sites
-   (`executor.py:864`, `cascade_solve.py:691`, `column_solve.py:746`) pass `len(result.attempts)`. Scratch measured the patched
-   full suite (§18.8 item 1).
+   (`executor.py:864`, `cascade_solve.py:691`, `column_solve.py:746`) pass `len(result.attempts)`; the stubs in
+   `tests/test_s01_cascade_wo3.py:125` and `tests/test_s02_column_wo2.py:475,559` take the third argument (§18.8 item 1).
 3. Tests: A05–A07, A06b, A13, A13b, A14, A20–A22 (§18.6); WO-2's strict xfails flip to plain passes or are deleted with their
    replacement named in the build log; the A05 profile-root tests stay as A06b's precondition.
 4. Acceptance: `pytest tests/test_s02_* tests/test_s01_* tests/test_t04_* tests/test_t03_*` green; ruff/format/mypy clean;
@@ -623,9 +623,10 @@ SHA-256 goes into `tests/test_s02_column_wo1.py::REFERENCE_SHA256`.
 
 ### 18.8 Open questions (each with a default)
 
-1. *Needs a fact.* Does ADR 0044 move a registered outcome outside S02? **Measured** on the scratch-patched suite: see
-   R-547's evidence line. **Default:** if a registered test moves, it is re-registered in ADR 0044's C-section with its new
-   outcome (as ADR 0010 C3 did), never relaxed.
+1. *Fact, measured.* ADR 0044 moves no registered outcome outside S01/S02 (full suite on a patched snapshot; ADR 0044 C2).
+   It moves five S01/S02 tests: A06 M1 from `x⁰` (strict xfail → pass, intended) and four forced-edge-3 tests whose
+   `eo_recovery_due` stub takes two arguments (WO-2b gives the stubs the third). **Default** for any later mover: re-register
+   in ADR 0044 C2, never relax.
 2. *Needs a fact.* Bit-identity of `x⁰` across x86-64/aarch64 (libm `exp`/`log` in `K`): **Default:** A05 by tolerance,
    A15 within one machine; K05's identity comparison covers the target's final state as before.
 3. *Needs a fact.* Convergence of the sweeps beyond SYN-001's registered columns (wide-boiling, many stages, non-ideal `K`):
