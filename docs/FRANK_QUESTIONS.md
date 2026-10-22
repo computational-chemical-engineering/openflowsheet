@@ -43,3 +43,12 @@ Questions only Frank can answer (scope, value judgments). Each carries the defau
   - **Default:** IAPWS-95 (steam tables). It sits behind most water cases: it is the only method in 8 development cases
     and appears beside other methods in 16 more. It is not started without your go-ahead.
   - Reference: spec §3, §10 Q-3.
+
+## L01 — component records (build lane, 2026-10-22)
+
+- **L01-Q4. May the new `pr-lib-v1` component records ship in the wheel?** T08.A32
+  (`tests/test_t08_w2_inventory.py:459`) allows only synthetic records or the vetted M01 records with a rights
+  statement in the distribution. L01's nine records (values from chemicals/ATcT, Cantera `nasa_gas.yaml`, JANAF,
+  CoolProp cross-checks) have no vetted rights row yet. **Default:** they stay in the repository only
+  (`benchmarks/l01/`), not in the package data, until a rights review adds them to the inventory; T08.A32 is not
+  amended. Shipping them is a distribution decision for you.
