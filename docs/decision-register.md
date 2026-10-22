@@ -11708,3 +11708,101 @@ byte pins then fall under this rule.
   U02 names the provider and now cites U01's refusal.
 
 ---
+
+## R-570 — W27 registration version 2 is a separate document for the next release, selected by an explicit switch; v0.2's W27 is unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C9 (Frank's L01-Q1) |
+| Normative text | `docs/derivations/W27-registration-v2.md` §0, §3 (W27v2-R01), §7 |
+| Evidence | GC-V2-1: `registration.json`, `M06-W27-registration.md` and `m06_w27_registration.py` keep their preflight-P2 SHA-256; `w27_registration_v2.py --check` exits 0 |
+| Affected packages | the next release's W27 gate; WO-C9-1; WO-L01-3 / S04 re-take |
+
+**Decision.** The rules go into a new document with its own companion `registration_v2.json` and generator. Its
+numbers have their own prefix (W27v2-R/A, GC-V2). The classifier takes `registration_version` explicitly and defaults
+to 1. The next release's registration selects version 2.
+
+**Rejected.** *Amendment 5 inside the v0.2 document.* It moves preflight P2's pins and v0.2's registered bytes, which
+the constraint forbids. *Selection by package version or by provider presence.* That is the silent switch W27-R63
+already rejected.
+
+---
+
+## R-571 — Several routes per method: a group is served iff some route serves it; units are judged on the serving route with the fewest unit reasons, ties by provider id
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C9 (L01 F-1) |
+| Normative text | `docs/derivations/W27-registration-v2.md` W27v2-R04…R07, R10, R11 |
+| Evidence | W27v2-A02…A13, each with a mutant it catches (GC-V2-5). GC-V2-6: version 2 equals version 1 on all 225 development rows at the committed snapshot |
+| Affected packages | WO-C9-1 |
+
+**Decision.** This adopts L01 F-1's recommendation. Only serving routes are candidates. The order is (unit-reason
+count, provider id). When no route serves, the detail lists every route's mismatch, sorted by provider id and joined
+by `;`. Refusal (d) keeps `routes_per_revision = 1`, replaces "two routes of one method" with "duplicate provider id",
+and keeps (e). Wherever version 1 classifies, version 2's rows are identical (a theorem, R10). The tie-break never
+changes a class (R11).
+
+**Rejected.** *The first serving route in snapshot order.* It makes the binder's order decide (A03, A06). *The
+smallest id alone.* A model-less route would hide a route that can represent the case (A05). *The fewest reasons
+over every route of the method.* That judges units on a route that cannot hold the components (A04). *The union of
+the serving routes' models.* That composes units across bases, which W27-R62 already rejected.
+
+---
+
+## R-572 — The archive-spelling check keeps case folding; a case-only collision passes only by a reviewed `case_distinct` entry; `Co` is reviewed as distinct from CO (630-08-0)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C9 (L01 F-2) |
+| Normative text | `docs/derivations/W27-registration-v2.md` W27v2-R08 |
+| Evidence | Development cases declaring `Co`: the two PrOMMIS nanofiltration cases, beside Li and Cl (GC-V2-4). Version 1 refuses the CO record on development spellings with exactly `['Co->630-08-0']`, and version 2 accepts it (GC-V2-7). An unreviewed `co` is still refused (A16) |
+| Affected packages | WO-C9-1; a later CO record (L01) |
+
+**Decision.** An exact spelling must be aliased to the record's CAS RN. A spelling equal only after case folding must
+be aliased to it, or listed in `case_distinct` against that CAS RN. `Co` is listed against 630-08-0 and stays
+`unidentified`.
+
+**Rejected.** *Case-sensitive formula and id match.* It silently passes every unreviewed case variant, such as `co2`
+or `h2o` (mutant `spelling_formula_case_sensitive`). *Aliasing `Co` to cobalt, 7440-48-4.* It asserts an identity the
+archive does not settle (element or Co²⁺ solute), and it changes version 2 rows, which breaks R10.
+
+---
+
+## R-573 — `pr-lib-v1 → cubic_pr` and its snapshot line (records file order, vapour for every component); a route without models is admitted and judges every unit `no_model`
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C9 (L01 F-1, L01 §4.3) |
+| Normative text | `docs/derivations/W27-registration-v2.md` W27v2-R02, R03, R05 |
+| Evidence | GC-V2-2, GC-V2-3; W27v2-A04 (only the library serves H2O, so all three units are `no_model`) |
+| Affected packages | WO-L01-3 (the snapshot line, W27v2-A23), WO-C9-1 |
+
+**Decision.** The provider row and the line are registered here, and WO-L01-3 implements the line. An empty
+`model_ids` is not refused, because a basis with no model is a fact about the build.
+
+**Rejected.** *Refusing model-less routes.* That would block L01 §4.3's exposure, which deliberately adds no models.
+
+---
+
+## R-574 — A version 2 coverage record has no default path and never overwrites `coverage.json`; its effect on C2's split is nil wherever version 1 classifies
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C9 |
+| Normative text | `docs/derivations/W27-registration-v2.md` W27v2-R09, §7 |
+| Evidence | W27v2-R10's proof; GC-V2-6. W27v2-A22 (the CLI refusals) is specified for WO-C9-1 |
+| Affected packages | WO-C9-1; release gates (C2-Q1) |
+
+**Decision.** The record's schema is `w27-coverage-v2`, with `registration_version` and `registration_v2_sha256`. The
+CLI refuses version 2 without `--out`, or with `--out` set to the committed `coverage.json`, before classifying
+anything. A whole-archive version 2 record goes under a `heldout/` path (SPLIT-R10 (b)). The split's read fields
+(`case_id`, `family`, `class`) do not change at any snapshot version 1 accepts. This follows from the rules, with no
+held-out row computed.
+
+**Rejected.** *Re-taking `coverage.json` under version 2.* It would break SPLIT-A18 and v0.2's record.
