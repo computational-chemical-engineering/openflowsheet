@@ -861,7 +861,7 @@ def _eo_recovery(
         "homotopy_or_sequential_restart",
     ) or not isinstance(failed, RegionResult):
         return step, spent, state
-    if not eo_recovery_due(failed.outcome, failed.budget):
+    if not eo_recovery_due(failed.outcome, failed.budget, len(failed.attempts)):
         return step, spent, state
     continuation = continuation_parameter(
         specification_rows=region.specification_rows,

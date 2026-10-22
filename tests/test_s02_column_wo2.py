@@ -154,8 +154,9 @@ def from_x0(case: str) -> tuple[RegionResult, RegionResult | None, dict[int, Any
     return _TARGETS[case]
 
 
-#: Steps 4–5 from `x⁰` converge unforced on these (measured); M1's ends LINEAR_SOLVE_FAILED.
-FROM_X0 = ("M2", "M3", "M4")
+#: Steps 4–5 from the registered profile endpoint (A06b) converge unforced on every case; M1's
+#: through edge 3 after `LINEAR_SOLVE_FAILED` in a restart (ADR 0044; WO-2's strict xfail flipped).
+FROM_X0 = CASES
 
 
 # -- the policy -----------------------------------------------------------------------------------
@@ -306,16 +307,14 @@ def test_a06_the_target_root_from_the_generators_x0(case: str) -> None:
             assert abs(values[key] - target) <= FLOW_REL * abs(target) + FLOW_ABS, key
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Q-S02-WO2-2, measured: from x⁰ the target's attempts are 2P×7 BOUND_BLOCKED, (L,2P×6) "
-        "BOUND_BLOCKED, (L,L,2P×5) LINEAR_SOLVE_FAILED rank 94 of 95 — not an edge-3 trigger"
-    ),
-)
-def test_a06_m1_target_root_from_the_generators_x0() -> None:
-    result, _, _ = from_x0("M1")
-    assert result.outcome == "CONVERGED"
+def test_a06b_m1_recovers_after_linear_solve_failed_in_a_restart() -> None:
+    """A06b, M1 (WO-2's strict xfail Q-S02-WO2-2, flipped by ADR 0044): the target from the profile
+    endpoint ends `LINEAR_SOLVE_FAILED` in a restart-opened attempt (2P×7 `BOUND_BLOCKED`,
+    (L,2P×6) `BOUND_BLOCKED`, (L,L,2P×5) singular), and edge 3 runs on it and converges."""
+    result, failed, _ = from_x0("M1")
+    assert failed is not None and failed.outcome == "LINEAR_SOLVE_FAILED"
+    assert len(failed.attempts) >= 2
+    assert result.outcome == "CONVERGED" and result.homotopy is not None
 
 
 @pytest.mark.parametrize(
@@ -472,7 +471,7 @@ def _forced(monkeypatch: pytest.MonkeyPatch, case: str) -> tuple[Any, list[dict[
         rebound.append(dict(values))
         return real(spec, values)
 
-    monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget: True)
+    monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget, attempts: True)
     monkeypatch.setattr(region_module, "rebind", rebind)
     spec = SPECS[case]
     profile = [float(t) for t in REFERENCE["cases"][case]["initializer"]["profile"]]
@@ -556,7 +555,7 @@ def test_a15_solved_twice_is_identical(monkeypatch: pytest.MonkeyPatch, case: st
         second.opening_sha256,
     )
     if case == "M1":
-        monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget: True)
+        monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget, attempts: True)
     profile = [float(t) for t in REFERENCE["cases"][case]["initializer"]["profile"]]
     runs = []
     for _ in range(2):

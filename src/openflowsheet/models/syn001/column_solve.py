@@ -744,7 +744,7 @@ def solve_target(
     )
     recovered_from: RegionResult | None = None
     if policy.globalization.eo_recovery == "homotopy" and eo_recovery_due(
-        result.outcome, result.budget
+        result.outcome, result.budget, len(result.attempts)
     ):
         recovered_from = result
         result = recover(spec, profile, target, provider, result, policy, trace)

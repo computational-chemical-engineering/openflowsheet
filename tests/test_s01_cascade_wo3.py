@@ -122,7 +122,7 @@ def _forced_edge_3(monkeypatch: pytest.MonkeyPatch) -> tuple[CascadeSolution, Tr
         rebound.append(dict(values))
         return real_rebind(spec, values)
 
-    monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget: True)
+    monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget, attempts: True)
     monkeypatch.setattr(region_module, "rebind", rebind)
     trace = Trace()
     answer = solve_cascade(_spec(REFERENCE["cases"]["C2"]), PROVIDER, trace=trace)

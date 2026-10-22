@@ -689,7 +689,7 @@ def solve_cascade(
     result = run_region(target, provider, x0, policy, initializer_source=PRESOLVE_ID, trace=trace)
     recovered_from: RegionResult | None = None
     if policy.globalization.eo_recovery == "homotopy" and eo_recovery_due(
-        result.outcome, result.budget
+        result.outcome, result.budget, len(result.attempts)
     ):
         recovered_from = result
         result = recover(spec, target, provider, result, policy, trace)

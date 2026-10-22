@@ -10,9 +10,12 @@ end state is where the globalization got lost, and is not a root of any level).
 `ACTIVE_SET_CYCLING` and `ATTEMPTS_EXHAUSTED` are triggers because on the lifted path the contract
 turns a core's globalization failure into a restart (T03 §4.8 rows 2–5), so the failure surfaces
 as the contract's terminal outcome: PHS-05's Newton failure *is* its cycling. The rank failure
-`LINEAR_SOLVE_FAILED` has its own row in blueprint §7.7; the defects, the refusals before any
-attempt, a spent property budget and `HOMOTOPY_STALLED` itself are not triggers — the last so that
-the edge cannot recurse.
+`LINEAR_SOLVE_FAILED` has its own row in blueprint §7.7 and is not a trigger when it ends attempt 0
+(the signature the homotopy would run in); it is one when the failed solve ran two or more attempts
+(ADR 0044 D1): its final attempt was opened by a contract restart after a globalization failure,
+the same conversion as above, and says nothing about item 0's signature. The defects, the refusals
+before any attempt, a spent property budget and `HOMOTOPY_STALLED` itself are not triggers — the
+last so that the edge cannot recurse.
 
 The edge changes the *solver*, not the *problem*: the recovery's λ = 1 instance has the failed
 solve's `(model_version, constants_sha256)` and the region's rows and columns (§5.4).
@@ -44,8 +47,12 @@ EO_RECOVERY_TRIGGERS: Final = frozenset(
 EO_RECOVERY_BUDGETS: Final = frozenset({"newton_iterations", "ptc_steps"})
 
 
-def eo_recovery_due(outcome: str, budget: str | None) -> bool:
-    """§5.1's trigger, decided in one place."""
+def eo_recovery_due(outcome: str, budget: str | None, attempts: int = 1) -> bool:
+    """§5.1's trigger, decided in one place. `attempts` is the failed region solve's
+    `len(attempts)`: `LINEAR_SOLVE_FAILED` is due iff it is two or more (ADR 0044 D1). The default
+    of one is attempt 0 alone, where the rank failure stays excluded."""
+    if outcome == "LINEAR_SOLVE_FAILED":
+        return attempts >= 2
     if outcome not in EO_RECOVERY_TRIGGERS:
         return False
     return outcome != "BUDGET_EXHAUSTED" or budget in EO_RECOVERY_BUDGETS
