@@ -62,6 +62,8 @@ relaxes no release gate. Blueprint §2.2 stands; a transient capability still re
 
 **Amendment 1 (2026-09-26; normative text: ADR 0008 "Amendment 1"; brief `docs/briefs/ADR-0008-A1-transient-readiness.md`).** Re-examined at ~37 000 lines against C1–C8 and two added candidates. **Adopted now:** the manifests' energy holdup stays the internal energy `U`, and the rigid SYN-001 vessels' dynamic energy rows are their steady rows; R-032's enthalpy content is a PTC pseudo-holdup no physical-time integrator may use (tests U1, U2); T04 finding F2's proposal to relabel the manifests "enthalpy content" is declined. **Constraint on T07 (J1–J3, J5 binding; J4, J6 recommended):** job outputs are a list of typed references, output events stream before the job ends, the operation is a closed request discriminator, and consumers ignore artifact and event kinds they do not know. **Registered for the first transient package, no code now:** holdup states in `x` in conservative form, so the physical mass matrix is a constant selection and `U = Σ_π H^π − P V` is an algebraic row; a dynamic unit is a separate model id sharing kernels, with the steady modules and kernels gated unchanged; property `v`, consistent with `h` and `lnK`, in a new provider, with `u = h − P v` formed in the unit layer; non-reversing pressure-driven flow in nTP-v1, liquid-full incompressible vessels being index 2; a phase change inside a step is an event; an explicit row→holdup-column map, absent when empty. **Excluded pending an ADR amending U1:** an isobaric free-volume vessel holding `H`. **Rejected:** a `dynamic` mode on the steady models; a `schedule` member now; a differential marker on variables; the `M(x) ẋ` form for physical time. No schema, Protocol, fixture or digest changed.
 
+**Amendment 2 (proposed 2026-10-21; normative text: ADR 0008 "Amendment 2"; brief `docs/briefs/ADR-0008-A2-readiness-recheck.md`; entries R-495–R-499).** Readiness was re-checked at the 0.2.0 cut (`main` `3c10e97`) against D1–D4 and Amendment 1. **Verdict: still additive; no lock-in point.** Nine findings. **Tests, done:** the readiness pins now reach every model id `MODEL_BUILDERS` can bind. That includes the external C1 reactor, its stand-in and its surrogate, which U1 used to skip or never walk. The 24 `holdup_balance` rows are registered, and the C1 units are pinned to conserve what their SYN-001 namesakes conserve (E1–E3; 44 → 55 passed). **Text:** the M01 stand-in's `C1RX-mole` statement is a recorded D3.3 erratum (R-497). An external model in a transient problem is either quasi-steady or model exchange; co-simulation is excluded (X11, R-498). X4's empty-diff set is every self-hashing module (24 at 0.2.0), and J5 binds the web shell (R-499). **Work orders:** C1 row-by-row accumulation and D4.3 sign tests (WO-B1); a web-shell unknown-kind test (WO-B2). **Open for Frank:** Q-B1 (later holdup units rigid; default yes), Q-B2 (co-simulation ever; default no). No schema, Protocol, fixture or digest changed.
+
 **Watch for.** A future session implementing PTC's `M` as a central diagonal recipe over the
 assembled system. That is the specific regression this entry exists to prevent.
 
@@ -10094,6 +10096,347 @@ the deferral as a limitation. A31 (b)'s exempt list is not amended.
 excludes either of them.
 
 ---
+
+## R-486 — OpenIDAES-450 is split once, before any OpenIDAES-targeted development: 225 development, 224 held-out, 1 excluded, stratified by family × class
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), package C2, on Frank's request of 2026-10-18 |
+| Normative text | `docs/derivations/C2-OpenIDAES-450-split-registration.md` SPLIT-R01…R07, R14; §8 |
+| Evidence | `benchmarks/m06/openidaes450/split.json` (SHA-256 `ee940a7ee2c6a2128f12fdc25c4e9906ff66607a5ce4e0bb975c00a935adf6cd`); held-out commitment `08b81669d5e15c4d1e9d99a0bca2b458ea5d46cfe71a521d32c3fba33daaea91`; generator `docs/derivations/scripts/c2_openidaes450_split.py --check`; `tests/test_c2_openidaes450_split.py` (SPLIT-A01…A17) |
+| Affected packages | every package that targets OpenIDAES coverage or agent scores; release gates |
+
+**Decision.** Within each (family, class) stratum, half the cases are held out. The odd strata alternate between
+rounding up and down, in the order of a seeded hash. Within a stratum, the held-out cases are the first unexposed
+cases by SHA-256 rank, and exposed cases are always development. The record lists the development ids in clear and
+commits to the held-out ids by hash. The development half drives gap analysis, unit and property selection, and
+prompt and tool tuning. The held-out half is scored only at release gates, reported separately, with the gap.
+
+**Rejected alternatives, and why.**
+- *A global largest-remainder allocation, or 60/40.* It is more machinery for no better balance; the default was
+  ~50/50.
+- *Compensating a stratum's shortfall in another stratum.* It breaks the per-stratum balance. There is one
+  shortfall, of one case.
+
+**Watch for.** Any edit to the generator's constants or to a pinned input. Either makes `--check` fail, and the
+remedy is SPLIT-R12, never a re-emit.
+
+---
+
+## R-487 — The split's strata use W27-R02 as committed in `coverage.json`, not R02-F1
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-2) |
+| Normative text | SPLIT-R03; SPLIT-A11 |
+| Evidence | R02-F1's facts are absent from `case_facts.json` (SPLIT-R13). Deriving R02-F1 classes would mean judging unit availability for held-out cases |
+| Affected packages | C2; any later reclassification |
+
+**Decision.** The strata are fixed at the draw from W27-R02's committed classes. A later reclassification under
+R02-F1 moves no case between halves. This answers R-474's fourth part: the split says which R02 its strata use.
+
+**Rejected alternatives, and why.**
+- *R02-F1 strata.* The facts are absent, and the rule would require a held-out gap computation.
+- *Waiting for the workstation's facts run.* The brief says the split is not blocked.
+
+**Watch for.** A request to "re-stratify" once R02-F1's facts exist. That is a re-split (R-491).
+
+---
+
+## R-488 — Exposed cases are development: W27's 45 drawn cases, its 3 canaries, and 17 cases named in committed non-data files at `f397467`
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | Frank (the 45; 2026-10-18), the session brief (the canaries), design lane `specifier` C2 (the 17; D-6) |
+| Normative text | SPLIT-R04; SPLIT-A04 |
+| Evidence | A whole-token scan of the tracked files at `f397467` outside the twelve all-case data files. It found 66 named cases: 48 from W27, 17 others, and the excluded case. The test SPLIT-A09 keeps this complete |
+| Affected packages | C2; development packages (they may cite these 65) |
+
+**Decision.** A case that development has already read is a development case. The 17 are registered test states,
+classifier tests and stubs, and cases discussed in specs and reviews.
+
+**Rejected alternatives, and why.**
+- *Only the 48 of Frank's rule.* The other 17 have had their content read and discussed in committed text, so
+  holding them out would not test generalisation. Frank's preference is asked (`docs/FRANK_QUESTIONS.md`, C2-Q2).
+
+**Watch for.** A later "exposed" addition. After the draw, exposure of a held-out case is contamination (R-490), not
+a move to development.
+
+---
+
+## R-489 — The split's seed embeds the brief commit's hash and was committed before the draw
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-3) |
+| Normative text | SPLIT-R05; SPLIT-A08 |
+| Evidence | `seed_text = "OpenIDAES-450-split-v1/f39746770dd7f3f1ad96f75dbac8d29b4deef4f7"`. The rules and seed were committed in `0211372`; the first draw was committed in `c0649a7`. The SHA-256 rank idiom is W27-R29's |
+| Affected packages | C2 |
+
+**Decision.** The seed is fixed text containing a commit hash that predates the session. It is not chosen.
+
+**Rejected alternatives, and why.**
+- *The archive's SHA-256.* It would tie the seed to an archive version, and SPLIT-R12 keeps assignments across
+  archive changes.
+- *A free string.* It can be shopped.
+
+**Watch for.** Any second seed. A redraw needs a v2 registration (R-491).
+
+---
+
+## R-490 — Held-out protection is a recorded rule plus a leak guard; held-out ids appear in clear only in the twelve all-case data files and in `heldout/` directories; contamination is recorded, never hidden
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-7, D-10) |
+| Normative text | SPLIT-R08…R11; SPLIT-A09, A10, A16, A17 |
+| Evidence | The first draw's SPLIT-A09 found one held-out id in the registration's own pre-draw text. It is recorded as contaminated (`c87ac13adc32…`); the headline is 223 |
+| Affected packages | every development package (no held-out gap frequencies; read all-case files only through a development filter); release gates; the build lane (the filter, §11 Q-3) |
+
+**Decision.**
+- No gap frequency over held-out cases, ever.
+- Feature choices cite development cases or general library goals.
+- Mechanical consumers compute the held-out list in memory and name a case only by `sha256(id)[:12]`.
+- A held-out case exposed after the draw stays held-out. It is recorded by hash, and reported outside the headline.
+
+**Rejected alternatives, and why.**
+- *Held-out ids in clear in the record.* Case ids describe their content. A development agent reading the record
+  would see them.
+- *Secrecy.* It is impossible with public data. The registration says so (§10).
+- *Editing out a leaked mention.* It hides the contamination.
+
+**Watch for.**
+- A future all-case artifact, such as a full coverage at a release gate, committed outside a `heldout/` directory.
+  SPLIT-A09 fails on it.
+- Prose that names a case as an example.
+
+---
+
+## R-491 — No re-split: archive changes go by amendment; a redraw needs a v2 registration that voids v1's held-out evidence
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-5, D-8) |
+| Normative text | SPLIT-R12; SPLIT-A02 |
+| Evidence | The generator pins its three inputs by SHA-256 and refuses on any change |
+| Affected packages | whoever re-acquires or repairs the archive |
+
+**Decision.**
+- A removed case is dropped.
+- A changed case keeps its half.
+- An added case is development if it was exposed first. Otherwise it is held-out iff `rank("added", id)` begins with
+  0–7.
+- A repaired `watertap_metab` is development, since it is already named.
+- New families or a re-based suite need a new registration.
+
+**Rejected alternatives, and why.**
+- *Redraw on every change.* It moves development-exposed cases into held-out and voids earlier held-out scores.
+
+**Watch for.** A `--emit` run after an input changed. It is refused by design. Do not update the pins without the
+amendment.
+
+---
+
+## R-492 — R02-F1: W27-R02's successor for classifications under the split registration (F-1 / R-474 taken up); awaits `topology_units` from the workstation
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-9), taking up R-474 and M07 spec §22.4 |
+| Normative text | SPLIT-R13; SPLIT-A12, A13 |
+| Evidence | `case_facts.json` (`w27-case-facts-v1`) has only the set of topology kinds for a `units.json` case; it has no topology unit ids. At kind level, `blind_synthesized_hda_flash` gains no group (W27-A08 kept) and `official_idaes_skeleton_pervaporation` gains `SkeletonUnitModel` (F-1's hidden unit) |
+| Affected packages | the workstation's next `facts` run (writes `case_facts-v2.json` with `topology_units: [{id, kind}]`; W27's file is unchanged); development gap analysis; release-gate scoring |
+
+**Decision.**
+- A `units.json` case gains one `topology:<k>` group for each non-boundary topology kind *k* (boundary: Feed,
+  Product) that no R02 group covers.
+- A kind is covered by a group whose `topology_kind` is *k*, or whose `idaes:` key subject is *k* (the class-name
+  fallback).
+- The added group is named by the topology ids and marked `from_topology` / `source=topology`.
+- W27, step 17 and v0.2's scores are untouched (R-474).
+
+**Rejected alternatives, and why.**
+- *The topology_kind-only rule.* An entry whose name matches no topology id would make every one of its kinds look
+  missing.
+- *A flag* (R-474).
+- *Applying the rule now at kind level.* The groups could not be named, and W27-R40's aliases need the ids.
+
+**Watch for.** The workstation measurement (§11 Q-4, development cases only). Also an internal sub-block becoming a
+unit; SPLIT-A13 is the registered state for it.
+
+---
+
+## R-493 — Dynamic cases are in the split as their own strata; the incomplete case is excluded from both halves
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (D-4, D-5) |
+| Normative text | SPLIT-R02 |
+| Evidence | 65 `NOT_STEADY_STATE_SIMULATION` cases fall in 8 strata, 33 of them held out. There is 1 `ARTIFACT_INCOMPLETE` case |
+| Affected packages | release gates (correct limitation reporting on dynamic cases is scored) |
+
+**Decision.** Correct limitation reporting is part of what the suite scores. Dynamic support is also a plausible
+later goal whose held-out evidence should exist from the start. The incomplete case cannot be scored.
+
+**Rejected alternatives, and why.**
+- *Excluding dynamic cases.* It would leave no held-out evidence for limitation reporting or for later dynamic
+  support.
+
+**Watch for.** A development package tuning dynamic-case limitation messages on held-out cases.
+
+---
+
+## R-494 — The split's non-claims: generalisation within OpenIDAES-450's nine families only; broader claims need an independent second suite
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`specifier`), C2 (from the brief's open list) |
+| Normative text | registration §10 |
+| Evidence | Both halves draw on the same 9 families and generators, and the case ids show many variants of one another. `coverage.json` publishes every case's reasons. On 2026-10-18 all-450 gap frequencies were computed in chat (not committed, not used) |
+| Affected packages | any report or release note quoting a held-out score |
+
+**Decision.** A held-out score is reported as generalisation within this suite. It is not validated against other
+flowsheet populations. The split is reproducible and not secret. The sizes are regression values.
+
+**Rejected alternatives, and why.**
+- *Claiming general coverage from the held-out half.* The families overlap entirely.
+
+**Watch for.** Release notes that drop "within OpenIDAES-450".
+
+---
+
+## R-495 — ADR 0008 Amendment 2: v0.2 keeps a later transient capability additive; nine findings, no lock-in
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`architect`), package C1; proposed, Frank's acceptance pending (A2 status) |
+| Normative text | `docs/adr/0008-transient-extension-readiness.md` "Amendment 2" |
+| Brief | `docs/briefs/ADR-0008-A2-readiness-recheck.md` |
+| Evidence | `tests/test_adr_0008_transient_readiness.py`: 44 passed at `3c10e97`, 55 at `d09f54a`; `git diff --stat 3c10e97 -- src schemas tests/fixtures benchmarks evidence` empty |
+| Affected packages | C1; the first transient package (TX) |
+
+**Decision.** Judged at `main` `3c10e97`, the v0.2 additions introduce no lock-in point. These are unchanged:
+- the boundary (`compiled.py:163-172`);
+- the external evaluation, which takes a tube inlet only (`models/c1/boundary.py:259-267`);
+- the experiment identity, which is exact over its inputs.
+
+Job operations and artifact kinds grew additively within J1–J3 and J5. The findings are F1–F9: three tests done, one
+erratum, two work orders, two TX constraints and one "none".
+
+**Rejected alternative.** Waiting until the transient package to re-check. By then the C1 and surrogate declarations
+would be hashed into more certified identities.
+
+**Watch for.** A v0.3 model kind that is bindable but outside `DECLARATION_PACKAGES`. E1 fails on it, as intended.
+
+---
+
+## R-496 — The readiness pins reach every bindable model: discovery anchored to `MODEL_BUILDERS`, 24 registered holdup rows, conservation signatures
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`architect`), package C1 |
+| Normative text | ADR 0008 A2.1 F1–F3, A2.3 |
+| Evidence | `d09f54a`: E1, E2 (6 namesake pairs), E3 (3 reactor ids), E1b/E2b. Mutation: under the old `MODEL_ID`-only rule E1 flags `models.c1.reactor`; under the old `models`-only walk it flags `c1.reactor_surrogate` |
+| Affected packages | Any package adding a model id, a declaring module or a `holdup_balance` row |
+
+**Decision.** U1's discovery reads `MODEL_ID` and `MODEL_IDS` in every module that defines `EQUATIONS` under
+`openflowsheet.models` and `openflowsheet.studies.surrogate`. A declaring module U1 cannot read is a failure. Every
+`MODEL_BUILDERS` id must be read.
+
+`REGISTERED_HOLDUP_ROWS` grows from 12 to 24 and keeps superset semantics. The six C1 units must keep their SYN-001
+namesakes' conservation signature: the multiset of (kind, holdup symbol, holdup dimension, row dimension) over the
+balance rows. The three C1 reactor ids must each hold `N_i` and `U`.
+
+**Rejected alternatives.**
+- Walking all of `openflowsheet`: optional extras fail to import.
+- Equality semantics for the holdup rows.
+- A per-row C1 classification table like M1.
+
+**Watch for.** A model module that names its id some third way. Extend `module_model_ids`; never skip the module.
+
+---
+
+## R-497 — Erratum: the M01 stand-in's `C1RX-mole` statement is written outflow minus inflow (ADR 0008 D3.3); the module is not edited
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`architect`), package C1 |
+| Normative text | ADR 0008 A2.1 F4 |
+| Evidence | `models/c1/reactor_standin.py:108-109` (`n_out,i - n_in,i - nu_i xi = 0`, `holdup_balance`). In-flowsheet rows for both ids are `models/c1/reactor.py:117-119` (`n_in,i + nu_i xi - n_out,i`), built through `_c1_reactor` (`revision_binding.py:1496-1499`). `ReactorStandin` has no `contribute` |
+| Affected packages | Whichever package next re-pins the stand-in variant; WO-B1 |
+
+**Decision.** The statement is a D3.3 erratum in a declaration that no residual implements. The module is unchanged:
+its bytes are the stand-in variant's pinned artifact (R-310's precedent). A correction is made only when a later
+package re-pins the stand-in. The executable orientation check of the rows that enter a compiled problem is WO-B1 (D4.3).
+
+**Rejected alternative.** Editing the statement now. That moves the pinned artifact hash for a text-only correction.
+
+**Watch for.** Any code that reads a manifest's `statement` to derive a residual sign. Signs come from implemented rows
+and `row_accumulation`.
+
+---
+
+## R-498 — External models in a transient problem: quasi-steady or model exchange; co-simulation excluded pending an ADR revising D2.3 (X11)
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`architect`), package C1; binds TX on Frank's acceptance of ADR 0008 A2 (Q-B2) |
+| Normative text | ADR 0008 A2.2 X11 |
+| Evidence | `adapters/external/protocol.py:4, :16`; ADR 0033 `:78` (pure function of the request), `:106` (warm start rejected, R-224); `models/c1/reactor.py:117-183` |
+| Affected packages | TX; any ADR admitting a dynamic external model |
+
+**Decision.** An ADR 0033 external model is a memoryless map. TX admits an external unit in two forms:
+- **(a) quasi-steady:** no holdup column, refused unless the run declares it (X8). The coupled route's cost is
+  measured first (X9), and the surrogate is the in-process equivalent.
+- **(b) model exchange:** internal states are columns of `x`, enter the request and `experiment_key`, and are never
+  integrated inside the child. This needs a new request and protocol version under an ADR.
+
+Co-simulation, where the child integrates and keeps state, is excluded. Admitting it needs an ADR revising D2.3. A
+dynamic C1 reactor that includes the bed's heat capacity is a different model (U–H.6).
+
+**Rejected alternatives.**
+- Recording nothing: the shortcut of hidden state behind the exact cache stays open.
+- Reserving a protocol member now: a member without semantics, the reason A1 C7 rejected `schedule`.
+
+**Watch for.** A "stateful child" or warm-start proposal for an external model. It is the excluded form.
+
+---
+
+## R-499 — X4's empty-diff set is every self-hashing module (24 at 0.2.0); J5 binds the web shell; a frozen surrogate's coefficients are backend form
+
+| | |
+| --- | --- |
+| Date | 2026-10-21 |
+| Decided by | design lane (`architect`), package C1; X4′ and J5's widening bind on Frank's acceptance of ADR 0008 A2 |
+| Normative text | ADR 0008 A2.1 F6, F8, F9; A2.2 |
+| Evidence | `grep -l __file__` over `models/`, `studies/surrogate/`, `thermo/`: 13 SYN-001 and 8 C1 model modules, `studies/surrogate/reactor.py`, `thermo/syn001.py`, `thermo/pr_c1.py`. Web shell `apps/web/js/screens/job.js:53, :102-111, :249-254` does not depend on kinds. `studies/surrogate/reactor.py:22-27` |
+| Affected packages | TX (X4′); the web shell's next change (J5, WO-B2) |
+
+**Decision.**
+- **X4′:** across TX's merge, the self-hashing modules have an empty diff. The shared kernels are either unchanged or
+  pass every SYN-001 and C1 pin unmodified. A1's paths under `src/process_runtime/` read as `src/openflowsheet/`.
+- **J5:** its consumer rule binds every shipped consumer, the web shell included.
+- **Surrogate coefficients:** a frozen surrogate's coefficients identify it through `model_version`. They are backend
+  form under D4.1, not pinned inputs.
+
+**Rejected alternatives.**
+- Keeping A1's list of twelve modules: it misses the certified C1 product.
+- Leaving J5 to T07's consumers only.
+- Requiring surrogate coefficients in `parameter_ids`: that moves every surrogate `model_version` for no transient gain.
+
+**Watch for.** A web-shell change that branches on `kind` without a fallback.
 
 ---
 

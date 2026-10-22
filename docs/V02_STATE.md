@@ -29,8 +29,8 @@ Position, not history. Rewritten in place. Read after `CLAUDE.md` and `docs/prog
 - [x] Frank's K_NH₃ decision (R-152), the order (R-153), the dossier statement
 - [x] `ci.yml` actions pinned by SHA (`67029fa`; 44 lines; inputs checked against the new majors; test added)
 - [x] T08 close-out review (`docs/reviews/T08-closeout-review.md`): all five confirmed, no must-fix; F1/F2/N1/N2/N5 applied as T08 spec Amendment R8
-- [ ] **F3 hand-on:** T08's own manifest (58 limitations, 16 without L/U id; A70, B23) is an input to v0.2's support-envelope harvest
-- [ ] Schema `$id` move (deferred to v0.2 by ADR; R-149) — with M01's or M06's first schema change
+- [x] **F3 hand-on:** T08's own manifest (58 limitations, 16 without L/U id; A70, B23) is an input to v0.2's support-envelope harvest. Closed since the alpha: the manifest is in the harvest (`tests/test_m07a_harvest.py:1-10`, `:28`, `:85`; `scripts/t08_support_matrix.py:478-482`). Ticked by C3 (d)
+- [ ] Schema `$id` move (R-149, `docs/decision-register.md:3470`; R-185, `:4245`) — not done in v0.2 and not in C3: it changes every schema's identity, a frozen interface (CLAUDE.md: only by a design-lane ADR). v0.3 backlog; trigger: the first v0.3 schema change, with the ADR written then
 
 ## Open inputs (M01, dossier `needs_fact`)
 
@@ -92,7 +92,20 @@ F5 education mode deferred.
 
 ## Next action
 
-**W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
+**Cloud queue (2026-10-22, overnight session; branches pushed, none on `main` yet):**
+- **C1, C2, C3 done** and merged together on `wp/C-merge` `904f265` (main ← C2 ← C1 ← C3): full gate PASS at
+  `904f265` (9944 passed, 104 skipped); CI 39694853666 green on both architectures. Updating `main` is a fast-forward
+  to `904f265`; the session's permission check refused the push to `main`, so **Frank (or a session allowed to push
+  `main`) fast-forwards it.** C1/C2/C3 carry no evidence manifest (the schema's `work_package` pattern admits no `C`
+  id; `docs/C2_DECISIONS.md`). Decisions: `docs/C1_DECISIONS.md`, `docs/C2_DECISIONS.md`, `docs/C3_DECISIONS.md`.
+  Questions: `docs/FRANK_QUESTIONS.md`.
+- **S01** (`wp/S01`): spec, WO-1…WO-4, one `reviewer` pass (fix first → WO-4 done); manifest
+  `evidence/S01/a3eaf09…/manifest.json` computes `tested` with `S01.gate` unsupported. Next: merge `main` (after the
+  C fast-forward) into `wp/S01`, run `scripts/gate.sh`, re-take the manifest with the gate result, CI, merge.
+- **L01** (`wp/L01`, from `wp/C-merge`): specification running/next; then `opus-engineer` work orders and a
+  development-half coverage re-take. **S02**: specification only, if time remains.
+
+**History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
 (a) coverage 0/450 CANDIDATE, G14 PASS; (b) 45 drawn, canaries prommis NF / mvo CO2 / cryst n13; (b′) confirmation written;
 (c) canaries 3/3 passed first attempt (pin `claude-sonnet-5-5`, the login's CLI default; Claude Code 2.1.302; USD-eq 0.23);

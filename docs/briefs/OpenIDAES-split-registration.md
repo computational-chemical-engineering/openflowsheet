@@ -31,3 +31,43 @@ the non-claim that both halves share the same 9 families (an independent second 
 ## Deliverable
 A registration document under `docs/derivations/`, a generator with `--check` writing the split JSON, register
 entries, and assertions for a build-lane test. ≤ 200-word report.
+
+## Session brief (cloud, 2026-10-21; package C2, branch `wp/C2`)
+
+Added by the build lane for the cloud run. Frank's settled rules above are unchanged.
+
+**Facts with anchors** (all committed; the archive is absent in a cloud session and must not be fetched)
+- `benchmarks/m06/openidaes450/case_facts.json` (schema `w27-case-facts-v1`, 450 cases): each case has
+  `family`, `units` (each with `key`, `names`, and `topology_kind` when its short name matches a topology id),
+  `unit_source` (`units.json` | `topology.json` | `none`), `topology_kinds` (all kinds incl. Feed/Product),
+  `steady_state`, `solve_dynamic`, `files_missing`, `in_full82`. Producer: `facts` stage of
+  `docs/derivations/scripts/m06_w27_registration.py` (needs the archive; `_unit_facts` at :1085-1123 is W27-R02).
+- The R02 rule text: `docs/derivations/M06-W27-registration.md:109-116`. Seeded SHA-256 draw idiom (no RNG):
+  same file §6, `:327-358` (W27-R26…R31); implementation `benchmarks/m06/w27/sample.py:27-140`.
+- Runtime classifier: `benchmarks/m06/w27/coverage.py` (`unit_aliases` :60, `_unit_reasons` :245,
+  `classify_case` :445, `coverage_document` :531). Committed coverage `benchmarks/m06/openidaes450/coverage.json`
+  (schema `w27-coverage-v1`, 450 rows, `class`, `family`, `reasons`).
+- W27's exposed cases: `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/sample.json` (`cases`, 45) and its
+  three canaries (`canaries`). Frank: these count as development.
+- R-474 (`docs/decision-register.md:9792-9830`) and M07 spec §22.4 (`docs/derivations/M07-spec.md:1545-1567`):
+  F-1's recommended default (topology units whose kind no `units.json` entry has; marked; W27-A08 keeps exactly one
+  unit reason; the split states which R02 its strata use).
+- Register numbering for this package: **R-486…R-494** (other cloud packages hold later ranges).
+
+**Exit test**
+1. A registration under `docs/derivations/` (split rules, F-1/R02 rule, protection rule, re-split policy, non-claims,
+   numbered assertions).
+2. A generator under `docs/derivations/scripts/` with `--emit`/`--check`, needing no archive and no network, writing
+   the split JSON under `benchmarks/` from committed files only; `--check` byte-identical.
+3. Register entries R-486… appended to `docs/decision-register.md`.
+4. Assertions for a build-lane test listed with ids (the build lane writes the test; the agent may write it too if
+   it is pure file checks).
+5. If the F-1 rule needs a fact `case_facts.json` lacks, say exactly which, register the rule for the workstation's
+   next `facts` run, and choose (DECISION line) how the split's strata treat R02 meanwhile. Do not block the split.
+
+**Out of scope.** Downloading or reading the archive; computing or recording gap frequencies (units, components,
+property methods) over held-out cases; changing W27's registration or `coverage.json`; any v0.3 scope.
+
+**Agent rules.** Context cap about 120k; at the cap commit, write a handoff of ≤ 30 lines to
+`docs/briefs/C2-handoff.md`, stop. Report ≤ 150 words. Choices you can defend: one `DECISION:` line each, logged
+in `docs/C2_DECISIONS.md`. Questions only Frank can answer: `docs/FRANK_QUESTIONS.md`, with your default.

@@ -28,6 +28,7 @@ Added by **ADR 0008**:
 | `test_adr_0008_transient_readiness.py` | Pins the evaluation-boundary field sets and method arities (no time coordinate), the coverage properties of the state hash (every coordinate at full precision, order, signed zero, nothing else), and the registered accumulation classification and balance-row statements of the six SYN-001 manifests |
 
 Amendment 1 adds U1, U1b, U2, U2b: every physical holdup in the unit library is internal energy or component amounts, never an enthalpy, and only the PTC path imports the residence-time pseudo-holdup mapping directly.
+Amendment 2 adds E1, E2, E3 and E1b/E2b, and widens U1's discovery: every model id `MODEL_BUILDERS` can bind (the external C1 reactor, its stand-in and its surrogate included) has declarations the readiness checks read, the C1 units conserve what their SYN-001 namesakes conserve, and the three C1 reactor ids hold amounts and internal energy.
 
 `tests/fixtures/schemas/` holds the round-trip fixtures. An invalid fixture is a document with
 `expect_error` and `document` keys: it must be rejected, and the rejection message must contain

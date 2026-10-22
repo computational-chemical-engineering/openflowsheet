@@ -7,6 +7,10 @@ that was made deliberately: a time coordinate at the evaluation boundary (group 
 hash that stops covering all of `x` (group H, D2), or a relabelled accumulation declaration in a
 SYN-001 manifest (group M, D3). Amendment 1 adds group U: a physical holdup that turns into an
 enthalpy, or a module outside the PTC path that imports the residence-time pseudo-holdup mapping.
+Amendment 2 adds group E and widens U1's reach: every model id the binder can instantiate — the
+external C1 reactor, its stand-in and its surrogate included — has declarations U1 reads, and the
+C1 units conserve what their SYN-001 namesakes conserve, and the three C1 reactor ids hold
+the same amounts and internal energy.
 A failure here is a design regression, and the message points at the ADR rule it violates.
 
 Blueprint §2.2 defers dynamics and this module does not change that: nothing below evaluates a
@@ -23,14 +27,16 @@ import pkgutil
 import re
 from collections import Counter
 from collections.abc import Iterable, Mapping
-from dataclasses import fields
+from dataclasses import fields, replace
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
 from conftest import REPO_ROOT, load_yaml
 
 import openflowsheet.models as models_package
+import openflowsheet.studies.surrogate as surrogate_package
 
 # D2's rules are pinned on both implementations that exist. The judge's is the independent witness
 # for the P02 artifacts, still on the §10.4 text encoding; production moved to big-endian IEEE-754
@@ -44,6 +50,7 @@ import openflowsheet.models as models_package
 # thing to assert against. K01 must port group H to the canonical hash when it lands; no digest
 # value is pinned here (D2.1).
 from benchmarks.p02.judge import _state_sha256 as _judge_state_sha256
+from openflowsheet.application.revision_binding import MODEL_BUILDERS
 from openflowsheet.canonical import state_sha256 as _production_state_sha256
 from openflowsheet.compiled import (
     CompiledProblem,
@@ -51,7 +58,7 @@ from openflowsheet.compiled import (
     EvaluationResult,
     JacobianResult,
 )
-from openflowsheet.models import DeclaredEquation, Holdup
+from openflowsheet.models import Accumulation, DeclaredEquation, Holdup
 from openflowsheet.models.syn001 import ENERGY, MOLE
 from openflowsheet.units import DIMENSION_ORDER
 
@@ -305,7 +312,9 @@ def test_the_adr_this_module_pins_is_present() -> None:
 # ------------------------------------------------------------------------------------------
 
 #: ADR 0008 A1 C3: the `holdup_balance` rows of the unit library registered when the amendment
-#: was written. Discovery may find more; it may not find fewer.
+#: was written (the first twelve), and the twelve Amendment 2 registered at the 0.2.0 cut (T08's
+#: kinetic CSTR, the C1 heater and flash, and the three C1 reactor ids: external, stand-in,
+#: surrogate). Discovery may find more; it may not find fewer.
 REGISTERED_HOLDUP_ROWS: frozenset[tuple[str, str]] = frozenset(
     {
         ("syn001.tp_heater", "HEAT-mole"),
@@ -320,7 +329,27 @@ REGISTERED_HOLDUP_ROWS: frozenset[tuple[str, str]] = frozenset(
         ("syn001.heat_exchanger", "HX-mole-cold"),
         ("syn001.heat_exchanger", "HX-energy-hot"),
         ("syn001.heat_exchanger", "HX-energy-cold"),
+        # Amendment 2 (A2-F2).
+        ("syn001.kinetic_cstr", "CSTR-mole"),
+        ("syn001.kinetic_cstr", "CSTR-duty"),
+        ("c1.tp_heater", "C1HEAT-mole"),
+        ("c1.tp_heater", "C1HEAT-duty"),
+        ("c1.tp_flash", "C1FL-mole"),
+        ("c1.tp_flash", "C1FL-duty"),
+        ("c1.reactor", "C1RX-mole"),
+        ("c1.reactor", "C1RX-duty"),
+        ("c1.reactor_standin", "C1RX-mole"),
+        ("c1.reactor_standin", "C1RX-duty"),
+        ("c1.reactor_surrogate", "C1RX-mole"),
+        ("c1.reactor_surrogate", "C1RX-duty"),
     }
+)
+
+#: ADR 0008 A2 E1: the packages whose modules declare the equations of a bindable model. The
+#: surrogate unit's module lives beside its study, outside `openflowsheet.models` (A2-F1).
+DECLARATION_PACKAGES: tuple[tuple[Any, str], ...] = (
+    (models_package, "openflowsheet.models."),
+    (surrogate_package, "openflowsheet.studies.surrogate."),
 )
 
 #: The residence-time pseudo-holdup mapping (T04 §6.2), and the PTC-path modules that import it.
@@ -377,21 +406,49 @@ def equation_configurations(equations: object) -> tuple[Any, ...] | None:
     return None
 
 
-def unit_library_holdups() -> tuple[list[tuple[str, str, Holdup, Any]], list[str]]:
-    """Every `holdup_balance` row of every model module, in every configuration it declares, and
-    the modules with a `MODEL_ID` whose `EQUATIONS` has a form U1 cannot read (review F6)."""
-    rows: list[tuple[str, str, Holdup, Any]] = []
+def module_model_ids(module: object) -> tuple[str, ...] | None:
+    """The model ids a module names: its `MODEL_ID`, and every id of a `MODEL_IDS` tuple — one
+    class may serve several ids (`models/c1/reactor.py`, A2-F1). `None` when it names none."""
+    ids: list[str] = []
+    model_id = getattr(module, "MODEL_ID", None)
+    if isinstance(model_id, str):
+        ids.append(model_id)
+    model_ids = getattr(module, "MODEL_IDS", None)
+    if isinstance(model_ids, tuple) and all(isinstance(item, str) for item in model_ids):
+        ids.extend(item for item in model_ids if item not in ids)
+    return tuple(ids) or None
+
+
+def unit_library_declarations() -> tuple[dict[str, list[tuple[str, Any]]], list[str]]:
+    """Every declared configuration, by model id, as `(module, equations)` pairs, over every
+    module of `DECLARATION_PACKAGES` that defines `EQUATIONS`; and the modules U1 cannot read —
+    an `EQUATIONS` of a form U1 does not know (review F6) or one that names no model id (A2-F1).
+    Neither is ever a skip; a bindable model with no declaring module fails E1."""
+    declarations: dict[str, list[tuple[str, Any]]] = {}
     unreadable: list[str] = []
-    for info in pkgutil.walk_packages(models_package.__path__, "openflowsheet.models."):
-        module = importlib.import_module(info.name)
-        model_id = getattr(module, "MODEL_ID", None)
-        if not isinstance(model_id, str):
-            continue
-        configurations = equation_configurations(getattr(module, "EQUATIONS", None))
-        if configurations is None:
-            unreadable.append(info.name)
-            continue
-        for configuration in configurations:
+    for package, prefix in DECLARATION_PACKAGES:
+        for info in pkgutil.walk_packages(package.__path__, prefix):
+            module = importlib.import_module(info.name)
+            if not hasattr(module, "EQUATIONS"):
+                continue
+            model_ids = module_model_ids(module)
+            configurations = equation_configurations(module.EQUATIONS)
+            if model_ids is None or configurations is None:
+                unreadable.append(info.name)
+                continue
+            for model_id in model_ids:
+                for configuration in configurations:
+                    declarations.setdefault(model_id, []).append((info.name, configuration))
+    return declarations, unreadable
+
+
+def unit_library_holdups() -> tuple[list[tuple[str, str, Holdup, Any]], list[str]]:
+    """Every `holdup_balance` row of every model id, in every configuration it declares, and the
+    modules U1 cannot read (`unit_library_declarations`)."""
+    declarations, unreadable = unit_library_declarations()
+    rows: list[tuple[str, str, Holdup, Any]] = []
+    for model_id, configurations in declarations.items():
+        for _, configuration in configurations:
             for equation in configuration:
                 accumulation = equation.accumulation
                 if accumulation.kind == "holdup_balance" and accumulation.holdup is not None:
@@ -532,3 +589,129 @@ def test_u2b_the_import_detector_sees_every_form() -> None:
     false_hits = [source for source in ignored if imports_pseudo_holdup_mapping(source, probe)]
     assert not missed, f"U2's detector missed: {missed}"
     assert not false_hits, f"U2's detector flagged: {false_hits}"
+
+
+# ------------------------------------------------------------------------------------------
+# E — the pins reach every bindable model kind (Amendment 2)
+# ------------------------------------------------------------------------------------------
+
+#: ADR 0008 A2 E2: each C1 unit performs its SYN-001 namesake's function (M02 design note §8;
+#: R-283), so it conserves the same quantities with the same accumulation kinds.
+NAMESAKES: tuple[tuple[str, str], ...] = (
+    ("syn001.feed_source", "c1.feed_source"),
+    ("syn001.adiabatic_mixer", "c1.adiabatic_mixer"),
+    ("syn001.tp_heater", "c1.tp_heater"),
+    ("syn001.tp_flash", "c1.tp_flash"),
+    ("syn001.stream_splitter", "c1.stream_splitter"),
+    ("syn001.product_sink", "c1.product_sink"),
+)
+
+#: ADR 0008 A2 E3: the three C1 reactor ids (external, stand-in, surrogate; ADR 0034 D9, ADR 0037
+#: D1) are one control volume holding `N_i` and `U`, whichever evaluates the map.
+C1_REACTOR_IDS: tuple[str, ...] = ("c1.reactor", "c1.reactor_standin", "c1.reactor_surrogate")
+
+
+def _per_second(dimension: tuple[int, ...]) -> tuple[int, ...]:
+    rate = list(dimension)
+    rate[TIME_INDEX] -= 1
+    return tuple(rate)
+
+
+#: What a reactor control volume conserves: amounts and internal energy, each per second.
+REACTOR_SIGNATURE: Counter[tuple[Any, ...]] = Counter(
+    {
+        ("holdup_balance", "N_i", tuple(MOLE), _per_second(tuple(MOLE))): 1,
+        ("holdup_balance", "U", tuple(ENERGY), _per_second(tuple(ENERGY))): 1,
+    }
+)
+
+
+def conservation_signature(configuration: Iterable[DeclaredEquation]) -> Counter[tuple[Any, ...]]:
+    """What a configuration conserves: one `(kind, holdup symbol, holdup dimension, row
+    dimension)` per balance row. Algebraic rows conserve nothing and do not appear."""
+    signature: Counter[tuple[Any, ...]] = Counter()
+    for equation in configuration:
+        accumulation = equation.accumulation
+        if accumulation.kind == "algebraic":
+            continue
+        holdup = accumulation.holdup
+        signature[
+            (
+                accumulation.kind,
+                None if holdup is None else holdup.symbol,
+                None if holdup is None else tuple(holdup.dimension),
+                None if equation.dimension is None else tuple(equation.dimension),
+            )
+        ] += 1
+    return signature
+
+
+def model_signatures(model_id: str) -> set[frozenset[tuple[tuple[Any, ...], int]]]:
+    """The distinct conservation signatures over every configuration a model id declares."""
+    declarations, _ = unit_library_declarations()
+    return {
+        frozenset(conservation_signature(configuration).items())
+        for _, configuration in declarations.get(model_id, [])
+    }
+
+
+def test_e1_every_bindable_model_has_declarations_u1_reads() -> None:
+    """A2 E1 (A2-F1): U1 reads the declarations of every model id `MODEL_BUILDERS` can bind."""
+    declarations, unreadable = unit_library_declarations()
+    assert not unreadable, (
+        f"modules defining EQUATIONS that U1 cannot read: {unreadable} (ADR 0008 A2 E1). See {ADR}."
+    )
+    missing = sorted(set(MODEL_BUILDERS) - set(declarations))
+    assert not missing, (
+        f"bindable model ids whose declarations no readiness check reads: {missing}. Add the "
+        f"declaring package to DECLARATION_PACKAGES or name the id in the module's MODEL_ID or "
+        f"MODEL_IDS (ADR 0008 A2 E1). See {ADR}."
+    )
+
+
+@pytest.mark.parametrize(("syn001_id", "c1_id"), NAMESAKES)
+def test_e2_c1_units_conserve_what_their_syn001_namesakes_conserve(
+    syn001_id: str, c1_id: str
+) -> None:
+    """A2 E2 (A2-F3): a relabelled C1 balance row — a junction's included — fails here."""
+    expected = model_signatures(syn001_id)
+    assert len(expected) == 1, f"{syn001_id}: its configurations disagree on what it conserves"
+    assert model_signatures(c1_id) == expected, (
+        f"{c1_id} no longer conserves what {syn001_id} conserves (kind, holdup, dimension per "
+        f"balance row). Reclassifying a row needs a design-lane ADR (ADR 0008 D3, A2 E2). See "
+        f"{ADR}."
+    )
+
+
+@pytest.mark.parametrize("model_id", C1_REACTOR_IDS)
+def test_e3_every_c1_reactor_kind_holds_amounts_and_internal_energy(model_id: str) -> None:
+    """A2 E3 (A2-F2, A2-F7): external, stand-in and surrogate declare one control volume."""
+    assert model_signatures(model_id) == {frozenset(REACTOR_SIGNATURE.items())}, (
+        f"{model_id}: every declared configuration of a C1 reactor id holds N_i and U on one "
+        f"mole and one energy holdup_balance row (ADR 0008 A2 E3). See {ADR}."
+    )
+
+
+def test_e1b_e2b_the_reach_and_the_signature_can_fail() -> None:
+    """A1.7 gate 3 for group E: each new check is shown able to fail."""
+    assert module_model_ids(SimpleNamespace()) is None
+    assert module_model_ids(SimpleNamespace(MODEL_ID="m", MODEL_IDS=("m", "n"))) == ("m", "n")
+    assert module_model_ids(SimpleNamespace(MODEL_IDS=("m", 1))) is None
+    declarations, _ = unit_library_declarations()
+    (_, mixer), *_ = declarations["c1.adiabatic_mixer"]
+    relabelled = tuple(
+        replace(equation, accumulation=Accumulation(kind="algebraic"))
+        if equation.accumulation.kind == "zero_holdup_balance"
+        else equation
+        for equation in mixer
+    )
+    assert conservation_signature(relabelled) != conservation_signature(mixer)
+    (_, heater), *_ = declarations["c1.tp_heater"]
+    enthalpy = Holdup("H", "enthalpy content at the pinned pressure (U + PV)", ENERGY)
+    renamed = tuple(
+        replace(equation, accumulation=Accumulation(kind="holdup_balance", holdup=enthalpy))
+        if equation.accumulation.holdup is not None and equation.accumulation.holdup.symbol == "U"
+        else equation
+        for equation in heater
+    )
+    assert conservation_signature(renamed) != conservation_signature(heater)

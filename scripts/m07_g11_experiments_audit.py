@@ -342,6 +342,12 @@ def audit(
                 structural.append(f"run {k}: points are not the runs file's")
         for point in record["points"]:
             counts["points"] += 1
+            expected = by_label.get(point["label"])
+            if expected is not None and point["path"] != expected["path"]:
+                structural.append(
+                    f"run {k} {point['label']}: path {point['path']} is not the runs file's "
+                    f"{expected['path']}"
+                )
             if point["experiments"] is None:
                 counts["direct_points"] += 1
                 if point["path"] == "boundary":
