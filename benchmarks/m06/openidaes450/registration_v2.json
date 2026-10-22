@@ -1,0 +1,2550 @@
+{
+  "base": {
+    "registration_version": 1,
+    "sha256": {
+      "benchmarks/m06/openidaes450/registration.json": "ee099a60f9da6900325f54127f92e9eee926d2015f97b527843db482d6f0e52e",
+      "docs/derivations/M06-W27-registration.md": "bf48a5212cb0f17675567a8194e61d1f5b6665a082c0c3916a341d7d93260c70",
+      "docs/derivations/scripts/m06_w27_registration.py": "3d7429a258fca0bc92af4a3e4113af7f4ef62cd2b1cd8e4999e9c8f6eb9241eb"
+    }
+  },
+  "cases": {
+    "CO-Co": {
+      "case_id": "synthetic-w27",
+      "expected_dof": 0,
+      "family": "synthetic",
+      "files_missing": [],
+      "in_full82": false,
+      "listed_components": [
+        "CO",
+        "Co"
+      ],
+      "model_type": "native_IDAES",
+      "objective_declared": false,
+      "package_source": "property_packages.json",
+      "packages": [
+        {
+          "classes": [
+            "GenericParameterBlock"
+          ],
+          "components": [
+            "CO",
+            "Co"
+          ],
+          "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+          "name": "fs.props",
+          "phases": [
+            "vapor"
+          ]
+        }
+      ],
+      "parse_errors": [],
+      "residual_check": "pass",
+      "solve_dynamic": false,
+      "steady_state": true,
+      "topology_entry_ids": [],
+      "topology_kinds": [
+        "Feed",
+        "Heater",
+        "Product"
+      ],
+      "topology_package_names": [],
+      "unit_source": "units.json",
+      "units": [
+        {
+          "class_leaf": "_ScalarFeed",
+          "key": "idaes:Feed",
+          "names": [
+            "fs.feed"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarHeater",
+          "key": "idaes:Heater",
+          "names": [
+            "fs.heater"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarProduct",
+          "key": "idaes:Product",
+          "names": [
+            "fs.product"
+          ]
+        }
+      ]
+    },
+    "H2": {
+      "case_id": "synthetic-w27",
+      "expected_dof": 0,
+      "family": "synthetic",
+      "files_missing": [],
+      "in_full82": false,
+      "listed_components": [
+        "H2"
+      ],
+      "model_type": "native_IDAES",
+      "objective_declared": false,
+      "package_source": "property_packages.json",
+      "packages": [
+        {
+          "classes": [
+            "GenericParameterBlock"
+          ],
+          "components": [
+            "H2"
+          ],
+          "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+          "name": "fs.props",
+          "phases": [
+            "vapor"
+          ]
+        }
+      ],
+      "parse_errors": [],
+      "residual_check": "pass",
+      "solve_dynamic": false,
+      "steady_state": true,
+      "topology_entry_ids": [],
+      "topology_kinds": [
+        "Feed",
+        "Heater",
+        "Product"
+      ],
+      "topology_package_names": [],
+      "unit_source": "units.json",
+      "units": [
+        {
+          "class_leaf": "_ScalarFeed",
+          "key": "idaes:Feed",
+          "names": [
+            "fs.feed"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarHeater",
+          "key": "idaes:Heater",
+          "names": [
+            "fs.heater"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarProduct",
+          "key": "idaes:Product",
+          "names": [
+            "fs.product"
+          ]
+        }
+      ]
+    },
+    "H2-2M": {
+      "case_id": "synthetic-w27",
+      "expected_dof": 0,
+      "family": "synthetic",
+      "files_missing": [],
+      "in_full82": false,
+      "listed_components": [
+        "H2"
+      ],
+      "model_type": "native_IDAES",
+      "objective_declared": false,
+      "package_source": "property_packages.json",
+      "packages": [
+        {
+          "classes": [
+            "GenericParameterBlock"
+          ],
+          "components": [
+            "H2"
+          ],
+          "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+          "name": "fs.props",
+          "phases": [
+            "vapor"
+          ]
+        },
+        {
+          "classes": [
+            "GenericParameterBlock"
+          ],
+          "components": [
+            "H2"
+          ],
+          "key": "generic[Vap:VaporPhase:Ideal]",
+          "name": "fs.props2",
+          "phases": [
+            "vapor"
+          ]
+        }
+      ],
+      "parse_errors": [],
+      "residual_check": "pass",
+      "solve_dynamic": false,
+      "steady_state": true,
+      "topology_entry_ids": [],
+      "topology_kinds": [
+        "Feed",
+        "Heater",
+        "Product"
+      ],
+      "topology_package_names": [],
+      "unit_source": "units.json",
+      "units": [
+        {
+          "class_leaf": "_ScalarFeed",
+          "key": "idaes:Feed",
+          "names": [
+            "fs.feed"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarHeater",
+          "key": "idaes:Heater",
+          "names": [
+            "fs.heater"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarProduct",
+          "key": "idaes:Product",
+          "names": [
+            "fs.product"
+          ]
+        }
+      ]
+    },
+    "H2-VL": {
+      "case_id": "synthetic-w27",
+      "expected_dof": 0,
+      "family": "synthetic",
+      "files_missing": [],
+      "in_full82": false,
+      "listed_components": [
+        "H2"
+      ],
+      "model_type": "native_IDAES",
+      "objective_declared": false,
+      "package_source": "property_packages.json",
+      "packages": [
+        {
+          "classes": [
+            "GenericParameterBlock"
+          ],
+          "components": [
+            "H2"
+          ],
+          "key": "generic[Liq:LiquidPhase:Cubic(type=PR);Vap:VaporPhase:Cubic(type=PR)]",
+          "name": "fs.props",
+          "phases": [
+            "liquid",
+            "vapor"
+          ]
+        }
+      ],
+      "parse_errors": [],
+      "residual_check": "pass",
+      "solve_dynamic": false,
+      "steady_state": true,
+      "topology_entry_ids": [],
+      "topology_kinds": [
+        "Feed",
+        "Heater",
+        "Product"
+      ],
+      "topology_package_names": [],
+      "unit_source": "units.json",
+      "units": [
+        {
+          "class_leaf": "_ScalarFeed",
+          "key": "idaes:Feed",
+          "names": [
+            "fs.feed"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarHeater",
+          "key": "idaes:Heater",
+          "names": [
+            "fs.heater"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarProduct",
+          "key": "idaes:Product",
+          "names": [
+            "fs.product"
+          ]
+        }
+      ]
+    },
+    "H2O": {
+      "case_id": "synthetic-w27",
+      "expected_dof": 0,
+      "family": "synthetic",
+      "files_missing": [],
+      "in_full82": false,
+      "listed_components": [
+        "H2O"
+      ],
+      "model_type": "native_IDAES",
+      "objective_declared": false,
+      "package_source": "property_packages.json",
+      "packages": [
+        {
+          "classes": [
+            "GenericParameterBlock"
+          ],
+          "components": [
+            "H2O"
+          ],
+          "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+          "name": "fs.props",
+          "phases": [
+            "vapor"
+          ]
+        }
+      ],
+      "parse_errors": [],
+      "residual_check": "pass",
+      "solve_dynamic": false,
+      "steady_state": true,
+      "topology_entry_ids": [],
+      "topology_kinds": [
+        "Feed",
+        "Heater",
+        "Product"
+      ],
+      "topology_package_names": [],
+      "unit_source": "units.json",
+      "units": [
+        {
+          "class_leaf": "_ScalarFeed",
+          "key": "idaes:Feed",
+          "names": [
+            "fs.feed"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarHeater",
+          "key": "idaes:Heater",
+          "names": [
+            "fs.heater"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarProduct",
+          "key": "idaes:Product",
+          "names": [
+            "fs.product"
+          ]
+        }
+      ]
+    },
+    "co": {
+      "case_id": "synthetic-w27",
+      "expected_dof": 0,
+      "family": "synthetic",
+      "files_missing": [],
+      "in_full82": false,
+      "listed_components": [
+        "co"
+      ],
+      "model_type": "native_IDAES",
+      "objective_declared": false,
+      "package_source": "property_packages.json",
+      "packages": [
+        {
+          "classes": [
+            "GenericParameterBlock"
+          ],
+          "components": [
+            "co"
+          ],
+          "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+          "name": "fs.props",
+          "phases": [
+            "vapor"
+          ]
+        }
+      ],
+      "parse_errors": [],
+      "residual_check": "pass",
+      "solve_dynamic": false,
+      "steady_state": true,
+      "topology_entry_ids": [],
+      "topology_kinds": [
+        "Feed",
+        "Heater",
+        "Product"
+      ],
+      "topology_package_names": [],
+      "unit_source": "units.json",
+      "units": [
+        {
+          "class_leaf": "_ScalarFeed",
+          "key": "idaes:Feed",
+          "names": [
+            "fs.feed"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarHeater",
+          "key": "idaes:Heater",
+          "names": [
+            "fs.heater"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarProduct",
+          "key": "idaes:Product",
+          "names": [
+            "fs.product"
+          ]
+        }
+      ]
+    }
+  },
+  "development": {
+    "cases": 225,
+    "rows_equal_v1_at_committed_snapshot": 225,
+    "scope": "development half only (C2 split); no held-out row is read"
+  },
+  "document": "docs/derivations/W27-registration-v2.md",
+  "generator": "docs/derivations/scripts/w27_registration_v2.py",
+  "mutants": [
+    "first_serving",
+    "smallest_id",
+    "all_routes",
+    "detail_last",
+    "shared_method_refused",
+    "no_duplicate_refusal",
+    "spelling_v1",
+    "spelling_formula_case_sensitive"
+  ],
+  "registration_version": 2,
+  "rules": {
+    "refusals": [
+      "a",
+      "b",
+      "c:case_distinct",
+      "d:routes_per_revision",
+      "d:duplicate_ids",
+      "e"
+    ],
+    "route_detail_join": ";",
+    "serving_route_order": [
+      "unit_reason_count",
+      "provider_id"
+    ]
+  },
+  "schema": "w27-registration-v2",
+  "snapshots": {
+    "S1": {
+      "basis": "C9 registered state (W27-registration-v2 §5.1)",
+      "git_commit": null,
+      "list_models_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "models": [
+        {
+          "model_id": "c1.adiabatic_mixer"
+        },
+        {
+          "model_id": "c1.feed_source"
+        },
+        {
+          "model_id": "c1.product_sink"
+        },
+        {
+          "model_id": "c1.reactor"
+        },
+        {
+          "model_id": "c1.reactor_standin"
+        },
+        {
+          "model_id": "c1.reactor_surrogate"
+        },
+        {
+          "model_id": "c1.stream_splitter"
+        },
+        {
+          "model_id": "c1.tp_flash"
+        },
+        {
+          "model_id": "c1.tp_heater"
+        }
+      ],
+      "package_version": "c9-registered-state",
+      "routes": [
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7664-41-7",
+              "formula": "H3N",
+              "id": "NH3",
+              "name": "ammonia",
+              "phases": [
+                "liquid",
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "c1.adiabatic_mixer",
+            "c1.feed_source",
+            "c1.product_sink",
+            "c1.reactor",
+            "c1.reactor_standin",
+            "c1.reactor_surrogate",
+            "c1.stream_splitter",
+            "c1.tp_flash",
+            "c1.tp_heater"
+          ],
+          "provider_id": "pr-c1-v1"
+        }
+      ],
+      "routes_per_revision": 1,
+      "schema": "w27-registry-snapshot-v1"
+    },
+    "S1co": {
+      "basis": "C9 registered state (W27-registration-v2 §5.1)",
+      "git_commit": null,
+      "list_models_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "models": [
+        {
+          "model_id": "c1.adiabatic_mixer"
+        },
+        {
+          "model_id": "c1.feed_source"
+        },
+        {
+          "model_id": "c1.product_sink"
+        },
+        {
+          "model_id": "c1.reactor"
+        },
+        {
+          "model_id": "c1.reactor_standin"
+        },
+        {
+          "model_id": "c1.reactor_surrogate"
+        },
+        {
+          "model_id": "c1.stream_splitter"
+        },
+        {
+          "model_id": "c1.tp_flash"
+        },
+        {
+          "model_id": "c1.tp_heater"
+        }
+      ],
+      "package_version": "c9-registered-state",
+      "routes": [
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7664-41-7",
+              "formula": "H3N",
+              "id": "NH3",
+              "name": "ammonia",
+              "phases": [
+                "liquid",
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "630-08-0",
+              "formula": "CO",
+              "id": "CO",
+              "name": "carbon monoxide",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "c1.adiabatic_mixer",
+            "c1.feed_source",
+            "c1.product_sink",
+            "c1.reactor",
+            "c1.reactor_standin",
+            "c1.reactor_surrogate",
+            "c1.stream_splitter",
+            "c1.tp_flash",
+            "c1.tp_heater"
+          ],
+          "provider_id": "pr-c1-v1"
+        }
+      ],
+      "routes_per_revision": 1,
+      "schema": "w27-registry-snapshot-v1"
+    },
+    "S2": {
+      "basis": "C9 registered state (W27-registration-v2 §5.1)",
+      "git_commit": null,
+      "list_models_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "models": [
+        {
+          "model_id": "c1.adiabatic_mixer"
+        },
+        {
+          "model_id": "c1.feed_source"
+        },
+        {
+          "model_id": "c1.product_sink"
+        },
+        {
+          "model_id": "c1.reactor"
+        },
+        {
+          "model_id": "c1.reactor_standin"
+        },
+        {
+          "model_id": "c1.reactor_surrogate"
+        },
+        {
+          "model_id": "c1.stream_splitter"
+        },
+        {
+          "model_id": "c1.tp_flash"
+        },
+        {
+          "model_id": "c1.tp_heater"
+        }
+      ],
+      "package_version": "c9-registered-state",
+      "routes": [
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7664-41-7",
+              "formula": "H3N",
+              "id": "NH3",
+              "name": "ammonia",
+              "phases": [
+                "liquid",
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "c1.adiabatic_mixer",
+            "c1.feed_source",
+            "c1.product_sink",
+            "c1.reactor",
+            "c1.reactor_standin",
+            "c1.reactor_surrogate",
+            "c1.stream_splitter",
+            "c1.tp_flash",
+            "c1.tp_heater"
+          ],
+          "provider_id": "pr-c1-v1"
+        },
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7732-18-5",
+              "formula": "H2O",
+              "id": "H2O",
+              "name": "water",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "124-38-9",
+              "formula": "CO2",
+              "id": "CO2",
+              "name": "carbon dioxide",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7782-44-7",
+              "formula": "O2",
+              "id": "O2",
+              "name": "oxygen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-84-0",
+              "formula": "C2H6",
+              "id": "C2H6",
+              "name": "ethane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-98-6",
+              "formula": "C3H8",
+              "id": "C3H8",
+              "name": "propane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [],
+          "provider_id": "pr-lib-v1"
+        }
+      ],
+      "routes_per_revision": 1,
+      "schema": "w27-registry-snapshot-v1"
+    },
+    "S2co": {
+      "basis": "C9 registered state (W27-registration-v2 §5.1)",
+      "git_commit": null,
+      "list_models_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "models": [
+        {
+          "model_id": "c1.adiabatic_mixer"
+        },
+        {
+          "model_id": "c1.feed_source"
+        },
+        {
+          "model_id": "c1.product_sink"
+        },
+        {
+          "model_id": "c1.reactor"
+        },
+        {
+          "model_id": "c1.reactor_standin"
+        },
+        {
+          "model_id": "c1.reactor_surrogate"
+        },
+        {
+          "model_id": "c1.stream_splitter"
+        },
+        {
+          "model_id": "c1.tp_flash"
+        },
+        {
+          "model_id": "c1.tp_heater"
+        }
+      ],
+      "package_version": "c9-registered-state",
+      "routes": [
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7664-41-7",
+              "formula": "H3N",
+              "id": "NH3",
+              "name": "ammonia",
+              "phases": [
+                "liquid",
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "c1.adiabatic_mixer",
+            "c1.feed_source",
+            "c1.product_sink",
+            "c1.reactor",
+            "c1.reactor_standin",
+            "c1.reactor_surrogate",
+            "c1.stream_splitter",
+            "c1.tp_flash",
+            "c1.tp_heater"
+          ],
+          "provider_id": "pr-c1-v1"
+        },
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7732-18-5",
+              "formula": "H2O",
+              "id": "H2O",
+              "name": "water",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "124-38-9",
+              "formula": "CO2",
+              "id": "CO2",
+              "name": "carbon dioxide",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7782-44-7",
+              "formula": "O2",
+              "id": "O2",
+              "name": "oxygen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-84-0",
+              "formula": "C2H6",
+              "id": "C2H6",
+              "name": "ethane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-98-6",
+              "formula": "C3H8",
+              "id": "C3H8",
+              "name": "propane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "630-08-0",
+              "formula": "CO",
+              "id": "CO",
+              "name": "carbon monoxide",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [],
+          "provider_id": "pr-lib-v1"
+        }
+      ],
+      "routes_per_revision": 1,
+      "schema": "w27-registry-snapshot-v1"
+    },
+    "S2dup": {
+      "basis": "C9 registered state (W27-registration-v2 §5.1)",
+      "git_commit": null,
+      "list_models_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "models": [
+        {
+          "model_id": "c1.adiabatic_mixer"
+        },
+        {
+          "model_id": "c1.feed_source"
+        },
+        {
+          "model_id": "c1.product_sink"
+        },
+        {
+          "model_id": "c1.reactor"
+        },
+        {
+          "model_id": "c1.reactor_standin"
+        },
+        {
+          "model_id": "c1.reactor_surrogate"
+        },
+        {
+          "model_id": "c1.stream_splitter"
+        },
+        {
+          "model_id": "c1.tp_flash"
+        },
+        {
+          "model_id": "c1.tp_heater"
+        }
+      ],
+      "package_version": "c9-registered-state",
+      "routes": [
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7664-41-7",
+              "formula": "H3N",
+              "id": "NH3",
+              "name": "ammonia",
+              "phases": [
+                "liquid",
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "c1.adiabatic_mixer",
+            "c1.feed_source",
+            "c1.product_sink",
+            "c1.reactor",
+            "c1.reactor_standin",
+            "c1.reactor_surrogate",
+            "c1.stream_splitter",
+            "c1.tp_flash",
+            "c1.tp_heater"
+          ],
+          "provider_id": "pr-c1-v1"
+        },
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7732-18-5",
+              "formula": "H2O",
+              "id": "H2O",
+              "name": "water",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "124-38-9",
+              "formula": "CO2",
+              "id": "CO2",
+              "name": "carbon dioxide",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7782-44-7",
+              "formula": "O2",
+              "id": "O2",
+              "name": "oxygen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-84-0",
+              "formula": "C2H6",
+              "id": "C2H6",
+              "name": "ethane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-98-6",
+              "formula": "C3H8",
+              "id": "C3H8",
+              "name": "propane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [],
+          "provider_id": "pr-lib-v1"
+        },
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7732-18-5",
+              "formula": "H2O",
+              "id": "H2O",
+              "name": "water",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "124-38-9",
+              "formula": "CO2",
+              "id": "CO2",
+              "name": "carbon dioxide",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7782-44-7",
+              "formula": "O2",
+              "id": "O2",
+              "name": "oxygen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-84-0",
+              "formula": "C2H6",
+              "id": "C2H6",
+              "name": "ethane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-98-6",
+              "formula": "C3H8",
+              "id": "C3H8",
+              "name": "propane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [],
+          "provider_id": "pr-lib-v1"
+        }
+      ],
+      "routes_per_revision": 1,
+      "schema": "w27-registry-snapshot-v1"
+    },
+    "S2r": {
+      "basis": "C9 registered state (W27-registration-v2 §5.1)",
+      "git_commit": null,
+      "list_models_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "models": [
+        {
+          "model_id": "c1.adiabatic_mixer"
+        },
+        {
+          "model_id": "c1.feed_source"
+        },
+        {
+          "model_id": "c1.product_sink"
+        },
+        {
+          "model_id": "c1.reactor"
+        },
+        {
+          "model_id": "c1.reactor_standin"
+        },
+        {
+          "model_id": "c1.reactor_surrogate"
+        },
+        {
+          "model_id": "c1.stream_splitter"
+        },
+        {
+          "model_id": "c1.tp_flash"
+        },
+        {
+          "model_id": "c1.tp_heater"
+        }
+      ],
+      "package_version": "c9-registered-state",
+      "routes": [
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7732-18-5",
+              "formula": "H2O",
+              "id": "H2O",
+              "name": "water",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "124-38-9",
+              "formula": "CO2",
+              "id": "CO2",
+              "name": "carbon dioxide",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7782-44-7",
+              "formula": "O2",
+              "id": "O2",
+              "name": "oxygen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-84-0",
+              "formula": "C2H6",
+              "id": "C2H6",
+              "name": "ethane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-98-6",
+              "formula": "C3H8",
+              "id": "C3H8",
+              "name": "propane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [],
+          "provider_id": "pr-lib-v1"
+        },
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7664-41-7",
+              "formula": "H3N",
+              "id": "NH3",
+              "name": "ammonia",
+              "phases": [
+                "liquid",
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "c1.adiabatic_mixer",
+            "c1.feed_source",
+            "c1.product_sink",
+            "c1.reactor",
+            "c1.reactor_standin",
+            "c1.reactor_surrogate",
+            "c1.stream_splitter",
+            "c1.tp_flash",
+            "c1.tp_heater"
+          ],
+          "provider_id": "pr-c1-v1"
+        }
+      ],
+      "routes_per_revision": 1,
+      "schema": "w27-registry-snapshot-v1"
+    },
+    "S2rpr": {
+      "basis": "C9 registered state (W27-registration-v2 §5.1)",
+      "git_commit": null,
+      "list_models_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "models": [
+        {
+          "model_id": "c1.adiabatic_mixer"
+        },
+        {
+          "model_id": "c1.feed_source"
+        },
+        {
+          "model_id": "c1.product_sink"
+        },
+        {
+          "model_id": "c1.reactor"
+        },
+        {
+          "model_id": "c1.reactor_standin"
+        },
+        {
+          "model_id": "c1.reactor_surrogate"
+        },
+        {
+          "model_id": "c1.stream_splitter"
+        },
+        {
+          "model_id": "c1.tp_flash"
+        },
+        {
+          "model_id": "c1.tp_heater"
+        }
+      ],
+      "package_version": "c9-registered-state",
+      "routes": [
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7664-41-7",
+              "formula": "H3N",
+              "id": "NH3",
+              "name": "ammonia",
+              "phases": [
+                "liquid",
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "c1.adiabatic_mixer",
+            "c1.feed_source",
+            "c1.product_sink",
+            "c1.reactor",
+            "c1.reactor_standin",
+            "c1.reactor_surrogate",
+            "c1.stream_splitter",
+            "c1.tp_flash",
+            "c1.tp_heater"
+          ],
+          "provider_id": "pr-c1-v1"
+        },
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7732-18-5",
+              "formula": "H2O",
+              "id": "H2O",
+              "name": "water",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "124-38-9",
+              "formula": "CO2",
+              "id": "CO2",
+              "name": "carbon dioxide",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7782-44-7",
+              "formula": "O2",
+              "id": "O2",
+              "name": "oxygen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-84-0",
+              "formula": "C2H6",
+              "id": "C2H6",
+              "name": "ethane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-98-6",
+              "formula": "C3H8",
+              "id": "C3H8",
+              "name": "propane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [],
+          "provider_id": "pr-lib-v1"
+        }
+      ],
+      "routes_per_revision": 2,
+      "schema": "w27-registry-snapshot-v1"
+    },
+    "S2x": {
+      "basis": "C9 registered state (W27-registration-v2 §5.1)",
+      "git_commit": null,
+      "list_models_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "models": [
+        {
+          "model_id": "c1.adiabatic_mixer"
+        },
+        {
+          "model_id": "c1.feed_source"
+        },
+        {
+          "model_id": "c1.product_sink"
+        },
+        {
+          "model_id": "c1.reactor"
+        },
+        {
+          "model_id": "c1.reactor_standin"
+        },
+        {
+          "model_id": "c1.reactor_surrogate"
+        },
+        {
+          "model_id": "c1.stream_splitter"
+        },
+        {
+          "model_id": "c1.tp_flash"
+        },
+        {
+          "model_id": "c1.tp_heater"
+        }
+      ],
+      "package_version": "c9-registered-state",
+      "routes": [
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7664-41-7",
+              "formula": "H3N",
+              "id": "NH3",
+              "name": "ammonia",
+              "phases": [
+                "liquid",
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "c1.adiabatic_mixer",
+            "c1.feed_source",
+            "c1.product_sink",
+            "c1.reactor",
+            "c1.reactor_standin",
+            "c1.reactor_surrogate",
+            "c1.stream_splitter",
+            "c1.tp_flash",
+            "c1.tp_heater"
+          ],
+          "provider_id": "pr-c1-v1"
+        },
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7732-18-5",
+              "formula": "H2O",
+              "id": "H2O",
+              "name": "water",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "124-38-9",
+              "formula": "CO2",
+              "id": "CO2",
+              "name": "carbon dioxide",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7782-44-7",
+              "formula": "O2",
+              "id": "O2",
+              "name": "oxygen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-84-0",
+              "formula": "C2H6",
+              "id": "C2H6",
+              "name": "ethane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-98-6",
+              "formula": "C3H8",
+              "id": "C3H8",
+              "name": "propane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "x.test"
+          ],
+          "provider_id": "pr-lib-v1"
+        }
+      ],
+      "routes_per_revision": 1,
+      "schema": "w27-registry-snapshot-v1"
+    },
+    "S3": {
+      "basis": "C9 registered state (W27-registration-v2 §5.1)",
+      "git_commit": null,
+      "list_models_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "models": [
+        {
+          "model_id": "c1.adiabatic_mixer"
+        },
+        {
+          "model_id": "c1.feed_source"
+        },
+        {
+          "model_id": "c1.product_sink"
+        },
+        {
+          "model_id": "c1.reactor"
+        },
+        {
+          "model_id": "c1.reactor_standin"
+        },
+        {
+          "model_id": "c1.reactor_surrogate"
+        },
+        {
+          "model_id": "c1.stream_splitter"
+        },
+        {
+          "model_id": "c1.tp_flash"
+        },
+        {
+          "model_id": "c1.tp_heater"
+        }
+      ],
+      "package_version": "c9-registered-state",
+      "routes": [
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7732-18-5",
+              "formula": "H2O",
+              "id": "H2O",
+              "name": "water",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "c1.feed_source",
+            "c1.product_sink",
+            "c1.tp_heater"
+          ],
+          "provider_id": "zz-test-pr"
+        },
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7732-18-5",
+              "formula": "H2O",
+              "id": "H2O",
+              "name": "water",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "124-38-9",
+              "formula": "CO2",
+              "id": "CO2",
+              "name": "carbon dioxide",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7782-44-7",
+              "formula": "O2",
+              "id": "O2",
+              "name": "oxygen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-84-0",
+              "formula": "C2H6",
+              "id": "C2H6",
+              "name": "ethane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-98-6",
+              "formula": "C3H8",
+              "id": "C3H8",
+              "name": "propane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [],
+          "provider_id": "pr-lib-v1"
+        },
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7664-41-7",
+              "formula": "H3N",
+              "id": "NH3",
+              "name": "ammonia",
+              "phases": [
+                "liquid",
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "c1.adiabatic_mixer",
+            "c1.feed_source",
+            "c1.product_sink",
+            "c1.reactor",
+            "c1.reactor_standin",
+            "c1.reactor_surrogate",
+            "c1.stream_splitter",
+            "c1.tp_flash",
+            "c1.tp_heater"
+          ],
+          "provider_id": "pr-c1-v1"
+        }
+      ],
+      "routes_per_revision": 1,
+      "schema": "w27-registry-snapshot-v1"
+    }
+  },
+  "states": [
+    {
+      "case": "H2",
+      "discriminates": [],
+      "expected": {
+        "class": "CANDIDATE",
+        "reasons": [],
+        "units_judged_on": "pr-c1-v1"
+      },
+      "id": "W27v2-A01",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S1",
+      "why": "one route per method: v2's row equals v1's (W27v2-R10)"
+    },
+    {
+      "case": "H2",
+      "discriminates": [
+        "shared_method_refused"
+      ],
+      "expected": {
+        "class": "CANDIDATE",
+        "reasons": [],
+        "units_judged_on": "pr-c1-v1"
+      },
+      "id": "W27v2-A02",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S2",
+      "why": "two cubic_pr routes serve; the one with models judges"
+    },
+    {
+      "case": "H2",
+      "discriminates": [
+        "first_serving"
+      ],
+      "expected": {
+        "class": "CANDIDATE",
+        "reasons": [],
+        "units_judged_on": "pr-c1-v1"
+      },
+      "id": "W27v2-A03",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S2r",
+      "why": "snapshot order does not choose the route"
+    },
+    {
+      "case": "H2O",
+      "discriminates": [
+        "all_routes"
+      ],
+      "expected": {
+        "class": "UNIT_UNAVAILABLE",
+        "reasons": [
+          [
+            "UNIT_UNAVAILABLE",
+            "Feed",
+            "no_model:feed units=fs.feed"
+          ],
+          [
+            "UNIT_UNAVAILABLE",
+            "Heater",
+            "no_model:heater units=fs.heater"
+          ],
+          [
+            "UNIT_UNAVAILABLE",
+            "Product",
+            "no_model:product units=fs.product"
+          ]
+        ],
+        "units_judged_on": "pr-lib-v1"
+      },
+      "id": "W27v2-A04",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S2",
+      "why": "only the library route serves H2O; units are judged on its (empty) model list"
+    },
+    {
+      "case": "H2O",
+      "discriminates": [
+        "smallest_id"
+      ],
+      "expected": {
+        "class": "CANDIDATE",
+        "reasons": [],
+        "units_judged_on": "zz-test-pr"
+      },
+      "id": "W27v2-A05",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S3",
+      "why": "fewest unit reasons beats the smaller provider id"
+    },
+    {
+      "case": "H2",
+      "discriminates": [
+        "first_serving"
+      ],
+      "expected": {
+        "class": "CANDIDATE",
+        "reasons": [],
+        "units_judged_on": "pr-c1-v1"
+      },
+      "id": "W27v2-A06",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S3",
+      "why": "a tie on unit reasons goes to the smaller provider id, not the first route"
+    },
+    {
+      "case": "H2-VL",
+      "discriminates": [
+        "detail_last"
+      ],
+      "expected": {
+        "class": "PROPERTY_ROUTE_UNAVAILABLE",
+        "reasons": [
+          [
+            "PROPERTY_ROUTE_UNAVAILABLE",
+            "fs.props",
+            "route_mismatch:pr-c1-v1:missing=:phase=1333-74-0:liquid;route_mismatch:pr-lib-v1:missing=:phase=1333-74-0:liquid"
+          ]
+        ],
+        "units_judged_on": null
+      },
+      "id": "W27v2-A07",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S2",
+      "why": "no route serves: every route's mismatch, by provider id"
+    },
+    {
+      "case": "H2-2M",
+      "discriminates": [],
+      "expected": {
+        "class": "PROPERTY_ROUTE_UNAVAILABLE",
+        "reasons": [
+          [
+            "PROPERTY_ROUTE_UNAVAILABLE",
+            "fs.props",
+            "multiple_routes_per_revision:cubic_pr,ideal_gas"
+          ],
+          [
+            "PROPERTY_ROUTE_UNAVAILABLE",
+            "fs.props2",
+            "multiple_routes_per_revision:cubic_pr,ideal_gas"
+          ]
+        ],
+        "units_judged_on": null
+      },
+      "id": "W27v2-A08",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S2",
+      "why": "one basis per revision stands (W27-R20's first sentence)"
+    },
+    {
+      "case": "H2",
+      "discriminates": [],
+      "expected": {
+        "refusal": "unregistered provider ids ['pr-lib-v1']"
+      },
+      "id": "W27v2-A09",
+      "provider_table": "v1",
+      "registration_version": 1,
+      "snapshot": "S2",
+      "why": "v1 is unchanged: pr-lib-v1 is not in v0.2's table"
+    },
+    {
+      "case": "H2",
+      "discriminates": [],
+      "expected": {
+        "refusal": "routes sharing a method ['cubic_pr']"
+      },
+      "id": "W27v2-A10",
+      "provider_table": "v1+lib",
+      "registration_version": 1,
+      "snapshot": "S2",
+      "why": "v1 is unchanged: W27-R24 (d) still refuses two routes of one method"
+    },
+    {
+      "case": "H2",
+      "discriminates": [
+        "no_duplicate_refusal"
+      ],
+      "expected": {
+        "refusal": "duplicate provider ids ['pr-lib-v1']"
+      },
+      "id": "W27v2-A11",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S2dup",
+      "why": "the tie-break key must be unique"
+    },
+    {
+      "case": "H2",
+      "discriminates": [],
+      "expected": {
+        "refusal": "routes_per_revision 2 is not 1"
+      },
+      "id": "W27v2-A12",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S2rpr",
+      "why": "one route per revision stands"
+    },
+    {
+      "case": "H2",
+      "discriminates": [],
+      "expected": {
+        "refusal": "route model ids not among the models ['x.test']"
+      },
+      "id": "W27v2-A13",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S2x",
+      "why": "(e) stands"
+    },
+    {
+      "case": "CO-Co",
+      "discriminates": [],
+      "expected": {
+        "refusal": "archive spellings of registry chemicals not aliased ['Co->630-08-0']"
+      },
+      "id": "W27v2-A14",
+      "provider_table": "v1",
+      "registration_version": 1,
+      "snapshot": "S1co",
+      "why": "v1 is unchanged: the casefold check refuses CO against Co (L01 F-2)"
+    },
+    {
+      "case": "CO-Co",
+      "discriminates": [
+        "spelling_v1"
+      ],
+      "expected": {
+        "class": "COMPONENT_UNAVAILABLE",
+        "reasons": [
+          [
+            "COMPONENT_UNAVAILABLE",
+            "Co",
+            "unidentified"
+          ]
+        ],
+        "units_judged_on": "pr-c1-v1"
+      },
+      "id": "W27v2-A15",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S1co",
+      "why": "v2 accepts CO beside the reviewed Co; Co stays unidentified"
+    },
+    {
+      "case": "co",
+      "discriminates": [
+        "spelling_formula_case_sensitive"
+      ],
+      "expected": {
+        "refusal": "archive spellings of registry chemicals not aliased ['co->630-08-0']"
+      },
+      "id": "W27v2-A16",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S1co",
+      "why": "an unreviewed case variant is still refused"
+    },
+    {
+      "case": "CO-Co",
+      "discriminates": [
+        "spelling_v1"
+      ],
+      "expected": {
+        "class": "UNIT_UNAVAILABLE",
+        "reasons": [
+          [
+            "UNIT_UNAVAILABLE",
+            "Feed",
+            "no_model:feed units=fs.feed"
+          ],
+          [
+            "UNIT_UNAVAILABLE",
+            "Heater",
+            "no_model:heater units=fs.heater"
+          ],
+          [
+            "UNIT_UNAVAILABLE",
+            "Product",
+            "no_model:product units=fs.product"
+          ],
+          [
+            "COMPONENT_UNAVAILABLE",
+            "Co",
+            "unidentified"
+          ]
+        ],
+        "units_judged_on": "pr-lib-v1"
+      },
+      "id": "W27v2-A17",
+      "provider_table": "v2",
+      "registration_version": 2,
+      "snapshot": "S2co",
+      "why": "both fixes together: CO on the library route"
+    }
+  ],
+  "tables": {
+    "case_distinct": {
+      "Co": {
+        "distinct_from": [
+          "630-08-0"
+        ],
+        "evidence": [
+          "blind_synthesized_prommis_membrane_cascade_flowsheet",
+          "blind_synthesized_prommis_nanofiltration_membrane_schematic"
+        ],
+        "reading": "cobalt (element symbol; the PrOMMIS nanofiltration solute declared beside Li and Cl), not carbon monoxide (CO, 630-08-0)"
+      }
+    },
+    "provider_lines_added": {
+      "pr-lib-v1": {
+        "phases": "vapor for every component",
+        "records": "benchmarks/l01/components.yaml (openflowsheet.thermo.pr_lib.RECORDS_PATH)"
+      }
+    },
+    "provider_methods": {
+      "pr-c1-v1": "cubic_pr",
+      "pr-lib-v1": "cubic_pr",
+      "syn001": "synthetic_syn001"
+    }
+  },
+  "test_provider_methods": {
+    "zz-test-pr": "cubic_pr"
+  }
+}
