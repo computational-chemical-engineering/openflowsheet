@@ -3973,3 +3973,216 @@ harvest:
   class: P
   to: []
   note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[0]
+  sha256: 5249fc19dc5d4a3bb16f1ec39561eee8752ad912a95dcdfbb29e39beca98ebbd
+  class: E
+  to:
+  - L18
+  note: synthetic; no real-chemistry or column validation
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[1]
+  sha256: e068d035a37a20ca7656a883ce8c23d900e24aae45cad960388410873e8454d8
+  class: E
+  to:
+  - L18
+  note: no independent column reference; X31's two references and perturbation studies are S03's
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[2]
+  sha256: fef5627ab794118d9429d4df31a5c0c2d261bb5f5f4c78f1d4adfa7ee6e28d7a
+  class: E
+  to:
+  - U04
+  - L19
+  - L20
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no uniqueness or global convergence
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[3]
+  sha256: 5d934fecba68b95d75a7e3eff8e787ae0730b0d3581a9cc360c6b0e3405af58e
+  class: E
+  to:
+  - U04
+  - L20
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no phase-transition robustness, P1 ends typed (A12)
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[4]
+  sha256: 0563960199d14525f4805b446b66be8199faed27f9bc60f1b559982ea18faae6
+  class: E
+  to:
+  - U04
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no inverse specifications, subcooled or total ends, side draws, hydraulics, efficiencies
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[5]
+  sha256: d388949232bbda9e4a17073e058517c6325ea69228b6794eaac06a455ef30faa
+  class: E
+  to:
+  - U04
+  - U05
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no inside-out, rate-based or sensitivity results (U05)
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[6]
+  sha256: 60595b7c7fc35a37f13d138a01b1c87697ed4de90359886cd154eae29ecc85c0
+  class: E
+  to:
+  - U04
+  - L19
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); admissibility claimed only at the registered roots
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[7]
+  sha256: 5976309a8be33d2d0cf7b5f543cfc90ff0b1053efe4fa048bf00c94b87b10ae5
+  class: E
+  to:
+  - U04
+  - L20
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); bubble-point sweeps measured on ten columns only, no contraction proof; R2 is a second root
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[8]
+  sha256: 77751fa98b52bdbddcccbdda0f2564f964039d4ec74b8f52bd1d892be5e8ca23
+  class: P
+  to: []
+  note: requirements empty; S02's D/A mapping (part of X31) is the design lane's to register
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[9]
+  sha256: 1e2b5921e61fbc2f653cc81dff4a4c6ffb2a1fd38e674427088506ebee80de69
+  class: P
+  to: []
+  note: ADR 0044 Proposed until review; A20's full-gate clause is the design lane's suite record and the pre-merge gate
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[10]
+  sha256: ccc9b88a4f6b2e8b0da1ed2b2a61c771fdb1f78f04f1c429cc571e50abfe7051
+  class: P
+  to: []
+  note: gate runs once before merge, not by the generator; process note
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[11]
+  sha256: 8f8ae19887643a981cd6b16d06a7e2b20dcfd5b1a82210c6103339186f131eb8
+  class: P
+  to: []
+  note: review pending; open questions Q-S02-WOG-1, Q-S02-WO2b-1
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[12]
+  sha256: 4fb3f0cb92d29bb4e755b5cce3003236a40863fec0dcf5cfd5f7a3f9ffe40956
+  class: E
+  to:
+  - L18
+  note: numerical verification against a 50-digit generator, not empirical validation
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: limitations[13]
+  sha256: 1e1838330f96007912b983876304219117a18c946a2d61ac64d63559bcb59c59
+  class: P
+  to: []
+  note: 'S02.A14 fail: two strict xfails (±5 K start, final state_sha256) pending the design lane''s ruling on Q-S02-WO2b-1'
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: checks[15]
+  check_id: S02.A14
+  sha256: e790105a27c831350dbddee3a55394e7d1364cf30314f7f494b1ab7ada30906d
+  class: P
+  to: []
+  note: 'S02.A14 fail: two strict xfails (±5 K start, final state_sha256) pending the design lane''s ruling on Q-S02-WO2b-1'
+- manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
+  item: checks[31]
+  check_id: S02.gate
+  sha256: 78a6eae9cabc74ef62e18d3f8bc175d170d5ced84bb7a19d262abc3173cb2f51
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[0]
+  sha256: 5249fc19dc5d4a3bb16f1ec39561eee8752ad912a95dcdfbb29e39beca98ebbd
+  class: E
+  to:
+  - L18
+  note: synthetic; no real-chemistry or column validation
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[1]
+  sha256: e068d035a37a20ca7656a883ce8c23d900e24aae45cad960388410873e8454d8
+  class: E
+  to:
+  - L18
+  note: no independent column reference; X31's two references and perturbation studies are S03's
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[2]
+  sha256: fef5627ab794118d9429d4df31a5c0c2d261bb5f5f4c78f1d4adfa7ee6e28d7a
+  class: E
+  to:
+  - U04
+  - L19
+  - L20
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no uniqueness or global convergence
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[3]
+  sha256: 5d934fecba68b95d75a7e3eff8e787ae0730b0d3581a9cc360c6b0e3405af58e
+  class: E
+  to:
+  - U04
+  - L20
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no phase-transition robustness, P1 ends typed (A12)
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[4]
+  sha256: 0563960199d14525f4805b446b66be8199faed27f9bc60f1b559982ea18faae6
+  class: E
+  to:
+  - U04
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no inverse specifications, subcooled or total ends, side draws, hydraulics, efficiencies
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[5]
+  sha256: d388949232bbda9e4a17073e058517c6325ea69228b6794eaac06a455ef30faa
+  class: E
+  to:
+  - U04
+  - U05
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no inside-out, rate-based or sensitivity results (U05)
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[6]
+  sha256: 60595b7c7fc35a37f13d138a01b1c87697ed4de90359886cd154eae29ecc85c0
+  class: E
+  to:
+  - U04
+  - L19
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); admissibility claimed only at the registered roots
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[7]
+  sha256: 5976309a8be33d2d0cf7b5f543cfc90ff0b1053efe4fa048bf00c94b87b10ae5
+  class: E
+  to:
+  - U04
+  - L20
+  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); bubble-point sweeps measured on ten columns only, no contraction proof; R2 is a second root
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[8]
+  sha256: 77751fa98b52bdbddcccbdda0f2564f964039d4ec74b8f52bd1d892be5e8ca23
+  class: P
+  to: []
+  note: requirements empty; S02's D/A mapping (part of X31) is the design lane's to register
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[9]
+  sha256: 622721151a367035e0d2783801a6d721675caa19760513f568d5e07d36d53967
+  class: P
+  to: []
+  note: ADR 0044 Proposed until R-550's conditions (tested manifest, pre-merge gate and CI, C2, workstation scan); A20's full-gate clause is the pre-merge gate
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[10]
+  sha256: ccc9b88a4f6b2e8b0da1ed2b2a61c771fdb1f78f04f1c429cc571e50abfe7051
+  class: P
+  to: []
+  note: gate runs once before merge, not by the generator; process note
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[11]
+  sha256: e2387cc855b41cb9c956cf4652194c8da1db764c468251f6b927772cd9a42c96
+  class: P
+  to: []
+  note: review fixes in this commit; the reviewer's check of them and human review pending
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: limitations[12]
+  sha256: 4fb3f0cb92d29bb4e755b5cce3003236a40863fec0dcf5cfd5f7a3f9ffe40956
+  class: E
+  to:
+  - L18
+  note: numerical verification against a 50-digit generator, not empirical validation
+- manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
+  item: checks[31]
+  check_id: S02.gate
+  sha256: 78a6eae9cabc74ef62e18d3f8bc175d170d5ced84bb7a19d262abc3173cb2f51
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here

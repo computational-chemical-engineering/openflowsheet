@@ -30,8 +30,9 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: (23, 316, 29) at `C_α`; main's M02 follow-up, M03, M04 and M05 manifests moved it at the alpha's
 #: merge into main; S01's three manifests (`ea12548…`, `implemented`, 17 and 6; `a3eaf09…` and
 #: `465240a…`, `tested`, 12 and 1 each), all kept as every package keeps its superseded manifests,
-#: moved it at S01's merge.
-HARVEST_SIZE = (34, 413, 41)
+#: moved it at S01's merge; S02's manifests (`66377ba…`, `implemented`, 14 and 2; `1810dde…`,
+#: `tested`, 13 and 1) move it on `wp/S02`.
+HARVEST_SIZE = (36, 440, 44)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 

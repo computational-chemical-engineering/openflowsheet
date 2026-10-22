@@ -10745,3 +10745,406 @@ rounding term `ε·|Ḣ|·D_x/(h·D_r)` was then 10⁴× inflated, so the check 
   `solve_region` reached it.
 
 **Watch for.** —
+
+---
+
+## R-530 — S02 column conventions: numbering, end units, products, pressure profile
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification |
+| Normative text | `docs/derivations/S02-spec.md` §1, §2.2, §2.3 |
+| Evidence | generator `s02_reference.py --check` (906 claims); `ref.dof` |
+| Affected packages | S02 (WO-1 to WO-3), S03 |
+
+**Decision.** Stages are numbered top to bottom, and N counts the condenser (stage 1) and the reboiler (stage N). Partial ends
+are S01 equilibrium stages with an absent inlet. The total condenser is a saturated-liquid block of 2C + 5 columns and rows.
+The pressure profile is explicit and non-decreasing downward.
+
+**Rejected alternatives, and why.**
+- *Ends outside the count:* every registered column tool and textbook table counts them in.
+- *Subcooled total condenser, total reboiler:* each needs its own slot kind. They are `unsupported` (Q-S02-1).
+
+**Watch for.** §2.3's ZERO_FLOW label `T_1⁰` when there is no `top` inlet.
+
+---
+
+## R-531 — S02 specification slots and the admissible specification sets
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification |
+| Normative text | `docs/derivations/S02-spec.md` §2.1, §3, §5 S2–S5 |
+| Evidence | `ref.variants`: (D, B) has `σ_min` 2.2e-41 / 9.1e-42; the other registered sets are ≥ 2.4e-3 |
+| Affected packages | S02, S03 |
+
+**Decision.** One slot row per non-`none` end: RR, D or Q_c at the condenser, and BR, B or Q_r at the reboiler. (D, B) is
+refused as structurally redundant. Inverse specifications are `unsupported`.
+
+**Rejected alternatives, and why.**
+- *Solving (D, B) when `D* + B* = F`:* the Jacobian is singular at every state.
+- *Inverse specifications now:* their admissibility depends on the state (Q-S02-2).
+
+**Watch for.** An unregistered pair at another state is not claimed regular.
+
+---
+
+## R-532 — S02 solve path: profile pre-solve, ratio rows held, edge 3 on `variable − parameter` slots only
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification |
+| Normative text | `docs/derivations/S02-spec.md` §6, §7 |
+| Evidence | generator: pre-solves two-phase and regular for M1–M4; straight paths two-phase at 16 steps |
+| Affected packages | S02 (WO-2) |
+
+**Decision.** The pre-solve replaces every `variable − parameter` slot with `T_j − T_j⁰`, on a linear profile between the
+band temperatures `T(0.1)` at `P_1*` and `T(0.9)` at `P_N*`. On a total condenser the substitute is `Σr − D`. Ratio rows are
+kept at their targets and never continued.
+
+**Rejected alternatives, and why.**
+- *S01's isothermal pre-solve:* it puts a partial condenser at its dew point and a partial reboiler at its bubble point,
+  both on the phase boundary.
+- *Lifting ratios as dimensionless variables:* this needs a row kind `KIND_TOLERANCE` lacks.
+
+**Watch for.** §15.3: each spec-set variant has its own pre-solve.
+
+---
+
+## R-533 — Cascade signatures: singular adjacent pairs and the block rule (finding on the phase contract)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification (derivation; a finding, not a contract change) |
+| Normative text | `docs/derivations/S02-spec.md` §4.2, §4.3, §8 item 4 |
+| Evidence | `ref.singular_pairs`: `‖Jδ‖/‖δ‖ ≤ 5.2e-53`, `σ_min ≤ 4.4e-41` at three probes |
+| Affected packages | S02, S03; T05b / ADR 0005 owners |
+
+**Decision.** A pair (LIQUID over a vapour-emitting stage), or (a liquid-emitting stage over VAPOR), has an internal
+circulation null vector at every state. A regular cascade signature therefore reads `VAPOR^a TWO_PHASE^b LIQUID^c`. S02
+asserts it on the compiled Jacobian (A11) and in acceptance. The v2 contract is not changed. P1 asserts either the closed
+form or a typed outcome.
+
+**Rejected alternatives, and why.**
+- *An S02 signature screen around `solve_region`:* it would be a second decision function, against ADR 0005 D4.
+
+**Watch for.** P1's measured outcome (Q-S02-3). If the contract cannot reach block signatures, S03 or an ADR decides.
+
+---
+
+## R-534 — S02 cases, tolerances and the independent reference
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification |
+| Normative text | `docs/derivations/S02-spec.md` §9, §10, §11 |
+| Evidence | `s02_reference.json` (906 claims) |
+| Affected packages | S02 |
+
+**Decision.**
+- Four matched column cases: M1 (partial/partial, RR/BR), M2 (total/partial, RR/B), M3 (stripper, Q_r) and M4 (refluxed
+  absorber, D).
+- The phase case P1 (all-liquid closed form).
+- Spec-set variants V-M1 and V-M2, which must return the same root.
+- S01's amended state tolerance (R-514).
+- Assertions A01–A16.
+
+**Rejected alternatives, and why.**
+- *A stripper with a liquid top over a two-phase section as the phase case:* that signature is singular (R-533).
+
+**Watch for.** The A10 floor for the new rows, and the deviation measurement.
+
+---
+
+## R-535 — S02 needs no ADR and stays library-only
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 specification |
+| Normative text | `docs/derivations/S02-spec.md` §0; `docs/S02_DECISIONS.md` |
+| Evidence | no frozen interface, row kind, contract or policy changes |
+| Affected packages | S02 |
+
+**Decision.** ADR 0044 is not used. S02 adds additive row builders and reuses `s01-default-v1`. The column is not bound into
+`MODEL_BUILDERS`, and support-envelope L-rows wait for the binding package.
+
+**Rejected alternatives, and why.**
+- *An ADR for the column contract:* nothing frozen moves.
+
+**Watch for.** If review finds the ratio row or the bubble row needs a new kind, an ADR is required.
+
+---
+
+## R-536 — S02 `φ` is `dimensionless`: a column-only scaling kind with nominal 1
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 ruling round 1 (Q-S02-WO1-1) |
+| Normative text | `docs/derivations/S02-spec.md` §17 item 1, A17 |
+| Evidence | `Scaling.from_kinds` refuses M2's `phi` (WO-1); `docs/interfaces-frozen.md` lists neither `QuantityKind` nor the nominal table; no hash reads `REGISTERED_NOMINALS`; `s02_reference.py --check` passes unchanged |
+| Affected packages | S02 (WO-2), K03 (table entry), K04 (unchanged; guarded) |
+
+**Decision.** `QuantityKind` gains `dimensionless` and `REGISTERED_NOMINALS` gains `dimensionless: 1.0`, as a column kind
+only: `Scaling.from_kinds` refuses a row of that kind. `KIND_TOLERANCE`, K04's tolerance table, `SCALE_PROVENANCE` and
+`benchmarks/registry.yaml` are unchanged. `φ` gets no bound; the flow bounds on `r` and `d` imply `φ ∈ [0, 1]`.
+
+**Rejected alternatives, and why.**
+- *Reformulate with a molar_flow reflux total `R`:* it changes C rows' form and kind and every registered M2 Jacobian claim
+  to avoid one table entry.
+- *Declare `φ` `molar_flow`:* wrong nominal (3) and a lower bound by kind that is not `φ`'s.
+- *Carry it in `registry.yaml` `scales`:* those are SYN-001 families' physical nominals; S02's numbers are in
+  `s02_reference.json`, which already holds `D_x(φ) = 1`.
+
+**Watch for.** R-043's warning stands for row kinds: a `dimensionless` row, a tolerance for it, or a K04 table entry moves
+`check_policy_sha256` and needs an ADR.
+
+---
+
+## R-537 — S02 stage-1 ZERO_FLOW label without a `top` inlet: the first present inlet's temperature
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 ruling round 1 (Q-S02-WO1-2) |
+| Normative text | `docs/derivations/S02-spec.md` §17 item 2 (replaces §2.3's `T_1⁰`), A18 |
+| Evidence | frozen `ZeroFlowForm.label` names a column (`orchestrator/region.py:227`, `orchestrator/splits.py:560-566`); §5 S6 and S10 guarantee a present inlet |
+| Affected packages | S02 (WO-2) |
+
+**Decision.** `label_source(spec, 1)` without a `top` inlet is the temperature column of `spec.inlets()[0]`; with a `top`
+inlet it stays `T_top` (S01 §4.3). `ProfileLabel` is withdrawn. §3's count and `ref.dof` do not move.
+
+**Rejected alternatives, and why.**
+- *(a) A pinned column `T0` with row `T0 − T_1⁰*`:* adds a column and row to every partial-condenser declaration for an
+  unclaimed regime, moves `ref.dof`, and puts an iterative band-temperature result into `constants_sha256`.
+- *(b) A constant label:* widens the frozen `ZeroFlowForm` (T05b §7.2, ADR 0012 D4 (c)) for a regime S02 does not claim.
+- *The inlet nearest the top:* also cycle-free, but needs a tie rule; the first of `inlets()` is already ordered.
+
+**Watch for.** A label value cited as a dormant condenser's temperature. It is a label, not a claim.
+
+---
+
+## R-538 — S02 total-condenser accumulation: two `holdup_balance` rows, the rest `algebraic`
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 ruling round 1 (Q-S02-WO1-3) |
+| Normative text | `docs/derivations/S02-spec.md` §17 item 3, A19; ADR 0008 D3.1–D3.5 |
+| Evidence | `models/syn001/column.py` declarations at WO-1 (`b78f349`) |
+| Affected packages | S02 (WO-2), T04's PTC `M` pattern |
+
+**Decision.** Confirmed as implemented: `COL-tc-bal` (`N_i`, mol) and `COL-tc-energy` (`U`, J) are `holdup_balance`,
+written `Σ in − Σ out + sources`; `COL-tc-split`, `-Ddef`, `-bubble`, `-P` and the slot rows are `algebraic`. A19 fixes
+the overall row signs, which no root can see.
+
+**Rejected alternatives, and why.**
+- *`zero_holdup_balance`:* the reflux drum is a vessel, not a junction (ADR 0008 D3.1).
+- *`COL-tc-split` as a balance:* it is a constitutive split of one liquid; the drum's balance is `COL-tc-bal`.
+
+**Watch for.** A subcooled condenser or a drum with vapour holdup is a different model with its own declarations.
+
+---
+
+## R-539 — S02 ruling round 1 needs no ADR; ADR 0044 stays free
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), S02 ruling round 1 |
+| Normative text | `docs/derivations/S02-spec.md` §17 |
+| Evidence | `docs/interfaces-frozen.md` (§1, §2 and its ADR 0001/0008 clause) is untouched; `ref.dof` and all 906 generator claims unchanged |
+| Affected packages | S02 |
+
+**Decision.** None of R-536 to R-538 changes a frozen interface, a schema, a registered value, a row kind, a tolerance, a
+policy or an identity, so no ADR is written. R-535 stands.
+
+**Rejected alternatives, and why.**
+- *An ADR for the new scaling kind:* the frozen list does not carry `QuantityKind`, and ADR 0001's kind list already has
+  `dimensionless`.
+
+**Watch for.** Option (b) of R-537, any row kind or tolerance for `dimensionless`, or a `registry.yaml` change: each needs
+ADR 0044.
+
+---
+
+## R-546 — S02 easy endpoint: bubble-point sweeps at fixed stage ratios replace the Newton pre-solve
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`architect`), S02 Amendment 2 |
+| Normative text | `docs/derivations/S02-spec.md` §18.2 (replaces §7.3) |
+| Evidence | scratch measurement on `47eb3aa`: the sweeps converge on all ten cases and variants (21–39 sweeps to 1e-9 K), worst non-continued row at the endpoint ≤ 1.3e-11, start ±5 K reaches the same point within 4e-13 K; the Newton pre-solve failed on every case (WO-2) |
+| Affected packages | S02 (WO-G, WO-2b, WO-3) |
+
+**Decision.** `x⁰` is constructed, not solved: per component the §6 tridiagonal at `S_ij = K_ij ρ_j` (CMO ratios, with
+`ρ_1 = 1/RR*`, `ρ_N = BR*`, `φ = RR*/(1+RR*)` at ratio ends), then each stage at the bubble temperature of its liquid, swept
+to a fixed point. It satisfies every target row except the continued `variable − parameter` slots (ADR 0010 D2's easy
+endpoint) and is two-phase on every stage by the M-matrix argument. Energy is activated by the target's Newton or edge 3.
+
+**Rejected alternatives, and why.**
+- *An opening rule or more attempts for the Newton profile pre-solve:* measured failing on M1 (`BOUND_BLOCKED`,
+  `LINEAR_SOLVE_FAILED`, `ACTIVE_SET_CYCLING`).
+- *Continuation from the bubble-point state to the linear profile:* runs a homotopy as a primary method through the recovery
+  API, and ends farther from the target.
+
+**Watch for.** A composition-dependent `K` (non-ideal provider) breaks the linear inner step; that package needs its own
+endpoint. The profile root `ref.cases.*.presolve` stays registered as a second endpoint (A06b).
+
+---
+
+## R-547 — Edge 3 after a restart that ends `LINEAR_SOLVE_FAILED` (ADR 0044); the contract keeps no block rule
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`architect`), S02 Amendment 2 |
+| Normative text | `docs/adr/0044-edge3-after-restart-into-singular-signature.md` (Proposed); S02 spec §18.3 |
+| Evidence | forced edge 3 reaches `ref.target` on 10 of 10 S02 cases; without D1, M2, V-M1 (RR,B), (D,BR) and M1 from the profile root end `LINEAR_SOLVE_FAILED`; full suite with D1 patched: no registered outcome outside S01/S02 moves; five S01/S02 tests move (one intended xfail flip, four stub signatures) — ADR 0044 C2 |
+| Affected packages | S02, S01, T04 |
+
+**Decision.** `LINEAR_SOLVE_FAILED` is an edge-3 trigger when the failed region solve ran two or more attempts; in attempt 0
+it stays excluded. The phase contract is unchanged (Q-S02-3's default).
+
+**Rejected alternatives, and why.**
+- *The block rule in the contract:* the measured restarts are mostly §4.2's end-stage singularity, which it does not cover.
+- *A numerical-rank screen on restarts:* rewrites the terminal outcome.
+- *`max_attempts = 1` in the target:* disables legitimate phase changes.
+
+**Watch for.** A registered outcome elsewhere that was `LINEAR_SOLVE_FAILED` after a restart under `eo_recovery = homotopy`.
+
+---
+
+## R-548 — S02 A07 compares across specification sets by the state tolerance; `same_root` only within one problem
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`architect`), ruling on Q-S02-WO2-3 |
+| Normative text | `docs/derivations/S02-spec.md` §18.4 |
+| Evidence | T03 §8.3 returns `NOT_COMPARABLE` when constants and rows differ |
+| Affected packages | S02 |
+
+**Decision.** A07 asserts each set's root against `ref.cases.<case>.target` within the state tolerance; `same_root = SAME`
+is asserted only between runs of one problem (A13, A14).
+
+**Rejected alternatives, and why.** *`same_root` across sets:* undefined by T03 §8.3; widening it is a T03 change.
+
+---
+
+## R-549 — V-M2 `(duty, duty)` has a second regular root; it is registered and asserted, not dropped
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`architect`), S02 Amendment 2 |
+| Normative text | `docs/derivations/S02-spec.md` §18.1 item 3, §18.4, A07, A21 |
+| Evidence | measured: `R2` with `D = 0.274431`, `φ = 0.775456`, `T_c = 321.583 K`, all 2P, scaled `σ_min` 2.1e-4 (M2's root 1.7e-4 in the same scaling); the generator certifies it in WO-G |
+| Affected packages | S02 (WO-G, WO-2b); FRANK_QUESTIONS Q-S02-4 |
+
+**Decision.** §15.3's rule: the set is kept; A07 asserts the root the solve path returns (`R2`), A21 asserts the
+multiplicity; §14 discloses that a `(duty, duty)` column may have several roots and no root-selection claim is made.
+
+**Rejected alternatives, and why.** *Dropping the set:* §15.3 forbids. *Tuning the endpoint until M2's root comes back:*
+measured fragile (stage ratios ×2 return M2's root, ×1 and ×0.5 return `R2`).
+
+**Watch for.** A root-selection requirement (Q-S02-4) would make this a continuation-first path.
+
+## R-550 — ADR 0044 narrowed: `LINEAR_SOLVE_FAILED` triggers edge 3 only after an attempt 0 that ended in a globalization failure; stays Proposed
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S02 review |
+| Normative text | `docs/derivations/S02-spec.md` §19 item 1; ADR 0044 D1 and Status; `docs/reviews/S02-review.md` M1, S1 |
+| Evidence | measured: on all S02 paths that recover after `LINEAR_SOLVE_FAILED` (M2, V-M1 `(RR, B)`, `(D, BR)`), attempt 0's solver outcome is `BOUND_BLOCKED`; T05b DZ-12's negative control shows a two-attempt solve `(CONVERGED, LINEAR_SOLVE_FAILED)` that the unnarrowed predicate would send to edge 3 |
+| Affected packages | S02, S01 (`cascade_solve`), T04 (`recovery.py`, `executor.py`) |
+
+**Decision.** The trigger needs ≥ 2 attempts **and** an attempt 0 that ended `LINE_SEARCH_FAILED`, `STAGNATION`,
+`BOUND_BLOCKED`, `PTC_STALLED`, or `BUDGET_EXHAUSTED` of a core budget. ADR 0044 stays Proposed. It becomes Accepted when
+four conditions hold: the narrowing has landed with A20 extended; S02's manifest is `tested`; `scripts/gate.sh` is green
+on the merge candidate (a git checkout) with CI green on both architectures, and C2 is rewritten from that run; and a
+workstation scan of registered step records is logged.
+
+**Rejected alternatives, and why.** *Accept as written:* the predicate also fires after physical phase corrections,
+where item 0's signature is known wrong and ADR 0010 D3's rank reason holds. *Accept on the git-less suite:* 240 tests
+did not run there.
+
+**Watch for.** Any registered outcome that moves under the narrowed predicate is listed in C2 before acceptance.
+
+## R-551 — S02 generator: stop at 1e-42 K and claim the §18.2 identity at 1e-40
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S02 review (Q-S02-WOG-1) |
+| Normative text | `docs/derivations/S02-spec.md` §19 item 2 |
+| Evidence | WO-G measured: rows 1.1e-33 to 8.4e-33 at a 1e-30 K stop, ≤ 8.1e-45 at 1e-42 K; values unchanged to 30 digits |
+| Affected packages | S02 (generator, `REFERENCE_SHA256`) |
+
+**Decision.** The residual scales with the stop (`O(|ΔT_last|·∂s/∂T·L)`), so the registered `< 1e-40` was wrong for a
+1e-30 K stop. The stop moves to 1e-42 K, and the claim is emitted on all ten endpoints.
+
+**Rejected alternatives, and why.** *Keep 1e-30 K and claim `< 1e-30`:* this also holds, but it sits ten orders closer
+to the residual, so it is a weaker test that the construction leaves no structural residual.
+
+**Watch for.** Generator `sweeps` values change; `sweeps_to_1e-9_K` does not.
+
+## R-552 — S02 A14: a shifted sweep start is not bit-identical; the sha clause is withdrawn
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S02 review (Q-S02-WO2b-1) |
+| Normative text | `docs/derivations/S02-spec.md` §19 item 3 |
+| Evidence | measured (WO-2b): `x⁰` max ΔT 2.28e-10 / 1.36e-10 K; answer max Δx 1.09e-11 / 3.64e-12; `SAME` |
+| Affected packages | S02 |
+
+**Decision.** At a `1e-9 K` stop with contraction `c ≤ 0.54`, the stopped iterate depends on the start within 1.2e-9 K.
+Bit identity cannot be derived, so the clause goes. The 1e-8 K clause, `CONVERGED`, the state tolerance and `SAME` stay.
+A15 keeps bit identity for the same input run twice.
+
+**Rejected alternatives, and why.** *Stop on an exact fixed point:* the bisection-limited map may cycle and is not
+guaranteed to terminate.
+
+**Watch for.** Nothing; this is a spec erratum.
+
+## R-553 — S02 registers six variant endpoints (V-M1 ×4, V-M2 ×2), not five
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S02 review |
+| Normative text | `docs/derivations/S02-spec.md` §19 item 4 |
+| Evidence | `ref.variants.*.*.bubble_point` has six keys; A05 runs ten endpoints |
+| Affected packages | S02 |
+
+**Decision.** Six. V-M2 `(duty, duty)` is admissible and is A07's `R2` endpoint.
+
+**Rejected alternatives, and why.** *Five (drop its key):* A07 would run an endpoint that is not registered.
+
+**Watch for.** Nothing.
+
+## R-554 — R-533 / Q-S02-3: the contract learns no block rule in S02; P1's measured typed outcome goes to S03
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S02 review |
+| Normative text | `docs/derivations/S02-spec.md` §19 item 5, §15.5 |
+| Evidence | P1: `HOMOTOPY_STALLED`; attempt 1 `(2P, L, 2P, 2P, 2P)` breaks §4.3's block rule (WO-3, `474e4b5`) |
+| Affected packages | S02, S03, T05b (contract) |
+
+**Decision.** §15.5's default is confirmed. R-533 stays open, now with the measured fact, and S03 decides.
+
+**Rejected alternatives, and why.** *Decide it in S02:* that would put contract structure into a model package (R-533,
+ADR 0005 D4).
+
+**Watch for.** Any column phase case whose regular signature is a block other than all-2P.

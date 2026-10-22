@@ -10,9 +10,15 @@ end state is where the globalization got lost, and is not a root of any level).
 `ACTIVE_SET_CYCLING` and `ATTEMPTS_EXHAUSTED` are triggers because on the lifted path the contract
 turns a core's globalization failure into a restart (T03 §4.8 rows 2–5), so the failure surfaces
 as the contract's terminal outcome: PHS-05's Newton failure *is* its cycling. The rank failure
-`LINEAR_SOLVE_FAILED` has its own row in blueprint §7.7; the defects, the refusals before any
-attempt, a spent property budget and `HOMOTOPY_STALLED` itself are not triggers — the last so that
-the edge cannot recurse.
+`LINEAR_SOLVE_FAILED` has its own row in blueprint §7.7 and is not a trigger when it ends attempt 0
+(the signature the homotopy would run in); it is one when the failed solve ran two or more attempts
+and its attempt 0 ended in a core globalization failure (`EO_CORE_FAILURES`; ADR 0044 D1 as
+narrowed, S02 spec §19 item 1, R-550): its final attempt was then opened by a contract restart
+after a globalization failure, the same conversion as above, and says nothing about item 0's
+signature. After a `CONVERGED` attempt 0 the restart is a physical correction, item 0's signature
+is known wrong, and the rank reason applies unchanged. The defects, the refusals
+before any attempt, a spent property budget and `HOMOTOPY_STALLED` itself are not triggers — the
+last so that the edge cannot recurse.
 
 The edge changes the *solver*, not the *problem*: the recovery's λ = 1 instance has the failed
 solve's `(model_version, constants_sha256)` and the region's rows and columns (§5.4).
@@ -23,7 +29,13 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any, Final
 
-__all__ = ["EO_RECOVERY_TRIGGERS", "eo_recovery_due", "recovered_provenance"]
+__all__ = [
+    "EO_CORE_FAILURES",
+    "EO_RECOVERY_TRIGGERS",
+    "eo_recovery_due",
+    "recovered_provenance",
+    "solver_outcomes",
+]
 
 #: §5.1: the terminal outcomes of a region solve after which edge 3 runs. `BUDGET_EXHAUSTED` is a
 #: trigger only for the cores' own budgets (`EO_RECOVERY_BUDGETS`), never for property calls.
@@ -44,11 +56,31 @@ EO_RECOVERY_TRIGGERS: Final = frozenset(
 EO_RECOVERY_BUDGETS: Final = frozenset({"newton_iterations", "ptc_steps"})
 
 
-def eo_recovery_due(outcome: str, budget: str | None) -> bool:
-    """§5.1's trigger, decided in one place."""
+#: ADR 0044 D1 as narrowed (R-550): the solver outcomes of a failed solve's attempt 0 after which a
+#: closing `LINEAR_SOLVE_FAILED` is due — the core globalization failures. `BUDGET_EXHAUSTED` here
+#: is a core budget's: the property budget closes the solve (T03 §4.8 row 5 restarts only on
+#: `EO_RECOVERY_BUDGETS`), so it never ends an attempt 0 that a further attempt follows.
+EO_CORE_FAILURES: Final = frozenset(
+    {"LINE_SEARCH_FAILED", "STAGNATION", "BOUND_BLOCKED", "PTC_STALLED", "BUDGET_EXHAUSTED"}
+)
+
+
+def eo_recovery_due(outcome: str, budget: str | None, *, attempts: Sequence[str]) -> bool:
+    """§5.1's trigger, decided in one place. `attempts` is the failed region solve's attempts'
+    solver outcomes, in order: `LINEAR_SOLVE_FAILED` is due iff there are two or more and attempt
+    0's is in `EO_CORE_FAILURES` (ADR 0044 D1 as narrowed, R-550)."""
+    if outcome == "LINEAR_SOLVE_FAILED":
+        return len(attempts) >= 2 and attempts[0] in EO_CORE_FAILURES
     if outcome not in EO_RECOVERY_TRIGGERS:
         return False
     return outcome != "BUDGET_EXHAUSTED" or budget in EO_RECOVERY_BUDGETS
+
+
+def solver_outcomes(attempts: Sequence[Any]) -> tuple[str, ...]:
+    """What each attempt's core ended on (`RegionAttempt.solver_outcome`), in attempt order — the
+    `attempts` that `eo_recovery_due`'s call sites pass. An attempt that records none reads `""`,
+    which is no core failure."""
+    return tuple("" if a.solver_outcome is None else str(a.solver_outcome) for a in attempts)
 
 
 def recovered_provenance(

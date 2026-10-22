@@ -34,13 +34,15 @@ def flowsheet() -> Syn001Flowsheet:
 
 
 def test_the_registered_nominals_are_derivation_section_9s() -> None:
-    """Written out: 3 mol/s, 100 K, 1e5 Pa, 1e5 W, and the flow nominal squared."""
+    """Written out: 3 mol/s, 100 K, 1e5 Pa, 1e5 W, the flow nominal squared, and S02's
+    column-only `dimensionless` at 1 (S02 spec §17 item 1, A17: extended, not loosened)."""
     assert REGISTERED_NOMINALS == {
         "molar_flow": 3.0,
         "molar_flow_squared": 9.0,
         "temperature": 100.0,
         "pressure": 1.0e5,
         "heat_rate": 1.0e5,
+        "dimensionless": 1.0,
     }
     assert REGISTERED_NOMINALS["molar_flow_squared"] == REGISTERED_NOMINALS["molar_flow"] ** 2
 

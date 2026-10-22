@@ -1,0 +1,909 @@
+{
+  "work_package": "S02",
+  "commit": "66377ba683b61cfefe8ccf5fde5ca8b0729a0d15",
+  "requirements": [],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "S02 acceptance: docs/derivations/S02-spec.md §10, §17 and §18.6 (A01–A22, A06b, A13b) against docs/derivations/scripts/s02_reference.json, check list §13",
+    "case_hash": "9a6d262ad3d36b377388a644f1d9a37849668e81d289c457aef0ed1a58bb8dbf",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/artifacts/s02-tests.junit.xml tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_cascade_wo4.py tests/test_s01_evidence_manifest.py tests/test_s01_review_adversarial.py tests/test_s02_column_wo1.py tests/test_s02_column_wo2.py tests/test_s02_column_wo2b.py tests/test_s02_column_wo3.py tests/test_s02_evidence_manifest.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "aaf440aee764c2e675df43d28ec525586f1f787534ac28de15f5074a0af44d69"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/s02_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "936621de1022da504a7f613dbe0fe560e25c582452f124b06fe275301e2be21c"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/ruff check src/openflowsheet/compile/spec.py src/openflowsheet/models/rows.py src/openflowsheet/models/syn001/cascade_solve.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_solve.py src/openflowsheet/numerics/scaling.py src/openflowsheet/orchestrator/executor.py src/openflowsheet/orchestrator/recovery.py tests/test_s02_column_wo1.py tests/test_s02_column_wo2.py tests/test_s02_column_wo2b.py tests/test_s02_column_wo3.py tests/test_s02_evidence_manifest.py scripts/s02_evidence_manifest.py docs/derivations/scripts/s02_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/ruff format --check src/openflowsheet/compile/spec.py src/openflowsheet/models/rows.py src/openflowsheet/models/syn001/cascade_solve.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_solve.py src/openflowsheet/numerics/scaling.py src/openflowsheet/orchestrator/executor.py src/openflowsheet/orchestrator/recovery.py tests/test_s02_column_wo1.py tests/test_s02_column_wo2.py tests/test_s02_column_wo2b.py tests/test_s02_column_wo3.py tests/test_s02_evidence_manifest.py scripts/s02_evidence_manifest.py docs/derivations/scripts/s02_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "d41ae50829b47e318b0787bc39d2a2ea2d52b518cfc7900d2efd569e6d26ab88"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/mypy",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "af568164d339b47161f00593aba12ae08dc59191cc57d10fe4b11c3e35c95255"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S02.A01",
+      "description": "Column and row counts for M1–M4 (P1 has M3's); row ids unique; per regime, pinned = dropped",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 34,
+        "outcomes": {
+          "passed": 34
+        },
+        "selectors": [
+          "tests/test_s02_column_wo1.py::test_a01_declared_counts_and_ids[M1]",
+          "tests/test_s02_column_wo1.py::test_a01_declared_counts_and_ids[M2]",
+          "tests/test_s02_column_wo1.py::test_a01_declared_counts_and_ids[M3]",
+          "tests/test_s02_column_wo1.py::test_a01_declared_counts_and_ids[M4]",
+          "tests/test_s02_column_wo1.py::test_a01_declared_counts_and_ids[P1]",
+          "tests/test_s02_column_wo1.py::test_a01_phi_is_declared_dimensionless",
+          "tests/test_s02_column_wo1.py::test_a01_slot_rows_are_the_column_specifications[M1]",
+          "tests/test_s02_column_wo1.py::test_a01_slot_rows_are_the_column_specifications[M2]",
+          "tests/test_s02_column_wo1.py::test_a01_slot_rows_are_the_column_specifications[M3]",
+          "tests/test_s02_column_wo1.py::test_a01_slot_rows_are_the_column_specifications[M4]",
+          "tests/test_s02_column_wo1.py::test_a01_slot_and_condenser_rows_are_the_stated_expressions[M1]",
+          "tests/test_s02_column_wo1.py::test_a01_slot_and_condenser_rows_are_the_stated_expressions[M2]",
+          "tests/test_s02_column_wo1.py::test_a01_slot_and_condenser_rows_are_the_stated_expressions[M4]",
+          "tests/test_s02_column_wo1.py::test_a01_energy_rows_read_the_stated_streams[M1]",
+          "tests/test_s02_column_wo1.py::test_a01_energy_rows_read_the_stated_streams[M2]",
+          "tests/test_s02_column_wo1.py::test_a01_energy_rows_read_the_stated_streams[M3]",
+          "tests/test_s02_column_wo1.py::test_a01_energy_rows_read_the_stated_streams[M4]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[TWO_PHASE-M1]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[TWO_PHASE-M2]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[TWO_PHASE-M3]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[TWO_PHASE-M4]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[LIQUID-M1]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[LIQUID-M2]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[LIQUID-M3]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[LIQUID-M4]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[VAPOR-M1]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[VAPOR-M2]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[VAPOR-M3]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[VAPOR-M4]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[ZERO_FLOW-M1]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[ZERO_FLOW-M2]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[ZERO_FLOW-M3]",
+          "tests/test_s02_column_wo1.py::test_a01_each_regime_pins_as_many_columns_as_it_drops_rows[ZERO_FLOW-M4]",
+          "tests/test_s02_column_wo1.py::test_a01_the_new_builders_reject_malformed_input"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.dof`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S02.A02",
+      "description": "S1–S10 and S-R5, one registered input each, plus S01 R1–R7 applied to a column",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 49,
+        "outcomes": {
+          "passed": 49
+        },
+        "selectors": [
+          "tests/test_s02_column_wo1.py::test_a02_refusals[R1]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[R2]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[R3-inlet]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[R3-stage]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[R4]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[R6]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[R7-duty-duty]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[R7-high]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[R7-low]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S-R5]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S-R5-probe]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S1-condenser]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S1-reboiler]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S10]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S2-at-none-end]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S2-missing]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S2-not-offered]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S2-wrong-end]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S4-boilup-ratio]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S4-bottoms-rate]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S4-condenser-duty]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S4-distillate-rate]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S4-reboiler-duty]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S4-reflux-ratio]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S5-bottoms]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S5-distillate]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S6-bottom-with-reboiler]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S6-no-bottom-without-reboiler]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S6-no-top-without-condenser]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S6-top-with-condenser]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S7-condenser]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S7-reboiler]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S8-one-stage-condenser]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S8-two-stages-two-ends]",
+          "tests/test_s02_column_wo1.py::test_a02_refusals[S9]",
+          "tests/test_s02_column_wo1.py::test_a02_the_r5_probe_is_above_its_bubble_point",
+          "tests/test_s02_column_wo1.py::test_a02_r7_is_applied_only_when_every_slot_is_a_duty",
+          "tests/test_s02_column_wo1.py::test_a02_misuse_raises",
+          "tests/test_s02_column_wo1.py::test_a02_every_registered_case_passes_section_5[M1]",
+          "tests/test_s02_column_wo1.py::test_a02_every_registered_case_passes_section_5[M1:distillate_rate+boilup_ratio]",
+          "tests/test_s02_column_wo1.py::test_a02_every_registered_case_passes_section_5[M1:duty+duty]",
+          "tests/test_s02_column_wo1.py::test_a02_every_registered_case_passes_section_5[M1:reflux_ratio+bottoms_rate]",
+          "tests/test_s02_column_wo1.py::test_a02_every_registered_case_passes_section_5[M1:reflux_ratio+duty]",
+          "tests/test_s02_column_wo1.py::test_a02_every_registered_case_passes_section_5[M2]",
+          "tests/test_s02_column_wo1.py::test_a02_every_registered_case_passes_section_5[M2:distillate_rate+boilup_ratio]",
+          "tests/test_s02_column_wo1.py::test_a02_every_registered_case_passes_section_5[M2:duty+duty]",
+          "tests/test_s02_column_wo1.py::test_a02_every_registered_case_passes_section_5[M3]",
+          "tests/test_s02_column_wo1.py::test_a02_every_registered_case_passes_section_5[M4]",
+          "tests/test_s02_column_wo1.py::test_a02_every_registered_case_passes_section_5[P1]"
+        ],
+        "not_passed": []
+      },
+      "expected": "§5 codes",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S02.A03",
+      "description": "X-DB refused before any evaluation, at both D*/B* splits (`D* + B* = F` and `≠ F`)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s02_column_wo1.py::test_a03_distillate_and_bottoms_rates_are_refused[registered-M1]",
+          "tests/test_s02_column_wo1.py::test_a03_distillate_and_bottoms_rates_are_refused[registered-M2]",
+          "tests/test_s02_column_wo1.py::test_a03_distillate_and_bottoms_rates_are_refused[not_summing_to_F-M1]",
+          "tests/test_s02_column_wo1.py::test_a03_distillate_and_bottoms_rates_are_refused[not_summing_to_F-M2]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`invalid_spec(redundant_specification)`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S02.A04",
+      "description": "Initializer on M1–M4: `T_a`, `T_b`, profile, `L_cmo`, `V_cmo`, `l`, `v`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_s02_column_wo1.py::test_a04_the_initializer_on_the_registered_cases[M1]",
+          "tests/test_s02_column_wo1.py::test_a04_the_initializer_on_the_registered_cases[M2]",
+          "tests/test_s02_column_wo1.py::test_a04_the_initializer_on_the_registered_cases[M3]",
+          "tests/test_s02_column_wo1.py::test_a04_the_initializer_on_the_registered_cases[M4]",
+          "tests/test_s02_column_wo1.py::test_a04_the_profile_outside_the_domain_is_a_typed_failure",
+          "tests/test_s02_column_wo1.py::test_a04_the_inlet_columns_are_the_feed_pattern"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.*.initializer`",
+      "tolerance": "T abs 1e-8 K; flows rel 1e-10 (as S01 A03)"
+    },
+    {
+      "id": "S02.A05",
+      "description": "§18.2 on M1–M4 and the five admissible variants: `x⁰`, `ρ`, `φ`; every target row except the continued slots within its kind tolerance at `x⁰`; every stage `L, V > 0`; continued slot ids and `p⁰`; sweep count ≤ 500 (recorded, not asserted exactly: libm may move a last bit across architectures)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 22,
+        "outcomes": {
+          "passed": 22
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2.py::test_a05_the_slot_substitutions_are_refs[M1]",
+          "tests/test_s02_column_wo2.py::test_a05_the_slot_substitutions_are_refs[M2]",
+          "tests/test_s02_column_wo2.py::test_a05_the_slot_substitutions_are_refs[M3]",
+          "tests/test_s02_column_wo2.py::test_a05_the_slot_substitutions_are_refs[M4]",
+          "tests/test_s02_column_wo2.py::test_a05_the_presolve_rows_hold_at_the_generators_x0[M1]",
+          "tests/test_s02_column_wo2.py::test_a05_the_presolve_rows_hold_at_the_generators_x0[M2]",
+          "tests/test_s02_column_wo2.py::test_a05_the_presolve_rows_hold_at_the_generators_x0[M3]",
+          "tests/test_s02_column_wo2.py::test_a05_the_presolve_rows_hold_at_the_generators_x0[M4]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_bubble_point_endpoint[M1-None]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_bubble_point_endpoint[M2-None]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_bubble_point_endpoint[M3-None]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_bubble_point_endpoint[M4-None]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_bubble_point_endpoint[M1-duty+duty]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_bubble_point_endpoint[M1-reflux_ratio+bottoms_rate]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_bubble_point_endpoint[M1-distillate_rate+boilup_ratio]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_bubble_point_endpoint[M1-reflux_ratio+duty]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_bubble_point_endpoint[M2-duty+duty]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_bubble_point_endpoint[M2-distillate_rate+boilup_ratio]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_continued_slots_and_p0[M1]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_continued_slots_and_p0[M2]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_continued_slots_and_p0[M3]",
+          "tests/test_s02_column_wo2b.py::test_a05_the_continued_slots_and_p0[M4]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.*.bubble_point`, `.bubble_point_continued`; `ref.variants.*.*.bubble_point`",
+      "tolerance": "state tolerance; `p⁰` Q abs 1e-2 W, rates rel 1e-6; ids exact"
+    },
+    {
+      "id": "S02.A06",
+      "description": "M1–M4 through `solve_column`: outcome, signature 2P×n, products, `spec_values`, root",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 8,
+        "outcomes": {
+          "passed": 8
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2.py::test_a06_the_target_root_from_the_generators_x0[M1]",
+          "tests/test_s02_column_wo2.py::test_a06_the_target_root_from_the_generators_x0[M2]",
+          "tests/test_s02_column_wo2.py::test_a06_the_target_root_from_the_generators_x0[M3]",
+          "tests/test_s02_column_wo2.py::test_a06_the_target_root_from_the_generators_x0[M4]",
+          "tests/test_s02_column_wo2b.py::test_a06_the_target_root_through_solve_column[M1]",
+          "tests/test_s02_column_wo2b.py::test_a06_the_target_root_through_solve_column[M2]",
+          "tests/test_s02_column_wo2b.py::test_a06_the_target_root_through_solve_column[M3]",
+          "tests/test_s02_column_wo2b.py::test_a06_the_target_root_through_solve_column[M4]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.*.target`, `.signature`, `.spec_values`",
+      "tolerance": "state tolerance; signature exact"
+    },
+    {
+      "id": "S02.A06b",
+      "description": "Steps 4–5 from the registered profile endpoint `ref.cases.*.presolve` (WO-2's tests; M1's strict xfail flips under ADR 0044)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2.py::test_a06b_m1_recovers_after_linear_solve_failed_in_a_restart"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.*.target`",
+      "tolerance": "state tolerance"
+    },
+    {
+      "id": "S02.A07",
+      "description": "V-M1 ×4 and V-M2 `(D, BR)` through `solve_column` return `ref.cases.‹case›.target`; V-M2 `(duty, duty)` returns `R2`. No cross-set `same_root`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2b.py::test_a07_each_matched_set_returns_the_cases_root[M1-duty+duty]",
+          "tests/test_s02_column_wo2b.py::test_a07_each_matched_set_returns_the_cases_root[M1-reflux_ratio+bottoms_rate]",
+          "tests/test_s02_column_wo2b.py::test_a07_each_matched_set_returns_the_cases_root[M1-distillate_rate+boilup_ratio]",
+          "tests/test_s02_column_wo2b.py::test_a07_each_matched_set_returns_the_cases_root[M1-reflux_ratio+duty]",
+          "tests/test_s02_column_wo2b.py::test_a07_each_matched_set_returns_the_cases_root[M2-distillate_rate+boilup_ratio]",
+          "tests/test_s02_column_wo2b.py::test_a07_m2_duty_duty_returns_the_second_root"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.cases.*.target`; `ref.variants.M2.duty+duty.second_root`",
+      "tolerance": "state tolerance"
+    },
+    {
+      "id": "S02.A08",
+      "description": "Overall component and energy closure at every converged case",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2.py::test_a08_overall_closure[M1]",
+          "tests/test_s02_column_wo2.py::test_a08_overall_closure[M2]",
+          "tests/test_s02_column_wo2.py::test_a08_overall_closure[M3]",
+          "tests/test_s02_column_wo2.py::test_a08_overall_closure[M4]"
+        ],
+        "not_passed": []
+      },
+      "expected": "0",
+      "tolerance": "`n_rows·τ_kind`"
+    },
+    {
+      "id": "S02.A09",
+      "description": "Every accepted state passes §8, items 1–5",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 5,
+        "outcomes": {
+          "passed": 5
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2.py::test_a09_every_accepted_state_passes_section_8[M1]",
+          "tests/test_s02_column_wo2.py::test_a09_every_accepted_state_passes_section_8[M2]",
+          "tests/test_s02_column_wo2.py::test_a09_every_accepted_state_passes_section_8[M3]",
+          "tests/test_s02_column_wo2.py::test_a09_every_accepted_state_passes_section_8[M4]",
+          "tests/test_s02_column_wo2.py::test_a09_section_8_items_refuse_what_they_name"
+        ],
+        "not_passed": []
+      },
+      "expected": "pass",
+      "tolerance": "kind tolerances"
+    },
+    {
+      "id": "S02.A10",
+      "description": "Compiled Jacobian vs central differences at `x_K` and the root of M2 (total condenser, ratio and rate rows) and M1. Step `h_j = 1e-6·max(D_x(j), |x_j|)` (R-516), `D_x(φ) = 1`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2.py::test_a10_the_compiled_jacobian[x_K-M2]",
+          "tests/test_s02_column_wo2.py::test_a10_the_compiled_jacobian[x_K-M1]",
+          "tests/test_s02_column_wo2.py::test_a10_the_compiled_jacobian[root-M2]",
+          "tests/test_s02_column_wo2.py::test_a10_the_compiled_jacobian[root-M1]"
+        ],
+        "not_passed": []
+      },
+      "expected": "agree",
+      "tolerance": "1e-6 scaled. Floor: S01 measured 5.9e-11 with this rule for S01's row kinds. WO-2 measures it for S02's rows and records it; it must be ≤ 1e-8 (needs a fact)"
+    },
+    {
+      "id": "S02.A11",
+      "description": "§4.3's circulation vector, mapped to the implementation's columns, annihilates the compiled Jacobian at the three `ref.singular_pairs` probe states. Mapping: `l_j`, `v_{j+1}`, `m_j` (inflow `v_{j+1}`) and `m_{j+1}` (inflow `l_j`) each += `c`; `L_j` and `V_{j+1}` += 1; plus the `T` shift. At M1's all-2P root the same vector is not null: the shift moves a two-phase stage's `T` by about `(h^V − h^L)/(C_P L)` ≈ 280 K per mol/s, and with it its `K`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s02_column_wo3.py::test_a11_the_circulation_vector_is_null_at_the_singular_probes[M1_stage3_LIQUID]",
+          "tests/test_s02_column_wo3.py::test_a11_the_circulation_vector_is_null_at_the_singular_probes[M1_stage4_VAPOR]",
+          "tests/test_s02_column_wo3.py::test_a11_the_circulation_vector_is_null_at_the_singular_probes[M3_stage1_LIQUID]",
+          "tests/test_s02_column_wo3.py::test_a11_the_same_vector_is_not_null_at_m1s_two_phase_root"
+        ],
+        "not_passed": []
+      },
+      "expected": "`‖D_r⁻¹ J δ‖∞ / ‖D_x⁻¹ δ‖∞`",
+      "tolerance": "≤ 1e-9 at the probes; ≥ 1e-3 at the 2P root (an all-zero Jacobian fails here and in A10). Double rounding gives about 1e-13; a dropped `l_j` enthalpy in `energy_{j+1}` gives O(1)"
+    },
+    {
+      "id": "S02.A12",
+      "description": "P1: the outcome is `CONVERGED` with signature LIQUID ×5 equal to the closed form (`ref.phase_case.P1`; distillate `+0.0` sign-checked), **or** a typed S01 §4.5 outcome whose attempt records name every attempted signature. Never an unaccepted `CONVERGED`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s02_column_wo3.py::test_a12_p1_is_the_closed_form_or_a_typed_outcome",
+          "tests/test_s02_column_wo3.py::test_a12_p1_measured_branch_is_held"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "state tolerance; signature, outcome exact"
+    },
+    {
+      "id": "S02.A13",
+      "description": "Edge 3 on `solve_column`'s own path (M1 after `ACTIVE_SET_CYCLING`, M2 after `LINEAR_SOLVE_FAILED`, no forcing): dyadic λ, `p⁰ = ref.cases.*.bubble_point_continued`, ratio rows untouched at every λ, λ = 1 identity equal to the target's, final `SAME` as a second run",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2b.py::test_a13_edge_3_on_solve_columns_own_path[M1]",
+          "tests/test_s02_column_wo2b.py::test_a13_edge_3_on_solve_columns_own_path[M2]"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "`p⁰` as A05; rest exact"
+    },
+    {
+      "id": "S02.A13b",
+      "description": "WO-2's forced edge 3 from `ref.cases.*.presolve` (unchanged, `p⁰ = ref.cases.*.continued`)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2.py::test_a13b_forced_edge_3_from_the_profile_endpoint[M1]",
+          "tests/test_s02_column_wo2.py::test_a13b_forced_edge_3_from_the_profile_endpoint[M2]"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "as §10 A13"
+    },
+    {
+      "id": "S02.A14",
+      "description": "M1 from four perturbed endpoints: sweep start `T⁰ ± 5 K` (`x⁰` equal to A05's within 1e-8 K and the same final `state_sha256`); every stage ratio not held by a ratio specification ×0.5 and ×2 (`x⁰` differs; target `CONVERGED`, deviation within the state tolerance, `same_root = SAME` with A06's run)",
+      "result": "fail",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 4,
+          "xfailed": 2
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2b.py::test_a14_a_shifted_sweep_start_reaches_the_same_endpoint[-5.0]",
+          "tests/test_s02_column_wo2b.py::test_a14_a_shifted_sweep_start_reaches_the_same_endpoint[5.0]",
+          "tests/test_s02_column_wo2b.py::test_a14_a_shifted_sweep_start_gives_the_same_final_state_sha256[-5.0]",
+          "tests/test_s02_column_wo2b.py::test_a14_a_shifted_sweep_start_gives_the_same_final_state_sha256[5.0]",
+          "tests/test_s02_column_wo2b.py::test_a14_scaled_stage_ratios_reach_the_same_root[0.5]",
+          "tests/test_s02_column_wo2b.py::test_a14_scaled_stage_ratios_reach_the_same_root[2.0]"
+        ],
+        "not_passed": [
+          {
+            "node": "tests/test_s02_column_wo2b.py::test_a14_a_shifted_sweep_start_gives_the_same_final_state_sha256[-5.0]",
+            "outcome": "xfailed",
+            "message": "Q-S02-WO2b-1, measured: x⁰ max |ΔT| 2.28e-10 K, answer max |Δx| 1.09e-11"
+          },
+          {
+            "node": "tests/test_s02_column_wo2b.py::test_a14_a_shifted_sweep_start_gives_the_same_final_state_sha256[5.0]",
+            "outcome": "xfailed",
+            "message": "Q-S02-WO2b-1, measured: x⁰ max |ΔT| 1.36e-10 K, answer max |Δx| 3.64e-12"
+          }
+        ]
+      },
+      "expected": "as stated",
+      "tolerance": "as stated"
+    },
+    {
+      "id": "S02.A15",
+      "description": "M1 and M2 solved twice: identical final `state_sha256` and records",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2.py::test_a15_solved_twice_is_identical[M1]",
+          "tests/test_s02_column_wo2.py::test_a15_solved_twice_is_identical[M2]"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S02.A16",
+      "description": "S01's 20 assertions still pass on `wp/S02` (S02 extends S01's code and must not move it)",
+      "result": "pass",
+      "value": {
+        "judged_by": "the S01 suite",
+        "nodes": 138,
+        "outcomes": {
+          "passed": 138
+        },
+        "not_passed": [],
+        "s01_assertions_uncited": []
+      },
+      "expected": "S01 suite",
+      "tolerance": "as registered"
+    },
+    {
+      "id": "S02.A17",
+      "description": "`φ`'s kind and scale. On M2, `variable_kinds[‹U›.stage.1.phi] == \"dimensionless\"`; `Scaling.from_spec` builds for M2 and for V-M2's two sets, with `column[phi] == 1.0` and every other entry equal to `REGISTERED_NOMINALS` of its declared kind; `REGISTERED_NOMINALS` is K03's five entries, unchanged, plus `\"dimensionless\": 1.0` (`test_k03_scaling`'s literal extended, not loosened); `\"dimensionless\"` is a key of neither `KIND_TOLERANCE` nor K04's tolerance table, and the `check_policy_sha256` values existing tests pin still pass; a `ProblemSpec` declaring one row `dimensionless` raises `ScaleUnavailableError` naming that row; WO-1's strict xfail `test_a01_phi_is_declared_dimensionless` becomes a plain pass",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2.py::test_a17_phi_is_dimensionless_with_scale_one",
+          "tests/test_s02_column_wo2.py::test_a17_a_dimensionless_row_is_refused_by_name"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S02.A18",
+      "description": "Stage-1 label. The stage-1 `ZERO_FLOW` label is `(label_row_id(U, 1), T_1, T_feed)` on M1 and `(…, T_bottom)` on M4; M3's is `T_top`; M2's stage-2 label is `T_c`; `label_source` returns a column id of the declaration for every stage of M1–M4; the zero-flow-form agreement check (`splits.py`, the `zero_flow_form_disagrees` branch) accepts every stage's form of M1–M4; on M1 at `x_K` with stage 1 `ZERO_FLOW` and every other stage `TWO_PHASE`, the attempt's system is square and its label row's residual is `T_1 − T_feed` (one IEEE subtraction); a partial-condenser, partial-reboiler column with no inlet is refused `invalid_spec(no_feed)` before any form is built",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 7,
+        "outcomes": {
+          "passed": 7
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2.py::test_a18_the_stage_1_labels",
+          "tests/test_s02_column_wo2.py::test_a18_the_agreement_check_accepts_every_form[M1]",
+          "tests/test_s02_column_wo2.py::test_a18_the_agreement_check_accepts_every_form[M2]",
+          "tests/test_s02_column_wo2.py::test_a18_the_agreement_check_accepts_every_form[M3]",
+          "tests/test_s02_column_wo2.py::test_a18_the_agreement_check_accepts_every_form[M4]",
+          "tests/test_s02_column_wo2.py::test_a18_m1_stage_1_zero_flow_label_residual",
+          "tests/test_s02_column_wo2.py::test_a18_a_column_without_inlets_is_refused_before_any_form"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S02.A19",
+      "description": "Condenser accumulation and sign. M2's compiled `row_accumulation` is `holdup_balance` on exactly the `COL-tc-bal` and `COL-tc-energy` rows among the `COL-*` rows and `algebraic` on the rest (`CAS-*` rows as S01 declares). At the trial state `v_2 = (0.5, 0.375, 0.25)`, `r = (0.125, 0.0625, 0.03125)`, `d = (0.25, 0.0625, 0.03125)` mol/s, `COL-tc-bal` is `(+0.125, +0.25, +0.1875)` mol/s. At `Q_c = 1000` W with `v_2 = r = d = 0` (any `T_2`, `T_c` in the band, `P_c = P_1*`), `COL-tc-energy` is `+1000.0` W",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2.py::test_a19_condenser_accumulation_and_sign"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S02.A20",
+      "description": "ADR 0044's trigger. `eo_recovery_due` table: every D3 trigger unchanged; `LINEAR_SOLVE_FAILED` due iff the failed solve ran ≥ 2 attempts; every other non-trigger never due. On M2's path: `recovered_from.outcome == \"LINEAR_SOLVE_FAILED\"`, `len(recovered_from.attempts) ≥ 2`, recovery `CONVERGED`. The full gate shows no registered outcome outside S02 moved (§18.8 item 1)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2b.py::test_a20_the_trigger_table",
+          "tests/test_s02_column_wo2b.py::test_a20_m2_recovers_after_linear_solve_failed_in_a_restart"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S02.A21",
+      "description": "Multiplicity: V-M2 `(duty, duty)`'s returned root equals `R2`, differs from M2's root by more than 5 K in `T_c` and by more than 0.1 mol/s in `D`, and both are regular (generator `σ_min` claims)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2b.py::test_a21_multiplicity"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.variants.M2.duty+duty.second_root`",
+      "tolerance": "state tolerance"
+    },
+    {
+      "id": "S02.A22",
+      "description": "Typed construction failures, before any region solve: with `band_temperature` stubbed to answer `below` at one stage, M1 ends `initialization_failed(s02-bubble-point-v1, bubble_point_outside_domain)`; with `max_sweeps = 1`, `initialization_failed(s02-bubble-point-v1, sweeps_exhausted)`; neither calls `solve_region` (stubbed to raise)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s02_column_wo2b.py::test_a22_a_bubble_point_outside_the_domain",
+          "tests/test_s02_column_wo2b.py::test_a22_sweeps_exhausted"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S02.generator",
+      "description": "§13: s02_reference.py --check re-derives every claim (1064) and byte-compares s02_reference.json",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/s02_reference.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S02.ruff",
+      "description": "§13: ruff check is clean on S02's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/ruff check src/openflowsheet/compile/spec.py src/openflowsheet/models/rows.py src/openflowsheet/models/syn001/cascade_solve.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_solve.py src/openflowsheet/numerics/scaling.py src/openflowsheet/orchestrator/executor.py src/openflowsheet/orchestrator/recovery.py tests/test_s02_column_wo1.py tests/test_s02_column_wo2.py tests/test_s02_column_wo2b.py tests/test_s02_column_wo3.py tests/test_s02_evidence_manifest.py scripts/s02_evidence_manifest.py docs/derivations/scripts/s02_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S02.format",
+      "description": "§13: ruff format --check is clean on S02's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/ruff format --check src/openflowsheet/compile/spec.py src/openflowsheet/models/rows.py src/openflowsheet/models/syn001/cascade_solve.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_solve.py src/openflowsheet/numerics/scaling.py src/openflowsheet/orchestrator/executor.py src/openflowsheet/orchestrator/recovery.py tests/test_s02_column_wo1.py tests/test_s02_column_wo2.py tests/test_s02_column_wo2b.py tests/test_s02_column_wo3.py tests/test_s02_evidence_manifest.py scripts/s02_evidence_manifest.py docs/derivations/scripts/s02_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S02.mypy",
+      "description": "mypy (the project's configuration) is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/mypy",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S02.deviation",
+      "description": "§10/§18.5: the measured maximum deviation of every registered root (solve_column's path for M1–M4, the variant sets and R2; the profile endpoint's for M1–M4) from ref, per column class, in units of §10's state tolerance (1 is the tolerance); §10 requires the tolerance to be at least 10x the measurement",
+      "result": "pass",
+      "value": {
+        "measured_at": "66377ba683b61cfefe8ccf5fde5ca8b0729a0d15",
+        "worst": 0.008486049515992458,
+        "below_10x_margin": [],
+        "cases": {
+          "M1 solve_column (A06)": {
+            "flow": 2.998450587579812e-06,
+            "T": 3.802824721788056e-07,
+            "Q": 4.361936589702964e-07,
+            "ratio": 0.0
+          },
+          "M1 from the profile endpoint (A06b)": {
+            "flow": 2.4118130489667086e-08,
+            "T": 2.8421709430404007e-09,
+            "Q": 3.637978807091713e-10,
+            "ratio": 0.0
+          },
+          "M2 solve_column (A06)": {
+            "flow": 1.6930751115935977e-07,
+            "T": 1.4210854715202004e-08,
+            "Q": 8.003553375601768e-09,
+            "ratio": 1.8503717077085943e-10
+          },
+          "M2 from the profile endpoint (A06b)": {
+            "flow": 1.0557884441252689e-06,
+            "T": 1.9610979506978765e-07,
+            "Q": 1.2005330063402653e-08,
+            "ratio": 0.0
+          },
+          "M3 solve_column (A06)": {
+            "flow": 0.008486049515992458,
+            "T": 0.002095493982778862,
+            "Q": 0.0,
+            "ratio": 0.0
+          },
+          "M3 from the profile endpoint (A06b)": {
+            "flow": 4.026413220095557e-08,
+            "T": 5.115907697472721e-09,
+            "Q": 0.0,
+            "ratio": 0.0
+          },
+          "M4 solve_column (A06)": {
+            "flow": 4.851120003608712e-06,
+            "T": 1.2420287021086551e-06,
+            "Q": 2.0045263227075338e-07,
+            "ratio": 0.0
+          },
+          "M4 from the profile endpoint (A06b)": {
+            "flow": 0.007535394565781538,
+            "T": 0.0016217251186390058,
+            "Q": 0.0001853833964560181,
+            "ratio": 0.0
+          },
+          "V-M1 duty+duty (A07)": {
+            "flow": 2.3165120129017694e-08,
+            "T": 4.547473508864641e-09,
+            "Q": 0.0,
+            "ratio": 0.0
+          },
+          "V-M1 reflux_ratio+bottoms_rate (A07)": {
+            "flow": 1.018437959957885e-06,
+            "T": 2.2225776774575934e-07,
+            "Q": 3.343302523717284e-07,
+            "ratio": 0.0
+          },
+          "V-M1 distillate_rate+boilup_ratio (A07)": {
+            "flow": 3.4465396087997535e-07,
+            "T": 4.604316927725449e-08,
+            "Q": 9.786162991076708e-08,
+            "ratio": 0.0
+          },
+          "V-M1 reflux_ratio+duty (A07)": {
+            "flow": 4.405619737814675e-07,
+            "T": 5.8548721426632255e-08,
+            "Q": 3.2741809263825417e-09,
+            "ratio": 0.0
+          },
+          "V-M2 distillate_rate+boilup_ratio (A07)": {
+            "flow": 5.567215860855809e-08,
+            "T": 4.547473508864641e-09,
+            "Q": 2.9103830456733704e-09,
+            "ratio": 1.4802973661668755e-09
+          },
+          "V-M2 duty+duty against R2 (A07)": {
+            "flow": 0.002647223325505147,
+            "T": 0.000440527969658433,
+            "Q": 0.0,
+            "ratio": 0.0006068417956005163
+          }
+        }
+      },
+      "expected": "every value ≤ 0.1"
+    },
+    {
+      "id": "S02.A10-floor",
+      "description": "§10 A10 / §13: the measured floor of D_r⁻¹ J D_x against central differences at h = 1e-6·max(D_x, |x|) (R-516), at x_K and the root of M1 and M2; it must be ≤ 1e-8",
+      "result": "pass",
+      "value": {
+        "measured_at": "66377ba683b61cfefe8ccf5fde5ca8b0729a0d15",
+        "worst": 6.380451722520775e-11,
+        "points": {
+          "M2 x_K": {
+            "worst": 6.380451722520775e-11,
+            "column": "S02.stage.5.P",
+            "row": "S02:stage:5:P"
+          },
+          "M2 root": {
+            "worst": 6.380451722520775e-11,
+            "column": "S02.stage.5.P",
+            "row": "S02:stage:5:P"
+          },
+          "M1 x_K": {
+            "worst": 6.380451722520775e-11,
+            "column": "S02.stage.5.P",
+            "row": "S02:stage:5:P"
+          },
+          "M1 root": {
+            "worst": 6.380451722520775e-11,
+            "column": "S02.stage.5.P",
+            "row": "S02:stage:5:P"
+          }
+        }
+      },
+      "expected": "≤ 1e-8"
+    },
+    {
+      "id": "S02.P1-outcome",
+      "description": "§13 / A12: P1's actual outcome and the attempts of the target and of edge 3, each with its attempted signature; the result is S02.A12's",
+      "result": "pass",
+      "value": {
+        "measured_at": "66377ba683b61cfefe8ccf5fde5ca8b0729a0d15",
+        "outcome": "HOMOTOPY_STALLED",
+        "cause": "homotopy_stalled(BOUND_BLOCKED)",
+        "attempts": [
+          {
+            "solve": "target",
+            "attempt": 0,
+            "outcome": "PHASE_UPDATE_REQUIRED",
+            "solver_outcome": "BOUND_BLOCKED",
+            "signature": [
+              "TWO_PHASE",
+              "TWO_PHASE",
+              "TWO_PHASE",
+              "TWO_PHASE",
+              "TWO_PHASE"
+            ]
+          },
+          {
+            "solve": "target",
+            "attempt": 1,
+            "outcome": "ACTIVE_SET_CYCLING",
+            "solver_outcome": "LINE_SEARCH_FAILED",
+            "signature": [
+              "TWO_PHASE",
+              "LIQUID",
+              "TWO_PHASE",
+              "TWO_PHASE",
+              "TWO_PHASE"
+            ]
+          },
+          {
+            "solve": "edge 3",
+            "attempt": 0,
+            "outcome": "HOMOTOPY_STALLED",
+            "solver_outcome": "HOMOTOPY_STALLED",
+            "signature": [
+              "TWO_PHASE",
+              "TWO_PHASE",
+              "TWO_PHASE",
+              "TWO_PHASE",
+              "TWO_PHASE"
+            ]
+          }
+        ]
+      },
+      "expected": "CONVERGED at the closed form (LIQUID x5), or a typed outcome naming every attempt"
+    },
+    {
+      "id": "S02.gate",
+      "description": "§13: scripts/gate.sh passes before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; the full gate runs once before merge (CLAUDE.md)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/artifacts/s02-tests.junit.xml",
+      "sha256": "1015320d41ddbd75417508e72206cadadf97f23711a641719cbdfa93c5c7d837",
+      "description": "JUnit report of the S02 and S01 test run (ignored; kept by hash)"
+    },
+    {
+      "path": "docs/derivations/scripts/s02_reference.json",
+      "sha256": "9a6d262ad3d36b377388a644f1d9a37849668e81d289c457aef0ed1a58bb8dbf",
+      "description": "the design lane's 50-digit reference values (ref)"
+    },
+    {
+      "path": "docs/derivations/S02-spec.md",
+      "sha256": "b34ee261e56b2fd45d675ab0bcba0e580b0c9411b1f740c708e7970294dc834d",
+      "description": "the S02 specification the checks are read from (§10, §13, §14, §17, §18)"
+    },
+    {
+      "path": "docs/adr/0044-edge3-after-restart-into-singular-signature.md",
+      "sha256": "3ce4e5b40528704173e8cc1cd2f400a95e7055fff314198a6411fc53a3f3c897",
+      "description": "ADR 0044 (Proposed): edge 3 after LINEAR_SOLVE_FAILED in a restart (R-547); S02's other Amendment 2 decisions are R-546, R-548, R-549"
+    }
+  ],
+  "limitations": [
+    "**Synthetic data only.** SYN-001 is an ideal three-component fixture with no azeotropes and composition-independent `K`. Nothing here validates a column against real chemistry, plant data or another simulator. The generator's agreement validates the transcription of SYN-001 and of §2's rows, not the property model. Real-chemistry columns need a liquid-capable property method (out of scope; PR routes are vapour-only).",
+    "**No independent column reference.** M1–M4 are matched against this generator, which shares SYN-001 and §6–§7's definitions with the implementation. The two independent references and the perturbation studies of X31 are S03's.",
+    "**No uniqueness or global convergence.** Nothing is claimed beyond the registered states, A14's openings and the straight paths the generator followed.",
+    "**No phase-transition robustness.** §4.3 proves which signatures are singular. It does not show that the v2 contract reaches a regular block signature: P1's outcome may be a typed failure (A12). Partial dormancy stays unclaimed (S01).",
+    "**No inverse specifications** (purity, recovery, temperature), no subcooled total condenser, no total reboiler, no pump-arounds, side draws or side heaters beyond S01's intermediate duties, no hydraulics, no efficiencies.",
+    "**No inside-out, rate-based or sensitivity results.**",
+    "**No admissibility claim for an unregistered specification pair** at a state other than the registered roots.",
+    "The sweeps' convergence is measured on the ten registered columns only; no contraction proof is offered. `x⁰` is not a physical column (duties free, CMO stage ratios). ADR 0044 is `Proposed` until S02's manifest is `tested` and the reviewer has read it. Uniqueness: §14, now with §18.1 item 3's counterexample.",
+    "requirements is empty: the schema takes D/A requirement ids and none lists S02; S02 supplies part of X31's evidence (docs/requirements.yaml: owners S02, S03) — the four matched column cases, the invalid specifications and the phase case against this package's generator; X31's two independent references and perturbation studies are S03's (§14). The mapping and the verdict are the design lane's.",
+    "ADR 0044 (edge 3 after a restart that ends LINEAR_SOLVE_FAILED) is Proposed until this manifest is tested and the reviewer has read it (§18.9); the decisions it rests on are R-546 to R-549. A20's clause that the full gate moves no registered outcome outside S02 is not measured here: the design lane's patched-suite run (commit 927bddb) records it, and scripts/gate.sh runs before merge.",
+    "scripts/gate.sh was not run by this generator (it runs once before merge into main); S02.gate is unsupported here.",
+    "Review is pending: numerical and process-model review are the design lane's and the human reviewer's; this manifest does not claim either. Open questions for the review: Q-S02-WOG-1 and Q-S02-WO2b-1 (docs/S02_DECISIONS.md).",
+    "The reference agreement is numerical verification against a 50-digit generator that shares SYN-001 and the §6/§18.2 definitions, not empirical validation.",
+    "S02.A14 is fail: tests/test_s02_column_wo2b.py::test_a14_a_shifted_sweep_start_gives_the_same_final_state_sha256[-5.0] xfailed; tests/test_s02_column_wo2b.py::test_a14_a_shifted_sweep_start_gives_the_same_final_state_sha256[5.0] xfailed (open design-lane questions in docs/S02_DECISIONS.md)"
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

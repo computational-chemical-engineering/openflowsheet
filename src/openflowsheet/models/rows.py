@@ -22,13 +22,16 @@ from openflowsheet.compile.spec import Algebra, Expr, RowBuilder
 
 __all__ = [
     "balance_row",
+    "bubble_row",
     "cooling_row",
     "definition_row",
     "energy_row",
     "equilibrium_row",
     "extent_row",
+    "fraction_row",
     "kinetic_balance_row",
     "offset_row",
+    "ratio_row",
     "reaction_balance_row",
     "scaled_row",
     "specification_row",
@@ -334,5 +337,73 @@ def cooling_row(
         return variables[duty] - capacity * (
             parameters[coolant_temperature] - variables[temperature]
         )
+
+    return build
+
+
+def ratio_row(terms: tuple[str, ...], ratio: str, reference: str) -> RowBuilder:
+    """`sum(terms) - p reference`, `p` a pinned ratio: S02's reflux and boil-up specifications.
+
+    The division-free form of `sum(terms) / reference = p` (S02 spec §2.1): `L_1 - RR* V_1`,
+    `V_N - BR* L_N`, and, at a total condenser, `sum_i r_i - RR* D`. It stays finite where the
+    reference flow vanishes, which the quotient does not. The ratio is a pinned input (ADR 0008
+    D1.3), never a literal; it is not `variable - parameter`, so it is not a continuable row.
+    """
+    if not terms:
+        raise ValueError("a ratio row needs at least one term")
+
+    def build(
+        variables: Mapping[str, Expr],
+        blocks: Mapping[str, Expr],
+        parameters: Mapping[str, float],
+        algebra: Algebra,
+    ) -> Expr:
+        accumulated = variables[terms[0]]
+        for name in terms[1:]:
+            accumulated = accumulated + variables[name]
+        return accumulated - parameters[ratio] * variables[reference]
+
+    return build
+
+
+def fraction_row(part: str, fraction: str, whole: str) -> RowBuilder:
+    """`part - phi whole`, `phi` a free variable: the total condenser's reflux split (S02 spec
+    §2.2, `r_i - phi v_i,2`).
+
+    `scaled_row`'s shape with the fraction a column rather than a pinned input: the split is what
+    the column specification determines, so it is solved for, and the row is bilinear in it.
+    """
+
+    def build(
+        variables: Mapping[str, Expr],
+        blocks: Mapping[str, Expr],
+        parameters: Mapping[str, float],
+        algebra: Algebra,
+    ) -> Expr:
+        return variables[part] - variables[fraction] * variables[whole]
+
+    return build
+
+
+def bubble_row(flows: tuple[str, ...], ln_k_keys: tuple[str, ...], total: str) -> RowBuilder:
+    """`sum_i K_i n_i - N`, `K_i = exp(lnK_i)` from a property block: a liquid of flows `n` at its
+    bubble point (S02 spec §2.2, `sum_i K_i(T_c, P_c) v_i,2 - V_2`).
+
+    The division-free form of `sum_i K_i x_i = 1`. It is degenerate where `N = 0` (every
+    temperature satisfies it), which is why S02 §8 requires a flowing condenser.
+    """
+    if not flows or len(flows) != len(ln_k_keys):
+        raise ValueError("a bubble row needs one K value per flow, and at least one flow")
+
+    def build(
+        variables: Mapping[str, Expr],
+        blocks: Mapping[str, Expr],
+        parameters: Mapping[str, float],
+        algebra: Algebra,
+    ) -> Expr:
+        accumulated = algebra.exp(blocks[ln_k_keys[0]]) * variables[flows[0]]
+        for name, key in zip(flows[1:], ln_k_keys[1:], strict=True):
+            accumulated = accumulated + algebra.exp(blocks[key]) * variables[name]
+        return accumulated - variables[total]
 
     return build
