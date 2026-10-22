@@ -40,8 +40,9 @@ is the signature the homotopy would run in, and D3's "rank" reason applies to it
 solve's item-0 opening in its opening signature, fresh contract state, dense `branch_provenance`, the recovery's outcome as
 the step's outcome. A genuine phase change shows up as `HOMOTOPY_STALLED` (bracketed), as before (S02 P1 measures it).
 
-**D3. Mechanism.** `orchestrator/recovery.py`: `eo_recovery_due(outcome, budget, attempts)` — `attempts` is the failed
-`RegionResult`'s `len(attempts)`; the decision stays in that one function. Its three call sites pass it
+**D3. Mechanism.** `orchestrator/recovery.py`: `eo_recovery_due(outcome, budget, *, attempts)` — `attempts` is the failed
+`RegionResult`'s attempts' solver outcomes in order (`solver_outcomes(result.attempts)`), required and keyword-only (review
+N1); D1's core failures are `EO_CORE_FAILURES`; the decision stays in that one function. Its three call sites pass it
 (`executor.py` edge 3, `cascade_solve.solve_cascade`, `column_solve.solve_target`). No schema, record kind, outcome value,
 policy field or identity changes; `solve-event`'s `eo_recovery` (`taken`/`unsupported`) already records the edge.
 

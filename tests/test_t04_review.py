@@ -28,7 +28,7 @@ import numpy as np
 import pytest
 from test_t04_ptc_region import HIGH, case, solve, start
 
-from openflowsheet.orchestrator.recovery import eo_recovery_due
+from openflowsheet.orchestrator.recovery import eo_recovery_due, solver_outcomes
 from openflowsheet.verify.checks import VerifierError
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -101,7 +101,9 @@ def test_m1_j1_a_failed_polish_jacobian_ends_the_attempt_evaluation_error(status
     )
     polish = [e for e in trace.of_kind("trial") if e.message.startswith("polish")]
     assert [e.message for e in polish] == ["polish(rejected:error)"]
-    assert not eo_recovery_due(result.outcome, result.budget)
+    assert not eo_recovery_due(
+        result.outcome, result.budget, attempts=solver_outcomes(result.attempts)
+    )
 
 
 def _free(item: Any, attempt: Any) -> list[str]:
@@ -124,7 +126,9 @@ def test_m1_j2_a_failed_pseudo_step_jacobian_is_not_a_stall(status: str) -> None
     assert result.outcome == attempt.solver_outcome == "EVALUATION_ERROR"
     assert attempt.iterations == 4
     assert attempt.ptc is not None and attempt.ptc.rejections == ()
-    assert not eo_recovery_due(result.outcome, result.budget)
+    assert not eo_recovery_due(
+        result.outcome, result.budget, attempts=solver_outcomes(result.attempts)
+    )
 
 
 def test_m1_j3_no_converged_result_exists_to_certify() -> None:

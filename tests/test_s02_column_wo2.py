@@ -395,7 +395,7 @@ def _forced(monkeypatch: pytest.MonkeyPatch, case: str) -> tuple[Any, list[dict[
         rebound.append(dict(values))
         return real(spec, values)
 
-    monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget, attempts: True)
+    monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget, *, attempts: True)
     monkeypatch.setattr(region_module, "rebind", rebind)
     spec = SPECS[case]
     profile = [float(t) for t in REFERENCE["cases"][case]["initializer"]["profile"]]
@@ -483,7 +483,9 @@ def test_a15_solved_twice_is_identical(monkeypatch: pytest.MonkeyPatch, case: st
     )
     assert first.state == second.state and first.outcome == "CONVERGED"
     if case == "M1":
-        monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget, attempts: True)
+        monkeypatch.setattr(
+            solve_module, "eo_recovery_due", lambda outcome, budget, *, attempts: True
+        )
     profile = [float(t) for t in REFERENCE["cases"][case]["initializer"]["profile"]]
     runs = []
     for _ in range(2):

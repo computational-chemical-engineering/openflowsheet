@@ -50,7 +50,11 @@ from openflowsheet.orchestrator.mass import (
     syn001_residence_time,
 )
 from openflowsheet.orchestrator.merge import merge_due, merged_provenance, unsupported_note
-from openflowsheet.orchestrator.recovery import eo_recovery_due, recovered_provenance
+from openflowsheet.orchestrator.recovery import (
+    eo_recovery_due,
+    recovered_provenance,
+    solver_outcomes,
+)
 from openflowsheet.orchestrator.region import (
     ClosureType,
     DormancyForm,
@@ -861,7 +865,9 @@ def _eo_recovery(
         "homotopy_or_sequential_restart",
     ) or not isinstance(failed, RegionResult):
         return step, spent, state
-    if not eo_recovery_due(failed.outcome, failed.budget, len(failed.attempts)):
+    if not eo_recovery_due(
+        failed.outcome, failed.budget, attempts=solver_outcomes(failed.attempts)
+    ):
         return step, spent, state
     continuation = continuation_parameter(
         specification_rows=region.specification_rows,

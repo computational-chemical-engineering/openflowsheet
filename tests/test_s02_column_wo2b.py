@@ -50,7 +50,12 @@ from openflowsheet.models.syn001.column_solve import (
 )
 from openflowsheet.models.syn001.saturation_band import BandTemperature
 from openflowsheet.numerics.scaling import Scaling
-from openflowsheet.orchestrator.recovery import EO_RECOVERY_TRIGGERS, eo_recovery_due
+from openflowsheet.orchestrator.recovery import (
+    EO_CORE_FAILURES,
+    EO_RECOVERY_TRIGGERS,
+    eo_recovery_due,
+    solver_outcomes,
+)
 from openflowsheet.orchestrator.region import KIND_TOLERANCE, SolveOutcome
 from openflowsheet.orchestrator.roots import same_root
 
@@ -352,22 +357,49 @@ def test_a14_scaled_stage_ratios_reach_the_same_root(scale: float) -> None:
 
 
 def test_a20_the_trigger_table() -> None:
-    """A20: every ADR 0010 D3 trigger is due whatever the attempt count; `LINEAR_SOLVE_FAILED` is
-    due iff the failed solve ran two or more attempts; every other outcome is never due."""
+    """A20 (§19 item 1, R-550): every ADR 0010 D3 trigger is due whatever the attempts;
+    `LINEAR_SOLVE_FAILED` is due iff the failed solve ran two or more attempts **and** attempt 0
+    ended in a core globalization failure (`EO_CORE_FAILURES`); every other outcome is never due."""
+    assert EO_CORE_FAILURES == {
+        "LINE_SEARCH_FAILED",
+        "STAGNATION",
+        "BOUND_BLOCKED",
+        "PTC_STALLED",
+        "BUDGET_EXHAUSTED",
+    }
     budgets = {"BUDGET_EXHAUSTED": "newton_iterations"}
-    for outcome in get_args(SolveOutcome):
-        for attempts in (1, 2, 3, 7):
-            due = eo_recovery_due(outcome, budgets.get(outcome), attempts)
+    outcomes = get_args(SolveOutcome)
+    histories = [
+        (first, *rest)
+        for first in outcomes
+        for rest in ((), ("LINEAR_SOLVE_FAILED",), ("STAGNATION", "LINEAR_SOLVE_FAILED"))
+    ]
+    for outcome in outcomes:
+        for history in histories:
+            due = eo_recovery_due(outcome, budgets.get(outcome), attempts=history)
             if outcome in EO_RECOVERY_TRIGGERS:
-                assert due, (outcome, attempts)
+                assert due, (outcome, history)
             elif outcome == "LINEAR_SOLVE_FAILED":
-                assert due == (attempts >= 2), attempts
+                assert due == (len(history) >= 2 and history[0] in EO_CORE_FAILURES), history
             else:
-                assert not due, (outcome, attempts)
-    assert not eo_recovery_due("LINEAR_SOLVE_FAILED", None)
-    assert not eo_recovery_due("LINEAR_SOLVE_FAILED", None, 1)
-    assert eo_recovery_due("LINEAR_SOLVE_FAILED", None, 2)
-    assert not eo_recovery_due("BUDGET_EXHAUSTED", "property_calls", 3)
+                assert not due, (outcome, history)
+    # §19 item 1's rows, by name.
+    assert not eo_recovery_due("LINEAR_SOLVE_FAILED", None, attempts=("LINEAR_SOLVE_FAILED",))
+    assert not eo_recovery_due(
+        "LINEAR_SOLVE_FAILED", None, attempts=("CONVERGED", "LINEAR_SOLVE_FAILED")
+    )
+    assert eo_recovery_due(
+        "LINEAR_SOLVE_FAILED", None, attempts=("BOUND_BLOCKED", "LINEAR_SOLVE_FAILED")
+    )
+    assert not eo_recovery_due("LINEAR_SOLVE_FAILED", None, attempts=())
+    assert not eo_recovery_due(
+        "BUDGET_EXHAUSTED", "property_calls", attempts=("BOUND_BLOCKED",) * 3
+    )
+    # N1: the attempts are required and keyword-only; no call site keeps the old predicate.
+    with pytest.raises(TypeError):
+        eo_recovery_due("LINEAR_SOLVE_FAILED", None)  # type: ignore[call-arg]
+    with pytest.raises(TypeError):
+        eo_recovery_due("LINEAR_SOLVE_FAILED", None, ("BOUND_BLOCKED", "LINEAR_SOLVE_FAILED"))  # type: ignore[misc]
     assert "LINEAR_SOLVE_FAILED" not in EO_RECOVERY_TRIGGERS
 
 
@@ -378,6 +410,10 @@ def test_a20_m2_recovers_after_linear_solve_failed_in_a_restart() -> None:
     failed = answer.recovered_from
     assert failed is not None and failed.outcome == "LINEAR_SOLVE_FAILED"
     assert len(failed.attempts) >= 2
+    # §19 item 1 (R-550): attempt 0 ended in a core globalization failure, so the narrowed
+    # predicate is what makes this recovery due.
+    assert failed.attempts[0].solver_outcome == "BOUND_BLOCKED"
+    assert eo_recovery_due(failed.outcome, failed.budget, attempts=solver_outcomes(failed.attempts))
     assert answer.outcome == "CONVERGED" and answer.result.homotopy is not None
 
 

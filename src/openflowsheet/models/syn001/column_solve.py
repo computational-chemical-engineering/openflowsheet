@@ -97,7 +97,11 @@ from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.orchestrator.execution import Region
 from openflowsheet.orchestrator.homotopy import Continuation
-from openflowsheet.orchestrator.recovery import eo_recovery_due, recovered_provenance
+from openflowsheet.orchestrator.recovery import (
+    eo_recovery_due,
+    recovered_provenance,
+    solver_outcomes,
+)
 from openflowsheet.orchestrator.region import (
     KIND_TOLERANCE,
     LABEL_KIND,
@@ -874,7 +878,7 @@ def solve_target(
     )
     recovered_from: RegionResult | None = None
     if policy.globalization.eo_recovery == "homotopy" and eo_recovery_due(
-        result.outcome, result.budget, len(result.attempts)
+        result.outcome, result.budget, attempts=solver_outcomes(result.attempts)
     ):
         recovered_from = result
         result = recover(spec, profile, target, provider, result, policy, trace)
