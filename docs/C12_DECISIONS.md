@@ -8,3 +8,9 @@ DECISION: Sources the records do not name but whose data passed through the retr
 DECISION: Cross-check-only sources (CoolProp, thermo, JANAF, literature table) → rows RC-09..RC-12 scoped to the cross-check and projection files, not the records. Alternative: omit them. Reversible by: deleting the rows.
 DECISION: Test name and location → `tests/test_l01_attribution.py` (inside the `test_l01_*` battery). Alternative: `tests/test_c12_*.py`. Reversible by: renaming.
 DECISION: Record findings F-1 (H2/N2/Ar `rights.source` names ATcT where the value is zero by definition) and F-3 ("Setzmann and Wagner et al.") → stated, records not edited (any edit changes both vetted files and the cross-check hash). Alternative: correct the text now. Reversible by: a design-lane ruling (A32-Q6).
+- DECISION (build lane): C12's design-lane step (amend T08.A32) → not started. Six sources are `unresolved` because
+  this cloud session's proxy refuses their public terms pages (403 policy denial): reference-EOS papers / REFPROP
+  route, NASA TM-4513, ATcT 1.112, PubChem/CAS identifiers, CIAAW atomic weights (`docs/l01-rights-check.md`).
+  Frank's rule (L01-Q4) releases the records only after the per-source check; so the check is completed on the
+  workstation (or by Frank) and then the design lane rules on the A32 questions (§5 Q1–Q7, F-1…F-3). Alternative:
+  amend A32 now on partial evidence. Reversible by: running the design step after the rows are vetted.
