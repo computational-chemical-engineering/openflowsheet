@@ -274,6 +274,15 @@ def _letter(record: dict[str, Any]) -> str:
 
 FLOWING = (*sorted(J_CASES), *sorted(V_SETS))
 
+#: S06 §17.4's A05 clause: each V-set's J twin. §6's endpoint reads no inverse target, so a
+#: V-set's `x⁰` is its twin's on every common column (`u` only where the V-set has a purity end).
+V_TWIN = {
+    "V-M1-purity+boilup_ratio": "J1",
+    "V-M1-reflux_ratio+temperature": "J3",
+    "V-M1-purity+purity": "J4",
+    "V-M1-recovery+recovery": "J4",
+}
+
 
 # -- A05: the endpoint's u⁰ and continued slots --------------------------------------------------
 
@@ -281,15 +290,16 @@ FLOWING = (*sorted(J_CASES), *sorted(V_SETS))
 @pytest.mark.parametrize("name", FLOWING)
 def test_a05_the_endpoint(name: str) -> None:
     """A05: `x⁰` (S02's endpoint at the CMO end ratio) is the generator's `bubble_point` within
-    the state tolerance (J cases; the V-sets' `x⁰` is their base's, checked through `p⁰`), `u⁰`
+    the state tolerance — a J case's own, a V-set's twin's (`V_TWIN`, S06 §17.4) — `u⁰`
     included; every target row except the continued slot rows within its kind tolerance at
     `x⁰`, the purity definition row among them."""
     spec = ALL_SETS[name]
     found = endpoint(name)
-    if name in J_CASES:
-        expected = stages_state(spec, REFERENCE["cases"][name]["bubble_point"]["stages"])
-        worst = deviation_from(spec, expected, found.state)
-        assert max(worst.values()) <= 1.0, worst
+    assert set(V_TWIN) == set(V_SETS)
+    case = V_TWIN.get(name, name)
+    expected = stages_state(spec, REFERENCE["cases"][case]["bubble_point"]["stages"])
+    worst = deviation_from(spec, expected, found.state)
+    assert max(worst.values()) <= 1.0, worst
     target = compile_column(spec, PROVIDER).spec
     initial = profile_initial(spec, PROVIDER, DECLARATION_CONTEXT)
     assert not isinstance(initial, CascadeFailure)
