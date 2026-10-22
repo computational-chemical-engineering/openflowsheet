@@ -97,6 +97,52 @@ def test_tables_are_read_from_registration_v2() -> None:
     }
 
 
+def _s1co_with(record: dict[str, Any], copies: int = 1) -> dict[str, Any]:
+    """S1co with its CO record (630-08-0) replaced by `copies` copies of `record`."""
+    snap = json.loads(registration.dump(V2["snapshots"]["S1co"]))
+    (route,) = snap["routes"]
+    kept = [c for c in route["components"] if c.get("cas") != "630-08-0"]
+    route["components"] = kept + [record] * copies
+    return snap
+
+
+@pytest.mark.parametrize(
+    ("record", "copies", "case", "refusal"),
+    [
+        # An exact spelling is refused whatever `case_distinct` says (W27v2-R08, first clause).
+        (
+            {"id": "Co", "name": "carbon monoxide", "formula": "CO", "cas": "630-08-0"},
+            1,
+            "CO-Co",
+            "['Co->630-08-0']",
+        ),
+        # A `case_distinct` entry covers only its listed CAS RNs (second clause).
+        (
+            {"id": "CO", "name": "test record", "formula": "CO", "cas": "7440-48-4"},
+            1,
+            "CO-Co",
+            "['CO->7440-48-4', 'Co->7440-48-4']",
+        ),
+        # W27v2-R07: the (c) list is sorted and has no duplicates.
+        (
+            {"id": "CO", "name": "carbon monoxide", "formula": "CO", "cas": "630-08-0"},
+            2,
+            "co",
+            "['co->630-08-0']",
+        ),
+    ],
+    ids=["exact-spelling", "other-cas", "no-duplicates"],
+)
+def test_r08_spelling_rule_beyond_the_states(
+    record: dict[str, Any], copies: int, case: str, refusal: str
+) -> None:
+    """Expectations read directly off W27v2-R07/R08's text (not registered states)."""
+    snap = _s1co_with({**record, "phases": ["vapor"], "synthetic": False}, copies)
+    with pytest.raises(coverage.RefusalError) as refused:
+        coverage.check_snapshot(snap, {"cases": [V2["cases"][case]]}, registration_version=2)
+    assert str(refused.value) == f"archive spellings of registry chemicals not aliased {refusal}"
+
+
 def test_v2_defaults_to_its_own_provider_table() -> None:
     """Without an explicit table, version 2 judges S2 with W27v2-R02's (W27v2-A02)."""
     snap = V2["snapshots"]["S2"]
