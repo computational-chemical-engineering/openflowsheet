@@ -11806,3 +11806,26 @@ anything. A whole-archive version 2 record goes under a `heldout/` path (SPLIT-R
 held-out row computed.
 
 **Rejected.** *Re-taking `coverage.json` under version 2.* It would break SPLIT-A18 and v0.2's record.
+
+---
+
+## R-580 — The version 2 CLI is a release-gate writer: it writes only under a `heldout/` path and prints no summary counts
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), C9 review |
+| Normative text | C2 SPLIT-R08, SPLIT-R10 (b), SPLIT-R11; `docs/derivations/W27-registration-v2.md` W27v2-R09; R-574 |
+| Evidence | `docs/reviews/C9-review.md` M1; `benchmarks/m06/w27/coverage.py:908-914`, `:928-929` at 12062a4 |
+| Affected packages | WO-C9-1 (fix before merge); release gates (C2-Q1) |
+
+**Decision.** With `--registration-version 2`, the CLI refuses with exit 2, naming `SPLIT-R10`, when the resolved
+`--out` has no directory segment named `heldout`. The refusal comes before any snapshot is built or case classified,
+in addition to W27v2-R09's two refusals. A version 2 run prints only the output path, the snapshot SHA-256 and G14's
+pass or fail. It prints no `summary` line, because a count over all 450 or the full 82 mixes the held-out half into
+what a development session reads (SPLIT-R08: the held-out half is reported separately, and only at a release gate).
+Version 1's CLI is unchanged.
+
+**Rejected.** *Leaving the path to convention (R-574's "goes under a `heldout/` path").* At a new snapshot, one run
+to `/tmp` exposes held-out rows and class counts to development (SPLIT-R11). *Refusing whole-archive version 2 runs
+outright.* Release gates need them.
