@@ -1,0 +1,689 @@
+record: l01-reference-values
+version: 1
+specification: docs/derivations/L01-spec.md
+generator: docs/derivations/scripts/l01_reference.py
+components_yaml_sha256: 2e01ade0bc00799563fc60032099dee865f951300fca1c7822b4bb1d23f4183a
+constants:
+  R_J_per_mol_K: '8.31446261815324'
+  Omega_a: '0.45724'
+  Omega_b: '0.07780'
+  kappa_rule: 0.37464 + 1.54226 w - 0.26992 w^2 (Peng-Robinson 1976), every component
+  k_ij: 0 for every pair (ADR 0026 D3)
+  T_ref_K: '298.15'
+  Zc_over_Bc: '3.951373035591441433'
+  order:
+  - H2
+  - N2
+  - Ar
+  - CH4
+  - H2O
+  - CO2
+  - O2
+  - C2H6
+  - C3H8
+  domain:
+    T_K:
+    - 200.0
+    - 1000.0
+    P_Pa:
+    - 10000.0
+    - 30000000.0
+closed_form:
+  phase_states:
+    V1L:
+      T_K: 700.0
+      P_Pa: 5000000.0
+      n_mol_s:
+      - 0.3
+      - 0.04
+      - 0.01
+      - 0.18
+      - 0.3
+      - 0.1
+      - 0.02
+      - 0.03
+      - 0.02
+      phase: VAPOR
+      why: every flow non-zero, so a permuted index shows (L01.A15, A16, A21)
+      values:
+        Z: 0.9951328706970328
+        v: 0.0011583593074908402
+        h: -114664.45307656379
+        lnphi_H2: 0.021039433178840695
+        lnphi_N2: 0.026567606427518018
+        lnphi_Ar: 0.015819774824217224
+        lnphi_CH4: 0.009837141164161812
+        lnphi_H2O: -0.048495407517898007
+        lnphi_CO2: 0.00017014022431730228
+        lnphi_O2: 0.01692366219288275
+        lnphi_C2H6: -0.007503440793631683
+        lnphi_C3H8: -0.01882588417401299
+      h_departure_J_mol: -316.1571596227649
+      real_root_count: 1
+      v_over_b_mix: 52.546858772097515
+      status_or_reason: ok
+    V2L:
+      T_K: 500.0
+      P_Pa: 1000000.0
+      n_mol_s:
+      - 0.0
+      - 0.05
+      - 0.0
+      - 0.0
+      - 0.9
+      - 0.05
+      - 0.0
+      - 0.0
+      - 0.0
+      phase: VAPOR
+      why: steam-rich, three roots and a stable vapour; zero flows test infinite dilution
+      values:
+        Z: 0.966288140814175
+        v: 0.004017083312582126
+        h: -230787.90083785143
+        lnphi_H2: 0.028828199194441732
+        lnphi_N2: 0.024233170432414415
+        lnphi_Ar: 0.018714188652654392
+        lnphi_CH4: 0.009780766564744008
+        lnphi_H2O: -0.03824820307705653
+        lnphi_CO2: -0.0023614033330518727
+        lnphi_O2: 0.019263870838823964
+        lnphi_C2H6: -0.014087391777580524
+        lnphi_C3H8: -0.03368542955635831
+      h_departure_J_mol: -417.48913994544085
+      real_root_count: 3
+      v_over_b_mix: 204.85418624954522
+      status_or_reason: ok
+    P1:
+      T_K: 500.0
+      P_Pa: 100000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      phase: VAPOR
+      why: pure water vapour at 0.1 MPa, 500 K (L01.A18's admitted counterpart)
+      values:
+        Z: 0.9962025178651621
+        v: 0.04141444297450013
+        h: -234942.9577373672
+        lnphi_H2: 0.0031490710159956074
+        lnphi_N2: 0.0026545516203021462
+        lnphi_Ar: 0.0020942918188606107
+        lnphi_CH4: 0.0011531451280375874
+        lnphi_H2O: -0.003792306697513443
+        lnphi_CO2: -0.0001018907933399455
+        lnphi_O2: 0.0021516834595880835
+        lnphi_C2H6: -0.00135019212847317
+        lnphi_C3H8: -0.0034172528253896234
+      h_departure_J_mol: -45.781079172651765
+      real_root_count: 3
+      v_over_b_mix: 2182.999197134513
+      status_or_reason: ok
+  derivatives:
+    V1L:
+      Z:
+        T: 7.480178875157888e-05
+        P: -7.261676420761934e-10
+        n_H2: 0.025851462433908196
+        n_N2: 0.0316950969227138
+        n_Ar: 0.020893478019460628
+        n_CH4: 0.015355587560901376
+        n_H2O: -0.0425370476388169
+        n_CO2: 0.005822922381143533
+        n_O2: 0.021969795288079397
+        n_C2H6: -0.0010053277038295115
+        n_C3H8: -0.011329858467692536
+      v:
+        T: 1.7418701453896398e-06
+        P: -2.3251713861820571e-10
+        n_H2: 3.0091742524385145e-05
+        n_N2: 3.689387779597068e-05
+        n_Ar: 2.432052587384165e-05
+        n_CH4: 1.7874284225685073e-05
+        n_H2O: -4.951417694713653e-05
+        n_CO2: 6.778025865299606e-06
+        n_O2: 2.557338583117015e-05
+        n_C2H6: -1.1702263457478026e-06
+        n_C3H8: -1.3188235857803514e-05
+      h:
+        T: 44.542322776337016
+        P: -6.094979428190781e-05
+        n_H2: 126668.42593394523
+        n_N2: 126751.27647419016
+        n_Ar: 123066.74306315494
+        n_CH4: 58765.22147543782
+        n_H2O: -113995.58104777928
+        n_CO2: -261412.668579967
+        n_O2: 127221.16321794882
+        n_C2H6: 61286.68221903259
+        n_C3H8: 53896.56530194994
+      lnphi_H2:
+        T: -6.209825792080953e-05
+        P: 4.196866626188194e-09
+        n_H2: -0.020418363466803872
+        n_N2: -0.020019565116955157
+        n_Ar: -0.01509766630911316
+        n_CH4: -0.007524645461636172
+        n_H2O: 0.026640068515694195
+        n_CO2: -0.0012372770410120201
+        n_O2: -0.015940158492318515
+        n_C2H6: 0.011275126335979282
+        n_C3H8: 0.02719805100324732
+      lnphi_N2:
+        T: -3.6666147262025095e-05
+        P: 5.365593523949316e-09
+        n_H2: -0.020019565116955157
+        n_N2: -0.019629755303953937
+        n_Ar: -0.014803124415297565
+        n_CH4: -0.007378780173022037
+        n_H2O: 0.02612141602971222
+        n_CO2: -0.0012139155283894898
+        n_O2: -0.015629163405468247
+        n_C2H6: 0.011052400650176687
+        n_C3H8: 0.02666247075354971
+      lnphi_Ar:
+        T: -1.2118784569863441e-05
+        P: 3.20526974329868e-09
+        n_H2: -0.01509766630911316
+        n_N2: -0.014803124415297565
+        n_Ar: -0.011163551397853804
+        n_CH4: -0.005564152368863158
+        n_H2O: 0.01969856129109389
+        n_CO2: -0.0009150878277108601
+        n_O2: -0.011786504177430343
+        n_C2H6: 0.008336307375001044
+        n_C3H8: 0.020109453373062598
+      lnphi_CH4:
+        T: 2.7490088398715264e-05
+        P: 2.0976916515868303e-09
+        n_H2: -0.007524645461636172
+        n_N2: -0.007378780173022037
+        n_Ar: -0.005564152368863158
+        n_CH4: -0.002774019277159625
+        n_H2O: 0.009819017522899532
+        n_CO2: -0.00045670392526534913
+        n_O2: -0.005874632156461902
+        n_C2H6: 0.004152846423569097
+        n_C3H8: 0.010019111253396886
+      lnphi_H2O:
+        T: 0.0002527318377396048
+        P: -9.480835388356825e-09
+        n_H2: 0.026640068515694195
+        n_N2: 0.02612141602971222
+        n_Ar: 0.01969856129109389
+        n_CH4: 0.009819017522899532
+        n_H2O: -0.034759906105644445
+        n_CO2: 0.0016154050515275998
+        n_O2: 0.020797772849252747
+        n_C2H6: -0.014707305581081
+        n_C3H8: -0.03547954629708267
+      lnphi_CO2:
+        T: 8.787978629434764e-05
+        P: 1.9115861563526137e-10
+        n_H2: -0.0012372770410120201
+        n_N2: -0.0012139155283894898
+        n_Ar: -0.0009150878277108601
+        n_CH4: -0.00045670392526534913
+        n_H2O: 0.0016154050515275998
+        n_CO2: -7.551356816295835e-05
+        n_O2: -0.0009661409490568288
+        n_C2H6: 0.000681549863595456
+        n_C3H8: 0.001645174134767293
+      lnphi_O2:
+        T: -1.3998505028644325e-05
+        P: 3.4205331970224345e-09
+        n_H2: -0.015940158492318515
+        n_N2: -0.015629163405468247
+        n_Ar: -0.011786504177430343
+        n_CH4: -0.005874632156461902
+        n_H2O: 0.020797772849252747
+        n_CO2: -0.0009661409490568288
+        n_O2: -0.012444219446002198
+        n_C2H6: 0.008801532123597773
+        n_C3H8: 0.021231678959684988
+      lnphi_C2H6:
+        T: 0.0001357157587829025
+        P: -1.1744914013593474e-09
+        n_H2: 0.011275126335979282
+        n_N2: 0.011052400650176687
+        n_Ar: 0.008336307375001044
+        n_CH4: 0.004152846423569097
+        n_H2O: -0.014707305581081
+        n_CO2: 0.000681549863595456
+        n_O2: 0.008801532123597773
+        n_C2H6: -0.006231423889277005
+        n_C3H8: -0.015028029731109567
+      lnphi_C3H8:
+        T: 0.00022360171620371748
+        P: -3.2393975541319523e-09
+        n_H2: 0.02719805100324732
+        n_N2: 0.02666247075354971
+        n_Ar: 0.020109453373062598
+        n_CH4: 0.010019111253396886
+        n_H2O: -0.03547954629708267
+        n_CO2: 0.001645174134767293
+        n_O2: 0.021231678959684988
+        n_C2H6: -0.015028029731109567
+        n_C3H8: -0.03624474510352953
+    V2L:
+      Z:
+        T: 0.0002065354206367352
+        P: -3.450594788284209e-08
+        n_H2: 0.0640291437618441
+        n_N2: 0.059385260700938906
+        n_Ar: 0.053647648887264435
+        n_CH4: 0.04452301277865072
+        n_H2O: -0.0050773078092726485
+        n_CO2: 0.03200627986596877
+        n_O2: 0.05421155573470683
+        n_C2H6: 0.020090798259774282
+        n_C3H8: 8.459407813604348e-05
+      v:
+        T: 8.892782142268597e-06
+        P: -4.160532519470044e-09
+        n_H2: 0.0002661839611401062
+        n_N2: 0.0002468782650836206
+        n_Ar: 0.0002230256856124852
+        n_CH4: 0.0001850924626978252
+        n_H2O: -2.1107542990527476e-05
+        n_CO2: 0.000133057508745874
+        n_O2: 0.00022536997681407543
+        n_C2H6: 8.352209554987573e-05
+        n_C3H8: 3.5167715018963386e-07
+      h:
+        T: 36.79232919547359
+        P: -0.00042930775855217255
+        n_H2: 237018.9554289519
+        n_N2: 236917.85317261185
+        n_Ar: 235162.08266648598
+        n_CH4: 164531.97743806872
+        n_H2O: -4579.113414547391
+        n_CO2: -154493.8117107588
+        n_O2: 237053.56443306696
+        n_C2H6: 159902.40193333282
+        n_C3H8: 144710.83852094272
+      lnphi_H2:
+        T: -0.00016144837642548932
+        P: 3.031728457601916e-08
+        n_H2: -0.05506952873590501
+        n_N2: -0.049587388275955366
+        n_Ar: -0.04552568185882677
+        n_CH4: -0.036385382631641316
+        n_H2O: 0.004186553125625021
+        n_CO2: -0.025770567985295003
+        n_O2: -0.04604930889631294
+        n_C2H6: -0.012803152317165565
+        n_C3H8: 0.0074272168996821625
+      lnphi_N2:
+        T: -0.00010362718584894953
+        P: 2.567340151511397e-08
+        n_H2: -0.049587388275955366
+        n_N2: -0.044651152974019774
+        n_Ar: -0.040993692575984446
+        n_CH4: -0.03276344495887609
+        n_H2O: 0.0037698036549960096
+        n_CO2: -0.023205312815908406
+        n_O2: -0.04146518865406367
+        n_C2H6: -0.011529090572697862
+        n_C3H8: 0.006687029332414725
+      lnphi_Ar:
+        T: -8.587259965990355e-05
+        P: 1.9935789701439498e-08
+        n_H2: -0.04552568185882677
+        n_N2: -0.040993692575984446
+        n_Ar: -0.03763586274462222
+        n_CH4: -0.03007968461814747
+        n_H2O: 0.00346100891912023
+        n_CO2: -0.02130446796817969
+        n_O2: -0.0380687406580937
+        n_C2H6: -0.0105844972297342
+        n_C3H8: 0.0061397043396147055
+      lnphi_CH4:
+        T: -3.198895506758208e-05
+        P: 1.0811153592825786e-08
+        n_H2: -0.036385382631641316
+        n_N2: -0.03276344495887609
+        n_Ar: -0.03007968461814747
+        n_CH4: -0.024040711516622328
+        n_H2O: 0.002766152522211967
+        n_CO2: -0.01702730044093931
+        n_O2: -0.030425648624237668
+        n_C2H6: -0.00845988392790907
+        n_C3H8: 0.004906248369308076
+      lnphi_H2O:
+        T: 0.00022603389577021955
+        P: -3.8789166995097586e-08
+        n_H2: 0.004186553125625021
+        n_N2: 0.0037698036549960096
+        n_Ar: 0.00346100891912023
+        n_CH4: 0.002766152522211967
+        n_H2O: -0.00031827687208954385
+        n_CO2: 0.0019591800426157794
+        n_O2: 0.0035008161327852857
+        n_C2H6: 0.0009733933323190289
+        n_C3H8: -0.0005645412106035946
+      lnphi_CO2:
+        T: 5.200922726502965e-05
+        P: -1.705579319856171e-09
+        n_H2: -0.025770567985295003
+        n_N2: -0.023205312815908406
+        n_Ar: -0.02130446796817969
+        n_CH4: -0.01702730044093931
+        n_H2O: 0.0019591800426157794
+        n_CO2: -0.012059927951175624
+        n_O2: -0.02154950173607147
+        n_C2H6: -0.005991989409044658
+        n_C3H8: 0.0034747124584499777
+      lnphi_O2:
+        T: -8.63438038554481e-05
+        P: 2.0499696548881893e-08
+        n_H2: -0.04604930889631294
+        n_N2: -0.04146518865406367
+        n_Ar: -0.0380687406580937
+        n_CH4: -0.030425648624237668
+        n_H2O: 0.0035008161327852857
+        n_CO2: -0.02154950173607147
+        n_O2: -0.03850659757286456
+        n_C2H6: -0.010706223051641336
+        n_C3H8: 0.006210346905331976
+      lnphi_C2H6:
+        T: 0.00011414752385860228
+        P: -1.3621060926050652e-08
+        n_H2: -0.012803152317165565
+        n_N2: -0.011529090572697862
+        n_Ar: -0.0105844972297342
+        n_CH4: -0.00845988392790907
+        n_H2O: 0.0009733933323190289
+        n_CO2: -0.005991989409044658
+        n_O2: -0.010706223051641336
+        n_C2H6: -0.0029780720598516107
+        n_C3H8: 0.0017243151498843499
+      lnphi_C3H8:
+        T: 0.0002385167995795908
+        P: -3.362726510768889e-08
+        n_H2: 0.0074272168996821625
+        n_N2: 0.006687029332414725
+        n_Ar: 0.0061397043396147055
+        n_CH4: 0.004906248369308076
+        n_H2O: -0.0005645412106035946
+        n_CO2: 0.0034747124584499777
+        n_O2: 0.006210346905331976
+        n_C2H6: 0.0017243151498843499
+        n_C3H8: -0.0010058014774374225
+  guard_states:
+    A17_365K:
+      T_K: 365.0
+      P_Pa: 101325.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      why: below PR's T_b
+      status_or_reason: vapour_root_metastable
+      real_root_count: 3
+      largest_root_v_over_b_mix: 1564.19
+    A17_385K:
+      T_K: 385.0
+      P_Pa: 101325.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      why: above PR's T_b
+      status_or_reason: ok
+      real_root_count: 3
+      largest_root_v_over_b_mix: 1651.94
+    A18_H2O_300K:
+      T_K: 300.0
+      P_Pa: 5000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      why: compressed liquid water, a single root
+      status_or_reason: vapour_root_liquid_like
+      real_root_count: 1
+      largest_root_v_over_b_mix: 1.11972
+    A18_CO2_250K:
+      T_K: 250.0
+      P_Pa: 5000000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      why: compressed liquid CO2, a single root
+      status_or_reason: vapour_root_liquid_like
+      real_root_count: 1
+      largest_root_v_over_b_mix: 1.51462
+    A19_330K:
+      T_K: 330.0
+      P_Pa: 100000.0
+      n_mol_s:
+      - 0.0
+      - 0.05
+      - 0.0
+      - 0.0
+      - 0.95
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      why: water partial pressure above its PR vapour pressure
+      status_or_reason: vapour_root_metastable
+      real_root_count: 3
+      largest_root_v_over_b_mix: 1411.54
+    A19_400K:
+      T_K: 400.0
+      P_Pa: 100000.0
+      n_mol_s:
+      - 0.0
+      - 0.05
+      - 0.0
+      - 0.0
+      - 0.95
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      why: the same mixture, dry
+      status_or_reason: ok
+      real_root_count: 3
+      largest_root_v_over_b_mix: 1718.62
+    A19_C3H8:
+      T_K: 300.0
+      P_Pa: 1500000.0
+      n_mol_s:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      why: propane above its PR vapour pressure
+      status_or_reason: vapour_root_metastable
+      real_root_count: 3
+      largest_root_v_over_b_mix: 20.2428
+    A20_T_low:
+      T_K: 199.5
+      P_Pa: 5000000.0
+      n_mol_s:
+      - 0.3
+      - 0.04
+      - 0.01
+      - 0.18
+      - 0.3
+      - 0.1
+      - 0.02
+      - 0.03
+      - 0.02
+      why: T below 200 K
+      status_or_reason: out_of_domain
+    A20_T_high:
+      T_K: 1000.5
+      P_Pa: 5000000.0
+      n_mol_s:
+      - 0.3
+      - 0.04
+      - 0.01
+      - 0.18
+      - 0.3
+      - 0.1
+      - 0.02
+      - 0.03
+      - 0.02
+      why: T above 1000 K
+      status_or_reason: out_of_domain
+    A20_P_high:
+      T_K: 700.0
+      P_Pa: 31000000.0
+      n_mol_s:
+      - 0.3
+      - 0.04
+      - 0.01
+      - 0.18
+      - 0.3
+      - 0.1
+      - 0.02
+      - 0.03
+      - 0.02
+      why: P above 30 MPa
+      status_or_reason: out_of_domain
+  saturation:
+    water_T_b_at_101325_Pa_K: 374.5260511084349
+    water_P_sat_at_330_K_Pa: 15482.236016440465
+    propane_P_sat_at_300_K_Pa: 997556.0617698635
+assertion_margins:
+  min_pairwise_lnphi_gap:
+    V1L: 0.0011
+    V2L: 0.00055
+generator_claims:
+- id: REC-01
+  holds: true
+  statement: components.yaml lists ('H2', 'N2', 'Ar', 'CH4', 'H2O', 'CO2', 'O2', 'C2H6', 'C3H8') in order
+- id: REC-02
+  holds: true
+  statement: the records' reference convention is PR-C1-ref-v1 (ADR 0043 D4)
+- id: PR-01
+  holds: true
+  statement: "Z_c/B_c of the PR cubic's triple root is 3.951373035591441433 (\u2248 3.951, spec \xA74.2)"
+- id: ADMIT-V1L
+  holds: true
+  statement: V1L is admitted (got ok)
+- id: HDEP-V1L
+  holds: true
+  statement: '|h^dep| at V1L exceeds 1 J/mol'
+- id: ADMIT-V2L
+  holds: true
+  statement: V2L is admitted (got ok)
+- id: HDEP-V2L
+  holds: true
+  statement: '|h^dep| at V2L exceeds 1 J/mol'
+- id: ADMIT-P1
+  holds: true
+  statement: P1 is admitted (got ok)
+- id: HDEP-P1
+  holds: true
+  statement: '|h^dep| at P1 exceeds 1 J/mol'
+- id: V2L-ROOTS
+  holds: true
+  statement: V2L has three admissible roots and its vapour (the largest) is the stable one
+- id: PH-GAP-V1L
+  holds: true
+  statement: 'V1L: nine non-zero ln phi, pairwise gaps >= 1e-6 (min 0.0011), so a permuted index fails A15''s 1e-12 by >=
+    1e6'
+- id: PH-GAP-V2L
+  holds: true
+  statement: 'V2L: nine non-zero ln phi, pairwise gaps >= 1e-6 (min 0.00055), so a permuted index fails A15''s 1e-12 by >=
+    1e6'
+- id: P1-Z
+  holds: true
+  statement: P1's Z = 0.99620252 is within 0.002 of IAPWS-IF97's 0.9958 (PR gives 0.99620)
+- id: P1-FALLBACKS
+  holds: true
+  statement: "the ideal-gas fallback (Z = 1) and a dropped a-term (Z \u2248 1.0006) fall outside A18's band"
+- id: DER-NZ
+  holds: true
+  statement: every n-derivative at V1L exceeds 1e-12 in size (min 1.17e-6)
+- id: GUARD-A17_365K
+  holds: true
+  statement: A17_365K (below PR's T_b) gives vapour_root_metastable (got vapour_root_metastable)
+- id: GUARD-A17_385K
+  holds: true
+  statement: A17_385K (above PR's T_b) gives ok (got ok)
+- id: GUARD-A18_H2O_300K
+  holds: true
+  statement: A18_H2O_300K (compressed liquid water, a single root) gives vapour_root_liquid_like (got vapour_root_liquid_like)
+- id: GUARD-A18_CO2_250K
+  holds: true
+  statement: A18_CO2_250K (compressed liquid CO2, a single root) gives vapour_root_liquid_like (got vapour_root_liquid_like)
+- id: GUARD-A19_330K
+  holds: true
+  statement: A19_330K (water partial pressure above its PR vapour pressure) gives vapour_root_metastable (got vapour_root_metastable)
+- id: GUARD-A19_400K
+  holds: true
+  statement: A19_400K (the same mixture, dry) gives ok (got ok)
+- id: GUARD-A19_C3H8
+  holds: true
+  statement: A19_C3H8 (propane above its PR vapour pressure) gives vapour_root_metastable (got vapour_root_metastable)
+- id: GUARD-A20_T_low
+  holds: true
+  statement: A20_T_low (T below 200 K) gives out_of_domain (got out_of_domain)
+- id: GUARD-A20_T_high
+  holds: true
+  statement: A20_T_high (T above 1000 K) gives out_of_domain (got out_of_domain)
+- id: GUARD-A20_P_high
+  holds: true
+  statement: A20_P_high (P above 30 MPa) gives out_of_domain (got out_of_domain)
+- id: A17-TB
+  holds: true
+  statement: 'PR places water''s saturation at 101325 Pa at 374.5261 K (spec: 374.53 K)'
+- id: A17-MARGIN
+  holds: true
+  statement: 365 K and 385 K are each >= 9.5 K from PR's saturation temperature
+- id: A18-VB-A18_H2O_300K
+  holds: true
+  statement: A18_H2O_300K has a single root with v/b = 1.11972 < Z_c/B_c (spec quotes 1.12)
+- id: A18-VB-A18_CO2_250K
+  holds: true
+  statement: A18_CO2_250K has a single root with v/b = 1.51462 < Z_c/B_c (spec quotes 1.52)
+- id: A19-RATIO
+  holds: true
+  statement: 'at 330 K the water partial pressure 0.95e5 Pa is 6.136 x PR''s vapour pressure 15482.2 Pa (spec: 5.5x, against
+    water''s measured vapour pressure)'
+- id: A19-C3H8
+  holds: true
+  statement: 'propane''s PR vapour pressure at 300 K is 997556.0 Pa (spec: about 1.0 MPa)'
