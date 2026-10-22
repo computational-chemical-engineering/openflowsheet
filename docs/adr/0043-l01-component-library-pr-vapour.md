@@ -40,6 +40,12 @@ The OpenIDAES-450 development half (225 cases) has no available component outsid
     mixture's b. It only ever refuses.
 
   Liquid requests and `flash` are refused. The domain box is C1's.
+
+  **Amended 2026-10-22 (reviewer, R-540; spec §12.3):** a third refusal, `vapour_unstable`, follows the two above.
+  It applies when a pure-component trial phase has tangent-plane distance tm_i < −10⁻¹⁰. For a pure fluid it is D2's
+  guard. A VAPOR answer is certified stable against pure-component trial phases only, not against mixed liquids.
+  Also amended: A12's bound is 2 % over all nine records (R-528), T08.A32 admits the library file (R-529), and
+  packaging moves with WO-L01-3 after L01-Q4 (R-541).
 - **D6 — Sources.** The sources are C1's: reference-EOS critical constants and ω, retrieved with chemicals 1.5.2
   `HEOS`; ATcT 1.112 Δ_fH° (`ATCT_G`); NASA TM-4513 low-range NASA-7 coefficients from Cantera 3.2.0; the cross-check
   is against CoolProp 8.0.0. A missing species stops that component; no substitute source is used.

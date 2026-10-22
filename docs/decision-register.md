@@ -10629,3 +10629,111 @@ cycles, liquid water and reformer outlets (> 1000 K) are not representable throu
 **Watch for.** A summary that says "water available" without the qualifier *vapour only, 200–1000 K*.
 
 ---
+
+## R-528 — L01.A12's c_p cross-check bound is 2 %, over all nine library records (the registered 0.5 % lay below its floor)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), L01 review |
+| Normative text | `docs/derivations/L01-spec.md` §12.1 (amends §5 A12) |
+| Evidence | `benchmarks/l01/components-crosscheck.json` (CH4 +0.68 % at 900 K, C3H8 +0.577 % at 600 K); M01 spec §3.3 (CH4 1.12 % at 1000 K, NH3 0.51 %); `docs/reviews/L01-review.md` M-2 |
+| Affected packages | L01 |
+
+**Decision.** |c_p − c_p,CoolProp|/c_p ≤ 2 % at 300, 600 and 900 K for every record of `benchmarks/l01/components.yaml`.
+The comparand is unchanged and C3H8 is kept.
+
+**Why the bound changed.** 0.5 % was registered with no floor. The floor is the NASA TM-4513 vs reference-EOS
+disagreement on correct data, which is up to 0.68 % here and 1.12 % in M01. The smallest error this check exists to
+catch is a species swap (≥ 6.5 %, O2/N2). 2 % lies about 3× from each. Digit slips are the exact-decimal retrieval
+check's job.
+
+**Also decided.**
+- O2's stated critical parameters stand. CoolProp's computed critical point is a cross-check statement only.
+- Two quoted spec numbers are corrected (§12.2): A18's CO2 v/b is 1.515, and A19's ratio is 5.5× IAPWS and 6.14× PR.
+
+**Rejected alternatives.**
+- Changing the comparand to TRC or JANAF to fit the data.
+- Stopping C3H8.
+- Keeping A12 on the five new records only (a narrowed denominator).
+
+**Watch for.** A future record above 2 % is a finding about that record or its species key. It is not a reason to
+widen the bound again without a new floor.
+
+---
+
+## R-529 — T08.A32 admits a second vetted record file (`benchmarks/l01/components.yaml`); rights stay Frank's
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), L01 review; amends R-158's "Also decided" |
+| Normative text | `docs/derivations/L01-spec.md` §12.4; T08 release spec §9 (T08.A32) as amended by M01 spec §3.5 |
+| Evidence | `tests/test_t08_w2_inventory.py:432-460` fails at `ca7213b` on `('benchmarks/l01/components.yaml', 'C3H8')`; `docs/reviews/L01-review.md` M-3 |
+| Affected packages | L01, T08 (test), any later record file |
+
+**Decision.** A `synthetic: false` record must:
+- belong to a registered vetted record file (M01's five ids and L01's nine), with identifiers, rights statements and
+  per-value provenance;
+- be covered by that file's retrieval equality. L01 additionally requires the cross-check JSON's `records_sha256` to
+  equal the file's bytes;
+- be the same whole mapping in every vetted file that holds its id.
+
+The real (file, id) set must equal the registry. Synthetic records keep the v0.1 rule.
+
+**Not decided here.** Whether the rights statements are correct, and whether the records ship in an sdist or wheel,
+is Frank's (L01-Q4, M01 Q-N4).
+
+**Rejected alternatives.**
+- Refusing L01's records outright. They meet the same vetting as M01's, which precedent admitted to the repository.
+- Allowing any file with a rights block. That is a relaxation, and A32 is amended, not relaxed.
+
+**Watch for.** Every new record file needs its own amendment that names its vetting JSON.
+
+---
+
+## R-540 — `pr-lib-v1` refuses `vapour_unstable` when a pure-component trial phase has tangent-plane distance < 0
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), L01 review |
+| Normative text | `docs/derivations/L01-spec.md` §12.3 (amends §4.2 and §9); ADR 0043 D5 (amended) |
+| Evidence | `tests/test_l01_review_adversarial.py` (independent float transcription): a cooled reformer outlet (313.15 K, 3 MPa, 30 % H2O) is answered `ok` with tm_H2O = −4.6; `docs/reviews/L01-review.md` M-1 |
+| Affected packages | L01 (and any later vapour-only route) |
+
+**Decision.** After `vapour_root_metastable` and `vapour_root_liquid_like`, refuse when some component with
+0 < y_i < 1 has tm_i = ln φ_i^pure(stable root) − ln y_i − ln φ_i(y; Z_V) < −10⁻¹⁰. This is closed form and only
+refuses. For a pure fluid it is ADR 0026 D2's guard.
+
+**Rejected alternatives.**
+- Declaring the gap without a guard. A VAPOR `ok` for a stream that PR itself says condenses is a placeholder success
+  path.
+- A full Michelsen stability test with iterated trial phases. It needs a convergence policy and belongs with a
+  liquid regime.
+- A partial-pressure-versus-P_sat test. It is not PR's own criterion and ignores non-ideality.
+
+**Watch for.** The guard is sufficient, not necessary. Instability towards a mixed liquid (a hydrocarbon condensate
+with no component supersaturated on its own) is not detected, and §9 and `numerical_limitations` must say so.
+
+---
+
+## R-541 — L01's records are packaged only with WO-L01-3, after Frank's L01-Q4 (spec §4.4 prevails over §4.1/§11)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), L01 review; reverses the WO-L01-1 build decision on `PACKAGED` |
+| Normative text | `docs/derivations/L01-spec.md` §12.5 (amends §4.1, §5 A01, §11) |
+| Evidence | `docs/L01_DECISIONS.md` (WO-1 `PACKAGED` decision); `docs/FRANK_QUESTIONS.md` L01-Q4; `docs/reviews/L01-review.md` S-1 |
+| Affected packages | L01, T08 (inventory and package-data tests) |
+
+**Decision.** Until WO-L01-3, which is held on W27-A3 and on L01-Q4, `benchmarks/l01/components.yaml` has no
+`PACKAGED` entry, no `_data` link and no package-data line. `pr_lib` reads the checkout copy.
+
+**Rejected alternative.** Packaging now, following M01's precedent. Nothing packaged can reach the records before
+exposure, and a merged `main` would carry them into the next wheel against L01-Q4's default.
+
+**Watch for.** WO-L01-3 restores the four edits only after Frank has answered L01-Q4.
+
+---

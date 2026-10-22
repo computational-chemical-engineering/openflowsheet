@@ -1,6 +1,6 @@
 # L01 specification — component-library gaps on the OpenIDAES-450 development half (Water first)
 
-**Status:** Proposed, 2026-10-22. **Author:** design lane (`specifier`), package L01, branch `wp/L01`.
+**Status:** Proposed, 2026-10-22; **amended** 2026-10-22 by the `reviewer` (§12: A12 bound and scope, `vapour_unstable`, T08.A32, packaging). **Author:** design lane (`specifier`), package L01, branch `wp/L01`.
 **Decision record:** ADR 0043 (Proposed); register R-520…R-527; `docs/L01_DECISIONS.md`.
 **Generator:** `docs/derivations/scripts/l01_projection.py` (`--emit`, `--check`) → `l01_projection.json` beside it.
 Every number in §3 and §6 is that record's, and the generator refuses to emit when a claim of §7 stops being true.
@@ -435,3 +435,121 @@ route. It is the reading W27 can judge today. Unit reasons are not projected.
   - the binder basis and the snapshot line (§4.3);
   - `benchmarks/l01/retake.py` (§6.2) and `tests/test_l01_retake.py` for A23–A26.
   - Before W27-A3 only A24 is runnable, and its refusal is the registered result.
+
+## 12. Amendment 1 (2026-10-22, design lane `reviewer`; `docs/reviews/L01-review.md`; R-528, R-529, R-540, R-541)
+
+This section supersedes the text it names. Every other part of the document is unchanged.
+
+### 12.1 L01.A12's c_p cross-check: the bound is 2 % and it covers all nine records (R-528)
+
+This replaces A12's last sentence: "`components-crosscheck.json` states |c_p − c_p,CoolProp|/c_p at 300, 600 and
+900 K for **every record of the file**, each ≤ **2 %**."
+
+Why the registered 0.5 % was wrong:
+- **Floor.** The bound compares two independent evaluations of ideal-gas c_p: the NASA TM-4513 fit and the reference
+  EOS's ideal part. Its floor is their disagreement on correct data. §5 derived none (A04 and A07–A11 each state one).
+  The same retrieval chain measured that disagreement:
+  - M01 §3.3 (R-158 "Watch for"): CH4 1.12 % at 1000 K and NH3 0.51 %, on records accepted as correct;
+  - this package's JSON: CH4 −0.47 %, +0.45 % and +0.68 % at 300, 600 and 900 K. L01.A02 requires that record to be
+    bitwise C1's.
+
+  A bound below its floor fails correct data, and C3H8's +0.577 % at 600 K is within that floor.
+- **Smallest error worth catching.** The cross-check is the only identity check that is independent of the retrieval
+  source. A wrong species key in `nasa_gas.yaml` would pass the exact-decimal check.
+  - The closest species swap, a new record against any of the nine and taken as the largest deviation of the three
+    temperatures, is O2/N2 at 6.5 %.
+  - A 10^{3k} scaling slip is off by orders of magnitude.
+  - Digit slips are the exact-decimal check's job. A one-unit slip in a b_k's leading digit moves c_p by ≥ 1.03 %, and
+    in its second digit by ≥ 0.10 %. The 0.5 % bound did not catch the second kind either.
+- **Bound.** 2 % sits about 3× above the measured floor (0.68 %) and about 3× below the closest swap (6.5 %).
+
+Scope: all nine records. With one rule per file, the copied four meet it too (max 0.68 %). Restricting A12 to the new
+five was a narrowed denominator. The comparand is unchanged, and C3H8 is not stopped.
+
+### 12.2 Quoted numbers (no assertion changes) and O2's critical point
+
+- A18: CO2 at 250 K and 5·10⁶ Pa has v/b = **1.515** (`reference_values.yaml`: 1.51462); the quoted "1.52" is replaced.
+- A19: "the water partial pressure is **5.5× the measured (IAPWS-95) vapour pressure at 330 K, 17.2 kPa, and 6.14× PR's
+  own, 15 482 Pa**". As §12.3 shows, this guard is not a supersaturation guard for mixtures. The state is refused
+  because it is 95 % water.
+- A07 (O2): the record's T_c and P_c (154.581 K, 5.043 MPa) are the parameters that Schmidt & Wagner state and that
+  chemicals' `HEOS` returns, and they are A07's comparand. They stand. CoolProp's computed critical point of that EOS
+  (154.5994 K, 5.04641 MPa) is a cross-check statement. It moves PR's a_c and b by ≤ 7·10⁻⁴, far below PR's own error.
+
+### 12.3 The vapour rule gains a third refusal, `vapour_unstable` (R-540)
+
+The defect: ADR 0026 D2's guard compares two roots of one composition. For a mixture that is not a stability test.
+Measured at `ca7213b`:
+- a cooled reformer outlet (H2 0.45, N2 0.15, CH4 0.02, H2O 0.30, CO2 0.08; 313.15 K, 3 MPa) is answered `ok` VAPOR,
+  with water at about 100× the fugacity of pure liquid water;
+- H2O 0.6 / N2 0.4 at 330 K and 10⁵ Pa is answered `ok`.
+
+**Rule.** This adds a third item to §4.2's root rule. After `vapour_root_metastable` and `vapour_root_liquid_like`,
+the provider refuses `vapour_unstable` when some component i with 0 < y_i < 1 has tm_i < −10⁻¹⁰, where
+
+  tm_i = ln φ_i^pure(T, P) − ln y_i − ln φ_i(T, P, y; Z_V),
+
+- ln φ_i^pure is the smallest ln φ_i over the admissible roots of the pure-i cubic at (T, P), that is its stable root,
+  because a pure phase has G^dep/RT = ln φ;
+- Z_V is the chosen (largest) root.
+
+The message is `vapour_unstable: pure-<id> trial phase tm = <tm> < 0 at <T> K, <P> Pa`. No values or derivatives are
+returned.
+
+**Derivation.**
+- Michelsen's tangent-plane distance of a trial phase w, over RT, is
+  tm(w) = Σ_k w_k [ln w_k + ln φ_k(w) − ln y_k − ln φ_k(y)]. If tm(w) < 0 for any w, the phase y is unstable: forming
+  a phase of composition w lowers G. With w = e_i, tm(w) is tm_i.
+- For y = e_i, tm_i = G^dep/RT(stable root) − G^dep/RT(Z_V). This is < 0 iff the smallest root is the stable one,
+  which is exactly D2's guard, and that guard has already refused. The rule therefore extends D2 to mixtures over
+  pure-component trial phases.
+- It only refuses, it is closed form with no iteration, and the derivatives of an admitted state are unchanged.
+- **Threshold.** The rounding error of tm_i is ≤ about 10⁻¹³ (four double terms, |ln φ| ≤ 50). 10⁻¹⁰ is 10³ above
+  that. An instability with |tm| < 10⁻¹⁰ has a condensation driving force e^{10⁻¹⁰} − 1, which is immaterial.
+
+**States.** The registered admitted states keep their status: min tm is 1.19 (V1L), 0.105 (V2L), 0.051 (A19 400 K),
+0.51 (C1V) and 1.39 (C1W), and it is exactly 0 for pure P1 and A17 385 K. The generator registers three refused states
+(the two above, and C3H8 0.5 / N2 0.5 at 250 K and 10⁶ Pa, tm = −0.62), each at tm ≤ −0.5. It also registers the
+mixture pair of the liquid-like guard (CH4/C2H6 50/50 at 350 K: 1.5·10⁷ Pa admitted at v/b_mix = 4.13; 2·10⁷ Pa
+refused at 3.16). That pair's classification flips if b_mix is replaced by the smallest or the largest b_i present.
+
+**§9 is corrected.** The bullet "No k_ij" now reads: "No k_ij, and no full phase-stability test. A VAPOR answer is
+certified stable only against pure-component trial phases (§12.3). A vapour that is unstable only towards a mixed
+liquid, for example a C2H6–C3H8 condensate with no component supersaturated on its own, is not detected. Dew points
+also carry ADR 0026 D3's k_ij = 0 error." ADR 0043 D5 carries the same addition.
+
+### 12.4 T08.A32 amended for a second vetted record file (R-529)
+
+T08.A32, as amended by M01 §3.5 (R-158), becomes the following. It is amended for real records, not relaxed.
+- A `synthetic: true` record keeps the v0.1 rule unchanged.
+- A `synthetic: false` record must meet all of these:
+  - (i) resolve, as a symlink resolves to its single copy, to a file registered as a **vetted record file**, and
+    carry one of that file's registered ids. The registry is:
+    - `benchmarks/m01/components.yaml`: H2, N2, NH3, Ar, CH4, vetted by `benchmarks/m01/external-crosscheck.json`;
+    - `benchmarks/l01/components.yaml`: H2, N2, Ar, CH4, H2O, CO2, O2, C2H6, C3H8, vetted by
+      `benchmarks/l01/components-crosscheck.json`;
+  - (ii) carry `identifiers` with `cas`, `inchi` and `inchikey`;
+  - (iii) carry non-empty `rights.source` and `rights.redistribution`, and a `provenance` on every parameter and on
+    the molecular weight;
+  - (iv) be covered by its file's retrieval equality:
+    - for M01, M01.A02 as now;
+    - for L01, all 13 `retrieval[id].equal` flags, `retrieval_all_equal`, the id absent from `retrieval_failures`, and
+      the JSON's `records_sha256` equal to the SHA-256 of the file's bytes. This is new and stricter: the vetting must
+      be of these bytes;
+  - (v) where an id appears in more than one vetted file, be the same whole record mapping in each (one datum per
+    substance; L01.A02).
+- The set of real (file, id) pairs equals the registry's, with each pair counted once.
+- Adding a file to the registry takes a design-lane amendment that names its vetting.
+
+**Not decided here: rights.** (iii) checks that a rights statement exists. Whether the statement is correct, and
+whether any of these records ships in an sdist or wheel, is Frank's decision (M01 Q-N4, L01-Q4). T08.A32's "no
+third-party data in sdist or wheel" stays as M01 §3.5 left it, a release-time question.
+
+### 12.5 Packaging moves with WO-L01-3, after L01-Q4 (R-541)
+
+§4.4 prevails over §4.1 and §11. The `PACKAGED` path, its `_data` link, the `pyproject.toml` package-data line, the
+T08 inventory pattern and the packaged-file count are all added by WO-L01-3, and only after Frank has answered L01-Q4.
+Until then the provider reads the checkout copy (`load_records`'s fallback). L01.A01's mirror clause becomes "until
+WO-L01-3, `benchmarks/l01/components.yaml` is not in `PACKAGED` and has no `_data` copy". The reason is that nothing
+packaged can reach the records before exposure, and L01-Q4's default is that nothing from L01 is released before the
+rights review.
