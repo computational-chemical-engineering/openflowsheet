@@ -366,9 +366,66 @@ provider says so (`verification: self-consistent; …; the EOS's own uncertainty
 | p-Xylene | 2.5e-15 | 4.1e-15 | 9.1e-07 | 1.9e-15 | 1.2e-14 | 1.4e+03 | 6 | none ≥ 1e-6 |
 | trans-2-Butene | 6.7e-16 | 2.0e-14 | 1.6e-06 | 2.9e-15 | 1.0e-14 | 1.9e+02 | 7 | none ≥ 1e-6 |
 
+## WO-S07-NC2 / NC3 (design note `docs/design/S07-near-critical-saturation.md`, Q-B4)
+
+Status: **implemented; WO-S07-2b's tier B now passes; two gates of the note fail (G3, G8) and wait for a ruling.**
+CoolProp scratch venv, x86-64, `OPENFLOWSHEET_REQUIRE_COOLPROP=1`. Identity was proved by recording every
+`evaluate_phase`/`flash` answer and every saturation result over the test suites (repr, round-trip exact) before and
+after each commit (scratch `recplug.py`/`cmp.py`).
+
+- **`16387740` refactor (inert).** `_maxwell_newton` extracted. S07 record over broad + coolprop + packaging
+  (35803 distinct calls) byte-identical; same 49 Q-B4 failures.
+- **`e14b7cc5` D1 + D2.** `nc_scan.py` (G1/G2/G3/G8; 123 fluids, 19759 T, 12 s): 0 unsolved, fallback at 343 points,
+  max polish 8 iterations, 0 G2 violations (no plain root moved, fallback never entered where the plain Newton
+  converges). Outer loop = bisection as specified (the prototype's Newton was not used). Forced fallback where the
+  plain Newton converges: refused at 4884 points, all θ ≥ 2.15e-3 (step 1/4/5 checks, M4's region); agreement
+  where both converge (14532 pairs): densities 5.1e-12 (θ ≥ 1e-2, bound 1e-11), **1.10e-8 (θ < 1e-2, bound 1e-8;
+  R22 at θ = 5e-5)**, **p_σ 6.5e-12 (bound 1e-12; 29 pairs R22 for θ ≤ 2.2e-3, 3 pairs R21)**. Jets inside the
+  fallback: **max 414 (Cyclopentane; G8 bound 400)**, next 394 (R1234ze_Z), 388 (R134a); the whole solve with the
+  failed Newton, 422. Cost split (Cyclopentane, forced, θ = 3.2e-2: 425 jets): 104 spinodal + ~57 k/K evaluations,
+  255 in 50 inner root solves (24 halvings), 9 polish.
+- **`c76bc19b` D3** (+ the module/`_density` docstrings). S07 record vs the pre-NC2 baseline: 35718 identical,
+  85 former refusals answered, 0 answered values changed. **`tests/test_s07_broad.py` 2626 passed**;
+  coolprop + packaging 303 passed.
+- **`232711c3` tests** (`tests/test_s07_near_critical.py`, N1-N3, N5 at the note's grids/bounds): 490 of 492
+  pass; N3 fails for R22 (both halves; numbers above). Left failing; not relaxed.
+- **`8cab0e15` S05 (D5).** S05 record (38010 calls) byte-identical before/after (sha256 `2bd5e0edc2f1dd00…` both);
+  S05 tests 380 passed, 1 skipped; `s05_reference.py --check` 2848 claims, json byte-identical; N6 fails before the
+  commit, passes after; `iapws95._saturation` converges at all 7478 points (G7(d)).
+- **Generators:** `s07_reference.py --check` all claims, json and fluid table byte-identical (112 s).
+- **Touched suites:** S05 + S07 (7 files) 3801 passed, 1 skipped, 2 failed (R22 N3); project venv 766 passed,
+  3038 skipped. ruff, format, mypy (project config, 244 files) clean.
+
+- **DECISION (Q3, session 2026-10-23):** the S05 strip fix goes on `wp/S07` as its own commit (`8cab0e15`).
+  Alternative: a separate S05 package. Reversible by reverting that commit.
+- **DECISION (Q5, session 2026-10-23):** S05 gets no fallback (D1/D2); G7(d) measured it unneeded. Alternative: port D1.
+  Reversible: additive.
+- **B-25 — DECISION (θ_min endpoint):** T_c(1 − 5e-5) computes θ < 5e-5 by one rounding for every fluid, so the
+  fallback is (correctly) not tried there (16 G1 "failures" in the first scan, all this). The scan and N1 move such a
+  grid T down by `nextafter` until θ ≥ θ_min. Alternative: drop the endpoint. Reversible in `nc_scan.py`/`at_theta`.
+- **B-26 — DECISION (step 5's inner starts, unspecified):** ρ_V(P_a) from min(P_a/RT, ρ_vb), ρ_L(P_b) from ρ_lb, as
+  step 6's first time. Reversible in `_maxwell_fallback`.
+- **B-27 — DECISION (step 6's stop test):** tested after each halving (so a final P_m and its roots always exist);
+  F = NaN → `None`; 64 halvings without reaching 2^−26 → `None`. Reversible in `_maxwell_fallback`.
+- **B-28 — DECISION (G7(c)'s continuity):** read as G5's (T_c(1 − 1e-12) vs T_c): 9.6e-12 (LIQUID 25 MPa), 1.2e-11
+  (VAPOR 20 MPa). Literally against 647.096 K the probes give 8.9e-6, 1.5e-6, 1.5e-7 (LIQUID) and 1.1e-5, 1.8e-6,
+  1.8e-7 (VAPOR): linear in ΔT (the physical (∂ln v/∂T)_P ≈ 1.5e-2/K), so 1e-8 cannot hold there.
+- **B-29 (placement):** N1-N3, N5, N6 in the new `tests/test_s07_near_critical.py`; `test_s07_broad.py` keeps 2626.
+- **B-30 — DECISION:** a CoolProp exception inside the fallback propagates as `coolprop_evaluation_failed` (as every
+  other `_jet` failure), not `None`. Reversible: catch in `_maxwell_fallback`.
+
+### For the design lane (one ruling round)
+
+1. **G3 fails for R22 (and R21 on p_σ):** the Maxwell floor of R22 is higher (R22 is F-6's cancellation fluid); the
+   p_σ difference follows from Δρ'' times (∂ln p/∂ln ρ)_T at the vapour. Options: bounds by amendment, or accept.
+2. **G8 fails by 3.5 %:** 414 jets (Cyclopentane) vs 400. Options: re-set the bound, or Q4's safeguarded Newton.
+3. **The new S05 manifest (WO-NC3) is not generated:** `s05_evidence_manifest.py`'s A33 is the identity of WO-S05-5's
+   packaging range (`92779215..C_m`, an exact file list); on `wp/S07` no base makes it pass, so the manifest would be
+   `implemented`. Needs a ruling on how A33 is carried (e.g. by hash from `01cdeed4`'s manifest).
+
 ## Handoff: next
 
-WO-S07-2b stopped on Q-B4 (above): a design ruling on the near-critical saturation solve (exclusion of 10 fluids,
-or a generic provider change for both tiers), and on F-6 (the A17 floor for R22 and PropyleneGlycol). After it:
-re-run `tests/test_s07_broad.py`, then WO-S07-3 (registration manifest with the U02 item, A29–A31, platform
-digest). The design lane rules on B-18–B-24 (and B-15) at the package review.
+Q-B4 is implemented (WO-S07-NC2, NC3; above): tier B passes (2626). Open for the design lane, in one round: the
+G3 and G8 misses and the S05 manifest's A33 (list above), F-6 and B-15, B-18-B-30. Not done here: WO-S07-NC1
+(specifier, Amendment 3 + S05 erratum), WO-S07-NC4 (generator: C-strip, 50-digit near-critical roots, N4), the
+reviewer pass, then WO-S07-3 (registration manifest with the U02 item, A29-A31, platform digest) and G9.
