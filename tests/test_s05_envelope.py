@@ -1,4 +1,4 @@
-"""S05.A22, A25-A30: the envelope, the robustness grid and the evidence (WO-S05-2).
+"""S05.A22, A25-A32: the envelope, the robustness grid and the evidence (WO-S05-2).
 
 Spec `docs/derivations/S05-IAPWS95-spec.md` §6.1. A22 is a stability grid with no expectation
 file; A25-A28 are facts of the repository (library-only registration, the packaging hold, the
@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import ast
 import fnmatch
+import hashlib
 import importlib.util
 import json
 import os
@@ -240,32 +241,56 @@ def test_a25_the_u02_note_names_the_provider() -> None:
         assert "`iapws95-v1`" in entry["note"] and "library-only" in entry["note"], entry
 
 
-# -- A26: the packaging hold (R-594) ---------------------------------------------------------------
+# -- A26: packaged (R-594, superseded by R-616; spec §16.2) ---------------------------------------
 
 COEFFICIENT_FILE = "benchmarks/s05/iapws95_coefficients.json"
+PACKAGE_COPY = ROOT / "src" / "openflowsheet" / "_data" / COEFFICIENT_FILE
+DATA_PATTERNS: list[str] = tomllib.loads((ROOT / "pyproject.toml").read_text("utf-8"))["tool"][
+    "setuptools"
+]["package-data"]["openflowsheet"]
 
 
-def test_a26_no_packaged_path_covers_the_coefficient_file() -> None:
-    assert not any(
-        entry == COEFFICIENT_FILE or COEFFICIENT_FILE.startswith(entry.rstrip("/") + "/")
-        for entry in PACKAGED
-    )
-    with pytest.raises(KeyError):
-        packaged(COEFFICIENT_FILE)
-    assert not (ROOT / "src" / "openflowsheet" / "_data" / "benchmarks" / "s05").exists()
-    project = tomllib.loads((ROOT / "pyproject.toml").read_text("utf-8"))
-    patterns = project["tool"]["setuptools"]["package-data"]["openflowsheet"]
-    assert not [p for p in patterns if fnmatch.fnmatch(f"_data/{COEFFICIENT_FILE}", p)]
-    # control: the same match finds a packaged benchmark file
-    assert [p for p in patterns if fnmatch.fnmatch("_data/benchmarks/m01/components.yaml", p)]
+def test_a26_the_coefficient_file_is_a_packaged_single_file() -> None:
+    from openflowsheet.resources import DIRECTORIES
+
+    # (a) one file entry; nothing below benchmarks/s05 is an entry or a directory entry
+    assert COEFFICIENT_FILE in PACKAGED
+    assert not [e for e in PACKAGED if e != COEFFICIENT_FILE and e.startswith("benchmarks/s05")]
+    assert not [e for e in DIRECTORIES if e.startswith("benchmarks/s05")]
+    # (b) the package copy is a link to the one repository copy, and hashes to H_C
+    assert PACKAGE_COPY.is_symlink()
+    assert os.readlink(PACKAGE_COPY) == f"../../../../../{COEFFICIENT_FILE}"
+    repository = (ROOT / COEFFICIENT_FILE).read_bytes()
+    assert packaged(COEFFICIENT_FILE).read_bytes() == repository
+    assert hashlib.sha256(repository).hexdigest() == REGISTERED_SHA256
+    # (c) exactly one package-data pattern matches
+    pattern = f"_data/{COEFFICIENT_FILE}"
+    assert len([p for p in DATA_PATTERNS if fnmatch.fnmatch(pattern, p)]) == 1
+    # control: (a)-(c) hold for a packaged benchmark file
+    control = "benchmarks/m01/components.yaml"
+    assert control in PACKAGED
+    assert (ROOT / "src" / "openflowsheet" / "_data" / control).is_symlink()
+    assert len([p for p in DATA_PATTERNS if fnmatch.fnmatch(f"_data/{control}", p)]) == 1
 
 
 #: A Python with `setuptools` (T08.A43's pin) to build the wheel; the manifest generator sets it.
 BUILD_PYTHON = os.environ.get("OFS_S05_BUILD_PYTHON")
+STRINGS = (
+    "\u00a9 2018 International Association for the Properties of Water and Steam",
+    "Publication in whole or in part is allowed in all countries provided that attribution is "
+    "given to the International Association for the Properties of Water and Steam",
+    "Please cite as: International Association for the Properties of Water and Steam, IAPWS "
+    "R6-95(2018), Revised Release on the IAPWS Formulation 1995 for the Thermodynamic "
+    "Properties of Ordinary Water Substance for General and Scientific Use (2018)",
+)
+
+
+def _collapsed(text: str) -> str:
+    return " ".join(text.split())
 
 
 @pytest.mark.skipif(not BUILD_PYTHON, reason="OFS_S05_BUILD_PYTHON (a Python with setuptools)")
-def test_a26_a_built_wheel_holds_no_coefficient_file(tmp_path: Path) -> None:
+def test_a26_a31_a_built_wheel_holds_the_coefficient_file_and_the_notice(tmp_path: Path) -> None:
     dist = _script("t08_dist")
     export, out = tmp_path / "export", tmp_path / "out"
     dist.export_commit("HEAD", export)
@@ -273,10 +298,58 @@ def test_a26_a_built_wheel_holds_no_coefficient_file(tmp_path: Path) -> None:
     wheel = dist.run_hook(Path(str(BUILD_PYTHON)), "build_wheel", export, out, "1700000000")
     with zipfile.ZipFile(wheel) as archive:
         names = archive.namelist()
-    assert not [name for name in names if name.endswith("iapws95_coefficients.json")]
-    # controls: the provider module and a packaged benchmark file are in the same wheel
-    assert "openflowsheet/thermo/iapws95.py" in names
-    assert "openflowsheet/_data/benchmarks/m01/components.yaml" in names
+        member = "openflowsheet/_data/" + COEFFICIENT_FILE
+        # A26 (d): exactly one such member, at the package path, with H_C's bytes
+        assert [n for n in names if n.endswith("iapws95_coefficients.json")] == [member]
+        assert hashlib.sha256(archive.read(member)).hexdigest() == REGISTERED_SHA256
+        below = "openflowsheet/_data/benchmarks/s05/"
+        assert [n for n in names if n.startswith(below)] == [member]
+        # controls: the provider module and a packaged benchmark file are in the same wheel
+        assert "openflowsheet/thermo/iapws95.py" in names
+        assert "openflowsheet/_data/benchmarks/m01/components.yaml" in names
+        # A31 (d): the wheel's NOTICE, located as T08.A31 locates it, equals the repository's
+        notices = [n for n in names if dist.classify_wheel(n, n.split("/", 1)[0]) == "licence"]
+        notice = [n for n in notices if n.endswith("/licenses/NOTICE")]
+        assert len(notice) == 1
+        assert archive.read(notice[0]) == (ROOT / "NOTICE").read_bytes()
+
+
+# -- A31: the attribution (R-616; spec §16.3) ------------------------------------------------------
+
+
+def test_a31_the_attribution_is_in_notice_the_record_and_the_provider_documentation() -> None:
+    notice = _collapsed((ROOT / "NOTICE").read_text("utf-8"))
+    recorded = _collapsed((ROOT / "docs" / "C10_DECISIONS.md").read_text("utf-8"))
+    document = _collapsed((ROOT / "docs" / "attributions" / "iapws95-v1.md").read_text("utf-8"))
+    for string in STRINGS:
+        assert string in notice, string
+        assert string in recorded, string
+        assert string in document, string
+    for string in (w.PROVIDER_ID, COEFFICIENT_FILE, REGISTERED_SHA256):
+        assert string in document, string
+
+
+# -- A32: the package copy serves the provider -----------------------------------------------------
+
+
+def _raises_key_error(relative: str) -> Any:
+    raise KeyError(relative)
+
+
+def test_a32_the_package_copy_serves_the_provider(monkeypatch: pytest.MonkeyPatch) -> None:
+    repository = (ROOT / COEFFICIENT_FILE).read_bytes()
+    w.load_coefficients.cache_clear()
+    try:
+        monkeypatch.setattr(w, "_checkout_coefficients", lambda: None)
+        assert w.load_coefficients() == w.parse_coefficients(repository)
+        w.load_coefficients.cache_clear()
+        # control: with the package copy unavailable too, nothing is left to read
+        monkeypatch.setattr(w, "packaged", _raises_key_error)
+        with pytest.raises(FileNotFoundError):
+            w.load_coefficients()
+    finally:
+        monkeypatch.undo()
+        w.load_coefficients.cache_clear()
 
 
 # -- A27, A28: the generator's facts and the generators' independence -----------------------------
@@ -548,10 +621,10 @@ def test_a30_each_probe_is_refused_and_its_control_answered(
     assert answered.status == "ok", answered.message
 
 
-def test_the_manifest_generator_reads_the_thirty_assertions_of_section_6_1() -> None:
+def test_the_manifest_generator_reads_the_thirty_three_assertions() -> None:
     generator = _script("s05_evidence_manifest")
     rows = generator.assertion_table(SPEC.read_text("utf-8"))
-    assert tuple(rows) == generator.ASSERTIONS and len(rows) == 30
+    assert tuple(rows) == generator.ASSERTIONS and len(rows) == 33
     assert generator.cited("tests/test_s05_envelope.py::test_a22_robustness_grid[300.0]") == (
         "A22",
     )

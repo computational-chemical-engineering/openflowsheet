@@ -75,6 +75,8 @@ openflowsheet = [
     "_data/benchmarks/m01/components.yaml",
     # M02 (register R-317 (b)): the external addendum, whose `compare` rules a coupled replay reads.
     "_data/benchmarks/m02/numerical_policy_external.yaml",
+    # S05 (R-616): the IAPWS-95 coefficients `iapws95-v1` reads, with IAPWS's attribution in NOTICE.
+    "_data/benchmarks/s05/iapws95_coefficients.json",
     # M06 (ADR 0030 D2): the diagnostic web shell, `_data/web` → `apps/web/`, one glob per
     # directory (`serve-http --ui`).
     "_data/web/*.html",
