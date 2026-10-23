@@ -107,6 +107,13 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
   merged. **Default:** nothing from L01 is released until a rights review vets the nine records and the design lane
   amends A32; shipping them is a distribution decision for you.
 
+## C10 — IAPWS-95 (S05), 2026-10-22
+
+**Answers — Frank, 2026-10-23:** C10-Q1 "Yes, as described" (build from the CoolProp-transcribed coefficients, `iapws` as comparison only; nothing ships until a person reads IAPWS's terms and checks Tables 6–8). C10-Q2 "Always 'vapour'" (T ≥ T_c is VAPOR). The S06 answers (Q-S06-1 no new warning; Q-S06-2 typed failure) are recorded on `wp/C11`.
+
+- **C10-Q1. May the IAPWS-95 coefficients ship?** This session could not read IAPWS's terms or the R6-95(2018) tables: iapws.org was refused by the proxy. **Default:** the tests and the provider may be built from the coefficients transcribed from CoolProp (MIT) and checked against `iapws` (GPL-3, used only as a comparison). Nothing ships in a wheel until a person reads the release's terms and confirms the generator's values against Tables 6–8.
+- **C10-Q2. How should a supercritical fluid (T ≥ T_c) be labelled?** **Default:** VAPOR. The alternative is to label by density (LIQUID iff ρ > ρ_c). Either label flips somewhere on a 24 MPa boiler path.
+
 ## S06 (C11) — column inverse specifications (design lane `specifier`, 2026-10-22)
 
 - **Q-S06-1. Should a column with a purity, recovery or temperature specification carry a "multiple steady

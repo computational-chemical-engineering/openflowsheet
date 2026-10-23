@@ -127,9 +127,10 @@ def test_g20_every_hit_is_allowlisted_and_every_entry_is_hit() -> None:
     # `published_schemas` and MCP tool list; T08 W2's kinetic CSTR `_artifact_hash` (13th model);
     # M01's `pr-c1-v1` records, parameters and source hash (3), its stand-in's `_artifact_hash`;
     # M04's surrogate-manifest checker's schema validators; S04's `pr-lib-v1` records, parameters
-    # and source hash (3, the same pattern as M01's).
+    # and source hash (3, the same pattern as M01's); S05's `iapws95-v1` coefficients, saturation
+    # bounds and source hash (3), and its exact-T saturation `lru_cache` (Q-3).
     per_line = Counter(hit for hits, count in found.values() for hit in hits for _ in range(count))
-    assert per_line == Counter({"cache": 28, "np.random": 3, "random": 1, "ContextVar": 1})
+    assert per_line == Counter({"cache": 32, "np.random": 3, "random": 1, "ContextVar": 1})
 
 
 def test_openflowsheet_never_imports_benchmarks() -> None:

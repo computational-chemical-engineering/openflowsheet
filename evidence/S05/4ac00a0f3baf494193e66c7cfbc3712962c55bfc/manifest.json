@@ -1,0 +1,1139 @@
+{
+  "work_package": "S05",
+  "commit": "4ac00a0f3baf494193e66c7cfbc3712962c55bfc",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S05 acceptance: docs/derivations/S05-IAPWS95-spec.md §6.1 (A01-A30) against docs/derivations/scripts/s05_reference.json, check list §12",
+    "case_hash": "524ebfb680b496bb67f5514467a976901f8a4812620e5c2301c0784ab0a409d1",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "OFS_S05_BUILD_PYTHON=build-venv/bin/python PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts/s05-tests.junit.xml tests/test_s05_envelope.py tests/test_s05_iapws95.py tests/test_s05_review_adversarial.py (build-venv: a scratch venv with setuptools 84.0.0)",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82cf4f319941838c2496ca4f68f7fdf8e240d28b37b7a7dee92eb52f5f5bed5f"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/s05_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "872a6de0259467cf602ceb895fd25ac68bb56ef75aa352876f28029b8231ce3a"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/python scripts/s05_mutations.py --logs evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "64e30fc06b83561d50544f515d491740bf31b1f80d64f89827fd3e9cb8b8ba58"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/ruff check src/openflowsheet/thermo/iapws95.py tests/test_s05_envelope.py tests/test_s05_iapws95.py tests/test_s05_review_adversarial.py scripts/s05_evidence_manifest.py scripts/s05_mutations.py docs/derivations/scripts/s05_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/home/user/openflowsheet/.venv/bin/ruff format --check src/openflowsheet/thermo/iapws95.py tests/test_s05_envelope.py tests/test_s05_iapws95.py tests/test_s05_review_adversarial.py scripts/s05_evidence_manifest.py scripts/s05_mutations.py docs/derivations/scripts/s05_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "0321fffcb91606a42c0a19d8c1121d5c544379d663821fce616c71a7bb62f6b5"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/mypy",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "e2e361019a16560078cfda341408fe96a1bf99ab33c44e293db9e2842bcef01b"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S05.A01",
+      "description": "The provider's coefficient file is byte-identical to the generator's. The module constants R_s, M, T_c, ρ_c, p_c and T_t equal §2.1's bitwise",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a01_coefficient_file_is_the_generators_and_constants_are_bitwise"
+        ],
+        "not_passed": []
+      },
+      "expected": "SHA-256 `b9e93877…abbe6ed`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S05.A02",
+      "description": "`describe()`: id `iapws95-v1`, convention `IAPWS95-ref-v1`, `nTP-v1`, components `(\"H2O\",)`, phases `(\"LIQUID\",\"VAPOR\")`, properties = the 8 ids, flashes `(\"TP\",)`, derivative_order `{T:1, P:1, n_H2O:1}`, the domain of §4.1, `numerical_limitations` naming `near_critical` and ε_σ",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a02_describe"
+        ],
+        "not_passed": []
+      },
+      "expected": "§2, §4",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S05.A03",
+      "description": "`phi_jet` at §5.1's three states, orders ≤ 2, φ° and φʳ",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 7,
+        "outcomes": {
+          "passed": 7
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a03_phi_jet_orders_up_to_two[R6_500]",
+          "tests/test_s05_iapws95.py::test_a03_phi_jet_orders_up_to_two[R6_647]",
+          "tests/test_s05_iapws95.py::test_a03_phi_jet_orders_up_to_two[delta_one]",
+          "tests/test_s05_iapws95.py::test_a03_delta_one_is_exact_and_takes_the_zero_jet",
+          "tests/test_s05_iapws95.py::test_a03_supplement_properties_at_t_rho[R6_500]",
+          "tests/test_s05_iapws95.py::test_a03_supplement_properties_at_t_rho[R6_647]",
+          "tests/test_s05_iapws95.py::test_a03_supplement_properties_at_t_rho[delta_one]"
+        ],
+        "not_passed": []
+      },
+      "expected": "ref `phi_states.*`",
+      "tolerance": "\\|Δ\\| ≤ 1e-12·max(\\|ref\\|, 1)"
+    },
+    {
+      "id": "S05.A04",
+      "description": "`phi_jet` third partials of φʳ at `R6_500` and `R6_647`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a04_third_partials_of_phir[R6_500]",
+          "tests/test_s05_iapws95.py::test_a04_third_partials_of_phir[R6_647]"
+        ],
+        "not_passed": []
+      },
+      "expected": "ref `phi_states.*_ddd` and the other third-order keys",
+      "tolerance": "\\|Δ\\| ≤ 1e-11·max(\\|ref\\|, 1) (Q-5)"
+    },
+    {
+      "id": "S05.A05",
+      "description": "`evaluate_phase` at §5.2's eleven states in their phase: h, s, v, Z, cp and lnphi_H2O",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 11,
+        "outcomes": {
+          "passed": 11
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a05_values[L_ambient]",
+          "tests/test_s05_iapws95.py::test_a05_values[L_corner]",
+          "tests/test_s05_iapws95.py::test_a05_values[L_hot]",
+          "tests/test_s05_iapws95.py::test_a05_values[V_dilute]",
+          "tests/test_s05_iapws95.py::test_a05_values[V_nearsat]",
+          "tests/test_s05_iapws95.py::test_a05_values[V_corner]",
+          "tests/test_s05_iapws95.py::test_a05_values[SC_dense]",
+          "tests/test_s05_iapws95.py::test_a05_values[SC_corner]",
+          "tests/test_s05_iapws95.py::test_a05_values[SC_ideal]",
+          "tests/test_s05_iapws95.py::test_a05_values[NC_vapour]",
+          "tests/test_s05_iapws95.py::test_a05_values[NC_liquid]"
+        ],
+        "not_passed": []
+      },
+      "expected": "ref `tp_states`",
+      "tolerance": "h: 1e-8·R·T absolute; s: 1e-8·R absolute; v: 1e-9 relative; Z, cp: 1e-8 relative; lnphi: 1e-8 absolute. NC ×100"
+    },
+    {
+      "id": "S05.A06",
+      "description": "The same states' T and P derivatives of all six",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 11,
+        "outcomes": {
+          "passed": 11
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives[L_ambient]",
+          "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives[L_corner]",
+          "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives[L_hot]",
+          "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives[V_dilute]",
+          "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives[V_nearsat]",
+          "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives[V_corner]",
+          "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives[SC_dense]",
+          "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives[SC_corner]",
+          "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives[SC_ideal]",
+          "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives[NC_vapour]",
+          "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives[NC_liquid]"
+        ],
+        "not_passed": []
+      },
+      "expected": "ref `d*_dT`, `d*_dP`",
+      "tolerance": "1e-8 relative; NC ×100"
+    },
+    {
+      "id": "S05.A07",
+      "description": "Every `n_H2O` derivative is present and equals 0.0. As a control, the T derivatives at the same state are non-zero",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 11,
+        "outcomes": {
+          "passed": 11
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero[L_ambient]",
+          "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero[L_corner]",
+          "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero[L_hot]",
+          "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero[V_dilute]",
+          "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero[V_nearsat]",
+          "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero[V_corner]",
+          "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero[SC_dense]",
+          "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero[SC_corner]",
+          "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero[SC_ideal]",
+          "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero[NC_vapour]",
+          "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero[NC_liquid]"
+        ],
+        "not_passed": []
+      },
+      "expected": "0.0",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S05.A08",
+      "description": "`Psat` at §5.3's five temperatures, and dPsat/dT. dPsat/dP is 0.0",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 5,
+        "outcomes": {
+          "passed": 5
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a08_psat_and_its_slope[273.16]",
+          "tests/test_s05_iapws95.py::test_a08_psat_and_its_slope[275]",
+          "tests/test_s05_iapws95.py::test_a08_psat_and_its_slope[450]",
+          "tests/test_s05_iapws95.py::test_a08_psat_and_its_slope[625]",
+          "tests/test_s05_iapws95.py::test_a08_psat_and_its_slope[647]"
+        ],
+        "not_passed": []
+      },
+      "expected": "ref `saturation.*.Psat`, `dPsat_dT`",
+      "tolerance": "2e-9 relative; slope 1e-8 relative"
+    },
+    {
+      "id": "S05.A09",
+      "description": "`Tsat` at §5.3's three pressures, and dTsat/dP. dTsat/dT is 0.0",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a09_tsat_and_its_slope[101325]",
+          "tests/test_s05_iapws95.py::test_a09_tsat_and_its_slope[1.0e6]",
+          "tests/test_s05_iapws95.py::test_a09_tsat_and_its_slope[1.0e7]"
+        ],
+        "not_passed": []
+      },
+      "expected": "ref `tsat`",
+      "tolerance": "1e-9 relative; slope 1e-8 relative"
+    },
+    {
+      "id": "S05.A10",
+      "description": "Maxwell: at each `Psat` temperature, LIQUID and VAPOR at P = the provider's own Psat(T) are both `ok`. \\|lnφ_L − lnφ_V\\| is small, and h_V − h_L matches ref",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 5,
+        "outcomes": {
+          "passed": 5
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a10_maxwell_on_the_providers_own_psat[273.16]",
+          "tests/test_s05_iapws95.py::test_a10_maxwell_on_the_providers_own_psat[275]",
+          "tests/test_s05_iapws95.py::test_a10_maxwell_on_the_providers_own_psat[450]",
+          "tests/test_s05_iapws95.py::test_a10_maxwell_on_the_providers_own_psat[625]",
+          "tests/test_s05_iapws95.py::test_a10_maxwell_on_the_providers_own_psat[647]"
+        ],
+        "not_passed": []
+      },
+      "expected": "ref `h_v − h_l`",
+      "tolerance": "lnφ: 1e-8 absolute; Δh: 1e-9 relative (1e-6 at 647.0 K)"
+    },
+    {
+      "id": "S05.A11",
+      "description": "Clausius–Clapeyron (I9) on the provider's own answers: dPsat/dT = (s_V − s_L)/(v_V − v_L)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 5,
+        "outcomes": {
+          "passed": 5
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a11_clausius_clapeyron_on_the_providers_answers[273.16]",
+          "tests/test_s05_iapws95.py::test_a11_clausius_clapeyron_on_the_providers_answers[275]",
+          "tests/test_s05_iapws95.py::test_a11_clausius_clapeyron_on_the_providers_answers[450]",
+          "tests/test_s05_iapws95.py::test_a11_clausius_clapeyron_on_the_providers_answers[625]",
+          "tests/test_s05_iapws95.py::test_a11_clausius_clapeyron_on_the_providers_answers[647]"
+        ],
+        "not_passed": []
+      },
+      "expected": "itself",
+      "tolerance": "1e-8 relative (1e-6 at 647.0 K)"
+    },
+    {
+      "id": "S05.A12",
+      "description": "The datum: at 273.16 K and P = Psat(273.16 K), LIQUID has \\|h − Pv\\| ≤ 1e-6 J/mol and \\|s\\| ≤ 1e-8 J/(mol·K). As a control, the same quantities at 450 K exceed 1000 J/mol and 10 J/(mol·K)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a12_the_datum"
+        ],
+        "not_passed": []
+      },
+      "expected": "ref `datum`",
+      "tolerance": "as stated"
+    },
+    {
+      "id": "S05.A13",
+      "description": "The band probes of §5.4: the answered sets and the values; the refused phase is `phase_not_stable:`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 5,
+        "outcomes": {
+          "passed": 5
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a13_band_probes[out_lo]",
+          "tests/test_s05_iapws95.py::test_a13_band_probes[in_lo]",
+          "tests/test_s05_iapws95.py::test_a13_band_probes[at]",
+          "tests/test_s05_iapws95.py::test_a13_band_probes[in_hi]",
+          "tests/test_s05_iapws95.py::test_a13_band_probes[out_hi]"
+        ],
+        "not_passed": []
+      },
+      "expected": "ref `band.probes`",
+      "tolerance": "as A05"
+    },
+    {
+      "id": "S05.A14",
+      "description": "`near_critical:` probes of §5.5, for both phases and for the flash, each with its control",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a14_near_critical"
+        ],
+        "not_passed": []
+      },
+      "expected": "§5.5",
+      "tolerance": "exact codes"
+    },
+    {
+      "id": "S05.A15",
+      "description": "The supercritical label and the (647.0 K, T_c) rule: the §5.5 `phase_not_stable` probes and their controls",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a15_supercritical_label_and_the_647_edge"
+        ],
+        "not_passed": []
+      },
+      "expected": "§5.5",
+      "tolerance": "exact codes"
+    },
+    {
+      "id": "S05.A16",
+      "description": "The four domain-edge probes of §5.5 → `out_of_domain`, for `evaluate_phase`, `Psat`, `Tsat` and `flash`. Controls at the exact bounds are `ok`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a16_domain_edges[probe0-L_corner]",
+          "tests/test_s05_iapws95.py::test_a16_domain_edges[probe1-SC_corner]",
+          "tests/test_s05_iapws95.py::test_a16_domain_edges[probe2-V_corner]",
+          "tests/test_s05_iapws95.py::test_a16_domain_edges[probe3-SC_corner]"
+        ],
+        "not_passed": []
+      },
+      "expected": "§5.5",
+      "tolerance": "exact codes"
+    },
+    {
+      "id": "S05.A17",
+      "description": "Value/derivative consistency: the provider's T and P derivatives against central differences of its own values (step 1e-6·x) at §5.2's states and the band probes",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 38,
+        "outcomes": {
+          "passed": 38
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[L_ambient-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[L_ambient-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[L_corner-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[L_corner-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[L_hot-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[L_hot-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[V_dilute-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[V_dilute-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[V_nearsat-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[V_nearsat-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[V_corner-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[V_corner-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[SC_dense-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[SC_dense-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[SC_corner-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[SC_corner-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[SC_ideal-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[SC_ideal-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[NC_vapour-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[NC_vapour-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[NC_liquid-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[NC_liquid-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_out_lo-VAPOR-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_out_lo-VAPOR-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_in_lo-LIQUID-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_in_lo-LIQUID-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_in_lo-VAPOR-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_in_lo-VAPOR-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_at-LIQUID-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_at-LIQUID-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_at-VAPOR-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_at-VAPOR-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_in_hi-LIQUID-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_in_hi-LIQUID-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_in_hi-VAPOR-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_in_hi-VAPOR-P]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_out_hi-LIQUID-T]",
+          "tests/test_s05_iapws95.py::test_a17_finite_differences[band_out_hi-LIQUID-P]"
+        ],
+        "not_passed": []
+      },
+      "expected": "itself",
+      "tolerance": "value units, FD_TOL = 1e-10 (§6.3, Q-6)"
+    },
+    {
+      "id": "S05.A18",
+      "description": "`no_saturation:` probes of §5.5, with controls",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a18_no_saturation"
+        ],
+        "not_passed": []
+      },
+      "expected": "§5.5",
+      "tolerance": "exact codes"
+    },
+    {
+      "id": "S05.A19",
+      "description": "A saturation-only request skips the phase check, and the same request with `h` added does not (§5.5)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a19_saturation_only_skips_the_phase_check"
+        ],
+        "not_passed": []
+      },
+      "expected": "§5.5",
+      "tolerance": "exact codes"
+    },
+    {
+      "id": "S05.A20",
+      "description": "Flash: single-phase outcomes at §5.2's states (vapour fraction, outlets, zero stream, `phase_signature`, empty `k_values`); `tp_flash_degenerate:` at band `in_lo`; dormant → `ZERO_FLOW`; `PH` and derivative refusals",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 12,
+        "outcomes": {
+          "passed": 12
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a20_single_phase_flash[L_ambient]",
+          "tests/test_s05_iapws95.py::test_a20_single_phase_flash[L_corner]",
+          "tests/test_s05_iapws95.py::test_a20_single_phase_flash[L_hot]",
+          "tests/test_s05_iapws95.py::test_a20_single_phase_flash[V_dilute]",
+          "tests/test_s05_iapws95.py::test_a20_single_phase_flash[V_nearsat]",
+          "tests/test_s05_iapws95.py::test_a20_single_phase_flash[V_corner]",
+          "tests/test_s05_iapws95.py::test_a20_single_phase_flash[SC_dense]",
+          "tests/test_s05_iapws95.py::test_a20_single_phase_flash[SC_corner]",
+          "tests/test_s05_iapws95.py::test_a20_single_phase_flash[SC_ideal]",
+          "tests/test_s05_iapws95.py::test_a20_single_phase_flash[NC_vapour]",
+          "tests/test_s05_iapws95.py::test_a20_single_phase_flash[NC_liquid]",
+          "tests/test_s05_iapws95.py::test_a20_band_dormant_and_contract"
+        ],
+        "not_passed": []
+      },
+      "expected": "§4.5",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S05.A21",
+      "description": "Contract refusals 1, 2, 3 and 5 of §4.5, with controls",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a21_contract_refusals"
+        ],
+        "not_passed": []
+      },
+      "expected": "§4.5",
+      "tolerance": "exact codes"
+    },
+    {
+      "id": "S05.A22",
+      "description": "Robustness grid: T ∈ {273.16, 300, 350, …, 1250, 1273.15} × P ∈ {1e2, 1e3, …, 1e8} plus 3·10⁷. Every non-refused phase is `ok`, `not_converged` never occurs, and every answer has (∂v/∂P)_T ‹ 0 and cp › 0",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 206,
+        "outcomes": {
+          "passed": 206
+        },
+        "selectors": [
+          "tests/test_s05_envelope.py::test_a22_the_grid_is_the_specs",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[273.16]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[300.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[350.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[400.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[450.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[500.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[550.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[600.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[650.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[700.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[750.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[800.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[850.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[900.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[950.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[1000.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[1050.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[1100.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[1150.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[1200.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[1250.0]",
+          "tests/test_s05_envelope.py::test_a22_robustness_grid[1273.15]",
+          "tests/test_s05_envelope.py::test_a22_the_dense_grid_is_the_reviews",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[273.16]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[276.3006722689076]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[279.44134453781516]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[282.5820168067227]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[285.7226890756303]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[288.86336134453785]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[292.0040336134454]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[295.144705882353]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[298.28537815126055]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[301.4260504201681]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[304.5667226890757]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[307.70739495798324]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[310.84806722689075]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[313.9887394957983]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[317.1294117647059]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[320.27008403361344]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[323.410756302521]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[326.5514285714286]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[329.69210084033614]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[332.8327731092437]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[335.97344537815127]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[339.11411764705883]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[342.2547899159664]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[345.39546218487396]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[348.53613445378153]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[351.6768067226891]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[354.81747899159666]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[357.9581512605042]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[361.0988235294118]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[364.23949579831935]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[367.3801680672269]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[370.5208403361345]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[373.66151260504205]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[376.8021848739496]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[379.9428571428572]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[383.08352941176474]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[386.2242016806723]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[389.3648739495799]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[392.50554621848744]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[395.646218487395]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[398.78689075630257]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[401.92756302521013]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[405.0682352941177]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[408.20890756302526]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[411.34957983193283]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[414.49025210084034]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[417.6309243697479]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[420.77159663865547]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[423.91226890756303]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[427.0529411764706]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[430.19361344537816]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[433.3342857142857]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[436.4749579831933]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[439.61563025210086]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[442.7563025210084]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[445.896974789916]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[449.03764705882355]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[452.1783193277311]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[455.3189915966386]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[458.4596638655462]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[461.60033613445376]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[464.7410084033613]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[467.8816806722689]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[471.02235294117645]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[474.163025210084]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[477.3036974789916]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[480.44436974789915]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[483.5850420168067]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[486.7257142857143]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[489.86638655462184]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[493.0070588235294]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[496.14773109243697]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[499.28840336134454]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[502.4290756302521]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[505.56974789915967]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[508.71042016806723]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[511.8510924369748]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[514.9917647058824]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[518.1324369747899]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[521.2731092436975]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[524.413781512605]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[527.5544537815126]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[530.6951260504202]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[533.8357983193278]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[536.9764705882353]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[540.1171428571429]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[543.2578151260504]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[546.398487394958]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[549.5391596638656]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[552.6798319327731]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[555.8205042016807]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[558.9611764705883]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[562.1018487394958]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[565.2425210084034]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[568.383193277311]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[571.5238655462185]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[574.6645378151261]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[577.8052100840337]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[580.9458823529412]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[584.0865546218488]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[587.2272268907564]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[590.3678991596639]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[593.5085714285715]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[596.649243697479]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[599.7899159663866]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[602.9305882352942]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[606.0712605042017]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[609.2119327731093]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[612.3526050420169]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[615.4932773109244]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[618.633949579832]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[621.7746218487396]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[624.9152941176471]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[628.0559663865547]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[631.1966386554623]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[634.3373109243698]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[637.4779831932773]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[640.6186554621848]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[643.7593277310924]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[646.9]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[648.5]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[659.0872881355932]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[669.6745762711864]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[680.2618644067796]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[690.8491525423728]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[701.4364406779661]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[712.0237288135593]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[722.6110169491526]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[733.1983050847458]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[743.785593220339]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[754.3728813559322]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[764.9601694915254]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[775.5474576271187]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[786.1347457627119]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[796.7220338983051]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[807.3093220338983]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[817.8966101694915]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[828.4838983050847]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[839.071186440678]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[849.6584745762711]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[860.2457627118645]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[870.8330508474577]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[881.4203389830509]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[892.0076271186441]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[902.5949152542373]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[913.1822033898305]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[923.7694915254237]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[934.356779661017]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[944.9440677966102]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[955.5313559322035]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[966.1186440677966]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[976.7059322033899]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[987.293220338983]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[997.8805084745763]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1008.4677966101694]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1019.0550847457628]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1029.642372881356]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1040.2296610169492]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1050.8169491525423]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1061.4042372881356]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1071.991525423729]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1082.578813559322]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1093.1661016949154]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1103.7533898305085]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1114.3406779661018]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1124.927966101695]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1135.5152542372882]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1146.1025423728813]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1156.6898305084746]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1167.2771186440677]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1177.864406779661]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1188.4516949152544]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1199.0389830508475]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1209.6262711864406]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1220.213559322034]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1230.8008474576272]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1241.3881355932203]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1251.9754237288134]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1262.562711864407]",
+          "tests/test_s05_envelope.py::test_a22_dense_grid_root_residual[1273.15]",
+          "tests/test_s05_envelope.py::test_a22_a_wrong_root_is_caught",
+          "tests/test_s05_envelope.py::test_a22_a_broken_stability_sign_is_caught"
+        ],
+        "not_passed": []
+      },
+      "expected": "none (stability)",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S05.A23",
+      "description": "Determinism: two calls give bitwise-equal results. Every result, refusals included, carries the provider id and the convention; `achieved_accuracy` is `exact-double`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a23_determinism_and_identity"
+        ],
+        "not_passed": []
+      },
+      "expected": "itself",
+      "tolerance": "bitwise"
+    },
+    {
+      "id": "S05.A24",
+      "description": "`implementation_sha256` = SHA-256 of `iapws95.py`'s bytes; `data_sha256` = the A01 hash",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s05_iapws95.py::test_a24_identities_are_the_files_hashes"
+        ],
+        "not_passed": [],
+        "measured": {
+          "implementation_sha256": "c480f55fa15c97a1b3eb142f755be485ba5025035ae4d4f8bf54935cdbcd8d01",
+          "data_sha256": "b9e93877e37874f1b3a483e298a45692e264d70686d4c158372084b96abbe6ed"
+        }
+      },
+      "expected": "files",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S05.A25",
+      "description": "Library-only: absent from `SELECTABLE_BASES`; registered in `LIBRARY_ONLY_PROVIDERS` and `scanned_providers` (F-2); U02's note names `iapws95-v1`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s05_envelope.py::test_a25_library_only_registration",
+          "tests/test_s05_envelope.py::test_a25_the_u02_note_names_the_provider"
+        ],
+        "not_passed": []
+      },
+      "expected": "R-568, R-569",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S05.A26",
+      "description": "Packaging hold: no `PACKAGED` entry covers `benchmarks/s05/`, and a built wheel holds no `iapws95_coefficients.json`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s05_envelope.py::test_a26_no_packaged_path_covers_the_coefficient_file",
+          "tests/test_s05_envelope.py::test_a26_a_built_wheel_holds_no_coefficient_file"
+        ],
+        "not_passed": [],
+        "measured": {
+          "wheel_built_with_setuptools": "84.0.0"
+        }
+      },
+      "expected": "R-594",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S05.A27",
+      "description": "Generator facts: ref's `coefficients_sha256` equals A01's hash, `claim_count` ≥ 300, and `--check` passed (manifest command)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s05_envelope.py::test_a27_generator_facts"
+        ],
+        "not_passed": [],
+        "measured": {
+          "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/s05_reference.py --check",
+          "exit_code": 0,
+          "output": [
+            "2848 claims passed",
+            "/home/user/ofs-c10/docs/derivations/scripts/s05_reference.json is byte-identical to the generator's output"
+          ]
+        }
+      },
+      "expected": "ref",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S05.A28",
+      "description": "Independence: the AST of `s05_reference.py` imports only the standard library and mpmath. No test imports `s05_crosscheck.py`, CoolProp or iapws",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s05_envelope.py::test_a28_the_reference_generator_imports_only_the_standard_library_and_mpmath",
+          "tests/test_s05_envelope.py::test_a28_no_test_imports_the_cross_check_or_its_libraries"
+        ],
+        "not_passed": []
+      },
+      "expected": "files",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S05.A29",
+      "description": "Mutation battery, where each mutation must fail the named assertion: (m1) drop Gaussian term 54 → A03 at `R6_647`; (m2) flip the sign of n°₃ → A03; (m3) CODATA R → A05; (m4) ε_σ = 0 → A13; (m5) 647.0 K replaced by T_c in step 3 → A15; (m6) omit the `n_H2O` derivative → A07; (m7) a zero third-order jet → A06 (dcp); (m8) take ln((δ−1)²) at δ = 1 → A03 at `delta_one`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 11,
+        "outcomes": {
+          "passed": 11
+        },
+        "selectors": [
+          "tests/test_s05_envelope.py::test_a29_every_edit_applies_once_and_the_mutations_are_the_specs",
+          "tests/test_s05_envelope.py::test_a29_a_stale_edit_is_refused",
+          "tests/test_s05_envelope.py::test_a29_the_control_run_passes",
+          "tests/test_s05_envelope.py::test_a29_the_named_assertion_catches_the_mutation[m1]",
+          "tests/test_s05_envelope.py::test_a29_the_named_assertion_catches_the_mutation[m2]",
+          "tests/test_s05_envelope.py::test_a29_the_named_assertion_catches_the_mutation[m3]",
+          "tests/test_s05_envelope.py::test_a29_the_named_assertion_catches_the_mutation[m4]",
+          "tests/test_s05_envelope.py::test_a29_the_named_assertion_catches_the_mutation[m5]",
+          "tests/test_s05_envelope.py::test_a29_the_named_assertion_catches_the_mutation[m6]",
+          "tests/test_s05_envelope.py::test_a29_the_named_assertion_catches_the_mutation[m7]",
+          "tests/test_s05_envelope.py::test_a29_the_named_assertion_catches_the_mutation[m8]"
+        ],
+        "not_passed": [],
+        "measured": {
+          "cmd": "/home/user/openflowsheet/.venv/bin/python scripts/s05_mutations.py --logs evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts",
+          "exit_code": 0,
+          "verdict": [
+            "S05.A29 pass: 8/8 mutations caught, control passed"
+          ],
+          "control": {
+            "nodes": [
+              "tests/test_s05_iapws95.py::test_a03_phi_jet_orders_up_to_two[R6_647]",
+              "tests/test_s05_iapws95.py::test_a03_phi_jet_orders_up_to_two",
+              "tests/test_s05_iapws95.py::test_a05_values",
+              "tests/test_s05_iapws95.py::test_a13_band_probes",
+              "tests/test_s05_iapws95.py::test_a15_supercritical_label_and_the_647_edge",
+              "tests/test_s05_iapws95.py::test_a07_n_derivatives_are_exactly_zero",
+              "tests/test_s05_iapws95.py::test_a06_t_and_p_derivatives",
+              "tests/test_s05_iapws95.py::test_a03_phi_jet_orders_up_to_two[delta_one]"
+            ],
+            "exit_code": 0,
+            "outcomes": {
+              "passed": 42
+            },
+            "passed": true,
+            "log": "s05-mutation-control.log",
+            "log_sha256": "8ebc47f261b07efebf60c56a9cb3b54c1110eea6e9207f1c477d917557f44714"
+          },
+          "mutations": [
+            {
+              "id": "m1",
+              "mutation": "drop Gaussian term 54 (the third of terms 52-54)",
+              "assertion": "A03",
+              "caught": true,
+              "log_sha256": "ddaf77aadab7afed01dd68db9e931cb767eb5e386d9d67f2fe75192a14cd8ee7",
+              "log": "evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts/s05-mutation-m1.log"
+            },
+            {
+              "id": "m2",
+              "mutation": "flip the sign of n°₃",
+              "assertion": "A03",
+              "caught": true,
+              "log_sha256": "0f82f64aadcae220a70be82754a9b97534f9ee141b842e4f36c142ab59b32f4e",
+              "log": "evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts/s05-mutation-m2.log"
+            },
+            {
+              "id": "m3",
+              "mutation": "CODATA R (8.314462618 J/(mol K)) in place of R_s·M",
+              "assertion": "A05",
+              "caught": true,
+              "log_sha256": "00e634e14a4f5fbc0ea3ec587cd7341b6e49d2d52c992c4894ed4ec1f13a9fdf",
+              "log": "evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts/s05-mutation-m3.log"
+            },
+            {
+              "id": "m4",
+              "mutation": "ε_σ = 0",
+              "assertion": "A13",
+              "caught": true,
+              "log_sha256": "c705168bfbe603f6801fc1cd1791a67173df50a21ac4efb0c75ee10cc89b2837",
+              "log": "evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts/s05-mutation-m4.log"
+            },
+            {
+              "id": "m5",
+              "mutation": "T_c replaced by 647.0 K in step 2 of the phase rule (R-598)",
+              "assertion": "A15",
+              "caught": true,
+              "log_sha256": "5e2fe3b2cac995aab44ab458902d94179e2e85ba3d361c435d94916b209583f7",
+              "log": "evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts/s05-mutation-m5.log"
+            },
+            {
+              "id": "m6",
+              "mutation": "omit the n_H2O derivative",
+              "assertion": "A07",
+              "caught": true,
+              "log_sha256": "9b9836cc94e75cd4db41771b76b8570b9cbd0712aeb297b40c7befecfe68261f",
+              "log": "evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts/s05-mutation-m6.log"
+            },
+            {
+              "id": "m7",
+              "mutation": "a zero third-order jet (every third partial of φ° and φʳ is 0.0)",
+              "assertion": "A06",
+              "caught": true,
+              "log_sha256": "e67a3076eb9336663584cbdae041f0baae406564fab945ab8d589b2f62dbc23e",
+              "log": "evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts/s05-mutation-m7.log"
+            },
+            {
+              "id": "m8",
+              "mutation": "take ln((δ−1)²) at δ = 1 in place of the zero jet",
+              "assertion": "A03",
+              "caught": true,
+              "log_sha256": "90048715975e4a124019034e3262e7258928593c4c577fcc01aa71a6adaba269",
+              "log": "evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts/s05-mutation-m8.log"
+            }
+          ],
+          "summary_sha256": "34011ab49e551683a6b39bc767bba385258721c1ab6a29e9d9dc0073b7d6acfa",
+          "registered": 8
+        }
+      },
+      "expected": "named",
+      "tolerance": "each fails"
+    },
+    {
+      "id": "S05.A30",
+      "description": "Coverage: every code of §4.5 has a probe, and every probe has an answered control (the test's probe table is checked against the code list)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 17,
+        "outcomes": {
+          "passed": 17
+        },
+        "selectors": [
+          "tests/test_s05_envelope.py::test_a30_the_probe_table_covers_every_code_of_section_4_5",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[evaluate_phase-undeclared_derivative_input]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[evaluate_phase-unknown_property]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[evaluate_phase-state_length]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[evaluate_phase-out_of_domain]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[evaluate_phase-dormant_state]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[evaluate_phase-no_saturation]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[evaluate_phase-near_critical]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[evaluate_phase-phase_not_stable]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[evaluate_phase-density_not_converged]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[evaluate_phase-saturation_not_converged]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[flash-unsupported_specification]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[flash-flash_derivatives_unsupported]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[flash-state_length]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[flash-out_of_domain]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[flash-near_critical]",
+          "tests/test_s05_envelope.py::test_a30_each_probe_is_refused_and_its_control_answered[flash-tp_flash_degenerate]"
+        ],
+        "not_passed": []
+      },
+      "expected": "§4.5",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S05.generator",
+      "description": "§11/§12: s05_reference.py --check re-derives every claim and byte-compares s05_reference.json",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/python docs/derivations/scripts/s05_reference.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S05.ruff",
+      "description": "ruff check is clean on S05's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/ruff check src/openflowsheet/thermo/iapws95.py tests/test_s05_envelope.py tests/test_s05_iapws95.py tests/test_s05_review_adversarial.py scripts/s05_evidence_manifest.py scripts/s05_mutations.py docs/derivations/scripts/s05_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S05.format",
+      "description": "ruff format --check is clean on S05's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/user/openflowsheet/.venv/bin/ruff format --check src/openflowsheet/thermo/iapws95.py tests/test_s05_envelope.py tests/test_s05_iapws95.py tests/test_s05_review_adversarial.py scripts/s05_evidence_manifest.py scripts/s05_mutations.py docs/derivations/scripts/s05_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S05.mypy",
+      "description": "mypy (the project's configuration) is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/user/openflowsheet/.venv/bin/mypy",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S05.gate",
+      "description": "§12: scripts/gate.sh passes before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; the full gate runs once before merge (CLAUDE.md)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts/s05-tests.junit.xml",
+      "sha256": "7dfe050cfdb3d35c8ca5e87d926ebb42ea63f0a6805618e0468f3600ea8785ff",
+      "description": "JUnit report of the S05 test run (ignored; kept by hash)"
+    },
+    {
+      "path": "evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/artifacts/s05-mutations.json",
+      "sha256": "34011ab49e551683a6b39bc767bba385258721c1ab6a29e9d9dc0073b7d6acfa",
+      "description": "the A29 battery's summary; its logs sit beside it (ignored)"
+    },
+    {
+      "path": "docs/derivations/scripts/s05_reference.json",
+      "sha256": "524ebfb680b496bb67f5514467a976901f8a4812620e5c2301c0784ab0a409d1",
+      "description": "the design lane's 50-digit reference values (ref)"
+    },
+    {
+      "path": "docs/derivations/scripts/s05_crosscheck.json",
+      "sha256": "bbc2ded9817afdf17434deab67c5855d9b01babc94aac17ee84ca41c1b063409",
+      "description": "the design lane's cross-check record (CoolProp 8.0.0, iapws 1.5.5), not re-run by the build lane"
+    },
+    {
+      "path": "benchmarks/s05/iapws95_coefficients.json",
+      "sha256": "b9e93877e37874f1b3a483e298a45692e264d70686d4c158372084b96abbe6ed",
+      "description": "the provider's coefficient file (data_sha256; not packaged)"
+    },
+    {
+      "path": "src/openflowsheet/thermo/iapws95.py",
+      "sha256": "c480f55fa15c97a1b3eb142f755be485ba5025035ae4d4f8bf54935cdbcd8d01",
+      "description": "the iapws95-v1 provider module (implementation_sha256)"
+    },
+    {
+      "path": "docs/derivations/S05-IAPWS95-spec.md",
+      "sha256": "99a790c372301896847678cb66dddc777e3f05f1ae3c6d6107c8165945663312",
+      "description": "the S05 specification the checks are read from (§6.1, §12)"
+    }
+  ],
+  "limitations": [
+    "Rights (C10-Q1, R-599): the IAPWS terms of use for R6-95 were not read (iapws.org refused, 2026-10-22); the rights row is `unresolved`. benchmarks/s05/iapws95_coefficients.json is unpackaged (A26), so `iapws95-v1` runs only from a source checkout; Tables 6-8 are not compared; ADR 0045 remains Proposed. There is no `released` status and no wheel carrying the coefficients until C10-Q1 is answered, and `reviewed` would cover numerics only, not rights.",
+    "`iapws95-v1` is library-only (R-568, R-569): it is not in revision_binding.SELECTABLE_BASES, so no revision can select it and no development case becomes runnable (U02); it is registered in the T08 envelope's LIBRARY_ONLY_PROVIDERS and its scanned_providers (spec §8 F-2). Coverage counts are unchanged.",
+    "The R6-95(2018) Tables 6-8 are not compared (C10-Q1, spec §10 Q-1): the coefficients and the admitted values equal two independent transcriptions (CoolProp 8.0.0, iapws 1.5.5) and a 50-digit evaluation of the committed transcription; a transcription error shared by both would pass every assertion. This is numerical verification of an implementation against a formulation, not empirical validation (spec §9).",
+    "The coefficient file benchmarks/s05/iapws95_coefficients.json is not packaged (R-594, C10-Q1): no PACKAGED entry covers benchmarks/s05/ and a built wheel holds no copy (A26), so `iapws95-v1` runs only from a source checkout.",
+    "The near_critical box, T in (647.0, 648.0) K and P in [2.20e7, 2.22e7] Pa, is refused near_critical for both phases and the flash (spec §4.2 step 1); states there are not evaluated.",
+    "The saturation band is eps_sigma = 1e-6 in ln(P/p_sigma) (spec §4.2 step 4): both phases are answered inside it, metastable states beyond it are refused phase_not_stable, and a TP flash inside it is refused tp_flash_degenerate.",
+    "s05_crosscheck.py --check (CoolProp 8.0.0, iapws 1.5.5) runs only in the design lane's scratch venv and is not re-run by the build lane; its committed output docs/derivations/scripts/s05_crosscheck.json (SHA-256 bbc2ded9817afdf17434deab67c5855d9b01babc94aac17ee84ca41c1b063409) was last written at 820c182e5400474d16bea25bd173235f7f39cde4, and s05_reference.py --check executes the admission against it (spec §7 C3).",
+    "requirements is empty: the schema takes D/A requirement ids and none lists S05; ADR 0045 (IAPWS-95 as a library-only provider) is Proposed, and spec §8's F-1 (ADR 0001 D5 and interfaces-frozen.md gain IAPWS95-ref-v1) is the design lane's amendment, not made here.",
+    "scripts/gate.sh was not run by this generator (it runs once before merge into main); S05.gate is unsupported here.",
+    "Review: the design lane's reviewer pass (docs/reviews/S05-review.md, R-595…R-599) ruled WO-S05-1's and WO-S05-2's questions, and WO-S05-3 applied the rulings; the reviewer's check of the WO-S05-3 diff and the human numerical and process-model review are pending, and this manifest claims neither. WO-S05-3's open QUESTION in docs/C10_DECISIONS.md (R-595 clause 2: the floor clause tested before the bracket safeguard) goes to that check."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

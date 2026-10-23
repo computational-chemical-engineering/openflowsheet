@@ -1,10 +1,26 @@
 # ADR 0044 — Recovery edge 3 after a restart that ends `LINEAR_SOLVE_FAILED`
 
-**Status:** Proposed 2026-10-22. **Review 2026-10-22 (S02 `reviewer`, R-550): stays Proposed.** It becomes Accepted when
+**Status:** Accepted 2026-10-23 — all four conditions and Frank's are met (evidence below and C2); Frank, verbatim: "1: yes" (2026-10-23). Proposed 2026-10-22. **Review 2026-10-22 (S02 `reviewer`, R-550): stays Proposed.** It becomes Accepted when
 (1) D1 is narrowed as below and A20 is extended (S02 spec §19 item 1); (2) S02's manifest is `tested`;
 (3) `scripts/gate.sh` has passed on the merge candidate (a git checkout), CI is green on both architectures, and C2 records that run in
 place of the git-less snapshot; and (4) a workstation scan of registered step records for `LINEAR_SOLVE_FAILED` with ≥ 2 attempts
-is logged. The reviewer has read this ADR.
+is logged. The reviewer has read this ADR. Frank (Q-S02-3 follow-up, 2026-10-22) adds: every other unit's results unchanged,
+bit-identical at the old configuration.
+**Workstation evidence 2026-10-22 (WS1, git checkout of `wp/WS1` at `9384285`, main's code with D1 as narrowed).**
+*(4) The scan.* Static: every tracked `.json`/`.jsonl` record holds `LINEAR_SOLVE_FAILED` as a value 9 times in 2 files
+(`evidence/T02`, `evidence/T05b` manifests), 0 of them with an `attempts` list of ≥ 2. Dynamic: `eo_recovery_due` wrapped in
+every Python process (a `sitecustomize` probe that logs each call whose outcome is `LINEAR_SOLVE_FAILED`) over the full default
+suite (10,596 run) and the `nlp`/`pymrm` tiers (193 run): 83 such calls; ≥ 2 attempts in 56, due in 20 — all 20 in
+`tests/test_s02_column_wo2.py` (3) and `tests/test_s02_column_wo2b.py` (17). Outside S02 the calls are `test_t04_edge3.py` (3;
+0 or 1 attempts) and `test_t05b_dormancy.py` (1; 2 attempts, attempt 0 `CONVERGED`, not due); the `nlp`/`pymrm` tiers make none.
+*Frank's condition.* The old configuration is ADR 0010 D3 (`LINEAR_SOLVE_FAILED` never a trigger), so the new path can move a
+result only where the predicate returns `True` for it; outside S02 it never does, so every other unit's execution is the old
+one. Counter-run with the probe returning the old predicate: the full suite differs from the D1 run in exactly 12 tests, all
+S02 column tests (5 in `test_s02_column_wo2.py`, 7 in `wo2b`:
+A06/A06b/A08/A09/A13/A14/A15 cases and A20); the other 10,583 pass in both (one further failure in both runs, M07a A50, is the ignored W27 archive copy in the
+worktree). Registered records replayed under D1 at `0.3.0.dev0`: the five G10 records digest-only (other = 0) and REAL
+`REPLAY PASS differences=0`. Conditions (1), (2) (`evidence/S02/1810dde…` `tested`), (4) and Frank's are met; (3) needs
+the merge gate and CI recorded in C2 — done 2026-10-23 (C2).
 **Date:** 2026-10-22
 **Author:** design lane (`architect`), S02 Amendment 2
 **Amends:** ADR 0010 D3 (the trigger set only). ADR 0005 D4 (the decision function) is **not** changed.
@@ -67,6 +83,10 @@ policy field or identity changes; `solve-event`'s `eo_recovery` (`taken`/`unsupp
 - C2. **Re-registrations: none.** Measured: full suite (`pytest tests`, 10,159 run, 51 min) on a git-less snapshot of `7302536` with D1 patched in: every failure and error outside S01/S02 (85 failed, 155 errors: changelog, ledger, campaign and V17 record tests that need git or ignored artifacts) is identical on the unpatched snapshot; D1 moves exactly five tests — S02 A06 M1-from-`x⁰` (a strict xfail that now passes, intended) and four tests whose `eo_recovery_due` stub has the old two-argument signature (S02 A13 M1/M2, A15 M1; S01 `test_a17_forced_edge_3_from_the_presolve_root`), a mechanical stub update. WO-2b updates the four stubs to the three-argument signature
   (no expectation changes) and flips the xfail. Any registered outcome that moves later is listed here before acceptance,
   as ADR 0010 C3 did; none is relaxed.
+  **Condition (3), 2026-10-23:** `scripts/gate.sh` PASS on the merge candidate, a git checkout of `main` at `05288372` (merge of
+  `wp/WS1`): 10634 passed, 58 skipped (W27 archive absent), 0 failed; CI run 39862529869 on `05288372` green on `ubuntu-latest`
+  and `ubuntu-24.04-arm` (and `identity`). This run replaces the git-less snapshot above; no registered outcome outside S01/S02
+  moved (WS1 counter-run, Status).
 - C3. **Register:** R-547.
 - C4. **ADR 0010** gains a pointer to this ADR in its D3 when this ADR is accepted (build lane, documentation).
 
