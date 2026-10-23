@@ -147,3 +147,5 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
   112 K and liquid hydrogen at 20 K are refused as out of range. Gases and vapours of all nine fluids are answered,
   and so are liquid water, CO2, ethane, propane and liquid oxygen at 90 K. Answering the cold liquids needs a freezing-line check at run time, which is a
   separate package (S07b). **Default:** yes, they wait (`docs/derivations/S07-spec.md` §6.2, R-620).
+
+- Q-A1-1 and Q-A1-3: defaults taken by the session (2026-10-23), reversible; Frank may object.
