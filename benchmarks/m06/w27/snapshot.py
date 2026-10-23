@@ -135,6 +135,15 @@ def _pr_c1_line(components: Sequence[str], every: list[str]) -> tuple[Path, dict
     return registration.ROOT / pr_c1.RECORDS_PATH, phases
 
 
+def _pr_lib_line(components: Sequence[str], every: list[str]) -> tuple[Path, dict[str, list[str]]]:
+    """`pr-lib-v1` (W27v2-R03): the records `pr_lib.load_records` reads (`pr_lib.RECORDS_PATH`), in
+    file order; `vapor` for every component (the provider admits VAPOR only, L01 §4.2). Only a
+    binder with a `pr-lib-v1` basis calls it; the installed one has none (L01 §14.3)."""
+    from openflowsheet.thermo import pr_lib  # noqa: PLC0415
+
+    return registration.ROOT / pr_lib.RECORDS_PATH, {cid: ["vapor"] for cid in components}
+
+
 #: W27-R63's per-provider lines: where each provider keeps its records and how it admits phases,
 #: given the basis' components (in order) and `describe().phases` as phase kinds.
 PROVIDER_LINES: Final[
@@ -142,6 +151,7 @@ PROVIDER_LINES: Final[
 ] = {
     "syn001": _syn001_line,
     "pr-c1-v1": _pr_c1_line,
+    "pr-lib-v1": _pr_lib_line,
 }
 
 
