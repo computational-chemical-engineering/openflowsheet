@@ -284,7 +284,8 @@ E_LIMITATION = (
 )
 
 CLAIM_TEXT = {
-    "C1": "EOS[0] is the EOS parsed, and every term type is in §2.2 or §16.2",
+    "C1": "the fluid JSON carries an EOS, and every term type of EOS[0], the one generated, is in "
+    "§2.2 or §16.2",
     "C2": "CoolProp 8.0.0 at the pinned gitrevision; each fluid_data_sha256 is stable across two "
     "reads",
     "C3": "no output key holds a coefficient array; the key set equals the schema whitelist",
@@ -875,6 +876,7 @@ class Fluid:
             e = self.eos
             t = mpf(temp)
             rl, rv = e.saturation(t, *self.seeds.sat(temp))
+            claim("C13", rl > self.rhoc_mp > rv, f"rho' > rho_c > rho'' at {temp!r} K")
             liq, vap = e.at_rho(t, rl), e.at_rho(t, rv)
             self._sat[temp] = {"T": temp, "rl": rl, "rv": rv, "psat": liq["p"], "L": liq, "V": vap}
         return self._sat[temp]
@@ -957,8 +959,6 @@ class Fluid:
         # saturation at T_lo, T_mid, T_sigma,max (C6, C7)
         sat_mid, sat_hi = self.sat(self.T_mid), self.sat(self.T_smax)
         sats = {"sat_lo": sat_lo, "sat_mid": sat_mid, "sat_hi": sat_hi}
-        for s in sats.values():
-            claim("C13", s["rl"] > self.rhoc_mp > s["rv"], f"rho' > rho_c > rho'' at {s['T']!r} K")
         claim("C6", sat_hi["psat"] > mpf(self.nc_P[0]), "p_sigma(T_sigma,max) > p_c (1 - 4e-3)")
         claim(
             "C6",
@@ -1206,6 +1206,7 @@ class Fluid:
         else:
             raise ClaimFailedError(f"Tsat at {dbl(pres)!r} Pa did not converge")
         rl, rv = e.saturation(t, rl, rv)
+        claim("C13", rl > self.rhoc_mp > rv, f"rho' > rho_c > rho'' at Tsat({dbl(pres)!r} Pa)")
         p = e.at_rho(t, rl)["p"]
         claim("C13", rel(p, pres) < mpf(10) ** (10 - mp.dps), "Tsat converged")
         sl = self.cdiff(lambda x: {"h": self.psat_mp(x, (rl, rv))}, t)["h"]
@@ -1752,13 +1753,15 @@ def build(jobs: int, report: Path | None) -> tuple[bytes, bytes]:
     }
     doc["claims"] = {}
     whitelist(doc)
-    claim("C17", True, "the output size is checked after encoding")  # counted once, asserted below
     counts = dict(claim.counts)
     for _, r in status.values():
         for k, v in r.get("claims", {}).items():
             counts[k] = counts.get(k, 0) + v
     statements = dict(CLAIM_TEXT)
     statements["C18"] += f" (measured: {slopes[worst]:.3e} /Pa, {worst})"
+    # C17 is made once, on the encoded payload that carries this count (below); the count
+    # written here is that claim's, and the ledger is checked against it after the claim.
+    counts["C17"] = counts.get("C17", 0) + 1
     order = sorted(CLAIM_TEXT, key=lambda x: int(x[1:]))
     doc["claims"] = {
         "count": sum(counts.values()),
@@ -1766,6 +1769,8 @@ def build(jobs: int, report: Path | None) -> tuple[bytes, bytes]:
     }
     payload = encode(doc)
     claim("C17", len(payload) <= 1_500_000, f"output size {len(payload)} bytes <= 1.5e6")
+    if claim.counts["C17"] != counts["C17"]:
+        raise ClaimFailedError("C17: the written count is not the ledger's")
     cpu = sum(r.get("cpu_s", 0) for _, r in status.values())
     print(
         f"wall {wall:.0f} s, CPU {cpu:.0f} s; {len(fluids)} fluids; {len(payload)} bytes",

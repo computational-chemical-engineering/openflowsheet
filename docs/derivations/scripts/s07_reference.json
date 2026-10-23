@@ -1,10 +1,10 @@
 {
  "claims": {
-  "count": 312521,
+  "count": 315273,
   "names": {
    "C1": {
     "count": 128,
-    "statement": "EOS[0] is the EOS parsed, and every term type is in §2.2 or §16.2"
+    "statement": "the fluid JSON carries an EOS, and every term type of EOS[0], the one generated, is in §2.2 or §16.2"
    },
    "C10": {
     "count": 1020,
@@ -15,11 +15,11 @@
     "statement": "CoolProp's own flash agrees with the generator at every TP state (1e-7; NC 1e-5)"
    },
    "C12": {
-    "count": 55,
-    "statement": "water equals s05_reference.json within 1e-12 at S05's states with T <= 646.9 K"
+    "count": 185,
+    "statement": "water equals s05_reference.json at S05's states with T <= 646.9 K: phi partials, TP values and their T and P derivatives, Psat, dPsat/dT, both saturated phases, Tsat and dTsat/dP (values 1e-12, h and s per R T and R, lnphi absolute; derivatives 1e-11)"
    },
    "C13": {
-    "count": 16830,
+    "count": 19452,
     "statement": "identities I1-I9 hold to 1e-30 at every TP and saturation state"
    },
    "C14": {
@@ -5054,10 +5054,33 @@
     "nc/s": 1.42e-08,
     "nc/v": 8.01e-14,
     "s05/Psat": 4.57e-14,
+    "s05/Tsat": 5.76e-15,
     "s05/Z": 4.86e-14,
+    "s05/Z_l": 5.69e-15,
+    "s05/Z_v": 4.71e-15,
     "s05/cp": 5.75e-14,
+    "s05/cp_l": 4.8e-14,
+    "s05/cp_v": 4.8e-14,
+    "s05/dPsat_dT": 4.56e-14,
+    "s05/dTsat_dP": 1.04e-14,
+    "s05/dZ_dP": 6.66e-14,
+    "s05/dZ_dT": 7.16e-14,
+    "s05/dcp_dP": 7.57e-14,
+    "s05/dcp_dT": 1.69e-12,
+    "s05/dh_dP": 4.24e-14,
+    "s05/dh_dT": 5.75e-14,
+    "s05/dlnphi_dP": 1.47e-13,
+    "s05/dlnphi_dT": 5.85e-14,
+    "s05/ds_dP": 4.81e-14,
+    "s05/ds_dT": 5.75e-14,
+    "s05/dv_dP": 5.37e-14,
+    "s05/dv_dT": 4.81e-14,
     "s05/h": 5e-14,
-    "s05/lnphi": 5.6e-14,
+    "s05/h_l": 4.7e-14,
+    "s05/h_v": 4.96e-14,
+    "s05/lnphi": 4.15e-14,
+    "s05/lnphi_l": 9.32e-16,
+    "s05/lnphi_v": 9.32e-16,
     "s05/phi0": 1.33e-16,
     "s05/phi0_d": 2.08e-16,
     "s05/phi0_dd": 4.15e-16,
@@ -5074,7 +5097,11 @@
     "s05/phir_tt": 7.41e-17,
     "s05/phir_ttt": 2.74e-15,
     "s05/s": 5.29e-14,
+    "s05/s_l": 4.78e-14,
+    "s05/s_v": 4.94e-14,
     "s05/v": 5.41e-14,
+    "s05/v_l": 2.79e-15,
+    "s05/v_v": 7.14e-15,
     "tp/Z": 8.01e-12,
     "tp/cp": 1.13e-11,
     "tp/h": 9.84e-12,

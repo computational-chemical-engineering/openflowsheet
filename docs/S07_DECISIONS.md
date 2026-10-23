@@ -95,3 +95,49 @@ Questions for the design lane (batched for the WO-S07-1b review; none blocks WO-
 - Q-B3: accepted (§18.2).
 - Generator follow-ups for the next regeneration: C12 widened (§18.3; review finding 1); count the real C17
   check and reword C1 (finding 5); move the ρ' > ρ_c > ρ'' claim into `Fluid.sat()` (finding 6).
+
+## Generator follow-ups (review findings 1, 5, 6; spec §18.3)
+
+- **B-15: C12 widened per §18.3** (`Fluid.c12`): the φ partials (1e-12 relative, unchanged), the TP values and
+  their T and P derivatives, Psat, dPsat/dT, both saturated phases' values, Tsat and dTsat/dP (Tsat solved by the
+  generator's own `tsat_solve`, seeded by CoolProp). Supersedes B-13. Measured, water: derivatives worst
+  1.69e-12 (dcp/dT at L_ambient, as the review's 1.7e-12), dTsat/dP 1.0e-14, Tsat 5.8e-15, saturated-phase values
+  <= 5.0e-14.
+  - **DECISION (§18.3's value bound read as S05's "relative or absolute" form):** h, s and lnphi pass when
+    |Δ| <= 1e-12·max(|x|, scale), scale R·T, R and 1. Read literally ("s within 1e-12·R"), the bound is *tighter*
+    than relative wherever |s| > R and fails at S05's V_corner (|Δs|/R = 1.1e-12, relative 4.6e-14), a state the
+    old plain-relative C12 passed. §18.3 gives the absolute forms "because s_l(T_t) is 6.5e-14", i.e. for
+    vanishing values only, and §9.1 states S05's bounds as "relative or absolute". Rejected: the literal absolute
+    bound (fails a state for no numerical reason); plain relative (meaningless at s_l(T_t)). Reversible by editing
+    `check()` in `Fluid.c12`. For the design lane to confirm at the S07 review.
+- **B-16: C17 counts the real check.** The placeholder `claim("C17", True, …)` is gone. The written C17 count is
+  the one size claim made on the encoded payload that carries it; after the claim the ledger is compared with the
+  written count and the generator refuses on a mismatch.
+- **B-17: ρ' > ρ_c > ρ'' is claimed in `Fluid.sat()`** (every memoized saturation state: `sat_*`, the NC
+  temperature, C8's grid) and at the end of `tsat_solve`; the loop over `sat_lo/mid/hi` is removed as redundant.
+  C1's statement is reworded to what it checks ("the fluid JSON carries an EOS, and every term type of EOS[0], the
+  one generated, is in §2.2 or §16.2").
+- **Regeneration (2026-10-23, after B-15–B-17):** `--jobs 48` 90 s wall, 1450 s CPU; all claims pass; output
+  1 116 476 bytes (C17 cap 1.5e6); 315 273 claims (was 312 521: C12 55 → 185, C13 16 830 → 19 452). `--check`
+  (`--jobs 48`): both files byte-identical. `_coolprop_heos_fluids.py` is unchanged. The reference JSON changed
+  only in: `claims/count`, `claims/names/C1/statement`, `claims/names/C12/{count,statement}`,
+  `claims/names/C13/count`, and `fluids/H2O/agreement` (26 `s05/*` members added; `s05/lnphi` 5.6e-14 → 4.15e-14
+  by B-15's form). No stored value, constant, state or probe moved.
+
+## Handoff: WO-S07-2a (the provider, tier A) — not started (engineer context cap reached after step 0)
+
+Read: spec §3–§6 (l.123–330), §7 (l.331), §9 + §9.1 (l.391–451), §12.2 (l.506), §16.8–§16.10 (l.972–1052), §18
+(l.1488–1565); S05 §3–§4 and `iapws95.py`'s `_saturation`, `_bracketed_density`, `_metastable_density`, `_rule` as
+the algorithm to generalize (do not import them; `iapws95.PhiJet` import only). Template tests:
+`tests/test_s05_iapws95.py`, `tests/test_s05_envelope.py` (`_starved` for §18.1's row-10 injection).
+- ref layout per fluid: `constants`, `canary`, `phi_states`, `tp_states/<key>` = {phase, values [T, P, h, s, v, Z,
+  cp, lnphi], dT [6], dP [6]}, `saturation/sat_{lo,mid,hi}` = {T, Psat, dPsat_dT, dh_vap, L [T, P, 6], V [T, P, 6]},
+  `tsat/tsat_mid` = {P, Tsat, dTsat_dP}, `band`, `probes` (compact lists, `compact_request` in the generator),
+  `s04_ig`, `verification`, `limitations`. Constants come from `_coolprop_heos_fluids.py` (A01 bitwise).
+- Psat must come from the vapour branch or a non-cancelling Maxwell form (review finding 3): C3H8 `sat_lo` has
+  Z_L = 3.8e-10. If A08/A10 fails there: measure, record here, STOP for a design ruling (no per-state tolerance).
+- A04 at `delta_one` > 1e-12 → stop (§18.6). A17 floor > 1e-11 for any fluid → stop (§9.1). Settle Q-3 (A26(c))
+  and F-5 (T08's provider scan vs the underscore table module).
+- Test env: `/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv`
+  has CoolProp 8.0.0 at the pinned gitrevision plus pytest; run with `PYTHONPATH=$PWD/src:$PWD
+  OPENFLOWSHEET_REQUIRE_COOLPROP=1`.
