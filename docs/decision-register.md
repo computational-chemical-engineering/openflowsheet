@@ -12475,3 +12475,31 @@ reports an implementation fault as a scope limit.
   made.
 - *Lower the purity instead.* That moves the slot `u − 0.75·F` and the test's expected values. Changing
   `bottoms_rate` moves only one row constant.
+
+---
+
+## R-614 — D08 lists M01's, S04's and S05's providers; D08 moves to `tested`; S04 and S05 join the ledger's packages
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), ruling round D2 item 3 |
+| Normative text | `docs/requirements.yaml` D08 row (comment, `packages`, `tests`, `evidence`, `status`); packages S04, S05 |
+| Evidence | `evidence/M01/3c80392…` `tested`, lists D08 (ADR 0026 Accepted on it). `evidence/S04/5c29fbf…` `tested`, lists D08. `evidence/S05/4ac00a0…` `tested`, `requirements: []`. `tests/test_requirements_ledger.py` and the M07/T08 ledger tests: 78 passed, 1 skipped |
+| Affected packages | D08's ledger row; S05 (WO-S05-4's manifest re-take carries D08) |
+
+**Decision.**
+- D08 gains S04 and S05 as packages. M01's and S04's manifests are cited.
+- S05's manifest is not cited: it lists no requirement, and the ledger test would refuse it. Its re-take under
+  WO-S05-4 lists D08.
+- The status moves from `implemented` to `tested`. The row's own reason for `implemented` was that M01's
+  real-provider evidence did not exist, and it now exists at `tested`.
+- The ledger gains package rows S04 and S05 (the ledger test requires every named package to exist).
+
+**Rejected alternatives, and why.**
+- *Keep `implemented`.* That contradicts the row's own stated condition.
+- *`reviewed`.* The human review fields of the manifests are `pending`.
+- *Cite S05 now by editing its manifest.* A manifest is the record of its commit, and the build lane re-takes it.
+
+**Finding (not ruled).** The ledger's S01–S03 package rows still read `planned` with no evidence, although S01 and S02
+are merged at `tested`. That belongs to the next ledger refresh.

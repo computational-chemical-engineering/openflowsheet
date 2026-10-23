@@ -170,7 +170,7 @@ requirements:
   - id: D08
     title: Thermodynamic primitive
     blueprint_ref: "§1 D08"
-    packages: [P01, K02, M01]
+    packages: [P01, K02, M01, S04, S05]
     minimum_evidence: "Consistent synthetic model and real provider conformance"
     # P01 delivered the synthetic half as an algebraic oracle: h = g - T dg/dT, K from equality
     # of chemical potentials, exact pure-component boiling points, the declared domain failure,
@@ -188,6 +188,17 @@ requirements:
     # minimum evidence is M01's and does not exist. A synthetic provider conforming to its own
     # contract is not the conformance this requirement asks for, and calling it `tested` would
     # claim M01's work.
+    #
+    # Design lane, D2, 2026-10-23 (R-614): the premise above no longer holds, so the status moves to
+    # `tested`. M01's real-provider evidence exists: `pr-c1-v1` on the same contract, with typed
+    # refusals and implementation and data hashes. Its manifest is `tested` and lists D08, and
+    # ADR 0026 was accepted on it after the design-lane review. S04 adds `pr-lib-v1`, a second real
+    # provider on the contract, whose manifest is `tested` and lists D08. S05 adds `iapws95-v1`
+    # (ADR 0045, Accepted): its tests are listed, but its manifest `evidence/S05/4ac00a0...` lists no
+    # requirement, so it is not cited. WO-S05-4 (S05 spec §15.4) re-takes it with D08. Not claimed:
+    # `reviewed` (the manifests' human numerical and process-model review is pending); and that the
+    # library-only providers `pr-lib-v1` and `iapws95-v1` are selectable or shipped (R-568, R-569,
+    # R-594; Frank, C12 2026-10-23).
     tests:
       - tests/test_syn001_oracle.py::test_a1_identity_by_a_fourth_order_difference
       - tests/test_syn001_oracle.py::test_a2_k_values_equal_the_chemical_potential_form
@@ -207,10 +218,20 @@ requirements:
       - tests/test_k02_heater_flash.py
       - tests/test_k02_mixer.py
       - tests/test_k02_flowsheet.py
+      - tests/test_m01_records.py
+      - tests/test_m01_provider.py
+      - tests/test_m01_reference_values.py
+      - tests/test_m01_flash.py
+      - tests/test_l01_records.py
+      - tests/test_l01_provider.py
+      - tests/test_s05_iapws95.py
+      - tests/test_s05_envelope.py
     evidence:
       - evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
       - evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
-    status: implemented
+      - evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
+      - evidence/S04/5c29fbf61898350a95764558e61befb350225a47/manifest.json
+    status: tested
 
   - id: D09
     title: Phase appearance
@@ -1079,6 +1100,26 @@ packages:
     depends_on: [S02]
     status: planned
     evidence: []
+
+  # S04 (L01, renumbered by R-565) and S05 were added by design-lane ruling round D2 (R-614), so that D08 can
+  # cite them. S06 is not listed because no requirement row names it yet.
+  - id: S04
+    phase: "v0.3"
+    lead: Fable
+    second: Opus
+    depends_on: [M01]
+    status: tested
+    evidence:
+      - evidence/S04/5c29fbf61898350a95764558e61befb350225a47/manifest.json
+
+  - id: S05
+    phase: "v0.3"
+    lead: Fable
+    second: Opus
+    depends_on: [M01]
+    status: tested
+    evidence:
+      - evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
 
   - id: R01
     phase: "v1"
