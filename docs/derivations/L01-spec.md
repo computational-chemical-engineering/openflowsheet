@@ -157,6 +157,8 @@ values.
 
 ### 4.3 Exposure (conditional)
 
+*(Amended 2026-10-23 by §14: WO-L01-3 is split. WO-L01-3a measures on a binding outside the wheel and exposes
+nothing. WO-L01-3b exposes, and is held until Frank decides to ship.)*
 The route is exposed only by **WO-L01-3**, and only after W27 can judge it (F-1, §10 Q-1). That work order adds:
 - a `SELECTABLE_BASES` entry with `record_source = benchmarks/l01/components.yaml`;
 - **no** models, so `MODEL_BASES` is unchanged and the route's `model_ids` is empty (units are out of scope);
@@ -292,8 +294,8 @@ The generator refuses to emit unless V1L and V2L are admitted and P1 is admitted
   - `pr_c1.describe()`'s two SHA-256 values equal their values at `b843941`;
   - the M01, M02, M05 and W27 pin tests pass unmodified.
 - **L01.A23** — `l01_projection.py --check` exits 0, so SC-1…SC-13 hold.
-- **L01.A24** — Before W27 can judge two `cubic_pr` routes, the re-take (§6) on a build that exposes `pr-lib-v1`
-  behaves as follows:
+- **L01.A24** *(amended by §14.4: it is now the registration-version-1 control)* — Before W27 can judge two `cubic_pr`
+  routes, the re-take (§6) on a build that exposes `pr-lib-v1` behaves as follows:
   - it exits 2;
   - it prints `REFUSED:` and the W27 refusal text containing `unregistered provider ids ['pr-lib-v1']` (or, with the
     provider row added, `routes sharing a method ['cubic_pr']`; both are proven by SC-11);
@@ -315,6 +317,9 @@ The generator refuses to emit unless V1L and V2L are admitted and P1 is admitted
 L01 does not run it.
 
 ### 6.2 Procedure (WO-L01-3: `benchmarks/l01/retake.py`)
+
+*(Amended by §14.3: steps 2–7 run on the measurement binding under registration version 2, and the output goes to
+`evidence/S04/`.)*
 
 1. Load the development ids. Filter `case_facts.json` to them **before** any other step.
 2. Build the snapshot with `snapshot.build_snapshot()` from the installed build.
@@ -432,7 +437,8 @@ route. It is the reading W27 can judge today. Unit reasons are not projected.
   - Write `tests/test_l01_provider.py` for A13–A21, and record A14's measured floor in the build-decisions log.
   - Done when A13–A21 and A22 pass. It then gets the design-lane `reviewer` pass (it touches phase logic and
     derivatives).
-- **WO-L01-3 — Exposure and re-take** (held until Q-1 is resolved):
+- **WO-L01-3 — Exposure and re-take** (held until Q-1 is resolved). *Superseded by §14: WO-L01-3a is the re-take,
+  and WO-L01-3b is the exposure.*
   - the binder basis and the snapshot line (§4.3);
   - `benchmarks/l01/retake.py` (§6.2) and `tests/test_l01_retake.py` for A23–A26.
   - Before W27-A3 only A24 is runnable, and its refusal is the registered result.
@@ -641,3 +647,139 @@ The commit of WO-L01-3 that adds the `SELECTABLE_BASES` entry also does the foll
 - (b) is not a check of W27's content. W27's rows and classes are held by W27's own tests and by C2's SPLIT-A18 and
   A19 (R-555), not by L01.
 - C2's strict pins on `case_facts.json` and `sample.json` stand.
+
+## 14. Amendment 3 (2026-10-23, design lane `specifier`, ruling round D2; R-615): WO-L01-3 is split into a measurement now and exposure later
+
+### 14.1 What changed
+
+- **W27 can now judge the route.** W27 registration version 2 (C9, `docs/derivations/W27-registration-v2.md`,
+  R-570…R-574) judges a build with two `cubic_pr` routes when the classifier is called with `registration_version=2`
+  (W27v2-R01, `benchmarks/m06/w27/coverage.py` `check_snapshot` and `classify_case`). §10 Q-1 and F-1 are resolved by
+  it.
+- **Frank keeps the records unshipped.** On 2026-10-23 (`docs/C12_DECISIONS.md`, last entry) he ruled that the nine
+  `pr-lib-v1` records stay out of every release, and that shipping starts with a clean-up package.
+- **The coupling.** WO-L01-3 as written (§4.3, §4.4, §12.5, §13.3, §13.4) ties the measurement to exposure: a
+  `SELECTABLE_BASES` entry, the `PACKAGED` path, `_data`, `pyproject.toml`, the T08 inventory and the envelope rows.
+  Exposure contradicts Frank's ruling.
+- **The measurement does not need exposure.** `snapshot.build_snapshot` takes the binder as an argument (`binding`,
+  `benchmarks/m06/w27/snapshot.py:222`). It reads only four things from it: `SELECTABLE_BASES`, `MODEL_BASES`,
+  `MODEL_BUILDERS` and `basis_provider` (`:148–197`).
+
+### 14.2 Ruling
+
+WO-L01-3 is split in two.
+- **WO-L01-3a, the development-half re-take on a measurement-only binding (§14.3).** It runs now, on the workstation,
+  where `docs/V02_STATE.md` places the re-take.
+- **WO-L01-3b, exposure.** It covers everything §4.3, §4.4 ("Moved by WO-L01-3 only"), §12.5, §13.3 and §13.4 assign
+  to WO-L01-3, except the snapshot line, which 3a adds. It is held until Frank decides to ship and the clean-up package
+  has landed. It then runs on the cleaned records and re-takes 3a's measurement on them (§14.5).
+
+### 14.3 WO-L01-3a (build lane, `opus-engineer`, about 80k context; branch `wp/S04-retake`)
+
+**Changes it may make:**
+1. **The snapshot line.** In `benchmarks/m06/w27/snapshot.py`, add `PROVIDER_LINES["pr-lib-v1"]`, W27v2-R03's line:
+   - the records come from `registration.ROOT / pr_lib.RECORDS_PATH`, in file order;
+   - every component is `["vapor"]`.
+
+   `benchmarks/` is outside `src`, so this is not in the wheel. A binder with no `pr-lib-v1` basis never calls it.
+2. **The re-take script, `benchmarks/l01/retake.py`** (§6.2, as amended here).
+   - **The measurement binding.** The script creates a `types.ModuleType("l01_measurement_binding")` with:
+     - `SELECTABLE_BASES`: `tuple(revision_binding.SELECTABLE_BASES)`, followed by one `ComponentBasis` for
+       `pr-lib-v1` over the nine record ids in file order, built as §4.3's entry would be;
+     - `MODEL_BASES` and `MODEL_BUILDERS`: `revision_binding`'s, unchanged, so the route's `model_ids` is empty;
+     - `basis_provider(b)`: `pr_lib.PrLibProvider()` for that basis, and `revision_binding.basis_provider(b)` otherwise.
+
+     Nothing under `src/openflowsheet` constructs or imports it.
+   - **§6.2 step 2** becomes `snapshot.build_snapshot(binding=<the measurement binding>)`.
+   - **Steps 3–5** pass `registration_version=2` to `check_snapshot` and `classify_case`. Step 5's "before" rows come
+     from the committed `coverage.json#/snapshot` under version 2. By W27v2-R10 they equal version 1's, and step 5
+     asserts that they equal the committed development rows.
+   - **The command line** takes `--registration-version {1,2}`, default 2. Version 1 is A24's control.
+   - **Step 6** writes `evidence/S04/<commit>/retake.json`. This replaces `evidence/L01/`, under R-565's renumbering.
+     Beside §6.2's members it carries:
+     - `registration_version`: `2`;
+     - `binding`: `"measurement-only: pr-lib-v1 added to the installed binder's SELECTABLE_BASES inside
+       benchmarks/l01/retake.py; not selectable in this build (L01 §14)"`;
+     - `selectable_in_build`: `false`;
+     - `pr_lib_data_sha256` and `pr_lib_implementation_sha256`, from `PrLibProvider().describe()`.
+   - **Step 7's printed line** gains `(measurement-only binding, W27 v2)`.
+3. **`tests/test_l01_retake.py`**, for A23–A27 as amended in §14.4, and for W27v2-A23.
+
+**What it must leave unchanged** (A27 asserts these, or an existing test already does):
+- `openflowsheet.resources.PACKAGED`, the `_data` mirror, the `pyproject.toml` package-data list, the T08 inventory
+  pattern and the packaged-file count;
+- `revision_binding`: `SELECTABLE_BASES`, `MODEL_BASES` and `basis_provider`;
+- the T08 envelope's `property_model.providers` and `LIBRARY_ONLY_PROVIDERS` (`pr-lib-v1` stays in it), S04's `U02`
+  items and every L-row;
+- `benchmarks/m06/openidaes450/coverage.json` and every committed W27 file (A26).
+
+L01.A22 (b) and (c) and R-569 therefore keep holding, and §13.3's retirement does not run.
+
+### 14.4 The assertions, as amended
+
+- **L01.A23**: unchanged.
+- **L01.A24 is amended: it is the control, not the result.** `retake.py --registration-version 1` on the measurement
+  binding must:
+  - exit 2;
+  - print `REFUSED:` and text containing `unregistered provider ids ['pr-lib-v1']` (W27v2-A09, on the real build);
+  - write no file and print no count.
+
+  *Why it stays:* it shows that the version 1 path still refuses the two-route snapshot, so no default can reach the
+  version 2 result by accident.
+- **L01.A25 is the measurement.** Under version 2:
+  - the development classes equal §6.3's projection;
+  - each case's removed component reasons equal the projection's `transitions`;
+  - any difference in unit reasons is listed per case with its W27-R62 cause.
+
+  A class difference is a finding. It goes in the S04 build-decisions log and is escalated, and the design lane
+  amends the projection. The test is never bent to fit.
+- **L01.A26**: unchanged.
+- **W27v2-A23** (W27 v2 §10 assigns it to WO-L01-3). On the measurement snapshot, the `pr-lib-v1` route's
+  `components` equal `registration_v2.json#/snapshots/S2/routes/1/components`.
+- **L01.A27 (new): the measurement does not expose.** At 3a's commit, all of the following hold:
+  1. no basis in `revision_binding.SELECTABLE_BASES` has `provider_id == "pr-lib-v1"`;
+  2. `snapshot.build_snapshot()`, called with no binding, has no `pr-lib-v1` route;
+  3. no `openflowsheet.resources.PACKAGED` path starts with `benchmarks/l01/`;
+  4. `LIBRARY_ONLY_PROVIDERS` in `tests/test_t08_w2_support_envelope.py` still maps `pr-lib-v1` to `S04`;
+  5. `retake.json` has `selectable_in_build: false` and `registration_version: 2`.
+
+  Each clause fails if 3b's exposure is done early.
+
+### 14.5 How long the measurement is valid
+
+- The re-take reads only two things from the records: `{id, name, formula, cas, synthetic}` and the phases
+  (W27v2-R03).
+- Availability is decided by CAS RN (`benchmarks/m06/w27/coverage.py:336–356`: `available = kind == "chemical" and
+  cas in registry_cas`). The constants (critical properties, NASA-7) never enter.
+- `retake.json` is valid only for its recorded `pr_lib_data_sha256`. Cited at any other data hash, it is stale.
+  WO-L01-3b re-takes on the cleaned records.
+
+### 14.6 Finding F-4 (for the clean-up package and Frank; not ruled here)
+
+- **Dropping CAS RNs breaks W27's identity key.** Frank's clean-up drops the CAS RNs from the records (CAS licence).
+  W27 identifies a registry chemical by CAS RN (§14.5), and W27v2-R03 reads `cas` from the records. Without CAS RNs,
+  every library component is `unavailable` to W27. Before 3b can measure anything, the clean-up therefore needs a
+  registered identity key other than the CAS RN, or a W27 amendment.
+- **The shipped C1 records carry CAS RNs.** `benchmarks/m01/components.yaml`, packaged since 0.2.0, carries five.
+  Whether C12's CAS-licence reading reaches that file is Frank's question.
+
+Neither point is decided here.
+
+### 14.7 Rejected alternatives
+
+- **Wait for the clean-up package.** The measurement would then also wait on F-4. Today's records already answer what
+  the re-take asks: whether the library route removes the component reasons §6.3 projects, and whether version 2
+  judges a real two-route build. The constants do not enter that answer. 3a costs one script and one test, and moves
+  no identity.
+- **Expose with the records unpackaged (source checkout only).** Every wheel built from that commit would carry a
+  selectable basis whose records are absent. A revision that selects it fails at load, which is a placeholder path.
+  It would also retire L01.A22 (b) and (c) and R-569, against Frank's ruling.
+- **Patch `revision_binding` in-process for the run.** The patch would be invisible in the record, and `build_snapshot`
+  already takes the binder as an argument.
+
+### 14.8 What this amendment does not establish
+
+- **Any coverage number.** 3a measures it.
+- **A validation of `pr-lib-v1`** (W27 v2 §8).
+- **Any decision about shipping, F-4 or the C1 file's CAS RNs.**
+- **Whether a release reports a version 2 result** (W27 v2 §9 Q-1).

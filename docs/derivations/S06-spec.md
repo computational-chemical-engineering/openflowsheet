@@ -439,7 +439,7 @@ probe — J5's stubbed non-root state with stage 5 `LIQUID` — must raise `Acce
 
 ### 17.4 Assertions strengthened (clauses added; no id, value or tolerance moves)
 
-- **A04** gains: on M2's structure (total condenser) with condenser `purity` of A 0.75 and reboiler `bottoms_rate` 0.55, at
+- **A04** gains *(the set is amended by §17.5: `bottoms_rate` 0.875, not 0.55)*: on M2's structure (total condenser) with condenser `purity` of A 0.75 and reboiler `bottoms_rate` 0.55, at
   a state whose columns are distinct dyadic values, the purity definition row equals `F·d_A − u·D` exactly (computed in
   the test from the dyadic operands) and differs from `F·v_1,A − u·V_1` and `F·r_A − u·Σ r`. A purity at a total
   condenser is offered (§1) and no J or V case declares one.
@@ -450,3 +450,40 @@ probe — J5's stubbed non-root state with stage 5 `LIQUID` — must raise `Acce
 - **A11** gains: at the λ state, each continued slot's column equals `p(λ) = p* + (1 − λ)(p⁰ − p*)` within its slot
   row's kind tolerance. The test's rebuild of the λ state mirrors `lambda_state` and cannot catch a wrong source by
   itself. Measured at `6053c73`: U1 0.0 and U2 1.1e-16 at every continued slot.
+
+### 17.5 A04's total-condenser set is made admissible (2026-10-23, design lane `specifier`, ruling round D2; R-613)
+
+**The defect.** §17.4's A04 set, a condenser `purity` of A of 0.75 with a reboiler `bottoms_rate` of 0.55, is refused by
+I6 at M2's feed and at the test's feed (`docs/C11_DECISIONS.md`, finding after F3). With `Σt = F − 0.55` and
+`t_A = 0.75·Σt`, the split needs `t_A < F_A`, and neither feed allows it.
+
+| Feed (mol/s) | F | Σt | t_A | F_A | I6 |
+| --- | --- | --- | --- | --- | --- |
+| M2, (0.3, 0.4, 0.3) | 1 | 9/20 | 27/80 = 0.3375 | 0.3 | refused |
+| test, (1/4, 1/2, 3/8) | 9/8 | 23/40 | 69/160 = 0.43125 | 0.25 | refused |
+
+The row form does not depend on admissibility. However, a declaration that validation refuses never reaches
+`declared_rows` in use, and §17.4's "a purity at a total condenser is offered" was then shown for no admissible set.
+
+**The amended set.** The condenser `purity` of A stays at 0.75, and the reboiler `bottoms_rate` becomes **0.875 (7/8)**.
+The purity row, its slot `u − 0.75·F` and every expected value of the test are unchanged. Only the `bottoms_rate` row's
+constant moves. The new set is admissible at both feeds. Its exact arithmetic, with one free direction in
+`(t_B, t_C)`:
+
+| Feed (mol/s) | F | Σt = F − 7/8 | t_A = 3/4·Σt | 0 < t_A < F_A | t_B + t_C = 1/4·Σt, in (0, F_B + F_C) |
+| --- | --- | --- | --- | --- | --- |
+| M2, (0.3, 0.4, 0.3) | 1 | 1/8 | 3/32 | 0.09375 < 0.3 | 1/32 in (0, 0.7) |
+| test, (1/4, 1/2, 3/8) | 9/8 | 1/4 | 3/16 | 0.1875 < 0.25 | 1/16 in (0, 0.875) |
+
+M2's feed is shown in decimals. `validate` decides on the binary64 inputs, and every margin above is at least 1/16 mol/s.
+
+**Measured on 2026-10-23 at `c3f1f44`** with `validate(spec, PROVIDER, CONTEXT)`. At either feed, `bottoms_rate` 0.55
+returns `INVALID_SPECIFICATION`, `infeasible_spec(mass_balance)`, and 0.875 returns `None`.
+
+**A04's clause, as amended.** `test_a04_purity_at_a_total_condenser` does the following:
+1. With `reboiler_spec = EndSpecification("bottoms_rate", 0.875)`, it asserts `validate(spec, PROVIDER, CONTEXT) is
+   None` before evaluating the rows. Then it asserts the existing equalities, unchanged.
+2. As a control, the same spec with `bottoms_rate` 0.55 returns `infeasible_spec(mass_balance)`. That keeps the
+   admissibility assertion from passing on a `validate` that refuses nothing.
+
+The build lane makes this edit (two lines and the docstring). No id, value or tolerance of A04 moves.

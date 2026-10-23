@@ -12397,3 +12397,140 @@ defect.
 
 **Rejected.** *Item 3 before the defect clauses* (WO-2's order, chosen so a stubbed non-root makes A14 observable). It
 reports an implementation fault as a scope limit.
+
+---
+
+## R-611 — ADR 0045 is Accepted; `IAPWS95-ref-v1` is written into ADR 0001 D5 and the freeze; shipping stays a release condition
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), ruling round D2 (`docs/briefs/D2-ruling-round.md` item 1) |
+| Normative text | ADR 0045 Status; ADR 0001 D5 item 4; `docs/interfaces-frozen.md` §3 (S05 paragraph); S05 spec §15 |
+| Evidence | `evidence/S05/4ac00a0…` `tested`; `docs/reviews/S05-review.md` and R-600 ("No work order"); Frank 2026-10-23, C10-Q1 "Yes, as described" and C10-Q2 "Always 'vapour'"; `af04961e` (`wp/S05-tables`): R6-95(2018) read, 385 values compared with 0 mismatches, terms quoted |
+| Affected packages | S05; any binding of `iapws95-v1`; any packaging change |
+
+**Decision.**
+- ADR 0045 is Accepted on its five conditions.
+- Spec §8 F-1 is written: `IAPWS95-ref-v1` is a registered convention, not a formation datum, and outside ADR 0011
+  D2's reaction-consistent set.
+- Shipping the coefficient file is a **release** condition, not an acceptance condition:
+  - R-594 and S05.A26 hold until Frank decides to ship;
+  - a decision to ship carries IAPWS's attribution and citation line, and amends R-594.
+- `wp/D2` merges after `wp/S05-tables`, or together with it.
+
+**Rejected alternatives, and why.**
+- *Stay Proposed until Frank's ship decision.* That ties a numerical acceptance to a rights decision. R-599 already
+  separates them ("`reviewed` covers numerics, not rights"), and A26 enforces the release side executably.
+- *Write F-1 into `interfaces-frozen.md` only, as ADR 0026 did.* Spec F-1 names ADR 0001 D5. One list in D5 avoids a
+  third convention being findable only in the freeze file.
+
+---
+
+## R-612 — S05 spec Amendment 2: `R6_647` is a Table 7 row; M and p_c are not in R6-95 (Q-7); WO-S05-4
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), ruling round D2, on the workstation check's two findings (`af04961e`) |
+| Normative text | S05 spec §15.2–§15.4; §5.1 and §10 Q-1 corrected in place |
+| Evidence | R6-95(2018) Table 6 has one state (500 K). The release prints neither M nor p_c. `s05_reference.json#/critical/p_eos_at_rhoc_Tc` = 22 064 000.000 002 13 Pa (relative 9.7e-14 from 22.064 MPa) |
+| Affected packages | S05 (generator labels and manifest re-take, WO-S05-4) |
+
+**Decision.**
+- `R6_647` is relabelled as a Table 7 row with no printed φ values. Nothing tested changes.
+- p_c is cited from the critical-parameters release. Its value is bound to the release-checked formulation by C7,
+  whose 1e-5 bound is below one unit in the last printed digit (4.5e-5). No fact is needed for its value.
+- M is cited from IAPWS G5-01. Comparing it with a printed copy is Q-7, *needs a fact*.
+  - *Default:* not a release condition. M scales molar extensive quantities only, and no release comparison can see
+    it.
+- WO-S05-4 relabels the generator, re-emits the JSON (only the `why` strings may move) and re-takes the manifest with
+  `requirements: ["D08"]`.
+
+**Rejected alternatives, and why.**
+- *Make Q-7 a release condition.* Frank's C10-Q1 condition named the terms and Tables 6–8. M is not a release
+  quantity, and p_c is already bound by C7.
+- *Drop `R6_647`.* It is the only φ state where the Gaussian and non-analytic terms are large.
+
+---
+
+## R-613 — S06 §17.4's A04 total-condenser set is made admissible: `bottoms_rate` 0.875, asserted through `validate`
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), ruling round D2 item 2, on the C11 finding (`docs/C11_DECISIONS.md`, after F3) |
+| Normative text | S06 spec §17.5 (amends §17.4's A04 bullet) |
+| Evidence | Exact I6 arithmetic in §17.5. `validate` at `c3f1f44`: 0.55 is refused `infeasible_spec(mass_balance)` at both feeds, and 0.875 returns `None` at both |
+| Affected packages | S06 (one test edit) |
+
+**Decision.**
+- A04's total-condenser set is a condenser purity of A of 0.75 with a reboiler `bottoms_rate` of 0.875.
+- The test asserts admissibility before evaluating the rows.
+- The 0.55 set stays as the refused control.
+
+**Rejected alternatives, and why.**
+- *Record that the row-form test needs no admissible set.* That is true of the row form. But the spec would then
+  register a set validation refuses, and "offered at a total condenser" would rest on a declaration that cannot be
+  made.
+- *Lower the purity instead.* That moves the slot `u − 0.75·F` and the test's expected values. Changing
+  `bottoms_rate` moves only one row constant.
+
+---
+
+## R-614 — D08 lists M01's, S04's and S05's providers; D08 moves to `tested`; S04 and S05 join the ledger's packages
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), ruling round D2 item 3 |
+| Normative text | `docs/requirements.yaml` D08 row (comment, `packages`, `tests`, `evidence`, `status`); packages S04, S05 |
+| Evidence | `evidence/M01/3c80392…` `tested`, lists D08 (ADR 0026 Accepted on it). `evidence/S04/5c29fbf…` `tested`, lists D08. `evidence/S05/4ac00a0…` `tested`, `requirements: []`. `tests/test_requirements_ledger.py` and the M07/T08 ledger tests: 78 passed, 1 skipped |
+| Affected packages | D08's ledger row; S05 (WO-S05-4's manifest re-take carries D08) |
+
+**Decision.**
+- D08 gains S04 and S05 as packages. M01's and S04's manifests are cited.
+- S05's manifest is not cited: it lists no requirement, and the ledger test would refuse it. Its re-take under
+  WO-S05-4 lists D08.
+- The status moves from `implemented` to `tested`. The row's own reason for `implemented` was that M01's
+  real-provider evidence did not exist, and it now exists at `tested`.
+- The ledger gains package rows S04 and S05 (the ledger test requires every named package to exist).
+
+**Rejected alternatives, and why.**
+- *Keep `implemented`.* That contradicts the row's own stated condition.
+- *`reviewed`.* The human review fields of the manifests are `pending`.
+- *Cite S05 now by editing its manifest.* A manifest is the record of its commit, and the build lane re-takes it.
+
+**Finding (not ruled).** The ledger's S01–S03 package rows still read `planned` with no evidence, although S01 and S02
+are merged at `tested`. That belongs to the next ledger refresh.
+
+---
+
+## R-615 — WO-L01-3 is split: WO-L01-3a re-takes the development half on a measurement-only binding outside the wheel; WO-L01-3b (exposure) waits for Frank's ship decision and the clean-up package
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), ruling round D2 item 4 |
+| Normative text | L01 spec §14 (markers in §4.3, §5 A24, §6.2, §11) |
+| Evidence | Frank 2026-10-23, `docs/C12_DECISIONS.md` last entry ("Keep unshipped for now"). W27 v2 (R-570…R-574). `snapshot.build_snapshot(version, binding)` at `benchmarks/m06/w27/snapshot.py:222` reads only `SELECTABLE_BASES`, `MODEL_BASES`, `MODEL_BUILDERS` and `basis_provider`. `benchmarks/` is outside the wheel (`pyproject.toml` `where = ["src"]`). W27 availability is by CAS RN (`coverage.py:336–356`) |
+| Affected packages | S04 (WO-L01-3a, branch `wp/S04-retake`); the `pr-lib-v1` clean-up package (F-4) |
+
+**Decision.**
+- 3a runs on a `types.ModuleType` binding built in `benchmarks/l01/retake.py`, under registration version 2.
+  - It adds the W27v2-R03 snapshot line.
+  - It writes `evidence/S04/<commit>/retake.json`, marked `selectable_in_build: false` and bound to
+    `pr_lib_data_sha256`.
+- L01.A24 becomes the version 1 control.
+- A new L01.A27 asserts that nothing is exposed: no selectable basis, no `PACKAGED` path, and `pr-lib-v1` still
+  library-only.
+- 3b, the exposure (§4.3, §4.4, §12.5, §13.3, §13.4), waits for Frank's ship decision and the clean-up package, and
+  re-takes the measurement on the cleaned records.
+- **Finding F-4.** The clean-up's CAS RN drop removes W27's identity key, and the shipped
+  `benchmarks/m01/components.yaml` carries five CAS RNs. Both are for Frank and the clean-up package.
+
+**Rejected alternatives, and why.**
+- *Wait for the clean-up.* The constants do not enter coverage, so the measurement is informative now, and it would
+  also wait on F-4.
+- *Expose in source checkouts only.* A wheel would then carry a selectable basis without its records.
+- *Monkeypatch the binder.* That is invisible in the record.
