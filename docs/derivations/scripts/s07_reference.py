@@ -298,7 +298,9 @@ CLAIM_TEXT = {
     "C10": "every rule state is in the box and outside the near-critical box, or dropped; "
     "tier A's states equal the unclamped rule; TP states pairwise distinct",
     "C11": "CoolProp's own flash agrees with the generator at every TP state (1e-7; NC 1e-5)",
-    "C12": "water equals s05_reference.json within 1e-12 at S05's states with T <= 646.9 K",
+    "C12": "water equals s05_reference.json at S05's states with T <= 646.9 K: phi partials, TP "
+    "values and their T and P derivatives, Psat, dPsat/dT, both saturated phases, Tsat and "
+    "dTsat/dP (values 1e-12, h and s per R T and R, lnphi absolute; derivatives 1e-11)",
     "C13": "identities I1-I9 hold to 1e-30 at every TP and saturation state",
     "C14": "the refusal probes cover every code of §6.5 except rows 4, 10 and 11, each with a "
     "control",
@@ -1462,17 +1464,35 @@ class Fluid:
                 claim("C8", e.pd(t, rmax)[0] > ph, f"p(rho_max, {temp!r} K) > P_hi")
 
     def c12(self) -> dict[str, float]:
-        """C12: water against s05_reference.json at S05's states with T <= 646.9 K."""
+        """C12 (§18.3): water against s05_reference.json at S05's states with T <= 646.9 K.
+
+        The φ partials, the TP values and their T and P derivatives, Psat, dPsat/dT and both
+        saturated phases, and Tsat with dTsat/dP. Values within 1e-12 relative, except h within
+        1e-12 R T, s within 1e-12 R and lnphi within 1e-12 absolute where |x| is below that
+        scale (IAPWS's datum puts s_l(T_t) at 6.5e-14 J/(mol K)): |d| <= 1e-12 max(|x|, scale).
+        Derivatives within 1e-11 relative; the φ partials at 1e-12 relative, as before. The
+        generator's generic cdiff, saturation and tsat paths meet an independent implementation
+        only here.
+        """
         s05 = json.loads(S05_PATH.read_text(encoding="utf-8"))
         e = self.eos
         worst: dict[str, float] = {}
+        rg = e.Rm
 
-        def check(key: str, mine: Any, ref: str) -> None:
-            err = rel(mine, mpf(ref))
-            claim(
-                "C12", err < mpf("1e-12"), f"water {key} equals S05 within 1e-12 ({dbl(err):.1e})"
-            )
+        def check(key: str, mine: Any, ref: str, temp: Any = None, deriv: bool = False) -> None:
             q = key.split("/")[-1]
+            b = mpf(ref)
+            base = q.split("_")[0] if q.startswith(("h_", "s_", "lnphi_")) else q
+            if deriv:
+                err, bound = rel(mine, b), mpf("1e-11")
+            else:
+                # S05's "relative or absolute" form: the absolute scale governs only where |x| is
+                # below it (s_l(T_t) at IAPWS's datum); elsewhere the bound stays 1e-12 relative.
+                scale = {"h": rg * temp if temp is not None else 0, "s": rg, "lnphi": 1}
+                den = max(abs(b), scale.get(base, 0), mpf("1e-300"))
+                err, bound = abs(mine - b) / den, mpf("1e-12")
+            text = f"water {key} equals S05 within {dbl(bound):.0e} ({dbl(err):.1e})"
+            claim("C12", err < bound, text)
             worst[q] = max(worst.get(q, 0.0), float(mp.nstr(err, 3)))
 
         m = mpf(e.M)
@@ -1487,19 +1507,41 @@ class Fluid:
                     k = label + suf
                     if k in row and not (label == "phi0" and i and j):
                         check(f"phi/{name}/{k}", jet[off + slot], row[k])
+        lo, hi = mpf(0), mpf(10) ** 9
         for name, row in s05["tp_states"].items():
             temp, pres = float(row["T"]), float(row["P"])
             if temp > 646.9:
                 continue
-            v = self.tp_values(mpf(temp), mpf(pres), mpf(row["rho"]) / m, mpf(0), mpf(10) ** 9)
+            t, p, r0 = mpf(temp), mpf(pres), mpf(row["rho"]) / m
+            v = self.tp_values(t, p, r0, lo, hi)
+            by_t = self.cdiff(lambda x, p=p, r0=r0: self.tp_values(x, p, r0, lo, hi), t)
+            by_p = self.cdiff(lambda x, t=t, r0=r0: self.tp_values(t, x, r0, lo, hi), p)
             for k in PROPS:
-                check(f"tp/{name}/{k}", v[k], row["lnphi_H2O" if k == "lnphi" else k])
+                sk = "lnphi_H2O" if k == "lnphi" else k
+                check(f"tp/{name}/{k}", v[k], row[sk], t)
+                check(f"tp/{name}/d{k}_dT", by_t[k], row[f"d{sk}_dT"], deriv=True)
+                check(f"tp/{name}/d{k}_dP", by_p[k], row[f"d{sk}_dP"], deriv=True)
         for t_, row in s05["saturation"].items():
             temp = float(t_)
             if temp > 646.9:
                 continue
-            rl, rv = e.saturation(mpf(temp), mpf(row["rho_l"]) / m, mpf(row["rho_v"]) / m)
-            check(f"sat/{t_}/Psat", e.at_rho(mpf(temp), rl)["p"], row["Psat"])
+            t = mpf(temp)
+            rl, rv = e.saturation(t, mpf(row["rho_l"]) / m, mpf(row["rho_v"]) / m)
+            liq, vap = e.at_rho(t, rl), e.at_rho(t, rv)
+            check(f"sat/{t_}/Psat", liq["p"], row["Psat"])
+            slope = self.cdiff(lambda x, seed=(rl, rv): {"h": self.psat_mp(x, seed)}, t)["h"]
+            check(f"sat/{t_}/dPsat_dT", slope, row["dPsat_dT"], deriv=True)
+            for k in PROPS:
+                sk = "lnphi_H2O" if k == "lnphi" else k
+                check(f"sat/{t_}/{k}_l", liq[k], row[f"{sk}_l"], t)
+                check(f"sat/{t_}/{k}_v", vap[k], row[f"{sk}_v"], t)
+        for p_, row in s05["tsat"].items():
+            pres, t0 = mpf(row["P"]), mpf(row["Tsat"])
+            if t0 > mpf("646.9"):
+                continue
+            ts = self.tsat_solve(pres, t0, tuple(mpf(x) for x in self.seeds.sat(float(t0))))
+            check(f"tsat/{p_}/Tsat", ts["T"], row["Tsat"])
+            check(f"tsat/{p_}/dTsat_dP", 1 / ts["slope"], row["dTsat_dP"], deriv=True)
         return worst
 
 
