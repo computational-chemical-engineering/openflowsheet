@@ -36,6 +36,7 @@ is Frank's call.
 | C10 | design / `specifier`, then build | **IAPWS-95** as a planned v0.3 addition: an ADR (use case, affected requirements, acceptance), a derivation and test spec against the published IAPWS tables, then the implementation (L01-Q3) | Plan-level manifest `tested` |
 | C11 | design, then build | Column specifications by purity, recovery and stage temperature: the next column package (Q-S02-2) | Plan-level manifest `tested` |
 | C12 | build, then design | Rights check of each source for the nine `pr-lib-v1` records, an attribution file, then the design lane amends T08.A32 (L01-Q4). Release only after that | Rights rows vetted; A32 amended |
+| S07 | design / `specifier`, then build / `opus-engineer` | **CoolProp as an optional external property provider, pure fluids first** (Frank, 2026-10-23). ADR + spec first: CoolProp called only as a Helmholtz evaluator at (T, ρ) with its analytic pure-fluid derivatives, the project's own phase logic, retry rules and exact-input caches kept; one pinned CoolProp version as an optional dependency (not in the default wheel), so its data is not redistributed by us; bit-identity on both CI architectures; cross-check against S05 (water) and the S04 records. Mixtures out of scope until measured (composition derivatives would need declared, audited finite differences). Then the implementation and tests | Plan-level manifest `tested` |
 
 ## Local-only packages (Frank's workstation)
 

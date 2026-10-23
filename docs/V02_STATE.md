@@ -108,6 +108,7 @@ unshipped (A32 design step parked; shipping needs a clean-up package: drop CAS R
 2. S04's development-half coverage re-take on C9's W27 registration version 2 (L01 spec WO-L01-3); needs the archive.
 3. Workstation backlog: S03 (column references, L4), M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
 4. IAPWS terms + Tables 6–8 check before S05 ships (a person, C10-Q1).
+5. **S07 queued (Frank, 2026-10-23):** CoolProp as an optional pure-fluid provider (`docs/CLOUD_WORK.md`); design lane first.
 - Remote `wp/*` branches already merged could be deleted (cloud got HTTP 403); keep `wp/M06-wo17` (unmerged WIP).
 
 **History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
