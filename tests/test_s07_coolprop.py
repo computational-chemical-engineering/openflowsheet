@@ -711,22 +711,49 @@ def test_a09_tsat_and_its_slope(cid: str) -> None:
 @needs_coolprop
 @pytest.mark.parametrize("cid", TIER_A)
 @pytest.mark.parametrize("key", ["sat_lo", "sat_mid", "sat_hi"])
+def saturated_phases(
+    provider: Provider, t: float
+) -> tuple[PropertyResult, dict[str, float], dict[str, float]]:
+    """The provider's Psat at T, and its two saturated phases' values at (T, Psat).
+
+    DECISION (WO-S07-2a, docs/S07_DECISIONS.md B-18): where Psat(T) < P_lo (C2H6 and C3H8 at
+    `sat_lo`: 32.5 Pa and 4.9e-3 Pa) `evaluate_phase` refuses (T, Psat) `out_of_domain` (spec §6.5
+    row 5), so A10/A11 read the two phases from the provider's own saturation state through the
+    same property path `evaluate_phase` uses (`_saturation`, `_at` at the root pressure). Inside
+    the box the public path is used, as S05 A10/A11. Pending a design ruling.
+    """
+    sat = psat(provider, t)
+    assert sat.status == "ok", sat.message
+    p = sat.values["Psat"]
+    if p >= provider._fluid.p_lo:
+        liquid, vapour = ev(provider, t, p, "LIQUID"), ev(provider, t, p, "VAPOR")
+        assert liquid.status == vapour.status == "ok", (liquid.message, vapour.message)
+        return sat, liquid.values, vapour.values
+    root = provider._saturation(t)
+    assert root is not None and root.pressure == p
+    phases = (provider._at(t, rho, p) for rho in (root.rho_l, root.rho_v))
+    liquid_values, vapour_values = ({x: v[0] for x, v in phase.items()} for phase in phases)
+    return sat, liquid_values, vapour_values
+
+
+@needs_coolprop
+@pytest.mark.parametrize("cid", TIER_A)
+@pytest.mark.parametrize("key", ["sat_lo", "sat_mid", "sat_hi"])
 def test_a10_maxwell_on_the_providers_own_psat(cid: str, key: str) -> None:
     entry = FLUIDS[cid]["saturation"][key]
-    _, liquid, vapour = both_phases_at_psat(PROVIDERS[cid], entry["T"])
-    assert liquid.status == vapour.status == "ok", (liquid.message, vapour.message)
+    _, liquid, vapour = saturated_phases(PROVIDERS[cid], entry["T"])
     lnphi = f"lnphi_{cid}"
-    assert abs(liquid.values[lnphi] - vapour.values[lnphi]) <= 1e-8
+    assert abs(liquid[lnphi] - vapour[lnphi]) <= 1e-8
     bound = 1e-6 if key == "sat_hi" else 1e-9
-    assert abs((vapour.values["h"] - liquid.values["h"]) / entry["dh_vap"] - 1.0) <= bound
+    assert abs((vapour["h"] - liquid["h"]) / entry["dh_vap"] - 1.0) <= bound
 
 
 @needs_coolprop
 @pytest.mark.parametrize("cid", TIER_A)
 @pytest.mark.parametrize("key", ["sat_lo", "sat_mid", "sat_hi"])
 def test_a11_clausius_clapeyron_on_the_providers_answers(cid: str, key: str) -> None:
-    sat, liquid, vapour = both_phases_at_psat(PROVIDERS[cid], FLUIDS[cid]["saturation"][key]["T"])
-    ratio = (vapour.values["s"] - liquid.values["s"]) / (vapour.values["v"] - liquid.values["v"])
+    sat, liquid, vapour = saturated_phases(PROVIDERS[cid], FLUIDS[cid]["saturation"][key]["T"])
+    ratio = (vapour["s"] - liquid["s"]) / (vapour["v"] - liquid["v"])
     bound = 1e-6 if key == "sat_hi" else 1e-8
     assert abs(sat.derivatives["Psat"]["T"] / ratio - 1.0) <= bound
 
