@@ -186,7 +186,189 @@ S07 tests 443 passed, 265 skipped, 6 failed = T08's C3 harvest check only (below
   only in `_jet`). A32 m1, m2, m5–m8 are source edits loaded as a private module (m7 in A26(c)'s subprocess); m3, m4,
   m9–m11 replace the instance's fluid record. A24 also checks cp^ig against ref `s04_ig` at 1e-12 (not numbered).
 
+## WO-S07-2b (tier B; spec §16.10, §16.11, §16.13 Q-A1-5)
+
+Commit `6cd2ad08`. Status: **implemented, not tested**: 49 of 2626 cases fail, all from one cause (Q-B4); stopped
+for a design ruling. Tier B is **self-consistent only, not validated** (spec §16.5.1): its expectations are 50-digit
+closed forms of CoolProp's own coefficients, and its other checks are the provider's consistency with itself. The
+provider says so (`verification: self-consistent; …; the EOS's own uncertainty is not re-validated`, A34).
+
+- **Runs** (x86-64; CoolProp scratch venv, `OPENFLOWSHEET_REQUIRE_COOLPROP=1`): `tests/test_s07_broad.py` 2626 cases,
+  2577 passed, 49 failed, **10.9 s** wall (the tier-B run time of §16.14). `test_s07_coolprop.py` +
+  `test_s07_packaging.py` 303 passed (417 before, less A34's 114 tier-B cases, now in the broad file). Project venv
+  (no CoolProp): both S07 test files 377 passed, 2542 skipped. ruff clean; the new file is mypy-strict clean.
+- **Worsts over the 114** (`wo2b_worsts.py`; A09 over the 108 that answer): A03 8.96e-13 (R22; bound 1e-11, m7's
+  floor 1.05e-12), A04 6.89e-13 (MM; 1e-11), A05 1.25e-3 of its bound (R22 `L_corner` h, |Δh| = 1.25e-11·R·T; the
+  §16.11 stop line 1e-9 is not reached), A08 1.1e-12 (R22), A09 1.6e-14, A10 |Δlnphi| 2.0e-11 (R22 at T_lo),
+  A11 4.7e-11 (R22 at T_σ,max) and ≤ 1.1e-13 at T_lo, T_mid. Medians: A03 2.8e-15, A04 2.6e-14, A05 2.2e-6 of the
+  bound, A17 2.9e-14.
+- **A17 floor above §16.11's 1e-11 for two fluids (F-6, for the design lane).** R22 5.63e-11 (`L_corner`, liquid at
+  (T_lo, P_hi): h in P, s in T) and PropyleneGlycol 1.07e-11 (`S_dense`, cp in T); every other fluid ≤ 8.7e-12
+  (R1130_E). Both pass the test's 1e-10 (S05 §6.3). R22 is also the A03 floor fluid: cancellation in CoolProp's
+  double-precision sums at liquid density (§16.11). §16.11 says the design lane re-sets the tolerance by amendment.
+- **Q-A1-5, low-pressure side: served.** Every tier-B fluid's saturation converges at T_lo and T_mid. Lowest
+  Psat(T_lo): MD3M 2.65e-6 Pa (T/T_c = 0.32), 1-Butene 4.5e-6 Pa (Z_L = 4.1e-13, the smallest); at most 23
+  Newton iterations (PropyleneGlycol at T_lo; 50 allowed). A10 and A11 at T_lo pass for all 114.
+- **Q-A1-5, near-critical side: not served — Q-B4 below.**
+- **B-22 — DECISION (A10/A11 at Psat < P_lo for tier B): B-18's path applies.** 59 of the 114 have
+  Psat(T_lo) < P_lo = 100 Pa; the shared helper `saturated_phases` reads both phases from the provider's own
+  saturation state there, as B-18 does for C2H6 and C3H8. Alternative: none that runs the check (dropping is
+  forbidden). Reversible with B-18 (`git revert b36724a6`), which then restores the public path for both tiers.
+- **B-23 — DECISION (A25 for tier B):** the tier-A call list less `tp(cid, "NC_V")` (tier B registers no NC state,
+  §16.6); the NC-box midpoint call stays. Reversible in `test_a25_determinism_and_identity`.
+- **B-24 (placement).** A34's tier-B cases sit in `test_s07_broad.py` (§16.10); A33 stays whole in
+  `test_s07_coolprop.py`, since it is one assertion over the full list, and it already covers all 123 and the 13
+  excluded. ref's tier-B `A21`-tagged probes are not exercised: §16.10 does not apply A19–A21 to tier B.
+
+### Q-B4 (for the design lane): the saturation solve fails near T_c for 10 tier-B fluids
+
+- **What fails.** All 49 failures are `saturation_not_converged`. Six fluids fail at T_σ,max = T_c(1 − 2e-4) and
+  above it in θ = 1 − T/T_c: Cyclopentane (from θ = 2e-3), R1234ze_Z (1e-3), R134a (5e-4), MDM, MM, R14 (2e-4). That
+  fails A09 (the Tsat bounds need p_σ(T_σ,max)), A10 and A11 at T_σ,max, and probes or controls of A14, A15, A16 and
+  A18: 42 cases. Ethanol, Neon and R114 fail at the A14/A15 strip controls at θ = 1e-4 (6 cases), and Fluorine at
+  A22's grid point 144.409 K, θ = 3.8e-5 (1 case). Everything else passes for these 10.
+- **Why.** S05's two-variable Newton in (δ', δ''), seeded by CoolProp's ancillaries (B-19), leaves ρ' > ρ_c > ρ''
+  in its first steps: near T_c the seed error is comparable to ρ' − ρ''. R134a at T_σ,max: seed ρ' 5272 vs 5500,
+  ρ'' 4594 vs 4520 mol/m³ (QT flash), width 980; the first step lands at (4278, 4523). The provider needs the
+  saturation at every T < T_c it answers: `Psat` on [T_lo, T_σ,max], and the density bracket in the strip
+  (T_σ,max, T_c) outside the NC box (`_evaluate`, `saturation = self._saturation(t)`), although the strip's label
+  does not use it (`_rule`).
+- **How wide** (`wo2b_near_critical.py`, θ ∈ {3e-2 … 1e-6}, T ≥ T_lo): 58 of 123 fluids fail at some θ ≥ 1e-6,
+  **including tier A's O2 (θ ≤ 1e-5) and H2 (θ = 1e-6)**. The registered states reach θ < 2e-4 only at the strip
+  controls (θ = 1e-4), so this is also a latent tier-A gap in the strip.
+- **Not a remedy: bracket-preserving step halving** (diagnostic in the script, not in the provider). It never acts
+  where the provider converges (the same root bitwise at every such point), but it does not rescue the failures:
+  the iteration stalls, or the seed itself is outside ρ' > ρ_c > ρ''.
+- **The options.** (a) Q-A1-5's default: exclude the 10 by amendment. It loses R134a, Ethanol, Neon, Cyclopentane,
+  MM, MDM, R14, R114, Fluorine and R1234ze(Z), and leaves the strip gap for 48 others, O2 and H2 among them.
+  (b) A generic change to the provider's near-critical solve, for both tiers: for example, seeds by continuation
+  from a converged root at larger θ, or the strip bracketed by ρ_c instead of the saturated densities. That is new
+  numerics; tier A must be proved bit-identical wherever it converges now. **Recommendation:** (b), because the gap
+  is not tier-B-specific. Not implemented here: the brief forbids special cases and inventing numerics.
+- **Blocks:** tier B's `tested`. A01–A08, A13, A17, A22 (except Fluorine), A25, A28 and A34–A35 pass for all 114.
+
+### Per-fluid record (A05 as |Δ|/bound; A17 the S05 §6.3 FD ratio; θ the highest failing value of the scan)
+
+| fluid | A03 | A04 | A05/bound | A08 | A17 floor | Psat(T_lo), Pa | max sat. iter. | highest failing θ |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1-Butene | 1.2e-15 | 1.9e-14 | 8.1e-06 | 1.2e-15 | 2.5e-14 | 4.5e-06 | 6 | 3e-06 |
+| Acetone | 1.3e-15 | 1.7e-14 | 1.4e-06 | 1.6e-15 | 1.3e-14 | 8.1e+00 | 6 | none ≥ 1e-6 |
+| Ammonia | 1.6e-14 | 5.1e-13 | 8.0e-07 | 6.7e-16 | 1.9e-14 | 3.6e+04 | 7 | 3e-06 |
+| Benzene | 2.1e-15 | 9.3e-14 | 1.8e-06 | 5.6e-16 | 3.5e-14 | 1.0e+04 | 5 | none ≥ 1e-6 |
+| CarbonMonoxide | 6.4e-16 | 9.9e-15 | 7.3e-07 | 4.4e-16 | 2.8e-14 | 1.9e+05 | 6 | none ≥ 1e-6 |
+| CarbonylSulfide | 6.7e-16 | 1.6e-14 | 7.1e-07 | 1.0e-15 | 2.8e-14 | 2.4e+02 | 5 | 1e-06 |
+| Chlorine | 1.8e-15 | 3.2e-15 | 5.1e-07 | 2.3e-15 | 1.9e-14 | 4.8e+03 | 6 | 1e-06 |
+| CycloHexane | 2.9e-15 | 1.1e-13 | 8.1e-07 | 1.1e-15 | 8.6e-14 | 4.6e+04 | 5 | 1e-06 |
+| CycloPropane | 5.2e-15 | 1.1e-14 | 8.5e-07 | 4.4e-16 | 6.6e-15 | 5.8e+05 | 11 | 1e-06 |
+| Cyclopentane | 2.6e-15 | 7.8e-14 | 5.3e-06 | 3.0e-15 | 4.1e-14 | 2.7e+01 | 5 | 0.002 |
+| D4 | 9.7e-15 | 4.3e-13 | 3.6e-06 | 2.7e-15 | 6.0e-14 | 2.2e+02 | 6 | 1e-05 |
+| D5 | 4.0e-15 | 2.8e-13 | 2.2e-05 | 1.9e-14 | 6.6e-14 | 1.4e-02 | 5 | none ≥ 1e-6 |
+| Deuterium | 7.3e-15 | 9.5e-14 | 7.1e-06 | 3.1e-15 | 3.9e-14 | 1.4e+06 | 8 | 5e-05 |
+| Dichloroethane | 7.6e-15 | 4.2e-14 | 1.9e-06 | 1.6e-15 | 2.7e-14 | 6.8e+02 | 6 | 2e-05 |
+| DiethylEther | 8.9e-16 | 1.8e-14 | 3.6e-07 | 3.3e-16 | 1.8e-14 | 3.9e+04 | 11 | 2e-05 |
+| DimethylCarbonate | 1.8e-15 | 8.8e-14 | 2.1e-06 | 2.4e-15 | 1.9e-14 | 5.3e+03 | 6 | 1e-06 |
+| DimethylEther | 1.3e-15 | 4.8e-14 | 3.3e-06 | 6.7e-16 | 2.2e-14 | 8.8e+00 | 7 | none ≥ 1e-6 |
+| Ethanol | 2.9e-15 | 1.7e-13 | 5.1e-05 | 1.5e-14 | 1.9e-13 | 9.6e-03 | 9 | 0.0001 |
+| EthylBenzene | 4.6e-15 | 9.9e-14 | 7.1e-06 | 2.7e-15 | 1.7e-14 | 2.0e-02 | 8 | none ≥ 1e-6 |
+| Ethylene | 6.1e-16 | 1.1e-14 | 1.2e-06 | 6.7e-16 | 2.0e-13 | 3.3e+03 | 7 | 1e-06 |
+| EthyleneOxide | 1.2e-14 | 5.4e-13 | 1.5e-06 | 6.7e-16 | 5.2e-14 | 4.7e+01 | 7 | 1e-06 |
+| Fluorine | 8.1e-15 | 1.8e-14 | 2.0e-05 | 2.2e-15 | 2.9e-13 | 4.4e+02 | 7 | 5e-05 |
+| HFE143m | 3.6e-15 | 1.4e-14 | 1.5e-06 | 2.9e-15 | 1.6e-14 | 1.1e+05 | 9 | none ≥ 1e-6 |
+| HeavyWater | 3.9e-14 | 1.0e-13 | 3.8e-06 | 8.9e-16 | 1.0e-13 | 6.6e+02 | 7 | 1e-06 |
+| HydrogenChloride | 6.8e-15 | 1.8e-13 | 9.5e-07 | 2.2e-16 | 3.2e-14 | 4.2e+04 | 9 | none ≥ 1e-6 |
+| HydrogenSulfide | 5.3e-16 | 1.6e-14 | 6.4e-07 | 4.4e-16 | 2.6e-14 | 7.2e+04 | 6 | none ≥ 1e-6 |
+| IsoButane | 1.5e-15 | 1.4e-14 | 1.4e-06 | 3.2e-15 | 5.3e-14 | 3.5e-01 | 5 | none ≥ 1e-6 |
+| IsoButene | 8.3e-16 | 1.9e-14 | 2.5e-06 | 1.6e-15 | 2.1e-14 | 2.3e+00 | 7 | none ≥ 1e-6 |
+| Isohexane | 8.3e-16 | 2.8e-14 | 1.2e-05 | 1.8e-15 | 4.1e-14 | 5.4e-05 | 6 | none ≥ 1e-6 |
+| Isopentane | 6.7e-16 | 2.6e-14 | 6.0e-06 | 2.8e-15 | 9.8e-15 | 2.9e-03 | 6 | none ≥ 1e-6 |
+| Krypton | 8.0e-16 | 1.2e-14 | 5.3e-07 | 1.2e-15 | 7.9e-15 | 4.8e+05 | 7 | none ≥ 1e-6 |
+| MD3M | 1.1e-14 | 4.7e-13 | 3.2e-05 | 2.9e-15 | 8.6e-14 | 2.7e-06 | 6 | none ≥ 1e-6 |
+| MD4M | 1.6e-14 | 6.0e-13 | 4.8e-06 | 9.8e-15 | 5.6e-14 | 7.6e-06 | 7 | 1e-06 |
+| MDM | 7.4e-15 | 7.4e-14 | 5.8e-06 | 2.0e-15 | 5.8e-14 | 6.6e-03 | 6 | 0.0002 |
+| MM | 1.6e-14 | 6.9e-13 | 5.8e-06 | 4.0e-15 | 4.2e-14 | 1.0e+01 | 5 | 0.0002 |
+| Methanol | 1.1e-14 | 1.2e-14 | 2.0e-04 | 3.4e-14 | 3.1e-12 | 1.6e+00 | 9 | 1e-06 |
+| MethylLinoleate | 4.7e-14 | 1.3e-14 | 3.8e-05 | 5.6e-16 | 2.6e-13 | 1.8e-05 | 7 | 1e-05 |
+| MethylLinolenate | 3.6e-15 | 1.3e-14 | 2.1e-06 | 3.3e-16 | 2.1e-14 | 5.6e-06 | 7 | 3e-06 |
+| MethylOleate | 6.0e-15 | 1.8e-14 | 4.1e-06 | 1.3e-15 | 2.9e-14 | 5.2e-06 | 8 | 3e-06 |
+| MethylPalmitate | 4.8e-15 | 1.4e-14 | 3.4e-06 | 4.8e-15 | 1.3e-14 | 9.5e-02 | 6 | 3e-06 |
+| MethylStearate | 1.2e-14 | 1.4e-14 | 6.8e-06 | 1.0e-15 | 4.7e-15 | 3.8e-02 | 7 | 1e-05 |
+| Neon | 2.8e-15 | 6.0e-14 | 1.2e-06 | 1.1e-15 | 3.6e-14 | 9.3e+05 | 10 | 0.0001 |
+| Neopentane | 1.1e-15 | 2.4e-14 | 3.7e-07 | 4.4e-16 | 1.7e-14 | 6.1e+04 | 6 | none ≥ 1e-6 |
+| NitrousOxide | 1.0e-15 | 1.3e-14 | 3.8e-07 | 1.6e-15 | 1.9e-14 | 2.0e+05 | 6 | none ≥ 1e-6 |
+| Novec649 | 9.5e-16 | 1.9e-14 | 4.3e-06 | 2.2e-16 | 4.7e-14 | 9.9e-01 | 6 | none ≥ 1e-6 |
+| OrthoDeuterium | 7.3e-15 | 9.5e-14 | 7.1e-06 | 1.3e-15 | 3.9e-14 | 1.4e+06 | 9 | 3e-06 |
+| OrthoHydrogen | 3.4e-15 | 4.4e-14 | 2.1e-06 | 4.4e-15 | 2.0e-14 | 1.0e+06 | 8 | 1e-06 |
+| ParaDeuterium | 7.3e-15 | 9.5e-14 | 7.1e-06 | 3.6e-15 | 5.5e-14 | 1.4e+06 | 6 | none ≥ 1e-6 |
+| Propylene | 6.4e-15 | 2.1e-13 | 1.0e-06 | 2.2e-16 | 3.2e-14 | 1.6e-02 | 9 | none ≥ 1e-6 |
+| PropyleneGlycol | 1.1e-14 | 3.7e-13 | 7.1e-06 | 3.6e-15 | 1.1e-11 | 4.8e-03 | 23 | none ≥ 1e-6 |
+| Propyne | 1.6e-14 | 2.7e-14 | 2.1e-06 | 4.0e-15 | 3.5e-14 | 4.6e+05 | 9 | 2e-05 |
+| R11 | 1.6e-15 | 1.0e-14 | 5.6e-06 | 1.1e-16 | 6.4e-14 | 2.0e+01 | 10 | none ≥ 1e-6 |
+| R1123 | 5.2e-15 | 3.0e-13 | 9.5e-07 | 2.2e-16 | 1.5e-14 | 7.1e+04 | 9 | none ≥ 1e-6 |
+| R113 | 4.8e-16 | 9.4e-15 | 9.5e-07 | 6.7e-16 | 2.9e-14 | 4.0e+03 | 6 | none ≥ 1e-6 |
+| R1130_E | 7.2e-16 | 1.0e-13 | 9.5e-06 | 2.7e-15 | 8.7e-12 | 1.7e+03 | 7 | 3e-06 |
+| R1132_E | 8.4e-15 | 2.6e-13 | 7.7e-07 | 1.8e-15 | 2.1e-14 | 4.2e+05 | 9 | 1e-05 |
+| R114 | 3.6e-15 | 1.0e-14 | 4.3e-06 | 8.9e-16 | 5.0e-14 | 1.5e+05 | 11 | 0.0001 |
+| R115 | 1.3e-15 | 7.0e-15 | 3.1e-06 | 1.9e-15 | 1.4e-14 | 4.6e+03 | 7 | none ≥ 1e-6 |
+| R116 | 6.1e-16 | 2.3e-14 | 7.1e-07 | 1.3e-15 | 6.2e-15 | 4.7e+04 | 8 | none ≥ 1e-6 |
+| R12 | 5.6e-16 | 2.3e-14 | 1.6e-06 | 3.3e-15 | 1.1e-14 | 8.9e-01 | 7 | none ≥ 1e-6 |
+| R1224YDZ | 2.6e-15 | 8.8e-14 | 5.3e-06 | 4.0e-15 | 3.1e-14 | 8.7e+00 | 9 | none ≥ 1e-6 |
+| R123 | 4.4e-14 | 3.6e-13 | 8.4e-04 | 4.5e-14 | 4.9e-12 | 1.4e+01 | 7 | 1e-05 |
+| R1233zd_E | 4.3e-15 | 1.9e-13 | 2.7e-06 | 2.2e-15 | 2.9e-14 | 2.7e+01 | 6 | none ≥ 1e-6 |
+| R1234yf | 2.0e-15 | 2.3e-14 | 4.4e-06 | 4.0e-15 | 1.3e-13 | 1.5e+00 | 8 | none ≥ 1e-6 |
+| R1234ze_E | 3.9e-15 | 8.2e-14 | 7.8e-07 | 2.7e-15 | 1.1e-14 | 5.6e+02 | 6 | 1e-06 |
+| R1234ze_Z | 2.2e-15 | 5.8e-14 | 1.4e-06 | 2.2e-16 | 2.5e-13 | 1.2e+05 | 5 | 0.001 |
+| R124 | 6.6e-16 | 1.2e-14 | 5.3e-06 | 1.8e-15 | 3.1e-14 | 1.2e-01 | 9 | none ≥ 1e-6 |
+| R1243zf | 1.2e-15 | 7.1e-14 | 7.1e-07 | 2.4e-15 | 1.9e-14 | 1.4e+00 | 6 | none ≥ 1e-6 |
+| R125 | 5.7e-15 | 2.8e-14 | 1.4e-06 | 2.2e-16 | 2.8e-14 | 6.2e+03 | 6 | none ≥ 1e-6 |
+| R13 | 4.2e-15 | 2.3e-15 | 3.6e-06 | 2.3e-15 | 5.0e-13 | 3.9e+00 | 12 | 5e-05 |
+| R1336mzz_E | 7.3e-15 | 1.1e-13 | 1.6e-06 | 1.3e-15 | 3.4e-14 | 1.6e+03 | 7 | none ≥ 1e-6 |
+| R1336mzz_Z | 3.1e-15 | 1.7e-14 | 2.4e-06 | 2.7e-15 | 2.4e-14 | 5.5e+01 | 6 | none ≥ 1e-6 |
+| R134a | 1.8e-15 | 2.6e-14 | 3.2e-06 | 1.1e-15 | 2.5e-14 | 9.6e+02 | 7 | 0.0005 |
+| R13I1 | 5.6e-16 | 2.8e-14 | 3.7e-06 | 3.6e-15 | 1.2e-13 | 1.5e+00 | 6 | none ≥ 1e-6 |
+| R14 | 1.9e-15 | 7.0e-15 | 1.7e-06 | 1.0e-15 | 1.8e-14 | 2.1e+04 | 6 | 0.0002 |
+| R141b | 1.2e-15 | 9.3e-15 | 1.4e-06 | 2.0e-15 | 1.6e-13 | 2.0e+01 | 6 | none ≥ 1e-6 |
+| R142b | 1.4e-15 | 9.5e-15 | 6.8e-07 | 1.1e-16 | 2.0e-14 | 1.2e+01 | 7 | 1e-06 |
+| R143a | 2.9e-15 | 1.5e-14 | 1.1e-06 | 2.6e-15 | 1.9e-14 | 2.4e+03 | 6 | none ≥ 1e-6 |
+| R152A | 2.3e-14 | 9.5e-14 | 2.9e-05 | 2.6e-14 | 6.7e-12 | 1.7e+02 | 10 | 5e-05 |
+| R21 | 6.5e-14 | 6.3e-14 | 1.2e-05 | 2.3e-14 | 1.4e-13 | 2.3e+03 | 11 | 1e-05 |
+| R218 | 1.2e-15 | 5.0e-15 | 3.5e-06 | 1.3e-15 | 1.4e-14 | 6.8e+00 | 6 | none ≥ 1e-6 |
+| R22 | 9.0e-13 | 3.8e-13 | 1.3e-03 | 1.1e-12 | 5.6e-11 | 1.6e+00 | 5 | 1e-05 |
+| R227EA | 3.4e-15 | 6.0e-15 | 9.4e-06 | 3.6e-15 | 7.3e-14 | 2.3e+01 | 5 | none ≥ 1e-6 |
+| R23 | 1.5e-15 | 1.3e-14 | 2.5e-06 | 5.6e-16 | 1.1e-13 | 1.7e+02 | 6 | 1e-05 |
+| R236FA | 4.3e-15 | 2.2e-13 | 8.2e-07 | 8.9e-16 | 1.4e-14 | 4.3e+02 | 5 | 3e-06 |
+| R245ca | 1.8e-15 | 1.6e-14 | 5.5e-06 | 0.0e+00 | 5.2e-14 | 3.3e+02 | 6 | none ≥ 1e-6 |
+| R245fa | 3.2e-15 | 8.0e-14 | 2.8e-06 | 1.3e-15 | 6.9e-14 | 4.3e+01 | 10 | none ≥ 1e-6 |
+| R32 | 1.5e-15 | 8.1e-14 | 4.4e-07 | 1.3e-15 | 3.3e-14 | 1.7e+02 | 7 | 1e-06 |
+| R365MFC | 3.9e-15 | 1.4e-14 | 7.6e-06 | 9.7e-15 | 4.5e-14 | 5.4e+03 | 8 | none ≥ 1e-6 |
+| R40 | 5.7e-16 | 2.5e-14 | 4.4e-07 | 4.4e-16 | 2.2e-14 | 9.5e+04 | 12 | 1e-05 |
+| R41 | 1.0e-15 | 2.1e-14 | 6.8e-07 | 2.2e-15 | 1.7e-14 | 1.0e+03 | 6 | none ≥ 1e-6 |
+| RC318 | 3.7e-15 | 1.1e-14 | 2.5e-06 | 6.7e-16 | 2.3e-14 | 3.7e+04 | 7 | 1e-05 |
+| SulfurDioxide | 1.4e-15 | 2.1e-14 | 6.1e-07 | 2.0e-15 | 2.4e-14 | 6.5e+03 | 6 | none ≥ 1e-6 |
+| SulfurHexafluoride | 1.3e-14 | 2.2e-14 | 1.9e-06 | 6.4e-15 | 6.5e-14 | 3.6e+05 | 6 | 1e-06 |
+| Tetrahydrofuran | 2.0e-15 | 5.0e-14 | 4.6e-06 | 8.9e-16 | 1.6e-14 | 7.4e-01 | 6 | none ≥ 1e-6 |
+| Toluene | 1.0e-15 | 3.3e-14 | 9.4e-07 | 1.1e-15 | 1.1e-14 | 1.7e-01 | 7 | none ≥ 1e-6 |
+| VinylChloride | 5.0e-15 | 2.2e-13 | 1.4e-05 | 2.9e-15 | 3.6e-12 | 2.4e-01 | 8 | 1e-06 |
+| Xenon | 6.7e-16 | 1.2e-14 | 5.5e-07 | 1.3e-15 | 2.0e-14 | 1.5e+05 | 7 | 3e-06 |
+| cis-2-Butene | 1.3e-15 | 1.9e-14 | 2.2e-06 | 5.3e-15 | 2.6e-14 | 9.8e-01 | 7 | 1e-05 |
+| m-Xylene | 2.3e-15 | 7.5e-14 | 1.8e-06 | 3.6e-15 | 1.5e-14 | 1.0e+01 | 8 | none ≥ 1e-6 |
+| n-Butane | 1.3e-15 | 1.1e-14 | 2.4e-05 | 8.7e-15 | 6.1e-13 | 9.7e-01 | 7 | none ≥ 1e-6 |
+| n-Decane | 1.0e-15 | 5.3e-14 | 1.2e-06 | 2.9e-15 | 1.0e-14 | 5.2e+00 | 7 | 3e-06 |
+| n-Dodecane | 1.0e-15 | 1.4e-14 | 1.9e-06 | 5.8e-15 | 4.7e-15 | 2.5e+00 | 7 | none ≥ 1e-6 |
+| n-Hexane | 1.1e-14 | 4.1e-13 | 1.1e-06 | 1.8e-15 | 2.6e-14 | 4.1e+00 | 6 | none ≥ 1e-6 |
+| n-Nonane | 1.2e-15 | 3.4e-14 | 6.8e-07 | 8.9e-16 | 1.4e-14 | 1.7e+00 | 5 | 1e-06 |
+| n-Octane | 2.5e-15 | 1.9e-14 | 2.7e-06 | 2.2e-16 | 4.1e-14 | 7.2e+00 | 7 | none ≥ 1e-6 |
+| n-Pentane | 1.6e-14 | 6.7e-13 | 1.8e-06 | 1.0e-15 | 4.6e-14 | 8.2e-01 | 9 | none ≥ 1e-6 |
+| n-Perfluorobutane | 2.8e-15 | 1.3e-13 | 1.4e-06 | 0.0e+00 | 1.2e-14 | 4.0e+00 | 9 | none ≥ 1e-6 |
+| n-Perfluorohexane | 1.3e-14 | 6.4e-13 | 1.5e-06 | 4.6e-15 | 1.9e-14 | 1.4e+01 | 7 | none ≥ 1e-6 |
+| n-Perfluoropentane | 6.7e-15 | 1.8e-13 | 2.8e-06 | 2.8e-15 | 1.2e-14 | 4.5e-01 | 6 | none ≥ 1e-6 |
+| n-Undecane | 1.8e-15 | 3.3e-15 | 4.1e-06 | 3.0e-15 | 8.1e-15 | 1.8e+00 | 6 | 3e-06 |
+| o-Xylene | 4.2e-15 | 1.1e-13 | 3.6e-06 | 1.3e-15 | 4.1e-14 | 6.6e+01 | 7 | 1e-06 |
+| p-Xylene | 2.5e-15 | 4.1e-15 | 9.1e-07 | 1.9e-15 | 1.2e-14 | 1.4e+03 | 6 | none ≥ 1e-6 |
+| trans-2-Butene | 6.7e-16 | 2.0e-14 | 1.6e-06 | 2.9e-15 | 1.0e-14 | 1.9e+02 | 7 | none ≥ 1e-6 |
+
 ## Handoff: next
 
-WO-S07-2b (tier B) and WO-S07-3 (registration manifest with the U02 item, A29–A31, platform digest). The design lane
-rules on B-18–B-21 (and B-15) at the package review.
+WO-S07-2b stopped on Q-B4 (above): a design ruling on the near-critical saturation solve (exclusion of 10 fluids,
+or a generic provider change for both tiers), and on F-6 (the A17 floor for R22 and PropyleneGlycol). After it:
+re-run `tests/test_s07_broad.py`, then WO-S07-3 (registration manifest with the U02 item, A29–A31, platform
+digest). The design lane rules on B-18–B-24 (and B-15) at the package review.
