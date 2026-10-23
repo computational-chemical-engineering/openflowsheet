@@ -416,6 +416,8 @@ after each commit (scratch `recplug.py`/`cmp.py`).
 
 ### For the design lane (one ruling round)
 
+**Ruled 2026-10-23 (R-626; spec §19; review `docs/reviews/S07-review.md`):** G3 and G8 bounds re-set (§19.2, §19.3); θ_min kept (remedy 7e-5 pre-registered); B-15, B-18–B-30 confirmed; F-6 accepted (A17 stop line 1e-10, h-scan rule); S05 A33: default = carry in S07's manifest (needs a decision). Remaining build items: §19.8.
+
 1. **G3 fails for R22 (and R21 on p_σ):** the Maxwell floor of R22 is higher (R22 is F-6's cancellation fluid); the
    p_σ difference follows from Δρ'' times (∂ln p/∂ln ρ)_T at the vapour. Options: bounds by amendment, or accept.
 2. **G8 fails by 3.5 %:** 414 jets (Cyclopentane) vs 400. Options: re-set the bound, or Q4's safeguarded Newton.

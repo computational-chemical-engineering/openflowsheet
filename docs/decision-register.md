@@ -12847,3 +12847,48 @@ package for both providers.
 - Psat at C3H8 `sat_lo` (Z_L = 3.8e-10, four decades below water's T_t). A liquid-branch pressure carries about
   ε/Z_L error. Q-A1-5's default applies to tier A.
 - C16 refuses on any published-check row until WO-S07-4 implements it.
+
+
+## R-626 — S07 review: near-critical saturation fallback and strip bracket made normative; G3 and G8 bounds re-set from derivations; B-15 confirmed; tier-B A17 stop line 1e-10 with an h-scan rule; S05 strip erratum
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`reviewer`), the S07 package review of `wp/S07` at `6f8c83d6` |
+| Normative text | S07 spec §19 (Amendment 3); S05 spec §17 (Erratum); review `docs/reviews/S07-review.md`; design note `docs/design/S07-near-critical-saturation.md` |
+| Evidence | Review re-runs, CoolProp 8.0.0 on x86-64. Near-critical and broad tests: 3118 passed, with R22's two N3 cases failing. Fallback-only roots, at all 343 points of the dense scan, against CoolProp's own QT saturation: densities ≤ 4.5e-10 and p_σ ≤ 3.3e-13; the highest fallback θ is 4.46e-3. R22 at θ_min: two accepted roots 1.10e-8 apart in ρ'', residuals at the noise (F2 ±1.3e-13), QT between them, K jitter 2.1e-13 (R21: 1.6e-14); Δp_σ/p_σ = (k''/Z'')·Δρ''/ρ'' = 6.5e-12. A17 h-scans: R22 independent of h (value noise); PropyleneGlycol ∝ h³ (truncation). Inner loops in double: CO2 at θ = 1e-3, and Ammonia and o-Xylene at 3e-3 to 5e-3; a 401-point grid misses the loop at θ = 1e-6 for 20 fluids |
+| Affected packages | S07 (the A47 bounds, A49's branch check, the record scripts, WO-S07-NC4); S05 (spec erratum only; code `8cab0e15`) |
+
+**Decision.**
+- The design note's D1–D5 are normative. The saturation is the plain Newton, then above θ_min = 5e-5 the
+  spinodal-bracketed fallback, then the same Newton. The strip takes the T ≥ T_c bracket where no saturation
+  converges, in S07 and S05 both. WO-S07-NC1 is discharged.
+- G3 (A47) for θ_min ≤ θ < 1e-2: densities 3e-8 (≈ 2√ε, R-595's floor clause) and p_σ 1e-10. For θ ≥ 1e-2,
+  densities 1e-11 and p_σ 1e-12.
+- G8 is a tripwire of 500 jets. The hard bound is 6906 plus 100. The plain path gains no jet.
+- θ_min stays 5e-5. If A45 fails at θ_min on aarch64, the remedy is 7e-5.
+- C-strip adds a 401-point grid on [ρ'', ρ'] and covers T_c(1 − 5e-5).
+- A48's references add R22 and each fallback fluid at its highest fallback θ.
+- A49 asserts the branch: ρ > ρ_c for LIQUID, ρ < ρ_c for VAPOR.
+- B-15 confirmed: |Δ| ≤ 1e-12·max(|x|, scale). This refines R-625's "absolute".
+- F-6: tier B's A17 stop line becomes 1e-10, with an h-scan record above 1e-11. A miss ∝ h stops for the design
+  lane.
+- B-18 to B-30 are confirmed. A10/A11 are reworded for p_σ < P_lo, and the design note's G7(c) is read as A49's
+  continuity.
+- S05's A33 needs a decision. The default is to carry the evidence in S07's manifest.
+
+**Rejected alternatives, and why.**
+- *Keep G3 at 1e-8 and 1e-12.* It asks for more than the convergence rule promises. It would fail the noisiest fluid
+  for no numerical reason.
+- *Per-fluid bounds.* Forbidden: no per-fluid tolerances.
+- *Make the fallback a safeguarded Newton to meet 400 jets.* Cost is not correctness, and the path is rare and cached.
+- *θ_min = 1e-4.* It puts the registered strip controls on the threshold.
+- *Require a single loop over the fallback's whole θ range.* That is false for CO2 at θ = 1e-3.
+- *A global stability test in the fallback.* The plain path has none either. Evidence covers the run set.
+- *Literal absolute C12 bounds.* They fail S05's V_corner, at 4.6e-14 relative.
+- *Raise A17's test bound.* No floor is near it, and it would weaken the check for every fluid.
+
+**Watch for.**
+- A45 at θ_min for R22 on aarch64.
+- A spurious Maxwell pair on an inner EOS loop. It is excluded by evidence (A47, A48), not by the run-time checks.
+- S05's A33 carry, which awaits a ruling.

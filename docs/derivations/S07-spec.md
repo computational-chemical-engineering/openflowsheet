@@ -2,7 +2,7 @@
 
 **Package:** S07 (brief `docs/briefs/S07-coolprop-design.md`; branch `wp/S07`). **Lane:** design (`specifier`) for
 this document; build for WO-S07-1a…4 (§16.14). **ADR:** 0046 (Proposed, with its Amendment 1 note). **Register:**
-R-618…R-622; Amendment 1: R-623; Erratum 1: R-624; Amendment 2: R-625.
+R-618…R-622; Amendment 1: R-623; Erratum 1: R-624; Amendment 2: R-625; Amendment 3: R-626.
 **Precedent followed:** S05 (`docs/derivations/S05-IAPWS95-spec.md`, ADR 0045). Where this document says "as S05
 §x", the S05 text applies with the substitutions stated here, and nothing else from S05 is implied.
 **Generator (to be written by WO-S07-1, plan in §8):** `docs/derivations/scripts/s07_reference.py`, run in an
@@ -1563,3 +1563,184 @@ design lane.
 - That the provider's Psat at tier A's lowest-Z_L state (C3H8 `sat_lo`, Z_L = 3.8e-10) meets A08. The review flags
   it as Q-A1-5 extended to tier A, with Q-A1-5's default.
 - Anything about tier B beyond the generator's output.
+
+## 19. Amendment 3 — near-critical saturation, the strip, and the review rulings (2026-10-23; R-626)
+
+### 19.0 Authority, trigger, scope and precedence
+
+Design lane (`reviewer`), at the package's single review (`docs/reviews/S07-review.md`). This amendment does two
+things.
+- **It makes design note `docs/design/S07-near-critical-saturation.md` (2cd05bca) normative**, as implemented in
+  `16387740`, `e14b7cc5`, `c76bc19b` and `8cab0e15`. This discharges WO-S07-NC1. The S05 side is S05 spec §17.
+- **It rules on the build lane's batched questions:** G3, G8, B-15, B-18…B-30 and F-6.
+
+Where this section conflicts with §6.3, §9.1, §16.11, §18.3 or the design note, this section governs. No stored
+value, constant, registered state or probe changes.
+
+### 19.1 The saturation solve and the strip (amends §6.3)
+
+- **The solve (D1, D2, D4).** The saturation at T < T_c is computed in two stages.
+  - **Plain stage.** S05 §3.5's Newton in (δ', δ''), from the ancillary seeds. It runs only if both seed densities
+    are finite and positive.
+  - **Fallback stage.** Where the plain stage gives no root, and θ = 1 − T/T_c (computed as written) is
+    ≥ θ_min = 5e-5, the fallback of design note §4.2 runs: spinodal brackets, bisection in pressure, then the same
+    Newton as a polish. It is accepted by the same rule, with ρ' ≥ ρ_lb and ρ'' ≤ ρ_vb.
+  - **Otherwise** the saturation does not converge.
+
+  §6.3's last sentence becomes: "A seed affects the iteration count. It affects the converged value only within the
+  double-precision floor of the Maxwell root (§19.2)."
+- **Termination and wrong roots.** Every loop is bounded (§19.3). The run-time checks exclude any result that is not
+  a Maxwell root, and any result with a phase inside the spinodals that were found. They do **not** exclude a
+  spurious Maxwell pair on an inner loop of the isotherm, should a spinodal bisection land on that loop.
+  - CO2 has such a loop at θ = 1e-3: k changes sign at ρ/ρ_c = 0.873, 1.101, 1.123 and 1.137. Ammonia and o-Xylene
+    have one at 3e-3 to 5e-3.
+  - Where the fallback runs, that case is excluded by evidence: A47's forced-fallback agreement, A48's 50-digit roots
+    over the fallback's run set (§19.5), and C-strip at the strip temperatures (§19.4).
+  - The plain stage carries the same unguarded case. A global stability test is not required.
+- **The strip (D3).** In (T_σ,max, T_c), outside the box, the density bracket is the saturation's where a
+  saturation converges. Otherwise it is the T ≥ T_c bracket, (0, ρ_max] from min(P/RT, ρ_max). The strip refuses
+  `saturation_not_converged` nowhere. Uniqueness of that root is C-strip's claim.
+- **θ_min stays 5e-5.**
+  - **What it does.** It decides only which bracket a strip state in [θ_min, 2e-4) uses, and both brackets give the
+    same root to within 2.2e-12 (M6). At T_σ,max, where Psat and Tsat need the saturation, the worst floor is
+    R22's 2.9e-10, a margin of 51× to √ε.
+  - **R22's thin margin.** At θ_min, R22's two roots differ by 1.1e-8, a margin of only 1.35× to √ε.
+  - **Pre-registered remedy.** If A45 fails at θ_min on aarch64, θ_min becomes 7e-5 (R22's margin becomes 2.2×),
+    by a register entry citing the CI run. The remedy is neither a looser convergence rule nor 1e-4, which would put
+    the registered strip controls at θ = 1e-4 on the threshold.
+
+### 19.2 Two-seed agreement (A47; G3 re-set)
+
+The forced fallback and the plain root, where both converge at the same T, must agree as follows.
+
+| quantity | θ ≥ 1e-2 | θ_min ≤ θ < 1e-2 |
+| --- | --- | --- |
+| \|Δρ'\|/ρ', \|Δρ''\|/ρ'' | 1e-11 | 3e-8 |
+| \|Δp_σ\|/p_σ | 1e-12 | 1e-10 |
+
+Why these bounds:
+- **The density bound is the convergence rule's own promise.** R-595's floor clause accepts a final correction up to
+  √ε = 1.49e-8. Each accepted root lies inside the noise ball of the Maxwell root whose radius that correction
+  measures, so two accepted roots can differ by up to about 2√ε. A tighter bound measures one fluid's evaluation
+  noise.
+  - Measured for R22 at θ_min: 1.10e-8. Both roots have residuals at the noise (F1 ±6e-14, F2 ±1.3e-13), and
+    CoolProp's QT root lies between them. K jitters by 2.1e-13 over 64 ulp of ρ'', against 1.6e-14 for R21.
+  - The floor scales as η·θ^(−3/2), where η is the evaluation noise of K. The far bound, 1e-11 at θ ≥ 1e-2, has 2× of
+    margin over R22's 5.1e-12, consistent with that scaling.
+- **p_σ follows ρ''.** To first order, |Δp_σ|/p_σ = (k''/Z'')·|Δρ''|/ρ''. For R22 at θ_min this is
+  5.9e-4 × 1.10e-8 = 6.5e-12, the measured value. Equivalently, it is η·ρ'/(Z''Δρ), about 50η at θ_min, and it
+  scales as θ^(−1/2).
+  - 1e-10 admits η up to 2e-12, 10× R22's.
+  - It is also 20× below A08's Psat bound of 2e-9, so no consumer can see which seed was used.
+
+### 19.3 Cost (G8 re-set)
+
+- The plain path gains no `_jet` call.
+- The fallback is bounded by its loop limits at 6906 jets, plus up to 100 for the failed plain Newton.
+- The dense scan's worst fallback must stay ≤ 500 jets. This is a regression tripwire, not a correctness bound;
+  the measured worst is 414 (Cyclopentane).
+- The safeguarded Newton (design note Q4) stays deferred until a benchmark shows the fallback on a hot path.
+
+### 19.4 Generator claim C-strip (G6)
+
+C-strip is checked for every fluid at T ∈ {T_σ,max, T_c(1 − 1e-4), T_c(1 − 5e-5), T_c(1 − 1e-6)}.
+- **Grid.** k = (∂p/∂ρ)_T/(RT) is evaluated at 50 digits on the union of two grids: 401 uniform points on
+  (0, ρ_max], and 401 uniform points on [ρ'', ρ'], the generator's 50-digit coexisting densities at that T. Each sign
+  change is refined by bisection.
+- **Sign changes.** k changes sign exactly twice, and both changes lie in (ρ'', ρ').
+- **Spinodal pressures.** p_sL > p_c(1 − 4e-3) and p_sV < p_c(1 + 8e-3).
+
+The second grid is required. Near T_c the unstable region is about θ^½·ρ_c wide. In double precision, the uniform
+grid alone finds no sign change at T_c(1 − 1e-6) for 20 of 123 fluids. At the other three temperatures every fluid
+already shows exactly two changes, with spinodal pressures inside the band.
+
+C-strip makes the D3 root unique for every strip state outside the box. It is **not** claimed on the fallback's
+whole θ range, where the claim would be false (§19.1).
+
+### 19.5 Near-critical references (A48; G4)
+
+The generator solves Maxwell at 50 digits, from a seed of its own choice that uses no QT flash, at these
+temperatures:
+- H2O, O2, H2, R134a, Cyclopentane, MM and R14 at θ ∈ {2e-4, 1e-4} (the design note's set);
+- R22 at θ ∈ {2e-4, 1e-4, 5e-5}, the fluid with the highest Maxwell floor;
+- each fluid that enters the fallback on the dense scan, at the highest θ at which it enters there. There were 13 at
+  `6f8c83d6`: Cyclopentane 4.5e-3, R1234ze_Z 1.2e-3, R134a 8.9e-4, MM, MDM, R14 ≈ 2e-4, R114, Neon, Ethanol,
+  R13, Deuterium, Fluorine and one more below 1e-4.
+
+  The build lane takes those temperatures from `nc_scan.py`'s output once and registers them as fixed doubles in the
+  generator's inputs. They are then registered values and are not recomputed.
+
+A48 compares the provider's (ρ', ρ'', p_σ) with these references:
+- for θ ≥ 1e-4: densities within 1e-8 and p_σ within 1e-11;
+- for θ < 1e-4: within §19.2's near bounds, 3e-8 and 1e-10.
+
+A48 is the near-critical saturation's only independent expectation. A45–A47 and A49 are self-consistency checks.
+
+### 19.6 Rulings on the batched build decisions
+
+- **B-15 (C12's value bound) is confirmed.** h, s and lnphi pass when |Δ| ≤ 1e-12·max(|x|, scale), with scale R·T,
+  R and 1 respectively.
+  - The two generators differ in the last digits of their coefficients (§18.3), and such a difference produces an
+    error proportional to the term it sits in, which is relative.
+  - The evidence: at S05's V_corner, |Δs| is 1.1e-12·R but 4.6e-14 relative, with |s| ≈ 24R. At water's datum,
+    s_l(T_t), the absolute form governs, as §18.3 intended.
+  - This refines R-625's "absolute"; it does not reverse it. The plain relative bound stays rejected.
+- **F-6 (A17's floor above 1e-11) is accepted.** Tier B's A17 stop line becomes the test's own bound, 1e-10 (S05
+  §6.3); §16.11's "above 1e-11" stop is replaced.
+  - **The rule from now on.** Any fluid whose floor exceeds 1e-11 is recorded in the decisions log with an h-scan,
+    h/x ∈ {1e-8 … 1e-4}.
+    - A miss independent of h is value noise.
+    - A miss ∝ h³ is truncation.
+    - Either is accepted.
+    - A miss ∝ h is a derivative inconsistency, and it stops for the design lane.
+  - **Measured.** R22 is independent of h (2e-11 to 7.5e-11), so its floor is value noise; R22 is A03's floor fluid.
+    PropyleneGlycol is ∝ h³, falling to 2.2e-13 at h/x = 1e-7, so its floor is the stencil's truncation of cp at
+    `S_dense`.
+- **B-18 and B-22 are confirmed, and A10/A11 are amended.** Where p_σ(T) < P_lo, A10 and A11 read both phases at the
+  provider's saturation state through the property map that `evaluate_phase` uses (`_at` at the root pressure). The
+  public request is outside the domain there (§6.5 row 5).
+- **Confirmed, as logged:** B-19, B-20, B-21, B-23 and B-24.
+- **B-25 is confirmed.** It is a test-grid device only; production compares θ, computed as written, with θ_min.
+- **Confirmed:** B-26, B-27 and B-29.
+- **B-30 is confirmed.** Every density the fallback evaluates is positive, so a CoolProp exception there is an
+  ordinary §4 evaluation failure.
+- **B-28 is confirmed.** The design note's G7(c) was mis-worded. S05's strip continuity is A49's T_c(1 − 1e-12)
+  against T_c test. The probes at 647.0954 K and above differ from 647.096 K physically, by (∂ln v/∂T)_P·ΔT.
+- **Q3 and Q5 (session defaults): no objection.**
+- **The S05 manifest's A33 needs a decision; the build lane proceeds with this default.** 8cab0e15's S05 evidence
+  (S05 suites, `s05_reference.py --check` byte-identical, and the record digest) is carried as an S05 section of
+  S07's manifest. No new S05 manifest is made, and S05's merged manifest keeps its own scope.
+
+### 19.7 Assertions A45–A50 (`tests/test_s07_near_critical.py`; both CI architectures)
+
+| id | asserts | independent |
+| --- | --- | --- |
+| A45 (N1) | The saturation is non-`None`, with ρ' > ρ_c > ρ'' > 0, for all 123 fluids at T_σ,max and at θ ∈ {2e-4, 1e-4, 5e-5}. Each grid T is moved down by `nextafter` until its computed θ ≥ θ (B-25). | no |
+| A46 (N2) | Where the plain stage converges, `_solve_saturation` returns its root bitwise and never enters the fallback. Identity against the pre-change code is shown by the committed record scripts and digests: S07 35 718 calls, S05 38 010 calls (review finding 4). | no |
+| A47 (N3) | §19.2's table at θ ∈ {1e-2, 2e-4, 1e-4, 5e-5}, wherever both stages converge. | no |
+| A48 (N4) | §19.5. | yes (50-digit) |
+| A49 (N5) | For 123 fluids × θ ∈ {1.9999e-4, 1e-4, 5e-5, 1e-5, 1e-6, 1e-8, 1e-12} × the four M6 states: the answer is `ok`, (∂v/∂P)_T < 0, cp > 0, and **ρ > ρ_c for LIQUID, ρ < ρ_c for VAPOR**. Continuity at P_hi (LIQUID) and P_lo (VAPOR): \|v(T_c(1 − 1e-12)) − v(T_c)\| ≤ 1e-8·v(T_c). | no |
+| A50 (N6) | S05: the three M7 strip temperatures at 25 MPa LIQUID and 20 MPa VAPOR are answered and stable, with A49's continuity at T_c. `iapws95._saturation` converges at 273.16 + 0.05·i K up to 647.0 K. | no |
+
+**The dense scan (G1, G3, G8)** stays a committed measurement with a one-line summary. Its pass line uses §19.2's
+and §19.3's bounds.
+
+### 19.8 Work remaining in WO-S07-NC2 to NC4
+
+- **Build, before `tested`.** Each item is a test or script edit; no provider changes.
+  - Set A47's bounds and `nc_scan.py`'s pass line to §19.2 and §19.3.
+  - Add A49's branch assertion.
+  - Commit `recplug.py` and `cmp.py` under `s07_measurements/`, and record both digests (A46).
+  - Rename the N-tests' docstrings to A45–A50.
+- **WO-S07-NC4 (build, `opus-engineer`).** C-strip per §19.4 and the references per §19.5 in `s07_reference.py`.
+  Then regenerate, add A48, and run `--check`.
+  - **Acceptance:** C-strip holds for all 123 fluids, A48 passes, and `--check` is byte-identical on re-run.
+  - **If C-strip fails for a fluid,** stop for the design lane. Do not change the grid.
+
+### 19.9 What this amendment does not establish
+
+- **That the plain or fallback stage can never return a spurious Maxwell pair** on an EOS with inner loops. That is
+  excluded by evidence where it matters (§19.1), not by proof.
+- **That the floors measured on x86-64 hold on aarch64.** CI's A45–A47 runs decide that, with §19.1's remedy for
+  θ_min.
+- **Empirical validity.** Tier B, and the near-critical roots beyond A48, remain self-consistent only (§16.5.1).
