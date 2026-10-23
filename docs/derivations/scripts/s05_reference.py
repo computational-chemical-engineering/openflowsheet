@@ -49,12 +49,18 @@ DIGITS = 25
 
 #: (name, T [K], rho [kg/m3], why). Spec §5.1.
 PHI_STATES: tuple[tuple[str, str, str, str], ...] = (
-    ("R6_500", "500", "838.025", "R6-95 Table 6 (its only state), liquid-like; every phi term is non-zero"),
+    (
+        "R6_500",
+        "500",
+        "838.025",
+        "R6-95 Table 6 (its only state), liquid-like; every phi term is non-zero",
+    ),
     (
         "R6_647",
         "647",
         "358",
-        "R6-95 Table 7 row (no printed phi values), near-critical; the non-analytic terms are large",
+        "R6-95 Table 7 row (no printed phi values), near-critical; "
+        "the non-analytic terms are large",
     ),
     (
         "delta_one",
