@@ -2,7 +2,7 @@
 
 **Package:** S07 (brief `docs/briefs/S07-coolprop-design.md`; branch `wp/S07`). **Lane:** design (`specifier`) for
 this document; build for WO-S07-1a…4 (§16.14). **ADR:** 0046 (Proposed, with its Amendment 1 note). **Register:**
-R-618…R-622; Amendment 1: R-623; Erratum 1: R-624; Amendment 2: R-625; Amendment 3: R-626.
+R-618…R-622; Amendment 1: R-623; Erratum 1: R-624; Amendment 2: R-625; Amendment 3: R-626; Amendment 4: R-627.
 **Precedent followed:** S05 (`docs/derivations/S05-IAPWS95-spec.md`, ADR 0045). Where this document says "as S05
 §x", the S05 text applies with the substitutions stated here, and nothing else from S05 is implied.
 **Generator (to be written by WO-S07-1, plan in §8):** `docs/derivations/scripts/s07_reference.py`, run in an
@@ -23,6 +23,10 @@ governs §10 F-3, §12.1 items 2–3 and §16.14's WO-S07-1a. It also scopes M07
 **Amendment 2 (2026-10-23, §18)** records the design lane's review of the generator (`docs/reviews/S07-generator-review.md`):
 rulings on Q-B1–Q-B3, C12 widened, A21 extended to §6.5 rows 10 and 11, and A33(a)'s order. No fluid, rule, stored value
 or tolerance changes. Register R-625.
+
+**Amendment 4 (2026-10-23, §20)** rules on A31 after aarch64 missed Q-1's pre-registered bound. Ordinary answers
+keep a derived 1e-10 in both tiers; answers within 1 % of T_c get per-state allowances from G3's Psat bound and
+their own pressure sensitivity; x86-64 stays bitwise. Register R-627.
 
 ## 0. Read this first
 
@@ -474,7 +478,9 @@ Test files: `tests/test_s07_coolprop.py` (WO-S07-2) and `tests/test_s07_registra
   and it is 4 decades inside A05's 1e-8, so no reference assertion can change verdict between architectures. The
   manifest records the measured worst per quantity, and ADR 0046's status line states "cross-architecture agreement
   ≤ <measured>, not bit-identity". If the measured worst exceeds 1e-12, nothing is loosened: the build lane stops
-  and the design lane amends.
+  and the design lane amends. **Outcome (2026-10-23):** aarch64 differed (CI run 39979785654, worst 2.243e-8) and the
+  stop rule fired. §20 (Amendment 4, R-627) replaces this default: answer classes, a derived 1e-10 for ordinary
+  answers in both tiers, and per-state allowances near T_c.
 - **Q-2 (closed by measurement while writing).** O2's T_m at its P_hi = 80 MPa is 63.03 K (m5). CoolProp raises
   only above 80 MPa, outside O2's Simon range. If the generator finds `melting_line` failing on any of C9's 20
   pressures, it refuses to emit, and the design lane amends (it does not fall back silently).
@@ -1070,6 +1076,8 @@ probe below ref's T_lo is answered; (m11) a tier-B fluid reports `independent:S0
     conditioning occurs at near-saturated vapour, where the jets are small and exact to a few ulp.
   - 1e-10 stays two decades inside A05's 1e-8. Tier B has no NC states.
   - Above 1e-10 the build lane stops, and the design lane amends. Nothing is loosened.
+  - **Superseded by §20 (R-627)** after aarch64 differed: class T keeps 1e-10, now for both tiers, and the
+    near-critical answers take §20.5's per-state allowances.
 
 ### 16.12 Rights (amends ADR 0046's Rights for the broad set)
 
@@ -1744,3 +1752,363 @@ and §19.3's bounds.
 - **That the floors measured on x86-64 hold on aarch64.** CI's A45–A47 runs decide that, with §19.1's remedy for
   θ_min.
 - **Empirical validity.** Tier B, and the near-critical roots beyond A48, remain self-consistent only (§16.5.1).
+
+## 20. Amendment 4 — A31 after aarch64 differed: answer classes, a derived ordinary bound, per-state near-critical allowances (2026-10-23; R-627)
+
+### 20.0 Authority, trigger, scope and precedence
+
+Design lane (`specifier`), on the brief `docs/briefs/S07-a31-ruling.md`.
+- **Trigger.** CI run 39979785654 at `95f8f9a5`. x86-64 reproduced the digest bitwise. aarch64 did not: its worst
+  ratio is 2.243e-8 (R22, `a10.T_sigma_max.LIQUID.cp`), above §11 Q-1's 1e-12 and §16.11's 1e-10. Q-1's stop rule
+  fired and the build lane stopped. Every other aarch64 test passed (14635, A45–A50 included).
+- **What it changes.** Only outcome (b) of A31: the class rule, the bounds, the verdict text and the report. It
+  replaces Q-1's pre-registered default and the A31(b) bullets of §9.1 and §16.11. The A31 rows of §9 and §16.10 now
+  read "outcome (b) per §20", and §20.8 replaces their assertion text.
+- **What it does not change.** Bit-identity stays the target (R-622). The digest stays an x86-64 regression fixture,
+  byte-unchanged. No stored value, constant, state, probe, reference tolerance, solver path or fallback changes.
+- **An ambiguity it closes.** Q-1 wrote "NC: 1e-10" and did not define NC. The script read it as the TP states
+  `NC_V` and `NC_L` (`".NC_" in key`). So `sat_hi` and `a10.T_sigma_max`, at θ = 2e-4 and nearer T_c than the NC
+  states, were held to tier A's 1e-12. §20.3 defines the class by rule.
+- Where §20 and an earlier section differ, §20 governs.
+
+### 20.1 What was measured (aarch64 against the x86-64 digest)
+
+The ratio is |Δ|/max(|x|, s_f), worst per group over all 123 fluids. The script's `quantity()` drops the state name,
+so each `a10` group mixes T_lo, T_mid and T_σ,max (§20.11 Q-20.1), and each `tp` group mixes the NC states with the
+others.
+
+| group | worst | group | worst |
+| --- | --- | --- | --- |
+| a10 cp, LIQUID and VAPOR | 2.24e-8, 2.17e-8 | a10 v, VAPOR and LIQUID | 6.41e-10, 5.07e-10 |
+| a10 dPσ/dT | 4.96e-10 | a10 Z, h, s | 6.29e-11 to 1.91e-10 |
+| a10 Psat | 1.61e-11 | sat dT; sat Psat | 1.41e-11 (H2O `sat_hi`); 1.59e-12 |
+| tp values | ≤ 1.84e-11 (s) | tp derivatives (tier A only) | ≤ 5.45e-12 (H2O `L_corner`, (∂cp/∂T)_P) |
+| tsat, band, a12, lnφ | ≤ 1.26e-12 | phi slots | 3.88e-13 |
+
+For H2O at T_σ,max the log printed all eleven rows, and each implies the same saturation-pressure difference once
+divided by its own pressure sensitivity (§20.5, measured on x86-64 by m9). For example: VAPOR v 3.85e-11/575 =
+6.7e-14, LIQUID cp 1.63e-9/2.16e4 = 7.5e-14, the slope 1.41e-11/215 = 6.5e-14. All eleven fall in 6.5e-14 to
+7.6e-14, although the rows themselves span 5.7e-12 to 1.63e-9. That agreement is the mechanism §20.5 is built on.
+
+### 20.2 Why Q-1's premise fails
+
+Q-1 argued that the jets differ by a few ulp (1e-15), that κ ≤ 100 amplifies this to ≤ 1e-13, and that 1e-12 leaves
+10×. Three steps of that argument are wrong.
+
+1. **The jet difference is not a few ulp of the result.** A different FMA contraction, or a libm result one ulp
+   apart (exp, log, pow), perturbs each term of CoolProp's Helmholtz sums by about one ulp *of that term*. The sum's
+   cancellation amplifies this by Σ|t_i|/|Σt_i|. That is the same factor that sets the floor A03 measures against
+   the 50-digit values: tier A 8.0e-15 at orders ≤ 2 and 8.0e-14 at order 3 (m4), tier B 1.05e-12 (m7). The
+   architecture difference is a second rounding realization at that floor. Measured: the phi slots differ by
+   3.88e-13, about 1750 ε of max(|x|, 1), not 1e-15.
+2. **The floors were measured at the jet states only.** The TP states reach other (τ, δ), up to `L_corner`, the
+   densest admitted state. The derivative rows and the h and s rows add cancellation of their own in the assembly.
+   Measured: 5.45e-12 on (∂cp/∂T)_P at H2O's `L_corner`, and 1.84e-11 on a tp s row.
+3. **Near T_c the bound must follow the conditioning, not a constant.** Psat is a Maxwell root with a noise ball
+   (§19.2). The a10 answers are TP roots evaluated at the computed Psat, so they inherit its difference multiplied by
+   their own pressure sensitivity σ/max(|q|, s_f). At T_σ,max that sensitivity is 104–843 for v and
+   3.97e3–4.30e4 for cp (m9). So no single constant can serve both a10's Psat (worst 1.61e-11) and its cp (worst
+   2.24e-8). The H2O rows of §20.1 show that each difference is its row's sensitivity times one pressure
+   difference.
+
+### 20.3 The class rule (mechanical)
+
+Every digest row is in exactly one class.
+- **S, a refusal string** (`status:code`). It must be equal on both machines, character for character. A string on
+  one machine and a number on the other fails. The row count per fluid must be equal, as now.
+- **N, near-critical.** A numeric row of family `tp`, `sat` or `a10` whose state temperature T has |θ| < 1e-2.
+  θ = 1 − T/T_c is computed in double precision as written, with T_c = `constants.T_c`.
+- **T, ordinary.** Every other numeric row.
+
+The state temperature of a row:
+
+| family | state temperature |
+| --- | --- |
+| `phi` | none: always class T |
+| `tp.<key>` | `tp_states[key].values[0]` |
+| `sat.<key>` | `saturation[key].T` |
+| `a10.T_lo`, `a10.T_mid`, `a10.T_sigma_max` | `constants.T_lo`, `saturation.sat_mid.T`, `constants.T_sigma_max` |
+| `tsat`, `band` | `band.T` |
+| `a12.<t>` | t |
+
+A `tsat`, `band` or `a12` row with |θ| < 1e-2 is not covered by §20. A31 then fails with "§20 defines no class-N
+sensitivity for <key>".
+
+With the reference at this head, class N holds exactly these (fluid, state) pairs, 168 in all (A31c asserts the
+set):
+- `a10.T_sigma_max` for all 123 fluids (θ = 2e-4);
+- `sat.sat_hi` for the nine tier-A fluids (θ = 2e-4);
+- `tp.NC_V` and `tp.NC_L` for the nine (θ = 5e-4);
+- `tp.S_dense`, `tp.V_sup` and `tp.V_corner` for MD4M, PropyleneGlycol, R236FA, R245ca, n-Nonane and
+  n-Perfluorohexane. Their T_hi lies 0.28 % to 0.92 % above T_c, so these clamped states have θ from −9.2e-3 to
+  −2.8e-3.
+
+**Why θ and 1e-2.** G3's θ rule (§19.2) puts the saturation's near range at θ < 1e-2. Taking |θ| also admits the six
+fluids' clamped supercritical states. Their allowance reduces to class T's where their sensitivity is small (§20.5),
+so including them costs nothing and needs no further rule.
+
+### 20.4 Class T: |Δ| ≤ B_T·max(|x|, s_f), with B_T = 1e-10, for both tiers
+
+Here x is the digest value and s_f the row's scale, as the script defines it now (A17's: R·T for h, R for s and cp,
+1 for Z, lnφ and the jet slots, 0 for v and the saturation quantities, a derivative taking its quantity's scale over
+T or P).
+- **Derivation.** The difference is J × K.
+  - J bounds the jet difference. By §20.2(1) it is a rounding realization at the jet floor, so
+    J ≤ J_max = 1.05e-12: the worst floor over all 123 fluids at orders ≤ 2 (R22; order 3 reaches 6.9e-13).
+  - K bounds the amplification through the density root and the assembly away from T_c: κ_ρ ≤ 100 (§9.1, S05).
+  - J_max·K = 1.05e-10, rounded to 1e-10. The product is pessimistic, as §16.11 argued: the largest floors occur at
+    liquid-like states, where κ_ρ ≪ 1.
+- **One bound for both tiers.** Tier A's jet floor is lower, but it was measured at the jet states only
+  (§20.2(2)). Tier A's correctness on aarch64 rests on its independent references, which run there too (A05–A13,
+  A23). A tighter A31 for tier A would add no detection, and it would measure noise.
+- **Margin.** Every `tp`, `sat`, `tsat`, `band`, `a12` and `phi` row measured at `95f8f9a5` is ≤ 1.84e-11,
+  whatever its class: a class-T utilization of ≤ 0.18.
+  - The a10 rows at T_mid and, for tier A, at T_lo come from the same computation as `sat_mid` and `sat_lo`, whose
+    Psat differences are ≤ 1.59e-12. Their pressure sensitivity there is ≤ 33 (m9), so they are ≤ 5.2e-11.
+  - Tier B's a10 rows at T_lo are not separately measured. That is Q-20.1.
+- **What it catches.** A wrong R (2.9e-6 relative in v), a permuted or mis-signed slot (O(1)), a wrong root (O(1)),
+  a different CoolProp build. Each sits at least 4 decades above the bound.
+
+### 20.5 Class N: per-state allowances
+
+Within class N, a row's last key part identifies it: `Psat` in family `sat` or `a10` is a Psat row; `dT` in family
+`sat` or `a10` is a slope row; `a10.<T>.<phase>.<x>` is an a10 phase row; every `tp` row is a TP row (values and,
+for tier A, the `dT.<x>` and `dP.<x>` derivatives).
+
+- **Psat rows** (`sat.sat_hi.Psat`, `a10.T_sigma_max.Psat`): |Δ| ≤ B_p·|x|, with B_p = 1e-10.
+- **Every other class-N row**: |Δ| ≤ B_T·max(|x|, s_f) + c_N·σ, with c_N = 2e-10.
+- **σ is the row's pressure sensitivity** P·|∂q/∂P|_T. It is computed on the machine running A31, by a central
+  difference with step H = 2.5e-7: σ = |q(P(1 + H)) − q(P(1 − H))|/(2H).
+  - q is the row's own answer, recomputed by `evaluate_phase` at the same T and phase. For a derivative row it is
+    the same derivative.
+  - P is the registered pressure for a `tp` row. For an a10 phase row or a slope row it is the Psat recomputed at
+    that T on the same machine.
+  - For a slope row (`sat.sat_hi.dT`, `a10.T_sigma_max.dT`), q(P) is the Clausius–Clapeyron quotient
+    CC(P) = (s_V − s_L)/(v_V − v_L) of the two phases evaluated at (T, P).
+  - Where P(1 + H) > P_hi, use the backward difference |q(P) − q(P(1 − H))|/H. Where P(1 − H) < P_lo, use the
+    forward difference.
+  - Every one of these evaluations must answer `ok`, and σ must be finite. Otherwise A31 fails with "§20
+    sensitivity not evaluable at <key>". A failed evaluation is never skipped and never read as σ = 0.
+- **Derivation for an a10 phase row.** The two machines evaluate the same TP root at P_x and P_a. To first order,
+  q_a − q_x = (∂q/∂P)_T·(P_a − P_x) + e_root + e_asm.
+  - **The pressure term.** |P_a − P_x| ≤ B_p·P, which the Psat row of the same state asserts in the same comparison.
+    B_p is G3's near p_σ bound (§19.2, R-626). Across architectures the noise ball's center also moves, by about the
+    two-seed spread. At θ = 2e-4 that spread is §19.2's 50η at θ_min scaled by (θ_min/θ)^½ = ½, so 25η. The
+    difference is therefore ≤ about 75η: 1.6e-11 for R22's η = 2.1e-13. The measured worst is 1.61e-11. B_p admits
+    η up to 1.3e-12.
+  - **The root term.** e_root is the root's own jet noise, an equivalent pressure shift ε_P on each machine. From
+    p = ρRT(1 + δαʳ_δ), ε_P ≤ J_max·δ·max(|αʳ_δ|, 1)/Z = J_max·r, with r = max(|Z − 1|, δ)/Z. A31c asserts r ≤ 20
+    at every class-N row that has v and Z (measured worst 7.34, H2O `NC_L`). So |e_root| ≤ 2J_max·r·σ ≤ 4.2e-11·σ.
+  - **The assembly term.** e_asm is the noise of assembling q at fixed density. Class T's derivation bounds it by
+    B_T·max(|q|, s_f). The part that 1/k amplifies near T_c is smaller than the σ term by about
+    J_max/(c_N·|∂ln q/∂ln ρ|_T), well below 1 for any q that depends on ρ.
+  - **The sum** is ≤ B_T·max(|q|, s_f) + 1.42e-10·σ. c_N = 2e-10 leaves 1.4× at r = 20, and 1.7× at the measured
+    r = 7.34. The second-order term is smaller than the first by about B_p·σ/max(|q|, s_f) ≤ 4.3e-6.
+- **Derivation for a slope row.** The provider's slope is CC at the saturation's converged densities
+  (`_saturation_slope`).
+  - The saturation's error is dominated by the near-null direction of the Maxwell Jacobian, whose amplification is
+    θ^(−3/2) against θ^(−1) for the other direction (§19.2's scaling). To leading order in θ^½ that direction is a
+    common pressure shift of both phases at fixed T, k′δρ′ = k″δρ″. Moving both TP roots to P(1 ± H) is exactly
+    such a shift. So CC's response is σ·(δp/p), where δp/p is the Psat difference that the Psat row bounds.
+  - The other component changes Δs and Δv in proportion, so it cancels in CC to first order.
+  - CC's own noise at fixed densities is of order J_max/((ρ_L − ρ_V)/ρ_c). A31c asserts (ρ_L − ρ_V)/ρ_c ≥ 0.04 at
+    every T_σ,max (measured minimum 0.086, OrthoDeuterium), so this noise is ≤ about 2.6e-11, inside B_T.
+- **A `tp` row** has a registered pressure, so only e_root and e_asm apply. c_N overstates them by at least 13×. It
+  is kept so that one constant serves.
+- **cp is not handled separately.** No constant is per quantity. Each row's σ carries its own conditioning, and cp
+  gets the largest allowance because its σ is the largest (at T_σ,max, m9): 3.97e3–4.30e4·|cp|, against 104–843·|v|
+  for v and 150–521·|dPσ/dT| for the slope. That replaces a per-quantity table, which would need a maximum over 123
+  fluids for every quantity.
+- **These are not per-fluid tolerances.** B_p, B_T, c_N and H are global, and σ follows from the state by one rule.
+  Nothing is chosen per fluid (R-626 forbids per-fluid bounds).
+- **The step.** H = ε_σ/4. ln(1 ± H) stays within ε_σ/2 of the computed Psat, inside the band where both phases
+  answer (ε_σ = 1e-6, §6.1). A31c asserts 2H ≤ ε_σ.
+  - Truncation: with σ/max(|q|, s_f) ≤ 4.3e4, q changes by its own size over no less than 2.3e-5·P, and H is ≤ 1.1 %
+    of that. The central difference is then good to about 2e-5 of σ. A one-sided difference is good to about 1 %.
+  - Roundoff: the rows' own noise puts ≤ 4e-4·max(|q|, s_f) into σ, which adds ≤ 8e-14·max(|q|, s_f) to the
+    allowance.
+- **What it catches.** A wrong root or branch at T_σ,max (O(θ^½) ≈ 1e-2 in v, O(1) in cp). A Psat outside G3's
+  bound, through the Psat row. A phase answer that moved more than twice what the pressure difference explains.
+
+### 20.6 The digest's own architecture: bitwise
+
+On `platform.machine()` = `x86_64`, A31 requires outcome (a). A difference there means that the code or the wheel
+changed, and catching that is what the digest is for. §20.4 and §20.5 are derived for an architecture difference,
+not for a code change. The digest is regenerated only by a commit that says why.
+
+### 20.7 Reference verdicts cannot change unobserved
+
+- **A31 decides only A31.** A05–A13 compute their verdicts on each CI architecture, against the same
+  architecture-independent 50-digit references. A merge needs CI green on both architectures (CLAUDE.md). So a
+  reference verdict that differed between the architectures would fail CI in that assertion, whatever A31 admits.
+  At `95f8f9a5` all of them passed on aarch64.
+- **Q-1's own argument is withdrawn.** Q-1 said that a bound 4 decades inside A05 means no verdict can change. That
+  is not needed, and near T_c it cannot hold: §19.2's admitted Psat difference (1e-10) by itself moves some
+  referenced quantities by more than their tolerance (F-20.2).
+- **Where A31's allowance meets or exceeds a reference tolerance.** It is listed so that nobody cites A31 for these
+  rows. The numbers are measured by m9 on x86-64 at this head:
+
+| row | judged by | tolerance | A31 allowance |
+| --- | --- | --- | --- |
+| `sat.sat_hi.dT`, the nine | A08 (slope) | 1e-8 relative | 4.3e-8 to 1.0e-7 relative |
+| h_V − h_L at T_σ,max, the nine | A10 | 1e-6 of \|Δh\| | the two phases' allowances summed: 0.83e-6 to 1.81e-6 of \|Δh\| |
+| class-T h rows with \|h\| > 100·R·T (MD4M `L_corner`: 141·R·T) | A05 | 1e-8·R·T | 1.41e-8·R·T |
+
+- Everywhere else the allowance is below the tolerance: Psat 1e-10 against 2e-9; lnφ ≤ 2.6e-10 against 1e-8; the NC
+  TP rows ≤ 7.0e-8 relative against A05/A06's NC bounds (1e-7 for v, 1e-6 otherwise); class-T relative quantities
+  1e-10 against ≥ 1e-9. These are measurements, not claims A31 makes.
+
+### 20.8 Assertions (replace the A31 rows of §9 and §16.10)
+
+Test: `tests/test_s07_registration.py`, both CI architectures. Implementation: `scripts/s07_platform_digest.py`.
+
+| id | assertion | expectation | tolerance |
+| --- | --- | --- | --- |
+| A31a | On `x86_64`: every row of every fluid is bitwise equal to the digest, and the row counts are equal | digest | bitwise |
+| A31b | On any other machine: outcome (a) if every row is bitwise equal. Otherwise every row is within its class: S exact, T by §20.4, N by §20.5 | digest | §20.4, §20.5 |
+| A31c | The rule's inputs, on every machine. (1) The class-N (fluid, state) set equals §20.3's 168 pairs, and no `phi`, `band`, `tsat` or `a12` row is class N. (2) 2H ≤ ε_σ for every fluid. (3) r = max(\|Z − 1\|, δ)/Z ≤ 20 at every class-N state with v and Z rows (each a10 phase at T_σ,max, each class-N `tp` state), with δ = 1/(v·ρ_red), v in m³/mol and ρ_red = `constants.rho_red` in mol/m³. (4) (ρ_L − ρ_V)/ρ_c ≥ 0.04 at every fluid's T_σ,max, from the a10 v rows and `constants.rho_c`. (5) Psat ≥ P_lo at every class-N a10 state | ref, rows | exact. A false item fails A31 with its number, and the design lane amends |
+| A31d | Every sensitivity evaluation of §20.5 answers `ok` and gives a finite σ, on every machine, x86-64 included | — | exact |
+| A31e | Comparator controls, on every machine, on a copy of the digest. (1) H2O `tp.V_sup.v` × (1 + 2e-10) is flagged, × (1 + 5e-11) is not. (2) H2O `a10.T_sigma_max.Psat` × (1 + 2e-10) is flagged, × (1 + 5e-11) is not. (3) H2O `a10.T_sigma_max.LIQUID.cp` + 2A is flagged and + 0.5A is not, where A is its §20.5 allowance; and A ≥ 1e-8·max(\|x\|, s_f), which shows the σ term is active. In each case no other row is flagged | — | exact |
+
+- **Why A31e.** On x86-64 every row is bitwise equal, so without A31e the allowance code would never run on that
+  architecture. A31e also shows that the comparison is not short-circuited. The perturbations stay valid on aarch64.
+  H2O's own differences in these rows are 1.63e-9 of cp against A = 4.3e-6 of cp, ≤ 8.5e-14 in v (the tp v worst),
+  and below 1e-12 in Psat (it is not among H2O's printed failures; §20.1's rows imply 7e-14).
+- **Why these thresholds.** 2e-10 and 5e-11 sit at 2× and 0.5× the 1e-10 bounds. 2A and 0.5A do the same for the
+  allowance.
+
+### 20.9 Report, verdict text, manifest and ADR status
+
+- **`compare()`** returns, per row: the key, the class, x and the recomputed value (as hex), |Δ|, the allowance A,
+  the utilization u = |Δ|/A (0 if Δ = 0; infinite if A = 0 and Δ ≠ 0), and the ratio |Δ|/max(|x|, s_f).
+  - Per group it returns the worst ratio and its key. The group is `<class>:<quantity>`. The quantity keeps the a10
+    temperature (`a10.T_sigma_max.LIQUID.cp`) and reads `lnphi_<id>` as `lnphi`.
+  - Per class it returns the rows compared, differing and failing, and the worst u with its key.
+- **`--report`** writes every differing row and the summaries as JSON to
+  `evidence/S07/artifacts/a31_report_<machine>.json`, or to the path given by `--out`. It prints the verdict line,
+  one line per class, and the 20 rows with the largest u, failures first.
+  - The A31 test writes the same file whenever the outcome is not (a).
+  - CI uploads `evidence/S07/artifacts/a31_report_*.json` as the artifact `s07-a31-report-<arch>`, with
+    `if: always()`.
+- **The verdict lines:**
+  - outcome (a): `S07 A31 (<machine>): bit-identical`;
+  - outcome (b), passing: `S07 A31 (<machine>): not bit-identical; within spec §20: class T worst ratio <r> of 1e-10
+    (<fluid> <key>); class N worst <u> of its allowance (<fluid> <key>); class-N Psat worst <r_p> of 1e-10; <n_diff> of
+    <n_rows> rows differ`;
+  - outcome (b), failing: `S07 A31 (<machine>): not bit-identical, FAILS spec §20: <n_fail> rows over their
+    allowance; worst <u> (<fluid> <key>)`;
+  - x86-64 not bitwise: `S07 A31 (x86_64): not bit-identical, FAILS: the digest's own architecture must be
+    bit-identical (spec §20.6)`.
+- **The manifest** (§13) records, per architecture: the verdict line, the worst ratio per group, the worst u per
+  class, and the report's SHA-256.
+- **ADR 0046's status line** is written once the aarch64 run passes (F-20.1): "Q-1: aarch64 is not bit-identical to
+  x86-64. Under spec §20 (R-627), A31 holds. Ordinary answers agree within <class-T worst ratio> (bound 1e-10 of
+  max(|x|, s_f)). Near-critical answers agree within <class-N worst u> of their per-state allowances, and the
+  saturation pressure within <Psat worst> (bound 1e-10). This is cross-architecture agreement, not bit-identity."
+
+### 20.10 Sanity values
+
+All "m9" numbers come from `docs/derivations/scripts/s07_measurements/m9_a31_allowances.py`, run on the
+workstation (x86-64) against the provider at this head with CoolProp 8.0.0 (§20.13 gives the command).
+
+| quantity | value | source |
+| --- | --- | --- |
+| ε = 2^−52 | 2.220446e-16 | |
+| J_max, the worst jet floor at orders ≤ 2 | 1.05e-12 | §16.11, m7 |
+| J_max·100, giving B_T | 1.05e-10, so B_T = 1e-10 | §20.4 |
+| B_p, G3's near p_σ bound | 1e-10 | §19.2 |
+| 75η for R22 (η = 2.1e-13) | 1.6e-11; measured worst a10 Psat 1.61e-11 | §20.5, §20.1 |
+| what c_N must cover, at r = 20 and at r = 7.34 | 1.42e-10 and 1.154e-10, against c_N = 2e-10 | §20.5 |
+| H; ln(1 + H) | 2.5e-7; 2.4999997e-7 < ε_σ/2 = 5e-7 | §20.5 |
+| r, worst over class-N rows | 7.339 (H2O `NC_L`) | m9 |
+| (ρ_L − ρ_V)/ρ_c at T_σ,max, minimum | 0.0860 (OrthoDeuterium) | m9 |
+| σ/max(\|q\|, s_f) at T_σ,max: v, Z, h, s, cp, lnφ | 104–843, 22–229, 9.8–938, 5.7–603, 3.97e3–4.30e4, 0.67–0.80 (≈ \|Z − 1\|) | m9 |
+| σ/\|dPσ/dT\| at T_σ,max | 150–521 (the nine: 215–510) | m9 |
+| class-N relative allowance at T_σ,max: cp, v, slope | 7.9e-7–8.6e-6, 2.1e-8–1.7e-7, 3.0e-8–1.04e-7 | m9 |
+| class-N relative allowance, NC TP rows, worst | 7.0e-8 ((∂cp/∂T)_P and (∂cp/∂P)_T) | m9 |
+| aarch64 worst ÷ smallest class-N allowance, per a10 group | cp 0.028 and 0.021; v 0.024 and 0.023; slope 0.016; Z ≤ 0.027; h ≤ 0.046; s ≤ 0.051; Psat 0.161 | §20.1, m9 |
+| a10 rows at T_lo and T_mid: σ/max(\|q\|, s_f), worst | 32.7 (ParaDeuterium, VAPOR cp at T_mid) | m9 |
+| largest stored \|h\|/(R·T) and \|s\|/R | 141.0 (MD4M `L_corner`), 93.9 (D4 `V_corner`) | m9 |
+| class-N tp states; sensitivity evaluations refused | 36; 0 | m9 |
+
+The ÷ row is an upper bound on each group's utilization, valid if the group's worst lies at T_σ,max. The per-row
+numbers come from the next aarch64 run.
+
+### 20.11 Open questions (each with a recommended default)
+
+- **Q-20.1 (needs a fact): are tier B's a10 rows at T_lo within class T's 1e-10?**
+  - At T_mid every fluid's Psat difference is measured through `sat_mid` (≤ 1.59e-12), and so is tier A's at T_lo
+    through `sat_lo`. Tier B's T_lo Psat difference is bounded only by the group worst, 1.61e-11.
+  - The tier-B rows whose sensitivity at T_lo exceeds 1e-10/1.61e-11 = 6.2 are VAPOR cp of Deuterium,
+    OrthoDeuterium, ParaDeuterium and OrthoHydrogen, at 10.5–12.3 (m9's `a10_far_sigma_over_6_2`). Only these four
+    could exceed 1e-10, and only if their own T_lo Psat difference exceeds 8.1e-12.
+  - **Measurement that settles it:** the first aarch64 report (per row).
+  - **Default:** they are within the bound.
+  - **Pre-registered remedy if not:** extend §20.5's allowance to every a10 row evaluated through a TP root at the
+    computed Psat, at every temperature. That is consistent, because the Psat row there has the same bound (1e-10).
+    It is not a change to B_T. Until then the build lane stops as usual.
+- **Q-20.2 (needs a fact): does every class-N row stay within its allowance on aarch64, as §20.10 predicts
+  (utilization ≤ 0.051 for phase and slope rows, ≤ 0.16 for Psat)?**
+  - **Measurement:** the same run.
+  - **Default:** yes.
+  - **If not:** the build lane stops, and nothing is loosened. The report shows whether the excess is explained by
+    the row's Psat difference times σ, and that is the first thing the design lane reads.
+- None of §20's choices turns on Frank's preference.
+
+### 20.12 Findings (for other documents; not written here)
+
+- **F-20.1 (ADR 0046, for the design lane).** D8 and Amendment 1's D8 bullet ("Tier A keeps 1e-12") are superseded
+  by §20. Recommended replacement for D8: "**D8 — Cross-architecture rule** (spec §11 Q-1, §20; R-622, R-627).
+  Bit-identity on aarch64 is the target, measured by spec A31 in CI, and x86-64 must reproduce the digest bitwise.
+  If aarch64 differs, A31 judges each answer by class (spec §20.3). Ordinary answers must agree within 1e-10 of
+  max(|x|, s_f), for both tiers. Near-critical answers (state within 1 % of T_c) get a per-state allowance: the
+  saturation pressure within 1e-10 (G3's near bound), every other answer within 1e-10·max(|x|, s_f) +
+  2e-10·P|∂q/∂P|_T, its own pressure sensitivity. Reference verdicts are decided by A05–A13 on both architectures,
+  not by A31. Beyond an allowance the build lane stops, and nothing is loosened." The status line follows §20.9.
+- **F-20.2 (S07 and S05 tolerances at T_σ,max, for the next design-lane tolerance pass).**
+  - A08's slope tolerance at `sat_hi` (1e-8) is tighter than what §19.2's admitted Psat difference can move the
+    slope. For the nine, σ/|dPσ/dT| = 215–510, so a Psat difference of 1e-10 moves the slope by 2.2e-8–5.1e-8. Two
+    seeds that G3 admits could therefore change A08's verdict at `sat_hi`.
+  - A08 holds today because the realized Psat differences are about 1e-13 for tier A (H2O 6.5e-14).
+  - A10's Δh at T_σ,max (1e-6) is exceeded by the two phases' allowances summed. The correlated difference is
+    smaller, and it is not measured.
+  - **Recommended default:** an amendment that derives A08's slope tolerance at T_σ,max from this sensitivity
+    (S05 already reads A10's Δh and A11 at 1e-6 at its top temperature). Nothing is changed here.
+
+### 20.13 Work order WO-S07-A31 (build; about 60k; design-adjacent, so `opus-engineer`)
+
+1. `scripts/s07_platform_digest.py`:
+   - replace `BOUND_A`, `BOUND_NC` and `BOUND_B` by §20's constants: B_T = B_p = 1e-10, c_N = 2e-10, H = 2.5e-7,
+     r ≤ 20, (ρ_L − ρ_V)/ρ_c ≥ 0.04;
+   - classify every row by §20.3, and compute σ and A by §20.5 with fresh provider evaluations on the running
+     machine;
+   - give `compare()` the per-row, per-group and per-class output of §20.9, the x86-64 rule of §20.6, and the
+     verdict lines;
+   - add `--report`'s JSON and `--out`;
+   - make the module docstring cite §20.
+2. `tests/test_s07_registration.py`: A31a–A31e as §20.8, the report file as §20.9.
+3. CI: upload the report artifact as §20.9.
+4. The digest is not regenerated. `--check` must still pass on x86-64.
+5. **Acceptance:** locally, A31a and A31c–A31e pass on x86-64 and m9 reproduces §20.10. Push, and read the aarch64
+   job once. If any row fails, stop: nothing is loosened.
+6. m9's command: `PYTHONPATH=<coolprop>:src python
+   docs/derivations/scripts/s07_measurements/m9_a31_allowances.py docs/derivations/scripts/s07_reference.json
+   m9.json`, where `<coolprop>` holds `requirements-coolprop.lock`'s wheel. It prints one summary line, and a
+   refused evaluation exits non-zero.
+
+### 20.14 What this amendment does not establish
+
+- **Bit-identity on aarch64, or the validity of its answers.** A05–A13 and A23 judge those on each architecture
+  against independent references. The digest is x86-64's own output, a regression fixture.
+- **A bound on the provider's error.** σ is a first-order sensitivity, and the allowances are an envelope for
+  architecture noise, not a bound against the true values.
+- **The jet floor at the TP states.** It is not measured. Class T's support there is the J_max·K product, with
+  §16.11's pessimism, plus the cross-architecture measurement.
+- **The slope argument away from T_σ,max.** The near-null-direction argument holds to leading order in θ^½. Only
+  T_σ,max carries class-N slope rows.
+- **That A31's allowances are below every reference tolerance.** They are not (§20.7). The reference assertions
+  carry their own verdicts.
+- **Agreement on other x86-64 microarchitectures, other wheels or other CoolProp versions,** beyond the CI runner
+  and the workstation.
+- **Anything about states outside the digest** (flash, other temperatures or pressures).
+- **The per-row aarch64 utilizations.** §20.10's are upper bounds from per-group worsts. The next run measures them.

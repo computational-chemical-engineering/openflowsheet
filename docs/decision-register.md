@@ -12892,3 +12892,54 @@ package for both providers.
 - A45 at θ_min for R22 on aarch64.
 - A spurious Maxwell pair on an inner EOS loop. It is excluded by evidence (A47, A48), not by the run-time checks.
 - S05's A33 carry, which awaits a ruling.
+
+
+## R-627 — S07 A31 after aarch64 differed: answer classes; ordinary answers 1e-10 in both tiers; per-state allowances within 1 % of T_c; x86-64 stays bitwise
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), on `docs/briefs/S07-a31-ruling.md` |
+| Normative text | S07 spec §20 (Amendment 4); pointers from §11 Q-1 and §16.11 |
+| Evidence | CI run 39979785654 at `95f8f9a5`: x86-64 bit-identical; aarch64 worst 2.243e-8 (R22 `a10.T_sigma_max.LIQUID.cp`), phi slots 3.88e-13, a10 Psat 1.61e-11, tp ≤ 1.84e-11. For H2O at T_σ,max all eleven printed rows imply one Psat difference, 6.5e-14 to 7.6e-14, once divided by their own pressure sensitivity. m9 (`docs/derivations/scripts/s07_measurements/m9_a31_allowances.py`, x86-64, CoolProp 8.0.0): 168 class-N (fluid, state) pairs, 0 refused sensitivity evaluations, r ≤ 7.34, (ρ_L − ρ_V)/ρ_c ≥ 0.086, sensitivity at T_σ,max 104–843 for v and 3.97e3–4.30e4 for cp |
+| Affected packages | S07 (A31, `scripts/s07_platform_digest.py`, ADR 0046 D8 and status via F-20.1) |
+| Amends | R-622 (the 1e-12 default and its no-flip argument); R-623 (tier B's 1e-10 now also tier A's) |
+
+**Decision.**
+- Q-1's premise is false. A jet difference between architectures is a second rounding realization at the
+  cancellation floor (up to 1.05e-12), not a few ulp. Near T_c the answers inherit the Psat difference multiplied by
+  their own conditioning.
+- Every digest row is S (a refusal string, exact), N (family `tp`, `sat` or `a10` with |1 − T/T_c| < 1e-2) or T
+  (everything else).
+- Class T: |Δ| ≤ 1e-10·max(|x|, s_f), for both tiers. This is the worst jet floor, 1.05e-12, times κ_ρ ≤ 100.
+- Class N, Psat rows: 1e-10·|x|, which is G3's near p_σ bound.
+- Class N, other rows: 1e-10·max(|x|, s_f) + 2e-10·σ, with σ = P|∂q/∂P|_T by a central difference of step 2.5e-7
+  (one-sided at a box edge). For the slope, q is the Clausius–Clapeyron quotient of the two TP roots. cp needs no
+  separate constant: its σ carries its conditioning.
+- On x86-64, A31 stays bitwise.
+- A31 does not decide reference verdicts. A05–A13 decide them on both architectures. The rows where A31's allowance
+  meets or exceeds a reference tolerance are listed in §20.7.
+- `--report` writes every differing row to JSON. The log shows a line per class and the top 20.
+
+**Rejected alternatives, and why.**
+- *Raise one flat bound to the measured worst (about 5e-8).* It is fitted to a measurement. It is 2.5 decades looser
+  than ordinary answers need, and it is above A05's 1e-9 for v.
+- *A fixed per-quantity table near T_c (for example v, h, s 1e-7 and cp 1e-5).* Each entry needs a maximum over 123
+  fluids, and cp's sensitivity spans a decade. A bound loose enough for o-Xylene is 10× too loose for n-Dodecane.
+- *Derive class N from G3's density bound, 3e-8 (2√ε).* The a10 answers are TP roots at the computed Psat, so their
+  difference follows the Psat difference through their own sensitivity. With sensitivities up to 843 for v, a Psat
+  difference inside its own 1e-10 could fail a fixed 3e-8. The density bound says nothing about cp either.
+- *Keep tier A tighter (1e-11 or 1e-12).* Its jet floor was measured at the jet states only, and H2O's `L_corner`
+  already shows 5.45e-12. Tier A's correctness on aarch64 rests on its independent references, which run there.
+- *Exclude the near-critical answers from A31.* That removes the only cross-architecture check on tier B's
+  saturation answers at T_σ,max, which have no reference.
+- *Per-fluid bounds.* Forbidden (R-626). The allowance here has global constants and a computed sensitivity.
+- *ADR 0025's 1e-9 replay class.* Rejected again, as in R-622. Class T stays 10× tighter.
+
+**Watch for.**
+- Q-20.1: the VAPOR cp rows of four tier-B hydrogen isotopes at T_lo. Their pre-registered remedy is to extend
+  §20.5 to every a10 row at the computed Psat.
+- Q-20.2: a class-N utilization above about 0.15 means a difference that the Psat difference does not explain. Read
+  the report before anything else.
+- F-20.2: A08's slope tolerance at `sat_hi` (1e-8) is tighter than G3's admitted Psat difference can move the slope
+  (2.2e-8 to 5.1e-8 per 1e-10).
