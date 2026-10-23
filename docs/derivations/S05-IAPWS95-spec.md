@@ -948,6 +948,7 @@ moves `implementation_sha256` anyway.
   - F-3's W27 v2 mapping;
   - a support-matrix L-row;
   - the next envelope's provider list.
+  **Answered — Frank, 2026-10-23: "Library only for now".** No binding in S05; a selectable-basis package is planned later, together with S07 (CoolProp), which raises the same question for many fluids.
 
   *Default:* no. The provider ships library-only (this amendment). The default is cheap to revisit, because a later
   binding undoes nothing here.
