@@ -474,7 +474,7 @@ def record_digest(files: Sequence[str], path: Path, extra: str = "") -> Timed:
     )
     timed = finish(process)
     return Timed(
-        "REC_OUT=<record> " + timed.cmd.replace(f"{MEASUREMENTS}", "s07_measurements") + extra,
+        "REC_OUT=record.json " + timed.cmd.replace(f"{MEASUREMENTS}", "s07_measurements") + extra,
         timed.exit_code,
         timed.stdout,
         timed.seconds,
