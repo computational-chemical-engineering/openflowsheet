@@ -16,6 +16,11 @@ working copy no longer has the pinned SHA-256, the draw reads the pinned content
 (by its blob id), and the working copy's read fields (`case_id`, `family`, `class` of every row)
 must still equal the pinned ones; drift is a SPLIT-R12 amendment trigger. Without the history the
 generator refuses (SPLIT-R01/A1); it never falls back to the working copy.
+
+Amendment 2 (2026-10-23, R-581/R-582): `case_facts-v2.json` (every case's topology units, written
+by `c2_openidaes450_facts_v2.py`) is read from the working copy under a strict SHA-256 pin with no
+history fallback (`F1_FACTS`; not one of the draw's three inputs). It is checked against
+`case_facts.json` (item 14) and gives F-1's unit-level states (item 15).
 """
 
 from __future__ import annotations
@@ -99,6 +104,7 @@ ALL_CASE_FILES: Final[tuple[str, ...]] = (
         for name in (
             "access_report.json",
             "case_facts.json",
+            "case_facts-v2.json",
             "coverage.json",
             "dry_illustration.json",
             "registration.json",
@@ -136,6 +142,19 @@ F1_STATES: Final[Mapping[str, tuple[str, ...]]] = {
     "official_idaes_skeleton_pervaporation": ("SkeletonUnitModel",),
 }
 F1_LACKING_FIELD: Final = "topology_units"
+# Amendment 2 (§15.4): the facts R02-F1 needs, pinned strictly (no history fallback), and the
+# unit-level states they give for the two cases of F1_STATES.
+F1_FACTS: Final = (
+    "benchmarks/m06/openidaes450/case_facts-v2.json",
+    "4f5c5a65fe1b310e04b7e311464e4d87ba90ed4bfa7a90c240cde397cd0114ef",
+)
+F1_SCHEMA: Final = "openidaes450-case-facts-v2"
+F1_WRITER: Final = "docs/derivations/scripts/c2_openidaes450_facts_v2.py"
+F1_UNIT_STATES: Final[Mapping[str, Mapping[str, tuple[str, ...]]]] = {
+    "blind_synthesized_hda_flash": {},
+    "official_idaes_skeleton_pervaporation": {"topology:SkeletonUnitModel": ("pervap",)},
+}
+F1_KEY: Final = "case_facts_v2"
 FORBIDDEN_KEYS: Final = frozenset({"reasons", "units", "components", "packages"})
 INCOMPLETE: Final = "ARTIFACT_INCOMPLETE"
 
@@ -143,9 +162,10 @@ INCOMPLETE: Final = "ARTIFACT_INCOMPLETE"
 class SplitRefusedError(Exception):
     """SPLIT-R14: the generator will not emit; `rule` names the violated rule."""
 
-    def __init__(self, rule: str, message: str) -> None:
-        super().__init__(f"{rule}: {message}")
+    def __init__(self, rule: str, message: str, label: str | None = None) -> None:
+        super().__init__(f"{rule} {label}: {message}" if label else f"{rule}: {message}")
         self.rule = rule
+        self.label = label
 
 
 def rank(purpose: str, ident: str) -> str:
@@ -233,9 +253,15 @@ def pinned_inputs(
 
 
 def read_inputs(root: Path = ROOT) -> dict[str, bytes]:
-    """The pinned content of the three inputs (SPLIT-R01; Amendment 1 for a re-taken input)."""
+    """The pinned content of the three inputs (SPLIT-R01; Amendment 1 for a re-taken input), and
+    the working copy of `case_facts-v2.json` under `F1_KEY` when it exists (Amendment 2; its pin is
+    item 13 of `build`)."""
     working = {name: (root / path).read_bytes() for name, (path, _) in INPUTS.items()}
-    return pinned_inputs(working, root=root)
+    out = pinned_inputs(working, root=root)
+    facts_v2 = root / F1_FACTS[0]
+    if facts_v2.is_file():
+        out[F1_KEY] = facts_v2.read_bytes()
+    return out
 
 
 @dataclass(frozen=True)
@@ -287,10 +313,8 @@ def draw(
     return Draw(frozenset(held), table)
 
 
-def f1_added_kinds(case: Mapping[str, Any]) -> tuple[str, ...]:
-    """SPLIT-R13 at kind level: the non-boundary topology kinds no W27-R02 unit group covers."""
-    if case["unit_source"] != "units.json":
-        return ()
+def _covered(case: Mapping[str, Any]) -> set[str]:
+    """§6: the kinds some W27-R02 unit group covers, by `topology_kind` or by its key's subject."""
     covered: set[str] = set()
     for unit in case["units"]:
         if "topology_kind" in unit:
@@ -298,7 +322,110 @@ def f1_added_kinds(case: Mapping[str, Any]) -> tuple[str, ...]:
         namespace, _, subject = str(unit["key"]).partition(":")
         if namespace == "idaes":
             covered.add(subject)
-    return tuple(sorted(set(case["topology_kinds"]) - BOUNDARY_KINDS - covered))
+    return covered
+
+
+def f1_added_kinds(case: Mapping[str, Any]) -> tuple[str, ...]:
+    """SPLIT-R13 at kind level: the non-boundary topology kinds no W27-R02 unit group covers."""
+    if case["unit_source"] != "units.json":
+        return ()
+    return tuple(sorted(set(case["topology_kinds"]) - BOUNDARY_KINDS - _covered(case)))
+
+
+def _a2(label: str, count: int, what: str = "case(s)") -> SplitRefusedError:
+    return SplitRefusedError("SPLIT-R13/A2", f"{count} {what}", label=label)
+
+
+def f1_identities(facts: Mapping[str, Any], facts_v2: Mapping[str, Any]) -> None:
+    """Item 14 (§15.4): `case_facts-v2.json`'s identities with `case_facts.json`, in order; a
+    failure names its label and a count, never a case. Callable below the pin (SPLIT-A21)."""
+    source = facts_v2.get("source")
+    binding = [
+        facts_v2.get("schema") == F1_SCHEMA,
+        isinstance(source, Mapping)
+        and set(source)
+        == {"access_report_sha256", "archive_sha256", "case_facts_v1_sha256", "generator"},
+        isinstance(source, Mapping)
+        and source.get("case_facts_v1_sha256") == INPUTS["case_facts"][1],
+        isinstance(source, Mapping)
+        and source.get("archive_sha256") == facts["source"]["archive_sha256"],
+        isinstance(source, Mapping) and source.get("generator") == F1_WRITER,
+    ]
+    if not all(binding):
+        raise _a2("binding", binding.count(False), "field(s)")
+    cases = facts_v2.get("cases")
+    cases = cases if isinstance(cases, list) else []
+    want = [c["case_id"] for c in facts["cases"]]
+    got = [c.get("case_id") if isinstance(c, Mapping) else None for c in cases]
+    if got != want:
+        raise _a2(
+            "case_ids",
+            sum(1 for i in range(max(len(got), len(want))) if got[i : i + 1] != want[i : i + 1]),
+        )
+    bad = sum(1 for c in cases if set(c) != {"case_id", "topology_units"})
+    if bad:
+        raise _a2("case_keys", bad)
+
+    def unit_ok(u: Any) -> bool:
+        return (
+            isinstance(u, Mapping)
+            and set(u) == {"id", "kind"}
+            and isinstance(u["id"], str)
+            and isinstance(u["kind"], str)
+        )
+
+    bad = sum(
+        1
+        for c in cases
+        if not (isinstance(c["topology_units"], list) and all(map(unit_ok, c["topology_units"])))
+    )
+    if bad:
+        raise _a2("unit_form", bad)
+    bad = sum(
+        1
+        for c in cases
+        if c["topology_units"] != sorted(c["topology_units"], key=lambda u: (u["id"], u["kind"]))
+    )
+    if bad:
+        raise _a2("unit_order", bad)
+    bad = sum(
+        1 for c in cases if len({u["id"] for u in c["topology_units"]}) != len(c["topology_units"])
+    )
+    if bad:
+        raise _a2("unit_ids", bad)
+    kinds = {c["case_id"]: set(c["topology_kinds"]) for c in facts["cases"]}
+    bad = sum(1 for c in cases if {u["kind"] for u in c["topology_units"]} != kinds[c["case_id"]])
+    if bad:
+        raise _a2("kind_sets", bad)
+
+
+def f1_unit_level_states(
+    facts: Mapping[str, Any], facts_v2: Mapping[str, Any]
+) -> dict[str, dict[str, list[str]]]:
+    """Item 15 (§15.4): for each case of F1_STATES, one group `topology:<k>` per added kind *k*,
+    holding the ids of the case's units of kind *k* in file order; refused (SPLIT-R13) unless the
+    added kinds are the kind-level state and the groups are F1_UNIT_STATES."""
+    v1 = {c["case_id"]: c for c in facts["cases"]}
+    v2 = {c["case_id"]: c for c in facts_v2["cases"]}
+    states: dict[str, dict[str, list[str]]] = {}
+    for c, want in F1_UNIT_STATES.items():
+        units = v2[c]["topology_units"]
+        added: set[str] = set()
+        if v1[c]["unit_source"] == "units.json":
+            added = {u["kind"] for u in units} - BOUNDARY_KINDS - _covered(v1[c])
+        if tuple(sorted(added)) != f1_added_kinds(v1[c]):
+            raise SplitRefusedError(
+                "SPLIT-R13", f"F-1 state {c!r}: added kinds differ from the kind-level state"
+            )
+        groups = {
+            f"topology:{k}": [u["id"] for u in units if u["kind"] == k] for k in sorted(added)
+        }
+        if groups != {k: list(v) for k, v in want.items()}:
+            raise SplitRefusedError(
+                "SPLIT-R13", f"F-1 state {c!r}: unit groups differ from the registered ones"
+            )
+        states[c] = groups
+    return states
 
 
 def _walk(node: Any) -> Iterable[tuple[str | None, Any]]:
@@ -318,7 +445,7 @@ def build(
     pins: Mapping[str, tuple[str, str]] = INPUTS,
     named_exposed: Mapping[str, str] = NAMED_EXPOSED,
 ) -> tuple[dict[str, Any], frozenset[str]]:
-    """The record and the held-out set, or `SplitRefusedError` (SPLIT-R14 items 1–9)."""
+    """The record and the held-out set, or `SplitRefusedError` (SPLIT-R14 items 1–15)."""
     for name, (path, sha) in pins.items():
         got = hashlib.sha256(raw[name]).hexdigest()
         if got != sha:
@@ -399,6 +526,18 @@ def build(
                 "SPLIT-R13", f"F-1 state {c!r}: added {states[c]}, registered {want}"
             )
 
+    # Amendment 2: items 13 (strict pin, no fallback), 14 and 15.
+    path_v2, sha_v2 = F1_FACTS
+    raw_v2 = raw.get(F1_KEY)
+    if raw_v2 is None:
+        raise SplitRefusedError("SPLIT-R13/A2", f"{path_v2} is absent; R02-F1 needs its facts")
+    got_v2 = hashlib.sha256(raw_v2).hexdigest()
+    if got_v2 != sha_v2:
+        raise SplitRefusedError("SPLIT-R13/A2", f"{path_v2} has SHA-256 {got_v2}, pinned {sha_v2}")
+    facts_v2 = json.loads(raw_v2)
+    f1_identities(facts, facts_v2)
+    unit_states = f1_unit_level_states(facts, facts_v2)
+
     totals = {
         "cases": len(all_ids),
         "frame": len(rows),
@@ -441,11 +580,17 @@ def build(
         "totals": totals,
         "contaminated": [dict(c) for c in sorted(CONTAMINATED, key=lambda c: c["sha256"])],
         "f1": {
-            "status": "awaiting_facts",
+            "status": "facts_committed",
             "rule": "SPLIT-R13 (R02-F1)",
-            "lacking": f"{F1_LACKING_FIELD}: [{{id, kind}}] per case, in case_facts-v2.json",
+            "facts": {
+                "path": path_v2,
+                "schema": F1_SCHEMA,
+                "sha256": sha_v2,
+                "writer": F1_WRITER,
+            },
             "boundary_kinds": sorted(BOUNDARY_KINDS),
             "kind_level_states": {c: list(v) for c, v in states.items()},
+            "unit_level_states": unit_states,
         },
     }
     for key, value in _walk(record):

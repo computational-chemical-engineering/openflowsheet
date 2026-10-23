@@ -11830,6 +11830,54 @@ Version 1's CLI is unchanged.
 to `/tmp` exposes held-out rows and class counts to development (SPLIT-R11). *Refusing whole-archive version 2 runs
 outright.* Release gates need them.
 
+## R-581 — C2 Amendment 2: `case_facts-v2.json` is written by C2's own script; W27's v0.2 generator stays byte-unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), C2 Amendment 2 (D-13), brief `docs/briefs/C2-A2-facts-v2-writer.md` |
+| Normative text | `docs/derivations/C2-OpenIDAES-450-split-registration.md` §15.2, §15.6; SPLIT-R13 (amended); SPLIT-A20, A24, A25 |
+| Evidence | WS1 `7b5c07f` (`docs/C7_DECISIONS.md`): file `57d43acb…`, and the full gate failing W27 P2 (`tests/test_m06_w27_harness.py:314`); §15.6's derivation of `4f5c5a65…`; the three `preflight.REGISTERED_SHA256` pins hold on `main` at `948944f3` |
+| Affected packages | C2, WS1 item 4 (re-done, not re-applied), W27 (untouched), L01 (provenance only) |
+
+**Decision.** `docs/derivations/scripts/c2_openidaes450_facts_v2.py` (`python -I`, `--emit | --check`, `--archive`)
+writes `benchmarks/m06/openidaes450/case_facts-v2.json`. It loads W27's generator by path and reuses its reading
+helpers without editing it. The reading rule is WS1's `extract_facts_v2`, verbatim except `source.generator`, so the
+expected file is WS1's bytes with that one field substituted: SHA-256 `4f5c5a65…`, with the cases block identical
+(`fb0e0fe3…`). The self-claims W1–W5 refuse with counts only. Without the archive the script reports `NOT CHECKED`
+and exits 2.
+
+**Rejected alternatives, and why.**
+- *WS1's stage in W27's generator, with a re-pin.* It keeps `57d43acb…`. But it moves W27's generator pin and, by the
+  preflight's own rule, the registration document's pin, against Frank's L01-Q1 answer (v0.2's W27 stays unchanged).
+- *A stage in C9's version 2 generator.* That generator does not own R02-F1, and the stage would change a file C9 just
+  registered.
+- *A stage in the split generator.* It would put an archive reader where SPLIT-R01 promises none.
+
+## R-582 — C2 Amendment 2: `case_facts-v2.json` is admitted to SPLIT-R10 by one exact path, pinned and checked against `case_facts.json`; `f1.status` is `facts_committed`
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), C2 Amendment 2 (D-14), brief `docs/briefs/C2-A2-facts-v2-writer.md` |
+| Normative text | `docs/derivations/C2-OpenIDAES-450-split-registration.md` §15.3, §15.4; SPLIT-R10 (a), SPLIT-R14 items 13–15 (amended); SPLIT-A12 (amended), A20–A23 |
+| Evidence | WS1's SPLIT-A09 failure (`tests/test_c2_openidaes450_split.py:176`); at authoring, the file holds 224 held-out ids, item 14's identities and item 15's states hold, and each A21 edit is refused with its label; `split.json` `ee940a7e…` → `a556e417…`, in `f1` only |
+| Affected packages | C2; development readers of all-case files (§11 Q-3); release-gate R02-F1 scoring |
+
+**Decision.**
+- `ALL_CASE_FILES` gains exactly `benchmarks/m06/openidaes450/case_facts-v2.json` (thirteen exact paths).
+- The split generator pins the file (`4f5c5a65…`, outside `INPUTS`). It refuses if the file is absent or changed
+  (`SPLIT-R13/A2`). It refuses if the file breaks one of seven labelled identities with `case_facts.json`
+  (`SPLIT-R13/A2`, counts only), or if the unit-level F-1 states differ (`SPLIT-R13`).
+- `f1` becomes `status: facts_committed`, with `facts` {path, schema, sha256, writer} and `unit_level_states`, and
+  without `lacking`. The draw, the commitment and the development ids are unchanged.
+
+**Rejected alternatives, and why.**
+- *A `heldout/` path.* SPLIT-R10 (b) is for release-gate outputs, and this file carries the development facts.
+- *A development file and a held-out file.* That is two pins and WS1's bytes lost, for no protection beyond the filter
+  rule.
+- *A pattern entry.* It would admit files nobody registered.
+
 ## R-585 — Package S05: IAPWS-95 pure water as a library-only provider `iapws95-v1` (ADR 0045, Proposed)
 
 | | |
