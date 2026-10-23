@@ -76,3 +76,4 @@ Append-only. One line per choice: `DECISION: <question> → <choice>. Alternativ
 - BUILD DECISION (WO-C2-A2): SPLIT-A18 builds its `raw` from the three `INPUTS` only; it now also supplies the
   facts-v2 working copy, as `read_inputs` does (item 13 would otherwise refuse). SPLIT-A20 parses a facts file's
   first line by closing it with `]}`. Reversible by: test edits in `87d86c83`.
+- REVIEW FIX (WO-C2-A2 F1/F2): A20 now asserts label None and the pinned SHA in the message (mutation: item 13 comparison deleted -> A20 fails); A25(c) asserts the OK byte-identical line and a synthetic archive differing in one unit id gives exit 1. Tests only. Reversible by: revert the commit.

@@ -506,8 +506,12 @@ def test_a20_facts_v2_is_pinned_and_is_ws1s_content(record):
     assert before == after
     flipped = bytearray(data)
     flipped[len(data) // 2] ^= 0x01
-    assert _refusal(bytes(flipped)).rule == "SPLIT-R13/A2"
-    assert _refusal(None).rule == "SPLIT-R13/A2"
+    refused = _refusal(bytes(flipped))
+    assert refused.rule == "SPLIT-R13/A2" and refused.label is None
+    assert gen.F1_FACTS[1] in str(refused)  # item 13's pin comparison, not item 14's identities
+    absent = _refusal(None)
+    assert absent.rule == "SPLIT-R13/A2" and absent.label is None
+    assert gen.F1_FACTS[0] in str(absent)
 
 
 def _a21_edit(n: int, doc: dict) -> None:
@@ -669,9 +673,20 @@ def test_a25c_writer_regression_on_a_synthetic_archive(tmp_path):
     build_archive(good, doc)
     out = _writer("--check", "--archive", str(good))
     assert out.returncode == 0, out.stdout + out.stderr
-    next(c for c in doc["cases"] if c["case_id"] == FIRST_DEVELOPMENT)["topology_units"][0][
-        "kind"
-    ] = "A25Kind"
+    assert (
+        f"OK benchmarks/m06/openidaes450/case_facts-v2.json byte-identical "
+        f"(sha256 {FACTS_V2_SHA256})"
+    ) in out.stdout
+    first = next(c for c in doc["cases"] if c["case_id"] == FIRST_DEVELOPMENT)["topology_units"]
+    first[0]["id"] += "_A25"
+    differs = tmp_path / "differs"
+    build_archive(differs, doc)
+    out = _writer("--check", "--archive", str(differs))
+    assert out.returncode == 1, out.stdout + out.stderr
+    assert out.stdout.startswith("FAIL")
+    assert not ({t.decode() for t in TOKEN.findall(out.stdout.encode())} & _all_ids())
+    first[0]["id"] = first[0]["id"][: -len("_A25")]
+    first[0]["kind"] = "A25Kind"
     bad = tmp_path / "bad"
     build_archive(bad, doc)
     out = _writer("--check", "--archive", str(bad))
