@@ -33,6 +33,7 @@ __all__ = [
     "offset_row",
     "ratio_row",
     "reaction_balance_row",
+    "scaled_definition_row",
     "scaled_row",
     "specification_row",
     "work_row",
@@ -381,6 +382,25 @@ def fraction_row(part: str, fraction: str, whole: str) -> RowBuilder:
         algebra: Algebra,
     ) -> Expr:
         return variables[part] - variables[fraction] * variables[whole]
+
+    return build
+
+
+def scaled_definition_row(part: str, scale: str, scaled: str, whole: str) -> RowBuilder:
+    """`F part - u whole`, `F` a pinned input and `u` a free variable: S06's purity definition
+    (S06 spec §2, `F n_c - u P`), so that `u = F part / whole` is a molar flow.
+
+    The division-free form of `u / F = part / whole`; bilinear like the equilibrium rows and of
+    their kind (`molar_flow_squared`). `F` is a pinned input (ADR 0008 D1.3), never a literal.
+    """
+
+    def build(
+        variables: Mapping[str, Expr],
+        blocks: Mapping[str, Expr],
+        parameters: Mapping[str, float],
+        algebra: Algebra,
+    ) -> Expr:
+        return parameters[scale] * variables[part] - variables[scaled] * variables[whole]
 
     return build
 

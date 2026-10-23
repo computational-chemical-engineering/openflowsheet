@@ -113,3 +113,21 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
 
 - **C10-Q1. May the IAPWS-95 coefficients ship?** This session could not read IAPWS's terms or the R6-95(2018) tables: iapws.org was refused by the proxy. **Default:** the tests and the provider may be built from the coefficients transcribed from CoolProp (MIT) and checked against `iapws` (GPL-3, used only as a comparison). Nothing ships in a wheel until a person reads the release's terms and confirms the generator's values against Tables 6–8.
 - **C10-Q2. How should a supercritical fluid (T ≥ T_c) be labelled?** **Default:** VAPOR. The alternative is to label by density (LIQUID iff ρ > ρ_c). Either label flips somewhere on a 24 MPa boiler path.
+
+## S06 (C11) — column inverse specifications (design lane `specifier`, 2026-10-22)
+
+- **Q-S06-1. Should a column with a purity, recovery or temperature specification carry a "multiple steady
+  states possible" warning, as duty-only columns do (C8)?** No registered S06 set shows a second root, and S06
+  claims no uniqueness for any set (`docs/derivations/S06-spec.md` §7.4, §14). Warning on every inverse set would
+  make the warning say "no uniqueness claim", which is true of every column. **Default:** no new warning; C8's
+  duty-only rule unchanged. A later measured second root under an inverse set adds a warning code for that class.
+  **Answer (Frank, 2026-10-23):** "No warning for now."
+- **Q-S06-2. Is a high-purity endpoint failure acceptable as a typed result for now?** S06 reuses S02's
+  bubble-point endpoint unchanged. When the endpoint already sits near total recovery of the specified component
+  (U1: bottoms recovery of C 0.9996 at the endpoint), the endpoint is ill-conditioned and the continuation fails at
+  its first step, although a regular root exists (M2's); and a total condenser whose reflux fraction is free can see
+  the straight path cross negative reflux (U2). The answer is then `inverse_specification_not_reached`,
+  typed and checkable, never a false success. Fixing it needs a second easy endpoint for inverse specifications
+  (a new algorithm and its own measurements). **Default:** yes, typed result and a §14 limitation; a follow-on
+  package only if you want such inverse specifications to solve unattended.
+  **Answer (Frank, 2026-10-23):** "Yes, typed failure."

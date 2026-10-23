@@ -506,10 +506,12 @@ REFUSALS: dict[str, tuple[ColumnSpec, str, str]] = {
         "INVALID_SPECIFICATION",
         "invalid_spec(specification:reboiler)",
     ),
+    # S06 §1 narrowed `NOT_OFFERED`: `purity` is offered there, so the probe names a kind that
+    # still is not (S06 A02 tests `purity`'s own refusals).
     "S2-not-offered": (
-        replace(M1, condenser_spec=_ratio("purity", 0.95)),
+        replace(M1, condenser_spec=_ratio("mole_fraction", 0.95)),
         "CAPABILITY_UNAVAILABLE",
-        "unsupported(specification:purity)",
+        "unsupported(specification:mole_fraction)",
     ),
     # S4
     "S4-reflux-ratio": (

@@ -12179,3 +12179,173 @@ CoolProp's.
 - *Tightening `ROOT_TOL` toward 5e-16.* The cold liquid's computed residual is rounding noise above that value.
 
 ---
+
+## R-601 — C11 is package S06: column specifications by purity, recovery and stage temperature on S02's column
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C11 |
+| Normative text | `docs/derivations/S06-spec.md` §0–§1 |
+| Evidence | `docs/derivations/scripts/s06_reference.py --check` |
+| Affected packages | S06 (C11); S02 (`NOT_OFFERED` narrows) |
+
+**Decision.** The package id is S06 (R-565 / D1 Q6: an S-letter id). Three inverse end kinds are offered at either end
+slot: `purity` and `recovery` of a named component in that end's product, and `temperature` of a named stage. They
+replace the end's S02 slot row; `mole_fraction`, `reflux_rate`, `boilup_rate`, `distillate_to_feed_ratio` stay
+`unsupported`. SYN-001 only.
+
+**Rejected.** *`mole_fraction` as an alias of `purity`.* Two ids for one row.
+
+## R-602 — Every inverse slot row is `variable − parameter`; purity uses the scaled-purity column `u = F·x_c`; no ADR
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C11 |
+| Normative text | `docs/derivations/S06-spec.md` §2, §16 |
+| Evidence | generator claims (rows vanish at every root; A04's trial values) |
+| Affected packages | S06 |
+
+**Decision.** Temperature `T_s − T*` (temperature); recovery `n_c − ν*`, `ν* = fl(r*·F_c)` (molar_flow); purity
+`u − π*` with `π* = fl(x*·F)` on a new `molar_flow` column `u`, defined by `F·n_c − u·P` (molar_flow_squared). Edge 3
+(ADR 0010 D2–D3) continues all of them unchanged; no kind, tolerance, schema or ADR moves; ADR 0046 stays free.
+
+**Rejected.** *A `dimensionless` purity column with a `dimensionless` slot row* (a row kind needing its own ruling and,
+through K04's table, an ADR; S02 §17 item 5). *The ratio row `n_c − x*·P` with ADR 0010 D2 widened to ratio rows* (an
+ADR change to a generic mechanism, for one row). *Recovery written against the inlet columns* (several columns in the
+row; not continuable).
+
+## R-603 — S06 reuses S02's easy endpoint unchanged; inverse slots are continued from their value at `x⁰`
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C11 |
+| Normative text | `docs/derivations/S06-spec.md` §6–§7 |
+| Evidence | generator: J1–J8 and four matched sets reach λ = 1 on the straight path; U1, U2 do not (§7.2) |
+| Affected packages | S06 |
+
+**Decision.** S02 §18.2 runs unchanged; an inverse end takes the CMO stage ratio (`φ⁰` at a total condenser) like a duty
+end; every inverse slot joins the continued set with `p⁰` = its variable at `x⁰`. Two registered sets with regular roots
+are not reached (U1: ill-conditioned endpoint; U2: negative reflux on the path); they are typed failures and non-claims.
+
+**Rejected.** *An endpoint that holds the inverse specification* (adjusting the end's stage ratio inside the sweeps): a new
+algorithm without an admissibility argument; deferred (Q-S06-2).
+
+## R-604 — Static refusals I1–I6: attributes, values, absent components, the stage band, redundancy, the product split
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C11 |
+| Normative text | `docs/derivations/S06-spec.md` §4–§5 |
+| Evidence | fifteen registered probes, each decided by the generator's own exact test |
+| Affected packages | S06 |
+
+**Decision.** After S02's S10: I1 attribute, I2 value, I3 absent component, I4 temperature outside the open band
+`(T_sat,lightest, T_sat,heaviest)` at the stage's pressure (closed form), I5 redundant (two temperatures on one stage, or
+dependent split rows), I6 no product split `0 < t_c < F_c` meets the rows linear in it (exact rational test). Temperature
+specifications are offered only on stages two-phase at the answer; a converged single-phase specified stage is
+`unsupported(temperature_specification_on_single_phase_stage:<s>)`.
+
+**Rejected.** *Leaving mass-balance infeasibility to the solver* (a refusal would read as a solver failure). *A
+finite-stage separation bound* (not exact for temperature-dependent `K`; would refuse reachable targets).
+
+## R-605 — An unreached inverse target is reported, typed and checkable, and never claimed infeasible
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C11 |
+| Normative text | `docs/derivations/S06-spec.md` §7.3; A11 |
+| Evidence | U1, U2 (regular roots the path does not reach) |
+| Affected packages | S06 |
+
+**Decision.** A non-`CONVERGED` answer with an inverse specification carries
+`inverse_specification_not_reached(<kind>:<end>)` per inverse end, with the last accepted λ of edge 3 and the specified
+quantity at that state (recomputable bit for bit), or `None` when edge 3 did not run.
+
+**Rejected.** *Mapping the failure to `infeasible_spec`.* False for U1 and U2.
+
+## R-606 — No multiplicity warning for inverse specifications; C8's duty-only rule unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C11 (Q-S06-1 to Frank, default) |
+| Normative text | `docs/derivations/S06-spec.md` §7.4; A12 |
+| Evidence | no registered S06 set shows a second root |
+| Affected packages | S06, C8 |
+
+**Decision.** `multiple_steady_states_possible(duty_only)` keeps its rule; a set with an inverse specification is not
+duty-only. No uniqueness claim is made for any set.
+
+**Rejected.** *Warning on every inverse set* (the warning would then say only "no uniqueness claim").
+
+## R-607 — S06's reference generator reuses S02's generator and registers J1–J8, four matched sets, U1–U2 and fifteen probes
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C11 |
+| Normative text | `docs/derivations/S06-spec.md` §9–§11 |
+| Evidence | `docs/derivations/scripts/s06_reference.py --check` (byte-identical `s06_reference.json`) |
+| Affected packages | S06 |
+
+**Decision.** `s06_reference.py` imports nothing from `openflowsheet`; it imports `s02_reference.py` for SYN-001, the
+generator's column formulation and S02's endpoint, and adds quotient-form inverse rows, a straight 16-step path and an
+exact refusal test. The matched sets take their inverse values from S02's registered M1 root and must return it.
+
+**Rejected.** *A stand-alone copy of S02's column code.* Duplicated and liable to drift.
+
+## R-608 — S06's I3 probe is at M1's feed state with A absent, not at a new feed temperature
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`reviewer`), S06 review (Q-S06-WO1-1) |
+| Normative text | `docs/derivations/S06-spec.md` §17.1 (replaces §9's I3 probe) |
+| Evidence | `docs/C11_DECISIONS.md` Q-S06-WO1-1: the old probe measured `inadmissible_inlet(feed, LIQUID)` (Σ z_i K_i ≈ 1.10) |
+| Affected packages | S06 |
+
+**Decision.** The I3 probe is feed (0, 0.5, 0.5) mol/s, reboiler recovery of A 0.9, condenser RR 2, at M1's feed state.
+It is admissible because M1's own admissible feed dominates it (`K_A > K_B > K_C`). Every refusal probe is at its base's
+inlet state and passes S01's R5 and S02's S1–S10 there. A02 checks this.
+
+**Rejected.** *Registering a 320 K feed temperature for the old probe* (the build lane's proposal). That needs a feed-state
+field the generator would carry and never use, and it breaks the rule that each probe is at its base's state.
+
+## R-609 — S06 §10: J8's measured deviation 0.182 of the state tolerance is recorded, with a 1/4 ceiling
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`reviewer`), S06 review (Q-S06-WO2-1) |
+| Normative text | `docs/derivations/S06-spec.md` §17.2 |
+| Evidence | `docs/C11_DECISIONS.md` WO-2 MEASURED and Q-S06-WO2-1 (commit `32aac25`); J8 `σ_min` 0.000610732 (§9) |
+| Affected packages | S06 |
+
+**Decision.** §10's measurement is answered: worst 0.182 (J8, `stage.6.m.A`), explained by J8's conditioning. The
+state tolerance is unchanged. The manifest's deviation check is ≤ 1/10 for every set except J8, whose ceiling is 1/4.
+
+**Rejected.** *Loosening the state tolerance* (nothing is wrong with the answer). *Replacing J8* (it is the near-total
+recovery case). *Classing the deviation as backlog and leaving `S06.deviation` failing* (a measured, explained fact
+would then block `tested` permanently).
+
+## R-610 — S06 §8 item 3 (single-phase specified stage) is decided only after every defect clause passes
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`reviewer`), S06 review |
+| Normative text | `docs/derivations/S06-spec.md` §17.3 (replaces §8 item 3's second sentence); A14 |
+| Evidence | `docs/reviews/S06-review.md` F1; `column_solve.py` `solve_target` at `6053c73` decides item 3 first |
+| Affected packages | S06 |
+
+**Decision.** A `CONVERGED` state that fails S02 §8 or S06 §8 items 1, 2 or 4 is a defect, whatever the specified stage's
+regime. `unsupported(temperature_specification_on_single_phase_stage:<s>)` is returned only for a state that has no
+defect.
+
+**Rejected.** *Item 3 before the defect clauses* (WO-2's order, chosen so a stubbed non-root makes A14 observable). It
+reports an implementation fault as a scope limit.
