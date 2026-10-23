@@ -85,23 +85,26 @@ LIBRARY_ONLY = (
     "registered in the T08 envelope's LIBRARY_ONLY_PROVIDERS and its scanned_providers (spec §8 "
     "F-2). Coverage counts are unchanged."
 )
-#: Ruling 8 of docs/reviews/S05-review.md (R-599; spec §14, §12): the rights statement.
+#: Spec §15.1 (R-614; `af04961e`): the rights statement after the terms were read.
 RIGHTS = (
-    "Rights (C10-Q1, R-599): the IAPWS terms of use for R6-95 were not read (iapws.org refused, "
-    "2026-10-22); the rights row is `unresolved`. benchmarks/s05/iapws95_coefficients.json is "
-    "unpackaged (A26), so `iapws95-v1` runs only from a source checkout; Tables 6-8 are not "
-    "compared; ADR 0045 remains Proposed. There is no `released` status and no wheel carrying the "
-    "coefficients until C10-Q1 is answered, and `reviewed` would cover numerics only, not rights."
+    "Rights (C10-Q1, spec §15.1): the IAPWS terms of use for R6-95 were read and quoted "
+    '(`af04961e`; "Publication in whole or in part is allowed in all countries provided that '
+    "attribution is given to the International Association for the Properties of Water and "
+    'Steam"); the rights row is `permitted with conditions` (attribution to IAPWS), following '
+    "docs/l01-rights-check.md's RC-03 precedent. ADR 0045 is Accepted (2026-10-23). "
+    "benchmarks/s05/iapws95_coefficients.json stays unpackaged (A26) until Frank decides to "
+    "ship; there is no `released` status, and `reviewed` would cover numerics, not rights."
 )
 #: Spec §12's limitations, with the cross-check's provenance (§12 `commands`).
 SPEC_LIMITATIONS = (
     RIGHTS,
     LIBRARY_ONLY,
-    "The R6-95(2018) Tables 6-8 are not compared (C10-Q1, spec §10 Q-1): the coefficients and the "
-    "admitted values equal two independent transcriptions (CoolProp 8.0.0, iapws 1.5.5) and a "
-    "50-digit evaluation of the committed transcription; a transcription error shared by both "
-    "would pass every assertion. This is numerical verification of an implementation against a "
-    "formulation, not empirical validation (spec §9).",
+    "The R6-95(2018) Tables 1, 2 and 6-8 are compared with the committed values: 385 values, "
+    "0 mismatches (spec §15.1, `af04961e`); the release's derivative relations (Tables 3-5) "
+    "were used, not compared. M = 0.018015268 kg/mol (IAPWS G5-01) is not compared with a "
+    "printed copy (spec §15.3, Q-7); it scales only molar extensive quantities, which no "
+    "comparison with the release can test. This is numerical verification of an implementation "
+    "against a formulation, not empirical validation (spec §9).",
     "The coefficient file benchmarks/s05/iapws95_coefficients.json is not packaged (R-594, "
     "C10-Q1): no PACKAGED entry covers benchmarks/s05/ and a built wheel holds no copy (A26), so "
     "`iapws95-v1` runs only from a source checkout.",
@@ -252,9 +255,9 @@ def status(entries: Sequence[Mapping[str, Any]]) -> str:
 
 def found_limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
     items = [
-        "requirements is empty: the schema takes D/A requirement ids and none lists S05; ADR 0045 "
-        "(IAPWS-95 as a library-only provider) is Proposed, and spec §8's F-1 (ADR 0001 D5 and "
-        "interfaces-frozen.md gain IAPWS95-ref-v1) is the design lane's amendment, not made here.",
+        "requirements lists D08 only (R-614): `iapws95-v1` is a real provider on the property "
+        "contract; ADR 0045 is Accepted (2026-10-23) and spec §8's F-1 (ADR 0001 D5, "
+        "interfaces-frozen.md) is made.",
         "scripts/gate.sh was not run by this generator (it runs once before merge into main); "
         "S05.gate is unsupported here.",
         "Review: the design lane's reviewer pass (docs/reviews/S05-review.md, R-595…R-599) ruled "
@@ -380,7 +383,7 @@ def build(commit: str) -> dict[str, Any]:
     manifest: dict[str, Any] = {
         "work_package": "S05",
         "commit": commit,
-        "requirements": [],
+        "requirements": ["D08"],
         "status": status(entries),
         "inputs": {
             "case_id": "S05 acceptance: docs/derivations/S05-IAPWS95-spec.md §6.1 (A01-A30) "
