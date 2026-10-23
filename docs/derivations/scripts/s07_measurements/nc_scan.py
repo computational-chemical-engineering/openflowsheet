@@ -8,12 +8,14 @@ down to the nearest double at which it does not, so every point lies in the fall
 At each T:
 
 - G1: `_solve_saturation(T)` is not `None`; counts the points where the fallback ran, its polish
-  iterations and the `_jet` calls made inside it (G8: ≤ 400 per T); the whole solve's calls,
-  the failed Newton included, are reported beside it.
+  iterations and the `_jet` calls made inside it (G8: a regression tripwire of ≤ 500 per T, spec
+  §19.3; the hard bound set by the loop limits is 6906, plus up to 100 for the failed plain Newton);
+  the whole solve's calls, the failed Newton included, are reported beside it.
 - G2: where the Newton from the ancillary seeds converges, the result is bitwise (repr) that
   Newton's and the fallback is not entered.
 - G3: where that Newton converges and θ ≥ θ_min, the fallback forced from the same T; relative
-  differences of ρ', ρ'' and p_σ against the plain root, split at θ = 1e-2.
+  differences of ρ', ρ'' and p_σ against the plain root, split at θ = 1e-2 (spec §19.2, A47:
+  densities 1e-11 above and 3e-8 below; p_σ 1e-12 above and 1e-10 below).
 
 Writes argv[1] (JSON: per-fluid worsts and every failing point) and prints one summary line.
 Scratch CoolProp venv; `PYTHONPATH=src`.
@@ -27,6 +29,9 @@ from multiprocessing import Pool
 from openflowsheet.thermo import coolprop_heos as ch
 
 PER_DECADE = 40
+#: Spec §19.2 (A47) and §19.3 (G8), R-626.
+G3_FAR_RHO, G3_NEAR_RHO, G3_FAR_P, G3_NEAR_P = 1e-11, 3e-8, 1e-12, 1e-10
+G8_TRIPWIRE = 500
 
 
 def grid(fluid):
@@ -147,7 +152,8 @@ def main():
         "g3_pairs": len(rows),
         "g3_far_rho": max(worst(far, 1), worst(far, 2)),
         "g3_near_rho": max(worst(near, 1), worst(near, 2)),
-        "g3_p": worst(rows, 3),
+        "g3_far_p": worst(far, 3),
+        "g3_near_p": worst(near, 3),
         "forced_none": len(forced_none),
         "forced_none_min_theta": forced_none[0] if forced_none else None,
     }
@@ -156,10 +162,11 @@ def main():
     ok = (
         g1 == 0
         and g2 == 0
-        and summary["max_fallback_jets"] <= 400
-        and summary["g3_far_rho"] <= 1e-11
-        and summary["g3_near_rho"] <= 1e-8
-        and summary["g3_p"] <= 1e-12
+        and summary["max_fallback_jets"] <= G8_TRIPWIRE
+        and summary["g3_far_rho"] <= G3_FAR_RHO
+        and summary["g3_near_rho"] <= G3_NEAR_RHO
+        and summary["g3_far_p"] <= G3_FAR_P
+        and summary["g3_near_p"] <= G3_NEAR_P
     )
     print(
         ("PASS " if ok else "FAIL ")

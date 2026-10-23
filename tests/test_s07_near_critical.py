@@ -35,9 +35,11 @@ N1_THETAS = (2e-4, 1e-4, 5e-5)
 N3_THETAS = (1e-2, *N1_THETAS)
 #: N5's strip θ grid (design note §6 G5).
 N5_THETAS = (1.9999e-4, 1e-4, 5e-5, 1e-5, 1e-6, 1e-8, 1e-12)
-#: N3's bounds (design note §6 G3): densities 1e-11 relative for θ ≥ 1e-2, 1e-8 for θ ≥ θ_min;
-#: p_σ 1e-12.
-N3_FAR, N3_NEAR, N3_PRESSURE = 1e-11, 1e-8, 1e-12
+#: N3's bounds (spec §19.2, A47; G3 re-set by R-626), relative: densities 1e-11 for θ ≥ 1e-2 and
+#: 3e-8 for θ_min ≤ θ < 1e-2 (two accepted roots differ by up to about 2√ε at the floor); p_σ
+#: 1e-12 and 1e-10 (it follows ρ'' through (k''/Z'')·|Δρ''|/ρ'').
+N3_FAR, N3_NEAR = 1e-11, 3e-8
+N3_PRESSURE_FAR, N3_PRESSURE_NEAR = 1e-12, 1e-10
 #: N5's continuity bound at T_c (design note §6 G5).
 CONTINUITY = 1e-8
 
@@ -134,8 +136,9 @@ def test_n3_the_fallback_agrees_with_the_plain_root_densities(cid: str) -> None:
 @pytest.mark.parametrize("cid", ALL)
 def test_n3_the_fallback_agrees_with_the_plain_root_pressure(cid: str) -> None:
     for theta, reference, forced in n3_pairs(cid):
+        bound = N3_PRESSURE_FAR if theta >= 1e-2 else N3_PRESSURE_NEAR
         difference = abs(forced.pressure - reference.pressure) / reference.pressure
-        assert difference <= N3_PRESSURE, (theta, difference)
+        assert difference <= bound, (theta, difference)
 
 
 def strip_states(fluid: cph._Fluid) -> list[tuple[Phase, float]]:
