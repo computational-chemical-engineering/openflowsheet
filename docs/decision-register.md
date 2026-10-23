@@ -12503,3 +12503,34 @@ reports an implementation fault as a scope limit.
 
 **Finding (not ruled).** The ledger's S01–S03 package rows still read `planned` with no evidence, although S01 and S02
 are merged at `tested`. That belongs to the next ledger refresh.
+
+---
+
+## R-615 — WO-L01-3 is split: WO-L01-3a re-takes the development half on a measurement-only binding outside the wheel; WO-L01-3b (exposure) waits for Frank's ship decision and the clean-up package
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), ruling round D2 item 4 |
+| Normative text | L01 spec §14 (markers in §4.3, §5 A24, §6.2, §11) |
+| Evidence | Frank 2026-10-23, `docs/C12_DECISIONS.md` last entry ("Keep unshipped for now"). W27 v2 (R-570…R-574). `snapshot.build_snapshot(version, binding)` at `benchmarks/m06/w27/snapshot.py:222` reads only `SELECTABLE_BASES`, `MODEL_BASES`, `MODEL_BUILDERS` and `basis_provider`. `benchmarks/` is outside the wheel (`pyproject.toml` `where = ["src"]`). W27 availability is by CAS RN (`coverage.py:336–356`) |
+| Affected packages | S04 (WO-L01-3a, branch `wp/S04-retake`); the `pr-lib-v1` clean-up package (F-4) |
+
+**Decision.**
+- 3a runs on a `types.ModuleType` binding built in `benchmarks/l01/retake.py`, under registration version 2.
+  - It adds the W27v2-R03 snapshot line.
+  - It writes `evidence/S04/<commit>/retake.json`, marked `selectable_in_build: false` and bound to
+    `pr_lib_data_sha256`.
+- L01.A24 becomes the version 1 control.
+- A new L01.A27 asserts that nothing is exposed: no selectable basis, no `PACKAGED` path, and `pr-lib-v1` still
+  library-only.
+- 3b, the exposure (§4.3, §4.4, §12.5, §13.3, §13.4), waits for Frank's ship decision and the clean-up package, and
+  re-takes the measurement on the cleaned records.
+- **Finding F-4.** The clean-up's CAS RN drop removes W27's identity key, and the shipped
+  `benchmarks/m01/components.yaml` carries five CAS RNs. Both are for Frank and the clean-up package.
+
+**Rejected alternatives, and why.**
+- *Wait for the clean-up.* The constants do not enter coverage, so the measurement is informative now, and it would
+  also wait on F-4.
+- *Expose in source checkouts only.* A wheel would then carry a selectable basis without its records.
+- *Monkeypatch the binder.* That is invisible in the record.
