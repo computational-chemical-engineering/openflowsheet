@@ -490,6 +490,9 @@ CoolProp scratch venv (8.0.0), x86-64, `OPENFLOWSHEET_REQUIRE_COOLPROP=1`. Commi
   Psat worst 1.826e-12 of 1e-10; 10818 of 22946 rows differ`. A31a–A31e passed there; `test_a31_the_report` failed
   because it assumed that only the perturbed row differs (a test bug, not a bound), and it is rewritten to judge
   against the unperturbed comparison. "Run checks" and default-install: the 6 expected T08 C3 harvest failures.
+- **CI run 40000637382 (`e76e904f`).** S07 tests step: x86-64 3484 passed, 1 skipped; aarch64 3483 passed, 2 skipped.
+  A31 lines identical to the run above (aarch64 class T worst u 0.566, class N worst u 0.0183, no class-S row). "Run
+  checks" and default-install: the 6 expected T08 C3 failures only.
 - **B-35 — DECISION (verdict text for a non-row failure; §20.9 gives the failing form only for rows over their
   allowance):** an A31c/A31d failure, an unclassifiable row or a row-count mismatch uses the failing form, with
   "bit-identical" where every row matched, "worst -" where no row failed, and "; <k> other failures, first: <msg>".
