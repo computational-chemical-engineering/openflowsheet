@@ -1,0 +1,6 @@
+# S07 (spec §17, R-624): the `coolprop` extra's increment over requirements.lock, for CI and
+# development environments. Install it after requirements.lock:
+#     python -m pip install --no-deps --require-hashes -r requirements-coolprop.lock
+# CoolProp's only requirement, numpy>=1.20, is requirements.lock's numpy==2.2.4. This file is not
+# a dependency-set identity: run manifests record requirements.lock's hash only (R-140).
+CoolProp==8.0.0 --hash=sha256:8ca1aefd1873b14f3e7e9122a08a32fe8c62ac03a1fc4496512a31a3bba8f611 --hash=sha256:113fc0e97f2b64617141d453ddc0439987b32aa3f6f4a45b928b2030c68292fa

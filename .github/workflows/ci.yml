@@ -91,15 +91,23 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.lock
 
+      # S07 (spec §17.4, R-624): the `coolprop` extra's increment over the lock above, hash-pinned
+      # for both architectures. --no-deps keeps numpy at the base pin; requirements.lock itself is
+      # a registered identity and does not carry CoolProp. No other job installs this file.
+      - name: Install the coolprop extra's lock
+        run: python -m pip install --no-deps --require-hashes -r requirements-coolprop.lock
+
       - name: Install project
         run: python -m pip install -e .
 
       # T07 gate G19 on this architecture: the server extra is installed, and its closure, read
-      # from the installed metadata, has no GPL-family, unresolved or unlisted licence.
+      # from the installed metadata, has no GPL-family, unresolved or unlisted licence. S07 adds
+      # the same gate over the coolprop extra's increment (numpy is the base install's, T08.A30).
       - name: The server extra and its licences (G19)
         run: |
           python -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"
           python scripts/t07_licence_inventory.py
+          python scripts/t07_licence_inventory.py --extra coolprop
 
       # M06 (design note §8 Layer C, ADR 0030 D6): Node for check.sh's `node --test` step of the
       # web shell's tests — a test-time tool, no packages installed. CI never sets
@@ -113,9 +121,11 @@ jobs:
       # skipping it. The aarch64 image has no browser; there it is skipped with its reason.
       # A test whose machine precondition fails here skips with its reason (M04 E39-E41); -rs
       # prints every reason in the log, so what the hosted runners did not check is on record.
+      # S07 (spec §17.4): CoolProp is installed above, so its tests must run, not skip.
       - name: Run checks
         env:
           PYTEST_ADDOPTS: -rs
+          OPENFLOWSHEET_REQUIRE_COOLPROP: "1"
         run: |
           if [ "${{ matrix.runner }}" = "ubuntu-latest" ]; then
             export OPENFLOWSHEET_REQUIRE_BROWSER=1
