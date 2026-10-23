@@ -361,7 +361,7 @@ def measured_records(artifacts: Path) -> tuple[bool, dict[str, Any], Any]:
         "count_123": len(rows) == 123 and len(reference["fluids"]) == 123,
         "tiers_9_and_114": dict(tiers) == {"A": 9, "B": 114},
         "excluded_13_with_reasons": len(reference["excluded"]) == 13
-        and all(isinstance(reason, str) and reason for _, reason in reference["excluded"]),
+        and all(isinstance(reason, str) and reason for reason in reference["excluded"].values()),
         "published_checks_0": published == [] and reference["published_checks"]["rows"] == {},
         "worsts_ran": worsts.exit_code == 0,
         "tier_a_a17_below_1e-11": floors["tier_a_worst"][0] <= 1e-11,
@@ -371,7 +371,7 @@ def measured_records(artifacts: Path) -> tuple[bool, dict[str, Any], Any]:
         "tiers": dict(tiers),
         "bounds": dict(Counter(f"{row['tier']}/{row['bound']}" for row in rows)),
         "per_fluid_tier_and_bound": {row["id"]: f"{row['tier']}/{row['bound']}" for row in rows},
-        "excluded": [list(pair) for pair in reference["excluded"]],
+        "excluded": [[name, reason] for name, reason in reference["excluded"].items()],
         "published_check_fluids": len(published),
         "a17": {k: v for k, v in floors.items() if k != "per_fluid"},
         "a17_per_fluid": floors["per_fluid"],
