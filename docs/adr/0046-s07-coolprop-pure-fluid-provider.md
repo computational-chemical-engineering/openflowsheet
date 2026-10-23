@@ -13,6 +13,12 @@ Accepted when all of these hold:
 *Met 2026-10-23:* Frank answered Q-S07-1, "Yes, they wait". He also chose the broad fluid list, which Amendment 1
 below records.
 
+*Q-1 answered 2026-10-23 (spec §20.9, F-20.1; CI run 40000637382, commit `e76e904f`):* aarch64 is not bit-identical to
+x86-64. Under spec §20 (R-627), A31 holds. Ordinary answers agree within 5.658e-11 (class T worst ratio; bound 1e-10 of
+max(|x|, s_f)). Near-critical answers agree within 0.0183 of their per-state allowances (class N worst), and the
+saturation pressure within 1.826e-12 (bound 1e-10). x86-64 reproduces the digest bit-identically. This is
+cross-architecture agreement, not bit-identity.
+
 **Author:** design lane (`specifier`), package S07. **Normative text:** `docs/derivations/S07-spec.md`.
 **Generator:** `docs/derivations/scripts/s07_reference.py` (WO-S07-1; the plan is spec §8).
 **Builds on:** ADR 0001 D1–D5; ADR 0026 (provider pattern: typed refusals, implementation and data hashes);
