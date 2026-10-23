@@ -1,0 +1,12 @@
+# S07 published EOS check values (spec §16.5.2; claim C16, assertion A35).
+#
+# Each row is one value printed in an EOS paper's table for checking computer programs:
+#   {fluid: <component id>, source: <citation>, table: <table id in the source>, T: <K>,
+#    rho: <mol/m3>, quantity: <p | cv | cp | w | alphar | ...>, value: <as printed>,
+#    digits: <significant digits printed>}
+# A density printed per kilogram is converted with the fluid's M, and the row says so.
+# s07_reference.py checks every row against its 50-digit closed form within one unit in the last
+# printed digit (C16). A tier-B fluid reports `published-check` only with at least 3 passing rows
+# at 2 or more distinct densities (A35). None are transcribed in S07 (Q-A1-3 default); WO-S07-4
+# adds them.
+rows: []
