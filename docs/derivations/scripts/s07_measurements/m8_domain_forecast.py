@@ -1,8 +1,9 @@
-"""S07 measurement 8 (Amendment 1): the domain rule of Amendment 1 applied to every CoolProp 8.0.0 fluid, with a
-double-precision forecast of the generator claims C6, C8 and C9 using CoolProp's own saturation and partials.
+"""S07 measurement 8 (Amendment 1): the domain rule of Amendment 1 applied to every CoolProp 8.0.0
+fluid, with a double-precision forecast of the generator claims C6, C8 and C9 using CoolProp's own
+saturation and partials.
 
-A forecast, not an expectation: the generator recomputes every number at 50 digits (claims C5-C9, C15). Writes argv[1]
-(JSON) and argv[2] (the Markdown fluid table of spec A1.3). Scratch venv only.
+A forecast, not an expectation: the generator recomputes every number at 50 digits (claims C5-C9,
+C15). Writes argv[1] (JSON) and argv[2] (the Markdown fluid table of spec A1.3). Scratch venv only.
 """
 
 import json
@@ -11,7 +12,9 @@ import re
 import sys
 from multiprocessing import Pool
 
-import CoolProp.CoolProp as CP
+import CoolProp.CoolProp
+
+CP = CoolProp.CoolProp
 
 S04 = {
     "Water": "H2O",
@@ -58,15 +61,15 @@ def comp_id(name):
     return S04.get(name, name.replace("(", "_").replace(")", ""))
 
 
-def dpdrho(a, rho, T):
-    a.update(CP.DmolarT_INPUTS, rho, T)
+def dpdrho(a, rho, temp):
+    a.update(CP.DmolarT_INPUTS, rho, temp)
     d = a.delta()
-    return a.gas_constant() * T * (1 + 2 * d * a.dalphar_dDelta() + d * d * a.d2alphar_dDelta2())
+    return a.gas_constant() * temp * (1 + 2 * d * a.dalphar_dDelta() + d * d * a.d2alphar_dDelta2())
 
 
-def pressure(a, rho, T):
-    a.update(CP.DmolarT_INPUTS, rho, T)
-    return rho * a.gas_constant() * T * (1 + a.delta() * a.dalphar_dDelta())
+def pressure(a, rho, temp):
+    a.update(CP.DmolarT_INPUTS, rho, temp)
+    return rho * a.gas_constant() * temp * (1 + a.delta() * a.dalphar_dDelta())
 
 
 def one(name):
@@ -93,45 +96,48 @@ def one(name):
         )
         return name, r
     a = CP.AbstractState("HEOS", name)
-    Tt, pt, Tc, pc = (
+    t_trip, pt, t_crit, pc = (
         a.Ttriple(),
         a.trivial_keyed_output(CP.iP_triple),
         a.T_critical(),
         a.p_critical(),
     )
-    T_hi = min(a.Tmax(), 1273.15)
-    r.update(Tt=Tt, pt=pt, Tc=Tc, pc=pc, T_hi=T_hi, pmax=a.pmax())
+    t_hi = min(a.Tmax(), 1273.15)
+    r.update(Tt=t_trip, pt=pt, Tc=t_crit, pc=pc, T_hi=t_hi, pmax=a.pmax())
     if a.has_melting_line():
-        P_hi = min(a.pmax(), 1.0e8)
+        p_hi = min(a.pmax(), 1.0e8)
         p_mmin, p_mmax = a.melting_line(CP.iP_min, -1, -1), a.melting_line(CP.iP_max, -1, -1)
         r.update(melt_p_min=p_mmin, melt_p_max=p_mmax)
-        if p_mmax < P_hi:
+        if p_mmax < p_hi:
             r["admitted"], r["reason"] = False, "melting line ends below P_hi"
             return name, r
         p0 = max(pt, P_LO, p_mmin)
-        grid = [p0 * (P_hi / p0) ** (i / 19) for i in range(20)]
+        grid = [p0 * (p_hi / p0) ** (i / 19) for i in range(20)]
         try:
             tm = [a.melting_line(CP.iT, CP.iP, p) for p in grid]
         except Exception as ex:  # noqa: BLE001
             r["admitted"], r["reason"] = False, "melting_line raises: " + str(ex)[:60]
             return name, r
-        if max(tm) <= Tt:
-            T_lo, bound = Tt, "triple (melting line below T_t)"
+        if max(tm) <= t_trip:
+            t_lo, bound = t_trip, "triple (melting line below T_t)"
             mono = all(tm[i + 1] <= tm[i] for i in range(19))
         else:
-            T_lo, bound = math.ceil(10 * tm[-1] - 1e-9) / 10, "melting line"
+            t_lo, bound = math.ceil(10 * tm[-1] - 1e-9) / 10, "melting line"
             mono = all(tm[i + 1] > tm[i] for i in range(19))
         r["C9_monotone"] = mono
     else:
-        P_hi = min(a.pmax(), max(P_FLOOR, ceil_sig(1.1 * pc, 2)))
-        T_lo, bound = math.ceil(10 * Tt * (1 + KAPPA * P_hi) - 1e-9) / 10, "triple-point estimate"
-    r.update(P_hi=P_hi, T_lo=T_lo, bound=bound)
+        p_hi = min(a.pmax(), max(P_FLOOR, ceil_sig(1.1 * pc, 2)))
+        t_lo, bound = (
+            math.ceil(10 * t_trip * (1 + KAPPA * p_hi) - 1e-9) / 10,
+            "triple-point estimate",
+        )
+    r.update(P_hi=p_hi, T_lo=t_lo, bound=bound)
     reasons = []
-    if not T_lo < Tc * (1 - 1e-2):
+    if not t_lo < t_crit * (1 - 1e-2):
         reasons.append("T_lo >= 0.99 T_c (no saturation range)")
-    if not T_hi > Tc * (1 + 2e-3):
+    if not t_hi > t_crit * (1 + 2e-3):
         reasons.append("T_hi <= T_c(1+2e-3) (near-critical box not inside)")
-    if not P_hi > pc * (1 + 8e-3):
+    if not p_hi > pc * (1 + 8e-3):
         reasons.append("P_hi <= p_c(1+8e-3) (near-critical box not inside)")
     if reasons:
         r["admitted"], r["reason"] = False, "; ".join(reasons)
@@ -139,79 +145,79 @@ def one(name):
     # forecast C6, C8 with CoolProp's saturation (measurement only)
     fc = []
     try:
-        Tsm = Tc * (1 - 2e-4)
-        a.update(CP.QT_INPUTS, 0, Tsm)
+        t_sm = t_crit * (1 - 2e-4)
+        a.update(CP.QT_INPUTS, 0, t_sm)
         if not a.p() > pc * (1 - 4e-3):
             fc.append("C6: p_sigma(T_sigma,max) <= p_c(1-4e-3)")
         b = CP.AbstractState("HEOS", name)
         b.specify_phase(CP.iphase_liquid)
-        b.update(CP.PT_INPUTS, P_hi, T_lo)
+        b.update(CP.PT_INPUTS, p_hi, t_lo)
         rho_max = ceil_sig(1.10 * b.rhomolar(), 3)
         r["rho_max"] = rho_max
         g = CP.AbstractState("HEOS", name)
         g.specify_phase(CP.iphase_gas)
-        Ts = [T_lo + (Tsm - T_lo) * i / 22 for i in range(23)]
-        for T in Ts:
-            a.update(CP.QT_INPUTS, 0, T)
+        t_s = [t_lo + (t_sm - t_lo) * i / 22 for i in range(23)]
+        for temp in t_s:
+            a.update(CP.QT_INPUTS, 0, temp)
             rl = a.rhomolar()
-            a.update(CP.QT_INPUTS, 1, T)
+            a.update(CP.QT_INPUTS, 1, temp)
             rv = a.rhomolar()
             for k in range(41):
                 rho = rl + (rho_max - rl) * k / 40
-                if not dpdrho(g, rho, T) > 0:
-                    fc.append(f"C8: dp/drho <= 0 on LIQUID bracket at T={T:.3f} rho={rho:.4g}")
+                if not dpdrho(g, rho, temp) > 0:
+                    fc.append(f"C8: dp/drho <= 0 on LIQUID bracket at T={temp:.3f} rho={rho:.4g}")
                     break
             for k in range(1, 42):
                 rho = rv * k / 41
-                if not dpdrho(g, rho, T) > 0:
-                    fc.append(f"C8: dp/drho <= 0 on VAPOR bracket at T={T:.3f}")
+                if not dpdrho(g, rho, temp) > 0:
+                    fc.append(f"C8: dp/drho <= 0 on VAPOR bracket at T={temp:.3f}")
                     break
-            if not pressure(g, rho_max, T) > P_hi:
-                fc.append(f"C8: p(rho_max) <= P_hi at T={T:.3f}")
+            if not pressure(g, rho_max, temp) > p_hi:
+                fc.append(f"C8: p(rho_max) <= P_hi at T={temp:.3f}")
         for i in range(8):
-            T = Tc * (1 + 2e-3) + (T_hi - Tc * (1 + 2e-3)) * i / 7
+            temp = t_crit * (1 + 2e-3) + (t_hi - t_crit * (1 + 2e-3)) * i / 7
             for k in range(1, 42):
                 rho = rho_max * k / 41
-                if not dpdrho(g, rho, T) > 0:
-                    fc.append(f"C8: dp/drho <= 0 supercritical at T={T:.1f} rho={rho:.4g}")
+                if not dpdrho(g, rho, temp) > 0:
+                    fc.append(f"C8: dp/drho <= 0 supercritical at T={temp:.1f} rho={rho:.4g}")
                     break
-            if not pressure(g, rho_max, T) > P_hi:
-                fc.append(f"C8: p(rho_max) <= P_hi at T={T:.1f}")
+            if not pressure(g, rho_max, temp) > p_hi:
+                fc.append(f"C8: p(rho_max) <= P_hi at T={temp:.1f}")
     except Exception as ex:  # noqa: BLE001 - recorded as a forecast failure
         fc.append("forecast raised: " + str(ex)[:80])
-    # forecast C10/C11 for the Amendment 1 TP-state rules (A1.6): inside the box, outside NC, distinct, and
-    # CoolProp's own PropsSI answers there (it is C11's independent solve)
+    # forecast C10/C11 for the Amendment 1 TP-state rules (A1.6): inside the box, outside NC,
+    # distinct, and CoolProp's own PropsSI answers there (it is C11's independent solve)
     try:
-        Tsm = Tc * (1 - 2e-4)
-        T_mid = (T_lo + Tsm) / 2
-        a.update(CP.QT_INPUTS, 0, T_mid)
+        t_sm = t_crit * (1 - 2e-4)
+        t_mid = (t_lo + t_sm) / 2
+        a.update(CP.QT_INPUTS, 0, t_mid)
         ps = a.p()
         st = {
-            "V_sup": (min(1.5 * Tc, T_hi), 0.1 * pc),
-            "V_sub": (T_mid, 0.5 * ps),
-            "L_sub": (T_mid, 2 * ps),
-            "S_dense": (min(1.2 * Tc, T_hi), min(3 * pc, P_hi)),
-            "L_corner": (T_lo, P_hi),
-            "V_corner": (T_hi, P_LO),
+            "V_sup": (min(1.5 * t_crit, t_hi), 0.1 * pc),
+            "V_sub": (t_mid, 0.5 * ps),
+            "L_sub": (t_mid, 2 * ps),
+            "S_dense": (min(1.2 * t_crit, t_hi), min(3 * pc, p_hi)),
+            "L_corner": (t_lo, p_hi),
+            "V_corner": (t_hi, P_LO),
         }
         r["clamped"] = sorted(
             k
             for k, v in {
-                "V_sup": 1.5 * Tc > T_hi,
-                "S_dense_T": 1.2 * Tc > T_hi,
-                "S_dense_P": 3 * pc > P_hi,
+                "V_sup": 1.5 * t_crit > t_hi,
+                "S_dense_T": 1.2 * t_crit > t_hi,
+                "S_dense_P": 3 * pc > p_hi,
             }.items()
             if v
         )
         if len(set(st.values())) != len(st):
             fc.append("C10: TP states not distinct")
-        for k, (T, P) in st.items():
-            inside = T_lo <= T <= T_hi and P_LO <= P <= P_hi
-            nc = Tsm < T < Tc * (1 + 2e-3) and pc * (1 - 4e-3) <= P <= pc * (1 + 8e-3)
+        for k, (temp, pres) in st.items():
+            inside = t_lo <= temp <= t_hi and P_LO <= pres <= p_hi
+            nc = t_sm < temp < t_crit * (1 + 2e-3) and pc * (1 - 4e-3) <= pres <= pc * (1 + 8e-3)
             if not inside or nc:
                 fc.append(f"C10: {k} outside the box or in NC")
             try:
-                CP.PropsSI("H", "T", T, "P", P, name)
+                CP.PropsSI("H", "T", temp, "P", pres, name)
             except Exception as ex:  # noqa: BLE001
                 fc.append(f"C11: PropsSI raises at {k}: " + str(ex)[:50])
     except Exception as ex:  # noqa: BLE001
@@ -236,14 +242,16 @@ if __name__ == "__main__":
     order = [n for n in S04 if n in adm] + sorted((n for n in adm if n not in S04), key=str.lower)
     with open(sys.argv[2], "w") as f:
         f.write(
-            "| # | id | CoolProp name | EOS (`BibTeX_EOS`) | T_lo bound | T_lo, K | T_hi, K | P_hi, Pa |\n"
+            "| # | id | CoolProp name | EOS (`BibTeX_EOS`) | T_lo bound "
+            "| T_lo, K | T_hi, K | P_hi, Pa |\n"
         )
         f.write("| --- | --- | --- | --- | --- | --- | --- | --- |\n")
         for i, n in enumerate(order, 1):
             r = res[n]
             kind = {"melting line": "M", "triple-point estimate": "E"}.get(r["bound"], "T")
             f.write(
-                f"| {i} | {r['id']} | {n} | {r['eos']} | {kind} | {r['T_lo']:g} | {r['T_hi']:g} | {r['P_hi']:.3g} |\n"
+                f"| {i} | {r['id']} | {n} | {r['eos']} | {kind} "
+                f"| {r['T_lo']:g} | {r['T_hi']:g} | {r['P_hi']:.3g} |\n"
             )
     print("fluids", len(names), "admitted", len(adm))
     for n in names:

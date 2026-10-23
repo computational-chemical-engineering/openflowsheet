@@ -1,9 +1,12 @@
-"""S07 measurement 4: CoolProp 8.0.0 Helmholtz partials vs a 30-digit mpmath closed form from the same JSON."""
+"""S07 measurement 4: CoolProp 8.0.0 Helmholtz partials vs a 30-digit mpmath closed form from the
+same JSON."""
 
 import json
 
-import CoolProp.CoolProp as CP
+import CoolProp.CoolProp
 import mpmath as mp
+
+CP = CoolProp.CoolProp
 
 mp.mp.dps = 30
 FL = [
@@ -59,7 +62,10 @@ def alpha0(terms, tau, delta):
         elif k == "IdealGasHelmholtzLogTau":
             s += mpf(t["a"]) * mp.log(tau)
         elif k == "IdealGasHelmholtzPlanckEinstein":
-            s += sum(mpf(n) * mp.log(1 - mp.exp(-mpf(th) * tau)) for n, th in zip(t["n"], t["t"], strict=False))
+            s += sum(
+                mpf(n) * mp.log(1 - mp.exp(-mpf(th) * tau))
+                for n, th in zip(t["n"], t["t"], strict=False)
+            )
         elif k == "IdealGasHelmholtzPlanckEinsteinFunctionT":
             s += sum(
                 mpf(n) * mp.log(1 - mp.exp(-mpf(v) / mpf(t["Tcrit"]) * tau))
@@ -77,9 +83,9 @@ def alphar(terms, tau, delta):
     for t in terms:
         k = t["type"]
         if k == "ResidualHelmholtzPower":
-            for n, d, e, l in zip(t["n"], t["d"], t["t"], t["l"], strict=False):
+            for n, d, e, ell in zip(t["n"], t["d"], t["t"], t["l"], strict=False):
                 f = mpf(n) * delta ** mpf(d) * tau ** mpf(e)
-                s += f * (mp.exp(-(delta ** mpf(l))) if l > 0 else 1)
+                s += f * (mp.exp(-(delta ** mpf(ell))) if ell > 0 else 1)
         elif k == "ResidualHelmholtzGaussian":
             for n, d, e, eta, eps, be, ga in zip(
                 t["n"], t["d"], t["t"], t["eta"], t["epsilon"], t["beta"], t["gamma"], strict=False
@@ -91,14 +97,14 @@ def alphar(terms, tau, delta):
                     * mp.exp(-mpf(eta) * (delta - mpf(eps)) ** 2 - mpf(be) * (tau - mpf(ga)) ** 2)
                 )
         elif k == "ResidualHelmholtzNonAnalytic":
-            for n, a, b, be, A, B, C, D in zip(
+            for n, a, b, be, a_na, b_na, c_na, d_na in zip(
                 *(t[x] for x in ("n", "a", "b", "beta", "A", "B", "C", "D")), strict=False
             ):
                 q = (delta - 1) ** 2
-                th = (1 - tau) + mpf(A) * q ** (1 / (2 * mpf(be)))
-                Dl = th**2 + mpf(B) * q ** mpf(a)
-                psi = mp.exp(-mpf(C) * q - mpf(D) * (tau - 1) ** 2)
-                s += mpf(n) * Dl ** mpf(b) * delta * psi
+                th = (1 - tau) + mpf(a_na) * q ** (1 / (2 * mpf(be)))
+                big_delta = th**2 + mpf(b_na) * q ** mpf(a)
+                psi = mp.exp(-mpf(c_na) * q - mpf(d_na) * (tau - 1) ** 2)
+                s += mpf(n) * big_delta ** mpf(b) * delta * psi
         else:
             raise SystemExit("unhandled " + k)
     return s
@@ -123,10 +129,12 @@ for fl in FL:
             [(alpha0, e["alpha0"], Z_), (alphar, e["alphar"], R_)]
         ):
             for (kd, kt), nm in zip(ORD, names, strict=False):
-                ref = mp.diff(lambda dd, tt: fn(terms, tt, dd), (delta, tau), (kd, kt))
+                ref = mp.diff(
+                    lambda dd, tt, fn=fn, terms=terms: fn(terms, tt, dd), (delta, tau), (kd, kt)
+                )
                 got = getattr(a, nm)()
                 err = float(abs(mpf(got) - ref) / max(abs(ref), 1))
                 if err > worst[part]:
                     worst[part], where[part] = err, (T_over, dl, nm)
     summary[fl] = worst
-    print(fl, "alpha0 worst %.1e" % worst[0], where[0], "| alphar worst %.1e" % worst[1], where[1])
+    print(fl, f"alpha0 worst {worst[0]:.1e}", where[0], f"| alphar worst {worst[1]:.1e}", where[1])

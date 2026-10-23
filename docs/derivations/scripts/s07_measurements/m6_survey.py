@@ -1,13 +1,16 @@
 """S07 measurement 6 (Amendment 1): survey of every CoolProp 8.0.0 fluid (scratch venv only).
 
-Prints one JSON line per fluid with the facts the Amendment 1 selection rule reads, and writes them to argv[1].
+Prints one JSON line per fluid with the facts the Amendment 1 selection rule reads, and writes them
+to argv[1].
 """
 
 import json
 import sys
 
 import CoolProp
-import CoolProp.CoolProp as CP
+import CoolProp.CoolProp
+
+CP = CoolProp.CoolProp
 
 names = sorted(CP.get_global_param_string("FluidsList").split(","))
 out = {

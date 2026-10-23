@@ -1,11 +1,14 @@
-"""S07 measurement 2: AbstractState derivative API, imposed phase, in-dome evaluation, determinism."""
+"""S07 measurement 2: AbstractState derivative API, imposed phase, in-dome evaluation,
+determinism."""
 
 import json
 import sys
 
-import CoolProp.CoolProp as CP
+import CoolProp.CoolProp
 
-AS = CP.AbstractState("HEOS", "Water")
+CP = CoolProp.CoolProp
+
+abstract_state = CP.AbstractState("HEOS", "Water")
 names_r = [
     "alphar",
     "dalphar_dDelta",
@@ -30,23 +33,26 @@ names_0 = [
     "d3alpha0_dDelta_dTau2",
     "d3alpha0_dTau3",
 ]
-missing = [n for n in names_r + names_0 if not hasattr(AS, n)]
+missing = [n for n in names_r + names_0 if not hasattr(abstract_state, n)]
 print("missing_methods", missing)
 print(
-    "has specify_phase", hasattr(AS, "specify_phase"), "unspecify", hasattr(AS, "unspecify_phase")
+    "has specify_phase",
+    hasattr(abstract_state, "specify_phase"),
+    "unspecify",
+    hasattr(abstract_state, "unspecify_phase"),
 )
 
 
-def jet(AS):
-    return [getattr(AS, n)() for n in names_0 + names_r if hasattr(AS, n)]
+def jet(abstract_state):
+    return [getattr(abstract_state, n)() for n in names_0 + names_r if hasattr(abstract_state, n)]
 
 
 # in-dome state for water at 400 K: rho between sat densities (mol/m3)
 T = 400.0
-AS.update(CP.QT_INPUTS, 0.0, T)
-rl = AS.rhomolar()
-AS.update(CP.QT_INPUTS, 1.0, T)
-rv = AS.rhomolar()
+abstract_state.update(CP.QT_INPUTS, 0.0, T)
+rl = abstract_state.rhomolar()
+abstract_state.update(CP.QT_INPUTS, 1.0, T)
+rv = abstract_state.rhomolar()
 rm = 0.5 * (rl + rv)
 pts = {"dome": (rm, T), "vap": (rv * 0.5, T), "liq": (rl * 1.01, T), "super": (5000.0, 900.0)}
 res = {}

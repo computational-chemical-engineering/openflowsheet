@@ -1,13 +1,14 @@
 """S07 measurement 3: FP environment after import, reference-state mutation, water jets, timing."""
 
 import hashlib
+import importlib
 import json
 import sys
 import time
 
 tiny = 2.2250738585072014e-308
 before = (tiny / 3.0, 5e-324 * 1.0, tiny * 0.5)
-import CoolProp.CoolProp as CP
+CP = importlib.import_module("CoolProp.CoolProp")
 
 A = CP.AbstractState("HEOS", "Water")
 after = (tiny / 3.0, 5e-324 * 1.0, tiny * 0.5)
@@ -40,10 +41,10 @@ R = [
 Z = [n.replace("alphar", "alpha0") for n in R]
 
 
-def jet(name, rho, T, phase=CP.iphase_gas):
+def jet(name, rho, temp, phase=CP.iphase_gas):
     a = CP.AbstractState("HEOS", name)
     a.specify_phase(phase)
-    a.update(CP.DmolarT_INPUTS, rho, T)
+    a.update(CP.DmolarT_INPUTS, rho, temp)
     return [getattr(a, n)() for n in Z], [getattr(a, n)() for n in R], a.tau(), a.delta()
 
 

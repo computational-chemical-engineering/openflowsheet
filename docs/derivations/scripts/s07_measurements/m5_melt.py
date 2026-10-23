@@ -1,6 +1,9 @@
-"""S07 measurement 5 ("m-melt"): CoolProp 8.0.0 melting lines and PropsSI's own refusal below T_melt(p)."""
+"""S07 measurement 5 ("m-melt"): CoolProp 8.0.0 melting lines and PropsSI's own refusal below
+T_melt(p)."""
 
-import CoolProp.CoolProp as CP
+import CoolProp.CoolProp
+
+CP = CoolProp.CoolProp
 
 for f in [
     "Water",
@@ -16,7 +19,7 @@ for f in [
     a = CP.AbstractState("HEOS", f)
     p_hi = min(a.pmax(), 1.0e8)
     try:
-        t_m = "%.2f" % a.melting_line(CP.iT, CP.iP, p_hi)
+        t_m = f"{a.melting_line(CP.iT, CP.iP, p_hi):.2f}"
     except Exception as e:  # noqa: BLE001 - the message is the measurement
         t_m = "raises: " + str(e)[:70]
     try:

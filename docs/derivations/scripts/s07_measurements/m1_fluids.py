@@ -4,7 +4,9 @@ import hashlib
 import json
 
 import CoolProp
-import CoolProp.CoolProp as CP
+import CoolProp.CoolProp
+
+CP = CoolProp.CoolProp
 
 FLUIDS = {
     "H2O": "Water",
