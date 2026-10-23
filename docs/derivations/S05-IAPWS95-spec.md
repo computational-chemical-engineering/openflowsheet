@@ -15,7 +15,8 @@
   within §6.2's bounds. They also seed the generator's root solves.
 - The release's printed verification tables (R6-95(2018) Tables 6–8) were **not** read, because iapws.org was refused
   on 2026-10-22. The coefficients are therefore evidenced by two independent transcriptions that agree exactly, not by
-  the release (§9, §10 Q-1).
+  the release (§9, §10 Q-1). *(Amended 2026-10-23, §15.1: the release was read on the workstation and compared digit
+  by digit, 0 mismatches in 385.)*
 - Tolerances are stated with their floor and their margin in §6.2–§6.3. The floors are measured and recorded in the
   JSON's `agreement` and `fd_floor`, and the generator refuses to emit if a floor rises above its stated margin.
 - Every refusal is a typed result with a fixed message prefix (§4.5). An implementation that cannot answer says so
@@ -54,11 +55,11 @@ This document establishes:
 | constant | value | role |
 | --- | --- | --- |
 | R_s | 461.51805 J/(kg·K) | the formulation's specific gas constant |
-| M | 0.018015268 kg/mol | molar mass |
+| M | 0.018015268 kg/mol | molar mass. R6-95 does not print it. Source and status: §15.3, Q-7 |
 | R = R_s·M | 8.3143713575874… J/(mol·K) (8.314371357587 to 13 digits) | the molar gas constant used everywhere, **not** CODATA's 8.31446261815324 |
 | T_c | 647.096 K | reducing temperature, τ = T_c/T |
 | ρ_c | 322 kg/m³ | reducing density, δ = ρ/ρ_c |
-| p_c | 22.064 MPa | the critical pressure. It is a registered constant, not an output of the EOS: p(ρ_c, T_c) agrees with it to 1e-5 (claim) |
+| p_c | 22.064 MPa | the critical pressure. It is a registered constant, not an output of the EOS: p(ρ_c, T_c) agrees with it to 1e-5 (claim). R6-95 does not print it. Source: §15.3 |
 | T_t | 273.16 K | triple point, and the domain's lower bound |
 
 Molar quantities are the specific ones × M: v = M/ρ, h = M·h_spec, and so on. The flow vector `n` has one entry,
@@ -278,8 +279,8 @@ All inputs are the nearest doubles of the listed decimals, and the generator eva
 
 | name | T [K] | ρ [kg/m³] | why |
 | --- | --- | --- | --- |
-| `R6_500` | 500 | 838.025 | R6-95 Table 6, point 1. Liquid-like; the power terms dominate, and the Gaussian and non-analytic terms are below 1e-20 here, so they are **not** tested by this state |
-| `R6_647` | 647 | 358 | R6-95 Table 6, point 2. Near-critical; the Gaussian (≈ 3e-2) and non-analytic (≈ 1e-1·n) terms are large, so a dropped or mis-signed term changes φʳ well above tolerance |
+| `R6_500` | 500 | 838.025 | R6-95 Table 6 (its only state; §15.2). Liquid-like; the power terms dominate, and the Gaussian and non-analytic terms are below 1e-20 here, so they are **not** tested by this state |
+| `R6_647` | 647 | 358 | A row of R6-95 **Table 7**, not Table 6. The release prints no φ values here, so its φ keys have no printed counterpart; its p, c_v, w and s match Table 7 (§15.2). Near-critical; the Gaussian (≈ 3e-2) and non-analytic (≈ 1e-1·n) terms are large, so a dropped or mis-signed term changes φʳ well above tolerance |
 | `delta_one` | 700 | 322 | δ = 1 exactly: the zero-jet rule of §3.2. The non-analytic terms still contribute ≈ 3e-5 through θ = 1 − τ, so an accidental zero is caught |
 
 ### 5.2 Single-phase states, at (T, P)
@@ -463,7 +464,7 @@ these groups:
 
 ## 8. Findings (for other documents; not written here)
 
-- **F-1.** When ADR 0045 is accepted, ADR 0001 D5's list of reference conventions and `interfaces-frozen.md` need an
+- **F-1.** *(Written 2026-10-23, D2: ADR 0001 D5 item 4 and `interfaces-frozen.md` §3.)* When ADR 0045 is accepted, ADR 0001 D5's list of reference conventions and `interfaces-frozen.md` need an
   `IAPWS95-ref-v1` line, as ADR 0026 added `PR-C1-ref-v1`. It is not reaction-consistent, so ADR 0011 D2's set is
   unchanged. This is a design-lane ADR amendment and is not written by C10.
 - **F-2.** The T08 support envelope's library-only registry (`tests/test_t08_w2_support_envelope.py:329`
@@ -494,7 +495,8 @@ these groups:
 
 ## 10. Open questions (each with a recommended default)
 
-- **Q-1, needs a fact (= C10-Q1).** Do the release's Tables 6–8 match? The settling measurement: a person with access
+- **Q-1, needs a fact (= C10-Q1). Answered 2026-10-23: they match (§15.1). The `R6_647` clause below is corrected by
+  §15.2.** Do the release's Tables 6–8 match? The settling measurement: a person with access
   to iapws.org compares the generator's `phi_states.R6_500` and `R6_647` `*_9` keys with Table 6, and the saturation
   and single-phase entries with Tables 7–8, and reads the release's terms.
   *Default:* build and test on the transcription now, and do not package the coefficient file (R-594).
@@ -634,3 +636,109 @@ the R-595 and A22 bullets above.
 - **§6.1 A22.** "The measured floor is ≤ 5e-16" holds only where the residual is not noise-dominated (for example
   400 K, 1e7 Pa). In the liquid near T_t the computed residual is rounding noise over hundreds of ulp: the envelope is
   7.2e-14 at 273.16 K, 10^5.3 Pa, and the worst answer on the dense grid is 3.4e-14. The bound 1e-12 is unchanged.
+
+## 15. Amendment 2, 2026-10-23 (design lane, `specifier`, ruling round D2; R-611, R-612)
+
+The source is the workstation check of IAPWS R6-95(2018), recorded in `docs/C10_DECISIONS.md` at `af04961e`
+(branch `wp/S05-tables`). This amendment takes effect when that record is in `main`.
+
+### 15.1 §10 Q-1 is answered: the release matches
+
+- **Read.** IAPWS R6-95(2018), 19 pages, PDF SHA-256
+  `512879217b94f4d0741c88cab743d41098268914d538d73e680a736cb1c3aad7`, fetched 2026-10-23. It is not committed.
+- **Compared: 385 values, digit by digit, 0 mismatches.** A control run with two printed digits altered reports
+  exactly those 2.
+
+  | Source in the release | Count | Compared against |
+  | --- | --- | --- |
+  | Eqs. 1–3 and T_t | 8 | the file's and the provider's T_c, ρ_c, R and T_t, exactly |
+  | Table 1 | 13 | the 8 n°ᵢ and 5 γ°ᵢ, exactly |
+  | Table 2 | 241 | all 56 residual rows, exactly |
+  | Table 6 | 36 | `R6_500`'s 12 values, each three ways, to 9 figures |
+  | Table 7 | 44 | p, c_v, w and s at 11 rows, to 9 figures |
+  | Table 8 | 42 | the saturation states at 275, 450 and 625 K, to 9 figures |
+  | p_t | 1 | 611.654 771 Pa, to 9 figures |
+
+- **Terms, verbatim.** "Publication in whole or in part is allowed in all countries provided that attribution is
+  given to the International Association for the Properties of Water and Steam."
+- **§9's first bullet is replaced.** A transcription error shared by CoolProp and `iapws` is now excluded for every
+  coefficient of Tables 1–2 and for T_c, ρ_c, R and T_t. What remains unchecked against print is §15.3's M.
+- **§12's limitations (R-599) for the next manifest.** They are replaced by these:
+  - the terms were read and quoted (`af04961e`);
+  - the rights row is `permitted with conditions` (attribution to IAPWS), following `docs/l01-rights-check.md`'s
+    RC-03 precedent;
+  - Tables 1, 2 and 6–8 are compared, with 0 mismatches;
+  - ADR 0045 is Accepted (2026-10-23);
+  - the coefficient file stays unpackaged (S05.A26) until Frank decides to ship;
+  - `reviewed` covers numerics, not rights.
+
+### 15.2 `R6_647` is a Table 7 row, not "Table 6 point 2"
+
+- The 2018 release's Table 6 has one state: 500 K and 838.025 kg/m³ (`R6_500`).
+- The state 647 K and 358 kg/m³ is a row of Table 7, and the release prints no φ derivatives for it. §5.1's row and
+  §10 Q-1 are corrected in place.
+- What is tested does not change:
+  - `R6_647` stays registered for its stated reason: the Gaussian and non-analytic terms are large there.
+  - Its φ expectations still come from the 50-digit generator, admitted by both external implementations (§6.2).
+    They have no printed counterpart.
+  - Its p, c_v, w and s were compared with Table 7 at `af04961e`.
+- The generator's `PHI_STATES` labels carry the same mislabel (`s05_reference.py` lines 52 and 57). They are corrected
+  by WO-S05-4 item 1.
+
+### 15.3 Where M and p_c come from (new Q-7)
+
+R6-95 prints neither constant. Per the `af04961e` record, the release's R is derived from the R_m and M of its
+references, and p_c is the value of IAPWS's critical-parameters release (R6-95's ref. [2]).
+
+- **p_c = 22.064 MPa.**
+  - *Citation:* IAPWS's release on the critical parameters of ordinary water substance, R2-83(1992), which is R6-95's
+    ref. [2].
+  - *Binding:* the value is also tied to the release-checked formulation by generator claim C7, which is executable.
+    The measurement is p(ρ_c, T_c) = 22 064 000.000 002 13 Pa (`s05_reference.json#/critical/p_eos_at_rhoc_Tc`), a
+    relative deviation of 9.7e-14.
+  - *Why C7's bound suffices:* C7's bound of 1e-5 is below 4.5e-5, the relative size of one unit in p_c's last printed
+    digit. A mistyped p_c therefore makes the generator refuse to emit.
+  - *Conclusion:* T_c, ρ_c, R and every coefficient are release-checked, so p_c's value needs no further fact. It is
+    used in §4.2 step 3 and in the box (§4.3).
+- **M = 0.018015268 kg/mol.**
+  - *Citation:* IAPWS G5-01, the Guideline on the Use of Fundamental Physical Constants and Basic Constants of Water,
+    which gives M for water of VSMOW composition. It has not been compared with a printed copy.
+  - *What M touches:* only the molar–mass conversion. That is v = M/ρ and the molar h, s, c_p, c_v and u: every molar
+    extensive quantity scales by M. T, P, the phase, p_σ, T_σ and every intensive ratio are untouched.
+  - *Why no check sees it:* every release comparison is on the mass basis (molar ÷ M), and every S05 expectation uses
+    the same M. A wrong M would therefore be invisible to every assertion here and to the Tables check. It would show
+    only against another provider's or record's molecular weight for water.
+- **Q-7, needs a fact.** Two questions:
+  - Does IAPWS G5-01 print M = 18.015268 g/mol?
+  - Is R6-95's ref. [2] R2-83(1992), with p_c = 22.064 MPa?
+
+  *Settling measurement:* a person with iapws.org access reads both documents and records them in
+  `docs/C10_DECISIONS.md`.
+  *Default:* cite them as above. Q-7 is **not** a release condition, for three reasons:
+  - p_c's value is bound to the checked formulation (C7);
+  - M's only effect is a common scale on molar extensive quantities, which no comparison with the release can test;
+  - Frank's C10-Q1 condition named the terms and Tables 6–8, and both are satisfied.
+
+  If G5-01 prints another M, M changes by amendment. `data_sha256` then moves and every expectation is regenerated.
+
+### 15.4 Work order WO-S05-4 (build lane, `sonnet-implementer`, about 40k context; after `wp/S05-tables` merges)
+
+1. **Labels.** In `docs/derivations/scripts/s05_reference.py` `PHI_STATES`, change two `why` strings:
+   - `R6_500`'s becomes `"R6-95 Table 6 (its only state), liquid-like; every phi term is non-zero"`;
+   - `R6_647`'s becomes `"R6-95 Table 7 row (no printed phi values), near-critical; the non-analytic terms are large"`.
+
+   Re-emit `s05_reference.json` and confirm that `--check` is OK.
+   *Acceptance:* load the old and the new JSON and delete every `why` member. The two documents must be equal, so only
+   the two strings move. Record that this was run. Re-pin any recorded SHA-256 of the JSON in the same commit.
+2. **Manifest.** In `scripts/s05_evidence_manifest.py`, set `requirements: ["D08"]` (R-614) and write §15.1's
+   limitations. Re-take `evidence/S05/<commit>/manifest.json` and harvest it. Then cite it in `docs/requirements.yaml`
+   under D08's `evidence` and S05's package row.
+3. **Not in this work order:** packaging, the inversion of S05.A26, and any binding.
+
+### 15.5 What this amendment does not establish
+
+- **Permission to ship.** The terms are read, but the decision is Frank's (ADR 0045's release condition).
+- **M from a printed IAPWS source** (Q-7).
+- **Agreement with the release beyond the 385 values of §15.1.** The release's derivative relations (Tables 3–5)
+  were used, not compared.
+- **Anything about accuracy against experiment**, as before (§9).

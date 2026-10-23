@@ -12397,3 +12397,57 @@ defect.
 
 **Rejected.** *Item 3 before the defect clauses* (WO-2's order, chosen so a stubbed non-root makes A14 observable). It
 reports an implementation fault as a scope limit.
+
+---
+
+## R-611 — ADR 0045 is Accepted; `IAPWS95-ref-v1` is written into ADR 0001 D5 and the freeze; shipping stays a release condition
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), ruling round D2 (`docs/briefs/D2-ruling-round.md` item 1) |
+| Normative text | ADR 0045 Status; ADR 0001 D5 item 4; `docs/interfaces-frozen.md` §3 (S05 paragraph); S05 spec §15 |
+| Evidence | `evidence/S05/4ac00a0…` `tested`; `docs/reviews/S05-review.md` and R-600 ("No work order"); Frank 2026-10-23, C10-Q1 "Yes, as described" and C10-Q2 "Always 'vapour'"; `af04961e` (`wp/S05-tables`): R6-95(2018) read, 385 values compared with 0 mismatches, terms quoted |
+| Affected packages | S05; any binding of `iapws95-v1`; any packaging change |
+
+**Decision.**
+- ADR 0045 is Accepted on its five conditions.
+- Spec §8 F-1 is written: `IAPWS95-ref-v1` is a registered convention, not a formation datum, and outside ADR 0011
+  D2's reaction-consistent set.
+- Shipping the coefficient file is a **release** condition, not an acceptance condition:
+  - R-594 and S05.A26 hold until Frank decides to ship;
+  - a decision to ship carries IAPWS's attribution and citation line, and amends R-594.
+- `wp/D2` merges after `wp/S05-tables`, or together with it.
+
+**Rejected alternatives, and why.**
+- *Stay Proposed until Frank's ship decision.* That ties a numerical acceptance to a rights decision. R-599 already
+  separates them ("`reviewed` covers numerics, not rights"), and A26 enforces the release side executably.
+- *Write F-1 into `interfaces-frozen.md` only, as ADR 0026 did.* Spec F-1 names ADR 0001 D5. One list in D5 avoids a
+  third convention being findable only in the freeze file.
+
+---
+
+## R-612 — S05 spec Amendment 2: `R6_647` is a Table 7 row; M and p_c are not in R6-95 (Q-7); WO-S05-4
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), ruling round D2, on the workstation check's two findings (`af04961e`) |
+| Normative text | S05 spec §15.2–§15.4; §5.1 and §10 Q-1 corrected in place |
+| Evidence | R6-95(2018) Table 6 has one state (500 K). The release prints neither M nor p_c. `s05_reference.json#/critical/p_eos_at_rhoc_Tc` = 22 064 000.000 002 13 Pa (relative 9.7e-14 from 22.064 MPa) |
+| Affected packages | S05 (generator labels and manifest re-take, WO-S05-4) |
+
+**Decision.**
+- `R6_647` is relabelled as a Table 7 row with no printed φ values. Nothing tested changes.
+- p_c is cited from the critical-parameters release. Its value is bound to the release-checked formulation by C7,
+  whose 1e-5 bound is below one unit in the last printed digit (4.5e-5). No fact is needed for its value.
+- M is cited from IAPWS G5-01. Comparing it with a printed copy is Q-7, *needs a fact*.
+  - *Default:* not a release condition. M scales molar extensive quantities only, and no release comparison can see
+    it.
+- WO-S05-4 relabels the generator, re-emits the JSON (only the `why` strings may move) and re-takes the manifest with
+  `requirements: ["D08"]`.
+
+**Rejected alternatives, and why.**
+- *Make Q-7 a release condition.* Frank's C10-Q1 condition named the terms and Tables 6–8. M is not a release
+  quantity, and p_c is already bound by C7.
+- *Drop `R6_647`.* It is the only φ state where the Gaussian and non-analytic terms are large.
