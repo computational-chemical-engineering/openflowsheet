@@ -124,20 +124,69 @@ Questions for the design lane (batched for the WO-S07-1b review; none blocks WO-
   `claims/names/C13/count`, and `fluids/H2O/agreement` (26 `s05/*` members added; `s05/lnphi` 5.6e-14 → 4.15e-14
   by B-15's form). No stored value, constant, state or probe moved.
 
-## Handoff: WO-S07-2a (the provider, tier A) — not started (engineer context cap reached after step 0)
+## WO-S07-2a (the provider, tier A; spec §12.2, §16.8–§16.10, §18)
 
-Read: spec §3–§6 (l.123–330), §7 (l.331), §9 + §9.1 (l.391–451), §12.2 (l.506), §16.8–§16.10 (l.972–1052), §18
-(l.1488–1565); S05 §3–§4 and `iapws95.py`'s `_saturation`, `_bracketed_density`, `_metastable_density`, `_rule` as
-the algorithm to generalize (do not import them; `iapws95.PhiJet` import only). Template tests:
-`tests/test_s05_iapws95.py`, `tests/test_s05_envelope.py` (`_starved` for §18.1's row-10 injection).
-- ref layout per fluid: `constants`, `canary`, `phi_states`, `tp_states/<key>` = {phase, values [T, P, h, s, v, Z,
-  cp, lnphi], dT [6], dP [6]}, `saturation/sat_{lo,mid,hi}` = {T, Psat, dPsat_dT, dh_vap, L [T, P, 6], V [T, P, 6]},
-  `tsat/tsat_mid` = {P, Tsat, dTsat_dP}, `band`, `probes` (compact lists, `compact_request` in the generator),
-  `s04_ig`, `verification`, `limitations`. Constants come from `_coolprop_heos_fluids.py` (A01 bitwise).
-- Psat must come from the vapour branch or a non-cancelling Maxwell form (review finding 3): C3H8 `sat_lo` has
-  Z_L = 3.8e-10. If A08/A10 fails there: measure, record here, STOP for a design ruling (no per-state tolerance).
-- A04 at `delta_one` > 1e-12 → stop (§18.6). A17 floor > 1e-11 for any fluid → stop (§9.1). Settle Q-3 (A26(c))
-  and F-5 (T08's provider scan vs the underscore table module).
-- Test env: `/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv`
-  has CoolProp 8.0.0 at the pinned gitrevision plus pytest; run with `PYTHONPATH=$PWD/src:$PWD
-  OPENFLOWSHEET_REQUIRE_COOLPROP=1`.
+Commits `b39a117c` (provider, tests, T07/T08 registrations) and `b36724a6` (B-18, isolated). Status: implemented,
+tested (CoolProp scratch venv, `OPENFLOWSHEET_REQUIRE_COOLPROP=1`): `tests/test_s07_coolprop.py` +
+`tests/test_s07_packaging.py` 417 passed in 13.4 s. Project venv (no CoolProp): T07, T08, S05 envelope, L01 retake,
+S07 tests 443 passed, 265 skipped, 6 failed = T08's C3 harvest check only (below). ruff clean, mypy clean.
+
+- **Measured per fluid** (worst over ref's states; A05 as |Δ|/bound; A17 the FD ratio):
+
+  | fluid | A03 | A04 (`delta_one`) | A05/bound | A08 Psat | A17 floor |
+  | --- | --- | --- | --- | --- | --- |
+  | H2O | 2.5e-15 | 6.2e-14 (2.2e-14) | 1.2e-5 | 3.0e-14 | 3.3e-12 |
+  | CO2 | 1.1e-14 | 1.6e-13 (1.6e-13) | 2.6e-6 | 2.5e-14 | 2.8e-12 |
+  | N2 | 1.5e-15 | 8.0e-14 | 3.7e-6 | 2.9e-15 | 2.1e-12 |
+  | O2 | 1.2e-15 | 8.9e-15 | 4.2e-6 | 1.6e-14 | 3.0e-12 |
+  | Ar | 1.3e-15 | 3.3e-15 | 1.3e-6 | 1.7e-14 | 2.2e-12 |
+  | CH4 | 7.5e-16 | 9.4e-15 | 2.2e-6 | 3.6e-15 | 3.1e-12 |
+  | C2H6 | 2.7e-15 | 3.4e-14 | 1.3e-6 | 6.7e-15 | 3.2e-12 |
+  | C3H8 | 7.8e-16 | 1.6e-14 | 1.3e-5 | 2.7e-14 | 3.2e-12 |
+  | H2 | 4.5e-15 | 3.7e-14 | 1.2e-6 | 1.2e-14 | 1.5e-12 |
+
+  Stop lines not reached: A04 at `delta_one` ≤ 1.6e-13 (< 1e-12, §18.6); A17 floor ≤ 3.3e-12 (< 1e-11, §9.1).
+  **The review's known risk (§18.7) did not materialize:** C3H8 `sat_lo` (Z_L = 3.8e-10) Psat agrees with ref to
+  2.7e-14 (A08 bound 2e-9), from the vapour branch.
+- **B-15 flag: none.** A05, A13 and A23 use S05's test form literally (h within 1e-8·R·T, s within 1e-8·R, lnphi
+  within 1e-8, all absolute; v, Z, cp relative). No S07 assertion uses the "relative or absolute" reading.
+- **Q-3 settled (A26(c)): yes, G4 runs once.** For all nine fluids, a reference-state change after an instance's
+  first evaluation leaves its values bitwise unchanged, and a change before it refuses `coolprop_state_mutated:`.
+  No §5.2 amendment.
+- **F-5 settled: no scan change.** `scripts/t08_support_matrix.py::_scanned_providers` counts a module only if it has
+  a string `PROVIDER_ID`; `_coolprop_heos_fluids.py` has none, imports without error, and is not counted. T08's A20
+  literal now lists `coolprop-heos-v1` and nothing else new.
+- **B-18 — DECISION (A10/A11 below P_lo; `b36724a6`, isolated): for the design lane.** C2H6 and C3H8 have
+  Psat(T_lo) = 32.5 Pa and 4.93e-3 Pa < P_lo = 100 Pa, so `evaluate_phase` refuses (T_lo, Psat) `out_of_domain`
+  (§6.5 row 5) and S05's A10/A11 path cannot run at `sat_lo` (4 failing cases in `b39a117c`). The test now reads both
+  phases from the provider's own saturation state through the property path `evaluate_phase` uses (`_saturation`,
+  `_at` at the root pressure) where Psat < P_lo, and the public path elsewhere. Measured there: C3H8
+  |lnphi_L − lnphi_V| 1.2e-13, h_V − h_L vs ref 2.9e-15, CC 2.6e-14; C2H6 6.0e-15, 4.4e-16, 6.2e-15.
+  Rejected: dropping the state (forbidden); lowering P_lo (a domain change). Alternatives for the ruling: confirm;
+  or amend §7/A10 to define the check at Psat < P_lo. Reversible by `git revert b36724a6`.
+- **B-19 — DECISION (saturation seed):** CoolProp's `ANCILLARIES` (`pS`, `rhoL`, `rhoV`) from the guard-checked
+  JSON, CoolProp's `SaturationAncillaryFunction` forms, with θ = 1 − T/T_c (the EOS critical point) instead of the
+  ancillary's T_r, so θ > 0 on all of (T_lo, T_c) (O2: T_r = 154.581 K < T_c = 154.599 K; the strip probes at
+  T_c(1 − 1e-4) need it). Seeds only (§6.3). Other ancillary kinds (none in tier A) refuse
+  `saturation_not_converged` with the kind named; WO-S07-2b measures tier B. Reversible in `_Ancillary.__call__`.
+- **B-20 — DECISION (A26(c)'s perturbation):** `set_reference_state(name, "NBP")` does not move α° for CH4 (4.97e-14)
+  and H2 (3.9e-11), whose DEF datum is NBP, so the literal probe cannot exercise G4 there. The test uses the first of
+  NBP, ASHRAE, IIR that moves a fresh state's α° by > 1e-3 (NBP: H2O, N2, O2, Ar, C3H8; ASHRAE: CO2, C2H6), else the
+  explicit `set_reference_state(name, 300 K, 100 mol/m³, 1000 J/mol, 10 J/(mol K))` (CH4, H2). Reversible in
+  `MUTATED_SCRIPT.perturb`.
+- **B-21 — DECISION (T08 registration now, as S05's WO-1 did):** the module's `PROVIDER_ID` enters T08's scan, so
+  `scanned_providers` and `LIBRARY_ONLY_PROVIDERS` (`"coolprop-heos-v1": "S07"`) are updated here; otherwise T08 A20
+  fails. T08's C3 harvest check (`test_c3_*`, 6 cases) fails until WO-S07-3's manifest carries a U02 item naming
+  `coolprop-heos-v1` (R-568/R-569). T07: the module's one `@cache` allowlisted (32 → 33).
+- **Build notes.** `helmholtz_jet` keeps one guarded instance per id in a module dict (the jet needs a live
+  `AbstractState`). A guard step that raises reports under its own code (G2, G3, G4). A21 row 11 is injected by an
+  `AbstractState` proxy whose `update` raises (the Cython class cannot be monkeypatched); rows 10 by
+  `MAX_ITERATIONS = 0` on a cold instance, as S05's `_starved`. A27 is an AST check (allowed names on the names bound
+  to CoolProp objects, the forbidden list anywhere, `specify_phase(iphase_gas)` before the first update, `update`
+  only in `_jet`). A32 m1, m2, m5–m8 are source edits loaded as a private module (m7 in A26(c)'s subprocess); m3, m4,
+  m9–m11 replace the instance's fluid record. A24 also checks cp^ig against ref `s04_ig` at 1e-12 (not numbered).
+
+## Handoff: next
+
+WO-S07-2b (tier B) and WO-S07-3 (registration manifest with the U02 item, A29–A31, platform digest). The design lane
+rules on B-18–B-21 (and B-15) at the package review.
