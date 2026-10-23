@@ -507,6 +507,34 @@ CoolProp scratch venv (8.0.0), x86-64, `OPENFLOWSHEET_REQUIRE_COOLPROP=1`. Commi
   `s07_evidence_manifest.py`'s `CI_STEPS` keys on them. The artifact is `s07-a31-report-<x86_64|aarch64>`, mapped
   from `runner.arch` to `platform.machine()`'s spelling, as the report's file name.
 
+## WO-S07-3 (manifest and harvest), 2026-10-24
+
+Build lane. CoolProp scratch venv (8.0.0), x86-64, `OPENFLOWSHEET_REQUIRE_COOLPROP=1`.
+
+- **B-40 — DECISION (ADR 0046 status line):** Q-1 is stated as cross-architecture agreement within spec §20 with the
+  measured worsts of CI run 40000637382 (class T 5.658e-11 of 1e-10; class N 0.0183 of its allowance; class-N Psat
+  1.826e-12 of 1e-10), x86-64 bit-identical, "not bit-identity" (spec §20.9, F-20.1). Docs only.
+- **B-41 — DECISION (C_m and the CI run):** `S07.ci` requires the CI run to be of the measured commit, so C_m is a
+  commit pushed and run in CI before the manifest is generated. The first manifest (C_m `8fc82461`, 64/65) failed
+  `test_evidence_manifests` (angle-bracket placeholder): the generator wrote `REC_OUT=<record>` in two commands and two
+  check values. Fixed to `REC_OUT=record.json` (`7bfab70d`), the first manifest dropped unpushed, CI re-run
+  (40026426736), manifest regenerated. Alternative: edit the JSON by hand (rejected: a manifest is generated, not
+  transcribed). Reversible by: reverting `7bfab70d`.
+- **MEASURED (manifest):** `evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json`: `status: tested`,
+  64 of 65 checks pass (A01-A50, tests, generator at default jobs and `--jobs 1`, licences, measured, digest, CI,
+  G2, S05 suites/generator/G7(b), ruff, format, mypy); `S07.gate` is `unsupported` (the gate runs once before merge).
+  Review fields `pending`; neither `reviewed` nor `released` is claimed.
+- **B-42 — DECISION (harvest classes, build-lane draft for design-lane review):** limitations[0], [1], [3], [4], [7],
+  [8] -> E to U02 (library-only status, domain and refusals, cross-architecture agreement, optional extra);
+  [2], [5], [6], [9], [10], [11], [12] and checks[S07.gate] -> P (provenance, measurements, process). Alternative:
+  [7] and [8] -> P. Reversible by: editing that harvest entry's class and `to`, then `t08_support_matrix.py --emit`.
+- **MEASURED (HARVEST_SIZE):** `matrix.harvest_items()` = (48, 552, 74), was (47, 539, 73). `--emit` regenerated
+  `docs/support-matrix.md`; `--check`: 0 problems. `test_t08_w2_support_envelope.py`, `test_m07a_harvest.py`,
+  `test_t08_w2_inventory.py`, `test_evidence_manifests.py`: 348 passed (T08 C3 passes).
+- HG line: `S07 HG 7bfab70d82fe85717cd1a4471e578255216091cc..HEAD: PASS (14 appended; HARVEST_SIZE (47, 539, 73) -> (48, 552, 74))`.
+- Not done: D08's `evidence:` list in `docs/requirements.yaml` still cites S05 only (the manifest lists D08; WO-S07-3 did
+  not ask for the citation).
+
 ## Handoff: next
 
 The review fixes (§19.8) and WO-S07-NC4 are done (above); A45–A50 and C-strip pass on x86-64. Next: WO-S07-3
