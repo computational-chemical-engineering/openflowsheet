@@ -8,9 +8,9 @@ the CoolProp scratch venv (`requirements-coolprop.lock`, `--no-deps --require-ha
 needs mpmath for the reference generator) and `OPENFLOWSHEET_REQUIRE_COOLPROP=1`:
 
 1. **The S07 tests** (`tests/test_s07_*.py` and `tests/test_m07_mr12_extras_v02.py` for A44; one
-   `pytest --junitxml` run). A test cites the assertions its function name carries (`_aNN`), the
-   near-critical tests by `_nN` (N1..N6 are A45..A50), the refusal probes by their parameter and
-   A44's two git-backed nodes by `CITED_BY_NAME`. `S07.Axx` passes only if at least one node cites
+   `pytest --junitxml` run). A test cites the assertions its function name carries (`_aNN`,
+   `_aNNc`), the near-critical tests by `_nN` (N1..N6 are A45..A50), the refusal probes by their
+   parameter and A44's two git-backed nodes by `CITED_BY_NAME`. `S07.Axx` passes only if at least one node cites
    it and every node citing it passed: a failure, an error or a skip leaves it `fail`. A29's built
    sdist and wheel run with `OFS_S07_BUILD_PYTHON`, a scratch venv holding T08.A43's pinned
    setuptools that this script builds. `S07.tests` also requires that no node of the run skipped.
@@ -112,8 +112,9 @@ REQUIRED_CHECKS = (
     "S07.format",
     "S07.mypy",
 )
-#: An assertion id in a test function's name: `_aNN`, then `_` or the end.
-CITED = re.compile(r"(?:^|_)a(\d{2})(?=_|$)")
+#: An assertion id in a test function's name: `_aNN` (with a part letter, `_a26c`), then `_` or
+#: the end.
+CITED = re.compile(r"(?:^|_)a(\d{2})[a-d]?(?=_|$)")
 #: The near-critical tests (spec §19.7): N1..N6 are A45..A50.
 N_TESTS = re.compile(r"(?:^|_)n(\d)(?=_|$)")
 #: The refusal probes are one parametrized function; the tag is in the parameter id.
@@ -170,8 +171,8 @@ def assertion_table(document: str) -> dict[str, tuple[str, str]]:
 
 def cited(node: str) -> tuple[str, ...]:
     """The assertion ids a test node cites (see the module docstring)."""
-    if node in CITED_BY_NAME:
-        return CITED_BY_NAME[node]
+    if node.startswith("tests/test_m07_"):  # M07's file: only the nodes named above cite
+        return CITED_BY_NAME.get(node, ())
     name, _, parameters = node.rsplit("::", 1)[-1].partition("[")
     found = [f"A{number}" for number in CITED.findall(name)]
     found += [f"A{44 + int(number)}" for number in N_TESTS.findall(name)]
