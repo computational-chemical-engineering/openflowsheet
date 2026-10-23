@@ -469,6 +469,35 @@ CoolProp scratch venv, x86-64, `OPENFLOWSHEET_REQUIRE_COOLPROP=1`. No provider f
   (7 files): 3833 passed, 1 skipped; project venv 766 passed, 3068 skipped. ruff and format clean.
 - **DECISION:** S05 A33 evidence carried in S07's manifest (reviewer default; session, 2026-10-23).
 
+## WO-S07-A31 (spec §20, R-627)
+
+CoolProp scratch venv (8.0.0), x86-64, `OPENFLOWSHEET_REQUIRE_COOLPROP=1`. Commits `38418bd5` (script, tests),
+`ea38e5a3` (CI report artifact), `90ffce71` (ADR 0046 D8 per F-20.1). The digest is not regenerated.
+
+- **Local.** `s07_platform_digest.py --check`: byte-identical. `--report`: `S07 A31 (x86_64): bit-identical`; class T
+  20774 rows, class N 2172, class S 0; 168 class-N pairs (A31c(1)); no A31c/A31d failure.
+  `tests/test_s07_registration.py`: 14 passed, 1 skipped (A29's build, `OFS_S07_BUILD_PYTHON` unset). The tests
+  that read `ci.yml`: 131 passed.
+- **m9 reproduces §20.10:** `refused 0; class-N tp states 36; r_max 7.339 (H2O.NC_L); drho_min 0.0860
+  (OrthoDeuterium); sigma_dT/|dT| 150.4..521.4; max |h|/RT 141.0 (MD4M.L_corner); max |s|/R 93.9 (D4.V_corner)`.
+  σ/max(|q|, s_f) at T_σ,max: v 104–842, Z 22–229, h 9.75–938, s 5.72–603, cp 3.97e3–4.30e4, lnφ 0.668–0.799;
+  relative allowances cp 7.93e-7–8.59e-6, v 2.10e-8–1.69e-7, slope 3.02e-8–1.04e-7; NC TP worst 6.96e-8 (Ar
+  `NC_V` dT.cp); a10 at T_lo/T_mid worst 32.7 (ParaDeuterium VAPOR cp, T_mid); Δh sums 8.27e-7–1.81e-6. The
+  script's σ at T_σ,max equals m9's exactly (largest relative difference 0.0).
+- **B-35 — DECISION (verdict text for a non-row failure; §20.9 gives the failing form only for rows over their
+  allowance):** an A31c/A31d failure, an unclassifiable row or a row-count mismatch uses the failing form, with
+  "bit-identical" where every row matched, "worst -" where no row failed, and "; <k> other failures, first: <msg>".
+  x86-64 not bitwise keeps §20.6's line. Reversible in `verdict()`.
+- **B-36 — DECISION (a12's group):** `quantity()` reads `a12.<u|s>`; the old split gave `a12.16.u` for 273.16 K.
+  Report-only. Reversible in `quantity()`.
+- **B-37 — DECISION (A31c's inputs):** items (3)–(5) read the running machine's recomputed rows; P_lo, P_hi and
+  eps_sigma come from ref's constants (equal to the provider's table for all 123). Alternative: the digest's values.
+- **B-38 — DECISION (σ missing):** a class-N row without σ gets allowance NaN, so any difference there fails (never
+  σ = 0), and A31d fails in any case. Non-finite numbers are written to the JSON report as strings ("inf").
+- **B-39 (CI naming):** the step names `S07 tests (spec §13)` and `S07 A31 line (spec §9, Q-1)` are kept, because
+  `s07_evidence_manifest.py`'s `CI_STEPS` keys on them. The artifact is `s07-a31-report-<x86_64|aarch64>`, mapped
+  from `runner.arch` to `platform.machine()`'s spelling, as the report's file name.
+
 ## Handoff: next
 
 The review fixes (§19.8) and WO-S07-NC4 are done (above); A45–A50 and C-strip pass on x86-64. Next: WO-S07-3
