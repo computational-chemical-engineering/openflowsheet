@@ -12451,3 +12451,27 @@ reports an implementation fault as a scope limit.
 - *Make Q-7 a release condition.* Frank's C10-Q1 condition named the terms and Tables 6–8. M is not a release
   quantity, and p_c is already bound by C7.
 - *Drop `R6_647`.* It is the only φ state where the Gaussian and non-analytic terms are large.
+
+---
+
+## R-613 — S06 §17.4's A04 total-condenser set is made admissible: `bottoms_rate` 0.875, asserted through `validate`
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), ruling round D2 item 2, on the C11 finding (`docs/C11_DECISIONS.md`, after F3) |
+| Normative text | S06 spec §17.5 (amends §17.4's A04 bullet) |
+| Evidence | Exact I6 arithmetic in §17.5. `validate` at `c3f1f44`: 0.55 is refused `infeasible_spec(mass_balance)` at both feeds, and 0.875 returns `None` at both |
+| Affected packages | S06 (one test edit) |
+
+**Decision.**
+- A04's total-condenser set is a condenser purity of A of 0.75 with a reboiler `bottoms_rate` of 0.875.
+- The test asserts admissibility before evaluating the rows.
+- The 0.55 set stays as the refused control.
+
+**Rejected alternatives, and why.**
+- *Record that the row-form test needs no admissible set.* That is true of the row form. But the spec would then
+  register a set validation refuses, and "offered at a total condenser" would rest on a declaration that cannot be
+  made.
+- *Lower the purity instead.* That moves the slot `u − 0.75·F` and the test's expected values. Changing
+  `bottoms_rate` moves only one row constant.
