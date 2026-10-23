@@ -1,0 +1,1530 @@
+{
+  "work_package": "S07",
+  "commit": "7bfab70d82fe85717cd1a4471e578255216091cc",
+  "requirements": [
+    "D08"
+  ],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S07 acceptance: docs/derivations/S07-spec.md §9, §16.10, §17.5, §19.7 (A01-A50) against docs/derivations/scripts/s07_reference.json, check list §13",
+    "case_hash": "9cdf276f04f34818292d2302f58d5c21e8314bb0e0d4c3392c7aa24097836a54",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "OPENFLOWSHEET_REQUIRE_COOLPROP=1 OFS_S07_BUILD_PYTHON=build-venv/bin/python PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/artifacts/s07-tests.junit.xml tests/test_s07_broad.py tests/test_s07_coolprop.py tests/test_s07_near_critical.py tests/test_s07_packaging.py tests/test_s07_registration.py tests/test_m07_mr12_extras_v02.py (build-venv: a scratch venv with setuptools 84.0.0)",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "fd8082cb2eec804ff58c0e66b9ce8c0b564d43803fbaf9e755a65d2e6d0f8bff"
+    },
+    {
+      "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/artifacts/s05-tests.junit.xml tests/test_s05_envelope.py tests/test_s05_iapws95.py tests/test_s05_review_adversarial.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "ecb24636cc1587273d4cbcbb7f3ffa38b7a555e11387a3820a6cb2c1ed34d47a"
+    },
+    {
+      "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python scripts/t07_licence_inventory.py --extra coolprop --out evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/artifacts/s07-coolprop-licences.json",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "a7791ab44446856a1f09deb45ff7524ab061b4274ba7c055852b0f4b46f24a4c"
+    },
+    {
+      "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python docs/derivations/scripts/s07_measurements/wo2b_worsts.py evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/artifacts/s07-wo2b-worsts.json",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "2ee89b2faf42de2fe5af64182ec8dd444412f4aa849cae2cb5e25cd9e2abc81d"
+    },
+    {
+      "cmd": "REC_OUT=record.json PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python -m pytest -q -p no:cacheprovider -p recplug tests/test_s07_broad.py tests/test_s07_coolprop.py tests/test_s07_packaging.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "03cb9b088761b696e9b0e8d9016596977baf4f5525094a74d747273737d728ba"
+    },
+    {
+      "cmd": "REC_OUT=record.json PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python -m pytest -q -p no:cacheprovider -p recplug tests/test_s05_envelope.py tests/test_s05_iapws95.py tests/test_s05_review_adversarial.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "970923a7bcc84381ace1c6e5d0c09d884d2f2e23e8267debf2ec1b8c58c4dc59"
+    },
+    {
+      "cmd": "/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/ruff check src/openflowsheet/thermo/coolprop_heos.py src/openflowsheet/thermo/_coolprop_heos_fluids.py tests/test_s07_broad.py tests/test_s07_coolprop.py tests/test_s07_near_critical.py tests/test_s07_packaging.py tests/test_s07_registration.py scripts/s07_evidence_manifest.py scripts/s07_platform_digest.py docs/derivations/scripts/s07_reference.py docs/derivations/scripts/s07_measurements/recplug.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/ruff format --check src/openflowsheet/thermo/coolprop_heos.py src/openflowsheet/thermo/_coolprop_heos_fluids.py tests/test_s07_broad.py tests/test_s07_coolprop.py tests/test_s07_near_critical.py tests/test_s07_packaging.py tests/test_s07_registration.py scripts/s07_evidence_manifest.py scripts/s07_platform_digest.py docs/derivations/scripts/s07_reference.py docs/derivations/scripts/s07_measurements/recplug.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "75b7030be9d7de96bf4e76e79b1f03f14af8899d169fd8d79564d59167d1ab80"
+    },
+    {
+      "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/mypy",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "4e2859e3af318482d45f7591ca53ca97016f9c6dd8cd0359aa137c41128a03ac"
+    },
+    {
+      "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python docs/derivations/scripts/s07_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "33346730abdd353c0afc59ba2adcffab285c78e50e04ed9514a2da135c925d2a"
+    },
+    {
+      "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python docs/derivations/scripts/s07_reference.py --check --jobs 1",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "37eb689595839ee9e40f11b4492bd75c52176f4df4804ffe3d6e1e4b3233760d"
+    },
+    {
+      "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python docs/derivations/scripts/s05_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "684ac2a5560e2592e173509bb4831273770d78b31a4982b4ab83cc11c448f93a"
+    },
+    {
+      "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python scripts/s07_platform_digest.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "07e60d2422fab320eee820ce23bc7b079b218e8a9bafed91d8ae7b28c0c5d8a7"
+    },
+    {
+      "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python scripts/s07_platform_digest.py --report",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "7e10c538a7a1e939b21e7ef6b27ea7f6d7b85b6f93178e839ebc347ad455aa8a"
+    },
+    {
+      "cmd": "gh run view 40026426736 --json headSha,conclusion,status,url,jobs",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "98b25c1ca5e15aea80cb00f922c18a0a0379dc1fc53f015f08a9c673f3bfffe1"
+    },
+    {
+      "cmd": "gh run view 40026426736 --job 120663666233 --log",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "2f7e2b1aca542e8b95c938107168dc0cf1c6f40e4c45840d5e8f44c0833bcbff"
+    },
+    {
+      "cmd": "gh run view 40026426736 --job 120663666341 --log",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "81a34810fc153d0ac28bbebb7099733cdaae7b807db8efd0f5c57a567b4bfb44"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S07.A01",
+      "description": "The module's per-fluid constants (§6.1, canary included), `FLUID_DATA_SHA256`, R, M, T_red, ρ_red equal ref bitwise",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "ref `constants`, `canary`"
+    },
+    {
+      "id": "S07.A02",
+      "description": "`describe()` per fluid: id, convention, `nTP-v1`, components, phases, the eight properties, `(\"TP\",)`, `derivative_order`, `domain` = the box, `thread_safety` `not_thread_safe`; with CoolProp absent it still answers, with the same identity",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 125,
+        "outcomes": {
+          "passed": 125
+        },
+        "not_passed": []
+      },
+      "expected": "§3.2"
+    },
+    {
+      "id": "S07.A03",
+      "description": "`helmholtz_jet` at `phi_gas`, `phi_liq`, `phi_dilute`, orders ≤ 2, α° and αʳ; `delta_one` for H2O and CO2",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "ref `phi_states`"
+    },
+    {
+      "id": "S07.A04",
+      "description": "The third partials at the same states",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "ref"
+    },
+    {
+      "id": "S07.A05",
+      "description": "`evaluate_phase` at the TP states: h, s, v, Z, cp, lnphi",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "ref `tp_states`"
+    },
+    {
+      "id": "S07.A06",
+      "description": "Their T and P derivatives",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 9,
+        "outcomes": {
+          "passed": 9
+        },
+        "not_passed": []
+      },
+      "expected": "ref"
+    },
+    {
+      "id": "S07.A07",
+      "description": "Every `n_‹id›` derivative is present and 0.0; control: the T derivatives at the same state are non-zero",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "0.0"
+    },
+    {
+      "id": "S07.A08",
+      "description": "`Psat` at `sat_*` and dPsat/dT; dPsat/dP is 0.0",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 141,
+        "outcomes": {
+          "passed": 141
+        },
+        "not_passed": []
+      },
+      "expected": "ref"
+    },
+    {
+      "id": "S07.A09",
+      "description": "`Tsat` at `tsat_mid` and dTsat/dP; dTsat/dT is 0.0",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "ref"
+    },
+    {
+      "id": "S07.A10",
+      "description": "Maxwell on the provider's own Psat, and h_V − h_L",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 369,
+        "outcomes": {
+          "passed": 369
+        },
+        "not_passed": []
+      },
+      "expected": "ref"
+    },
+    {
+      "id": "S07.A11",
+      "description": "Clausius–Clapeyron on the provider's own answers",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 369,
+        "outcomes": {
+          "passed": 369
+        },
+        "not_passed": []
+      },
+      "expected": "itself"
+    },
+    {
+      "id": "S07.A12",
+      "description": "The datum, H2O only: S05 A12 at T_t; control at 450 K",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "not_passed": []
+      },
+      "expected": "ref"
+    },
+    {
+      "id": "S07.A13",
+      "description": "Band probes: answered sets, values, refused phase `phase_not_stable:`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "ref `band`"
+    },
+    {
+      "id": "S07.A14",
+      "description": "`near_critical:` probes for both phases and the flash, with controls",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "§6.5"
+    },
+    {
+      "id": "S07.A15",
+      "description": "The T ≥ T_c label and the (T_σ,max, T_c) strip, with controls",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "§6.5"
+    },
+    {
+      "id": "S07.A16",
+      "description": "The four box-edge probes → `out_of_domain:` for `evaluate_phase`, `Psat`, `Tsat`, `flash`; controls at the exact bounds `ok`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "§6.1"
+    },
+    {
+      "id": "S07.A17",
+      "description": "Central differences of the provider's own values against its derivatives at the TP states and band probes",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "itself"
+    },
+    {
+      "id": "S07.A18",
+      "description": "`no_saturation:` probes, with controls",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "§6.5"
+    },
+    {
+      "id": "S07.A19",
+      "description": "A saturation-only request skips the phase check; with `h` added it does not",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 9,
+        "outcomes": {
+          "passed": 9
+        },
+        "not_passed": []
+      },
+      "expected": "§6.3"
+    },
+    {
+      "id": "S07.A20",
+      "description": "Flash: as S05 A20",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 9,
+        "outcomes": {
+          "passed": 9
+        },
+        "not_passed": []
+      },
+      "expected": "§6.5"
+    },
+    {
+      "id": "S07.A21",
+      "description": "Contract refusals 1, 2, 3, 6 of §6.5, with controls; constructing with an id outside §2.1 raises `ValueError`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 19,
+        "outcomes": {
+          "passed": 19
+        },
+        "not_passed": []
+      },
+      "expected": "§6.5"
+    },
+    {
+      "id": "S07.A22",
+      "description": "Robustness grid per fluid: 24 temperatures spaced evenly from T_lo to T_hi (ends included) × P ∈ {1e2, 1e3, …, P_hi} ∪ {P_hi}. Every non-refused phase is `ok`; `not_converged` and `coolprop_evaluation_failed` never occur; every answer has (∂v/∂P)_T ‹ 0 and cp › 0",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "none"
+    },
+    {
+      "id": "S07.A23",
+      "description": "**Water against S05.** `coolprop-heos-v1` (H2O) at every S05 registered TP, saturation and band state with T ≤ 646.9 K, against `s05_reference.json`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "not_passed": []
+      },
+      "expected": "S05 ref"
+    },
+    {
+      "id": "S07.A24",
+      "description": "**Against S04's ideal-gas parts.** cp^ig = R(1 − τ²α°_ττ) from `helmholtz_jet` at ρ = 1 mol/m³ (α°_ττ does not depend on ρ) against `pr_lib.cp_ig` at 300 and 600 K; control: the same comparison per kilogram fails by > 10×",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 9,
+        "outcomes": {
+          "passed": 9
+        },
+        "not_passed": []
+      },
+      "expected": "`pr_lib`"
+    },
+    {
+      "id": "S07.A25",
+      "description": "Determinism: two calls bitwise equal; provider id and convention on every result; `achieved_accuracy` `exact-double`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "itself"
+    },
+    {
+      "id": "S07.A26",
+      "description": "Guard: (a) CoolProp made unimportable (`sys.modules[\"CoolProp\"] = None` in a subprocess) → every property, `Psat` and flash request refuses `coolprop_unavailable:`, and `helmholtz_jet` raises; (b) a monkeypatched version string → `coolprop_version_mismatch:`; a monkeypatched fluid JSON → `coolprop_data_mismatch:`; (c) in a subprocess, `set_reference_state(‹name›, \"NBP\")` before the first evaluation → `coolprop_state_mutated:`, and after the first evaluation → values unchanged (bitwise)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "not_passed": []
+      },
+      "expected": "§5.2"
+    },
+    {
+      "id": "S07.A27",
+      "description": "\"Helmholtz evaluator only\": the module's AST uses only these CoolProp names: `AbstractState`, `specify_phase`, `iphase_gas`, `update`, `DmolarT_INPUTS`, the twenty partial getters, `get_fluid_param_string`, `get_global_param_string`, `__version__`; and none of `set_reference_state`, `set_config_*`, `add_fluids_as_JSON`, `PropsSI`, `p`, `hmolar`, … appear",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "not_passed": []
+      },
+      "expected": "file"
+    },
+    {
+      "id": "S07.A28",
+      "description": "Identity: `implementation_sha256` and `data_sha256` follow §5.1 exactly; equal with and without CoolProp installed",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "not_passed": []
+      },
+      "expected": "§5.1"
+    },
+    {
+      "id": "S07.A29",
+      "description": "No redistribution: (a) no `PACKAGED` path covers `s07_reference.json` or `docs/derivations/scripts/`; a built wheel and sdist hold no CoolProp file and no fluid JSON; (b) the default wheel's `Requires-Dist` names CoolProp only under the `coolprop` extra; (c) ref's key set equals C3's whitelist",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "not_passed": [],
+        "measured": {
+          "sdist_and_wheel_built_with_setuptools": "84.0.0"
+        }
+      },
+      "expected": "files"
+    },
+    {
+      "id": "S07.A30",
+      "description": "Library-only: absent from `SELECTABLE_BASES`; in `LIBRARY_ONLY_PROVIDERS` as `\"S07\"` and in `scanned_providers`; U02's note names `coolprop-heos-v1`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "not_passed": []
+      },
+      "expected": "R-568, R-569"
+    },
+    {
+      "id": "S07.A31",
+      "description": "**Cross-architecture.** `benchmarks/s07/platform_digest.json` holds, per fluid, the `float.hex` of every A03–A13 answer as produced on x86-64 (a regression fixture, not validation). On each CI architecture the test recomputes the answers and compares them. Outcome (a): bitwise equal on aarch64 → A31 passes as \"bit-identical\". Outcome (b) is §11 Q-1's pre-registered rule",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 8,
+        "outcomes": {
+          "passed": 8
+        },
+        "not_passed": [],
+        "measured": {
+          "this_machine": {
+            "digest_sha256": "a79fb01c08a12decf416274a350be5156b92475c4ea42a94fdbc7b53fa556218",
+            "check": [
+              "benchmarks/s07/platform_digest.json: OK (byte-identical)"
+            ],
+            "report": "S07 A31 (x86_64): bit-identical"
+          },
+          "ci": {
+            "run": "40026426736",
+            "url": "https://github.com/computational-chemical-engineering/openflowsheet/actions/runs/40026426736",
+            "head_sha": "7bfab70d82fe85717cd1a4471e578255216091cc",
+            "status": "completed",
+            "conclusion": "failure",
+            "architectures": {
+              "aarch64": {
+                "job": "check (ubuntu-24.04-arm)",
+                "job_conclusion": "failure",
+                "steps": {
+                  "S07 tests (spec §13)": "success",
+                  "S07 A31 line (spec §9, Q-1)": "success"
+                },
+                "a31_lines": [
+                  "S07 A31 (aarch64): not bit-identical; within spec §20: class T worst ratio 5.658e-11 (R22 a10.T_lo.LIQUID.lnphi_R22) of 1e-10; class N worst 0.0183 (R22 a10.T_sigma_max.Psat) of its allowance; class-N Psat worst 1.826e-12 of 1e-10; 10818 of 22946 rows differ"
+                ]
+              },
+              "x86_64": {
+                "job": "check (ubuntu-latest)",
+                "job_conclusion": "failure",
+                "steps": {
+                  "S07 tests (spec §13)": "success",
+                  "S07 A31 line (spec §9, Q-1)": "success"
+                },
+                "a31_lines": [
+                  "S07 A31 (x86_64): bit-identical"
+                ]
+              }
+            },
+            "parts": {
+              "run_is_of_this_commit": true,
+              "both_architectures": true,
+              "s07_steps_succeeded": true,
+              "a31_line_per_architecture_without_failure": true
+            }
+          }
+        }
+      },
+      "expected": "itself"
+    },
+    {
+      "id": "S07.A32",
+      "description": "Mutation battery, each mutation failing the named assertion: (m1) permute two jet slots (φ_δτ ↔ φ_ττ) → A03 and A05 (cp); (m2) use T_red in place of T_c in the phase rule → A15 for O2; (m3) CODATA R for N2 → A05; (m4) ε_σ = 0 → A13; (m5) omit the `n_‹id›` derivative → A07; (m6) call `update` without `specify_phase` → A27; (m7) skip G4 → A26(c); (m8) hash the raw JSON string instead of the canonical one → A28",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "not_passed": []
+      },
+      "expected": "named"
+    },
+    {
+      "id": "S07.A33",
+      "description": "**The fluid list.** (a) `admitted()` equals ref `fluids` (ids, names, CAS, tier, bound, in order), and every admitted id constructs; (b) each of the 13 excluded fluids, by CoolProp name and by its would-be id, raises `ValueError` whose message contains ref's reason, and `excluded()` equals ref `excluded`; (c) the AST of `coolprop_heos.py` contains no string constant equal to an admitted or excluded CoolProp name or id (the table module is exempt)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "not_passed": []
+      },
+      "expected": "ref"
+    },
+    {
+      "id": "S07.A34",
+      "description": "**Tier and bound are reported.** Per fluid, `describe().uncertainty` begins with `verification: ‹ref's string›`; E fluids carry §16.8's sentence in `numerical_limitations`, and M and T fluids do not; control: no tier-B string begins `independent:`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "ref"
+    },
+    {
+      "id": "S07.A35",
+      "description": "**Published checks.** As §16.5.2: a tier-B fluid reports `published-check` iff its rows qualify; with zero rows no fluid does; the file hash recorded in ref equals the committed file's",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "not_passed": []
+      },
+      "expected": "ref, file"
+    },
+    {
+      "id": "S07.A36",
+      "description": "`requirements.lock`'s SHA-256 is `ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4`, and no line's canonical name is `coolprop`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "not_passed": []
+      },
+      "expected": "no"
+    },
+    {
+      "id": "S07.A37",
+      "description": "`requirements-coolprop.lock` holds exactly one requirement, `CoolProp==8.0.0`, equal to `pyproject.toml`'s `coolprop` extra (`[\"CoolProp==8.0.0\"]`). Its `--hash=sha256:` set is {`8ca1aefd…f611`, `113fc0e9…92fa`} (full values in §17.2), equal to the set of A39's record's `coolprop` wheel SHA-256s. WO-S07-2a adds a clause: the requirement's version equals the provider's pinned version.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "not_passed": []
+      },
+      "expected": "no"
+    },
+    {
+      "id": "S07.A38",
+      "description": "With the extra installed, the closure of the `coolprop` extra minus the closure of `[project].dependencies` is exactly {`coolprop`}, and every base member's installed version equals its `requirements.lock` pin",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "not_passed": []
+      },
+      "expected": "yes"
+    },
+    {
+      "id": "S07.A39",
+      "description": "`docs/s07-coolprop-licences.json` equals §17.3's expected record. `verdict_of` re-judges its row `ok`, its declared licence is in `ALLOWED`, and it has a licence file. With the extra installed, the record re-read from the environment has `failures` = `[]`, and its `distributions` rows (every field but `wheels`) and its `base_members` equal the committed ones. `python` is not compared, because CI's 3.13 patch level may differ from the recording venv's",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "not_passed": []
+      },
+      "expected": "partly (the re-read)"
+    },
+    {
+      "id": "S07.A40",
+      "description": "Each base member of A39 (numpy 2.2.4) is a `distributions` row, at the same version, of both `docs/t08-a30/t08-a30-x86_64.json` and `docs/t08-a30/t08-a30-aarch64.json`. Both records carry `lock_sha256` = `ead4edf1…b9c4` and `verdict.pass` = true",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "not_passed": []
+      },
+      "expected": "no"
+    },
+    {
+      "id": "S07.A41",
+      "description": "The server path is unchanged. `ALLOWED`'s keys are exactly `MIT`, `MIT-0`, `BSD-3-Clause`, `Apache-2.0`, `Apache-2.0 OR BSD-3-Clause`, `PSF-2.0` and `MPL-2.0`. `docs/t07-server-licences.json` has SHA-256 `3052fb332fff417bd861107f71fedbacf813dd3e28ea5c5b40385c4e749dac7b`. `tests/test_t07_server_extra.py` passes unmodified",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "not_passed": []
+      },
+      "expected": "no"
+    },
+    {
+      "id": "S07.A42",
+      "description": "The partition does the work. The same `coolprop` closure, judged without the partition (every row through `verdict_of`), gives `failures` = `[\"numpy: not-allowed\"]`. With the partition it gives `[]` (A39)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "not_passed": []
+      },
+      "expected": "yes"
+    },
+    {
+      "id": "S07.A43",
+      "description": "The helper of §17.4, with CoolProp made unimportable in a subprocess (a `sys.modules[\"CoolProp\"] = None` entry): it skips without the flag and fails with `OPENFLOWSHEET_REQUIRE_COOLPROP=1`, in both cases with §17.4's reason text. In `.github/workflows/ci.yml` (parsed as YAML), the `check` job sets the flag to `\"1\"` for the step that runs `./scripts/check.sh` (on that step or on the job), installs `requirements-coolprop.lock` with `--no-deps --require-hashes` in an earlier step, and runs `t07_licence_inventory.py --extra coolprop`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "not_passed": []
+      },
+      "expected": "no (absence is simulated)"
+    },
+    {
+      "id": "S07.A44",
+      "description": "Ruling M. `mr12_extras_v02` run git-backed as the test does: at `RELEASE_0_2_0_COMMIT` (`5c82b4cc…`) it gives `pass` with `new_since_v0_1_1` = `[\"nlp\"]`. At `HEAD` it gives `fail` with `new_since_v0_1_1` = `[\"coolprop\", \"nlp\"]` and `extras[\"coolprop\"]` = `{\"audit\": null, \"reason\": \"no MR12_AUDITS entry\"}`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "not_passed": []
+      },
+      "expected": "no"
+    },
+    {
+      "id": "S07.A45",
+      "description": "The saturation is non-`None`, with ρ' > ρ_c > ρ'' > 0, for all 123 fluids at T_σ,max and at θ ∈ {2e-4, 1e-4, 5e-5}. Each grid T is moved down by `nextafter` until its computed θ ≥ θ (B-25).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "no"
+    },
+    {
+      "id": "S07.A46",
+      "description": "Where the plain stage converges, `_solve_saturation` returns its root bitwise and never enters the fallback. Identity against the pre-change code is shown by the committed record scripts and digests: S07 35 718 calls, S05 38 010 calls (review finding 4).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "no"
+    },
+    {
+      "id": "S07.A47",
+      "description": "§19.2's table at θ ∈ {1e-2, 2e-4, 1e-4, 5e-5}, wherever both stages converge.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 246,
+        "outcomes": {
+          "passed": 246
+        },
+        "not_passed": []
+      },
+      "expected": "no"
+    },
+    {
+      "id": "S07.A48",
+      "description": "§19.5.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 30,
+        "outcomes": {
+          "passed": 30
+        },
+        "not_passed": []
+      },
+      "expected": "yes (50-digit)"
+    },
+    {
+      "id": "S07.A49",
+      "description": "For 123 fluids × θ ∈ {1.9999e-4, 1e-4, 5e-5, 1e-5, 1e-6, 1e-8, 1e-12} × the four M6 states: the answer is `ok`, (∂v/∂P)_T ‹ 0, cp › 0, and **ρ > ρ_c for LIQUID, ρ < ρ_c for VAPOR**. Continuity at P_hi (LIQUID) and P_lo (VAPOR): \\|v(T_c(1 − 1e-12)) − v(T_c)\\| ≤ 1e-8·v(T_c).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 123,
+        "outcomes": {
+          "passed": 123
+        },
+        "not_passed": []
+      },
+      "expected": "no"
+    },
+    {
+      "id": "S07.A50",
+      "description": "S05: the three M7 strip temperatures at 25 MPa LIQUID and 20 MPa VAPOR are answered and stable, with A49's continuity at T_c. `iapws95._saturation` converges at 273.16 + 0.05·i K up to 647.0 K.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "not_passed": []
+      },
+      "expected": "no"
+    },
+    {
+      "id": "S07.tests",
+      "description": "§13: the S07 tests pass and none skips (CoolProp present, flag set)",
+      "result": "pass",
+      "value": {
+        "nodes": 3485,
+        "outcomes": {
+          "passed": 3485
+        },
+        "skipped": [],
+        "not_passed": []
+      },
+      "expected": "every node passed"
+    },
+    {
+      "id": "S07.generator",
+      "description": "§13: s07_reference.py --check re-derives every claim and byte-compares both outputs",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python docs/derivations/scripts/s07_reference.py --check",
+        "exit_code": 0,
+        "seconds": 329.9,
+        "output": [
+          "wall 327 s, CPU 4742 s; 123 fluids; 1124403 bytes",
+          "all claims passed; s07_reference.json and _coolprop_heos_fluids.py are byte-identical"
+        ],
+        "coolprop": {
+          "version": "8.0.0",
+          "gitrevision": "ae81610e7d23efc57f9d051c8e70a4d66e87537f"
+        },
+        "claims": 338886
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S07.generator_jobs1",
+      "description": "§16.15: the same --check at --jobs 1 (the outputs are byte-identical to --jobs N)",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python docs/derivations/scripts/s07_reference.py --check --jobs 1",
+        "exit_code": 0,
+        "seconds": 4998.7,
+        "output": [
+          "wall 4994 s, CPU 4080 s; 123 fluids; 1124403 bytes",
+          "all claims passed; s07_reference.json and _coolprop_heos_fluids.py are byte-identical"
+        ]
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S07.licences",
+      "description": "§13, §17.3: the licence inventory for the coolprop extra is OK with both wheel hashes",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python scripts/t07_licence_inventory.py --extra coolprop --out evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/artifacts/s07-coolprop-licences.json",
+        "exit_code": 0,
+        "parts": {
+          "exit_code_0": true,
+          "equals_the_committed_record_apart_from_the_wheels": true,
+          "both_wheel_hashes_are_the_locks": true,
+          "no_failures": true
+        },
+        "wheel_sha256": {
+          "aarch64": "113fc0e97f2b64617141d453ddc0439987b32aa3f6f4a45b928b2030c68292fa",
+          "x86_64": "8ca1aefd1873b14f3e7e9122a08a32fe8c62ac03a1fc4496512a31a3bba8f611"
+        },
+        "record_sha256": "14dd6e175eadff052ddd3e751d7ddd0d87bf741c15d3e71f6ebcb64bb457c22e"
+      }
+    },
+    {
+      "id": "S07.measured",
+      "description": "§13, §16.15: fluid count, tiers and bounds, exclusions, published checks and the measured A17 floors and tier-B worsts",
+      "result": "pass",
+      "value": {
+        "fluids": 123,
+        "tiers": {
+          "A": 9,
+          "B": 114
+        },
+        "bounds": {
+          "A/T": 1,
+          "A/M": 8,
+          "B/E": 96,
+          "B/M": 17,
+          "B/T": 1
+        },
+        "per_fluid_tier_and_bound": {
+          "H2O": "A/T",
+          "CO2": "A/M",
+          "N2": "A/M",
+          "O2": "A/M",
+          "Ar": "A/M",
+          "CH4": "A/M",
+          "C2H6": "A/M",
+          "C3H8": "A/M",
+          "H2": "A/M",
+          "1-Butene": "B/E",
+          "Acetone": "B/E",
+          "Ammonia": "B/E",
+          "Benzene": "B/E",
+          "CarbonMonoxide": "B/M",
+          "CarbonylSulfide": "B/E",
+          "Chlorine": "B/E",
+          "cis-2-Butene": "B/E",
+          "CycloHexane": "B/M",
+          "Cyclopentane": "B/E",
+          "CycloPropane": "B/E",
+          "D4": "B/E",
+          "D5": "B/E",
+          "Deuterium": "B/M",
+          "Dichloroethane": "B/E",
+          "DiethylEther": "B/E",
+          "DimethylCarbonate": "B/E",
+          "DimethylEther": "B/E",
+          "Ethanol": "B/M",
+          "EthylBenzene": "B/E",
+          "Ethylene": "B/M",
+          "EthyleneOxide": "B/E",
+          "Fluorine": "B/M",
+          "HeavyWater": "B/T",
+          "HFE143m": "B/E",
+          "HydrogenChloride": "B/E",
+          "HydrogenSulfide": "B/E",
+          "IsoButane": "B/M",
+          "IsoButene": "B/E",
+          "Isohexane": "B/E",
+          "Isopentane": "B/M",
+          "Krypton": "B/M",
+          "m-Xylene": "B/E",
+          "MD3M": "B/E",
+          "MD4M": "B/E",
+          "MDM": "B/E",
+          "Methanol": "B/M",
+          "MethylLinoleate": "B/E",
+          "MethylLinolenate": "B/E",
+          "MethylOleate": "B/E",
+          "MethylPalmitate": "B/E",
+          "MethylStearate": "B/E",
+          "MM": "B/E",
+          "n-Butane": "B/M",
+          "n-Decane": "B/E",
+          "n-Dodecane": "B/E",
+          "n-Hexane": "B/E",
+          "n-Nonane": "B/E",
+          "n-Octane": "B/E",
+          "n-Pentane": "B/M",
+          "n-Perfluorobutane": "B/E",
+          "n-Perfluorohexane": "B/E",
+          "n-Perfluoropentane": "B/E",
+          "n-Undecane": "B/E",
+          "Neon": "B/M",
+          "Neopentane": "B/E",
+          "NitrousOxide": "B/E",
+          "Novec649": "B/E",
+          "o-Xylene": "B/E",
+          "OrthoDeuterium": "B/M",
+          "OrthoHydrogen": "B/M",
+          "p-Xylene": "B/E",
+          "ParaDeuterium": "B/M",
+          "Propylene": "B/M",
+          "PropyleneGlycol": "B/E",
+          "Propyne": "B/E",
+          "R11": "B/E",
+          "R1123": "B/E",
+          "R113": "B/E",
+          "R1130_E": "B/E",
+          "R1132_E": "B/E",
+          "R114": "B/E",
+          "R115": "B/E",
+          "R116": "B/E",
+          "R12": "B/E",
+          "R1224YDZ": "B/E",
+          "R123": "B/E",
+          "R1233zd_E": "B/E",
+          "R1234yf": "B/E",
+          "R1234ze_E": "B/E",
+          "R1234ze_Z": "B/E",
+          "R124": "B/E",
+          "R1243zf": "B/E",
+          "R125": "B/E",
+          "R13": "B/E",
+          "R1336mzz_E": "B/E",
+          "R1336mzz_Z": "B/E",
+          "R134a": "B/E",
+          "R13I1": "B/E",
+          "R14": "B/E",
+          "R141b": "B/E",
+          "R142b": "B/E",
+          "R143a": "B/E",
+          "R152A": "B/E",
+          "R21": "B/E",
+          "R218": "B/E",
+          "R22": "B/E",
+          "R227EA": "B/E",
+          "R23": "B/E",
+          "R236FA": "B/E",
+          "R245ca": "B/E",
+          "R245fa": "B/E",
+          "R32": "B/E",
+          "R365MFC": "B/E",
+          "R40": "B/E",
+          "R41": "B/E",
+          "RC318": "B/E",
+          "SulfurDioxide": "B/E",
+          "SulfurHexafluoride": "B/E",
+          "Tetrahydrofuran": "B/E",
+          "Toluene": "B/E",
+          "trans-2-Butene": "B/E",
+          "VinylChloride": "B/E",
+          "Xenon": "B/E"
+        },
+        "excluded": [
+          [
+            "Air",
+            "S1: EOS[0] is pseudo-pure (a mixture described as a pure fluid)"
+          ],
+          [
+            "D6",
+            "S2: EOS[0] uses IdealGasHelmholtzCP0AlyLee, which has no closed form in S07 §2.2/§16.2 (Q-A1-2)"
+          ],
+          [
+            "Helium",
+            "S3: T_lo >= 0.99*T_c, so the saturation range is below 1 % of T_c"
+          ],
+          [
+            "MD2M",
+            "S4: the near-critical box does not lie inside the domain box"
+          ],
+          [
+            "ParaHydrogen",
+            "S3: T_lo >= 0.99*T_c, so the saturation range is below 1 % of T_c"
+          ],
+          [
+            "R161",
+            "S4: the near-critical box does not lie inside the domain box"
+          ],
+          [
+            "R236EA",
+            "S4: the near-critical box does not lie inside the domain box"
+          ],
+          [
+            "R404A",
+            "S1: EOS[0] is pseudo-pure (a mixture described as a pure fluid)"
+          ],
+          [
+            "R407C",
+            "S1: EOS[0] is pseudo-pure (a mixture described as a pure fluid)"
+          ],
+          [
+            "R410A",
+            "S1: EOS[0] is pseudo-pure (a mixture described as a pure fluid)"
+          ],
+          [
+            "R507A",
+            "S1: EOS[0] is pseudo-pure (a mixture described as a pure fluid)"
+          ],
+          [
+            "SES36",
+            "S1: EOS[0] is pseudo-pure (a mixture described as a pure fluid)"
+          ],
+          [
+            "n-Heptane",
+            "S2: EOS[0] uses IdealGasHelmholtzCP0AlyLee, which has no closed form in S07 §2.2/§16.2 (Q-A1-2)"
+          ]
+        ],
+        "published_check_fluids": 0,
+        "a17": {
+          "tier_a_worst": [
+            3.2549359833612434e-12,
+            "H2O"
+          ],
+          "tier_b_worst": [
+            5.630798489042119e-11,
+            "R22"
+          ],
+          "tier_b_above_1e-11": [
+            "PropyleneGlycol",
+            "R22"
+          ]
+        },
+        "a17_per_fluid": {
+          "H2O": 3.2549359833612434e-12,
+          "CO2": 2.7601517217365207e-12,
+          "N2": 2.0678117087617834e-12,
+          "O2": 2.971338165028247e-12,
+          "Ar": 2.199056997423726e-12,
+          "CH4": 3.115238436963589e-12,
+          "C2H6": 3.1768825623498012e-12,
+          "C3H8": 3.199689203933232e-12,
+          "H2": 1.4772355382581295e-12,
+          "1-Butene": 2.5431318191260722e-14,
+          "Acetone": 1.2667764242341926e-14,
+          "Ammonia": 1.8584480673354458e-14,
+          "Benzene": 3.466971644767983e-14,
+          "CarbonMonoxide": 2.8147783346178185e-14,
+          "CarbonylSulfide": 2.7816432218424983e-14,
+          "Chlorine": 1.8557530751483405e-14,
+          "cis-2-Butene": 2.6275315259733823e-14,
+          "CycloHexane": 8.634230501491738e-14,
+          "Cyclopentane": 4.120533810283964e-14,
+          "CycloPropane": 6.565076229346025e-15,
+          "D4": 5.983211534228978e-14,
+          "D5": 6.576285477051858e-14,
+          "Deuterium": 3.916616749862442e-14,
+          "Dichloroethane": 2.737760607888196e-14,
+          "DiethylEther": 1.7894661578226048e-14,
+          "DimethylCarbonate": 1.9049458081430263e-14,
+          "DimethylEther": 2.2106448318318277e-14,
+          "Ethanol": 1.9369861517742113e-13,
+          "EthylBenzene": 1.686697454194168e-14,
+          "Ethylene": 2.0291291451377918e-13,
+          "EthyleneOxide": 5.1636288078386484e-14,
+          "Fluorine": 2.9199424978733606e-13,
+          "HeavyWater": 1.0079643525659516e-13,
+          "HFE143m": 1.6370736374698357e-14,
+          "HydrogenChloride": 3.214037274233012e-14,
+          "HydrogenSulfide": 2.5644452739884803e-14,
+          "IsoButane": 5.297525981812915e-14,
+          "IsoButene": 2.1279991062213257e-14,
+          "Isohexane": 4.071674380291798e-14,
+          "Isopentane": 9.847888599458302e-15,
+          "Krypton": 7.888036252477429e-15,
+          "m-Xylene": 1.4773975347547345e-14,
+          "MD3M": 8.633542980600014e-14,
+          "MD4M": 5.5569987298917016e-14,
+          "MDM": 5.809693261366064e-14,
+          "Methanol": 3.0865685421993817e-12,
+          "MethylLinoleate": 2.569102928228625e-13,
+          "MethylLinolenate": 2.148203714468002e-14,
+          "MethylOleate": 2.869653435233835e-14,
+          "MethylPalmitate": 1.2500371740285332e-14,
+          "MethylStearate": 4.713291118074031e-15,
+          "MM": 4.192049973812069e-14,
+          "n-Butane": 6.066751675681236e-13,
+          "n-Decane": 1.0259826207560596e-14,
+          "n-Dodecane": 4.669617143064705e-15,
+          "n-Hexane": 2.596485648557502e-14,
+          "n-Nonane": 1.3786810583424493e-14,
+          "n-Octane": 4.1163825532209526e-14,
+          "n-Pentane": 4.594101939802794e-14,
+          "n-Perfluorobutane": 1.2361519684002932e-14,
+          "n-Perfluorohexane": 1.9067025468401258e-14,
+          "n-Perfluoropentane": 1.2007833827742606e-14,
+          "n-Undecane": 8.05480612371339e-15,
+          "Neon": 3.605974159526408e-14,
+          "Neopentane": 1.7211440517789223e-14,
+          "NitrousOxide": 1.8936129263252365e-14,
+          "Novec649": 4.6595014342531256e-14,
+          "o-Xylene": 4.139965430063705e-14,
+          "OrthoDeuterium": 3.916616749862442e-14,
+          "OrthoHydrogen": 2.0453860299754364e-14,
+          "p-Xylene": 1.2069685379927091e-14,
+          "ParaDeuterium": 5.494523129897672e-14,
+          "Propylene": 3.161959003769726e-14,
+          "PropyleneGlycol": 1.0669575151273854e-11,
+          "Propyne": 3.5222465607361793e-14,
+          "R11": 6.362398884864904e-14,
+          "R1123": 1.545525539664533e-14,
+          "R113": 2.89384316656266e-14,
+          "R1130_E": 8.745510474540392e-12,
+          "R1132_E": 2.1475233821027075e-14,
+          "R114": 4.988541087590541e-14,
+          "R115": 1.427725171637872e-14,
+          "R116": 6.186146053815813e-15,
+          "R12": 1.0524020303616726e-14,
+          "R1224YDZ": 3.1452195428942837e-14,
+          "R123": 4.865432161874404e-12,
+          "R1233zd_E": 2.8626967157302673e-14,
+          "R1234yf": 1.3125961347814844e-13,
+          "R1234ze_E": 1.1321470175467306e-14,
+          "R1234ze_Z": 2.4909288336058773e-13,
+          "R124": 3.134435667178027e-14,
+          "R1243zf": 1.9446033376316003e-14,
+          "R125": 2.840302864722936e-14,
+          "R13": 4.991019141201173e-13,
+          "R1336mzz_E": 3.3723657925562414e-14,
+          "R1336mzz_Z": 2.3751783665064835e-14,
+          "R134a": 2.5048078670345425e-14,
+          "R13I1": 1.2143092597497364e-13,
+          "R14": 1.809638792325847e-14,
+          "R141b": 1.6068860577506792e-13,
+          "R142b": 1.983324046596854e-14,
+          "R143a": 1.9483230777144183e-14,
+          "R152A": 6.73988842413965e-12,
+          "R21": 1.3818753102617212e-13,
+          "R218": 1.35510814543458e-14,
+          "R22": 5.630798489042119e-11,
+          "R227EA": 7.346323284656213e-14,
+          "R23": 1.05458533441948e-13,
+          "R236FA": 1.3961134534520292e-14,
+          "R245ca": 5.210595827284657e-14,
+          "R245fa": 6.916734805043494e-14,
+          "R32": 3.26005339869874e-14,
+          "R365MFC": 4.542061147514174e-14,
+          "R40": 2.2385691333258568e-14,
+          "R41": 1.7278032792774196e-14,
+          "RC318": 2.306316327852455e-14,
+          "SulfurDioxide": 2.3569037849166583e-14,
+          "SulfurHexafluoride": 6.52937719869988e-14,
+          "Tetrahydrofuran": 1.6265485465067092e-14,
+          "Toluene": 1.0958263319900683e-14,
+          "trans-2-Butene": 1.0434127724458719e-14,
+          "VinylChloride": 3.5509852875834003e-12,
+          "Xenon": 1.9599445212828464e-14
+        },
+        "tier_b_worsts": [
+          "A03 worst (8.957279362675763e-13, 'R22') of 114",
+          "A04 worst (6.885579110152382e-13, 'MM') of 114",
+          "A05 worst (0.0012547189794450946, 'R22') of 114",
+          "A08 worst (1.1148859613285822e-12, 'R22') of 114",
+          "A09 worst (1.554312234475219e-14, 'R22') of 114",
+          "A17 worst (5.630798489042119e-11, 'R22') of 114"
+        ],
+        "worsts_json_sha256": "0c907316a56867c13ef65a244549b15a918459eacb01a38906d7edc67ba832db",
+        "parts": {
+          "count_123": true,
+          "tiers_9_and_114": true,
+          "excluded_13_with_reasons": true,
+          "published_checks_0": true,
+          "worsts_ran": true,
+          "tier_a_a17_below_1e-11": true
+        }
+      }
+    },
+    {
+      "id": "S07.digest",
+      "description": "§9 A31: the platform digest is the script's x86-64 output and this machine's answers equal it",
+      "result": "pass",
+      "value": {
+        "digest_sha256": "a79fb01c08a12decf416274a350be5156b92475c4ea42a94fdbc7b53fa556218",
+        "check": [
+          "benchmarks/s07/platform_digest.json: OK (byte-identical)"
+        ],
+        "report": "S07 A31 (x86_64): bit-identical"
+      }
+    },
+    {
+      "id": "S07.ci",
+      "description": "§13: the S07 tests and A31's line, on both CI architectures, for this commit",
+      "result": "pass",
+      "value": {
+        "run": "40026426736",
+        "url": "https://github.com/computational-chemical-engineering/openflowsheet/actions/runs/40026426736",
+        "head_sha": "7bfab70d82fe85717cd1a4471e578255216091cc",
+        "status": "completed",
+        "conclusion": "failure",
+        "architectures": {
+          "aarch64": {
+            "job": "check (ubuntu-24.04-arm)",
+            "job_conclusion": "failure",
+            "steps": {
+              "S07 tests (spec §13)": "success",
+              "S07 A31 line (spec §9, Q-1)": "success"
+            },
+            "a31_lines": [
+              "S07 A31 (aarch64): not bit-identical; within spec §20: class T worst ratio 5.658e-11 (R22 a10.T_lo.LIQUID.lnphi_R22) of 1e-10; class N worst 0.0183 (R22 a10.T_sigma_max.Psat) of its allowance; class-N Psat worst 1.826e-12 of 1e-10; 10818 of 22946 rows differ"
+            ]
+          },
+          "x86_64": {
+            "job": "check (ubuntu-latest)",
+            "job_conclusion": "failure",
+            "steps": {
+              "S07 tests (spec §13)": "success",
+              "S07 A31 line (spec §9, Q-1)": "success"
+            },
+            "a31_lines": [
+              "S07 A31 (x86_64): bit-identical"
+            ]
+          }
+        },
+        "parts": {
+          "run_is_of_this_commit": true,
+          "both_architectures": true,
+          "s07_steps_succeeded": true,
+          "a31_line_per_architecture_without_failure": true
+        }
+      }
+    },
+    {
+      "id": "S07.G2",
+      "description": "§19.7 A46 (G2): the S07 record digest after the near-critical change equals the registered one",
+      "result": "pass",
+      "value": {
+        "cmd": "REC_OUT=record.json PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python -m pytest -q -p no:cacheprovider -p recplug tests/test_s07_broad.py tests/test_s07_coolprop.py tests/test_s07_packaging.py",
+        "exit_code": 0,
+        "sha256": "2d95732312c94945c91527854c97f9f7c1f4056bf7b3068a69d7ad944779ceb3",
+        "expected_sha256": "2d95732312c94945c91527854c97f9f7c1f4056bf7b3068a69d7ad944779ceb3",
+        "calls": 42187,
+        "keys": 35890,
+        "expected_keys": 35890,
+        "tests_tail": [
+          "2929 passed in 42.78s"
+        ],
+        "seconds": 43.9
+      },
+      "expected": "2d95732312c94945c91527854c97f9f7c1f4056bf7b3068a69d7ad944779ceb3"
+    },
+    {
+      "id": "S07.S05.suites",
+      "description": "S05 section: the S05 suites pass (S05 A33 evidence carried, 8cab0e15)",
+      "result": "pass",
+      "value": {
+        "nodes": 381,
+        "outcomes": {
+          "passed": 380,
+          "skipped": 1
+        },
+        "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/artifacts/s05-tests.junit.xml tests/test_s05_envelope.py tests/test_s05_iapws95.py tests/test_s05_review_adversarial.py"
+      },
+      "expected": "every node passed or skipped with its reason"
+    },
+    {
+      "id": "S07.S05.generator",
+      "description": "S05 section: s05_reference.py --check is byte-identical",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python docs/derivations/scripts/s05_reference.py --check",
+        "exit_code": 0,
+        "seconds": 4998.7,
+        "output": [
+          "2848 claims passed",
+          "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s07/docs/derivations/scripts/s05_reference.json is byte-identical to the generator's output"
+        ]
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S07.S05.G7b",
+      "description": "S05 section (G7(b)): the S05 record digest equals the one before 8cab0e15",
+      "result": "pass",
+      "value": {
+        "cmd": "REC_OUT=record.json PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/python -m pytest -q -p no:cacheprovider -p recplug tests/test_s05_envelope.py tests/test_s05_iapws95.py tests/test_s05_review_adversarial.py",
+        "exit_code": 0,
+        "sha256": "2bd5e0edc2f1dd001b89d51a313c4fd728481086a2f75493bacd151fccfd7b8e",
+        "expected_sha256": "2bd5e0edc2f1dd001b89d51a313c4fd728481086a2f75493bacd151fccfd7b8e",
+        "calls": 38010,
+        "keys": 22782,
+        "expected_keys": 22782,
+        "tests_tail": [
+          "380 passed, 1 skipped in 27.59s"
+        ],
+        "seconds": 28.3
+      },
+      "expected": "2bd5e0edc2f1dd001b89d51a313c4fd728481086a2f75493bacd151fccfd7b8e"
+    },
+    {
+      "id": "S07.ruff",
+      "description": "ruff check is clean on S07's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/ruff check src/openflowsheet/thermo/coolprop_heos.py src/openflowsheet/thermo/_coolprop_heos_fluids.py tests/test_s07_broad.py tests/test_s07_coolprop.py tests/test_s07_near_critical.py tests/test_s07_packaging.py tests/test_s07_registration.py scripts/s07_evidence_manifest.py scripts/s07_platform_digest.py docs/derivations/scripts/s07_reference.py docs/derivations/scripts/s07_measurements/recplug.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S07.format",
+      "description": "ruff format --check is clean on S07's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/ruff format --check src/openflowsheet/thermo/coolprop_heos.py src/openflowsheet/thermo/_coolprop_heos_fluids.py tests/test_s07_broad.py tests/test_s07_coolprop.py tests/test_s07_near_critical.py tests/test_s07_packaging.py tests/test_s07_registration.py scripts/s07_evidence_manifest.py scripts/s07_platform_digest.py docs/derivations/scripts/s07_reference.py docs/derivations/scripts/s07_measurements/recplug.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S07.mypy",
+      "description": "mypy (the project's configuration) is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/venv/bin/mypy",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S07.gate",
+      "description": "§13: scripts/gate.sh passes before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; the full gate runs once before merge (CLAUDE.md)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/artifacts/s07-tests.junit.xml",
+      "sha256": "a29bad85e8b36c533e8b305d57eee85ac05a0eff3dc7e84e4d6d70f31ba3a859",
+      "description": "JUnit report of the S07 test run (ignored; kept by hash)"
+    },
+    {
+      "path": "evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/artifacts/s05-tests.junit.xml",
+      "sha256": "0d61863271b25114d4a999f661f20bc6fc6d6faf43f961a0e80b872808869211",
+      "description": "JUnit report of the S05 suites (ignored; kept by hash)"
+    },
+    {
+      "path": "docs/derivations/scripts/s07_reference.json",
+      "sha256": "9cdf276f04f34818292d2302f58d5c21e8314bb0e0d4c3392c7aa24097836a54",
+      "description": "the design lane's 50-digit reference values (ref)"
+    },
+    {
+      "path": "src/openflowsheet/thermo/_coolprop_heos_fluids.py",
+      "sha256": "521fc40556d962bc3cf061ae558ee1d97a526abb0ef94a2465c7e87af300f878",
+      "description": "the generated fluid table (FLUID_DATA_SHA256's recipe, A28)"
+    },
+    {
+      "path": "src/openflowsheet/thermo/coolprop_heos.py",
+      "sha256": "64a8632b45486de96f4381fa8976e62bdd6f0415a4bff065d41b558b8d31e131",
+      "description": "the coolprop-heos-v1 provider module (implementation_sha256)"
+    },
+    {
+      "path": "benchmarks/s07/platform_digest.json",
+      "sha256": "a79fb01c08a12decf416274a350be5156b92475c4ea42a94fdbc7b53fa556218",
+      "description": "A31's x86-64 digest (a regression fixture, not validation)"
+    },
+    {
+      "path": "docs/s07-coolprop-licences.json",
+      "sha256": "14dd6e175eadff052ddd3e751d7ddd0d87bf741c15d3e71f6ebcb64bb457c22e",
+      "description": "the coolprop extra's licence record with both wheel SHA-256s"
+    },
+    {
+      "path": "requirements-coolprop.lock",
+      "sha256": "f958daa4691dafb0e69a1428ba6171db849bc763513545f8dbf479c961a9b1ef",
+      "description": "the coolprop extra's hash-pinned lock"
+    },
+    {
+      "path": "benchmarks/s07/published_checks.yaml",
+      "sha256": "99bccf912ec499fd5e7bb3ac5a92dd9e46e911bd5f65cb256df5a7452dc943ed",
+      "description": "published check values (zero rows; A35)"
+    },
+    {
+      "path": "docs/derivations/S07-spec.md",
+      "sha256": "47b4f46b14f5374caa389e40a965ff51d53bcc97a39fe6de060b6b43e9456d81",
+      "description": "the S07 specification the checks are read from"
+    },
+    {
+      "path": "evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/artifacts/s07-g2.rec",
+      "sha256": "2d95732312c94945c91527854c97f9f7c1f4056bf7b3068a69d7ad944779ceb3",
+      "description": "the S07 provider-answer record behind G2 (ignored; kept by hash)"
+    },
+    {
+      "path": "evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/artifacts/s05-g7b.rec",
+      "sha256": "2bd5e0edc2f1dd001b89d51a313c4fd728481086a2f75493bacd151fccfd7b8e",
+      "description": "the S05 provider-answer record behind G7(b) (ignored; by hash)"
+    }
+  ],
+  "limitations": [
+    "`coolprop-heos-v1` is library-only (R-568, R-569, R-621): it is not in revision_binding.SELECTABLE_BASES, so no revision can select it and no development case becomes runnable (U02); it is registered in the T08 envelope's LIBRARY_ONLY_PROVIDERS and its scanned_providers (spec §3.4, A30). Coverage counts are unchanged.",
+    "The provider serves 123 fluids (tier A 9, tier B 114) and refuses 13 by name with a reason (spec §16.1); the full excluded list, each fluid's tier and its bound kind (E, M or T) are in the S07.measured check. Tier B is self-consistent against CoolProp's own EOS, not independent of it: this is numerical verification of an implementation against a formulation, not empirical validation (spec §15).",
+    "0 fluids report `published-check` (spec §16.5.2, A35): no published check values are transcribed (WO-S07-4 is optional and does not gate `tested`).",
+    "The melting lines bound the domain from below only through a run-time estimate T_lo = T_t(1 + 1e-8/Pa P_hi) for the E fluids: no melting line exists in CoolProp 8.0.0 for them, and solid states inside the box are not refused (§16.8, §15); the cryogenic liquids below T_lo are S07b's.",
+    "The near-critical box of each fluid is refused near_critical, and the saturation of the (T_sigma_max, T_c) strip is answered by the second-stage fallback of docs/design/S07-near-critical-saturation.md (A45-A50, R-626); metastable states beyond eps_sigma = 1e-6 are refused phase_not_stable (spec §4, §19).",
+    "A17's floors: tier A at most 3.25e-12 (H2O), tier B at most 5.63e-11 (R22); tier B fluids above 1e-11: PropyleneGlycol, R22. R22 (value noise in `L_corner` h and s) and PropyleneGlycol (cp in `S_dense`, truncation) were accepted by the reviewer (docs/S07_DECISIONS.md F-6, §19.6). Tier B's A03, A05, A08-A11 worsts are in the S07.measured check (spec §16.11).",
+    "Q-3 (spec §5.2, A26(c)): the reference-state guard G4 runs once per instance for all nine tier-A fluids; no §5.2 amendment (docs/S07_DECISIONS.md, WO-S07-2a).",
+    "Q-1 (cross-architecture): x86-64: S07 A31 (x86_64): bit-identical; aarch64: S07 A31 (aarch64): not bit-identical; within spec §20: class T worst ratio 5.658e-11 (R22 a10.T_lo.LIQUID.lnphi_R22) of 1e-10; class N worst 0.0183 (R22 a10.T_sigma_max.Psat) of its allowance; class-N Psat worst 1.826e-12 of 1e-10; 10818 of 22946 rows differ. The spec's pre-registered rule, if not bitwise, is |d| <= 1e-12 max(|x|, s_f) (tier B and NC: 1e-10); ADR 0046's status line states the measured agreement.",
+    "CoolProp is the `coolprop` extra (`CoolProp==8.0.0`, MIT, compiled; the wheels' SHA-256s are recorded in docs/s07-coolprop-licences.json and the lock); it is not bundled, its fluid data are not redistributed (A29), and `requirements.lock` is byte-unchanged (A36). Distribution of a bundle containing CoolProp is a separate decision (ADR 0046).",
+    "Requirements: D08 only (R-614 pattern): `coolprop-heos-v1` is a real provider on the property contract; no unit-model basis selects it (the binding package is a follow-on).",
+    "S05 section (docs/S07_DECISIONS.md, 'S05 A33 evidence carried in S07's manifest'): the S05 suites, `s05_reference.py --check` and the record digest G7(b) after `8cab0e15` (S05's saturation fallback) are checks S07.S05.* of this manifest; S05's merged manifest keeps its own scope and no new S05 manifest is made.",
+    "scripts/gate.sh was not run by this generator (it runs once before merge into main); S07.gate is unsupported here.",
+    "Review: the design lane's reviewer pass (docs/reviews/S07-review.md, R-626) was applied by the review fixes and WO-S07-NC4; the human numerical and process-model review is pending, and this manifest claims neither `reviewed` nor `released`."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
