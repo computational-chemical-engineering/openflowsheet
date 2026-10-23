@@ -138,6 +138,8 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
 
 ## S07 — CoolProp pure-fluid provider (design lane `specifier`, 2026-10-23)
 
+**Answers — Frank, 2026-10-23:** Q-S07-1 "Yes, they wait" (cryogenic liquids → S07b). **Fluid scope: "Broad list now"** — asked whether S07 starts with the nine S04 fluids and adds more later, or includes many more CoolProp fluids now; Frank chose the broad list. The spec is amended accordingly (S07 Amendment 1).
+
 - **Q-S07-1. May the very cold liquids wait for a later package?** The new CoolProp provider answers each of the
   nine fluids only above the temperature where the fluid would freeze at the provider's top pressure (100 MPa; 80 MPa
   for oxygen). That keeps every answer out of the solid region, and it keeps the answered range a simple
