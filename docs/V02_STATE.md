@@ -102,6 +102,8 @@ Amendment 2** (`case_facts-v2.json` 4f5c5a65…, `f1.status` facts_committed, R-
 Frank 2026-10-23: C10-Q2 supercritical → VAPOR; Q-S06-1 no new warning; Q-S06-2 typed failure; C12 keep `pr-lib-v1`
 unshipped (A32 design step parked; shipping needs a clean-up package: drop CAS RNs, constants from primary papers).
 
+**No cloud sessions from 2026-10-23 (Frank); all work is local.** Merged since: wp/S05-tables, wp/D2 (gate PASS `8ac950b1`, 11228 passed). Frank: S05 ships with IAPWS attribution, library only (Q-8). In flight: wp/S05-wo4 + wp/S06-a04, wp/S04-retake (WO-L01-3a); wp/S05-ship (R-616, WO-S05-5) waits for wp/S05-wo4.
+
 **Next actions (in order):**
 1. Design-lane small items: S06 §17.4's F3 set is refused by I6 (`docs/C11_DECISIONS.md`, the A04 test avoids
    `validate`); ADR 0045 acceptance conditions; D08 in `docs/requirements.yaml` does not list S04.

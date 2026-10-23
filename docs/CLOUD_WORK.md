@@ -1,5 +1,8 @@
 # Work packages after 0.2.0, sorted by where they can run
 
+**2026-10-23 (Frank): no more cloud sessions** — that budget is nearly gone. Every package below, cloud or local,
+now runs in workstation sessions; the cloud/local split is kept only as a record of what needs local assets.
+
 0.2.0 is released (tag `v0.2.0`, 2026-10-20). This file sorts the open work by **where it can run**: in a cloud
 session (a fresh clone, no local assets) or only on Frank's workstation. It does not re-plan anything. Package
 order and scope are still those of `docs/implementation-plan.md` §4.5 and the decision register. Starting v0.3 (S01)
