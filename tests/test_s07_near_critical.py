@@ -1,17 +1,19 @@
-"""S07 near-critical saturation and the (T_σ,max, T_c) strip: the gates of design note
-`docs/design/S07-near-critical-saturation.md` (§6), as assertions N1-N3, N5 and N6 (S07 Amendment 3
-numbers them; G4 and G6 belong to the generator, WO-S07-NC4).
+"""S07 near-critical saturation and the (T_σ,max, T_c) strip: spec §19 (Amendment 3, R-626),
+assertions A45-A47, A49 and A50 (the design note's N1-N3, N5 and N6, whose names the test
+functions keep; A48, the 50-digit references, follows the generator's near-critical roots).
 
-- N1 (G1): the saturation exists at T_σ,max and at θ = 1 − T/T_c ∈ {2e-4, 1e-4, 5e-5} for all 123.
-- N2 (G2): where the Newton from the ancillary seeds converges, the answer is bitwise that Newton's
-  and the fallback is never entered.
-- N3 (G3): where both converge, the fallback forced from the same T agrees with the plain root
-  within the Maxwell root's double-precision floor.
-- N5 (G5): every strip state outside the box is answered, mechanically stable, and continuous
-  across T_c.
-- N6 (G7(c), (d)): S05 adopts the strip rule (D5), and its own saturation needs no fallback.
+- A45 (N1): the saturation exists at T_σ,max and at θ = 1 − T/T_c ∈ {2e-4, 1e-4, 5e-5} for all 123.
+- A46 (N2): where the Newton from the ancillary seeds converges, the answer is bitwise that
+  Newton's and the fallback is never entered. Identity against the pre-change code is shown by
+  the committed record scripts `docs/derivations/scripts/s07_measurements/recplug.py` and
+  `cmp.py`, with their digests in `docs/S07_DECISIONS.md`.
+- A47 (N3): where both converge, the fallback forced from the same T agrees with the plain root
+  within §19.2's bounds (the Maxwell root's double-precision floor).
+- A49 (N5): every strip state outside the box is answered, mechanically stable, on its labelled
+  branch, and continuous across T_c.
+- A50 (N6): S05 adopts the strip rule (D5), and its own saturation needs no fallback.
 
-The dense coverage scan (G1 over 40 points per decade, G8's cost) is
+The dense coverage scan (G1 over 40 points per decade, G3, G8's cost) is
 `docs/derivations/scripts/s07_measurements/nc_scan.py`, a measurement with a one-line summary.
 """
 
@@ -169,7 +171,10 @@ def test_n5_the_strip_is_answered_and_continuous_at_t_c(cid: str) -> None:
         t = fluid.t_c * (1.0 - theta)
         assert fluid.t_sigma_max < t < fluid.t_c
         for phase, p in strip_states(fluid):
-            stable_answer(instance, t, p, phase)
+            rho = 1.0 / stable_answer(instance, t, p, phase)
+            # A49's branch check: the bracket (0, rho_max] could give the other branch's root.
+            on_branch = rho > fluid.rho_c if phase == "LIQUID" else rho < fluid.rho_c
+            assert on_branch, f"{phase} at {t!r} K, {p!r} Pa: rho/rho_c = {rho / fluid.rho_c}"
     t_below = fluid.t_c * (1.0 - 1e-12)
     ends: tuple[tuple[Phase, float], ...] = (("LIQUID", fluid.p_hi), ("VAPOR", fluid.p_lo))
     for phase, p in ends:
@@ -178,7 +183,7 @@ def test_n5_the_strip_is_answered_and_continuous_at_t_c(cid: str) -> None:
         assert abs(v_below - v_at) <= CONTINUITY * v_at, (phase, v_below, v_at)
 
 
-# -- N6: S05 (`iapws95.py`) ------------------------------------------------------------------------
+# -- A50 (N6): S05 (`iapws95.py`) ------------------------------------------------------------------
 
 S05 = w.Iapws95Provider()
 #: Design note M7: strip temperatures at which the S05 saturation does not converge, at a liquid
