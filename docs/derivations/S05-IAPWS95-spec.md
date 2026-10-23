@@ -51,6 +51,7 @@ This document establishes:
   doubles. The generator reads the same text as exact decimals.
 - **The provider's copy.** The provider reads `benchmarks/s05/iapws95_coefficients.json`, which is byte-identical to
   this file (S05.A01). Like L01's records, it sits in no `PACKAGED` path until C10-Q1 is answered (§10 Q-1).
+  *(Amended 2026-10-23 by §16, R-616: Frank decided to ship; WO-S05-5 packages it, with IAPWS's attribution in NOTICE.)*
 
 | constant | value | role |
 | --- | --- | --- |
@@ -366,7 +367,7 @@ Expectations are keys of `s05_reference.json`; "ref" below means that file. The 
 | A23 | Determinism: two calls give bitwise-equal results. Every result, refusals included, carries the provider id and the convention; `achieved_accuracy` is `exact-double` | itself | bitwise |
 | A24 | `implementation_sha256` = SHA-256 of `iapws95.py`'s bytes; `data_sha256` = the A01 hash | files | exact |
 | A25 | Library-only: absent from `SELECTABLE_BASES`; registered in `LIBRARY_ONLY_PROVIDERS` and `scanned_providers` (F-2); U02's note names `iapws95-v1` | R-568, R-569 | exact |
-| A26 | Packaging hold: no `PACKAGED` entry covers `benchmarks/s05/`, and a built wheel holds no `iapws95_coefficients.json` | R-594 | exact |
+| A26 | *Superseded by §16.2 (R-616): the assertion is inverted, the file is packaged.* Packaging hold: no `PACKAGED` entry covers `benchmarks/s05/`, and a built wheel holds no `iapws95_coefficients.json` | R-594 | exact |
 | A27 | Generator facts: ref's `coefficients_sha256` equals A01's hash, `claim_count` ≥ 300, and `--check` passed (manifest command) | ref | exact |
 | A28 | Independence: the AST of `s05_reference.py` imports only the standard library and mpmath. No test imports `s05_crosscheck.py`, CoolProp or iapws | files | exact |
 | A29 | Mutation battery, where each mutation must fail the named assertion: (m1) drop Gaussian term 54 → A03 at `R6_647`; (m2) flip the sign of n°₃ → A03; (m3) CODATA R → A05; (m4) ε_σ = 0 → A13; (m5) 647.0 K replaced by T_c in step 3 → A15; (m6) omit the `n_H2O` derivative → A07; (m7) a zero third-order jet → A06 (dcp); (m8) take ln((δ−1)²) at δ = 1 → A03 at `delta_one` | named | each fails |
@@ -742,3 +743,245 @@ references, and p_c is the value of IAPWS's critical-parameters release (R6-95's
 - **Agreement with the release beyond the 385 values of §15.1.** The release's derivative relations (Tables 3–5)
   were used, not compared.
 - **Anything about accuracy against experiment**, as before (§9).
+
+## 16. Amendment 3, 2026-10-23 (design lane, `specifier`; Frank's ship decision; R-616)
+
+**Source.** Frank, 2026-10-23 (`docs/FRANK_QUESTIONS.md`, C10, "Ship decision"): "Yes, ship with attribution". S05 may
+ship in a release with an IAPWS attribution in NOTICE. This meets ADR 0045's release condition and supersedes R-594's
+packaging hold. The terms and the 385-value Tables check are §15.1's. This amendment does not touch §15.4: WO-S05-4
+runs first.
+
+Two constants are used throughout:
+- F = `benchmarks/s05/iapws95_coefficients.json`;
+- H_C = `b9e93877e37874f1b3a483e298a45692e264d70686d4c158372084b96abbe6ed`, F's SHA-256 (A01).
+
+### 16.1 What this amendment establishes
+
+1. A26 is inverted: F is package data, and a built wheel holds it (§16.2).
+2. The attribution that NOTICE and the provider's documentation carry, verbatim (§16.3).
+3. No binding: `iapws95-v1` stays library-only, and A25 is unchanged (§16.4).
+4. The identity consequences (§16.5) and three new assertions, A31–A33 (§16.6). §6.1's thirty assertions become
+   thirty-three.
+5. One recorded erratum (§16.7), one open question (§16.8), one finding (§16.9) and WO-S05-5 (§16.10).
+
+### 16.2 A26, as amended
+
+This row replaces §6.1's A26. Every part is exact (§16.6 gives the reason).
+
+| id | assertion | expectation | tolerance |
+| --- | --- | --- | --- |
+| A26 | Packaged (R-616). (a) F is an entry of `PACKAGED`. Neither `benchmarks/s05` nor any other path below it is an entry or in `DIRECTORIES`. (b) `packaged(F).read_bytes()` equals the repository copy's bytes and hashes to H_C. `src/openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json` is a symbolic link whose target is `../../../../../benchmarks/s05/iapws95_coefficients.json`. (c) Exactly one `package-data` pattern of `pyproject.toml` matches `_data/` + F. (d) A wheel built from HEAD by T08.A43's hook holds exactly one member ending `iapws95_coefficients.json`, namely `openflowsheet/_data/` + F. Its bytes hash to H_C, and no other member lies below `openflowsheet/_data/benchmarks/s05/`. *Controls:* (a)–(c) hold for `benchmarks/m01/components.yaml`; the same wheel holds `openflowsheet/thermo/iapws95.py` and `openflowsheet/_data/benchmarks/m01/components.yaml` | H_C; the paths stated | exact |
+
+Why each part is there:
+- **(a)** A single file entry ships exactly the bytes A01 pins, and nothing placed beside F later.
+- **(b)** The link keeps one repository copy (`resources.py`'s rule). The hash ties the package copy to the
+  release-checked file.
+- **(c)** Without the pattern, setuptools omits the file silently. (a) and (b) would then pass in a checkout while the
+  wheel lacked it.
+- **(d)** It is the only part that sees the artifact. "Exactly one" catches a second copy at another path.
+
+The wheel half keeps today's harness. It needs `OFS_S05_BUILD_PYTHON` and is skipped without it, and a skipped wheel
+node leaves A26 `fail` in the manifest, as now.
+
+### 16.3 The attribution
+
+Three strings, each verbatim from the release's cover page as recorded at `af04961e` (`docs/C10_DECISIONS.md`,
+"TERMS"):
+- **S0** = `© 2018 International Association for the Properties of Water and Steam`. The sign is U+00A9; the PDF's text
+  layer has U+F6D9, a symbol-font glyph.
+- **S1** = `Publication in whole or in part is allowed in all countries provided that attribution is given to the
+  International Association for the Properties of Water and Steam`.
+- **S2** = `Please cite as: International Association for the Properties of Water and Steam, IAPWS R6-95(2018), Revised
+  Release on the IAPWS Formulation 1995 for the Thermodynamic Properties of Ordinary Water Substance for General and
+  Scientific Use (2018)`.
+
+Here and in every check, a string is compared after each run of whitespace is collapsed to one space.
+
+**NOTICE.** Append one empty line and then exactly this block, with LF line endings and a final newline. No existing
+byte changes.
+
+```text
+Third-party data: the IAPWS-95 coefficients
+
+The file openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json
+(repository path benchmarks/s05/iapws95_coefficients.json), read by the
+library-only property provider iapws95-v1, reproduces the coefficients and
+constants of the IAPWS-95 formulation, IAPWS R6-95(2018). That release is
+© 2018 International Association for the Properties of Water and Steam. Its
+terms: "Publication in whole or in part is allowed in all countries provided
+that attribution is given to the International Association for the
+Properties of Water and Steam". Attribution is hereby given to the
+International Association for the Properties of Water and Steam (IAPWS).
+
+Please cite as: International Association for the Properties of Water and
+Steam, IAPWS R6-95(2018), Revised Release on the IAPWS Formulation 1995 for
+the Thermodynamic Properties of Ordinary Water Substance for General and
+Scientific Use (2018).
+```
+
+Measured on this text: the old NOTICE is 1292 bytes with SHA-256
+`11b9cac850433895cdb7e0e012b71d969c097467ca055274e95a338f3802c38f`. The new NOTICE is the old bytes, `\n` and the
+block, with SHA-256 `24790a6d2cf79b6b8c063f383ec2d2bee9105422f4e06d607054ab11ff37dd8a`.
+It contains S0, S1 and S2, and the old NOTICE contains none of them.
+
+**`docs/attributions/iapws95-v1.md`** is the provider's documentation that ADR 0045's release condition asks for. It
+follows the `pr-lib-v1.md` pattern and states:
+- F's two paths, H_C and the provider id;
+- S0, S1 and S2;
+- the release that was read (PDF SHA-256 `512879217b94f4d0741c88cab743d41098268914d538d73e680a736cb1c3aad7`) and the
+  check of 385 values with 0 mismatches (`af04961e`);
+- the transcription route: CoolProp 8.0.0 (MIT), none of whose code or text ships; checked equal to `iapws` 1.5.5
+  (GPL-3), executed only, with nothing copied (R-594);
+- M's citation as Q-7 leaves it (not compared with print);
+- that it states facts and quoted terms, and is not a legal opinion.
+
+**Why NOTICE and not only the attribution file.** `docs/` is not in the wheel. NOTICE is in both artifacts (T08.A31),
+and its bytes equal the repository's (T08.A43).
+
+### 16.4 Binding: none
+
+`iapws95-v1` is not bound. The following are unchanged:
+- `SELECTABLE_BASES`, `MODEL_BASES` and `snapshot.PROVIDER_LINES`;
+- the support envelope's `property_model` block;
+- `LIBRARY_ONLY_PROVIDERS` and `scanned_providers`;
+- the M07 registration, `v0.2-envelope-1`.
+
+A25 holds as written, and it is the executable statement of this section.
+
+**Why.** Binding is not a packaging step. It needs three things this package does not have:
+- **A basis key.** The binder selects a basis by `record_source`, a component-record file. `iapws95-v1` reads a
+  coefficient file and has no record file. L01 §13.4 measured what a non-matching record source does: it selects
+  SYN-001's basis, and the components are refused.
+- **Unit models bound on the basis.** The C1 units are bound on `pr-c1-v1`'s basis. A basis with an empty `model_ids`,
+  as L01 §4.3 plans for `pr-lib-v1`, makes no flowsheet runnable.
+- **F-3's mapping** of W27's `iapws95` method string to `iapws95-v1`, under W27 v2. The W27 v1 files are frozen.
+
+Bound without models, the provider would move the registry's identity, the support matrix and the next envelope, and
+make nothing runnable. Whether a release should offer water as a selectable basis, and spend a package on the basis key
+and the units, is a scope decision. That is Frank's (Q-8).
+
+**What a wheel user gets.** `iapws95-v1`, constructed directly in Python, reading the packaged coefficients. Every
+wheel built since S05 already carries `thermo/iapws95.py` (the old A26's control). From a wheel, its first use raised
+`FileNotFoundError` (`load_coefficients`). Packaging closes that gap.
+
+### 16.5 Identity consequences
+
+**Unchanged (A33):**
+- F, so `iapws95-v1`'s `data_sha256` stays H_C;
+- `src/openflowsheet/thermo/iapws95.py` (SHA-256 `c480f55fa15c97a1b3eb142f755be485ba5025035ae4d4f8bf54935cdbcd8d01`),
+  so `implementation_sha256` is unchanged. The reviewed bytes (manifest `4ac00a0…`, R-600) are the shipped bytes;
+- the generators and their JSON (`docs/derivations/scripts/s05_*`, as WO-S05-4 leaves them);
+- everything else below `src/openflowsheet/`: `thermo/pr_c1.py`, `thermo/pr_lib.py`, `thermo/conventions.py`,
+  `models/c1/*` and `application/revision_binding.py`. So `SELECTABLE_BASES`, `MODEL_BASES` and `list_models_sha256`
+  do not move;
+- `benchmarks/m01/components.yaml` and its `_data` link;
+- `benchmarks/l01/components.yaml`, which stays unpackaged (R-541, R-615);
+- every committed W27 v1 file: `benchmarks/m06/openidaes450/` `registration.json`, `coverage.json`, `case_facts.json`,
+  `dry_illustration.json` and `runs/**`; `benchmarks/m06/w27/snapshot.py` (`PROVIDER_LINES`); every committed snapshot;
+- the journey records `benchmarks/m07/journey/*/journey.json` and `benchmarks/m07/registration.json`;
+- the M02 and M05 dumps below `benchmarks/m02/` and `benchmarks/m05/`;
+- in `benchmarks/t08/support_envelope.yaml`, the `property_model` block and every existing `harvest` row;
+- `schemas/`, `docs/interfaces-frozen.md` and ADR 0001 D5. No interface moves.
+
+**New identities:** none. F and the module already have theirs (A24).
+
+**Moved by WO-S05-5 only:**
+- `openflowsheet.resources.PACKAGED`, by one added file path, and its docstring;
+- `src/openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json`, a new link;
+- `pyproject.toml`, by one `package-data` pattern;
+- NOTICE, by the appended block (§16.3);
+- every sdist and wheel built afterwards, by one member and a new NOTICE. A new build is a new artifact, and no
+  committed record hashes a future build;
+- `tests/test_s05_envelope.py` (A26 inverted; A31 and A32 added) and `tests/test_t08_w4_package_data.py`, whose count
+  of packaged single files goes from 5 to 6;
+- `scripts/s05_evidence_manifest.py` (A26's text, the coefficient artifact's description and one limitation), a new S05
+  manifest, its appended harvest rows, and D08's note in `docs/requirements.yaml`.
+
+**Registry snapshots.** The registry's content does not move (A25, A33). No committed snapshot moves. A snapshot built
+afterwards records a different `git_commit`, as any new build does.
+
+**Rejected alternative.** *Correcting `iapws95.py`'s stale sentences (§16.7) in the same commit.* That moves
+`implementation_sha256` away from the reviewed bytes, with no change in behaviour.
+
+### 16.6 Assertions added
+
+All three are exact. They compare bytes, strings, paths and exceptions, so the roundoff floor is zero and any
+difference is a defect. No tolerance applies.
+
+| id | assertion | expectation | tolerance |
+| --- | --- | --- | --- |
+| A31 | Attribution. (a) NOTICE contains S0, S1 and S2. (b) `docs/C10_DECISIONS.md` contains each of S0, S1 and S2. (c) `docs/attributions/iapws95-v1.md` contains S0, S1, S2, `iapws95-v1`, F and H_C. (d) The wheel's NOTICE member, located as T08.A31 locates it, equals the repository NOTICE's bytes. Whitespace is collapsed as §16.3 says | S0–S2; equal bytes | exact |
+| A32 | The package copy serves the provider. Patch `iapws95._checkout_coefficients` to return `None` and clear `load_coefficients`'s cache: `load_coefficients()` then equals `parse_coefficients(` the repository bytes of F `)`. *Control:* with `iapws95.packaged` also patched to raise `KeyError`, it raises `FileNotFoundError`. The cache is cleared again on exit | equality; the exception | exact |
+| A33 | Identity, a manifest command run once over WO-S05-5's range `<base>..<tip>`. (a) Outside `docs/` and `evidence/`, `git diff --name-status` lists exactly: `M NOTICE`, `M pyproject.toml`, `M src/openflowsheet/resources.py`, `A src/openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json`, `M tests/test_s05_envelope.py`, `M tests/test_t08_w4_package_data.py`, `M scripts/s05_evidence_manifest.py` and `M benchmarks/t08/support_envelope.yaml`. (b) In `support_envelope.yaml`, `property_model` is equal at base and tip, and every `harvest` entry at base is present and unchanged at tip. (c) At tip, NOTICE hashes to `24790a6d…37dd8a` and its first 1292 bytes to `11b9cac8…02c38f` (§16.3). At base, NOTICE contains none of S0, S1 and S2. (d) At tip, `iapws95.py` hashes to `c480f55f…cdbcd8d01` and F to H_C | the list; equality; the hashes | exact |
+
+A31(d) needs the wheel. It runs in A26(d)'s node, and without `OFS_S05_BUILD_PYTHON` it leaves A31 `fail` in the
+manifest.
+
+Why each is in the list:
+- **A31.** (b) catches a typo in the test's literal, because it ties the literal to the recorded quote rather than to
+  the test's own copy. (d) is the only part that sees what a user receives. (a) stays true when a later release appends
+  another attribution, so it is a permanent test. The exact bytes are pinned once, in A33(c).
+- **A32.** An installed package has no checkout, and A32 shows that the coefficients are still read. The control shows
+  that the checkout branch really is disabled, so the pass does not come from the old path. With A26(d), this covers
+  the installed wheel without building a venv that holds every dependency.
+- **A33.** (a) is exact both ways: a forgotten step (no NOTICE edit) fails it, and so does any path the work order was
+  not meant to touch. (c)'s base clause is the control for A31(a): it shows that the old file does not satisfy it. If
+  a path outside (a)'s list must change, this amendment is wrong. Stop and escalate (rule 6); do not widen the list.
+
+### 16.7 Recorded erratum (the R-310 pattern)
+
+From WO-S05-5 on, two passages of `thermo/iapws95.py` are false:
+- lines 14–15: "sits in no `PACKAGED` path until C10-Q1 is answered (R-594), so only a source checkout reads it; an
+  installed package says so on first use";
+- `load_coefficients`'s docstring: "it does not until C10-Q1 is answered, R-594".
+
+They are recorded errata. The module's bytes are the reviewed bytes, and the code they describe already handles both
+cases (package data first, then the checkout). They are corrected with the module's next substantive change, which
+moves `implementation_sha256` anyway.
+
+### 16.8 Open question
+
+- **Q-8, needs the user's preference.** Should a release offer `iapws95-v1` as a basis that a revision can select? That
+  needs its own package with five parts:
+  - a basis key that does not depend on a record file;
+  - unit models bound on the basis;
+  - F-3's W27 v2 mapping;
+  - a support-matrix L-row;
+  - the next envelope's provider list.
+  **Answered — Frank, 2026-10-23: "Library only for now".** No binding in S05; a selectable-basis package is planned later, together with S07 (CoolProp), which raises the same question for many fluids.
+
+  *Default:* no. The provider ships library-only (this amendment). The default is cheap to revisit, because a later
+  binding undoes nothing here.
+
+### 16.9 Finding (for the release package; not written here)
+
+- **F-5.** The first release that carries F is any release cut from `main` after WO-S05-5. Its envelope's `packages`
+  must list S05. Its distribution and data gate (V18, D04) must re-run on the new member and on NOTICE. Its CHANGELOG
+  must name the IAPWS data. `v0.2-envelope-1` covers 0.2.0 only and is unchanged.
+
+### 16.10 WO-S05-5 (build lane, `sonnet-implementer`, ~60k; `wp/S05-pack` from `main` after `wp/S05-wo4` and this)
+
+1. **Package F:** a `PACKAGED` entry after M02's (docstring clause), A26(b)'s link, and the `package-data` pattern
+   `"_data/benchmarks/s05/iapws95_coefficients.json"`; the comments cite R-616.
+2. **Attribution:** append §16.3's block to NOTICE; write `docs/attributions/iapws95-v1.md` as §16.3 lists.
+3. **Tests:** in `test_s05_envelope.py`, §16.2's A26 replaces both A26 tests; add A31 ((d) in the wheel node) and A32;
+   the thirty-assertions test expects 33. In `test_t08_w4_package_data.py`, 5 becomes 6 (comment: R-616).
+4. **Generator** (`s05_evidence_manifest.py`): `ASSERTIONS` = A01–A33; `assertion_table` takes §6.1's rows, replaced or
+   extended by id from §16.2's and §16.6's tables. A33 has no test node: it is judged on its measured half alone, run
+   from `--a33-base <commit>` (absent → `fail`). The coefficient artifact loses "not packaged"; the unpackaged
+   limitation becomes "the coefficient file is package data, with IAPWS's attribution in NOTICE (R-616)".
+5. **Evidence:** re-take the S05 manifest with `OFS_S05_BUILD_PYTHON` set (A26(d), A31(d) run, never skip); harvest;
+   cite it under D08. D08's "Not claimed" keeps `pr-lib-v1` selectable or shipped, and `iapws95-v1` selectable.
+6. **Gates:** the touched tests, `t08_dist.py`, `gate.sh` before merge; `tested`; no `reviewer` pass (A33 is the proof).
+7. **Never** edit `iapws95.py`, F, `s05_reference.py`, `s05_crosscheck.py` or their JSON, `revision_binding.py`,
+   `snapshot.py` or `LIBRARY_ONLY_PROVIDERS`. If A33(a) fails, stop and escalate.
+
+### 16.11 What this amendment does not establish
+
+- **A legal opinion.** The terms are quoted and Frank decided. Whether CoolProp's MIT notice is owed is not decided
+  beyond R-594's reading that the values are IAPWS's, now confirmed against print.
+- **A release.** Packaging puts F in every wheel built from `main`. Releasing is a later act (F-5).
+- **Any binding.** No flowsheet with water becomes runnable, and no W27 coverage count moves.
+- **M from print** (Q-7, unchanged).
+- **Anything numerical.** No value, tolerance or expectation of §6 moves.
+- **An end-to-end run of an installed wheel in a fresh environment.** A26(d) and A32 cover it in two parts.
