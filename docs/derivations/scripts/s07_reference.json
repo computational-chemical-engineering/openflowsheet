@@ -1,6 +1,6 @@
 {
  "claims": {
-  "count": 315273,
+  "count": 337536,
   "names": {
    "C1": {
     "count": 128,
@@ -19,7 +19,7 @@
     "statement": "water equals s05_reference.json at S05's states with T <= 646.9 K: phi partials, TP values and their T and P derivatives, Psat, dPsat/dT, both saturated phases, Tsat and dTsat/dP (values 1e-12, h and s per R T and R, lnphi absolute; derivatives 1e-11)"
    },
    "C13": {
-    "count": 19452,
+    "count": 40731,
     "statement": "identities I1-I9 hold to 1e-30 at every TP and saturation state"
    },
    "C14": {
@@ -49,6 +49,10 @@
    "C2": {
     "count": 130,
     "statement": "CoolProp 8.0.0 at the pinned gitrevision; each fluid_data_sha256 is stable across two reads"
+   },
+   "C20": {
+    "count": 984,
+    "statement": "C-strip (§19.4): at T_sigma,max and T_c (1 - theta), theta in {1e-4, 5e-5, 1e-6}, k changes sign exactly twice on the union of 401 points on (0, rho_max] and 401 on [rho'', rho'], both inside (rho'', rho'), with p_sL > p_c (1 - 4e-3) and p_sV < p_c (1 + 8e-3)"
    },
    "C3": {
     "count": 1251,

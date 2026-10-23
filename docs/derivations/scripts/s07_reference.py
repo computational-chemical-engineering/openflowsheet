@@ -84,6 +84,8 @@ T_SIGMA_FACTOR = "0.9998"  # T_sigma,max = T_c (1 - 2e-4)
 NC_T_HI_FACTOR = "1.002"
 NC_P_LO_FACTOR = "0.996"
 NC_P_HI_FACTOR = "1.008"
+#: C20 (C-strip, §19.4): T_c (1 − θ) at these θ, beside T_sigma,max.
+STRIP_THETAS = (1e-4, 5e-5, 1e-6)
 PROBE_REL = "1e-9"  # the refusal probes' distance from a bound (§7)
 ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]*$")
 
@@ -310,6 +312,10 @@ CLAIM_TEXT = {
     "C17": "the output file is at most 1.5e6 bytes",
     "C18": "kappa >= 1.5 x the largest relative melting slope of the M fluids with T_t >= 20 K",
     "C19": "--emit-fluid-table reproduces the committed _coolprop_heos_fluids.py byte for byte",
+    "C20": "C-strip (§19.4): at T_sigma,max and T_c (1 - theta), theta in {1e-4, 5e-5, 1e-6}, k "
+    "changes sign exactly twice on the union of 401 points on (0, rho_max] and 401 on "
+    "[rho'', rho'], both inside (rho'', rho'), with p_sL > p_c (1 - 4e-3) and "
+    "p_sV < p_c (1 + 8e-3)",
 }
 
 
@@ -669,9 +675,9 @@ class Eos:
         )
         return r
 
-    def saturation(self, temp: Any, seed_l: Any, seed_v: Any) -> tuple[Any, Any]:
-        """Maxwell (I8) by Newton in (rho', rho'')."""
-        tol = mpf(10) ** (6 - mp.dps)
+    def saturation(self, temp: Any, seed_l: Any, seed_v: Any, tol: Any = None) -> tuple[Any, Any]:
+        """Maxwell (I8) by Newton in (rho', rho''); the step tolerance defaults to 1e-(dps - 6)."""
+        tol = mpf(10) ** (6 - mp.dps) if tol is None else tol
         rl, rv = mpf(seed_l), mpf(seed_v)
         for _ in range(200):
             pl, dl, gl = self.sat_terms(temp, rl)
@@ -690,6 +696,78 @@ class Eos:
         else:
             raise ClaimFailedError(f"saturation at T={dbl(temp)!r} did not converge")
         return rl, rv
+
+    def k(self, temp: Any, rho: Any) -> Any:
+        """k = (dp/drho)_T / (RT)."""
+        return self.sat_terms(temp, rho)[1]
+
+    def k_root(self, temp: Any, a: Any, b: Any) -> Any:
+        """The zero of k between a and b, where k(a) and k(b) differ in sign, by bisection."""
+        tol = mpf("1e-25")
+        positive = self.k(temp, a) > 0
+        for _ in range(200):
+            m = (a + b) / 2
+            if (self.k(temp, m) > 0) == positive:
+                a = m
+            else:
+                b = m
+            if abs(b - a) <= tol * abs(b):
+                return (a + b) / 2
+        raise ClaimFailedError(f"the spinodal at T={dbl(temp)!r} did not converge")
+
+    def saturation_free(
+        self, temp: Any, t_c: Any, rho_c: Any, rho_max: Any
+    ) -> tuple[Any, Any, Any, Any]:
+        """Maxwell at T < T_c from no CoolProp seed (§19.5): (rho', rho'', rho_sL, rho_sV).
+
+        The spinodals are found by stepping out of rho_c (where k < 0) in steps that double from
+        rho_c sqrt(theta)/64 until k > 0, then bisecting. The pressure is bisected on g' − g''
+        between the spinodal pressures, the two density roots taken on their stable branches, to
+        1e-6 of the loop's pressure range; the result seeds `saturation`'s Newton. That Newton
+        runs 20 digits above the working precision with the working precision's tolerance: its
+        Jacobian's conditioning grows as theta^(-3/2), about 1e9 at theta = 1e-6. A seed affects
+        the iteration count, not the root.
+        """
+        theta = 1 - temp / t_c
+        claim("C13", theta > 0 and self.k(temp, rho_c) < 0, f"k(rho_c) < 0 at {dbl(temp)!r} K")
+
+        def spinodal(sign: int) -> Any:
+            step = rho_c * mp.sqrt(theta) / 64
+            inner = rho_c
+            for _ in range(60):
+                outer = rho_c + sign * step
+                if not 0 < outer < rho_max:
+                    break
+                if self.k(temp, outer) > 0:
+                    return self.k_root(temp, inner, outer)
+                inner, step = outer, 2 * step
+            raise ClaimFailedError(f"no spinodal on side {sign} at T={dbl(temp)!r}")
+
+        s_v, s_l = spinodal(-1), spinodal(+1)
+        lo, hi = self.pd(temp, s_l)[0], self.pd(temp, s_v)[0]
+        claim("C13", 0 < lo < hi, f"p(rho_sL) < p(rho_sV) at {dbl(temp)!r} K")
+        r_v, r_l = s_v / 2, (s_l + rho_max) / 2
+        width = mpf("1e-6") * (hi - lo)
+        for _ in range(200):
+            mid = (lo + hi) / 2
+            r_v = self.rho_root(temp, mid, r_v, mpf(0), s_v)
+            r_l = self.rho_root(temp, mid, r_l, s_l, rho_max)
+            if self.sat_terms(temp, r_l)[2] > self.sat_terms(temp, r_v)[2]:
+                lo = mid
+            else:
+                hi = mid
+            if hi - lo <= width:
+                break
+        tol = mpf(10) ** (6 - mp.dps)
+        with mp.workdps(mp.dps + 20):
+            rl, rv = self.saturation(temp, r_l, r_v, tol)
+        rl, rv = +rl, +rv
+        claim(
+            "C13",
+            rl >= s_l > rho_c > s_v >= rv > 0,
+            f"rho' >= rho_sL > rho_c > rho_sV >= rho'' at {dbl(temp)!r} K",
+        )
+        return rl, rv, s_l, s_v
 
 
 # -- CoolProp seeds and admission (never an expectation) ------------------------------------------
@@ -1161,6 +1239,8 @@ class Fluid:
 
         # brackets (C8), at 20 digits
         self.brackets(rmax)
+        # C-strip (C20, §19.4), at 50 digits
+        self.c20(rmax)
 
         if self.tier == "A":
             res["s04_ig"] = {}
@@ -1463,6 +1543,51 @@ class Fluid:
                             f"dp/drho > 0 at {temp!r} K, {dbl(r):.6g} mol/m3",
                         )
                 claim("C8", e.pd(t, rmax)[0] > ph, f"p(rho_max, {temp!r} K) > P_hi")
+
+    def sat_free(self, temp: float, rmax: Any) -> tuple[Any, Any, Any, Any]:
+        """The QT-free 50-digit saturation at the double T (`Eos.saturation_free`)."""
+        return self.eos.saturation_free(mpf(temp), self.Tc_mp, self.rhoc_mp, rmax)
+
+    def c20(self, rmax: Any) -> None:
+        """C-strip (§19.4): the D3 root is unique for every strip state outside the box.
+
+        At each temperature k is evaluated on the union of 401 uniform points on (0, rho_max]
+        and 401 on [rho'', rho'] (the second grid resolves the unstable region, about
+        theta^(1/2) rho_c wide, which the first misses near T_c); each sign change is refined by
+        bisection. At T_sigma,max the QT-free saturation is also checked against `sat`'s.
+        """
+        e = self.eos
+        temps = [self.T_smax] + [self.T_c * (1.0 - theta) for theta in STRIP_THETAS]
+        for temp in temps:
+            t = mpf(temp)
+            rl, rv, _, _ = self.sat_free(temp, rmax)
+            if temp == self.T_smax:
+                s = self.sat(temp)
+                agree = max(rel(rl, s["rl"]), rel(rv, s["rv"]))
+                claim("C13", agree < mpf("1e-40"), f"two seeds, one saturation at {temp!r} K")
+            grid = sorted(
+                {rmax * i / 401 for i in range(1, 402)}
+                | {rv + (rl - rv) * i / 400 for i in range(401)}
+            )
+            ks = [e.k(t, r) for r in grid]
+            changes = [
+                e.k_root(t, grid[i], grid[i + 1])
+                for i in range(len(grid) - 1)
+                if (ks[i] > 0) != (ks[i + 1] > 0)
+            ]
+            claim(
+                "C20",
+                len(changes) == 2 and all(rv < r < rl for r in changes),
+                f"k changes sign twice, inside (rho'', rho'), at {temp!r} K "
+                f"({[dbl(r / self.rhoc_mp) for r in changes]} rho_c)",
+            )
+            p_sv, p_sl = (e.pd(t, r)[0] for r in changes)
+            claim(
+                "C20",
+                p_sl > mpf(self.nc_P[0]) and p_sv < mpf(self.nc_P[1]),
+                f"spinodal pressures inside the box's band at {temp!r} K "
+                f"({dbl(p_sl / self.pc_mp):.6f}, {dbl(p_sv / self.pc_mp):.6f} p_c)",
+            )
 
     def c12(self) -> dict[str, float]:
         """C12 (§18.3): water against s05_reference.json at S05's states with T <= 646.9 K.
