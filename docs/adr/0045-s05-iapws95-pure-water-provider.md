@@ -38,6 +38,9 @@ authorise shipping.
 - A new register entry then amends R-594, and S05.A26 is inverted by the same commit.
 - Spec §15 Q-7 (where M comes from) is recorded. It is not a release condition (§15.3).
 
+*Met 2026-10-23 (R-616):* Frank, "Yes, ship with attribution". Spec §16 inverts S05.A26, fixes the NOTICE text
+(S05.A31) and leaves `iapws95-v1` library-only; WO-S05-5 carries it out.
+
 **Reopening.** A later finding that the coefficients disagree with the printed release reopens D2 by amendment. It is
 never absorbed as a silent re-take.
 

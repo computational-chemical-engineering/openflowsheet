@@ -12078,6 +12078,9 @@ single-phase case unserved.
 **Rejected alternatives, and why.** *Shipping on CoolProp's MIT licence alone.* The coefficients are IAPWS's, not
 CoolProp's.
 
+*Superseded by R-616 (2026-10-23):* Frank decided to ship with IAPWS's attribution. The packaging hold and the
+`unresolved` rights row are replaced; the rejected alternative and the executed-only rule for `iapws` stand.
+
 ---
 
 ## R-595 — S05 Newton convergence: a sub-ulp correction is converged; stagnation only for Newton steps ≤ √ε (review F1)
@@ -12534,3 +12537,37 @@ are merged at `tested`. That belongs to the next ledger refresh.
   also wait on F-4.
 - *Expose in source checkouts only.* A wheel would then carry a selectable basis without its records.
 - *Monkeypatch the binder.* That is invisible in the record.
+
+---
+
+## R-616 — S05 ships: the IAPWS-95 coefficient file is package data with IAPWS's attribution in NOTICE; `iapws95-v1` stays library-only (supersedes R-594's hold)
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | Frank (the ship decision); design lane (`specifier`) for what it changes |
+| Normative text | S05 spec §16 (Amendment 3: A26 inverted, A31–A33, WO-S05-5); markers in §2.1 and §6.1; ADR 0045's release condition |
+| Evidence | Frank 2026-10-23, `docs/FRANK_QUESTIONS.md` C10 "Ship decision": "Yes, ship with attribution". Terms and citation line quoted verbatim at `af04961e` (`docs/C10_DECISIONS.md`); Tables check 385 values, 0 mismatches. NOTICE today: 1292 bytes, SHA-256 `11b9cac8…02c38f` |
+| Affected packages | S05 (WO-S05-5, branch `wp/S05-pack`; D08's note); the next release cut from `main` (D04, V18; spec §16.9 F-5) |
+
+**Decision.**
+- `benchmarks/s05/iapws95_coefficients.json` becomes one file entry of `PACKAGED`, with a `_data` link and one
+  `package-data` pattern. A built wheel holds it once, with SHA-256 H_C = `b9e93877…abbe6ed` (S05.A26 as amended).
+- NOTICE gains an appended block that carries IAPWS's copyright line, the terms' attribution sentence and the release's
+  "Please cite as" line, all verbatim. `docs/attributions/iapws95-v1.md` is the provider's documentation (S05.A31).
+- No binding: `SELECTABLE_BASES`, `PROVIDER_LINES`, the support envelope's `property_model`, `LIBRARY_ONLY_PROVIDERS`
+  and `v0.2-envelope-1` are unchanged, and S05.A25 holds as written. Whether a release should make water selectable is
+  Frank's (spec Q-8; default no).
+- `thermo/iapws95.py` and the coefficient file stay byte-identical, so `implementation_sha256` and `data_sha256` do not
+  move. The module's two sentences about the hold are recorded errata (the R-310 pattern, spec §16.7).
+- W27 v1 files, the m01 records, the journey record and every committed snapshot stay byte-unchanged (S05.A33).
+
+**Rejected alternatives, and why.**
+- *Package and bind in one work order.* A binding needs a basis key without a record file, unit models on the basis
+  (none exist) and F-3's W27 v2 mapping. Without models it would move the registry, the support matrix and the next
+  envelope while making nothing runnable.
+- *Ship the directory `benchmarks/s05/`.* A single file entry ships exactly the bytes A01 pins.
+- *Attribution only under `docs/`.* `docs/` is not in the wheel. Frank named NOTICE, and ADR 0045 names "the wheel's
+  notices".
+- *Fix the module's stale docstring in the same commit.* That moves `implementation_sha256` away from the reviewed
+  bytes, with no change in behaviour.
