@@ -484,6 +484,12 @@ CoolProp scratch venv (8.0.0), x86-64, `OPENFLOWSHEET_REQUIRE_COOLPROP=1`. Commi
   relative allowances cp 7.93e-7–8.59e-6, v 2.10e-8–1.69e-7, slope 3.02e-8–1.04e-7; NC TP worst 6.96e-8 (Ar
   `NC_V` dT.cp); a10 at T_lo/T_mid worst 32.7 (ParaDeuterium VAPOR cp, T_mid); Δh sums 8.27e-7–1.81e-6. The
   script's σ at T_σ,max equals m9's exactly (largest relative difference 0.0).
+- **CI run 39994536211 (`553ae6dd`).** x86-64: `S07 A31 (x86_64): bit-identical`; S07 tests passed. aarch64:
+  `S07 A31 (aarch64): not bit-identical; within spec §20: class T worst ratio 5.658e-11 (R22
+  a10.T_lo.LIQUID.lnphi_R22) of 1e-10; class N worst 0.0183 (R22 a10.T_sigma_max.Psat) of its allowance; class-N
+  Psat worst 1.826e-12 of 1e-10; 10818 of 22946 rows differ`. A31a–A31e passed there; `test_a31_the_report` failed
+  because it assumed that only the perturbed row differs (a test bug, not a bound), and it is rewritten to judge
+  against the unperturbed comparison. "Run checks" and default-install: the 6 expected T08 C3 harvest failures.
 - **B-35 — DECISION (verdict text for a non-row failure; §20.9 gives the failing form only for rows over their
   allowance):** an A31c/A31d failure, an unclassifiable row or a row-count mismatch uses the failing form, with
   "bit-identical" where every row matched, "worst -" where no row failed, and "; <k> other failures, first: <msg>".

@@ -366,29 +366,39 @@ def test_a31_the_report(
 ) -> None:
     """§20.9: the report holds every differing row with its class, both values as hex, |d|, the
     allowance, u and the ratio; the worst ratio per `<class>:<quantity>` group, which keeps the a10
-    temperature and reads `lnphi`; and per class the rows compared, differing and failing."""
+    temperature and reads `lnphi`; and per class the rows compared, differing and failing. Judged
+    against the unperturbed comparison, so the test holds whatever the machine's own differences
+    (on aarch64 the perturbed row may already differ, by at most 2.3e-8 of cp: §20.1)."""
     key = "a10.T_sigma_max.LIQUID.cp"
+    base = digest_script.compare(None, measured, machine="aarch64")
     digest = _mutated(
         digest_script,
         measured,
         "H2O",
         key,
-        lambda hexed: (float.fromhex(hexed) * (1.0 + 1e-9)).hex(),
+        lambda hexed: (float.fromhex(hexed) * (1.0 + 1e-7)).hex(),
     )
     result = digest_script.compare(digest, measured, machine="aarch64")
     path = digest_script.write_report(result, tmp_path / "a31.json")
     report = json.loads(path.read_text("utf-8"))
     assert report["verdict"] == result["verdict"] and report["passed"] and report["outcome"] == "b"
-    (row,) = report["rows"]
-    assert row["fluid"] == "H2O" and row["key"] == key and row["class"] == "N"
-    assert float.fromhex(row["x"]) != float.fromhex(row["y"]) and not row["fails"]
+    before = {(row["fluid"], row["key"]) for row in base["rows"]}
+    after = {(row["fluid"], row["key"]) for row in report["rows"]}
+    assert after == before | {("H2O", key)}
+    row = next(row for row in report["rows"] if (row["fluid"], row["key"]) == ("H2O", key))
+    assert row["class"] == "N" and not row["fails"]
+    assert float.fromhex(row["x"]) != float.fromhex(row["y"])
     assert 0.0 < row["u"] < 1.0 and row["u"] == row["delta"] / row["allowance"]
-    assert 1e-10 < row["ratio"] < 2e-9
-    assert list(report["groups"]) == [f"N:{key}"]
-    assert report["classes"]["N"]["differing"] == 1 and report["classes"]["N"]["failing"] == 0
-    assert report["classes"]["T"]["compared"] > 0 and report["class_n_pairs"] == 168
+    assert 7e-8 < row["ratio"] < 1.3e-7
+    assert f"N:{key}" in report["groups"] and report["groups"][f"N:{key}"][0] >= row["ratio"]
+    assert all(group.split(":")[0] in ("T", "N") for group in report["groups"])
+    differing = report["classes"]["N"]["differing"]
+    assert differing == base["classes"]["N"]["differing"] + (("H2O", key) not in before)
+    assert report["classes"]["N"]["failing"] == 0 and report["class_n_pairs"] == 168
+    assert report["classes"]["T"]["compared"] > 0
     assert digest_script.quantity("tp.NC_V.dT.lnphi_H2O") == "tp.dT.lnphi"
     assert digest_script.quantity("a12.273.16.u") == "a12.u"
     lines = digest_script.report_lines(result)
-    assert lines[0] == result["verdict"] and len(lines) == 1 + 3 + 1
+    assert lines[0] == result["verdict"] and lines[1].startswith("  class T: ")
+    assert len(lines) == 1 + 3 + min(20, len(report["rows"]))
     assert sum("S07 A31 (" in line for line in lines) == 1
