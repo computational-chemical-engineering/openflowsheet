@@ -111,6 +111,10 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
 
 **Answers — Frank, 2026-10-23:** C10-Q1 "Yes, as described" (build from the CoolProp-transcribed coefficients, `iapws` as comparison only; nothing ships until a person reads IAPWS's terms and checks Tables 6–8). C10-Q2 "Always 'vapour'" (T ≥ T_c is VAPOR). The S06 answers (Q-S06-1 no new warning; Q-S06-2 typed failure) are recorded on `wp/C11`.
 
+**Ship decision — Frank, 2026-10-23:** "Yes, ship with attribution" — after the workstation Tables check (385 comparisons, 0 mismatches, `af04961e`) and the IAPWS terms quoted ("Publication in whole or in part is allowed in all countries provided that attribution is given to the International Association for the Properties of Water and Steam"). S05 may ship in a release with an IAPWS attribution in NOTICE; this answers ADR 0045's release condition and supersedes R-594's hold (the packaging/binding work order is design-lane, WO-S05-5).
+
+**F-4 (D2, R-615) — open, for the `pr-lib-v1` clean-up package only:** dropping CAS RNs removes W27's identity key, and the shipped m01 file carries five. Not needed until that package starts.
+
 - **C10-Q1. May the IAPWS-95 coefficients ship?** This session could not read IAPWS's terms or the R6-95(2018) tables: iapws.org was refused by the proxy. **Default:** the tests and the provider may be built from the coefficients transcribed from CoolProp (MIT) and checked against `iapws` (GPL-3, used only as a comparison). Nothing ships in a wheel until a person reads the release's terms and confirms the generator's values against Tables 6–8.
 - **C10-Q2. How should a supercritical fluid (T ≥ T_c) be labelled?** **Default:** VAPOR. The alternative is to label by density (LIQUID iff ρ > ρ_c). Either label flips somewhere on a 24 MPa boiler path.
 
