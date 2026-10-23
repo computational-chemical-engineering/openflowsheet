@@ -12632,6 +12632,9 @@ are merged at `tested`. That belongs to the next ledger refresh.
   1e-10, and its P-derivative central differences are off by 1e-4 to 1e-3 (S05 §6.3).
 - *A default dependency.* That puts third-party binaries and data in every install.
 
+*Amended by R-624 (2026-10-23):* CoolProp is not locked in `requirements.lock`, which stays at its registered
+`ead4edf1…`. It is hash-pinned in `requirements-coolprop.lock`, and G19 judges only CoolProp (S07 spec §17).
+
 ---
 
 ## R-619 — S07 identity: architecture-independent hashes over the pinned version and the canonical fluid JSON, plus a run-time guard
@@ -12758,3 +12761,49 @@ package for both providers.
   maximum is too thin for fluids outside the sample.
 - *The full registered-state set for every fluid.* A reference file of several MB, and generic code judged 114 times.
 - *Admit the Aly–Lee fluids (n-Heptane, D6) with a fitted constant.* That copies the expectation from the thing tested.
+
+---
+
+## R-624 — S07 Erratum 1: the `coolprop` extra gets its own hash-pinned lock and `requirements.lock` stays byte-unchanged; G19 judges only what the extra adds, numpy stays T08.A30's, and `ALLOWED` is unchanged; M07's MR-12 test reads at v0.2.0
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), on WO-S07-1a's stop report (build lane, `a882c171`) |
+| Normative text | S07 spec §17 (assertions A36–A44; WO-S07-1a corrected in §17.6) |
+| Evidence | Spec §17.9. Adding CoolProp to `requirements.lock` fails T08.A19(a) (registered hash `ead4edf1…b9c4`; 436 files carry it at `a882c171`). G19's own `closure`/`verdict_of` on `CoolProp==8.0.0`: `coolprop` ok (MIT), `numpy` not-allowed. numpy declares no SPDX expression, and its `License` field's first line is `Copyright (c) 2005-2024, NumPy Developers.`. Its `LICENSE.txt` (x86-64 `c002bd26…bf06`, aarch64 `487cab6f…e8a3`) names the GCC runtime library (GPL-3.0-with-GCC-exception) and libquadmath (LGPL-2.1-or-later), neither of which G19's first-line test sees. CoolProp requires only `numpy>=1.20` and ships no vendored objects. Its wheels: x86-64 `8ca1aefd…f611`, aarch64 `113fc0e9…92fa`. `mr12_extras_v02` git-backed: `pass ["nlp"]` at v0.2.0 `5c82b4cc` and at `b0260e00`, `fail ["coolprop", "nlp"]` at `a882c171` |
+| Affected packages | S07; M07's MR-12 test; the binding follow-on of R-621 (F-7); the next RC gate set (F-8, F-9) |
+| Amends | R-618 (its "locked in `requirements.lock`"); ADR 0046 D2, by a note the design lane writes (spec F-6) |
+
+**Decision.**
+- `requirements.lock` is not edited, and nothing registered moves. `requirements-coolprop.lock` at the root holds one
+  line: `CoolProp==8.0.0` with both wheel hashes. CI's `check` job installs it after the main lock with
+  `--no-deps --require-hashes`. No other job installs it.
+- No bundle's identity needs CoolProp. The provider is library-only (R-621), and its guard and `implementation_sha256`
+  pin CoolProp's version and gitrevision (R-619).
+- `t07_licence_inventory.py --extra coolprop` judges the extra's closure minus the base closure, which is CoolProp
+  alone. It lists base members (numpy 2.2.4) as `base_members` at their lock pins, and A40 ties them to the T08.A30
+  records. `ALLOWED` and the server record are unchanged.
+- In CI, `OPENFLOWSHEET_REQUIRE_COOLPROP=1` turns a missing CoolProp from a skip into a failure.
+- Ruling M. The git-backed `mr12_extras_v02` test judges M07's S9.4 at `RELEASE_0_2_0_COMMIT`, as R-217 and R-456
+  did. Its `HEAD` clause now expects `fail` with `coolprop` lacking an `MR12_AUDITS` entry (A44). The measure is
+  unchanged, and the next release supplies `coolprop`'s entry (F-9).
+- No question for Frank. numpy's GCC runtime is already his ruling (R-135), and the lock follows R-121.
+
+**Rejected alternatives, and why.**
+- *Re-register `requirements.lock` with CoolProp.* It would move `LOCK_SHA256`, T08.A19, L41 and the release records,
+  and demote every registered bundle to `inspected_archived_results` (R-121). It would also contradict ADR 0046's
+  Migration impact, all for a pin that no bundle can use.
+- *Add numpy's first line to `ALLOWED`.* That line is a copyright line, not a licence. G19 would pass two GPL-family
+  texts it cannot see, and would judge the base install again with a weaker tool than T08.A30.
+- *Partition the server extra too.* That moves a committed T07 record for no gain.
+- *An unlocked `pip install CoolProp==8.0.0` in CI.* The installed bytes would then not be tied to the inventoried
+  hashes.
+- *An `MR12_AUDITS["coolprop"]` entry now.* MR-12 v02 is v0.2's measure, and coolprop is not in v0.2. The entry
+  belongs to the next release's MR-12 (F-9).
+- *Dropping the `HEAD` clause.* That silences the tripwire for unaudited extras.
+
+**Watch for.**
+- `make lock` run with CoolProp in the venv. T08.A19(a) and A36 fail.
+- A CoolProp pin change that adds a requirement. A38 fails.
+- A numpy pin change without an A30 refresh. A40 fails.
