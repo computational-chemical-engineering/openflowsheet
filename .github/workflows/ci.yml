@@ -134,7 +134,7 @@ jobs:
           fi
           ./scripts/check.sh
 
-      # S07 (spec §13, §9 A31, Q-1): the S07 tests and A31's one-line outcome on each architecture,
+      # S07 (spec §13, §20 A31): the S07 tests and A31's verdict line on each architecture,
       # as their own steps, so that a run's per-architecture S07 result is readable by
       # scripts/s07_evidence_manifest.py (`--ci-run`) whatever else the full suite above did.
       - name: S07 tests (spec §13)
@@ -148,6 +148,14 @@ jobs:
         env:
           OPENFLOWSHEET_REQUIRE_COOLPROP: "1"
         run: python scripts/s07_platform_digest.py --report
+
+      # S07 (spec §20.9, R-627): A31's per-row report, whatever the outcome.
+      - name: S07 A31 report (spec §20.9)
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: s07-a31-report-${{ runner.arch == 'ARM64' && 'aarch64' || 'x86_64' }}
+          path: evidence/S07/artifacts/a31_report_*.json
 
       # Gate G05's second clause: two-platform structural equality. Each runner emits the R0
       # artifacts blueprint §8.3 promises identical across supported platforms; the `identity`
