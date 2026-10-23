@@ -25,9 +25,15 @@ call. Their forms are CoolProp 8.0.0's `SaturationAncillaryFunction`: the expone
 otherwise, the `rhoLnoexp` kind y = y_r·(1 + Σ nᵢθ^{tᵢ}). One change is made: θ = 1 − T/T_c with
 the EOS's critical temperature (spec §6.1) in place of the ancillary's own T_r, so that θ > 0 on
 all of (T_lo, T_c), where the saturation is needed (the strip below T_c included); for some fluids
-T_r < T_c (O2: 154.581 K against 154.599 K). A seed sets the iteration count, never the converged
-value, which is judged by Maxwell's conditions alone. A fluid whose ancillary is of another kind is
-refused `saturation_not_converged` with the kind named.
+T_r < T_c (O2: 154.581 K against 154.599 K). A seed sets the iteration count, and the converged
+value only within the double-precision floor of the Maxwell root; the root is judged by Maxwell's
+conditions alone. Near T_c the seeds can leave ρ' > ρ_c > ρ'' (design note
+`docs/design/S07-near-critical-saturation.md`): where the Newton from them gives no root, or a seed
+is not a finite positive density, and θ ≥ `THETA_FALLBACK_MIN` = 5e-5, new seeds come from a
+bisection in pressure between the spinodal pressures, and the same Newton polishes them. In the
+strip (T_σ,max, T_c) a state whose saturation does not converge takes the T ≥ T_c density bracket.
+A fluid whose ancillary is of another kind is refused `saturation_not_converged` with the kind
+named.
 
 **The guard** (spec §5.2). At an instance's first evaluation: CoolProp importable (G1), the pinned
 version and gitrevision (G2), the fluid JSON's canonical hash (G3), and the four canary values from
@@ -839,11 +845,14 @@ class CoolPropHeosProvider:
     def _density(
         self, temperature: float, pressure: float, phase: Phase, saturation: _Saturation | None
     ) -> float | None:
-        """The root of the answered phase on its bracket (S05 §4.4, ρ_max for 1250 kg/m³)."""
+        """The root of the answered phase on its bracket (S05 §4.4, ρ_max for 1250 kg/m³).
+        `saturation` is `None` at T ≥ T_c, and in the strip (T_σ,max, T_c) where the saturation
+        does not converge: the bracket is then (0, ρ_max] from min(P/RT, ρ_max) (design note
+        S07-near-critical-saturation, D3)."""
         fluid = self._fluid
         top = fluid.rho_max
         ideal = pressure / (fluid.r * temperature)
-        if saturation is None:  # T ≥ T_c
+        if saturation is None:  # T ≥ T_c, or the strip without a saturation
             return self._bracketed_density(temperature, pressure, 0.0, top, min(ideal, top))
         if phase == "VAPOR":
             if pressure <= saturation.pressure:
@@ -1020,9 +1029,8 @@ class CoolPropHeosProvider:
                 )
             saturation = rule.saturation
             if saturation is None and t < fluid.t_c:
+                # The strip (T_σ,max, T_c): without a saturation, the T ≥ T_c bracket (D3).
                 saturation = self._saturation(t)
-                if saturation is None:
-                    return self._not_converged(f"at {t!r} K")
             rho = self._density(t, p, request.phase, saturation)
             if rho is None:
                 return _refused(
