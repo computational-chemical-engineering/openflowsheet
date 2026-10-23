@@ -59,7 +59,7 @@ this note governs.
   - Published values transcribed from the EOS papers are a mechanism (a data file and claim C16). S07 requires none.
   - Water (against S05) and the nine (against S04's ideal-gas parts) keep their independent cross-checks.
 - **D8 — tier B's cross-architecture stop line** is 1e-10 (spec §16.11), because tier B's jet floor reaches 1.05e-12
-  (R22). Tier A keeps 1e-12.
+  (R22). Tier A keeps 1e-12. *Superseded by spec §20 (R-627): see D8.*
 - **Rights.** The Rights argument below does not depend on the fluid and covers all 123 (spec §16.12).
 
 **Alternatives rejected (Amendment 1).**
@@ -143,10 +143,13 @@ makes no flowsheet binding.
   - CoolProp's numerical output is tested against it, never used for it.
   - Water is judged a second time against S05's reference, whose coefficients match the printed IAPWS release.
   - The ideal-gas parts are compared with the S04 records (2 %, L01.A12).
-- **D8 — Cross-architecture rule** (spec §11 Q-1). Bit-identity on aarch64 is the target, measured by spec A31 in CI.
-  If it does not hold, the pre-registered bound is 1e-12 relative (1e-10 near critical), and the manifest records the
-  measured worst. That is 4 decades inside every reference tolerance. Beyond 1e-12 the build lane stops, and the bound
-  is not loosened.
+- **D8 — Cross-architecture rule** (spec §11 Q-1, §20; R-622, R-627). Bit-identity on aarch64 is the target,
+  measured by spec A31 in CI, and x86-64 must reproduce the digest bitwise. If aarch64 differs, A31 judges each answer
+  by class (spec §20.3). Ordinary answers must agree within 1e-10 of max(|x|, s_f), for both tiers. Near-critical
+  answers (state within 1 % of T_c) get a per-state allowance: the saturation pressure within 1e-10 (G3's near
+  bound), every other answer within 1e-10·max(|x|, s_f) + 2e-10·P|∂q/∂P|_T, its own pressure sensitivity. Reference
+  verdicts are decided by A05–A13 on both architectures, not by A31. Beyond an allowance the build lane stops, and
+  nothing is loosened.
 - **D9 — Library-only** (spec §3.4). The provider is not in `SELECTABLE_BASES`. It is registered under R-568, and its
   limitations go to U02 under R-569. The records-less selectable basis for S05 and S07 is a follow-on package with
   its own ADR.
