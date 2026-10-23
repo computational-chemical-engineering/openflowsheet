@@ -607,17 +607,25 @@ def test_a04_temperature_row() -> None:
 
 def test_a04_purity_at_a_total_condenser() -> None:
     """A04 / S06 §17.4: on M2's structure (total condenser) with condenser purity of A 0.75 and
-    reboiler bottoms rate 0.55, at a state whose columns are distinct dyadic values, the purity
-    definition row is `F·d_A − u·D` exactly and differs from the top vapour's `F·v_2,A − u·V_2`
-    and the reflux's `F·r_A − u·Σ r`. The feed is (1/4, 1/2, 3/8) so that `F` = 9/8 is dyadic
-    and not 1. The row form does not depend on admissibility; this set is refused by I6 (no top
-    product holds `d_A = 0.75 D` with `D = F − 0.55`), so `validate` is not asked."""
-    spec = replace(
-        BASES["M2"],
-        sides=(_feed((0.25, 0.5, 0.375)),),
-        condenser_spec=EndSpecification("purity", 0.75, component="A"),
-    )
-    assert spec.reboiler_spec == EndSpecification("bottoms_rate", 0.55)
+    reboiler bottoms rate 0.875 (R-613), at a state whose columns are distinct dyadic values, the
+    purity definition row is `F·d_A − u·D` exactly and differs from the top vapour's
+    `F·v_2,A − u·V_2` and the reflux's `F·r_A − u·Σ r`. The feed is (1/4, 1/2, 3/8) so that `F` =
+    9/8 is dyadic and not 1. The set is admissible through `validate` at M2's feed and at the
+    test's (S06 §17.5); the former set, bottoms rate 0.55, stays as the refused control
+    (`infeasible_spec(mass_balance)`: no top product holds `d_A = 0.75 D` with `D = F − 0.55`)."""
+    condenser = EndSpecification("purity", 0.75, component="A")
+    for feed in (_feed(), _feed((0.25, 0.5, 0.375))):
+        spec = replace(
+            BASES["M2"],
+            sides=(feed,),
+            condenser_spec=condenser,
+            reboiler_spec=EndSpecification("bottoms_rate", 0.875),
+        )
+        assert validate(spec, PROVIDER, CONTEXT) is None
+        control = replace(spec, reboiler_spec=EndSpecification("bottoms_rate", 0.55))
+        refused = validate(control, PROVIDER, CONTEXT)
+        assert isinstance(refused, CascadeFailure)
+        assert refused.cause == "infeasible_spec(mass_balance)"
     rows = declared_rows(spec, PROVIDER, CONTEXT)
     state: dict[str, float] = {}
     for k, name in enumerate(rows.variable_ids):
