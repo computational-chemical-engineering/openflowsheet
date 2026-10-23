@@ -1,0 +1,2487 @@
+{
+  "after": {
+    "classes": {
+      "ARTIFACT_INCOMPLETE": 0,
+      "CANDIDATE": 0,
+      "COMPONENT_UNAVAILABLE": 6,
+      "NOT_STEADY_STATE_SIMULATION": 32,
+      "PROPERTY_ROUTE_UNAVAILABLE": 3,
+      "UNIT_UNAVAILABLE": 184
+    },
+    "component_reasons_by_subject": {
+      "ADM1": 1,
+      "ADM1 liquid and vapor components": 1,
+      "ADM1 soluble and particulate components": 2,
+      "ASM2d": 1,
+      "Al": 4,
+      "Al2O3": 4,
+      "Al_o": 2,
+      "BTEX": 2,
+      "B[OH]3": 1,
+      "B[OH]4_-": 1,
+      "C4H10": 4,
+      "CH3OH": 4,
+      "CO": 6,
+      "CO3--": 1,
+      "COD": 3,
+      "Ca": 4,
+      "Ca++": 1,
+      "Ca2+": 2,
+      "CaO": 4,
+      "CaSO4": 1,
+      "Ca_2+": 2,
+      "Ca_o": 2,
+      "Ce": 4,
+      "Ce2O3": 2,
+      "Cl": 2,
+      "Cl-": 8,
+      "Cl_-": 8,
+      "Co": 2,
+      "Co2+": 1,
+      "CoOH2": 1,
+      "Cu": 1,
+      "Cu++": 1,
+      "Cu2+": 1,
+      "DOC": 1,
+      "Dy": 4,
+      "Dy2O3": 2,
+      "Fe": 5,
+      "Fe+++": 2,
+      "Fe2O3": 4,
+      "Fe3+": 2,
+      "Fe_o": 2,
+      "Fe_rich_alloy": 1,
+      "GAC": 1,
+      "Gd": 4,
+      "Gd2O3": 2,
+      "H": 1,
+      "H+": 2,
+      "H2S": 3,
+      "H2SO4": 3,
+      "HCO3_-": 7,
+      "HCl": 1,
+      "HSO4": 1,
+      "H_+": 3,
+      "K_+": 2,
+      "La": 4,
+      "La2O3": 2,
+      "Li": 2,
+      "Li+": 7,
+      "Li2CO3": 3,
+      "Li_+": 2,
+      "MEA": 6,
+      "MEACOO_-": 5,
+      "MEA_+": 5,
+      "Mg": 2,
+      "Mg++": 3,
+      "Mg2+": 2,
+      "Mg_2+": 4,
+      "NH4": 4,
+      "NH4+": 3,
+      "NO3": 2,
+      "NO3-": 2,
+      "NOx": 1,
+      "N_product": 1,
+      "Na+": 8,
+      "NaCl": 29,
+      "NaOH": 2,
+      "Na_+": 7,
+      "Nd": 6,
+      "Nd2Fe14B": 1,
+      "Nd2O3": 2,
+      "NdFeB": 1,
+      "Nd_rich_alloy": 1,
+      "Ni2+": 1,
+      "NiOH2": 1,
+      "None": 39,
+      "OH-": 3,
+      "OH_-": 3,
+      "PO4": 2,
+      "PO4---": 1,
+      "P_product": 1,
+      "Pr": 4,
+      "Pr2O3": 2,
+      "REE oxalate": 2,
+      "REE oxides": 2,
+      "REE+++": 1,
+      "REE3+": 1,
+      "REE_o": 2,
+      "REO": 2,
+      "SO2": 2,
+      "SO4": 4,
+      "SO4_2-": 2,
+      "S_A": 1,
+      "S_ALK": 4,
+      "S_F": 1,
+      "S_I": 5,
+      "S_IC": 2,
+      "S_IN": 2,
+      "S_N2": 1,
+      "S_ND": 4,
+      "S_NH": 4,
+      "S_NH4": 1,
+      "S_NO": 4,
+      "S_NO3": 1,
+      "S_O": 4,
+      "S_O2": 1,
+      "S_PO4": 1,
+      "S_S": 4,
+      "S_aa": 2,
+      "S_ac": 2,
+      "S_bu": 2,
+      "S_ch4": 4,
+      "S_co2": 2,
+      "S_fa": 2,
+      "S_h2": 4,
+      "S_pro": 2,
+      "S_su": 2,
+      "S_va": 2,
+      "Sc": 4,
+      "Sc2O3": 2,
+      "Sludge": 2,
+      "Sm": 4,
+      "Sm2O3": 2,
+      "TDS": 6,
+      "TEG": 4,
+      "TSS": 2,
+      "VFA": 1,
+      "VOC": 1,
+      "X": 1,
+      "X_AUT": 1,
+      "X_BA": 4,
+      "X_BH": 4,
+      "X_H": 1,
+      "X_I": 5,
+      "X_ND": 4,
+      "X_P": 4,
+      "X_PAO": 1,
+      "X_PHA": 1,
+      "X_PP": 1,
+      "X_S": 5,
+      "X_c": 2,
+      "X_ch": 2,
+      "X_li": 2,
+      "X_pr": 2,
+      "Y": 4,
+      "Y2O3": 2,
+      "ZnO": 1,
+      "ZnS": 1,
+      "acetate": 1,
+      "acid": 4,
+      "activated_carbon": 1,
+      "adsorbent": 1,
+      "air": 3,
+      "ammonium_salt": 2,
+      "ammonium_sulfate": 1,
+      "anions": 1,
+      "ash": 1,
+      "base": 1,
+      "benzene": 15,
+      "benzene_vapor": 1,
+      "biomass": 4,
+      "borate": 2,
+      "boric_acid": 1,
+      "carbonate": 1,
+      "cations": 1,
+      "coal": 1,
+      "digestate": 1,
+      "dye": 1,
+      "electricity": 4,
+      "ethanol": 1,
+      "ethylene_glycol": 4,
+      "ethylene_oxide": 3,
+      "extractant": 5,
+      "flue_gas": 3,
+      "heat": 7,
+      "heat_stable_salt": 1,
+      "heat_stable_salts": 1,
+      "hitec_salt": 1,
+      "hydrate": 1,
+      "inerts": 4,
+      "ionic_impurity": 1,
+      "methanol": 2,
+      "natural_gas": 1,
+      "oxalate": 1,
+      "phase_change_material": 1,
+      "phosphate": 1,
+      "piperazine": 2,
+      "primary air": 1,
+      "process_fluid": 1,
+      "propionate": 1,
+      "propylene": 1,
+      "raw coal": 1,
+      "resin": 1,
+      "salt": 3,
+      "salt_crystal": 3,
+      "secondary air": 1,
+      "selective_solvent": 1,
+      "solar_salt": 2,
+      "soluble_impurity": 1,
+      "solute": 9,
+      "solvent": 1,
+      "struvite": 2,
+      "substrate": 1,
+      "sulfur": 1,
+      "sulfuric_acid": 3,
+      "tds": 3,
+      "therminol66": 1,
+      "toluene": 14,
+      "tss": 1,
+      "water_steam": 1,
+      "zeolite": 1
+    },
+    "reason_kinds": {
+      "COMPONENT_UNAVAILABLE": 612,
+      "NOT_STEADY_STATE_SIMULATION": 32,
+      "PROPERTY_ROUTE_UNAVAILABLE": 314,
+      "UNIT_UNAVAILABLE": 632
+    }
+  },
+  "before": {
+    "classes": {
+      "ARTIFACT_INCOMPLETE": 0,
+      "CANDIDATE": 0,
+      "COMPONENT_UNAVAILABLE": 9,
+      "NOT_STEADY_STATE_SIMULATION": 32,
+      "PROPERTY_ROUTE_UNAVAILABLE": 0,
+      "UNIT_UNAVAILABLE": 184
+    },
+    "component_reasons_by_subject": {
+      "ADM1": 1,
+      "ADM1 liquid and vapor components": 1,
+      "ADM1 soluble and particulate components": 2,
+      "ASM2d": 1,
+      "Al": 4,
+      "Al2O3": 4,
+      "Al_o": 2,
+      "BTEX": 2,
+      "B[OH]3": 1,
+      "B[OH]4_-": 1,
+      "C2H6": 4,
+      "C3H8": 4,
+      "C4H10": 4,
+      "CH3OH": 4,
+      "CO": 6,
+      "CO2": 38,
+      "CO3--": 1,
+      "COD": 3,
+      "Ca": 4,
+      "Ca++": 1,
+      "Ca2+": 2,
+      "CaO": 4,
+      "CaSO4": 1,
+      "Ca_2+": 2,
+      "Ca_o": 2,
+      "Ce": 4,
+      "Ce2O3": 2,
+      "Cl": 2,
+      "Cl-": 8,
+      "Cl_-": 8,
+      "Co": 2,
+      "Co2+": 1,
+      "CoOH2": 1,
+      "Cu": 1,
+      "Cu++": 1,
+      "Cu2+": 1,
+      "DOC": 1,
+      "Dy": 4,
+      "Dy2O3": 2,
+      "Fe": 5,
+      "Fe+++": 2,
+      "Fe2O3": 4,
+      "Fe3+": 2,
+      "Fe_o": 2,
+      "Fe_rich_alloy": 1,
+      "GAC": 1,
+      "Gd": 4,
+      "Gd2O3": 2,
+      "H": 1,
+      "H+": 2,
+      "H2O": 139,
+      "H2S": 3,
+      "H2SO4": 3,
+      "HCO3_-": 7,
+      "HCl": 1,
+      "HSO4": 1,
+      "H_+": 3,
+      "K_+": 2,
+      "La": 4,
+      "La2O3": 2,
+      "Li": 2,
+      "Li+": 7,
+      "Li2CO3": 3,
+      "Li_+": 2,
+      "MEA": 6,
+      "MEACOO_-": 5,
+      "MEA_+": 5,
+      "Mg": 2,
+      "Mg++": 3,
+      "Mg2+": 2,
+      "Mg_2+": 4,
+      "NH4": 4,
+      "NH4+": 3,
+      "NO3": 2,
+      "NO3-": 2,
+      "NOx": 1,
+      "N_product": 1,
+      "Na+": 8,
+      "NaCl": 29,
+      "NaOH": 2,
+      "Na_+": 7,
+      "Nd": 6,
+      "Nd2Fe14B": 1,
+      "Nd2O3": 2,
+      "NdFeB": 1,
+      "Nd_rich_alloy": 1,
+      "Ni2+": 1,
+      "NiOH2": 1,
+      "None": 39,
+      "O2": 16,
+      "OH-": 3,
+      "OH_-": 3,
+      "PO4": 2,
+      "PO4---": 1,
+      "P_product": 1,
+      "Pr": 4,
+      "Pr2O3": 2,
+      "REE oxalate": 2,
+      "REE oxides": 2,
+      "REE+++": 1,
+      "REE3+": 1,
+      "REE_o": 2,
+      "REO": 2,
+      "SO2": 2,
+      "SO4": 4,
+      "SO4_2-": 2,
+      "S_A": 1,
+      "S_ALK": 4,
+      "S_F": 1,
+      "S_I": 5,
+      "S_IC": 2,
+      "S_IN": 2,
+      "S_N2": 1,
+      "S_ND": 4,
+      "S_NH": 4,
+      "S_NH4": 1,
+      "S_NO": 4,
+      "S_NO3": 1,
+      "S_O": 4,
+      "S_O2": 1,
+      "S_PO4": 1,
+      "S_S": 4,
+      "S_aa": 2,
+      "S_ac": 2,
+      "S_bu": 2,
+      "S_ch4": 4,
+      "S_co2": 2,
+      "S_fa": 2,
+      "S_h2": 4,
+      "S_pro": 2,
+      "S_su": 2,
+      "S_va": 2,
+      "Sc": 4,
+      "Sc2O3": 2,
+      "Sludge": 2,
+      "Sm": 4,
+      "Sm2O3": 2,
+      "TDS": 6,
+      "TEG": 4,
+      "TSS": 2,
+      "VFA": 1,
+      "VOC": 1,
+      "X": 1,
+      "X_AUT": 1,
+      "X_BA": 4,
+      "X_BH": 4,
+      "X_H": 1,
+      "X_I": 5,
+      "X_ND": 4,
+      "X_P": 4,
+      "X_PAO": 1,
+      "X_PHA": 1,
+      "X_PP": 1,
+      "X_S": 5,
+      "X_c": 2,
+      "X_ch": 2,
+      "X_li": 2,
+      "X_pr": 2,
+      "Y": 4,
+      "Y2O3": 2,
+      "ZnO": 1,
+      "ZnS": 1,
+      "acetate": 1,
+      "acid": 4,
+      "activated_carbon": 1,
+      "adsorbent": 1,
+      "air": 3,
+      "ammonium_salt": 2,
+      "ammonium_sulfate": 1,
+      "anions": 1,
+      "ash": 1,
+      "base": 1,
+      "benzene": 15,
+      "benzene_vapor": 1,
+      "biomass": 4,
+      "borate": 2,
+      "boric_acid": 1,
+      "carbonate": 1,
+      "cations": 1,
+      "coal": 1,
+      "digestate": 1,
+      "dye": 1,
+      "electricity": 4,
+      "ethanol": 1,
+      "ethylene_glycol": 4,
+      "ethylene_oxide": 3,
+      "extractant": 5,
+      "flue_gas": 3,
+      "heat": 7,
+      "heat_stable_salt": 1,
+      "heat_stable_salts": 1,
+      "hitec_salt": 1,
+      "hydrate": 1,
+      "inerts": 4,
+      "ionic_impurity": 1,
+      "methanol": 2,
+      "natural_gas": 1,
+      "oxalate": 1,
+      "oxygen": 2,
+      "phase_change_material": 1,
+      "phosphate": 1,
+      "piperazine": 2,
+      "primary air": 1,
+      "process_fluid": 1,
+      "propane": 1,
+      "propionate": 1,
+      "propylene": 1,
+      "raw coal": 1,
+      "resin": 1,
+      "salt": 3,
+      "salt_crystal": 3,
+      "secondary air": 1,
+      "selective_solvent": 1,
+      "solar_salt": 2,
+      "soluble_impurity": 1,
+      "solute": 9,
+      "solvent": 1,
+      "steam": 3,
+      "struvite": 2,
+      "substrate": 1,
+      "sulfur": 1,
+      "sulfuric_acid": 3,
+      "tds": 3,
+      "therminol66": 1,
+      "toluene": 14,
+      "tss": 1,
+      "water": 9,
+      "water_steam": 1,
+      "water_vapor": 4,
+      "zeolite": 1
+    },
+    "reason_kinds": {
+      "COMPONENT_UNAVAILABLE": 832,
+      "NOT_STEADY_STATE_SIMULATION": 32,
+      "PROPERTY_ROUTE_UNAVAILABLE": 314,
+      "UNIT_UNAVAILABLE": 621
+    }
+  },
+  "binding": "measurement-only: pr-lib-v1 added to the installed binder's SELECTABLE_BASES inside benchmarks/l01/retake.py; not selectable in this build (L01 §14)",
+  "inputs": {
+    "benchmarks/l01/components.yaml": "2e01ade0bc00799563fc60032099dee865f951300fca1c7822b4bb1d23f4183a",
+    "case_facts.json": "0ca8cffa146865971dd2a2d445b699cf484965cc052f7f37d8f6554c669e38f7",
+    "coverage.json": "aa89cdd675be482b9979a4eedb51b3403364be64bf371aa21241ee6e9b690a13",
+    "registration.json": "ee099a60f9da6900325f54127f92e9eee926d2015f97b527843db482d6f0e52e",
+    "registration_v2.json": "c7dab28a00886e7a6643ce38079c998c235c7e694c8f4afaf0c62ab2c45f04b0",
+    "split.json": "a556e417a8063dbf06242890667e7f5bd4056128cea552c49a81bf40c9cd755c"
+  },
+  "pr_lib_data_sha256": "2e01ade0bc00799563fc60032099dee865f951300fca1c7822b4bb1d23f4183a",
+  "pr_lib_implementation_sha256": "59efa92bb52f736f83e127b51a1e5d85d16e94c31598fd65cd284f7e78d2cce2",
+  "registration_version": 2,
+  "schema": "l01-retake-v1",
+  "scope": "development half only (C2 split, 225 ids); no held-out row is read",
+  "selectable_in_build": false,
+  "snapshot": {
+    "basis": "built by benchmarks.m06.w27.snapshot from the build at git_commit",
+    "git_commit": "67054e1c37e7db7c5dc69905373bbcb5d8455349",
+    "list_models_sha256": "f070fbe0c67695765cdb3862031a18208af959a5b82de6911d1c99fcabea49b4",
+    "models": [
+      {
+        "model_id": "c1.adiabatic_mixer"
+      },
+      {
+        "model_id": "c1.feed_source"
+      },
+      {
+        "model_id": "c1.product_sink"
+      },
+      {
+        "model_id": "c1.reactor"
+      },
+      {
+        "model_id": "c1.reactor_standin"
+      },
+      {
+        "model_id": "c1.reactor_surrogate"
+      },
+      {
+        "model_id": "c1.stream_splitter"
+      },
+      {
+        "model_id": "c1.tp_flash"
+      },
+      {
+        "model_id": "c1.tp_heater"
+      },
+      {
+        "model_id": "syn001.adiabatic_mixer"
+      },
+      {
+        "model_id": "syn001.component_separator"
+      },
+      {
+        "model_id": "syn001.conversion_reactor"
+      },
+      {
+        "model_id": "syn001.feed_source"
+      },
+      {
+        "model_id": "syn001.heat_exchanger"
+      },
+      {
+        "model_id": "syn001.kinetic_cstr"
+      },
+      {
+        "model_id": "syn001.liquid_pump"
+      },
+      {
+        "model_id": "syn001.ph_flash"
+      },
+      {
+        "model_id": "syn001.product_sink"
+      },
+      {
+        "model_id": "syn001.stream_splitter"
+      },
+      {
+        "model_id": "syn001.tp_flash"
+      },
+      {
+        "model_id": "syn001.tp_heater"
+      },
+      {
+        "model_id": "syn001.valve"
+      }
+    ],
+    "package_version": "0.3.0.dev0",
+    "routes": [
+      {
+        "components": [
+          {
+            "cas": null,
+            "formula": null,
+            "id": "A",
+            "name": "SYN-001 pseudo-component A",
+            "phases": [
+              "liquid",
+              "vapor"
+            ],
+            "synthetic": true
+          },
+          {
+            "cas": null,
+            "formula": null,
+            "id": "B",
+            "name": "SYN-001 pseudo-component B",
+            "phases": [
+              "liquid",
+              "vapor"
+            ],
+            "synthetic": true
+          },
+          {
+            "cas": null,
+            "formula": null,
+            "id": "C",
+            "name": "SYN-001 pseudo-component C",
+            "phases": [
+              "liquid",
+              "vapor"
+            ],
+            "synthetic": true
+          }
+        ],
+        "model_ids": [
+          "syn001.adiabatic_mixer",
+          "syn001.component_separator",
+          "syn001.conversion_reactor",
+          "syn001.feed_source",
+          "syn001.heat_exchanger",
+          "syn001.kinetic_cstr",
+          "syn001.liquid_pump",
+          "syn001.ph_flash",
+          "syn001.product_sink",
+          "syn001.stream_splitter",
+          "syn001.tp_flash",
+          "syn001.tp_heater",
+          "syn001.valve"
+        ],
+        "provider_id": "syn001"
+      },
+      {
+        "components": [
+          {
+            "cas": "1333-74-0",
+            "formula": "H2",
+            "id": "H2",
+            "name": "hydrogen",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "7727-37-9",
+            "formula": "N2",
+            "id": "N2",
+            "name": "nitrogen",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "7664-41-7",
+            "formula": "H3N",
+            "id": "NH3",
+            "name": "ammonia",
+            "phases": [
+              "liquid",
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "7440-37-1",
+            "formula": "Ar",
+            "id": "Ar",
+            "name": "argon",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "74-82-8",
+            "formula": "CH4",
+            "id": "CH4",
+            "name": "methane",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          }
+        ],
+        "model_ids": [
+          "c1.adiabatic_mixer",
+          "c1.feed_source",
+          "c1.product_sink",
+          "c1.reactor",
+          "c1.reactor_standin",
+          "c1.reactor_surrogate",
+          "c1.stream_splitter",
+          "c1.tp_flash",
+          "c1.tp_heater"
+        ],
+        "provider_id": "pr-c1-v1"
+      },
+      {
+        "components": [
+          {
+            "cas": "1333-74-0",
+            "formula": "H2",
+            "id": "H2",
+            "name": "hydrogen",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "7727-37-9",
+            "formula": "N2",
+            "id": "N2",
+            "name": "nitrogen",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "7440-37-1",
+            "formula": "Ar",
+            "id": "Ar",
+            "name": "argon",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "74-82-8",
+            "formula": "CH4",
+            "id": "CH4",
+            "name": "methane",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "7732-18-5",
+            "formula": "H2O",
+            "id": "H2O",
+            "name": "water",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "124-38-9",
+            "formula": "CO2",
+            "id": "CO2",
+            "name": "carbon dioxide",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "7782-44-7",
+            "formula": "O2",
+            "id": "O2",
+            "name": "oxygen",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "74-84-0",
+            "formula": "C2H6",
+            "id": "C2H6",
+            "name": "ethane",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          },
+          {
+            "cas": "74-98-6",
+            "formula": "C3H8",
+            "id": "C3H8",
+            "name": "propane",
+            "phases": [
+              "vapor"
+            ],
+            "synthetic": false
+          }
+        ],
+        "model_ids": [],
+        "provider_id": "pr-lib-v1"
+      }
+    ],
+    "routes_per_revision": 1,
+    "schema": "w27-registry-snapshot-v1"
+  },
+  "snapshot_sha256": "b7c2a2c7e8cf6ebf634c0ae2c24cfda1869452d2ad3100c845ed7b178a4e0673",
+  "transitions": [
+    {
+      "case_id": "blind_synthesized_boron_removal_unit",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_bped_unit",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_coag_floc_unit",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_electrodialysis_conc_recirc",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_gac_unit",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_mvc_single_stage",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_prommis_leach_flowsheet",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_prommis_nanofiltration_ui_flowsheet",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_prommis_nf_brine_advanced_costing",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_prommis_ree_oxalate_roaster",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_prommis_simplified_uky_flowsheet",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_prommis_uky_ui_flowsheet",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_ro_no_energy_recovery",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_ro_pressure_exchanger",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_subcritical_power_plant",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "blind_synthesized_watertap_electroNP_bsm2_no_bioP",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "dispatches_nuclear_double_loop",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "oxygen",
+        "water"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "dispatches_ultra_supercritical_plant",
+      "class_after": "NOT_STEADY_STATE_SIMULATION",
+      "class_before": "NOT_STEADY_STATE_SIMULATION",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "dispatches_usc_tes_charge_superstructure",
+      "class_after": "NOT_STEADY_STATE_SIMULATION",
+      "class_before": "NOT_STEADY_STATE_SIMULATION",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "dispatches_usc_tes_integrated",
+      "class_after": "NOT_STEADY_STATE_SIMULATION",
+      "class_before": "NOT_STEADY_STATE_SIMULATION",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "dispatches_wind_battery_pem_tank_turbine",
+      "class_after": "NOT_STEADY_STATE_SIMULATION",
+      "class_before": "NOT_STEADY_STATE_SIMULATION",
+      "component_reasons_removed": [
+        "oxygen",
+        "water"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "idaes_co2_membrane_1d",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "idaes_drum_1d",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "idaes_dynamic_feedwater_heater",
+      "class_after": "NOT_STEADY_STATE_SIMULATION",
+      "class_before": "NOT_STEADY_STATE_SIMULATION",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "idaes_heat_exchanger_2d",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "idaes_ngcc_soec",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "C2H6",
+        "C3H8",
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "idaes_shell_and_tube_1d",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "idaes_soc_pid_control",
+      "class_after": "NOT_STEADY_STATE_SIMULATION",
+      "class_before": "NOT_STEADY_STATE_SIMULATION",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "idaes_temperature_swing_adsorption",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "idaes_valve",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "ngcc_gas_turbine_subflowsheet",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "C2H6",
+        "C3H8",
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "ngcc_hrsg_subflowsheet",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "ngcc_steam_turbine_subflowsheet",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "ngfc_atr",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "C2H6",
+        "C3H8",
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": [
+        "UNIT_UNAVAILABLE:Heater:no_model:heater units=fs.intercooler_s1,fs.intercooler_s2",
+        "UNIT_UNAVAILABLE:Mixer:no_model:mixer units=fs.reformer_mix,fs.bypass_rejoin",
+        "UNIT_UNAVAILABLE:Separator:no_model:splitter units=fs.reformer_bypass"
+      ]
+    },
+    {
+      "case_id": "official_idaes_eg_cstr_flowsheet",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "water"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "official_idaes_eg_pfr_flowsheet",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "water"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "official_idaes_eg_stoichiometric_flowsheet",
+      "class_after": "COMPONENT_UNAVAILABLE",
+      "class_before": "COMPONENT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "water"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "official_idaes_hx1d_unit",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "official_idaes_skeleton_pervaporation",
+      "class_after": "COMPONENT_UNAVAILABLE",
+      "class_before": "COMPONENT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "water"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "official_idaes_smr_equilibrium_flowsheet",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": [
+        "UNIT_UNAVAILABLE:Feed:no_model:feed units=fs.CH4,fs.H2O",
+        "UNIT_UNAVAILABLE:Heater:no_model:heater units=fs.H101",
+        "UNIT_UNAVAILABLE:Mixer:no_model:mixer units=fs.M101",
+        "UNIT_UNAVAILABLE:Product:no_model:product units=fs.PROD"
+      ]
+    },
+    {
+      "case_id": "official_idaes_smr_gibbs_flowsheet",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": [
+        "UNIT_UNAVAILABLE:Feed:no_model:feed units=fs.CH4,fs.H2O",
+        "UNIT_UNAVAILABLE:Heater:no_model:heater units=fs.H101",
+        "UNIT_UNAVAILABLE:Mixer:no_model:mixer units=fs.M101",
+        "UNIT_UNAVAILABLE:Product:no_model:product units=fs.PROD"
+      ]
+    },
+    {
+      "case_id": "official_ngcc",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "C2H6",
+        "C3H8",
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "official_subcritical_boiler",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "pareto_produced_water_network",
+      "class_after": "COMPONENT_UNAVAILABLE",
+      "class_before": "COMPONENT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "water"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "reflo_crystallizer_effect",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "reflo_kbhdp_soa",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_ammonia_recovery_storage_scrubber_recycle",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_dispatches_pem_oxygen_coproduct_methanation",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_hda_distillation_heat_pump",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "water_vapor"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_hda_methanol_steam_level_integration",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O",
+        "steam"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_bfb_staged_air_flue_gas_recycle",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_boiler_biomass_cofire_fgr",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_co2_membrane_two_stage_recycle",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_dac_co2_electroreduction_methanation",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_ethanol_water_pervaporation_polish",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O",
+        "water_vapor"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_hx_lumped_a40_ua15_cf70",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_hx_lumped_a65_ua80_cf75",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_hx_lumped_a80_ua50_cf90",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_hx_lumped_compact_crossflow",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_hx_ntu_e55_a70",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_hx_ntu_e60_a80",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_hx_ntu_e75_a110",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_hx_ntu_e80_a120",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_hx_ntu_e85_a160",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_iapws_pump_dp200k_eff75",
+      "class_after": "PROPERTY_ROUTE_UNAVAILABLE",
+      "class_before": "COMPONENT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_iapws_pump_dp600k_eff75",
+      "class_after": "PROPERTY_ROUTE_UNAVAILABLE",
+      "class_before": "COMPONENT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_iapws_pump_dp800k_eff85",
+      "class_after": "PROPERTY_ROUTE_UNAVAILABLE",
+      "class_before": "COMPONENT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_mea_absorber_flash_regeneration",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_methanation_co2_recycle",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_natural_gas_glycol_dehydration",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_ngcc_supplementary_firing_district_heat",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "steam"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_propane_propylene_heat_pump",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "propane"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_pz_capture_lean_vapor_recompression",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_pz_solvent_reclaimer_degradation_purge",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_rsofc_hydrogen_storage_heat_cascade",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_sour_gas_zno_claus_tailgas",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_supercritical_double_reheat_feedwater_split",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O",
+        "steam"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_teg_dehydration_flash_regeneration",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_teg_regenerator_stripping_column",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_tsa_water_co2_coadsorption",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_idaes_vsa_co2_dual_bed",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_methanol_capture_electrolysis_heat_integration",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O",
+        "O2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_methanol_reaction_water_condense_reheat",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_methanol_water_nrtl_partial_condensation",
+      "class_after": "COMPONENT_UNAVAILABLE",
+      "class_before": "COMPONENT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "water"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_natural_gas_compressor_heat_teg_regeneration",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_natural_gas_hydrate_inhibitor_slug_recovery",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_prommis_evaporation_pond_staged_salt_harvest",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_prommis_li_mg_nf_diafiltration",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_prommis_lithium_magnesium_nf_cascade",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_prommis_lithium_nf_bped_crystallization",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_reflo_air_stripping_offgas_gac_polishing",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_reflo_crystallizer_mother_liquor_recycle",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_reflo_multi_effect_crystallizer_mvr_heat_integrated",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O",
+        "water_vapor"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_reflo_nacl_seeded_cooling_crystallization",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_cryst_n10p5119_t333_y45_45",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_cryst_n11_t333_y40_35",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_cryst_n12_t323_y30_50",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_cryst_n13_t338_y45_50",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_cryst_n14_t328_y35_50",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_cryst_n16_t333_y55_35",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_cryst_n8_t338_y50_40",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_cryst_n9_t323_y35_40",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_gac_replace_45_20",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_gac_replace_50_10",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_gac_replace_50_15",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_gac_replace_50_20",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_gac_replace_55_10",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_gac_replace_60_10",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_gac_replace_70_15",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_ro_f08_s30_p22_10_a70_100",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_ro_f09_s20_p19_09_a70_100",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_ro_f09_s25_p20_10_a75_110",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_ro_f10_s25_p21_10_a75_110",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_ro_f11_s20_p21_10_a85_120",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_ro_f12_s20_p23_11_a95_130",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_v4_ro_f12_s30_p25_12_a100_140",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_ad_digestate_ammonia_stripping",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_adm1_biogas_water_scrubbing",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_adm1_two_stage_acidogenic_methanogenic",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_ammonia_membrane_contactor_heat_recovery",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_asm1_clarifier_only_ras",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_asm1_step_feed_internal_recycle",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_asm2d_sidestream_struvite",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_biogas_co2_water_scrubber",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "CO2",
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_bped_acid_base_product_recycle",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_bped_ix_brine_acid_base_recovery",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_bsm2p_centrate_struvite_recovery",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_ed_concentrate_recycle_purge",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_ed_metathesis_sulfate_control",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_ed_nitrate_concentrate_recycle",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_ed_organic_acid_recovery",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "water"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_gac_biological_regeneration_loop",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_gac_lead_lag",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_ix_ammonium_regeneration",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_ix_nitrate_selective_brine_recovery",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_mother_liquor_recycle_crystallization",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_ro_boron_polishing_second_pass",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_ro_md_crystallizer_zld",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O",
+        "water_vapor"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_ro_nf_softening_pretreatment",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_two_stage_crystallization",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "variant_watertap_wrrf_equalization_bnr",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_asm1",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_bped_unit",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_bsm2",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_bsm2_p_extension",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_coagulation_flocculation_unit",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_crystallization",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_dye_desalination",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_electrodialysis_conc_recirc",
+      "class_after": "NOT_STEADY_STATE_SIMULATION",
+      "class_before": "NOT_STEADY_STATE_SIMULATION",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_generic_desalination_train",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_nf_dspmde_base",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_nf_dspmde_with_bypass",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_oaro_multi",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_ro_no_energy_recovery",
+      "class_after": "NOT_STEADY_STATE_SIMULATION",
+      "class_before": "NOT_STEADY_STATE_SIMULATION",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_ro_pump_as_turbine",
+      "class_after": "NOT_STEADY_STATE_SIMULATION",
+      "class_before": "NOT_STEADY_STATE_SIMULATION",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_ro_with_energy_recovery",
+      "class_after": "NOT_STEADY_STATE_SIMULATION",
+      "class_before": "NOT_STEADY_STATE_SIMULATION",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    },
+    {
+      "case_id": "watertap_seawater_ro_pump_as_turbine",
+      "class_after": "UNIT_UNAVAILABLE",
+      "class_before": "UNIT_UNAVAILABLE",
+      "component_reasons_removed": [
+        "H2O"
+      ],
+      "other_reasons_removed": [],
+      "reasons_added": []
+    }
+  ],
+  "unit_reason_differences": [
+    {
+      "case_id": "ngfc_atr",
+      "cause": "W27-R62: units are judged on the models of the route serving the case's cubic_pr package; it moved from 'pr-c1-v1' to 'pr-lib-v1', and pr-lib-v1 carries no models (L01 §4.3)",
+      "unit_reasons_added": [
+        "UNIT_UNAVAILABLE:Heater:no_model:heater units=fs.intercooler_s1,fs.intercooler_s2",
+        "UNIT_UNAVAILABLE:Mixer:no_model:mixer units=fs.reformer_mix,fs.bypass_rejoin",
+        "UNIT_UNAVAILABLE:Separator:no_model:splitter units=fs.reformer_bypass"
+      ],
+      "unit_reasons_removed": [],
+      "units_judged_on_after": "pr-lib-v1",
+      "units_judged_on_before": "pr-c1-v1"
+    },
+    {
+      "case_id": "official_idaes_smr_equilibrium_flowsheet",
+      "cause": "W27-R62: units are judged on the models of the route serving the case's cubic_pr package; it moved from 'pr-c1-v1' to 'pr-lib-v1', and pr-lib-v1 carries no models (L01 §4.3)",
+      "unit_reasons_added": [
+        "UNIT_UNAVAILABLE:Feed:no_model:feed units=fs.CH4,fs.H2O",
+        "UNIT_UNAVAILABLE:Heater:no_model:heater units=fs.H101",
+        "UNIT_UNAVAILABLE:Mixer:no_model:mixer units=fs.M101",
+        "UNIT_UNAVAILABLE:Product:no_model:product units=fs.PROD"
+      ],
+      "unit_reasons_removed": [],
+      "units_judged_on_after": "pr-lib-v1",
+      "units_judged_on_before": "pr-c1-v1"
+    },
+    {
+      "case_id": "official_idaes_smr_gibbs_flowsheet",
+      "cause": "W27-R62: units are judged on the models of the route serving the case's cubic_pr package; it moved from 'pr-c1-v1' to 'pr-lib-v1', and pr-lib-v1 carries no models (L01 §4.3)",
+      "unit_reasons_added": [
+        "UNIT_UNAVAILABLE:Feed:no_model:feed units=fs.CH4,fs.H2O",
+        "UNIT_UNAVAILABLE:Heater:no_model:heater units=fs.H101",
+        "UNIT_UNAVAILABLE:Mixer:no_model:mixer units=fs.M101",
+        "UNIT_UNAVAILABLE:Product:no_model:product units=fs.PROD"
+      ],
+      "unit_reasons_removed": [],
+      "units_judged_on_after": "pr-lib-v1",
+      "units_judged_on_before": "pr-c1-v1"
+    }
+  ]
+}
