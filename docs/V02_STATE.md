@@ -92,39 +92,23 @@ F5 education mode deferred.
 
 ## Next action
 
-**Handoff (2026-10-22, end of the cloud session).** Frank (2026-10-22): the session may fast-forward and merge into
-`main` under CLAUDE.md's merge rules (full gate read, CI green on both architectures, `tested` manifest where the
-package has one; C-items and ruling rounds carry none, R-565).
-
-On `main`: C1, C2, C3 (gate `904f265`), S01 (merge `7dcdf2a`, manifest `evidence/S01/465240a…` tested), S02
-(merge `768aa14`, manifest `evidence/S02/1810dde…` tested; ADR 0044 Proposed), C4 + C7 (`9b09ed2`: harvest has no
-exclusions; version `0.3.0.dev0`, envelope `v0.2-envelope-dev`; W27 coverage re-taken; C2 split Amendment 1 R-555).
-D1 (rulings R-560…R-565, WO-D1-A; gate PASS `92d9d6d`, CI 39776387190) and S04 (formerly L01; `pr-lib-v1`
-vapour-only PR route for H2O, CO2, O2, C2H6, C3H8, library-only; manifest `evidence/S04/5c29fbf…` tested; rulings
-R-566…R-569; gate PASS `4e41f44`, 10493 passed; CI 39793267612) are on `main` (`4e41f44`).
-
-**Cloud queue C8–C12 (2026-10-22, Frank's answers).** C8 (duty-only column warning
-`multiple_steady_states_possible(duty_only)`), C9 (W27 registration version 2 for the next release:
-`docs/derivations/W27-registration-v2.md`, classifier behind `registration_version`, v1 byte-identical; review
-`docs/reviews/C9-review.md`, R-570…R-574, R-580) and C12's build step (`docs/l01-rights-check.md`,
-`docs/attributions/pr-lib-v1.md`) are merged together (`wp/C-merge2`). **C12's design step is blocked:** six sources
-are `unresolved` because the cloud proxy refuses their terms pages — check them on the workstation, then the design
-lane rules on the A32 questions (`docs/l01-rights-check.md` §5); the `pr-lib-v1` records do not ship before that.
-**Next cloud packages:** C10 (IAPWS-95: ADR, derivation and test spec, implementation), then C11 (column purity /
-recovery / stage-temperature specifications). S04's measured development-half re-take can now be built on C9's
-version 2 (L01 spec WO-L01-3).
+**Position (2026-10-23, workstation).** `main` = `a904cedf`: gate PASS 11228 passed / 60 skipped; S06 and C2-A2
+branch CI green both architectures. On `main`: C1–C4, C7–C9, C12 (build step + workstation terms fetch), D1,
+S01, S02, S04, **S05** (IAPWS-95 provider, manifest `evidence/S05/4ac00a0…` tested, ADR 0045 Proposed; library-only,
+nothing ships before IAPWS's terms are read and Tables 6–8 checked, C10-Q1), **S06** (column purity/recovery/stage
+temperature, manifest `evidence/S06/ad264a2…` tested, review `docs/reviews/S06-review.md`, R-601…R-610), **C2
+Amendment 2** (`case_facts-v2.json` 4f5c5a65…, `f1.status` facts_committed, R-581/R-582, review
+`docs/reviews/C2-A2-review.md`). WS1 done; ADR 0044 Accepted (Frank, 2026-10-23).
+Frank 2026-10-23: C10-Q2 supercritical → VAPOR; Q-S06-1 no new warning; Q-S06-2 typed failure; C12 keep `pr-lib-v1`
+unshipped (A32 design step parked; shipping needs a clean-up package: drop CAS RNs, constants from primary papers).
 
 **Next actions (in order):**
-1. WS1 done (`docs/C7_DECISIONS.md`): G10 re-take and REAL replay at `0.3.0.dev0` pass; ADR 0044 scan and Frank's
-   bit-identity condition recorded (flip to Accepted needs only (3): the merge gate and CI written into C2); C2's
-   `case_facts-v2.json` blocked (parked on `wp/WS1-f1`): trips SPLIT-A09 and W27's P2 pin; needs a registration amendment.
-2. Frank's answers in `docs/FRANK_QUESTIONS.md`, in particular L01-Q4 (rights for the nine `pr-lib-v1` records before
-   any release ships them), L01-Q1 (who amends W27 so S04's development-half coverage re-take can be measured; only
-   a projection exists: CANDIDATE 0→0, COMPONENT 9→6, ROUTE 0→3), C2-Q1/Q2, the C2 split's Q-5, Q-S02-1…3.
-3. Next work packages: S02's implementation is done; S03 (two independent column references) is workstation work
-   (`docs/CLOUD_WORK.md` L4). A liquid-capable property method (IAPWS-95, L01-Q3) is the main lever for OpenIDAES
-   coverage and needs Frank's scope decision.
-- Open for the design lane: D08 in `docs/requirements.yaml` does not list S04; ADR 0044 acceptance conditions.
+1. Design-lane small items: S06 §17.4's F3 set is refused by I6 (`docs/C11_DECISIONS.md`, the A04 test avoids
+   `validate`); ADR 0045 acceptance conditions; D08 in `docs/requirements.yaml` does not list S04.
+2. S04's development-half coverage re-take on C9's W27 registration version 2 (L01 spec WO-L01-3); needs the archive.
+3. Workstation backlog: S03 (column references, L4), M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
+4. IAPWS terms + Tables 6–8 check before S05 ships (a person, C10-Q1).
+- Remote `wp/*` branches already merged could be deleted (cloud got HTTP 403); keep `wp/M06-wo17` (unmerged WIP).
 
 **History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
