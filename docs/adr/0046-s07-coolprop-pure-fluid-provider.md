@@ -1,6 +1,6 @@
 # ADR 0046 — CoolProp as an optional pure-fluid Helmholtz evaluator: a library-only provider `coolprop-heos-v1` (package S07)
 
-**Status:** **Proposed, 2026-10-23** (design lane, `specifier`; R-618…R-622; Amendment 1: R-623). It becomes
+**Status:** **Proposed, 2026-10-23** (design lane, `specifier`; R-618…R-622; Amendment 1: R-623; Erratum 1: R-624). It becomes
 Accepted when all of these hold:
 - `evidence/S07/<commit>/manifest.json` is `tested`, with spec §13's check list complete, on both CI architectures;
 - the `reviewer` has passed `thermo/coolprop_heos.py` and the generator `s07_reference.py`;
@@ -81,6 +81,16 @@ C15–C19 pass. The manifest carries spec §16.15's items.
 solid states for every fluid. That every claim holds at 50 digits for all 123 before WO-S07-1b's run (spec §16.13
 Q-A1-4).
 
+## Erratum 1 (2026-10-23; R-624; spec §17)
+
+D2: CoolProp is hash-pinned in `requirements-coolprop.lock`, installed after `requirements.lock` with `--no-deps`.
+`requirements.lock` and its registered hash `ead4edf1…` are unchanged. G19 judges the extra's increment (CoolProp,
+MIT). numpy belongs to the base install, audited by T08.A30 and dispositioned by R-135.
+
+This note supersedes D2's "It enters `requirements.lock` … (MIT, compiled, numpy already covered)", the Interfaces
+line's "`requirements.lock` (one pin)", and R-618's "locked in `requirements.lock`" (the register carries the
+amended-by line). Written by the design lane at the S07 generator review (spec §17.7 F-6; R-625).
+
 ## Use case
 
 Water has its own provider (S05). The other components the L01 re-take admits (CO2, O2, C2H6, C3H8, and C1's N2, H2,
@@ -102,6 +112,7 @@ makes no flowsheet binding.
 - **D2 — An optional, pinned dependency.** `CoolProp==8.0.0` (gitrevision `ae81610e…`) is the `coolprop` extra. It is
   not a default requirement of the wheel. It enters `requirements.lock` the way the `server` extra's closure does, so
   CI installs it on both architectures. The G19 licence inventory covers it (MIT, compiled, numpy already covered).
+  *(Superseded by Erratum 1, above: `requirements-coolprop.lock`, and G19 judges the increment.)*
   Any other installed version is a typed refusal on every call (`coolprop_version_mismatch:`). Moving the pin takes a
   register entry and a spec amendment.
 - **D3 — Identity when the data live in a third-party package** (spec §5.1).
@@ -185,7 +196,8 @@ makes no flowsheet binding.
   provider sits behind the existing exact-input cache, keyed on D3's identities.
 - ADR 0001 D5 and `interfaces-frozen.md` §3: one convention line, written on acceptance (spec F-1). No Protocol,
   schema, quantity kind or result-type field changes.
-- `pyproject.toml` (extra), `requirements.lock` (one pin), and the G19 licence inventory (spec F-3).
+- `pyproject.toml` (extra), `requirements.lock` (one pin), and the G19 licence inventory (spec F-3). *(Superseded by
+  Erratum 1: `requirements-coolprop.lock`, and `requirements.lock` is unchanged.)*
 - R-568's `LIBRARY_ONLY_PROVIDERS` and R-569's U02 note: one entry each.
 - ADR 0045: its rejection is superseded for this provider only. The register records it (R-618). ADR 0045's text is
   unchanged.

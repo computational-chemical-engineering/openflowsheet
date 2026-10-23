@@ -12807,3 +12807,43 @@ package for both providers.
 - `make lock` run with CoolProp in the venv. T08.A19(a) and A36 fail.
 - A CoolProp pin change that adds a requirement. A38 fails.
 - A numpy pin change without an A30 refresh. A40 fails.
+
+---
+
+## R-625 — S07 generator review: WO-S07-2a may start; C14 excludes §6.5 row 10, A21 reaches rows 10–11 by injection, A04 keeps `delta_one`, C11's lnphi source accepted, C12 widened
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`reviewer`), at the review of WO-S07-1b's generator (`a04c8924`) that §16.14 requires before WO-S07-2a |
+| Normative text | S07 spec §18 (Amendment 2); review `docs/reviews/S07-generator-review.md`; ADR 0046 Erratum 1 note (spec F-6, written here) |
+| Evidence | Review re-runs from the committed `s07_reference.json`. Stored jets against CoolProp 8.0.0 for all 123 fluids: tier A ≤ 8.0e-14, tier B ≤ 9.0e-13. `delta_one` third partials 1.6e-13 (CO2 αʳ_δδδ). The generator's derivative, saturation-phase and Tsat paths against `s05_reference.json`: derivatives ≤ 1.7e-12 relative (dcp/dT at L_ambient, 3.9e-14 of cp/T), values ≤ 4.8e-14, s_l(T_t) 5e-15·R absolute. §16.3 table 123/123 equal |
+| Affected packages | S07 (WO-S07-1b regeneration for C12; WO-S07-2a for A04, A21 and A33) |
+
+**Decision.**
+- C14 covers §6.5 rows 1–3 and 5–9. No rule state reaches row 10: A22 asserts it never occurs inside the domain, and
+  row 5 pre-empts it outside. A21 reaches rows 10 and 11 by injection on N2, with S05's iteration starving and a
+  raising `AbstractState.update`.
+- A04 judges `delta_one`'s third partials (H2O, CO2), as §9 wrote. CoolProp follows the zero-jet rule there at the
+  floor.
+- C11 takes lnphi from an `AbstractState("HEOS")` PT update's `fugacity_coefficient(0)`, judged absolutely, because
+  `PropsSI` has no such output.
+- C12 widens to S05's derivatives, saturated phases, dPsat/dT and Tsat. Bounds: values 1e-12 (h, s and lnphi
+  absolute), derivatives 1e-11 relative.
+- A33(a) compares as a mapping. ref `fluids` carries no order, and the table's order is §16.3's.
+
+**Rejected alternatives, and why.**
+- *A rule probe for row 10.* No in-domain state should reach it, and out-of-domain probes answer row 5.
+- *Leave rows 10–11 untested.* Two refusal codes of a "complete" table would ship unexercised. S05 already starves
+  iterations.
+- *Exclude `delta_one` from A04, as S05 did.* Measured at 1.6e-13, 63× inside the bound. Excluding it would drop a
+  passing check of the non-analytic terms.
+- *Drop lnphi from C11.* That removes the only external check of the lnphi formula before the provider exists.
+- *Keep C12 values-only.* The generic `cdiff`, saturation and `tsat_solve` paths would meet no independent
+  implementation at generation time.
+- *Plain relative bounds for C12's h and s.* s_l(T_t) ≈ 6.5e-14 J/(mol K) makes a relative bound meaningless there.
+
+**Watch for.**
+- Psat at C3H8 `sat_lo` (Z_L = 3.8e-10, four decades below water's T_t). A liquid-branch pressure carries about
+  ε/Z_L error. Q-A1-5's default applies to tier A.
+- C16 refuses on any published-check row until WO-S07-4 implements it.

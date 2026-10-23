@@ -88,3 +88,10 @@ Questions for the design lane (batched for the WO-S07-1b review; none blocks WO-
   A04 excludes `delta_one` (as S05) by ruling, never by tolerance.
 - **Q-B3: C11's lnphi source** (B-7): an `AbstractState` PT flash rather than `PropsSI`, which has no such output.
   Proposed: accept; the flash is the same solver `PropsSI` calls.
+
+**Ruled (design lane, 2026-10-23; spec §18, R-625; review `docs/reviews/S07-generator-review.md`).**
+- Q-B1: yes. C14 excludes rows 4, 10 and 11. A21 reaches rows 10 and 11 by injection on N2 (§18.1).
+- Q-B2: A04 keeps `delta_one`. Measured at 1.6e-13 (§18.6).
+- Q-B3: accepted (§18.2).
+- Generator follow-ups for the next regeneration: C12 widened (§18.3; review finding 1); count the real C17
+  check and reword C1 (finding 5); move the ρ' > ρ_c > ρ'' claim into `Fluid.sat()` (finding 6).

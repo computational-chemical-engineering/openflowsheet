@@ -2,7 +2,7 @@
 
 **Package:** S07 (brief `docs/briefs/S07-coolprop-design.md`; branch `wp/S07`). **Lane:** design (`specifier`) for
 this document; build for WO-S07-1a…4 (§16.14). **ADR:** 0046 (Proposed, with its Amendment 1 note). **Register:**
-R-618…R-622; Amendment 1: R-623; Erratum 1: R-624.
+R-618…R-622; Amendment 1: R-623; Erratum 1: R-624; Amendment 2: R-625.
 **Precedent followed:** S05 (`docs/derivations/S05-IAPWS95-spec.md`, ADR 0045). Where this document says "as S05
 §x", the S05 text applies with the substitutions stated here, and nothing else from S05 is implied.
 **Generator (to be written by WO-S07-1, plan in §8):** `docs/derivations/scripts/s07_reference.py`, run in an
@@ -19,6 +19,10 @@ rule, at Frank's direction ("Broad list now"). Where §16 and an earlier section
 (its hash is a registered replay identity), and the extra gets its own hash-pinned `requirements-coolprop.lock`. G19
 judges only what the extra adds (CoolProp), because numpy belongs to the base install and T08.A30 audits it. §17
 governs §10 F-3, §12.1 items 2–3 and §16.14's WO-S07-1a. It also scopes M07's MR-12 test to the v0.2.0 commit (Ruling M).
+
+**Amendment 2 (2026-10-23, §18)** records the design lane's review of the generator (`docs/reviews/S07-generator-review.md`):
+rulings on Q-B1–Q-B3, C12 widened, A21 extended to §6.5 rows 10 and 11, and A33(a)'s order. No fluid, rule, stored value
+or tolerance changes. Register R-625.
 
 ## 0. Read this first
 
@@ -379,10 +383,10 @@ worsts), and `claims` (count and names). Floats as `repr`; keys sorted; `--check
 | C8 | §6.4 third item |
 | C9 | §6.4 fourth item |
 | C10 | every rule-state lies inside its fluid's box and outside the near-critical box, or is in `dropped`; the expected `dropped` list is literal in the generator; all registered TP states of a fluid are pairwise distinct |
-| C11 | admission: CoolProp's `PropsSI` agrees with the generator at every TP state outside NC within 1e-7 relative (h and s within 1e-7·R·T and 1e-7·R absolute), NC within 1e-5. The measured worsts go in `agreement`. This checks the generator against an independent solve; it never supplies a number |
-| C12 | water: the generator's own values at S05's registered states with T ≤ 646.9 K equal `s05_reference.json`'s within 1e-12 relative (same formulation, two generators) |
+| C11 | admission: CoolProp's `PropsSI` agrees with the generator at every TP state outside NC within 1e-7 relative (h and s within 1e-7·R·T and 1e-7·R absolute), NC within 1e-5. The measured worsts go in `agreement`. This checks the generator against an independent solve; it never supplies a number (amended, §18.2: lnphi's source) |
+| C12 | water: the generator's own values at S05's registered states with T ≤ 646.9 K equal `s05_reference.json`'s within 1e-12 relative (same formulation, two generators) (amended, §18.3) |
 | C13 | identities I1–I9 hold on the generator's numbers at every TP and saturation state to 1e-30 relative |
-| C14 | the refusal-probe table covers every code of §6.5 except row 4 and row 11, each with a control |
+| C14 | the refusal-probe table covers every code of §6.5 except row 4 and row 11, each with a control (amended, §18.1: rows 4, 10 and 11) |
 
 ## 9. Assertions (applicability by tier and A33–A35: §16.10)
 
@@ -411,7 +415,7 @@ Test files: `tests/test_s07_coolprop.py` (WO-S07-2) and `tests/test_s07_registra
 | A18 | `no_saturation:` probes, with controls | §6.5 | exact codes |
 | A19 | A saturation-only request skips the phase check; with `h` added it does not | §6.3 | exact codes |
 | A20 | Flash: as S05 A20 | §6.5 | exact |
-| A21 | Contract refusals 1, 2, 3, 6 of §6.5, with controls; constructing with an id outside §2.1 raises `ValueError` | §6.5 | exact |
+| A21 | Contract refusals 1, 2, 3, 6 of §6.5, with controls; constructing with an id outside §2.1 raises `ValueError` | §6.5 | exact (amended, §18.1: rows 10 and 11 by injection) |
 | A22 | Robustness grid per fluid: 24 temperatures spaced evenly from T_lo to T_hi (ends included) × P ∈ {1e2, 1e3, …, P_hi} ∪ {P_hi}. Every non-refused phase is `ok`; `not_converged` and `coolprop_evaluation_failed` never occur; every answer has (∂v/∂P)_T < 0 and cp > 0 | none | exact |
 | A23 | **Water against S05.** `coolprop-heos-v1` (H2O) at every S05 registered TP, saturation and band state with T ≤ 646.9 K, against `s05_reference.json` | S05 ref | S05 A05/A06/A08/A10 bounds |
 | A24 | **Against S04's ideal-gas parts.** cp^ig = R(1 − τ²α°_ττ) from `helmholtz_jet` at ρ = 1 mol/m³ (α°_ττ does not depend on ρ) against `pr_lib.cp_ig` at 300 and 600 K; control: the same comparison per kilogram fails by > 10× | `pr_lib` | 2 % relative (L01.A12, R-528) |
@@ -813,7 +817,7 @@ P_hi follow the fluid's bound kind:
 | T | the pinned data have a melting line, and T_m ≤ T_t and non-increasing on C9's grid (an ice-Ih-like branch) | min(JSON p_max, 1.0e8 Pa) | T_t, CoolProp's `Ttriple()`, exactly |
 | E | the pinned data have no melting line | min(JSON p_max, max(5.0e6 Pa, ⌈1.1·p_c⌉₂)) | ⌈10·T_t·(1 + κ·P_hi)⌉/10 K, with κ = 1.0e-8 Pa⁻¹ |
 
-- ⌈x⌉₂ rounds up to two significant digits. Every ceiling is taken on the exact decimal value of the double
+- ⌈x⌉₂ rounds up to two significant digits. Every ceiling is taken on the decimal of the double (wording amended, §18.5)
   (`Decimal(repr(x))`), with no fudge term. p_c is §6.1's EOS critical pressure, solved at 50 digits.
 - **C9, amended (E2).** For M and T fluids, the grid of 20 logarithmically spaced pressures runs from
   max(p_t, P_lo, p_m,min) to P_hi, and p_m,max ≥ P_hi. M requires T_m to increase strictly on the grid. T requires
@@ -1038,7 +1042,7 @@ New assertions (test file `tests/test_s07_broad.py`, except A33–A34 for tier A
 
 | id | assertion | expectation | tolerance |
 | --- | --- | --- | --- |
-| A33 | **The fluid list.** (a) `admitted()` equals ref `fluids` (ids, names, CAS, tier, bound, in order), and every admitted id constructs; (b) each of the 13 excluded fluids, by CoolProp name and by its would-be id, raises `ValueError` whose message contains ref's reason, and `excluded()` equals ref `excluded`; (c) the AST of `coolprop_heos.py` contains no string constant equal to an admitted or excluded CoolProp name or id (the table module is exempt) | ref | exact |
+| A33 | **The fluid list.** (a) `admitted()` equals ref `fluids` (ids, names, CAS, tier, bound, in order), and every admitted id constructs; (b) each of the 13 excluded fluids, by CoolProp name and by its would-be id, raises `ValueError` whose message contains ref's reason, and `excluded()` equals ref `excluded`; (c) the AST of `coolprop_heos.py` contains no string constant equal to an admitted or excluded CoolProp name or id (the table module is exempt) | ref | exact (amended, §18.4: order) |
 | A34 | **Tier and bound are reported.** Per fluid, `describe().uncertainty` begins with `verification: <ref's string>`; E fluids carry §16.8's sentence in `numerical_limitations`, and M and T fluids do not; control: no tier-B string begins `independent:` | ref | exact |
 | A35 | **Published checks.** As §16.5.2: a tier-B fluid reports `published-check` iff its rows qualify; with zero rows no fluid does; the file hash recorded in ref equals the committed file's | ref, file | exact |
 
@@ -1480,3 +1484,82 @@ records, not gates. A36–A44 re-check every value this section relies on.
 - That the CI environment with CoolProp installed is the environment `requirements.lock` attests. It holds one more
   distribution, which no bundle can use while the provider is library-only (F-7).
 - Anything about the RC and release jobs (F-8).
+
+## 18. Amendment 2 — generator review rulings (2026-10-23; R-625)
+
+### 18.0 Authority, trigger, scope and precedence
+
+- **Trigger.** The design lane's review of WO-S07-1b's generator (`a04c8924`) before WO-S07-2a, as §16.14 requires.
+  The review is `docs/reviews/S07-generator-review.md`. Its verdict: WO-S07-2a may start.
+- **Scope.** The build lane's questions Q-B1–Q-B3 (`docs/S07_DECISIONS.md`), C12's coverage, A21's coverage of §6.5
+  rows 10 and 11, A33(a)'s order, and one wording erratum in §16.4. No fluid, rule, constant, stored value, tolerance
+  or identity changes. Where this section and §1–§17 differ, this section governs.
+
+### 18.1 Q-B1: C14 excludes rows 4, 10 and 11, and A21 reaches rows 10 and 11 by injection
+
+- **C14** reads: "the refusal-probe table covers every code of §6.5 except rows 4, 10 and 11, each with a control".
+  Row 10 is a failure of the provider's own solves. Inside the domain no rule state should reach it, and A22 asserts
+  that it never occurs. Outside the domain, row 5 takes precedence. So no rule probe can expect it.
+- **A21** gains rows 10 and 11, for one tier-A fluid (N2), each with its unforced control:
+  - `density_not_converged:` and `saturation_not_converged:` by an iteration-starved call, as S05's
+    `tests/test_s05_envelope.py` does (`_starved`);
+  - `coolprop_evaluation_failed:` by a monkeypatched `AbstractState.update` that raises.
+
+  Without these, two refusal codes of a complete table would ship unexercised. Row 4 stays with A26.
+
+### 18.2 Q-B3: C11's lnphi source
+
+Accepted. C11 takes h, s, ρ, Z and cp from `PropsSI`. lnphi comes from `fugacity_coefficient(0)` after a CoolProp
+`AbstractState("HEOS")` PT update, because `PropsSI` has no fugacity output. That update is the same TP flash.
+lnphi is judged absolutely, within 1e-7 (NC: 1e-5), as B-7 implements. The source is admission only, never an
+expectation. A27 constrains the provider module, not the generator.
+
+### 18.3 C12, widened
+
+C12 covers water at every S05 registered state with T ≤ 646.9 K:
+- the φ partials;
+- the TP values h, s, v, Z, cp and lnphi, and their T and P derivatives;
+- the saturation Psat and dPsat/dT, and both phases' h, s, v, Z, cp and lnphi;
+- `tsat`: Tsat and dTsat/dP.
+
+Bounds:
+- **Values:** 1e-12 relative, except h within 1e-12·R·T, s within 1e-12·R, and lnphi within 1e-12 absolute.
+  The absolute forms are needed because s_l(T_t) is 6.5e-14 J/(mol K), IAPWS's datum, where a relative measure is
+  meaningless.
+- **Derivatives:** 1e-11 relative.
+
+**Measured (review).**
+- Derivatives: worst 1.7e-12. That is dcp/dT at S05's L_ambient, which is −5.85e-3 J/(mol K²), near liquid water's
+  cp minimum; relative to cp/T it is 3.9e-14.
+- Values: Tsat 5.8e-15; saturated-phase values ≤ 4.8e-14; s_l and h_l at T_t within 5e-15·R and 3e-16·R·T.
+
+These are two generators of one formulation whose coefficients differ in the last digits, as C12's present
+5.8e-14 shows.
+
+Why: the generator's `cdiff`, saturation-phase and `tsat_solve` paths are generic across all 123 fluids. The
+water check is the one place where they meet an independent implementation. The build lane makes the change and
+regenerates. Only water's `agreement` and the claim counts change.
+
+### 18.4 A33(a): order
+
+ref `fluids` is a JSON object with sorted keys (§8), so it carries no order. A33(a) compares `admitted()` with ref
+`fluids` as a mapping keyed by id: names, CAS, tier and bound. The order of `admitted()` is the fluid table's
+`FLUIDS` order, which is §16.3's. The review measured 123 of 123, and C19 ties the table to the generator.
+
+### 18.5 Wording erratum (§16.4)
+
+"The exact decimal value of the double" contradicts its own parenthetical, because `Decimal(repr(x))` is the
+shortest round-trip decimal. The parenthetical governs, and the generator implements it (B-6). No value changes.
+
+### 18.6 Q-B2: A04 at `delta_one`
+
+§9 stands: A04 judges the third partials at `delta_one` for H2O and CO2. **Measured (review):** CoolProp 8.0.0's
+third partials at δ = 1 agree with the zero-jet values stored by the generator to 1.6e-13 (CO2, αʳ_δδδ; H2O
+≤ 1e-13), 63× inside A04's 1e-11. No exclusion. If WO-S07-2a measures more than 1e-12 there, it stops for the
+design lane.
+
+### 18.7 What this amendment does not establish
+
+- That the provider's Psat at tier A's lowest-Z_L state (C3H8 `sat_lo`, Z_L = 3.8e-10) meets A08. The review flags
+  it as Q-A1-5 extended to tier A, with Q-A1-5's default.
+- Anything about tier B beyond the generator's output.
