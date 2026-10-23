@@ -585,14 +585,19 @@ class CoolPropHeosProvider:
     # -- saturation (S05 §3.5) ---------------------------------------------------------------------
 
     def _solve_saturation(self, temperature: float) -> _Saturation | None:
-        """Maxwell's conditions by two-variable Newton in (δ', δ''), T < T_c; `None` if not
-        converged in `MAX_ITERATIONS` or if an iterate leaves ρ' > ρ_c > ρ'' (S05 §3.5)."""
+        """Maxwell's conditions at T < T_c from the ancillary seeds (S05 §3.5)."""
         fluid, seeds = self._fluid, self._seeds
         if seeds is None:
             return None
-        dc = fluid.rho_c / fluid.rho_red
         dl = seeds.rho_l(temperature, fluid.t_c) / fluid.rho_red
         dv = seeds.rho_v(temperature, fluid.t_c) / fluid.rho_red
+        return self._maxwell_newton(temperature, dl, dv)
+
+    def _maxwell_newton(self, temperature: float, dl: float, dv: float) -> _Saturation | None:
+        """Maxwell's conditions by two-variable Newton in (δ', δ'') from (dl, dv), T < T_c; `None`
+        if not converged in `MAX_ITERATIONS` or if an iterate leaves ρ' > ρ_c > ρ'' (S05 §3.5)."""
+        fluid = self._fluid
+        dc = fluid.rho_c / fluid.rho_red
         previous = math.inf
         for iteration in range(1, MAX_ITERATIONS + 1):
             (_, rl), (_, rv) = (
