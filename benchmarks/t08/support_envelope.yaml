@@ -765,12 +765,14 @@ limitations:
       - doc:docs/derivations/T03-phase-controller-spec.md §13
   - id: L40
     text: >-
-      The reference-tool data (the IDAES and DWSIM environments, their downloads and their
-      outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's
-      own code, its package data (since M01 including the five C1 records, M01 spec §15 Q-N4's
-      default) and its licence files only, and every ComponentRecord is synthetic (SYN-001) or
-      one of M01's five real C1 records, each with its identifiers, rights,
-      per-parameter provenance and retrieval equality (M01 spec §3.5, R-158).
+      The reference-tool data (the IDAES and DWSIM environments, their downloads and their outputs) and
+      OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's own code, its
+      package data (since M01 including the five C1 records, M01 spec §15 Q-N4's default), its licence
+      files and one third-party data file, the IAPWS-95 coefficients
+      `benchmarks/s05/iapws95_coefficients.json`, under IAPWS's terms with their attribution in NOTICE
+      (S05 spec §16, R-616, R-617), and nothing else; every ComponentRecord is synthetic (SYN-001) or
+      one of M01's five real C1 records, each with its identifiers, rights, per-parameter provenance and
+      retrieval equality (M01 spec §3.5, R-158).
     evidence:
       - tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel
       - tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_rights
