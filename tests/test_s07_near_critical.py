@@ -1,6 +1,5 @@
 """S07 near-critical saturation and the (T_σ,max, T_c) strip: spec §19 (Amendment 3, R-626),
-assertions A45-A47, A49 and A50 (the design note's N1-N3, N5 and N6, whose names the test
-functions keep; A48, the 50-digit references, follows the generator's near-critical roots).
+assertions A45-A50 (the design note's N1-N6, whose names the test functions keep).
 
 - A45 (N1): the saturation exists at T_σ,max and at θ = 1 − T/T_c ∈ {2e-4, 1e-4, 5e-5} for all 123.
 - A46 (N2): where the Newton from the ancillary seeds converges, the answer is bitwise that
@@ -9,6 +8,8 @@ functions keep; A48, the 50-digit references, follows the generator's near-criti
   `cmp.py`, with their digests in `docs/S07_DECISIONS.md`.
 - A47 (N3): where both converge, the fallback forced from the same T agrees with the plain root
   within §19.2's bounds (the Maxwell root's double-precision floor).
+- A48 (N4): the saturation equals the generator's 50-digit near-critical references (§19.5,
+  `nc_saturation` in `s07_reference.json`): the only independent expectation here.
 - A49 (N5): every strip state outside the box is answered, mechanically stable, on its labelled
   branch, and continuous across T_c.
 - A50 (N6): S05 adopts the strip rule (D5), and its own saturation needs no fallback.
@@ -23,7 +24,7 @@ import math
 
 import pytest
 from s07_coolprop_support import require_coolprop
-from test_s07_coolprop import CONTEXT, ev
+from test_s07_coolprop import CONTEXT, FLUIDS, ev
 
 from openflowsheet.thermo import Phase, PropertyRequest, StreamState
 from openflowsheet.thermo import _coolprop_heos_fluids as table
@@ -42,6 +43,9 @@ N5_THETAS = (1.9999e-4, 1e-4, 5e-5, 1e-5, 1e-6, 1e-8, 1e-12)
 #: 1e-12 and 1e-10 (it follows ρ'' through (k''/Z'')·|Δρ''|/ρ'').
 N3_FAR, N3_NEAR = 1e-11, 3e-8
 N3_PRESSURE_FAR, N3_PRESSURE_NEAR = 1e-12, 1e-10
+#: A48's bounds (spec §19.5): (densities, p_σ) for θ ≥ 1e-4, and §19.2's near bounds below.
+N4_FAR, N4_NEAR = (1e-8, 1e-11), (3e-8, 1e-10)
+NC_REFERENCES = [(cid, key) for cid in ALL for key in sorted(FLUIDS[cid]["nc_saturation"])]
 #: N5's continuity bound at T_c (design note §6 G5).
 CONTINUITY = 1e-8
 
@@ -141,6 +145,24 @@ def test_n3_the_fallback_agrees_with_the_plain_root_pressure(cid: str) -> None:
         bound = N3_PRESSURE_FAR if theta >= 1e-2 else N3_PRESSURE_NEAR
         difference = abs(forced.pressure - reference.pressure) / reference.pressure
         assert difference <= bound, (theta, difference)
+
+
+@needs_coolprop
+@pytest.mark.parametrize(("cid", "key"), NC_REFERENCES)
+def test_n4_the_saturation_equals_the_50_digit_references(cid: str, key: str) -> None:
+    instance = provider(cid)
+    reference = FLUIDS[cid]["nc_saturation"][key]
+    t = reference["T"]
+    theta = 1.0 - t / instance._fluid.t_c
+    rho_bound, p_bound = N4_FAR if theta >= 1e-4 else N4_NEAR
+    solved = instance._solve_saturation(t)
+    assert solved is not None, f"no saturation at {t!r} K"
+    for got, want, bound in (
+        (solved.rho_l, reference["rho_l"], rho_bound),
+        (solved.rho_v, reference["rho_v"], rho_bound),
+        (solved.pressure, reference["Psat"], p_bound),
+    ):
+        assert abs(got - want) <= bound * want, (key, theta, got, want, abs(got - want) / want)
 
 
 def strip_states(fluid: cph._Fluid) -> list[tuple[Phase, float]]:

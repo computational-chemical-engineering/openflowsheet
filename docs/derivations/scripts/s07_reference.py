@@ -28,7 +28,9 @@ serializes the results with sorted keys, so the bytes do not depend on the numbe
 **Layout** (``docs/S07_DECISIONS.md`` B-10): per fluid under ``fluids[<id>]``; a jet is 20 floats,
 α° then αʳ, each in ``PhiJet`` order; a TP state is ``[T, P, h, s, v, Z, cp, lnphi]`` (tier A adds
 its T and P derivatives of h, s, v, Z, cp, lnphi); a refusal probe is ``[assertion, code, probe,
-control]``. Floats are ``repr`` of the nearest double; keys are sorted.
+control]``; ``nc_saturation`` holds A48's near-critical references (§19.5) as ``{T, rho_l, rho_v,
+Psat}`` per label, empty for a fluid outside that set. Floats are ``repr`` of the nearest double;
+keys are sorted.
 
 The environment is ``requirements.lock`` (mpmath, PyYAML) plus ``requirements-coolprop.lock``.
 
@@ -43,6 +45,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import sys
@@ -86,6 +89,30 @@ NC_P_LO_FACTOR = "0.996"
 NC_P_HI_FACTOR = "1.008"
 #: C20 (C-strip, §19.4): T_c (1 − θ) at these θ, beside T_sigma,max.
 STRIP_THETAS = (1e-4, 5e-5, 1e-6)
+#: A48's near-critical references (§19.5): the design note's set at these θ, T = T_c (1 − θ)
+#: moved down by `nextafter` until its computed θ is not below it (B-25)...
+NC_REFERENCE_THETAS: dict[str, tuple[float, ...]] = {
+    **{cid: (2e-4, 1e-4) for cid in ("H2O", "O2", "H2", "R134a", "Cyclopentane", "MM", "R14")},
+    "R22": (2e-4, 1e-4, 5e-5),
+}
+NC_THETA_LABELS = {2e-4: "theta_2e-4", 1e-4: "theta_1e-4", 5e-5: "theta_5e-5"}
+#: ...and each fluid that enters the fallback on the dense scan, at the highest θ (lowest T) at
+#: which it enters there: `s07_measurements/nc_scan.py` at 45cdcb19, registered once as doubles.
+NC_FALLBACK_T: dict[str, float] = {
+    "Cyclopentane": 509.4397123068415,
+    "Deuterium": 38.33726051711582,
+    "Ethanol": 514.6482564780813,
+    "Fluorine": 144.40533719893722,
+    "MDM": 565.2416955737244,
+    "MM": 518.5907582677291,
+    "Neon": 44.39385752070135,
+    "R114": 420.54071245851645,
+    "R1234ze_Z": 422.75709583022785,
+    "R13": 303.02296026384147,
+    "R134a": 373.87923986736416,
+    "R14": 227.35074922917502,
+    "R152A": 386.39053241276565,
+}
 PROBE_REL = "1e-9"  # the refusal probes' distance from a bound (§7)
 ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]*$")
 
@@ -1239,8 +1266,9 @@ class Fluid:
 
         # brackets (C8), at 20 digits
         self.brackets(rmax)
-        # C-strip (C20, §19.4), at 50 digits
+        # C-strip (C20, §19.4) and A48's near-critical references (§19.5), at 50 digits
         self.c20(rmax)
+        res["nc_saturation"] = self.nc_references(rmax)
 
         if self.tier == "A":
             res["s04_ig"] = {}
@@ -1589,6 +1617,30 @@ class Fluid:
                 f"({dbl(p_sl / self.pc_mp):.6f}, {dbl(p_sv / self.pc_mp):.6f} p_c)",
             )
 
+    def nc_references(self, rmax: Any) -> dict[str, Any]:
+        """A48's 50-digit near-critical saturation (§19.5), from the QT-free solve."""
+        temps = {}
+        for theta in NC_REFERENCE_THETAS.get(self.id, ()):
+            t = self.T_c * (1.0 - theta)
+            while 1.0 - t / self.T_c < theta:
+                t = math.nextafter(t, 0.0)
+            temps[NC_THETA_LABELS[theta]] = t
+        if self.id in NC_FALLBACK_T:
+            temps["fallback"] = NC_FALLBACK_T[self.id]
+        out = {}
+        for key, temp in temps.items():
+            claim("C13", self.T_lo < temp < self.T_c, f"{key}: {temp!r} K below T_c")
+            rl, rv, _, _ = self.sat_free(temp, rmax)
+            liq, vap = self.eos.at_rho(mpf(temp), rl), self.eos.at_rho(mpf(temp), rv)
+            claim(
+                "C13",
+                rel(liq["p"], vap["p"]) < mpf("1e-30")
+                and abs(liq["lnphi"] - vap["lnphi"]) < mpf("1e-30") * max(abs(vap["lnphi"]), 1),
+                f"I8 at the reference {temp!r} K",
+            )
+            out[key] = {"T": temp, "rho_l": dbl(rl), "rho_v": dbl(rv), "Psat": dbl(liq["p"])}
+        return out
+
     def c12(self) -> dict[str, float]:
         """C12 (§18.3): water against s05_reference.json at S05's states with T <= 646.9 K.
 
@@ -1782,6 +1834,7 @@ FLUID_KEYS_B = {
     "phi_states",
     "tp_states",
     "saturation",
+    "nc_saturation",
     "tsat",
     "band",
     "probes",

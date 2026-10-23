@@ -17,7 +17,9 @@ At each T:
   differences of ρ', ρ'' and p_σ against the plain root, split at θ = 1e-2 (spec §19.2, A47:
   densities 1e-11 above and 3e-8 below; p_σ 1e-12 above and 1e-10 below).
 
-Writes argv[1] (JSON: per-fluid worsts and every failing point) and prints one summary line.
+Writes argv[1] (JSON: per-fluid worsts, every failing point and every T at which the fallback ran;
+the highest θ of the last per fluid is spec §19.5's reference set, registered once in
+`s07_reference.py`'s `NC_FALLBACK_T`) and prints one summary line.
 Scratch CoolProp venv; `PYTHONPATH=src`.
 """
 
@@ -87,6 +89,7 @@ def scan(component):
         "g2_fail": [],
         "g3_rows": [],
         "forced_none": [],
+        "fallback_t": [],
     }
     for t in grid(fluid):
         theta = 1.0 - t / fluid.t_c
@@ -103,6 +106,7 @@ def scan(component):
             out["solved"] += 1
         if entered[0]:
             out["fallback"] += 1
+            out["fallback_t"].append(t)
             out["max_jets"] = max(out["max_jets"], inside[0])
             out["max_solve_jets"] = max(out["max_solve_jets"], jets[0])
             if result is not None:

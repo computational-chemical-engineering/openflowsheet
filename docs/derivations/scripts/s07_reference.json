@@ -1,6 +1,6 @@
 {
  "claims": {
-  "count": 337536,
+  "count": 338886,
   "names": {
    "C1": {
     "count": 128,
@@ -19,7 +19,7 @@
     "statement": "water equals s05_reference.json at S05's states with T <= 646.9 K: phi partials, TP values and their T and P derivatives, Psat, dPsat/dT, both saturated phases, Tsat and dTsat/dP (values 1e-12, h and s per R T and R, lnphi absolute; derivatives 1e-11)"
    },
    "C13": {
-    "count": 40731,
+    "count": 42081,
     "statement": "identities I1-I9 hold to 1e-30 at every TP and saturation state"
    },
    "C14": {
@@ -170,6 +170,7 @@
    "fluid_data_sha256": "4eca884152cbf8845e2ffc53ecc9525c0de5ccbf911a13a72d9b59d87a83d6d4",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "1-Butene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 398.32550000000003,
@@ -333,6 +334,7 @@
    "fluid_data_sha256": "22396ed42ac669d13db8d8e4b76c912ba1815a9f0eb326c5e806450cea39615f",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Acetone",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 482.69500000000005,
@@ -496,6 +498,7 @@
    "fluid_data_sha256": "9963d40b6e50ff599a36679fcc17c949b56af87c83ad05f601ff00e3f066e9d5",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Ammonia",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 385.282,
@@ -672,6 +675,7 @@
    "fluid_data_sha256": "fcee503d59cb3f0456b0505407cb8ae502fae69b882fc1a50f2d74e4da319720",
    "limitations": [],
    "name": "Argon",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 143.15265000000002,
@@ -884,6 +888,7 @@
    "fluid_data_sha256": "234a100583e0a78f1478e64a999779a5b44141c2db1987287ee37683a605b437",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Benzene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 533.919,
@@ -1060,6 +1065,7 @@
    "fluid_data_sha256": "83ca6fb9b950e4b5693f35f011057de145c2b22362bc0c0a0b85545fb97420c2",
    "limitations": [],
    "name": "Ethane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 290.0559,
@@ -1283,6 +1289,7 @@
    "fluid_data_sha256": "d13abb1c9e34b7984649aa4e8bd23ca7753fa9179d533ca06a34ee32d9bd7e57",
    "limitations": [],
    "name": "n-Propane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 351.39549999999997,
@@ -1506,6 +1513,7 @@
    "fluid_data_sha256": "2db4de754d81e64a425bd19a2857d5abb3787d966a300659e8b7d488e52f7637",
    "limitations": [],
    "name": "Methane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 181.0358,
@@ -1730,6 +1738,7 @@
    "fluid_data_sha256": "8671af27ea8aa0051921f7410416a790c20232c38bbfbb29b5c079602f24793c",
    "limitations": [],
    "name": "CarbonDioxide",
+   "nc_saturation": {},
    "phi_states": {
     "delta_one": {
      "T": 273.71538,
@@ -1947,6 +1956,7 @@
    "fluid_data_sha256": "f9593231ffba9f0152b7ded69ea11ab415d914ed920c0099e4428d09d574a51d",
    "limitations": [],
    "name": "CarbonMonoxide",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 126.21700000000001,
@@ -2111,6 +2121,7 @@
    "fluid_data_sha256": "947f416a937e6054b33413c49ec800b5171764c3bfc77c863c50fc925f3c04e9",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "CarbonylSulfide",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 359.8315,
@@ -2275,6 +2286,7 @@
    "fluid_data_sha256": "53640a22ae2cc0a2f866ec358d04646abdff112a6221192cd6abb34af6ad35a8",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Chlorine",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 396.02213,
@@ -2439,6 +2451,7 @@
    "fluid_data_sha256": "b3ebc2958c293f066999e646b8f23bd9a270f0ccc2319a99f15057615cdb1350",
    "limitations": [],
    "name": "CycloHexane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 525.9200000000001,
@@ -2603,6 +2616,7 @@
    "fluid_data_sha256": "c3d0f714013f557d1b61b328e3b4432c910d1f0695462530627f980990c74d29",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "CycloPropane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 378.385,
@@ -2767,6 +2781,26 @@
    "fluid_data_sha256": "ccb41d8e10af2bf3a5b80012ab8eb4541c793610e68bda731e1bd065be1c77db",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Cyclopentane",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 4437018.33223421,
+     "T": 509.4397123068415,
+     "rho_l": 4970.838383067659,
+     "rho_v": 2893.7525152129383
+    },
+    "theta_1e-4": {
+     "Psat": 4579419.577051583,
+     "T": 511.66889525013846,
+     "rho_l": 4084.972110544755,
+     "rho_v": 3755.611221061295
+    },
+    "theta_2e-4": {
+     "Psat": 4576077.284126711,
+     "T": 511.61772324341274,
+     "rho_l": 4153.128207252047,
+     "rho_v": 3688.0003217050303
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 486.134,
@@ -2930,6 +2964,7 @@
    "fluid_data_sha256": "76fa3e30dce7fed58687bbf2f047b5d5523114a514460d645009d9354b6c83a4",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "D4",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 557.175,
@@ -3094,6 +3129,7 @@
    "fluid_data_sha256": "c0eaba4cde75ae11feb686b6af03f9c325b81399dd615783e43c32962998837c",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "D5",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 587.385,
@@ -3257,6 +3293,14 @@
    "fluid_data_sha256": "c3cb644e22564ab032637c7aeb89da0e651a09eb349058041d7114d230cb9e98",
    "limitations": [],
    "name": "Deuterium",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 1678896.8018139813,
+     "T": 38.33726051711582,
+     "rho_l": 17673.359438833413,
+     "rho_v": 16787.406514154718
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 36.423,
@@ -3421,6 +3465,7 @@
    "fluid_data_sha256": "cdbe5c461350fbd46b0760375a05068adf0111fc1631bf7cd13cb36a09ef9151",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Dichloroethane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 533.52,
@@ -3585,6 +3630,7 @@
    "fluid_data_sha256": "64b156b5168a688901215661f677f4d3eddffb6d663fe549cee238eb917ead47",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "DiethylEther",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 443.365,
@@ -3749,6 +3795,7 @@
    "fluid_data_sha256": "7a5647a18e7845d601c97a06f758aba37dce333118641846c53ac55248c3c7b9",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "DimethylCarbonate",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 529.15,
@@ -3913,6 +3960,7 @@
    "fluid_data_sha256": "59bc5e7efa7799a540ac851c7e7300caf12a64e76e0d7ba8e0041f7178bff06f",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "DimethylEther",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 380.3591,
@@ -4076,6 +4124,14 @@
    "fluid_data_sha256": "c3365c42444984c5accb1ab2efbd224d0b121e541753441beb77a9b1c1841ce2",
    "limitations": [],
    "name": "Ethanol",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 6260924.81695976,
+     "T": 514.6482564780813,
+     "rho_l": 6184.820776877714,
+     "rho_v": 5664.542315404171
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 488.97450000000003,
@@ -4239,6 +4295,7 @@
    "fluid_data_sha256": "ec9f10297bc2c32bda85a19b673ff8fe6b062803c2c87827e382eefc6f386c3d",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "EthylBenzene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 586.264,
@@ -4402,6 +4459,7 @@
    "fluid_data_sha256": "ec19416d909e57292721e644c395054d5331532537bf89dc695ada0d8ef1f4a8",
    "limitations": [],
    "name": "Ethylene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 268.2325,
@@ -4566,6 +4624,7 @@
    "fluid_data_sha256": "d859354a113dcf19e917e9f77e905fc0927fc5b35866a965ff1d9c17af179540",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "EthyleneOxide",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 445.474,
@@ -4729,6 +4788,14 @@
    "fluid_data_sha256": "08568b71eb58524d9762228f978c2eb0d319a5b38bcb521269affa8f3ab0d0e7",
    "limitations": [],
    "name": "Fluorine",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 5237414.7662065625,
+     "T": 144.40533719893722,
+     "rho_l": 16069.884755087218,
+     "rho_v": 15110.896318002278
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 137.1933,
@@ -4905,6 +4972,20 @@
    "fluid_data_sha256": "1489addb39cdd047a1e7970a403f91a4452c75ecfb1046bce408eddb35a23046",
    "limitations": [],
    "name": "Hydrogen",
+   "nc_saturation": {
+    "theta_1e-4": {
+     "Psat": 1295727.5424830145,
+     "T": 33.14101825504217,
+     "rho_l": 16058.013442431611,
+     "rho_v": 14948.993269291079
+    },
+    "theta_2e-4": {
+     "Psat": 1295097.8828273416,
+     "T": 33.137703821773336,
+     "rho_l": 16286.86176737757,
+     "rho_v": 14723.320228296716
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 31.487750000000002,
@@ -5178,6 +5259,20 @@
    "fluid_data_sha256": "8c0cbfa57e7daa27fd9eeb61172e08ef88710889570f0d526614e59b06cc48ce",
    "limitations": [],
    "name": "Water",
+   "nc_saturation": {
+    "theta_1e-4": {
+     "Psat": 22046736.897502314,
+     "T": 647.0312903999799,
+     "rho_l": 19592.093966614582,
+     "rho_v": 16147.614159868319
+    },
+    "theta_2e-4": {
+     "Psat": 22029516.75814275,
+     "T": 646.96658079998,
+     "rho_l": 20038.25786556195,
+     "rho_v": 15700.783710752075
+    }
+   },
    "phi_states": {
     "delta_one": {
      "T": 582.3864,
@@ -5395,6 +5490,7 @@
    "fluid_data_sha256": "a75a303e4896bf081ebe3c1d2e1e4a46033fdfb31f284ead84fabb0cad6c6e20",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "HFE143m",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 359.02495,
@@ -5559,6 +5655,7 @@
    "fluid_data_sha256": "94bf8702df4d2e5463bb4d7ffd645e3e8066a03ef59275ec8423e4d286c7fc96",
    "limitations": [],
    "name": "HeavyWater",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 611.65465,
@@ -5723,6 +5820,7 @@
    "fluid_data_sha256": "9a46473824c2ebc948e1ead1efa0b8c81378912b851ec404e95dba8f02b2be7b",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "HydrogenChloride",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 308.446,
@@ -5887,6 +5985,7 @@
    "fluid_data_sha256": "6ad56c6b02693c29a916f39bd198bea17b4c8d93be0c7f172199183ccf0bfa8b",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "HydrogenSulfide",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 354.44500000000005,
@@ -6051,6 +6150,7 @@
    "fluid_data_sha256": "525b9dc9dba0540d924d4dfb2413be92fb3b950bf2e6ed5762094ea9a544cb35",
    "limitations": [],
    "name": "IsoButane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 387.4195,
@@ -6214,6 +6314,7 @@
    "fluid_data_sha256": "4ea61c29aeae0ce385504b024e34757624cf0488b0b9f03e0d7828b237ebeb72",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "IsoButene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 397.1855,
@@ -6377,6 +6478,7 @@
    "fluid_data_sha256": "e6552ffe1301b531cdfaad91bad266a2dce0ad3b099277bd5d89e8559882427d",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Isohexane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 472.815,
@@ -6540,6 +6642,7 @@
    "fluid_data_sha256": "7fef22d3895f38e61913e35bb3768347944bb63e87dbd409fc63e353a0440826",
    "limitations": [],
    "name": "Isopentane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 437.33250000000004,
@@ -6703,6 +6806,7 @@
    "fluid_data_sha256": "13ca586344a942df39ec5650ce364552215399d13f4f4197ab0a61f70e8d76d9",
    "limitations": [],
    "name": "Krypton",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 199.006,
@@ -6867,6 +6971,7 @@
    "fluid_data_sha256": "b78757fcecf18cd9ae1333d72aae25b119d6774d5901543f6be1961604d0b18c",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "MD3M",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 596.6,
@@ -7030,6 +7135,7 @@
    "fluid_data_sha256": "3cc459422f803c26f38b516f8c65fe5b1c5e0e917d773a715356633b10bfe527",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "MD4M",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 620.5400000000001,
@@ -7193,6 +7299,14 @@
    "fluid_data_sha256": "e0045f24462551920f51702a4f8c07066de1057468c2b0a5e5e62779f5671c0c",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "MDM",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 1434932.7535655643,
+     "T": 565.2416955737244,
+     "rho_l": 1208.0931806514304,
+     "rho_v": 1060.285818689894
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 537.092855,
@@ -7356,6 +7470,26 @@
    "fluid_data_sha256": "2285849612b7f29dd60c84b877f84db70db05613b48b3024e3334472822585e5",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "MM",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 1927691.1706921156,
+     "T": 518.5907582677291,
+     "rho_l": 1793.3535047953067,
+     "rho_v": 1513.3379541285942
+    },
+    "theta_1e-4": {
+     "Psat": 1929499.4591516964,
+     "T": 518.6482552697806,
+     "rho_l": 1750.7675855780165,
+     "rho_v": 1555.563348489168
+    },
+    "theta_2e-4": {
+     "Psat": 1927867.9572556568,
+     "T": 518.5963852572525,
+     "rho_l": 1789.8435183212164,
+     "rho_v": 1516.8127618534886
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 492.76500000000004,
@@ -7514,6 +7648,7 @@
    "fluid_data_sha256": "41169384fcca81ed8ebbcbcff3743528c12d745d568a5c6cea416bf65049dd09",
    "limitations": [],
    "name": "Methanol",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 487.711,
@@ -7677,6 +7812,7 @@
    "fluid_data_sha256": "63965c7435b1763b08b85eb42c3490f3b8be0eb628d8fbb89b02b005a051a1bd",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "MethylLinoleate",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 759.05,
@@ -7840,6 +7976,7 @@
    "fluid_data_sha256": "d3dff31cfee03e040dab3469e17a0362381f42afef0dab47d2e01b441edc45a7",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "MethylLinolenate",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 733.4,
@@ -8003,6 +8140,7 @@
    "fluid_data_sha256": "0e8aa9edf09cf24748674bac3565cfc6d31b2997be4cd73263f5e0dead47dae1",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "MethylOleate",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 742.9,
@@ -8166,6 +8304,7 @@
    "fluid_data_sha256": "236fb3d18b8687ca475f176fa2b3e1a698459b10b7bb3ded708705786d97c137",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "MethylPalmitate",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 717.25,
@@ -8329,6 +8468,7 @@
    "fluid_data_sha256": "eeb4f66beb74ab96d03c1e8f777c11bc6b9d746ee4e2eccdb783f26b169675fb",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "MethylStearate",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 736.25,
@@ -8504,6 +8644,7 @@
    "fluid_data_sha256": "d1a6659e2ee65b2ab7ea8a53758fbae50fb5bdf18d8b3d6cc9bddeef0b2a847f",
    "limitations": [],
    "name": "Nitrogen",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 119.88239999999999,
@@ -8716,6 +8857,14 @@
    "fluid_data_sha256": "792571f959bd3374a67b49ab99b8c245efb3eff31f9f927760453047750e5967",
    "limitations": [],
    "name": "Neon",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 2659501.9373595687,
+     "T": 44.39385752070135,
+     "rho_l": 25251.265014634617,
+     "rho_v": 22953.027492178386
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 42.18,
@@ -8880,6 +9029,7 @@
    "fluid_data_sha256": "eee8512c210fd3de0a3ed2cc9c57ad0f6101242e83306e2a1d2025ef3d488476",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Neopentane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 412.053,
@@ -9044,6 +9194,7 @@
    "fluid_data_sha256": "d19ad55abc36e61fec4c319969c977a431ea4856f199beb8505b80d687aed843",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "NitrousOxide",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 294.044,
@@ -9208,6 +9359,7 @@
    "fluid_data_sha256": "c49ccb45e326a8a94e1db53c3bfcd3954d6324529921e599dfb14ad90be050b5",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Novec649",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 419.7195,
@@ -9383,6 +9535,20 @@
    "fluid_data_sha256": "d6459b1a18fd9be8b724c185c9c0fdb5f9a98a663f036479bb1742441cf2333d",
    "limitations": [],
    "name": "Oxygen",
+   "nc_saturation": {
+    "theta_1e-4": {
+     "Psat": 5043409.780027086,
+     "T": 154.58392989630207,
+     "rho_l": 14086.64561949224,
+     "rho_v": 12680.653460829442
+    },
+    "theta_2e-4": {
+     "Psat": 5040406.45726524,
+     "T": 154.56846995731854,
+     "rho_l": 14402.53878226457,
+     "rho_v": 12432.401182445099
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 146.85195,
@@ -9595,6 +9761,7 @@
    "fluid_data_sha256": "d6d659eae37f7e09764c728c104afd8158885643bc3b79423c813b7f0afa251a",
    "limitations": [],
    "name": "OrthoDeuterium",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 36.423,
@@ -9759,6 +9926,7 @@
    "fluid_data_sha256": "3b76f8e1bb09f16a17d7c7f598a8d795a8583096af95153bc4cefb81487b71d1",
    "limitations": [],
    "name": "OrthoHydrogen",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 31.558999999999997,
@@ -9923,6 +10091,7 @@
    "fluid_data_sha256": "45d21140abf0088c1da070c3a627c6d218a93fdd3fa58b53abe5a0c1551a54aa",
    "limitations": [],
    "name": "ParaDeuterium",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 36.423,
@@ -10087,6 +10256,7 @@
    "fluid_data_sha256": "64ff55ee9ebd0407fd1eb98230566ab4b9375bc70e4cf2f39b85a1a504f777b2",
    "limitations": [],
    "name": "Propylene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 346.00045,
@@ -10250,6 +10420,7 @@
    "fluid_data_sha256": "caa5ae867f96fe9ef18728a99f8477505188a85cf8ef732ae6f07f942681ca7a",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "PropyleneGlycol",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 640.3,
@@ -10413,6 +10584,7 @@
    "fluid_data_sha256": "3cfc7b1e16f1b0610c33ec32d8dfdba58e38de40cc203f98794168f0c88671fa",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Propyne",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 382.26099999999997,
@@ -10577,6 +10749,7 @@
    "fluid_data_sha256": "8bf4e3f08057699f4f58f80b2329dd40e284b95ecf4eb394a63a2cc58d631b34",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R11",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 447.5545,
@@ -10740,6 +10913,7 @@
    "fluid_data_sha256": "0a3feb585c6fb4b6d9066d8af458aaa2041540205adc79104c276e940dc69203",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R1123",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 315.1435,
@@ -10904,6 +11078,7 @@
    "fluid_data_sha256": "ebd856f95beb70d4f27f094d98aa1383e790c8cc3f2c37b53219bb30c7768e15",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R113",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 462.8495,
@@ -11068,6 +11243,7 @@
    "fluid_data_sha256": "9964c551d40a926647be679cc2106d86adc70ae8edbdf5840ae9f14b91544a78",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R1130(E)",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 489.9055000000001,
@@ -11232,6 +11408,7 @@
    "fluid_data_sha256": "6fc91f363b54666f7b224624dee83e739cf0310e5d7042d09329a4fe9f5f2382",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R1132(E)",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 331.379,
@@ -11396,6 +11573,14 @@
    "fluid_data_sha256": "06dcd2298995ac96a0b3380bb988b6f3e1444b3b8baa411c6445d7b20dda85bf",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R114",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 3348726.864078111,
+     "T": 420.54071245851645,
+     "rho_l": 3516.4150224526907,
+     "rho_v": 3193.6121058197505
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 397.88849999999996,
@@ -11560,6 +11745,7 @@
    "fluid_data_sha256": "e5e7b08284852bcbfa80f33b7acd4cb7f256922872c4336caef96ec8560302c6",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R115",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 335.44500000000005,
@@ -11724,6 +11910,7 @@
    "fluid_data_sha256": "7be3d902b729606f2cd254b5b7680817635637dfd2223564b81223ed528a05e7",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R116",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 278.3785,
@@ -11888,6 +12075,7 @@
    "fluid_data_sha256": "a93f6dd46dadbe43919872bb55bd90905e594afbe0f154c79961fce384544483",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R12",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 365.86400000000003,
@@ -12046,6 +12234,7 @@
    "fluid_data_sha256": "45f97d3280b8b050504c496869c8ab1011ed022472ddb6c2dfa5ef45d31730e3",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R1224YDZ",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 407.2555,
@@ -12209,6 +12398,7 @@
    "fluid_data_sha256": "100b4c36d6b6fe13c6f6ddfa39dc8222645a60c72729b87857e32a05b3eec463",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R123",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 433.98945000000003,
@@ -12372,6 +12562,7 @@
    "fluid_data_sha256": "a3864aa3a18160a155493418a988a52cbbb41cb9c07f490b6ef216c9d4303928",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R1233zd(E)",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 416.91700000000003,
@@ -12535,6 +12726,7 @@
    "fluid_data_sha256": "fc7fa1074d89a9805f0217a2533922c48708c7898a181df2059fd0fa5dae1b5e",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R1234yf",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 349.45750000000004,
@@ -12698,6 +12890,7 @@
    "fluid_data_sha256": "aa13a1ab5e28a064c1a31fde65bb2ba975fc1bd0d5ebf414d5d9b0fd36029238",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R1234ze(E)",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 363.38734999999997,
@@ -12862,6 +13055,14 @@
    "fluid_data_sha256": "48c56acbac0bbc0a986d3fbd3eefc65707f50cae62d6718ff24801d7fb7ecf86",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R1234ze(Z)",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 3497836.096306984,
+     "T": 422.75709583022785,
+     "rho_l": 4954.856858310193,
+     "rho_v": 3073.980774056524
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 402.1065,
@@ -13026,6 +13227,7 @@
    "fluid_data_sha256": "4cc6d6c26ca277b0c71bdf7455d2c23d5b50485bbfc2c3896b0c7ed6b9cb4828",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R124",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 375.65375,
@@ -13189,6 +13391,7 @@
    "fluid_data_sha256": "43c9e662e4432b79f09e0a1b1106aad1ead93676f30486a5ff78a4338eb54af9",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R1243zf",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 358.0835,
@@ -13352,6 +13555,7 @@
    "fluid_data_sha256": "6d07b8f1a38b3fa2c27d7a6dc53eb0ca2b897707ed0ba6e34dd892b09aafdb5c",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R125",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 322.21435,
@@ -13516,6 +13720,14 @@
    "fluid_data_sha256": "1197d23089340d6dbef13aeab8664a1e1c823e4a894dcc4568111c71a8570234",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R13",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 3970714.505161031,
+     "T": 303.02296026384147,
+     "rho_l": 5713.6920893994875,
+     "rho_v": 5319.34082262644
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 286.786,
@@ -13679,6 +13891,7 @@
    "fluid_data_sha256": "bda7399af940d2df92a36d70314e1dbc6a6fba0c4e55dbfa4c895b17c12b7764",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R1336mzz(E)",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 383.3535,
@@ -13843,6 +14056,7 @@
    "fluid_data_sha256": "51ad933d3654c63d0bfb974af0adae819d6a358b04ce76fd6258b36531c5a6e4",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R1336mzz(Z)",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 422.275,
@@ -14006,6 +14220,26 @@
    "fluid_data_sha256": "7cf8072ec07c83ffd672f95040157d92e2bef24a9f9c33d347642c0fdeb979fe",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R134a",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 4031681.2803700496,
+     "T": 373.87923986736416,
+     "rho_l": 5905.311011952397,
+     "rho_v": 4111.917485075811
+    },
+    "theta_1e-4": {
+     "Psat": 4056145.1963831238,
+     "T": 374.1745453882897,
+     "rho_l": 5372.079625494372,
+     "rho_v": 4653.405837143209
+    },
+    "theta_2e-4": {
+     "Psat": 4053023.446630334,
+     "T": 374.1371241916312,
+     "rho_l": 5500.420910296333,
+     "rho_v": 4520.353097531338
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 355.471,
@@ -14170,6 +14404,7 @@
    "fluid_data_sha256": "1de4b94e46f105b9524edf69e2592882aec08e70f3e0a9c7e5b8128480a05e88",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R13I1",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 376.618,
@@ -14333,6 +14568,26 @@
    "fluid_data_sha256": "fedc380a6ab3e8511b62ae641438070fa2792177ffb0f92aacb35e89dd47a655",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R14",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 3757104.7814678745,
+     "T": 227.35074922917502,
+     "rho_l": 7609.629663926615,
+     "rho_v": 6627.010642907935
+    },
+    "theta_1e-4": {
+     "Psat": 3759778.031610118,
+     "T": 227.37348885202246,
+     "rho_l": 7470.798968257024,
+     "rho_v": 6771.634592966429
+    },
+    "theta_2e-4": {
+     "Psat": 3757104.7814678713,
+     "T": 227.350749229175,
+     "rho_l": 7609.629663926761,
+     "rho_v": 6627.010642907781
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 216.1345,
@@ -14497,6 +14752,7 @@
    "fluid_data_sha256": "083c962832444b93f56bc20032a07d356a9bb9fca3a059ea5d82d00b3450f371",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R141b",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 453.625,
@@ -14660,6 +14916,7 @@
    "fluid_data_sha256": "9bd72de80be85e7983154a8efab15712740b7831ec23585e7ccf53e32d60dafb",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R142b",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 389.747,
@@ -14823,6 +15080,7 @@
    "fluid_data_sha256": "4132755eedc998ed81d23d4fd2914708adb4bd1adfbc9b4775a2c351b5955ed5",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R143a",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 328.56415000000004,
@@ -14987,6 +15245,14 @@
    "fluid_data_sha256": "ce741bbf1c2d01e30f939cb9e5431141a95982d5d259e5d00d1c4dfc9497554a",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R152A",
+   "nc_saturation": {
+    "fallback": {
+     "Psat": 4514938.928720909,
+     "T": 386.39053241276565,
+     "rho_l": 5830.236831724247,
+     "rho_v": 5309.641611894973
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 367.09045,
@@ -15146,6 +15412,7 @@
    "fluid_data_sha256": "7f9d5783139a7ba876bafecba095aefad5bf33011a326f1b263607e7bf7d0654",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R21",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 428.906,
@@ -15305,6 +15572,7 @@
    "fluid_data_sha256": "d8bdcbf648d6e1f3be64f96f2415f3d2166e930db399eeb309ef01121edd145a",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R218",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 327.769,
@@ -15468,6 +15736,26 @@
    "fluid_data_sha256": "eb9399dcd0b0f2729fbcde4a9c1e287843f8c46d461fa25f5a59732e8c05e550",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R22",
+   "nc_saturation": {
+    "theta_1e-4": {
+     "Psat": 4986446.73439835,
+     "T": 369.258070508023,
+     "rho_l": 6503.812879017071,
+     "rho_v": 5586.538149504195
+    },
+    "theta_2e-4": {
+     "Psat": 4982906.454873298,
+     "T": 369.22114100802224,
+     "rho_l": 6649.825163385028,
+     "rho_v": 5430.520402913992
+    },
+    "theta_5e-5": {
+     "Psat": 4988221.328763118,
+     "T": 369.2765352580234,
+     "rho_l": 6388.106208520395,
+     "rho_v": 5711.427825540461
+    }
+   },
    "phi_states": {
     "phi_dilute": {
      "T": 350.83025000000004,
@@ -15631,6 +15919,7 @@
    "fluid_data_sha256": "f97a5fac649f0bc4987d1296afc47031c392f75b6bd890081357b6861f1b0d0c",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R227EA",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 356.155,
@@ -15794,6 +16083,7 @@
    "fluid_data_sha256": "96ee68cdb29564ac33d4337749ec7461d84c7941616c2f3dbd86ec63e2369e91",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R23",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 284.32835,
@@ -15958,6 +16248,7 @@
    "fluid_data_sha256": "8559673513d8e58ccf1b9b007dc2c87e8bde61e31c153bed573ba3b0038e108d",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R236FA",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 378.1665,
@@ -16122,6 +16413,7 @@
    "fluid_data_sha256": "efb188b2a7d792f33f68ee5191944fee8515a35db0fa4d8731d18574ac30b912",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R245ca",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 425.1915,
@@ -16286,6 +16578,7 @@
    "fluid_data_sha256": "1258b07211f765196ae16a0ad7f74e6e9121b267fef1d7614e3fbd4f27492d74",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R245fa",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 405.6595,
@@ -16449,6 +16742,7 @@
    "fluid_data_sha256": "bf27c98dc6eefcd858cb950b4e30eb7aa82beb08e24b93a58f52e90d3e6f30f9",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R32",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 333.69225,
@@ -16608,6 +16902,7 @@
    "fluid_data_sha256": "0564b48f5ce3e4f64c4383d287476882ebc717379f92b5cd8ab185170cea3db7",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R365MFC",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 437.0,
@@ -16772,6 +17067,7 @@
    "fluid_data_sha256": "88a3f2ecf7447b84bf242f48254c7fad5bba8205c3d84e0f3418d335f9a1aef4",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R40",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 395.485,
@@ -16936,6 +17232,7 @@
    "fluid_data_sha256": "12b1163529d173a80b4d7302c7f8e00204298060f0529ca51ff94a1e44d6e7be",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "R41",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 301.416,
@@ -17095,6 +17392,7 @@
    "fluid_data_sha256": "3201d582fb57edb18e95aa9c3157d84bec6134651a30cbe345fde7796811fc44",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "RC318",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 368.961,
@@ -17259,6 +17557,7 @@
    "fluid_data_sha256": "b94c7f4867633a6e214025f3bfc2cd3b1cf5739b41d9844530d3fa4f0c304a12",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "SulfurDioxide",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 409.108,
@@ -17423,6 +17722,7 @@
    "fluid_data_sha256": "7d0b7a09a99a755cc078689265815c727f8a5bfb7b5a4a05c7e4ea33c84115d4",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "SulfurHexafluoride",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 302.78704000000005,
@@ -17587,6 +17887,7 @@
    "fluid_data_sha256": "a1b5c6cef7098bbda4d642f6550b1bf71b0b672f01fe9ed711b7af5399d43f1a",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Tetrahydrofuran",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 513.19,
@@ -17750,6 +18051,7 @@
    "fluid_data_sha256": "6c4f5e0bd1111fb2bcd161292498722ecba2b3efa71e84c0df34e92f87b2b8ff",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Toluene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 562.1625,
@@ -17913,6 +18215,7 @@
    "fluid_data_sha256": "27d6b8d1eb7f29891620cb93169057db4523825473ccd5fbca900353be5987d1",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "VinylChloride",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 403.75,
@@ -18076,6 +18379,7 @@
    "fluid_data_sha256": "9578ef916a85b7b17a88d2ee0a432795367f093a891ed0969076013192180481",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "Xenon",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 275.24635,
@@ -18240,6 +18544,7 @@
    "fluid_data_sha256": "7dcef74d18d155337c6001f4a6d20d8fe2a34499c90a889aa0edeeb1d7a49b59",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "cis-2-Butene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 413.9625,
@@ -18403,6 +18708,7 @@
    "fluid_data_sha256": "a6b56ec9e0bfdfb6fee101b34cb6ff34324ca0bd884d7cb4807f983c473fa887",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "m-Xylene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 586.0455,
@@ -18566,6 +18872,7 @@
    "fluid_data_sha256": "d486196625eb551f230ddf67fd49fba2a23b990c4774b6d196cc4c644ad8d2b8",
    "limitations": [],
    "name": "n-Butane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 403.86875,
@@ -18729,6 +19036,7 @@
    "fluid_data_sha256": "688e4b66f3934b6a7751d4a982e20e7ba746ee77f48a5138771fc10d7615380b",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "n-Decane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 586.815,
@@ -18892,6 +19200,7 @@
    "fluid_data_sha256": "c9d38203404934702e2776bbfa8238dd022b5a8a7b8ea48d3c92c33553059c03",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "n-Dodecane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 625.195,
@@ -19055,6 +19364,7 @@
    "fluid_data_sha256": "b83be75022c497c1a43357d10c8fec77189937cb1a0b8208e14d8a0cd396f0d9",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "n-Hexane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 482.429,
@@ -19218,6 +19528,7 @@
    "fluid_data_sha256": "fd39b7c1afa1ba2b9a5883afc30f2dccf21fcd52625b152d2e6c2668bbcb2709",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "n-Nonane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 564.8225,
@@ -19381,6 +19692,7 @@
    "fluid_data_sha256": "4a15c54d68e434371bd91bd572c2c93f096d0ea3453071624ea03f0973a54401",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "n-Octane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 540.303,
@@ -19544,6 +19856,7 @@
    "fluid_data_sha256": "fcc84dc5e35f2cf20bcc68b83e543c20a002a091eb6430e4b6ff2970ace97422",
    "limitations": [],
    "name": "n-Pentane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 446.215,
@@ -19707,6 +20020,7 @@
    "fluid_data_sha256": "d68e8c572ba8e20d8214a2b24436b6a17fa547fa08a0d781194eb4a0c64debf6",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "n-Perfluorobutane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 367.0097,
@@ -19870,6 +20184,7 @@
    "fluid_data_sha256": "4c8edb59e9291e7d1cb31b6a9f35c3bb052b95688644527bcefb82b477245a04",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "n-Perfluorohexane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 425.6,
@@ -20033,6 +20348,7 @@
    "fluid_data_sha256": "07d45c7502383471ea6d8a9cfabf5d0bd62d161764f119360517896cf1d6dddb",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "n-Perfluoropentane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 399.95,
@@ -20196,6 +20512,7 @@
    "fluid_data_sha256": "8c99019c3e125b107bcdfcd8d5bf34c65ac8218861276a6943c52c5801665a3c",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "n-Undecane",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 606.8599999999999,
@@ -20359,6 +20676,7 @@
    "fluid_data_sha256": "a9e5cfd3b47998486e6b15f084b22dac9cba607b8e4c7e7337a8b42060f49287",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "o-Xylene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 598.74605,
@@ -20522,6 +20840,7 @@
    "fluid_data_sha256": "8e4e53d596366882b52be70f4024887831f90ea3d653689ebfaf2ba73d40deaa",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "p-Xylene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 585.3596,
@@ -20686,6 +21005,7 @@
    "fluid_data_sha256": "92cb70fbc4d640809413d66d1f9014c6d04bbeda8ee9bed1fa02418e3e5c4a98",
    "limitations": ["lower temperature bound estimated from the triple point (no melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting slope exceeds 0.01/MPa*T_t"],
    "name": "trans-2-Butene",
+   "nc_saturation": {},
    "phi_states": {
     "phi_dilute": {
      "T": 407.1795,
