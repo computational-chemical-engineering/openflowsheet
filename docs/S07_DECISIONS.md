@@ -425,9 +425,53 @@ after each commit (scratch `recplug.py`/`cmp.py`).
    packaging range (`92779215..C_m`, an exact file list); on `wp/S07` no base makes it pass, so the manifest would be
    `implemented`. Needs a ruling on how A33 is carried (e.g. by hash from `01cdeed4`'s manifest).
 
+## Review fixes (R-626, spec §19.8) and WO-S07-NC4
+
+CoolProp scratch venv, x86-64, `OPENFLOWSHEET_REQUIRE_COOLPROP=1`. No provider file changed; no answered value changed.
+
+- **`e27d493a` A47 and the scan take §19.2/§19.3.** N3 bounds: densities 1e-11 (θ ≥ 1e-2) / 3e-8; p_σ 1e-12 / 1e-10.
+  The two R22 N3 tests now pass (246 N3 cases). `nc_scan.py`: PASS, 19759 points, 0 G1/G2 failures, fallback at
+  343, max polish 8, max fallback jets 414 (tripwire 500), near ρ 1.10e-8, far ρ 5.09e-12, near p_σ 6.54e-12, far
+  p_σ 6.79e-13 (14532 pairs).
+- **`b79375b3` C-strip (§19.4).** Holds for all 123 fluids at T_σ,max and T_c(1 − θ), θ ∈ {1e-4, 5e-5, 1e-6}
+  (984 claims). JSON: only the claim ledger changes; every value and the fluid table byte-identical. Generator
+  wall 112 s → 306 s (CPU 1401 → 4658 s; the k grid at 50 digits is most of it).
+  - **B-31 — DECISION (claim id):** C-strip is ledger id `C20` (statement starts "C-strip (§19.4)"), because the
+    ledger orders ids numerically. Alternative: a non-numeric id with a changed sort. Reversible: rename.
+  - **B-32 — DECISION (the generator's QT-free saturation, §19.5 "a seed of its own choice"):** spinodals by
+    stepping out of ρ_c (k(ρ_c) < 0 claimed) in steps doubling from ρ_c·θ^½/64, then bisection; pressure bisection
+    on g' − g'' between the spinodal pressures to 1e-6 of that range; then the existing Newton, run at dps + 20
+    with the 50-digit tolerance (its conditioning ~θ^(−3/2); at dps 50 it did not meet 1e-44 at θ = 1e-6 for
+    CO2, R22, Neon, Ammonia, H2). Checked against the QT-seeded root at T_σ,max: < 1e-40 for all 123.
+    `saturation()` gained an optional `tol`, default unchanged. Alternative: QT seeds (excluded by §19.5).
+  - **B-33 — DECISION (grid spelling):** (0, ρ_max] is ρ_max·i/401, i = 1…401; [ρ'', ρ'] is ρ'' + (ρ' − ρ'')·i/400,
+    i = 0…400; the bisection stops at 1e-25 relative. C-strip uses the QT-free solve at all four T. Reversible in `c20`.
+- **`45cdcb19` A49 branch check; identity scripts.** All 123 × 7 × 4 strip states on their branch. `recplug.py`
+  and `cmp.py` committed under `docs/derivations/scripts/s07_measurements/`. Digests (sha256 of the records):
+  - **S07 (G2):** pre-change (`2cd05bca`) and after the refactor `16387740`
+    `405a6a65ce234f44b6f902db9c775f394a7959369005266f9c5a5a392f83324f` (35803 keys); after D3 `c76bc19b`
+    `2d95732312c94945c91527854c97f9f7c1f4056bf7b3068a69d7ad944779ceb3` (35890 keys: 35718 identical, 85 former
+    refusals answered, 0 answers changed). Re-run with the committed scripts at `45cdcb19`: `2d957323…` reproduced.
+  - **S05 (G7(b)):** `2bd5e0edc2f1dd001b89d51a313c4fd728481086a2f75493bacd151fccfd7b8e` before and after
+    `8cab0e15` (38010 lines, 22782 keys); reproduced at `45cdcb19`.
+- **`def4a3ec` A48 references (§19.5).** 30 references in `fluids[*].nc_saturation` (I8 claimed to 1e-30 each).
+  `NC_FALLBACK_T`, registered from `nc_scan.py` (which now records every fallback T), at θ: Cyclopentane 4.46e-3,
+  R1234ze_Z 1.21e-3, R134a 8.89e-4, MDM 2.11e-4, MM 2.11e-4, R14 2.00e-4, R114 1.59e-4, Neon 1.38e-4, Ethanol
+  1.19e-4, R13 8.89e-5, Deuterium 7.14e-5, Fluorine 6.29e-5, R152A 5.30e-5. A48 passes 30/30: θ ≥ 1e-4 (25) worst
+  ρ 1.45e-10, p_σ 1.33e-13; θ < 1e-4 (5) worst ρ 4.06e-9, p_σ 2.42e-12 (all R22).
+  - **B-34 — DECISION (layout):** a per-fluid key `nc_saturation` (`{label: {T, rho_l, rho_v, Psat}}`, labels
+    `theta_2e-4`, `theta_1e-4`, `theta_5e-5`, `fallback`; empty for the other fluids), added to C3's whitelist.
+    Alternative: entries in `saturation` (whose tests parametrize over fixed keys). Reversible: move the key.
+- **F-6 h-scan record (§19.6)**, the two fluids above 1e-11, measured by the reviewer (`docs/reviews/S07-review.md`):
+  R22 `L_corner` h in P 2.1e-11…6.6e-11 and s in T 2.9e-11…7.5e-11 over h/x = 1e-8…1e-4 (independent of h: value
+  noise); PropyleneGlycol `S_dense` cp in T 2.1e-13 → 1.3e-5 (∝ h³: truncation). Both accepted.
+- **Gates.** `s07_reference.py --check`: all claims, json and fluid table byte-identical on re-run (329 s). S05 + S07
+  (7 files): 3833 passed, 1 skipped; project venv 766 passed, 3068 skipped. ruff and format clean.
+- **DECISION:** S05 A33 evidence carried in S07's manifest (reviewer default; session, 2026-10-23).
+
 ## Handoff: next
 
-Q-B4 is implemented (WO-S07-NC2, NC3; above): tier B passes (2626). Open for the design lane, in one round: the
-G3 and G8 misses and the S05 manifest's A33 (list above), F-6 and B-15, B-18-B-30. Not done here: WO-S07-NC1
-(specifier, Amendment 3 + S05 erratum), WO-S07-NC4 (generator: C-strip, 50-digit near-critical roots, N4), the
-reviewer pass, then WO-S07-3 (registration manifest with the U02 item, A29-A31, platform digest) and G9.
+The review fixes (§19.8) and WO-S07-NC4 are done (above); A45–A50 and C-strip pass on x86-64. Next: WO-S07-3
+(registration manifest with the U02 item, the S05 section carrying `8cab0e15`'s A33 evidence, A29–A31, platform
+digest, the G2/G7(b) digests above), then G9 (full gate, CI on both architectures; §19.1's θ_min remedy if A45
+fails on aarch64).
