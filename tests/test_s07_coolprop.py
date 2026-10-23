@@ -22,7 +22,7 @@ import math
 import subprocess
 import sys
 import types
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
@@ -340,8 +340,8 @@ def probe_problems(provider: Provider, cid: str, tags: tuple[str, ...]) -> list[
     return problems if count else [f"no {tags} probe in ref"]
 
 
-def a28_problems(module: types.ModuleType) -> list[str]:
-    """§16.9's recipe from the files' bytes, and §5.1's canonical fluid hash."""
+def a28_problems(module: types.ModuleType, cids: Iterable[str] = tuple(TIER_A)) -> list[str]:
+    """§16.9's recipe from the files' bytes, and §5.1's canonical fluid hash, for `cids`."""
     problems = []
     canonical = {"sort_keys": True, "separators": (",", ":"), "ensure_ascii": True}
     implementation = hashlib.sha256(
@@ -357,7 +357,7 @@ def a28_problems(module: types.ModuleType) -> list[str]:
             **canonical,  # type: ignore[arg-type]
         ).encode()
     ).hexdigest()
-    for cid in TIER_A:
+    for cid in cids:
         described = module.CoolPropHeosProvider(cid).describe()
         data = hashlib.sha256(
             json.dumps(
@@ -486,7 +486,12 @@ def test_a01_constants_are_refs_bitwise(cid: str) -> None:
 
 @pytest.mark.parametrize("cid", TIER_A)
 def test_a02_describe(cid: str) -> None:
-    described, fluid = PROVIDERS[cid].describe(), FLUIDS[cid]["constants"]
+    check_a02(PROVIDERS[cid], cid)
+
+
+def check_a02(provider: Provider, cid: str) -> None:
+    """A02: `describe()` as spec §3.2, with §16.8's strings (both tiers)."""
+    described, fluid = provider.describe(), FLUIDS[cid]["constants"]
     assert described.provider_id == "coolprop-heos-v1"
     assert described.reference_convention == "COOLPROP-DEF-ref-v1"
     assert described.state_definition == "nTP-v1"
@@ -610,7 +615,7 @@ def test_a33c_no_fluid_literal_in_the_algorithm_module() -> None:
     assert literals & spellings == set()
 
 
-@pytest.mark.parametrize("cid", list(FLUIDS))
+@pytest.mark.parametrize("cid", TIER_A)
 def test_a34_tier_and_bound_are_reported(cid: str) -> None:
     assert a34_problems(Provider(cid), cid) == []
 
