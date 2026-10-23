@@ -765,12 +765,14 @@ limitations:
       - doc:docs/derivations/T03-phase-controller-spec.md §13
   - id: L40
     text: >-
-      The reference-tool data (the IDAES and DWSIM environments, their downloads and their
-      outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's
-      own code, its package data (since M01 including the five C1 records, M01 spec §15 Q-N4's
-      default) and its licence files only, and every ComponentRecord is synthetic (SYN-001) or
-      one of M01's five real C1 records, each with its identifiers, rights,
-      per-parameter provenance and retrieval equality (M01 spec §3.5, R-158).
+      The reference-tool data (the IDAES and DWSIM environments, their downloads and their outputs) and
+      OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's own code, its
+      package data (since M01 including the five C1 records, M01 spec §15 Q-N4's default), its licence
+      files and one third-party data file, the IAPWS-95 coefficients
+      `benchmarks/s05/iapws95_coefficients.json`, under IAPWS's terms with their attribution in NOTICE
+      (S05 spec §16, R-616, R-617), and nothing else; every ComponentRecord is synthetic (SYN-001) or
+      one of M01's five real C1 records, each with its identifiers, rights, per-parameter provenance and
+      retrieval equality (M01 spec §3.5, R-158).
     evidence:
       - tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel
       - tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_rights
@@ -5016,6 +5018,78 @@ harvest:
   item: checks[24]
   check_id: S06.gate
   sha256: 9add6cc7a77ee4d7a7c8fc509abbb15b6af1fbc568f7f769aa769a3d6099c640
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+  item: limitations[0]
+  sha256: 8a1cbd0f34bf6a4d05286551785304fcf7cb3ed112d96a90f787c3ec2cd7a595
+  class: E
+  to:
+  - U02
+  note: S05's `iapws95-v1` is library-only (U02); the IAPWS terms for R6-95 were read and the rights row is `permitted with conditions` (attribution to IAPWS); Frank decided to ship the coefficient file with attribution (R-616); no released status (spec §16, R-616, R-617)
+- manifest: evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+  item: limitations[1]
+  sha256: 7bd9ebbde03e4836c4855ff0b4cf541cbb1efed6109ec9d4e319146ee3d1af49
+  class: E
+  to:
+  - U02
+  note: S05's `iapws95-v1` is library-only (not in SELECTABLE_BASES, U02); registered in LIBRARY_ONLY_PROVIDERS and scanned_providers (spec §8 F-2, R-568, R-569)
+- manifest: evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+  item: limitations[2]
+  sha256: 5e2a215bbe29010c76b994fdaadbd69f473070ece31d5057a37d4f765dc032cf
+  class: E
+  to:
+  - U02
+  note: S05's `iapws95-v1` is library-only (U02); Tables 1, 2 and 6-8 are compared with 0 mismatches in 385 values, M is not compared with a printed copy (Q-7); numerical verification, not empirical validation (spec §15.1, R-569)
+- manifest: evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+  item: limitations[3]
+  sha256: 10627d8dfcd42b78f810c1e8c9906ab2549131ba2d2aa415af57d5fd59e8353b
+  class: P
+  to: []
+  note: the IAPWS-95 coefficient file is package data with IAPWS's attribution in NOTICE (R-616, R-617); the library-only status (U02) is unchanged, and L40 states the one third-party data file
+- manifest: evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+  item: limitations[4]
+  sha256: 4e2405d4fb013880d93f229fcc550d5f075df5ccb371215c68bb8c0c2191ad5e
+  class: E
+  to:
+  - U02
+  note: S05's `iapws95-v1` is library-only (U02); it refuses the near_critical box (R-590, R-569)
+- manifest: evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+  item: limitations[5]
+  sha256: d0928c986de59c966d6c848d3bc16e90d8bcbb38d88070ca6db14cd0ff32e0b4
+  class: E
+  to:
+  - U02
+  note: S05's `iapws95-v1` is library-only (U02); its saturation band is eps_sigma = 1e-6, metastable states beyond it are refused (R-590, R-569)
+- manifest: evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+  item: limitations[6]
+  sha256: 10b19f3b1cba1c0058f9b99565ab413cc2630c88bd702bc88285e75a323cf0c3
+  class: P
+  to: []
+  note: S05's cross-check (CoolProp, iapws) is the design lane's, recorded by hash and commit; not re-run by the build lane (R-586)
+- manifest: evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+  item: limitations[7]
+  sha256: ec69d0c3a2e46505f300e2d5a2e306f51543408446d6c62e8efde48df4f9ac77
+  class: P
+  to: []
+  note: S05 lists D08 (R-614); ADR 0045 is Accepted and spec §8 F-1 is made
+- manifest: evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+  item: limitations[8]
+  sha256: 4fa5a3ab318b31ba0c12069e15bc18b439891f11f5ac1b941d1ac25b8e2097a6
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+  item: limitations[9]
+  sha256: 58a5e4912bbae1663cca427908690ec521c98faf4154b24f52b556423f0488f1
+  class: P
+  to: []
+  note: 'S05 review: R-595…R-599 ruled and applied by WO-S05-3; the reviewer''s diff check and the human numerical and process-model review are pending; the R-595 clause-2 QUESTION goes to it'
+- manifest: evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+  item: checks[37]
+  check_id: S05.gate
+  sha256: 7365ec9417efcef4aa85914ebeee750cd86940857a7b25cd23b0091cb3b380c3
   class: P
   to: []
   note: scripts/gate.sh runs once before merge, not by the generator; unsupported here

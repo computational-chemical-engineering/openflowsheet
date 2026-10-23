@@ -91,8 +91,8 @@ def test_every_packaged_file_reads_the_repository_bytes() -> None:
     # Every registered schema, and every packaged path that is a file rather than a directory.
     assert sum(1 for r in expected if r.startswith("schemas/")) == len(_registry())
     # Four before M02; M02 (R-317 (b)) added the external addendum. (Not a schema count: the
-    # packaged single files, which `PACKAGED` lists.)
-    assert sum(1 for r in expected if r in PACKAGED) == 5
+    # packaged single files, which `PACKAGED` lists.) S05 (R-616) added the IAPWS-95 coefficients.
+    assert sum(1 for r in expected if r in PACKAGED) == 6
     for relative, data in expected.items():
         assert packaged(relative).read_bytes() == data, relative
     assert sorted(

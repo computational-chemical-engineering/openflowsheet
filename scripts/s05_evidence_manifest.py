@@ -8,9 +8,9 @@ differs from it; S01's rule):
 1. **The S05 tests** (`tests/test_s05_*.py`, one `pytest --junitxml` run). A test cites the
    assertions its function name carries (`test_a22_…` cites A22). `S05.Axx` passes only if at
    least one node cites it and every node citing it passed: a failure, an error, a skip or an
-   expected failure (a strict xfail holding a measured miss) leaves it `fail`. A26's wheel half
-   runs with `OFS_S05_BUILD_PYTHON`, a scratch venv holding T08.A43's pinned setuptools that this
-   script builds (a skipped wheel node leaves A26 `fail`).
+   expected failure (a strict xfail holding a measured miss) leaves it `fail`. A26's and A31's
+   wheel half runs with `OFS_S05_BUILD_PYTHON`, a scratch venv holding T08.A43's pinned setuptools
+   that this script builds (a skipped wheel node leaves A26 and A31 `fail`).
 2. **The reference generator's `--check`** (§11: about 10 minutes; its output lines recorded).
    A27 passes only if its nodes passed and this run exited 0.
 3. **The mutation battery** (`scripts/s05_mutations.py`, A29), its logs and summary under
@@ -22,7 +22,9 @@ differs from it; S01's rule):
 `s05_crosscheck.py --check` is the design lane's (scratch venv with CoolProp and iapws); it is not
 re-run here, and its committed output is recorded by hash with the commit that wrote it.
 `scripts/gate.sh` is not run here (it runs once before merge): its check is `unsupported`.
-`status` is computed, never written: `tested` iff every assertion A01–A30 and the generator,
+A33 (spec §16.6, as amended by §16.12.3) has no test node: it is judged on its measured half
+alone, the identity check over `--a33-base <commit>`..`HEAD` (absent: `fail`).
+`status` is computed, never written: `tested` iff every assertion A01–A33 and the generator,
 ruff, format and mypy checks pass; otherwise `implemented`. Both review fields stay `pending`.
 
 Usage:
@@ -32,7 +34,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import ast
 import dataclasses
+import hashlib
 import json
 import os
 import re
@@ -73,7 +77,9 @@ DECISIONS = ROOT / "docs" / "C10_DECISIONS.md"
 #: The source files S05 added or changed.
 SOURCES = ("src/openflowsheet/thermo/iapws95.py",)
 SCRIPT_FILES = ("scripts/s05_evidence_manifest.py", "scripts/s05_mutations.py")
-ASSERTIONS = tuple(f"A{index:02d}" for index in range(1, 31))
+ASSERTIONS = tuple(f"A{index:02d}" for index in range(1, 34))
+#: Judged on the measured half alone: A33 has no test node (spec §16.6).
+MEASURED_ONLY = ("A33",)
 REQUIRED_CHECKS = ("S05.generator", "S05.ruff", "S05.format", "S05.mypy")
 #: An assertion id in a test function's name: `_aNN`, then `_` or the end.
 CITED = re.compile(r"(?:^|_)a(\d{2})(?=_|$)")
@@ -92,8 +98,9 @@ RIGHTS = (
     "attribution is given to the International Association for the Properties of Water and "
     'Steam"); the rights row is `permitted with conditions` (attribution to IAPWS), following '
     "docs/l01-rights-check.md's RC-03 precedent. ADR 0045 is Accepted (2026-10-23). "
-    "benchmarks/s05/iapws95_coefficients.json stays unpackaged (A26) until Frank decides to "
-    "ship; there is no `released` status, and `reviewed` would cover numerics, not rights."
+    "Frank decided to ship with attribution (2026-10-23; spec §16, R-616): the file is package "
+    "data (A26) and NOTICE carries the attribution (A31); there is no `released` status, and "
+    "`reviewed` would cover numerics, not rights."
 )
 #: Spec §12's limitations, with the cross-check's provenance (§12 `commands`).
 SPEC_LIMITATIONS = (
@@ -105,9 +112,7 @@ SPEC_LIMITATIONS = (
     "printed copy (spec §15.3, Q-7); it scales only molar extensive quantities, which no "
     "comparison with the release can test. This is numerical verification of an implementation "
     "against a formulation, not empirical validation (spec §9).",
-    "The coefficient file benchmarks/s05/iapws95_coefficients.json is not packaged (R-594, "
-    "C10-Q1): no PACKAGED entry covers benchmarks/s05/ and a built wheel holds no copy (A26), so "
-    "`iapws95-v1` runs only from a source checkout.",
+    "The coefficient file is package data, with IAPWS's attribution in NOTICE (R-616).",
     "The near_critical box, T in (647.0, 648.0) K and P in [2.20e7, 2.22e7] Pa, is refused "
     "near_critical for both phases and the flash (spec §4.2 step 1); states there are not "
     "evaluated.",
@@ -136,18 +141,29 @@ def crosscheck_limitation() -> str:
 # -- the specification ---------------------------------------------------------------------------
 
 
-def assertion_table(document: str) -> dict[str, tuple[str, str, str]]:
-    """§6.1's table: id → (assertion, expectation, tolerance)."""
-    start = document.index("### 6.1 ")
-    body = document[start : document.index("### 6.2 ", start)]
+def _rows(body: str) -> dict[str, tuple[str, str, str]]:
     rows: dict[str, tuple[str, str, str]] = {}
     for line in body.splitlines():
         cells = [cell.strip() for cell in line.strip().strip("|").split(" | ")]
         if len(cells) == 4 and re.fullmatch(r"A\d{2}", cells[0]):
             rows[cells[0]] = (cells[1], cells[2], cells[3])
-    if tuple(rows) != ASSERTIONS:
-        raise SystemExit(f"§6.1's ids are {list(rows)}, not A01-A30")
     return rows
+
+
+def assertion_table(document: str) -> dict[str, tuple[str, str, str]]:
+    """§6.1's table (id → (assertion, expectation, tolerance)), its rows replaced or extended by id
+    from §16.2's (A26, as amended), §16.6's (A31-A33) and §16.12's (A33, as amended) tables
+    (R-616, R-617)."""
+    start = document.index("### 6.1 ")
+    rows = _rows(document[start : document.index("### 6.2 ", start)])
+    for number in ("16.2", "16.6", "16.12"):
+        start = document.index(f"### {number} ")
+        rows |= _rows(document[start : document.index("\n### ", start + 1)])
+    if tuple(sorted(rows)) != ASSERTIONS:
+        raise SystemExit(
+            f"the ids of §6.1, §16.2, §16.6 and §16.12 are {sorted(rows)}, not A01-A33"
+        )
+    return {identifier: rows[identifier] for identifier in ASSERTIONS}
 
 
 # -- the tests -----------------------------------------------------------------------------------
@@ -188,7 +204,8 @@ def assertion_checks(
     tests: Sequence[Node],
     extra: Mapping[str, tuple[bool, dict[str, Any]]],
 ) -> list[dict[str, Any]]:
-    """One check per assertion; `extra` adds a measured half (A26, A27, A29) that must also pass."""
+    """One check per assertion; `extra` adds a measured half (A27, A29) that must also pass, and
+    the assertions of `MEASURED_ONLY` (A33) are judged on that half alone."""
     s05 = [item for item in tests if item.node.startswith("tests/test_s05_")]
     entries: list[dict[str, Any]] = []
     for identifier in ASSERTIONS:
@@ -196,7 +213,11 @@ def assertion_checks(
         if identifier in extra:
             passed, measured = extra[identifier]
             value = {**value, "measured": measured}
-            result = "pass" if result == "pass" and passed else "fail"
+            if identifier in MEASURED_ONLY:
+                value = {"judged_by": "measurement", "measured": measured}
+                result = "pass" if passed else "fail"
+            else:
+                result = "pass" if result == "pass" and passed else "fail"
         assertion, expected, tolerance = rows[identifier]
         entries.append(
             check(f"S05.{identifier}", assertion, result, value, text(expected), text(tolerance))
@@ -214,6 +235,226 @@ def build_python(work: Path) -> tuple[str, str]:
 
     python, version = t08_dist.build_environment(work / "build-venv", t08_dist.SETUPTOOLS)
     return str(python), version
+
+
+A33_PATHS = (
+    "M\tNOTICE",
+    "M\tpyproject.toml",
+    "M\tsrc/openflowsheet/resources.py",
+    "A\tsrc/openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json",
+    "M\ttests/test_s05_envelope.py",
+    "M\ttests/test_t08_w4_package_data.py",
+    "M\ttests/test_t08_w2_inventory.py",
+    "M\tscripts/s05_evidence_manifest.py",
+    "M\tbenchmarks/t08/support_envelope.yaml",
+)
+A33_NOTICE_SHA256 = "24790a6d2cf79b6b8c063f383ec2d2bee9105422f4e06d607054ab11ff37dd8a"
+A33_OLD_NOTICE_SHA256 = "11b9cac850433895cdb7e0e012b71d969c097467ca055274e95a338f3802c38f"
+A33_OLD_NOTICE_BYTES = 1292
+A33_MODULE_SHA256 = "c480f55fa15c97a1b3eb142f755be485ba5025035ae4d4f8bf54935cdbcd8d01"
+A33_COEFFICIENTS_SHA256 = "b9e93877e37874f1b3a483e298a45692e264d70686d4c158372084b96abbe6ed"
+#: L40's text at C_m (spec §16.12.1, T_L40).
+T_L40 = (
+    "The reference-tool data (the IDAES and DWSIM environments, their downloads and their "
+    "outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the "
+    "project's own code, its package data (since M01 including the five C1 records, M01 spec "
+    "§15 Q-N4's default), its licence files and one third-party data file, the IAPWS-95 "
+    "coefficients `benchmarks/s05/iapws95_coefficients.json`, under IAPWS's terms with their "
+    "attribution in NOTICE (S05 spec §16, R-616, R-617), and nothing else; every "
+    "ComponentRecord is synthetic (SYN-001) or one of M01's five real C1 records, each with its "
+    "identifiers, rights, per-parameter provenance and retrieval equality (M01 spec §3.5, "
+    "R-158)."
+)
+ATTRIBUTION = (
+    "\u00a9 2018 International Association for the Properties of Water and Steam",
+    "Publication in whole or in part is allowed in all countries provided that attribution is "
+    "given to the International Association for the Properties of Water and Steam",
+    "Please cite as: International Association for the Properties of Water and Steam, IAPWS "
+    "R6-95(2018), Revised Release on the IAPWS Formulation 1995 for the Thermodynamic "
+    "Properties of Ordinary Water Substance for General and Scientific Use (2018)",
+)
+
+
+def _git(*arguments: str) -> bytes:
+    return subprocess.run(["git", *arguments], cwd=ROOT, capture_output=True, check=True).stdout
+
+
+def _module_statements(source: str) -> tuple[list[str], list[ast.stmt]]:
+    """A33(e): the module-level statements of `source` apart from the amendment's own (spec
+    §16.12.3), as `ast.dump` strings, and the `ATTRIBUTED_DATA` assignments."""
+    own = {"IAPWS_ATTRIBUTION", "ATTRIBUTED_DATA"}
+    functions = {"_attributed", "test_a32_no_third_party_data_in_the_sdist_or_the_wheel"}
+    body = ast.parse(source).body
+    attributed: list[ast.stmt] = []
+    kept: list[str] = []
+    for index, statement in enumerate(body):
+        if isinstance(statement, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "ATTRIBUTED_DATA"
+            for target in statement.targets
+        ):
+            attributed.append(statement)
+        if isinstance(statement, ast.Import | ast.ImportFrom):
+            continue
+        if (
+            index == 0
+            and isinstance(statement, ast.Expr)
+            and isinstance(statement.value, ast.Constant)
+            and isinstance(statement.value.value, str)
+        ):
+            continue
+        if isinstance(statement, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id in own for target in statement.targets
+        ):
+            continue
+        if isinstance(statement, ast.AnnAssign) and (
+            isinstance(statement.target, ast.Name) and statement.target.id in own
+        ):
+            continue
+        if isinstance(statement, ast.FunctionDef) and statement.name in functions:
+            continue
+        kept.append(ast.dump(statement))
+    return kept, attributed
+
+
+def identity(base: str | None) -> tuple[bool, dict[str, Any]]:
+    """A33 (spec §16.12.3, R-617): the identity of the packaging range `base`..`HEAD` (C_m),
+    measured."""
+    if not base:
+        return False, {"error": "--a33-base <commit> was not given"}
+    envelope = "benchmarks/t08/support_envelope.yaml"
+    inventory = "tests/test_t08_w2_inventory.py"
+    listed = [
+        line
+        for line in _git("diff", "--name-status", f"{base}..HEAD").decode().splitlines()
+        if not line.split("\t", 1)[1].startswith(("docs/", "evidence/"))
+    ]
+
+    def block(revision: str) -> Any:
+        import yaml
+
+        return yaml.safe_load(_git("show", f"{revision}:{envelope}"))
+
+    def l40(document: Mapping[str, Any]) -> dict[str, Any]:
+        (row,) = [row for row in document["limitations"] if row["id"] == "L40"]
+        return dict(row)
+
+    old, new = block(base), block("HEAD")
+    old_l40, new_l40 = l40(old), l40(new)
+    old["limitations"] = [row for row in old["limitations"] if row["id"] != "L40"]
+    new["limitations"] = [row for row in new["limitations"] if row["id"] != "L40"]
+    notice = _git("show", "HEAD:NOTICE")
+    before = " ".join(_git("show", f"{base}:NOTICE").decode().split())
+    hashes = {
+        "notice": hashlib.sha256(notice).hexdigest(),
+        "notice_first_bytes": hashlib.sha256(notice[:A33_OLD_NOTICE_BYTES]).hexdigest(),
+        "module": hashlib.sha256(_git("show", "HEAD:" + shown(MODULE))).hexdigest(),
+        "coefficients": hashlib.sha256(_git("show", "HEAD:" + shown(COEFFICIENTS))).hexdigest(),
+    }
+    old_statements, old_attributed = _module_statements(
+        _git("show", f"{base}:{inventory}").decode()
+    )
+    new_statements, new_attributed = _module_statements(_git("show", f"HEAD:{inventory}").decode())
+    expected = {
+        "openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json": A33_COEFFICIENTS_SHA256
+    }
+    literal = (
+        ast.literal_eval(new_attributed[0].value)  # type: ignore[attr-defined]
+        if len(new_attributed) == 1
+        else None
+    )
+    parts = {
+        "a_name_status_equal": sorted(listed) == sorted(A33_PATHS),
+        "b_document_equal_without_l40": old == new,
+        "b_l40_text_is_t_l40": " ".join(new_l40["text"].split()) == " ".join(T_L40.split()),
+        "b_base_l40_lacks_the_file": "iapws95_coefficients.json" not in old_l40["text"],
+        "c_notice": hashes["notice"] == A33_NOTICE_SHA256,
+        "c_notice_prefix": hashes["notice_first_bytes"] == A33_OLD_NOTICE_SHA256,
+        "c_base_has_no_attribution": not any(
+            " ".join(string.split()) in before for string in ATTRIBUTION
+        ),
+        "d_module": hashes["module"] == A33_MODULE_SHA256,
+        "d_coefficients": hashes["coefficients"] == A33_COEFFICIENTS_SHA256,
+        "e_attributed_data_absent_at_base": old_attributed == [],
+        "e_attributed_data_is_the_one_key": literal == expected,
+        "e_other_statements_unchanged": old_statements == new_statements,
+    }
+    return all(parts.values()), {
+        "base": base,
+        "tip": "HEAD",
+        "name_status": listed,
+        "parts": parts,
+        "sha256": hashes,
+    }
+
+
+def check_harvest(measured: str) -> int:
+    """HG (spec §16.12.2, R-617): `measured`..`HEAD` is exactly the harvest of C_m's manifest.
+    One output line; exit 0 on PASS, 1 otherwise."""
+    import yaml
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import t08_support_matrix as matrix
+
+    envelope = "benchmarks/t08/support_envelope.yaml"
+    harvest_test = "tests/test_m07a_harvest.py"
+    manifest_path = f"evidence/S05/{measured}/manifest.json"
+    label = f"S05 HG {measured}..HEAD"
+    if _git("status", "--porcelain").strip():
+        print(f"{label}: FAIL (the working tree is not clean)")
+        return 1
+
+    def at(revision: str, path: str) -> bytes:
+        return _git("show", f"{revision}:{path}")
+
+    def size(revision: str) -> tuple[tuple[int, ...], str]:
+        tree = ast.parse(at(revision, harvest_test).decode())
+        value: tuple[int, ...] | None = None
+        for statement in tree.body:
+            if isinstance(statement, ast.Assign) and any(
+                isinstance(target, ast.Name) and target.id == "HARVEST_SIZE"
+                for target in statement.targets
+            ):
+                value = ast.literal_eval(statement.value)
+                statement.value = ast.Constant(None)
+        assert value is not None
+        return value, ast.dump(tree)
+
+    listed = sorted(
+        line
+        for line in _git("diff", "--name-status", f"{measured}..HEAD").decode().splitlines()
+        if not line.split("\t", 1)[1].startswith(("docs/", "evidence/"))
+    )
+    old, new = yaml.safe_load(at(measured, envelope)), yaml.safe_load(at("HEAD", envelope))
+    old_harvest, new_harvest = old.pop("harvest"), new.pop("harvest")
+    appended = new_harvest[len(old_harvest) :]
+    pairs = [(entry["manifest"], entry["item"]) for entry in appended]
+    expected = {key for key in matrix.harvest_items() if key[0] == manifest_path}
+    old_size, old_tree = size(measured)
+    new_size, new_tree = size("HEAD")
+    tracked = bool(_git("ls-files", "--", manifest_path).strip())
+    recorded = (
+        json.loads((ROOT / manifest_path).read_text(encoding="utf-8")).get("status")
+        if tracked
+        else None
+    )
+    parts = {
+        "a": listed == [f"M\t{envelope}", f"M\t{harvest_test}"],
+        "b": old == new
+        and new_harvest[: len(old_harvest)] == old_harvest
+        and len(set(pairs)) == len(pairs)
+        and set(pairs) == expected
+        and bool(expected),
+        "c": old_tree == new_tree
+        and new_size[0] == old_size[0] + 1
+        and sum(new_size[1:]) == sum(old_size[1:]) + len(expected),
+        "d": tracked and recorded == "tested",
+    }
+    if all(parts.values()):
+        print(f"{label}: PASS ({len(pairs)} appended; HARVEST_SIZE {old_size} -> {new_size})")
+        return 0
+    failing = ", ".join(f"HG({name})" for name, held in parts.items() if not held)
+    print(f"{label}: FAIL ({failing})")
+    return 1
 
 
 def battery(artifacts: Path) -> tuple[bool, dict[str, Any], Any]:
@@ -285,7 +526,7 @@ def found_limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
     return items
 
 
-def build(commit: str) -> dict[str, Any]:
+def build(commit: str, a33_base: str | None) -> dict[str, Any]:
     refuse_unless_measuring(commit)
     document = SPEC.read_text(encoding="utf-8")
     rows = assertion_table(document)
@@ -336,6 +577,7 @@ def build(commit: str) -> dict[str, Any]:
     identities = provider.Iapws95Provider().describe()
     extra = {
         "A26": (True, {"wheel_built_with_setuptools": setuptools}),
+        "A33": identity(a33_base),
         "A27": (
             generator.exit_code == 0,
             {
@@ -386,7 +628,7 @@ def build(commit: str) -> dict[str, Any]:
         "requirements": ["D08"],
         "status": status(entries),
         "inputs": {
-            "case_id": "S05 acceptance: docs/derivations/S05-IAPWS95-spec.md §6.1 (A01-A30) "
+            "case_id": "S05 acceptance: docs/derivations/S05-IAPWS95-spec.md §6.1 (A01-A33) "
             "against docs/derivations/scripts/s05_reference.json, check list §12",
             "case_hash": sha256_file(REFERENCE),
             "environment_lock_hash": sha256_file(LOCK),
@@ -418,7 +660,7 @@ def build(commit: str) -> dict[str, Any]:
             {
                 "path": shown(COEFFICIENTS),
                 "sha256": sha256_file(COEFFICIENTS),
-                "description": "the provider's coefficient file (data_sha256; not packaged)",
+                "description": "the provider's coefficient file (data_sha256; package data, R-616)",
             },
             {
                 "path": shown(MODULE),
@@ -444,15 +686,25 @@ def build(commit: str) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--commit", help="the measured commit (default: HEAD)")
+    parser.add_argument(
+        "--a33-base", help="the base commit of WO-S05-5's range (A33; absent: fail)"
+    )
     parser.add_argument("--out", type=Path, help="default: evidence/S05/<commit>/manifest.json")
+    parser.add_argument(
+        "--check-harvest",
+        metavar="C_M",
+        help="HG (spec §16.12.2): check that C_M..HEAD is the harvest of C_M's manifest",
+    )
     arguments = parser.parse_args()
+    if arguments.check_harvest:
+        return check_harvest(arguments.check_harvest)
     commit = (
         arguments.commit
         or subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
         ).stdout.strip()
     )
-    manifest = build(commit)
+    manifest = build(commit, arguments.a33_base)
     out = arguments.out or ROOT / "evidence" / "S05" / commit / "manifest.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

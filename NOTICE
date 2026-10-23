@@ -25,3 +25,20 @@ This project distributes no third-party binaries. It depends on CasADi 3.8.0,
 fetched by the installer from PyPI; that wheel's `_casadi.so` closure is
 LGPL-3.0-or-later and its bytes are not redistributed here. See
 docs/adr/0006-distribution-data-rights.md.
+
+Third-party data: the IAPWS-95 coefficients
+
+The file openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json
+(repository path benchmarks/s05/iapws95_coefficients.json), read by the
+library-only property provider iapws95-v1, reproduces the coefficients and
+constants of the IAPWS-95 formulation, IAPWS R6-95(2018). That release is
+© 2018 International Association for the Properties of Water and Steam. Its
+terms: "Publication in whole or in part is allowed in all countries provided
+that attribution is given to the International Association for the
+Properties of Water and Steam". Attribution is hereby given to the
+International Association for the Properties of Water and Steam (IAPWS).
+
+Please cite as: International Association for the Properties of Water and
+Steam, IAPWS R6-95(2018), Revised Release on the IAPWS Formulation 1995 for
+the Thermodynamic Properties of Ordinary Water Substance for General and
+Scientific Use (2018).

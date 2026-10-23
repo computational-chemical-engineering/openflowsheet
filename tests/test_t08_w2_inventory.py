@@ -375,16 +375,60 @@ PACKAGING = re.compile(
 )
 
 
+# S05 spec §16.12 (R-617): third-party data shipped under recorded terms, admitted only with its
+# hash and with its attribution in the same artifact's NOTICE (Frank, C10 "Ship decision", R-616).
+ATTRIBUTED_DATA = {
+    "openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json": (
+        "b9e93877e37874f1b3a483e298a45692e264d70686d4c158372084b96abbe6ed"
+    ),
+}
+IAPWS_ATTRIBUTION = (
+    "\u00a9 2018 International Association for the Properties of Water and Steam",
+    "Publication in whole or in part is allowed in all countries provided that attribution is "
+    "given to the International Association for the Properties of Water and Steam",
+    "Please cite as: International Association for the Properties of Water and Steam, IAPWS "
+    "R6-95(2018), Revised Release on the IAPWS Formulation 1995 for the Thermodynamic "
+    "Properties of Ordinary Water Substance for General and Scientific Use (2018)",
+)
+
+
+def _attributed(name: str, content: bytes, notice: bytes) -> bool:
+    path = name.removeprefix("src/")
+    if path not in ATTRIBUTED_DATA:
+        return False
+    text = " ".join(notice.decode("utf-8").split())
+    return (
+        hashlib.sha256(content).hexdigest() == ATTRIBUTED_DATA[path]
+        and path in text
+        and all(" ".join(string.split()) in text for string in IAPWS_ATTRIBUTION)
+    )
+
+
 def test_a32_no_third_party_data_in_the_sdist_or_the_wheel(built: dict[str, Path]) -> None:
+    """Amended for one attributed file by S05 spec §16.12 (R-617)."""
     for kind in ("sdist", "wheel"):
-        members = list((_sdist_members if kind == "sdist" else _wheel_members)(built[kind]))
+        contents = (_sdist_members if kind == "sdist" else _wheel_members)(built[kind])
+        members = list(contents)
         assert any(name.endswith("openflowsheet/__init__.py") for name in members), kind
+        notice_name = r"NOTICE" if kind == "sdist" else r"[^/]+\.dist-info/licenses/NOTICE"
+        notices = [name for name in members if re.fullmatch(notice_name, name)]
+        assert len(notices) == 1, kind
+        notice = contents[notices[0]]
+        admitted = [name for name in members if _attributed(name, contents[name], notice)]
+        (path,) = ATTRIBUTED_DATA
+        assert admitted == (["src/" + path] if kind == "sdist" else [path]), kind
+        if kind == "wheel":
+            name, content = admitted[0], contents[admitted[0]]
+            assert not _attributed(name, content, notice[:1292])
+            assert not _attributed(name, content + b"\n", notice)
+            assert not _attributed("openflowsheet/_data/benchmarks/s05/x.json", content, notice)
         other = [
             name
             for name in members
             if not name.endswith(".py")
             and not SHIPPED_DATA.match(name)
             and not PACKAGING.match(name)
+            and name not in admitted
         ]
         assert other == [], kind
         # Since T08 W4.2 `MANIFEST.in` prunes `tests/` from the sdist (setuptools adds
