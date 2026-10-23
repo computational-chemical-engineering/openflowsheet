@@ -1,7 +1,18 @@
 """S07 measurement 5 ("m-melt"): CoolProp 8.0.0 melting lines and PropsSI's own refusal below T_melt(p)."""
+
 import CoolProp.CoolProp as CP
 
-for f in ["Water", "CarbonDioxide", "Nitrogen", "Oxygen", "Argon", "Methane", "Ethane", "n-Propane", "Hydrogen"]:
+for f in [
+    "Water",
+    "CarbonDioxide",
+    "Nitrogen",
+    "Oxygen",
+    "Argon",
+    "Methane",
+    "Ethane",
+    "n-Propane",
+    "Hydrogen",
+]:
     a = CP.AbstractState("HEOS", f)
     p_hi = min(a.pmax(), 1.0e8)
     try:
