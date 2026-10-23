@@ -484,18 +484,20 @@ def digest_part(files: Sequence[str], keys: int, expected: str, label: str, arti
     timed = record_digest(files, record)
     got = hashlib.sha256(record.read_bytes()).hexdigest() if record.is_file() else ""
     lines = record.read_text("utf-8").splitlines() if record.is_file() else []
+    # cmp.py's request key: tag|component|first argument
+    request_keys = {tuple(line.split("|", 3)[:3]) for line in lines}
     measured = {
         "cmd": timed.cmd,
         "exit_code": timed.exit_code,
         "sha256": got,
         "expected_sha256": expected,
         "calls": len(lines),
-        "distinct_calls": len(set(lines)),
+        "keys": len(request_keys),
         "expected_keys": keys,
         "tests_tail": [text(x) for x in timed.stdout.strip().splitlines()[-1:]],
         "seconds": round(timed.seconds, 1),
     }
-    passed = timed.exit_code == 0 and got == expected and len(set(lines)) == keys
+    passed = timed.exit_code == 0 and got == expected and len(request_keys) == keys
     return passed, measured, timed
 
 
