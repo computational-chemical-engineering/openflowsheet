@@ -12605,3 +12605,120 @@ are merged at `tested`. That belongs to the next ledger refresh.
 
 **Finding (not acted on).** F-6: ADR 0006 D1's mode-A row says "the project's own bytes only", meaning CasADi's. ADR
 0045's release condition governs F. Clarify ADR 0006 the next time it changes.
+
+---
+
+## R-618 — S07: CoolProp is an optional, pinned Helmholtz evaluator; the provider keeps phase logic, refusals and exactness (ADR 0045's rejection superseded for this provider only)
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), S07 brief (Frank queued S07 on 2026-10-23 with these settled points) |
+| Normative text | ADR 0046 D1, D2; `docs/derivations/S07-spec.md` §0, §4, A27 |
+| Evidence | CoolProp 8.0.0 measurements, spec §14 (m2): the twenty partials are bit-identical with and without an imposed phase at four water states. In the dome, CoolProp's `p()` returns 245769.35 Pa (saturation) while the jet gives the EOS value 6.739e15 Pa. The jet there agrees with `iapws95.phi_jet` to 2.4e-15 |
+| Affected packages | S07; ADR 0045 (its rejected alternative "CoolProp as a runtime dependency" no longer covers S07) |
+
+**Decision.**
+- The provider calls only `AbstractState("HEOS", name)`, `specify_phase(iphase_gas)`, `update(DmolarT_INPUTS, ρ, T)`
+  and the twenty α°/αʳ partial getters. Every property, root, phase and refusal is the provider's own. A27 enforces
+  this by an AST allowlist.
+- `CoolProp==8.0.0` is the `coolprop` extra, locked in `requirements.lock`, and inventoried by G19. It is not a
+  default requirement.
+- ADR 0045's rejection stands for `iapws95-v1`. Its two objections are answered for S07: the extra makes the
+  dependency optional, and D1/D4 keep refusals and exactness.
+
+**Rejected alternatives, and why.**
+- *CoolProp's flash and property getters.* They are excluded by the brief. Measured: the TP solve is noisy at about
+  1e-10, and its P-derivative central differences are off by 1e-4 to 1e-3 (S05 §6.3).
+- *A default dependency.* That puts third-party binaries and data in every install.
+
+---
+
+## R-619 — S07 identity: architecture-independent hashes over the pinned version and the canonical fluid JSON, plus a run-time guard
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), S07 |
+| Normative text | ADR 0046 D3, D4; S07 spec §5, A26, A28 |
+| Evidence | m1: gitrevision `ae81610e7d23efc57f9d051c8e70a4d66e87537f`. Wheel SHA-256 prefixes: x86-64 `8ca1aefd1873b14f3e7e`, aarch64 `113fc0e97f2b64617141`. m3: `set_reference_state("Water","NBP")` leaves the fluid JSON unchanged but changes α° in new `AbstractState`s, and `"DEF"` restores the bits |
+| Affected packages | S07; any later package that pins a third-party evaluator |
+
+**Decision.**
+- `data_sha256` = SHA-256 of canonical {version, fluid, SHA-256 of the canonically re-serialized fluid JSON}.
+- `implementation_sha256` = SHA-256 of canonical {module SHA-256, version, gitrevision}.
+- Neither includes the binary. Both are computed from constants.
+- A guard runs before the first evaluation: import, version, fluid hash, and an α° canary at 1e-12. Each failure is
+  a typed `unsupported` refusal.
+- A new fluid hash, or a registered value moving out of tolerance under a new pin, makes the id `coolprop-heos-v2`.
+
+**Rejected alternatives, and why.**
+- *Hash the binary.* The identity would differ between the CI pair.
+- *Hash the raw JSON string.* That ties the hash to CoolProp's formatting for no gain.
+- *Trust the JSON hash alone.* Measured: a global reference-state change escapes it.
+
+---
+
+## R-620 — S07 fluids and domain: the nine S04 library components; a box per fluid whose lower T is the melting temperature at the top pressure (cryogenic liquids deferred to S07b)
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), S07 (Q-S07-1 asks Frank to confirm the cryogenic deferral; the default stands meanwhile) |
+| Normative text | S07 spec §2.1, §6.1, §6.2, §6.4 |
+| Evidence | m1: all nine have one EOS, with six α° and three αʳ term types. m4: CoolProp's partials agree with 30-digit closed forms to ≤ 8.0e-14. m5: T_m(P_hi) is CO2 236.03, N2 82.80, O2 63.03 (80 MPa), Ar 106.96, CH4 114.28, C2H6 105.39, C3H8 94.67, H2 31.39 K. CoolProp's own `PropsSI` refuses (1.1·T_t, 100 MPa) as below T_melt for six fluids |
+| Affected packages | S07; follow-on S07b (cryogenic liquids) |
+
+**Decision.**
+- Fluids: H2O, CO2, N2, O2, Ar, CH4, C2H6, C3H8, H2, by the S04 ids, one provider instance each.
+- Domain: T ∈ [T_lo, min(T_max, 1273.15 K)], P ∈ [1e2, min(p_max, 1e8)] Pa. T_lo is T_t for water and
+  ⌈10·T_m(P_hi)⌉/10 K for the others. The near-critical box, saturation edge and liquid bracket follow spec §6.1's
+  relative rules, each a generator claim.
+
+**Rejected alternatives, and why.**
+- *T_lo = T_t for all fluids.* That answers LIQUID above the melting line, a silent wrong stability claim.
+- *A run-time melting guard now.* The domain is then not a box, which `PropertyCapabilities.domain` cannot state.
+  It is deferred to S07b.
+- *More fluids.* No case needs a pure-fluid stream outside the nine. An addition is a generator run.
+
+---
+
+## R-621 — S07 is library-only; the records-less selectable basis for S05 and S07 is a follow-on package with its own ADR
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), S07, under Frank's S05 Q-8 answer ("library only for now; binding planned later together with S07") |
+| Normative text | ADR 0046 D9; S07 spec §3.4, §12.4, A30 |
+| Evidence | R-568/R-569 (the library-only pattern); `iapws95-v1` is library-only (R-616) |
+| Affected packages | S07; the binding follow-on |
+
+**Decision.** `coolprop-heos-v1` goes in `LIBRARY_ONLY_PROVIDERS` as `"S07"`, with a U02 note. The shared
+records-less basis key, unit-model admission, W27 v2 mapping, support-matrix rows and envelope come in one later
+package for both providers.
+
+**Rejected alternative, and why.** *Design the basis key in S07.* It changes the selection layer shared with
+`pr-c1-v1` and `pr-lib-v1`, and it would double S07's first delivery.
+
+---
+
+## R-622 — S07 cross-architecture rule: bit-identity is the target; a pre-registered 1e-12 relative bound applies if aarch64 differs, and beyond it the build lane stops
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), S07 |
+| Normative text | ADR 0046 D8; S07 spec §11 Q-1, A31 |
+| Evidence | Not measurable on the workstation: there is no aarch64 binfmt. ADR 0007 measurement 2: the project's pure-Python evaluations are bit-identical across the CI pair. CoolProp is compiled C++, and aarch64 contracts FMA by default |
+| Affected packages | S07 (WO-S07-3 measures it) |
+
+**Decision.**
+- A31 compares the x86-64 answers (a committed regression fixture) on both architectures.
+- If they are not bitwise equal: |Δ| ≤ 1e-12·max(|x|, s_f), or 1e-10 near critical. The measured worst goes in the
+  manifest and in ADR 0046's status.
+- Above 1e-12 the build lane stops for an amendment.
+
+**Rejected alternatives, and why.**
+- *Demand bit-identity unconditionally.* CI would go red on a fact we cannot change, for differences 4 decades
+  inside every reference tolerance.
+- *Use ADR 0025's 1e-9 replay class directly.* It is too loose to detect a real divergence at the provider level.
