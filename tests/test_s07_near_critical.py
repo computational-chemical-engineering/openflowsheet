@@ -1,6 +1,6 @@
 """S07 near-critical saturation and the (T_σ,max, T_c) strip: the gates of design note
 `docs/design/S07-near-critical-saturation.md` (§6), as assertions N1-N3, N5 and N6 (S07 Amendment 3
-numbers them; N6 is S05's, G4 and G6 belong to the generator, WO-S07-NC4).
+numbers them; G4 and G6 belong to the generator, WO-S07-NC4).
 
 - N1 (G1): the saturation exists at T_σ,max and at θ = 1 − T/T_c ∈ {2e-4, 1e-4, 5e-5} for all 123.
 - N2 (G2): where the Newton from the ancillary seeds converges, the answer is bitwise that Newton's
@@ -9,6 +9,7 @@ numbers them; N6 is S05's, G4 and G6 belong to the generator, WO-S07-NC4).
   within the Maxwell root's double-precision floor.
 - N5 (G5): every strip state outside the box is answered, mechanically stable, and continuous
   across T_c.
+- N6 (G7(c), (d)): S05 adopts the strip rule (D5), and its own saturation needs no fallback.
 
 The dense coverage scan (G1 over 40 points per decade, G8's cost) is
 `docs/derivations/scripts/s07_measurements/nc_scan.py`, a measurement with a one-line summary.
@@ -20,11 +21,12 @@ import math
 
 import pytest
 from s07_coolprop_support import require_coolprop
-from test_s07_coolprop import ev
+from test_s07_coolprop import CONTEXT, ev
 
-from openflowsheet.thermo import Phase
+from openflowsheet.thermo import Phase, PropertyRequest, StreamState
 from openflowsheet.thermo import _coolprop_heos_fluids as table
 from openflowsheet.thermo import coolprop_heos as cph
+from openflowsheet.thermo import iapws95 as w
 
 ALL = [row["id"] for row in table.FLUIDS]
 PROVIDERS = {cid: cph.CoolPropHeosProvider(cid) for cid in ALL}
@@ -171,3 +173,41 @@ def test_n5_the_strip_is_answered_and_continuous_at_t_c(cid: str) -> None:
         v_below = stable_answer(instance, t_below, p, phase)
         v_at = stable_answer(instance, fluid.t_c, p, "VAPOR")
         assert abs(v_below - v_at) <= CONTINUITY * v_at, (phase, v_below, v_at)
+
+
+# -- N6: S05 (`iapws95.py`) ------------------------------------------------------------------------
+
+S05 = w.Iapws95Provider()
+#: Design note M7: strip temperatures at which the S05 saturation does not converge, at a liquid
+#: and a vapour pressure outside the box [22.0, 22.2] MPa.
+S05_STRIP_T = (647.0954, 647.0959, 647.09599)
+S05_STRIP_STATES: tuple[tuple[Phase, float], ...] = (("LIQUID", 25.0e6), ("VAPOR", 20.0e6))
+
+
+def s05_v(t: float, p: float, phase: Phase) -> float:
+    state = StreamState(n=(1.0,), temperature=t, pressure=p)
+    request = PropertyRequest(state, phase, ("v", "cp"), ("T", "P"))
+    result = S05.evaluate_phase(request, CONTEXT)
+    assert result.status == "ok", f"{phase} at {t!r} K, {p!r} Pa: {result.message}"
+    assert result.derivatives["v"]["P"] < 0.0
+    assert result.values["cp"] > 0.0
+    return result.values["v"]
+
+
+def test_n6_the_s05_strip_without_a_saturation_is_answered_and_continuous_at_t_c() -> None:
+    for t in S05_STRIP_T:
+        assert w._saturation(t) is None, t
+        for phase, p in S05_STRIP_STATES:
+            s05_v(t, p, phase)
+    for phase, p in S05_STRIP_STATES:
+        v_below = s05_v(w.T_C * (1.0 - 1e-12), p, phase)
+        v_at = s05_v(w.T_C, p, "VAPOR")
+        assert abs(v_below - v_at) <= CONTINUITY * v_at, (phase, v_below, v_at)
+
+
+def test_n6_the_s05_saturation_converges_on_its_whole_range() -> None:
+    """D5's premise: S05's Newton from the IAPWS ancillaries needs no fallback below 647.0 K."""
+    grid = [273.16 + 0.05 * i for i in range(int((647.0 - 273.16) / 0.05) + 1)]
+    grid = [t for t in grid if t <= w.T_SIGMA_MAX] + [w.T_SIGMA_MAX]
+    failed = [t for t in grid if w._saturation(t) is None]
+    assert not failed, failed[:5]
