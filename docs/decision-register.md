@@ -11829,3 +11829,353 @@ Version 1's CLI is unchanged.
 **Rejected.** *Leaving the path to convention (R-574's "goes under a `heldout/` path").* At a new snapshot, one run
 to `/tmp` exposes held-out rows and class counts to development (SPLIT-R11). *Refusing whole-archive version 2 runs
 outright.* Release gates need them.
+
+## R-585 — Package S05: IAPWS-95 pure water as a library-only provider `iapws95-v1` (ADR 0045, Proposed)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C10 |
+| Normative text | ADR 0045; `docs/derivations/S05-IAPWS95-spec.md` §1, §2 |
+| Evidence | ADR 0043: Water is unavailable in 150 of the 225 development cases; Frank's L01-Q3 answer (`docs/FRANK_QUESTIONS.md`) |
+| Affected packages | S05 (WO-S05-1, WO-S05-2); later binding and W27 packages |
+
+**Decision.** C10's manifest id is `S05` (`evidence/S05/`, checks `S05.Axx`). The provider is `iapws95-v1`
+(`thermo/iapws95.py`, components `("H2O",)`, `nTP-v1`). It is library-only under R-568/R-569: in no
+`SELECTABLE_BASES` entry, with no binding, model or W27 exposure.
+
+**Rejected alternatives, and why.**
+- *Keep `C10`.* A C-item carries no manifest under R-565.
+- *IF97.* It is a fit to IAPWS-95 with region seams, and it is out of scope.
+
+---
+
+## R-586 — S05's expectations are 50-digit mpmath values over φ alone, admitted by CoolProp 8.0.0 and iapws 1.5.5 agreement
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C10 |
+| Normative text | spec §0, §6.2, §7; `s05_reference.py`, `s05_crosscheck.py` |
+| Evidence | iapws.org was refused by the proxy (CONNECT 403, 2026-10-22). `s05_crosscheck.py --check` asserts that all 21 coefficient arrays and R equal iapws 1.5.5's exactly. The measured agreement is recorded in `s05_reference.json` `agreement` |
+| Affected packages | S05 |
+
+**Decision.**
+- Every expectation comes from `s05_reference.py`, which uses mpmath at 50 digits and numerical differentiation of
+  φ only. It imports nothing from `src/`.
+- A value is admitted only when both external implementations lie within spec §6.2's bounds.
+- The external implementations run only in a scratch venv, and their values are committed in `s05_crosscheck.json`.
+- The R6-95 Tables 6–8 comparison is pending (spec §10 Q-1). The generator emits the 9-digit values to compare.
+
+**Rejected alternatives, and why.**
+- *CoolProp's values as expectations.* Rule 1: an implementation is not an expectation.
+- *Waiting for the PDF.* It blocks all work on one fact that only confirms the transcription.
+
+---
+
+## R-587 — IAPWS-95 R6-95(2018) coefficients and the formulation's R; molar = specific × M
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C10 |
+| Normative text | spec §2.1–§2.3; `s05_iapws95_coefficients.json` (SHA-256 `b9e93877…abbe6ed`) |
+| Evidence | CoolProp `Water` JSON (SHA-256 `a10a0da6…0dec4586`): n°₁ = −8.3204464837497, n°₂ = 6.6832105275932, R 8.314371357587. iapws 1.5.5 carries the same values. Generator claim: R_s·M rounds to 8.314371357587 |
+| Affected packages | S05 |
+
+**Decision.** The coefficients are the 2016/2018 revision's. R_s = 461.51805 J/(kg·K) and M = 0.018015268 kg/mol;
+the molar R is R_s·M everywhere. The provider's copy of the file is byte-identical to the generator's (S05.A01).
+
+**Rejected alternatives, and why.** *CODATA R*, which departs from the formulation by about 9e-6 relative.
+
+---
+
+## R-588 — Reference convention `IAPWS95-ref-v1`: the formulation's triple-point datum, not a formation datum
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C10 |
+| Normative text | spec §3.6; ADR 0045 D4 |
+| Evidence | Generator claims: \|u'(T_t)\| < 1e-6 J/mol and \|s'(T_t)\| < 1e-8 J/(mol·K); h' and s' are non-zero at 450 K |
+| Affected packages | S05; finding F-1 (ADR 0001 D5, `interfaces-frozen.md`) |
+
+**Decision.** u = s = 0 for the saturated liquid at 273.16 K. The convention is outside ADR 0011 D2's set, and
+`conventions.py` is unchanged. **Finding F-1** (not written by C10): on acceptance, ADR 0001 D5's list and
+`interfaces-frozen.md` gain an `IAPWS95-ref-v1` line, as ADR 0026 did for `PR-C1-ref-v1`.
+
+**Rejected alternatives, and why.** *A formation-datum shift.* No reaction uses pure water here, and D5.2 already
+forbids mixing conventions.
+
+---
+
+## R-589 — S05 domain: T ∈ [273.16, 1273.15] K, P ∈ [1e2, 1e8] Pa; ice excluded
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C10 |
+| Normative text | spec §4.1; S05.A16 |
+| Evidence | Ice Ih/III lies at 209.9 MPa, which is above P_max; T ≥ T_t |
+| Affected packages | S05 |
+
+**Decision.** Both bounds are inclusive and compared as doubles. A state outside the box is `out_of_domain`, and
+each of the four edges carries a probe and an answered control.
+
+**Rejected alternatives, and why.** *The formulation's full range up to 1 GPa*, which would need melting-curve logic.
+
+---
+
+## R-590 — S05 phase rule: a saturation band ε_σ = 1e-6, VAPOR at T ≥ T_c, and the `near_critical` box
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C10; C10-Q2 open (default VAPOR) |
+| Normative text | spec §4.2, §4.3 |
+| Evidence | Generator claims: p_σ(647.0 K) > 22.0 MPa; (T_c, p_c) lies inside the box; the band-edge roots exist at 647.0 K; and the band at 450 K answers V, V+L, V+L, V+L, L for k = −2, −0.5, 0, 0.5, 2 |
+| Affected packages | S05 |
+
+**Decision.**
+- T ≤ 647.0 K: LIQUID iff ln(P/p_σ) ≥ −ε_σ, and VAPOR iff ln(P/p_σ) ≤ ε_σ.
+- T ∈ (647.0 K, T_c): LIQUID iff P ≥ p_c, and VAPOR iff P < 22.0 MPa.
+- T ≥ T_c: VAPOR.
+- (647.0, 648.0) K × [22.0, 22.2] MPa is refused `near_critical`.
+
+**Rejected alternatives, and why.**
+- *Labelling by density.* It flips along an isotherm.
+- *Answering metastable roots out to the spinodal.* It invites labels that disagree with stability.
+
+---
+
+## R-591 — S05 density brackets: saturated densities bound both branches for every T < T_c (amends the first decision)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C10 (amending its own first-pass DECISION) |
+| Normative text | spec §4.4; amending line in `docs/C10_DECISIONS.md` |
+| Evidence | Below T_c, an isotherm crosses the two-phase dome, where (∂p/∂ρ)_T ≤ 0. The generator claims (∂p/∂ρ)_T > 0 on the band-extended branch brackets at 23 temperatures from 273.16 to 647.05 K, and on (0, 1250] at 8 temperatures from 647.1 to 1273.15 K |
+| Affected packages | S05 |
+
+**Decision.**
+- For T < T_c: VAPOR uses (0, ρ''(T)] and LIQUID uses [ρ'(T), 1250 kg/m³].
+- A metastable band root is found by Newton from the saturated density and accepted only on its side of ρ_c.
+- For T ≥ T_c: (0, 1250].
+- Non-convergence is `not_converged`.
+
+**Rejected alternatives, and why.** *(0, 1250] for all T > 647.0 K* (the first pass). It is not monotone for
+T ∈ (647.0 K, T_c).
+
+---
+
+## R-592 — S05 properties and derivatives: one order-3 φ jet; `n_H2O` derivatives exactly 0.0; saturation without a phase check
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C10 |
+| Normative text | spec §3; S05.A03–A11, A17 |
+| Evidence | Generator claims identities I1–I9 to 1e-20 against numerically differentiated values |
+| Affected packages | S05 |
+
+**Decision.**
+- Properties: `h`, `s`, `v`, `Z`, `cp`, `lnphi_H2O`, `Psat` and `Tsat`, with first derivatives in T, P and `n_H2O`.
+- φ and its partials up to order 3 come from one evaluation (`phi_jet`); at δ = 1 the |δ−1|^q factors are zero jets.
+- The `n_H2O` derivatives are present and equal 0.0, as are d`Psat`/dP and d`Tsat`/dT.
+- A request made only of `Psat` and `Tsat` skips the phase check.
+
+**Rejected alternatives, and why.**
+- *Finite-difference derivatives in the provider.* They are inexact, and they break residual/Jacobian identity.
+- *Omitting the n-derivatives.* Absent means "not provided", not zero.
+
+---
+
+## R-593 — S05 flash: `TP` only; refused `tp_flash_degenerate` inside the band
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C10 |
+| Normative text | spec §4.5; S05.A20 |
+| Evidence | A pure fluid at fixed (T, P) on the saturation curve has an undetermined split |
+| Affected packages | S05 |
+
+**Decision.**
+- Outside the band the flash is single-phase: vapour fraction 1.0 or 0.0, and the other outlet is the zero stream.
+- Inside the band it is refused `tp_flash_degenerate`.
+- `near_critical` and `out_of_domain` are refused.
+- A dormant feed is answered `ZERO_FLOW`.
+
+**Rejected alternatives, and why.** *Refusing every flash* (the `pr-lib-v1` choice), which leaves the common
+single-phase case unserved.
+
+---
+
+## R-594 — S05 rights: IAPWS terms unresolved, so the coefficient file is not packaged; iapws (GPL-3) is executed only
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`specifier`), C10; Frank's C10-Q1 open |
+| Normative text | spec §9, §10 Q-1; ADR 0045 |
+| Evidence | iapws.org was refused (CONNECT 403). CoolProp's licence is MIT, read from its dist metadata. iapws 1.5.5 is GPL-3, and nothing is copied from it |
+| Affected packages | S05; any later packaging change |
+
+**Decision.**
+- `benchmarks/s05/iapws95_coefficients.json` is in no `PACKAGED` path until a person has read the release's terms and
+  compared Tables 6–8. S05.A26 asserts this.
+- The rights row is `unresolved` (the `docs/l01-rights-check.md` pattern, Frank's L01-Q4 rule by analogy).
+
+**Rejected alternatives, and why.** *Shipping on CoolProp's MIT licence alone.* The coefficients are IAPWS's, not
+CoolProp's.
+
+---
+
+## R-595 — S05 Newton convergence: a sub-ulp correction is converged; stagnation only for Newton steps ≤ √ε (review F1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S05 review; rules on the build lane's Q-floor question |
+| Normative text | spec §14 (amends §3.5, §4.4, §6.1 A22); `docs/reviews/S05-review.md` F1, F2, ruling 1 |
+| Evidence | `tests/test_s05_review_adversarial.py`: 700 K, 1e8 Pa, VAPOR is answered `ok` with ρ = 480.66 against 651.77 kg/m³ (h +2947 J/mol). 99 of 10 980 dense-grid states are wrong. A22 passed over two of them |
+| Affected packages | S05 (WO-S05-3) |
+
+**Decision.**
+- Converged means one of two things:
+  - the Newton correction is ≤ 4ε relative, including a correction that rounds to zero, tested before the bracket
+    safeguard;
+  - or the previous Newton step is ≤ √ε and the current Newton step is ≥ it and is itself ≤ √ε.
+- A bisection step never converges.
+- A22 asserts the root residual |p(M/v, T) − P| / (ρ ∂p/∂ρ) ≤ 1e-12 at every answer, and on a 180 × 61 grid.
+- *Amended by R-600 (2026-10-22):* both clauses are tested on the raw Newton correction before the safeguard,
+  inside the bracket or not, and the answer is always that Newton point. The floor is up to about 7e-14, not 5e-16.
+
+**Rejected alternatives, and why.**
+- *A Σ|terms| floor estimate.* It is not needed, because the root-residual test guards the outcome.
+- *The literal 4ε rule.* The Maxwell solve never meets it at 273.16 K or at 647.0 K.
+
+---
+
+## R-596 — S05: p_σ from the vapour side; Z = P/(ρ R_s T) at a solved root (spec §3.1, §3.5 amended)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S05 review, rulings 2 and 3 |
+| Normative text | spec §14 |
+| Evidence | Against ref at 273.16 K: the liquid side's p_σ is off by 5.4e-8, the vapour side's by ≤ 1.6e-14. With 1 + δφʳ_δ, \|lnφ_L − lnφ_V\| = 5.4e-8, against A10's 1e-8 (`C10_DECISIONS.md`, WO-S05-1) |
+| Affected packages | S05 |
+
+**Decision.**
+- p_σ = p(ρ'', T).
+- At a density root solved for a given (T, P), Z and the ln Z inside `lnphi_H2O` are P/(ρ R_s T), and their partials
+  stay the jet's. On the branch they are the same function.
+- Consequence: Z no longer witnesses the root, so the root-residual check of R-595 does that job.
+
+**Rejected alternatives, and why.**
+- *The spec's literal liquid side and 1 + δφʳ_δ.* With them, A08 fails at 273.16 and 275 K, and A10 fails as well.
+
+---
+
+## R-597 — S05 A17: stencils amended at NC, at the box edges and at the band probes; FD_TOL = 1e-10 unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S05 review, ruling 4 (Q-6) |
+| Normative text | spec §14 (amends §6.3) |
+| Evidence | The review's probe: ≤ 5.7e-13 at NC with h = 1e-7·x, ≤ 2.8e-13 at the corners one-sided, and ≤ 1.3e-14 at the band probes with ε_σ-scaled steps. The NC truncation was measured at 1.25e-9 with h = 1e-6·x, and it falls 8× per halving of h |
+| Affected packages | S05 (WO-S05-3) |
+
+**Decision.**
+- **NC states:** h = 1e-7·x. A 10× margin needs h ≤ 2e-7·x.
+- **A coordinate at a box edge:** the inward 3-point stencil, −3f₀ + 4f₁ − f₂.
+- **Band probes:** h_P = (ε_σ/4)·P and h_T = (ε_σ/4)/|d ln p_σ/dT|.
+- All 21 xfails become ordinary cases, and the tolerance is unchanged.
+
+**Rejected alternatives, and why.**
+- *Loosening FD_TOL.* No derivation shows that the registered value is wrong. Only the stencil was outside §6.3's
+  "away from the box" argument.
+- *Dropping the cases.* That is forbidden.
+
+---
+
+## R-598 — S05 A29 m5 restated; A04 (Q-5) bound kept at 1e-11; Tsat admission bound text is 2e-7
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S05 review, rulings 5 and 6, and F4 |
+| Normative text | spec §14 (amends §6.1 A04, A29 and §6.2) |
+| Evidence | The new m5 (`temperature >= T_C` → `temperature > T_SIGMA_MAX` in `_rule`) refuses `NC_liquid`, so A15 catches it. A04's measured floor is ≤ 6.8e-13. CoolProp's `d3alphar` agrees with ref to 6.8e-13. iapws's Tsat is at worst 1.03e-8 |
+| Affected packages | S05 |
+
+**Decision.**
+- m5 becomes "T_c replaced by 647.0 K in step 2" (→ A15). The old m5 is an equivalent mutant by construction.
+- A04 stays at 1e-11·max(|ref|, 1). Generator admission of the third partials is a design-lane follow-up.
+- The Tsat admission bound is 2e-7, the code's value, because C11's margin needs it.
+
+**Rejected alternatives, and why.**
+- *Dropping m5.* That loses the coverage of step 3.
+- *An assertion on the flash's `route` message.* It is not a contract field.
+
+---
+
+## R-599 — S05 review verdict: not yet `tested` (one must-fix); rights statement required in the manifest
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`), S05 review; C10-Q1 and C10-Q2 stay Frank's |
+| Normative text | `docs/reviews/S05-review.md`; spec §14 (§12 limitations) |
+| Evidence | S05 tests at `7a7e346` plus the adversarial file: 169 passed, 1 skipped, 27 xfailed. F1 to F4 and N1 to N5 are in the review |
+| Affected packages | S05; ADR 0045 acceptance |
+
+**Decision.**
+- WO-S05-3 (R-595 to R-598, and F3) precedes the `tested` manifest.
+- The `reviewer` then checks only that diff.
+- The manifest must state:
+  - the IAPWS terms of use were not read (iapws.org was refused, 2026-10-22);
+  - the rights row is `unresolved`;
+  - the coefficient file is unpackaged;
+  - Tables 6–8 are not compared;
+  - ADR 0045 remains Proposed, and nothing is `released` until C10-Q1 is answered;
+  - `reviewed` covers numerics, not rights.
+
+**Rejected alternatives, and why.**
+- *Passing with F1 as a limitation.* Wrong values answered `ok` are a placeholder success path.
+
+---
+
+## R-600 — S05 Newton convergence: R-595's floor clause is tested on the raw Newton correction before the safeguard (amends R-595)
+
+| | |
+| --- | --- |
+| Date | 2026-10-22 |
+| Decided by | design lane (`reviewer`); rules on the build lane's WO-S05-3 QUESTION (`docs/C10_DECISIONS.md`, R-595 clause 2) |
+| Normative text | spec §14, note of 2026-10-22; `docs/reviews/S05-review.md`, "Ruling on the WO-S05-3 departure" |
+| Evidence | `e3182e1` and `9e0bad4`. With the literal clause, `L_ambient` and 228 of 10 980 dense-grid states return `not_converged`. With this rule, 0 of 10 980 have a root residual > 1e-12, and the worst is 3.4e-14. Around 273.16 K, 10^5.3 Pa the residual's noise envelope over ±300 ulp is 7.2e-14 (61 sign changes). S05 tests: 378 passed, 1 skipped |
+| Affected packages | S05 |
+
+**Decision.**
+- Both of R-595's clauses are tested on the raw Newton correction at the current iterate, before the bracket
+  safeguard, whether or not the Newton point lies in the bracket.
+- The answer is always that Newton point, never the iterate or a midpoint.
+- `previous` is the last raw Newton correction. It is ∞ after a bisection forced by ∂p/∂ρ ≤ 0.
+- Review F1 clause 2's "stayed inside the bracket" is withdrawn.
+- F2's and spec §14's "measured floor ≤ 5e-16" is corrected: the floor is up to about 7e-14 for the liquid near T_t.
+  `ROOT_TOL = 1e-12` is unchanged.
+
+**Reasons.**
+- The in-bracket condition existed only to keep a midpoint from being returned. Returning only Newton points does that
+  directly.
+- A Newton step leaves the bracket only by crossing its far end. The root then lies within that step.
+- At the cold liquid's rounding floor (about 20ε, above 4ε) the literal clause cycles to `MAX_ITERATIONS`.
+
+**Rejected alternatives, and why.**
+- *The literal clause.* It refuses answerable states, including the registered `L_ambient`.
+- *Tightening `ROOT_TOL` toward 5e-16.* The cold liquid's computed residual is rounding noise above that value.
+
+---

@@ -4569,3 +4569,168 @@ harvest:
   class: P
   to: []
   note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: limitations[0]
+  sha256: 7bd9ebbde03e4836c4855ff0b4cf541cbb1efed6109ec9d4e319146ee3d1af49
+  class: E
+  to:
+  - U02
+  note: 'S05''s `iapws95-v1` is library-only (not in SELECTABLE_BASES, U02); registered in LIBRARY_ONLY_PROVIDERS and scanned_providers (spec §8 F-2, R-568, R-569)'
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: limitations[1]
+  sha256: 9104ab88447cf62b068d62ef1ada86153ae52df632dae9074004d42ec6f50dad
+  class: E
+  to:
+  - U02
+  note: 'S05''s `iapws95-v1` is library-only (U02); its coefficients are not compared with the printed R6-95 tables (C10-Q1); numerical verification, not empirical validation (R-569)'
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: limitations[2]
+  sha256: 25103d5ca7b41192cf0015f8d9566575d0eaf0869b847c2ef23ac1bc981c7323
+  class: E
+  to:
+  - U02
+  note: 'S05''s `iapws95-v1` is library-only (U02); its coefficient file is not packaged, so it runs from a source checkout only (R-594, R-569)'
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: limitations[3]
+  sha256: 4e2405d4fb013880d93f229fcc550d5f075df5ccb371215c68bb8c0c2191ad5e
+  class: E
+  to:
+  - U02
+  note: 'S05''s `iapws95-v1` is library-only (U02); it refuses the near_critical box (R-590, R-569)'
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: limitations[4]
+  sha256: d0928c986de59c966d6c848d3bc16e90d8bcbb38d88070ca6db14cd0ff32e0b4
+  class: E
+  to:
+  - U02
+  note: 'S05''s `iapws95-v1` is library-only (U02); its saturation band is eps_sigma = 1e-6, metastable states beyond it are refused (R-590, R-569)'
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: limitations[5]
+  sha256: 10b19f3b1cba1c0058f9b99565ab413cc2630c88bd702bc88285e75a323cf0c3
+  class: P
+  to: []
+  note: 'S05''s cross-check (CoolProp, iapws) is the design lane''s, recorded by hash and commit; not re-run by the build lane (R-586)'
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: limitations[6]
+  sha256: 6df2e31d16f7c1dec03f60f9238dec6843e16201b19aed1bf837ffb8b7cdd980
+  class: P
+  to: []
+  note: 'S05 lists no requirement id; ADR 0045 is Proposed and spec §8 F-1 is the design lane''s'
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: limitations[7]
+  sha256: 4fa5a3ab318b31ba0c12069e15bc18b439891f11f5ac1b941d1ac25b8e2097a6
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: limitations[8]
+  sha256: 4914564e2a0812c91810728e5cdb1de0d294e7eb06c40bed79478aafc362ffa7
+  class: P
+  to: []
+  note: S05 review pending (reviewer, human numerical and process-model); WO-S05-1/2 QUESTION lines go to it
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: limitations[9]
+  sha256: e4cd81ee32d6ab6ccc5f254746e2369e77c43fe16731051d727791c09cb759b0
+  class: P
+  to: []
+  note: 'S05.A17 fail: 21 strict xfails (NC step, box corners, band probes) pending the design lane''s ruling on spec §6.3 (Q-6)'
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: limitations[10]
+  sha256: 05c72c25261bb8ba0fe95076bbc567ce993f18890e10c9ed39dfe6a19b20d8e0
+  class: P
+  to: []
+  note: 'S05.A29 fail: m5 is an equivalent mutant on A15, a strict xfail pending the design lane''s ruling on spec §6.1 A29'
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: checks[16]
+  check_id: S05.A17
+  sha256: 3e2b8e243ac26db7f4f444cf473e7a54676fa77ec0a8f5e436e78cf74eb35ffc
+  class: P
+  to: []
+  note: 'S05.A17 fail: 21 strict xfails (NC step, box corners, band probes) pending the design lane''s ruling on spec §6.3 (Q-6)'
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: checks[28]
+  check_id: S05.A29
+  sha256: 99d78f6be1c371e81438e2646f06a0a91880b849985e023d3b4cc2a7b3a00ee1
+  class: P
+  to: []
+  note: 'S05.A29 fail: m5 is an equivalent mutant on A15, a strict xfail pending the design lane''s ruling on spec §6.1 A29'
+- manifest: evidence/S05/601e04f41a0a4f98b406205a98577683c9f4ca9b/manifest.json
+  item: checks[34]
+  check_id: S05.gate
+  sha256: 7365ec9417efcef4aa85914ebeee750cd86940857a7b25cd23b0091cb3b380c3
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
+  item: limitations[0]
+  sha256: 3d0531b880629318b1320883bc8e99395abbb80a371766e26850d380176ccbf8
+  class: E
+  to:
+  - U02
+  note: S05's `iapws95-v1` is library-only (U02); the IAPWS terms of use for R6-95 are unread and the rights row is unresolved (C10-Q1, Frank's); no released status and no wheel with the coefficients until it is answered (R-599, R-569)
+- manifest: evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
+  item: limitations[1]
+  sha256: 7bd9ebbde03e4836c4855ff0b4cf541cbb1efed6109ec9d4e319146ee3d1af49
+  class: E
+  to:
+  - U02
+  note: S05's `iapws95-v1` is library-only (not in SELECTABLE_BASES, U02); registered in LIBRARY_ONLY_PROVIDERS and scanned_providers (spec §8 F-2, R-568, R-569)
+- manifest: evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
+  item: limitations[2]
+  sha256: 9104ab88447cf62b068d62ef1ada86153ae52df632dae9074004d42ec6f50dad
+  class: E
+  to:
+  - U02
+  note: S05's `iapws95-v1` is library-only (U02); its coefficients are not compared with the printed R6-95 tables (C10-Q1); numerical verification, not empirical validation (R-569)
+- manifest: evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
+  item: limitations[3]
+  sha256: 25103d5ca7b41192cf0015f8d9566575d0eaf0869b847c2ef23ac1bc981c7323
+  class: E
+  to:
+  - U02
+  note: S05's `iapws95-v1` is library-only (U02); its coefficient file is not packaged, so it runs from a source checkout only (R-594, R-569)
+- manifest: evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
+  item: limitations[4]
+  sha256: 4e2405d4fb013880d93f229fcc550d5f075df5ccb371215c68bb8c0c2191ad5e
+  class: E
+  to:
+  - U02
+  note: S05's `iapws95-v1` is library-only (U02); it refuses the near_critical box (R-590, R-569)
+- manifest: evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
+  item: limitations[5]
+  sha256: d0928c986de59c966d6c848d3bc16e90d8bcbb38d88070ca6db14cd0ff32e0b4
+  class: E
+  to:
+  - U02
+  note: S05's `iapws95-v1` is library-only (U02); its saturation band is eps_sigma = 1e-6, metastable states beyond it are refused (R-590, R-569)
+- manifest: evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
+  item: limitations[6]
+  sha256: 10b19f3b1cba1c0058f9b99565ab413cc2630c88bd702bc88285e75a323cf0c3
+  class: P
+  to: []
+  note: S05's cross-check (CoolProp, iapws) is the design lane's, recorded by hash and commit; not re-run by the build lane (R-586)
+- manifest: evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
+  item: limitations[7]
+  sha256: 6df2e31d16f7c1dec03f60f9238dec6843e16201b19aed1bf837ffb8b7cdd980
+  class: P
+  to: []
+  note: S05 lists no requirement id; ADR 0045 is Proposed and spec §8 F-1 is the design lane's
+- manifest: evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
+  item: limitations[8]
+  sha256: 4fa5a3ab318b31ba0c12069e15bc18b439891f11f5ac1b941d1ac25b8e2097a6
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
+  item: limitations[9]
+  sha256: 58a5e4912bbae1663cca427908690ec521c98faf4154b24f52b556423f0488f1
+  class: P
+  to: []
+  note: 'S05 review: R-595…R-599 ruled and applied by WO-S05-3; the reviewer''s diff check and the human numerical and process-model review are pending; the R-595 clause-2 QUESTION goes to it'
+- manifest: evidence/S05/4ac00a0f3baf494193e66c7cfbc3712962c55bfc/manifest.json
+  item: checks[34]
+  sha256: 7365ec9417efcef4aa85914ebeee750cd86940857a7b25cd23b0091cb3b380c3
+  check_id: S05.gate
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here

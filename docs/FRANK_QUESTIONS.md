@@ -106,3 +106,8 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
   only packaged ones, so L01 also needs a design-lane amendment of T08.A32; until then `wp/L01` fails A32 and is not
   merged. **Default:** nothing from L01 is released until a rights review vets the nine records and the design lane
   amends A32; shipping them is a distribution decision for you.
+
+## C10 — IAPWS-95 (S05), 2026-10-22
+
+- **C10-Q1. May the IAPWS-95 coefficients ship?** This session could not read IAPWS's terms or the R6-95(2018) tables: iapws.org was refused by the proxy. **Default:** the tests and the provider may be built from the coefficients transcribed from CoolProp (MIT) and checked against `iapws` (GPL-3, used only as a comparison). Nothing ships in a wheel until a person reads the release's terms and confirms the generator's values against Tables 6–8.
+- **C10-Q2. How should a supercritical fluid (T ≥ T_c) be labelled?** **Default:** VAPOR. The alternative is to label by density (LIQUID iff ρ > ρ_c). Either label flips somewhere on a 24 MPa boiler path.
