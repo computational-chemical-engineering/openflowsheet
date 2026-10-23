@@ -85,6 +85,16 @@ MAX_ITERATIONS: Final = 50
 STEP_TOLERANCE: Final = 4.0 * 2.0**-52
 #: √ε: the onset of S05's residual-floor clause (R-595).
 FLOOR_ONSET: Final = 2.0**-26
+#: θ = 1 − T/T_c from which the near-critical saturation fallback runs where the Newton from the
+#: ancillary seeds fails (design note S07-near-critical-saturation, D4 and §4.3): 4× above the θ at
+#: which the Maxwell root's double-precision floor reaches √ε, 4× below T_σ,max's 2e-4.
+THETA_FALLBACK_MIN: Final = 5e-5
+#: The fallback's loop bounds (design note §4.2): halvings of each spinodal bisection (the interval
+#: ends ≤ ε·ρ_c), and the bound on the vapour-point halvings and on the pressure bisection.
+_SPINODAL_HALVINGS: Final = 52
+_FALLBACK_HALVINGS: Final = 64
+#: The pressure bisection stops at P_b − P_a ≤ 2^−26·P_b (design note §4.2 step 6).
+_PRESSURE_WIDTH: Final = 2.0**-26
 #: Entries of each instance's saturation cache, keyed on the exact double T (S05 §10 Q-3).
 SATURATION_CACHE_SIZE: Final = 1024
 #: G4's bound (spec §5.2): |Δ| ≤ 1e-12·max(|ref|, 1).
@@ -92,6 +102,11 @@ CANARY_TOLERANCE: Final = 1e-12
 
 _SATURATION_PROPERTIES: Final[tuple[str, ...]] = ("Psat", "Tsat")
 _NOT_CONVERGED_SAT: Final = "saturation_not_converged"
+
+
+def _usable(density: float) -> bool:
+    """A seed density is finite and positive (design note D2); `_jet` raises on any other."""
+    return 0.0 < density < math.inf
 
 
 def _converged(step: float, previous: float) -> bool:
@@ -585,13 +600,113 @@ class CoolPropHeosProvider:
     # -- saturation (S05 §3.5) ---------------------------------------------------------------------
 
     def _solve_saturation(self, temperature: float) -> _Saturation | None:
-        """Maxwell's conditions at T < T_c from the ancillary seeds (S05 §3.5)."""
+        """Maxwell's conditions at T < T_c (S05 §3.5; design note S07-near-critical-saturation,
+        D1, D2): the Newton from the ancillary seeds, skipped if a seed is not a usable density;
+        where it gives no root and θ = 1 − T/T_c ≥ `THETA_FALLBACK_MIN`, the fallback."""
         fluid, seeds = self._fluid, self._seeds
         if seeds is None:
             return None
-        dl = seeds.rho_l(temperature, fluid.t_c) / fluid.rho_red
-        dv = seeds.rho_v(temperature, fluid.t_c) / fluid.rho_red
-        return self._maxwell_newton(temperature, dl, dv)
+        rho_l = seeds.rho_l(temperature, fluid.t_c)
+        rho_v = seeds.rho_v(temperature, fluid.t_c)
+        if _usable(rho_l) and _usable(rho_v):
+            plain = self._maxwell_newton(temperature, rho_l / fluid.rho_red, rho_v / fluid.rho_red)
+            if plain is not None:
+                return plain
+        if 1.0 - temperature / fluid.t_c >= THETA_FALLBACK_MIN:
+            return self._maxwell_fallback(temperature, rho_v)
+        return None
+
+    def _maxwell_fallback(self, temperature: float, seed_v: float) -> _Saturation | None:
+        """Design note S07-near-critical-saturation §4.2: seeds from a bisection in pressure on
+        F(P) = K(ρ_L(P)) − K(ρ_V(P)) (K = αʳ + δαʳ_δ + ln δ) between the spinodal pressures, each
+        phase's root on its mechanically stable branch, then `_maxwell_newton` from them; accepted
+        by its rule with both phases outside the spinodals. Every loop is bounded; any failed
+        check gives `None`. `seed_v` is the vapour ancillary's density, used only if usable."""
+        fluid = self._fluid
+        rho_c, top, rho_red = fluid.rho_c, fluid.rho_max, fluid.rho_red
+
+        def stable(density: float) -> bool:  # k = (∂p/∂ρ)_T/(RT) > 0
+            return self._pressure(temperature, density)[1] > 0.0
+
+        def gibbs(density: float) -> float:  # K
+            delta = density / rho_red
+            _, res = self._jet(temperature, density)
+            return res.phi + delta * res.d + math.log(delta)
+
+        # 1. The anchor: ρ_c inside the unstable branch.
+        if stable(rho_c):
+            return None
+        # 2. A mechanically stable vapour density below ρ_c.
+        rho_a = min(seed_v, 0.5 * rho_c) if _usable(seed_v) else 0.5 * rho_c
+        halvings = 0
+        while not stable(rho_a):
+            if halvings == _FALLBACK_HALVINGS:
+                return None
+            rho_a, halvings = 0.5 * rho_a, halvings + 1
+        # 3. The spinodals, each by bisection on the sign of k, keeping the end with k > 0.
+        if not stable(top):
+            return None
+        low, high = rho_a, rho_c
+        for _ in range(_SPINODAL_HALVINGS):
+            middle = 0.5 * (low + high)
+            if stable(middle):
+                low = middle
+            else:
+                high = middle
+        rho_vb = low
+        low, high = rho_c, top
+        for _ in range(_SPINODAL_HALVINGS):
+            middle = 0.5 * (low + high)
+            if stable(middle):
+                high = middle
+            else:
+                low = middle
+        rho_lb = high
+        # 4. The pressure bracket.
+        p_a, p_b = self._pressure(temperature, rho_lb)[0], self._pressure(temperature, rho_vb)[0]
+        if not 0.0 < p_a < p_b:
+            return None
+        rt = fluid.r * temperature
+
+        def vapour(pressure: float, start: float) -> float | None:
+            return self._bracketed_density(temperature, pressure, 0.0, rho_vb, start)
+
+        def liquid(pressure: float, start: float) -> float | None:
+            return self._bracketed_density(temperature, pressure, rho_lb, top, start)
+
+        # 5. The end signs: F(P_a) > 0 > F(P_b).
+        rho_l_end, rho_v_end = liquid(p_b, rho_lb), vapour(p_a, min(p_a / rt, rho_vb))
+        if rho_l_end is None or rho_v_end is None:
+            return None
+        if not gibbs(rho_lb) - gibbs(rho_v_end) > 0.0 > gibbs(rho_l_end) - gibbs(rho_vb):
+            return None
+        # 6. Bisection on P, the inner roots warm-started from the previous ones.
+        rho_l, rho_v = rho_lb, math.nan
+        for halving in range(_FALLBACK_HALVINGS):
+            p_m = 0.5 * (p_a + p_b)
+            root_v = vapour(p_m, min(p_m / rt, rho_vb) if halving == 0 else rho_v)
+            root_l = liquid(p_m, rho_l)
+            if root_l is None or root_v is None:
+                return None
+            rho_l, rho_v = root_l, root_v
+            f = gibbs(rho_l) - gibbs(rho_v)
+            if f > 0.0:
+                p_a = p_m
+            elif f < 0.0:
+                p_b = p_m
+            elif f == 0.0:
+                break
+            else:
+                return None
+            if p_b - p_a <= _PRESSURE_WIDTH * p_b:
+                break
+        else:
+            return None
+        # 7. The polish and its acceptance.
+        polished = self._maxwell_newton(temperature, rho_l / rho_red, rho_v / rho_red)
+        if polished is None or not (polished.rho_l >= rho_lb and polished.rho_v <= rho_vb):
+            return None
+        return polished
 
     def _maxwell_newton(self, temperature: float, dl: float, dv: float) -> _Saturation | None:
         """Maxwell's conditions by two-variable Newton in (δ', δ'') from (dl, dv), T < T_c; `None`
