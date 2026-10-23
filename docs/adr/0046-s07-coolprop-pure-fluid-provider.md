@@ -1,13 +1,17 @@
 # ADR 0046 — CoolProp as an optional pure-fluid Helmholtz evaluator: a library-only provider `coolprop-heos-v1` (package S07)
 
-**Status:** **Proposed, 2026-10-23** (design lane, `specifier`; R-618…R-622). It becomes Accepted when all of these
-hold:
+**Status:** **Proposed, 2026-10-23** (design lane, `specifier`; R-618…R-622; Amendment 1: R-623). It becomes
+Accepted when all of these hold:
 - `evidence/S07/<commit>/manifest.json` is `tested`, with spec §13's check list complete, on both CI architectures;
 - the `reviewer` has passed `thermo/coolprop_heos.py` and the generator `s07_reference.py`;
 - spec §11 Q-1 (aarch64 identity) is answered with its number, and this status line says which outcome holds;
 - Frank has answered Q-S07-1 (whether the cryogenic liquids may wait), or its default has stood unchallenged through
   the package's review;
-- spec §10 F-1 is written into ADR 0001 D5 and `interfaces-frozen.md` §3 by the design lane.
+- spec §10 F-1 is written into ADR 0001 D5 and `interfaces-frozen.md` §3 by the design lane;
+- Amendment 1's acceptance evidence (below) is in the same manifest.
+
+*Met 2026-10-23:* Frank answered Q-S07-1, "Yes, they wait". He also chose the broad fluid list, which Amendment 1
+below records.
 
 **Author:** design lane (`specifier`), package S07. **Normative text:** `docs/derivations/S07-spec.md`.
 **Generator:** `docs/derivations/scripts/s07_reference.py` (WO-S07-1; the plan is spec §8).
@@ -18,6 +22,64 @@ artifacts); Frank's queueing of S07 (2026-10-23) and his S05 Q-8 answer ("librar
 together with S07").
 **Supersedes, for this provider only:** ADR 0045's rejected alternative "CoolProp … as a runtime dependency" (see
 Alternatives). ADR 0045 is not edited.
+
+## Amendment 1 (2026-10-23; R-623) — the broad fluid list
+
+**Trigger.** Frank, 2026-10-23: asked whether S07 starts with the nine S04 fluids or includes many more CoolProp fluids
+now, he chose **"Broad list now"**. On Q-S07-1 he answered "Yes, they wait", so the cryogenic liquids stay with S07b
+and the melting-line lower bound stays. **Normative text:** spec §16. Where this note and the decisions below differ,
+this note governs.
+
+**What changes.**
+- **D5 — fluids by rule, in two tiers** (spec §16.1, §16.3). A CoolProp 8.0.0 fluid is admitted iff it is not
+  pseudo-pure, every term type of `EOS[0]` has a closed form that reproduces CoolProp (measured), its box holds a
+  saturation range and the near-critical box, and the generator's claims hold for it. That admits **123** of the 136
+  fluids.
+  - **Tier A** is the nine, unchanged.
+  - **Tier B** is the other 114. Their ids are the CoolProp names with parentheses replaced; the CAS number is a
+    constant.
+  - **Thirteen are excluded,** each with its reason, which the provider reports: six pseudo-pure mixtures, two fluids
+    with an Aly–Lee ideal-gas term whose CoolProp integration constants are not reproduced, Helium and ParaHydrogen
+    (no saturation range above the melting bound), and MD2M, R236EA and R161 (the critical region lies outside the EOS
+    range).
+- **D6 — a third lower-bound kind** (spec §16.4). Fluids with a melting line keep it (M), or use the triple point when
+  the line lies below it (T: H2O, HeavyWater). The 96 fluids without one (E) get
+  P_hi = min(p_max, max(5 MPa, ⌈1.1·p_c⌉₂)) and T_lo = ⌈10·T_t·(1 + 1e-8 Pa⁻¹·P_hi)⌉/10. The 1e-8 Pa⁻¹ bounds the
+  relative melting slope. It sits 1.6× above the steepest slope measured among CoolProp's melting lines with
+  T_t ≥ 20 K (Neon) and 2.6× above the steepest non-quantum one, and generator claim C18 keeps the margin executable.
+  The provider states the bound's empirical basis in `numerical_limitations`.
+- **D3 — identity** (spec §16.9). The per-fluid constants move to a generated data module,
+  `_coolprop_heos_fluids.py`, and `implementation_sha256` adds its hash. A pin under which the admitted list changes
+  is a new provider id.
+- **D7 — verification by tier** (spec §16.5).
+  - Tier B is verified by 50-digit closed forms of CoolProp's own coefficients, and by consistency identities on the
+    provider's answers. That is implementation verification and self-consistency, not validation, and `describe()`
+    says so (`verification: self-consistent`).
+  - Measured: CoolProp's fluid files hold no published check values.
+  - Published values transcribed from the EOS papers are a mechanism (a data file and claim C16). S07 requires none.
+  - Water (against S05) and the nine (against S04's ideal-gas parts) keep their independent cross-checks.
+- **D8 — tier B's cross-architecture stop line** is 1e-10 (spec §16.11), because tier B's jet floor reaches 1.05e-12
+  (R22). Tier A keeps 1e-12.
+- **Rights.** The Rights argument below does not depend on the fluid and covers all 123 (spec §16.12).
+
+**Alternatives rejected (Amendment 1).**
+- *Exclude every fluid without a melting line.* That leaves 27 fluids, and it contradicts Frank's choice. It would
+  drop ammonia, the aromatics, the refrigerants and the heavier alkanes.
+- *T_lo = T_t for those fluids.* That gives silent LIQUID answers in the solid region, which R-620 rejected.
+- *The full registered-state set for every fluid.* That means a reference file of several MB, and the same generic
+  code judged 114 times. Tier B registers 11 states per fluid instead (spec §16.6).
+- *Admit the Aly–Lee fluids with a fitted constant.* That would copy the expectation from the thing tested.
+- *Admit the pseudo-pure mixtures.* That applies a pure-fluid phase rule to a mixture.
+
+**Errata in the first spec** (spec §16.0): N2's T_lo is 82.8 K; C9's melting grid starts at the melting line's own
+lower pressure limit; O2's EOS citation key is the full string; C1's "one EOS per fluid" becomes "`EOS[0]`".
+
+**Acceptance evidence added.** Spec A33–A35 and §16.10's tier-B column pass on both architectures. Generator claims
+C15–C19 pass. The manifest carries spec §16.15's items.
+
+**Does not establish.** That any tier-B fluid's coefficients are the source paper's. That the E boxes are free of
+solid states for every fluid. That every claim holds at 50 digits for all 123 before WO-S07-1b's run (spec §16.13
+Q-A1-4).
 
 ## Use case
 

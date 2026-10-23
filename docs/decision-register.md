@@ -12681,6 +12681,9 @@ are merged at `tested`. That belongs to the next ledger refresh.
   It is deferred to S07b.
 - *More fluids.* No case needs a pure-fluid stream outside the nine. An addition is a generator run.
 
+*Amended by R-623 (2026-10-23):* Frank chose the broad list. The fluids are now 123, selected by rule, and the
+rejected alternative "More fluids" is reversed. The melting-line bound and the S07b deferral stand.
+
 ---
 
 ## R-621 — S07 is library-only; the records-less selectable basis for S05 and S07 is a follow-on package with its own ADR
@@ -12722,3 +12725,36 @@ package for both providers.
 - *Demand bit-identity unconditionally.* CI would go red on a fact we cannot change, for differences 4 decades
   inside every reference tolerance.
 - *Use ADR 0025's 1e-9 replay class directly.* It is too loose to detect a real divergence at the provider level.
+
+---
+
+## R-623 — S07 Amendment 1: 123 CoolProp fluids by rule, in two verification tiers; fluids without a melting line get a triple-point-estimate lower bound with a pressure cap
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | Frank, 2026-10-23 ("Broad list now"; Q-S07-1 "Yes, they wait"); the rule, the bound and the tiers by the design lane (`specifier`) |
+| Normative text | S07 spec §16; ADR 0046 Amendment 1 |
+| Evidence | Spec §16.16. m6: 136 fluids, 6 pseudo-pure, 30 with a melting line, no published check values in any fluid file. m7: closed forms reproduce CoolProp's partials for all 123 admitted fluids (αʳ ≤ 1.05e-12, R22; α° ≤ 4.6e-14); the Aly–Lee α° is off by a + bτ. m8: S1–S5 admit 123, and C6 and C8–C11 are forecast to hold for all of them. The steepest relative melting slope is 0.00622/MPa (Neon), and 0.00382/MPa among non-quantum fluids (IsoButane) |
+| Affected packages | S07; S07b; the binding follow-on, which maps components to fluids by CAS |
+| Amends | R-620 (the fluid list; its rejected alternative "More fluids" is reversed by Frank's answer); R-619 (the implementation hash adds the fluid table); R-622 (tier B's stop line) |
+
+**Decision.**
+- A CoolProp 8.0.0 fluid is admitted iff all of these hold: it is not pseudo-pure; every term type of `EOS[0]` has a
+  verified closed form; the domain rule gives T_lo < 0.99·T_c; the near-critical box lies inside the box; and the
+  generator's claims hold. That admits 123. The 13 excluded fluids and their reasons are emitted and reported by the
+  provider.
+- Lower bounds. M: the melting line at P_hi. T: the triple point (H2O, HeavyWater). E, for fluids without a melting
+  line: P_hi = min(p_max, max(5 MPa, ⌈1.1·p_c⌉₂)) and T_lo = ⌈10·T_t·(1 + 1e-8 Pa⁻¹·P_hi)⌉/10, with claim C18
+  keeping 1e-8 Pa⁻¹ at least 1.5× above the steepest measured slope.
+- Tier A (the nine) is unchanged. Tier B (114 fluids) registers three jets, six TP states, `sat_mid` and `tsat_mid`,
+  and reports `verification: self-consistent`. Published check values are a mechanism; S07 requires none.
+- Errata in the first spec: N2's T_lo is 82.8 K; C9's grid starts at the melting line's lower pressure limit.
+
+**Rejected alternatives, and why.**
+- *Exclude the fluids without a melting line.* That leaves 27 fluids and contradicts the broad-list decision.
+- *T_lo = T_t for them.* That gives silent LIQUID answers in the solid region (R-620).
+- *1e-8 Pa⁻¹ halved, to 0.005/MPa.* That lies below Neon's measured slope, and a 1.3× margin over the non-quantum
+  maximum is too thin for fluids outside the sample.
+- *The full registered-state set for every fluid.* A reference file of several MB, and generic code judged 114 times.
+- *Admit the Aly–Lee fluids (n-Heptane, D6) with a fitted constant.* That copies the expectation from the thing tested.

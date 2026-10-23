@@ -1,13 +1,19 @@
 # S07 — CoolProp as an optional pure-fluid Helmholtz evaluator: contract, domain, identity and test specification
 
 **Package:** S07 (brief `docs/briefs/S07-coolprop-design.md`; branch `wp/S07`). **Lane:** design (`specifier`) for
-this document; build for WO-S07-1…3 (§12). **ADR:** 0046 (Proposed). **Register:** R-618…R-622.
+this document; build for WO-S07-1a…4 (§16.14). **ADR:** 0046 (Proposed, with its Amendment 1 note). **Register:**
+R-618…R-622; Amendment 1: R-623.
 **Precedent followed:** S05 (`docs/derivations/S05-IAPWS95-spec.md`, ADR 0045). Where this document says "as S05
 §x", the S05 text applies with the substitutions stated here, and nothing else from S05 is implied.
 **Generator (to be written by WO-S07-1, plan in §8):** `docs/derivations/scripts/s07_reference.py`, run in an
 environment holding the `coolprop` extra and mpmath 1.3.0, `--check`; it writes `s07_reference.json`.
 **Measurements behind this document:** `docs/derivations/scripts/s07_measurements/m1…m4` (§14), run 2026-10-23 on
-the workstation (x86-64, Python 3.13.5) in a scratch venv with `CoolProp==8.0.0 mpmath==1.3.0`.
+the workstation (x86-64, Python 3.13.5) in a scratch venv with `CoolProp==8.0.0 mpmath==1.3.0`; Amendment 1 adds m6–m8
+(§16.16).
+
+**Amendment 1 (2026-10-23, §16)** widens the fluid list from the nine S04 fluids to 123 CoolProp fluids, selected by
+rule, at Frank's direction ("Broad list now"). Where §16 and an earlier section differ, §16 governs. The markers
+"(amended, §16.x)" flag the places it changes, and §16.0 lists four errata in §1–§15.
 
 ## 0. Read this first
 
@@ -43,12 +49,12 @@ This document establishes:
 4. the per-fluid domain, constants and phase rule (§6);
 5. the registered states by rule, and why each is there (§7);
 6. the generator plan and its executable self-claims (§8);
-7. thirty-two numbered assertions with expectations and tolerances (§9);
+7. thirty-two numbered assertions with expectations and tolerances (§9; thirty-five with §16.10);
 8. findings, open questions, work orders and the manifest check list (§10–§13).
 
 ## 2. Fluids and the closed form
 
-### 2.1 The fluid list (decided; R-620)
+### 2.1 The fluid list (decided; R-620; amended, §16.1–§16.3: 123 fluids in two tiers, these nine are tier A)
 
 The nine components of the S04 library records (`benchmarks/l01/components.yaml`, `pr_lib.COMPONENTS`), by the same
 component ids:
@@ -96,7 +102,7 @@ over the term's arrays. Abbreviations as in §2.1.
 CoolProp 8.0.0 partials (10 of α°, 10 of αʳ, total order ≤ 3) for all nine fluids at five (T/T_red, δ) points
 {(1.5, 0.3), (0.8, 2.4), (0.95, 0.02), (2.5, 1.1), (1.1, 1.6)}, with max |Δ|/max(|ref|, 1) = 1.5e-15 for α° and
 8.0e-14 for αʳ (worst: N2 `d3alphar_dDelta3` at (0.95, 0.02)). So the forms above are CoolProp's, and its
-partials sit at the double-precision floor. The NA term at δ = 1 follows S05 §3.2's zero-jet rule (A03 state
+partials sit at the double-precision floor (amended, §16.2: seven more term types, measured over 123 fluids). The NA term at δ = 1 follows S05 §3.2's zero-jet rule (A03 state
 `delta_one`, water and CO2 only). A term type outside the table is a generator refusal (claim C1), never a skip.
 
 ### 2.3 Properties
@@ -111,7 +117,7 @@ n-derivatives are exactly 0.0.
 
 - Module `src/openflowsheet/thermo/coolprop_heos.py`; `PROVIDER_ID = "coolprop-heos-v1"`;
   `REFERENCE_CONVENTION = "COOLPROP-DEF-ref-v1"` (§3.5).
-- `CoolPropHeosProvider(component_id)` for `component_id` in §2.1's ids; any other id raises `ValueError` at
+- (Amended, §16.8: any id of §16.3; excluded fluids are reported.) `CoolPropHeosProvider(component_id)` for `component_id` in §2.1's ids; any other id raises `ValueError` at
   construction (a programming error, not a request outcome). One instance serves one fluid: components `(id,)`,
   state definition `nTP-v1`, `len(state.n) == 1`. Mixtures are out of scope (blueprint §6.1).
 - The module imports CoolProp lazily, inside the guard (§5.2). `import openflowsheet.thermo.coolprop_heos` must
@@ -198,7 +204,7 @@ with `pr-c1-v1` and `pr-lib-v1`, and S07's first delivery stays small.
   platform's number printing (Python's float repr is the shortest round-trip form on every platform).
 - **`data_sha256`** = SHA-256 of the canonical JSON (same `dumps` arguments) of
   `{"coolprop_version": "8.0.0", "fluid": <name>, "fluid_data_sha256": FLUID_DATA_SHA256[id]}`.
-- **`implementation_sha256`** = SHA-256 of the canonical JSON of
+- **`implementation_sha256`** (amended, §16.9: adds the fluid-table module's hash) = SHA-256 of the canonical JSON of
   `{"module_sha256": <SHA-256 of coolprop_heos.py's bytes>, "coolprop_version": "8.0.0",
   "coolprop_gitrevision": "ae81610e…"}`.
 - **Both are architecture-independent by construction.** The CoolProp binary differs per architecture
@@ -235,7 +241,7 @@ A26(c)).
 
 ## 6. Domain, constants and phase rule
 
-### 6.1 Per-fluid constants (rules; the generator emits the values, the module mirrors them bitwise, A01)
+### 6.1 Per-fluid constants (rules; the generator emits the values, the module mirrors them bitwise, A01; T_lo and P_hi amended, §16.4)
 
 | constant | rule |
 | --- | --- |
@@ -253,7 +259,7 @@ A26(c)).
 **T_m(P_hi), measured with CoolProp 8.0.0's `melting_line(iT, iP, P_hi)` (m5):** CO2 236.03, N2 82.80, O2 63.03
 (at 80 MPa), Ar 106.96, CH4 114.28, C2H6 105.39, C3H8 94.67, H2 31.39 K. So T_lo = 236.1, 82.9, 63.1, 107.0, 114.3,
 105.4, 94.7, 31.4 K. (Water's 264.21 K at 100 MPa lies on the ice Ih branch below T_t, which is consistent with S05's
-argument.) The generator recomputes these (C9).
+argument.) The generator recomputes these (C9). (Amended, §16.0 E1: N2's T_lo is 82.8 K.)
 
 ### 6.2 Why the cryogenic liquid is cut, and what that costs (decided for the first delivery; R-620; Q-S07-1)
 
@@ -292,7 +298,7 @@ As S05 §4.2, §4.4, §3.5 and §4.5, with these substitutions:
   per bracket, as S05 §4.4 (C8).
 - **No melting inside the box.** T_m(P_hi) ≤ T_lo, and T_m(P) increases on 20 pressures spaced logarithmically
   from max(p_t, P_lo) to P_hi, by CoolProp's `melting_line(iT, iP, ·)`. So no (T ≥ T_lo, P ≤ P_hi) lies above the
-  melting line (C9; not for H2O, §6.1).
+  melting line (C9; not for H2O, §6.1). (Amended, §16.0 E2 and §16.4: the grid starts at max(p_t, P_lo, p_m,min).)
 
 ### 6.5 Refusal table (complete; precedence top to bottom; message `<code>: <detail>`)
 
@@ -313,7 +319,7 @@ As S05 §4.2, §4.4, §3.5 and §4.5, with these substitutions:
 `flash` checks S05 §4.5's order, with the guard (row 4) after `state_length`. Every result, refusals included,
 carries `provider_id` `coolprop-heos-v1` and `reference_convention` `COOLPROP-DEF-ref-v1`.
 
-## 7. Registered states (by rule; the generator emits the concrete values)
+## 7. Registered states (by rule; the generator emits the concrete values; tier A — tier B is §16.6)
 
 Per fluid f. T_mid = (T_lo + T_σ,max)/2. Every state's reason is in the last column. A state that a rule would put
 outside f's box is dropped and recorded in the JSON's `dropped` list (C10 asserts the list is exactly the expected one).
@@ -340,7 +346,7 @@ outside f's box is dropped and recorded in the JSON's `dropped` list (C10 assert
 `V_corner` is a vanishing-quantity state: lnφ and Z − 1 are small there, but not zero. A17's FD scale s_f keeps the
 assertion non-vacuous, and A05 asserts the values themselves.
 
-## 8. Generator plan (`s07_reference.py`; WO-S07-1) and its self-claims
+## 8. Generator plan (`s07_reference.py`; WO-S07-1b) and its self-claims (amended, §16.7)
 
 **Inputs.** For each fluid, from the installed CoolProp 8.0.0 only: the fluid JSON (parsed, never written out),
 `T_critical()`/`rhomolar_critical()` (seeds), `melting_line(iT, iP, ·)` (T_lo and C9), and `PropsSI` at the registered TP states (admission, C11). `s05_reference.json` for C12.
@@ -373,7 +379,7 @@ worsts), and `claims` (count and names). Floats as `repr`; keys sorted; `--check
 | C13 | identities I1–I9 hold on the generator's numbers at every TP and saturation state to 1e-30 relative |
 | C14 | the refusal-probe table covers every code of §6.5 except row 4 and row 11, each with a control |
 
-## 9. Assertions
+## 9. Assertions (applicability by tier and A33–A35: §16.10)
 
 Test files: `tests/test_s07_coolprop.py` (WO-S07-2) and `tests/test_s07_registration.py` (WO-S07-3). "ref" is
 `s07_reference.json`. Parametrized over the nine fluids unless stated. NC bounds ×100, as S05 §6.2.
@@ -413,7 +419,7 @@ Test files: `tests/test_s07_coolprop.py` (WO-S07-2) and `tests/test_s07_registra
 | A31 | **Cross-architecture.** `benchmarks/s07/platform_digest.json` holds, per fluid, the `float.hex` of every A03–A13 answer as produced on x86-64 (a regression fixture, not validation). On each CI architecture the test recomputes the answers and compares them. Outcome (a): bitwise equal on aarch64 → A31 passes as "bit-identical". Outcome (b) is §11 Q-1's pre-registered rule | itself | (a) bitwise; (b) per Q-1 |
 | A32 | Mutation battery, each mutation failing the named assertion: (m1) permute two jet slots (φ_δτ ↔ φ_ττ) → A03 and A05 (cp); (m2) use T_red in place of T_c in the phase rule → A15 for O2; (m3) CODATA R for N2 → A05; (m4) ε_σ = 0 → A13; (m5) omit the `n_<id>` derivative → A07; (m6) call `update` without `specify_phase` → A27; (m7) skip G4 → A26(c); (m8) hash the raw JSON string instead of the canonical one → A28 | named | each fails |
 
-### 9.1 Tolerances: floor and margin
+### 9.1 Tolerances: floor and margin (tier B: §16.11)
 
 - **The jet (A03/A04).** CoolProp's partials against 30-digit mpmath: worst 8.0e-14 over 9 fluids × 5 states ×
   20 partials (m4). A03's 1e-12 sits 12× above it. A04's 1e-11 sits 125× above it. The coefficients are
@@ -466,13 +472,13 @@ Test files: `tests/test_s07_coolprop.py` (WO-S07-2) and `tests/test_s07_registra
 - **Q-3 (needs a fact): does a G4-checked `AbstractState` keep its α° after a later `set_reference_state`?**
   WO-S07-2 measures it in A26(c). **Default:** yes, so G4 runs once. If no, G4 runs on every evaluation (cost: four
   getters, < 1 µs), and §5.2 is amended.
-- **Q-4 (needs the user's preference): may the cryogenic liquids wait?** That is §6.2's cut. Asked as Q-S07-1 in
+- **Q-4 (closed by Frank, 2026-10-23: "Yes, they wait"): may the cryogenic liquids wait?** That is §6.2's cut. Asked as Q-S07-1 in
   `docs/FRANK_QUESTIONS.md`. **Default:** yes, they wait for S07b.
-- **Q-5 (needs the user's preference, not asked now): more CoolProp fluids.** **Default:** none until a case needs a
+- **Q-5 (closed by Frank, 2026-10-23: "Broad list now"; §16): more CoolProp fluids.** **Default:** none until a case needs a
   pure-fluid stream of a component outside the nine. Each addition is a generator run, a §2.1 row and a register
   entry.
 
-## 12. Work orders (each ≤ ~100k context; the lead lane is build for all three, and the design lane reviews WO-S07-1's generator before WO-S07-2 starts)
+## 12. Work orders (superseded by §16.14; each ≤ ~100k context; the lead lane is build for all three, and the design lane reviews WO-S07-1's generator before WO-S07-2 starts)
 
 ### 12.1 WO-S07-1 (build, `opus-engineer`): dependency, inventory and generator
 
@@ -513,7 +519,7 @@ them.
 - **Core factoring:** S05 and S07 on one Helmholtz pure-fluid core, under a bit-identity gate for `iapws95-v1`.
 - **Mixtures:** out of scope until composition derivatives are measured (blueprint §6.1).
 
-## 13. Manifest check list (`evidence/S07/<commit>/manifest.json`)
+## 13. Manifest check list (`evidence/S07/<commit>/manifest.json`; extended, §16.15)
 
 `status: tested` requires: A01–A32 pass on x86-64 and aarch64 (A31 with Q-1's outcome stated); `s07_reference.py
 --check` OK, with the command and CoolProp version recorded; the licence inventory OK with both wheel SHA-256s;
@@ -537,7 +543,7 @@ scripts; the reorder from m2's getter order to `PhiJet`'s order is the permutati
 WO-S07-1's generator re-measures every load-bearing number here as a claim (C2, C4, C9, C11, C12). These
 scripts are records, not gates.
 
-## 15. What this document does not establish
+## 15. What this document does not establish (extended, §16.17)
 
 - The accuracy of any EOS against experiment, or of CoolProp's coefficients against the original papers (except
   water, through S05 and the IAPWS release). A03/A04 show that CoolProp evaluates its own data correctly. They do
@@ -550,3 +556,621 @@ scripts are records, not gates.
 - Permission to bundle CoolProp in any distribution. The extra is installed by the user from PyPI. A bundle would
   carry CoolProp's MIT notice and is a separate decision (ADR 0046).
 - Anything about the held-out half.
+
+## 16. Amendment 1 — the broad fluid list (2026-10-23; R-623)
+
+### 16.0 Authority, trigger and precedence
+
+- **Trigger.** Frank, 2026-10-23 (`docs/FRANK_QUESTIONS.md`, S07). Asked whether S07 starts with the nine S04 fluids
+  and adds more later, he chose **"Broad list now"**. On Q-S07-1 he answered **"Yes, they wait"**: the cryogenic
+  liquids stay with S07b, and the melting-line lower bound stays. §11 Q-4 and Q-5 are closed by these answers.
+- **Authority.** ADR 0046 (Proposed) with its Amendment 1 note, and R-623. Consistent with `interfaces-frozen.md` §1
+  (no Protocol, result type or field changes) and with the component-record id pattern
+  `^[A-Za-z0-9][A-Za-z0-9_.:-]*$` (`schemas/component-record.schema.json`).
+- **Precedence.** Where this section and §1–§15 differ, this section governs. Everything it does not name stands,
+  including every tier-A expectation and tolerance.
+- **It establishes:** the selection rule and the resulting 123 fluids (§16.1, §16.3); seven added term types (§16.2);
+  the lower bound for fluids without a melting line (§16.4); verification by tier, and what each tier is and is not
+  (§16.5); tier-B registered states (§16.6); the generator, provider and identity amendments (§16.7–§16.9);
+  applicability by tier, three new assertions and the amended tolerances (§16.10, §16.11); rights (§16.12); open
+  questions (§16.13); re-sized work orders (§16.14).
+- **Errata found while measuring.** They are corrected here, not worked around downstream.
+  - **E1.** §6.1 states N2's T_lo as 82.9 K. N2's T_m(100 MPa) is 82.7993 K, so the rule gives
+    ⌈827.993⌉/10 = **82.8 K**. The rule was right and the stated value was mis-rounded. The generator's value governs
+    (A01).
+  - **E2.** C9's grid (§6.4) must start at max(p_t, P_lo, p_m,min), where p_m,min = `melting_line(iP_min, ·, ·)`.
+    Started at p_t, CoolProp raises at the first grid point for N2, H2O, Ar and CH4, because their EOS triple pressures
+    lie below their melting lines' own lower limits: N2 12519.78 < 12523 Pa, H2O 611.6548 < 611.657 Pa,
+    CH4 11696.06 < 11700 Pa, Ar 68892.48 < 69688.0 Pa (m8). As written, C9 would have refused for four of the nine.
+  - **E3.** §2.1 gives O2's `BibTeX_EOS` as `Schmidt-FPE-1985`. The full string is
+    `Schmidt-FPE-1985,Stewart-JPCRD-1991`, and `data_provenance` carries the full string.
+  - **E4.** "Every fluid has exactly one EOS" (§2.1, C1) holds for the nine but not for the broad set: 21 admitted
+    fluids list more than one EOS. HEOS evaluates `EOS[0]`, and the generator parses `EOS[0]` alone. m7 shows that
+    CoolProp's partials equal `EOS[0]`'s closed forms at the floor for all 21.
+
+### 16.1 The selection rule (decided; R-623)
+
+The rule is applied to CoolProp 8.0.0's `FluidsList` (136 names; m6). A fluid is admitted iff S1–S5 all hold. The
+generator computes the admitted list by these rules and compares it with its literal list (C15). A mismatch is a
+refusal.
+
+| rule | statement | excluded by it |
+| --- | --- | --- |
+| S1 | `EOS[0].pseudo_pure` is false | 6: Air, R404A, R407C, R410A, R507A, SES36 |
+| S2 | every term type of `EOS[0]` (α° and αʳ) has a closed form in §2.2 or §16.2 | 2: n-Heptane, D6 (`IdealGasHelmholtzCP0AlyLee`, §16.2) |
+| S3 | §16.4's rule gives T_lo < 0.99·T_c (a saturation range of at least 1 % of T_c) | 2: Helium (T_lo = 14.3 K, T_c = 5.195 K), ParaHydrogen (T_lo = 34.2 K, T_c = 32.94 K) |
+| S4 | the near-critical box lies inside the domain box: T_hi > T_c(1 + 2e-3) and P_hi > p_c(1 + 8e-3) | 3: MD2M (T_hi = 600 K < 600.6 K), R236EA (T_hi = 412 K < T_c = 412.41 K), R161 (P_hi = 5.0 MPa < p_c = 5.01 MPa) |
+| S5 | the generator's claims C1–C19 hold for the fluid | none forecast: m8 checks C6, C8, C9, C10 and whether `PropsSI` answers at every C11 state, in double precision, for all 123 |
+
+**Result: 123 fluids.** Tier A is the nine S04 fluids. Tier B is the other 114. Thirteen are excluded. Each excluded
+fluid and its reason are emitted (ref `excluded`) and reported by the provider (§16.8), so none goes missing silently.
+
+**Why each rule.**
+- S1: a pseudo-pure EOS describes a mixture as if it were pure. Its "saturation" has no dew–bubble split, so S05's
+  phase rule would make a false claim about it.
+- S2: the expectation must come from a closed form. A term type whose form does not reproduce CoolProp cannot supply
+  an expectation (rule 1).
+- S3 and S4: §6.3's phase rule and claims C6–C7 presume a saturation curve that ends at a critical point inside the
+  box. A fluid whose box lacks one would need a different phase rule.
+- S5: the generator never emits a fluid whose claims fail. If one fails in WO-S07-1b, the build lane stops, and the
+  design lane removes the fluid by amendment with the measured reason. There is no silent skip.
+- Helium and ParaHydrogen wait for S07b with the other cryogenic liquids.
+
+### 16.2 Added term types (closed forms; measured)
+
+Seven term types beyond §2.2, all evaluated on `EOS[0]` with τ = T_red/T and δ = ρ/ρ_red as in §2.2:
+
+| | type | contribution | admitted users |
+| --- | --- | --- | --- |
+| PEG | `IdealGasHelmholtzPlanckEinsteinGeneralized` | Σ n ln(c + d·exp(t τ)) | 1 (Fluorine) |
+| CP | `IdealGasHelmholtzCP0PolyT` | Σ_k A(c_k, t_k), with the term's own `Tc` and `T0` | 21 |
+| CC | `IdealGasHelmholtzCP0Constant` | A(`cp_over_R`, 0), with the term's own `Tc` and `T0` | 4 |
+| E | `ResidualHelmholtzExponential` | Σ n δ^d τ^t exp(−g δ^l), taken literally (g = 0 gives 1) | 10 |
+| DE | `ResidualHelmholtzDoubleExponential` | Σ n δ^d τ^t exp(−gd δ^ld − gt τ^lt) | 1 (Methanol) |
+| L5 | `ResidualHelmholtzLemmon2005` | Σ n δ^d τ^t · (exp(−δ^l) if l > 0, else 1) · (exp(−τ^m) if m > 0, else 1) | 1 (R125) |
+| GB | `ResidualHelmholtzGaoB` | Σ n δ^d τ^t exp(η(δ − ε)² + 1/(β(τ − γ)² + b)), η as stored (negative) | 1 (Ammonia) |
+
+For a cp°/R term c·T^t, A(c, t) = (1/T)∫_{T0}^{T} c T'^t dT' − ∫_{T0}^{T} c T'^(t−1) dT', with T = Tc/τ and
+τ0 = Tc/T0. In closed form:
+- t = 0: c(1 − τ/τ0 + ln(τ/τ0));
+- t = −1: c[(τ/Tc) ln(τ0/τ) + (τ − τ0)/Tc];
+- otherwise: −c Tc^t τ^(−t)/(t(t + 1)) − c T0^(t+1) τ/(Tc(t + 1)) + c T0^t/t.
+
+**Measured (m7).** 30-digit closed forms, differentiated numerically, reproduce CoolProp's twenty partials at §2.2's
+five points for all 123 admitted fluids, in |Δ|/max(|ref|, 1):
+- α°: ≤ 4.6e-14;
+- αʳ, total order ≤ 2: ≤ 1.05e-12 (R22, αʳ_ττ at (0.8, 2.4)); the next worst is 6.6e-14, and the median 2.3e-15;
+- αʳ, order 3: ≤ 6.9e-13 (MM, αʳ_δδδ at (0.95, 0.02)); median 2.9e-14.
+
+The worst over each added type's users: PEG 2.1e-15 (α°), CP 4.6e-14 (α°), CC 2.5e-15 (α°), E 1.0e-13 (αʳ),
+DE 1.5e-14, L5 4.6e-14, GB 5.0e-13.
+
+**Not admitted: `IdealGasHelmholtzCP0AlyLee`.** The cp° integral of the Aly–Lee form
+c0 + c1(u/sinh u)² + c3(v/cosh v)², with u = c2/T and v = c4/T, reproduces CoolProp's α°_ττ to ≤ 3.3e-14. But α° and
+α°_τ differ by a + bτ: b = 6.832331 for n-Heptane and 9.861130 for D6 (m7 diagnostic, recorded in §16.16). So
+CoolProp's integration constants for this type are not those of the cp° integral from T0. This document will not
+encode a reverse-engineered constant as an expectation (§16.13 Q-A1-2).
+
+### 16.3 Ids, tiers and the fluid table
+
+- **Component ids.** Tier A keeps the S04 ids (§2.1). A tier-B id is the CoolProp name with `(` replaced by `_` and
+  `)` deleted. Seven names change, for example `R1234ze(E)` → `R1234ze_E`. Every id matches the component-record
+  pattern, the ids are unique, and so are the CAS numbers (C15; m8 asserts all three). Property names are
+  `lnphi_<id>` and derivative inputs `n_<id>`.
+- **CAS.** Each fluid's CAS number (JSON `INFO.CAS`, a fact, not a coefficient) is a constant (A01). The binding
+  follow-on (§12.4) maps component records to provider fluids by CAS, not by name.
+- **Tier** is a property of the fluid. It is emitted in ref `fluids` and reported by `describe()` (A34).
+  **A** = the nine, judged by every §9 assertion as written. **B** = the 114 others, judged by §16.10's subset.
+- **Bound kind** (§16.4's T_lo rule): **M** = melting line at P_hi; **T** = triple point exactly, because the melting
+  line lies below T_t (H2O, HeavyWater); **E** = triple-point estimate, because the pinned data have no melting line.
+
+The table below was measured by m8 with CoolProp 8.0.0. The generator recomputes every value, and its claims govern
+(C15, A01). T_lo, T_hi and P_hi follow §16.4.
+
+| # | id | CoolProp name | EOS (`BibTeX_EOS`) | T_lo bound | T_lo, K | T_hi, K | P_hi, Pa |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | H2O | Water | Wagner-JPCRD-2002 | T | 273.16 | 1273.15 | 1e+08 |
+| 2 | CO2 | CarbonDioxide | Span-JPCRD-1996 | M | 236.1 | 1273.15 | 1e+08 |
+| 3 | N2 | Nitrogen | Span-JPCRD-2000 | M | 82.8 | 1273.15 | 1e+08 |
+| 4 | O2 | Oxygen | Schmidt-FPE-1985,Stewart-JPCRD-1991 | M | 63.1 | 1273.15 | 8e+07 |
+| 5 | Ar | Argon | Tegeler-JPCRD-1999 | M | 107 | 1273.15 | 1e+08 |
+| 6 | CH4 | Methane | Setzmann-JPCRD-1991 | M | 114.3 | 625 | 1e+08 |
+| 7 | C2H6 | Ethane | Buecker-JPCRD-2006 | M | 105.4 | 675 | 1e+08 |
+| 8 | C3H8 | n-Propane | Lemmon-JCED-2009 | M | 94.7 | 650 | 1e+08 |
+| 9 | H2 | Hydrogen | Leachman-JPCRD-2009 | M | 31.4 | 1000 | 1e+08 |
+| 10 | 1-Butene | 1-Butene | Lemmon-FPE-2005 | E | 92.2 | 525 | 5e+06 |
+| 11 | Acetone | Acetone | Lemmon-JCED-2006 | E | 187.8 | 550 | 5.2e+06 |
+| 12 | Ammonia | Ammonia | Gao-JPCRD-2020 | E | 221 | 725 | 1.3e+07 |
+| 13 | Benzene | Benzene | Thol-HTHP-2012 | E | 293.8 | 725 | 5.4e+06 |
+| 14 | CarbonMonoxide | CarbonMonoxide | Lemmon-JCED-2006 | M | 87.7 | 500 | 1e+08 |
+| 15 | CarbonylSulfide | CarbonylSulfide | Lemmon-JCED-2006 | E | 143.9 | 650 | 7.1e+06 |
+| 16 | Chlorine | Chlorine | Thol-AICHE-2021 | E | 186.9 | 525 | 8.5e+06 |
+| 17 | cis-2-Butene | cis-2-Butene | Lemmon-FPE-2005 | E | 141.1 | 525 | 5e+06 |
+| 18 | CycloHexane | CycloHexane | Zhou-JPCRD-2014 | M | 329.4 | 700 | 1e+08 |
+| 19 | Cyclopentane | Cyclopentane | Gedanitz-JCED-2015 | E | 188.9 | 550 | 5.1e+06 |
+| 20 | CycloPropane | CycloPropane | Polt-CT-1992 | E | 290 | 473 | 6.2e+06 |
+| 21 | D4 | D4 | Thol-THESIS-2015 | E | 304.8 | 1200 | 5e+06 |
+| 22 | D5 | D5 | Thol-FPE-2019-siloxanes | E | 237.3 | 630 | 5e+06 |
+| 23 | Deuterium | Deuterium | Richardson-JPCRD-2013 | M | 36.8 | 600 | 1e+08 |
+| 24 | Dichloroethane | Dichloroethane | Thol-THESIS-2015 | E | 251.3 | 1000 | 5.8e+06 |
+| 25 | DiethylEther | DiethylEther | Thol-IJT-2014 | E | 283.5 | 548 | 5e+06 |
+| 26 | DimethylCarbonate | DimethylCarbonate | Zhou-JPCRD-2011 | E | 292.1 | 600 | 5.4e+06 |
+| 27 | DimethylEther | DimethylEther | Wu-JPCRD-2011 | E | 139.5 | 525 | 5.9e+06 |
+| 28 | Ethanol | Ethanol | Schroeder-JPCRD-2014 | M | 171.3 | 650 | 1e+08 |
+| 29 | EthylBenzene | EthylBenzene | Zhou-JPCRD-2012 | E | 187.2 | 700 | 5e+06 |
+| 30 | Ethylene | Ethylene | Smukala-JPCRD-2000 | M | 127.2 | 450 | 1e+08 |
+| 31 | EthyleneOxide | EthyleneOxide | Thol-CES-2015,Thol-CES-2015-CORR,Thol-THESIS-2015 | E | 173.7 | 1000 | 8.1e+06 |
+| 32 | Fluorine | Fluorine | deReuck-BOOK-1990 | M | 55.5 | 300 | 2e+07 |
+| 33 | HeavyWater | HeavyWater | Herrig-JPCRD-2019 | T | 276.969 | 825 | 1e+08 |
+| 34 | HFE143m | HFE143m | Akasaka-IJR-2012 | E | 252 | 420 | 5e+06 |
+| 35 | HydrogenChloride | HydrogenChloride | Thol-JCED-2018-HCl | E | 173.8 | 670 | 9.2e+06 |
+| 36 | HydrogenSulfide | HydrogenSulfide | Lemmon-JCED-2006 | E | 206.3 | 760 | 9.9e+06 |
+| 37 | IsoButane | IsoButane | Buecker-JPCRD-2006B | M | 125.4 | 575 | 3.5e+07 |
+| 38 | IsoButene | IsoButene | Lemmon-FPE-2005 | E | 139.1 | 550 | 5e+06 |
+| 39 | Isohexane | Isohexane | Lemmon-JCED-2006 | E | 125.6 | 550 | 5e+06 |
+| 40 | Isopentane | Isopentane | Lemmon-JCED-2006 | M | 124.4 | 500 | 1e+08 |
+| 41 | Krypton | Krypton | Lemmon-JCED-2006 | M | 143.9 | 750 | 1e+08 |
+| 42 | m-Xylene | m-Xylene | Zhou-JPCRD-2012 | E | 236.6 | 700 | 5e+06 |
+| 43 | MD3M | MD3M | Thol-FPE-2019-siloxanes | E | 201.6 | 673 | 5e+06 |
+| 44 | MD4M | MD4M | Thol-FPE-2019-siloxanes | E | 224.9 | 655 | 5e+06 |
+| 45 | MDM | MDM | Thol-JCED-2017-siloxanes | E | 196.6 | 575 | 5e+06 |
+| 46 | Methanol | Methanol | deReuck-BOOK-1993 | M | 189.8 | 620 | 1e+08 |
+| 47 | MethylLinoleate | MethylLinoleate | Huber-EF-2009 | E | 273 | 1000 | 5e+06 |
+| 48 | MethylLinolenate | MethylLinolenate | Huber-EF-2009 | E | 273 | 1000 | 5e+06 |
+| 49 | MethylOleate | MethylOleate | Huber-EF-2009 | E | 266.2 | 1000 | 5e+06 |
+| 50 | MethylPalmitate | MethylPalmitate | Huber-EF-2009 | E | 317.9 | 1000 | 5e+06 |
+| 51 | MethylStearate | MethylStearate | Huber-EF-2009 | E | 327.5 | 1000 | 5e+06 |
+| 52 | MM | MM | Thol-FPE-2016-MM,Thol-THESIS-2015 | E | 215.2 | 673 | 5e+06 |
+| 53 | n-Butane | n-Butane | Buecker-JPCRD-2006B | M | 136.9 | 575 | 1.2e+07 |
+| 54 | n-Decane | n-Decane | Lemmon-JCED-2006 | E | 255.7 | 675 | 5e+06 |
+| 55 | n-Dodecane | n-Dodecane | Lemmon-EF-2004 | E | 276.8 | 700 | 5e+06 |
+| 56 | n-Hexane | n-Hexane | Thol-FPE-2019-alkanes-hexane | E | 186.8 | 600 | 5e+06 |
+| 57 | n-Nonane | n-Nonane | Lemmon-JCED-2006 | E | 230.7 | 600 | 5e+06 |
+| 58 | n-Octane | n-Octane | Beckmueller-IJT-2019-octane | E | 227.2 | 730 | 5e+06 |
+| 59 | n-Pentane | n-Pentane | Thol-FPE-2019-alkanes-pentane | M | 156.3 | 650 | 1e+08 |
+| 60 | n-Perfluorobutane | n-Perfluorobutane | Gao-2022-CxFy | E | 151.2 | 450 | 5e+06 |
+| 61 | n-Perfluorohexane | n-Perfluorohexane | Gao-2022-CxFy | E | 196.5 | 450 | 5e+06 |
+| 62 | n-Perfluoropentane | n-Perfluoropentane | Gao-2022-CxFy | E | 155.7 | 500 | 5e+06 |
+| 63 | n-Undecane | n-Undecane | Aleksandrov-TE-2011 | E | 260 | 700 | 5e+06 |
+| 64 | Neon | Neon | Thol-JPCRD-2019-Neon | M | 37.1 | 725 | 1e+08 |
+| 65 | Neopentane | Neopentane | Lemmon-JCED-2006 | E | 269.5 | 550 | 5e+06 |
+| 66 | NitrousOxide | NitrousOxide | Lemmon-JCED-2006 | E | 197 | 525 | 8e+06 |
+| 67 | Novec649 | Novec649 | McLinden-JCED-2015-Novec649 | E | 173.3 | 500 | 5e+06 |
+| 68 | o-Xylene | o-Xylene | Zhou-JPCRD-2012 | E | 260.4 | 700 | 5e+06 |
+| 69 | OrthoDeuterium | OrthoDeuterium | Richardson-JPCRD-2013 | M | 36.8 | 600 | 1e+08 |
+| 70 | OrthoHydrogen | OrthoHydrogen | Leachman-JPCRD-2009 | M | 31.4 | 1000 | 1e+08 |
+| 71 | p-Xylene | p-Xylene | Zhou-JPCRD-2012 | E | 300.8 | 700 | 5e+06 |
+| 72 | ParaDeuterium | ParaDeuterium | Richardson-JPCRD-2013 | M | 36.8 | 600 | 1e+08 |
+| 73 | Propylene | Propylene | Lemmon-PROPYLENE-2013 | M | 96.9 | 575 | 1e+08 |
+| 74 | PropyleneGlycol | PropyleneGlycol | Eisenbach-JPCRD-2021 | E | 230.3 | 680 | 8.1e+06 |
+| 75 | Propyne | Propyne | Polt-CT-1992 | E | 290.2 | 474 | 6.3e+06 |
+| 76 | R11 | R11 | Jacobsen-FPE-1992 | E | 170.9 | 625 | 5e+06 |
+| 77 | R1123 | R1123 | Akasaka-IJR-2020-R1123 | E | 205.2 | 480 | 5.1e+06 |
+| 78 | R113 | R113 | Marx-BOOK-1992 | E | 248.8 | 525 | 5e+06 |
+| 79 | R1130_E | R1130(E) | Huber-IJT-2025-R1130E | E | 236.3 | 525 | 5.8e+06 |
+| 80 | R1132_E | R1132(E) | Akasaka-IJT-2024-R1132E | E | 253.7 | 400 | 5.7e+06 |
+| 81 | R114 | R114 | Platzer-BOOK-1990 | E | 286.9 | 507 | 5e+06 |
+| 82 | R115 | R115 | Lemmon-JCED-2016-365227 | E | 182.3 | 550 | 5e+06 |
+| 83 | R116 | R116 | Lemmon-JCED-2006 | E | 181.8 | 425 | 5e+06 |
+| 84 | R12 | R12 | Marx-BOOK-1992 | E | 122 | 525 | 5e+06 |
+| 85 | R1224YDZ | R1224YDZ | Akasaka-IJT-2023-R1224ydZ | E | 165.7 | 473.15 | 5e+06 |
+| 86 | R123 | R123 | Younglove-JPCRD-1994 | E | 174.3 | 600 | 5e+06 |
+| 87 | R1233zd_E | R1233zd(E) | Akasaka-JPCRD-2022-R1233zdE | E | 174.1 | 450 | 5e+06 |
+| 88 | R1234yf | R1234yf | Lemmon-IJT-2022 | E | 127.7 | 410 | 5e+06 |
+| 89 | R1234ze_E | R1234ze(E) | Thol-IJT-2016-R1234zeE | E | 177.1 | 420 | 5e+06 |
+| 90 | R1234ze_Z | R1234ze(Z) | Akasaka-JCED-2019 | E | 286.7 | 440 | 5e+06 |
+| 91 | R124 | R124 | deVries-ICR-1995 | E | 126 | 470 | 5e+06 |
+| 92 | R1243zf | R1243zf | Akasaka-IJT-2025-R1243zf | E | 128.5 | 430 | 5e+06 |
+| 93 | R125 | R125 | Lemmon-JPCRD-2005 | E | 181.2 | 500 | 5e+06 |
+| 94 | R13 | R13 | Platzer-BOOK-1990 | E | 103.1 | 450 | 5e+06 |
+| 95 | R1336mzz_E | R1336mzz(E) | Akasaka-IJT-2023 | E | 210.2 | 410 | 5e+06 |
+| 96 | R1336mzz_Z | R1336mzz(Z) | McLinden-JCED-2020-R1336mzzZ | E | 191.8 | 500 | 5e+06 |
+| 97 | R134a | R134a | TillnerRoth-JPCRD-1994 | E | 178.4 | 455 | 5e+06 |
+| 98 | R13I1 | R13I1 | Lemmon-JCED-2016-365227 | E | 126 | 420 | 5e+06 |
+| 99 | R14 | R14 | Platzer-BOOK-1990 | E | 126 | 623 | 5e+06 |
+| 100 | R141b | R141b | Lemmon-JCED-2006 | E | 178.2 | 500 | 5e+06 |
+| 101 | R142b | R142b | Lemmon-JCED-2006 | E | 149.9 | 470 | 5e+06 |
+| 102 | R143a | R143a | LemmonJacobsen-JPCRD-2000 | E | 169.5 | 650 | 5e+06 |
+| 103 | R152A | R152A | Outcalt-JPCRD-1996-R152A | E | 162.3 | 500 | 5e+06 |
+| 104 | R21 | R21 | Platzer-BOOK-1990 | E | 211.8 | 473 | 5.9e+06 |
+| 105 | R218 | R218 | Lemmon-JCED-2006 | E | 131.8 | 440 | 5e+06 |
+| 106 | R22 | R22 | Kamei-IJT-1995 | E | 122.1 | 550 | 5.5e+06 |
+| 107 | R227EA | R227EA | Lemmon-JCED-2016-365227 | E | 153.7 | 475 | 5e+06 |
+| 108 | R23 | R23 | Penoncello-JPCRD-2003 | E | 124.4 | 475 | 5.4e+06 |
+| 109 | R236FA | R236FA | Pan-FPE-2012 | E | 188.6 | 400 | 5e+06 |
+| 110 | R245ca | R245ca | Zhou-IJT-2016-R245ca | E | 205.8 | 450 | 5e+06 |
+| 111 | R245fa | R245fa | Akasaka-JPCRD-2015-R245fa | E | 179.7 | 440 | 5e+06 |
+| 112 | R32 | R32 | TillnerRoth-JPCRD-1997 | E | 145.1 | 435 | 6.4e+06 |
+| 113 | R365MFC | R365MFC | Lemmon-JCED-2016-365227 | E | 251 | 500 | 5e+06 |
+| 114 | R40 | R40 | Thol-IJT-2014 | E | 247.8 | 730 | 7.7e+06 |
+| 115 | R41 | R41 | Lemmon-JCED-2006 | E | 138.3 | 425 | 6.5e+06 |
+| 116 | RC318 | RC318 | Platzer-BOOK-1990 | E | 245.1 | 623 | 5e+06 |
+| 117 | SulfurDioxide | SulfurDioxide | Gao-JCED-2016 | E | 214.9 | 525 | 8.7e+06 |
+| 118 | SulfurHexafluoride | SulfurHexafluoride | Guder-JPCRD-2009 | E | 234.8 | 625 | 5e+06 |
+| 119 | Tetrahydrofuran | Tetrahydrofuran | Fiedler-IJT-2023-THF | E | 174.5 | 600 | 5.9e+06 |
+| 120 | Toluene | Toluene | Lemmon-JCED-2006 | E | 186.9 | 700 | 5e+06 |
+| 121 | trans-2-Butene | trans-2-Butene | Lemmon-FPE-2005 | E | 176 | 525 | 5e+06 |
+| 122 | VinylChloride | VinylChloride | Thol-IJT-2022-VinylChloride | E | 126.8 | 430 | 6.2e+06 |
+| 123 | Xenon | Xenon | Lemmon-JCED-2006 | E | 171.9 | 750 | 6.5e+06 |
+
+Counts: 123 fluids; bound M 25, T 2, E 96. The 21 that list more than one EOS (E4) are Ammonia, D4, D5,
+HydrogenChloride, MD3M, MD4M, MDM, MM, Methanol, Neon, R11, R123, R1234yf, R1234ze(E), R1234ze(Z), R152A, R245fa,
+SulfurDioxide, n-Hexane, n-Octane and n-Pentane.
+
+### 16.4 The lower bound (amends §6.1's T_lo and P_hi rows; R-623)
+
+T_hi, P_lo, T_σ,max, the near-critical box, ρ_max, ε_σ and the canary keep §6.1's rules for every fluid. T_lo and
+P_hi follow the fluid's bound kind:
+
+| bound | applies when | P_hi | T_lo |
+| --- | --- | --- | --- |
+| M | the pinned data have a melting line, and T_m rises on C9's grid | min(JSON p_max, 1.0e8 Pa) | ⌈10·T_m(P_hi)⌉/10 K |
+| T | the pinned data have a melting line, and T_m ≤ T_t and non-increasing on C9's grid (an ice-Ih-like branch) | min(JSON p_max, 1.0e8 Pa) | T_t, CoolProp's `Ttriple()`, exactly |
+| E | the pinned data have no melting line | min(JSON p_max, max(5.0e6 Pa, ⌈1.1·p_c⌉₂)) | ⌈10·T_t·(1 + κ·P_hi)⌉/10 K, with κ = 1.0e-8 Pa⁻¹ |
+
+- ⌈x⌉₂ rounds up to two significant digits. Every ceiling is taken on the exact decimal value of the double
+  (`Decimal(repr(x))`), with no fudge term. p_c is §6.1's EOS critical pressure, solved at 50 digits.
+- **C9, amended (E2).** For M and T fluids, the grid of 20 logarithmically spaced pressures runs from
+  max(p_t, P_lo, p_m,min) to P_hi, and p_m,max ≥ P_hi. M requires T_m to increase strictly on the grid. T requires
+  T_m ≤ T_t and non-increasing on it. A fluid that fits neither is a refusal (S5).
+- **The T fluids.** T_m(100 MPa) is 264.21 K for H2O and 268.49 K for HeavyWater, both below T_t (m6). Water's T_lo
+  was already S05 §4.1's T_t.
+
+**Why κ = 1e-8 Pa⁻¹ (0.01 MPa⁻¹).**
+- κ bounds the relative melting slope (T_m(P)/T_t − 1)/(P − p_t) of a fluid whose melting line is not in the data.
+- Measured over the 25 M fluids, on C9's grid (from m8's data): the largest for T_t ≥ 20 K is Neon's, 0.00622 MPa⁻¹.
+  The largest among non-quantum fluids is IsoButane's, 0.00382, followed by N2's, 0.00349.
+- So κ sits 1.6× above Neon and 2.6× above every non-quantum fluid. Only the hydrogen isotopes (T_t < 20 K) exceed
+  it, and all of them have melting lines.
+- Simon-type melting curves are concave in T(P), so the slope near p_t bounds the rise at P_hi.
+- Claim C18 makes this executable: κ ≥ 1.5 × the largest such slope over the M fluids with T_t ≥ 20 K, or the
+  generator refuses.
+
+**Why the pressure floor is 5 MPa and 1.1·p_c.**
+- With κ fixed, T_lo/T_t = 1 + κ·P_hi. That is 2.0 at 100 MPa, which would be useless, and 1.05 at 5 MPa.
+- 5 MPa covers the condensing pressures of refrigerant and ORC cycles and most pure-fluid process streams of these
+  fluids.
+- The 1.1·p_c floor keeps the critical point and the near-critical box inside the box (S4), which §6.3's phase rule
+  needs. For ammonia it gives P_hi = 13 MPa and T_lo = 221.0 K, still below the 239.8 K normal boiling point.
+- Of the 96 E fluids, 67 have P_hi = 5 MPa and the others up to 13 MPa. T_lo/T_t lies in [1.05, 1.13].
+
+**What it costs (E fluids).** Liquid within 5–13 % of T_t above the triple point is out of domain, and so is every
+state above P_hi. For example, liquid p-xylene at 298 K (T_lo = 300.8 K), liquid D4 at 298 K (304.8 K) and compressed
+liquid R134a above 5 MPa are refused. Liquid benzene at 298 K (T_lo = 293.8 K), toluene from 186.9 K, ammonia from
+221.0 K, and every vapour and supercritical state up to P_hi are inside.
+
+**What it does not establish.** κ is an empirical bound taken from CoolProp's melting lines of other fluids. It is
+not a property of the E fluids. A fluid whose relative melting slope exceeds 0.01 MPa⁻¹ would have a thin solid sliver
+near (T_lo, P_hi) inside its box, answered as LIQUID. The provider says so: each E fluid carries the
+`numerical_limitations` sentence of §16.8 (A34).
+
+### 16.5 Verification by tier (decided; R-623)
+
+What each check is:
+
+| | check | what it verifies | kind |
+| --- | --- | --- | --- |
+| V1 | A03, A04: CoolProp's jet against 50-digit closed forms of the same coefficients | CoolProp evaluates the functional form with the coefficients it ships, and the provider calls it at the right (T, ρ) with the right reducing constants | implementation verification; shares CoolProp's data |
+| V2 | A05, A08, A09: provider answers against 50-digit solves of those closed forms | the provider's density roots, saturation and property formulas | implementation verification |
+| V3 | C11: CoolProp's own `PropsSI` against the generator | the generator, against an independent solver | admission of the generator; shares the data |
+| V4 | A10, A11, A17, A22, C13's identities | the thermodynamic consistency of the provider's own answers | self-consistency |
+| V5 | A23: water against S05, whose coefficients were checked digit by digit against the printed IAPWS release | CoolProp's water data and the provider, against an independent transcription and implementation | independent cross-check (H2O) |
+| V6 | A24: cp^ig against the S04 records, 2 % | the ideal-gas part, against an independent correlation | independent but weak (the nine) |
+| V7 | C16, A35: closed forms against published EOS check values (§16.5.2) | CoolProp's coefficients are the paper's | data verification against the source |
+
+None of V1–V7 is empirical validation. No check here compares an EOS with experiment (§15).
+
+#### 16.5.1 What each tier gets
+
+- **Tier A:** V1–V6, by every §9 assertion as written. Verification string `independent:S05` for H2O and
+  `independent:S04-ig` for the other eight.
+- **Tier B:** V1–V4, at §16.6's registered states, with §16.10's applicability. Verification string
+  `self-consistent`. It means: CoolProp evaluates its coefficients correctly, and the provider's answers are correct
+  for those coefficients and consistent with each other. Nothing in S07 checks a tier-B fluid's coefficients against
+  their source. A tier-B fluid reports `published-check` only through §16.5.2.
+
+#### 16.5.2 Published check values (a mechanism; none required in S07)
+
+- **Measured: CoolProp's fluid file provides none.** The union of the top-level keys over all 136 fluid JSONs is
+  {ANCILLARIES, EOS, INFO, STATES, TRANSPORT} (m6). `STATES` holds anchors that CoolProp computed itself
+  (`hs_anchor`, `sat_min_*`). They are not published values, they are not independent, and they are not used.
+- **Papers.** Many EOS papers print a table of values for checking computer programs: typically p, c_v and w,
+  sometimes α partials, at stated (T, ρ), to 9–10 significant digits. Transcribing them needs access to each paper
+  and a checked transcription. S07 requires none (§16.13 Q-A1-3).
+- **The mechanism**, so that each later addition is a data row: `benchmarks/s07/published_checks.yaml`, committed
+  from WO-S07-1b on with `rows: []`. A row is `{fluid: <id>, source: <citation>, table: <table id in the source>,
+  T: <K>, rho: <mol/m³>, quantity: <p | cv | cp | w | alphar | …>, value: <as printed>, digits: <significant digits
+  printed>}`. A density printed per kilogram is converted with the fluid's M, and the row says so.
+- **C16.** For every row, the 50-digit closed form agrees with `value` within one unit in its last printed digit.
+  Every row names a source. The file's SHA-256 is in ref.
+- **A35.** A tier-B fluid reports `published-check` iff it has at least 3 rows, at least 2 distinct densities among
+  them, and all of them pass C16. Three rows, because one passing value can be an accident at a state where the
+  wrong term happens to be small. With zero rows, A35 asserts that no fluid reports `published-check`.
+- **Why one unit in the last printed digit.** The printed value is the paper's EOS rounded to its printed digits
+  (≤ 0.5 unit). The closed form evaluates the same coefficients at 50 digits. The second half-unit covers the paper's
+  own double-precision evaluation. A coefficient that differs from the paper's moves a value by its relative
+  difference times its term's share, so this check resolves coefficient differences down to roughly the printed
+  precision of the values, not below.
+
+### 16.6 Tier-B registered states (by rule; the generator emits the values)
+
+Per tier-B fluid, 11 registered states with stored values:
+
+| key | where | stored | assertions |
+| --- | --- | --- | --- |
+| `phi_gas`, `phi_liq`, `phi_dilute` | as §7 | the 20 partials, α° then αʳ, each in `PhiJet` order | A03, A04 |
+| `V_sup` | (min(1.5·T_c, T_hi), 0.1·p_c) | h, s, v, Z, cp, lnphi | A05, A07, A17 |
+| `V_sub`, `L_sub` | as §7 | as above | A05, A17 |
+| `S_dense` | (min(1.2·T_c, T_hi), min(3·p_c, P_hi)) | as above | A05, A15's label, A17 |
+| `L_corner`, `V_corner` | as §7 | as above | A05, A17 |
+| `sat_mid` | T_mid | Psat, h_V − h_L | A08, A10 |
+| `tsat_mid` | P = p_σ(T_mid), rounded to 6 significant digits | Tsat | A09 |
+
+The generator also emits, as states and expected codes without values: §7's band probes (the answered sets and the
+refused phase), the refusal probes with their controls (C14), and the A10/A11 temperatures {T_lo, T_mid, T_σ,max}.
+
+- **The clamps** (`min(…, T_hi)`, `min(…, P_hi)`) are written for all fluids. They are inactive for the nine, so
+  tier A's §7 states do not change: m8 finds no clamp firing for any of the nine, and C10 asserts that tier A's
+  states equal §7's unclamped rule. Over tier B the clamps fire 88 times for `V_sup`, 50 times for `S_dense`'s T and
+  86 times for its P (m8).
+- **Why these states.** The jets are where each fluid's own coefficients enter, which is the fluid-specific risk. The
+  six TP states test the per-fluid constants (R, M, reducing values, brackets, ρ_max) at a vapour, a liquid, a dense
+  supercritical state and the two corners. `sat_mid` and `tsat_mid` exercise the saturation solver.
+- **Not registered for tier B:** NC states, band values, T and P derivative values, `sat_lo` and `sat_hi` values,
+  `s04_ig`. They test generic code that tier A already judges against independent values (A06, A13, NC). A tier-B
+  derivative is judged by A04, which checks the third partials where a fluid-specific derivative error would start,
+  and by A17, the central differences of the provider's own values.
+- **`dropped`.** m8 forecasts it empty for tier B. The literal expected list is fixed at WO-S07-1b's first run, and
+  the design lane reviews it: each entry needs its rule's reason.
+- **Layout and size.** Jets are stored as a 20-float list (α° then αʳ, `PhiJet` order) and TP states as
+  `[T, P, h, s, v, Z, cp, lnphi]`, for both tiers. That is about 150 floats per tier-B fluid. The estimate is about
+  0.4 MB for tier B and 0.6–0.9 MB for the whole file. C17 caps the file at 1.5e6 bytes. Past the cap the generator
+  refuses, and the design lane amends (fewer tier-B states). The harness is never bent to fit.
+
+### 16.7 Generator amendments (`s07_reference.py`)
+
+- **Inputs.** Add `FluidsList` (C15), `melting_line(iP_min, ·, ·)` and `melting_line(iP_max, ·, ·)` (C9), and
+  `benchmarks/s07/published_checks.yaml` (C16).
+- **The fluid loop.** Every admitted fluid runs in a worker process (`--jobs N`, default `os.cpu_count()`). The parent
+  serializes the results in sorted order, so the bytes do not depend on N. WO-S07-1b checks `--jobs 1` against the
+  default once, over the full run, and records the result.
+- **Cost (an estimate; WO-S07-1b records the measured time).** m7 needed 0.3 s of CPU per fluid for 100 partials at
+  30 digits. With the solves and C8's 31 × 82 bracket points, the budget is up to about 1 min of CPU per fluid, about
+  2 h of CPU in all, and a few minutes of wall time on the workstation's 48 threads. `--check` stays a manifest
+  command, not a CI test.
+- **Claims amended.**
+  - C1: every admitted fluid's `EOS[0]` term types are in §2.2 or §16.2, and `EOS[0]` is the EOS parsed (E4).
+  - C9: as §16.4.
+  - C10: adds that tier A's states equal §7's unclamped rule.
+  - C11: holds at every TP state of either tier outside NC. A `PropsSI` exception fails the claim; it is not a skip.
+  - C13: holds at every stored TP and saturation state of either tier.
+  - C14: per fluid, both tiers.
+- **New claims (the generator refuses to emit if any fails):**
+
+| | claim |
+| --- | --- |
+| C15 | the admitted list computed by S1–S5 equals §16.3's literal list (123, in order); the excluded list with reasons equals the literal 13; each fluid's computed bound kind equals the literal one; the ids match the component-record pattern and are unique; the CAS numbers are unique |
+| C16 | §16.5.2 |
+| C17 | the output file is at most 1.5e6 bytes |
+| C18 | κ ≥ 1.5 × max over the M fluids with T_t ≥ 20 K of (T_m(P)/T_t − 1)/(P − p_t) on C9's grid |
+| C19 | `--emit-fluid-table` reproduces the committed `_coolprop_heos_fluids.py` byte for byte (checked by `--check`) |
+
+- **Output additions.** `fluids` (id → CoolProp name, CAS, `BibTeX_EOS`, tier, bound, verification string,
+  limitation strings), `excluded` (name → reason), `published_checks` (the file's SHA-256 and the rows per fluid), and
+  the tier-B blocks. C3's whitelist grows by these keys only. The schema name stays `s07-reference-v1`, since nothing
+  has been emitted under it yet.
+
+### 16.8 Provider amendments
+
+- **The fluid table is its own module,** `src/openflowsheet/thermo/_coolprop_heos_fluids.py`. It holds data only, as
+  Python literals.
+  - Per fluid: id, CoolProp name, CAS, tier, bound, `BibTeX_EOS`, R, M, T_red, ρ_red, §6.1's constants, the canary,
+    `FLUID_DATA_SHA256`, and the verification and limitation strings.
+  - `EXCLUDED`: name → reason.
+  - It is emitted by `s07_reference.py --emit-fluid-table` and committed (C19, A01). `coolprop_heos.py` holds the
+    algorithms only.
+  - Why a separate module: 123 fluids of constants would bury the logic, and each file stays reviewable on its own.
+    The leading underscore keeps it off the provider surface. If T08's provider scan treats it otherwise, the build
+    lane reports it (§16.13 F-5).
+- **Construction.** `CoolPropHeosProvider(component_id)` accepts any id of §16.3. An excluded fluid's would-be id, or
+  its CoolProp name, raises `ValueError` whose message contains the exclusion reason. Any other unknown id raises
+  `ValueError` as before. The class methods `CoolPropHeosProvider.admitted()` and `.excluded()` return the two tables
+  (A33). `helmholtz_jet` accepts every admitted id.
+- **No fluid-specific code.** `coolprop_heos.py` contains no fluid name or component id as a literal. Every per-fluid
+  value comes from the table (A33(c)). A fluid the generic algorithm cannot serve is excluded by amendment, never
+  special-cased.
+- **`describe()` strings (exact; A34).**
+  - `uncertainty` = `"verification: <v>; EOS <BibTeX_EOS> as evaluated by CoolProp 8.0.0; the EOS's own uncertainty
+    is not re-validated"`, where `<v>` is `independent:S05` for H2O, `independent:S04-ig` for the other tier-A
+    fluids, and, for tier B, `published-check` if §16.5.2's rows qualify and `self-consistent` otherwise.
+  - `numerical_limitations` gains, for E fluids only: `"lower temperature bound estimated from the triple point (no
+    melting line in CoolProp 8.0.0): T_lo = T_t*(1 + 1e-8/Pa*P_hi); solid states lie inside the box if the melting
+    slope exceeds 0.01/MPa*T_t"`.
+  - `data_provenance` as §3.2, with the full `BibTeX_EOS` string (E3).
+- **Cost.** One `AbstractState` per instance, created at the first evaluation, as before. Nothing per fluid is loaded
+  from CoolProp before an instance's first evaluation.
+
+### 16.9 Identity (amends §5.1; R-619 extended by R-623)
+
+- `implementation_sha256` = SHA-256 of the canonical JSON of `{"module_sha256": <SHA-256 of coolprop_heos.py's
+  bytes>, "fluid_table_sha256": <SHA-256 of _coolprop_heos_fluids.py's bytes>, "coolprop_version": "8.0.0",
+  "coolprop_gitrevision": "ae81610e…"}`. A change to any fluid's constants changes every instance's implementation
+  hash. There is one table and one identity, so a cache keyed on it can never mix table versions.
+- `data_sha256` keeps its form: per instance, the version, the fluid name and that fluid's canonical JSON hash. The
+  broad set adds no shared data hash, because each instance's data are its own fluid's.
+- The guard (§5.2) is unchanged and runs per instance: G3 checks the instance's fluid hash and G4 its canary.
+- **Moving the pin** (§5.1) now re-runs the generator over every admitted fluid. The id becomes `coolprop-heos-v2` if
+  any fluid's hash changes, if any registered value moves outside its tolerance, or if the admitted list changes. A
+  fluid that disappears must not do so under the old id.
+
+### 16.10 Assertions: applicability by tier; new A33–A35
+
+| id | tier A | tier B |
+| --- | --- | --- |
+| A01 | as §9, plus CAS, tier, bound and the strings | as tier A |
+| A02, A25, A28 | as §9 (A28 with §16.9's recipe) | as tier A |
+| A03 | as §9: \|Δ\| ≤ 1e-12·max(\|ref\|, 1) | `phi_gas`, `phi_liq`, `phi_dilute`: \|Δ\| ≤ 1e-11·max(\|ref\|, 1) |
+| A04 | as §9: 1e-11 | as tier A |
+| A05 | as §9 | the six TP states of §16.6, with S05 A05's bounds |
+| A06 | as §9 | not applied (§16.6) |
+| A07 | as §9 | at `V_sup` |
+| A08 | as §9 | Psat at `sat_mid`; dPsat/dP is 0.0; dPsat/dT is judged by A11 |
+| A09 | as §9 | Tsat at `tsat_mid`; dTsat/dT is 0.0 |
+| A10 | as §9 | Maxwell on the provider's own Psat at {T_lo, T_mid, T_σ,max}; h_V − h_L at `sat_mid` against ref |
+| A11 | as §9 | at {T_lo, T_mid, T_σ,max} |
+| A12, A23 | H2O | not applied |
+| A13 | as §9 | the answered sets and refused-phase codes only |
+| A14–A16, A18 | as §9 | as §9 (codes, from ref's probes) |
+| A17 | as §9 | at the six TP states |
+| A19–A21, A24, A26 | as §9 | not applied: generic code paths, or tier-A cross-checks; every tier-B test passes the guard per instance |
+| A22 | as §9, plus: `Psat` is `ok` at every grid temperature ≤ T_σ,max | 12 temperatures evenly from T_lo to T_hi, the same pressures and checks, plus the `Psat` item |
+| A27, A29, A30 | global, unchanged; A29(c)'s whitelist is C3's as amended (§16.7) | — |
+| A31 | as §9 | tier B's stored answers in the digest; outcome (b)'s stop line 1e-10 (§16.11) |
+| A32 | as §9, plus (m9)–(m11) below | not applied |
+
+New assertions (test file `tests/test_s07_broad.py`, except A33–A34 for tier A, which sit in
+`tests/test_s07_coolprop.py`):
+
+| id | assertion | expectation | tolerance |
+| --- | --- | --- | --- |
+| A33 | **The fluid list.** (a) `admitted()` equals ref `fluids` (ids, names, CAS, tier, bound, in order), and every admitted id constructs; (b) each of the 13 excluded fluids, by CoolProp name and by its would-be id, raises `ValueError` whose message contains ref's reason, and `excluded()` equals ref `excluded`; (c) the AST of `coolprop_heos.py` contains no string constant equal to an admitted or excluded CoolProp name or id (the table module is exempt) | ref | exact |
+| A34 | **Tier and bound are reported.** Per fluid, `describe().uncertainty` begins with `verification: <ref's string>`; E fluids carry §16.8's sentence in `numerical_limitations`, and M and T fluids do not; control: no tier-B string begins `independent:` | ref | exact |
+| A35 | **Published checks.** As §16.5.2: a tier-B fluid reports `published-check` iff its rows qualify; with zero rows no fluid does; the file hash recorded in ref equals the committed file's | ref, file | exact |
+
+Added mutations, each failing the named assertion: (m9) the provider reads the fluid table one row off
+(`R1234ze_Z`'s row for `R1234ze_E`) → A01, A05; (m10) one E fluid's T_lo is edited to T_t in the table → A01, and A16's
+probe below ref's T_lo is answered; (m11) a tier-B fluid reports `independent:S04-ig` → A34.
+
+### 16.11 Tolerances: floors and margins (amends §9.1 for tier B)
+
+- **A03, tier B: 1e-11.** The floor is 1.05e-12 (R22, αʳ_ττ at (0.8, 2.4); m7). It comes from cancellation in
+  CoolProp's double-precision sums for an EOS with large terms at liquid density; the median is 2.3e-15. The margin is
+  9.5× over the worst fluid. The errors worth catching sit at least 6 decades higher: a permuted slot (O(1)) and a
+  wrong reducing constant (≥ 1e-5). Tier A keeps 1e-12, against its own floor of 8.0e-15 at orders ≤ 2.
+- **A04, both tiers: 1e-11.** Tier B's order-3 floor is 6.9e-13 (MM), a margin of 14×.
+- **A05, A08–A10, tier B: S05's bounds.** The value floor is the jet floor times the conditioning of the density root.
+  With the jet floor at ≤ 1.05e-12 and the root's conditioning κ_ρ ≤ 100 away from NC (§9.1's κ, S05), the floor is ≤ 1.1e-10, two decades below 1e-8.
+  If WO-S07-2b measures a tier-B worst above 1e-9, it stops for the design lane.
+- **A17, tier B.** S05 §6.3's rule. WO-S07-2b measures the floor per fluid and records the worst. Above 1e-11 the
+  design lane re-sets the tolerance by amendment (§9.1's rule, unchanged).
+- **A31(b), tier B: 1e-10·max(\|x\|, s_f), a pre-registered stop line** (R-622's rule with a tier-B bound).
+  - A different FMA contraction perturbs CoolProp's sums by at most their own rounding, which m7 bounds at 1.05e-12 of
+    max(|ref|, 1) for the worst fluid.
+  - 1e-10 is that worst jet floor times the worst density-root conditioning (κ_ρ ≤ 100). The product is pessimistic:
+    the worst floors occur at liquid-like states, where the root is well conditioned (κ_ρ ≪ 1), and the worst
+    conditioning occurs at near-saturated vapour, where the jets are small and exact to a few ulp.
+  - 1e-10 stays two decades inside A05's 1e-8. Tier B has no NC states.
+  - Above 1e-10 the build lane stops, and the design lane amends. Nothing is loosened.
+
+### 16.12 Rights (amends ADR 0046's Rights for the broad set)
+
+- **The argument does not depend on the fluid,** so it covers all 123. CoolProp (MIT) is installed by the user from
+  PyPI as the `coolprop` extra. The provider reads each fluid's data at run time from that installation. The project
+  copies no coefficient and redistributes nothing of CoolProp.
+- **The broad set's coefficients** come from many sources: journal papers (JPCRD, JCED, IJT, FPE, IJR, EF and others),
+  two books (Platzer 1990, Marx 1992), theses (Thol 2015), and work associated with REFPROP (RC-01, RC-02). Whether
+  CoolProp may distribute them is CoolProp's question. We neither copy nor redistribute them (A29, C3).
+- **What the repository gains:**
+  - `s07_reference.json`: computed property values at registered states, derived constants and hashes, now for 123
+    fluids. It stays out of every `PACKAGED` path (A29).
+  - `_coolprop_heos_fluids.py`: derived constants, R, M, the reducing constants, CAS numbers, hashes and citation keys.
+    That is the kind of content §3–§6 already put into the packaged module for nine fluids.
+  - `published_checks.yaml`, once rows exist: values printed in publications, with their citations. They are facts, a
+    handful per fluid, and none is a coefficient.
+  - None of them holds a coefficient array (C3).
+- **`data_provenance`** names CoolProp's citation key for each fluid. The full citations are CoolProp's.
+- **The flag stands.** Bundling CoolProp in any distribution needs its own decision.
+
+### 16.13 Open questions and findings (Amendment 1; each question with a recommended default)
+
+- **Q-A1-1 (needs the user's preference; not blocking): the E-bound trade.** κ = 0.01 MPa⁻¹ with
+  P_hi = max(5 MPa, 1.1·p_c) costs 96 fluids 5–13 % of liquid range above T_t, and every pressure above P_hi, in
+  exchange for a box that needs no melting-line data. The alternatives: (a) exclude the 96, leaving 27 fluids;
+  (b) κ = 0.005 MPa⁻¹, halving the liquid-range cost with a margin of 1.3× over the non-quantum maximum and below
+  Neon's slope; (c) a 10 MPa floor (T_lo = 1.10·T_t). **Default:** as specified. Reversible by a register entry and a
+  generator re-run. The rule's two numbers live in the generator and the table, so no provider code changes.
+- **Q-A1-2 (needs a fact): CoolProp's `IdealGasHelmholtzCP0AlyLee` constants.** **Measurement that settles it:**
+  read CoolProp 8.0.0's implementation of the term (MIT source at the pinned gitrevision), derive its α° in closed
+  form, and check it at m7's points. If it reproduces CoolProp at the floor, n-Heptane and D6 join by amendment.
+  **Default:** excluded.
+- **Q-A1-3 (needs the user's preference): transcribe published check values?** Which fluids, and whether their papers
+  are accessible. **Default:** none in S07. WO-S07-4 is optional and may run after the merge, starting with the fluids
+  that development cases use.
+- **Q-A1-4 (needs a fact): do C5–C14 hold at 50 digits for all 123?** m8 forecasts C6 and C8–C11 in double precision.
+  C5 (the critical-point solve), C7 (the band roots), C13 and C11's 1e-7 agreement are not forecast. **Measurement:**
+  WO-S07-1b's first full run. **Default:** a fluid that fails any claim is removed by amendment, with the measured
+  reason. The build lane continues with the others only after that amendment. No silent skip, and no per-fluid
+  tolerance.
+- **Q-A1-5 (needs a fact): does S05's generic algorithm serve every tier-B fluid?** The risk is saturation at very low
+  reduced temperature, where p_σ(T_lo) reaches about 1e-6 Pa (1-Butene: T_lo/T_c = 0.22). **Measurement:** A22's
+  `Psat` item and A10/A11 at T_lo, in WO-S07-2b. **Default:** as Q-A1-4, exclusion by amendment and no special case.
+- **Q-1, extended.** WO-S07-3's aarch64 run covers tier B. Tier B's stop line is §16.11's 1e-10.
+- **F-5 (for the build lane, with an acceptance test).** T08's provider scan imports every `thermo` module. WO-S07-2a
+  checks that the scan imports `_coolprop_heos_fluids.py` without error and does not count it as a provider. If it
+  does count it, the build lane adjusts the scan's filter and reports the change.
+
+### 16.14 Work orders (supersede §12.1–§12.3; each ≤ ~100k context)
+
+The lead lane is build for all of them. The design lane reviews WO-S07-1b's generator and first output, including the
+`dropped` list and any claim failure (Q-A1-4), before WO-S07-2a starts.
+
+- **WO-S07-1a (build, `sonnet-implementer`; about 40k): dependency and inventory.** §12.1 items 1–3, unchanged: the
+  extra, the lock and the licence inventory with both wheel SHA-256s. Acceptance: `pip install -r requirements.lock`
+  in a fresh venv imports CoolProp 8.0.0 at the pinned gitrevision; the inventory script passes with the `coolprop`
+  extra; the tests it touches pass.
+- **WO-S07-1b (build, `opus-engineer`; about 100k): the generator.**
+  - `s07_reference.py` per §8 as amended by §16.7: the closed forms of §2.2 and §16.2, the rules of §6.1 and §16.4,
+    S1–S5, claims C1–C19, the tiers, `--jobs`, `--check` and `--emit-fluid-table`.
+  - Outputs: `s07_reference.json`, `_coolprop_heos_fluids.py`, and `benchmarks/s07/published_checks.yaml` with
+    `rows: []`.
+  - m7's forms are a starting point to read; they are records, not code to import.
+  - Record the measured run time and the `--jobs 1` byte-identity check.
+  - Stop and report on any claim failure (Q-A1-4). Never edit a rule to make a claim pass.
+- **WO-S07-2a (build, `opus-engineer`; about 100k): the provider, tier A.** §12.2 as written, with the constants read
+  from `_coolprop_heos_fluids.py`. `tests/test_s07_coolprop.py` covers A01–A28 and A32 (with m9–m11) for tier A, plus
+  A33 and A34. Settle Q-3 and F-5.
+- **WO-S07-2b (build, `opus-engineer`; about 80k): tier B.** `tests/test_s07_broad.py` covers §16.10's tier-B column
+  over the 114 fluids, and A35. Measure and record per fluid the A17 floor and the A03 and A05 worsts, and the tier-B
+  test run time on x86-64. A fluid the generic provider cannot serve (Q-A1-5) is reported, never special-cased.
+- **WO-S07-3 (build, `sonnet-implementer`; about 60k).** §12.3 as written. The platform digest covers both tiers
+  (tier B: its stored answers, about 0.3 MB of `float.hex`), and A31 applies its tier bounds.
+- **WO-S07-4 (build; optional; does not gate S07's `tested`).** Transcribe published check values for the fluids that
+  Q-A1-3 names, and regenerate. A35 then reports them.
+
+### 16.15 Manifest additions (§13)
+
+`status: tested` also requires:
+- A33–A35 and §16.10's tier-B column pass on both architectures;
+- the fluid count (123: tier A 9, tier B 114) and the excluded list with reasons, and per fluid its tier and bound;
+- the generator's measured run time and the `--jobs 1` byte-identity check;
+- the measured tier-B worsts (A03, A05, A17) and A31's tier-B outcome;
+- the number of fluids reporting `published-check`. Zero is a valid value, and it is stated as 0.
+
+### 16.16 Measurements behind Amendment 1 (scratch venv, as §14)
+
+```
+$S/cpvenv/bin/python -I docs/derivations/scripts/s07_measurements/m6_survey.py m6.json          # every fluid: pseudo-pure, EOS count, term types, melting line and its limits
+$S/cpvenv/bin/python -I docs/derivations/scripts/s07_measurements/m7_forms_all.py m7.json       # §2.2 and §16.2 forms vs CoolProp, 130 non-pseudo-pure fluids, worsts by order
+$S/cpvenv/bin/python -I docs/derivations/scripts/s07_measurements/m8_domain_forecast.py m8.json m8_table.md  # S1-S5, §16.4's bounds, forecast of C6 and C8-C11, §16.3's table
+```
+
+- Run on 2026-10-23 on the workstation (x86-64, 48 threads), with CoolProp 8.0.0 at `ae81610e…` and mpmath 1.3.0. m7
+  took 5 s of wall time and 39 s of CPU in 40 processes. After `ruff format`, all three were re-run and their outputs
+  were byte-identical.
+- Computed inline from m7's and m8's data, not by a committed script: the Aly–Lee diagnostic (α° − closed form is
+  linear in τ, and α°_ττ agrees to ≤ 3.3e-14, at τ ∈ {0.4, 0.667, 1.0, 1.25}), and the melting slopes of §16.4 on
+  C9's grid.
+- These are records, not gates. The generator re-measures every load-bearing number as a claim: C1 (term types), C9
+  (melting lines), C11 (admission), C15 (the list) and C18 (κ).
+
+### 16.17 What Amendment 1 does not establish
+
+- That any tier-B fluid's coefficients are the source paper's. Only V7 would show that, and S07 transcribes no check
+  values. Nor any EOS's accuracy against experiment.
+- That the E boxes contain no solid state. κ is an empirical bound taken from CoolProp's melting lines of other
+  fluids (§16.4).
+- That claims C5, C7, C13 and C11's agreement hold at 50 digits for every admitted fluid (only partly forecast;
+  Q-A1-4), or that the generic provider serves every tier-B fluid (Q-A1-5).
+- That n-Heptane, D6, Helium, ParaHydrogen, MD2M, R236EA, R161 or the six pseudo-pure fluids cannot be supported. This
+  document's rules exclude them, with reasons, and any of them can return by amendment.
+- Anything §15 does not establish.
