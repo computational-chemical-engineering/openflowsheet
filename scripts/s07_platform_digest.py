@@ -2,7 +2,7 @@
 
 Spec §9 A31 and §12.3 item 2. The digest is a regression fixture, not validation: it records what
 `coolprop-heos-v1` answers on the machine that wrote it (x86-64), so that CI can recompute the
-answers on `ubuntu-24.04-arm` and compare them (Q-1: bitwise, or the pre-registered bound).
+answers on `ubuntu-24.04-arm` and compare them (spec §20: bitwise, or within each row's class).
 
 The inputs are the states of `s07_reference.json` (`phi_states`, `tp_states`, `saturation`,
 `tsat`, `band`); no reference *value* is read. Per fluid, in a fixed order (tier B stops where
@@ -21,23 +21,29 @@ A refusal is recorded as the string `status:code`. The file holds the values onl
 `answers(cid)`'s order (its keys are regenerated; the test also compares their count).
 `answers(cid)` returns (key, value, scale) rows; `scale` is A17's FD scale s_f (`R*T` for h, `R`
 for s and cp, 1 for Z, lnphi and the jet slots, 0 for v and the saturation quantities; a
-derivative takes its quantity's scale over T or P), the floor of Q-1's comparison
-`|d| <= bound * max(|x|, s_f)`.
+derivative takes its quantity's scale over T or P), the floor of A31's `max(|x|, s_f)`.
 
-`compare()` is A31: it recomputes every answer and compares it with the digest. Outcome (a) is
-bitwise equality. Otherwise (Q-1's pre-registered rule) every answer must satisfy
-`|d| <= bound * max(|x|, s_f)`, with bound 1e-12 for tier A (1e-10 at the NC states) and 1e-10 for
-tier B (spec §11 Q-1, §16.11); the worst ratio per quantity is reported. Above the bound the
-comparison fails: nothing is loosened here.
+`compare()` is A31 under spec §20 (R-627; it replaces §11 Q-1's rule). It recomputes every answer
+and compares it with the digest. Outcome (a) is bitwise equality, and on x86-64, the digest's own
+machine, it is required (§20.6). Otherwise every row is judged by its class (§20.3): a refusal
+string (S) exactly; an ordinary row (T) by |d| <= 1e-10 * max(|x|, s_f) (§20.4); a near-critical
+row (N: family `tp`, `sat` or `a10` with |1 - T/T_c| < 1e-2) by |d| <= 1e-10 * |x| for Psat and
+otherwise by 1e-10 * max(|x|, s_f) + 2e-10 * sigma, where sigma = P*|dq/dP|_T is the row's own
+pressure sensitivity, recomputed on the running machine by a central difference with step 2.5e-7
+(§20.5). A31c's rule inputs and A31d's evaluability are checked on every machine. Beyond an
+allowance the comparison fails: nothing is loosened here. `--report` prints §20.9's verdict line
+and summaries and writes the JSON report.
 
 Usage (CoolProp 8.0.0 environment, from the repository root):
-    PYTHONPATH=src python scripts/s07_platform_digest.py [--check | --report]
+    PYTHONPATH=src python scripts/s07_platform_digest.py [--check | --report [--out PATH]]
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import math
+import platform
 import sys
 from pathlib import Path
 from typing import Any
@@ -188,78 +194,472 @@ def answers(cid: str, reference: dict[str, Any] | None = None) -> list[Row]:
     return rows
 
 
-BOUND_A, BOUND_NC, BOUND_B = 1e-12, 1e-10, 1e-10
+# -- A31's rule (spec §20, R-627) ------------------------------------------------------------------
+
+B_T = 1e-10  # §20.4: class T, |d| <= B_T * max(|x|, s_f), both tiers
+B_P = 1e-10  # §20.5: class-N Psat rows, |d| <= B_P * |x| (G3's near p_sigma bound, §19.2)
+C_N = 2e-10  # §20.5: every other class-N row, |d| <= B_T * max(|x|, s_f) + C_N * sigma
+H = 2.5e-7  # §20.5: the sensitivity's relative pressure step, eps_sigma / 4
+THETA_N = 1e-2  # §20.3: class N where |1 - T/T_c| < THETA_N
+R_MAX = 20.0  # A31c(3): r = max(|Z - 1|, delta)/Z
+DRHO_MIN = 0.04  # A31c(4): (rho_L - rho_V)/rho_c at T_sigma_max
+#: §20.3: the six fluids whose clamped supercritical TP states lie within 1 % above T_c.
+CLAMPED_NEAR_CRITICAL = (
+    "MD4M",
+    "PropyleneGlycol",
+    "R236FA",
+    "R245ca",
+    "n-Nonane",
+    "n-Perfluorohexane",
+)
+REPORT_DIR = ROOT / "evidence" / "S07" / "artifacts"
+
+
+def expected_class_n(tiers: dict[str, str]) -> set[tuple[str, str]]:
+    """§20.3's 168 (fluid, state) pairs at this head (A31c(1))."""
+    pairs = {(cid, "a10.T_sigma_max") for cid in tiers}
+    for cid, tier in tiers.items():
+        if tier == "A":
+            pairs |= {(cid, "sat.sat_hi"), (cid, "tp.NC_V"), (cid, "tp.NC_L")}
+    for cid in CLAMPED_NEAR_CRITICAL:
+        pairs |= {(cid, f"tp.{key}") for key in ("S_dense", "V_sup", "V_corner")}
+    return pairs
+
+
+def state_temperature(key: str, fluid: dict[str, Any]) -> float | None:
+    """§20.3's state temperature of a row; `phi` rows have none."""
+    parts = key.split(".")
+    family = parts[0]
+    if family == "phi":
+        return None
+    if family == "tp":
+        return float(fluid["tp_states"][parts[1]]["values"][0])
+    if family == "sat":
+        return float(fluid["saturation"][parts[1]]["T"])
+    if family == "a10":
+        if parts[1] == "T_mid":
+            return float(fluid["saturation"]["sat_mid"]["T"])
+        return float(fluid["constants"][parts[1]])
+    if family in ("tsat", "band"):
+        return float(fluid["band"]["T"])
+    if family == "a12":
+        return float(".".join(parts[1:-1]))
+    raise ValueError(f"no §20.3 state temperature for {key}")
+
+
+def row_class(key: str, value: float | str, fluid: dict[str, Any]) -> str:
+    """§20.3: `S` (a refusal string), `N` (near-critical: a `tp`, `sat` or `a10` row whose state
+    temperature has |theta| < 1e-2) or `T`. A near-critical `tsat`, `band` or `a12` row has no
+    class: ValueError."""
+    if isinstance(value, str):
+        return "S"
+    t = state_temperature(key, fluid)
+    if t is None:
+        return "T"
+    theta = 1.0 - t / float(fluid["constants"]["T_c"])
+    if not abs(theta) < THETA_N:
+        return "T"
+    if key.split(".")[0] in ("tp", "sat", "a10"):
+        return "N"
+    raise ValueError(f"§20 defines no class-N sensitivity for {key}")
+
+
+def _is_psat(key: str) -> bool:
+    parts = key.split(".")
+    return parts[0] in ("sat", "a10") and parts[-1] == "Psat"
+
+
+def _evaluate(provider: Any, t: float, p: float, phase: str, names: tuple[str, ...], d: Any) -> Any:
+    from openflowsheet.thermo import PropertyRequest, StreamState
+
+    evaluation_context, _, _ = _modules()
+    context = evaluation_context(model_version="s07-provider", constants_sha256="0" * 64)
+    state = StreamState(n=(1.0,), temperature=t, pressure=p)
+    request = PropertyRequest(state, phase, names, d)  # type: ignore[arg-type]
+    return provider.evaluate_phase(request, context)
+
+
+def sensitivities(
+    cid: str, rows: list[Row], fluid: dict[str, Any], tier: str
+) -> tuple[dict[str, str], dict[str, float], list[str]]:
+    """§20.3 and §20.5 for one fluid, on the running machine: each row's class, sigma for every
+    class-N row other than Psat, and the failures (an unclassifiable row; a sensitivity that is not
+    evaluable, A31d). sigma = |q(P(1 + H)) - q(P(1 - H))|/(2H), one-sided at the box's edges."""
+    _, _, cph = _modules()
+    constants = fluid["constants"]
+    p_lo, p_hi = float(constants["P_lo"]), float(constants["P_hi"])
+    properties = ("h", "s", "v", "Z", "cp", f"lnphi_{cid}")
+    values = dict((key, value) for key, value, _ in rows)
+    classes: dict[str, str] = {}
+    failures: list[str] = []
+    states: dict[str, list[str]] = {}
+    for key, value, _ in rows:
+        try:
+            classes[key] = row_class(key, value, fluid)
+        except ValueError as error:
+            classes[key] = "T"
+            failures.append(f"{cid}: {error}")
+            continue
+        if classes[key] == "N" and not _is_psat(key):
+            states.setdefault(".".join(key.split(".")[:2]), []).append(key)
+    provider = cph.CoolPropHeosProvider(cid)
+
+    def answer(t: float, p: float, phase: str, d: tuple[str, ...]) -> Any:
+        result = _evaluate(provider, t, p, phase, properties, d)
+        return result if result.status == "ok" else None
+
+    def tp_q(state: str, t: float, phase: str, d: tuple[str, ...]) -> Any:
+        def q(p: float) -> dict[str, float] | None:
+            result = answer(t, p, phase, d)
+            if result is None:
+                return None
+            out = {f"{state}.{x}": float(result.values[x]) for x in properties}
+            if d:
+                for x in properties:
+                    for wrt in ("T", "P"):
+                        out[f"{state}.d{wrt}.{x}"] = float(result.derivatives[x][wrt])
+            return out
+
+        return q
+
+    def saturated_q(state: str, t: float) -> Any:
+        def q(p: float) -> dict[str, float] | None:
+            pair = {phase: answer(t, p, phase, ()) for phase in ("LIQUID", "VAPOR")}
+            if None in pair.values():
+                return None
+            out = {
+                f"{state}.{phase}.{x}": float(result.values[x])
+                for phase, result in pair.items()
+                for x in properties
+            }
+            liquid, vapour = pair["LIQUID"].values, pair["VAPOR"].values
+            out[f"{state}.dT"] = (float(vapour["s"]) - float(liquid["s"])) / (
+                float(vapour["v"]) - float(liquid["v"])
+            )
+            return out
+
+        return q
+
+    sigma: dict[str, float] = {}
+    for state, keys in states.items():
+        family, name = state.split(".")
+        t = state_temperature(keys[0], fluid)
+        assert t is not None
+        if family == "tp":
+            entry = fluid["tp_states"][name]
+            p = float(entry["values"][1])
+            phase = "LIQUID" if entry["phase"] == "LIQUID" else "VAPOR"
+            d = ("T", "P", f"n_{cid}") if tier == "A" else ()
+            q = tp_q(state, t, phase, d)
+        else:
+            psat = values.get(f"{state}.Psat")
+            p = psat if isinstance(psat, float) else float("nan")
+            q = saturated_q(state, t)
+        up, down = p * (1.0 + H), p * (1.0 - H)
+        if up > p_hi:
+            points, step = (p, down), H
+        elif down < p_lo:
+            points, step = (up, p), H
+        else:
+            points, step = (up, down), 2.0 * H
+        a, b = (q(point) if math.isfinite(point) else None for point in points)
+        for key in keys:
+            s = abs(a[key] - b[key]) / step if a and b and key in a and key in b else math.nan
+            if not math.isfinite(s):  # refused, missing or not finite: never skipped, never 0
+                failures.append(f"{cid}: §20 sensitivity not evaluable at {key}")
+                continue
+            sigma[key] = s
+    return classes, sigma, failures
+
+
+def rule_inputs(
+    cid: str, rows: list[Row], classes: dict[str, str], fluid: dict[str, Any]
+) -> tuple[set[str], dict[str, Any], list[str]]:
+    """A31c (2)-(5) for one fluid, from ref's constants and the running machine's rows: the
+    class-N states, the measured inputs and the failures (each with its item number)."""
+    constants = fluid["constants"]
+    values = {key: value for key, value, _ in rows}
+    numeric = {key: value for key, value in values.items() if isinstance(value, float)}
+    rho_red, rho_c = float(constants["rho_red"]), float(constants["rho_c"])
+    failures: list[str] = []
+    states = {".".join(key.split(".")[:2]) for key, c in classes.items() if c == "N"}
+    measured: dict[str, Any] = {"r": {}, "drho": None, "psat_over_p_lo": {}}
+    if not 2.0 * H <= float(constants["eps_sigma"]):
+        failures.append(f"A31c(2) {cid}: 2H = {2.0 * H!r} > eps_sigma {constants['eps_sigma']!r}")
+    prefixes = [f"{state}." + phase for state in sorted(states) for phase in ("LIQUID", "VAPOR")]
+    prefixes = [s for s in prefixes if s.startswith("a10.")]
+    prefixes += [state for state in sorted(states) if state.startswith("tp.")]
+    for prefix in prefixes:
+        v, z = numeric.get(f"{prefix}.v"), numeric.get(f"{prefix}.Z")
+        if v is None or z is None:
+            continue
+        r = max(abs(z - 1.0), 1.0 / (v * rho_red)) / z
+        measured["r"][prefix] = r
+        if not r <= R_MAX:
+            failures.append(f"A31c(3) {cid} {prefix}: r = {r:.4g} > {R_MAX:g}")
+    v_l = numeric.get("a10.T_sigma_max.LIQUID.v")
+    v_v = numeric.get("a10.T_sigma_max.VAPOR.v")
+    drho = (1.0 / v_l - 1.0 / v_v) / rho_c if v_l and v_v else float("nan")
+    measured["drho"] = drho
+    if not drho >= DRHO_MIN:
+        failures.append(f"A31c(4) {cid}: (rho_L - rho_V)/rho_c = {drho:.4g} < {DRHO_MIN:g}")
+    for state in sorted(s for s in states if s.startswith("a10.")):
+        psat = numeric.get(f"{state}.Psat", float("nan"))
+        measured["psat_over_p_lo"][state] = psat / float(constants["P_lo"])
+        if not psat >= float(constants["P_lo"]):
+            failures.append(f"A31c(5) {cid} {state}: Psat {psat!r} < P_lo {constants['P_lo']!r}")
+    return states, measured, failures
+
+
+def measure(reference: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Everything A31 recomputes on the running machine, per fluid: the rows, their classes, the
+    class-N sensitivities and A31c's inputs; and the failures of A31c and A31d."""
+    _, table, _ = _modules()
+    reference = reference or json.loads(REFERENCE.read_text("utf-8"))
+    tiers = {row["id"]: row["tier"] for row in table.FLUIDS}
+    fluids: dict[str, Any] = {}
+    failures: list[str] = []
+    pairs: set[tuple[str, str]] = set()
+    for cid, tier in tiers.items():
+        fluid = reference["fluids"][cid]
+        rows = answers(cid, reference)
+        classes, sigma, sigma_failures = sensitivities(cid, rows, fluid, tier)
+        states, inputs, input_failures = rule_inputs(cid, rows, classes, fluid)
+        pairs |= {(cid, state) for state in states}
+        failures += sigma_failures + input_failures
+        fluids[cid] = {"rows": rows, "classes": classes, "sigma": sigma, "inputs": inputs}
+    expected = expected_class_n(tiers)
+    if pairs != expected:
+        failures.append(
+            f"A31c(1): class-N pairs {len(pairs)}, §20.3 lists {len(expected)}; "
+            f"extra {sorted(pairs - expected)[:5]}, missing {sorted(expected - pairs)[:5]}"
+        )
+    return {"fluids": fluids, "class_n_pairs": sorted(pairs), "failures": failures}
+
+
+def allowance(key: str, x: float, scale: float, row: str, sigma: float | None) -> float:
+    """A31's allowance A for a numeric row of class `row` (§20.4, §20.5); NaN where a class-N
+    row's sigma is missing (A31d has then failed, and a difference there fails)."""
+    if row == "T":
+        return B_T * max(abs(x), scale)
+    if _is_psat(key):
+        return B_P * abs(x)
+    if sigma is None:
+        return float("nan")
+    return B_T * max(abs(x), scale) + C_N * sigma
 
 
 def quantity(key: str) -> str:
-    """The key without its state name: the quantity a worst is reported for."""
+    """The key without its state name (§20.9): the quantity a worst is reported for. The a10
+    temperature stays; `lnphi_<id>` reads `lnphi`."""
     parts = key.split(".")
-    if parts[0] == "phi":
+    if parts[-1].startswith("lnphi_"):
+        parts[-1] = "lnphi"
+    family = parts[0]
+    if family == "phi":
         return "phi.slot"
-    if parts[0] in ("band", "sat"):
-        return f"{parts[0]}.{parts[-1]}"
-    return ".".join([parts[0], *parts[2:]]) if parts[0] in ("tp", "a10", "a12") else key
+    if family in ("band", "sat", "a12"):
+        return f"{family}.{parts[-1]}"
+    if family == "tp":
+        return ".".join([family, *parts[2:]])
+    return ".".join(parts)
 
 
-def compare(digest: dict[str, Any] | None = None) -> dict[str, Any]:
-    """A31: recompute and compare. Returns `bitwise` (every answer equal), `failures` (answers
-    above their bound, or of another kind), `worst` (per quantity: ratio, fluid, key) and the
-    worst over all."""
-    _, table, _ = _modules()
+def _hex(value: float | str) -> str:
+    return value.hex() if isinstance(value, float) else value
+
+
+def compare(
+    digest: dict[str, Any] | None = None,
+    measured: dict[str, Any] | None = None,
+    machine: str | None = None,
+) -> dict[str, Any]:
+    """A31 (spec §20.8): compare the running machine's answers with the digest. Returns the
+    outcome, every differing row (§20.9's fields), the worst ratio per `<class>:<quantity>` group,
+    the per-class counts and worst utilization, the rows over their allowance (`flagged`), every
+    failure, and the verdict line."""
+    machine = machine or platform.machine()
     digest = digest or json.loads(DIGEST.read_text("utf-8"))
-    reference = json.loads(REFERENCE.read_text("utf-8"))
-    failures: list[str] = []
-    worst: dict[str, tuple[float, str, str]] = {}
+    measured = measured or measure()
+    failures: list[str] = list(measured["failures"])
+    rows_out: list[dict[str, Any]] = []
+    flagged: list[tuple[str, str]] = []
+    groups: dict[str, tuple[float, str, str]] = {}
+    classes: dict[str, dict[str, Any]] = {
+        c: {"compared": 0, "differing": 0, "failing": 0, "worst_u": None} for c in "TNS"
+    }
+    psat_worst: tuple[float, str, str] | None = None
     bitwise = True
-    for row in table.FLUIDS:
-        cid, tier = row["id"], row["tier"]
+
+    def worse(old: Any, new: tuple[float, str, str]) -> Any:
+        return new if old is None or new[0] > old[0] else old
+
+    for cid, entry in measured["fluids"].items():
         stored = digest["fluids"][cid]
-        rows = answers(cid, reference)
+        rows = entry["rows"]
         if len(rows) != len(stored):
             failures.append(f"{cid}: {len(rows)} answers, the digest holds {len(stored)}")
             bitwise = False
             continue
         for (key, value, scale), hexed in zip(rows, stored, strict=True):
-            if isinstance(value, str) or ":" in hexed:
-                if value != hexed:
-                    failures.append(f"{cid} {key}: {value!r} vs {hexed!r}")
-                    bitwise = False
-                continue
-            expected = float.fromhex(hexed)
-            if value == expected:
-                continue
-            bitwise = False
-            ratio = abs(value - expected) / max(abs(expected), scale)
-            bound = BOUND_B if tier == "B" else BOUND_NC if ".NC_" in key else BOUND_A
-            group = quantity(key)
-            if group not in worst or ratio > worst[group][0]:
-                worst[group] = (ratio, cid, key)
-            if not ratio <= bound:
+            kind = "S" if isinstance(value, str) or ":" in hexed else entry["classes"][key]
+            summary = classes[kind]
+            summary["compared"] += 1
+            if kind == "S":
+                if value == hexed:
+                    continue
+                bitwise = False
+                row = {"fluid": cid, "key": key, "class": "S", "x": hexed, "y": _hex(value)}
+                row |= {"delta": None, "allowance": None, "u": math.inf, "ratio": None}
+            else:
+                assert isinstance(value, float)
+                x = float.fromhex(hexed)
+                if value == x:
+                    continue
+                bitwise = False
+                delta = abs(value - x)
+                a = allowance(key, x, scale, kind, entry["sigma"].get(key))
+                u = math.inf if not a > 0.0 else delta / a
+                denominator = max(abs(x), scale)
+                ratio = delta / denominator if denominator > 0.0 else math.inf
+                row = {"fluid": cid, "key": key, "class": kind, "x": hexed, "y": value.hex()}
+                row |= {"delta": delta, "allowance": a, "u": u, "ratio": ratio}
+                group = f"{kind}:{quantity(key)}"
+                groups[group] = worse(groups.get(group), (ratio, cid, key))
+                if kind == "N" and _is_psat(key):
+                    psat_worst = worse(psat_worst, (ratio, cid, key))
+            row["fails"] = not row["u"] <= 1.0
+            summary["differing"] += 1
+            summary["worst_u"] = worse(summary["worst_u"], (row["u"], cid, key))
+            if row["fails"]:
+                summary["failing"] += 1
+                flagged.append((cid, key))
                 failures.append(
-                    f"{cid} {key}: {value.hex()} vs {hexed}, ratio {ratio:.3e} > {bound:g}"
+                    f"{cid} {key} [{kind}]: {row['y']} vs {row['x']}"
+                    + ("" if kind == "S" else f", |d| {row['delta']:.3e}, A {row['allowance']:.3e}")
                 )
-    overall = max((entry[0] for entry in worst.values()), default=0.0)
-    return {"bitwise": bitwise, "failures": failures, "worst": worst, "overall": overall}
+            rows_out.append(row)
+    rows_out.sort(key=lambda row: (not row["fails"], -row["u"]))
+    result = {
+        "machine": machine,
+        "outcome": "a" if bitwise else "b",
+        "bitwise": bitwise,
+        "rows": rows_out,
+        "groups": groups,
+        "classes": classes,
+        "psat_worst": psat_worst,
+        "flagged": flagged,
+        "failures": failures,
+        "class_n_pairs": len(measured["class_n_pairs"]),
+    }
+    result["verdict"] = verdict(result)
+    return result
 
 
-def summary(result: dict[str, Any]) -> str:
-    """One line: the outcome of A31 for the machine it ran on."""
-    import platform
+def verdict(result: dict[str, Any]) -> str:
+    """§20.9's verdict line for the machine A31 ran on."""
+    head = f"S07 A31 ({result['machine']}): "
+    classes = result["classes"]
+    n_fail = sum(summary["failing"] for summary in classes.values())
+    other = len(result["failures"]) - n_fail
+    if result["bitwise"] and not result["failures"]:
+        return head + "bit-identical"
+    if result["machine"] == "x86_64" and not result["bitwise"]:
+        return head + (
+            "not bit-identical, FAILS: the digest's own architecture must be bit-identical "
+            "(spec §20.6)"
+        )
+    if result["failures"]:
+        worst = max(
+            (s["worst_u"] for s in classes.values() if s["failing"]),
+            key=lambda entry: entry[0],
+            default=None,
+        )
+        text = head + ("bit-identical" if result["bitwise"] else "not bit-identical")
+        text += f", FAILS spec §20: {n_fail} rows over their allowance; worst "
+        text += f"{worst[0]:.3g} ({worst[1]} {worst[2]})" if worst else "-"
+        if other:
+            text += f"; {other} other failures, first: {result['failures'][0]}"
+        return text
 
-    head = f"S07 A31 ({platform.machine()}): "
-    if result["bitwise"]:
-        return head + "bit-identical (every answer equal to the x86-64 digest)"
-    worst = max(
-        result["worst"].items(), key=lambda item: item[1][0], default=("-", (0.0, "-", "-"))
+    def at(entry: Any, digits: str) -> str:
+        return f"{entry[0]:{digits}} ({entry[1]} {entry[2]})" if entry else "0 (-)"
+
+    t_worst = max(
+        (entry for group, entry in result["groups"].items() if group.startswith("T:")),
+        key=lambda entry: entry[0],
+        default=None,
     )
-    status = "within the pre-registered bounds" if not result["failures"] else "FAILS"
-    return (
-        head
-        + f"not bitwise, {status}; worst {result['overall']:.3e} "
-        + f"({worst[0]}: {worst[1][1]} {worst[1][2]}); "
-        + "per quantity "
-        + ", ".join(f"{name} {entry[0]:.2e}" for name, entry in sorted(result["worst"].items()))
+    p_worst = result["psat_worst"]
+    p_text = format(p_worst[0], ".3e") if p_worst else "0"
+    n_diff = sum(summary["differing"] for summary in classes.values())
+    n_rows = sum(summary["compared"] for summary in classes.values())
+    return head + (
+        f"not bit-identical; within spec §20: class T worst ratio {at(t_worst, '.3e')} of 1e-10; "
+        f"class N worst {at(classes['N']['worst_u'], '.3g')} of its allowance; "
+        f"class-N Psat worst {p_text} of 1e-10; {n_diff} of {n_rows} rows differ"
     )
+
+
+def _plain(value: Any) -> Any:
+    """JSON without NaN or Infinity: a non-finite number is written as its string."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return str(value)
+    if isinstance(value, dict):
+        return {key: _plain(item) for key, item in value.items()}
+    if isinstance(value, list | tuple):
+        return [_plain(item) for item in value]
+    return value
+
+
+def write_report(result: dict[str, Any], out: Path | None = None) -> Path:
+    """§20.9: every differing row and the summaries, as JSON, at `out` or
+    `evidence/S07/artifacts/a31_report_<machine>.json`."""
+    path = out or REPORT_DIR / f"a31_report_{result['machine']}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    document = {
+        "schema": "s07-a31-report-v1",
+        "spec": "docs/derivations/S07-spec.md §20 (R-627)",
+        "constants": {"B_T": B_T, "B_P": B_P, "C_N": C_N, "H": H},
+        **{key: result[key] for key in ("machine", "verdict", "outcome", "bitwise")},
+        "passed": not result["failures"],
+        "classes": result["classes"],
+        "groups": result["groups"],
+        "psat_worst": result["psat_worst"],
+        "class_n_pairs": result["class_n_pairs"],
+        "failures": result["failures"],
+        "rows": result["rows"],
+    }
+    path.write_text(json.dumps(_plain(document), indent=1, allow_nan=False) + "\n", "utf-8")
+    return path
+
+
+def report_lines(result: dict[str, Any]) -> list[str]:
+    """§20.9's printout: the verdict line, one line per class, the 20 rows with the largest
+    utilization (failures first), then every failure that is not a row over its allowance."""
+    lines = [result["verdict"]]
+    for name, summary in result["classes"].items():
+        worst = summary["worst_u"]
+        lines.append(
+            f"  class {name}: {summary['compared']} compared, {summary['differing']} differ, "
+            f"{summary['failing']} fail; worst u "
+            + (f"{worst[0]:.3g} ({worst[1]} {worst[2]})" if worst else "-")
+        )
+    for row in result["rows"][:20]:
+        numbers = (
+            ""
+            if row["class"] == "S"
+            else f" ratio {row['ratio']:.3e} |d| {row['delta']:.3e} A {row['allowance']:.3e}"
+        )
+        mark = "FAIL " if row["fails"] else ""
+        lines.append(
+            f"  {mark}{row['fluid']} {row['key']} [{row['class']}] u {row['u']:.3g}{numbers}"
+        )
+    flagged = {f"{cid} {key} " for cid, key in result["flagged"]}
+    lines += [
+        f"  {line}" for line in result["failures"] if not any(line.startswith(f) for f in flagged)
+    ]
+    return lines
 
 
 def build() -> dict[str, Any]:
@@ -293,14 +693,17 @@ def render(digest: dict[str, Any]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--check", action="store_true", help="regenerate and compare with the file")
-    parser.add_argument("--report", action="store_true", help="A31: compare, print one line")
+    parser.add_argument("--report", action="store_true", help="A31 (spec §20): compare and report")
+    parser.add_argument(
+        "--out", type=Path, help="--report's JSON (default: evidence/S07/artifacts)"
+    )
     arguments = parser.parse_args()
     sys.path.insert(0, str(ROOT / "src"))
     if arguments.report:
         result = compare()
-        print(summary(result))
-        for line in result["failures"][:20]:
-            print(f"  {line}")
+        path = write_report(result, arguments.out)
+        print("\n".join(report_lines(result)))
+        print(f"  report: {path}")
         return 1 if result["failures"] else 0
     text = render(build())
     json.loads(text)
