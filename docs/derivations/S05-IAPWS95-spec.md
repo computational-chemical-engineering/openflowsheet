@@ -751,6 +751,8 @@ ship in a release with an IAPWS attribution in NOTICE. This meets ADR 0045's rel
 packaging hold. The terms and the 385-value Tables check are §15.1's. This amendment does not touch §15.4: WO-S05-4
 runs first.
 
+*Erratum 1 (§16.12, R-617) amends A33, T08.A32 for F, L40 and the order of WO-S05-5's last steps.*
+
 Two constants are used throughout:
 - F = `benchmarks/s05/iapws95_coefficients.json`;
 - H_C = `b9e93877e37874f1b3a483e298a45692e264d70686d4c158372084b96abbe6ed`, F's SHA-256 (A01).
@@ -896,6 +898,8 @@ wheel built since S05 already carries `thermo/iapws95.py` (the old A26's control
   of packaged single files goes from 5 to 6;
 - `scripts/s05_evidence_manifest.py` (A26's text, the coefficient artifact's description and one limitation), a new S05
   manifest, its appended harvest rows, and D08's note in `docs/requirements.yaml`.
+- *Added by §16.12 (R-617):* `tests/test_t08_w2_inventory.py` (T08.A32 for F), L40's text and `docs/support-matrix.md`
+  in the packaging range; `HARVEST_SIZE` in `tests/test_m07a_harvest.py` in the harvest range.
 
 **Registry snapshots.** The registry's content does not move (A25, A33). No committed snapshot moves. A snapshot built
 afterwards records a different `git_commit`, as any new build does.
@@ -913,6 +917,8 @@ difference is a defect. No tolerance applies.
 | A31 | Attribution. (a) NOTICE contains S0, S1 and S2. (b) `docs/C10_DECISIONS.md` contains each of S0, S1 and S2. (c) `docs/attributions/iapws95-v1.md` contains S0, S1, S2, `iapws95-v1`, F and H_C. (d) The wheel's NOTICE member, located as T08.A31 locates it, equals the repository NOTICE's bytes. Whitespace is collapsed as §16.3 says | S0–S2; equal bytes | exact |
 | A32 | The package copy serves the provider. Patch `iapws95._checkout_coefficients` to return `None` and clear `load_coefficients`'s cache: `load_coefficients()` then equals `parse_coefficients(` the repository bytes of F `)`. *Control:* with `iapws95.packaged` also patched to raise `KeyError`, it raises `FileNotFoundError`. The cache is cleared again on exit | equality; the exception | exact |
 | A33 | Identity, a manifest command run once over WO-S05-5's range `<base>..<tip>`. (a) Outside `docs/` and `evidence/`, `git diff --name-status` lists exactly: `M NOTICE`, `M pyproject.toml`, `M src/openflowsheet/resources.py`, `A src/openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json`, `M tests/test_s05_envelope.py`, `M tests/test_t08_w4_package_data.py`, `M scripts/s05_evidence_manifest.py` and `M benchmarks/t08/support_envelope.yaml`. (b) In `support_envelope.yaml`, `property_model` is equal at base and tip, and every `harvest` entry at base is present and unchanged at tip. (c) At tip, NOTICE hashes to `24790a6d…37dd8a` and its first 1292 bytes to `11b9cac8…02c38f` (§16.3). At base, NOTICE contains none of S0, S1 and S2. (d) At tip, `iapws95.py` hashes to `c480f55f…cdbcd8d01` and F to H_C | the list; equality; the hashes | exact |
+
+*A33 is amended by §16.12.3 (R-617). That row replaces this one, which is kept as written.*
 
 A31(d) needs the wheel. It runs in A26(d)'s node, and without `OFS_S05_BUILD_PYTHON` it leaves A31 `fail` in the
 manifest.
@@ -970,11 +976,39 @@ moves `implementation_sha256` anyway.
    extended by id from §16.2's and §16.6's tables. A33 has no test node: it is judged on its measured half alone, run
    from `--a33-base <commit>` (absent → `fail`). The coefficient artifact loses "not packaged"; the unpackaged
    limitation becomes "the coefficient file is package data, with IAPWS's attribution in NOTICE (R-616)".
-5. **Evidence:** re-take the S05 manifest with `OFS_S05_BUILD_PYTHON` set (A26(d), A31(d) run, never skip); harvest;
-   cite it under D08. D08's "Not claimed" keeps `pr-lib-v1` selectable or shipped, and `iapws95-v1` selectable.
-6. **Gates:** the touched tests, `t08_dist.py`, `gate.sh` before merge; `tested`; no `reviewer` pass (A33 is the proof).
-7. **Never** edit `iapws95.py`, F, `s05_reference.py`, `s05_crosscheck.py` or their JSON, `revision_binding.py`,
-   `snapshot.py` or `LIBRARY_ONLY_PROVIDERS`. If A33(a) fails, stop and escalate.
+*Items 1–4 are done at `6acbe4f9`. Erratum 1 (§16.12, R-617) replaces items 5–7 with the following.*
+
+5. **Erratum, in the packaging range (before C_m):**
+   - `tests/test_t08_w2_inventory.py`: apply §16.12.1's amendment, using the names and controls exactly as given.
+   - `benchmarks/t08/support_envelope.yaml`: set L40's `text` to T_L40. Re-emit `docs/support-matrix.md`, then run
+     `t08_support_matrix.py --check`.
+   - `scripts/s05_evidence_manifest.py`:
+     - `assertion_table` also reads §16.12, after §16.6, and replaces rows by id. The section ends at `### 16.13`.
+     - Rewrite A33 per §16.12.3. `A33_PATHS` gains `M\ttests/test_t08_w2_inventory.py`. (b) becomes the whole-document
+       comparison with L40's text removed; this drops the `["property_model"]` lookup, and T_L40 becomes a constant.
+       Add (e).
+     - Add `--check-harvest <C_m>` per §16.12.2: one output line, exit codes 0 and 1.
+   - Run `test_s05_envelope.py`, `test_t08_w4_package_data.py`, `test_t08_w2_support_envelope.py` and
+     `test_t08_w2_inventory.py -k a32`. The last must report passed with 0 skipped, recorded in `docs/C10_DECISIONS.md`.
+     Also run `t08_support_matrix.py --check`.
+   - Commit. That commit, or a later docs-only commit, is C_m.
+6. **Manifest at C_m:** on a clean tree at C_m, run the generator with `OFS_S05_BUILD_PYTHON` set and
+   `--a33-base 92779215aabab270d4630dc6ba6920cd4192c350`.
+   - A26(d) and A31(d) run; they never skip.
+   - The computed status must be `tested`. If A33 fails, stop and escalate.
+7. **Harvest at H:**
+   - Commit the manifest.
+   - Harvest it into `support_envelope.yaml`.
+   - Move `HARVEST_SIZE` and extend its `#:` comment.
+   - Cite the manifest under D08 in `docs/requirements.yaml`. D08's "Not claimed" still says that neither `pr-lib-v1`
+     nor `iapws95-v1` is selectable, and that `pr-lib-v1` is not shipped.
+   - Commit; that commit is H.
+   - Run `s05_evidence_manifest.py --check-harvest <C_m>`. It must print PASS. Quote its line in `docs/C10_DECISIONS.md`
+     in a docs-only commit.
+8. **Gates:** `t08_dist.py`, HG again at the branch tip, and `gate.sh` before the merge. The status is `tested`. There is
+   no `reviewer` pass, because A33 and HG are the proof. Do not merge `main` into the branch before H.
+9. **Never** edit `iapws95.py`, F, `s05_reference.py`, `s05_crosscheck.py` or their JSON, `revision_binding.py`,
+   `snapshot.py` or `LIBRARY_ONLY_PROVIDERS`. If A33(a) or HG(a) fails, stop and escalate.
 
 ### 16.11 What this amendment does not establish
 
@@ -985,3 +1019,197 @@ moves `implementation_sha256` anyway.
 - **M from print** (Q-7, unchanged).
 - **Anything numerical.** No value, tolerance or expectation of §6 moves.
 - **An end-to-end run of an installed wheel in a fresh environment.** A26(d) and A32 cover it in two parts.
+
+### 16.12 Erratum 1 to Amendment 3, 2026-10-23 (design lane, `specifier`; R-617)
+
+**Source.** The build lane stopped WO-S05-5 after items 1–4 (`6acbe4f9`, branch `wp/S05-pack`), as §16.6 told it to,
+because A33(a) could not pass. This amendment has four defects:
+
+1. **T08.A32 was not amended.** `tests/test_t08_w2_inventory.py::test_a32_no_third_party_data_in_the_sdist_or_the_wheel`
+   fails on the built artifacts. F is third-party data, and `SHIPPED_DATA` (the project's own package data) does not
+   match it. §16 changed what the wheel carries and left standing the T08 assertion that forbids it.
+2. **The harvest moves an unlisted path.** Item 5's harvest moves `HARVEST_SIZE` in `tests/test_m07a_harvest.py` by
+   one manifest and its items, as every manifest does. A33(a) does not list that path.
+3. **The order is impossible.** The manifest command judges A33 at the measured commit. The harvest classifies that
+   manifest, so it comes after it. Harvest rows can therefore never be inside the measured range, and A33(a)'s
+   `M benchmarks/t08/support_envelope.yaml` cannot hold as written. (b) also names a key that does not exist:
+   `property_model` is an entry of the envelope's `axes` list, not a top-level key.
+4. **L40 becomes false.** L40 is the envelope's statement for T08.A32's third clause. It says the sdist and the wheel
+   carry "the project's own code, its package data (...) and its licence files only". After item 1 that is false.
+
+None of the four moves a number, an entry of §16.5's "Unchanged" list, or a frozen interface. The repairs follow:
+§16.12.1 for defects 1 and 4, §16.12.2 for defects 2 and 3, and §16.12.3 for the amended A33.
+
+#### 16.12.1 T08.A32, amended for one file (not loosened)
+
+T08.A32 has three clauses (T08 release spec, the A32 row). The second is "no third-party data in sdist or wheel". It
+gains one named exception. This follows the pattern of M01 §3.5 (R-158) and L01 §12.4 (R-529): amended for a named
+item, not relaxed.
+
+> **T08.A32, second clause, as amended by S05 §16.12 (R-617).** The sdist and the wheel carry no third-party data,
+> with one exception. A member is admitted when its path, without a leading `src/`, is a key of `ATTRIBUTED_DATA`,
+> and only if both of these hold:
+> (i) its bytes hash to that key's SHA-256;
+> (ii) the same artifact's NOTICE, whitespace collapsed, contains that path and each of S0, S1 and S2 (§16.3).
+> `ATTRIBUTED_DATA` has exactly one key, P_F = `openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json`, and
+> its value is H_C. Each artifact holds exactly one admitted member.
+
+**The rights record.** No new rights row is needed. F is not a ComponentRecord, so the first clause's `rights` field
+does not apply to it. The admission rests on three things: Frank's decision (C10 "Ship decision", R-616), the terms
+quoted at `af04961e`, and the attribution inside the artifact itself. Condition (ii) checks that record in the
+artifact a user receives. F cannot be admitted into an artifact whose NOTICE lacks the attribution.
+
+**Implementation in `tests/test_t08_w2_inventory.py`.** The names below are binding, because A33(e) checks them.
+- `SHIPPED_DATA` and `PACKAGING` are unchanged. F is not the project's own data. In `SHIPPED_DATA` it would be
+  admitted as any bytes at that path, with or without the attribution.
+- Two new module-level constants, as plain assignments:
+
+  ```python
+  # S05 spec §16.12 (R-617): third-party data shipped under recorded terms, admitted only with its
+  # hash and with its attribution in the same artifact's NOTICE (Frank, C10 "Ship decision", R-616).
+  ATTRIBUTED_DATA = {
+      "openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json": (
+          "b9e93877e37874f1b3a483e298a45692e264d70686d4c158372084b96abbe6ed"
+      ),
+  }
+  IAPWS_ATTRIBUTION = (S0, S1, S2)  # the three strings of S05 spec §16.3, verbatim
+  ```
+
+- One new helper:
+
+  ```python
+  def _attributed(name: str, content: bytes, notice: bytes) -> bool:
+      path = name.removeprefix("src/")
+      if path not in ATTRIBUTED_DATA:
+          return False
+      text = " ".join(notice.decode("utf-8").split())
+      return (
+          hashlib.sha256(content).hexdigest() == ATTRIBUTED_DATA[path]
+          and path in text
+          and all(" ".join(string.split()) in text for string in IAPWS_ATTRIBUTION)
+      )
+  ```
+
+- In `test_a32_no_third_party_data_in_the_sdist_or_the_wheel`, each artifact's NOTICE is located the way T08.A31
+  locates it: in the sdist, the member `NOTICE`; in the wheel, the single member matching
+  `[^/]+\.dist-info/licenses/NOTICE`. A missing NOTICE fails the test. The `other` list also excludes every member
+  for which `_attributed(name, content, notice)` is true. Then the test asserts:
+  - **(P)** each artifact has exactly one admitted member: `src/` + P_F in the sdist, P_F in the wheel;
+  - **controls**, on the wheel's admitted member, each of which must make `_attributed` false:
+    - (α) the notice cut to `notice[:1292]`, which is NOTICE before R-616 (A33(c));
+    - (β) the content changed to `content + b"\n"`;
+    - (γ) the name changed to `openflowsheet/_data/benchmarks/s05/x.json`.
+- The test's docstring or comment cites S05 §16.12 and R-617. Nothing else in the file changes (A33(e)).
+
+**Why each part is there.**
+- (P) exercises the admission branch, so the test sees a later loss of F from the artifact, or of the condition.
+- (α) shows that the attribution condition is live: the old NOTICE fails it.
+- (β) shows that the hash condition is live.
+- (γ) shows that the exception covers one path only.
+
+All of this compares bytes, hashes and strings, so the tolerance is exact.
+
+**The skip rule.** The node uses the `built` fixture, which skips when the build backend cannot be installed. A skip
+is not a pass. Before C_m (§16.12.2), the build lane runs `pytest tests/test_t08_w2_inventory.py -k a32` and records
+"passed, 0 skipped" in `docs/C10_DECISIONS.md`.
+
+**L40.** Its `text`, whitespace collapsed, becomes exactly T_L40:
+
+```text
+The reference-tool data (the IDAES and DWSIM environments, their downloads and their outputs) and OpenIDAES-450 are not distributed: the sdist and the wheel carry the project's own code, its package data (since M01 including the five C1 records, M01 spec §15 Q-N4's default), its licence files and one third-party data file, the IAPWS-95 coefficients `benchmarks/s05/iapws95_coefficients.json`, under IAPWS's terms with their attribution in NOTICE (S05 spec §16, R-616, R-617), and nothing else; every ComponentRecord is synthetic (SYN-001) or one of M01's five real C1 records, each with its identifiers, rights, per-parameter provenance and retrieval equality (M01 spec §3.5, R-158).
+```
+
+- L40's `evidence` does not change.
+- T_L40 keeps the three words that T08.A32's third-clause test looks for: `not distributed`, `OpenIDAES-450` and
+  `reference`.
+- `docs/support-matrix.md` is re-emitted from the envelope (`t08_support_matrix.py`, then `--check`).
+- The T08 spec's A32 row is not edited. `t08_support_matrix.py` reads that spec, and this amendment lives here, as
+  M01's and L01's do.
+
+#### 16.12.2 Two ranges
+
+WO-S05-5 is judged over two consecutive ranges.
+
+| range | from | to | judged by |
+| --- | --- | --- | --- |
+| packaging | B = `92779215aabab270d4630dc6ba6920cd4192c350` (`main`, the parent of `6acbe4f9`) | C_m, the measured commit: HEAD when the S05 manifest command runs with `--a33-base B` | A33 as amended (§16.12.3), inside the manifest |
+| harvest | C_m | H, the commit that harvests C_m's manifest | the harvest gate HG, `scripts/s05_evidence_manifest.py --check-harvest C_m`, run at H |
+
+HG is a gate of the work order, not an S05 assertion. It comes after the manifest because no manifest can judge its own
+harvest. There are still thirty-three assertions.
+
+`main` is not merged into the branch between B and H. A merge would put `main`'s changes into both diffs. A merge with
+`main` comes after HG, and `gate.sh` judges it.
+
+**HG.** `--check-harvest <C_m>` refuses (exit 1) unless the working tree is clean. It judges `C_m..HEAD`. It exits 0
+only if all four parts hold. Otherwise it exits 1 and names the failing parts.
+- **HG(a)** Outside `docs/` and `evidence/`, `git diff --name-status C_m..HEAD` lists exactly
+  `M benchmarks/t08/support_envelope.yaml` and `M tests/test_m07a_harvest.py`.
+- **HG(b)** In `support_envelope.yaml`:
+  - with `harvest` removed, the files at C_m and at HEAD load to equal documents;
+  - C_m's `harvest` list is a prefix of HEAD's;
+  - the appended entries' `(manifest, item)` pairs have no duplicate;
+  - as a set, those pairs equal the `t08_support_matrix.harvest_items()` keys whose manifest is
+    `evidence/S05/<C_m>/manifest.json`, and that set is not empty.
+- **HG(c)** In `tests/test_m07a_harvest.py`:
+  - the module's `ast.dump` at C_m and at HEAD are equal once `HARVEST_SIZE`'s assigned value is removed, so only
+    that value and comments may change;
+  - HEAD's `HARVEST_SIZE[0]` is C_m's plus 1;
+  - the sum of its other two components grows by the size of HG(b)'s set. M07a.A50's own test, run at HEAD, pins how
+    that growth splits into limitations and checks.
+- **HG(d)** `evidence/S05/<C_m>/manifest.json` is tracked at HEAD, and its `status` is `tested`.
+
+It prints one line, for example
+`S05 HG <C_m>..HEAD: PASS (n appended; HARVEST_SIZE (46, 529, 72) -> (47, …, …))`.
+
+**Why each part is there.**
+- HG(a) is the harvest commit's identity, exact both ways, as A33(a) is for the packaging range.
+- HG(b): the harvest only appends, it appends only this manifest's items, and it appends all of them.
+- HG(c): the only code change is the quoted size, and the size follows the harvest.
+- HG(d): a failed manifest is never harvested as done.
+
+HG is run at H, and again at the branch tip if docs-only commits follow. Such commits do not change its result.
+
+#### 16.12.3 A33, as amended
+
+This row replaces §16.6's A33. `assertion_table` reads this table after §16.2's and §16.6's tables, and a row replaces
+the row with the same id.
+
+| id | assertion | expectation | tolerance |
+| --- | --- | --- | --- |
+| A33 | Identity of the packaging range B..C_m (§16.12.2): a manifest command run once at C_m with `--a33-base B`. (a) Outside `docs/` and `evidence/`, `git diff --name-status B..C_m` lists exactly: `M NOTICE`, `M pyproject.toml`, `M src/openflowsheet/resources.py`, `A src/openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json`, `M tests/test_s05_envelope.py`, `M tests/test_t08_w4_package_data.py`, `M tests/test_t08_w2_inventory.py`, `M scripts/s05_evidence_manifest.py` and `M benchmarks/t08/support_envelope.yaml`. (b) With L40's `text` removed from both, `support_envelope.yaml` at B and at C_m loads to equal documents. So every `axes` entry (`property_model` among them), every `harvest` entry and every other row is unchanged. At C_m, L40's text, whitespace collapsed, equals T_L40 (§16.12.1). At B, L40's text does not contain `iapws95_coefficients.json`. (c) At C_m, NOTICE hashes to `24790a6d…37dd8a` and its first 1292 bytes to `11b9cac8…02c38f` (§16.3). At B, NOTICE contains none of S0, S1 and S2. (d) At C_m, `iapws95.py` hashes to `c480f55f…cdbcd8d01` and F to H_C. (e) In `tests/test_t08_w2_inventory.py`: `ATTRIBUTED_DATA` is absent at B. At C_m it is a plain module-level assignment, and its value under `ast.literal_eval` is exactly `{"openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json": H_C}`. Every other module-level statement has the same `ast.dump`, in the same order, at B and at C_m. The exceptions are imports, the module docstring, and the definitions of `IAPWS_ATTRIBUTION`, `_attributed` and `test_a32_no_third_party_data_in_the_sdist_or_the_wheel`. So `SHIPPED_DATA`, `PACKAGING` and every sibling test are unchanged | the list; equality; T_L40; the hashes; the dict | exact |
+
+**Why the new parts are there.**
+- **(a)'s two added lines** are the T08.A32 amendment and L40. HG covers the harvest paths.
+- **(b)** now compares the whole document, so no key lookup can miss its target (defect 3). B's clause is the control:
+  it shows the old L40 does not satisfy the new text.
+- **(e)** makes "one file, not a general loosening" executable. A widened `SHIPPED_DATA`, a second key or an edited
+  sibling test fails A33.
+
+All parts compare names, bytes, strings, hashes and syntax trees. The roundoff floor is zero, and any difference is a
+defect.
+
+If a path outside A33(a)'s list or HG(a)'s list must change, the amendment is wrong again. Stop and escalate (rule 6).
+Do not widen a list.
+
+#### 16.12.4 Rejected alternatives
+
+- **Add P_F to `SHIPPED_DATA`** (the build lane's proposal). That classes F as the project's own data. It would also
+  admit any bytes at that path, without the attribution.
+- **Judge A33 after the harvest, with the harvest paths listed.** The manifest would have to be taken after its own
+  harvest. A re-take at H would need a harvest of its own, and so on without end.
+- **Leave L40 alone until the release (F-5).** That leaves a known-false statement in the live envelope, and T08.A32's
+  third-clause test cites L40 as its evidence.
+- **Make HG a pytest node.** HG needs C_m and the history after it, and no committed file names C_m before H. The
+  generator already reads history for A33.
+
+### 16.13 What the erratum does not establish
+
+- **A new S05 assertion.** There are still thirty-three. HG is a gate of WO-S05-5 and says nothing about S05's
+  content.
+- **A rule for third-party data in general.** A second file needs its own ruling and its own key.
+- **A change to ADR 0006.** Its mode-A row says "the project's own bytes only", and in context that is about CasADi.
+  ADR 0045's release condition is the authority for F. **Finding F-6:** clarify ADR 0006 D1 the next time it changes.
+  This erratum does not change it.
+- **A legal opinion**, as §16.11 says.
+- **Anything numerical.**

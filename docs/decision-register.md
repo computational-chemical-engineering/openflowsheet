@@ -12571,3 +12571,37 @@ are merged at `tested`. That belongs to the next ledger refresh.
   notices".
 - *Fix the module's stale docstring in the same commit.* That moves `implementation_sha256` away from the reviewed
   bytes, with no change in behaviour.
+
+## R-617 — S05 Amendment 3, erratum 1: T08.A32 admits the IAPWS-95 coefficient file alone, by its hash and with its attribution in the same artifact; A33 judges the packaging range and a harvest gate the harvest range
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | Design lane (`specifier`), on the build lane's stop at `6acbe4f9` (`wp/S05-pack`) under S05 §16.6's escalation rule |
+| Normative text | S05 spec §16.12 (T08.A32 amended for F; L40's text T_L40; two ranges; A33 as amended; harvest gate HG), §16.13; WO-S05-5 items 5–9 (§16.10) |
+| Evidence | At `6acbe4f9`, `test_a32_no_third_party_data_in_the_sdist_or_the_wheel` fails: `SHIPPED_DATA` does not match F. The harvest moves `HARVEST_SIZE` (46, 529, 72) in `tests/test_m07a_harvest.py`, which A33(a) does not list. The harvest follows the manifest, so A33(a)'s envelope line cannot hold at the measured commit. `property_model` is an `axes` entry, not a top-level key. L40 says the artifacts carry "licence files only" |
+| Affected packages | S05 (WO-S05-5); T08.A32 (second clause, one exception); the support envelope's L40 |
+
+**Decision.**
+- T08.A32's second clause gains one named exception, `ATTRIBUTED_DATA` = {`openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json`: H_C}.
+  A member is admitted only if its bytes hash to H_C and the same artifact's NOTICE contains its path and IAPWS's three
+  strings (S05 §16.3). Each artifact holds exactly one admitted member. Controls: the pre-R-616 NOTICE, changed bytes
+  and another path are each refused. `SHIPPED_DATA` and `PACKAGING` are unchanged.
+- L40's text names the file and its attribution (T_L40); `docs/support-matrix.md` is re-emitted.
+- WO-S05-5 is judged over two ranges. A33 covers B = `92779215…`..C_m (the measured commit), in the manifest: nine
+  paths, the envelope equal apart from L40's text, and (e) the T08 test file unchanged apart from the named
+  definitions. The harvest gate HG (`s05_evidence_manifest.py --check-harvest C_m`) covers C_m..H: exactly the
+  envelope and `test_m07a_harvest.py`, harvest rows appended for C_m's manifest only and in full, only
+  `HARVEST_SIZE` moved, and the manifest `tested`. Still thirty-three assertions. `main` is not merged into the branch
+  before H.
+
+**Rejected alternatives, and why.**
+- *Add the path to `SHIPPED_DATA`* (the build lane's proposal). That classes third-party data as the project's own.
+  It would also admit any bytes at that path, without the attribution.
+- *List the harvest paths in A33 and judge it after the harvest.* No manifest can be taken after its own harvest; a
+  re-take needs another harvest.
+- *Leave L40 for the release.* That leaves a known-false statement as T08.A32's third-clause evidence.
+- *HG as a pytest node.* HG needs C_m and the history after it, and no committed file names C_m before H.
+
+**Finding (not acted on).** F-6: ADR 0006 D1's mode-A row says "the project's own bytes only", meaning CasADi's. ADR
+0045's release condition governs F. Clarify ADR 0006 the next time it changes.
