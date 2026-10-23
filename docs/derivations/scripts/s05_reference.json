@@ -8,7 +8,7 @@
   "R6_500": {
    "T": "500",
    "rho": "838.025",
-   "why": "R6-95 Table 6 point 1, liquid-like; every phi term is non-zero",
+   "why": "R6-95 Table 6 (its only state), liquid-like; every phi term is non-zero",
    "tau": "1.294192",
    "delta": "2.602562111801242165411902",
    "phi0": "2.047977334795937216525918",
@@ -48,7 +48,7 @@
   "R6_647": {
    "T": "647",
    "rho": "358",
-   "why": "R6-95 Table 6 point 2, near-critical; the non-analytic terms are large",
+   "why": "R6-95 Table 7 row (no printed phi values), near-critical; the non-analytic terms are large",
    "tau": "1.000148377125193199381762",
    "delta": "1.111801242236024844720497",
    "phi0": "-1.563196050525171290825654",
