@@ -137,3 +137,15 @@ temperature 1e-9 rel); each spec record now carries `rule2d_basis` and `rule2d_t
 has a temperature specification, the script scans the IL of every method in the loaded DWSIM
 assemblies for calls to its accessors and records the callers in `settings.stage_number_readers`.
 Runner: `s03_qualify.sh` passes arguments after LOG_DIR to the tool script (`--only ...`).
+
+**B3b-5 Top-up output and merge.** The tool script runs the eight cases into
+`evidence/S03/artifacts/s03-qualification-topup/out` (git-ignored), so it cannot rewrite a standing
+record. `spikes/references/s03_dwsim_topup_merge.py` then checks the eleven standing results files
+byte-equal to `95870140` (`git show`; refuses without history), copies the eight records, and writes
+`qualification/dwsim.json`: the top-up run's top-level fields; `qualification_runs` with the earlier
+run's versions, fingerprint and settings; standing entries verbatim plus `from_commit`, `run` and
+`ladder: column_method_order`; top-up entries plus `run` and `ladder:
+column_method_order_amendment_1`; the selection recomputed over all 19 cases as a (tolerance, method)
+pair, since `rung_index` counts different ladders in the two runs. Alternative: a merge mode inside
+the tool script (rejected: the tool script may read no project file but `s03_cases.json`). Reversible
+by: deleting the script and rewriting the file.
