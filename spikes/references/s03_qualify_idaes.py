@@ -201,13 +201,13 @@ def check_warm_start_options(data: dict[str, Any], log_dir: Path) -> dict[str, A
 
     Each option alone, then all four, on a one-variable NLP (min (x - 1)^2, 0 <= x <= 10) with the
     registered options; no case is solved. An option is accepted iff its trial ends "Optimal
-    Solution Found" and Ipopt's log reports no invalid option.
+    Solution Found" and the log reports no invalid option. An option the ipopt executable's AMPL
+    keyword interface does not know is tried once more through Ipopt's options file (Pyomo's `OF_`
+    prefix), the route Pyomo provides for options outside that interface (B2b-1).
     """
     import pyomo.environ as pyo
 
-    warm = warm_start_options(data)
-    trials: dict[str, Any] = {}
-    for name, opts in [*((k, {k: v}) for k, v in warm.items()), ("all four", warm)]:
+    def trial(name: str, opts: dict[str, Any]) -> dict[str, Any]:
         m = pyo.ConcreteModel()
         m.x = pyo.Var(bounds=(0, 10), initialize=5.0)
         m.obj = pyo.Objective(expr=(m.x - 1) ** 2)
@@ -224,20 +224,42 @@ def check_warm_start_options(data: dict[str, Any], log_dir: Path) -> dict[str, A
         text = logfile.read_text(encoding="utf-8", errors="replace") if logfile.exists() else ""
         parsed = t06i.parse_ipopt_log(text)
         flagged = [ln.strip() for ln in text.splitlines()
-                   if "not a valid option" in ln or "Invalid" in ln or "not valid" in ln]
-        trials[name] = {"options": opts, "exit": parsed.get("exit"), "error": error,
-                        "invalid_option_messages": flagged,
-                        "ipopt_version": parsed.get("ipopt_version"),
-                        "accepted": parsed.get("exit") == "Optimal Solution Found." and not flagged
-                        and error is None}
-    accepted = {k: trials[k]["accepted"] for k in warm}
+                   if any(t in ln for t in ("not a valid option", "Invalid", "not valid",
+                                            "Unknown keyword", "OPTION_INVALID"))]
+        return {"options": opts, "exit": parsed.get("exit"), "error": error,
+                "invalid_option_messages": flagged, "ipopt_version": parsed.get("ipopt_version"),
+                "accepted": parsed.get("exit") == "Optimal Solution Found." and not flagged
+                and error is None}
+
+    warm = warm_start_options(data)
+    trials: dict[str, Any] = {}
+    route: dict[str, str | None] = {}
+    for k, v in warm.items():
+        trials[f"{k} (command line)"] = t = trial(f"{k}-command-line", {k: v})
+        route[k] = "command line" if t["accepted"] else None
+        if route[k] is None:
+            trials[f"{k} (options file)"] = t = trial(f"{k}-options-file", {f"OF_{k}": v})
+            route[k] = "options file" if t["accepted"] else None
+    keys = solver_option_keys(warm, route)
+    trials["all four"] = trial("all-four", keys)
+    accepted = {k: route[k] is not None for k in warm}
     return {"spec": "docs/derivations/S03-spec.md §18.8 step 3, Q-A2-2",
-            "method": "each warm-start option alone, then all four, with the registered options, on "
+            "method": "each warm-start option alone with the registered options, on the ipopt "
+                      "command line and, if its AMPL keyword interface refuses it, through Ipopt's "
+                      "options file (Pyomo's OF_ prefix); then all four together; on "
                       "min (x - 1)^2, 0 <= x <= 10 (not a case)",
-            "trials": trials, "accepted": accepted, "all_accepted": all(accepted.values())}
+            "trials": trials, "route": route, "accepted": accepted,
+            "all_accepted": all(accepted.values()) and trials["all four"]["accepted"]}
 
 
-def ladder(data: dict[str, Any], accepted: dict[str, bool]) -> dict[str, Any]:
+def solver_option_keys(warm: dict[str, Any], route: dict[str, str | None]) -> dict[str, Any]:
+    """The warm-start options as Pyomo's ipopt plugin takes them: an option Ipopt accepts only
+    through its options file carries Pyomo's `OF_` prefix (B2b-1)."""
+    return {(f"OF_{k}" if route.get(k) == "options file" else k): v for k, v in warm.items()}
+
+
+def ladder(data: dict[str, Any], accepted: dict[str, bool],
+           route: dict[str, str | None]) -> dict[str, Any]:
     """§18.1's positions from `tool_settings.IDAES_amendment_2`, with Q-A2-2's answer applied: a
     rejected `bound_mult_init_method` is dropped (the registered contingency); any other rejected
     option makes the positions using it fail unrun (nothing is substituted)."""
@@ -249,6 +271,7 @@ def ladder(data: dict[str, Any], accepted: dict[str, bool]) -> dict[str, Any]:
         contingency = ("Ipopt rejected bound_mult_init_method: P1 and P2 run without it "
                        "(§18.1 order step 5)")
     rejected = [k for k in warm if not accepted.get(k, True)]
+    warm = solver_option_keys(warm, route)
     positions = {
         p["id"]: {"eps_schedule_K": [float(e) for e in p["eps_schedule_K"]],
                   "warm_start": bool(p["warm_start"]),
@@ -1304,7 +1327,7 @@ def main() -> int:
     if args.check_options:
         print(json.dumps(check["accepted"]), f"all_accepted={check['all_accepted']}", flush=True)
         return 0 if check["all_accepted"] else 1
-    lad = ladder(data, check["accepted"])
+    lad = ladder(data, check["accepted"], check["route"])
     ids = args.only or list(data["cases"])
     fingerprint = fx.fingerprint("idaes", ENV_DIR)
     common = {
