@@ -670,6 +670,21 @@ def test_a27_library_only_registration() -> None:
     assert LIBRARY_ONLY_PROVIDERS["coolprop-heos-v1"] == "S07"
 
 
+def test_a27_the_registry_carries_the_s10_family() -> None:
+    registry = yaml.safe_load((REPO_ROOT / "benchmarks" / "registry.yaml").read_text("utf-8"))
+    (family,) = (f for f in registry["families"] if f["id"] == "S10")
+    assert family["provider"] == "wilson-ig-v1"
+    assert family["components"] == "benchmarks/s10/verification-records.yaml"
+    assert family["reference"] == "benchmarks/s10/reference_values.yaml"
+    assert family["reference_sha256"] == hashlib.sha256(REFERENCE_PATH.read_bytes()).hexdigest()
+    assert family["records_sha256"] == REFERENCE["records_sha256"]
+    assert family["reference_convention"] == "S10-VER-ref-v1"
+    assert family["property_domain"]["temperature_K"] == {"min": 300.0, "max": 420.0}
+    assert family["property_domain"]["pressure_Pa"] == {"min": 50000.0, "max": 300000.0}
+    assert family["tolerances"]["evaluate_phase"]["TOL_VALUE"] == TOL_VALUE
+    assert not any(case.get("family") == "S10" for case in registry["cases"])
+
+
 # -- A28: not package data -------------------------------------------------------------------------
 
 
