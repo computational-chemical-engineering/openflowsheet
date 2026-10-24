@@ -275,3 +275,68 @@ Consequence under §17.3(b): PC-P, IDAES's only control, is not available, so **
 has no liquid-distillate variable. Its distillate flow is the Expression `(1 − RR/(1+RR))·F_liq`, which is 0 only at
 RR = ∞, and its `reflux_ratio` is reflux over the liquid distillate. It also refuses `atBubblePoint`. So L2(a) has no
 realization, and every partial-condenser case goes to L3 (Flash): RC1, RC7 and the RC1 family pass there.
+
+## WO-S03-2b (IDAES re-run under the path ladder, spec §18; build lane `opus-engineer`, 2026-10-24; branch `wp/S03`)
+
+Script `spikes/references/s03_qualify_idaes.py` (ladder `44efbcaf`, B2b-1 `4163aa5e`, pilot disclosures in the records
+commit), run once by `spikes/references/s03_qualify.sh idaes`. P0 check: `spikes/references/s03_idaes_p0_reproduction.py`
+(reads IDAES records only: `git show 6d9486a0:…` and the new ones). S1–S6 are B2-4's code, unchanged.
+
+- DECISION B2b-1: `bound_mult_init_method` → passed through Ipopt's options file (Pyomo's `OF_` prefix). Measured (step 3,
+  `warm_start_options_check`): the ipopt executable's AMPL keyword interface refuses it ("Unknown keyword"). Ipopt 3.13.2
+  accepts it through its options file and validates its value: an invalid value raises `OPTION_INVALID`. `mu_init`,
+  `bound_push` and `bound_frac` pass on the command line as before. §18.1's contingency ("if Ipopt rejects …") is
+  therefore not applied, because Ipopt does not reject the option, only one of its two input routes does. Alternative:
+  apply the contingency (P1 and P2 without it). Reversible by reverting `4163aa5e` and re-running. **Question for the
+  design lane** (batched for the `reviewer` pass): does §18.1's "Ipopt rejects" mean the solver or the command-line route?
+- DECISION B2b-2: path-dependence ratio (§18.4) → `|q_b − q_a| / tol(kind, q_a)`, where `a` is the earlier position in
+  P0, P1, P2 order. Every pair of converged positions is compared, as the rerun's movement uses the base value (B2-6). Each
+  level records every pair, the maximum, its quantity and its pair. Alternative: the larger of both values. The difference
+  is the 1e-6 relative term, and the classifier recomputes the ratio with the twin's value anyway.
+- DECISION B2b-3: rerun and judgement order → every position whose final solve ends "Optimal Solution Found" gets its
+  `floor_rerun` (§18.1 order step 2), before rules 2–2d are judged. The failed-rule order is unchanged (2, 2b, 2c, 2d
+  specification, 2d rerun). Under B2-6 the rerun ran only after 2–2c passed. No 6d9486a0 attempt converged and then failed
+  rules 2–2c, so P0's records are unaffected; the P0 check confirms this.
+- DECISION B2b-4: record layout → every position's full record (B2-8's contents) sits under
+  `levels.<L>.positions.<P>.{summary, full}` in `results/idaes-<case>.json`. The selected attempt is held once, at the
+  record's top level (`solve`, `raw_output`, `rule_values`, `registered_quantities`, `accuracy_rerun`) as before, plus
+  `position` and `path_dependence`. `levels` replaces `levels_before`. `qualification/idaes.json` holds the summaries,
+  `supersedes`, `pilot_runs`, `warm_start_options_check`, `settings.path_ladder_used` and `p0_reproduction`.
+- DECISION B2b-5: a P2 intermediate solve that raises (no iterate to load) ends the position as a recorded failure.
+  Alternative: none within §18.1, because the next step starts from the previous step's iterate.
+- Pilot runs (all in `pilot_runs`, scratch output only):
+  1. The unchanged WO-S03-2 harness on all cases reproduced 20/20 attempts of `6d9486a0` exactly, raw output included,
+     before any ladder change. The old harness ignores `tool_variant`, so its "PC-LI" run solved RC1's model.
+  2. The option check.
+  3. The ladder harness on RC2: P0, P1 and P2 all pass at L2, P0 reproduces, and the path dependence is 2.8e-6.
+- DECISION B2b-6: the P0 check at levels the new run did not reach. RC6 and RC2-RR pass at L2 (P1), so §18.1's search
+  stops there, and their old L3 attempts have no new P0 counterpart. `s03_idaes_p0_reproduction.py --run-unreached` runs
+  those two P0 attempts with the tool script's own `position_attempt`, for the check only. They are not qualification
+  attempts, are written to no tool record and cannot change a selection. Alternative: report 18/18 and leave the two
+  unchecked. Reversible by dropping the flag; the records do not depend on it.
+
+### WO-S03-2b outcome (one run, 199 s, fingerprint matches; `cases_sha256` `c901d6c9…`)
+
+- **Q-A2-2.** All four warm-start options are accepted, `bound_mult_init_method` through the options file (B2b-1). The
+  contingency is not applied.
+- **Q-A2-3.** P0 reproduces `6d9486a0` exactly: 20/20 attempts. 18 come from the records, and 2 were run for the check
+  (B2b-6). The comparison covers termination, iterations, every rule value, the raw output, the quantities and the rerun.
+
+| Case | IDAES | Level, position | Positions (final solve; rerun movement) | Path dependence |
+| --- | --- | --- | --- | --- |
+| RC1, RC1-RR, RC1-z, RC7 | available | L3, P0 | all three pass | ≤ 1.2e-5 |
+| RC1-BR | available | L3, P0 | P1 converged, but its rerun did not converge (2d); P0 and P2 pass | 1.0e-7 |
+| RC2, RC2-B, RC2-z | available | L2, P0 | all three pass | ≤ 2.8e-6 |
+| RC2-RR | available | L2, P1 | P0 "acceptable" (8 iterations); P1 and P2 pass | 4.6e-9 |
+| RC3, RC3-Q, RC3-z | available | L3, P1 | P0 "acceptable" (6–13 iterations); P1 and P2 pass | ≤ 6.7e-8 |
+| RC5 | available | L3, P1 | P0 "acceptable" (14); P1 and P2 pass | 7.8e-5 |
+| RC6 | available | L2, P1 | P0 converged, rerun moved 0.34 (2d); P1 and P2 pass with rerun 0 | 1.8e-6 |
+| RC4, RC4-D, RC4-z | not available | — | L3: every position hits 500 iterations (RC4's P2 step 1 ends locally infeasible) | — |
+| PC-P | not available | — | L3: every position hits 500 iterations | — |
+| PC-LI | available | L3, P0 | P1 hits 500 iterations; P0 and P2 pass (rerun 1.9e-5) | 3.6e-8 |
+| PC-L | not_applicable | — | — | — |
+
+The path-dependence check excludes no level: the largest ratio is 7.8e-5 tolerance (RC5, P1 against P2), and the threshold
+is 0.1. 15 of the 19 IDAES cases are available. Every standing P0 selection stays where it was. The cases that move are
+RC3, RC3-Q, RC3-z and RC5 (L3, P1), and RC2-RR and RC6 (L2, P1). PC-P stays not available, and PC-LI runs. The
+classification of the controls belongs to WO-S03-4; this script computes no twin distance.

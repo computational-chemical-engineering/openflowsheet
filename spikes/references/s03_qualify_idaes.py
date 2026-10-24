@@ -141,6 +141,24 @@ PILOT_RUNS: list[dict[str, Any]] = [
                 "1e-8 K)",
      "outcome": "the selected policy; RC2 converged from one pilot start and ended 'Solved To "
                 "Acceptable Level' from another (outcome detail not recorded)", "source": _B24},
+    {"work_order": "WO-S03-2b", "case": "all 20 (scratch output, not a record)",
+     "variant": "the WO-S03-2 harness unchanged (787cd4fd's script at 91ca4222), to separate the "
+                "environment from the harness before any ladder change; it ignores tool_variant, "
+                "so its PC-LI run solved RC1's registered model, not PC-LI",
+     "outcome": "s03_idaes_p0_reproduction.py: 20/20 attempts of 6d9486a0 reproduced exactly "
+                "(raw output included); 9/19 available, the ninth being RC1's model under PC-LI's id",
+     "source": "docs/S03_BUILD_DECISIONS.md, WO-S03-2b"},
+    {"work_order": "WO-S03-2b", "case": "none (one-variable NLP)",
+     "variant": "§18.8 step 3 option check, command line only (44efbcaf)",
+     "outcome": "mu_init, bound_push, bound_frac accepted; bound_mult_init_method refused by the "
+                "AMPL keyword interface ('Unknown keyword'); through the options file it is "
+                "accepted, and an invalid value of it raises OPTION_INVALID (B2b-1)",
+     "source": "docs/S03_BUILD_DECISIONS.md, WO-S03-2b"},
+    {"work_order": "WO-S03-2b", "case": "RC2 (scratch output, not a record)",
+     "variant": "the ladder harness at 4163aa5e, --only RC2, to check the path before the run",
+     "outcome": "L2: P0, P1, P2 all 'Optimal Solution Found' and pass rules 2-2d; P0 reproduces "
+                "6d9486a0 exactly; path dependence max 2.8e-6 tolerance",
+     "source": "docs/S03_BUILD_DECISIONS.md, WO-S03-2b"},
 ]
 
 
