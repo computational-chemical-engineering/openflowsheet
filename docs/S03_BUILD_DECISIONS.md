@@ -340,3 +340,10 @@ The path-dependence check excludes no level: the largest ratio is 7.8e-5 toleran
 is 0.1. 15 of the 19 IDAES cases are available. Every standing P0 selection stays where it was. The cases that move are
 RC3, RC3-Q, RC3-z and RC5 (L3, P1), and RC2-RR and RC6 (L2, P1). PC-P stays not available, and PC-LI runs. The
 classification of the controls belongs to WO-S03-4; this script computes no twin distance.
+
+## WO-S03-1c: our side after Amendment 2 (§18.8)
+
+- DECISION: PC-LI → alias of RC1, `OURS_ALIASES = {"PC-L": "RC1", "PC-LI": "RC1"}`; no `ours-PC-LI.json` (§18.3, A02). Alternative: a copy of RC1's record. Reversible by: moving PC-LI to `OURS_CASES`.
+- Docstrings of `scripts/s03_references_ours.py` and A02's test updated for the alias; A02's alias assertion extended.
+- The 18 `ours-*.json` regenerated. `git diff` shows 1 line added and 1 removed in each file, only `cases_sha256`, now `c901d6c90f4b700b92ff98e2a01ae7e8f1d5557b80dd647e3b14e089d3703f39`.
+- `tests/test_s03_ours.py` and `tests/test_s03_s11_refusal.py`: 95 passed (A02 alias test and A07 on the 18 records included).
