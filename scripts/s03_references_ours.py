@@ -8,9 +8,10 @@ registered quantities of `cases.cases.<case>.quantities` by name, in SI units an
 numbering (§4). The comparison (WO-S03-4) reads these records, never this module; the gate test
 solves again live and checks that the committed record is what a solve produces today (A07).
 
-Which cases have a record (§3, §12 WO-S03-1, §17.10): RC1–RC7, the ten perturbed cases and PC-P. PC-L is
-RC1 with DWSIM's unmapped latent heat, and PC-LI (§18.3) is RC1 with IDAES's `h_form,ig` shifted by
-`P_r v_i`, so the "ours" of each is RC1's record (§3.3; no file), as T06's PC-1 is REF-04's.
+Which cases have a record (§3, §12 WO-S03-1, §17.10): RC1–RC7, the ten perturbed cases and PC-P.
+PC-L is RC1 with DWSIM's unmapped latent heat, and PC-LI (§18.3) is RC1 with IDAES's `h_form,ig`
+shifted by `P_r v_i`, so the "ours" of each is RC1's record (§3.3; no file), as T06's PC-1 is
+REF-04's.
 
 The mapping (§3, §5.1 rows 2, 4, 8, 10): one pressure per stage and per inlet exactly as
 registered; an inlet on port `top` enters stage 1, one on `bottom` stage N, any other port is a
