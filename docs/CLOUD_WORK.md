@@ -50,6 +50,7 @@ is Frank's call.
 | L3 | M04's off-Haswell question; J25 `env.verify` vs R-259 | machine-specific measurement |
 | L4 | **v0.3 S03**: two independent column references, perturbation studies | external reference environments (likely) |
 | L5 | Any release candidate (RC steps 12, 14, 17), the journey at a cut, W27/V17 campaigns | reactor/nlp environments, the archive, the login token (R-473) |
+| S08 | **One-phase column sections** (Frank, 2026-10-24, Q-S03-4 "Yes, plan a package"; provisional id from S03 spec §17.7): teach the phase logic to converge columns whose right answer has an all-liquid or all-vapour section, instead of the typed failure S03 registers as a limitation. Design lane first | after S03 merges |
 
 ## How to run a cloud session cheaply
 
