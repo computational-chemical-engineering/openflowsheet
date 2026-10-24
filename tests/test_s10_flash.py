@@ -553,6 +553,71 @@ def test_e1_a_flow_whose_z_underflows_is_absent(
         assert _hex(dataclasses.replace(result, liquid=want.liquid, vapor=want.vapor)) == _hex(want)
 
 
+# -- Amendment 1 E-2: near the VB-VC azeotrope the split is valid or not_converged -----------------
+
+#: (n_VB, n_VC), T at 101 325 Pa, n_VA = 0: inside the two-phase sliver of the VB-VC azeotrope
+#: (AZ-01, x_VB = 0.83765458220354), where the SS noise floor exceeds DELTA_K (spec §14 E-2).
+#: Offsets +2e-5, -5e-5 and +1e-4 in x_VB from F12; four temperatures each at 1/5 to 4/5 of the
+#: band where both trial distances are below -EPS_TPD (sliver 2.5e-8, 1.5e-7, 6.2e-7 K wide). The
+#: last is the review's reproducer. Which of them stop on a noise dip and which reach the cap
+#: depends on rounding, so the test asserts only the outcome contract, never the split.
+NEAR_AZEOTROPE = (
+    ((1.675349164407079, 0.324650835592921), 350.03974947074545),
+    ((1.675349164407079, 0.324650835592921), 350.0397494746303),
+    ((1.675349164407079, 0.324650835592921), 350.03974947851515),
+    ((1.675349164407079, 0.324650835592921), 350.0397494824),
+    ((1.675209164407079, 0.324790835592921), 350.0397495467531),
+    ((1.675209164407079, 0.324790835592921), 350.0397495765184),
+    ((1.675209164407079, 0.324790835592921), 350.0397496062837),
+    ((1.675209164407079, 0.324790835592921), 350.03974963604895),
+    ((1.675509164407079, 0.324490835592921), 350.039749818219),
+    ((1.675509164407079, 0.324490835592921), 350.0397499402996),
+    ((1.675509164407079, 0.324490835592921), 350.03975006238016),
+    ((1.675509164407079, 0.324490835592921), 350.0397501844608),
+    ((1.675339164407079, 0.324660835592921), 350.0397494670053),
+)
+
+
+@pytest.mark.parametrize(("n", "t"), NEAR_AZEOTROPE)
+def test_e2_near_the_azeotrope_a_valid_split_or_not_converged(
+    provider: WilsonIdealGasProvider, n: tuple[float, float], t: float
+) -> None:
+    """Either `ok` with a valid split (0 < β < 1; balance ≤ TOL_BALANCE n_tot; ln x_i + ln φ_i^L(x)
+    = ln y_i + ln φ_i^V(y) to 1e-10 through evaluate_phase; VA exactly 0.0) or `not_converged` with
+    UNKNOWN and no outlets. Never `ok` with an invalid split."""
+    state = StreamState(n=(0.0, *n), temperature=t, pressure=101325.0)
+    # Both trials are unstable, so the flash reaches the two-phase SS (step 4).
+    for phase in ("LIQUID", "VAPOR"):
+        assert provider.stability(state, phase, CONTEXT).label == "UNSTABLE"
+    result = provider.flash(FlashRequest(state=state), CONTEXT)
+    if result.status == "not_converged":
+        assert result.message.startswith(
+            f"stability: UNKNOWN; scope: {SCOPE}; reason: two_phase_not_converged: "
+        ), result.message
+        assert result.vapor is None and result.liquid is None
+        assert result.vapor_fraction is None and result.phase_signature is None
+        assert result.k_values == {}
+        return
+    assert result.status == "ok" and result.phase_signature == "TWO_PHASE", result.message
+    assert GRAMMAR["TWO_PHASE"].fullmatch(result.message), result.message
+    assert result.vapor is not None and result.liquid is not None
+    beta = result.vapor_fraction
+    assert beta is not None and 0.0 < beta < 1.0
+    total = state.total_flow
+    for i in range(len(COMPONENTS)):
+        assert abs(result.vapor.n[i] + result.liquid.n[i] - state.n[i]) <= TOL_BALANCE * total
+    assert result.vapor.n[0] == 0.0 and result.liquid.n[0] == 0.0
+    x = [v / sum(result.liquid.n) for v in result.liquid.n]
+    y = [v / sum(result.vapor.n) for v in result.vapor.n]
+    ln_phi_l, ln_phi_v = (
+        _ln_phi(provider, result.liquid, "LIQUID"),
+        _ln_phi(provider, result.vapor, "VAPOR"),
+    )
+    for i in (1, 2):
+        residual = math.log(x[i]) + ln_phi_l[i] - math.log(y[i]) - ln_phi_v[i]
+        assert abs(residual) <= 1e-10, (i, residual)
+
+
 # -- A23: permutation (the flash half) -------------------------------------------------------------
 
 PERMUTED = ("VC", "VA", "VB")
