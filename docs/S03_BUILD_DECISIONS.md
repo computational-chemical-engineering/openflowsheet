@@ -355,3 +355,38 @@ classification of the controls belongs to WO-S03-4; this script computes no twin
   executable's command-line parser lacks the keyword. So B2b-1 (`4163aa5e`) stands and §18.1's contingency is not
   applied. Alternative: read it as the command-line route, revert `4163aa5e` and re-run WO-S03-2b with the
   contingency. Reversible by: that revert and re-run. Put to the package's `reviewer` pass for confirmation.
+
+## WO-S03-4 (classifier, comparison, gate test, evidence; build lane `opus-engineer`, 2026-10-24; branch `wp/S03`)
+
+Authority: spec §6–§8, §11–§13 as amended by §17 and §18. Started after WO-S03-1c and WO-S03-2b (§18.8).
+
+- DECISION B4-1: files → `scripts/s03_reference_comparison.py` (T06's `scripts/t06_reference_comparison.py`
+  pattern: `compute()`, `--write`, `--check`, `--markdown`); `benchmarks/s03/references/SHA256SUMS` lists every
+  `qualification/*.json`, `results/*.json` and `comparison.json`, paths relative to `benchmarks/s03/references/`.
+  Alternative: a module under `benchmarks/s03/`. Reversible by: moving the file and its imports.
+- DECISION B4-2: what "recomputes the rule values from the record's raw fields" (§8) reads → the tool's registered
+  quantities and every rule 2–2d value come from `raw_output` (DWSIM: `profile`, `streams`, `energy_streams_kW` with
+  the recorded sign conversion; IDAES: `stages`, `products`, `inlets`, `variables`, `smooth_vle_parameters`), the
+  structural fields (`stage_map`, `feed_stages`), `settings_used.max_iterations`, `accuracy_rerun` and, for §18.4,
+  each converged position's `levels.<L>.positions.<P>.full.raw`. `registered_quantities` and `rule_values` (the
+  script's summaries) are not read by `classify`; the gate test checks that the script's `registered_quantities`
+  equal the recomputed ones (a harness-defect check). DWSIM inlets are the streams tagged `IN*`, products the rest.
+  DWSIM's iteration limit: the column's internal and external iteration counts must be below the recorded maximum.
+  IDAES pressures: every stage's `P_Pa`, each product's, and every `*.pressure` variable, attributed to its stage by
+  the `stage_map` unit prefix. Alternative: trust `rule_values`. Reversible by: reading `rule_values` in `classify`.
+- DECISION B4-3: the tolerance in rule 2d's rerun movement, in §18.4's path dependence and in rule 3 → §6's formula on
+  the twin's 25-digit value (§18.4 says so for the path; the scripts used the tool's value, B3-3, B2b-2). No pair's
+  outcome differs: the largest rerun movements are 0.0931 (DWSIM RC1-z) and 0.00694 (IDAES RC1), as the scripts had.
+- DECISION B4-4: §17.3(b)'s "every pair of that tool" → the tool's non-control pairs that reached rule 2 or beyond
+  (rules 2–2d and 4). Rule 0 (absent), rule 1 (access) and rule 3 (ours) keep their labels, so §17.5's precedence
+  (ours, access before unusable) sees them; the controls keep their own classification (§17.3(c)). Moot on these
+  records: both tools have a `DISAGREE` control. Alternative: relabel every pair. Reversible by: `apply_controls`.
+- DECISION B4-5: §7.3's control distance to the tool-model twin → divided by §6's tolerance of the tool-model value
+  (`ref.controls.<PC>.tool_model`). Alternative: the twin's tolerance (differs by 1e-6 relative of the difference).
+  Reported, not classified.
+- DECISION B4-6: §17.3(a)'s "the comparison stops" → `comparison.json` is still written, with
+  `comparison_stopped: true` and the clause "stopped"; a pair outside §17.5's classes makes the clause
+  "undetermined". Neither occurs on these records.
+- DECISION B4-7: §7.4's response table → a tool's Δy is given wherever both its records are available, with a
+  `both_agree` flag per tool; ours where both of our records are `CONVERGED`; the bound `tol(y_pert) + tol(y_base)` on
+  the twin's values.
