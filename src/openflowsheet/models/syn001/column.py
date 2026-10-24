@@ -96,6 +96,7 @@ from openflowsheet.models.syn001.cascade import (
     liquid_id,
     liquid_total_id,
     mixed_id,
+    property_method_refusal,
     stage_duty_id,
     stage_prefix,
     stage_pressure_id,
@@ -620,8 +621,15 @@ def validate(
     S1–S10, then R7 when every slot is a duty. A malformed object (a pressure or duty list that is
     not one per stage, a non-finite duty, a `None` duty anywhere but a column-specification stage,
     a flow vector of the wrong length, a duplicated port) is misuse and raises `ValueError`.
+
+    S03 §9 S11 precedes R1: a provider other than SYN-001 is refused by identity
+    (`property_method_refusal`) before anything else is read or evaluated.
     """
     unit, components = spec.unit_id, spec.components
+    # S11 (S03 §9)
+    refused = property_method_refusal(unit, provider)
+    if refused is not None:
+        return refused
     count = spec.stage_count
     # R1
     if isinstance(count, bool) or not isinstance(count, int) or count < 1:
