@@ -28,15 +28,27 @@ REPO = Path(__file__).resolve().parents[2]
 EARLIER_COMMIT = "95870140"
 REL = "benchmarks/s03/references"
 # §17.8: the records that stand, and the cases the top-up qualifies.
-STANDING = ("RC1", "RC1-RR", "RC1-z", "PC-L", "RC2", "RC2-RR", "RC2-B", "RC2-z", "RC5", "RC1-BR",
-            "PC-P")
+STANDING = (
+    "RC1",
+    "RC1-RR",
+    "RC1-z",
+    "PC-L",
+    "RC2",
+    "RC2-RR",
+    "RC2-B",
+    "RC2-z",
+    "RC5",
+    "RC1-BR",
+    "PC-P",
+)
 TOP_UP = ("RC3", "RC3-Q", "RC3-z", "RC4", "RC4-D", "RC4-z", "RC6", "RC7")
 
 
 def git_show(path: str) -> bytes:
     try:
-        return subprocess.run(["git", "show", f"{EARLIER_COMMIT}:{path}"], cwd=REPO, check=True,
-                              capture_output=True).stdout
+        return subprocess.run(
+            ["git", "show", f"{EARLIER_COMMIT}:{path}"], cwd=REPO, check=True, capture_output=True
+        ).stdout
     except (OSError, subprocess.CalledProcessError) as exc:
         raise SystemExit(f"refused: needs the git history of {EARLIER_COMMIT} ({exc})") from exc
 
@@ -61,21 +73,32 @@ def main() -> int:
         if path.read_bytes() != git_show(f"{REL}/results/dwsim-{cid}.json"):
             raise SystemExit(f"standing record changed: {path}")
     for cid in TOP_UP:
-        shutil.copyfile(topup / "results" / f"dwsim-{cid}.json",
-                        out / "results" / f"dwsim-{cid}.json")
+        shutil.copyfile(
+            topup / "results" / f"dwsim-{cid}.json", out / "results" / f"dwsim-{cid}.json"
+        )
 
-    order = list(json.loads((REPO / "docs/derivations/scripts/s03_cases.json").read_text(
-        encoding="utf-8"))["cases"])
+    order = list(
+        json.loads((REPO / "docs/derivations/scripts/s03_cases.json").read_text(encoding="utf-8"))[
+            "cases"
+        ]
+    )
     assert set(order) == set(STANDING) | set(TOP_UP), order
     cases: dict[str, Any] = {}
     per_case: dict[str, Any] = {}
     for cid in order:
         if cid in STANDING:
-            cases[cid] = {**earlier["cases"][cid], "from_commit": EARLIER_COMMIT,
-                          "run": "WO-S03-3", "ladder": "column_method_order"}
+            cases[cid] = {
+                **earlier["cases"][cid],
+                "from_commit": EARLIER_COMMIT,
+                "run": "WO-S03-3",
+                "ladder": "column_method_order",
+            }
             sel = earlier["selection"]["per_case"][cid]
-            per_case[cid] = sel and {**sel, "ladder": "column_method_order",
-                                     "from_commit": EARLIER_COMMIT}
+            per_case[cid] = sel and {
+                **sel,
+                "ladder": "column_method_order",
+                "from_commit": EARLIER_COMMIT,
+            }
         else:
             cases[cid] = {**new["cases"][cid], "run": "WO-S03-3b (top-up)"}
             sel = new["selection"]["per_case"][cid]
@@ -86,25 +109,42 @@ def main() -> int:
     not_available = [cid for cid in order if per_case[cid] is None]
     selection = {
         "uniform_pair": uniform and {"tolerance": uniform[0], "method": uniform[1]},
-        "uniform_note": ("no (tolerance, method) pair passes rules 2-2d for every case; cases "
-                         f"passing at no position: {', '.join(not_available)}; each case takes its "
-                         "own first passing position (spec §5.2, §17.2)") if uniform is None
+        "uniform_note": (
+            "no (tolerance, method) pair passes rules 2-2d for every case; cases "
+            f"passing at no position: {', '.join(not_available)}; each case takes its "
+            "own first passing position (spec §5.2, §17.2)"
+        )
+        if uniform is None
         else "a pair passes for every case",
-        "rung_index_note": ("rung_index counts positions within a level of the case's ladder: "
-                            "column_method_order (3 methods per tolerance) for the standing "
-                            "entries, column_method_order_amendment_1 (2 per tolerance) for the "
-                            "top-up entries"),
+        "rung_index_note": (
+            "rung_index counts positions within a level of the case's ladder: "
+            "column_method_order (3 methods per tolerance) for the standing "
+            "entries, column_method_order_amendment_1 (2 per tolerance) for the "
+            "top-up entries"
+        ),
         "per_case": per_case,
     }
-    keep = ("tool", "versions", "environment_fingerprint", "input_file", "settings",
-            "sign_conversion", "wall_time_total_s")
+    keep = (
+        "tool",
+        "versions",
+        "environment_fingerprint",
+        "input_file",
+        "settings",
+        "sign_conversion",
+        "wall_time_total_s",
+    )
     merged = {
         **{k: new[k] for k in keep},
         "qualification_runs": {
-            "WO-S03-3": {"commit": EARLIER_COMMIT, "cases": list(STANDING),
-                         **{k: earlier[k] for k in keep}},
-            "WO-S03-3b (top-up)": {"commit": "5474531f",  # the commit that added the records
-                                   "cases": list(TOP_UP)},
+            "WO-S03-3": {
+                "commit": EARLIER_COMMIT,
+                "cases": list(STANDING),
+                **{k: earlier[k] for k in keep},
+            },
+            "WO-S03-3b (top-up)": {
+                "commit": "5474531f",  # the commit that added the records
+                "cases": list(TOP_UP),
+            },
         },
         "selection": selection,
         "cases": cases,
@@ -112,8 +152,10 @@ def main() -> int:
     path = out / "qualification" / "dwsim.json"
     path.write_text(json.dumps(merged, indent=1) + "\n", encoding="utf-8")
     n_ok = sum(1 for cid in order if per_case[cid] is not None)
-    print(f"merged: {n_ok}/{len(order)} cases available; uniform pair {uniform}; "
-          f"not available: {', '.join(not_available)}")
+    print(
+        f"merged: {n_ok}/{len(order)} cases available; uniform pair {uniform}; "
+        f"not available: {', '.join(not_available)}"
+    )
     return 0
 
 

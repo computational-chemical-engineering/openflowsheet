@@ -432,3 +432,21 @@ Authority: spec §6–§8, §11–§13 as amended by §17 and §18. Started afte
   RC1-z), largest IDAES path dependence 7.75e-5 (RC5).
 - Manifest: `implemented`, 21/24 checks pass. A01–A16 and the generator, comparison, ruff, format and record checks
   pass; A17 fails (`docs/reviews/S03-verdicts.md` is WO-S03-5's); gate and CI unsupported.
+
+## WO-S03-6 (review rulings, manifest, harvest)
+
+- F1 (`e9afea26`): A10 (ii) compares §19.1's projection with `==`; spec §8's last bullet and §11's A10 row carry §19.1's
+  text. A10 (i) unchanged. Both A10 tests pass.
+- Ruling 2 (`a25dd067`): the review's `pyproject.toml` text, verbatim. Tool scripts byte-identical to `2eb71ac0`
+  (IDAES) and `5474531f` (DWSIM), checked with `git diff --quiet <commit> HEAD -- <script>`.
+- DECISION B6-1: the rest of the lint failures the brief missed → `check.sh` (CI) also fails `ruff check` F841 in
+  `s03_qualify_idaes.py:688` (`pyo` unused) and `ruff format --check` on both tool scripts. §19.5's normative text
+  ("a lint rule they fail is waived for those files in `pyproject.toml`; they are not edited") is applied to them:
+  F841 joins the IDAES script's per-file ignore and both scripts go under `[tool.ruff.format] exclude`; the
+  "no other check is relaxed" sentence names the three waivers. Alternative: edit the scripts (a new qualification
+  run, §19.5). Reversible by: reverting the B6-1 commit (restores ruling 2's text exactly). For the design lane to
+  confirm.
+- DECISION B6-2: the two helper scripts `s03_dwsim_topup_merge.py` and `s03_idaes_p0_reproduction.py` fail only
+  `ruff format --check` → reformatted with `ruff format` (no waiver); their ASTs are identical before and after
+  (`ast.dump` compared). They are not the tool scripts §19.5 names, A03 does not scan them, and their records cite
+  their run commits. Alternative: waive them too. Reversible by: reverting the B6-2 commit.
