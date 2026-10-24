@@ -6,7 +6,7 @@ part; X31 `:357`, with S02), brief `docs/briefs/S03-column-references.md`. Base:
 ADR 0014 D7. Reference generator `docs/derivations/scripts/s03_reference.py` (mpmath, 50 digits; it reuses the S02 and S06
 generators, which import nothing from `src/`). `--check` re-derives **4009 claims** (4558 after Amendment 1, §17; 4577 after Amendment 2, §18) and byte-compares two files,
 `s03_cases.json` (inputs only) and `s03_reference.json` (twin values), in about one minute on 15 worker processes.
-Register R-628 to R-633; Amendment 1 (§17): R-634 to R-639; Amendment 2 (§18): R-640 to R-643.
+Register R-628 to R-633; Amendment 1 (§17): R-634 to R-639; Amendment 2 (§18): R-640 to R-643; errata (§19): R-644.
 
 ## 0. Authority and scope
 
@@ -1535,3 +1535,68 @@ Register R-640 to R-643.
 - R-642: PC-LI is IDAES's second positive control.
 - R-643: the IDAES records at `6d9486a0` are superseded by WO-S03-2b's full blind re-run, whose P0 must reproduce them. X31's
   and D19's outcomes are pre-registered for both branches.
+
+## 19. Errata (2026-10-25, design lane `reviewer`, S03 review)
+
+These correct the text; no tolerance, threshold, case, setting or record changes, and no classification moves. Register R-644.
+The review is `docs/reviews/S03-review.md`.
+
+### 19.1 A10 and §8's last bullet: what "values and ratios 1e-12 relative" applies to
+
+**The defect.** 1e-12 relative is T06 A50's rule for values that a well-conditioned map takes from a solve. Most floats in
+`comparison.json` are not like that. A ratio `|ours − tool| / tol` and a response `Δy = y_pert − y_base` are differences of
+nearly equal numbers. Their condition number with respect to our values is `|y| / |ours − tool|` or `|y| / |Δy|`, which exceeds
+1e12 here (on RC2's family, DWSIM and ours differ by about 1e-14 mol/s). Moving our values by at most 2.3e-16 relative, about
+one unit in the last place, moves 932 floats of the document beyond 1e-12 relative and changes three rule 4 `reason` strings
+(reviewer probe).
+Read literally, the text demands bit identity across architectures, which A07 and T06 A50 already say cannot hold.
+
+**§8, last bullet, replaced:** "The document recomputed from the committed files is compared byte for byte. Recomputed from a
+live solve of our side, its classifications are compared exactly (A10). Our values themselves are compared to 1e-12 relative by
+A07 (T06 A50's rule, ADR 0014 Amendment 5)."
+
+**§11 A10, replaced:**
+
+| Id | Assertion | Expected | Tolerance |
+| --- | --- | --- | --- |
+| A10 | (i) The classifier's document recomputed from the committed tool records, `ours-<case>.json`, `cases` and `ref` is byte-identical to `comparison.json`, and so is `SHA256SUMS`. (ii) Recomputed with a live solve of our side in place of `ours-<case>.json` (aliases applied), these equal `comparison.json`'s: every pair's `classification`, `category`, `rule` and `label`; every per-quantity `within_tolerance` and `quantities_outside`; the `controls` block and `comparison_stopped`; and under `x31` every pair class, case row, case outcome and clause outcome | equal | (i) exact; (ii) exact. Floats that depend on our values are not compared in (ii): A07 pins our values to 1e-12 relative, and (i) pins the document as a function of them |
+
+*Why this is not a relaxation.* Every classification is still compared exactly against a live solve. The 1e-12 rule moves to the
+quantities where it is well posed (A07), and the document gains a byte-identity check it did not have. No label can move at
+roundoff. The classified ratio nearest a boundary is 1.10 (rule 4, verdict agent), and our largest distance to the twin is
+0.0202 against rule 3's 0.1.
+
+### 19.2 §17.8 condition 2, and §18.5's "unchanged"
+
+**§17.8 condition 2, replaced:** "2. every value of that earlier file's `tool_settings` is present in the current file and
+equal to it. A JSON object may gain keys at any depth, but no earlier key is removed and no earlier leaf value changes."
+
+**§17.8's next sentence, replaced:** "All three hold for the eleven standing records, since the change is additions only.
+Amendment 1 adds `tool_settings.DWSIM.column_method_order_amendment_1` and `tool_settings.specification_definitions_amendment_1`,
+and it changes no earlier value. Without history the check refuses explicitly."
+
+**§18.5, DWSIM row:** "`tool_settings.DWSIM` is unchanged" now reads "`tool_settings.DWSIM` is unchanged since `5474531f`. Since
+`95870140` it has changed only by §17.2's addition, `column_method_order_amendment_1`."
+
+This is build decision B4-9 (`contained()` in `tests/test_s03_references.py`), which stands.
+
+### 19.3 §18.1 order step 5: "Ipopt rejects"
+
+"Ipopt" means the solver, that is, Ipopt's option registry refusing the option or its value. How the harness passes a registered
+option to Ipopt (the command line or Ipopt's options file) is harness mechanics. Build decision B2b-1 stands, and the
+contingency did not apply. The evidence:
+- every P1 and P2 record lists `OF_bound_mult_init_method = mu-based`, and P0 does not;
+- the options-file route validates the value (`qualification/idaes.json` → `warm_start_options_check`);
+- P0 reproduced `6d9486a0` in 20 of 20 attempts, so the options file did not reach P0.
+
+### 19.4 §17.3(b): "every pair of that tool"
+
+It means every pair of that tool, other than its controls, that is available and was classified by rules 2–2d or rule 4. A
+pair classified by rule 0 stays `absent`, by rule 1 stays `access`, and by rule 3 stays `ours`, so §17.5's precedence (rows 1
+and 3 before row 4) still applies. This is build decision B4-4, which stands.
+
+### 19.5 The tool scripts' provenance
+
+The S03 tool scripts at HEAD stay byte-identical to their versions at the qualification commits (`2eb71ac0` and `5474531f`).
+A lint rule they fail is waived for those files in `pyproject.toml`. They are not edited to satisfy it, because an edit means a
+new qualification run.

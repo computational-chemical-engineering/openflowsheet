@@ -13442,3 +13442,40 @@ attempt that does not reproduce `6d9486a0`.
 
 **Watch for.** A verdict that reports "met with two references", or that counts an IDAES pair without a `DISAGREE` IDAES
 control. Watch also for the release gate's handling of an unmet clause (Q-A2-4, Frank's call).
+
+## R-644 — S03 review: A10 re-scoped (byte identity on the committed inputs, classifications exact on a live solve, our values through A07); §17.8 condition 2 means additions only; §18.1's "Ipopt rejects" means the solver; §17.3(b)'s reading; the tool scripts are not edited to satisfy lint
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`reviewer`), S03's review pass (brief `docs/briefs/S03-review.md` §4) |
+| Normative text | `docs/derivations/S03-spec.md` §19 |
+| Evidence | `docs/reviews/S03-review.md` (the reviewer's probe of A10's conditioning; the IDAES position recomputation); CI run 40131170434; `docs/S03_BUILD_DECISIONS.md` B2b-1, B4-4, B4-9; `docs/reviews/S03-verdicts.md` F-1, F-4 |
+| Affected packages | S03 (the A10 test, the ruff configuration); S09 inherits the A10 form for any live-solve gate over a comparison document |
+| Amends | S03 §8's last bullet and §11 A10; §17.8 condition 2 and §18.5's DWSIM row (wording) |
+
+**Decision.**
+- A10 has two parts. (i) The document recomputed from the committed files must be byte-identical to `comparison.json`. (ii)
+  Recomputed from a live solve, its classifications, controls and X31 outcomes must equal `comparison.json`'s exactly. Our
+  values are compared to 1e-12 relative by A07 alone.
+- §17.8 condition 2 means additions only, recursively: no earlier `tool_settings` key is removed and no earlier leaf value
+  changes (B4-9).
+- §18.1's "Ipopt rejects" means the solver. The options-file route for `bound_mult_init_method` stands (B2b-1), and the
+  contingency did not apply.
+- §17.3(b)'s "every pair of that tool" means the tool's available non-control pairs classified by rules 2–2d or 4 (B4-4).
+- The S03 tool scripts stay byte-identical to their qualification commits. Ruff's E501 is waived for those two files
+  in `pyproject.toml`.
+
+**Rejected alternatives, and why.**
+- *Keep 1e-12 relative on every float of the live document.* A ratio of a near-zero difference has a condition number
+  above 1e12. A change of about one unit in the last place of our values breaks 932 floats and three reason strings. The rule
+  would demand bit identity across architectures.
+- *Relax only the response table.* The live test stops at its first failure, and the response table sorts before `rows`. CI
+  never compared the rows, and they fail the same way.
+- *Rewrap the tool scripts at HEAD* (option b). HEAD would then hold a script that never ran, and a wrap risks changing a
+  string literal. A03 scans HEAD, so the scan would read code that produced nothing.
+- *Read "Ipopt rejects" as the command-line route.* The registered option set is what matters, and Ipopt applies and
+  validates it through its options file. Reversing would reopen six IDAES pairs to drop an option the solver accepts.
+
+**Watch for.** A live-solve gate that compares derived differences or ratios to a relative tolerance. An edit to an S03 tool
+script without a new qualification run. A re-run in which a tool loses every control, where §19.4 decides the relabelling.
