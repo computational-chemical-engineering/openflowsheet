@@ -1213,3 +1213,19 @@ Do not widen a list.
   This erratum does not change it.
 - **A legal opinion**, as §16.11 says.
 - **Anything numerical.**
+
+## 17. Erratum, 2026-10-23 (design lane, `reviewer`; S07 review; R-626)
+
+**§4.4, strip bracket.** For T ∈ (647.0 K, T_c), outside the box, the saturated densities at T bound the
+brackets **where the saturation converges**. Where it does not, the bracket is the T ≥ T_c one: (0, 1250 kg/m³],
+starting from min(P/(R_S T), 1250 kg/m³).
+- **Where that happens.** The Newton from the IAPWS ancillaries fails only for θ ≲ 1e-6, which is above about
+  647.0954 K. There the loop's pressure range is ≲ 1e-5·p_c, well inside the box [22.0, 22.2] MPa, so the root on
+  (0, 1250] is unique for every state outside the box.
+- **What changed.** Before, those states were refused `saturation_not_converged` (§6.5 row 9), even though 647.09 K
+  and 647.096 K answered. The rule is implemented in `8cab0e15` (design note
+  `docs/design/S07-near-critical-saturation.md`, D3 and D5). No registered value, `s05_reference.json` entry or
+  probe outcome changes: the S05 record of 38 010 calls is byte-identical, and `--check` passes.
+- **What did not change.** S05 gets no fallback saturation solve. Its Newton converges at every 0.05 K from 273.16 K
+  to 647.0 K.
+- **Tests.** S07 spec §19.7, A50.

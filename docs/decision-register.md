@@ -12605,3 +12605,341 @@ are merged at `tested`. That belongs to the next ledger refresh.
 
 **Finding (not acted on).** F-6: ADR 0006 D1's mode-A row says "the project's own bytes only", meaning CasADi's. ADR
 0045's release condition governs F. Clarify ADR 0006 the next time it changes.
+
+---
+
+## R-618 — S07: CoolProp is an optional, pinned Helmholtz evaluator; the provider keeps phase logic, refusals and exactness (ADR 0045's rejection superseded for this provider only)
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), S07 brief (Frank queued S07 on 2026-10-23 with these settled points) |
+| Normative text | ADR 0046 D1, D2; `docs/derivations/S07-spec.md` §0, §4, A27 |
+| Evidence | CoolProp 8.0.0 measurements, spec §14 (m2): the twenty partials are bit-identical with and without an imposed phase at four water states. In the dome, CoolProp's `p()` returns 245769.35 Pa (saturation) while the jet gives the EOS value 6.739e15 Pa. The jet there agrees with `iapws95.phi_jet` to 2.4e-15 |
+| Affected packages | S07; ADR 0045 (its rejected alternative "CoolProp as a runtime dependency" no longer covers S07) |
+
+**Decision.**
+- The provider calls only `AbstractState("HEOS", name)`, `specify_phase(iphase_gas)`, `update(DmolarT_INPUTS, ρ, T)`
+  and the twenty α°/αʳ partial getters. Every property, root, phase and refusal is the provider's own. A27 enforces
+  this by an AST allowlist.
+- `CoolProp==8.0.0` is the `coolprop` extra, locked in `requirements.lock`, and inventoried by G19. It is not a
+  default requirement.
+- ADR 0045's rejection stands for `iapws95-v1`. Its two objections are answered for S07: the extra makes the
+  dependency optional, and D1/D4 keep refusals and exactness.
+
+**Rejected alternatives, and why.**
+- *CoolProp's flash and property getters.* They are excluded by the brief. Measured: the TP solve is noisy at about
+  1e-10, and its P-derivative central differences are off by 1e-4 to 1e-3 (S05 §6.3).
+- *A default dependency.* That puts third-party binaries and data in every install.
+
+*Amended by R-624 (2026-10-23):* CoolProp is not locked in `requirements.lock`, which stays at its registered
+`ead4edf1…`. It is hash-pinned in `requirements-coolprop.lock`, and G19 judges only CoolProp (S07 spec §17).
+
+---
+
+## R-619 — S07 identity: architecture-independent hashes over the pinned version and the canonical fluid JSON, plus a run-time guard
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), S07 |
+| Normative text | ADR 0046 D3, D4; S07 spec §5, A26, A28 |
+| Evidence | m1: gitrevision `ae81610e7d23efc57f9d051c8e70a4d66e87537f`. Wheel SHA-256 prefixes: x86-64 `8ca1aefd1873b14f3e7e`, aarch64 `113fc0e97f2b64617141`. m3: `set_reference_state("Water","NBP")` leaves the fluid JSON unchanged but changes α° in new `AbstractState`s, and `"DEF"` restores the bits |
+| Affected packages | S07; any later package that pins a third-party evaluator |
+
+**Decision.**
+- `data_sha256` = SHA-256 of canonical {version, fluid, SHA-256 of the canonically re-serialized fluid JSON}.
+- `implementation_sha256` = SHA-256 of canonical {module SHA-256, version, gitrevision}.
+- Neither includes the binary. Both are computed from constants.
+- A guard runs before the first evaluation: import, version, fluid hash, and an α° canary at 1e-12. Each failure is
+  a typed `unsupported` refusal.
+- A new fluid hash, or a registered value moving out of tolerance under a new pin, makes the id `coolprop-heos-v2`.
+
+**Rejected alternatives, and why.**
+- *Hash the binary.* The identity would differ between the CI pair.
+- *Hash the raw JSON string.* That ties the hash to CoolProp's formatting for no gain.
+- *Trust the JSON hash alone.* Measured: a global reference-state change escapes it.
+
+---
+
+## R-620 — S07 fluids and domain: the nine S04 library components; a box per fluid whose lower T is the melting temperature at the top pressure (cryogenic liquids deferred to S07b)
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), S07 (Q-S07-1 asks Frank to confirm the cryogenic deferral; the default stands meanwhile) |
+| Normative text | S07 spec §2.1, §6.1, §6.2, §6.4 |
+| Evidence | m1: all nine have one EOS, with six α° and three αʳ term types. m4: CoolProp's partials agree with 30-digit closed forms to ≤ 8.0e-14. m5: T_m(P_hi) is CO2 236.03, N2 82.80, O2 63.03 (80 MPa), Ar 106.96, CH4 114.28, C2H6 105.39, C3H8 94.67, H2 31.39 K. CoolProp's own `PropsSI` refuses (1.1·T_t, 100 MPa) as below T_melt for six fluids |
+| Affected packages | S07; follow-on S07b (cryogenic liquids) |
+
+**Decision.**
+- Fluids: H2O, CO2, N2, O2, Ar, CH4, C2H6, C3H8, H2, by the S04 ids, one provider instance each.
+- Domain: T ∈ [T_lo, min(T_max, 1273.15 K)], P ∈ [1e2, min(p_max, 1e8)] Pa. T_lo is T_t for water and
+  ⌈10·T_m(P_hi)⌉/10 K for the others. The near-critical box, saturation edge and liquid bracket follow spec §6.1's
+  relative rules, each a generator claim.
+
+**Rejected alternatives, and why.**
+- *T_lo = T_t for all fluids.* That answers LIQUID above the melting line, a silent wrong stability claim.
+- *A run-time melting guard now.* The domain is then not a box, which `PropertyCapabilities.domain` cannot state.
+  It is deferred to S07b.
+- *More fluids.* No case needs a pure-fluid stream outside the nine. An addition is a generator run.
+
+*Amended by R-623 (2026-10-23):* Frank chose the broad list. The fluids are now 123, selected by rule, and the
+rejected alternative "More fluids" is reversed. The melting-line bound and the S07b deferral stand.
+
+---
+
+## R-621 — S07 is library-only; the records-less selectable basis for S05 and S07 is a follow-on package with its own ADR
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), S07, under Frank's S05 Q-8 answer ("library only for now; binding planned later together with S07") |
+| Normative text | ADR 0046 D9; S07 spec §3.4, §12.4, A30 |
+| Evidence | R-568/R-569 (the library-only pattern); `iapws95-v1` is library-only (R-616) |
+| Affected packages | S07; the binding follow-on |
+
+**Decision.** `coolprop-heos-v1` goes in `LIBRARY_ONLY_PROVIDERS` as `"S07"`, with a U02 note. The shared
+records-less basis key, unit-model admission, W27 v2 mapping, support-matrix rows and envelope come in one later
+package for both providers.
+
+**Rejected alternative, and why.** *Design the basis key in S07.* It changes the selection layer shared with
+`pr-c1-v1` and `pr-lib-v1`, and it would double S07's first delivery.
+
+---
+
+## R-622 — S07 cross-architecture rule: bit-identity is the target; a pre-registered 1e-12 relative bound applies if aarch64 differs, and beyond it the build lane stops
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), S07 |
+| Normative text | ADR 0046 D8; S07 spec §11 Q-1, A31 |
+| Evidence | Not measurable on the workstation: there is no aarch64 binfmt. ADR 0007 measurement 2: the project's pure-Python evaluations are bit-identical across the CI pair. CoolProp is compiled C++, and aarch64 contracts FMA by default |
+| Affected packages | S07 (WO-S07-3 measures it) |
+
+**Decision.**
+- A31 compares the x86-64 answers (a committed regression fixture) on both architectures.
+- If they are not bitwise equal: |Δ| ≤ 1e-12·max(|x|, s_f), or 1e-10 near critical. The measured worst goes in the
+  manifest and in ADR 0046's status.
+- Above 1e-12 the build lane stops for an amendment.
+
+**Rejected alternatives, and why.**
+- *Demand bit-identity unconditionally.* CI would go red on a fact we cannot change, for differences 4 decades
+  inside every reference tolerance.
+- *Use ADR 0025's 1e-9 replay class directly.* It is too loose to detect a real divergence at the provider level.
+
+---
+
+## R-623 — S07 Amendment 1: 123 CoolProp fluids by rule, in two verification tiers; fluids without a melting line get a triple-point-estimate lower bound with a pressure cap
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | Frank, 2026-10-23 ("Broad list now"; Q-S07-1 "Yes, they wait"); the rule, the bound and the tiers by the design lane (`specifier`) |
+| Normative text | S07 spec §16; ADR 0046 Amendment 1 |
+| Evidence | Spec §16.16. m6: 136 fluids, 6 pseudo-pure, 30 with a melting line, no published check values in any fluid file. m7: closed forms reproduce CoolProp's partials for all 123 admitted fluids (αʳ ≤ 1.05e-12, R22; α° ≤ 4.6e-14); the Aly–Lee α° is off by a + bτ. m8: S1–S5 admit 123, and C6 and C8–C11 are forecast to hold for all of them. The steepest relative melting slope is 0.00622/MPa (Neon), and 0.00382/MPa among non-quantum fluids (IsoButane) |
+| Affected packages | S07; S07b; the binding follow-on, which maps components to fluids by CAS |
+| Amends | R-620 (the fluid list; its rejected alternative "More fluids" is reversed by Frank's answer); R-619 (the implementation hash adds the fluid table); R-622 (tier B's stop line) |
+
+**Decision.**
+- A CoolProp 8.0.0 fluid is admitted iff all of these hold: it is not pseudo-pure; every term type of `EOS[0]` has a
+  verified closed form; the domain rule gives T_lo < 0.99·T_c; the near-critical box lies inside the box; and the
+  generator's claims hold. That admits 123. The 13 excluded fluids and their reasons are emitted and reported by the
+  provider.
+- Lower bounds. M: the melting line at P_hi. T: the triple point (H2O, HeavyWater). E, for fluids without a melting
+  line: P_hi = min(p_max, max(5 MPa, ⌈1.1·p_c⌉₂)) and T_lo = ⌈10·T_t·(1 + 1e-8 Pa⁻¹·P_hi)⌉/10, with claim C18
+  keeping 1e-8 Pa⁻¹ at least 1.5× above the steepest measured slope.
+- Tier A (the nine) is unchanged. Tier B (114 fluids) registers three jets, six TP states, `sat_mid` and `tsat_mid`,
+  and reports `verification: self-consistent`. Published check values are a mechanism; S07 requires none.
+- Errata in the first spec: N2's T_lo is 82.8 K; C9's grid starts at the melting line's lower pressure limit.
+
+**Rejected alternatives, and why.**
+- *Exclude the fluids without a melting line.* That leaves 27 fluids and contradicts the broad-list decision.
+- *T_lo = T_t for them.* That gives silent LIQUID answers in the solid region (R-620).
+- *1e-8 Pa⁻¹ halved, to 0.005/MPa.* That lies below Neon's measured slope, and a 1.3× margin over the non-quantum
+  maximum is too thin for fluids outside the sample.
+- *The full registered-state set for every fluid.* A reference file of several MB, and generic code judged 114 times.
+- *Admit the Aly–Lee fluids (n-Heptane, D6) with a fitted constant.* That copies the expectation from the thing tested.
+
+---
+
+## R-624 — S07 Erratum 1: the `coolprop` extra gets its own hash-pinned lock and `requirements.lock` stays byte-unchanged; G19 judges only what the extra adds, numpy stays T08.A30's, and `ALLOWED` is unchanged; M07's MR-12 test reads at v0.2.0
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), on WO-S07-1a's stop report (build lane, `a882c171`) |
+| Normative text | S07 spec §17 (assertions A36–A44; WO-S07-1a corrected in §17.6) |
+| Evidence | Spec §17.9. Adding CoolProp to `requirements.lock` fails T08.A19(a) (registered hash `ead4edf1…b9c4`; 436 files carry it at `a882c171`). G19's own `closure`/`verdict_of` on `CoolProp==8.0.0`: `coolprop` ok (MIT), `numpy` not-allowed. numpy declares no SPDX expression, and its `License` field's first line is `Copyright (c) 2005-2024, NumPy Developers.`. Its `LICENSE.txt` (x86-64 `c002bd26…bf06`, aarch64 `487cab6f…e8a3`) names the GCC runtime library (GPL-3.0-with-GCC-exception) and libquadmath (LGPL-2.1-or-later), neither of which G19's first-line test sees. CoolProp requires only `numpy>=1.20` and ships no vendored objects. Its wheels: x86-64 `8ca1aefd…f611`, aarch64 `113fc0e9…92fa`. `mr12_extras_v02` git-backed: `pass ["nlp"]` at v0.2.0 `5c82b4cc` and at `b0260e00`, `fail ["coolprop", "nlp"]` at `a882c171` |
+| Affected packages | S07; M07's MR-12 test; the binding follow-on of R-621 (F-7); the next RC gate set (F-8, F-9) |
+| Amends | R-618 (its "locked in `requirements.lock`"); ADR 0046 D2, by a note the design lane writes (spec F-6) |
+
+**Decision.**
+- `requirements.lock` is not edited, and nothing registered moves. `requirements-coolprop.lock` at the root holds one
+  line: `CoolProp==8.0.0` with both wheel hashes. CI's `check` job installs it after the main lock with
+  `--no-deps --require-hashes`. No other job installs it.
+- No bundle's identity needs CoolProp. The provider is library-only (R-621), and its guard and `implementation_sha256`
+  pin CoolProp's version and gitrevision (R-619).
+- `t07_licence_inventory.py --extra coolprop` judges the extra's closure minus the base closure, which is CoolProp
+  alone. It lists base members (numpy 2.2.4) as `base_members` at their lock pins, and A40 ties them to the T08.A30
+  records. `ALLOWED` and the server record are unchanged.
+- In CI, `OPENFLOWSHEET_REQUIRE_COOLPROP=1` turns a missing CoolProp from a skip into a failure.
+- Ruling M. The git-backed `mr12_extras_v02` test judges M07's S9.4 at `RELEASE_0_2_0_COMMIT`, as R-217 and R-456
+  did. Its `HEAD` clause now expects `fail` with `coolprop` lacking an `MR12_AUDITS` entry (A44). The measure is
+  unchanged, and the next release supplies `coolprop`'s entry (F-9).
+- No question for Frank. numpy's GCC runtime is already his ruling (R-135), and the lock follows R-121.
+
+**Rejected alternatives, and why.**
+- *Re-register `requirements.lock` with CoolProp.* It would move `LOCK_SHA256`, T08.A19, L41 and the release records,
+  and demote every registered bundle to `inspected_archived_results` (R-121). It would also contradict ADR 0046's
+  Migration impact, all for a pin that no bundle can use.
+- *Add numpy's first line to `ALLOWED`.* That line is a copyright line, not a licence. G19 would pass two GPL-family
+  texts it cannot see, and would judge the base install again with a weaker tool than T08.A30.
+- *Partition the server extra too.* That moves a committed T07 record for no gain.
+- *An unlocked `pip install CoolProp==8.0.0` in CI.* The installed bytes would then not be tied to the inventoried
+  hashes.
+- *An `MR12_AUDITS["coolprop"]` entry now.* MR-12 v02 is v0.2's measure, and coolprop is not in v0.2. The entry
+  belongs to the next release's MR-12 (F-9).
+- *Dropping the `HEAD` clause.* That silences the tripwire for unaudited extras.
+
+**Watch for.**
+- `make lock` run with CoolProp in the venv. T08.A19(a) and A36 fail.
+- A CoolProp pin change that adds a requirement. A38 fails.
+- A numpy pin change without an A30 refresh. A40 fails.
+
+---
+
+## R-625 — S07 generator review: WO-S07-2a may start; C14 excludes §6.5 row 10, A21 reaches rows 10–11 by injection, A04 keeps `delta_one`, C11's lnphi source accepted, C12 widened
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`reviewer`), at the review of WO-S07-1b's generator (`a04c8924`) that §16.14 requires before WO-S07-2a |
+| Normative text | S07 spec §18 (Amendment 2); review `docs/reviews/S07-generator-review.md`; ADR 0046 Erratum 1 note (spec F-6, written here) |
+| Evidence | Review re-runs from the committed `s07_reference.json`. Stored jets against CoolProp 8.0.0 for all 123 fluids: tier A ≤ 8.0e-14, tier B ≤ 9.0e-13. `delta_one` third partials 1.6e-13 (CO2 αʳ_δδδ). The generator's derivative, saturation-phase and Tsat paths against `s05_reference.json`: derivatives ≤ 1.7e-12 relative (dcp/dT at L_ambient, 3.9e-14 of cp/T), values ≤ 4.8e-14, s_l(T_t) 5e-15·R absolute. §16.3 table 123/123 equal |
+| Affected packages | S07 (WO-S07-1b regeneration for C12; WO-S07-2a for A04, A21 and A33) |
+
+**Decision.**
+- C14 covers §6.5 rows 1–3 and 5–9. No rule state reaches row 10: A22 asserts it never occurs inside the domain, and
+  row 5 pre-empts it outside. A21 reaches rows 10 and 11 by injection on N2, with S05's iteration starving and a
+  raising `AbstractState.update`.
+- A04 judges `delta_one`'s third partials (H2O, CO2), as §9 wrote. CoolProp follows the zero-jet rule there at the
+  floor.
+- C11 takes lnphi from an `AbstractState("HEOS")` PT update's `fugacity_coefficient(0)`, judged absolutely, because
+  `PropsSI` has no such output.
+- C12 widens to S05's derivatives, saturated phases, dPsat/dT and Tsat. Bounds: values 1e-12 (h, s and lnphi
+  absolute), derivatives 1e-11 relative.
+- A33(a) compares as a mapping. ref `fluids` carries no order, and the table's order is §16.3's.
+
+**Rejected alternatives, and why.**
+- *A rule probe for row 10.* No in-domain state should reach it, and out-of-domain probes answer row 5.
+- *Leave rows 10–11 untested.* Two refusal codes of a "complete" table would ship unexercised. S05 already starves
+  iterations.
+- *Exclude `delta_one` from A04, as S05 did.* Measured at 1.6e-13, 63× inside the bound. Excluding it would drop a
+  passing check of the non-analytic terms.
+- *Drop lnphi from C11.* That removes the only external check of the lnphi formula before the provider exists.
+- *Keep C12 values-only.* The generic `cdiff`, saturation and `tsat_solve` paths would meet no independent
+  implementation at generation time.
+- *Plain relative bounds for C12's h and s.* s_l(T_t) ≈ 6.5e-14 J/(mol K) makes a relative bound meaningless there.
+
+**Watch for.**
+- Psat at C3H8 `sat_lo` (Z_L = 3.8e-10, four decades below water's T_t). A liquid-branch pressure carries about
+  ε/Z_L error. Q-A1-5's default applies to tier A.
+- C16 refuses on any published-check row until WO-S07-4 implements it.
+
+
+## R-626 — S07 review: near-critical saturation fallback and strip bracket made normative; G3 and G8 bounds re-set from derivations; B-15 confirmed; tier-B A17 stop line 1e-10 with an h-scan rule; S05 strip erratum
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`reviewer`), the S07 package review of `wp/S07` at `6f8c83d6` |
+| Normative text | S07 spec §19 (Amendment 3); S05 spec §17 (Erratum); review `docs/reviews/S07-review.md`; design note `docs/design/S07-near-critical-saturation.md` |
+| Evidence | Review re-runs, CoolProp 8.0.0 on x86-64. Near-critical and broad tests: 3118 passed, with R22's two N3 cases failing. Fallback-only roots, at all 343 points of the dense scan, against CoolProp's own QT saturation: densities ≤ 4.5e-10 and p_σ ≤ 3.3e-13; the highest fallback θ is 4.46e-3. R22 at θ_min: two accepted roots 1.10e-8 apart in ρ'', residuals at the noise (F2 ±1.3e-13), QT between them, K jitter 2.1e-13 (R21: 1.6e-14); Δp_σ/p_σ = (k''/Z'')·Δρ''/ρ'' = 6.5e-12. A17 h-scans: R22 independent of h (value noise); PropyleneGlycol ∝ h³ (truncation). Inner loops in double: CO2 at θ = 1e-3, and Ammonia and o-Xylene at 3e-3 to 5e-3; a 401-point grid misses the loop at θ = 1e-6 for 20 fluids |
+| Affected packages | S07 (the A47 bounds, A49's branch check, the record scripts, WO-S07-NC4); S05 (spec erratum only; code `8cab0e15`) |
+
+**Decision.**
+- The design note's D1–D5 are normative. The saturation is the plain Newton, then above θ_min = 5e-5 the
+  spinodal-bracketed fallback, then the same Newton. The strip takes the T ≥ T_c bracket where no saturation
+  converges, in S07 and S05 both. WO-S07-NC1 is discharged.
+- G3 (A47) for θ_min ≤ θ < 1e-2: densities 3e-8 (≈ 2√ε, R-595's floor clause) and p_σ 1e-10. For θ ≥ 1e-2,
+  densities 1e-11 and p_σ 1e-12.
+- G8 is a tripwire of 500 jets. The hard bound is 6906 plus 100. The plain path gains no jet.
+- θ_min stays 5e-5. If A45 fails at θ_min on aarch64, the remedy is 7e-5.
+- C-strip adds a 401-point grid on [ρ'', ρ'] and covers T_c(1 − 5e-5).
+- A48's references add R22 and each fallback fluid at its highest fallback θ.
+- A49 asserts the branch: ρ > ρ_c for LIQUID, ρ < ρ_c for VAPOR.
+- B-15 confirmed: |Δ| ≤ 1e-12·max(|x|, scale). This refines R-625's "absolute".
+- F-6: tier B's A17 stop line becomes 1e-10, with an h-scan record above 1e-11. A miss ∝ h stops for the design
+  lane.
+- B-18 to B-30 are confirmed. A10/A11 are reworded for p_σ < P_lo, and the design note's G7(c) is read as A49's
+  continuity.
+- S05's A33 needs a decision. The default is to carry the evidence in S07's manifest.
+
+**Rejected alternatives, and why.**
+- *Keep G3 at 1e-8 and 1e-12.* It asks for more than the convergence rule promises. It would fail the noisiest fluid
+  for no numerical reason.
+- *Per-fluid bounds.* Forbidden: no per-fluid tolerances.
+- *Make the fallback a safeguarded Newton to meet 400 jets.* Cost is not correctness, and the path is rare and cached.
+- *θ_min = 1e-4.* It puts the registered strip controls on the threshold.
+- *Require a single loop over the fallback's whole θ range.* That is false for CO2 at θ = 1e-3.
+- *A global stability test in the fallback.* The plain path has none either. Evidence covers the run set.
+- *Literal absolute C12 bounds.* They fail S05's V_corner, at 4.6e-14 relative.
+- *Raise A17's test bound.* No floor is near it, and it would weaken the check for every fluid.
+
+**Watch for.**
+- A45 at θ_min for R22 on aarch64.
+- A spurious Maxwell pair on an inner EOS loop. It is excluded by evidence (A47, A48), not by the run-time checks.
+- S05's A33 carry, which awaits a ruling.
+
+
+## R-627 — S07 A31 after aarch64 differed: answer classes; ordinary answers 1e-10 in both tiers; per-state allowances within 1 % of T_c; x86-64 stays bitwise
+
+| | |
+| --- | --- |
+| Date | 2026-10-23 |
+| Decided by | design lane (`specifier`), on `docs/briefs/S07-a31-ruling.md` |
+| Normative text | S07 spec §20 (Amendment 4); pointers from §11 Q-1 and §16.11 |
+| Evidence | CI run 39979785654 at `95f8f9a5`: x86-64 bit-identical; aarch64 worst 2.243e-8 (R22 `a10.T_sigma_max.LIQUID.cp`), phi slots 3.88e-13, a10 Psat 1.61e-11, tp ≤ 1.84e-11. For H2O at T_σ,max all eleven printed rows imply one Psat difference, 6.5e-14 to 7.6e-14, once divided by their own pressure sensitivity. m9 (`docs/derivations/scripts/s07_measurements/m9_a31_allowances.py`, x86-64, CoolProp 8.0.0): 168 class-N (fluid, state) pairs, 0 refused sensitivity evaluations, r ≤ 7.34, (ρ_L − ρ_V)/ρ_c ≥ 0.086, sensitivity at T_σ,max 104–843 for v and 3.97e3–4.30e4 for cp |
+| Affected packages | S07 (A31, `scripts/s07_platform_digest.py`, ADR 0046 D8 and status via F-20.1) |
+| Amends | R-622 (the 1e-12 default and its no-flip argument); R-623 (tier B's 1e-10 now also tier A's) |
+
+**Decision.**
+- Q-1's premise is false. A jet difference between architectures is a second rounding realization at the
+  cancellation floor (up to 1.05e-12), not a few ulp. Near T_c the answers inherit the Psat difference multiplied by
+  their own conditioning.
+- Every digest row is S (a refusal string, exact), N (family `tp`, `sat` or `a10` with |1 − T/T_c| < 1e-2) or T
+  (everything else).
+- Class T: |Δ| ≤ 1e-10·max(|x|, s_f), for both tiers. This is the worst jet floor, 1.05e-12, times κ_ρ ≤ 100.
+- Class N, Psat rows: 1e-10·|x|, which is G3's near p_σ bound.
+- Class N, other rows: 1e-10·max(|x|, s_f) + 2e-10·σ, with σ = P|∂q/∂P|_T by a central difference of step 2.5e-7
+  (one-sided at a box edge). For the slope, q is the Clausius–Clapeyron quotient of the two TP roots. cp needs no
+  separate constant: its σ carries its conditioning.
+- On x86-64, A31 stays bitwise.
+- A31 does not decide reference verdicts. A05–A13 decide them on both architectures. The rows where A31's allowance
+  meets or exceeds a reference tolerance are listed in §20.7.
+- `--report` writes every differing row to JSON. The log shows a line per class and the top 20.
+
+**Rejected alternatives, and why.**
+- *Raise one flat bound to the measured worst (about 5e-8).* It is fitted to a measurement. It is 2.5 decades looser
+  than ordinary answers need, and it is above A05's 1e-9 for v.
+- *A fixed per-quantity table near T_c (for example v, h, s 1e-7 and cp 1e-5).* Each entry needs a maximum over 123
+  fluids, and cp's sensitivity spans a decade. A bound loose enough for o-Xylene is 10× too loose for n-Dodecane.
+- *Derive class N from G3's density bound, 3e-8 (2√ε).* The a10 answers are TP roots at the computed Psat, so their
+  difference follows the Psat difference through their own sensitivity. With sensitivities up to 843 for v, a Psat
+  difference inside its own 1e-10 could fail a fixed 3e-8. The density bound says nothing about cp either.
+- *Keep tier A tighter (1e-11 or 1e-12).* Its jet floor was measured at the jet states only, and H2O's `L_corner`
+  already shows 5.45e-12. Tier A's correctness on aarch64 rests on its independent references, which run there.
+- *Exclude the near-critical answers from A31.* That removes the only cross-architecture check on tier B's
+  saturation answers at T_σ,max, which have no reference.
+- *Per-fluid bounds.* Forbidden (R-626). The allowance here has global constants and a computed sensitivity.
+- *ADR 0025's 1e-9 replay class.* Rejected again, as in R-622. Class T stays 10× tighter.
+
+**Watch for.**
+- Q-20.1: the VAPOR cp rows of four tier-B hydrogen isotopes at T_lo. Their pre-registered remedy is to extend
+  §20.5 to every a10 row at the computed Psat.
+- Q-20.2: a class-N utilization above about 0.15 means a difference that the Psat difference does not explain. Read
+  the report before anything else.
+- F-20.2: A08's slope tolerance at `sat_hi` (1e-8) is tighter than G3's admitted Psat difference can move the slope
+  (2.2e-8 to 5.1e-8 per 1e-10).

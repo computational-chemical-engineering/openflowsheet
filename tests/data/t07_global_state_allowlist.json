@@ -177,6 +177,13 @@
       "justification": "S05 (WO-S05-1, ADR 0045): three nullary functions of immutable inputs, each computed once per process: load_coefficients (the IAPWS-95 coefficient file's bytes, hash-checked and parsed), _tsat_bounds (p_sigma at 273.16 K and 647.0 K, a pure function of those coefficients) and _implementation_sha256 (the module source's SHA-256, the W0.5 pattern)."
     },
     {
+      "file": "thermo/coolprop_heos.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "S07 (WO-S07-2a, ADR 0046): nullary _implementation_sha256, the SHA-256 of the canonical JSON of the module's and the fluid table's source hashes and the CoolProp pin (spec \u00a716.9), immutable for the process's life (the W0.5 pattern). The per-instance saturation cache is an instance attribute, not process state."
+    },
+    {
       "file": "models/c1/reactor_standin.py",
       "line": "@cache",
       "patterns": ["cache"],

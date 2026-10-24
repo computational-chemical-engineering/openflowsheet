@@ -42,8 +42,9 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: on `wp/C10` (WO-S05-3); S06's manifest (`be4ea98…`, `implemented`, 14 and 3) and its re-take
 #: after the review (`ad264a2…`, `tested`, 12 and 1) move it on `wp/C11`; S05's re-take with D08
 #: (`da829aa…`, `tested`, 10 and 1) moves it on `wp/S05-wo4` (WO-S05-4); S05's packaging manifest
-#: (`01cdeed…`, `tested`, 10 and 1) moves it on `wp/S05-pack` (WO-S05-5).
-HARVEST_SIZE = (47, 539, 73)
+#: (`01cdeed…`, `tested`, 10 and 1) moves it on `wp/S05-pack` (WO-S05-5); S07's manifest
+#: (`7bfab70…`, `tested`, 13 and 1) moves it on `wp/S07` (WO-S07-3).
+HARVEST_SIZE = (48, 552, 74)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.

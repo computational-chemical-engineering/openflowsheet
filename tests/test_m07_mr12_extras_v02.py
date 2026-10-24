@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from conftest import REPO_ROOT
+from conftest import RELEASE_0_2_0_COMMIT, REPO_ROOT
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import m07a_evidence_manifest as manifest  # noqa: E402
@@ -146,17 +146,33 @@ def test_a_missing_a30_summary_fails() -> None:
     assert result == "fail"
 
 
+def _git_backed(commit: str, tmp_path: Path) -> tuple[Any, tuple[str, dict[str, Any]], Path]:
+    rc = tmp_path / commit / "rc"
+    for path, document in [(manifest.STEP14_RECORD, _step14(commit)), *_summaries().items()]:
+        (rc / path).parent.mkdir(parents=True, exist_ok=True)
+        (rc / path).write_text(json.dumps(document), encoding="utf-8")
+    inputs = manifest.Inputs(commit=commit, tests=None, evidence=tmp_path)  # type: ignore[arg-type]
+    return inputs, manifest.MEASURES["mr12_extras_v02"](inputs), rc
+
+
+def test_the_git_backed_measure_at_the_v0_2_0_commit(tmp_path: Path) -> None:
+    """S9.4 is about the v0.2 release candidate: it reads at v0.2.0 (S07 Ruling M, A44)."""
+    inputs, (result, value), rc = _git_backed(RELEASE_0_2_0_COMMIT, tmp_path)
+    assert result == "pass", value
+    assert value["new_since_v0_1_1"] == ["nlp"]
+    (rc / manifest.STEP14_RECORD).write_text(
+        json.dumps(_step14(RELEASE_0_2_0_COMMIT, "fail")), encoding="utf-8"
+    )
+    assert manifest.MEASURES["mr12_extras_v02"](inputs)[0] == "fail"
+
+
 def test_the_git_backed_measure_at_head(tmp_path: Path) -> None:
+    """The tripwire (S07 Ruling M, A44): `coolprop`, an extra added after v0.2, has no `MR12_AUDITS`
+    entry, so the measure fails at `HEAD` until the next release specification adds one (F-9)."""
     head = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True, check=True
     ).stdout.strip()
-    rc = tmp_path / head / "rc"
-    for path, document in [(manifest.STEP14_RECORD, _step14(head)), *_summaries().items()]:
-        (rc / path).parent.mkdir(parents=True, exist_ok=True)
-        (rc / path).write_text(json.dumps(document), encoding="utf-8")
-    inputs = manifest.Inputs(commit=head, tests=None, evidence=tmp_path)  # type: ignore[arg-type]
-    result, value = manifest.MEASURES["mr12_extras_v02"](inputs)
-    assert result == "pass", value
-    assert value["new_since_v0_1_1"] == ["nlp"]
-    (rc / manifest.STEP14_RECORD).write_text(json.dumps(_step14(head, "fail")), encoding="utf-8")
-    assert manifest.MEASURES["mr12_extras_v02"](inputs)[0] == "fail"
+    _, (result, value), _ = _git_backed(head, tmp_path)
+    assert result == "fail", value
+    assert value["new_since_v0_1_1"] == ["coolprop", "nlp"]
+    assert value["extras"]["coolprop"] == {"audit": None, "reason": "no MR12_AUDITS entry"}

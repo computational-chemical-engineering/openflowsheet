@@ -91,15 +91,23 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.lock
 
+      # S07 (spec §17.4, R-624): the `coolprop` extra's increment over the lock above, hash-pinned
+      # for both architectures. --no-deps keeps numpy at the base pin; requirements.lock itself is
+      # a registered identity and does not carry CoolProp. No other job installs this file.
+      - name: Install the coolprop extra's lock
+        run: python -m pip install --no-deps --require-hashes -r requirements-coolprop.lock
+
       - name: Install project
         run: python -m pip install -e .
 
       # T07 gate G19 on this architecture: the server extra is installed, and its closure, read
-      # from the installed metadata, has no GPL-family, unresolved or unlisted licence.
+      # from the installed metadata, has no GPL-family, unresolved or unlisted licence. S07 adds
+      # the same gate over the coolprop extra's increment (numpy is the base install's, T08.A30).
       - name: The server extra and its licences (G19)
         run: |
           python -c "import mcp.server.lowlevel, mcp.server.stdio, starlette, uvicorn"
           python scripts/t07_licence_inventory.py
+          python scripts/t07_licence_inventory.py --extra coolprop
 
       # M06 (design note §8 Layer C, ADR 0030 D6): Node for check.sh's `node --test` step of the
       # web shell's tests — a test-time tool, no packages installed. CI never sets
@@ -113,9 +121,11 @@ jobs:
       # skipping it. The aarch64 image has no browser; there it is skipped with its reason.
       # A test whose machine precondition fails here skips with its reason (M04 E39-E41); -rs
       # prints every reason in the log, so what the hosted runners did not check is on record.
+      # S07 (spec §17.4): CoolProp is installed above, so its tests must run, not skip.
       - name: Run checks
         env:
           PYTEST_ADDOPTS: -rs
+          OPENFLOWSHEET_REQUIRE_COOLPROP: "1"
         run: |
           if [ "${{ matrix.runner }}" = "ubuntu-latest" ]; then
             export OPENFLOWSHEET_REQUIRE_BROWSER=1
@@ -123,6 +133,29 @@ jobs:
             export OPENFLOWSHEET_BROWSER
           fi
           ./scripts/check.sh
+
+      # S07 (spec §13, §20 A31): the S07 tests and A31's verdict line on each architecture,
+      # as their own steps, so that a run's per-architecture S07 result is readable by
+      # scripts/s07_evidence_manifest.py (`--ci-run`) whatever else the full suite above did.
+      - name: S07 tests (spec §13)
+        if: ${{ !cancelled() }}
+        env:
+          OPENFLOWSHEET_REQUIRE_COOLPROP: "1"
+        run: python -m pytest -q tests/test_s07_*.py tests/test_m07_mr12_extras_v02.py
+
+      - name: S07 A31 line (spec §9, Q-1)
+        if: ${{ !cancelled() }}
+        env:
+          OPENFLOWSHEET_REQUIRE_COOLPROP: "1"
+        run: python scripts/s07_platform_digest.py --report
+
+      # S07 (spec §20.9, R-627): A31's per-row report, whatever the outcome.
+      - name: S07 A31 report (spec §20.9)
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: s07-a31-report-${{ runner.arch == 'ARM64' && 'aarch64' || 'x86_64' }}
+          path: evidence/S07/artifacts/a31_report_*.json
 
       # Gate G05's second clause: two-platform structural equality. Each runner emits the R0
       # artifacts blueprint §8.3 promises identical across supported platforms; the `identity`

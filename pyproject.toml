@@ -47,6 +47,9 @@ server = [
     "starlette==1.7.0",
     "uvicorn==0.54.0",
 ]
+# S07 ADR 0046: the optional CoolProp pure-fluid Helmholtz provider (`coolprop-heos-v1`). Not a
+# base dependency: the default install is unchanged, and the provider imports CoolProp lazily.
+coolprop = ["CoolProp==8.0.0"]
 # M03 ADR 0032 D5: the optional general-NLP bridge. Installable only into the audited environment
 # of docs/m03-ipopt-audit.md (scripts/build-m03-ipopt-env.sh), which provides cyipopt 1.7.0 from
 # conda-forge and libpynumero_ASL; PyPI has no cyipopt wheel for CPython 3.13.

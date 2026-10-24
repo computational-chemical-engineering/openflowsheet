@@ -731,7 +731,7 @@ def _density(
 ) -> float | None:
     """The root of the answered phase on its bracket (spec §4.4)."""
     ideal = pressure / (R_S * temperature)
-    if saturation is None:  # T ≥ T_c
+    if saturation is None:  # T ≥ T_c, or the strip without a saturation
         return _bracketed_density(temperature, pressure, 0.0, RHO_MAX, min(ideal, RHO_MAX))
     if phase == "VAPOR":
         if pressure <= saturation.pressure:
@@ -907,9 +907,9 @@ class Iapws95Provider:
                 )
             saturation = rule.saturation
             if saturation is None and t < T_C:
+                # The strip (647.0 K, T_c): without a saturation, the T ≥ T_c bracket (design note
+                # S07-near-critical-saturation, D3 and D5).
                 saturation = _saturation(t)
-                if saturation is None:
-                    return _refused("not_converged", f"{_NOT_CONVERGED_SAT}: at {t!r} K")
             rho = _density(t, p, request.phase, saturation)
             if rho is None:
                 return _refused(

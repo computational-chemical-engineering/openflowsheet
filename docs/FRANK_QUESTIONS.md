@@ -135,3 +135,17 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
   (a new algorithm and its own measurements). **Default:** yes, typed result and a §14 limitation; a follow-on
   package only if you want such inverse specifications to solve unattended.
   **Answer (Frank, 2026-10-23):** "Yes, typed failure."
+
+## S07 — CoolProp pure-fluid provider (design lane `specifier`, 2026-10-23)
+
+**Answers — Frank, 2026-10-23:** Q-S07-1 "Yes, they wait" (cryogenic liquids → S07b). **Fluid scope: "Broad list now"** — asked whether S07 starts with the nine S04 fluids and adds more later, or includes many more CoolProp fluids now; Frank chose the broad list. The spec is amended accordingly (S07 Amendment 1).
+
+- **Q-S07-1. May the very cold liquids wait for a later package?** The new CoolProp provider answers each of the
+  nine fluids only above the temperature where the fluid would freeze at the provider's top pressure (100 MPa; 80 MPa
+  for oxygen). That keeps every answer out of the solid region, and it keeps the answered range a simple
+  temperature–pressure rectangle. The price: liquid nitrogen at 77 K, liquid argon at 87 K, liquefied natural gas at
+  112 K and liquid hydrogen at 20 K are refused as out of range. Gases and vapours of all nine fluids are answered,
+  and so are liquid water, CO2, ethane, propane and liquid oxygen at 90 K. Answering the cold liquids needs a freezing-line check at run time, which is a
+  separate package (S07b). **Default:** yes, they wait (`docs/derivations/S07-spec.md` §6.2, R-620).
+
+- Q-A1-1 and Q-A1-3: defaults taken by the session (2026-10-23), reversible; Frank may object.

@@ -5093,3 +5093,94 @@ harvest:
   class: P
   to: []
   note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[0]
+  sha256: 72069d6847d30577bbadd433bf5bf9ea53f6a16a96d14e569f00416208042f0d
+  class: E
+  to:
+  - U02
+  note: '`coolprop-heos-v1` is library-only (not in SELECTABLE_BASES, U02); registered in LIBRARY_ONLY_PROVIDERS and scanned_providers (R-568, R-569, R-621)'
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[1]
+  sha256: b19b36bee0f229750c65ee28f6ff34aa2a3a10a2bc9cfa2e4cb40d9525c7b0e0
+  class: E
+  to:
+  - U02
+  note: S07's `coolprop-heos-v1` is library-only (U02); it serves 123 fluids and refuses 13 by name; tier B is self-consistent against CoolProp's own EOS, numerical verification and not empirical validation (spec §15, §16.1, R-569)
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[2]
+  sha256: c94ce1e263cbba770df1350a0b46c0d473000f99b51dbf647a6a578e10071870
+  class: P
+  to: []
+  note: S07 records that 0 fluids report `published-check`; no published check values are transcribed, and WO-S07-4 is optional and does not gate `tested` (spec §16.5.2)
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[3]
+  sha256: f6d9bb2980e0366756f8d916b4c4910789301d96fee9503d10f2abeaeed06e47
+  class: E
+  to:
+  - U02
+  note: S07's `coolprop-heos-v1` is library-only (U02); solid states inside the box are not refused for the E fluids (no melting line in CoolProp 8.0.0), and the cryogenic liquids below T_lo are S07b's (spec §15, §16.8)
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[4]
+  sha256: 62f6dc72d23d53533bb7549aac8551244c71d30e613152a90d77fe148da37119
+  class: E
+  to:
+  - U02
+  note: S07's `coolprop-heos-v1` is library-only (U02); it refuses the near_critical box and answers the (T_sigma_max, T_c) saturation strip by the second-stage fallback; metastable states beyond eps_sigma = 1e-6 are refused (spec §4, §19, R-626, R-569)
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[5]
+  sha256: 508983ee2e8ce66c69d7afdad6357cd033eb1f7dd3aa40394abf1d08dbfb2ee8
+  class: P
+  to: []
+  note: S07's A17 floors and the two tier B fluids above 1e-11 (PropyleneGlycol, R22) are measurements accepted by the reviewer (F-6, spec §19.6), recorded in the S07.measured check
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[6]
+  sha256: c26d612b4de116bbb5ccd16a11ceb8d0bb18966ef9a8aef8f84d28b252227251
+  class: P
+  to: []
+  note: 'S07''s Q-3 note: the reference-state guard G4 runs once per instance for the nine tier-A fluids; no spec §5.2 amendment'
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[7]
+  sha256: 0b7c8ca40363a9756dd9b6cbccb4c0b3d4c569498eab158b021116cf50268bc9
+  class: E
+  to:
+  - U02
+  note: S07's `coolprop-heos-v1` is library-only (U02); aarch64 agrees with x86-64 within spec §20's bounds (class T worst 5.658e-11 of 1e-10, class N 0.0183 of its allowance), not bit-identically; x86-64 is bit-identical (ADR 0046 Q-1, R-627, R-569)
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[8]
+  sha256: 02b32232434ab9c85377467c8d088beb354517045bedc0bc81bf72ce0d7768b5
+  class: E
+  to:
+  - U02
+  note: S07's `coolprop-heos-v1` is library-only (U02); CoolProp 8.0.0 is the optional `coolprop` extra, it is not bundled and its fluid data are not redistributed (spec A29, A36, ADR 0046)
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[9]
+  sha256: d573668dc2fd242dc9cebbe81dc2eadeda9e59b9fe5f96c642ab8a2dbeddcfa6
+  class: P
+  to: []
+  note: S07 lists D08 only (R-614 pattern); no unit-model basis selects `coolprop-heos-v1`
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[10]
+  sha256: 75eea0ebdb9f76b574b4fe2ffb05e7e8eddf542dd272bf48db6542c1193f0c6d
+  class: P
+  to: []
+  note: S07's manifest carries S05's A33 evidence (S07.S05.* checks); S05's merged manifest keeps its own scope
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[11]
+  sha256: ef73d4affde05552b65d522579afa5fe7c3654c60381aef1bb0869531fd122a2
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: limitations[12]
+  sha256: 1b46c223ad8d5d45978cabdeadb63ed0fcd96820b4190b381e2cc7f628b1290f
+  class: P
+  to: []
+  note: 'S07 review: the reviewer''s R-626 findings are applied by the review fixes and WO-S07-NC4; the human numerical and process-model review is pending'
+- manifest: evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
+  item: checks[64]
+  check_id: S07.gate
+  sha256: e8d25d00170b861f7ddf30e9a5b94bf45baaa0441e418c3684f0cd7f1674596d
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here

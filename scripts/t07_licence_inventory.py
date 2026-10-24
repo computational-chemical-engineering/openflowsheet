@@ -22,8 +22,16 @@ than `*-none-any`). The wheel SHA-256s are of the wheel files themselves, which 
 environment does not keep; `--wheels DIR` hashes the files in a directory filled by `pip download`
 (both CI architectures, W0.6's commands), and without it the record's `wheels` are empty.
 
+`--extra coolprop` (S07 spec §17.3, R-624) judges the `coolprop` extra's increment over the base
+install: a distribution that is also in the closure of `[project].dependencies` (a *base member*,
+numpy) is listed in `base_members`, held to its `requirements.lock` pin, and not judged here —
+the base install is T08.A30's. Every other row goes through the same verdict against the same
+`ALLOWED`.
+
 Usage (in an environment that has the extra, e.g. `pip install -r requirements.lock`):
     python scripts/t07_licence_inventory.py [--wheels DIR] [--out docs/t07-server-licences.json]
+    python scripts/t07_licence_inventory.py --extra coolprop [--wheels DIR] \\
+        [--out docs/s07-coolprop-licences.json]
 
 Exit status 0 when the verdict passes, 1 when it fails; the record is written either way.
 """
@@ -45,6 +53,8 @@ from packaging.utils import canonicalize_name, parse_wheel_filename
 
 ROOT = Path(__file__).resolve().parent.parent
 FORMAT = "t07-server-licences-v1"
+FORMAT_COOLPROP = "s07-coolprop-licences-v1"
+LOCK = ROOT / "requirements.lock"
 
 GPL_FAMILY = re.compile(r"\b(A|L)?GPL|GNU (Lesser |Affero |Library )?General Public", re.IGNORECASE)
 
@@ -63,10 +73,26 @@ ALLOWED: dict[str, str] = {
 }
 
 
-def server_requirements(pyproject: Path) -> list[Requirement]:
+def extra_requirements(pyproject: Path, extra: str) -> list[Requirement]:
     with pyproject.open("rb") as handle:
         project = tomllib.load(handle)["project"]
-    return [Requirement(text) for text in project["optional-dependencies"]["server"]]
+    return [Requirement(text) for text in project["optional-dependencies"][extra]]
+
+
+def base_requirements(pyproject: Path) -> list[Requirement]:
+    with pyproject.open("rb") as handle:
+        project = tomllib.load(handle)["project"]
+    return [Requirement(text) for text in project["dependencies"]]
+
+
+def lock_pins(lock: Path) -> dict[str, str]:
+    """`requirements.lock`'s `name==version` pins, keyed by canonical name."""
+    pins: dict[str, str] = {}
+    for line in lock.read_text(encoding="utf-8").splitlines():
+        if line and not line.startswith("#") and "==" in line:
+            name, version = line.split("==", 1)
+            pins[canonicalize_name(name)] = version.strip()
+    return pins
 
 
 def _wanted(requirement: Requirement, extras: set[str]) -> bool:
@@ -157,10 +183,19 @@ def verdict_of(entry: dict[str, Any]) -> str:
     return "ok"
 
 
-def inventory(pyproject: Path, wheels: Path | None) -> dict[str, Any]:
-    roots = server_requirements(pyproject)
+def inventory(pyproject: Path, wheels: Path | None, extra: str = "server") -> dict[str, Any]:
+    roots = extra_requirements(pyproject, extra)
+    members = closure(roots)
+    base_members: list[dict[str, str]] = []
+    if extra != "server":
+        pins = lock_pins(LOCK)
+        for name in sorted(closure(base_requirements(pyproject)).keys() & members.keys()):
+            version = members.pop(name).version
+            if pins.get(name) != version:
+                raise SystemExit(f"{name}: off-lock {version} (lock: {pins.get(name)})")
+            base_members.append({"name": name, "version": version})
     rows = []
-    for name, distribution in sorted(closure(roots).items()):
+    for name, distribution in sorted(members.items()):
         meta = distribution.metadata
         licence = meta.get("License")
         entry: dict[str, Any] = {
@@ -180,14 +215,17 @@ def inventory(pyproject: Path, wheels: Path | None) -> dict[str, Any]:
         }
         entry["verdict"] = verdict_of(entry)
         rows.append(entry)
-    return {
-        "format": FORMAT,
-        "extra": "server",
+    record: dict[str, Any] = {
+        "format": FORMAT if extra == "server" else FORMAT_COOLPROP,
+        "extra": extra,
         "requirements": [str(requirement) for requirement in roots],
         "python": ".".join(str(part) for part in sys.version_info[:3]),
         "distributions": rows,
         "failures": [f"{row['name']}: {row['verdict']}" for row in rows if row["verdict"] != "ok"],
     }
+    if extra != "server":
+        record["base_members"] = base_members
+    return record
 
 
 def main() -> int:
@@ -195,8 +233,9 @@ def main() -> int:
     parser.add_argument("--pyproject", type=Path, default=ROOT / "pyproject.toml")
     parser.add_argument("--wheels", type=Path, help="a directory of `pip download`ed wheels")
     parser.add_argument("--out", type=Path, help="write the record here (JSON)")
+    parser.add_argument("--extra", choices=["server", "coolprop"], default="server")
     args = parser.parse_args()
-    record = inventory(args.pyproject, args.wheels)
+    record = inventory(args.pyproject, args.wheels, args.extra)
     text = json.dumps(record, indent=1, sort_keys=True) + "\n"
     if args.out:
         args.out.write_text(text, encoding="utf-8")

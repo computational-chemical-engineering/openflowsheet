@@ -170,7 +170,7 @@ requirements:
   - id: D08
     title: Thermodynamic primitive
     blueprint_ref: "§1 D08"
-    packages: [P01, K02, M01, S04, S05]
+    packages: [P01, K02, M01, S04, S05, S07]
     minimum_evidence: "Consistent synthetic model and real provider conformance"
     # P01 delivered the synthetic half as an algebraic oracle: h = g - T dg/dT, K from equality
     # of chemical potentials, exact pure-component boiling points, the declared domain failure,
@@ -196,10 +196,14 @@ requirements:
     # provider on the contract, whose manifest is `tested` and lists D08. S05 adds `iapws95-v1`
     # (ADR 0045, Accepted): its tests are listed, and its packaging manifest `evidence/S05/01cdeed4...`
     # (WO-S05-5, S05 spec §16, R-616, R-617) is `tested` and lists D08 (the superseded `da829aa...` and
-    # `4ac00a0...` are not cited). Not claimed:
+    # `4ac00a0...` are not cited). S07 adds `coolprop-heos-v1` (ADR 0046), an optional provider over
+    # CoolProp 8.0.0 for 123 pure fluids: its tests are listed (they run where the `coolprop` extra is
+    # installed, as in CI's check job), and its manifest `evidence/S07/7bfab70d...` is `tested` and lists
+    # D08. Not claimed:
     # `reviewed` (the manifests' human numerical and process-model review is pending); that the
-    # library-only providers `pr-lib-v1` and `iapws95-v1` are selectable (R-568, R-569, R-594; Frank,
-    # C12 2026-10-23); and that `pr-lib-v1` is shipped (`iapws95-v1`'s coefficient file is package
+    # library-only providers `pr-lib-v1`, `iapws95-v1` and `coolprop-heos-v1` are selectable (R-568,
+    # R-569, R-594; Frank, C12 2026-10-23); bit-identity of `coolprop-heos-v1` across architectures
+    # (agreement within S07 spec §20, R-627); and that `pr-lib-v1` is shipped (`iapws95-v1`'s coefficient file is package
     # data under IAPWS's attribution, R-616).
     tests:
       - tests/test_syn001_oracle.py::test_a1_identity_by_a_fourth_order_difference
@@ -228,12 +232,15 @@ requirements:
       - tests/test_l01_provider.py
       - tests/test_s05_iapws95.py
       - tests/test_s05_envelope.py
+      - tests/test_s07_coolprop.py
+      - tests/test_s07_registration.py
     evidence:
       - evidence/P01/05406c803a95e8c154476607c5c3db6de84f78e4/manifest.json
       - evidence/K02/1baaf033be114e4e44bf982ecee8716b0f040519/manifest.json
       - evidence/M01/3c803920f63f3d2e2fe7300090198f2e5670fbf7/manifest.json
       - evidence/S04/5c29fbf61898350a95764558e61befb350225a47/manifest.json
       - evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+      - evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
     status: tested
 
   - id: D09
@@ -1123,6 +1130,15 @@ packages:
     status: tested
     evidence:
       - evidence/S05/01cdeed4e794a4a00532e1ba25e84d8edc5d5798/manifest.json
+
+  - id: S07
+    phase: "v0.3"
+    lead: Fable
+    second: Opus
+    depends_on: [M01, S05]
+    status: tested
+    evidence:
+      - evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
 
   - id: R01
     phase: "v1"
