@@ -75,6 +75,15 @@ SCHEMA = "s03-reference-comparison-v1"
 TOOLS = ("DWSIM", "IDAES")
 #: Our record per case where the case has none of its own (§3.3 PC-L, §18.3 PC-LI; A02).
 OURS_ALIASES = {"PC-L": "RC1", "PC-LI": "RC1"}
+#: The qualification commits that hold the standing tool records (§2.3 step 3, §17.8, §18.5):
+#: DWSIM's blind run (WO-S03-3) and its top-up (WO-S03-3b); IDAES's re-run (WO-S03-2b).
+QUALIFICATION_COMMITS = {
+    "DWSIM": (
+        "958701409a162efe1c1be9dcad70b26a8cbbf546",
+        "5474531f519ef2781fc9563cd3177f5f6684b590",
+    ),
+    "IDAES": ("2eb71ac05b8ad489ddab525755b0e45415a878fb",),
+}
 #: X31's count (§2.3 step 5) and the inverse kinds reported beside it (§17.5).
 X31_CASES = ("RC1", "RC2", "RC3", "RC4")
 INVERSE_KINDS = {"RC5": "purity", "RC6": "recovery", "RC7": "temperature"}
@@ -721,11 +730,22 @@ def classify(
             3,
         )
 
+    word, extra = rule4(values, ours["quantities"], twin, kinds)
+    return {**result(word, None, extra.pop("reason"), 4), **extra}
+
+
+def rule4(
+    values: dict[str, float],
+    ours_quantities: dict[str, float],
+    twin: dict[str, dict[str, str]],
+    kinds: dict[str, str],
+) -> tuple[str, dict[str, Any]]:
+    """Rule 4: every registered quantity within §6's tolerance on the twin's value (A14)."""
     table = []
     for q, tool_value in values.items():
         twin_value = Decimal(twin[q]["value"])
         tol = tolerance(kinds[q], twin_value)
-        ours_value = float(ours["quantities"][q])
+        ours_value = float(ours_quantities[q])
         o, t = dec(ours_value), dec(tool_value)
         table.append(
             {
@@ -751,8 +771,8 @@ def classify(
         else f"{outside} of {len(table)} quantities outside tolerance; worst "
         f"{worst['quantity']} at {worst['ratio']:.4g} of its tolerance"
     )
-    return {
-        **result(word, None, reason, 4),
+    return word, {
+        "reason": reason,
         "worst_quantity": worst["quantity"],
         "worst_ratio": worst["ratio"],
         "quantities_outside": outside,

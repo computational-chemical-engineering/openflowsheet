@@ -390,3 +390,20 @@ Authority: spec §6–§8, §11–§13 as amended by §17 and §18. Started afte
 - DECISION B4-7: §7.4's response table → a tool's Δy is given wherever both its records are available, with a
   `both_agree` flag per tool; ours where both of our records are `CONVERGED`; the bound `tol(y_pert) + tol(y_base)` on
   the twin's values.
+- DECISION B4-8: A10 → two tests: the document from the committed files equals `comparison.json` (and `SHA256SUMS`)
+  byte for byte; the document from a live solve of our side (`s03_references_ours.solve`, aliases applied) equals it
+  with every non-float exact and every float to 1e-12 relative (§8, T06 A50's rule). Measured locally: bit-identical.
+  A near-zero `|ours − tool|` makes its ratio sensitive to last-bit changes of ours across architectures; if CI's
+  second architecture differs there, that is reported, not loosened.
+- DECISION B4-9: §17.8 rule 2 ("every `tool_settings` key of that earlier file is present, and equal") and A08's
+  settings check → read as "additions only", recursively: every earlier JSON value is present and identical, and a
+  mapping may gain keys (§17's preamble; Amendment 1 added `column_method_order_amendment_1` inside
+  `tool_settings.DWSIM`, so the literal top-level reading would fail the eleven records §17.8 says stand "by
+  construction"). Alternative: top-level equality. Reversible by: `contained()` in the test.
+- DECISION B4-10: A03's mechanics → an in-repository import resolves to `spikes/references/<name>.py` (the scripts'
+  directory; a module of that name under `src/`, `scripts/`, `tests/`, `benchmarks/` or `docs/` fails the test);
+  "`s03_cases.json` is the only input file" is checked statically: the data-file names a scanned module spells
+  (string and f-string literals, docstrings excluded) must be `s03_cases.json`, the outputs `idaes.json`,
+  `dwsim.json`, `idaes-{}.json`, `dwsim-{}.json`, or DWSIM's own `DWSIM.UI.Desktop.runtimeconfig.json`. Scan points:
+  HEAD's working tree and `QUALIFICATION_COMMITS` (95870140, 5474531f, 2eb71ac0); at each, the producing tool
+  script must be present.
