@@ -9,11 +9,18 @@ Ipopt record, termination, degrees of freedom and initialization events, the rul
 output (every Pyomo variable, every SmoothVLE eps and every constraint residual), the registered
 quantities, and the rerun's convergence, Ipopt record, quantities and movement.
 
+A level the old record attempted but the new run did not reach (an earlier level passed under the
+ladder, so §18.1's search stopped there) has no new P0 attempt. With `--run-unreached` the P0
+attempt at that level is run here, by the tool script's own `position_attempt`, for this check only:
+it is not an attempt of the qualification, is written to no tool record, and cannot change a
+selection (B2b-6). That mode needs IDAES's environment.
+
 It reads IDAES records only: the old ones with `git show 6d9486a0:...`, the new ones from DIR. With
 `--write` it stores the outcome as `p0_reproduction` in DIR/qualification/idaes.json. Prints one
 line per difference and one summary line; exits 1 on any difference.
 
-    python3 spikes/references/s03_idaes_p0_reproduction.py [DIR] [--write]
+    .venv-idaes/bin/python spikes/references/s03_idaes_p0_reproduction.py [DIR] [--write]
+        [--run-unreached]
 """
 
 from __future__ import annotations
@@ -98,14 +105,37 @@ def diff_keys(a: Any, b: Any, path: str = "") -> list[str]:
                 out.extend(diff_keys(a[k], b[k], f"{path}/{k}"))
         return out
     if isinstance(a, list) and isinstance(b, list) and len(a) == len(b):
-        return [d for i, (x, y) in enumerate(zip(a, b, strict=True)) for d in diff_keys(x, y, f"{path}[{i}]")]
+        return [d for i, (x, y) in enumerate(zip(a, b, strict=True))
+                for d in diff_keys(x, y, f"{path}[{i}]")]
     return [] if a == b and type(a) is type(b) else [path or "/"]
+
+
+def run_unreached_p0(cid: str, level: str, log_dir: Path) -> tuple[dict[str, Any], Any]:
+    """The P0 attempt at a level the new run did not reach, by the tool script's own code."""
+    import logging
+    import os
+
+    os.environ.setdefault("IDAES_DATA", str(REPO / ".venv-idaes" / "idaes-data"))
+    import idaes
+    import s03_qualify_idaes as q
+    import t06_fixtures as fx
+
+    logging.getLogger("idaes").setLevel(logging.WARNING)
+    idaes.cfg.ipopt.options.linear_solver = fx.IDAES_SOLVER_OPTIONS["linear_solver"]
+    data = q.load_cases()
+    case = data["cases"][cid]
+    lad = q.ladder(data, {}, {})  # P0 uses no warm-start option
+    log_dir.mkdir(parents=True, exist_ok=True)
+    return q.position_attempt(data, cid, case, q.realization(case, level), lad, "P0", log_dir)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("dir", nargs="?", type=Path, default=REPO / RECORDS)
     parser.add_argument("--write", action="store_true")
+    parser.add_argument("--run-unreached", action="store_true")
+    parser.add_argument("--log-dir", type=Path, default=REPO / "evidence" / "S03" / "artifacts" /
+                        "s03-qualification" / "idaes-p0-check")
     args = parser.parse_args()
     results: dict[str, Any] = {}
     n_attempts = n_equal = 0
@@ -116,12 +146,19 @@ def main() -> int:
         results[cid] = {}
         for level, (osumm, ofull) in old.items():
             n_attempts += 1
-            if level not in new:
-                diffs = ["no new P0 attempt at this level"]
-            else:
+            source = "the new record's P0 attempt"
+            if level in new:
                 diffs = diff_keys(fingerprint(osumm, ofull), fingerprint(*new[level]))
+            elif args.run_unreached:
+                source = ("run by this script for the check only: the new run did not reach this "
+                          "level (an earlier level passed); not an attempt of the qualification")
+                diffs = diff_keys(fingerprint(osumm, ofull),
+                                  fingerprint(*run_unreached_p0(cid, level, args.log_dir)))
+            else:
+                diffs = ["no new P0 attempt at this level (not reached; see --run-unreached)"]
             n_equal += not diffs
             results[cid][level] = {"reproduced": not diffs, "differences": diffs[:50],
+                                   "new_side": source,
                                    "old_termination": osumm.get("termination"),
                                    "old_iterations": osumm.get("ipopt_iterations"),
                                    "converged_with_quantities":
