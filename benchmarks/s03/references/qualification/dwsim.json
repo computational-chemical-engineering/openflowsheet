@@ -261,7 +261,7 @@
    "wall_time_total_s": 1403.8343910280382
   },
   "WO-S03-3b (top-up)": {
-   "commit": "the commit that adds this file's top-up entries",
+   "commit": "5474531f",
    "cases": [
     "RC3",
     "RC3-Q",

@@ -150,7 +150,7 @@ pair, since `rung_index` counts different ladders in the two runs. Alternative: 
 the tool script (rejected: the tool script may read no project file but `s03_cases.json`). Reversible
 by: deleting the script and rewriting the file.
 
-### WO-S03-3b outcome (records: the commit that adds this section)
+### WO-S03-3b outcome (records: commit 5474531f)
 
 Run 2026-10-24, 1116 s, DWSIM 9.0.5 on .NET 8.0.31, fingerprint matches `docs/reference-environments.md`
 §3. Command: `spikes/references/s03_qualify.sh dwsim evidence/S03/artifacts/s03-qualification-topup/out

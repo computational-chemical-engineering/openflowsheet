@@ -103,7 +103,7 @@ def main() -> int:
         "qualification_runs": {
             "WO-S03-3": {"commit": EARLIER_COMMIT, "cases": list(STANDING),
                          **{k: earlier[k] for k in keep}},
-            "WO-S03-3b (top-up)": {"commit": "the commit that adds this file's top-up entries",
+            "WO-S03-3b (top-up)": {"commit": "the commit that adds this file's top-up entries (5474531f for WO-S03-3b)",
                                    "cases": list(TOP_UP)},
         },
         "selection": selection,
