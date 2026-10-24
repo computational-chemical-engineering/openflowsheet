@@ -13247,3 +13247,32 @@ decided.
 - *An LLE system:* outside the model and the interface.
 
 **Watch for.** Frank's answer. A different chemistry re-runs WO-S10-3 only, because the verification is synthetic.
+
+## R-711 — S10 review errata: the flowing set is defined on z; the two-phase SS's δ_K floor depends on the state and exceeds δ_K near an azeotrope, which fails honestly and is fixed in S10-C
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`reviewer`), S10, WO-S10-1/2 review |
+| Normative text | S10 spec §14 (Amendment 1, E-1 and E-2) |
+| Evidence | `docs/reviews/S10-review-wo1-wo2.md`, findings 1 and 2 |
+| Affected packages | S10 (build-lane fix for E-1 and a near-azeotrope test); S10-C (the E-2 remedy, inside its `architect` pass, R-709) |
+
+**Decision.**
+- **E-1.** F = {i : n_i/n_tot > 0} in binary64. A subnormal flow whose z_i underflows is treated as absent. The flash
+  and `stability()` then return results instead of raising.
+- **E-2.** Near an azeotrope, the two-phase SS's step has a noise floor of about u‖G‖/min|K_i − 1|. Once |K_i − 1| ≲
+  1e-4, that floor is above δ_K = 1e-13.
+  - S10 keeps δ_K and the code. Such states come back `not_converged` with stability UNKNOWN, as §5.4 requires.
+  - §5.6's floor and §7.3's A·δ_K bound are stated to hold at the registered states only.
+
+**Rejected alternatives, and why.**
+- *Change S10's stop rule now* (a floor estimate or stagnation detection): it changes numerics and the stated accuracy
+  at review time, for a library-only TP flash whose failure here is already honest. S10-C's PH flash must search
+  inside the sliver, so the stop is designed there.
+- *Keep F on n_i > 0 and take ln z_i = ln n_i − ln n_tot*: z_i is still 0.0 in Rachford–Rice and in x, so the
+  component's outlets would be zero anyway. Defining F on z is the consistent form.
+
+**Watch for.**
+- S10-C reopening δ_K: the stop rule and the accuracy it states move together.
+- WO-S10-3 re-measuring ρ and the iteration counts on the real records (review finding 4).

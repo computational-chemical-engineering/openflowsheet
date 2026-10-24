@@ -1028,6 +1028,49 @@ search would otherwise pose. **S10-C needs one** (§10).
 
 ---
 
+## 14. Amendment 1: review errata (2026-10-25; R-711)
+
+These come from the `reviewer` pass on WO-S10-1/2 (`docs/reviews/S10-review-wo1-wo2.md`). They change no registered
+state, constant, tolerance or reference value.
+
+**E-1. The flowing set is defined on z** (§2 "Flowing", §5.4 step 1, §5.5).
+- F = {i : z_i > 0}, where z_i = n_i/n_tot is computed in binary64.
+- A component with n_i > 0 whose z_i underflows to 0.0 (n_i < 2⁻¹⁰⁷⁵ n_tot) is treated as absent:
+  - a single-phase result still returns the feed bitwise;
+  - in a split, its outlet flows are 0.0, an imbalance below 2.5 × 10⁻³²⁴ n_tot.
+- **Reason.** Taken with n_i > 0, step 3's ln z_i is ln 0. The search then raises instead of returning a result, and
+  `stability()` must never raise.
+
+**E-2. The δ_K floor depends on the state; near an azeotrope it exceeds δ_K** (§5.6, δ_K row; §7.3, the A·δ_K
+bound).
+- **Where the floor comes from.**
+  - The Rachford–Rice β is set by Σ z_i(K_i − 1) against Σ z_i(K_i − 1)².
+  - A rounding of u in ln K therefore moves β by about u/|K − 1|², and x by about u/|K − 1|.
+  - So the step of step 4(c) has a noise floor of about u‖G‖/min_{i∈F}|K_i − 1|.
+- **Where it matters.** The floor exceeds δ_K = 10⁻¹³ once |K_i − 1| ≲ 10⁻⁴ over F, that is, within about 10⁻⁴ in
+  composition of an azeotrope and inside the two-phase sliver there.
+- **What was measured** (verification records, VB–VC azeotrope, 101 325 Pa):
+  - composition offsets of 2 × 10⁻⁵ to 10⁻⁴, five temperatures each inside the sliver (6 × 10⁻⁹ to 1.5 × 10⁻⁷ K
+    wide);
+  - 7 of the 20 states reach the cap, with the last step between 10⁻¹¹ and 3 × 10⁻¹¹;
+  - the rest stop on a noise dip, so their ln K error is the floor, not A·δ_K.
+  - Their β carries about 10⁻⁶ relative error. That is the β conditioning itself (∂β/∂T ≈ 10⁸ K⁻¹ there); x and y
+    are not affected at that level.
+- **Consequences.**
+  1. §5.4's contract holds: those states are `not_converged`, with stability UNKNOWN and no outlets, never a wrong
+     split.
+  2. The §7.3 statement "an SS stopped at s ≤ δ_K is within A·δ_K of the fixed point" applies only where the floor is
+     below δ_K. That is the case at F3–F10, so the registered tolerances stand.
+  3. §5.6's floor and its "28×" margin are facts of the registered states, not of the method.
+- **What follows.**
+  - S10 changes no code or constant for this.
+  - The build lane adds a near-azeotrope test that only asserts a correct outcome: either `ok` with a valid split or
+    `not_converged` with UNKNOWN.
+  - The remedy is S10-C's: a stop tied to the conditioning, or an iteration that does not pass x through β. S10-C's
+    PH flash searches inside this sliver.
+
+---
+
 ## Appendix A. Sanity values (copied from `reference_values.yaml`; the YAML governs)
 
 **Pure components at 350 K:**
