@@ -362,16 +362,25 @@ def _pure(records: WilsonRecords, temperature: float) -> _Pure:
     )
 
 
-def _wilson(
+def _ln_gamma(
     lam: Sequence[Sequence[float]], x: Sequence[float]
-) -> tuple[tuple[float, ...], tuple[tuple[float, ...], ...]]:
-    """ln γ_i (eq. 3.8) and G_ij = ∂ln γ_i/∂x_j with x free (eq. 3.9), at x on the simplex."""
+) -> tuple[tuple[float, ...], list[float]]:
+    """ln γ_i (eq. 3.8) and S_i = Σ_j x_j Λ_ij, at x on the simplex."""
     size = len(x)
     s = [sum(x[j] * lam[i][j] for j in range(size)) for i in range(size)]
     ln_gamma = tuple(
         1.0 - math.log(s[i]) - sum(x[k] * lam[k][i] / s[k] for k in range(size))
         for i in range(size)
     )
+    return ln_gamma, s
+
+
+def _wilson(
+    lam: Sequence[Sequence[float]], x: Sequence[float]
+) -> tuple[tuple[float, ...], tuple[tuple[float, ...], ...]]:
+    """ln γ_i (eq. 3.8) and G_ij = ∂ln γ_i/∂x_j with x free (eq. 3.9), at x on the simplex."""
+    size = len(x)
+    ln_gamma, s = _ln_gamma(lam, x)
     g = tuple(
         tuple(
             -lam[i][j] / s[i]
