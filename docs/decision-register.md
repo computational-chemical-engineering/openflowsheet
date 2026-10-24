@@ -16,6 +16,9 @@ the project had already rejected that option on purpose.
 `docs/adr/` remains the normative authority. This register is the index that makes the ADRs
 findable by the question they answer rather than by their number.
 
+**Numbering note (S10, 2026-10-24).** S10's entries start at **R-700**, not after R-627: R-628…R-643 are held by
+S03 on `wp/S03` and are not on `main` yet. ADR 0047 is S10's. The next package on `main` continues after S03's range.
+
 ---
 
 ## R-001 — Transient extension: neutralize the lock-in points now, keep dynamics deferred
@@ -12943,3 +12946,304 @@ package for both providers.
   the report before anything else.
 - F-20.2: A08's slope tolerance at `sat_hi` (1e-8) is tighter than G3's admitted Psat difference can move the slope
   (2.2e-8 to 5.1e-8 per 1e-10).
+
+---
+
+## R-700 — S10's method: γ–φ with a Wilson liquid (constant Λ > 0), an ideal-gas vapour and a DIPPR-101 vapour pressure, all caloric terms from one potential
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D1, Proposed |
+| Normative text | `docs/derivations/S10-spec.md` §3; ADR 0047 D1 |
+| Evidence | `benchmarks/s10/reference_values.yaml` claims CONS-VA/VB/VC, CONS-MIX (Gibbs–Helmholtz at 50 digits) |
+| Affected packages | S10, S10-C |
+
+**Decision.**
+- Liquid fugacity: ln f_i^L = ln(x_i γ_i P_i^sat). The vapour is an ideal gas.
+- Vapour pressure: ln(P^sat/Pa) = a + b/θ + c ln θ + d θ², with θ = T/1000 K. The ideal gas is NASA-7.
+- h_i^0L = h_i^ig − R T² d ln P_i^sat/dT. With constant Λ, h^E = 0 and v^E = 0.
+- There is no Poynting factor and no liquid volume.
+- Provider `wilson-ig-v1`. It offers `h` and `lnphi_<c>`, the latter with ln φ^L = ln γ + ln(P^sat/P) and ln φ^V = 0.
+
+**Rejected alternatives, and why.**
+- *A cubic liquid with k_ij:* ADR 0026's blockers still hold — a symmetric-model trivial solution, no open k_ij, and
+  van der Waals mixing is poor for alcohol–water.
+- *NRTL first:* non-convex, so a false LLE and a multi-start stability test. It is the planned second γ model.
+- *UNIQUAC:* more data, and no case needs it.
+- *T-dependent Λ:* IDAES carries constant τ and no h^E, and an h^E path needs its own tests. Deferred to a v2.
+- *Poynting:* needs v^L data, and both reference tools omit it. Its effect is ≤ 4.8 × 10⁻³ (spec §3.7).
+- *An independent liquid c_p or ΔH_vap:* inconsistent with the equilibrium potential (blueprint §6.2).
+- *Antoine:* its curvature gives a poor implied c_p^L.
+- *IDAES's Wagner form:* it makes IDAES's enthalpy non-polynomial, and DWSIM's support for it is unknown.
+
+**Watch for.**
+- Adding a T-dependent Λ, a Poynting term or a liquid volume is a new provider version with new tests, not an edit of
+  `v1`.
+- Pairing a separately chosen ΔH_vap with this vapour pressure breaks the consistency claims.
+
+---
+
+## R-701 — S10 stability: the Wilson liquid is strictly convex for every Λ > 0, so a closed-form vapour trial and one convex liquid-trial search are a global test within the model; ε_tpd = 1e-10, scope `S10-tpd-v1`
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D2, Proposed |
+| Normative text | S10 spec §4 (the theorem and its consequences), §4.3 (the labels) |
+| Evidence | Claims CVX-01 (minimum eigenvalue 1.94 on the grid) and CVX-02 (one stationary point from five starts); FLOOR-TM (1.78e-14) |
+| Affected packages | S10, S10-C; any later γ model |
+
+**Decision.**
+- The convexity proof: f(x) = Σ x_i ln(x_i/(Λx)_i) is a sum of jointly convex perspectives, and it is strict on the
+  simplex because Λ > 0.
+- Consequences:
+  - at most one liquid and one vapour;
+  - each trial distance has a single stationary point, which is its global minimum;
+  - a converged L–V tangent is the global minimum;
+  - there is no trivial solution, because the two phases use different models.
+- Labels:
+  - `STABLE_WITHIN_TESTED_SCOPE`: the deciding distance is ≥ −1e-10, or a converged two-phase result.
+  - `UNSTABLE`: the deciding distance is < −1e-10.
+  - `UNKNOWN`: a search reached its cap, or the state is dormant or out of domain.
+
+**Rejected alternatives, and why.**
+- *Multi-start searches from pure-component trials:* unnecessary under the theorem, and they would turn
+  `STABLE_WITHIN_TESTED_SCOPE` into a statement about initial guesses.
+- *A tighter ε_tpd:* R-540 set 1e-10 for `pr-lib-v1`, and that is 5600× above the measured floor.
+- *Bubble/dew checks alone:* blueprint §6.3 forbids treating them as a stability proof.
+
+**Watch for.** The theorem needs Λ > 0 and the Wilson form. NRTL does not inherit it: an NRTL route needs a
+multi-start scope of its own and a new scope id.
+
+---
+
+## R-702 — S10's TP flash: request checks in `pr-c1-v1`'s order, then a vapour trial, a liquid-trial SS search and a two-phase SS with Rachford–Rice inside; no pure-component branch; ties go to the liquid; δ = 1e-13, SS_MAX = 1000
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D3, Proposed |
+| Normative text | S10 spec §5.4, §5.6 |
+| Evidence | Claims SS-F3…F10 (spectral radius ≤ 0.48), SS-CAP (≤ 40 iterations), FLOOR-LNK (δ_K is 28× the floor), PURE-01, AZ-F12 |
+| Affected packages | S10 |
+
+**Decision.**
+- Steps:
+  - tm_V ≥ −ε gives LIQUID;
+  - otherwise, tm_L ≥ −ε gives VAPOR;
+  - otherwise the flash runs SS on K from K(w*).
+- tm_L is evaluated by the full, second-order formula.
+- Reported quantities come from the K used in the last Rachford–Rice solve.
+- A cap gives `not_converged` with `UNKNOWN`.
+- Single-phase results report no K.
+- The expectations are solved by Newton in the generator, not by SS.
+
+**Rejected alternatives, and why.**
+- *SYN-001's dormant-before-domain order:* `pr-c1-v1`'s order, ratified in M01 Amendment 1, is the newer precedent.
+- *A special pure-component branch:* the general steps decide it (PURE-01).
+- *Splitting inside the ε band:* this would give vapour fractions of order 1e-10 with no physical resolution behind
+  them.
+- *Newton acceleration:* not needed at these contraction rates, and it would add an algorithm to verify.
+
+**Watch for.** A tolerance tightened below §5.6's floors; K reported for single-phase results.
+
+---
+
+## R-703 — S10's contract needs no frozen change: the stability label travels in `FlashResult.message`, with a full `StabilityReport` from a provider method outside the Protocol; flash derivatives are refused; the provider has no PH flash
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D4, Proposed |
+| Normative text | S10 spec §5.2–§5.5, §5.8; findings F-1 and F-2 |
+| Evidence | `src/openflowsheet/thermo/__init__.py`: `FlashRequest` has no enthalpy field; `FlashResult` has one `liquid` and no stability field; `Phase` is {LIQUID, VAPOR} |
+| Affected packages | S10, S10-C |
+
+**Decision.**
+- The message grammar is `stability: <LABEL>; scope: S10-tpd-v1; tm_vapour_trial: R; tm_liquid_trial:
+  R|not_evaluated[; fugacity_residual: R]`. Refusals keep the form `<code>: …`.
+- The method is `stability(state, phase, context) -> StabilityReport` (`thermo/stability.py`).
+- A PH flash belongs to the consumer package S10-C.
+
+**Rejected alternatives, and why.**
+- *An optional typed field on `FlashResult`:* a frozen field-set change, recorded as finding F-2 with the default "not
+  now".
+- *A `"PH"` flash specification:* `FlashRequest` cannot carry the enthalpy target.
+
+**Watch for.** A consumer parsing the message instead of calling `stability()` for anything beyond the label.
+
+---
+
+## R-704 — S10's conventions `WILSON-IG-ref-v1` (real) and `S10-VER-ref-v1` (verification) are formation data from the NASA polynomial's own H(298.15 K); neither is reaction-registered
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D5, Proposed |
+| Normative text | S10 spec §3.1; finding F-3 |
+| Evidence | Claims PURE-*-1 (h^ig(298.15 K) = Δ_fH exactly) |
+| Affected packages | S10, S10-C |
+
+**Decision.**
+- Δ_fH_i = R(a₁T₀ + … + a₅T₀⁵/5 + a₆), from NASA TM-4513, which C12 cleared.
+- The conventions are not added to ADR 0011 D2's set.
+- Streams never mix with another convention.
+
+**Rejected alternatives, and why.**
+- *ATcT formation enthalpies, as for C1:* C12's row RC-05 is unresolved.
+- *A pure-liquid datum like SYN-001's:* it gives no route to a later reactor.
+- *Registering the conventions as reaction-consistent now:* no S10 consumer reacts.
+
+**Watch for.** A reacting unit on these conventions needs a new entry, and it amends ADR 0011 D2.
+
+---
+
+## R-705 — S10 verifies on three synthetic components (`S10-verification-v1`); its tolerances come from measured floors and from the SS error amplification
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D6, Proposed |
+| Normative text | S10 spec §6, §7 |
+| Evidence | `s10_reference.py --check`: 113 claims, including FLOOR-E (6.93e-14 ≤ 1e-13), FLOOR-TM, FLOOR-LNK, and MUT-* (each of fifteen mutations ≥ 1e3× a tolerance) |
+| Affected packages | S10 |
+
+**Decision.**
+- The provider takes a records path.
+- The verification uses invented coefficients, all nonzero, with Λ distinct and asymmetric and one azeotropic pair.
+- Tolerances:
+  - `evaluate_phase`: 1e-12·max(|x|, s_q);
+  - trial distances: 1e-12;
+  - two-phase outputs: 10·(S_q·A·(δ_K + f_lnK) + 64ε·max(|q|, s_q)), with A = ‖(I − ∂Φ/∂ln K)⁻¹‖_∞.
+
+**Rejected alternatives, and why.**
+- *Verification on the real records only:* it waits for rights-pending data, and real Λ may hide index errors.
+- *An a-posteriori bound from ‖∂Φ‖_∞:* it measured 1.16 at F3, so it is not a contraction in that norm. The
+  first-order amplification is exact to first order.
+
+**Watch for.** A tolerance loosened to pass. If measurement contradicts §7, the spec is amended.
+
+---
+
+## R-706 — S10's real data: NASA TM-4513 ideal-gas data; a vapour pressure fitted by the project to CoolProp 8.0.0 reference-EOS saturation pressures; Wilson Λ fitted by the project to published binary VLE; no CAS RNs; not package data until rights are vetted and Frank decides
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D7, Proposed; shipping is Frank's (Q-F3) |
+| Normative text | S10 spec §9.1–§9.5 |
+| Evidence | Cantera 3.2.0 `nasa_gas.yaml` (`4de6199d…`) carries CH3OH, C2H5OH and H2O, and no C2H6O2; `docs/C12_DECISIONS.md`; `docs/l01-rights-check.md` RC-03, RC-07 |
+| Affected packages | S10 (WO-S10-3) |
+
+**Decision.**
+- The fits are by the project's own scripts, with `--check`:
+  - vapour pressure: least squares on a 61-point grid, claim max |Δ ln P| ≤ 2e-3;
+  - Λ: Gauss–Newton on ln γ with θ = −ln Λ, plus a grid-scan claim.
+- Transcription is double-entry.
+- Rights rows S10-RC-01…09 follow C12's format.
+
+**Rejected alternatives, and why.**
+- *DECHEMA parameters:* a copyrighted compilation.
+- *DWSIM's or ChemSep's embedded databanks:* GPL-3 or Artistic-2.0, with unknown upstream.
+- *Constants from REFPROP-derived tables:* NIST SRD terms (C12 RC-02).
+- *Ethylene glycol–water:* no NASA data.
+
+**Watch for.** Any record entering a `PACKAGED` path before every row it depends on is `permitted` and Frank has
+decided.
+
+---
+
+## R-707 — S10's independent references: IDAES 2.13's `activity_coeff_prop_pack` Wilson is primary, with tau[j,i] = −ln Λ_ij (IDAES's transposed index), the DIPPR form in its three vapour-pressure sites, and a pre-registered ε/solver ladder; DWSIM 9.0.5 is secondary and may be NOT_COMPARABLE
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D8, Proposed |
+| Normative text | S10 spec §8 |
+| Evidence | Read from the installed IDAES source (`activity_coeff_prop_pack.py`). Claim IDAES-MAP: exact at 50 digits; the untransposed mapping is off by 0.046 |
+| Affected packages | S10 (WO-S10-4/5), R01 (candidate comparisons) |
+
+**Decision.**
+- Comparison states I1–I14 are rule-defined.
+- Tolerances: 1e-7 for fractions and K, 0.05 J/mol for h.
+- Smoothing ε ∈ (1e-4, 1e-5, 1e-6) K; Ipopt `tol` = 1e-10.
+- The `verdict` agent judges.
+
+**Rejected alternatives, and why.**
+- *IDAES's default smoothing ε = 0.01 K:* its predicted error exceeds the tolerance by about 10³.
+- *IDAES's eNRTL modular route:* no Wilson.
+- *DWSIM as primary:* its Wilson form cannot be read, and constant Λ may be representable only state by state.
+
+**Watch for.**
+- Comparing before the readbacks pass.
+- Per-state hand tuning of IDAES starts.
+- Treating agreement as validation.
+
+---
+
+## R-708 — S10's empirical validation bands are pre-registered before any data are transcribed: ternary 1.0 K and 0.015 in y; isothermal 3 % in P and 0.015 in y; pure-component ΔH_vap 5 % and c_p^L 25 %. Fit quality is never validation
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D9, Proposed |
+| Normative text | S10 spec §9.4, §9.6 |
+| Evidence | None yet: the bands are set before the data, as the S03 lesson requires |
+| Affected packages | S10 (WO-S10-6) |
+
+**Decision.**
+- The held-out datasets are the 1993 ternary (VAL-1) and the 1995 isothermal binaries (VAL-2). Their bibliographic
+  details are to be verified (Q-N1).
+- The pure-component reference for VAL-3 is CoolProp's reference EOS.
+- A result outside a band is reported and stated in `uncertainty`.
+
+**Rejected alternatives, and why.**
+- *Bands set after seeing the data:* that is fitting the criterion.
+- *Counting fit residuals as validation:* circular.
+- *A tighter c_p^L band:* the ideal-gas Clapeyron slope error is of order 20 % for methanol, which is a known weakness
+  and not a defect of the implementation.
+
+**Watch for.** A band moved after a miss. A miss needs a new entry and, where warranted, a model version (Q-N5).
+
+---
+
+## R-709 — S10 is library-only by default; S03's S11 refusal of the column stays; the PH flash and the column go to S10-C with an `architect` pass; LLE is out (an interface ADR first)
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D10–D11, Proposed; the flowsheet question is Frank's (Q-F2) |
+| Normative text | S10 spec §10, §13 F-1 |
+| Evidence | R-568 and R-569 (library-only registration); Frank's Q-8 for S05 and S07 (library only) |
+| Affected packages | S10, S10-C, S03 |
+
+**Decision.**
+- `LIBRARY_ONLY_PROVIDERS["wilson-ig-v1"] = "S10"`, with a U02 row.
+- Column cases C-MW and C-EW are registered for S10-C, as definitions only.
+
+**Rejected alternatives, and why.**
+- *Relaxing S11 in S10:* K(x) changes the cascade's Jacobian structure, which needs a design pass.
+- *Admitting the provider to flowsheets now:* Frank's scope call.
+
+**Watch for.** A unit accepting `wilson-ig-v1` without S10-C's design.
+
+---
+
+## R-710 — S10's default chemistry is methanol, ethanol and water (each pair, the ternary, and the ethanol–water azeotrope) at 3e4–2e5 Pa and 300–400 K, pending Frank's Q-F1
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; the choice is Frank's (Q-F1); this is the recommended default |
+| Normative text | S10 spec §9.5, §12 |
+| Evidence | NASA TM-4513 coverage (`nasa_gas.yaml`); an open multi-binary dataset from one laboratory (Q-N1) |
+| Affected packages | S10 (WO-S10-3 onward) |
+
+**Decision.** The default proceeds unless Frank names another chemistry.
+
+**Rejected alternatives, and why.**
+- *Ethylene glycol–water:* no NASA data.
+- *An LLE system:* outside the model and the interface.
+
+**Watch for.** Frank's answer. A different chemistry re-runs WO-S10-3 only, because the verification is synthetic.

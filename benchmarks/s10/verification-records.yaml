@@ -1,0 +1,93 @@
+# S10 verification records: three SYNTHETIC components for the closed-form verification of `wilson-ig-v1`.
+#
+# Normative text: docs/derivations/S10-spec.md section 6 (the verification data set) and ADR 0047 D9.
+#
+# THESE ARE NOT A MODEL OF ANY SUBSTANCE. Every number below was invented by the design lane (S10) so
+# that each term of the closed forms is visible at the registered states: all ideal-gas heat capacity
+# coefficients are nonzero, every vapour-pressure coefficient is nonzero, the six Wilson parameters are
+# pairwise distinct and asymmetric, and the pair VB-VC has a minimum-boiling azeotrope at 101 325 Pa.
+# Nothing produced from this file is evidence about a real mixture; it is SYN-001's role for S10. The
+# real records are benchmarks/s10/records.yaml (WO-S10-3), which use exactly this format.
+#
+# Forms (spec section 3; theta = T / 1000 K, R = 8.31446261815324 J/(mol K), exact SI):
+#   ideal gas      c_p^ig / R = b0 + b1 theta + b2 theta^2 + b3 theta^3 + b4 theta^4
+#                  h^ig(T)   = standard_formation_enthalpy + R * 1000 K * sum_k b_k (theta^(k+1) - theta_0^(k+1)) / (k+1),
+#                              theta_0 = 0.29815
+#   vapour pressure ln(P_sat / Pa) = a + b / theta + c ln(theta) + d theta^2
+#   Wilson         Lambda_ij > 0, constant, Lambda_ii = 1 (not stored)
+#
+# Datum: the reference convention S10-VER-ref-v1 (a formation datum over invented formation enthalpies).
+
+schema_version: 1
+record_schema: schemas/component-record.schema.json
+data_set: S10-verification-v1
+reference_convention: S10-VER-ref-v1
+synthetic: true
+uncertainty: "None. S10-verification-v1 is a synthetic fixture with invented constants (S10 spec section 6); it has no measurement uncertainty and is not a model of any substance."
+data_provenance: "benchmarks/s10/verification-records.yaml, invented by the S10 design lane (S10 spec section 6). No experimental or third-party source."
+domain:
+  T: [300.0, 420.0]
+  P: [50000.0, 300000.0]
+components:
+  - id: VA
+    name: synthetic component VA (S10 verification)
+    synthetic: true
+    molecular_weight: {value: 0.032, unit: kg/mol, dimension: [0, 1, 0, 0, -1, 0, 0], kind: molar_mass, meaning: "Invented molar mass of VA; unused by wilson-ig-v1", role: fixed, provenance: "Invented (S10 spec section 6); synthetic"}
+    elemental_composition: null
+    elemental_verification: NOT_APPLICABLE
+    parameters:
+      ideal_gas_cp_b0: {value: 2.5, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_0 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b1: {value: 12.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_1 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b2: {value: -8.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_2 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b3: {value: 3.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_3 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b4: {value: -0.5, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_4 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      standard_formation_enthalpy: {value: -201000.0, unit: J/mol, dimension: [2, 1, -2, 0, -1, 0, 0], kind: molar_enthalpy, meaning: "Invented formation enthalpy of VA, ideal gas at 298.15 K; the S10-VER-ref-v1 datum", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_a: {value: 23.33, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "a of ln(P_sat/Pa) = a + b/theta + c ln theta + d theta^2", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_b: {value: -6.306, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b of ln(P_sat/Pa)", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_c: {value: -6.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "c of ln(P_sat/Pa)", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_d: {value: 3.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "d of ln(P_sat/Pa)", role: fixed, provenance: "Invented (S10 spec section 6)"}
+    rights: {source: "Invented by the S10 design lane; no external source", redistribution: "permitted: project-authored synthetic values", notes: "Synthetic; not a model of any substance"}
+  - id: VB
+    name: synthetic component VB (S10 verification)
+    synthetic: true
+    molecular_weight: {value: 0.046, unit: kg/mol, dimension: [0, 1, 0, 0, -1, 0, 0], kind: molar_mass, meaning: "Invented molar mass of VB; unused by wilson-ig-v1", role: fixed, provenance: "Invented (S10 spec section 6); synthetic"}
+    elemental_composition: null
+    elemental_verification: NOT_APPLICABLE
+    parameters:
+      ideal_gas_cp_b0: {value: 1.8, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_0 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b1: {value: 25.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_1 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b2: {value: -15.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_2 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b3: {value: 5.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_3 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b4: {value: -0.8, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_4 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      standard_formation_enthalpy: {value: -234500.0, unit: J/mol, dimension: [2, 1, -2, 0, -1, 0, 0], kind: molar_enthalpy, meaning: "Invented formation enthalpy of VB, ideal gas at 298.15 K; the S10-VER-ref-v1 datum", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_a: {value: 22.519, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "a of ln(P_sat/Pa) = a + b/theta + c ln theta + d theta^2", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_b: {value: -7.02, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b of ln(P_sat/Pa)", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_c: {value: -8.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "c of ln(P_sat/Pa)", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_d: {value: 5.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "d of ln(P_sat/Pa)", role: fixed, provenance: "Invented (S10 spec section 6)"}
+    rights: {source: "Invented by the S10 design lane; no external source", redistribution: "permitted: project-authored synthetic values", notes: "Synthetic; not a model of any substance"}
+  - id: VC
+    name: synthetic component VC (S10 verification)
+    synthetic: true
+    molecular_weight: {value: 0.018, unit: kg/mol, dimension: [0, 1, 0, 0, -1, 0, 0], kind: molar_mass, meaning: "Invented molar mass of VC; unused by wilson-ig-v1", role: fixed, provenance: "Invented (S10 spec section 6); synthetic"}
+    elemental_composition: null
+    elemental_verification: NOT_APPLICABLE
+    parameters:
+      ideal_gas_cp_b0: {value: 4.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_0 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b1: {value: -1.5, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_1 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b2: {value: 4.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_2 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b3: {value: -2.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_3 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      ideal_gas_cp_b4: {value: 0.4, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b_4 of c_p^ig/R", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      standard_formation_enthalpy: {value: -241800.0, unit: J/mol, dimension: [2, 1, -2, 0, -1, 0, 0], kind: molar_enthalpy, meaning: "Invented formation enthalpy of VC, ideal gas at 298.15 K; the S10-VER-ref-v1 datum", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_a: {value: 24.072, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "a of ln(P_sat/Pa) = a + b/theta + c ln theta + d theta^2", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_b: {value: -6.599, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "b of ln(P_sat/Pa)", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_c: {value: -5.0, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "c of ln(P_sat/Pa)", role: fixed, provenance: "Invented (S10 spec section 6)"}
+      vapour_pressure_d: {value: 1.5, unit: "1", dimension: [0, 0, 0, 0, 0, 0, 0], kind: dimensionless, meaning: "d of ln(P_sat/Pa)", role: fixed, provenance: "Invented (S10 spec section 6)"}
+    rights: {source: "Invented by the S10 design lane; no external source", redistribution: "permitted: project-authored synthetic values", notes: "Synthetic; not a model of any substance"}
+# Wilson Lambda_ij (dimensionless, constant, > 0). ln gamma_i = 1 - ln(sum_j x_j Lambda_ij) - sum_k x_k Lambda_ki / (sum_j x_j Lambda_kj).
+wilson_lambda:
+  - {i: VA, j: VB, value: 0.80, provenance: "Invented (S10 spec section 6)"}
+  - {i: VB, j: VA, value: 1.15, provenance: "Invented (S10 spec section 6)"}
+  - {i: VA, j: VC, value: 0.45, provenance: "Invented (S10 spec section 6)"}
+  - {i: VC, j: VA, value: 0.85, provenance: "Invented (S10 spec section 6)"}
+  - {i: VB, j: VC, value: 0.70, provenance: "Invented (S10 spec section 6)"}
+  - {i: VC, j: VB, value: 0.30, provenance: "Invented (S10 spec section 6)"}
