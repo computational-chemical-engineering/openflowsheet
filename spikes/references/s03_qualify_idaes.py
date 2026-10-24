@@ -1,19 +1,23 @@
-"""S03 WO-S03-2: blind qualification and runs of the column cases in IDAES 2.13.0.
+"""S03 WO-S03-2/2b: blind qualification and runs of the column cases in IDAES 2.13.0.
 
 Authority: `docs/derivations/S03-spec.md` §2.2 (levels), §2.3 (the pre-registered "where available"
 rule), §2.4 (structural questions), §5.1 (matched semantics, rows 12, 13 and 15), §6 (thresholds),
 §7.1 rules 2, 2b, 2c and 2d (computed here from IDAES's own record only) and Amendment 1 (§17.1 RC6
 and RC7 as L2(b) equations, §17.4 specification definitions and per-kind thresholds, §17.6 imports,
-§17.10's WO-S03-2 delta).
+§17.10's WO-S03-2 delta) and Amendment 2 (§18: the closed path ladder P0, P1, P2 of §18.1, read
+from `tool_settings.IDAES_amendment_2`; rule 2d's path dependence, §18.4; PC-LI, §18.3; WO-S03-2b,
+§18.8).
 
-For every case of `s03_cases.json` (RC1-RC7, the ten perturbed cases and PC-P; PC-L gets the
+For every case of `s03_cases.json` (RC1-RC7, the ten perturbed cases, PC-P and PC-LI; PC-L gets the
 registered `not_applicable` record) this script tries the levels L1, L2, L3 in turn. At each level it
 builds IDAES's model on SYN-001 (the `GenericParameterBlock` of `idaes_representability`, i.e.
 `docs/reference-environments.md` §5.0, with T06's SmoothVLE and Ipopt settings), records a structural
 inspection of the built model before it is solved, and, if the model is structurally expressible,
-runs it under the registered settings. A run that passes rules 2-2c and 2d's specification residual is
-rerun at `floor_rerun` (§5.1 row 15) for 2d's movement check. The case's level is the first one that is
-structurally expressible and passes rules 2-2d; every attempt is recorded.
+runs every path position P0, P1, P2 (§18.1) from the common start S1-S6. Every position whose final
+solve ends "Optimal Solution Found" is rerun at `floor_rerun` (§5.1 row 15; §18.1 order step 4) for
+2d's movement check. A level passes if no two converged positions differ on a registered quantity
+by more than 0.1 tolerance (§18.4) and some position passes rules 2-2d; the selected attempt is the
+first such position. The case's level is the first level that passes; every attempt is recorded.
 
 Levels for IDAES (§2.2):
 * L1: `TrayColumn` with its native specification variables only (`Condenser.reflux_ratio`,
@@ -30,6 +34,7 @@ modules of this project imported are T06's SYN-001 definitions (`t06_fixtures`, 
 output is read. It prints one line per case and one summary line.
 
     .venv-idaes/bin/python spikes/references/s03_qualify_idaes.py [--out DIR] [--only CASE ...]
+    .venv-idaes/bin/python spikes/references/s03_qualify_idaes.py --check-options   (§18.8 step 3)
 
 Not part of `scripts/check.sh`: the gate never runs a tool.
 """
@@ -74,6 +79,14 @@ RULE2D_SPEC = {  # kind -> (threshold, basis)
     "recovery": (1e-9, "absolute"), "temperature": (1e-9, "relative"),
 }
 RULE2D_RERUN_FRACTION = 0.1
+# §18.1: the closed path ladder, in its registered order; §18.4: path dependence at the rerun's
+# fraction of the tolerance.
+POSITIONS = ("P0", "P1", "P2")
+PATH_DEPENDENCE_FRACTION = RULE2D_RERUN_FRACTION
+# §18.3: PC-LI's registered IDAES tool variant (the only one besides the registered settings).
+H_FORM_VARIANT = "IDAES_amendment_2.h_form_ig_J_per_mol_PC-LI in place of h_form_ig_J_per_mol"
+# §18.2 and §18.8 step 2: the records at 6d9486a0 that WO-S03-2b supersedes, and the pilot runs.
+SUPERSEDES = "6d9486a0"
 # §5.1 row 12: the registered temperature profile, linear from 320 K (stage 1) to 400 K (stage N).
 PROFILE_T_TOP_K, PROFILE_T_BOTTOM_K = 320.0, 400.0
 
@@ -105,6 +118,31 @@ INITIALIZATION = [
     "own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves.",
 ]
 
+# §18.2: every pilot run, disclosed (case, variant, outcome). No pilot outcome can change the
+# ladder, the options or the order, which §18.1 fixes.
+_B24 = "docs/S03_BUILD_DECISIONS.md, WO-S03-2, B2-4 (no log retained)"
+PILOT_RUNS: list[dict[str, Any]] = [
+    {"work_order": "WO-S03-2", "case": "RC2",
+     "variant": "registered eps 1e-8 K set before the initializers, IDAES's default guesses",
+     "outcome": "TrayColumn.initialize failed in the condenser's inlet-state initialization "
+                "(saturated vapour; 'bad status: error', InitializationError)", "source": _B24},
+    {"work_order": "WO-S03-2", "case": "RC2",
+     "variant": "registered eps 1e-8 K set before the initializers, profile-seeded guesses",
+     "outcome": "the same initializer failure", "source": _B24},
+    {"work_order": "WO-S03-2", "case": "RC2",
+     "variant": "eps continuation 1e-4, 1e-6, 1e-8 K after the initializers, Ipopt's default "
+                "initialization options (no warm start)",
+     "outcome": "Solved To Acceptable Level", "source": _B24},
+    {"work_order": "WO-S03-2", "case": "RC2 and RC3",
+     "variant": "no full initializer solve before the final solve",
+     "outcome": "rejected on convergence (outcome detail not recorded)", "source": _B24},
+    {"work_order": "WO-S03-2", "case": "RC2 and RC3",
+     "variant": "B2-4 as recorded (initializers and full solve at IDAES's default eps, then "
+                "1e-8 K)",
+     "outcome": "the selected policy; RC2 converged from one pilot start and ended 'Solved To "
+                "Acceptable Level' from another (outcome detail not recorded)", "source": _B24},
+]
+
 
 def file_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -128,6 +166,9 @@ def load_cases() -> dict[str, Any]:
         assert probe.L_VAP[c] == float(ids["h_form_ig_J_per_mol"][i])
         assert float(ids["h_form_liq_J_per_mol"][i]) == 0.0
     assert tuple(data["components"]) == probe.COMPONENTS
+    a2 = data["tool_settings"]["IDAES_amendment_2"]
+    assert [p["id"] for p in a2["path_positions"]] == list(POSITIONS)
+    assert [len(h) for h in (a2["h_form_ig_J_per_mol_PC-LI"],)] == [len(probe.COMPONENTS)]
     return data
 
 
@@ -137,6 +178,108 @@ def final_options(data: dict[str, Any], rerun: bool) -> dict[str, Any]:
         fr = data["tool_settings"]["IDAES"]["floor_rerun"]
         opts.update(tol=float(fr["tol"]), constr_viol_tol=float(fr["constr_viol_tol"]))
     return opts
+
+
+def tool_variant(data: dict[str, Any], case: dict[str, Any]) -> dict[str, Any] | None:
+    """The case's registered IDAES tool variant: None for the registered settings, PC-LI's h_form."""
+    v = case["tool_variant"]["IDAES"]
+    if v == "registered settings":
+        return None
+    if v == H_FORM_VARIANT:
+        h = data["tool_settings"]["IDAES_amendment_2"]["h_form_ig_J_per_mol_PC-LI"]
+        return {"tool_variant": v, "h_form_ig_J_per_mol": [float(x) for x in h]}
+    raise ValueError(f"unregistered IDAES tool variant: {v!r}")
+
+
+def warm_start_options(data: dict[str, Any]) -> dict[str, Any]:
+    reg = data["tool_settings"]["IDAES_amendment_2"]["warm_start_options"]
+    return {k: (v if k == "bound_mult_init_method" else float(v)) for k, v in reg.items()}
+
+
+def check_warm_start_options(data: dict[str, Any], log_dir: Path) -> dict[str, Any]:
+    """§18.8 step 3 (Q-A2-2): does the bundled Ipopt accept each warm-start option?
+
+    Each option alone, then all four, on a one-variable NLP (min (x - 1)^2, 0 <= x <= 10) with the
+    registered options; no case is solved. An option is accepted iff its trial ends "Optimal
+    Solution Found" and Ipopt's log reports no invalid option.
+    """
+    import pyomo.environ as pyo
+
+    warm = warm_start_options(data)
+    trials: dict[str, Any] = {}
+    for name, opts in [*((k, {k: v}) for k, v in warm.items()), ("all four", warm)]:
+        m = pyo.ConcreteModel()
+        m.x = pyo.Var(bounds=(0, 10), initialize=5.0)
+        m.obj = pyo.Objective(expr=(m.x - 1) ** 2)
+        solver = pyo.SolverFactory("ipopt")
+        for k, v in {**fx.IDAES_SOLVER_OPTIONS, **opts}.items():
+            solver.options[k] = v
+        logfile = log_dir / f"idaes-option-check-{name.replace(' ', '-')}.ipopt.log"
+        error = None
+        logfile.unlink(missing_ok=True)
+        try:
+            solver.solve(m, tee=False, logfile=str(logfile), load_solutions=False)
+        except Exception as exc:  # an Ipopt that refuses an option may make Pyomo raise
+            error = f"{type(exc).__name__}: {exc}"
+        text = logfile.read_text(encoding="utf-8", errors="replace") if logfile.exists() else ""
+        parsed = t06i.parse_ipopt_log(text)
+        flagged = [ln.strip() for ln in text.splitlines()
+                   if "not a valid option" in ln or "Invalid" in ln or "not valid" in ln]
+        trials[name] = {"options": opts, "exit": parsed.get("exit"), "error": error,
+                        "invalid_option_messages": flagged,
+                        "ipopt_version": parsed.get("ipopt_version"),
+                        "accepted": parsed.get("exit") == "Optimal Solution Found." and not flagged
+                        and error is None}
+    accepted = {k: trials[k]["accepted"] for k in warm}
+    return {"spec": "docs/derivations/S03-spec.md §18.8 step 3, Q-A2-2",
+            "method": "each warm-start option alone, then all four, with the registered options, on "
+                      "min (x - 1)^2, 0 <= x <= 10 (not a case)",
+            "trials": trials, "accepted": accepted, "all_accepted": all(accepted.values())}
+
+
+def ladder(data: dict[str, Any], accepted: dict[str, bool]) -> dict[str, Any]:
+    """§18.1's positions from `tool_settings.IDAES_amendment_2`, with Q-A2-2's answer applied: a
+    rejected `bound_mult_init_method` is dropped (the registered contingency); any other rejected
+    option makes the positions using it fail unrun (nothing is substituted)."""
+    a2 = data["tool_settings"]["IDAES_amendment_2"]
+    warm = warm_start_options(data)
+    contingency = None
+    if not accepted.get("bound_mult_init_method", True):
+        warm.pop("bound_mult_init_method")
+        contingency = ("Ipopt rejected bound_mult_init_method: P1 and P2 run without it "
+                       "(§18.1 order step 5)")
+    rejected = [k for k in warm if not accepted.get(k, True)]
+    positions = {
+        p["id"]: {"eps_schedule_K": [float(e) for e in p["eps_schedule_K"]],
+                  "warm_start": bool(p["warm_start"]),
+                  "unavailable": (f"Ipopt rejected {rejected} (Q-A2-2): the position is not run"
+                                  if p["warm_start"] and rejected else None)}
+        for p in a2["path_positions"]}
+    assert tuple(positions) == POSITIONS
+    return {"positions": positions, "warm_start_options": warm,
+            "contingency_applied": contingency}
+
+
+def set_smooth_vle_eps_to(m: Any, eps_k: float) -> list[str]:
+    """`t06i.set_smooth_vle_eps` with eps_1 = eps_2 = eps_k (P2's schedule, §18.1)."""
+    import pyomo.environ as pyo
+
+    done = []
+    for b in m.component_data_objects(pyo.Block, descend_into=True):
+        teq = b.component("_teq")
+        if teq is None:
+            continue
+        for pair in teq:
+            suffix = "_" + "_".join(pair)
+            for which in fx.IDAES_SMOOTH_VLE_EPS_K:
+                param = b.component(which + suffix)
+                if param is None:
+                    raise ValueError(f"{b.name}: SmoothVLE block without {which}{suffix}")
+                param.set_value(eps_k)
+            done.append(f"{b.name}[{','.join(pair)}]")
+    if not done:
+        raise ValueError("no SmoothVLE state block found")
+    return done
 
 
 def quantity_tolerance(kind: str, value: float) -> float:
@@ -219,6 +362,11 @@ class Model:
         self.data, self.case, self.real = data, case, real
         self.n = int(case["stage_count"])
         self.m = new_flowsheet()
+        # §18.3: PC-LI's h_form,ig in place of L_i (T06's definitions otherwise; Psat keeps L_i).
+        self.variant = tool_variant(data, case)
+        if self.variant is not None:
+            for c, h in zip(data["components"], self.variant["h_form_ig_J_per_mol"], strict=True):
+                getattr(self.m.fs.props, c).enth_mol_form_ig_comp_ref.fix(h)
         self.stages: dict[int, Any] = {}
         self.kinds: dict[int, str] = {}
         self.inlets: list[dict[str, Any]] = []  # {"tag", "port", "state", "stage"}
@@ -530,13 +678,22 @@ class Model:
             reb_text = "absent: the bottom inlet enters stage N's vapour inlet (an ordinary Tray)"
         pressure_fixed = {v.name: float(v.value) for b in blocks for v in [b.pressure] if v.fixed}
         trays = [u for j, u in self.stages.items() if self.kinds[j] == "tray"]
+        package = {
+            "every_state_block_uses_fs_props": all(b.params is props for b in blocks),
+            "state_block_count": len(blocks),
+            "package": "idaes_representability.build_property_package: GenericParameterBlock, "
+                       "SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0",
+        }
+        if self.variant is not None:
+            package["tool_variant"] = (
+                f"{self.variant['tool_variant']} (§18.3, PC-LI): T06's IDAES definitions with "
+                "enth_mol_form_ig_comp_ref replaced on every component and nothing else (Psat keeps "
+                "L_i; h_form_liq = 0)")
+            package["h_form_ig_J_per_mol_in_model"] = {
+                c: float(getattr(props, c).enth_mol_form_ig_comp_ref.value)
+                for c in self.data["components"]}
         return {
-            "property_package": {
-                "every_state_block_uses_fs_props": all(b.params is props for b in blocks),
-                "state_block_count": len(blocks),
-                "package": "idaes_representability.build_property_package: GenericParameterBlock, "
-                           "SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0",
-            },
+            "property_package": package,
             "stage_map": {"stage_count_registered": n, "stage_count_idaes": len(self.stages),
                           "map": stage_map,
                           "rule": "our j (S02 §1.1, condenser = 1 and reboiler = N when present); "
@@ -671,13 +828,21 @@ class Model:
             if v.fixed and id(v) not in keep:
                 v.unfix()
 
-    def solve_final(self, options: dict[str, Any], logfile: Path) -> dict[str, Any]:
-        """Set the registered SmoothVLE eps, then the registered final solve (§5.1 row 13)."""
+    def solve(self, options: dict[str, Any], logfile: Path,
+              eps_k: float | None = None) -> dict[str, Any]:
+        """One solve of a path (§18.1). With eps_k None: the registered SmoothVLE eps on every block,
+        then a solve that decides (§5.1 row 13); otherwise eps_1 = eps_2 = eps_k (P2's schedule).
+        The final iterate is loaded whatever the termination."""
         import pyomo.environ as pyo
         from pyomo.opt import SolverStatus
 
-        rec: dict[str, Any] = {"smooth_vle_eps_set_on": t06i.set_smooth_vle_eps(self.m),
-                               "degrees_of_freedom": int(_dof(self.m))}
+        if eps_k is None:
+            rec: dict[str, Any] = {"smooth_vle_eps_set_on": t06i.set_smooth_vle_eps(self.m),
+                                   "degrees_of_freedom": int(_dof(self.m))}
+        else:
+            rec = {"smooth_vle_eps_K": {"eps_1": eps_k, "eps_2": eps_k},
+                   "smooth_vle_eps_blocks_set": len(set_smooth_vle_eps_to(self.m, eps_k)),
+                   "degrees_of_freedom": int(_dof(self.m))}
         solver = pyo.SolverFactory("ipopt")
         for k, v in options.items():
             solver.options[k] = v
@@ -895,25 +1060,56 @@ def rerun_movement(case: dict[str, Any], base: dict[str, float],
                            and ratios[worst] <= RULE2D_RERUN_FRACTION)}
 
 
-def run_once(data: dict[str, Any], case: dict[str, Any], real: dict[str, Any], rerun: bool,
-             logfile: Path) -> tuple[Model, dict[str, Any]]:
+def solve_summary(rec: dict[str, Any]) -> dict[str, Any]:
+    """One solve of a path as §18.8 step 2 records it."""
+    return {"smooth_vle_eps_K": rec.get("smooth_vle_eps_K", fx.IDAES_SMOOTH_VLE_EPS_K),
+            "ipopt_options": rec["ipopt_options"], "termination": rec["termination"],
+            "converged": rec["converged"], "iterations": rec["ipopt"].get("iterations"),
+            "final_constraint_violation_unscaled":
+                rec["ipopt"].get("final_constraint_violation_unscaled"),
+            "final_overall_nlp_error_scaled": rec["ipopt"].get("final_overall_nlp_error_scaled")}
+
+
+def run_position(data: dict[str, Any], case: dict[str, Any], real: dict[str, Any],
+                 lad: dict[str, Any], pid: str, rerun: bool,
+                 log_stem: Path) -> tuple[Model, dict[str, Any]]:
+    """The common start S1-S6 (Model.initialize), then position pid's solves (§18.1). With rerun,
+    `floor_rerun`'s tol and constr_viol_tol replace the registered ones in every solve after S3."""
+    pos = lad["positions"][pid]
     model = Model(data, case, real)
     t0 = time.perf_counter()
     events = model.initialize()
     rec: dict[str, Any] = {"initialization_events": events,
                            "wall_time_initialize_s": time.perf_counter() - t0}
-    rec.update(model.solve_final(final_options(data, rerun), logfile))
+    options = final_options(data, rerun)
+    if pos["warm_start"]:
+        options.update(lad["warm_start_options"])
+    solves = []
+    for k, eps_k in enumerate(pos["eps_schedule_K"], start=1):
+        step = model.solve(options, Path(f"{log_stem}-step{k}.ipopt.log"), eps_k)
+        solves.append(solve_summary(step))
+    final = model.solve(options, Path(f"{log_stem}.ipopt.log"))
+    solves.append(solve_summary(final))
+    rec.update(final)
+    rec.update(position=pid, solves=solves)
     return model, rec
 
 
-def attempt(data: dict[str, Any], cid: str, case: dict[str, Any], real: dict[str, Any],
-            log_dir: Path) -> tuple[dict[str, Any], dict[str, Any] | None]:
-    """One level's run with its accuracy rerun; returns (summary, full record or None)."""
+def position_attempt(data: dict[str, Any], cid: str, case: dict[str, Any], real: dict[str, Any],
+                     lad: dict[str, Any], pid: str,
+                     log_dir: Path) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    """One position's run at one level, with its accuracy rerun if its final solve converged
+    (§18.1 order step 2); returns (summary, full record or None)."""
     level = real["level"]
-    summary: dict[str, Any] = {"level": level}
+    summary: dict[str, Any] = {"level": level, "position": pid}
     full: dict[str, Any] | None = None
+    if lad["positions"][pid]["unavailable"]:
+        summary.update(run=False, converged=False, passes=False, failed_rule="2",
+                       reason=lad["positions"][pid]["unavailable"])
+        return summary, full
+    stem = log_dir / f"idaes-{cid}-{level}-{pid}"
     try:
-        model, rec = run_once(data, case, real, False, log_dir / f"idaes-{cid}-{level}.ipopt.log")
+        model, rec = run_position(data, case, real, lad, pid, False, stem)
         summary.update(converged=rec["converged"], termination=rec["termination"],
                        ipopt_iterations=rec["ipopt"].get("iterations"),
                        wall_time_solve_s=rec["wall_time_solve_s"])
@@ -930,10 +1126,30 @@ def attempt(data: dict[str, Any], cid: str, case: dict[str, Any], real: dict[str
         summary["rule2c_failed_checks"] = [k for k, c in rules["rule2c"]["checks"].items()
                                            if not c["passes"]]
         summary["rule2d_specification"] = rules["rule2d_specification"]["max_measure_by_end"]
+        summary["solves"] = [{k: v for k, v in s.items() if k != "ipopt_options"}
+                             for s in rec["solves"]]
         if not rec["converged"]:
             summary.update(passes=False, failed_rule="2", reason=rec["termination"])
             return summary, full
         full["quantities"] = qs = quantities(model, raw)
+        model2, rec2 = run_position(data, case, real, lad, pid, True, Path(f"{stem}-rerun"))
+        rerun: dict[str, Any] = {"ipopt_options": rec2["ipopt_options"],
+                                 "converged": rec2["converged"],
+                                 "termination": rec2["termination"],
+                                 "ipopt": rec2["ipopt"],
+                                 "initialization_events": rec2["initialization_events"],
+                                 "wall_time_solve_s": rec2["wall_time_solve_s"],
+                                 "solves": rec2["solves"]}
+        if rec2["converged"]:
+            raw2 = raw_output(model2)
+            q2 = quantities(model2, raw2)
+            rerun["quantities"] = q2
+            rerun["movement"] = rerun_movement(case, qs, q2)
+            rerun["passes"] = rerun["movement"]["passes"]
+            summary["rerun_max_ratio"] = rerun["movement"]["max_ratio"]
+        else:
+            rerun["passes"] = False
+        full["rerun"] = rerun
         if not rules["rule2"]["passes"]:
             summary.update(passes=False, failed_rule="2", reason="tool-internal balance")
             return summary, full
@@ -948,24 +1164,6 @@ def attempt(data: dict[str, Any], cid: str, case: dict[str, Any], real: dict[str
         if not rules["rule2d_specification"]["passes"]:
             summary.update(passes=False, failed_rule="2d", reason="specification residual")
             return summary, full
-        model2, rec2 = run_once(data, case, real, True,
-                                log_dir / f"idaes-{cid}-{level}-rerun.ipopt.log")
-        rerun: dict[str, Any] = {"ipopt_options": rec2["ipopt_options"],
-                                 "converged": rec2["converged"],
-                                 "termination": rec2["termination"],
-                                 "ipopt": rec2["ipopt"],
-                                 "initialization_events": rec2["initialization_events"],
-                                 "wall_time_solve_s": rec2["wall_time_solve_s"]}
-        if rec2["converged"]:
-            raw2 = raw_output(model2)
-            q2 = quantities(model2, raw2)
-            rerun["quantities"] = q2
-            rerun["movement"] = rerun_movement(case, qs, q2)
-            rerun["passes"] = rerun["movement"]["passes"]
-            summary["rerun_max_ratio"] = rerun["movement"]["max_ratio"]
-        else:
-            rerun["passes"] = False
-        full["rerun"] = rerun
         if not rerun["passes"]:
             summary.update(passes=False, failed_rule="2d", reason="accuracy rerun")
             return summary, full
@@ -977,13 +1175,42 @@ def attempt(data: dict[str, Any], cid: str, case: dict[str, Any], real: dict[str
         return summary, full
 
 
-# ---- qualification (§2.3) ---------------------------------------------------------------------
+def path_dependence(case: dict[str, Any],
+                    runs: dict[str, tuple[dict[str, Any], Any]]) -> dict[str, Any]:
+    """§18.4: every pair of positions whose final solves ended "Optimal Solution Found", compared on
+    every registered quantity; the tolerance uses the earlier position's own value (B2-6)."""
+    kinds = dict(case["quantities"])
+    conv = [(pid, runs[pid][1]["quantities"]) for pid in POSITIONS
+            if pid in runs and runs[pid][0].get("converged") and runs[pid][1]
+            and "quantities" in runs[pid][1]]
+    pairs: dict[str, Any] = {}
+    worst: tuple[float, str, str] | None = None
+    for i, (pa, qa) in enumerate(conv):
+        for pb, qb in conv[i + 1:]:
+            ratios = {k: abs(qb[k] - qa[k]) / quantity_tolerance(kinds[k], qa[k]) for k in qa}
+            kmax = max(ratios, key=lambda k: ratios[k])
+            pairs[f"{pa}-{pb}"] = {"max_ratio": ratios[kmax], "max_quantity": kmax,
+                                   "ratio_to_tolerance": ratios}
+            r = ratios[kmax] if math.isfinite(ratios[kmax]) else math.inf
+            if worst is None or r > worst[0]:
+                worst = (r, kmax, f"{pa}-{pb}")
+    return {"converged_positions": [pid for pid, _q in conv], "pairs": pairs,
+            "max_ratio": None if worst is None else worst[0],
+            "max_quantity": None if worst is None else worst[1],
+            "max_pair": None if worst is None else worst[2],
+            "threshold_fraction_of_tolerance": PATH_DEPENDENCE_FRACTION,
+            "tolerance_value_used": "the earlier position's own value (the script reads no other)",
+            "fires": worst is not None and not worst[0] <= PATH_DEPENDENCE_FRACTION}
 
 
-def qualify_case(data: dict[str, Any], cid: str, log_dir: Path,
+# ---- qualification (§2.3, §18.1) ----------------------------------------------------------------
+
+
+def qualify_case(data: dict[str, Any], cid: str, lad: dict[str, Any], log_dir: Path,
                  partial_facts: dict[str, Any]) -> dict[str, Any]:
     case = data["cases"][cid]
-    per: dict[str, Any] = {"levels": {}, "attempts": [], "selected": None, "full": None}
+    per: dict[str, Any] = {"levels": {}, "attempts": [], "selected": None, "position": None,
+                           "full": None}
     for level in ("L1", "L2", "L3"):
         real = realization(case, level)
         entry: dict[str, Any] = {"realization": {k: v for k, v in real.items()
@@ -1003,14 +1230,35 @@ def qualify_case(data: dict[str, Any], cid: str, log_dir: Path,
         if not real["expressible"]:
             print(f"idaes {cid} {level}: not expressible", file=sys.stderr, flush=True)
             continue
-        summ, full = attempt(data, cid, case, real, log_dir)
-        per["attempts"].append(summ)
-        print(f"idaes {cid} {level}: {'PASS' if summ['passes'] else 'fail ' + str(summ['failed_rule'])}"
-              f" ({summ.get('reason')})", file=sys.stderr, flush=True)
-        if summ["passes"]:
-            per["selected"], per["full"] = level, full
+        runs: dict[str, tuple[dict[str, Any], Any]] = {}
+        for pid in POSITIONS:  # every position before the level is judged (§18.1 order step 2)
+            summ, full = position_attempt(data, cid, case, real, lad, pid, log_dir)
+            runs[pid] = (summ, full)
+            per["attempts"].append(summ)
+            print(f"idaes {cid} {level} {pid}: "
+                  f"{'PASS' if summ['passes'] else 'fail ' + str(summ['failed_rule'])}"
+                  f" ({summ.get('reason')})", file=sys.stderr, flush=True)
+        pd = path_dependence(case, runs)
+        passing = [pid for pid in POSITIONS if runs[pid][0]["passes"]]
+        entry["positions"] = {pid: {"summary": s, "full": f} for pid, (s, f) in runs.items()}
+        entry["path_dependence"] = pd
+        if pd["fires"]:
+            entry.update(passes=False, selected_position=None,
+                         reason=f"reference_accuracy: path_dependence({pd['max_ratio']!r}) on "
+                                f"{pd['max_quantity']} between {pd['max_pair']}")
+        elif passing:
+            entry.update(passes=True, selected_position=passing[0],
+                         reason=f"{passing[0]} passes rules 2-2d; no path dependence")
+        else:
+            entry.update(passes=False, selected_position=None,
+                         reason="no position passes rules 2-2d")
+        print(f"idaes {cid} {level}: {'PASS ' + passing[0] if entry['passes'] else 'fail'}"
+              f" ({entry['reason']}; path dependence max {pd['max_ratio']})",
+              file=sys.stderr, flush=True)
+        if entry["passes"]:
+            per["selected"], per["position"] = level, passing[0]
+            per["full"] = runs[passing[0]][1]
             break
-        per["levels"][level]["failed_full_record"] = full
     return per
 
 
@@ -1021,9 +1269,9 @@ def not_available_reason(per: dict[str, Any]) -> str:
         if not real["expressible"]:
             parts.append(f"{level}: {real['reason']}")
         else:
-            fails = [f"{a['failed_rule']}: {a['reason']}" for a in per["attempts"]
+            fails = [f"{a['position']} {a['failed_rule']}: {a['reason']}" for a in per["attempts"]
                      if a["level"] == level]
-            parts.append(f"{level}: failed rules 2-2d ({'; '.join(fails)})")
+            parts.append(f"{level}: {entry['reason']} ({'; '.join(fails)})")
     return " | ".join(parts)
 
 
@@ -1034,6 +1282,8 @@ def main() -> int:
                         default=fx.REPO_ROOT / "evidence" / "S03" / "artifacts" /
                         "s03-qualification" / "idaes-ipopt")
     parser.add_argument("--only", nargs="*", help="case ids (default: all)")
+    parser.add_argument("--check-options", action="store_true",
+                        help="only §18.8 step 3: does Ipopt accept the warm-start options?")
     args = parser.parse_args()
     out_dir, log_dir = args.out.resolve(), args.log_dir.resolve()
     for d in (out_dir / "qualification", out_dir / "results", log_dir):
@@ -1050,6 +1300,11 @@ def main() -> int:
 
     idaes.cfg.ipopt.options.linear_solver = fx.IDAES_SOLVER_OPTIONS["linear_solver"]
     data = load_cases()
+    check = check_warm_start_options(data, log_dir)
+    if args.check_options:
+        print(json.dumps(check["accepted"]), f"all_accepted={check['all_accepted']}", flush=True)
+        return 0 if check["all_accepted"] else 1
+    lad = ladder(data, check["accepted"])
     ids = args.only or list(data["cases"])
     fingerprint = fx.fingerprint("idaes", ENV_DIR)
     common = {
@@ -1071,11 +1326,15 @@ def main() -> int:
                                 "Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0)",
             "initialization": INITIALIZATION,
             "temperature_profile_K": [PROFILE_T_TOP_K, PROFILE_T_BOTTOM_K],
+            "amendment_2": data["tool_settings"]["IDAES_amendment_2"],
+            "path_ladder_used": lad,
         },
         "sign_conversion": SIGN_CONVERSION,
     }
     partial_facts = Model.partial_condenser_facts()
-    qual: dict[str, Any] = {**common, "cases": {}, "q_s03_7_partial_condenser": partial_facts}
+    qual: dict[str, Any] = {**common, "supersedes": SUPERSEDES,
+                            "warm_start_options_check": check, "pilot_runs": PILOT_RUNS,
+                            "cases": {}, "q_s03_7_partial_condenser": partial_facts}
     status = 0
     n_ok = 0
     for cid in ids:
@@ -1089,19 +1348,25 @@ def main() -> int:
             print(f"idaes {cid}: not_applicable", flush=True)
         else:
             t0 = time.perf_counter()
-            per = qualify_case(data, cid, log_dir, partial_facts)
-            sel = per["selected"]
-            qual["cases"][cid] = {"available": sel is not None, "level": sel,
-                                  "levels": {k: {kk: vv for kk, vv in v.items()
-                                                 if kk != "failed_full_record"}
-                                             for k, v in per["levels"].items()},
-                                  "attempts": per["attempts"],
-                                  "wall_time_s": time.perf_counter() - t0}
+            per = qualify_case(data, cid, lad, log_dir, partial_facts)
+            sel, pos = per["selected"], per["position"]
+            qual["cases"][cid] = {
+                "available": sel is not None, "level": sel, "position": pos,
+                "levels": {k: {**{kk: vv for kk, vv in v.items() if kk != "positions"},
+                               **({"positions": {p: pv["summary"]
+                                                 for p, pv in v["positions"].items()}}
+                                  if "positions" in v else {})}
+                           for k, v in per["levels"].items()},
+                "attempts": per["attempts"], "wall_time_s": time.perf_counter() - t0}
             rec = {**common, "case": cid, "case_definition": case, "attempts": per["attempts"]}
+            if sel is not None:  # the selected attempt is held once, at the record's top level
+                per["levels"][sel]["positions"][pos]["full"] = (
+                    "the selected attempt: solve, raw_output, rule_values, registered_quantities "
+                    "and accuracy_rerun at the record's top level")
             if sel is None:
                 reason = not_available_reason(per)
                 qual["cases"][cid]["not_available_reason"] = reason
-                rec.update(available=False, level=None, not_available_reason=reason,
+                rec.update(available=False, level=None, position=None, not_available_reason=reason,
                            levels=per["levels"])
                 status = 1
             else:
@@ -1109,7 +1374,9 @@ def main() -> int:
                 full = per["full"]
                 insp = per["levels"][sel]["structural_inspection"]
                 rec.update(
-                    available=True, level=sel, realization=per["levels"][sel]["realization"],
+                    available=True, level=sel, position=pos,
+                    path_dependence=per["levels"][sel]["path_dependence"],
+                    realization=per["levels"][sel]["realization"],
                     settings_used={"final_solve_ipopt_options": full["record"]["ipopt_options"],
                                    "smooth_vle_eps_K": fx.IDAES_SMOOTH_VLE_EPS_K},
                     stage_map=insp["stage_map"], feed_stages=insp["feed_stages"],
@@ -1120,9 +1387,10 @@ def main() -> int:
                     termination=full["record"]["termination"],
                     solve=full["record"], raw_output=full["raw"], rule_values=full["rules"],
                     registered_quantities=full["quantities"], accuracy_rerun=full["rerun"],
-                    levels_before={k: v for k, v in per["levels"].items() if k != sel},
+                    levels=per["levels"],
                 )
-            print(f"idaes {cid}: available={sel is not None} level={sel}", flush=True)
+            print(f"idaes {cid}: available={sel is not None} level={sel} position={pos}",
+                  flush=True)
         path = out_dir / "results" / f"idaes-{cid}.json"
         path.write_text(json.dumps(fx.finite(rec), indent=1) + "\n", encoding="utf-8")
     qual["wall_time_total_s"] = time.perf_counter() - t_start
