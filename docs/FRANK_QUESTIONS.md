@@ -149,3 +149,10 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
   separate package (S07b). **Default:** yes, they wait (`docs/derivations/S07-spec.md` §6.2, R-620).
 
 - Q-A1-1 and Q-A1-3: defaults taken by the session (2026-10-23), reversible; Frank may object.
+
+## S03 — two independent column references (2026-10-24)
+
+- **Q-S03-4** (one-phase sections: converge instead of a typed failure?) — **Frank: "Yes, plan a package"** (2026-10-24).
+  Not part of S03: a later package teaches the phase logic to handle all-liquid or all-vapour column sections. Queued.
+- **Q-S03-5** (which of S06's specs S03 checks against the tools) — **Frank: "All three"** (2026-10-24): purity,
+  recovery and temperature, not purity only. The S03 spec is amended to add the recovery and temperature cases.
