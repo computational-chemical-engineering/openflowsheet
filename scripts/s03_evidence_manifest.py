@@ -299,8 +299,9 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], record: Mapping[str,
         "Every NOT_COMPARABLE and DISAGREE pair, with its reason: " + " || ".join(lost),
         "scripts/gate.sh and CI on both architectures were not run by this generator (they run "
         "once before merge into main); S03.gate and S03.ci are unsupported here.",
-        "Review: the package's single reviewer pass (WO-S03-1 to WO-S03-4, WO-S03-2b) and the "
-        "human numerical and process-model review are pending; this manifest claims neither.",
+        "Review: the design lane's reviewer pass (docs/reviews/S03-review.md, R-644) was applied "
+        "by WO-S03-6 (F1-F3 and rulings 1-6, spec §19); the human numerical and process-model "
+        "review is pending, and this manifest claims neither `reviewed` nor `released`.",
     ]
     for entry in entries:
         if entry["result"] == "pass" or entry["id"] in ("S03.gate", "S03.ci"):
@@ -424,7 +425,7 @@ def build(commit: str) -> dict[str, Any]:
         "status": status(entries),
         "inputs": {
             "case_id": "S03 acceptance: docs/derivations/S03-spec.md §11 (A01–A17, amended by "
-            "§17.9 and §18.7) against docs/derivations/scripts/s03_reference.json and the "
+            "§17.9, §18.7 and §19.1) against docs/derivations/scripts/s03_reference.json and the "
             "committed tool records, check list §13",
             "case_hash": sha256_file(REFERENCE),
             "environment_lock_hash": sha256_file(LOCK),
