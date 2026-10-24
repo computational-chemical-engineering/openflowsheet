@@ -20,6 +20,16 @@ derivative that is an identity of the model (every vapour ln φ derivative, ∂h
 is returned as the answer `0.0`, never omitted (S10.A06). The phase is the one asked about:
 `evaluate_phase` never decides phases, so a metastable liquid is answered.
 
+**What `flash` and `stability` answer** (spec §4, §5.4–§5.5): the TP flash `S10-tp-flash-v1`, a
+closed-form vapour trial, a liquid trial by successive substitution, then a two-phase successive
+substitution on Rachford–Rice. Both phase models are strictly convex in composition (spec §4.1), so
+a single phase whose other-model trial distance is ≥ −1e-10 and a converged split with 0 < β < 1
+are global within the model: every `ok` result states `STABLE_WITHIN_TESTED_SCOPE` with scope
+`S10-tpd-v1` and its distances in `message`, by spec §5.4's grammar. A loop that reaches its cap
+is `not_converged` with label `UNKNOWN` and no outlets, never a split. `stability()`, outside the
+frozen Protocol (ADR 0047 C1), judges one phase against the other model's trial and returns a
+`StabilityReport`; it reports and never raises.
+
 **The records are data, read at run time, never transcribed into code** (spec §5.1). The real
 records are `benchmarks/s10/records.yaml`, read from a source checkout only: they are not package
 data until their rights are vetted and Frank decides (R-706). Before WO-S10-3 the file does not
@@ -29,7 +39,7 @@ by path. `parse_records` refuses a file off the registration with a `RecordError
 begins with one of the codes `record_structure`, `record_units`, `record_convention`,
 `record_lambda`, `record_domain`, and hands over the parsed floats unchanged (S10.A02: bitwise).
 `data_sha256` is the SHA-256 of the file's bytes; `implementation_sha256` that of this module's
-source, which holds the loader, the closed forms, and (WO-S10-2) the flash and the stability search.
+source, which holds the loader, the closed forms, the flash and the stability search.
 
 **Every refusal is typed** (spec §5.3): a status and a `message` that begins with the reason code
 and a colon. No refusal carries values.
@@ -54,12 +64,14 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.thermo import (
     FlashRequest,
     FlashResult,
+    Phase,
     PropertyCapabilities,
     PropertyRequest,
     PropertyResult,
     PropertyStatus,
     StreamState,
 )
+from openflowsheet.thermo.stability import StabilityLabel, StabilityReport
 
 PROVIDER_ID: Final = "wilson-ig-v1"
 STATE_DEFINITION: Final = "nTP-v1"
@@ -79,6 +91,22 @@ T_UNIT: Final = 1000.0
 THETA_0: Final = 0.29815
 #: K, the NASA-7 low range the records' T domain must lie in (spec §5.1 `record_domain`).
 T_NASA: Final = (200.0, 1000.0)
+
+#: The scope id of every stability label this provider states (spec §4.3): trial models
+#: {LIQUID: Wilson, VAPOR: ideal gas}, the vapour trial in closed form, the liquid trial by
+#: successive substitution to DELTA_SS within SS_MAX iterations, resolution EPS_TPD.
+SCOPE: Final = "S10-tpd-v1"
+#: The resolution in the tangent-plane distance (spec §4.3, §5.6; R-540's value).
+EPS_TPD: Final = 1.0e-10
+#: The stop of the two-phase successive substitution, in max |Δ ln K| (spec §5.4 step 4, §5.6).
+DELTA_K: Final = 1.0e-13
+#: The stop of the liquid-trial successive substitution, in max |Δ ln W| (spec §5.4 step 3, §5.6).
+DELTA_SS: Final = 1.0e-13
+#: Spec §5.6's cap, per loop: SS_MAX for the liquid trial, SS_MAX_TWO_PHASE for the two-phase
+#: loop. Two names for one registered value, so S10.A20 can patch each loop's cap alone; there is
+#: no production knob.
+SS_MAX: Final = 1000
+SS_MAX_TWO_PHASE: Final = 1000
 
 #: The record file's top-level keys, exactly (spec §5.1).
 _TOP_KEYS: Final = frozenset(
@@ -550,19 +578,428 @@ class WilsonIdealGasProvider:
     # -- flash ---------------------------------------------------------------------------------
 
     def flash(self, request: FlashRequest, context: EvaluationContext) -> FlashResult:
-        """The TP flash `S10-tp-flash-v1` (spec §5.4) is WO-S10-2's; until then every flash is
-        refused `unsupported`, never answered."""
-        del request, context
+        """The TP flash `S10-tp-flash-v1` (spec §5.4): the closed-form vapour trial, the liquid
+        trial by successive substitution, then the two-phase successive substitution.
+
+        By the strict convexity of both phase models (spec §4.1), a single phase whose other-model
+        trial distance is ≥ −EPS_TPD and a converged two-phase split with 0 < β < 1 are global
+        within the model, so every `ok` result is labelled `STABLE_WITHIN_TESTED_SCOPE` in
+        `message`. A loop that reaches its cap, or a split without a Rachford–Rice bracket or with
+        β ∉ (0, 1), is `not_converged` with label `UNKNOWN` and no outlets: never a split.
+        """
+        del context
+        convention = self._records.reference_convention
+        if request.specification != "TP":
+            return _flash_refused(
+                "unsupported",
+                f"unsupported_specification: {request.specification!r}; "
+                f"{PROVIDER_ID} offers TP only",
+                convention,
+            )
+        if request.derivatives:
+            return _flash_refused(
+                "unsupported",
+                f"flash_derivatives_unsupported: {list(request.derivatives)}; "
+                "FlashResult carries no derivatives",
+                convention,
+            )
+        state = request.state
+        ids = self._records.components
+        if len(state.n) != len(ids):
+            return _flash_refused(
+                "error", f"state_length: {len(state.n)} flows for the components {ids}", convention
+            )
+        outside = self._domain_violation(state)
+        if outside is not None:
+            return _flash_refused("out_of_domain", outside, convention)
+        t, p = state.temperature, state.pressure
+        if state.is_dormant:
+            # Step 0.5 (ADR 0001 D3.4): two dormant outlets at T and P; a result, not a failure.
+            dormant = StreamState(n=(0.0,) * len(ids), temperature=t, pressure=p)
+            return FlashResult(
+                status="ok",
+                phase_signature="ZERO_FLOW",
+                vapor_fraction=None,
+                vapor=dormant,
+                liquid=dormant,
+                provider_id=PROVIDER_ID,
+                reference_convention=convention,
+                message=_unknown("dormant_state: composition undefined (ADR 0001 D3.1, D3.4)"),
+            )
+
+        search = _Search(self._records, state)
+        tm_vapour, _ = search.vapour_trial()  # step 2
+        if tm_vapour >= -EPS_TPD:
+            return self._single_phase(
+                state,
+                "LIQUID",
+                0,
+                f"{_STABLE}; tm_vapour_trial: {tm_vapour!r}; tm_liquid_trial: not_evaluated",
+            )
+        trial = search.liquid_trial()  # step 3
+        if trial.tm is None:
+            return _flash_not_converged(
+                _unknown(f"stability_not_converged: {_cap_text('liquid-trial', trial)}"),
+                trial.iterations,
+                convention,
+            )
+        if trial.tm >= -EPS_TPD:
+            return self._single_phase(
+                state,
+                "VAPOR",
+                trial.iterations,
+                f"{_STABLE}; tm_vapour_trial: {tm_vapour!r}; tm_liquid_trial: {trial.tm!r}",
+            )
+        assert trial.ln_k is not None  # a converged trial carries ln K at its final w
+        split = search.two_phase(trial.ln_k)  # step 4
+        iterations = trial.iterations + split.iterations
+        if split.failure is not None:
+            return _flash_not_converged(
+                _unknown(f"two_phase_not_converged: {split.failure}"), iterations, convention
+            )
+        total = state.total_flow
+        beta = split.beta
         return FlashResult(
-            status="unsupported",
-            phase_signature=None,
-            vapor_fraction=None,
-            vapor=None,
-            liquid=None,
+            status="ok",
+            phase_signature="TWO_PHASE",
+            vapor_fraction=beta,
+            vapor=StreamState(
+                n=tuple(beta * total * yi for yi in split.y), temperature=t, pressure=p
+            ),
+            liquid=StreamState(
+                n=tuple((1.0 - beta) * total * xi for xi in split.x), temperature=t, pressure=p
+            ),
+            k_values=dict(zip(ids, split.k, strict=True)),
+            iterations=iterations,
+            provider_id=PROVIDER_ID,
+            reference_convention=convention,
+            message=(
+                f"{_STABLE}; tm_vapour_trial: {tm_vapour!r}; tm_liquid_trial: {trial.tm!r}; "
+                f"fugacity_residual: {split.residual!r}"
+            ),
+        )
+
+    def _single_phase(
+        self, state: StreamState, phase: Phase, iterations: int, message: str
+    ) -> FlashResult:
+        """The feed, bitwise, in `phase`; the other outlet dormant at the same T and P; no K-value
+        (spec §5.4 steps 2 and 3)."""
+        dormant = StreamState(
+            n=(0.0,) * len(state.n), temperature=state.temperature, pressure=state.pressure
+        )
+        liquid = phase == "LIQUID"
+        return FlashResult(
+            status="ok",
+            phase_signature=phase,
+            vapor_fraction=0.0 if liquid else 1.0,
+            vapor=dormant if liquid else state,
+            liquid=state if liquid else dormant,
+            iterations=iterations,
             provider_id=PROVIDER_ID,
             reference_convention=self._records.reference_convention,
-            message="flash_not_implemented: the TP flash S10-tp-flash-v1 is WO-S10-2's",
+            message=message,
         )
+
+    # -- stability (outside the frozen Protocol, ADR 0047 C1) ----------------------------------
+
+    def stability(
+        self, state: StreamState, phase: Phase, context: EvaluationContext
+    ) -> StabilityReport:
+        """Judge `state` as `phase` against the other phase model's trials (spec §5.5).
+
+        As LIQUID: the closed-form vapour trial (spec §5.4 step 2). As VAPOR: the liquid trial
+        (step 3). STABLE_WITHIN_TESTED_SCOPE if the distance is ≥ −EPS_TPD, else UNSTABLE; UNKNOWN
+        with a reason for a wrong length, an out-of-domain or dormant state, an unknown phase, or a
+        liquid trial that reached its cap. It reports and never raises.
+        """
+        del context
+        if phase not in ("LIQUID", "VAPOR"):
+            return _report_unknown(
+                phase, f"unsupported_phase: {phase!r}; {PROVIDER_ID} judges LIQUID or VAPOR"
+            )
+        ids = self._records.components
+        if len(state.n) != len(ids):
+            return _report_unknown(
+                phase, f"state_length: {len(state.n)} flows for the components {ids}"
+            )
+        outside = self._domain_violation(state)
+        if outside is not None:
+            return _report_unknown(phase, outside)
+        if state.is_dormant:
+            return _report_unknown(phase, "dormant_state: composition undefined")
+
+        search = _Search(self._records, state)
+        if phase == "LIQUID":
+            tm, ln_k = search.vapour_trial()
+            weights = [
+                search.z[i] * math.exp(ln_k[i]) if i in search.flowing else 0.0
+                for i in range(len(ids))
+            ]
+            total = sum(weights)
+            return StabilityReport(
+                label=_label(tm),
+                scope=SCOPE,
+                phase=phase,
+                tm={"VAPOR": tm, "LIQUID": None},
+                trial_composition=tuple(wi / total for wi in weights),
+                iterations=0,
+                residual=None,
+                epsilon=EPS_TPD,
+                reason="",
+            )
+        trial = search.liquid_trial()
+        if trial.tm is None:
+            return StabilityReport(
+                label="UNKNOWN",
+                scope=SCOPE,
+                phase=phase,
+                tm={"VAPOR": None, "LIQUID": None},
+                trial_composition=None,
+                iterations=trial.iterations,
+                residual=trial.residual,
+                epsilon=EPS_TPD,
+                reason=f"stability_not_converged: {_cap_text('liquid-trial', trial)}",
+            )
+        return StabilityReport(
+            label=_label(trial.tm),
+            scope=SCOPE,
+            phase=phase,
+            tm={"VAPOR": None, "LIQUID": trial.tm},
+            trial_composition=trial.w,
+            iterations=trial.iterations,
+            residual=trial.residual,
+            epsilon=EPS_TPD,
+            reason="",
+        )
+
+
+# -- the flash and the stability search (spec §5.4-§5.5) -----------------------------------------
+
+_STABLE: Final = f"stability: STABLE_WITHIN_TESTED_SCOPE; scope: {SCOPE}"
+
+
+def _unknown(reason: str) -> str:
+    """The message of a flash whose label is UNKNOWN (spec §5.4)."""
+    return f"stability: UNKNOWN; scope: {SCOPE}; reason: {reason}"
+
+
+def _label(tm: float) -> StabilityLabel:
+    return "STABLE_WITHIN_TESTED_SCOPE" if tm >= -EPS_TPD else "UNSTABLE"
+
+
+def _cap_text(loop: str, trial: _LiquidTrial) -> str:
+    return (
+        f"{loop} successive substitution reached its cap of {trial.iterations} iterations "
+        f"(last step {trial.residual!r} > {DELTA_SS!r})"
+    )
+
+
+@dataclass(frozen=True)
+class _LiquidTrial:
+    """The liquid trial against a vapour of the feed composition (spec §5.4 step 3).
+
+    `tm`, `w` and `ln_k` are None when the loop reached its cap without its stop.
+    """
+
+    iterations: int
+    #: The last step max_{i∈F} |ln W'_i − ln W_i|.
+    residual: float
+    tm: float | None
+    #: w = W/ΣW of the final W (0.0 for absent components) and ln K_i(w), every component.
+    w: tuple[float, ...] | None
+    ln_k: tuple[float, ...] | None
+
+
+@dataclass(frozen=True)
+class _Split:
+    """The two-phase successive substitution (spec §5.4 step 4). `failure` is None on a converged
+    split with 0 < β < 1, and otherwise says why there is none."""
+
+    iterations: int
+    failure: str | None
+    beta: float = math.nan
+    x: tuple[float, ...] = ()
+    y: tuple[float, ...] = ()
+    #: K_i for i ∈ F (the K of the stopping Rachford–Rice solve), K_i(x) for i ∉ F.
+    k: tuple[float, ...] = ()
+    #: The last step max_{i∈F} |ln K'_i − ln K_i|.
+    residual: float = math.nan
+
+
+class _Search:
+    """The trials and the split at one non-dormant, in-domain state of known length."""
+
+    def __init__(self, records: WilsonRecords, state: StreamState) -> None:
+        self._lam = records.wilson_lambda
+        self._size = len(state.n)
+        total = state.total_flow
+        self.z = tuple(value / total for value in state.n)  # step 1
+        self.flowing = tuple(i for i, value in enumerate(state.n) if value > 0.0)
+        self._ln_z = {i: math.log(self.z[i]) for i in self.flowing}
+        self._ln_psat = _pure(records, state.temperature).ln_psat
+        self._ln_p = math.log(state.pressure)
+
+    def ln_k(self, x: Sequence[float]) -> tuple[float, ...]:
+        """ln K_i(x) = ln γ_i(x) + ln P_i^sat − ln P, every component (eq. 3.10)."""
+        ln_gamma, _ = _ln_gamma(self._lam, x)
+        return tuple(g + s - self._ln_p for g, s in zip(ln_gamma, self._ln_psat, strict=True))
+
+    def _full(self, values: Mapping[int, float]) -> tuple[float, ...]:
+        return tuple(values.get(i, 0.0) for i in range(self._size))
+
+    def vapour_trial(self) -> tuple[float, tuple[float, ...]]:
+        """tm_V = 1 − Σ_{i∈F} z_i K_i(z), and ln K(z) (step 2, closed form)."""
+        ln_k = self.ln_k(self.z)
+        return 1.0 - sum(self.z[i] * math.exp(ln_k[i]) for i in self.flowing), ln_k
+
+    def liquid_trial(self) -> _LiquidTrial:
+        """W_i = z_i/K_i(w), w = W/ΣW, from W = z/K(z), to max |Δ ln W| ≤ DELTA_SS (step 3).
+
+        W is carried as ln W = ln z − ln K(w), the logarithm of the spec's W'_i = z_i/K_i(w).
+        """
+        flowing, ln_z = self.flowing, self._ln_z
+        start = self.ln_k(self.z)
+        ln_w = {i: ln_z[i] - start[i] for i in flowing}
+        step = math.inf
+        for m in range(1, SS_MAX + 1):
+            ln_k = self.ln_k(self._normalised(ln_w))
+            new = {i: ln_z[i] - ln_k[i] for i in flowing}
+            step = max(abs(new[i] - ln_w[i]) for i in flowing)
+            ln_w = new
+            if step <= DELTA_SS:
+                # tm at w = W/ΣW of the final W: second-order in the error of W, unlike 1 − ΣW.
+                w = self._normalised(ln_w)
+                ln_k = self.ln_k(w)
+                tm = 1.0 + sum(
+                    math.exp(ln_w[i]) * (ln_w[i] + ln_k[i] - ln_z[i] - 1.0) for i in flowing
+                )
+                return _LiquidTrial(m, step, tm, w, ln_k)
+        return _LiquidTrial(SS_MAX, step, None, None, None)
+
+    def _normalised(self, ln_w: Mapping[int, float]) -> tuple[float, ...]:
+        weights = {i: math.exp(value) for i, value in ln_w.items()}
+        total = sum(weights.values())
+        return self._full({i: value / total for i, value in weights.items()})
+
+    def two_phase(self, ln_k_start: Sequence[float]) -> _Split:
+        """Rachford–Rice and K_i = K_i(x) by successive substitution to max |Δ ln K| ≤ DELTA_K,
+        from K = K(w) of the liquid trial (step 4)."""
+        flowing, z = self.flowing, self.z
+        ln_k = {i: ln_k_start[i] for i in flowing}
+        step = math.inf
+        for m in range(1, SS_MAX_TWO_PHASE + 1):
+            k = {i: math.exp(ln_k[i]) for i in flowing}
+            k_max, k_min = max(k.values()), min(k.values())
+            if not k_max > 1.0 > k_min:  # (a)
+                return _Split(
+                    m,
+                    f"no Rachford-Rice bracket (K_max = {k_max!r}, K_min = {k_min!r} over the "
+                    "flowing components)",
+                )
+            beta = _rachford_rice([z[i] for i in flowing], [k[i] for i in flowing])
+            x = {i: z[i] / (1.0 + beta * (k[i] - 1.0)) for i in flowing}  # (b)
+            y = {i: k[i] * x[i] for i in flowing}
+            x_total, y_total = sum(x.values()), sum(y.values())
+            x_full = self._full({i: value / x_total for i, value in x.items()})
+            y_full = self._full({i: value / y_total for i, value in y.items()})
+            ln_k_new = self.ln_k(x_full)  # (c)
+            step = max(abs(ln_k_new[i] - ln_k[i]) for i in flowing)
+            if step <= DELTA_K:
+                if not 0.0 < beta < 1.0:
+                    return _Split(m, f"vapour fraction {beta!r} outside (0, 1)")
+                k_out = tuple(k[i] if i in k else math.exp(ln_k_new[i]) for i in range(self._size))
+                return _Split(m, None, beta, x_full, y_full, k_out, step)
+            ln_k = {i: ln_k_new[i] for i in flowing}
+        return _Split(
+            SS_MAX_TWO_PHASE,
+            f"two-phase successive substitution reached its cap of {SS_MAX_TWO_PHASE} iterations "
+            f"(last step {step!r} > {DELTA_K!r})",
+        )
+
+
+def _rachford_rice(z: Sequence[float], k: Sequence[float]) -> float:
+    """β with Σ z_i (K_i − 1)/(1 + β(K_i − 1)) = 0 on (1/(1 − K_max), 1/(1 − K_min)), K_max > 1 >
+    K_min (spec §5.4 step 4a): bisection with safeguarded Newton, from β = 0.5, until the bracket
+    is ≤ 4 ulp(β) wide or f(β) = 0.
+
+    f is strictly decreasing on the bracket, so its sign at each iterate moves one end. A Newton
+    step is taken when it lands strictly inside the bracket and moves β; otherwise, and whenever two
+    Newton steps have not halved the bracket, the step is the midpoint. The bracket therefore at
+    least halves every three iterations, so the loop ends.
+    """
+    lo, hi = 1.0 / (1.0 - max(k)), 1.0 / (1.0 - min(k))
+    beta = 0.5
+    reference = hi - lo
+    newton_left = 2
+    while True:
+        f = slope = 0.0
+        for zi, ki in zip(z, k, strict=True):
+            d = ki - 1.0
+            denominator = 1.0 + beta * d
+            term = zi * d / denominator
+            f += term
+            slope -= term * d / denominator
+        if f == 0.0:
+            return beta
+        if f > 0.0:
+            lo = beta
+        else:
+            hi = beta
+        if hi - lo <= 4.0 * math.ulp(beta):
+            return beta
+        if hi - lo <= 0.5 * reference:
+            reference, newton_left = hi - lo, 2
+        candidate = beta - f / slope
+        if newton_left > 0 and lo < candidate < hi and candidate != beta:
+            newton_left -= 1
+            beta = candidate
+        else:
+            newton_left = 2
+            beta = lo + 0.5 * (hi - lo)
+
+
+def _flash_refused(status: PropertyStatus, message: str, convention: str) -> FlashResult:
+    """A typed flash refusal: no outlets, no vapour fraction (spec §5.4 step 0)."""
+    return FlashResult(
+        status=status,
+        phase_signature=None,
+        vapor_fraction=None,
+        vapor=None,
+        liquid=None,
+        provider_id=PROVIDER_ID,
+        reference_convention=convention,
+        message=message,
+    )
+
+
+def _flash_not_converged(message: str, iterations: int, convention: str) -> FlashResult:
+    """A search that reached its cap or has no split: label UNKNOWN, no outlets (spec §5.4)."""
+    return FlashResult(
+        status="not_converged",
+        phase_signature=None,
+        vapor_fraction=None,
+        vapor=None,
+        liquid=None,
+        iterations=iterations,
+        provider_id=PROVIDER_ID,
+        reference_convention=convention,
+        message=message,
+    )
+
+
+def _report_unknown(phase: Phase, reason: str) -> StabilityReport:
+    """UNKNOWN before any trial ran (spec §5.5): no distance, no trial composition."""
+    return StabilityReport(
+        label="UNKNOWN",
+        scope=SCOPE,
+        phase=phase,
+        tm={"VAPOR": None, "LIQUID": None},
+        trial_composition=None,
+        iterations=0,
+        residual=None,
+        epsilon=EPS_TPD,
+        reason=reason,
+    )
 
 
 #: Spec §5.7, verbatim.

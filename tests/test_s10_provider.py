@@ -766,13 +766,3 @@ def test_the_stability_report_is_frozen_with_spec_5_5s_fields() -> None:
     )
     with pytest.raises(dataclasses.FrozenInstanceError):
         report.label = "UNSTABLE"  # type: ignore[misc]
-
-
-def test_the_flash_is_refused_until_wo_s10_2(provider: WilsonIdealGasProvider) -> None:
-    """No placeholder success path: until the TP flash lands, every flash is `unsupported`."""
-    from openflowsheet.thermo import FlashRequest
-
-    result = provider.flash(FlashRequest(state=_state("E1")), CONTEXT)
-    assert result.status == "unsupported"
-    assert result.message.startswith("flash_not_implemented: ")
-    assert result.vapor is None and result.liquid is None and result.vapor_fraction is None
