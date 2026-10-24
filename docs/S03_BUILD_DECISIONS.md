@@ -488,3 +488,7 @@ Authority: spec §6–§8, §11–§13 as amended by §17 and §18. Started afte
   `test_m07a_harvest.py`, `test_t08_w2_support_envelope.py`, `test_t08_w2_inventory.py`: 686 passed in 216 s
   (T08 C3/A21 and M07a's harvest test pass). `ruff check .` and `ruff format --check .` clean.
 - HG line: `S03 HG 930aad1b162d0dc27276e64a5b67ce857a7cdf97..HEAD: PASS (66 appended; HARVEST_SIZE (48, 552, 74) -> (50, 613, 79))`.
+  Measured at `84daa691` by S05's `check_harvest` (R-617) adapted to S03's two manifests (a scratch script, not
+  committed): (a) only the envelope and `test_m07a_harvest.py` change outside `docs/` and `evidence/`; (b) the rows
+  appended are exactly both manifests' items; (c) only `HARVEST_SIZE` moves, by two manifests and 66 items; (d) both
+  manifests tracked, 930aad1b's `tested`.
