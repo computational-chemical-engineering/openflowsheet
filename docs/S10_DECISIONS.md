@@ -25,6 +25,12 @@ each; each is isolated and revertible. Measurements go in the run log below.
 - DECISION B-14: `FlashResult.achieved_accuracy` → the default `"exact-double"`, as every provider's flash (`pr-c1-v1`'s Newton flash included); spec §5.4 is silent. Alternative: a new accuracy string for an SS result converged to δ_K (would need a convention the cache understands). Reversible by: one field in `flash` (`f23e1927`). For the reviewer.
 - DECISION B-15: ln γ (eq. 3.8) factored out of `_wilson` as `_ln_gamma`, so the flash's K-values skip the O(N³) G matrix. Inert: `evaluate_phase` bit-identical at E1-E6, both phases, every value and derivative (hex dump before and after). Alternative: a second transcription of eq. 3.8. Reversible by: reverting `c7a72e95`.
 
+## WO-S10-2b (review findings 1-3; spec §14 Amendment 1 E-1, E-2; R-711)
+
+- DECISION B-16: what the E-1 test asserts → with n_VA = 5e-324 (n_tot unchanged, so z bitwise equal), `flash` and both `stability()` reports equal the n_VA = 0.0 results bitwise (single phase: the outlet is the feed itself, subnormal included); cases: the review's two reproducers at F3 (both LIQUID) and F5 with the subnormal (a split, VA outlets 0.0). Alternative: assert only "no raise, typed result". Reversible by: `test_e1_*` (`7a3d26f4`).
+- DECISION B-17: the E-2 sample → 12 literal states plus the review's reproducer: offsets +2e-5, −5e-5, +1e-4 in x_VB from F12, temperatures at 1/5…4/5 of the band where both trial distances are below −EPS_TPD (found offline by bisection on `stability()`); the test first asserts both labels UNSTABLE, so every state reaches step 4. "Fugacity equality ≤ 1e-10" is read as |ln x_i + ln φ_i^L(x) − ln y_i − ln φ_i^V(y)| ≤ 1e-10 at the outlets, through `evaluate_phase`. No count of ok vs not_converged is asserted (it depends on rounding). Alternative: compute the sample at test time. Reversible by: `NEAR_AZEOTROPE` (`23a2c289`).
+- DECISION B-18: finding 3's check → both phases, all 10 queries: the spread of ln w_i + ln φ_i^trial(w) − ln z_i − ln φ_i^phase(z) ≤ 1e-12 and each term within 1e-12 of −ln(1 − tm) (the review's −ln ΣW). Alternative: the spread alone. Reversible by: the block in `test_a21_stability_queries` (`300eb941`).
+
 ## Run log
 
 - 2026-10-25, WO-S10-1. `tests/test_s10_provider.py`: 88 passed. Per group: A01 2, A02 21 (19 malformed copies covering
@@ -56,7 +62,15 @@ each; each is isolated and revertible. Measurements go in the run log below.
   registration; T04/T06 registries; document hashes) with both S10 files: 539 passed, 11 skipped, 6 failed = T08 C3's
   harvest check only, as in WO-S10-1. ruff, ruff format and mypy clean on the touched files.
 
-## Where WO-S10-2 stopped
+- 2026-10-25, WO-S10-2b. E-1 (`_Search.flowing` on z) inert: `flash` and `stability()` (both phases) hex-identical
+  before and after on F1-F12 and 70 near-azeotrope states (5 offsets × 14 temperatures), 252 results. The E-1 test
+  fails 3 of 3 on the old code. Finding 3 margins: spread 7.8 × 10⁻¹⁴, constant 4.0 × 10⁻¹⁴ (bound 1e-12); mutation
+  trial_composition = z fails 10 of 10, unnormalised vapour-trial W fails 5 of 5. E-2: 9 ok (worst ln-fugacity
+  residual 1.0 × 10⁻¹³, balance 1.1 × 10⁻¹⁶ n_tot), 4 not_converged (the reproducer, 1027 iterations, among them);
+  mutation DELTA_K = 1e-9 fails 13 of 13. `tests/test_s10_flash.py` 102 passed (86 + 3 E-1 + 13 E-2),
+  `tests/test_s10_provider.py` 87 passed. ruff, ruff format, mypy clean on the touched files.
 
-Complete. Next: the `reviewer` pass on WO-S10-1 and WO-S10-2 against spec §3-§5 (residuals, derivatives and phase
-logic), with B-1…B-15 for its ruling round.
+## Where WO-S10-2b stopped
+
+Complete: review findings 2 and 3 fixed, finding 1 recorded by E-2 with its outcome test; the stop rule is S10-C's.
+B-16…B-18 are test-design choices for the next ruling round.
