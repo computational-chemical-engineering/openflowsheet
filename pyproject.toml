@@ -107,16 +107,23 @@ select = ["E", "F", "I", "B", "UP", "N"]
 # F, Q_*, H_*) as identifiers. Those names are fixed by docs/derivations/SYN-001-oracle-spec.md
 # §1, frozen per docs/interfaces-frozen.md, so pep8-naming's lowercase rules for arguments
 # (N803), local variables (N806) and dataclass fields such as `sum_zK` (N815) are switched off
-# for these three files only. Apart from the S03 tool scripts' E501 waiver below, no other check
-# is relaxed anywhere.
+# for these three files only. Apart from the S03 tool scripts' waivers below (E501, F841 and the
+# formatter), no other check is relaxed anywhere.
 "benchmarks/syn001/oracle.py" = ["N803", "N806", "N815"]
 "tests/test_syn001_oracle.py" = ["N803", "N806"]
 "tests/test_syn001_reference_values.py" = ["N803", "N806"]
 # The S03 tool scripts are the provenance of the committed tool records. They stay byte-identical to
 # their qualification commits (2eb71ac0, 5474531f), which A03 scans, so long lines are waived, not
 # rewrapped (S03 §19.5, R-644). An edit to either script means a new qualification run.
-"spikes/references/s03_qualify_idaes.py" = ["E501"]
+# The same §19.5 waiver covers the one other check s03_qualify_idaes.py fails at its qualification
+# commit, F841 (an unused local, `pyo` in `inspection`; S03 WO-S03-6 build decision B6-1).
+"spikes/references/s03_qualify_idaes.py" = ["E501", "F841"]
 "spikes/references/s03_qualify_dwsim.py" = ["E501"]
+
+[tool.ruff.format]
+# The S03 tool scripts are not reformatted either: an edit means a new qualification run (S03 §19.5,
+# R-644; S03 WO-S03-6 build decision B6-1).
+exclude = ["spikes/references/s03_qualify_idaes.py", "spikes/references/s03_qualify_dwsim.py"]
 
 [tool.mypy]
 python_version = "3.13"
