@@ -179,3 +179,15 @@ evidence/S03/artifacts/s03-qualification-topup/out`. The eleven standing results
 - Disclosure: before the run, the harness was exercised once on RC7 alone into the scratchpad (structural
   positions and the IL scan only; RC7 has no runnable position, so no solver ran). One mistyped runner
   call (`... RC3` without `--only`) was rejected by argparse before DWSIM started. No other run was made.
+
+## WO-S03-1b (our side for RC6 and RC7, spec §17.10)
+
+- RC6 and RC7 are appended after RC5 in `OURS_CASES` (the order of `s03_cases.json`). `column_spec` needed no
+  change: the registered `recovery` (component C, 0.99) and `temperature` (stage 6, 368) entries go
+  through the existing S06 inverse-specification path in `ColumnSpec`.
+- Regenerated all 18 `ours-*.json`. In each of the 16 old records only `cases_sha256` changed, to
+  `a0ac8496…3f24fb2` (key-by-key comparison against the prior files; `git diff --numstat` is 1/1 per file).
+- Agreement with `s03_reference.json` (A06, tolerance fractions): RC6 worst 2.0e-2 (`bottom[A]`), RC7 worst
+  1.1e-6 (`top[B]`), both under 0.1 (Q-S03-3). A06 is parametrized over `OURS_CASES`, so it took both cases
+  with no code change; only the docstring and a measurement comment were updated.
+- `tests/test_s03_ours.py` + `tests/test_s03_s11_refusal.py`: 95 passed (A02 case-set, A06, A07, A16 included).

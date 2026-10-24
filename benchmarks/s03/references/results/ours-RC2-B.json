@@ -1,7 +1,7 @@
 {
  "case": "RC2-B",
  "cases_file": "docs/derivations/scripts/s03_cases.json",
- "cases_sha256": "243f2afae377940a3688cc2e5c00503767d90940d72db064b6c48411540b688e",
+ "cases_sha256": "a0ac8496b416b0a401e9906f576243a879eab18c991939d017f009b0a3f24fb2",
  "cause": "",
  "outcome": "CONVERGED",
  "policy_id": "s01-default-v1",

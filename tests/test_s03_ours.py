@@ -90,7 +90,7 @@ def test_a02_the_inputs_are_the_registered_file() -> None:
 
 
 def test_a02_every_registered_case_has_our_record_or_an_alias() -> None:
-    """A02: RC1–RC5, the ten perturbed cases and PC-P have a record each; PC-L's is RC1's
+    """A02: RC1–RC7, the ten perturbed cases and PC-P have a record each; PC-L's is RC1's
     (§3.3); every committed `ours-*.json` is one of them."""
     assert set(ours_side.OURS_CASES) | set(ours_side.OURS_ALIASES) == set(CASES["cases"])
     assert not set(ours_side.OURS_CASES) & set(ours_side.OURS_ALIASES)
@@ -182,7 +182,7 @@ def test_a02_quantity_names_outside_section_4_are_refused() -> None:
 @pytest.mark.parametrize("case", ours_side.OURS_CASES)
 def test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin(case: str) -> None:
     """A06 (rule 3): `CONVERGED` (so S02 §8 and S06 §8 accepted: `solve_column` raises on a
-    `CONVERGED` answer that fails them), every equilibrium stage `TWO_PHASE` (RC2: the total
+    `CONVERGED` answer that fails them), every equilibrium stage `TWO_PHASE` (RC2 and RC6: the total
     condenser plus six), and every registered quantity within 0.1 × §6's tolerance of `ref`."""
     record = live(case)
     assert record["outcome"] == "CONVERGED", record
@@ -203,6 +203,7 @@ def test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin(case: str) ->
         worst = max(worst, ratio)
         assert ratio <= OURS_FRACTION, (case, name, value, entry["value"], float(ratio))
     # Measured 2026-10-24 (WO-S03-1): worst 3.5e-3 of a tolerance (RC3 `bottom[B]`).
+    # WO-S03-1b: RC6 worst 2.0e-2 (`bottom[A]`), RC7 worst 1.1e-6 (`top[B]`); both under 0.1.
     assert worst <= OURS_FRACTION
 
 

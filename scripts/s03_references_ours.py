@@ -8,7 +8,7 @@ registered quantities of `cases.cases.<case>.quantities` by name, in SI units an
 numbering (§4). The comparison (WO-S03-4) reads these records, never this module; the gate test
 solves again live and checks that the committed record is what a solve produces today (A07).
 
-Which cases have a record (§3, §12 WO-S03-1): RC1–RC5, the ten perturbed cases and PC-P. PC-L is
+Which cases have a record (§3, §12 WO-S03-1, §17.10): RC1–RC7, the ten perturbed cases and PC-P. PC-L is
 RC1 with DWSIM's unmapped latent heat, so its "ours" is RC1's record (§3.3; no file), as T06's
 PC-1 is REF-04's.
 
@@ -69,6 +69,8 @@ OURS_CASES: tuple[str, ...] = (
     "RC3",
     "RC4",
     "RC5",
+    "RC6",
+    "RC7",
     "RC1-RR",
     "RC1-BR",
     "RC1-z",
