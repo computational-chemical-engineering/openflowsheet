@@ -92,26 +92,25 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-23, workstation).** `main` = `a904cedf`: gate PASS 11228 passed / 60 skipped; S06 and C2-A2
-branch CI green both architectures. On `main`: C1–C4, C7–C9, C12 (build step + workstation terms fetch), D1,
-S01, S02, S04, **S05** (IAPWS-95 provider, manifest `evidence/S05/4ac00a0…` tested, ADR 0045 Proposed; library-only,
-nothing ships before IAPWS's terms are read and Tables 6–8 checked, C10-Q1), **S06** (column purity/recovery/stage
-temperature, manifest `evidence/S06/ad264a2…` tested, review `docs/reviews/S06-review.md`, R-601…R-610), **C2
-Amendment 2** (`case_facts-v2.json` 4f5c5a65…, `f1.status` facts_committed, R-581/R-582, review
-`docs/reviews/C2-A2-review.md`). WS1 done; ADR 0044 Accepted (Frank, 2026-10-23).
-Frank 2026-10-23: C10-Q2 supercritical → VAPOR; Q-S06-1 no new warning; Q-S06-2 typed failure; C12 keep `pr-lib-v1`
-unshipped (A32 design step parked; shipping needs a clean-up package: drop CAS RNs, constants from primary papers).
-
-**No cloud sessions from 2026-10-23 (Frank); all work is local.** Merged since: wp/S05-tables, wp/D2 (gate PASS `8ac950b1`, 11228 passed). Frank: S05 ships with IAPWS attribution, library only (Q-8). In flight: wp/S05-wo4 + wp/S06-a04, wp/S04-retake (WO-L01-3a); wp/S05-ship (R-616, WO-S05-5) waits for wp/S05-wo4.
+**Position (2026-10-24, workstation; no cloud sessions from 2026-10-23, Frank).** `main` = `a40a6b80`. Last full
+gate: PASS at `c80dc6e5` (wp/S07 head; tree identical to the merge): 11653 passed, 3137 skipped (CoolProp tests skip
+without the `coolprop` extra; S05+S07 suites with it: 3847 passed, 2 skipped). CI 40045965622 green on both architectures.
+On `main`: C1–C4, C7–C9, C12, D1, D2, S01, S02, S04 (+ development-half re-take), **S05** (`iapws95-v1`, ADR 0045 Accepted,
+manifest `evidence/S05/01cdeed4…` tested, coefficients packaged with the IAPWS attribution; library only, Frank Q-8),
+**S06**, **C2 Amendment 2**, **S07** (`coolprop-heos-v1` over CoolProp 8.0.0, optional extra with its own lock; 123
+fluids, tier A the nine S04 fluids cross-checked, tier B 114 self-consistent; ADR 0046 Proposed; manifest
+`evidence/S07/7bfab70d…` tested 64/65, the 65th the gate `unsupported`; aarch64 agrees with x86-64 within spec §20,
+R-627, not bitwise; library only). HARVEST_SIZE (48, 552, 74). pr-lib-v1 stays unshipped (Frank, C12).
 
 **Next actions (in order):**
-1. Design-lane small items: S06 §17.4's F3 set is refused by I6 (`docs/C11_DECISIONS.md`, the A04 test avoids
-   `validate`); ADR 0045 acceptance conditions; D08 in `docs/requirements.yaml` does not list S04.
-2. S04's development-half coverage re-take on C9's W27 registration version 2 (L01 spec WO-L01-3); needs the archive.
-3. Workstation backlog: S03 (column references, L4), M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
-4. IAPWS terms + Tables 6–8 check before S05 ships (a person, C10-Q1).
-5. **S07 queued (Frank, 2026-10-23):** CoolProp as an optional pure-fluid provider (`docs/CLOUD_WORK.md`); design lane first.
-- Remote `wp/*` branches already merged could be deleted (cloud got HTTP 403); keep `wp/M06-wo17` (unmerged WIP).
+1. Design-lane review items left by S07: harvest classes B-42 (build-lane draft); spec §20 F-20.2 (G3's Psat
+   allowance can move A08's sat_hi slope past 1e-8; a later tolerance pass); Q-A1-2 (AlyLee constants, n-Heptane, D6);
+   ADR 0046 acceptance.
+2. Binding package (S05 + S07 as selectable pure-fluid bases; needs its own ADR, `SELECTABLE_BASES` changes shape).
+3. S07b cryogenic liquids (run-time melting guard); WO-S07-4 published check values (optional).
+4. `components-crosscheck.json` projection re-take (needs the sources environment); pr-lib-v1 clean-up (drop CAS RNs,
+   F-4: W27 identity key).
+5. Workstation backlog: S03 (column references, L4), M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
 
 **History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
