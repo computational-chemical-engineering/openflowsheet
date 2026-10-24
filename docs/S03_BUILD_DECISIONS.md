@@ -60,3 +60,34 @@ Specifications: RR → `Stream_Ratio`; BR → reboiler `Stream_Ratio`; B → reb
 `Product_Molar_Flow_Rate` is the liquid distillate). L2(a): only RC4's family (partial condenser,
 D specified): `Partial_Condenser`, vapour product rate = D*, liquid distillate fixed at 0 by the
 condenser specification. L3: not admissible for DWSIM (§2.2).
+
+### WO-S03-3 outcome and questions for the design lane (records: commit 95870140)
+
+Run 2026-10-24, 1404 s, DWSIM 9.0.5 on .NET 8.0.31, fingerprint = `docs/reference-environments.md` §3.
+
+| Case(s) | DWSIM | Level, rung | Note |
+| --- | --- | --- | --- |
+| RC1, RC1-RR, RC1-z, PC-L | available | L1, (1e-8, Wang-Henke) | rerun moves 0.071, 0.079, 0.093, 0.071 tol |
+| RC2, RC2-RR, RC2-B, RC2-z, RC5 | available | L1, (1e-10, Napthali-Sandholm) | rerun 0.000 (RC2 family), 0.017 (RC5) |
+| RC1-BR | not available | — | only (1e-8, WH) passes 2-2c; its rerun moves 0.1006 tol (2d) |
+| PC-P | not available | — | WH fails DWSIM's own mass-balance check at 1e-10..1e-8, rule 2 balance at 1e-7, 1e-6 |
+| RC3, RC3-Q, RC3-z | not available | — | NS: 1000 iterations without convergence at every tolerance |
+| RC4, RC4-D, RC4-z | not available | — | L1 not expressible; L2(a) under NS: "Error evaluating error functions" |
+
+Measured facts that bear on the spec (no harness change made; §12 rule 6):
+- **F1** DWSIM 9.0.5's `DistillationColumn` dispatches only "Wang-Henke (Bubble Point)", "Modified Wang-Henke" and
+  "Napthali-Sandholm" (`RigorousColumn.vb` v9.0.5, ~l. 4807-4855). Russell inside-out does not exist; Burningham-Otto is
+  used only by `AbsorptionColumn` (no condenser or reboiler). §5.2's ladder therefore has one method for RC3/RC4.
+- **F2** Napthali-Sandholm defines the condenser `Stream_Ratio` as L(0)/LSS(0) and `Product_Molar_Flow_Rate` as LSS(0)
+  (the liquid distillate, `NewtonRaphson.vb` l. 442-448), which a full-reflux condenser holds at 0: every RR- or
+  D-specified partial-condenser case fails under NS. Wang-Henke's reflux ratio is L(0)/(LSS(0)+V(0)) = L_1/V_1.
+- **F3** DWSIM's column checks its own relative component balance at 10 × the column tolerance and errors above it, so
+  Wang-Henke passes only at 1e-8 here, and its 10× rerun moves quantities by 0.07-0.10 tolerance.
+- **F4** By §7.2, PC-P not comparable for DWSIM makes DWSIM's RC1 and its three perturbation pairs
+  `NOT_COMPARABLE(control_not_comparable: PC-P)` in the classifier (WO-S03-4), leaving DWSIM comparable on the RC2 family,
+  RC5 and PC-L only.
+
+Questions (defaults are what the records already do):
+- **Q3-1** Amend §5.2 for F1 (e.g. a substitute method for RC3/RC4)? Default: no amendment; RC3/RC4 families are
+  DWSIM-unavailable. Wang-Henke, outside their registered ladder, was not run into the records.
+- **Q3-2** Q-S03-2 answered "no" for 8 cases. Default: records stand as `NOT_COMPARABLE`; §6 not relaxed.
