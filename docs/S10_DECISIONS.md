@@ -13,6 +13,18 @@ each; each is isolated and revertible. Measurements go in the run log below.
 - DECISION B-6: the S10 family's shape in `benchmarks/registry.yaml` → SYN-001-T06's keys plus `provider`, `status`, `records_sha256`, `cases_directory: null` with a reason, `budgets: null` with a reason; no cases (library-only). Alternative: no family until S10-C. Reversible by: deleting the family and its test (`77aaf55f`).
 - DECISION B-7: θ₀ → the literal `0.29815` (spec §2), not `298.15 / 1000.0`. Alternative: the quotient. Reversible by: one constant (`647ce9a9`).
 
+## WO-S10-2 (spec §4, §5.4-§5.5, §7.5 A12-A22, A23 flash half)
+
+- DECISION B-1 superseded: `flash()` is the TP flash of spec §5.4; the refusal and its test are gone (`f23e1927`).
+- DECISION B-8: how S10.A20 patches "the two-phase cap" alone → two module constants, `SS_MAX` (liquid trial) and `SS_MAX_TWO_PHASE`, both 1000, one registered value (§5.6 "per loop"), read at call time. Alternative: one `SS_MAX` for both loops (A20's F3 case could not reach step 4). Reversible by: merging the names and patching both in A20 (`f23e1927`).
+- DECISION B-9: Rachford–Rice details §5.4 4a leaves open → start β = 0.5 (always inside the bracket, which spans (<0, >1)); a Newton step when it lands strictly inside the bracket and moves β, the midpoint otherwise and whenever two Newton steps have not halved the bracket (so the bracket halves at least every three iterations and the loop provably ends); the returned β is the last one evaluated when the bracket is ≤ 4 ulp(β) or f(β) = 0. Alternative: rtsafe's step-size stop (does not close the bracket from both sides as §5.4 requires). Reversible by: `_rachford_rice` (`f23e1927`).
+- DECISION B-10: the liquid trial carries ln W = ln z_i − ln K_i(w), the logarithm of the spec's W'_i = z_i/K_i(w), and forms W = exp(ln W) for w; step s and tm_L use ln W directly. Alternative: divide, then take logs (an extra rounding in every step). Reversible by: `_Search.liquid_trial` (`f23e1927`).
+- DECISION B-11: what a `not_converged` flash carries beyond §5.4 → no outlets, `vapor_fraction` None, `k_values` {} (spec), and `iterations` = the iterations actually taken (step 3's cap: SS_MAX; step 4: step-3 count + step-4 count), blueprint §6.4; the reason text follows the code (`… reached its cap of N iterations (last step R > 1e-13)`; `no Rachford-Rice bracket (K_max = R, K_min = R …)`; `vapour fraction R outside (0, 1)`). Note: `FlashResult`'s docstring says not_converged "carries what it reached"; the spec's "no outlets" is followed. Alternative: iterations 0. Reversible by: `_flash_not_converged` (`f23e1927`).
+- DECISION B-12: `stability(…, "VAPOR")` at the liquid-trial cap → UNKNOWN, `tm` both None, `trial_composition` None, `iterations` SS_MAX, `residual` the last step (§5.5 names only the label and reason). Alternative: report the unconverged tm (not a minimum, so not a distance the label could rest on). Reversible by: `stability` (`f23e1927`).
+- DECISION B-13: `stability()` with a phase other than LIQUID/VAPOR → UNKNOWN, reason `unsupported_phase: …`, checked before length, domain and dormancy (§5.5 "reports and never raises"). Alternative: raise, or fall through to a trial. Reversible by: `stability` (`f23e1927`).
+- DECISION B-14: `FlashResult.achieved_accuracy` → the default `"exact-double"`, as every provider's flash (`pr-c1-v1`'s Newton flash included); spec §5.4 is silent. Alternative: a new accuracy string for an SS result converged to δ_K (would need a convention the cache understands). Reversible by: one field in `flash` (`f23e1927`). For the reviewer.
+- DECISION B-15: ln γ (eq. 3.8) factored out of `_wilson` as `_ln_gamma`, so the flash's K-values skip the O(N³) G matrix. Inert: `evaluate_phase` bit-identical at E1-E6, both phases, every value and derivative (hex dump before and after). Alternative: a second transcription of eq. 3.8. Reversible by: reverting `c7a72e95`.
+
 ## Run log
 
 - 2026-10-25, WO-S10-1. `tests/test_s10_provider.py`: 88 passed. Per group: A01 2, A02 21 (19 malformed copies covering
@@ -28,7 +40,23 @@ each; each is isolated and revertible. Measurements go in the run log below.
   check only (`wilson-ig-v1: S10 has no U02 item in the harvest`), expected until S10's manifest is harvested, as for
   S05 and S07. ruff, ruff format and mypy clean on the touched files.
 
-## Where WO-S10-1 stopped
+- 2026-10-25, WO-S10-2. `tests/test_s10_flash.py`: 86 passed. Per group: A12 13, A13 7, A14/A15 6 (5 states + worst),
+  A15 absent components 5, A16 5, A17 14, A18 1, A19 7, message rule 1, A20 3, Rachford–Rice vs the analytic binary
+  root 4, A21 12 (10 queries, both labels, flash = stability distances bitwise), A22 7 (6 + unknown phase), A23 1.
+  `tests/test_s10_provider.py`: 87 passed (B-1's test removed).
+- Agreement: worst two-phase output 0.034 of its §7.3 tolerance (F10 K_VA; F3 0.032, F4 0.026, F8 0.027, F5 0.004);
+  worst trial distance 1.78 × 10⁻¹⁴ (F2 tm_V, = FLOOR-TM), every other ≤ 2.4 × 10⁻¹⁵; worst component balance
+  5.6 × 10⁻¹⁷ n_tot; fugacity residuals 3.9-9.4 × 10⁻¹⁴.
+- Iterations: liquid trial F2 40, F3/F8/F10/F11 39, F5 28, F4 21, F6b 1; two-phase F3 39, F4 28, F5 28, F8 23, F10 17
+  (spec SS-CAP: at most 40 and 39). Labels: F1, F6a, F7, F12 LIQUID; F2, F6b, F11 VAPOR; F3, F4, F5, F8, F10 TWO_PHASE;
+  F9 ZERO_FLOW. stability(): F1 L stable / V unstable, F2 L unstable / V stable, F3 both unstable, F7 L stable / V
+  unstable, F11 L unstable / V stable, as the YAML.
+- Mutation MF01 (K at y) re-run on the implementation: F3's β moves 1.27 × 10⁹× its tolerance (spec 1.3 × 10⁹×).
+- Registry tests (T08 envelope, unsupported, inventory; T07 global state; requirements ledger; S05 envelope; S07
+  registration; T04/T06 registries; document hashes) with both S10 files: 539 passed, 11 skipped, 6 failed = T08 C3's
+  harvest check only, as in WO-S10-1. ruff, ruff format and mypy clean on the touched files.
 
-Complete. Next: WO-S10-2 (`flash`, `stability()`, the message grammar; `tests/test_s10_flash.py` for A12-A22 and the
-flash half of A23), then the `reviewer` pass on WO-1 and WO-2.
+## Where WO-S10-2 stopped
+
+Complete. Next: the `reviewer` pass on WO-S10-1 and WO-S10-2 against spec §3-§5 (residuals, derivatives and phase
+logic), with B-1…B-15 for its ruling round.
