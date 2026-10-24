@@ -415,3 +415,20 @@ Authority: spec §6–§8, §11–§13 as amended by §17 and §18. Started afte
   `rule2.energy_balance_W` values of order 1e-12 W (cancellations of 1e4 W terms), by at most 1.25e-12 relative.
 - FIX: `scripts/s03_references_ours.py` docstring line 11 exceeded 100 characters (ruff E501, §13); rewrapped
   (`5778ac52`), no behaviour change.
+
+### WO-S03-4 outcome (comparison `959131dc`; manifest `evidence/S03/959131dc…/manifest.json`)
+
+- Every comparable pair `AGREE`. DWSIM: RC1, RC2, RC5, RC6, RC1-RR, RC1-z, RC2-RR, RC2-B, RC2-z (worst 0.0380 tolerance,
+  RC1-RR `top[B]`). IDAES: RC1, RC2, RC3, RC5, RC6, RC7 and every perturbed case but the RC4 family (worst 0.0202,
+  RC6 `bottom[A]`). `NOT_COMPARABLE(capability)` (rule 0): DWSIM RC3, RC4 and their families, RC7, RC1-BR, PC-P;
+  IDAES RC4, RC4-D, RC4-z, PC-P. `not_applicable`: (PC-L, IDAES), (PC-LI, DWSIM).
+- Controls: (PC-L, DWSIM) `DISAGREE`, 22/29 outside, worst 243.3 (`Q_reboiler`), tool-model distance 0.0326;
+  (PC-LI, IDAES) `DISAGREE`, worst 243.3 (`Q_reboiler`), tool-model distance 4.6e-4. No control `AGREE`; both tools'
+  pairs count (§17.3(b) relabels nothing).
+- §17.5: RC1, RC2 row 5 (two references); RC3 row 6 (IDAES; DWSIM absent); RC4 row 7 (no reference). X31 reference
+  clause: **not met**, 2 of 4 cases with two references (§18.6 branch B-i, IDAES qualified RC3 but not RC4).
+  Inverse kinds: purity (RC5) and recovery (RC6) row 5; temperature (RC7) row 6 (IDAES).
+- Rule values recomputed from the raw fields match the scripts' to roundoff; largest rerun movement 0.0931 (DWSIM
+  RC1-z), largest IDAES path dependence 7.75e-5 (RC5).
+- Manifest: `implemented`, 21/24 checks pass. A01–A16 and the generator, comparison, ruff, format and record checks
+  pass; A17 fails (`docs/reviews/S03-verdicts.md` is WO-S03-5's); gate and CI unsupported.
