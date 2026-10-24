@@ -418,7 +418,9 @@ scans every qualification commit. §18.7 adds WO-S03-2b's commit to the scan poi
 **The gate never runs a tool.**
 - `tests/test_s03_references.py` recomputes every classification from the committed tool records, `s03_reference.json` and a
   live solve of our side, and checks the result equals `comparison.json`.
-- Classifications are compared exactly; ratios and values to 1e-12 relative (T06 A50's rule, ADR 0014 Amendment 5).
+- The document recomputed from the committed files is compared byte for byte. Recomputed from a live solve of our side, its
+  classifications are compared exactly (A10). Our values themselves are compared to 1e-12 relative by A07 (T06 A50's rule,
+  ADR 0014 Amendment 5). *Replaced by erratum §19.1.*
 
 ## 9. Supported nonideal scope: none
 
@@ -501,7 +503,7 @@ is not exact. *Amended by §17.9: A01, A03, A06, A08, A09, A11, A12, A13; and by
 | A07 | `ours-<case>.json` reproduces from a live solve | non-floats exact; floats 1e-12 relative | T06 A50's rule (cross-architecture last bits) |
 | A08 | Every tool record carries §8's fields and `s03_cases.json`'s settings; every (case, tool) pair registered in §3 and §7.2 has a record (a `NOT_COMPARABLE(capability)` record included) | set equality | exact |
 | A09 | The qualification records' commit is an ancestor of `comparison.json`'s commit (manifest fields; checked with `git merge-base --is-ancestor`; without history the test refuses explicitly, per R-555's pattern) | pass | exact |
-| A10 | The gate test's recomputed classification of every pair equals `comparison.json` | equal | classifications exact; values and ratios 1e-12 relative |
+| A10 | (i) The classifier's document recomputed from the committed tool records, `ours-<case>.json`, `cases` and `ref` is byte-identical to `comparison.json`, and so is `SHA256SUMS`. (ii) Recomputed with a live solve of our side in place of `ours-<case>.json` (aliases applied), these equal `comparison.json`'s: every pair's `classification`, `category`, `rule` and `label`; every per-quantity `within_tolerance` and `quantities_outside`; the `controls` block and `comparison_stopped`; and under `x31` every pair class, case row, case outcome and clause outcome. *Replaced by erratum §19.1* | equal | (i) exact; (ii) exact. Floats that depend on our values are not compared in (ii): A07 pins our values to 1e-12 relative, and (i) pins the document as a function of them |
 | A11 | PC-P is `DISAGREE` in each tool where RC1 is available; (PC-L, DWSIM) is `DISAGREE`; (PC-L, IDAES) is `not_applicable`. Rule 2 on a control propagates as §7.2 says | as stated | exact |
 | A12 | Rules 2c and 2d actually fire. On each available tool's committed RC1 record, the classifier is run on copies each altered in exactly one raw field: `L[1]` × (1 + 2e-4), which breaks RR's definition, so rule 2c; `L[1]` × (1 + 2e-8), so rule 2d's residual; a stage pressure + 0.01 Pa, so 2c; an accuracy-rerun quantity moved by 0.2 tolerance, so 2d. The unaltered record classifies by rule 4 | the four expected labels; unaltered: rule 4 | exact |
 | A13 | `comparison.json` holds the X31 count (§2.3 step 5), the perturbation response table (§7.4), each control's tool-model distance (§7.3) and every `NOT_COMPARABLE`/`DISAGREE` with its reason. No registered pair is missing | present, complete | exact |

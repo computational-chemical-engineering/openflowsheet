@@ -1,11 +1,12 @@
 """S03 WO-S03-4: the column reference comparison, gated on the committed records (spec §7, §8, §11).
 
-Authority: `docs/derivations/S03-spec.md` §11's A01, A02, A03 and A08–A14, as amended by §17.9 and
-§18.7. The gate never runs DWSIM or IDAES (§8): it reads the committed tool records, the committed
-qualification records and `s03_reference.json`, solves our side live, recomputes the comparison
-with `scripts/s03_reference_comparison.py` and requires it to equal the committed
-`benchmarks/s03/references/comparison.json` (A10). The classification is mechanical; the verdict is
-the `verdict` agent's (§7.5).
+Authority: `docs/derivations/S03-spec.md` §11's A01, A02, A03 and A08–A14, as amended by §17.9,
+§18.7 and §19.1. The gate never runs DWSIM or IDAES (§8): it reads the committed tool records, the
+committed qualification records and `s03_reference.json` and recomputes the comparison with
+`scripts/s03_reference_comparison.py`. From the committed files the document must equal
+`benchmarks/s03/references/comparison.json` byte for byte; from a live solve of our side its
+classifications must equal it exactly (A10). The classification is mechanical; the verdict is the
+`verdict` agent's (§7.5).
 
 The expectations are independent of both sides: `s03_reference.json`'s 25-digit twin values and
 control discriminations, `s03_cases.json`'s registered inputs and tool settings, the environment
@@ -19,7 +20,6 @@ import ast
 import copy
 import hashlib
 import json
-import math
 import re
 import subprocess
 import sys
@@ -48,8 +48,6 @@ PAIRS = [(cid, tool) for cid in CASE_IDS for tool in TOOLS]
 #: §18.7 A01.
 CLAIMS = 4577
 CASES_SHA256 = "c901d6c90f4b700b92ff98e2a01ae7e8f1d5557b80dd647e3b14e089d3703f39"
-#: T06 A50's rule (ADR 0014 Amendment 5): values and ratios to 1e-12 relative.
-ROUNDOFF_REL = 1e-12
 HISTORY = "S03 A03, A08 and A09 need the repository's history (a full clone; R-555's pattern)"
 
 
@@ -522,8 +520,8 @@ def test_a09_the_qualification_commits_precede_the_comparison() -> None:
 
 
 def test_a10_the_comparison_recomputes_identically_from_the_committed_files() -> None:
-    """A10: `comparison.json` and `SHA256SUMS` are what the classifier computes from the committed
-    records, byte for byte."""
+    """A10 (i) (§19.1): `comparison.json` and `SHA256SUMS` are what the classifier computes from the
+    committed records, byte for byte."""
     assert comparison.TABLE.read_text(encoding="utf-8") == comparison.dumps(comparison.compute())
     assert comparison.SUMS.read_text(encoding="utf-8") == comparison.sums_text()
 
@@ -534,30 +532,59 @@ def live_ours() -> dict[str, dict[str, Any] | None]:
     return {cid: solved[comparison.OURS_ALIASES.get(cid, cid)] for cid in CASE_IDS}
 
 
-def assert_same(live: Any, committed: Any, where: str) -> None:
-    """Classifications (every non-float) exactly; values and ratios to 1e-12 relative."""
-    if isinstance(committed, float) and isinstance(live, float):
-        assert math.isclose(live, committed, rel_tol=ROUNDOFF_REL, abs_tol=0.0), where
-    elif isinstance(committed, dict):
-        assert isinstance(live, dict) and set(live) == set(committed), where
-        for key in committed:
-            assert_same(live[key], committed[key], f"{where}.{key}")
-    elif isinstance(committed, list):
-        assert isinstance(live, list) and len(live) == len(committed), where
-        for k, (a, b) in enumerate(zip(live, committed, strict=True)):
-            assert_same(a, b, f"{where}[{k}]")
-    else:
-        assert type(live) is type(committed) and live == committed, where
+def classifications(document: dict[str, Any]) -> dict[str, Any]:
+    """§19.1 A10 (ii): the part of the document that a live solve must reproduce exactly.
+
+    Every pair's classification, category, rule and label; every per-quantity `within_tolerance`
+    and `quantities_outside`; the `controls` block and `comparison_stopped`; and under `x31` every
+    pair class, case row, case outcome and clause outcome. Floats that depend on our values (ratios,
+    responses, worst ratios, the rule 4 `reason` that prints one) are conditioned beyond 1e12 with
+    respect to our values and are left out: A07 pins our values to 1e-12 relative, and A10 (i) pins
+    the document as a function of them.
+    """
+
+    def pair(row: dict[str, Any]) -> dict[str, Any]:
+        quantities = row.get("quantities")
+        return {
+            "classification": row["classification"],
+            "category": row["category"],
+            "rule": row["rule"],
+            "label": row["label"],
+            "quantities_outside": row.get("quantities_outside"),
+            "within_tolerance": None
+            if quantities is None
+            else {q["quantity"]: q["within_tolerance"] for q in quantities},
+        }
+
+    def x31_case(case: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "row": case["row"],
+            "outcome": case["outcome"],
+            "pairs": {tool: p["class"] for tool, p in case["pairs"].items()},
+        }
+
+    x31 = document["x31"]
+    return {
+        "rows": {(row["case"], row["tool"]): pair(row) for row in document["rows"]},
+        "controls": document["controls"],
+        "comparison_stopped": document["comparison_stopped"],
+        "x31": {
+            "cases": {cid: x31_case(case) for cid, case in x31["cases"].items()},
+            "inverse_kinds": {kind: x31_case(case) for kind, case in x31["inverse_kinds"].items()},
+            "clause": x31["clause"],
+        },
+    }
 
 
 def test_a10_the_comparison_recomputes_from_a_live_solve_of_our_side(
     table: dict[str, Any], live_ours: dict[str, Any]
 ) -> None:
-    """A10 (§8): recomputed from the committed tool records, the twin and a live solve of our
-    side, every classification equals `comparison.json` exactly and every value and ratio to
-    1e-12 relative."""
+    """A10 (ii) (§19.1): recomputed from the committed tool records, the twin and a live solve of
+    our side, every classification equals `comparison.json`'s exactly."""
     live = json.loads(comparison.dumps(comparison.compute(ours=live_ours)))
-    assert_same(live, table, "comparison")
+    expected = classifications(table)
+    assert len(expected["rows"]) == len(table["rows"]) == len(live["rows"])
+    assert classifications(live) == expected
 
 
 # -- A11 -------------------------------------------------------------------------------------------
