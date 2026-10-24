@@ -347,3 +347,11 @@ classification of the controls belongs to WO-S03-4; this script computes no twin
 - Docstrings of `scripts/s03_references_ours.py` and A02's test updated for the alias; A02's alias assertion extended.
 - The 18 `ours-*.json` regenerated. `git diff` shows 1 line added and 1 removed in each file, only `cases_sha256`, now `c901d6c90f4b700b92ff98e2a01ae7e8f1d5557b80dd647e3b14e089d3703f39`.
 - `tests/test_s03_ours.py` and `tests/test_s03_s11_refusal.py`: 95 passed (A02 alias test and A07 on the 18 records included).
+
+## Session (orchestrator) decisions after WO-S03-2b
+
+- DECISION: §18.1's "Ipopt rejects" an option → read as the solver rejecting it, not one invocation route. Ipopt 3.13.2
+  accepts `bound_mult_init_method=mu-based` through its options file and rejects an invalid value there; only the
+  executable's command-line parser lacks the keyword. So B2b-1 (`4163aa5e`) stands and §18.1's contingency is not
+  applied. Alternative: read it as the command-line route, revert `4163aa5e` and re-run WO-S03-2b with the
+  contingency. Reversible by: that revert and re-run. Put to the package's `reviewer` pass for confirmation.

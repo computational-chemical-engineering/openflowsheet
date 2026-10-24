@@ -156,3 +156,8 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
   Not part of S03: a later package teaches the phase logic to handle all-liquid or all-vapour column sections. Queued.
 - **Q-S03-5** (which of S06's specs S03 checks against the tools) — **Frank: "All three"** (2026-10-24): purity,
   recovery and temperature, not purity only. The S03 spec is amended to add the recovery and temperature cases.
+- **Q-A2-4** (if no tool can model a column type, what then?) — **Frank: "Plan a 3rd tool"** (2026-10-24). After
+  WO-S03-2b, IDAES models the stripper (RC3 family) but not the refluxed absorber (RC4 family, 500 iterations at every
+  path position); DWSIM models neither. A later package brings in a third reference tool (candidates: COCO/ChemSep)
+  for the column cases with fewer than two references: RC4 (none), RC3 and RC7 (IDAES only). Queued as S09
+  (provisional). S03 itself closes with the gap recorded.
