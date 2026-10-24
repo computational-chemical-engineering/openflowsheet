@@ -407,3 +407,11 @@ Authority: spec §6–§8, §11–§13 as amended by §17 and §18. Started afte
   `dwsim.json`, `idaes-{}.json`, `dwsim-{}.json`, or DWSIM's own `DWSIM.UI.Desktop.runtimeconfig.json`. Scan points:
   HEAD's working tree and `QUALIFICATION_COMMITS` (95870140, 5474531f, 2eb71ac0); at each, the producing tool
   script must be present.
+- FIX B4-11 (found by the first manifest run, `3473f81e`, where A10 failed in the full suite and passed alone): the
+  classifier's decimal arithmetic inherited the process's decimal context, and `tests/test_s03_ours.py` sets
+  `getcontext().prec = 60` at import. Every public function of `s03_reference_comparison.py` now runs in a fresh
+  50-digit context (`_exact`); the document is checked identical under process precisions 60, 28 and 12.
+  `comparison.json` regenerated: no label, classification or non-float value changes; 9 floats move, all DWSIM
+  `rule2.energy_balance_W` values of order 1e-12 W (cancellations of 1e4 W terms), by at most 1.25e-12 relative.
+- FIX: `scripts/s03_references_ours.py` docstring line 11 exceeded 100 characters (ruff E501, §13); rewrapped
+  (`5778ac52`), no behaviour change.

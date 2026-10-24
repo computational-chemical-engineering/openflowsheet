@@ -50,11 +50,13 @@ Usage (repository root, project environment, `PYTHONPATH=src`):
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import json
 import math
 import sys
-from decimal import Decimal, localcontext
+from collections.abc import Callable
+from decimal import Context, Decimal, localcontext
 from pathlib import Path
 from typing import Any
 
@@ -116,6 +118,18 @@ IPOPT_OPTIMAL = "Optimal Solution Found."
 PRECISION = 50
 
 
+def _exact[F: Callable[..., Any]](function: F) -> F:
+    """Run `function` in a fresh 50-digit decimal context, whatever the caller's context is
+    (a test module sets the process-wide precision), so the document never depends on it."""
+
+    @functools.wraps(function)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        with localcontext(Context(prec=PRECISION)):
+            return function(*args, **kwargs)
+
+    return wrapper  # type: ignore[return-value]
+
+
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -131,11 +145,13 @@ def dec(x: Any) -> Decimal:
     return Decimal(repr(float(x)))
 
 
+@_exact
 def tolerance(kind: str, value: Decimal) -> Decimal:
     """§6: `a_k + 1e-6 |v|`, exact in decimal (A14)."""
     return ALLOWANCE[kind] + RELATIVE * abs(value)
 
 
+@_exact
 def ratio(numerator: Decimal, denominator: Decimal) -> float:
     with localcontext() as ctx:
         ctx.prec = PRECISION
@@ -175,6 +191,7 @@ def _products_and_inlets_dwsim(streams: dict[str, Any]) -> tuple[list[str], list
     return inlets, products
 
 
+@_exact
 def view(record: dict[str, Any], case: dict[str, Any], raw: dict[str, Any] | None = None) -> dict:
     """The raw fields every rule and quantity is computed from, normalized across the tools.
 
@@ -307,6 +324,7 @@ def view(record: dict[str, Any], case: dict[str, Any], raw: dict[str, Any] | Non
     return v
 
 
+@_exact
 def tool_quantities(v: dict[str, Any], case: dict[str, Any]) -> dict[str, float]:
     """The case's registered quantities (§4), from the raw fields, as recorded doubles."""
     out: dict[str, float] = {}
@@ -329,6 +347,7 @@ def tool_quantities(v: dict[str, Any], case: dict[str, Any]) -> dict[str, float]
     return out
 
 
+@_exact
 def specification_values(v: dict[str, Any], case: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """§5.1 row 9 with §17.4, from the tool's own flows, duties and temperatures."""
     n, out = v["n"], {}
@@ -401,6 +420,7 @@ def rule1(record: dict[str, Any], tool: str) -> str | None:
     return None
 
 
+@_exact
 def rule2(record: dict[str, Any], tool: str, v: dict[str, Any]) -> tuple[str | None, dict]:
     detail: dict[str, Any] = {}
     raw = record["raw_output"]
@@ -452,6 +472,7 @@ def rule2(record: dict[str, Any], tool: str, v: dict[str, Any]) -> tuple[str | N
     return None, detail
 
 
+@_exact
 def rule2b(v: dict[str, Any], cases: dict[str, Any]) -> tuple[str | None, dict[str, Any]]:
     """T06 rule 2b unchanged, recomputed from the record's variables and SmoothVLE parameters."""
     registered = cases["tool_settings"]["IDAES"]["smooth_vle"]
@@ -479,6 +500,7 @@ def rule2b(v: dict[str, Any], cases: dict[str, Any]) -> tuple[str | None, dict[s
     return None, detail
 
 
+@_exact
 def rule2c(
     record: dict[str, Any],
     case: dict[str, Any],
@@ -539,6 +561,7 @@ def rule2c(
     return None, detail
 
 
+@_exact
 def movement(
     case: dict[str, Any],
     twin: dict[str, dict[str, str]],
@@ -556,6 +579,7 @@ def movement(
     return {"max_ratio": ratio(num, tol), "max_quantity": worst, "_exceeds": num > TENTH * tol}
 
 
+@_exact
 def path_positions(record: dict[str, Any], case: dict[str, Any]) -> dict[str, dict[str, float]]:
     """IDAES: the registered quantities of every position at the selected level whose final solve
     ended "Optimal Solution Found", each from its own raw fields (§18.4)."""
@@ -577,6 +601,7 @@ def path_positions(record: dict[str, Any], case: dict[str, Any]) -> dict[str, di
     return dict(sorted(out.items()))
 
 
+@_exact
 def rule2d(
     record: dict[str, Any],
     case: dict[str, Any],
@@ -643,6 +668,7 @@ def _label(classification: str, category: str | None, reason: str) -> str:
     return f"{classification}({category}: {reason})"
 
 
+@_exact
 def classify(
     case_id: str,
     tool: str,
@@ -734,6 +760,7 @@ def classify(
     return {**result(word, None, extra.pop("reason"), 4), **extra}
 
 
+@_exact
 def rule4(
     values: dict[str, float],
     ours_quantities: dict[str, float],
@@ -913,6 +940,7 @@ def x31(rows: list[dict[str, Any]], stopped: bool) -> dict[str, Any]:
     }
 
 
+@_exact
 def control_distances(
     rows: list[dict[str, Any]], records: dict, ref: dict[str, Any], cases: dict[str, Any]
 ) -> dict[str, Any]:
@@ -950,6 +978,7 @@ def control_distances(
     return out
 
 
+@_exact
 def response_table(
     rows: list[dict[str, Any]],
     records: dict,
@@ -1025,6 +1054,7 @@ def load_ours(results: Path = RESULTS, cases: dict[str, Any] | None = None) -> d
     return ours
 
 
+@_exact
 def compute(
     records: dict | None = None,
     ours: dict | None = None,

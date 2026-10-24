@@ -2776,7 +2776,7 @@
    "rule2": {
     "component_balance_max_mol_per_s": 1.3204985787e-08,
     "converged": true,
-    "energy_balance_W": -2.252311620946e-12
+    "energy_balance_W": -2.2523116209444916e-12
    },
    "rule2c": {
     "feed_stages": [
@@ -3603,7 +3603,7 @@
    "rule2": {
     "component_balance_max_mol_per_s": 2.2e-16,
     "converged": true,
-    "energy_balance_W": 6.819146845e-12
+    "energy_balance_W": 6.819146845008518e-12
    },
    "rule2c": {
     "feed_stages": [
@@ -5598,7 +5598,7 @@
    "rule2": {
     "component_balance_max_mol_per_s": 1.4e-16,
     "converged": true,
-    "energy_balance_W": 1.506399185259e-11
+    "energy_balance_W": 1.5063991852593418e-11
    },
    "rule2c": {
     "feed_stages": [
@@ -6858,7 +6858,7 @@
    "rule2": {
     "component_balance_max_mol_per_s": 1.5931584293e-08,
     "converged": true,
-    "energy_balance_W": -7.995797978935e-12
+    "energy_balance_W": -7.995797978932281e-12
    },
    "rule2c": {
     "feed_stages": [
@@ -8132,7 +8132,7 @@
    "rule2": {
     "component_balance_max_mol_per_s": 6.326147308e-09,
     "converged": true,
-    "energy_balance_W": -8.868589191582e-12
+    "energy_balance_W": -8.86858919158509e-12
    },
    "rule2c": {
     "feed_stages": [
@@ -8959,7 +8959,7 @@
    "rule2": {
     "component_balance_max_mol_per_s": 1.4e-16,
     "converged": true,
-    "energy_balance_W": -1.285503168317e-11
+    "energy_balance_W": -1.2855031683168313e-11
    },
    "rule2c": {
     "feed_stages": [
@@ -9771,7 +9771,7 @@
    "rule2": {
     "component_balance_max_mol_per_s": 1.935e-16,
     "converged": true,
-    "energy_balance_W": -9.7570347077e-13
+    "energy_balance_W": -9.757034707699338e-13
    },
    "rule2c": {
     "feed_stages": [
@@ -10584,7 +10584,7 @@
    "rule2": {
     "component_balance_max_mol_per_s": 1.8e-16,
     "converged": true,
-    "energy_balance_W": -4.63499990772e-12
+    "energy_balance_W": -4.634999907722494e-12
    },
    "rule2c": {
     "feed_stages": [
@@ -12115,7 +12115,7 @@
    "rule2": {
     "component_balance_max_mol_per_s": 1.3204273232e-08,
     "converged": true,
-    "energy_balance_W": -4.561691632242e-12
+    "energy_balance_W": -4.561691632240765e-12
    },
    "rule2c": {
     "feed_stages": [
