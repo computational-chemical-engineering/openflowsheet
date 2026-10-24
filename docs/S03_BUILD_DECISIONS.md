@@ -103,3 +103,37 @@ Questions (defaults are what the records already do):
 - DECISION: `reflux` (total condenser) → computed as `φ · V_2` from the state, §4's literal definition. Alternative: `Σ_c r_c` (equal at the root to roundoff). Reversible by: one line in `quantity`.
 - DECISION: our-side test file → `tests/test_s03_ours.py` (A02 our half, A06, A07, A16); A06 compares in `Decimal` against `ref`'s 25-digit strings with the tolerance recomputed from §6's formula (and checked equal to `ref`'s tolerance string). A16 runs `s02_reference.py --check` and `s06_reference.py --check` concurrently as subprocesses (measured 202 s and 138 s), so the test costs ~3.5 min. Alternative: leave A16 to the gate script outside pytest. Reversible by: deleting the test.
 - Measured (2026-10-24): all 16 our-side cases `CONVERGED`, every equilibrium stage `TWO_PHASE`, worst deviation from the twin 3.5e-3 of a §6 tolerance (RC3 `bottom[B]`; RC3-Q 2.3e-3, RC3-z 1.7e-3; every other case ≤ 2.4e-6). Q-S03-3 answered yes. Two runs write byte-identical records.
+
+## WO-S03-3b (DWSIM top-up: RC3, RC4 families, RC6, RC7)
+
+Engineer: build lane, worktree `.claude/worktrees/s03`, branch `wp/S03`. Authority: spec §17.2, §17.4,
+§17.6, §17.8, §17.10. Only `s03_cases.json` is read by the tool script.
+
+**B3b-1 Ladder and order (spec-mandated, §17.2).** `ladder()` reads
+`column_method_order_amendment_1` (Napthali-Sandholm, Wang-Henke); the Russell and Burningham-Otto
+names and `SUM_RATES_BASES` are gone. Positions within a level: tolerance tightest first, then method.
+L2(a) positions exist only under a method whose L1 realization was structurally inexpressible. Every
+position is recorded in `attempts`: a run, or `structurally_expressible: false`,
+`failed_rule: "structural"` with the Q-X6 reason (§17.8 ladder conformance).
+
+**B3b-2 Realization per (level, method).** `realization(case, level, method)` with `end_option()`; the
+structural answer can now differ by method. Napthali-Sandholm's condenser `Stream_Ratio` on a
+`Full_Reflux` condenser is L(0)/LSS(0), not L_1/V_1, so it is structurally inexpressible (F2; §17.2's
+own example), and no run is made. Every failing end's reason is recorded, not only the first.
+`levels.<L>.by_method.<method>` holds `realization` and `structural_inspection` for the new entries
+(the standing entries keep their method-independent layout). Alternative: one realization per level
+and runs under NS that fail (WO-S03-3's behaviour). Reversible by: reverting the commit.
+
+**B3b-3 New specification kinds (§17.4).** Recovery → DWSIM `Component_Recovery` at the reboiler,
+value = 100 × r* (DWSIM's percent; recorded in `settings.recovery_percent_conversion`). Its definition
+in both methods is `Lj(ns)·xc(ns)(c) / Σ_j zc(j)(c)·F(j)` (NewtonRaphson.vb l. 472-479, BubblePoint.vb
+l. 284-290), i.e. l_N's flow of c over the inlets' flow of c: §17.4's. Temperature → DWSIM
+`Temperature` only when the named stage is the end stage; DWSIM reads Tj(0) or Tj(ns) only
+(NewtonRaphson.vb l. 492-494, 919; BubblePoint.vb l. 291-293, 659-661). Rule 2c stays 1e-4 relative;
+rule 2d per kind from `RULE2D_SPEC` (ratio/rate/duty 1e-8 rel, purity 1e-8 abs, recovery 1e-9 abs,
+temperature 1e-9 rel); each spec record now carries `rule2d_basis` and `rule2d_threshold`.
+
+**B3b-4 Q-A1-1 measured by the tool script.** `ColumnSpec` has a `StageNumber` property. When a case
+has a temperature specification, the script scans the IL of every method in the loaded DWSIM
+assemblies for calls to its accessors and records the callers in `settings.stage_number_readers`.
+Runner: `s03_qualify.sh` passes arguments after LOG_DIR to the tool script (`--only ...`).

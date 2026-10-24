@@ -1,17 +1,21 @@
-"""S03 WO-S03-3: blind qualification and runs of the column cases in DWSIM 9.0.5.
+"""S03 WO-S03-3/3b: blind qualification and runs of the column cases in DWSIM 9.0.5.
 
 Authority: `docs/derivations/S03-spec.md` §2.2 (levels), §2.3 (the pre-registered "where available"
-rule), §2.4 (structural questions), §5.1 (matched semantics), §5.2 (the column-solver ladder), §6
-(thresholds) and §7.1 rules 2, 2c and 2d (computed here from DWSIM's own record only).
+rule), §2.4 (structural questions), §5.1 (matched semantics), §5.2 with §17.2 (the column-solver
+ladder, Amendment 1), §6 with §17.4 (thresholds, specification definitions) and §7.1 rules 2, 2c and
+2d (computed here from DWSIM's own record only).
 
-For every case of `s03_cases.json` (RC1-RC5, the ten perturbed cases, PC-P and PC-L) this script
+For every case of `s03_cases.json` (RC1-RC7, the ten perturbed cases, PC-P and PC-L) this script
 builds DWSIM's own rigorous `DistillationColumn` on SYN-001 (T06's user compounds and Raoult's Law
-package, imported from `t06_qualify_dwsim`, i.e. `docs/reference-environments.md` §5.0), records a
-structural inspection of the built model before it is solved, and runs it under every rung of §5.2's
-ladder (tolerance-major, then method). A run that passes rules 2-2c and 2d's specification residual
-is rerun at ten times the column tolerance (§5.1 row 15) for 2d's movement check. Every attempt is
-recorded. The selection follows §5.2: the first rung that passes for every case is the uniform
-setting; otherwise each case takes its own first passing rung (§2.3 step 1 for the levels).
+package, imported from `t06_qualify_dwsim`, i.e. `docs/reference-environments.md` §5.0). It walks
+§17.2's order: L1, for each tolerance (tightest first) and each method of
+`column_method_order_amendment_1` in order, the structural inspection, then the run if the model is
+expressible under that method; then L2(a), only under a method for which L1 was structurally
+inexpressible. A run that passes rules 2-2c and 2d's specification residual is rerun at ten times
+the column tolerance (§5.1 row 15) for 2d's movement check. Every position of the order is recorded,
+as an attempt or as the structural reason none was made. The selection follows §5.2: the first rung
+that passes for every case is the uniform setting; otherwise each case takes its own first passing
+position (§2.3 step 1 for the levels).
 
 Levels for DWSIM (§2.2): L1 is the native column and its native specifications; L2 is form (a) only
 (a tool variable fixed at a value S02's semantics implies exactly); L3 is not admissible for DWSIM.
@@ -55,21 +59,25 @@ RULE2_ENERGY_W = 1e-3
 RULE2C_PRESSURE_PA = 1e-3
 RULE2C_INTERMEDIATE_DUTY_W = 1e-3
 RULE2C_ZERO_DISTILLATE_MOL_PER_S = 3.1e-8
-RULE2C_SPEC_RELATIVE = 1e-4
-RULE2D_SPEC_RELATIVE = 1e-8  # purity: 1e-8 absolute on the mole fraction
+RULE2C_SPEC_RELATIVE = 1e-4  # every kind (§17.4)
+# Rule 2d's specification threshold per kind (§17.4): (basis, threshold). "absolute" is on the
+# fraction (purity, recovery); "relative" is on the specified value.
+RULE2D_SPEC = {
+    "reflux_ratio": ("relative", 1e-8), "boilup_ratio": ("relative", 1e-8),
+    "distillate_rate": ("relative", 1e-8), "bottoms_rate": ("relative", 1e-8),
+    "duty": ("relative", 1e-8), "purity": ("absolute", 1e-8),
+    "recovery": ("absolute", 1e-9), "temperature": ("relative", 1e-9),
+}
 RULE2D_RERUN_FRACTION = 0.1
 
-# §5.2's methods, by the label `s03_cases.json` uses, mapped to the name DWSIM's column dispatches on
-# (`Column.SolvingMethodName`). DWSIM's own dispatcher decides whether a name is available; a name it
-# does not know ends the run with its error "Unable to find column solver with name ...", recorded.
+# §17.2's methods, by the label `s03_cases.json` uses, mapped to the name DWSIM's column dispatches
+# on (`Column.SolvingMethodName`).
+NS, WH = "Napthali-Sandholm", "Wang-Henke"
 DWSIM_METHOD_NAME = {
-    "Napthali-Sandholm": "Napthali-Sandholm (Simultaneous Correction)",
-    "Russell inside-out": "Russell (Inside-Out)",
-    "Wang-Henke": "Wang-Henke (Bubble Point)",
-    "Burningham-Otto": "Burningham-Otto (Sum Rates)",
+    NS: "Napthali-Sandholm (Simultaneous Correction)",
+    WH: "Wang-Henke (Bubble Point)",
 }
-# §5.2 method 3: sum rates for RC3, RC4 and their perturbations; bubble point for every other case.
-SUM_RATES_BASES = ("RC3", "RC4")
+PERCENT_PER_FRACTION = 100.0  # DWSIM's Component_Recovery value is a percentage (§17.4: x 0.01)
 
 SIGN_CONVERSION = (
     "Q_condenser = -1000 E(Q-COND) and Q_reboiler = +1000 E(Q-REB), W, Q > 0 into the stage; "
@@ -98,11 +106,10 @@ def load_cases() -> dict[str, Any]:
     return data
 
 
-def ladder(case_id: str, dw: dict[str, Any]) -> list[tuple[float, str]]:
-    """§5.2's rungs for one case, tightest tolerance first, then the method order."""
-    order = list(dw["column_method_order"])
-    third = "Burningham-Otto" if case_id.split("-")[0] in SUM_RATES_BASES else "Wang-Henke"
-    methods = [order[0], order[1], third]
+def ladder(dw: dict[str, Any]) -> list[tuple[float, str]]:
+    """§17.2's positions within a level: tightest tolerance first, then the amended method order."""
+    methods = list(dw["column_method_order_amendment_1"]["methods"])
+    assert all(m in DWSIM_METHOD_NAME for m in methods), methods
     return [(float(t), m) for t in dw["column_tolerance_ladder"] for m in methods]
 
 
@@ -114,74 +121,111 @@ def quantity_tolerance(kind: str, value: float) -> float:
 # ---- the model at each level (§2.2, §5.1) -----------------------------------------------------
 
 
-def realization(case: dict[str, Any], level: str) -> dict[str, Any]:
-    """DWSIM's realization of a case at a level, or the reason it has none (no tool is touched)."""
+# Structural reasons (§2.4 Q-X6: the tool's definition in its own variables), from DWSIM 9.0.5's
+# source (`RigorousColumn.vb`, `RigorousColumnSolvers/NewtonRaphson.vb`, `BubblePoint.vb`).
+NS_PARTIAL_REFLUX_RATIO = (
+    "Napthali-Sandholm's condenser Stream_Ratio is L(0)/LSS(0) (NewtonRaphson.vb l. 446-448), the "
+    "reflux over the liquid distillate, which a Full_Reflux condenser holds at 0; S02's reflux "
+    "ratio on a partial condenser is L_1/V_1 (spec §5.1 row 9, §17.2 F2): not this specification. "
+    "Wang-Henke's is L(0)/(LSS(0) + V(0)) = L_1/V_1"
+)
+PARTIAL_DISTILLATE_RATE = (
+    "condenser specification distillate_rate: DWSIM's native rate option on the condenser "
+    "(Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, "
+    "BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour "
+    "distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1"
+)
+INTERIOR_TEMPERATURE = (
+    "DWSIM's reboiler Temperature specification is the reboiler stage's temperature Tj(ns), "
+    "our stage {n} (NewtonRaphson.vb l. 492-494 and 919; BubblePoint.vb l. 291-293 and "
+    "659-661); its condenser one is Tj(0), our stage 1. ColumnSpec.StageNumber selects no "
+    "stage: the column reads it only as the -1 sentinel of its default distillate-rate "
+    "specification and in a log line (RigorousColumn.vb l. 3646-3660 and 4651-4665), and no "
+    "other method of the loaded DWSIM assemblies calls its accessors (settings."
+    "stage_number_readers, an IL scan made by this script). The registered specification is T "
+    "of stage {s} (spec §17.4): another stage, not this specification"
+)
+NO_L2A = (
+    "no L2(a) realization: DWSIM's only one is a Partial_Condenser with its liquid distillate "
+    "fixed at 0 and a vapour-rate specification, for a partial condenser's distillate_rate "
+    "(spec §17.2)"
+)
+
+
+def end_option(case: dict[str, Any], end: str,
+               method: str) -> tuple[str, float, str, str] | str:
+    """DWSIM's native option for one registered end specification under one method (§5.1 row 9,
+    §17.4), as SetCondenserSpec/SetReboilerSpec arguments, or the structural reason for none."""
+    spec = case["specifications"][end]
+    kind, value = spec["kind"], float(spec["value"])
+    n = int(case["stage_count"])
+    if end == "condenser":
+        partial = case["condenser"] == "partial"
+        if kind == "reflux_ratio":
+            if partial and method == NS:
+                return NS_PARTIAL_REFLUX_RATIO
+            return ("Stream_Ratio", value, "", "")
+        if kind == "purity" and partial:
+            comp = probe.compound_name(spec["component"])
+            return ("Component_Fraction", value, COMPONENT_FRACTION_UNIT, comp)
+        if kind == "distillate_rate" and partial:
+            return PARTIAL_DISTILLATE_RATE
+    else:
+        if kind == "boilup_ratio":
+            return ("Stream_Ratio", value, "", "")
+        if kind == "bottoms_rate":
+            return ("Product_Molar_Flow_Rate", value, "mol/s", "")
+        if kind == "duty":
+            return ("Heat_Duty", value / 1000.0, "kW", "")
+        if kind == "recovery":
+            comp = probe.compound_name(spec["component"])
+            return ("Component_Recovery", value * PERCENT_PER_FRACTION, "%", comp)
+        if kind == "temperature":
+            if int(spec["stage"]) != n:
+                return INTERIOR_TEMPERATURE.format(n=n, s=int(spec["stage"]))
+            return ("Temperature", value, "K", "")
+    raise ValueError(f"unregistered {end} specification {kind} on a {case[end]} {end}")
+
+
+def realization(case: dict[str, Any], level: str, method: str) -> dict[str, Any]:
+    """DWSIM's realization of a case at a level under a method, or the reason it has none."""
     cond, reb = case["condenser"], case["reboiler"]
     specs = case["specifications"]
+    r: dict[str, Any] = {"level": level, "method": method, "condenser_spec": None,
+                         "reboiler_spec": None}
+    reasons: list[str] = []
     if level == "L3":
-        return {"expressible": False, "reason": "L3 is not admissible for DWSIM (spec §2.2)"}
-    r: dict[str, Any] = {"level": level, "condenser_spec": None, "reboiler_spec": None}
-    if cond == "partial":
-        kind = specs["condenser"]["kind"]
-        value = float(specs["condenser"]["value"])
-        if level == "L1":
+        return {**r, "expressible": False, "reason": "L3 is not admissible for DWSIM (spec §2.2)"}
+    if level == "L2":
+        if not (cond == "partial" and specs["condenser"]["kind"] == "distillate_rate"):
+            return {**r, "expressible": False, "reason": NO_L2A}
+        r["condenser_type"] = "Partial_Condenser"
+        r["vapor_flow_rate_mol_per_s"] = float(specs["condenser"]["value"])
+        r["liquid_distillate"] = "fixed at 0 mol/s by the condenser specification (L2 a)"
+        r["condenser_spec"] = ("Product_Molar_Flow_Rate", 0.0, "mol/s", "")
+    elif cond in ("partial", "total"):
+        if cond == "partial":
             r["condenser_type"] = "Full_Reflux"
             r["liquid_distillate"] = "none: DWSIM's Full_Reflux condenser has no liquid product"
-            if kind == "reflux_ratio":
-                r["condenser_spec"] = ("Stream_Ratio", value, "", "")
-            elif kind == "purity":
-                comp = probe.compound_name(specs["condenser"]["component"])
-                r["condenser_spec"] = ("Component_Fraction", value, COMPONENT_FRACTION_UNIT, comp)
-            else:
-                return {
-                    "expressible": False,
-                    "reason": (
-                        f"condenser specification {kind}: DWSIM's native rate option on the "
-                        "condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) "
-                        "(RigorousColumn/NewtonRaphson/BubblePoint, v9.0.5), which a Full_Reflux "
-                        "condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 "
-                        "row 9). No native option of the Full_Reflux condenser is V_1"
-                    ),
-                }
         else:
-            if kind != "distillate_rate":
-                return {
-                    "expressible": False,
-                    "reason": (
-                        f"L2(a) needs DWSIM's Partial_Condenser with its liquid distillate fixed at "
-                        f"0; DWSIM fixes that rate only through the condenser specification slot, "
-                        f"which the registered {kind} specification occupies"
-                    ),
-                }
-            r["condenser_type"] = "Partial_Condenser"
-            r["vapor_flow_rate_mol_per_s"] = value
-            r["liquid_distillate"] = "fixed at 0 mol/s by the condenser specification (L2 a)"
-            r["condenser_spec"] = ("Product_Molar_Flow_Rate", 0.0, "mol/s", "")
-    elif cond == "total":
-        if level != "L1":
-            return {"expressible": False, "reason": "no L2(a) realization distinct from L1"}
-        r["condenser_type"] = "Total_Condenser"
-        r["condenser_spec"] = ("Stream_Ratio", float(specs["condenser"]["value"]), "", "")
-        assert specs["condenser"]["kind"] == "reflux_ratio"
+            r["condenser_type"] = "Total_Condenser"
+        native = end_option(case, "condenser", method)
+        if isinstance(native, str):
+            reasons.append(f"condenser: {native}")
+        else:
+            r["condenser_spec"] = native
     else:
-        if level != "L1":
-            return {"expressible": False, "reason": "no L2(a) realization distinct from L1"}
         r["reboiled_absorber"] = True
     if reb == "partial":
-        kind = specs["reboiler"]["kind"]
-        value = float(specs["reboiler"]["value"])
-        if kind == "boilup_ratio":
-            r["reboiler_spec"] = ("Stream_Ratio", value, "", "")
-        elif kind == "bottoms_rate":
-            r["reboiler_spec"] = ("Product_Molar_Flow_Rate", value, "mol/s", "")
-        elif kind == "duty":
-            r["reboiler_spec"] = ("Heat_Duty", value / 1000.0, "kW", "")
+        native = end_option(case, "reboiler", method)
+        if isinstance(native, str):
+            reasons.append(f"reboiler: {native}")
         else:
-            raise ValueError(kind)
+            r["reboiler_spec"] = native
     else:
-        if level != "L1" and cond != "partial":
-            return {"expressible": False, "reason": "no L2(a) realization distinct from L1"}
         r["refluxed_absorber"] = True
+    if reasons:  # every end's reason is recorded, not only the first
+        return {**r, "expressible": False, "reason": " || ".join(reasons)}
     r["expressible"] = True
     return r
 
@@ -417,7 +461,8 @@ def quantities(model: Model, rec: dict[str, Any]) -> dict[str, float]:
 
 
 def spec_values(model: Model, rec: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """§5.1 row 9, computed from DWSIM's own flows (and duties) and set against the registered value."""
+    """§5.1 row 9 with §17.4, from DWSIM's own flows, duties and temperatures, against the
+    registered value; rule 2c at 1e-4 relative for every kind, rule 2d at the kind's threshold."""
     case, prof, streams = model.case, rec["profile"], rec["streams"]
     n = int(case["stage_count"])
     top = streams["TOP"]
@@ -447,17 +492,30 @@ def spec_values(model: Model, rec: dict[str, Any]) -> dict[str, dict[str, Any]]:
         elif kind == "purity":
             got = top["overall_mol_per_s"][spec["component"]] / top["molar_flow_mol_per_s"]
             definition = f"mole fraction of {spec['component']} in the vapour distillate"
+        elif kind == "recovery":
+            c = spec["component"]
+            product = "TOP" if end == "condenser" else "BOTTOM"
+            fed = sum(streams[t]["overall_mol_per_s"][c] for t in model.inlets)
+            got = streams[product]["overall_mol_per_s"][c] / fed
+            definition = (f"{product} stream flow of {c} over the inlets' total flow of {c} "
+                          "(n_c / F_c)")
+        elif kind == "temperature":
+            stage = int(spec["stage"])
+            got = prof["T_K"][stage - 1]
+            definition = f"T of our stage {stage} (DWSIM stage index {stage - 1})"
         else:
             raise ValueError(kind)
         absolute = got - reg
         relative = absolute / abs(reg)
-        accuracy = abs(absolute) if kind == "purity" else abs(relative)
+        basis, threshold = RULE2D_SPEC[kind]
+        accuracy = abs(absolute) if basis == "absolute" else abs(relative)
         out[end] = {
             "kind": kind, "definition": definition, "registered": reg, "dwsim": got,
             "relative_difference": relative, "absolute_difference": absolute,
-            "rule2c_passes": bool(math.isfinite(relative) and abs(relative) <= RULE2C_SPEC_RELATIVE),
-            "rule2d_measure": accuracy,
-            "rule2d_passes": bool(math.isfinite(accuracy) and accuracy <= RULE2D_SPEC_RELATIVE),
+            "rule2c_passes": bool(math.isfinite(relative)
+                                  and abs(relative) <= RULE2C_SPEC_RELATIVE),
+            "rule2d_basis": basis, "rule2d_threshold": threshold, "rule2d_measure": accuracy,
+            "rule2d_passes": bool(math.isfinite(accuracy) and accuracy <= threshold),
         }
     return out
 
@@ -599,72 +657,155 @@ def attempt(automation: Any, cid: str, case: dict[str, Any], real: dict[str, Any
 # ---- qualification and selection (§2.3, §5.2) -------------------------------------------------
 
 
+def stage_number_readers(automation: Any) -> dict[str, Any]:
+    """Every method of the loaded DWSIM assemblies whose IL calls a ColumnSpec.StageNumber accessor.
+
+    Q-X6 for an interior-stage temperature specification (spec §17.12 Q-A1-1): whether any DWSIM
+    code could read a stage for a column specification. Each call/callvirt operand is resolved
+    against its own module; a match is a method of ColumnSpec named *StageNumber*.
+    """
+    import System
+    from System.Reflection import BindingFlags
+
+    sh = t06d.Sheet(automation, mapped_latent=True)
+    spec_type = sh.add("DistillationColumn", "COL-SCAN").Specs["R"].GetType()
+    flags = (BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
+             | BindingFlags.Static | BindingFlags.DeclaredOnly)
+    callers: set[tuple[str, str, str, str]] = set()
+    n_methods, assemblies = 0, []
+    for asm in System.AppDomain.CurrentDomain.GetAssemblies():
+        name = str(asm.GetName().Name)
+        if "DWSIM" not in name:
+            continue
+        assemblies.append(name)
+        try:
+            types = list(asm.GetTypes())
+        except Exception as exc:  # ReflectionTypeLoadException: keep the types that loaded
+            types = [t for t in getattr(exc, "Types", []) if t is not None]
+        for t in types:
+            try:
+                members = list(t.GetMethods(flags)) + list(t.GetConstructors(flags))
+            except Exception:
+                continue
+            for m in members:
+                try:
+                    body = m.GetMethodBody()
+                except Exception:
+                    continue
+                if body is None:
+                    continue
+                il = bytes(body.GetILAsByteArray())
+                n_methods += 1
+                for i in range(len(il) - 4):
+                    if il[i] not in (0x28, 0x6F):  # call, callvirt
+                        continue
+                    token = int.from_bytes(il[i + 1:i + 5], "little")
+                    if token >> 24 not in (0x06, 0x0A, 0x2B):  # MethodDef, MemberRef, MethodSpec
+                        continue
+                    try:
+                        target = m.Module.ResolveMethod(token)
+                    except Exception:
+                        continue
+                    if (target is not None and target.DeclaringType is not None
+                            and str(target.DeclaringType.FullName) == str(spec_type.FullName)
+                            and "StageNumber" in str(target.Name)):
+                        callers.add((name, str(t.FullName), str(m.Name), str(target.Name)))
+    return {"column_spec_type": str(spec_type.FullName), "assemblies": sorted(assemblies),
+            "methods_scanned": n_methods,
+            "callers": [{"assembly": a, "type": t, "method": m, "accessor": acc}
+                        for a, t, m, acc in sorted(callers)]}
+
+
 def qualify(automation: Any, data: dict[str, Any], ids: list[str]) -> dict[str, Any]:
+    """§17.2's order for every case; positions run rung-major across cases (B3-6, compute only)."""
     dw = data["tool_settings"]["DWSIM"]
     max_it = int(dw["column_max_iterations"])
     cases = data["cases"]
+    rungs = ladder(dw)
+    methods = list(dict.fromkeys(m for _, m in rungs))
     per: dict[str, dict[str, Any]] = {cid: {"levels": {}, "attempts": [], "passing": []}
                                       for cid in ids}
     full_records: dict[tuple[str, str, float, str], dict[str, Any]] = {}
-    for level in ("L1", "L2", "L3"):
-        todo = [cid for cid in ids if not per[cid]["passing"]]
-        for cid in todo:
-            real = realization(cases[cid], level)
-            entry: dict[str, Any] = {"realization": real}
-            if real["expressible"]:
-                try:
-                    entry["structural_inspection"] = Model(automation, cases[cid],
-                                                           real).inspection()
-                except Exception as exc:
-                    real = {**real, "expressible": False,
-                            "reason": f"model not built: {type(exc).__name__}: {exc}"}
-                    entry["realization"] = real
-            per[cid]["levels"][level] = entry
-        runnable = [cid for cid in todo if per[cid]["levels"][level]["realization"]["expressible"]]
-        if not runnable:
-            continue
-        rungs = {cid: ladder(cid, dw) for cid in runnable}
-        for k in range(len(rungs[runnable[0]])):  # rung-major: every case at rung k, then k + 1
-            for cid in runnable:
-                tol, method = rungs[cid][k]
-                real = per[cid]["levels"][level]["realization"]
-                summ, full = attempt(automation, cid, cases[cid], real, tol, method, max_it)
+    for li, level in enumerate(("L1", "L2")):
+        for cid in ids:
+            by_method: dict[str, Any] = {}
+            for method in methods:
+                if level == "L2" and per[cid]["levels"]["L1"]["by_method"][method][
+                        "realization"]["expressible"]:
+                    continue  # §17.2: L2(a) only under a method where L1 is inexpressible
+                real = realization(cases[cid], level, method)
+                entry: dict[str, Any] = {"realization": real}
+                if real["expressible"]:
+                    try:
+                        entry["structural_inspection"] = Model(automation, cases[cid],
+                                                               real).inspection()
+                    except Exception as exc:
+                        real = {**real, "expressible": False,
+                                "reason": f"model not built: {type(exc).__name__}: {exc}"}
+                        entry["realization"] = real
+                by_method[method] = entry
+            per[cid]["levels"][level] = {"by_method": by_method}
+        for k, (tol, method) in enumerate(rungs):
+            for cid in ids:
+                entry = per[cid]["levels"][level]["by_method"].get(method)
+                if entry is None:
+                    continue  # not a position of §17.2's order for this case
+                real = entry["realization"]
+                if not real["expressible"]:
+                    summ: dict[str, Any] = {
+                        "level": level, "tolerance": tol, "method": method,
+                        "dwsim_method_name": DWSIM_METHOD_NAME[method],
+                        "structurally_expressible": False, "converged": None,
+                        "passes": False, "failed_rule": "structural", "reason": real["reason"]}
+                    full = None
+                else:
+                    summ, full = attempt(automation, cid, cases[cid], real, tol, method, max_it)
+                    summ["structurally_expressible"] = True
                 summ["rung_index"] = k
                 per[cid]["attempts"].append(summ)
                 if summ["passes"]:
-                    per[cid]["passing"].append((level, k))
+                    per[cid]["passing"].append((li, k))
                     full_records[(cid, level, tol, method)] = full
                 print(f"dwsim {cid} {level} rung {k} ({tol:g}, {method}): "
                       f"{'PASS' if summ['passes'] else 'fail ' + str(summ.get('failed_rule'))}",
                       file=sys.stderr, flush=True)
-    # §5.2 selection: a rung under which every case passes (at its level) is the uniform setting.
-    n_rungs = len(ladder(ids[0], dw))
-    uniform = next((k for k in range(n_rungs)
-                    if all(any(p[1] == k for p in per[cid]["passing"]) for cid in ids)), None)
-    selection: dict[str, Any] = {"uniform_rung_index": uniform, "per_case": {}}
     for cid in ids:
-        passing = per[cid]["passing"]
+        per[cid]["levels"]["L3"] = {"realization": realization(cases[cid], "L3", "")}
+    # §5.2 selection: a rung under which every case passes (at its level) is the uniform setting;
+    # otherwise each case takes the first passing position of §17.2's order (L1 before L2).
+    uniform = next((k for k in range(len(rungs))
+                    if all(any(p[1] == k for p in per[cid]["passing"]) for cid in ids)), None)
+    selection: dict[str, Any] = {"uniform_rung_index": uniform, "per_case": {},
+                                 "ladder": "column_method_order_amendment_1"}
+    for cid in ids:
+        passing = sorted(per[cid]["passing"])
         if not passing:
             selection["per_case"][cid] = None
             continue
-        level = passing[0][0]
-        k = uniform if uniform is not None else min(p[1] for p in passing if p[0] == level)
-        tol, method = ladder(cid, dw)[k]
-        selection["per_case"][cid] = {"level": level, "rung_index": k, "tolerance": tol,
-                                      "method": method, "uniform": uniform is not None}
+        li = passing[0][0]
+        k = uniform if uniform is not None else passing[0][1]
+        tol, method = rungs[k]
+        selection["per_case"][cid] = {"level": ("L1", "L2")[li], "rung_index": k,
+                                      "tolerance": tol, "method": method,
+                                      "uniform": uniform is not None}
     return {"per_case": per, "selection": selection, "full_records": full_records}
 
 
 def not_available_reason(per: dict[str, Any]) -> str:
     parts = []
     for level, entry in per["levels"].items():
-        real = entry["realization"]
-        if not real["expressible"]:
-            parts.append(f"{level}: {real['reason']}")
-        else:
-            fails = sorted({f"{a['failed_rule']}: {a['reason']}" for a in per["attempts"]
-                            if a["level"] == level})
-            parts.append(f"{level}: no rung passed rules 2-2d ({'; '.join(fails)})")
+        if "by_method" not in entry:
+            parts.append(f"{level}: {entry['realization']['reason']}")
+            continue
+        for method, sub in entry["by_method"].items():
+            real = sub["realization"]
+            if not real["expressible"]:
+                parts.append(f"{level} {method}: structurally inexpressible: {real['reason']}")
+            else:
+                fails = sorted({f"{a['failed_rule']}: {a['reason']}" for a in per["attempts"]
+                                if a["level"] == level and a["method"] == method})
+                parts.append(f"{level} {method}: no tolerance passed rules 2-2d "
+                             f"({'; '.join(fails)})")
     return " | ".join(parts)
 
 
@@ -699,11 +840,17 @@ def main() -> int:
             "flash_settings_applied": fx.DWSIM_FLASH_SETTINGS,
             "property_package_options_applied": fx.DWSIM_PP_OPTIONS,
             "method_names_dwsim": DWSIM_METHOD_NAME,
+            "ladder": "column_method_order_amendment_1 (spec §17.2)",
+            "recovery_percent_conversion": "DWSIM Component_Recovery value = 100 x the registered "
+                                           "recovery fraction (spec §17.4)",
             "column_other": "DWSIM defaults (SolverScheme, Broyden acceleration, internal "
                             "initial estimates); stage efficiency 1; CondenserDeltaP 0",
         },
         "sign_conversion": SIGN_CONVERSION,
     }
+    if any(spec["kind"] == "temperature" for cid in ids
+           for spec in data["cases"][cid]["specifications"].values()):
+        common["settings"]["stage_number_readers"] = stage_number_readers(automation)
     q = qualify(automation, data, ids)
     qual = {**common, "wall_time_total_s": time.perf_counter() - t0,
             "selection": q["selection"], "cases": {}}
@@ -712,6 +859,7 @@ def main() -> int:
         per = q["per_case"][cid]
         sel = q["selection"]["per_case"][cid]
         qual["cases"][cid] = {"available": sel is not None, "level": sel and sel["level"],
+                              "ladder": "column_method_order_amendment_1",
                               "levels": per["levels"], "attempts": per["attempts"]}
         rec: dict[str, Any] = {**common, "case": cid, "case_definition": data["cases"][cid],
                                "attempts": per["attempts"]}
@@ -719,13 +867,16 @@ def main() -> int:
             reason = not_available_reason(per)
             qual["cases"][cid]["not_available_reason"] = reason
             rec.update(available=False, level=None, not_available_reason=reason,
-                       structural_inspection={k: v.get("structural_inspection")
-                                              for k, v in per["levels"].items()})
+                       structural_inspection={
+                           level: {m: sub.get("structural_inspection")
+                                   for m, sub in entry.get("by_method", {}).items()}
+                           for level, entry in per["levels"].items()})
             status = 1
         else:
-            real = per["levels"][sel["level"]]["realization"]
+            chosen = per["levels"][sel["level"]]["by_method"][sel["method"]]
+            real = chosen["realization"]
             full = q["full_records"][(cid, sel["level"], sel["tolerance"], sel["method"])]
-            insp = per["levels"][sel["level"]]["structural_inspection"]
+            insp = chosen["structural_inspection"]
             rec.update(
                 available=True, level=sel["level"], realization=real,
                 settings_used={"column_tolerance": sel["tolerance"], "method": sel["method"],

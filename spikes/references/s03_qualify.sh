@@ -9,13 +9,15 @@
 # evidence/S03/artifacts/s03-qualification, git-ignored); this prints the per-case lines and the
 # summary line only. Not part of scripts/check.sh: the gate never runs a tool.
 #
-# Usage: spikes/references/s03_qualify.sh idaes|dwsim [OUT] [LOG_DIR]
+# Usage: spikes/references/s03_qualify.sh idaes|dwsim [OUT] [LOG_DIR] [SCRIPT ARGS ...]
+# (SCRIPT ARGS go to the tool script, e.g. `--only RC3 RC4` for a top-up run.)
 set -uo pipefail
 
 cd "$(dirname "$0")/../.."
-WHICH="${1:?usage: s03_qualify.sh idaes|dwsim [OUT] [LOG_DIR]}"
+WHICH="${1:?usage: s03_qualify.sh idaes|dwsim [OUT] [LOG_DIR] [SCRIPT ARGS ...]}"
 OUT="${2:-benchmarks/s03/references}"
 LOG_DIR="${3:-evidence/S03/artifacts/s03-qualification}"
+EXTRA=("${@:4}")
 mkdir -p "$OUT" "$LOG_DIR"
 
 case "$WHICH" in
@@ -30,7 +32,7 @@ if [ ! -f "$SCRIPT" ]; then
 fi
 
 LOG="$LOG_DIR/${WHICH}-run.log"
-"$PY" "$SCRIPT" --out "$OUT" >"$LOG" 2>&1
+"$PY" "$SCRIPT" --out "$OUT" "${EXTRA[@]}" >"$LOG" 2>&1
 status=$?
 grep -E "^${WHICH} [^ ]+: |^${WHICH} SUMMARY" "$LOG"
 echo "log: $LOG"
