@@ -149,3 +149,33 @@ column_method_order_amendment_1`; the selection recomputed over all 19 cases as 
 pair, since `rung_index` counts different ladders in the two runs. Alternative: a merge mode inside
 the tool script (rejected: the tool script may read no project file but `s03_cases.json`). Reversible
 by: deleting the script and rewriting the file.
+
+### WO-S03-3b outcome (records: the commit that adds this section)
+
+Run 2026-10-24, 1116 s, DWSIM 9.0.5 on .NET 8.0.31, fingerprint matches `docs/reference-environments.md`
+§3. Command: `spikes/references/s03_qualify.sh dwsim evidence/S03/artifacts/s03-qualification-topup/out
+evidence/S03/artifacts/s03-qualification-topup --only RC3 RC3-Q RC3-z RC4 RC4-D RC4-z RC6 RC7`, then
+`.venv-dwsim/bin/python spikes/references/s03_dwsim_topup_merge.py
+evidence/S03/artifacts/s03-qualification-topup/out`. The eleven standing results files are byte-equal to
+`95870140`; their qualification entries are verbatim (checked key by key).
+
+| Case(s) | DWSIM | Level, rung | Attempts (every position of §17.2's order) |
+| --- | --- | --- | --- |
+| RC3, RC3-Q, RC3-z | not available | — | NS: 1000 iterations at every tolerance. WH: DWSIM's own mass-balance error at 1e-10..1e-8; converged at 1e-7 and 1e-6 but rule 2 component balance 1.1e-7..4.0e-7 mol/s (> 3.1e-8) |
+| RC4, RC4-D, RC4-z | not available | — | L1 structural under both methods (no native V_1). L2(a): NS "Error evaluating error functions", WH "A convergence error was found while trying to solve the column", every tolerance |
+| RC6 | available | L1, (1e-10, NS) | spec residual max 1.5e-16 (recovery absolute, threshold 1e-9; RR relative); rule 2 balance 1.7e-16 mol/s, 1.5e-11 W; rerun at 1e-9 moves 6.6e-9 tol. NS also passes at 1e-9..1e-6; WH fails (2 at 1e-10 and 1e-6, 2d rerun 0.206 and 0.537 tol at 1e-9 and 1e-8, 2d spec residual 2.2e-8 at 1e-7) |
+| RC7 | not available | — | structural at every position: NS's partial-condenser RR (F2) and, under both methods, the reboiler Temperature specification is Tj(ns) = T_7, not T_6; no L2(a) |
+
+- **Q-A1-1 answered: no.** DWSIM 9.0.5's column temperature specification is T of the condenser stage or
+  the reboiler stage only (source lines in B3b-3). `ColumnSpec.StageNumber` exists, but the tool's IL
+  scan (24156 methods in 20 DWSIM assemblies, `settings.stage_number_readers`) finds only
+  `Column.GetSolverInputData`, `GetSolverInputData_New` and `Column.get_Specs` touching it, which use it
+  as the -1 sentinel of the default distillate-rate specification and in a log line. RC7 is
+  `NOT_COMPARABLE(capability: interior-stage temperature specification)` for DWSIM, as §17.12 defaulted.
+- **Q-A1-2 answered: no.** Wang-Henke qualifies no case of the RC3 or RC4 families.
+- **Q-A1-3 (DWSIM part): yes for RC6.** Recovery residual 1.5e-16 against 1e-9; no DWSIM temperature case
+  was runnable.
+- Selection over all 19 cases: no uniform (tolerance, method) pair; 10/19 available.
+- Disclosure: before the run, the harness was exercised once on RC7 alone into the scratchpad (structural
+  positions and the IL scan only; RC7 has no runnable position, so no solver ran). One mistyped runner
+  call (`... RC3` without `--only`) was rejected by argparse before DWSIM started. No other run was made.
