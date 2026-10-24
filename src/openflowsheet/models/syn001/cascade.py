@@ -65,6 +65,8 @@ from openflowsheet.models.syn001 import (
     P_MIN,
     POWER,
     PRESSURE,
+    PROVIDER_ID,
+    REFERENCE_CONVENTION,
     T_MAX,
     T_MIN,
     TEMPERATURE,
@@ -392,6 +394,32 @@ def _invalid(code: str, message: str) -> CascadeFailure:
     return CascadeFailure("INVALID_SPECIFICATION", f"invalid_spec({code})", message)
 
 
+def property_method_refusal(unit: str, provider: PropertyProvider) -> CascadeFailure | None:
+    """S03 §9 S11, before R1 and before any provider evaluation: `None` exactly when `provider`
+    declares SYN-001's identity, else `unsupported(column_property_method:<provider_id>)`.
+
+    It reads `describe()` (metadata, not an evaluation). The check is identity, not capability:
+    the cascade evaluates K as a function of (T, P) alone (`LnKBlock`), so a provider with
+    composition-dependent K would declare what SYN-001 declares and be answered silently wrong.
+    A wrapper that delegates `describe()` to a SYN-001 provider (the property cache) passes.
+    """
+    described = provider.describe()
+    if (
+        described.provider_id == PROVIDER_ID
+        and described.reference_convention == REFERENCE_CONVENTION
+    ):
+        return None
+    return CascadeFailure(
+        "CAPABILITY_UNAVAILABLE",
+        f"unsupported(column_property_method:{described.provider_id})",
+        f"{unit}: provider {described.provider_id!r} (reference convention "
+        f"{described.reference_convention!r}) is outside the supported scope; a cascade or "
+        f"column supports SYN-001 only (provider_id {PROVIDER_ID!r}, reference_convention "
+        f"{REFERENCE_CONVENTION!r}), whose K is composition-independent; the supported nonideal "
+        "scope is empty (S03 §9)",
+    )
+
+
 def _k_values(
     provider: PropertyProvider,
     context: EvaluationContext,
@@ -459,8 +487,14 @@ def validate(
     question about a declared phase. A malformed object (a flow vector of the wrong length, a
     pressure or duty list that is not one per stage, a non-finite duty, a duplicated port) is
     misuse and raises `ValueError`; it is not one of §5's refusals.
+
+    S03 §9 S11 precedes R1: a provider other than SYN-001 is refused by identity before anything
+    else is read or evaluated.
     """
     unit, components = spec.unit_id, spec.components
+    refused = property_method_refusal(unit, provider)
+    if refused is not None:
+        return refused
     count = spec.stage_count
     if isinstance(count, bool) or not isinstance(count, int) or count < 1:
         return _invalid("stage_count", f"{unit}: N = {count!r} is not an integer >= 1")
