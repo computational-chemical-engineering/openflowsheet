@@ -466,3 +466,11 @@ Authority: spec §6–§8, §11–§13 as amended by §17 and §18. Started afte
   pre-F2/F3 classifier and pass after.
 - `comparison.json` and `SHA256SUMS`: unchanged (`s03_reference_comparison.py --check` after F2/F3: "recomputes
   identically"). Every committed record conforms, as probe (b) and the review said.
+- MEASURED (manifest): `evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json`, generated from a clean
+  tree at `930aad1b`: `status: tested`, 22 of 24 checks pass (A01–A17, generator, comparison, ruff, format); `S03.gate`
+  and `S03.ci` `unsupported` (they run before merge). A15: 504 S01/S02/S06 nodes passed. A17: the verdicts document is
+  present. Review fields `pending`; neither `reviewed` nor `released` is claimed. The `implemented` manifest at
+  `959131dc` is kept (as every package keeps its superseded manifests) and not cited.
+- Ledger: S03 `tested`, citing that manifest; D19 and X31 cite it with a comment stating the verdicts (D19's column
+  part met for the covered states, RC4 gap; X31 not met, 2 of 4; S09 queued). D19's status and X31's verdict field are
+  not moved (the design lane's).
