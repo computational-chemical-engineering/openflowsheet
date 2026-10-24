@@ -474,3 +474,17 @@ Authority: spec §6–§8, §11–§13 as amended by §17 and §18. Started afte
 - Ledger: S03 `tested`, citing that manifest; D19 and X31 cite it with a comment stating the verdicts (D19's column
   part met for the covered states, RC4 gap; X31 not met, 2 of 4; S09 queued). D19's status and X31's verdict field are
   not moved (the design lane's).
+- DECISION B6-4 (harvest classes, build-lane draft for design-lane review; both S03 manifests, same classes for the
+  shared texts): limitations[0], [1], [15] -> E to L18 (not empirical validation; Poynting terms without an independent
+  reference); [2] -> E to U04, L19; [3] -> E to U04, U05; [4], [12] -> E to U04; [5] -> E to U04, L20; [6] -> E to U02;
+  [8] -> E to L16; [7], [9]-[11], [13], [14], [16]-[29] and checks[S03.gate], checks[S03.ci] -> P (provenance,
+  measurements, process); 959131dc's limitations[30] and checks[S03.A17] -> S to `check:S03.A17` (passes at 930aad1b).
+  Alternative: [26] (X31 not met, 2 of 4) -> E to L18, and [1], [15] -> P. Reversible by: editing those harvest
+  entries' class and `to`, then `t08_support_matrix.py --emit`.
+- MEASURED (HARVEST_SIZE): `matrix.harvest_items()` = (50, 613, 79), was (48, 552, 74): S03's `959131d…` (31 and 3)
+  and `930aad1…` (30 and 2). `--emit` regenerated `docs/support-matrix.md` (S03 row 20 E, 2 S, 44 P); `--check`:
+  0 problems. YAML written without anchors (a first dump shared `to` lists as `&id…` aliases; rewritten).
+- Tests (after the harvest): the S03 suites, `test_requirements_ledger.py`, `test_evidence_manifests.py`,
+  `test_m07a_harvest.py`, `test_t08_w2_support_envelope.py`, `test_t08_w2_inventory.py`: 686 passed in 216 s
+  (T08 C3/A21 and M07a's harvest test pass). `ruff check .` and `ruff format --check .` clean.
+- HG line: `S03 HG 930aad1b162d0dc27276e64a5b67ce857a7cdf97..HEAD: PASS (66 appended; HARVEST_SIZE (48, 552, 74) -> (50, 613, 79))`.

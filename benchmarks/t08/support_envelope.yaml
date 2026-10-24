@@ -5184,3 +5184,432 @@ harvest:
   class: P
   to: []
   note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[0]
+  sha256: 4605753d6c64a6239267bbe1626856c9d770fb8a47175028a39c1999ecdb662e
+  class: E
+  to:
+  - L18
+  note: 'S03: an AGREE verifies two independent implementations of the same synthetic equations at a registered state; not empirical validation'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[1]
+  sha256: 49be2c42d1308fe6ca0f0fd485b94482a5126cb28458125b9dc2a0eed6b7b9fa
+  class: E
+  to:
+  - L18
+  note: 'S03 compares only at P_r: our Poynting terms have no independent reference; M1-M4 at their own pressure profile have none (S02 §14 stands)'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[2]
+  sha256: 7a01a0a67b66b2dcc91e340e2aaff48cd0da630a011b7521cd99a1de8d66305d
+  class: E
+  to:
+  - U04
+  - L19
+  note: S03's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); S03 compares only the registered states (seven configurations, ten neighbours, PC-P); no uniqueness claim
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[3]
+  sha256: 4e627d85bdcf4ae26afe6ceccb4b42a3e201fa5bb98a9ab8eab6b5025b2e2982
+  class: E
+  to:
+  - U04
+  - U05
+  note: S03's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); the perturbation study is finite differences at registered states; no sensitivity capability (U05)
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[4]
+  sha256: a6ba16fccbbe288fff851c82d7a7e5ee0dc702ed8d8b993c98a5810d1e6bf393
+  class: E
+  to:
+  - U04
+  note: S03's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); inverse specifications are compared at one state per kind (RC5 purity, RC6 recovery, RC7 temperature)
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[5]
+  sha256: 3e5672bc369b04ef0c4463139b5fc81cfb19e28e4225852e8f859b826ba76250
+  class: E
+  to:
+  - U04
+  - L20
+  note: 'S03''s column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no phase-transition robustness: a one-phase section ends typed; no partial dormancy, subcooled condenser, total reboiler, side draws or hydraulics'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[6]
+  sha256: 12d975fec40936ae3af51496fd1c546267190427753a0e08283ff86d25903ca3
+  class: E
+  to:
+  - U02
+  note: 'S03''s supported nonideal scope is none (spec §9): SYN-001 only (U02)'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[7]
+  sha256: 98939f4bec069f4ee51574795264ebc6d143a01461c3ddfb34d53a5ea751aa46
+  class: P
+  to: []
+  note: S03 does not compare refusals with the tools; S1-S11 are our contract (S02 A02-A03, S03 A04)
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[8]
+  sha256: 83364e24d050c3ca488ff4e59a0715fc8d7100f2288b3deb677ed5e75371f7d5
+  class: E
+  to:
+  - L16
+  note: S03's IDAES agreement verifies SmoothVLE's sharp limit only to within eps = 1e-8 K (T06 A2)
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[9]
+  sha256: e648f22e846f92e4c550f7bc9c0430c23a5c054b40f67afdd8cefa9ff9f6a8fa
+  class: P
+  to: []
+  note: 'S03: how to read NOT_COMPARABLE (neither failure nor pass) and an L3 AGREE (against IDAES''s tray equations as the harness connected them)'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[10]
+  sha256: ec57a9f12394ae75e0dfd7ba59893e94ce49e5eaa2c13ead27c4a4cf4f4fa1f5
+  class: P
+  to: []
+  note: S03 blindness is procedural (spec §2.1); A03 is a static tripwire (review N4)
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[11]
+  sha256: 52c70b93fc6105b6b24318bbee0869928efd9d774fde5c34ddc3a8f73baf341a
+  class: P
+  to: []
+  note: pointer to S03 §17.11 and §18.9, harvested item by item below
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[12]
+  sha256: a0f1e55a16bb41669c7d31b05eb65e251f281bcda05c7c448fb02ba4d0bb0d5b
+  class: E
+  to:
+  - U04
+  note: S03's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); one state per inverse kind, no perturbed neighbour (§17.11)
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[13]
+  sha256: fb2f011e5e798c21bc2de4c96ba5c4ba01965d83e8eb90a4ee4daa4b92f1f7e0
+  class: P
+  to: []
+  note: S03 §17.11's pre-registered expectation that RC6/RC7 may have one reference or none; the outcome is verdict 4 (docs/reviews/S03-verdicts.md)
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[14]
+  sha256: cc12c00cf858fb8b30044a6d5879965e41081634595e5b8ca288187e0d5208dd
+  class: P
+  to: []
+  note: 'S03 §17.11: DWSIM''s ladder records which methods DWSIM 9.0.5 dispatches; not a claim about DWSIM''s solvers'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[15]
+  sha256: 7fee4c57a19c92f6257dbc8afe27bec3639fa534c49740acba4ffc219814900e
+  class: E
+  to:
+  - L18
+  note: 'S03 §17.11: DWSIM''s K away from P_r is not re-proved at column level; our Poynting terms stay without an independent check'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[16]
+  sha256: 0b073558b802dd512cac5caa77888d8738863f51bf3b7cf57d8837e1e54d5f43
+  class: P
+  to: []
+  note: 'S03 §17.11: the 1e-9 rule 2d thresholds are derived at the registered states only'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[17]
+  sha256: c5651639542eeb3f61a7c7677206855f66121d2924dd7efb924d1e8c841b67e5
+  class: P
+  to: []
+  note: 'S03 §17.11: the queued one-phase package has not started (process)'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[18]
+  sha256: f32a134407d22012ce008ce865a1b631e89a558129e4b06f0901ba827a227b80
+  class: P
+  to: []
+  note: 'S03 §17.11: the blindness exemption covers three pinned files only (provenance)'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[19]
+  sha256: fb7d8d84dacb4592f140234fe8e0c0eacaeaa756def656d68b369074ab42d548
+  class: P
+  to: []
+  note: 'S03 §18.9: IDAES''s ladder is a fact about this tool, path and settings, not a claim about IDAES''s solvers'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[20]
+  sha256: 55afb698fae3b16ef9922d384246a34a28f3dfb7be88f6be07370838b7c94e99
+  class: P
+  to: []
+  note: 'S03 §18.9: rule 2d''s path-independence check spans three positions at one level; not a uniqueness claim'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[21]
+  sha256: 14dfb3d3ca409126cdec3470be6e3bd9ec476fa5f7591c56609f545dc3aecd86
+  class: P
+  to: []
+  note: 'S03 §18.9: PC-LI shows the IDAES harness passes h_form,ig through; IDAES''s missing Poynting factor at column level rests on T06 PC-2'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[22]
+  sha256: 9d67e045249abc1fb8f31bdfcfd2fa62b0d8ddbc502041b4055492f74715fe83
+  class: P
+  to: []
+  note: 'S03 §18.9: the §18.1 readings were hypotheses; WO-S03-2b measured them (review N1)'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[23]
+  sha256: 21c770f79c4a7e29f4d78f7175050c5b4b0f95a5b48f335af3b2df43f013bceb
+  class: P
+  to: []
+  note: 'S03 §18.9: the §18.6 branch outcomes were pre-registered mappings'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[24]
+  sha256: 99f60a94288df253a0ea183c2a8700c2497540567211b9dc8505e40ad3c3274c
+  class: P
+  to: []
+  note: 'S03 §18.9: blindness stays procedural; the pilot runs are disclosed'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[25]
+  sha256: da1814ddda24fa0837b30862f1f33b5f2e75a31c9f3099b96553b8bb41499258
+  class: P
+  to: []
+  note: S03 manifest lists D19 only (X31 is outside the schema's D/A pattern); the ledger's D19 and X31 rows cite the verdicts (process)
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[26]
+  sha256: 209738a2002a5df6a188e948ffa56c1fd2aea2e29253a60c9d132811daa550c3
+  class: P
+  to: []
+  note: S03's X31 reference clause as §17.5's table classifies it (not met, 2 of 4 cases); the verdict is A17's document, cited in the ledger's X31 row
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[27]
+  sha256: 2b85b05920b4e97496b743479f523ca90f499d18ba46b1392170e3b027f3ef4a
+  class: P
+  to: []
+  note: 'S03 measurement record: every NOT_COMPARABLE and DISAGREE pair with its reason (comparison.json)'
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[28]
+  sha256: d1954b72693b7235dbd71eed0196df0f35baf44f0d6575e1e3e4223e65762410
+  class: P
+  to: []
+  note: scripts/gate.sh and CI run once before merge, not by the generator; process note
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[29]
+  sha256: b26a841e7b7af907a9dee4e0aad4058b655065c957f6e13af74fb3d4c986c751
+  class: P
+  to: []
+  note: S03 review pending at 959131dc; the reviewer pass ran afterwards (docs/reviews/S03-review.md)
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: limitations[30]
+  sha256: 94651e1a7a99d0a60708e6db219de7f69ea96338c30054bc3a89bf6592df99fc
+  class: S
+  to:
+  - check:S03.A17
+  note: S03.A17 fail at 959131dc (verdicts document not yet written), closed by WO-S03-5's docs/reviews/S03-verdicts.md; passes at 930aad1b
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: checks[16]
+  check_id: S03.A17
+  sha256: 30dd9127790e55a9bd8a1215857d37723b6424822e254beac588ce8d5c1b6ca3
+  class: S
+  to:
+  - check:S03.A17
+  note: S03.A17 fail at 959131dc (verdicts document not yet written), closed by WO-S03-5's docs/reviews/S03-verdicts.md; passes at 930aad1b
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: checks[22]
+  check_id: S03.gate
+  sha256: ee61ab522dcf5c37724db3a15076f9988ef02eb3cc196ae1fd57953d35da6c94
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S03/959131dcfc9ec9b2a068cb89b4cd73b989dfc326/manifest.json
+  item: checks[23]
+  check_id: S03.ci
+  sha256: d1c2762c9a2c9323cbeb195ef8fd319bb574bdbb739939a21d31a4d9d70b54aa
+  class: P
+  to: []
+  note: CI on both architectures is checked before merge, not by the generator; unsupported here
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[0]
+  sha256: 4605753d6c64a6239267bbe1626856c9d770fb8a47175028a39c1999ecdb662e
+  class: E
+  to:
+  - L18
+  note: 'S03: an AGREE verifies two independent implementations of the same synthetic equations at a registered state; not empirical validation'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[1]
+  sha256: 49be2c42d1308fe6ca0f0fd485b94482a5126cb28458125b9dc2a0eed6b7b9fa
+  class: E
+  to:
+  - L18
+  note: 'S03 compares only at P_r: our Poynting terms have no independent reference; M1-M4 at their own pressure profile have none (S02 §14 stands)'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[2]
+  sha256: 7a01a0a67b66b2dcc91e340e2aaff48cd0da630a011b7521cd99a1de8d66305d
+  class: E
+  to:
+  - U04
+  - L19
+  note: S03's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); S03 compares only the registered states (seven configurations, ten neighbours, PC-P); no uniqueness claim
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[3]
+  sha256: 4e627d85bdcf4ae26afe6ceccb4b42a3e201fa5bb98a9ab8eab6b5025b2e2982
+  class: E
+  to:
+  - U04
+  - U05
+  note: S03's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); the perturbation study is finite differences at registered states; no sensitivity capability (U05)
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[4]
+  sha256: a6ba16fccbbe288fff851c82d7a7e5ee0dc702ed8d8b993c98a5810d1e6bf393
+  class: E
+  to:
+  - U04
+  note: S03's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); inverse specifications are compared at one state per kind (RC5 purity, RC6 recovery, RC7 temperature)
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[5]
+  sha256: 3e5672bc369b04ef0c4463139b5fc81cfb19e28e4225852e8f859b826ba76250
+  class: E
+  to:
+  - U04
+  - L20
+  note: 'S03''s column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no phase-transition robustness: a one-phase section ends typed; no partial dormancy, subcooled condenser, total reboiler, side draws or hydraulics'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[6]
+  sha256: 12d975fec40936ae3af51496fd1c546267190427753a0e08283ff86d25903ca3
+  class: E
+  to:
+  - U02
+  note: 'S03''s supported nonideal scope is none (spec §9): SYN-001 only (U02)'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[7]
+  sha256: 98939f4bec069f4ee51574795264ebc6d143a01461c3ddfb34d53a5ea751aa46
+  class: P
+  to: []
+  note: S03 does not compare refusals with the tools; S1-S11 are our contract (S02 A02-A03, S03 A04)
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[8]
+  sha256: 83364e24d050c3ca488ff4e59a0715fc8d7100f2288b3deb677ed5e75371f7d5
+  class: E
+  to:
+  - L16
+  note: S03's IDAES agreement verifies SmoothVLE's sharp limit only to within eps = 1e-8 K (T06 A2)
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[9]
+  sha256: e648f22e846f92e4c550f7bc9c0430c23a5c054b40f67afdd8cefa9ff9f6a8fa
+  class: P
+  to: []
+  note: 'S03: how to read NOT_COMPARABLE (neither failure nor pass) and an L3 AGREE (against IDAES''s tray equations as the harness connected them)'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[10]
+  sha256: ec57a9f12394ae75e0dfd7ba59893e94ce49e5eaa2c13ead27c4a4cf4f4fa1f5
+  class: P
+  to: []
+  note: S03 blindness is procedural (spec §2.1); A03 is a static tripwire (review N4)
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[11]
+  sha256: 52c70b93fc6105b6b24318bbee0869928efd9d774fde5c34ddc3a8f73baf341a
+  class: P
+  to: []
+  note: pointer to S03 §17.11 and §18.9, harvested item by item below
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[12]
+  sha256: a0f1e55a16bb41669c7d31b05eb65e251f281bcda05c7c448fb02ba4d0bb0d5b
+  class: E
+  to:
+  - U04
+  note: S03's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); one state per inverse kind, no perturbed neighbour (§17.11)
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[13]
+  sha256: fb2f011e5e798c21bc2de4c96ba5c4ba01965d83e8eb90a4ee4daa4b92f1f7e0
+  class: P
+  to: []
+  note: S03 §17.11's pre-registered expectation that RC6/RC7 may have one reference or none; the outcome is verdict 4 (docs/reviews/S03-verdicts.md)
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[14]
+  sha256: cc12c00cf858fb8b30044a6d5879965e41081634595e5b8ca288187e0d5208dd
+  class: P
+  to: []
+  note: 'S03 §17.11: DWSIM''s ladder records which methods DWSIM 9.0.5 dispatches; not a claim about DWSIM''s solvers'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[15]
+  sha256: 7fee4c57a19c92f6257dbc8afe27bec3639fa534c49740acba4ffc219814900e
+  class: E
+  to:
+  - L18
+  note: 'S03 §17.11: DWSIM''s K away from P_r is not re-proved at column level; our Poynting terms stay without an independent check'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[16]
+  sha256: 0b073558b802dd512cac5caa77888d8738863f51bf3b7cf57d8837e1e54d5f43
+  class: P
+  to: []
+  note: 'S03 §17.11: the 1e-9 rule 2d thresholds are derived at the registered states only'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[17]
+  sha256: c5651639542eeb3f61a7c7677206855f66121d2924dd7efb924d1e8c841b67e5
+  class: P
+  to: []
+  note: 'S03 §17.11: the queued one-phase package has not started (process)'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[18]
+  sha256: f32a134407d22012ce008ce865a1b631e89a558129e4b06f0901ba827a227b80
+  class: P
+  to: []
+  note: 'S03 §17.11: the blindness exemption covers three pinned files only (provenance)'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[19]
+  sha256: fb7d8d84dacb4592f140234fe8e0c0eacaeaa756def656d68b369074ab42d548
+  class: P
+  to: []
+  note: 'S03 §18.9: IDAES''s ladder is a fact about this tool, path and settings, not a claim about IDAES''s solvers'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[20]
+  sha256: 55afb698fae3b16ef9922d384246a34a28f3dfb7be88f6be07370838b7c94e99
+  class: P
+  to: []
+  note: 'S03 §18.9: rule 2d''s path-independence check spans three positions at one level; not a uniqueness claim'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[21]
+  sha256: 14dfb3d3ca409126cdec3470be6e3bd9ec476fa5f7591c56609f545dc3aecd86
+  class: P
+  to: []
+  note: 'S03 §18.9: PC-LI shows the IDAES harness passes h_form,ig through; IDAES''s missing Poynting factor at column level rests on T06 PC-2'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[22]
+  sha256: 9d67e045249abc1fb8f31bdfcfd2fa62b0d8ddbc502041b4055492f74715fe83
+  class: P
+  to: []
+  note: 'S03 §18.9: the §18.1 readings were hypotheses; WO-S03-2b measured them (review N1)'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[23]
+  sha256: 21c770f79c4a7e29f4d78f7175050c5b4b0f95a5b48f335af3b2df43f013bceb
+  class: P
+  to: []
+  note: 'S03 §18.9: the §18.6 branch outcomes were pre-registered mappings'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[24]
+  sha256: 99f60a94288df253a0ea183c2a8700c2497540567211b9dc8505e40ad3c3274c
+  class: P
+  to: []
+  note: 'S03 §18.9: blindness stays procedural; the pilot runs are disclosed'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[25]
+  sha256: da1814ddda24fa0837b30862f1f33b5f2e75a31c9f3099b96553b8bb41499258
+  class: P
+  to: []
+  note: S03 manifest lists D19 only (X31 is outside the schema's D/A pattern); the ledger's D19 and X31 rows cite the verdicts (process)
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[26]
+  sha256: 209738a2002a5df6a188e948ffa56c1fd2aea2e29253a60c9d132811daa550c3
+  class: P
+  to: []
+  note: S03's X31 reference clause as §17.5's table classifies it (not met, 2 of 4 cases); the verdict is A17's document, cited in the ledger's X31 row
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[27]
+  sha256: 2b85b05920b4e97496b743479f523ca90f499d18ba46b1392170e3b027f3ef4a
+  class: P
+  to: []
+  note: 'S03 measurement record: every NOT_COMPARABLE and DISAGREE pair with its reason (comparison.json)'
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[28]
+  sha256: d1954b72693b7235dbd71eed0196df0f35baf44f0d6575e1e3e4223e65762410
+  class: P
+  to: []
+  note: scripts/gate.sh and CI run once before merge, not by the generator; process note
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: limitations[29]
+  sha256: 695a8a0d6818d5e70618b8f086e296c376313ff06ee177947868a9dd058f9c7e
+  class: P
+  to: []
+  note: S03 reviewer pass applied by WO-S03-6; human numerical and process-model review pending; neither reviewed nor released claimed
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: checks[22]
+  check_id: S03.gate
+  sha256: ee61ab522dcf5c37724db3a15076f9988ef02eb3cc196ae1fd57953d35da6c94
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+  item: checks[23]
+  check_id: S03.ci
+  sha256: d1c2762c9a2c9323cbeb195ef8fd319bb574bdbb739939a21d31a4d9d70b54aa
+  class: P
+  to: []
+  note: CI on both architectures is checked before merge, not by the generator; unsupported here
