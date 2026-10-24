@@ -743,6 +743,328 @@
     ]
    ]
   },
+  "RC6": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "total",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "1.5"
+    },
+    "reboiler": {
+     "kind": "recovery",
+     "value": "0.99",
+     "component": "C"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "reflux",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC7": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "partial",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "2"
+    },
+    "reboiler": {
+     "kind": "temperature",
+     "value": "368",
+     "stage": 6
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
   "RC1-RR": {
    "role": "comparison",
    "tool_variant": {
@@ -2603,8 +2925,31 @@
     "1e-6"
    ],
    "column_max_iterations": 1000,
-   "floor_rerun": "the selected column tolerance times 10, everything else unchanged"
+   "floor_rerun": "the selected column tolerance times 10, everything else unchanged",
+   "column_method_order_amendment_1": {
+    "supersedes": "column_method_order",
+    "methods": [
+     "Napthali-Sandholm",
+     "Wang-Henke"
+    ],
+    "applies_to": "every case and control",
+    "order": "levels L1 then L2; within a level, tolerances tightest first; within a tolerance, the methods in this order",
+    "reason": "Russell inside-out does not exist in DWSIM 9.0.5; Burningham-Otto runs only in AbsorptionColumn, which has no condenser and no reboiler (spec §17.2)"
+   }
   },
-  "tool_initial_guess": "the tool's own initializer or estimator; if it needs a temperature profile: linear from 320 K (stage 1) to 400 K (stage N), from SYN-001's T_b alone"
+  "tool_initial_guess": "the tool's own initializer or estimator; if it needs a temperature profile: linear from 320 K (stage 1) to 400 K (stage N), from SYN-001's T_b alone",
+  "specification_definitions_amendment_1": {
+   "note": "spec §5.1 row 9 with §17.4; molar; our stage numbering; the condenser end's product is v_1 (partial) or d (total), the reboiler end's product is l_N",
+   "reflux_ratio": "L_1/V_1 (partial condenser); sum(r)/D (total condenser)",
+   "boilup_ratio": "V_N/L_N",
+   "distillate_rate": "V_1 (partial condenser); D (total condenser)",
+   "bottoms_rate": "L_N",
+   "duty": "the end stage's duty, positive into the stage",
+   "purity": "n_c/P: the component's mole fraction in the end's product",
+   "recovery": "n_c/F_c: the end's product flow of c over the inlets' total flow of c",
+   "temperature": "T_s of the named stage s (s = 1 with a total condenser means T_c)",
+   "semantics_threshold": "1e-4 relative (rule 2c)",
+   "accuracy_threshold": "rule 2d: 1e-8 relative for a ratio, rate or duty; 1e-8 absolute for purity; 1e-9 absolute for recovery; 1e-9 relative for temperature"
+  }
  }
 }

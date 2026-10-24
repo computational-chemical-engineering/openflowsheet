@@ -16,6 +16,23 @@ endpoint and the straight specification path in 16 equal steps. What it adds (sp
 * the discrimination claims: every perturbation moves some registered quantity by at least 100
   tolerances, each positive control by at least 10, a feed one stage up (E1) by at least 100.
 
+Amendment 1 (spec §17) adds, without changing any earlier value:
+
+* RC6 (S06's J8 at P_r: RC2's column, RR 1.5, reboiler recovery of C 0.99) and RC7 (S06's J3 at
+  P_r: RC1's column, RR 2, the reboiler slot taken by stage 6's temperature, 368 K);
+* the inverse-partner claim: RC5, RC6 and RC7 each move their ratio-partner base case (RC1, RC2,
+  RC1) by at least 100 tolerances, so a harness that dropped the inverse specification and kept
+  the base case's would disagree;
+* the specification-accuracy claim behind rule 2d's thresholds: for every compared case and every
+  specified end, re-solving with that specification moved by exactly its threshold (1e-8 relative
+  for a ratio, rate or duty; 1e-8 absolute on a purity; 1e-9 absolute on a recovery; 1e-9 relative
+  on a temperature) moves every registered quantity by at most 0.05 tolerance;
+* the definition-mismatch claim behind rule 2c's 1e-4 threshold for the inverse kinds: each
+  registered wrong reading of a purity, recovery or temperature specification differs from the
+  registered value by more than 1e-3 relative (ten times the threshold);
+* DWSIM's amended column-solver ladder and the specification definitions, as new keys of
+  ``tool_settings`` (the superseded key is kept so that the earlier records' settings still read).
+
 It writes two files. ``s03_cases.json`` holds inputs only (cases, quantity names, tool
 settings): the tool scripts read it and nothing else of this project (spec §8, blindness).
 ``s03_reference.json`` holds the twin values and the claims; it records the SHA-256 of the cases
@@ -66,6 +83,20 @@ STAGE_MIN = mpf(100)  # spec §5.3: E1 (feed one stage up) moves some quantity b
 MARGIN_MIN = mpf("0.02")  # S01: a declared single-phase inlet is admissible with this margin
 SIGMA_REGULAR = mpf("1e-4")
 NEWTON_FROM_SYN = 2  # the tool-model root is found by Newton from the SYN-001 root
+# Amendment 1 (spec §17.4): rule 2d's specification threshold, its claimed effect, rule 2c's margin
+# rule 2d's specification threshold per kind: (basis, value). Ratio, rate and duty: 1e-8 relative
+# (spec §6). Purity: 1e-8 absolute on the fraction (spec §6). Recovery and temperature: 1e-9, set by
+# the response claim below (measured 0.30 and 0.23 tolerance at 1e-8; spec §17.4).
+SPEC_ACCURACY: dict[str, tuple[str, Any]] = {
+    "purity": ("absolute", mpf("1e-8")),
+    "recovery": ("absolute", mpf("1e-9")),
+    "temperature": ("relative", mpf("1e-9")),
+}
+SPEC_ACCURACY_DIRECT = ("relative", mpf("1e-8"))
+SPEC_RESPONSE_MAX = mpf("0.05")  # a threshold-sized specification error moves <= 0.05 tolerance
+SEMANTICS_THRESHOLD = mpf("1e-4")  # rule 2c, relative
+SEMANTICS_MARGIN = 10  # each registered wrong reading misses by > 10 x rule 2c's threshold
+FRACTION_KINDS = ("purity", "recovery")
 
 CLAIMS: list[str] = []
 
@@ -119,7 +150,22 @@ CASES: dict[str, tuple[str, dict[str, tuple[str, Any, str]], Any, Any]] = {
         None,
         None,
     ),
+    # Amendment 1 (spec §17.1): S06's J8 and J3 at P_r, each with its ratio partner
+    "RC6": (
+        "RC2",
+        {"condenser": ("reflux_ratio", None, "1.5"), "reboiler": ("recovery", 2, "0.99")},
+        None,
+        None,
+    ),
+    "RC7": (
+        "RC1",
+        {"condenser": ("reflux_ratio", None, "2"), "reboiler": ("temperature", 6, "368")},
+        None,
+        None,
+    ),
 }
+# Amendment 1: the case whose specifications an inverse case shares except for its inverse end
+INVERSE_PARTNER = {"RC5": "RC1", "RC6": "RC2", "RC7": "RC1"}
 PERTURBED: dict[str, tuple[str, dict[str, tuple[str, Any, str]], Any, Any]] = {
     "RC1-RR": (
         "RC1",
@@ -265,6 +311,78 @@ def record(case: dict[str, Any], st: dict[str, Any]) -> list[list[str]]:
     return [[name, kind, wide(value)] for name, kind, value in quantities(case, st)]
 
 
+# -- Amendment 1 (spec §17.4): what rules 2c and 2d's specification thresholds rest on -----------
+def spec_response(case: dict[str, Any], x_syn: Sequence[Any], st_syn: dict) -> dict[str, Any]:
+    """Each specified end's specification moved by exactly rule 2d's threshold, re-solved by Newton
+    from the twin root; the largest move of a registered quantity, in tolerances at the twin."""
+    n_st, two = case["N"], ["TWO_PHASE"] * case["N"]
+    base = {name: (kind, value) for name, kind, value in quantities(case, st_syn)}
+    out: dict[str, Any] = {}
+    for end, j in (("condenser", 1), ("reboiler", n_st)):
+        if case[end] == "none":
+            continue
+        direct, inverse = dict(s2.target_slots(case)), dict(case["inverse"])
+        if j in inverse:
+            e, kind, attr, value = inverse[j]
+            basis, threshold = SPEC_ACCURACY[kind]
+            delta = threshold if basis == "absolute" else threshold * abs(value)
+            inverse[j] = (e, kind, attr, value + delta)
+        else:
+            kind, (basis, threshold) = case["spec"][end][0], SPEC_ACCURACY_DIRECT
+            slot, value = direct[j]
+            direct[j] = (slot, value + threshold * abs(value))
+        x = s2.newton(lambda y, d=direct, i=inverse: s6.residual(case, y, d, i, two), x_syn)
+        moved = {name: v for name, _, v in quantities(case, s2.unpack(case, x))}
+        ratios = {n: abs(moved[n] - v) / tolerance(k, v) for n, (k, v) in base.items()}
+        worst = max(ratios, key=lambda n: ratios[n])
+        claim(
+            ratios[worst] <= SPEC_RESPONSE_MAX,
+            f"{case['name']}: the {end} {kind} specification moved by {s(threshold)} ({basis}) "
+            "moves every registered quantity by <= 0.05 tolerance",
+        )
+        out[end] = {
+            "kind": kind,
+            "basis": basis,
+            "threshold": s(threshold),
+            "max_ratio": mp.nstr(ratios[worst], 6),
+            "argmax": worst,
+        }
+    return out
+
+
+def definition_alternatives(case: dict[str, Any], st: dict[str, Any]) -> dict[str, Any]:
+    """Registered wrong readings of each inverse specification, at the twin root; each must miss the
+    registered value by more than 10 x rule 2c's 1e-4 relative threshold."""
+    feed, total = s2.feed_total(case)
+    out: dict[str, Any] = {}
+    for j, (end, kind, attr, value) in case["inverse"].items():
+        flows = s6.product(case, st, end)
+        alternatives: dict[str, Any] = {}
+        if kind == "purity":
+            liquid = st["l"][j]
+            alternatives["liquid_of_the_end_stage"] = liquid[attr] / sum(liquid)
+            alternatives["recovery_in_the_product"] = flows[attr] / feed[attr]
+        elif kind == "recovery":
+            other = s6.product(case, st, "condenser" if end == "reboiler" else "reboiler")
+            alternatives["recovery_in_the_other_product"] = other[attr] / feed[attr]
+            alternatives["purity_in_the_product"] = flows[attr] / sum(flows)
+            alternatives["fraction_of_the_total_feed"] = flows[attr] / total
+        else:
+            for name, stage in (("stage_above", attr - 1), ("stage_below", attr + 1)):
+                alternatives[name] = s6.quantity(case, st, end, kind, stage)
+        entry: dict[str, Any] = {"kind": kind, "end": end, "registered": s(value)}
+        for name, alt in alternatives.items():
+            miss = abs(alt - value) / abs(value)
+            claim(
+                miss > SEMANTICS_MARGIN * SEMANTICS_THRESHOLD,
+                f"{case['name']}: reading the {kind} specification as {name} misses the registered "
+                "value by > 1e-3 relative (10 x rule 2c's threshold)",
+            )
+            entry[name] = {"value": s(alt), "relative_miss": mp.nstr(miss, 6)}
+        out[str(j)] = entry
+    return out
+
+
 def run_job(key: str) -> tuple[str, dict[str, Any], list[str]]:
     CLAIMS.clear()
     s2.CLAIMS.clear()
@@ -305,6 +423,11 @@ def run_job(key: str) -> tuple[str, dict[str, Any], list[str]]:
         tool = solve_tool_model(case, syn["x"], key)
         out["tool_model"] = record(case, tool["st"])
         out["tool_model_sigma_min"] = mp.nstr(tool["sigma_min"], 6)
+    # Amendment 1: appended after every earlier claim of the job, so those keep their order
+    if key in CASES or key in PERTURBED:
+        out["spec_response"] = spec_response(case, syn["x"], syn["st"])
+    if case["inverse"] and (key in CASES or key in PERTURBED):
+        out["definition_alternatives"] = definition_alternatives(case, syn["st"])
     return key, out, [*s2.CLAIMS, *s6.CLAIMS, *CLAIMS]
 
 
@@ -363,8 +486,10 @@ def case_inputs(name: str, entry: tuple[str, dict[str, tuple[str, Any, str]], An
     specs = {}
     for end, (kind, attr, value) in entry[1].items():
         item: dict[str, Any] = {"kind": kind, "value": value}
-        if kind == "purity":
+        if kind in FRACTION_KINDS:
             item["component"] = NAMES[attr]
+        if kind == "temperature":
+            item["stage"] = attr  # our numbering (S02 §1.1)
         specs[end] = item
     variant = {
         "PC-P": {"IDAES": "registered settings", "DWSIM": "registered settings"},
@@ -430,9 +555,33 @@ TOOL_SETTINGS: dict[str, Any] = {
         "column_tolerance_ladder": ["1e-10", "1e-9", "1e-8", "1e-7", "1e-6"],
         "column_max_iterations": 1000,
         "floor_rerun": "the selected column tolerance times 10, everything else unchanged",
+        "column_method_order_amendment_1": {
+            "supersedes": "column_method_order",
+            "methods": ["Napthali-Sandholm", "Wang-Henke"],
+            "applies_to": "every case and control",
+            "order": "levels L1 then L2; within a level, tolerances tightest first; within a "
+            "tolerance, the methods in this order",
+            "reason": "Russell inside-out does not exist in DWSIM 9.0.5; Burningham-Otto runs "
+            "only in AbsorptionColumn, which has no condenser and no reboiler (spec §17.2)",
+        },
     },
     "tool_initial_guess": "the tool's own initializer or estimator; if it needs a temperature "
     "profile: linear from 320 K (stage 1) to 400 K (stage N), from SYN-001's T_b alone",
+    "specification_definitions_amendment_1": {
+        "note": "spec §5.1 row 9 with §17.4; molar; our stage numbering; the condenser end's "
+        "product is v_1 (partial) or d (total), the reboiler end's product is l_N",
+        "reflux_ratio": "L_1/V_1 (partial condenser); sum(r)/D (total condenser)",
+        "boilup_ratio": "V_N/L_N",
+        "distillate_rate": "V_1 (partial condenser); D (total condenser)",
+        "bottoms_rate": "L_N",
+        "duty": "the end stage's duty, positive into the stage",
+        "purity": "n_c/P: the component's mole fraction in the end's product",
+        "recovery": "n_c/F_c: the end's product flow of c over the inlets' total flow of c",
+        "temperature": "T_s of the named stage s (s = 1 with a total condenser means T_c)",
+        "semantics_threshold": "1e-4 relative (rule 2c)",
+        "accuracy_threshold": "rule 2d: 1e-8 relative for a ratio, rate or duty; 1e-8 absolute for "
+        "purity; 1e-9 absolute for recovery; 1e-9 relative for temperature",
+    },
 }
 
 
@@ -511,6 +660,29 @@ def build_documents() -> tuple[bytes, bytes, int]:
         if close:
             raise SystemExit(f"claim failed: {key}: quantities within a tolerance: {close}")
         post(True, f"{key}: within each family the registered quantities differ pairwise")
+    # Amendment 1 (spec §17.1, §17.4)
+    inverse_partner: dict[str, Any] = {}
+    for key, partner in INVERSE_PARTNER.items():
+        d = discrimination(values(by_key[partner]["syn"]), values(by_key[key]["syn"]), "moved")
+        post(
+            d.pop("_max") >= RESOLVE_MIN,
+            f"{key}: moves its ratio-partner base case {partner} by >= 100 tolerances",
+        )
+        inverse_partner[key] = {"partner": partner, **d}
+    spec_responses = {key: by_key[key]["spec_response"] for key in [*CASES, *PERTURBED]}
+    worst_key, worst_end = max(
+        ((k, e) for k, ends in spec_responses.items() for e in ends),
+        key=lambda ke: mpf(spec_responses[ke[0]][ke[1]]["max_ratio"]),
+    )
+    alternatives = {
+        key: by_key[key]["definition_alternatives"]
+        for key in [*CASES, *PERTURBED]
+        if "definition_alternatives" in by_key[key]
+    }
+    post(
+        sorted(alternatives) == sorted(INVERSE_PARTNER),
+        "the inverse cases with registered wrong readings are exactly RC5, RC6 and RC7",
+    )
 
     cases_doc = {
         "generator": "docs/derivations/scripts/s03_reference.py",
@@ -533,6 +705,18 @@ def build_documents() -> tuple[bytes, bytes, int]:
         "perturbations": perturbations,
         "controls": controls,
         "sensitivity": sensitivity,
+        "amendment_1": {
+            "spec": "docs/derivations/S03-spec.md §17",
+            "inverse_partner": inverse_partner,
+            "spec_response": {
+                "threshold": "rule 2d: 1e-8 relative (ratio, rate, duty), 1e-8 absolute (purity), "
+                "1e-9 absolute (recovery), 1e-9 relative (temperature)",
+                "claimed_max_ratio": s(SPEC_RESPONSE_MAX),
+                "worst": {"case": worst_key, "end": worst_end},
+                "cases": spec_responses,
+            },
+            "definition_alternatives": alternatives,
+        },
         "claims": claims,
         "claim_count": len(claims),
     }

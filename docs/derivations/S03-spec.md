@@ -4,9 +4,9 @@ Design lane (`specifier`), 2026-10-24. Package S03 (plan v1.2 §4.5, `docs/imple
 part; X31 `:357`, with S02), brief `docs/briefs/S03-column-references.md`. Base: S02 (`docs/derivations/S02-spec.md` with
 §17–§19) and S06 (`docs/derivations/S06-spec.md` with §17). Precedent: T06 §9 (`docs/derivations/T06-corpus-spec.md`) and
 ADR 0014 D7. Reference generator `docs/derivations/scripts/s03_reference.py` (mpmath, 50 digits; it reuses the S02 and S06
-generators, which import nothing from `src/`). `--check` re-derives **4009 claims** and byte-compares two files,
+generators, which import nothing from `src/`). `--check` re-derives **4009 claims** (4558 after Amendment 1, §17) and byte-compares two files,
 `s03_cases.json` (inputs only) and `s03_reference.json` (twin values), in about one minute on 15 worker processes.
-Register R-628 to R-633.
+Register R-628 to R-633; Amendment 1 (§17): R-634 to R-639.
 
 ## 0. Authority and scope
 
@@ -32,6 +32,8 @@ comparison quantities (§4). The matched semantics per tool (§5). The tolerance
 layout and blindness (§8). The supported nonideal scope, which is none, with the refusal that makes it checkable (§9). The
 decisions S02 deferred (§10). Assertions S03.A01–A17 (§11), work orders (§12) and the manifest check list (§13).
 
+**Amendment 1** (§17) adds RC6 and RC7 (recovery and temperature). It amends DWSIM's ladder (§5.2), the control rule (§7.2), rule 2d's thresholds for the new kinds, A03's exemptions and X31's per-case outcomes, and it queues the one-phase package (Q-S03-4).
+
 **What it does not establish** is §14. Read it before citing anything here.
 
 ## 1. The brief's questions, decided
@@ -39,7 +41,7 @@ decisions S02 deferred (§10). Assertions S03.A01–A17 (§11), work orders (§1
 | Question (brief §6) | Decision | Where |
 | --- | --- | --- |
 | 1. The references | IDAES 2.13.0 and DWSIM 9.0.5, the T06 environments. Whether each can express a case is settled by a blind qualification at three pre-registered levels; a case a tool cannot express is `NOT_COMPARABLE(capability)` for that tool, never a substituted model | §2 |
-| 2. Cases | RC1–RC4 are S02's M1–M4 with every pressure at `P_r` (X31's four). RC5 is S06's J1 on RC1 (one inverse kind). Both tools, all quantities of §4. P1 is not compared | §3 |
+| 2. Cases | RC1–RC4 are S02's M1–M4 with every pressure at `P_r` (X31's four). RC5 is S06's J1 on RC1 (one inverse kind). Both tools, all quantities of §4. P1 is not compared. *Amended (§17.1): RC6 and RC7 add recovery and temperature* | §3 |
 | 3. Matched semantics | T06 §9.3's mapping verbatim, plus the column rows of §5.1 | §5 |
 | 4. Tolerances and verdicts | T06 §9.4's formula; T06 §9.5's rule order, plus a semantics self-check (2c) and an accuracy check (2d) | §6, §7 |
 | 5. Perturbation studies | Ten registered perturbed cases (each end specification +2 %, and a feed-composition shift), solved by all three implementations and classified like the base cases. Each perturbation moves the twin by ≥ 8382 tolerances. The finite-difference response is reported. No sensitivity capability is claimed | §3.2, §7.4 |
@@ -105,7 +107,7 @@ defaults leaving 0.0306 mol/s of balance error).
 5. **X31's clause** "two independent references where available" counts RC1–RC4 only. It is met in count if every RC1–RC4
    case has a comparable classification (`AGREE` or `DISAGREE`) from every available tool, and at least one tool is available
    for every case. The count of cases with two comparable references is reported (target: 4). Whether the column is verified
-   is the `verdict` agent's call (§7.5).
+   is the `verdict` agent's call (§7.5). *Amended: §17.5 pre-registers the per-case outcomes and the clause's outcome.*
 
 ### 2.4 Structural questions (answered per tool and case, before the run)
 
@@ -146,6 +148,9 @@ down the column.
 | RC5 | RC1's column; condenser purity of A in the vapour distillate 0.85, BR* = 1.5 (S06's J1 at `P_r`) | S06's inverse slot against a second implementation, with a ratio partner. One inverse kind exercises S06's slot mechanics; recovery and temperature are not compared (§14, Q-S03-5) | `T_1 = 330.53412968…`, `T_7 = 371.65135241…` K; `D = 0.33702663…`; `RR = 2.24545407…`; `Q_1 = −21227.6941…`, `Q_7 = 31686.3669…` W; σ_min 0.0316093; 29 quantities |
 
 RC1–RC4 are X31's "four matched column cases" for the reference clause. RC5 is reported beside them and is not counted.
+
+*Amendment 1 (§17.1) registers RC6 (recovery) and RC7 (temperature) the same way. The last clause of RC5's row ("recovery and
+temperature are not compared") is superseded.*
 
 Every case is checked in the generator:
 - the twin root is reached by S02 §18.2's endpoint and the straight path in 16 equal steps (S06's solve);
@@ -239,9 +244,12 @@ cancel in every balance, so they do not cancel in a stream's enthalpy.
 | 14 | DWSIM settings | Flash loops (PT and PH, external and internal) `1e-10`, 1000 iterations. The column solver and tolerance follow §5.2 | T06 §9.3 |
 | 15 | Accuracy rerun (rule 2d; `floor_rerun` in `s03_cases.json`) | IDAES: `tol = 1e-9`, `constr_viol_tol = 1e-8`. DWSIM: the selected column tolerance × 10. Everything else unchanged | §6 |
 
-Every setting is machine-readable in `s03_cases.json` → `tool_settings`.
+Every setting is machine-readable in `s03_cases.json` → `tool_settings`. *Amended: row 9 gains recovery and temperature (§17.4).*
 
 ### 5.2 DWSIM's column solver (pre-registered ladder; selected blind in qualification)
+
+*The "Methods" bullet is superseded by §17.2. Russell inside-out does not exist in DWSIM 9.0.5, and Burningham–Otto cannot
+realize these columns. The methods are Napthali–Sandholm, then Wang–Henke, for every case.*
 
 - **Tolerances**, tightest first: `1e-10, 1e-9, 1e-8, 1e-7, 1e-6`. These apply to the column's convergence tolerances (external
   and internal loops), with at most 1000 iterations.
@@ -296,7 +304,8 @@ registered value at two levels:
 
 *Derivation of 1e-8.* The largest response to a relative specification change is RC3-Q's: 32861 tolerances per 2 %, or
 1.64e6 tolerances per unit relative change. So 1e-8 relative moves a quantity by ≤ 0.016 tolerance, six times under the 0.1
-budget. Purity uses 1e-8 absolute on the mole fraction.
+budget. Purity uses 1e-8 absolute on the mole fraction. *Amended (§17.4): the response is now claimed per case and end (largest
+0.0167, not 0.016); recovery and temperature take 1e-9.*
 
 ## 7. Verdict mechanics
 
@@ -312,7 +321,7 @@ tool.
 | 2 | not converged: for IDAES, Ipopt's final solve did not end "Optimal Solution Found"; for DWSIM, the column or any object reported an error or hit its iteration limit. Or the tool's own overall component balance (inlets = products) misses by more than 3.1e-8 mol/s on any component. Or its own energy balance (Σ inlet enthalpies + duties = Σ product enthalpies, in its own datum) misses by more than 1e-3 W | `NOT_COMPARABLE(reference_accuracy: <value>)` |
 | 2b | (IDAES only) T06 rule 2b unchanged: SmoothVLE shift > 1e-7 K on any state block, or a block without `eps_1 = eps_2 = 1e-8 K` | `NOT_COMPARABLE(semantics: smooth_vle_shift(<K>))` |
 | 2c | semantics self-check fails: the stage count or `stage_map` disagrees with the case, an inlet enters another stage, a stage pressure is more than 1e-3 Pa from the registered value, an intermediate duty has \|Q\| > 1e-3 W, a fixed-zero liquid distillate carries more than 3.1e-8 mol/s, or a specification computed by §5.1 row 9 from the tool's own flows (or T) differs from the registered value by more than 1e-4 relative | `NOT_COMPARABLE(semantics: <check>(<value>))` |
-| 2d | accuracy check fails: a specification residual > 1e-8 relative (purity 1e-8 absolute), or the accuracy rerun (§5.1 row 15) did not converge, or it moves any registered quantity by more than 0.1 tolerance | `NOT_COMPARABLE(reference_accuracy: <check>(<value>))` |
+| 2d | accuracy check fails: a specification residual above its kind's threshold (§17.4: 1e-8 relative; purity 1e-8 absolute; recovery 1e-9 absolute; temperature 1e-9 relative), or the accuracy rerun (§5.1 row 15) did not converge, or it moves any registered quantity by more than 0.1 tolerance | `NOT_COMPARABLE(reference_accuracy: <check>(<value>))` |
 | 3 | ours is not accepted: its outcome is not `CONVERGED`, it fails S02 §8 or S06 §8, or a registered quantity is more than 0.1 tolerance from the twin | `NOT_COMPARABLE(ours_not_verified)`, and a column finding (§7.5) |
 | 4 | every registered quantity within §6 | `AGREE`; otherwise `DISAGREE`, with the full table (quantity, ours, tool, twin, tolerance, ratio) |
 
@@ -321,6 +330,9 @@ can show no change on the rerun and still be inaccurate. That error then appears
 agent. An inaccurate reference can therefore cost a false `DISAGREE`, never a false `AGREE`.
 
 ### 7.2 Positive controls
+
+*The second bullet is replaced by §17.3. A tool's pairs count only if at least one of its controls classifies
+`DISAGREE`, and a control that is `NOT_COMPARABLE` propagates nothing by itself.*
 
 - PC-P (both tools) and PC-L (DWSIM) **must classify `DISAGREE`**.
 - If rules 1–2d classify a control `NOT_COMPARABLE`, that tool's RC1 pair and its three RC1 perturbation pairs are
@@ -393,6 +405,9 @@ The classifier recomputes the rule values from the record's raw fields. It does 
 - They open no path under `benchmarks/s03/references/results/ours-*`.
 - Their only input file from this project is `s03_cases.json`.
 
+*Amended: §17.6 names the exempt modules, pins them by SHA-256 and
+scans every qualification commit.*
+
 **The gate never runs a tool.**
 - `tests/test_s03_references.py` recomputes every classification from the committed tool records, `s03_reference.json` and a
   live solve of our side, and checks the result equals `comparison.json`.
@@ -446,7 +461,7 @@ R-533 is closed as a **registered limitation**:
 3. The failure is honest: typed, with every attempted signature in the records (S02 A12).
 
 **Reopening** needs a registered use case whose regular signature is not all-two-phase, and an ADR against ADR 0005 D4. Whether
-to schedule that is Frank's call (Q-S03-4).
+to schedule that is Frank's call (Q-S03-4). *Answered: Frank asked for a later package (§17.7).*
 
 ### 10.2 R-534 — S02's cases and the independent reference
 
@@ -466,7 +481,7 @@ and RC4 (no reboiler, a vapour `bottom` inlet), and every equilibrium stage of e
 ## 11. Assertions
 
 `ref` = `s03_reference.json`, `cases` = `s03_cases.json`. Tolerances are as stated, with the reason after each table row where it
-is not exact.
+is not exact. *Amended by §17.9: A01, A03, A06, A08, A09, A11, A12, A13.*
 
 | Id | Assertion | Expected | Tolerance |
 | --- | --- | --- | --- |
@@ -489,6 +504,8 @@ is not exact.
 | A17 | `docs/reviews/S03-verdicts.md` exists, is written by the `verdict` agent, and records §7.5's items | present | — |
 
 ## 12. Work orders
+
+*Amendment 1's deltas (WO-S03-1b, WO-S03-2, WO-S03-3b, WO-S03-4, WO-S03-5) are in §17.10.*
 
 Each is about 150k context. Run at most two agents at a time. WO-S03-2 and WO-S03-3 need the rebuilt `.venv-idaes` and
 `.venv-dwsim`.
@@ -542,7 +559,7 @@ the classifier decides reference verdicts.
 ## 13. Evidence manifest check list
 
 - `status: tested` requires a passing test for each of A01–A16, each citing its id, and A17's document.
-- `s03_reference.py --check` passes at the manifest commit (4009 claims; both JSON files byte-identical). The S02 and S06
+- `s03_reference.py --check` passes at the manifest commit (4558 claims after Amendment 1; both JSON files byte-identical). The S02 and S06
   generators' `--check` pass too (A16).
 - `ruff check` and `ruff format --check` are clean. `scripts/gate.sh` passes before the merge, and CI is green on both
   architectures.
@@ -568,14 +585,16 @@ the classifier decides reference verdicts.
 - **Only at `P_r`.** At every RC state SYN-001's Poynting factor is 1 and its `v_i (P − P_r)` term is 0. **Our Poynting terms are
   not independently verified.** S02's generator covers them for M1–M4, and the generator is not independent. M1–M4 at their
   own pressure profile have no independent reference (S02 §14 stands for them).
-- **Only the registered states.** Five configurations, ten neighbouring states and PC-P. Nothing for another N, feed stage,
+- **Only the registered states.** Seven configurations (Amendment 1), ten neighbouring states and PC-P. Nothing for another N, feed stage,
   specification pair or state. No uniqueness claim. A tool converging from its own initializer says nothing about our solver's
   robustness.
 - **No sensitivity capability.** The perturbation study gives finite-difference responses of three implementations at
   registered states. No derivative of our solution is verified, and S02 §14's "no sensitivity results" stands for the column
   as a capability.
-- **Inverse specifications: purity only** (RC5). Recovery and stage temperature (S06) have no independent reference.
-- **No phase-transition robustness** (§10.1). No partial dormancy, no subcooled condenser, no total reboiler, no side draws,
+- **Inverse specifications: one state per kind** (Amendment 1, §17.1): purity (RC5), recovery (RC6) and temperature (RC7). Each
+  may end with one reference or none (§17.11). RC7's is expected to be IDAES alone.
+- **No phase-transition robustness** (§10.1). A column with a one-phase (dry or flooded) section ends in a typed failure. A later
+  package is queued for it (Q-S03-4, §17.7); S03 neither depends on it nor anticipates it. No partial dormancy, no subcooled condenser, no total reboiler, no side draws,
   pump-arounds, hydraulics, efficiencies or rate-based models (deferred by the plan).
 - **Supported nonideal scope: none** (§9).
 - **Refusals are not compared with the tools.** S1–S10 and S11 are our contract (S02 A02–A03, A04 here). The tools' error
@@ -584,6 +603,7 @@ the classifier decides reference verdicts.
 - **A `NOT_COMPARABLE`** is neither a failure nor a pass of our column. **An L3 `AGREE`** verifies our column against IDAES's
   tray equations as the harness connected them.
 - **Blindness is procedural** (§2.1).
+- **Amendment 1's own limits** are in §17.11.
 
 ## 15. Open questions (each with a default)
 
@@ -592,17 +612,18 @@ the classifier decides reference verdicts.
    express is `NOT_COMPARABLE(capability)`, reported. It is not a reason to change the case.
 2. **Q-S03-2** *Needs a fact.* Does some rung of §5.2's ladder pass rule 2d for every DWSIM case? **Default:** yes, at
    `1e-10` or `1e-9`. If no rung passes for a case, the record is `NOT_COMPARABLE(reference_accuracy)` and goes to the design
-   lane. §6 is not relaxed.
+   lane. §6 is not relaxed. *Answered (WO-S03-3): no, for eight DWSIM cases; see §17.2 and §17.8.*
 3. **Q-S03-3** *Needs a fact* (WO-S03-1). Does our side solve every RC case, perturbed case and PC-P within 0.1 tolerance of
    the twin? **Default:** yes. A failure is an S02 or S06 finding, not a relaxed tolerance or a dropped case.
 4. **Q-S03-4** *Needs Frank's preference (scope and priority).* In plain words: today, a column whose physically right answer
    has a dry or flooded section (some stages all-liquid or all-vapour) ends in a typed failure, because the phase-switching
    logic cannot find that answer. Should a later package teach it to? **Default: no.** It stays a registered limitation, since
-   no registered use case needs it and it would change the shared phase-switching logic (ADR 0005 D4).
+   no registered use case needs it and it would change the shared phase-switching logic (ADR 0005 D4). *Answered by Frank: "Yes,
+   plan a package" (§17.7).*
 5. **Q-S03-5** *Needs Frank's preference (scope).* In plain words: S03 checks one of S06's three new column specifications
    (product purity) against the other simulators, and not component recovery or stage temperature. Should it check all three?
    **Default: purity only.** One case exercises the shared mechanism. Adding RC6 (recovery) and RC7 (temperature) later costs
-   two generator cases and two runs per tool, with no change to the rules.
+   two generator cases and two runs per tool, with no change to the rules. *Answered by Frank: "All three" (§17.1).*
 6. **Q-S03-6** *Needs a fact.* Does DWSIM 9.0.5 still run on the pinned .NET 8 runtime after its end of support on
    2026-11-10? **Default:** yes, because the runtime is pinned and runs offline. The DWSIM runs should be done early. A runtime
    failure is rule 1 (`NOT_COMPARABLE(access)`), reported.
@@ -619,3 +640,463 @@ Register R-628 to R-633.
 - R-631: the supported nonideal scope and S11.
 - R-632: the block rule closed as a limitation.
 - R-633: R-534 and R-508 resolved, and no ADR needed.
+- Amendment 1 (§17): R-634 to R-639.
+
+## 17. Amendment 1 (2026-10-24, design lane `specifier`)
+
+Brief `docs/briefs/S03-amendment-1.md`. This amendment:
+- records Frank's answers to Q-S03-4 and Q-S03-5 (`docs/FRANK_QUESTIONS.md:155–158`);
+- rules on the blind DWSIM qualification (WO-S03-3, records at `95870140`; outcome in `docs/S03_BUILD_DECISIONS.md:64–94`);
+- names A03's exemptions;
+- replaces §7.2's control rule.
+
+Register R-634 to R-639. The author read no tool record's values. Every DWSIM fact used here comes from the build-decisions lines
+above: from rules 0–2d, which read only the tool's own record, or from DWSIM's source. None comes from a comparison, and no
+comparison has been run.
+
+**What it changes.** §0's header, §1 row 2, §2.3 step 5, §3.1, §5.1 row 9, §5.2's methods, §6's specification thresholds,
+§7.1 rule 2d, §7.2, §8's A03, §10.1's reopening, §11 (A01, A03, A06, A08, A09, A11, A12, A13), §12, §13, §14 and §15. Each
+of these carries a pointer here.
+
+**What it keeps.**
+- Every registered input, twin value and claim of the original. The generator's outputs change by additions only: every
+  earlier JSON value is byte-identical, and every earlier claim is present in its order. Only `cases_sha256` and
+  `claim_count` change. This was verified while authoring by a key-by-key comparison with the files at `4bd961e9`.
+- §6's tolerance formula, the rule order, the levels, and the ladder's tolerances and selection rule.
+- Rule 2c's threshold, and rule 2d's threshold for ratio, rate, duty and purity specifications.
+
+`--check` now re-derives **4558 claims** (4009 + 549) in about one minute on 16 worker processes.
+
+### 17.1 RC6 and RC7: recovery and temperature (Q-S03-5, Frank: "All three")
+
+RC6 and RC7 are registered the way RC5 was: an S06 case at `P_r` with a ratio partner. J8 and J3 are the only S06 cases that
+have a recovery or temperature specification together with a ratio partner (S06 §9). Common inputs are §3's: the feed, `P_r`
+everywhere and adiabatic intermediate stages.
+
+| Case | Configuration | Why it is in the list | Sanity values at the twin root (`ref.twin.<case>`) |
+| --- | --- | --- | --- |
+| RC6 | S06's J8 at `P_r`: RC2's column (N = 7, total condenser, kettle reboiler, liquid feed at stage 4, 340 K); RR* = 1.5; reboiler **recovery of C** in the bottoms, r* = 0.99 | the recovery slot (`n_c − ν*`, ν* = r*·F_C = 0.297 mol/s) at the reboiler end, held against a ratio partner, compared with a second implementation. The total condenser is one that DWSIM's Napthali–Sandholm expresses (the RC2 family qualified at (L1, 1e-10, NS)) | `T_1 = 330.48915509…`, `T_7 = 376.44561389…` K; `D = 0.46643884…`; `BR = 1.97315945…`; reflux `0.69965826…`; `Q_1 = −32663.8657…`, `Q_7 = 34164.8394…` W; `top[C] = 0.003` and `bottom[C] = 0.297` exactly; σ_min 0.000605633; 28 quantities (RC2's list) |
+| RC7 | S06's J3 at `P_r`: RC1's column; RR* = 2; the reboiler slot taken by **stage 6's temperature**, T* = 368 K | an interior stage's temperature in an end's slot, the general form of S06's temperature row. If a harness or our row reads stage 5 or 7 for stage 6, it misses by 1.45–2.08 % (§17.4). An end-stage temperature would let that error hide | `T_1 = 339.29303915…`, `T_6 = 368` exactly, `T_7 = 375.64801394…` K; `D = 0.43687023…`; `BR = 2.15251155…`; `Q_1 = −25545.7548…`, `Q_7 = 39154.2926…` W; σ_min 0.012611; 29 quantities (RC1's list) |
+
+The generator checks both like every RC case (§3.1's list), plus the following.
+- **Inverse partner** (`ref.amendment_1.inverse_partner`). Each inverse case moves its partner base case by ≥ 100
+  tolerances. The partner is the same column with the inverse end's original specification. Measured:
+  - RC5 against RC1: 48029.9 tolerances (`L[1]`), 29/29 quantities over one tolerance;
+  - RC6 against RC2: 31543.8 (`top[B]`), 28/28;
+  - RC7 against RC1: 168655 (`top[B]`), 29/29.
+
+  A harness that dropped the inverse specification and kept the base case's would classify `DISAGREE`. The base case's root
+  cannot produce an `AGREE` on RC5–RC7.
+- **Specified quantities stay in the list.** RC7's list includes `T[6]` = 368 K and RC6's includes `bottom[C]` = 0.297
+  mol/s. They are compared, as RC2's `L[7]` and RC4's `V[1]` are (§4). Only a specified duty is left out.
+
+*No perturbed cases for RC6 and RC7.*
+- RC5 has none.
+- Q-S03-5's costing, which Frank accepted, was two generator cases and two runs per tool.
+- The partner claim already shows that each inverse specification is resolved by ≥ 31543 tolerances.
+
+The cost is one state per inverse kind (§17.11).
+
+*σ_min.* RC6's 0.000605633 is the smallest in the registered set (S06's J8 has 0.000610732 at S02's profile). It is regular
+(> 1e-4). The root is sensitive near total recovery, so §17.4's response claim sets a tighter rule 2d threshold for it. A tool
+that cannot meet that threshold is `NOT_COMPARABLE(reference_accuracy)`, which is a result.
+
+*Counting.* RC5–RC7 are reported beside RC1–RC4 and are not counted in X31 (§2.3 step 5). The verdict reports §17.5's
+per-case outcome for each inverse kind.
+
+*Expected realizations.* Structural inspection confirms or refutes each one; none is assumed.
+- IDAES, RC6: the total condenser and RR are native. The reboiler's boil-up specification is unfixed and replaced by the
+  L2(b) equation `bottoms flow of C − 0.297 = 0`.
+- IDAES, RC7: the partial condenser follows Q-S03-7. The boil-up is unfixed and replaced by the L2(b) equation `T(our stage 6)
+  − 368 = 0`. Our stage 6 is IDAES tray 5 under §5.1 row 3's map.
+- DWSIM, RC6: L1 if DWSIM has a native reboiler component-recovery specification with §17.4's definition (a percentage is
+  converted and recorded).
+- DWSIM, RC7: see §17.12 Q-A1-1.
+
+### 17.2 DWSIM's column-solver ladder (Q3-1); replaces §5.2's "Methods" bullet
+
+**Facts.** These are F1–F3 of `docs/S03_BUILD_DECISIONS.md:77–85`, from DWSIM 9.0.5's source and the tool's own records:
+- **F1.** `DistillationColumn` dispatches only Wang–Henke, Modified Wang–Henke and Napthali–Sandholm. Russell inside-out does
+  not exist. Burningham–Otto runs only in `AbsorptionColumn`, which has no condenser and no reboiler, so it can realize none of
+  RC1–RC7.
+- **F2.** Napthali–Sandholm defines the condenser reflux ratio as L/(liquid distillate), and its product rate as the liquid
+  distillate. Wang–Henke's reflux ratio is L_1/V_1.
+- **F3.** DWSIM raises an error when its own relative component balance exceeds 10× the column tolerance.
+
+§5.2's ladder therefore rested on a false premise. It gave RC3 and RC4 one runnable method, and gave every case a rung that
+never existed. That is a defect of this document, amended here under §12 rule 6.
+
+**Amended methods**, at each tolerance, for every case and control:
+1. Napthali–Sandholm;
+2. Wang–Henke (bubble point).
+
+The machine-readable form is `tool_settings.DWSIM.column_method_order_amendment_1`. It supersedes `column_method_order`,
+which is kept so that the standing records' settings still read.
+
+**Order of attempts** (the order WO-S03-3 used, now written down):
+1. **L1.** For each tolerance, tightest first, and each method in order: the structural inspection, then the run if the model
+   is expressible.
+2. **L2(a).** Only for a method under which step 1 found the L1 model structurally inexpressible, and only where an L2(a)
+   realization exists that makes it expressible. Then for each tolerance: inspect, then run.
+
+   Where L1 is expressible, every variable L2(a) could fix already holds its S02 value natively, so L2(a) would be the same
+   model. For DWSIM the only L2(a) realization is a partial condenser with its liquid distillate fixed at 0 and a vapour-rate
+   specification, for the RC4 family. No L2(a) realization makes Napthali–Sandholm's reflux ratio equal L_1/V_1.
+3. **Selection.** The selected attempt is the first one in this order that is structurally expressible and passes rules 2–2d.
+   - An attempt whose structural inspection fails is recorded with its Q-X6 answer and cannot be selected. An example is
+     Napthali–Sandholm's reflux ratio on a partial condenser (F2); §5.1 row 9 says it is not this specification.
+   - An attempt DWSIM refuses to dispatch is recorded with DWSIM's message.
+
+The rest of §5.2 is unchanged: the tolerances 1e-10 … 1e-6, the 1000-iteration cap, the selection rule (one uniform pair if
+one exists, otherwise per case) and rule 2d's rerun at 10× the tolerance.
+
+**Not added.**
+- *Modified Wang–Henke.* It is a variant of the bubble-point method already on the ladder. Adding a second variant after seeing
+  failures is a search for a passing setting. At 1e-10 and 1e-9 it would also come before the RC1 family's selected rung.
+- *Other DWSIM units*, such as an `AbsorptionColumn` with an external condenser and reboiler vessels. §2.2's "Why no DWSIM L3"
+  rules them out.
+
+**Why this keeps blindness.**
+- The amendment is uniform: one method list for every case.
+- It was decided from facts that rules 0–2d read from the tool's own records and from DWSIM's source, by an author who has seen
+  no tool value, before the classifier has run.
+- No comparison exists, so no rung can have been chosen toward agreement.
+- It is post hoc with respect to convergence, and this section discloses that, as `docs/reviews/T06-verdicts.md:117` did for
+  T06's Amendment 2.
+- Rule 2d still checks whatever is selected.
+
+**Effect on the records** (detail in §17.8):
+- The records of the eleven cases based on RC1, RC2 or RC5, including both controls, stand. Under the amended ladder their
+  sequence of runnable attempts is the recorded one, without a rung that never ran.
+- The six records of the RC3 and RC4 families are superseded. The amended ladder adds Wang–Henke attempts they never had, so
+  the top-up run re-qualifies them (§17.10).
+
+**Q3-2.** RC1-BR stays not available: its rerun moved 0.1006 tolerance, above rule 2d's 0.1. PC-P stays not available. No
+tolerance moves. The RC3 and RC4 families take whatever the top-up's blind qualification finds.
+
+### 17.3 Positive controls (PC-P in DWSIM); replaces §7.2's second bullet
+
+**The question.** DWSIM cannot run PC-P. Wang–Henke fails DWSIM's own balance check at 1e-10 to 1e-8, and rule 2's 3.1e-8 mol/s
+balance at 1e-7 and 1e-6. Read literally, §7.2 then makes DWSIM's RC1 pair and its three perturbation pairs
+`NOT_COMPARABLE(control_not_comparable: PC-P)`. Strictly, §7.2 names rules 1–2d and PC-P's unavailability is rule 0. But its
+cause is a rule 2 failure at every rung, and the build lane's reading (F4) is the natural one.
+
+**That reading is not the intended one, because the rule as written is incoherent.**
+1. A control proves that the harness reads the tool's answer and resolves a known model difference at the registered
+   tolerance. That is not a property of a state: PC-P is at 1.5e5 Pa and RC1 is at `P_r`.
+2. §7.2 keeps DWSIM's RC2 family, RC5, RC6 and RC7 comparable, although none of them has a control on its configuration. It
+   would drop RC1, which still has a comparable control on its own configuration: PC-L, at RC1's rung. The rule penalizes the
+   case that has a working control and spares the cases that have none.
+3. Beyond PC-L, DWSIM's PC-P would only show at column level that DWSIM's missing Poynting factor is visible.
+   - T06's PC-2 shows that at flash level, at the same pressure: DWSIM `DISAGREE` (`docs/reviews/T06-verdicts.md:84`).
+   - At `P_r` the factor is exactly 1 (§3).
+   - Pressure is checked per record by rule 2c, to 1e-3 Pa.
+4. Conversely, if a tool's only control is not comparable, nothing shows that the tool's harness can see a known difference.
+   §7.2 as written would still accept that tool's RC2–RC5 pairs.
+
+**Replacement rule.**
+- (a) A control classified `AGREE` stops the comparison (unchanged).
+- (b) A tool's pairs count only if **at least one of its registered controls classifies `DISAGREE`**. If none does, **every**
+  pair of that tool is `NOT_COMPARABLE(control_not_comparable: <each control and its classification>)`.
+- (c) A control classified `NOT_COMPARABLE`, for any reason including rule 0, is recorded with its reason and propagates nothing
+  by itself.
+- (d) (PC-L, IDAES) is `not_applicable` (unchanged).
+
+**Pre-registered consequences.**
+- DWSIM's controls are PC-P, recorded as not available, and PC-L. DWSIM's pairs count if and only if (PC-L, DWSIM) is
+  `DISAGREE`. The generator's PC-L discrimination is 243.292 tolerances.
+- IDAES's only control is PC-P. IDAES's pairs count if and only if (PC-P, IDAES) is `DISAGREE`.
+
+For a tool whose only control fails, this is stricter than §7.2: all of its pairs are lost, not four. For DWSIM's RC1 family it
+is less strict. Both directions follow from points 1–4 above. No tolerance, threshold or case changes.
+
+**Rejected.**
+- *Keep §7.2 literally.* It is incoherent (point 2), and it costs DWSIM's RC1 family over a fact about another state.
+- *A replacement control DWSIM can run*, such as PC-P on RC2's or RC5's configuration, where Napthali–Sandholm converged. The
+  control's configuration would be chosen after seeing where DWSIM converges. It needs three more solves (ours, IDAES and
+  DWSIM), and it guards nothing in the harness that PC-L does not already guard.
+- *PC-P at a lower pressure.* That tunes the control to the tool's convergence, and lowers its discrimination.
+
+### 17.4 Specification definitions and thresholds (rules 2c and 2d); extends §5.1 row 9, replaces §6's derivation of 1e-8
+
+**Definitions.** These extend §5.1 row 9; the machine-readable form is `tool_settings.specification_definitions_amendment_1`.
+- *Recovery* is `n_c / F_c`: the end's product flow of c over the inlets' total flow of c. The product is `l_N` at the reboiler
+  end, and `v_1` or `d` at the condenser end.
+- *Temperature* is `T_s` of the named stage s, in our numbering. With a total condenser, s = 1 means `T_c`.
+- A tool option given in percent is converted (× 0.01), and the conversion is recorded.
+- Any other definition (another product, another basis, another stage) is not this specification.
+
+**Rule 2c** (definition mismatch) stays at **1e-4 relative** for every kind. The generator now claims that each registered wrong
+reading of an inverse specification misses by more than ten times that (`ref.amendment_1.definition_alternatives`):
+
+| Case | Registered | Wrong reading | Value at the twin | Relative miss |
+| --- | --- | --- | --- | --- |
+| RC5 | purity of A in `v_1` = 0.85 | the condenser liquid's `x_A,1` | 0.630036 | 0.259 |
+| RC5 | | recovery of A in `v_1` | 0.954909 | 0.123 |
+| RC6 | recovery of C in `l_7` = 0.99 | recovery in the distillate | 0.01 | 0.990 |
+| RC6 | | purity of C in `l_7` | 0.556637 | 0.438 |
+| RC6 | | over the total feed F | 0.297 | 0.700 |
+| RC7 | `T_6` = 368 K | `T_5` (one stage up) | 362.660395 K | 0.0145 |
+| RC7 | | `T_7` (one stage down) | 375.648014 K | 0.0208 |
+
+**Rule 2d** (accuracy) thresholds per kind. The last column is the largest response at the threshold; the generator claims it is
+≤ 0.05 tolerance.
+
+| Kind | Threshold | Basis | Largest response |
+| --- | --- | --- | --- |
+| ratio (RR, BR), rate (D, B), duty | 1e-8 | relative | 0.0167 (RC3-Q, reboiler duty, `L[5]`) |
+| purity | 1e-8 | absolute on the fraction | 0.0142 (RC5, `L[1]`) |
+| recovery | **1e-9** | absolute on the fraction (3e-10 mol/s of C at RC6) | 0.0303 (RC6, `top[B]`) |
+| temperature | **1e-9** | relative (3.68e-7 K at RC7) | 0.0233 (RC7, `top[B]`) |
+
+*Derivation (executable).*
+- The generator covers every compared case (RC1–RC7 and the ten perturbed cases) and every specified end, 28 ends in all. For
+  each one it re-solves by Newton from the twin root, with that specification moved by exactly its threshold. It claims every
+  registered quantity moves by ≤ 0.05 tolerance, half of rule 2d's 0.1 rerun budget (`ref.amendment_1.spec_response`).
+- At 1e-8, RC6's recovery moves `top[B]` by 0.3026 tolerance and RC7's temperature moves it by 0.2327. These were measured
+  directly while authoring, and they are ten times the claimed values, by linearity.
+- So a 1e-8 threshold would admit a tool whose specification error alone costs about a third of a tolerance.
+- 1e-9 is the largest power of ten that satisfies the claim for both kinds.
+
+These are new thresholds for new kinds. None relaxes an earlier one.
+
+*Correction to §6.* §6 said that 1e-8 relative moves a quantity by ≤ 0.016 tolerance. It took that from RC3-Q's 2 % finite
+difference: 32861 tolerances, or 0.0164 per 1e-8. The local response is 0.0167, the claim above. The conclusion stands, but §6's
+bound of 0.016 was about 4 % low.
+
+*Floor.*
+- The twin's moved roots are computed at 50 digits and converge to 1e-40 (S02's Newton tolerance), so the claimed ratios carry
+  no roundoff.
+- A tool's specification residual is computed from its own binary64 record. ulp(0.297) is about 5.6e-17, and ulp(368 K) is about
+  5.7e-14 K, at least 6000× below the thresholds.
+
+### 17.5 X31's clause: per-case outcomes, pre-registered; replaces §2.3 step 5's last two sentences
+
+The count stays on RC1–RC4. For each case c and tool t, the pair falls into exactly one class:
+- **comparable**: `AGREE` or `DISAGREE` after rules 0–4 and §17.3;
+- **absent**: rule 0, not available, either for capability or because no level and rung passed rules 2–2d;
+- **unusable**: an available tool's pair that §17.3(b) made `NOT_COMPARABLE(control_not_comparable)`;
+- **access**: rule 1;
+- **ours**: rule 3.
+
+For each case, the first matching row decides:
+
+| # | Condition | Case outcome |
+| --- | --- | --- |
+| 1 | any pair is **ours** | not met: a column finding (S02 or S06) |
+| 2 | any pair is a genuine `DISAGREE` (§7.5) | not met: a disagreement finding, until the design lane resolves it |
+| 3 | any pair is **access** | blocked |
+| 4 | any pair is **unusable** | not met: an available reference could not be shown to see a known difference |
+| 5 | both pairs `AGREE` | two references |
+| 6 | one pair `AGREE`, the other **absent** | one reference, with the absent tool and its reason quoted |
+| 7 | both pairs **absent** | no reference: not met |
+
+The clause is then:
+- **met with two references** if all four cases are row 5;
+- **met where available** if every case is row 5 or row 6, reported with the count of row 5 cases (target 4);
+- **not met** if any case is row 1, 2, 4 or 7;
+- **blocked** if no case is "not met" and some case is row 3.
+
+The `verdict` agent applies this table as written. Its own judgment is D19's question, whether the column is verified, and the
+reasons for its answer (§7.5).
+
+*If IDAES also fails a case that DWSIM lacks* (row 7), the clause is not met. The verdict says: "X31 reference clause: not met
+for <case>: no independent reference expresses it (IDAES: <reason>; DWSIM: <reason>)". That is the measured result:
+- no case changes;
+- no tool is added (the original brief's §7);
+- no tolerance moves;
+- S03's manifest may still be `tested` (§13).
+
+Whether a later gate (R01, or a release) accepts the clause unmet is outside S03.
+
+*Where it stands now*, from §17.2's facts, before IDAES and the top-up have run:
+- DWSIM is available for RC1 (comparable if and only if PC-L is `DISAGREE`, §17.3) and for RC2.
+- DWSIM is not yet available for RC3 or RC4.
+- If IDAES expresses all four cases and every comparable pair is `AGREE`, the clause is met where available, with 2 of 4 cases
+  having two references. It is more if the top-up qualifies RC3 or RC4.
+
+*RC5–RC7* get the same per-case outcome, reported for each inverse kind (purity, recovery, temperature), outside the count.
+
+### 17.6 A03's exemption list (B3-2); replaces §8's "other than T06's SYN-001 definitions"
+
+The original exempted "T06's SYN-001 definitions" without naming files. Measured at `4bd961e9`:
+- **Imports.** The DWSIM script imports `dwsim_representability`, `dwsim_runtime`, `t06_fixtures` and `t06_qualify_dwsim`.
+  `t06_qualify_idaes` imports `t06_fixtures`, and `idaes_representability` inside functions.
+- **Forbidden strings present.** `t06_fixtures.py` contains `twin` three times and `comparison` twice. `t06_qualify_dwsim.py` and
+  `t06_qualify_idaes.py` contain `twin` once each. Every occurrence is in a comment or docstring stating the module's own
+  blindness toward T06's twin.
+- **Forbidden strings absent.** None of these three contains any of the other five strings. The other imported modules contain
+  none of the seven.
+- **File access.** The only file `t06_fixtures` opens is in `file_sha256`, for the environment fingerprint.
+- **History.** The three files are unchanged since `5a350199`.
+
+**A03, amended.**
+1. *Scanned set.* The S03 tool scripts (`s03_qualify_idaes.py`, `s03_qualify_dwsim.py`, `s03_qualify.sh`), and every module they
+   import from this repository, transitively. Imports are found from every import statement in each file, function-level ones
+   included.
+2. *Forbidden strings.* The seven strings of §8, in every scanned file. The three exempt modules below may contain `twin` and
+   `comparison`; the other five strings stay forbidden in them.
+3. *Exempt modules, pinned by SHA-256.* A03 holds this table. A different hash fails A03 with "exempt module changed:
+   re-register in S03 §17.6".
+   - `spikes/references/t06_fixtures.py`: `c6320cc81ea4bf08c36f7d7b5aca19180c2109fd66e4e23c84476d35286ba61f`
+   - `spikes/references/t06_qualify_dwsim.py`: `e3c1218e435df89462a6aa6ee894f2eccd5576d7012182d31a7f23c92e4e46d0`
+   - `spikes/references/t06_qualify_idaes.py`: `aead49938b96e43514ff4e4bcacece87c65d413efa8733e20793c8fd1c7e6eea`
+4. *Scan points.* HEAD, and every qualification commit in the manifest (DWSIM `95870140`, the DWSIM top-up, IDAES), read with
+   `git show`. The standing records were produced by the scripts as they were at those commits. Without history the test
+   refuses explicitly, following R-555's pattern as A09 does.
+5. *Input file.* `s03_cases.json` is still the only input file the scripts read from this project (unchanged).
+
+*Why the exemption is safe.* The strings guard S03's twin, our results and the comparison. The exempt modules predate S03, and
+their occurrences refer to T06's own artefacts. The five S03-specific strings, and with them any path to `ours-*`, stay
+forbidden in the exempt modules. The pinned hash makes any later edit visible.
+
+### 17.7 Q-S03-4: one-phase column sections (Frank: "Yes, plan a package")
+
+S03 keeps §10.1's decision. The typed failure is a registered limitation, and S03 does not teach the phase contract a block
+rule. §10.1's "Reopening … is Frank's call (Q-S03-4)" is now answered: a later package is queued.
+
+**The queued package: one-phase column sections** (provisional id **S08**). The session makes the work-queue entry.
+- *Objective.* A column whose regular root has a dry or flooded section (some stages all-vapour or all-liquid) converges to that
+  root, instead of ending in a typed S01 §4.5 outcome.
+- *Entry conditions* (§10.1):
+  - a registered use case whose regular signature is not all-two-phase (S02's P1 is the first candidate);
+  - an ADR against ADR 0005 D4 that decides between a block rule in the phase contract and a model-side screen.
+- *Exit evidence, in outline.* The use case reaches its generator-verified regular root with that signature, and every S01,
+  S02, S06 and S03 case is unchanged.
+- *Relation to S03.* None. S03 neither depends on it nor anticipates it.
+
+§14's amended line restates the limitation.
+
+### 17.8 The DWSIM records: what stands
+
+| Case(s) | Record at `95870140` | Under Amendment 1 |
+| --- | --- | --- |
+| RC1, RC1-RR, RC1-z, PC-L | available, (L1, 1e-8, Wang–Henke) | **stands** |
+| RC2, RC2-RR, RC2-B, RC2-z, RC5 | available, (L1, 1e-10, Napthali–Sandholm) | **stands** |
+| RC1-BR | not available (rule 2d: rerun 0.1006) | **stands** |
+| PC-P | not available (rule 2 at every rung) | **stands**; §17.3(c) |
+| RC3, RC3-Q, RC3-z | not available (Napthali–Sandholm: 1000 iterations; Burningham–Otto not dispatched) | **superseded**; re-qualified (§17.10) |
+| RC4, RC4-D, RC4-z | not available (L1: no native D = V_1 under Napthali–Sandholm; L2(a) under Napthali–Sandholm: error; Burningham–Otto not dispatched) | **superseded**; re-qualified |
+| RC6, RC7 | — | **new**; qualified in the top-up |
+
+**Records made from an earlier `s03_cases.json`.** These additions change the cases file's SHA-256. A tool record stands if all
+three of these hold:
+1. its case's entry `cases.<case>` in the cases file at the record's qualification commit, read with `git show`, equals the
+   current entry as parsed JSON;
+2. every `tool_settings` key of that earlier file is present, and equal, in the current file;
+3. if the record carries a cases SHA-256, it equals that earlier file's.
+
+All three hold for the eleven standing records by construction, since the change is additions only (§17's preamble). Without
+history the check refuses explicitly.
+
+**Ladder conformance** (checked, not assumed):
+- For each DWSIM record, the selected (level, tolerance, method) must be the first attempt, in §17.2's order, that passed
+  structural inspection and rules 2–2d. Attempts with a method outside §17.2's list (Russell inside-out, Burningham–Otto) are
+  ignored.
+- A not-available record must show, for every position of §17.2's order, either a failed attempt or the structural reason none
+  was made.
+
+### 17.9 Assertions amended
+
+| Id | Change |
+| --- | --- |
+| A01 | 4558 claims (was 4009); `ref.cases_sha256` = SHA-256 of the current `cases` |
+| A03 | as §17.6 |
+| A06 | adds RC6 and RC7 (every stage two-phase; RC6: total condenser plus two-phase ×6) |
+| A08 | the pair set adds RC6 and RC7 for both tools; §17.8's earlier-cases-file rule and DWSIM ladder conformance are checked |
+| A09 | applies to each qualification commit: DWSIM `95870140`, the DWSIM top-up, IDAES |
+| A11 | replaced: (i) no control classifies `AGREE`; (ii) §17.3(b) is applied, checked both on the committed classification and by mutation: re-classifying with each tool's `DISAGREE` controls replaced by `NOT_COMPARABLE` copies turns every pair of that tool into `NOT_COMPARABLE(control_not_comparable: …)`, and the unaltered input reproduces `comparison.json`; (iii) (PC-L, IDAES) is `not_applicable`; (iv) (PC-P, DWSIM) is as recorded and changes no other DWSIM pair |
+| A12 | the RC1 part is unchanged. Added, independent of availability: one synthetic record per specification kind (RR partial and total, BR, D partial and total, B, duty, purity, recovery, temperature), with the specification residual at 2× rule 2c's threshold → rule 2c; at 2× the kind's rule 2d threshold (§17.4) → rule 2d; at 0.5× it → neither |
+| A13 | `comparison.json` also holds §17.5's table (the class of each pair, the outcome of each case, the clause's outcome) for RC1–RC4, and the same per inverse kind for RC5–RC7 |
+
+### 17.10 Work-order deltas
+
+**WO-S03-1b: our side for RC6 and RC7** (build lane, small; it may run beside WO-S03-2).
+- Add RC6 and RC7 to `scripts/s03_references_ours.py`'s case list, and write `ours-RC6.json` and `ours-RC7.json`.
+- Regenerate the 16 existing `ours-*.json` files. In each, only `cases_sha256` may change, to
+  `a0ac8496b416b0a401e9906f576243a879eab18c991939d017f009b0a3f24fb2`; a byte diff must confirm this. Our records are cheap to
+  remake, so §17.8's earlier-cases-file rule is for tool records only.
+- Extend A06, A07 and A02's our half in `tests/test_s03_ours.py`.
+- Until this work order lands, two tests in `tests/test_s03_ours.py` fail on `wp/S03`, as a direct result of this amendment:
+  A02's case-set test (RC6 and RC7 have no record yet) and A07 (`cases_sha256` has moved).
+- There is no measured expectation yet; S06 solved J8 and J3 at S02's profile. A miss of more than 0.1 tolerance is a rule 3
+  finding against S06.
+
+**WO-S03-2: IDAES** (unchanged except for the following).
+- Cases: RC1–RC7, the ten perturbed cases, PC-P, and a `not_applicable` record for PC-L, 19 records in all.
+- RC6 and RC7 are realized as §17.1 expects, recorded by structural inspection. The L2(b) equations are written from S06 §2,
+  with ν* = 0.297 mol/s (RC6) and T* = 368 K on our stage 6 (RC7).
+- Rule 2c and 2d values use §17.4's definitions and per-kind thresholds.
+- Imports follow §17.6's scanned-set rule. `s03_qualify_idaes.py` itself contains none of the seven strings.
+- Commit before WO-S03-4.
+
+**WO-S03-3b: DWSIM top-up** (new; build lane, `opus-engineer`, worktree).
+- Read `tool_settings.DWSIM.column_method_order_amendment_1` in place of `column_method_order`. No Russell or Burningham–Otto
+  rung remains.
+- Run blind, in §17.2's order, the eight cases RC3, RC3-Q, RC3-z, RC4, RC4-D, RC4-z, RC6 and RC7. Include the accuracy rerun and
+  the rule values per §17.4.
+- Leave the eleven standing `results/dwsim-<case>.json` files byte-unchanged. Replace the six superseded records and add the two
+  new ones.
+- Rewrite `qualification/dwsim.json`:
+  - carry the eleven standing per-case entries verbatim, each with `"from_commit": "95870140"`;
+  - add the eight new entries;
+  - recompute the top-level selection summary over all 19 cases. No uniform pair exists while RC1-BR and PC-P pass at no rung.
+- Expected outcomes, to be confirmed or refuted:
+  - RC6 at (L1, Napthali–Sandholm), if a native reboiler component-recovery specification with §17.4's definition exists;
+  - RC7 not available (Q-A1-1);
+  - RC3 and RC4: unknown.
+- Run before 2026-11-10, when .NET 8 support ends (Q-S03-6). A runtime failure is rule 1, and is recorded.
+- Commit before WO-S03-4, and log in `docs/S03_BUILD_DECISIONS.md`.
+
+**WO-S03-4: classifier, gate test, evidence** (unchanged except for the following).
+- It starts only after WO-S03-1b, WO-S03-2 and WO-S03-3b are committed (§2.3 step 3).
+- Rule 2c at 1e-4 relative for every kind; rule 2d per §17.4's table.
+- §17.3's control rule, and §17.5's table and clause outcome in `comparison.json`.
+- §17.8's earlier-cases-file rule and ladder conformance; A03 per §17.6.
+- Tests per §17.9: A01 (4558 claims), A03, A08, A09, A11, A12, A13. A06 comes with WO-S03-1b.
+- The manifest per §13, plus: the DWSIM qualification commits (`95870140` and the top-up) and the IDAES one; each pair's level
+  and rung; §17.5's table.
+
+**WO-S03-5: verdict.** It applies §17.5's table to X31's clause and §17.3's rule to the controls, and reports RC5–RC7 per inverse
+kind.
+
+### 17.11 What Amendment 1 does not establish
+
+- **One state per inverse kind.** RC5, RC6 and RC7 are one state each, with no perturbed neighbour. An `AGREE` verifies the slot
+  at that state. The partner claim shows only that a dropped inverse specification cannot pass.
+- **RC6 and RC7 may have one reference, or none.** If DWSIM cannot express RC7 (the default expectation) and IDAES can, the
+  temperature kind has one reference. If neither can, it has none, reported per §17.5 outside X31's count.
+- **The ladder amendment is not a claim about DWSIM's solvers.** It records which methods DWSIM 9.0.5 dispatches for these
+  units. A case DWSIM cannot qualify is a fact about this tool and these settings, not about the case.
+- **§17.3 does not re-prove DWSIM's K at column level away from the reference pressure.** That rests on T06's PC-2 (a flash)
+  and on §3's identity at `P_r`. Our Poynting terms stay without an independent check (§14).
+- **The 1e-9 thresholds** are derived from the twin's response at the registered states only. They say nothing about other
+  states.
+- **The queued one-phase package** (§17.7) has not started, and nothing here anticipates its outcome.
+- **The exemption** (§17.6) covers three pinned files only. Every other import must pass the full list of strings.
+
+### 17.12 Open questions (each with a default)
+
+1. **Q-A1-1** *Needs a fact*; WO-S03-3b settles it. Can DWSIM express RC7's interior-stage temperature specification at L1?
+   **Default: no.** DWSIM's column specifications attach to the condenser and the reboiler; this is not yet measured here. RC7
+   is then `NOT_COMPARABLE(capability: interior-stage temperature specification)` for DWSIM, and IDAES-only. That is not a
+   reason to change RC7: a different model is never substituted (§2.2).
+2. **Q-A1-2** *Needs a fact*; WO-S03-3b settles it. Does Wang–Henke qualify any case of the RC3 or RC4 families?
+   **Default: unknown**, and no expectation is registered. If it does not, those cases are `NOT_COMPARABLE(capability)` for
+   DWSIM, and X31's RC3 and RC4 rest on IDAES alone (row 6 of §17.5).
+3. **Q-A1-3** *Needs a fact*; WO-S03-2 and WO-S03-3b settle it. Do the tools meet the 1e-9 recovery and temperature thresholds?
+   **Default: IDAES yes; DWSIM unknown.** A square Ipopt solve usually ends with residuals far below `constr_viol_tol`. That is
+   not a guarantee, though: a 1e-9 mol/s residual on the ν* equation bounds the recovery error only at 3.3e-9, so this must be
+   measured. A miss is `NOT_COMPARABLE(reference_accuracy)`, reported. The thresholds are not relaxed.
+4. **Q-A1-4** *Needs the session's choice*: a name, not a scientific question. What is the queued package's id?
+   **Default: S08.** It is unused as a package id in `docs/` at `4bd961e9`; W27-S08 is a case id, not a package.
+
+### 17.13 Decisions
+
+Register R-634 to R-639.
+- R-634: RC6 and RC7; the partner and response claims; rule 2d's per-kind thresholds.
+- R-635: DWSIM's ladder amended; which records stand.
+- R-636: the positive-control rule.
+- R-637: X31's per-case outcomes.
+- R-638: A03's exemption list.
+- R-639: the one-phase column package queued (Q-S03-4).

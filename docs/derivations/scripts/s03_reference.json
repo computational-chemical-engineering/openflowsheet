@@ -2,7 +2,7 @@
  "generator": "docs/derivations/scripts/s03_reference.py",
  "spec": "docs/derivations/S03-spec.md",
  "precision_digits": 50,
- "cases_sha256": "243f2afae377940a3688cc2e5c00503767d90940d72db064b6c48411540b688e",
+ "cases_sha256": "a0ac8496b416b0a401e9906f576243a879eab18c991939d017f009b0a3f24fb2",
  "tolerance": "a_k + 1e-6 |v|; a_flow 3.1e-7 mol/s, a_T 1e-5 K, a_duty 1e-2 W; v the twin value",
  "twin": {
   "RC1": {
@@ -719,6 +719,331 @@
      "kind": "duty",
      "value": "31686.36693972011651421979",
      "tolerance": "0.04168636693972011651421979"
+    }
+   }
+  },
+  "RC6": {
+   "sigma_min": "0.000605633",
+   "spec_values": {
+    "condenser_duty": "-32663.86578097851215676421",
+    "reboiler_duty": "34164.83943146836326787005",
+    "reflux_ratio": "1.5",
+    "distillate_rate": "0.4664388412529158209508526",
+    "boilup_ratio": "1.973159451711933707555306",
+    "bottoms_rate": "0.5335611587470841790491474"
+   },
+   "inverse_values": {
+    "reboiler": {
+     "kind": "recovery",
+     "value": "0.99",
+     "parameter": "0.297"
+    }
+   },
+   "quantities": {
+    "T[1]": {
+     "kind": "T",
+     "value": "330.4891550956162971919792",
+     "tolerance": "0.0003404891550956162971919792"
+    },
+    "T[2]": {
+     "kind": "T",
+     "value": "341.8780793578615411018399",
+     "tolerance": "0.0003518780793578615411018399"
+    },
+    "T[3]": {
+     "kind": "T",
+     "value": "349.9966770256090506069203",
+     "tolerance": "0.0003599966770256090506069203"
+    },
+    "T[4]": {
+     "kind": "T",
+     "value": "356.2524639523329078600808",
+     "tolerance": "0.0003662524639523329078600808"
+    },
+    "T[5]": {
+     "kind": "T",
+     "value": "362.4709594648609598530019",
+     "tolerance": "0.0003724709594648609598530019"
+    },
+    "T[6]": {
+     "kind": "T",
+     "value": "368.4069324739919361180389",
+     "tolerance": "0.0003784069324739919361180389"
+    },
+    "T[7]": {
+     "kind": "T",
+     "value": "376.4456138956942268234631",
+     "tolerance": "0.0003864456138956942268234631"
+    },
+    "L[2]": {
+     "kind": "flow",
+     "value": "0.6565778376817112275456204",
+     "tolerance": "0.0000009665778376817112275456204"
+    },
+    "V[2]": {
+     "kind": "flow",
+     "value": "1.166097103132289552377132",
+     "tolerance": "0.000001476097103132289552377132"
+    },
+    "L[3]": {
+     "kind": "flow",
+     "value": "0.6277359247985569896577034",
+     "tolerance": "0.0000009377359247985569896577034"
+    },
+    "V[3]": {
+     "kind": "flow",
+     "value": "1.123016678934627048496473",
+     "tolerance": "0.000001433016678934627048496473"
+    },
+    "L[4]": {
+     "kind": "flow",
+     "value": "1.635776345958104675147733",
+     "tolerance": "0.000001945776345958104675147733"
+    },
+    "V[4]": {
+     "kind": "flow",
+     "value": "1.094174766051472810608556",
+     "tolerance": "0.000001404174766051472810608556"
+    },
+    "L[5]": {
+     "kind": "flow",
+     "value": "1.616954205471369131787874",
+     "tolerance": "0.000001926954205471369131787874"
+    },
+    "V[5]": {
+     "kind": "flow",
+     "value": "1.102215187211020496098586",
+     "tolerance": "0.000001412215187211020496098586"
+    },
+    "L[6]": {
+     "kind": "flow",
+     "value": "1.586362402195264819586866",
+     "tolerance": "0.000001896362402195264819586866"
+    },
+    "V[6]": {
+     "kind": "flow",
+     "value": "1.083393046724284952738726",
+     "tolerance": "0.000001393393046724284952738726"
+    },
+    "L[7]": {
+     "kind": "flow",
+     "value": "0.5335611587470841790491474",
+     "tolerance": "0.0000008435611587470841790491474"
+    },
+    "V[7]": {
+     "kind": "flow",
+     "value": "1.052801243448180640537718",
+     "tolerance": "0.000001362801243448180640537718"
+    },
+    "reflux": {
+     "kind": "flow",
+     "value": "0.6996582618793737314262789",
+     "tolerance": "0.000001009658261879373731426279"
+    },
+    "top[A]": {
+     "kind": "flow",
+     "value": "0.2947685177591917682961905",
+     "tolerance": "0.0000006047685177591917682961905"
+    },
+    "top[B]": {
+     "kind": "flow",
+     "value": "0.1686703234937240526546621",
+     "tolerance": "0.0000004786703234937240526546621"
+    },
+    "top[C]": {
+     "kind": "flow",
+     "value": "0.003",
+     "tolerance": "0.000000313"
+    },
+    "bottom[A]": {
+     "kind": "flow",
+     "value": "0.005231482240808231703809465",
+     "tolerance": "0.0000003152314822408082317038095"
+    },
+    "bottom[B]": {
+     "kind": "flow",
+     "value": "0.2313296765062759473453379",
+     "tolerance": "0.0000005413296765062759473453379"
+    },
+    "bottom[C]": {
+     "kind": "flow",
+     "value": "0.297",
+     "tolerance": "0.000000607"
+    },
+    "Q_condenser": {
+     "kind": "duty",
+     "value": "-32663.86578097851215676421",
+     "tolerance": "0.04266386578097851215676421"
+    },
+    "Q_reboiler": {
+     "kind": "duty",
+     "value": "34164.83943146836326787005",
+     "tolerance": "0.04416483943146836326787005"
+    }
+   }
+  },
+  "RC7": {
+   "sigma_min": "0.012611",
+   "spec_values": {
+    "condenser_duty": "-25545.75480758722336957362",
+    "reboiler_duty": "39154.29262046854073921886",
+    "reflux_ratio": "2.0",
+    "distillate_rate": "0.4368702391623574418608288",
+    "boilup_ratio": "2.15251155794745699143976",
+    "bottoms_rate": "0.5631297608376425581391712"
+   },
+   "inverse_values": {
+    "reboiler": {
+     "kind": "temperature",
+     "value": "368.0",
+     "parameter": "368.0"
+    }
+   },
+   "quantities": {
+    "T[1]": {
+     "kind": "T",
+     "value": "339.2930391539950286045911",
+     "tolerance": "0.0003492930391539950286045911"
+    },
+    "T[2]": {
+     "kind": "T",
+     "value": "347.1005813902160249160246",
+     "tolerance": "0.0003571005813902160249160246"
+    },
+    "T[3]": {
+     "kind": "T",
+     "value": "352.1367714712114157642809",
+     "tolerance": "0.0003621367714712114157642809"
+    },
+    "T[4]": {
+     "kind": "T",
+     "value": "357.0631932093307320816111",
+     "tolerance": "0.0003670631932093307320816111"
+    },
+    "T[5]": {
+     "kind": "T",
+     "value": "362.6603953893493120754172",
+     "tolerance": "0.0003726603953893493120754172"
+    },
+    "T[6]": {
+     "kind": "T",
+     "value": "368.0",
+     "tolerance": "0.000378"
+    },
+    "T[7]": {
+     "kind": "T",
+     "value": "375.6480139403999309884021",
+     "tolerance": "0.0003856480139403999309884021"
+    },
+    "L[1]": {
+     "kind": "flow",
+     "value": "0.8737404783247148837216576",
+     "tolerance": "0.000001183740478324714883721658"
+    },
+    "V[1]": {
+     "kind": "flow",
+     "value": "0.4368702391623574418608288",
+     "tolerance": "0.0000007468702391623574418608288"
+    },
+    "L[2]": {
+     "kind": "flow",
+     "value": "0.8469611702255862026570398",
+     "tolerance": "0.00000115696117022558620265704"
+    },
+    "V[2]": {
+     "kind": "flow",
+     "value": "1.310610717487072325582486",
+     "tolerance": "0.000001620610717487072325582486"
+    },
+    "L[3]": {
+     "kind": "flow",
+     "value": "0.8213208887078449372763552",
+     "tolerance": "0.000001131320888707844937276355"
+    },
+    "V[3]": {
+     "kind": "flow",
+     "value": "1.283831409387943644517869",
+     "tolerance": "0.000001593831409387943644517869"
+    },
+    "L[4]": {
+     "kind": "flow",
+     "value": "1.829518229833755712165106",
+     "tolerance": "0.000002139518229833755712165106"
+    },
+    "V[4]": {
+     "kind": "flow",
+     "value": "1.258191127870202379137184",
+     "tolerance": "0.000001568191127870202379137184"
+    },
+    "L[5]": {
+     "kind": "flow",
+     "value": "1.809870430161272240486238",
+     "tolerance": "0.000002119870430161272240486238"
+    },
+    "V[5]": {
+     "kind": "flow",
+     "value": "1.266388468996113154025935",
+     "tolerance": "0.000001576388468996113154025935"
+    },
+    "L[6]": {
+     "kind": "flow",
+     "value": "1.775273079664855394162206",
+     "tolerance": "0.000002085273079664855394162206"
+    },
+    "V[6]": {
+     "kind": "flow",
+     "value": "1.246740669323629682347067",
+     "tolerance": "0.000001556740669323629682347067"
+    },
+    "L[7]": {
+     "kind": "flow",
+     "value": "0.5631297608376425581391712",
+     "tolerance": "0.0000008731297608376425581391712"
+    },
+    "V[7]": {
+     "kind": "flow",
+     "value": "1.212143318827212836023035",
+     "tolerance": "0.000001522143318827212836023035"
+    },
+    "top[A]": {
+     "kind": "flow",
+     "value": "0.2954640619394356622995599",
+     "tolerance": "0.0000006054640619394356622995599"
+    },
+    "top[B]": {
+     "kind": "flow",
+     "value": "0.1407681358958022270572194",
+     "tolerance": "0.0000004507681358958022270572194"
+    },
+    "top[C]": {
+     "kind": "flow",
+     "value": "0.0006380413271195525040494336",
+     "tolerance": "0.0000003106380413271195525040494"
+    },
+    "bottom[A]": {
+     "kind": "flow",
+     "value": "0.004535938060564337700440061",
+     "tolerance": "0.0000003145359380605643377004401"
+    },
+    "bottom[B]": {
+     "kind": "flow",
+     "value": "0.2592318641041977729427806",
+     "tolerance": "0.0000005692318641041977729427806"
+    },
+    "bottom[C]": {
+     "kind": "flow",
+     "value": "0.2993619586728804474959506",
+     "tolerance": "0.0000006093619586728804474959506"
+    },
+    "Q_condenser": {
+     "kind": "duty",
+     "value": "-25545.75480758722336957362",
+     "tolerance": "0.03554575480758722336957362"
+    },
+    "Q_reboiler": {
+     "kind": "duty",
+     "value": "39154.29262046854073921886",
+     "tolerance": "0.04915429262046854073921886"
     }
    }
   },
@@ -2829,6 +3154,323 @@
    "quantities": 29
   }
  },
+ "amendment_1": {
+  "spec": "docs/derivations/S03-spec.md §17",
+  "inverse_partner": {
+   "RC5": {
+    "partner": "RC1",
+    "max_ratio": "48029.9",
+    "argmax": "L[1]",
+    "quantities_over_one_tolerance": 29,
+    "quantities": 29
+   },
+   "RC6": {
+    "partner": "RC2",
+    "max_ratio": "31543.8",
+    "argmax": "top[B]",
+    "quantities_over_one_tolerance": 28,
+    "quantities": 28
+   },
+   "RC7": {
+    "partner": "RC1",
+    "max_ratio": "168655.0",
+    "argmax": "top[B]",
+    "quantities_over_one_tolerance": 29,
+    "quantities": 29
+   }
+  },
+  "spec_response": {
+   "threshold": "rule 2d: 1e-8 relative (ratio, rate, duty), 1e-8 absolute (purity), 1e-9 absolute (recovery), 1e-9 relative (temperature)",
+   "claimed_max_ratio": "0.05",
+   "worst": {
+    "case": "RC6",
+    "end": "reboiler"
+   },
+   "cases": {
+    "RC1": {
+     "condenser": {
+      "kind": "reflux_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00425126",
+      "argmax": "L[1]"
+     },
+     "reboiler": {
+      "kind": "boilup_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00524515",
+      "argmax": "Q_reboiler"
+     }
+    },
+    "RC2": {
+     "condenser": {
+      "kind": "reflux_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00685279",
+      "argmax": "reflux"
+     },
+     "reboiler": {
+      "kind": "bottoms_rate",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.0108239",
+      "argmax": "top[B]"
+     }
+    },
+    "RC3": {
+     "reboiler": {
+      "kind": "duty",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.0159452",
+      "argmax": "L[5]"
+     }
+    },
+    "RC4": {
+     "condenser": {
+      "kind": "distillate_rate",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00797541",
+      "argmax": "L[2]"
+     }
+    },
+    "RC5": {
+     "condenser": {
+      "kind": "purity",
+      "basis": "absolute",
+      "threshold": "0.00000001",
+      "max_ratio": "0.014161",
+      "argmax": "L[1]"
+     },
+     "reboiler": {
+      "kind": "boilup_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00989258",
+      "argmax": "L[1]"
+     }
+    },
+    "RC6": {
+     "condenser": {
+      "kind": "reflux_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00918028",
+      "argmax": "L[3]"
+     },
+     "reboiler": {
+      "kind": "recovery",
+      "basis": "absolute",
+      "threshold": "0.000000001",
+      "max_ratio": "0.0302641",
+      "argmax": "top[B]"
+     }
+    },
+    "RC7": {
+     "condenser": {
+      "kind": "reflux_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00697154",
+      "argmax": "L[1]"
+     },
+     "reboiler": {
+      "kind": "temperature",
+      "basis": "relative",
+      "threshold": "0.000000001",
+      "max_ratio": "0.02327",
+      "argmax": "top[B]"
+     }
+    },
+    "RC1-RR": {
+     "condenser": {
+      "kind": "reflux_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00425069",
+      "argmax": "L[1]"
+     },
+     "reboiler": {
+      "kind": "boilup_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00527703",
+      "argmax": "Q_reboiler"
+     }
+    },
+    "RC1-BR": {
+     "condenser": {
+      "kind": "reflux_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00426856",
+      "argmax": "L[1]"
+     },
+     "reboiler": {
+      "kind": "boilup_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00522407",
+      "argmax": "Q_reboiler"
+     }
+    },
+    "RC1-z": {
+     "condenser": {
+      "kind": "reflux_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00416334",
+      "argmax": "L[1]"
+     },
+     "reboiler": {
+      "kind": "boilup_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00522224",
+      "argmax": "Q_reboiler"
+     }
+    },
+    "RC2-RR": {
+     "condenser": {
+      "kind": "reflux_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00689534",
+      "argmax": "reflux"
+     },
+     "reboiler": {
+      "kind": "bottoms_rate",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.0108448",
+      "argmax": "top[B]"
+     }
+    },
+    "RC2-B": {
+     "condenser": {
+      "kind": "reflux_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00679917",
+      "argmax": "reflux"
+     },
+     "reboiler": {
+      "kind": "bottoms_rate",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.0111594",
+      "argmax": "top[B]"
+     }
+    },
+    "RC2-z": {
+     "condenser": {
+      "kind": "reflux_ratio",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00685279",
+      "argmax": "reflux"
+     },
+     "reboiler": {
+      "kind": "bottoms_rate",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.0105497",
+      "argmax": "top[B]"
+     }
+    },
+    "RC3-Q": {
+     "reboiler": {
+      "kind": "duty",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.0167318",
+      "argmax": "L[5]"
+     }
+    },
+    "RC3-z": {
+     "reboiler": {
+      "kind": "duty",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.0157086",
+      "argmax": "L[5]"
+     }
+    },
+    "RC4-D": {
+     "condenser": {
+      "kind": "distillate_rate",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00840609",
+      "argmax": "L[2]"
+     }
+    },
+    "RC4-z": {
+     "condenser": {
+      "kind": "distillate_rate",
+      "basis": "relative",
+      "threshold": "0.00000001",
+      "max_ratio": "0.00836075",
+      "argmax": "L[2]"
+     }
+    }
+   }
+  },
+  "definition_alternatives": {
+   "RC5": {
+    "1": {
+     "kind": "purity",
+     "end": "condenser",
+     "registered": "0.85",
+     "liquid_of_the_end_stage": {
+      "value": "0.6300358860311967533630118",
+      "relative_miss": "0.258781"
+     },
+     "recovery_in_the_product": {
+      "value": "0.954908800340310447342541",
+      "relative_miss": "0.123422"
+     }
+    }
+   },
+   "RC6": {
+    "7": {
+     "kind": "recovery",
+     "end": "reboiler",
+     "registered": "0.99",
+     "recovery_in_the_other_product": {
+      "value": "0.01",
+      "relative_miss": "0.989899"
+     },
+     "purity_in_the_product": {
+      "value": "0.5566372198032922396780944",
+      "relative_miss": "0.43774"
+     },
+     "fraction_of_the_total_feed": {
+      "value": "0.297",
+      "relative_miss": "0.7"
+     }
+    }
+   },
+   "RC7": {
+    "7": {
+     "kind": "temperature",
+     "end": "reboiler",
+     "registered": "368.0",
+     "stage_above": {
+      "value": "362.6603953893493120754172",
+      "relative_miss": "0.0145098"
+     },
+     "stage_below": {
+      "value": "375.6480139403999309884021",
+      "relative_miss": "0.0207826"
+     }
+    }
+   }
+  }
+ },
  "claims": [
   "[RC1] RC1: initializer flows positive",
   "[RC1] RC1 bubble_point: stage 1 temperature in the SYN-001 domain",
@@ -3092,6 +3734,8 @@
   "[RC1] RC1: every stage and inlet pressure equals 100000.0 Pa",
   "[RC1] RC1: inlet feed is an admissible LIQUID with margin >= 0.02",
   "[RC1] RC1: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC1] RC1: the condenser reflux_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC1] RC1: the reboiler boilup_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC2] RC2: initializer flows positive",
   "[RC2] RC2 bubble_point: stage 2 temperature in the SYN-001 domain",
   "[RC2] RC2 bubble_point: stage 2 2P, L and V > 1e-3",
@@ -3336,6 +3980,8 @@
   "[RC2] RC2: every stage and inlet pressure equals 100000.0 Pa",
   "[RC2] RC2: inlet feed is an admissible LIQUID with margin >= 0.02",
   "[RC2] RC2: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC2] RC2: the condenser reflux_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC2] RC2: the reboiler bottoms_rate specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC3] RC3: initializer flows positive",
   "[RC3] RC3 bubble_point: stage 1 temperature in the SYN-001 domain",
   "[RC3] RC3 bubble_point: stage 1 2P, L and V > 1e-3",
@@ -3526,6 +4172,7 @@
   "[RC3] RC3: every stage and inlet pressure equals 100000.0 Pa",
   "[RC3] RC3: inlet top is an admissible LIQUID with margin >= 0.02",
   "[RC3] RC3: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC3] RC3: the reboiler duty specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC4] RC4: initializer flows positive",
   "[RC4] RC4 bubble_point: stage 1 temperature in the SYN-001 domain",
   "[RC4] RC4 bubble_point: stage 1 2P, L and V > 1e-3",
@@ -3716,6 +4363,7 @@
   "[RC4] RC4: every stage and inlet pressure equals 100000.0 Pa",
   "[RC4] RC4: inlet bottom is an admissible VAPOR with margin >= 0.02",
   "[RC4] RC4: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC4] RC4: the condenser distillate_rate specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC5] RC5: initializer flows positive",
   "[RC5] RC5 bubble_point: stage 1 temperature in the SYN-001 domain",
   "[RC5] RC5 bubble_point: stage 1 2P, L and V > 1e-3",
@@ -3979,6 +4627,527 @@
   "[RC5] RC5: every stage and inlet pressure equals 100000.0 Pa",
   "[RC5] RC5: inlet feed is an admissible LIQUID with margin >= 0.02",
   "[RC5] RC5: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC5] RC5: the condenser purity specification moved by 0.00000001 (absolute) moves every registered quantity by <= 0.05 tolerance",
+  "[RC5] RC5: the reboiler boilup_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC5] RC5: reading the purity specification as liquid_of_the_end_stage misses the registered value by > 1e-3 relative (10 x rule 2c's threshold)",
+  "[RC5] RC5: reading the purity specification as recovery_in_the_product misses the registered value by > 1e-3 relative (10 x rule 2c's threshold)",
+  "[RC6] RC6: initializer flows positive",
+  "[RC6] RC6 bubble_point: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 bubble_point: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 bubble_point: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 bubble_point: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 bubble_point: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 bubble_point: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 bubble_point: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 bubble_point: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 bubble_point: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 bubble_point: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 bubble_point: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 bubble_point: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 bubble_point: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 1/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 1/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 1/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 1/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 1/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 1/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 1/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 1/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 1/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 1/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 1/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 1/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 1/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 2/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 2/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 2/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 2/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 2/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 2/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 2/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 2/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 2/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 2/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 2/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 2/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 2/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 3/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 3/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 3/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 3/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 3/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 3/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 3/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 3/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 3/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 3/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 3/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 3/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 3/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 4/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 4/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 4/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 4/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 4/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 4/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 4/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 4/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 4/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 4/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 4/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 4/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 4/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 5/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 5/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 5/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 5/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 5/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 5/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 5/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 5/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 5/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 5/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 5/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 5/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 5/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 6/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 6/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 6/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 6/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 6/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 6/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 6/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 6/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 6/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 6/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 6/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 6/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 6/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 7/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 7/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 7/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 7/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 7/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 7/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 7/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 7/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 7/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 7/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 7/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 7/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 7/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 8/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 8/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 8/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 8/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 8/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 8/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 8/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 8/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 8/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 8/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 8/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 8/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 8/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 9/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 9/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 9/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 9/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 9/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 9/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 9/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 9/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 9/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 9/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 9/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 9/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 9/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 10/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 10/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 10/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 10/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 10/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 10/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 10/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 10/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 10/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 10/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 10/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 10/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 10/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 11/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 11/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 11/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 11/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 11/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 11/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 11/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 11/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 11/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 11/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 11/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 11/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 11/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 12/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 12/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 12/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 12/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 12/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 12/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 12/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 12/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 12/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 12/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 12/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 12/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 12/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 13/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 13/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 13/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 13/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 13/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 13/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 13/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 13/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 13/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 13/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 13/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 13/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 13/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 14/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 14/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 14/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 14/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 14/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 14/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 14/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 14/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 14/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 14/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 14/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 14/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 14/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 15/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 15/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 15/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 15/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 15/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 15/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 15/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 15/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 15/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 15/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 15/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 15/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 15/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 path step 16/16: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 16/16: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 16/16: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 16/16: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 16/16: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 16/16: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 16/16: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 16/16: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 16/16: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 16/16: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 16/16: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 path step 16/16: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 path step 16/16: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6 target: stage 2 temperature in the SYN-001 domain",
+  "[RC6] RC6 target: stage 2 2P, L and V > 1e-3",
+  "[RC6] RC6 target: stage 3 temperature in the SYN-001 domain",
+  "[RC6] RC6 target: stage 3 2P, L and V > 1e-3",
+  "[RC6] RC6 target: stage 4 temperature in the SYN-001 domain",
+  "[RC6] RC6 target: stage 4 2P, L and V > 1e-3",
+  "[RC6] RC6 target: stage 5 temperature in the SYN-001 domain",
+  "[RC6] RC6 target: stage 5 2P, L and V > 1e-3",
+  "[RC6] RC6 target: stage 6 temperature in the SYN-001 domain",
+  "[RC6] RC6 target: stage 6 2P, L and V > 1e-3",
+  "[RC6] RC6 target: stage 7 temperature in the SYN-001 domain",
+  "[RC6] RC6 target: stage 7 2P, L and V > 1e-3",
+  "[RC6] RC6 target: total condenser T in domain, 0 < phi < 1",
+  "[RC6] RC6: overall component and energy closure",
+  "[RC6] RC6: x0 is a root of H(., 0) below 1e-30",
+  "[RC6] RC6: the straight path reaches lambda = 1 in 16 steps",
+  "[RC6] RC6: target regular, sigma_min > 1e-4",
+  "[RC6] RC6: S02's division-free rows vanish below 1e-38 at the target",
+  "[RC6] RC6: the reboiler recovery and its implementation row hold at the target",
+  "[RC6] RC6: square (100)",
+  "[RC6] RC6: every stage and inlet pressure equals 100000.0 Pa",
+  "[RC6] RC6: inlet feed is an admissible LIQUID with margin >= 0.02",
+  "[RC6] RC6: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC6] RC6: the condenser reflux_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC6] RC6: the reboiler recovery specification moved by 0.000000001 (absolute) moves every registered quantity by <= 0.05 tolerance",
+  "[RC6] RC6: reading the recovery specification as recovery_in_the_other_product misses the registered value by > 1e-3 relative (10 x rule 2c's threshold)",
+  "[RC6] RC6: reading the recovery specification as purity_in_the_product misses the registered value by > 1e-3 relative (10 x rule 2c's threshold)",
+  "[RC6] RC6: reading the recovery specification as fraction_of_the_total_feed misses the registered value by > 1e-3 relative (10 x rule 2c's threshold)",
+  "[RC7] RC7: initializer flows positive",
+  "[RC7] RC7 bubble_point: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 bubble_point: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 bubble_point: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 bubble_point: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 bubble_point: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 bubble_point: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 bubble_point: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 bubble_point: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 bubble_point: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 bubble_point: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 bubble_point: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 bubble_point: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 bubble_point: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 bubble_point: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 1/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 1/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 1/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 1/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 1/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 1/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 1/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 1/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 1/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 1/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 1/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 1/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 1/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 1/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 2/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 2/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 2/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 2/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 2/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 2/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 2/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 2/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 2/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 2/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 2/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 2/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 2/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 2/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 3/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 3/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 3/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 3/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 3/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 3/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 3/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 3/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 3/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 3/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 3/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 3/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 3/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 3/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 4/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 4/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 4/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 4/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 4/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 4/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 4/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 4/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 4/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 4/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 4/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 4/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 4/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 4/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 5/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 5/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 5/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 5/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 5/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 5/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 5/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 5/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 5/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 5/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 5/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 5/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 5/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 5/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 6/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 6/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 6/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 6/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 6/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 6/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 6/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 6/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 6/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 6/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 6/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 6/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 6/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 6/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 7/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 7/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 7/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 7/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 7/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 7/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 7/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 7/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 7/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 7/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 7/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 7/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 7/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 7/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 8/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 8/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 8/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 8/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 8/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 8/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 8/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 8/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 8/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 8/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 8/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 8/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 8/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 8/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 9/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 9/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 9/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 9/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 9/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 9/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 9/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 9/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 9/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 9/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 9/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 9/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 9/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 9/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 10/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 10/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 10/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 10/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 10/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 10/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 10/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 10/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 10/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 10/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 10/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 10/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 10/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 10/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 11/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 11/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 11/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 11/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 11/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 11/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 11/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 11/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 11/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 11/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 11/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 11/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 11/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 11/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 12/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 12/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 12/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 12/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 12/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 12/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 12/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 12/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 12/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 12/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 12/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 12/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 12/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 12/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 13/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 13/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 13/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 13/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 13/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 13/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 13/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 13/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 13/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 13/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 13/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 13/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 13/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 13/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 14/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 14/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 14/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 14/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 14/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 14/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 14/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 14/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 14/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 14/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 14/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 14/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 14/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 14/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 15/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 15/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 15/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 15/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 15/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 15/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 15/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 15/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 15/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 15/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 15/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 15/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 15/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 15/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 16/16: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 16/16: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 16/16: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 16/16: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 16/16: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 16/16: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 16/16: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 16/16: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 16/16: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 16/16: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 16/16: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 16/16: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 path step 16/16: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 path step 16/16: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7 target: stage 1 temperature in the SYN-001 domain",
+  "[RC7] RC7 target: stage 1 2P, L and V > 1e-3",
+  "[RC7] RC7 target: stage 2 temperature in the SYN-001 domain",
+  "[RC7] RC7 target: stage 2 2P, L and V > 1e-3",
+  "[RC7] RC7 target: stage 3 temperature in the SYN-001 domain",
+  "[RC7] RC7 target: stage 3 2P, L and V > 1e-3",
+  "[RC7] RC7 target: stage 4 temperature in the SYN-001 domain",
+  "[RC7] RC7 target: stage 4 2P, L and V > 1e-3",
+  "[RC7] RC7 target: stage 5 temperature in the SYN-001 domain",
+  "[RC7] RC7 target: stage 5 2P, L and V > 1e-3",
+  "[RC7] RC7 target: stage 6 temperature in the SYN-001 domain",
+  "[RC7] RC7 target: stage 6 2P, L and V > 1e-3",
+  "[RC7] RC7 target: stage 7 temperature in the SYN-001 domain",
+  "[RC7] RC7 target: stage 7 2P, L and V > 1e-3",
+  "[RC7] RC7: overall component and energy closure",
+  "[RC7] RC7: x0 is a root of H(., 0) below 1e-30",
+  "[RC7] RC7: the straight path reaches lambda = 1 in 16 steps",
+  "[RC7] RC7: target regular, sigma_min > 1e-4",
+  "[RC7] RC7: S02's division-free rows vanish below 1e-38 at the target",
+  "[RC7] RC7: the reboiler temperature and its implementation row hold at the target",
+  "[RC7] RC7: square (103)",
+  "[RC7] RC7: every stage and inlet pressure equals 100000.0 Pa",
+  "[RC7] RC7: inlet feed is an admissible LIQUID with margin >= 0.02",
+  "[RC7] RC7: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC7] RC7: the condenser reflux_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC7] RC7: the reboiler temperature specification moved by 0.000000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC7] RC7: reading the temperature specification as stage_above misses the registered value by > 1e-3 relative (10 x rule 2c's threshold)",
+  "[RC7] RC7: reading the temperature specification as stage_below misses the registered value by > 1e-3 relative (10 x rule 2c's threshold)",
   "[RC1-RR] RC1-RR: initializer flows positive",
   "[RC1-RR] RC1-RR bubble_point: stage 1 temperature in the SYN-001 domain",
   "[RC1-RR] RC1-RR bubble_point: stage 1 2P, L and V > 1e-3",
@@ -4241,6 +5410,8 @@
   "[RC1-RR] RC1-RR: every stage and inlet pressure equals 100000.0 Pa",
   "[RC1-RR] RC1-RR: inlet feed is an admissible LIQUID with margin >= 0.02",
   "[RC1-RR] RC1-RR: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC1-RR] RC1-RR: the condenser reflux_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC1-RR] RC1-RR: the reboiler boilup_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC1-BR] RC1-BR: initializer flows positive",
   "[RC1-BR] RC1-BR bubble_point: stage 1 temperature in the SYN-001 domain",
   "[RC1-BR] RC1-BR bubble_point: stage 1 2P, L and V > 1e-3",
@@ -4503,6 +5674,8 @@
   "[RC1-BR] RC1-BR: every stage and inlet pressure equals 100000.0 Pa",
   "[RC1-BR] RC1-BR: inlet feed is an admissible LIQUID with margin >= 0.02",
   "[RC1-BR] RC1-BR: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC1-BR] RC1-BR: the condenser reflux_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC1-BR] RC1-BR: the reboiler boilup_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC1-z] RC1-z: initializer flows positive",
   "[RC1-z] RC1-z bubble_point: stage 1 temperature in the SYN-001 domain",
   "[RC1-z] RC1-z bubble_point: stage 1 2P, L and V > 1e-3",
@@ -4765,6 +5938,8 @@
   "[RC1-z] RC1-z: every stage and inlet pressure equals 100000.0 Pa",
   "[RC1-z] RC1-z: inlet feed is an admissible LIQUID with margin >= 0.02",
   "[RC1-z] RC1-z: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC1-z] RC1-z: the condenser reflux_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC1-z] RC1-z: the reboiler boilup_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC2-RR] RC2-RR: initializer flows positive",
   "[RC2-RR] RC2-RR bubble_point: stage 2 temperature in the SYN-001 domain",
   "[RC2-RR] RC2-RR bubble_point: stage 2 2P, L and V > 1e-3",
@@ -5009,6 +6184,8 @@
   "[RC2-RR] RC2-RR: every stage and inlet pressure equals 100000.0 Pa",
   "[RC2-RR] RC2-RR: inlet feed is an admissible LIQUID with margin >= 0.02",
   "[RC2-RR] RC2-RR: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC2-RR] RC2-RR: the condenser reflux_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC2-RR] RC2-RR: the reboiler bottoms_rate specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC2-B] RC2-B: initializer flows positive",
   "[RC2-B] RC2-B bubble_point: stage 2 temperature in the SYN-001 domain",
   "[RC2-B] RC2-B bubble_point: stage 2 2P, L and V > 1e-3",
@@ -5253,6 +6430,8 @@
   "[RC2-B] RC2-B: every stage and inlet pressure equals 100000.0 Pa",
   "[RC2-B] RC2-B: inlet feed is an admissible LIQUID with margin >= 0.02",
   "[RC2-B] RC2-B: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC2-B] RC2-B: the condenser reflux_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC2-B] RC2-B: the reboiler bottoms_rate specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC2-z] RC2-z: initializer flows positive",
   "[RC2-z] RC2-z bubble_point: stage 2 temperature in the SYN-001 domain",
   "[RC2-z] RC2-z bubble_point: stage 2 2P, L and V > 1e-3",
@@ -5497,6 +6676,8 @@
   "[RC2-z] RC2-z: every stage and inlet pressure equals 100000.0 Pa",
   "[RC2-z] RC2-z: inlet feed is an admissible LIQUID with margin >= 0.02",
   "[RC2-z] RC2-z: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC2-z] RC2-z: the condenser reflux_ratio specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
+  "[RC2-z] RC2-z: the reboiler bottoms_rate specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC3-Q] RC3-Q: initializer flows positive",
   "[RC3-Q] RC3-Q bubble_point: stage 1 temperature in the SYN-001 domain",
   "[RC3-Q] RC3-Q bubble_point: stage 1 2P, L and V > 1e-3",
@@ -5687,6 +6868,7 @@
   "[RC3-Q] RC3-Q: every stage and inlet pressure equals 100000.0 Pa",
   "[RC3-Q] RC3-Q: inlet top is an admissible LIQUID with margin >= 0.02",
   "[RC3-Q] RC3-Q: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC3-Q] RC3-Q: the reboiler duty specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC3-z] RC3-z: initializer flows positive",
   "[RC3-z] RC3-z bubble_point: stage 1 temperature in the SYN-001 domain",
   "[RC3-z] RC3-z bubble_point: stage 1 2P, L and V > 1e-3",
@@ -5877,6 +7059,7 @@
   "[RC3-z] RC3-z: every stage and inlet pressure equals 100000.0 Pa",
   "[RC3-z] RC3-z: inlet top is an admissible LIQUID with margin >= 0.02",
   "[RC3-z] RC3-z: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC3-z] RC3-z: the reboiler duty specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC4-D] RC4-D: initializer flows positive",
   "[RC4-D] RC4-D bubble_point: stage 1 temperature in the SYN-001 domain",
   "[RC4-D] RC4-D bubble_point: stage 1 2P, L and V > 1e-3",
@@ -6067,6 +7250,7 @@
   "[RC4-D] RC4-D: every stage and inlet pressure equals 100000.0 Pa",
   "[RC4-D] RC4-D: inlet bottom is an admissible VAPOR with margin >= 0.02",
   "[RC4-D] RC4-D: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC4-D] RC4-D: the condenser distillate_rate specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[RC4-z] RC4-z: initializer flows positive",
   "[RC4-z] RC4-z bubble_point: stage 1 temperature in the SYN-001 domain",
   "[RC4-z] RC4-z bubble_point: stage 1 2P, L and V > 1e-3",
@@ -6257,6 +7441,7 @@
   "[RC4-z] RC4-z: every stage and inlet pressure equals 100000.0 Pa",
   "[RC4-z] RC4-z: inlet bottom is an admissible VAPOR with margin >= 0.02",
   "[RC4-z] RC4-z: at P_r the tools' K (no Poynting factor) gives SYN-001's rows exactly",
+  "[RC4-z] RC4-z: the condenser distillate_rate specification moved by 0.00000001 (relative) moves every registered quantity by <= 0.05 tolerance",
   "[PC-P] PC-P: initializer flows positive",
   "[PC-P] PC-P bubble_point: stage 1 temperature in the SYN-001 domain",
   "[PC-P] PC-P bubble_point: stage 1 2P, L and V > 1e-3",
@@ -6829,6 +8014,8 @@
   "[post] RC3: within each family the registered quantities differ pairwise",
   "[post] RC4: within each family the registered quantities differ pairwise",
   "[post] RC5: within each family the registered quantities differ pairwise",
+  "[post] RC6: within each family the registered quantities differ pairwise",
+  "[post] RC7: within each family the registered quantities differ pairwise",
   "[post] RC1-RR: within each family the registered quantities differ pairwise",
   "[post] RC1-BR: within each family the registered quantities differ pairwise",
   "[post] RC1-z: within each family the registered quantities differ pairwise",
@@ -6838,7 +8025,11 @@
   "[post] RC3-Q: within each family the registered quantities differ pairwise",
   "[post] RC3-z: within each family the registered quantities differ pairwise",
   "[post] RC4-D: within each family the registered quantities differ pairwise",
-  "[post] RC4-z: within each family the registered quantities differ pairwise"
+  "[post] RC4-z: within each family the registered quantities differ pairwise",
+  "[post] RC5: moves its ratio-partner base case RC1 by >= 100 tolerances",
+  "[post] RC6: moves its ratio-partner base case RC2 by >= 100 tolerances",
+  "[post] RC7: moves its ratio-partner base case RC1 by >= 100 tolerances",
+  "[post] the inverse cases with registered wrong readings are exactly RC5, RC6 and RC7"
  ],
- "claim_count": 4009
+ "claim_count": 4558
 }
