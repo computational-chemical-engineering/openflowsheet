@@ -450,3 +450,19 @@ Authority: spec §6–§8, §11–§13 as amended by §17 and §18. Started afte
   `ruff format --check` → reformatted with `ruff format` (no waiver); their ASTs are identical before and after
   (`ast.dump` compared). They are not the tool scripts §19.5 names, A03 does not scan them, and their records cite
   their run commits. Alternative: waive them too. Reversible by: reverting the B6-2 commit.
+- F2: rule 2c's IDAES branch calls `idaes_stage_map_faults`: distinct units; stage 1's kind is `condenser_total` or
+  `condenser_flash` exactly when the case has a condenser, stage N's is `reboiler` exactly when it has a reboiler,
+  every other stage `tray` (so the intermediate-duty check, which selects `kind == "tray"`, sees every tray).
+- DECISION B6-3: "tray order by unit index" → every tray whose unit name ends in an index (`fs.stage<k>`,
+  `…section[<k>]`) has k − j equal to one constant per record. Row 3's literal k = j − [condenser ≠ none] holds for
+  the TrayColumn records (RC2 family, RC6) but not for L3's units, which the harness names `fs.stage<j>`; a constant
+  offset is the harness-neutral form, and it also places the unindexed `feed_tray` (a swap with a neighbour breaks
+  it). Alternative: row 3's literal offset per level. Reversible by: `idaes_stage_map_faults`.
+- F3: `path_positions` raises `ValueError` for a non-selected position at the selected level without `full.raw`
+  (the review's first option; the work order asks for a loud failure).
+- Tests (A12 additions): kinds relabelled (stage 1, stage 2, stage N, stage N−1) and two trays' units swapped on
+  IDAES RC1 (L3, partial), RC2 (TrayColumn, total) and RC3 (no condenser) → 2c `stage_map`; RC2's feed tray swapped
+  with its neighbour → `trays out of order`; a position's raw fields deleted → `ValueError`. All five fail on the
+  pre-F2/F3 classifier and pass after.
+- `comparison.json` and `SHA256SUMS`: unchanged (`s03_reference_comparison.py --check` after F2/F3: "recomputes
+  identically"). Every committed record conforms, as probe (b) and the review said.

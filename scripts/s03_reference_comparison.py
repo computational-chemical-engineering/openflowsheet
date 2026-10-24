@@ -54,6 +54,7 @@ import functools
 import hashlib
 import json
 import math
+import re
 import sys
 from collections.abc import Callable
 from decimal import Context, Decimal, localcontext
@@ -500,6 +501,41 @@ def rule2b(v: dict[str, Any], cases: dict[str, Any]) -> tuple[str | None, dict[s
     return None, detail
 
 
+#: IDAES `stage_map` kinds a condenser stage may carry (the harness's names: an L1 TrayColumn
+#: condenser, or L3's Flash for S02's partial condenser).
+IDAES_CONDENSER_KINDS = ("condenser_total", "condenser_flash")
+
+
+def idaes_stage_map_faults(
+    smap: dict[str, dict[str, Any]], case: dict[str, Any], n: int
+) -> list[str]:
+    """§5.1 row 3 and §7.1 rule 2c for IDAES's `stage_map` (review F2): the units are distinct;
+    stage 1 is a condenser exactly when the case has one, stage N the reboiler exactly when it has
+    one, and every other stage a tray; and the trays whose unit carries an index (`fs.stage<k>`,
+    `...section[<k>]`) carry it in stage order, k = j + c with one c per record (row 3's
+    k = j - [condenser != none] for a TrayColumn; L3 names its units by j)."""
+    faults = []
+    if len({e["unit"] for e in smap.values()}) != n:
+        faults.append("units not distinct")
+    offsets = set()
+    for key, entry in smap.items():
+        j = int(key)
+        if j == 1 and case["condenser"] != "none":
+            expected: tuple[str, ...] = IDAES_CONDENSER_KINDS
+        elif j == n and case["reboiler"] != "none":
+            expected = ("reboiler",)
+        else:
+            expected = ("tray",)
+        if entry["kind"] not in expected:
+            faults.append(f"stage {j} is {entry['kind']}")
+        index = re.search(r"(\d+)\]?$", entry["unit"])
+        if entry["kind"] == "tray" and index is not None:
+            offsets.add(int(index.group(1)) - j)
+    if len(offsets) > 1:
+        faults.append("trays out of order")
+    return faults
+
+
 @_exact
 def rule2c(
     record: dict[str, Any],
@@ -518,8 +554,7 @@ def rule2c(
     if tool == "DWSIM":
         bad = [j for j, e in smap["map"].items() if int(e["dwsim_index"]) != int(j) - 1]
     else:
-        units = [e["unit"] for e in smap["map"].values()]
-        bad = [] if len(set(units)) == n else ["units not distinct"]
+        bad = idaes_stage_map_faults(smap["map"], case, n)
     if keys != list(range(1, n + 1)) or bad:
         return f"stage_map({bad or keys})", detail
     feeds = record["feed_stages"]
@@ -582,7 +617,8 @@ def movement(
 @_exact
 def path_positions(record: dict[str, Any], case: dict[str, Any]) -> dict[str, dict[str, float]]:
     """IDAES: the registered quantities of every position at the selected level whose final solve
-    ended "Optimal Solution Found", each from its own raw fields (§18.4)."""
+    ended "Optimal Solution Found", each from its own raw fields (§18.4). A non-selected position
+    without raw fields is an error, not a skip (review F3)."""
     level = record["levels"][record["level"]]
     out = {}
     for name, entry in level.get("positions", {}).items():
@@ -592,7 +628,10 @@ def path_positions(record: dict[str, Any], case: dict[str, Any]) -> dict[str, di
             continue
         full = entry.get("full")
         if not isinstance(full, dict) or "raw" not in full:
-            continue
+            # Review F3: a position §18.4 must compare is never dropped without notice.
+            raise ValueError(
+                f"({record['case']}, IDAES) position {name} at {record['level']} has no raw fields"
+            )
         rec = full["record"]
         exits = [rec.get("ipopt", {}).get("exit"), rec.get("termination")]
         exits += [s.get("termination") for s in rec.get("solves", [])[-1:]]

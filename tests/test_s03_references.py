@@ -764,6 +764,74 @@ def test_a12_rules_2c_and_2d_fire_on_the_rc1_record(tool: str) -> None:
     assert row["reason"].startswith("rerun_movement("), row["reason"]
 
 
+def classify_idaes(cid: str, record: dict[str, Any]) -> dict[str, Any]:
+    ours = load(RESULTS / f"ours-{comparison.OURS_ALIASES.get(cid, cid)}.json")
+    return comparison.classify(cid, "IDAES", record, ours, CASES, REF)
+
+
+def swap_units(record: dict[str, Any], a: int, b: int) -> None:
+    smap = record["stage_map"]["map"]
+    smap[str(a)]["unit"], smap[str(b)]["unit"] = smap[str(b)]["unit"], smap[str(a)]["unit"]
+
+
+@pytest.mark.parametrize("cid", ["RC1", "RC2", "RC3"])
+def test_a12_idaes_stage_map_kinds_and_tray_order_are_checked(cid: str) -> None:
+    """A12, review F2 (§5.1 row 3, §7.1 rule 2c): on IDAES's committed record for an L3 column
+    with a partial condenser (RC1), a TrayColumn with a total condenser (RC2) and a column without
+    a condenser (RC3), a copy whose `stage_map` labels a tray as a condenser or as the reboiler,
+    labels the end units as trays, or swaps two trays' units → rule 2c `stage_map`. The unaltered
+    record classifies by rule 4."""
+    record = tool_record("IDAES", cid)
+    assert record is not None and record["available"], f"IDAES {cid} is not available"
+    assert classify_idaes(cid, record)["rule"] == 4
+    n = len(record["stage_map"]["map"])
+    case = CASES["cases"][cid]
+    tops = ["condenser_flash"] if case["condenser"] == "none" else ["tray"]
+
+    def altered(change: Any) -> dict[str, Any]:
+        out = copy.deepcopy(record)
+        change(out["stage_map"]["map"])
+        return out
+
+    copies = [altered(lambda m, k=k: m["1"].__setitem__("kind", k)) for k in tops]
+    copies.append(altered(lambda m: m["2"].__setitem__("kind", "condenser_total")))
+    copies.append(altered(lambda m: m[str(n)].__setitem__("kind", "tray")))
+    copies.append(altered(lambda m: m[str(n - 1)].__setitem__("kind", "reboiler")))
+    swapped = copy.deepcopy(record)
+    swap_units(swapped, 2, 3)
+    copies.append(swapped)
+    for broken in copies:
+        row = classify_idaes(cid, broken)
+        assert (row["rule"], row["category"]) == ("2c", "semantics"), row["label"]
+        assert row["reason"].startswith("stage_map("), row["reason"]
+
+
+def test_a12_idaes_feed_tray_out_of_place_is_a_stage_map_fault() -> None:
+    """Review F2: in IDAES's TrayColumn record (RC2), the unindexed feed tray swapped with an
+    indexed neighbour breaks k = j + c → rule 2c `stage_map(... trays out of order ...)`."""
+    record = tool_record("IDAES", "RC2")
+    assert record is not None and record["available"]
+    smap = record["stage_map"]["map"]
+    feed = next(int(j) for j, e in smap.items() if e["unit"].endswith("feed_tray"))
+    broken = copy.deepcopy(record)
+    swap_units(broken, feed, feed - 1)
+    row = classify_idaes("RC2", broken)
+    assert row["rule"] == "2c" and "trays out of order" in row["reason"], row["reason"]
+
+
+def test_a12_idaes_a_position_without_raw_fields_is_an_error() -> None:
+    """Review F3 (§18.4): a non-selected path position at the selected level that carries no raw
+    fields makes the classifier raise; it is never skipped silently."""
+    record = tool_record("IDAES", "RC1")
+    assert record is not None and record["available"]
+    broken = copy.deepcopy(record)
+    positions = broken["levels"][broken["level"]]["positions"]
+    other = next(name for name in positions if name != broken["position"])
+    del positions[other]["full"]["raw"]
+    with pytest.raises(ValueError, match="has no raw fields"):
+        classify_idaes("RC1", broken)
+
+
 def test_a12_idaes_path_dependence_fires_at_two_tenths_not_at_five_hundredths() -> None:
     """A12 (§18.7): on each IDAES record with a selected attempt, a copy with one extra "Optimal"
     position equal to the selected attempt's quantities except one moved by 0.2 tolerance →
