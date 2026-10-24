@@ -140,6 +140,27 @@ def test_statuses_use_the_declared_vocabulary(ledger: dict[str, Any]) -> None:
         assert requirement["status"] in vocabulary, requirement["id"]
 
 
+def test_package_status_matches_its_evidence(ledger: dict[str, Any], repo_root: Path) -> None:
+    # The ledger fell behind its manifests once (synced 2026-10-24). A package whose manifest on
+    # disk is `tested` or `reviewed` must say so here, and a `tested`/`reviewed` package must cite
+    # a manifest that carries that status.
+    rank = {"planned": 0, "blocked": 0, "implemented": 1, "tested": 2, "reviewed": 3, "released": 4}
+    problems: list[str] = []
+    for package in ledger["packages"]:
+        pid, status = package["id"], package["status"]
+        on_disk: dict[str, str] = {}
+        for path in sorted(repo_root.glob(f"evidence/{pid}/*/manifest.json")):
+            on_disk[path.relative_to(repo_root).as_posix()] = json.loads(path.read_text())["status"]
+        best = max((rank.get(s, 0) for s in on_disk.values()), default=0)
+        if best >= rank["tested"] and rank[status] < best:
+            problems.append(f"{pid}: ledger says {status}, a manifest on disk is further")
+        if rank[status] >= rank["tested"]:
+            cited = [rank.get(on_disk.get(e, ""), -1) for e in package.get("evidence", [])]
+            if not any(c >= rank[status] for c in cited):
+                problems.append(f"{pid}: {status} but no cited manifest carries that status")
+    assert not problems, "\n".join(problems)
+
+
 def test_every_blueprint_requirement_is_covered(ledger: dict[str, Any]) -> None:
     expected = {f"D{n:02d}" for n in range(1, 21)} | {f"A{n:02d}" for n in range(1, 11)}
     assert {item["id"] for item in ledger["requirements"]} == expected
