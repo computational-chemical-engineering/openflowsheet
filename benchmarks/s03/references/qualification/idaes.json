@@ -1,0 +1,3933 @@
+{
+ "tool": "IDAES",
+ "versions": {
+  "idaes_pse": "2.13.0",
+  "pyomo": "6.10.1",
+  "python": "3.13.5"
+ },
+ "environment_fingerprint": {
+  "measured": {
+   "pip_freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+   "idaes_data_bin_tree": "370a694825da3be3d7b0e68742bf2e704918260b05fa0f6c54d4d61458d1144d",
+   "ipopt_sha256": "8f8711b709b5f265ff7cb8b352c037bb999d88628384be8390f26530f08de94e"
+  },
+  "expected_docs_reference_environments_s3": {
+   "pip_freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+   "idaes_data_bin_tree": "370a694825da3be3d7b0e68742bf2e704918260b05fa0f6c54d4d61458d1144d",
+   "ipopt_sha256": "8f8711b709b5f265ff7cb8b352c037bb999d88628384be8390f26530f08de94e"
+  },
+  "matches": true
+ },
+ "input_file": "docs/derivations/scripts/s03_cases.json",
+ "cases_sha256": "a0ac8496b416b0a401e9906f576243a879eab18c991939d017f009b0a3f24fb2",
+ "settings": {
+  "registered": {
+   "version": "idaes-pse 2.13.0, extensions 3.4.2",
+   "linear_solver": "mumps",
+   "tol": "1e-10",
+   "constr_viol_tol": "1e-9",
+   "max_iter": 500,
+   "initializers": "linear_solver = mumps; IDAES's other defaults",
+   "smooth_vle": {
+    "eps_1_K": "1e-8",
+    "eps_2_K": "1e-8"
+   },
+   "floor_rerun": {
+    "tol": "1e-9",
+    "constr_viol_tol": "1e-8"
+   },
+   "h_form_liq_J_per_mol": [
+    "0",
+    "0",
+    "0"
+   ],
+   "h_form_ig_J_per_mol": [
+    "25000",
+    "30000",
+    "35000"
+   ],
+   "placeholders": {
+    "temperature_crit_K": "1000",
+    "pressure_crit_Pa": "1e7"
+   }
+  },
+  "final_solve_ipopt_options": {
+   "linear_solver": "mumps",
+   "tol": 1e-10,
+   "constr_viol_tol": 1e-09,
+   "max_iter": 500
+  },
+  "rerun_ipopt_options": {
+   "linear_solver": "mumps",
+   "tol": 1e-09,
+   "constr_viol_tol": 1e-08,
+   "max_iter": 500
+  },
+  "smooth_vle_eps_K": {
+   "eps_1": 1e-08,
+   "eps_2": 1e-08
+  },
+  "initializer_ipopt_options": {
+   "nlp_scaling_method": "gradient-based",
+   "tol": 1e-06,
+   "max_iter": 200,
+   "linear_solver": "mumps"
+  },
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "property_package": "idaes_representability.build_property_package (SYN-001, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0)",
+  "initialization": [
+   "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+   "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+   "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+   "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+  ],
+  "temperature_profile_K": [
+   320.0,
+   400.0
+  ]
+ },
+ "sign_conversion": "identity: IDAES's heat_duty (Condenser, Reboiler, Flash) is the heat into the control volume, W, so Q_condenser = condenser heat_duty and Q_reboiler = reboiler heat_duty, Q > 0 into the stage",
+ "cases": {
+  "RC1": {
+   "available": true,
+   "level": "L3",
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Flash",
+      "reboiler": "Reboiler",
+      "specifications": {
+       "condenser": "L2(b)",
+       "reboiler": "native"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_flash",
+         "idaes_class": "_ScalarFlash"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "6": {
+         "unit": "fs.stage6",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "7": {
+         "unit": "fs.stage7",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.stage4",
+        "idaes_port": "fs.stage4.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "partial (S02) at L3: IDAES Flash; its vapour outlet is the distillate and its liquid outlet is joined by an Arc to stage 2's liquid inlet (all liquid refluxed); no liquid-distillate stream exists",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "2"
+        },
+        "realization": "L2(b)",
+        "tool": "L_1 - RR*\u00b7V_1 = 0 (S02 \u00a72.1)",
+        "equation": "fs.stage1.s03_spec_condenser: fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Liq] - 2.0*fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Vap]  ==  0",
+        "replaces": null
+       },
+       "reboiler": {
+        "kind": "boilup_ratio",
+        "registered": {
+         "kind": "boilup_ratio",
+         "value": "1.5"
+        },
+        "realization": "native",
+        "tool": "Reboiler.boilup_ratio fixed (vapor_reboil / bottoms)"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage4.properties_in_feed[0.0].pressure": 100000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "Flash outlet pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": true,
+     "termination": "Optimal Solution Found.",
+     "ipopt_iterations": 174,
+     "wall_time_solve_s": 0.3672288709785789,
+     "rule2_component_max_mol_per_s": 1.5543122344752192e-15,
+     "rule2_energy_W": -1.2164638974354602e-05,
+     "rule2b_max_shift_K": 5.00001e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 0.0,
+      "reboiler": 0.0
+     },
+     "rerun_max_ratio": 0.006942952187215025,
+     "passes": true,
+     "failed_rule": null,
+     "reason": "passes rules 2-2d"
+    }
+   ],
+   "wall_time_s": 3.770070340950042
+  },
+  "RC2": {
+   "available": true,
+   "level": "L2",
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "no native IDAES column specification variable for ['reboiler: bottoms_rate'] (native: Condenser.reflux_ratio = reflux/distillate, Reboiler.boilup_ratio = vapour/bottoms, Reboiler.heat_duty)"
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "condenser": "total",
+      "specifications": {
+       "condenser": "native",
+       "reboiler": "L2(b)"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.col.condenser",
+         "kind": "condenser_total",
+         "idaes_class": "_ScalarCondenser"
+        },
+        "2": {
+         "unit": "fs.col.rectification_section[1]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "3": {
+         "unit": "fs.col.rectification_section[2]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "4": {
+         "unit": "fs.col.feed_tray",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.col.stripping_section[4]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "6": {
+         "unit": "fs.col.stripping_section[5]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "7": {
+         "unit": "fs.col.reboiler",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.col.feed_tray",
+        "idaes_port": "fs.col.feed_tray.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "total: IDAES Condenser, condenser_type=totalCondenser, temperature_spec=atBubblePoint (eq_total_cond_spec: T = bubble temperature of the outlet; no subcooling)",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "1.5"
+        },
+        "realization": "native",
+        "tool": "Condenser.reflux_ratio fixed (reflux / distillate)"
+       },
+       "reboiler": {
+        "kind": "bottoms_rate",
+        "registered": {
+         "kind": "bottoms_rate",
+         "value": "0.55"
+        },
+        "realization": "L2(b)",
+        "tool": "L_N - B* = 0 (S02 \u00a72.1)",
+        "equation": "fs.col.reboiler.s03_spec_reboiler: fs.col.reboiler.control_volume.properties_out[0.0].flow_mol_phase[Liq] - 0.55  ==  0",
+        "replaces": "fs.col.reboiler.boilup_ratio"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.col.condenser.control_volume.properties_out[0.0].pressure": 100000.0,
+        "fs.col.feed_tray.properties_in_feed[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "condenser_pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L2",
+     "converged": true,
+     "termination": "Optimal Solution Found.",
+     "ipopt_iterations": 40,
+     "wall_time_solve_s": 0.15831081895157695,
+     "rule2_component_max_mol_per_s": 1.7126383644594512e-10,
+     "rule2_energy_W": 1.6698232684575487e-05,
+     "rule2b_max_shift_K": 5e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 4.440892098500626e-16,
+      "reboiler": 0.0
+     },
+     "rerun_max_ratio": 0.0,
+     "passes": true,
+     "failed_rule": null,
+     "reason": "passes rules 2-2d"
+    }
+   ],
+   "wall_time_s": 4.74701775808353
+  },
+  "RC3": {
+   "available": false,
+   "level": null,
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": null,
+      "reboiler": "Reboiler",
+      "specifications": {
+       "reboiler": "native"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 14,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 5,
+       "stage_count_idaes": 5,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "top",
+        "registered_stage": 1,
+        "idaes_unit": "fs.stage1",
+        "idaes_port": "fs.stage1.liq_in",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "absent: the top inlet enters stage 1's liquid inlet (an ordinary Tray)",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "reboiler": {
+        "kind": "duty",
+        "registered": {
+         "kind": "duty",
+         "value": "30000"
+        },
+        "realization": "native",
+        "tool": "Reboiler.heat_duty fixed, W, heat into the reboiler"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage1.properties_in_liq[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {},
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": false,
+     "termination": "Solved To Acceptable Level.",
+     "ipopt_iterations": 13,
+     "wall_time_solve_s": 0.06006896495819092,
+     "rule2_component_max_mol_per_s": 1.2322726172797616e-10,
+     "rule2_energy_W": 0.0005021956967539154,
+     "rule2b_max_shift_K": 6.2836e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "reboiler": 0.0
+     },
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "Solved To Acceptable Level."
+    }
+   ],
+   "wall_time_s": 1.1280683689983562,
+   "not_available_reason": "L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit | L3: failed rules 2-2d (2: Solved To Acceptable Level.)"
+  },
+  "RC4": {
+   "available": false,
+   "level": null,
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Flash",
+      "reboiler": null,
+      "specifications": {
+       "condenser": "L2(b)"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 14,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 5,
+       "stage_count_idaes": 5,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_flash",
+         "idaes_class": "_ScalarFlash"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "bottom",
+        "registered_stage": 5,
+        "idaes_unit": "fs.stage5",
+        "idaes_port": "fs.stage5.vap_in",
+        "unit_is_our_stage": true,
+        "declared_phase": "VAPOR",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "partial (S02) at L3: IDAES Flash; its vapour outlet is the distillate and its liquid outlet is joined by an Arc to stage 2's liquid inlet (all liquid refluxed); no liquid-distillate stream exists",
+      "reboiler_realization": "absent: the bottom inlet enters stage N's vapour inlet (an ordinary Tray)",
+      "specifications": {
+       "condenser": {
+        "kind": "distillate_rate",
+        "registered": {
+         "kind": "distillate_rate",
+         "value": "0.5"
+        },
+        "realization": "L2(b)",
+        "tool": "V_1 - D* = 0 (S02 \u00a72.1)",
+        "equation": "fs.stage1.s03_spec_condenser: fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Vap] - 0.5  ==  0",
+        "replaces": null
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage5.properties_in_vap[0.0].pressure": 100000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "Flash outlet pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": false,
+     "termination": "Maximum Number of Iterations Exceeded.",
+     "ipopt_iterations": 500,
+     "wall_time_solve_s": 0.5769664769759402,
+     "rule2_component_max_mol_per_s": 0.14818732865803727,
+     "rule2_energy_W": -271542.9277560987,
+     "rule2b_max_shift_K": 1.90191338046111,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 3.831870620141231e-06
+     },
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "Maximum Number of Iterations Exceeded."
+    }
+   ],
+   "wall_time_s": 1.813831599894911,
+   "not_available_reason": "L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L3: failed rules 2-2d (2: Maximum Number of Iterations Exceeded.)"
+  },
+  "RC5": {
+   "available": false,
+   "level": null,
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Flash",
+      "reboiler": "Reboiler",
+      "specifications": {
+       "condenser": "L2(b)",
+       "reboiler": "native"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_flash",
+         "idaes_class": "_ScalarFlash"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "6": {
+         "unit": "fs.stage6",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "7": {
+         "unit": "fs.stage7",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.stage4",
+        "idaes_port": "fs.stage4.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "partial (S02) at L3: IDAES Flash; its vapour outlet is the distillate and its liquid outlet is joined by an Arc to stage 2's liquid inlet (all liquid refluxed); no liquid-distillate stream exists",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "purity",
+        "registered": {
+         "kind": "purity",
+         "value": "0.85",
+         "component": "A"
+        },
+        "realization": "L2(b)",
+        "tool": "F\u00b7n_A - \u03c0*\u00b7P = 0 with F = 1.0, \u03c0* = fl(x*\u00b7F) = 0.85 (S06 \u00a72)",
+        "equation": "fs.stage1.s03_spec_condenser: fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Vap]*fs.stage1.control_volume.properties_out[0.0].mole_frac_phase_comp[Vap,A] - 0.85*fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Vap]  ==  0",
+        "replaces": null
+       },
+       "reboiler": {
+        "kind": "boilup_ratio",
+        "registered": {
+         "kind": "boilup_ratio",
+         "value": "1.5"
+        },
+        "realization": "native",
+        "tool": "Reboiler.boilup_ratio fixed (vapor_reboil / bottoms)"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage4.properties_in_feed[0.0].pressure": 100000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "Flash outlet pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": false,
+     "termination": "Solved To Acceptable Level.",
+     "ipopt_iterations": 14,
+     "wall_time_solve_s": 0.08757146901916713,
+     "rule2_component_max_mol_per_s": 2.6407950270979086e-09,
+     "rule2_energy_W": 0.0007132272367016412,
+     "rule2b_max_shift_K": 5.3376e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 1.47075684964193e-11,
+      "reboiler": 7.651242602454052e-11
+     },
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "Solved To Acceptable Level."
+    }
+   ],
+   "wall_time_s": 1.689816429046914,
+   "not_available_reason": "L1: S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection | L2: S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection | L3: failed rules 2-2d (2: Solved To Acceptable Level.)"
+  },
+  "RC6": {
+   "available": false,
+   "level": null,
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "no native IDAES column specification variable for ['reboiler: recovery'] (native: Condenser.reflux_ratio = reflux/distillate, Reboiler.boilup_ratio = vapour/bottoms, Reboiler.heat_duty)"
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "condenser": "total",
+      "specifications": {
+       "condenser": "native",
+       "reboiler": "L2(b)"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.col.condenser",
+         "kind": "condenser_total",
+         "idaes_class": "_ScalarCondenser"
+        },
+        "2": {
+         "unit": "fs.col.rectification_section[1]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "3": {
+         "unit": "fs.col.rectification_section[2]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "4": {
+         "unit": "fs.col.feed_tray",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.col.stripping_section[4]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "6": {
+         "unit": "fs.col.stripping_section[5]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "7": {
+         "unit": "fs.col.reboiler",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.col.feed_tray",
+        "idaes_port": "fs.col.feed_tray.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "total: IDAES Condenser, condenser_type=totalCondenser, temperature_spec=atBubblePoint (eq_total_cond_spec: T = bubble temperature of the outlet; no subcooling)",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "1.5"
+        },
+        "realization": "native",
+        "tool": "Condenser.reflux_ratio fixed (reflux / distillate)"
+       },
+       "reboiler": {
+        "kind": "recovery",
+        "registered": {
+         "kind": "recovery",
+         "value": "0.99",
+         "component": "C"
+        },
+        "realization": "L2(b)",
+        "tool": "n_C - \u03bd* = 0 on the bottoms, \u03bd* = fl(r*\u00b7F_C) = 0.297 mol/s (S06 \u00a72)",
+        "equation": "fs.col.reboiler.s03_spec_reboiler: fs.col.reboiler.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.col.reboiler.control_volume.properties_out[0.0].mole_frac_phase_comp[Liq,C]*fs.col.reboiler.control_volume.properties_out[0.0].flow_mol_phase[Liq]/fs.col.reboiler.control_volume.properties_out[0.0].flow_mol_phase[Liq]) - 0.297  ==  0",
+        "replaces": "fs.col.reboiler.boilup_ratio"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.col.condenser.control_volume.properties_out[0.0].pressure": 100000.0,
+        "fs.col.feed_tray.properties_in_feed[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "condenser_pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Condenser(total)",
+      "reboiler": "Reboiler",
+      "specifications": {
+       "condenser": "native",
+       "reboiler": "L2(b)"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_total",
+         "idaes_class": "_ScalarCondenser"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "6": {
+         "unit": "fs.stage6",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "7": {
+         "unit": "fs.stage7",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.stage4",
+        "idaes_port": "fs.stage4.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "total: IDAES Condenser, condenser_type=totalCondenser, temperature_spec=atBubblePoint (eq_total_cond_spec: T = bubble temperature of the outlet; no subcooling)",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "1.5"
+        },
+        "realization": "native",
+        "tool": "Condenser.reflux_ratio fixed (reflux / distillate)"
+       },
+       "reboiler": {
+        "kind": "recovery",
+        "registered": {
+         "kind": "recovery",
+         "value": "0.99",
+         "component": "C"
+        },
+        "realization": "L2(b)",
+        "tool": "n_C - \u03bd* = 0 on the bottoms, \u03bd* = fl(r*\u00b7F_C) = 0.297 mol/s (S06 \u00a72)",
+        "equation": "fs.stage7.s03_spec_reboiler: fs.stage7.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.stage7.control_volume.properties_out[0.0].mole_frac_phase_comp[Liq,C]*fs.stage7.control_volume.properties_out[0.0].flow_mol_phase[Liq]/fs.stage7.control_volume.properties_out[0.0].flow_mol_phase[Liq]) - 0.297  ==  0",
+        "replaces": "fs.stage7.boilup_ratio"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage4.properties_in_feed[0.0].pressure": 100000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "condenser_pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L2",
+     "converged": true,
+     "termination": "Optimal Solution Found.",
+     "ipopt_iterations": 74,
+     "wall_time_solve_s": 0.17471281404141337,
+     "rule2_component_max_mol_per_s": 1.746112143763412e-10,
+     "rule2_energy_W": 1.802490442059934e-05,
+     "rule2b_max_shift_K": 5e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 2.9605947323337506e-16,
+      "reboiler": 1.3322676295501878e-15
+     },
+     "rerun_max_ratio": 0.34031641790654854,
+     "passes": false,
+     "failed_rule": "2d",
+     "reason": "accuracy rerun"
+    },
+    {
+     "level": "L3",
+     "converged": false,
+     "termination": "Converged to a point of local infeasibility. Problem may be infeasible.",
+     "ipopt_iterations": 287,
+     "wall_time_solve_s": 0.5651944288983941,
+     "rule2_component_max_mol_per_s": 0.0029768301661984298,
+     "rule2_energy_W": -118.03080995704022,
+     "rule2b_max_shift_K": 5.00001e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 4.440892098500626e-16,
+      "reboiler": 6.296596577470837e-11
+     },
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "Converged to a point of local infeasibility. Problem may be infeasible."
+    }
+   ],
+   "wall_time_s": 7.135949729010463,
+   "not_available_reason": "L1: no native IDAES column specification variable for ['reboiler: recovery'] (native: Condenser.reflux_ratio = reflux/distillate, Reboiler.boilup_ratio = vapour/bottoms, Reboiler.heat_duty) | L2: failed rules 2-2d (2d: accuracy rerun) | L3: failed rules 2-2d (2: Converged to a point of local infeasibility. Problem may be infeasible.)"
+  },
+  "RC7": {
+   "available": true,
+   "level": "L3",
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Flash",
+      "reboiler": "Reboiler",
+      "specifications": {
+       "condenser": "L2(b)",
+       "reboiler": "L2(b)"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_flash",
+         "idaes_class": "_ScalarFlash"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "6": {
+         "unit": "fs.stage6",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "7": {
+         "unit": "fs.stage7",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.stage4",
+        "idaes_port": "fs.stage4.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "partial (S02) at L3: IDAES Flash; its vapour outlet is the distillate and its liquid outlet is joined by an Arc to stage 2's liquid inlet (all liquid refluxed); no liquid-distillate stream exists",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "2"
+        },
+        "realization": "L2(b)",
+        "tool": "L_1 - RR*\u00b7V_1 = 0 (S02 \u00a72.1)",
+        "equation": "fs.stage1.s03_spec_condenser: fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Liq] - 2.0*fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Vap]  ==  0",
+        "replaces": null
+       },
+       "reboiler": {
+        "kind": "temperature",
+        "registered": {
+         "kind": "temperature",
+         "value": "368",
+         "stage": 6
+        },
+        "realization": "L2(b)",
+        "tool": "T_6 - T* = 0 on our stage 6 (fs.stage6) (S06 \u00a72)",
+        "equation": "fs.s03_spec_reboiler: fs.stage6.properties_out[0.0].temperature - 368.0  ==  0",
+        "replaces": "fs.stage7.boilup_ratio"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage4.properties_in_feed[0.0].pressure": 100000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "Flash outlet pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": true,
+     "termination": "Optimal Solution Found.",
+     "ipopt_iterations": 60,
+     "wall_time_solve_s": 0.1369700839277357,
+     "rule2_component_max_mol_per_s": 2.2370993946196904e-13,
+     "rule2_energy_W": -2.465269062668085e-06,
+     "rule2b_max_shift_K": 5.00001e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 2.1094237467877974e-15,
+      "reboiler": 0.0
+     },
+     "rerun_max_ratio": 0.0,
+     "passes": true,
+     "failed_rule": null,
+     "reason": "passes rules 2-2d"
+    }
+   ],
+   "wall_time_s": 3.3639762370148674
+  },
+  "RC1-RR": {
+   "available": true,
+   "level": "L3",
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Flash",
+      "reboiler": "Reboiler",
+      "specifications": {
+       "condenser": "L2(b)",
+       "reboiler": "native"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_flash",
+         "idaes_class": "_ScalarFlash"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "6": {
+         "unit": "fs.stage6",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "7": {
+         "unit": "fs.stage7",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.stage4",
+        "idaes_port": "fs.stage4.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "partial (S02) at L3: IDAES Flash; its vapour outlet is the distillate and its liquid outlet is joined by an Arc to stage 2's liquid inlet (all liquid refluxed); no liquid-distillate stream exists",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "2.04"
+        },
+        "realization": "L2(b)",
+        "tool": "L_1 - RR*\u00b7V_1 = 0 (S02 \u00a72.1)",
+        "equation": "fs.stage1.s03_spec_condenser: fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Liq] - 2.04*fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Vap]  ==  0",
+        "replaces": null
+       },
+       "reboiler": {
+        "kind": "boilup_ratio",
+        "registered": {
+         "kind": "boilup_ratio",
+         "value": "1.5"
+        },
+        "realization": "native",
+        "tool": "Reboiler.boilup_ratio fixed (vapor_reboil / bottoms)"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage4.properties_in_feed[0.0].pressure": 100000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "Flash outlet pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": true,
+     "termination": "Optimal Solution Found.",
+     "ipopt_iterations": 454,
+     "wall_time_solve_s": 0.9726006300188601,
+     "rule2_component_max_mol_per_s": 4.440892098500626e-16,
+     "rule2_energy_W": -1.2777823940268718e-05,
+     "rule2b_max_shift_K": 5.00003e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 0.0,
+      "reboiler": 0.0
+     },
+     "rerun_max_ratio": 5.082267907403862e-06,
+     "passes": true,
+     "failed_rule": null,
+     "reason": "passes rules 2-2d"
+    }
+   ],
+   "wall_time_s": 5.1131434480194
+  },
+  "RC1-BR": {
+   "available": true,
+   "level": "L3",
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Flash",
+      "reboiler": "Reboiler",
+      "specifications": {
+       "condenser": "L2(b)",
+       "reboiler": "native"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_flash",
+         "idaes_class": "_ScalarFlash"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "6": {
+         "unit": "fs.stage6",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "7": {
+         "unit": "fs.stage7",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.stage4",
+        "idaes_port": "fs.stage4.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "partial (S02) at L3: IDAES Flash; its vapour outlet is the distillate and its liquid outlet is joined by an Arc to stage 2's liquid inlet (all liquid refluxed); no liquid-distillate stream exists",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "2"
+        },
+        "realization": "L2(b)",
+        "tool": "L_1 - RR*\u00b7V_1 = 0 (S02 \u00a72.1)",
+        "equation": "fs.stage1.s03_spec_condenser: fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Liq] - 2.0*fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Vap]  ==  0",
+        "replaces": null
+       },
+       "reboiler": {
+        "kind": "boilup_ratio",
+        "registered": {
+         "kind": "boilup_ratio",
+         "value": "1.53"
+        },
+        "realization": "native",
+        "tool": "Reboiler.boilup_ratio fixed (vapor_reboil / bottoms)"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage4.properties_in_feed[0.0].pressure": 100000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "Flash outlet pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": true,
+     "termination": "Optimal Solution Found.",
+     "ipopt_iterations": 158,
+     "wall_time_solve_s": 0.3104897750308737,
+     "rule2_component_max_mol_per_s": 2.886579864025407e-15,
+     "rule2_energy_W": -1.1548470865818672e-05,
+     "rule2b_max_shift_K": 5.00003e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 0.0,
+      "reboiler": 0.0
+     },
+     "rerun_max_ratio": 0.0,
+     "passes": true,
+     "failed_rule": null,
+     "reason": "passes rules 2-2d"
+    }
+   ],
+   "wall_time_s": 4.016298255999573
+  },
+  "RC1-z": {
+   "available": true,
+   "level": "L3",
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Flash",
+      "reboiler": "Reboiler",
+      "specifications": {
+       "condenser": "L2(b)",
+       "reboiler": "native"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_flash",
+         "idaes_class": "_ScalarFlash"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "6": {
+         "unit": "fs.stage6",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "7": {
+         "unit": "fs.stage7",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.stage4",
+        "idaes_port": "fs.stage4.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "partial (S02) at L3: IDAES Flash; its vapour outlet is the distillate and its liquid outlet is joined by an Arc to stage 2's liquid inlet (all liquid refluxed); no liquid-distillate stream exists",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "2"
+        },
+        "realization": "L2(b)",
+        "tool": "L_1 - RR*\u00b7V_1 = 0 (S02 \u00a72.1)",
+        "equation": "fs.stage1.s03_spec_condenser: fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Liq] - 2.0*fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Vap]  ==  0",
+        "replaces": null
+       },
+       "reboiler": {
+        "kind": "boilup_ratio",
+        "registered": {
+         "kind": "boilup_ratio",
+         "value": "1.5"
+        },
+        "realization": "native",
+        "tool": "Reboiler.boilup_ratio fixed (vapor_reboil / bottoms)"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage4.properties_in_feed[0.0].pressure": 100000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "Flash outlet pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": true,
+     "termination": "Optimal Solution Found.",
+     "ipopt_iterations": 184,
+     "wall_time_solve_s": 0.3885962550994009,
+     "rule2_component_max_mol_per_s": 9.992007221626409e-16,
+     "rule2_energy_W": -9.557754310662858e-06,
+     "rule2b_max_shift_K": 5.00003e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 0.0,
+      "reboiler": 1.4802973661668753e-16
+     },
+     "rerun_max_ratio": 5.976556712182219e-06,
+     "passes": true,
+     "failed_rule": null,
+     "reason": "passes rules 2-2d"
+    }
+   ],
+   "wall_time_s": 4.100571803981438
+  },
+  "RC2-RR": {
+   "available": false,
+   "level": null,
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "no native IDAES column specification variable for ['reboiler: bottoms_rate'] (native: Condenser.reflux_ratio = reflux/distillate, Reboiler.boilup_ratio = vapour/bottoms, Reboiler.heat_duty)"
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "condenser": "total",
+      "specifications": {
+       "condenser": "native",
+       "reboiler": "L2(b)"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.col.condenser",
+         "kind": "condenser_total",
+         "idaes_class": "_ScalarCondenser"
+        },
+        "2": {
+         "unit": "fs.col.rectification_section[1]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "3": {
+         "unit": "fs.col.rectification_section[2]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "4": {
+         "unit": "fs.col.feed_tray",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.col.stripping_section[4]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "6": {
+         "unit": "fs.col.stripping_section[5]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "7": {
+         "unit": "fs.col.reboiler",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.col.feed_tray",
+        "idaes_port": "fs.col.feed_tray.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "total: IDAES Condenser, condenser_type=totalCondenser, temperature_spec=atBubblePoint (eq_total_cond_spec: T = bubble temperature of the outlet; no subcooling)",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "1.53"
+        },
+        "realization": "native",
+        "tool": "Condenser.reflux_ratio fixed (reflux / distillate)"
+       },
+       "reboiler": {
+        "kind": "bottoms_rate",
+        "registered": {
+         "kind": "bottoms_rate",
+         "value": "0.55"
+        },
+        "realization": "L2(b)",
+        "tool": "L_N - B* = 0 (S02 \u00a72.1)",
+        "equation": "fs.col.reboiler.s03_spec_reboiler: fs.col.reboiler.control_volume.properties_out[0.0].flow_mol_phase[Liq] - 0.55  ==  0",
+        "replaces": "fs.col.reboiler.boilup_ratio"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.col.condenser.control_volume.properties_out[0.0].pressure": 100000.0,
+        "fs.col.feed_tray.properties_in_feed[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "condenser_pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Condenser(total)",
+      "reboiler": "Reboiler",
+      "specifications": {
+       "condenser": "native",
+       "reboiler": "L2(b)"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_total",
+         "idaes_class": "_ScalarCondenser"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "6": {
+         "unit": "fs.stage6",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "7": {
+         "unit": "fs.stage7",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.stage4",
+        "idaes_port": "fs.stage4.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "total: IDAES Condenser, condenser_type=totalCondenser, temperature_spec=atBubblePoint (eq_total_cond_spec: T = bubble temperature of the outlet; no subcooling)",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "1.53"
+        },
+        "realization": "native",
+        "tool": "Condenser.reflux_ratio fixed (reflux / distillate)"
+       },
+       "reboiler": {
+        "kind": "bottoms_rate",
+        "registered": {
+         "kind": "bottoms_rate",
+         "value": "0.55"
+        },
+        "realization": "L2(b)",
+        "tool": "L_N - B* = 0 (S02 \u00a72.1)",
+        "equation": "fs.stage7.s03_spec_reboiler: fs.stage7.control_volume.properties_out[0.0].flow_mol_phase[Liq] - 0.55  ==  0",
+        "replaces": "fs.stage7.boilup_ratio"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage4.properties_in_feed[0.0].pressure": 100000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "condenser_pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L2",
+     "converged": false,
+     "termination": "Solved To Acceptable Level.",
+     "ipopt_iterations": 8,
+     "wall_time_solve_s": 0.08331456198357046,
+     "rule2_component_max_mol_per_s": 1.7389828466107815e-10,
+     "rule2_energy_W": 1.0459639270266052e-05,
+     "rule2b_max_shift_K": 5e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 2.9025438552291675e-16,
+      "reboiler": 0.0
+     },
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "Solved To Acceptable Level."
+    },
+    {
+     "level": "L3",
+     "converged": false,
+     "termination": "Maximum Number of Iterations Exceeded.",
+     "ipopt_iterations": 500,
+     "wall_time_solve_s": 0.8240016540512443,
+     "rule2_component_max_mol_per_s": 0.29887402880547503,
+     "rule2_energy_W": 21622.141008278148,
+     "rule2b_max_shift_K": 0.754100186346,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 1.4512719276145837e-16,
+      "reboiler": 5.820049607908505e-06
+     },
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "Maximum Number of Iterations Exceeded."
+    }
+   ],
+   "wall_time_s": 5.384502207045443,
+   "not_available_reason": "L1: no native IDAES column specification variable for ['reboiler: bottoms_rate'] (native: Condenser.reflux_ratio = reflux/distillate, Reboiler.boilup_ratio = vapour/bottoms, Reboiler.heat_duty) | L2: failed rules 2-2d (2: Solved To Acceptable Level.) | L3: failed rules 2-2d (2: Maximum Number of Iterations Exceeded.)"
+  },
+  "RC2-B": {
+   "available": true,
+   "level": "L2",
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "no native IDAES column specification variable for ['reboiler: bottoms_rate'] (native: Condenser.reflux_ratio = reflux/distillate, Reboiler.boilup_ratio = vapour/bottoms, Reboiler.heat_duty)"
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "condenser": "total",
+      "specifications": {
+       "condenser": "native",
+       "reboiler": "L2(b)"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.col.condenser",
+         "kind": "condenser_total",
+         "idaes_class": "_ScalarCondenser"
+        },
+        "2": {
+         "unit": "fs.col.rectification_section[1]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "3": {
+         "unit": "fs.col.rectification_section[2]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "4": {
+         "unit": "fs.col.feed_tray",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.col.stripping_section[4]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "6": {
+         "unit": "fs.col.stripping_section[5]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "7": {
+         "unit": "fs.col.reboiler",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.col.feed_tray",
+        "idaes_port": "fs.col.feed_tray.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "total: IDAES Condenser, condenser_type=totalCondenser, temperature_spec=atBubblePoint (eq_total_cond_spec: T = bubble temperature of the outlet; no subcooling)",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "1.5"
+        },
+        "realization": "native",
+        "tool": "Condenser.reflux_ratio fixed (reflux / distillate)"
+       },
+       "reboiler": {
+        "kind": "bottoms_rate",
+        "registered": {
+         "kind": "bottoms_rate",
+         "value": "0.561"
+        },
+        "realization": "L2(b)",
+        "tool": "L_N - B* = 0 (S02 \u00a72.1)",
+        "equation": "fs.col.reboiler.s03_spec_reboiler: fs.col.reboiler.control_volume.properties_out[0.0].flow_mol_phase[Liq] - 0.561  ==  0",
+        "replaces": "fs.col.reboiler.boilup_ratio"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.col.condenser.control_volume.properties_out[0.0].pressure": 100000.0,
+        "fs.col.feed_tray.properties_in_feed[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "condenser_pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L2",
+     "converged": true,
+     "termination": "Optimal Solution Found.",
+     "ipopt_iterations": 29,
+     "wall_time_solve_s": 0.11539638694375753,
+     "rule2_component_max_mol_per_s": 1.698990392817734e-10,
+     "rule2_energy_W": 1.6001959920686204e-05,
+     "rule2b_max_shift_K": 5e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 4.440892098500626e-16,
+      "reboiler": 0.0
+     },
+     "rerun_max_ratio": 4.2484606407502315e-07,
+     "passes": true,
+     "failed_rule": null,
+     "reason": "passes rules 2-2d"
+    }
+   ],
+   "wall_time_s": 4.721284428960644
+  },
+  "RC2-z": {
+   "available": true,
+   "level": "L2",
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "no native IDAES column specification variable for ['reboiler: bottoms_rate'] (native: Condenser.reflux_ratio = reflux/distillate, Reboiler.boilup_ratio = vapour/bottoms, Reboiler.heat_duty)"
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "condenser": "total",
+      "specifications": {
+       "condenser": "native",
+       "reboiler": "L2(b)"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.col.condenser",
+         "kind": "condenser_total",
+         "idaes_class": "_ScalarCondenser"
+        },
+        "2": {
+         "unit": "fs.col.rectification_section[1]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "3": {
+         "unit": "fs.col.rectification_section[2]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "4": {
+         "unit": "fs.col.feed_tray",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.col.stripping_section[4]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "6": {
+         "unit": "fs.col.stripping_section[5]",
+         "kind": "tray",
+         "idaes_class": "TrayData"
+        },
+        "7": {
+         "unit": "fs.col.reboiler",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.col.feed_tray",
+        "idaes_port": "fs.col.feed_tray.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "total: IDAES Condenser, condenser_type=totalCondenser, temperature_spec=atBubblePoint (eq_total_cond_spec: T = bubble temperature of the outlet; no subcooling)",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "1.5"
+        },
+        "realization": "native",
+        "tool": "Condenser.reflux_ratio fixed (reflux / distillate)"
+       },
+       "reboiler": {
+        "kind": "bottoms_rate",
+        "registered": {
+         "kind": "bottoms_rate",
+         "value": "0.55"
+        },
+        "realization": "L2(b)",
+        "tool": "L_N - B* = 0 (S02 \u00a72.1)",
+        "equation": "fs.col.reboiler.s03_spec_reboiler: fs.col.reboiler.control_volume.properties_out[0.0].flow_mol_phase[Liq] - 0.55  ==  0",
+        "replaces": "fs.col.reboiler.boilup_ratio"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.col.condenser.control_volume.properties_out[0.0].pressure": 100000.0,
+        "fs.col.feed_tray.properties_in_feed[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "condenser_pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L2",
+     "converged": true,
+     "termination": "Optimal Solution Found.",
+     "ipopt_iterations": 24,
+     "wall_time_solve_s": 0.08673587604425848,
+     "rule2_component_max_mol_per_s": 1.6496631838336384e-10,
+     "rule2_energy_W": 1.6775831682025455e-05,
+     "rule2b_max_shift_K": 5.00001e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 2.9605947323337506e-16,
+      "reboiler": 0.0
+     },
+     "rerun_max_ratio": 1.8222217852803992e-05,
+     "passes": true,
+     "failed_rule": null,
+     "reason": "passes rules 2-2d"
+    }
+   ],
+   "wall_time_s": 5.128389283083379
+  },
+  "RC3-Q": {
+   "available": false,
+   "level": null,
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": null,
+      "reboiler": "Reboiler",
+      "specifications": {
+       "reboiler": "native"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 14,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 5,
+       "stage_count_idaes": 5,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "top",
+        "registered_stage": 1,
+        "idaes_unit": "fs.stage1",
+        "idaes_port": "fs.stage1.liq_in",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "absent: the top inlet enters stage 1's liquid inlet (an ordinary Tray)",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "reboiler": {
+        "kind": "duty",
+        "registered": {
+         "kind": "duty",
+         "value": "30600"
+        },
+        "realization": "native",
+        "tool": "Reboiler.heat_duty fixed, W, heat into the reboiler"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage1.properties_in_liq[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {},
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": false,
+     "termination": "Solved To Acceptable Level.",
+     "ipopt_iterations": 6,
+     "wall_time_solve_s": 0.0525515649933368,
+     "rule2_component_max_mol_per_s": 5.433501426566067e-10,
+     "rule2_energy_W": 0.0001311643427470699,
+     "rule2b_max_shift_K": 4.9588e-09,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "reboiler": 0.0
+     },
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "Solved To Acceptable Level."
+    }
+   ],
+   "wall_time_s": 1.2237819989677519,
+   "not_available_reason": "L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit | L3: failed rules 2-2d (2: Solved To Acceptable Level.)"
+  },
+  "RC3-z": {
+   "available": false,
+   "level": null,
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": null,
+      "reboiler": "Reboiler",
+      "specifications": {
+       "reboiler": "native"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 14,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 5,
+       "stage_count_idaes": 5,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "top",
+        "registered_stage": 1,
+        "idaes_unit": "fs.stage1",
+        "idaes_port": "fs.stage1.liq_in",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "absent: the top inlet enters stage 1's liquid inlet (an ordinary Tray)",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "reboiler": {
+        "kind": "duty",
+        "registered": {
+         "kind": "duty",
+         "value": "30000"
+        },
+        "realization": "native",
+        "tool": "Reboiler.heat_duty fixed, W, heat into the reboiler"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage1.properties_in_liq[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {},
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": false,
+     "termination": "Solved To Acceptable Level.",
+     "ipopt_iterations": 12,
+     "wall_time_solve_s": 0.06361275701783597,
+     "rule2_component_max_mol_per_s": 4.107825191113079e-15,
+     "rule2_energy_W": 3.6033481592312455e-05,
+     "rule2b_max_shift_K": 6.592683e-08,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "reboiler": 0.0
+     },
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "Solved To Acceptable Level."
+    }
+   ],
+   "wall_time_s": 1.20451268798206,
+   "not_available_reason": "L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit | L3: failed rules 2-2d (2: Solved To Acceptable Level.)"
+  },
+  "RC4-D": {
+   "available": false,
+   "level": null,
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Flash",
+      "reboiler": null,
+      "specifications": {
+       "condenser": "L2(b)"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 14,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 5,
+       "stage_count_idaes": 5,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_flash",
+         "idaes_class": "_ScalarFlash"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "bottom",
+        "registered_stage": 5,
+        "idaes_unit": "fs.stage5",
+        "idaes_port": "fs.stage5.vap_in",
+        "unit_is_our_stage": true,
+        "declared_phase": "VAPOR",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "partial (S02) at L3: IDAES Flash; its vapour outlet is the distillate and its liquid outlet is joined by an Arc to stage 2's liquid inlet (all liquid refluxed); no liquid-distillate stream exists",
+      "reboiler_realization": "absent: the bottom inlet enters stage N's vapour inlet (an ordinary Tray)",
+      "specifications": {
+       "condenser": {
+        "kind": "distillate_rate",
+        "registered": {
+         "kind": "distillate_rate",
+         "value": "0.51"
+        },
+        "realization": "L2(b)",
+        "tool": "V_1 - D* = 0 (S02 \u00a72.1)",
+        "equation": "fs.stage1.s03_spec_condenser: fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Vap] - 0.51  ==  0",
+        "replaces": null
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage5.properties_in_vap[0.0].pressure": 100000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "Flash outlet pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": false,
+     "termination": "Maximum Number of Iterations Exceeded.",
+     "ipopt_iterations": 500,
+     "wall_time_solve_s": 0.5701203799108043,
+     "rule2_component_max_mol_per_s": 0.16084966215038946,
+     "rule2_energy_W": -204202.2918769481,
+     "rule2b_max_shift_K": 1.20828022119517,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 1.886556289270602e-05
+     },
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "Maximum Number of Iterations Exceeded."
+    }
+   ],
+   "wall_time_s": 2.1193431890569627,
+   "not_available_reason": "L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L3: failed rules 2-2d (2: Maximum Number of Iterations Exceeded.)"
+  },
+  "RC4-z": {
+   "available": false,
+   "level": null,
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit"
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Flash",
+      "reboiler": null,
+      "specifications": {
+       "condenser": "L2(b)"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 14,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 5,
+       "stage_count_idaes": 5,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_flash",
+         "idaes_class": "_ScalarFlash"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "bottom",
+        "registered_stage": 5,
+        "idaes_unit": "fs.stage5",
+        "idaes_port": "fs.stage5.vap_in",
+        "unit_is_our_stage": true,
+        "declared_phase": "VAPOR",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "partial (S02) at L3: IDAES Flash; its vapour outlet is the distillate and its liquid outlet is joined by an Arc to stage 2's liquid inlet (all liquid refluxed); no liquid-distillate stream exists",
+      "reboiler_realization": "absent: the bottom inlet enters stage N's vapour inlet (an ordinary Tray)",
+      "specifications": {
+       "condenser": {
+        "kind": "distillate_rate",
+        "registered": {
+         "kind": "distillate_rate",
+         "value": "0.5"
+        },
+        "realization": "L2(b)",
+        "tool": "V_1 - D* = 0 (S02 \u00a72.1)",
+        "equation": "fs.stage1.s03_spec_condenser: fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Vap] - 0.5  ==  0",
+        "replaces": null
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage5.properties_in_vap[0.0].pressure": 100000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 100000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "Flash outlet pressure": 100000.0
+       },
+       "registered_Pa": [
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0,
+        100000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": false,
+     "termination": "Maximum Number of Iterations Exceeded.",
+     "ipopt_iterations": 500,
+     "wall_time_solve_s": 0.5900986180640757,
+     "rule2_component_max_mol_per_s": 0.08352345725601515,
+     "rule2_energy_W": -34313.41823969603,
+     "rule2b_max_shift_K": 1.9625648527319,
+     "rule2c_failed_checks": [],
+     "rule2d_specification": {
+      "condenser": 6.036075822346554e-05
+     },
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "Maximum Number of Iterations Exceeded."
+    }
+   ],
+   "wall_time_s": 1.9055843049427494,
+   "not_available_reason": "L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L3: failed rules 2-2d (2: Maximum Number of Iterations Exceeded.)"
+  },
+  "PC-P": {
+   "available": false,
+   "level": null,
+   "levels": {
+    "L1": {
+     "realization": {
+      "level": "L1",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L2": {
+     "realization": {
+      "level": "L2",
+      "unit": "TrayColumn",
+      "expressible": false,
+      "reason": "S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection"
+     },
+     "structural_inspection": {
+      "condenser_realization": {
+       "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+       "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+       "distillate_flow_mol_component_type": "Expression",
+       "distillate_flow_mol_is_variable": false,
+       "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+       "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+       "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+       "ports": [
+        "reflux",
+        "distillate",
+        "vapor_outlet"
+       ]
+      },
+      "expressible": false
+     }
+    },
+    "L3": {
+     "realization": {
+      "level": "L3",
+      "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+      "condenser": "Flash",
+      "reboiler": "Reboiler",
+      "specifications": {
+       "condenser": "L2(b)",
+       "reboiler": "native"
+      },
+      "expressible": true
+     },
+     "structural_inspection": {
+      "property_package": {
+       "every_state_block_uses_fs_props": true,
+       "state_block_count": 20,
+       "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+      },
+      "stage_map": {
+       "stage_count_registered": 7,
+       "stage_count_idaes": 7,
+       "map": {
+        "1": {
+         "unit": "fs.stage1",
+         "kind": "condenser_flash",
+         "idaes_class": "_ScalarFlash"
+        },
+        "2": {
+         "unit": "fs.stage2",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "3": {
+         "unit": "fs.stage3",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "4": {
+         "unit": "fs.stage4",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "5": {
+         "unit": "fs.stage5",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "6": {
+         "unit": "fs.stage6",
+         "kind": "tray",
+         "idaes_class": "_ScalarTray"
+        },
+        "7": {
+         "unit": "fs.stage7",
+         "kind": "reboiler",
+         "idaes_class": "_ScalarReboiler"
+        }
+       },
+       "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+      },
+      "feed_stages": [
+       {
+        "inlet": "feed",
+        "registered_stage": 4,
+        "idaes_unit": "fs.stage4",
+        "idaes_port": "fs.stage4.feed",
+        "unit_is_our_stage": true,
+        "declared_phase": "LIQUID",
+        "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+       }
+      ],
+      "condenser_realization": "partial (S02) at L3: IDAES Flash; its vapour outlet is the distillate and its liquid outlet is joined by an Arc to stage 2's liquid inlet (all liquid refluxed); no liquid-distillate stream exists",
+      "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+      "specifications": {
+       "condenser": {
+        "kind": "reflux_ratio",
+        "registered": {
+         "kind": "reflux_ratio",
+         "value": "2"
+        },
+        "realization": "L2(b)",
+        "tool": "L_1 - RR*\u00b7V_1 = 0 (S02 \u00a72.1)",
+        "equation": "fs.stage1.s03_spec_condenser: fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Liq] - 2.0*fs.stage1.control_volume.properties_out[0.0].flow_mol_phase[Vap]  ==  0",
+        "replaces": null
+       },
+       "reboiler": {
+        "kind": "boilup_ratio",
+        "registered": {
+         "kind": "boilup_ratio",
+         "value": "1.5"
+        },
+        "realization": "native",
+        "tool": "Reboiler.boilup_ratio fixed (vapor_reboil / bottoms)"
+       }
+      },
+      "pressures": {
+       "fixed_pressure_variables_Pa": {
+        "fs.stage4.properties_in_feed[0.0].pressure": 150000.0,
+        "fs.stage1.control_volume.properties_out[0.0].pressure": 150000.0
+       },
+       "unit_pressure_specifications_Pa": {
+        "Flash outlet pressure": 150000.0
+       },
+       "registered_Pa": [
+        150000.0,
+        150000.0,
+        150000.0,
+        150000.0,
+        150000.0,
+        150000.0,
+        150000.0
+       ],
+       "trays_have_pressure_change": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+      },
+      "intermediate_stages": {
+       "trays_have_heat_transfer": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "trays_side_draws": [
+        false,
+        false,
+        false,
+        false,
+        false
+       ],
+       "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+       "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+      },
+      "initialization": [
+       "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+       "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+       "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+       "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+      ],
+      "degrees_of_freedom": 0
+     }
+    }
+   },
+   "attempts": [
+    {
+     "level": "L3",
+     "converged": false,
+     "termination": "Maximum Number of Iterations Exceeded.",
+     "ipopt_iterations": 500,
+     "wall_time_solve_s": 0.7871382610173896,
+     "rule2_component_max_mol_per_s": 0.29984841370884124,
+     "rule2_energy_W": 19007.026692783376,
+     "rule2b_max_shift_K": 0.197204142782,
+     "rule2c_failed_checks": [
+      "specification"
+     ],
+     "rule2d_specification": {
+      "condenser": 0.037212576749781734,
+      "reboiler": 8.289101257237993e-10
+     },
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "Maximum Number of Iterations Exceeded."
+    }
+   ],
+   "wall_time_s": 3.0654310720274225,
+   "not_available_reason": "L1: S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection | L2: S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, \u00a75.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection | L3: failed rules 2-2d (2: Maximum Number of Iterations Exceeded.)"
+  },
+  "PC-L": {
+   "not_applicable": "IDAES's SYN-001 mapping has no vaporization-enthalpy input (T06 \u00a79.4); spec \u00a73.3 and \u00a77.2: (PC-L, IDAES) is not_applicable, a registered absence outside every count"
+  }
+ },
+ "q_s03_7_partial_condenser": {
+  "partial_at_bubble_point": "ConfigurationError: condenser_type set to partial but temperature_spec set to atBubblePoint. Select customTemperature and specify outlet temperature.",
+  "reflux_split_fraction": "fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)",
+  "distillate_flow_mol_component_type": "Expression",
+  "distillate_flow_mol_is_variable": false,
+  "distillate_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(1 - (fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1)))",
+  "reflux_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Liq]*(fs.c.reflux_ratio*(1 + fs.c.reflux_ratio)**(-1))",
+  "vapor_outlet_flow_mol": "fs.c.control_volume.properties_out[0.0].flow_mol_phase[Vap]",
+  "ports": [
+   "reflux",
+   "distillate",
+   "vapor_outlet"
+  ]
+ },
+ "wall_time_total_s": 63.07975959603209
+}

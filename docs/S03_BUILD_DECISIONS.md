@@ -191,3 +191,87 @@ evidence/S03/artifacts/s03-qualification-topup/out`. The eleven standing results
   1.1e-6 (`top[B]`), both under 0.1 (Q-S03-3). A06 is parametrized over `OURS_CASES`, so it took both cases
   with no code change; only the docstring and a measurement comment were updated.
 - `tests/test_s03_ours.py` + `tests/test_s03_s11_refusal.py`: 95 passed (A02 case-set, A06, A07, A16 included).
+
+## WO-S03-2 (IDAES qualification and runs; build lane `opus-engineer`, 2026-10-24; branch `wp/S03-idaes`)
+
+Script `spikes/references/s03_qualify_idaes.py` (commit `787cd4fd`), run by `spikes/references/s03_qualify.sh idaes`
+(unchanged); Ipopt logs go to `evidence/S03/artifacts/s03-qualification/idaes-ipopt/` (git-ignored).
+
+- DECISION B2-1: imports → `t06_fixtures`, `t06_qualify_idaes` (both exempt and pinned, §17.6) and `idaes_representability`
+  (not exempt; contains none of the seven strings). The script asserts the imported settings equal
+  `tool_settings.IDAES` (Ipopt options, ε, placeholders, h_form). Alternative: re-enter the mapping (rejected by §5.1 row 1).
+- DECISION B2-2: the L1/L2 boundary → L1 fixes only IDAES's column specification variables (`Condenser.reflux_ratio`,
+  `Reboiler.boilup_ratio`, `Reboiler.heat_duty`). Every other specification is an explicit `Constraint` written from S02 §2.1 /
+  S06 §2 (L2(b)), including a bottoms rate `L_N − B*` and a stage temperature `T_s − T*`. This matches §17.1's expectations.
+  Alternative: count fixing a port or state variable (bottoms flow, a tray temperature) as L1. Reversible by `L1_NATIVE`.
+  Levels and comparisons are unaffected (the equations are identical); only the recorded level moves.
+- DECISION B2-3: S02's partial condenser → not expressible at L1 or L2, by inspection, without a run (§2.3 step 1; DWSIM's
+  precedent for an inexpressible structure). L3 realizes it as a `Flash` whose outlet pressure is fixed at the registered
+  value (`deltaP` free), the analogue of `TrayColumn`'s fixed `condenser_pressure`. Its liquid outlet goes to stage 2 by an
+  `Arc`, so no liquid distillate exists. This answers Q-S03-7 (below).
+- DECISION B2-4: initialization (§5.1 row 12) → recorded in every record (`settings.initialization`):
+  - profile-seeded guesses on tray inlets (320 → 400 K, 1 mol/s, the inlet composition);
+  - IDAES's own `TrayColumn.initialize()` (L1/L2), or the unit initializers in its order (L3);
+  - one full solve with IDAES's initializer solver;
+  - **the initializers run at IDAES's default SmoothVLE ε; the registered ε = 1e-8 K is set on every block afterwards**, before
+    the final solve and the rerun. Rule 2b checks every block (shift 5.0e-9 K on every passing record).
+
+  Measured on pilot RC2 runs: at ε = 1e-8 K, `TrayColumn.initialize` fails in the condenser's inlet-state initialization (a
+  saturated vapour: "bad status: error", then `InitializationError`). This happens with IDAES's default guesses (the feed tray's
+  vapour is 1.8e-16 mol/s) and with profile-seeded guesses. T06's application note set ε before the initializers; this
+  departs from that note, not from a registered setting. Alternatives tried on the pilot and rejected: an ε continuation
+  (1e-4, 1e-6, 1e-8; RC2 ended "Solved To Acceptable Level"), and no full initializer solve. Disclosure: the policy was fixed
+  on pilot runs of RC2 and RC3 by convergence alone, before the 18-case run. No comparison exists.
+- DECISION B2-5: `OMP_NUM_THREADS = OPENBLAS_NUM_THREADS = MKL_NUM_THREADS = 1` (setdefault, recorded) → deterministic
+  linear algebra. Measured: a threaded MUMPS run sat at 1100 % CPU for minutes on the shared host; single-threaded, an RC2 run
+  takes 6 s.
+- DECISION B2-6: rule 2d inside the script → as B3-3/B3-4. The tolerance uses the tool's own value. "The rerun converged"
+  means "Optimal Solution Found". The rerun rebuilds, re-initializes and solves with `floor_rerun` (tol 1e-9, constr_viol_tol
+  1e-8), everything else unchanged. The level search stops at the first level that passes, as DWSIM's did.
+- DECISION B2-7: the sign → identity: IDAES's `heat_duty` is heat into the control volume (`sign_conversion` in every record).
+  Rule 2's energy balance would catch a wrong sign.
+- DECISION B2-8: record contents → §8's fields plus every Pyomo variable and every SmoothVLE ε (rule 2b is recomputed from
+  these, as in T06), `cases_sha256`, and the failed levels' full records. 19 files, 1.47 MB.
+
+### WO-S03-2 outcome (run 2026-10-24, 63 s, fingerprint = `docs/reference-environments.md` §3)
+
+| Case(s) | IDAES | Note |
+| --- | --- | --- |
+| RC1, RC1-RR, RC1-BR, RC1-z, RC7 | available, L3 | Flash condenser; reruns move ≤ 0.0069 tolerance |
+| RC2, RC2-B, RC2-z | available, L2 | TrayColumn with B as L2(b) for RC2 and RC2-B; RC2-z the same; reruns ≤ 1.8e-5 |
+| RC2-RR | not available | L2: "Solved To Acceptable Level" after 8 iterations; L3: 500 iterations |
+| RC3, RC3-Q, RC3-z | not available | L3: "Solved To Acceptable Level" after 6–13 iterations |
+| RC4, RC4-D, RC4-z | not available | L3: 500 iterations (the initializer's full solve also fails) |
+| RC5 | not available | L3: "Solved To Acceptable Level" after 14 iterations |
+| RC6 | not available | L2 converged, but rule 2d's rerun moved 0.34 tolerance; L3: local infeasibility |
+| PC-P | not available | L3: 500 iterations |
+| PC-L | not_applicable | registered (§3.3) |
+
+On every passing record, rules 2–2d are met:
+
+| Check | Worst value |
+| --- | --- |
+| component balance | ≤ 1.7e-10 mol/s |
+| energy balance | ≤ 1.7e-5 W |
+| SmoothVLE shift | 5.0e-9 K |
+| pressure deviation | 0 Pa |
+| specification residual | ≤ 2.1e-15 |
+| final constraint violation | ≤ 7e-10 |
+
+**Finding for the design lane (rule 6; T06 §9.5's rule 2b note).** The failures are Ipopt terminations at the registered
+ε = 1e-8 K. They are not model errors. The failing final solves stall at residuals of 1e-10 to 1e-5 on the SmoothVLE rows of
+the trays' *inlet* state blocks (`_teq_constraint`, `eq_mole_frac_tbub` of `properties_in_vap`/`_liq`). IDAES's `Tray`
+re-flashes every inlet, and a saturated inter-stage stream sits at the kink, where ε = 1e-8 K gives curvature ~1/ε. The
+dual infeasibility reaches 1.8e14.
+
+The outcome depends on the starting point:
+- RC2 converged from one pilot start and ended "acceptable" from another;
+- RC6's L2 converged, but its rerun moved 0.34 tolerance.
+
+Consequence under §17.3(b): PC-P, IDAES's only control, is not available, so **every IDAES pair becomes
+`NOT_COMPARABLE(control_not_comparable)`**. No harness change was made to rescue a case.
+
+**Q-S03-7 answered (inspection, `qualification/idaes.json` → `q_s03_7_partial_condenser`).** No. IDAES's partial `Condenser`
+has no liquid-distillate variable. Its distillate flow is the Expression `(1 − RR/(1+RR))·F_liq`, which is 0 only at
+RR = ∞, and its `reflux_ratio` is reflux over the liquid distillate. It also refuses `atBubblePoint`. So L2(a) has no
+realization, and every partial-condenser case goes to L3 (Flash): RC1, RC7 and the RC1 family pass there.
