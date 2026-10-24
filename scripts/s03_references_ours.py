@@ -9,8 +9,8 @@ numbering (§4). The comparison (WO-S03-4) reads these records, never this modul
 solves again live and checks that the committed record is what a solve produces today (A07).
 
 Which cases have a record (§3, §12 WO-S03-1, §17.10): RC1–RC7, the ten perturbed cases and PC-P. PC-L is
-RC1 with DWSIM's unmapped latent heat, so its "ours" is RC1's record (§3.3; no file), as T06's
-PC-1 is REF-04's.
+RC1 with DWSIM's unmapped latent heat, and PC-LI (§18.3) is RC1 with IDAES's `h_form,ig` shifted by
+`P_r v_i`, so the "ours" of each is RC1's record (§3.3; no file), as T06's PC-1 is REF-04's.
 
 The mapping (§3, §5.1 rows 2, 4, 8, 10): one pressure per stage and per inlet exactly as
 registered; an inlet on port `top` enters stage 1, one on `bottom` stage N, any other port is a
@@ -85,7 +85,7 @@ OURS_CASES: tuple[str, ...] = (
 )
 
 #: Registered cases whose "ours" is another case's record (§3.3).
-OURS_ALIASES: Mapping[str, str] = {"PC-L": "RC1"}
+OURS_ALIASES: Mapping[str, str] = {"PC-L": "RC1", "PC-LI": "RC1"}
 
 _STAGE_QUANTITY = re.compile(r"^(T|L|V)\[([1-9][0-9]*)\]$")
 _PRODUCT_QUANTITY = re.compile(r"^(top|bottom)\[([A-Za-z0-9_]+)\]$")

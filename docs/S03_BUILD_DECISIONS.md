@@ -275,3 +275,10 @@ Consequence under §17.3(b): PC-P, IDAES's only control, is not available, so **
 has no liquid-distillate variable. Its distillate flow is the Expression `(1 − RR/(1+RR))·F_liq`, which is 0 only at
 RR = ∞, and its `reflux_ratio` is reflux over the liquid distillate. It also refuses `atBubblePoint`. So L2(a) has no
 realization, and every partial-condenser case goes to L3 (Flash): RC1, RC7 and the RC1 family pass there.
+
+## WO-S03-1c: our side after Amendment 2 (§18.8)
+
+- DECISION: PC-LI → alias of RC1, `OURS_ALIASES = {"PC-L": "RC1", "PC-LI": "RC1"}`; no `ours-PC-LI.json` (§18.3, A02). Alternative: a copy of RC1's record. Reversible by: moving PC-LI to `OURS_CASES`.
+- Docstrings of `scripts/s03_references_ours.py` and A02's test updated for the alias; A02's alias assertion extended.
+- The 18 `ours-*.json` regenerated. `git diff` shows 1 line added and 1 removed in each file, only `cases_sha256`, now `c901d6c90f4b700b92ff98e2a01ae7e8f1d5557b80dd647e3b14e089d3703f39`.
+- `tests/test_s03_ours.py` and `tests/test_s03_s11_refusal.py`: 95 passed (A02 alias test and A07 on the 18 records included).

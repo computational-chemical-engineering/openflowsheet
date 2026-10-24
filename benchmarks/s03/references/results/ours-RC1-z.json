@@ -1,7 +1,7 @@
 {
  "case": "RC1-z",
  "cases_file": "docs/derivations/scripts/s03_cases.json",
- "cases_sha256": "a0ac8496b416b0a401e9906f576243a879eab18c991939d017f009b0a3f24fb2",
+ "cases_sha256": "c901d6c90f4b700b92ff98e2a01ae7e8f1d5557b80dd647e3b14e089d3703f39",
  "cause": "",
  "outcome": "CONVERGED",
  "policy_id": "s01-default-v1",

@@ -90,11 +90,11 @@ def test_a02_the_inputs_are_the_registered_file() -> None:
 
 
 def test_a02_every_registered_case_has_our_record_or_an_alias() -> None:
-    """A02: RC1–RC7, the ten perturbed cases and PC-P have a record each; PC-L's is RC1's
-    (§3.3); every committed `ours-*.json` is one of them."""
+    """A02: RC1–RC7, the ten perturbed cases and PC-P have a record each; PC-L's and PC-LI's
+    are RC1's (§3.3, §18.3); every committed `ours-*.json` is one of them."""
     assert set(ours_side.OURS_CASES) | set(ours_side.OURS_ALIASES) == set(CASES["cases"])
     assert not set(ours_side.OURS_CASES) & set(ours_side.OURS_ALIASES)
-    assert ours_side.OURS_ALIASES == {"PC-L": "RC1"}
+    assert ours_side.OURS_ALIASES == {"PC-L": "RC1", "PC-LI": "RC1"}
     committed = {path.name for path in RESULTS.glob("ours-*.json")}
     assert committed == {f"ours-{case}.json" for case in ours_side.OURS_CASES}
 
