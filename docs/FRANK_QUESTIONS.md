@@ -149,3 +149,11 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
   separate package (S07b). **Default:** yes, they wait (`docs/derivations/S07-spec.md` §6.2, R-620).
 
 - Q-A1-1 and Q-A1-3: defaults taken by the session (2026-10-23), reversible; Frank may object.
+
+## S10 — liquid-capable mixture property method (2026-10-25)
+
+All four answered with the recommended default (Frank, 2026-10-25):
+- **Q-F1** first mixtures → **methanol, ethanol, water** (incl. the ethanol–water azeotrope).
+- **Q-F2** flowsheets or library → **library only for now** (like S05/S07; flowsheet use with the binding package).
+- **Q-F3** ship fitted data → **decide after the rights check** (repository-only until then; come back to Frank).
+- **Q-F4** two liquid phases soon → **no** (Wilson only; would-split mixtures refused with a clear message).
