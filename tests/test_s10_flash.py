@@ -23,7 +23,13 @@ import pytest
 import yaml
 from conftest import REPO_ROOT
 
-from openflowsheet.thermo import FlashRequest, FlashResult, StreamState, wilson_ig
+from openflowsheet.thermo import (
+    FlashRequest,
+    FlashResult,
+    PropertyRequest,
+    StreamState,
+    wilson_ig,
+)
 from openflowsheet.thermo.wilson_ig import WilsonIdealGasProvider
 
 RECORDS = REPO_ROOT / "benchmarks" / "s10" / "verification-records.yaml"
@@ -127,6 +133,19 @@ def _message_tm(message: str, key: str) -> float | None:
     match = re.search(rf"{key}: ([^;]+)", message)
     assert match is not None, message
     return None if match.group(1) == "not_evaluated" else float(match.group(1))
+
+
+def _ln_phi(provider: WilsonIdealGasProvider, state: StreamState, phase: str) -> list[float]:
+    """ln φ_i of `phase` at `state` from `evaluate_phase` (spec §5.3), independent of the
+    flash and stability search code."""
+    request = PropertyRequest(
+        state=state,
+        phase=phase,  # type: ignore[arg-type]
+        properties=tuple(f"lnphi_{c}" for c in COMPONENTS),
+    )
+    result = provider.evaluate_phase(request, CONTEXT)
+    assert result.status == "ok", result.message
+    return [result.values[f"lnphi_{c}"] for c in COMPONENTS]
 
 
 # -- A12: phase signature and vapour fraction -----------------------------------------------------
@@ -419,6 +438,18 @@ def test_a21_stability_queries(provider: WilsonIdealGasProvider, fid: str, phase
     assert report.trial_composition is not None
     assert abs(sum(report.trial_composition) - 1.0) <= 1e-15
     assert all(w > 0.0 for w in report.trial_composition)  # every component flows at these states
+    # Stationarity of tm at the trial w, through evaluate_phase (spec §5.4 steps 2-3): with z
+    # in `phase` and w in the trial phase, ln w_i + ln φ_i^trial(w) − ln z_i − ln φ_i^phase(z) is
+    # the same for every i, and equals −ln ΣW = −ln(1 − tm). Returning z fails this.
+    state, w = _state(fid), report.trial_composition
+    z = [v / state.total_flow for v in state.n]
+    at_w = dataclasses.replace(state, n=w)
+    ln_phi_w, ln_phi_z = _ln_phi(provider, at_w, trial), _ln_phi(provider, state, phase)
+    shift = [
+        math.log(w[i]) + ln_phi_w[i] - math.log(z[i]) - ln_phi_z[i] for i in range(len(COMPONENTS))
+    ]
+    assert max(shift) - min(shift) <= 1e-12, shift
+    assert all(abs(value + math.log(1.0 - got)) <= 1e-12 for value in shift), (shift, got)
     if phase == "LIQUID":
         assert report.iterations == 0 and report.residual is None
     else:
