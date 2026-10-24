@@ -834,7 +834,8 @@ class _Search:
         self._size = len(state.n)
         total = state.total_flow
         self.z = tuple(value / total for value in state.n)  # step 1
-        self.flowing = tuple(i for i, value in enumerate(state.n) if value > 0.0)
+        # F on z, not n: an n_i < 2^-1075 n_tot underflows to z_i = 0.0 (spec §14 E-1).
+        self.flowing = tuple(i for i, value in enumerate(self.z) if value > 0.0)
         self._ln_z = {i: math.log(self.z[i]) for i in self.flowing}
         self._ln_psat = _pure(records, state.temperature).ln_psat
         self._ln_p = math.log(state.pressure)

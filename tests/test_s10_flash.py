@@ -13,6 +13,7 @@ single-phase outlets bitwise; the component balance 1e-13 n_tot.
 
 from __future__ import annotations
 
+import dataclasses
 import math
 import re
 from pathlib import Path
@@ -470,6 +471,55 @@ def test_a22_stability_reports_unknown(
 def test_a22_an_unknown_phase_is_reported_not_raised(provider: WilsonIdealGasProvider) -> None:
     report = provider.stability(_state("F3"), "SOLID", CONTEXT)  # type: ignore[arg-type]
     assert report.label == "UNKNOWN" and report.reason.startswith("unsupported_phase: ")
+
+
+# -- Amendment 1 E-1: the flowing set is defined on z ----------------------------------------------
+
+
+def _hex(value: Any) -> Any:
+    """Every float of a result as its hex string, so == compares bits (0.0 and -0.0 differ)."""
+    if isinstance(value, float):
+        return value.hex()
+    if dataclasses.is_dataclass(value) and not isinstance(value, type):
+        return {f.name: _hex(getattr(value, f.name)) for f in dataclasses.fields(value)}
+    if isinstance(value, dict):
+        return {key: _hex(item) for key, item in value.items()}
+    if isinstance(value, list | tuple):
+        return [_hex(item) for item in value]
+    return value
+
+
+@pytest.mark.parametrize(
+    ("fid", "n_zero"),
+    [("F3", (0.0, 1.0, 1.0)), ("F3", (0.0, 0.0, 2.0)), ("F5", None)],
+)
+def test_e1_a_flow_whose_z_underflows_is_absent(
+    provider: WilsonIdealGasProvider, fid: str, n_zero: tuple[float, ...] | None
+) -> None:
+    """n_VA = 5e-324 gives z_VA = 0.0 (n_tot is unchanged by it), so the flash and stability()
+    return what they return with n_VA = 0.0, bitwise, instead of raising on ln 0; a single-phase
+    result still returns the feed itself. F3's two are the review's reproducers (liquid), F5 a
+    split."""
+    base = _state(fid)
+    zero = base if n_zero is None else dataclasses.replace(base, n=n_zero)
+    assert zero.n[0] == 0.0
+    state = dataclasses.replace(zero, n=(5e-324, *zero.n[1:]))
+    assert state.total_flow == zero.total_flow
+    for phase in ("LIQUID", "VAPOR"):
+        report = provider.stability(state, phase, CONTEXT)
+        assert report.label != "UNKNOWN", report.reason
+        assert _hex(report) == _hex(provider.stability(zero, phase, CONTEXT))
+    result = provider.flash(FlashRequest(state=state), CONTEXT)
+    want = provider.flash(FlashRequest(state=zero), CONTEXT)
+    assert result.status == "ok"
+    if result.phase_signature == "TWO_PHASE":
+        assert result.vapor is not None and result.liquid is not None
+        assert result.vapor.n[0] == 0.0 and result.liquid.n[0] == 0.0
+        assert _hex(result) == _hex(want)
+    else:
+        feed = result.liquid if result.phase_signature == "LIQUID" else result.vapor
+        assert feed is not None and _bits(feed) == _bits(state)
+        assert _hex(dataclasses.replace(result, liquid=want.liquid, vapor=want.vapor)) == _hex(want)
 
 
 # -- A23: permutation (the flash half) -------------------------------------------------------------
