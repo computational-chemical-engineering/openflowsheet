@@ -66,6 +66,18 @@ LIMITATIONS = (
     "not_converged with stability UNKNOWN, never a split.",
 )
 
+#: The U02 limitation S10's evidence manifest carries (R-569, R-709; spec §10): T08 C3 requires
+#: every S10 harvest item with U02 in `to` to name the provider in back-ticks and `library-only`.
+#: Until S10's manifest generator exists it lives here; that generator takes it over verbatim
+#: (docs/S10_DECISIONS.md, B-3).
+U02_LIBRARY_ONLY = (
+    "`wilson-ig-v1` is library-only (R-568, R-569, R-709): it is not in "
+    "revision_binding.SELECTABLE_BASES, so no revision can select it and no development case "
+    "becomes runnable (U02); it is registered in the T08 envelope's LIBRARY_ONLY_PROVIDERS and its "
+    "scanned_providers (S10 spec §10). The column's refusal S11 is unchanged and no unit model "
+    "accepts the provider. Coverage counts are unchanged."
+)
+
 
 @pytest.fixture(scope="module")
 def provider() -> WilsonIdealGasProvider:
@@ -668,6 +680,21 @@ def test_a27_library_only_registration() -> None:
     assert "wilson-ig-v1" in matrix.code_facts()["scanned_providers"]
     # control: the S07 provider is registered the same way, under its own package
     assert LIBRARY_ONLY_PROVIDERS["coolprop-heos-v1"] == "S07"
+
+
+def test_a27_the_u02_note_names_the_provider() -> None:
+    """The U02 limitation names `wilson-ig-v1` and library-only; once an S10 manifest is
+    harvested, every S10 U02 item's note does and there is at least one (T08 C3 judges the same on
+    the whole registry, and fails until then)."""
+    assert "`wilson-ig-v1`" in U02_LIBRARY_ONLY and "library-only" in U02_LIBRARY_ONLY
+    matrix = _script("t08_support_matrix")
+    items = [
+        entry
+        for entry in matrix.load()["harvest"]
+        if entry["manifest"].startswith("evidence/S10/") and "U02" in (entry.get("to") or [])
+    ]
+    for entry in items:
+        assert "`wilson-ig-v1`" in entry["note"] and "library-only" in entry["note"], entry
 
 
 def test_a27_the_registry_carries_the_s10_family() -> None:
