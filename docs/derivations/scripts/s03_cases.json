@@ -2852,6 +2852,168 @@
      "duty"
     ]
    ]
+  },
+  "PC-LI": {
+   "role": "positive_control",
+   "tool_variant": {
+    "IDAES": "IDAES_amendment_2.h_form_ig_J_per_mol_PC-LI in place of h_form_ig_J_per_mol",
+    "DWSIM": "not_applicable"
+   },
+   "stage_count": 7,
+   "condenser": "partial",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "2"
+    },
+    "reboiler": {
+     "kind": "boilup_ratio",
+     "value": "1.5"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
   }
  },
  "tool_settings": {
@@ -2950,6 +3112,57 @@
    "temperature": "T_s of the named stage s (s = 1 with a total condenser means T_c)",
    "semantics_threshold": "1e-4 relative (rule 2c)",
    "accuracy_threshold": "rule 2d: 1e-8 relative for a ratio, rate or duty; 1e-8 absolute for purity; 1e-9 absolute for recovery; 1e-9 relative for temperature"
+  },
+  "IDAES_amendment_2": {
+   "spec": "docs/derivations/S03-spec.md §18",
+   "registered_unchanged": "tool_settings.IDAES: linear_solver, tol, constr_viol_tol, max_iter and smooth_vle for every solve that decides (the final solve and its accuracy rerun); converged iff 'Optimal Solution Found'",
+   "common_start": [
+    "S1 initial guesses: every tray inlet that is not a case inlet at the registered linear profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), 1 mol/s, the first inlet's composition, the registered pressure",
+    "S2 initializers: L1/L2 TrayColumn.initialize(); L3 IDAES's unit initializers in TrayColumn.initialize's order (trays holding a case inlet, then the end units from the nearest of them, then every other tray from its nearest initialized neighbours)",
+    "S3 one full model solve with IDAES's initializer solver (get_solver(), MUMPS, IDAES's other defaults); its final iterate is the start of the position's solves whatever its termination",
+    "S4 S1-S3 run at IDAES's default SmoothVLE eps (eps_1 = 0.01 K, eps_2 = 5e-4 K)",
+    "S5 an L2(b) equation on another stage's variables is deactivated during S2, with the native variable it replaces fixed at IDAES's own initial value, and restored before S3",
+    "S6 an initializer exception is recorded and does not end the attempt"
+   ],
+   "warm_start_options": {
+    "mu_init": "1e-9",
+    "bound_push": "1e-9",
+    "bound_frac": "1e-9",
+    "bound_mult_init_method": "mu-based"
+   },
+   "path_positions": [
+    {
+     "id": "P0",
+     "eps_schedule_K": [],
+     "warm_start": false,
+     "note": "B2-4 as recorded: eps_1 = eps_2 = 1e-8 K on every SmoothVLE block, then the final solve with the registered options and Ipopt's defaults otherwise"
+    },
+    {
+     "id": "P1",
+     "eps_schedule_K": [],
+     "warm_start": true,
+     "note": "eps 1e-8 K on every block, then the final solve with the registered options plus warm_start_options"
+    },
+    {
+     "id": "P2",
+     "eps_schedule_K": [
+      "1e-4",
+      "1e-6"
+     ],
+     "warm_start": true,
+     "note": "eps_1 = eps_2 = 1e-4 K, solve; 1e-6 K, solve; 1e-8 K, the final solve; each solve with the registered options plus warm_start_options, from the previous solve's final iterate whatever its termination"
+    }
+   ],
+   "order": "levels L1, L2, L3 (each only if structurally expressible); within a level every position P0, P1, P2 is run before the level is judged, and every position whose final solve ends 'Optimal Solution Found' also gets its accuracy rerun; the search stops at the first level that passes",
+   "selection": "the first position, in P0, P1, P2 order, of the first level that shows no path dependence and has a position passing rules 2-2d",
+   "path_dependence": "rule 2d (IDAES): two positions of one level whose final solves ended 'Optimal Solution Found' differ on a registered quantity by more than 0.1 tolerance",
+   "accuracy_rerun": "the attempt repeated from S1 with floor_rerun's tol and constr_viol_tol in place of the registered ones in every solve after S3",
+   "contingency": "if Ipopt rejects bound_mult_init_method, P1 and P2 run without it and the record says so; no other option is substituted",
+   "h_form_ig_J_per_mol_PC-LI": [
+    "25010",
+    "30010",
+    "35010"
+   ]
   }
  }
 }

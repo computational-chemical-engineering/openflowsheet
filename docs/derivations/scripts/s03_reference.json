@@ -2,7 +2,7 @@
  "generator": "docs/derivations/scripts/s03_reference.py",
  "spec": "docs/derivations/S03-spec.md",
  "precision_digits": 50,
- "cases_sha256": "a0ac8496b416b0a401e9906f576243a879eab18c991939d017f009b0a3f24fb2",
+ "cases_sha256": "c901d6c90f4b700b92ff98e2a01ae7e8f1d5557b80dd647e3b14e089d3703f39",
  "tolerance": "a_k + 1e-6 |v|; a_flow 3.1e-7 mol/s, a_T 1e-5 K, a_duty 1e-2 W; v the twin value",
  "twin": {
   "RC1": {
@@ -3137,6 +3137,308 @@
     }
    },
    "tool_model_sigma_min": "0.0476583",
+   "max_ratio": "243.292",
+   "argmax": "Q_reboiler",
+   "quantities_over_one_tolerance": 22,
+   "quantities": 29
+  },
+  "PC-LI": {
+   "ours": {
+    "T[1]": {
+     "kind": "T",
+     "value": "332.4839729778400045935567",
+     "tolerance": "0.0003424839729778400045935567"
+    },
+    "T[2]": {
+     "kind": "T",
+     "value": "340.6713430864032156293841",
+     "tolerance": "0.0003506713430864032156293841"
+    },
+    "T[3]": {
+     "kind": "T",
+     "value": "347.3182573340001273322912",
+     "tolerance": "0.0003573182573340001273322912"
+    },
+    "T[4]": {
+     "kind": "T",
+     "value": "353.7198022514268336405959",
+     "tolerance": "0.0003637198022514268336405959"
+    },
+    "T[5]": {
+     "kind": "T",
+     "value": "359.3714905245571644611674",
+     "tolerance": "0.0003693714905245571644611674"
+    },
+    "T[6]": {
+     "kind": "T",
+     "value": "364.8213408036467500038773",
+     "tolerance": "0.0003748213408036467500038773"
+    },
+    "T[7]": {
+     "kind": "T",
+     "value": "372.1615759425475920711485",
+     "tolerance": "0.0003821615759425475920711485"
+    },
+    "L[1]": {
+     "kind": "flow",
+     "value": "0.705540576463846851417563",
+     "tolerance": "0.000001015540576463846851417563"
+    },
+    "V[1]": {
+     "kind": "flow",
+     "value": "0.3527702882319234257087815",
+     "tolerance": "0.0000006627702882319234257087815"
+    },
+    "L[2]": {
+     "kind": "flow",
+     "value": "0.6738759965568771979160853",
+     "tolerance": "0.0000009838759965568771979160853"
+    },
+    "V[2]": {
+     "kind": "flow",
+     "value": "1.058310864695770277126345",
+     "tolerance": "0.000001368310864695770277126345"
+    },
+    "L[3]": {
+     "kind": "flow",
+     "value": "0.6463646091941767782587652",
+     "tolerance": "0.0000009563646091941767782587652"
+    },
+    "V[3]": {
+     "kind": "flow",
+     "value": "1.026646284788800623624867",
+     "tolerance": "0.000001336646284788800623624867"
+    },
+    "L[4]": {
+     "kind": "flow",
+     "value": "1.657358900774947096875186",
+     "tolerance": "0.000001967358900774947096875186"
+    },
+    "V[4]": {
+     "kind": "flow",
+     "value": "0.9991348974261002039675467",
+     "tolerance": "0.000001309134897426100203967547"
+    },
+    "L[5]": {
+     "kind": "flow",
+     "value": "1.642183560443446900529142",
+     "tolerance": "0.000001952183560443446900529142"
+    },
+    "V[5]": {
+     "kind": "flow",
+     "value": "1.010129189006870522583968",
+     "tolerance": "0.000001320129189006870522583968"
+    },
+    "L[6]": {
+     "kind": "flow",
+     "value": "1.618074279420191435728046",
+     "tolerance": "0.000001928074279420191435728046"
+    },
+    "V[6]": {
+     "kind": "flow",
+     "value": "0.9949538486753703262379238",
+     "tolerance": "0.000001304953848675370326237924"
+    },
+    "L[7]": {
+     "kind": "flow",
+     "value": "0.6472297117680765742912185",
+     "tolerance": "0.0000009572297117680765742912185"
+    },
+    "V[7]": {
+     "kind": "flow",
+     "value": "0.9708445676521148614368277",
+     "tolerance": "0.000001280844567652114861436828"
+    },
+    "top[A]": {
+     "kind": "flow",
+     "value": "0.2877727505769035539027329",
+     "tolerance": "0.0000005977727505769035539027329"
+    },
+    "top[B]": {
+     "kind": "flow",
+     "value": "0.06474389611470696180093271",
+     "tolerance": "0.0000003747438961147069618009327"
+    },
+    "top[C]": {
+     "kind": "flow",
+     "value": "0.0002536415403129100051158488",
+     "tolerance": "0.0000003102536415403129100051158"
+    },
+    "bottom[A]": {
+     "kind": "flow",
+     "value": "0.01222724942309644609726706",
+     "tolerance": "0.0000003222272494230964460972671"
+    },
+    "bottom[B]": {
+     "kind": "flow",
+     "value": "0.3352561038852930381990673",
+     "tolerance": "0.0000006452561038852930381990673"
+    },
+    "bottom[C]": {
+     "kind": "flow",
+     "value": "0.2997463584596870899948842",
+     "tolerance": "0.0000006097463584596870899948842"
+    },
+    "Q_condenser": {
+     "kind": "duty",
+     "value": "-20031.97495591840904851003",
+     "tolerance": "0.03003197495591840904851003"
+    },
+    "Q_reboiler": {
+     "kind": "duty",
+     "value": "30993.93770852674630002593",
+     "tolerance": "0.04099393770852674630002593"
+    }
+   },
+   "ours_sigma_min": "0.0476505",
+   "tool_model": {
+    "T[1]": {
+     "kind": "T",
+     "value": "332.4833080831638368365732",
+     "tolerance": "0.0003424833080831638368365732"
+    },
+    "T[2]": {
+     "kind": "T",
+     "value": "340.6706143729133466362474",
+     "tolerance": "0.0003506706143729133466362474"
+    },
+    "T[3]": {
+     "kind": "T",
+     "value": "347.3177189274170862737715",
+     "tolerance": "0.0003573177189274170862737715"
+    },
+    "T[4]": {
+     "kind": "T",
+     "value": "353.7195263195052015764155",
+     "tolerance": "0.0003637195263195052015764155"
+    },
+    "T[5]": {
+     "kind": "T",
+     "value": "359.3712017071800823439441",
+     "tolerance": "0.0003693712017071800823439441"
+    },
+    "T[6]": {
+     "kind": "T",
+     "value": "364.8210807043423733883835",
+     "tolerance": "0.0003748210807043423733883835"
+    },
+    "T[7]": {
+     "kind": "T",
+     "value": "372.1613525680125237290334",
+     "tolerance": "0.0003821613525680125237290334"
+    },
+    "L[1]": {
+     "kind": "flow",
+     "value": "0.7055285067215771720206672",
+     "tolerance": "0.000001015528506721577172020667"
+    },
+    "V[1]": {
+     "kind": "flow",
+     "value": "0.3527642533607885860103336",
+     "tolerance": "0.0000006627642533607885860103336"
+    },
+    "L[2]": {
+     "kind": "flow",
+     "value": "0.6738742740045276423656481",
+     "tolerance": "0.0000009838742740045276423656481"
+    },
+    "V[2]": {
+     "kind": "flow",
+     "value": "1.058292760082365758031001",
+     "tolerance": "0.000001368292760082365758031001"
+    },
+    "L[3]": {
+     "kind": "flow",
+     "value": "0.6463711374956235507192478",
+     "tolerance": "0.0000009563711374956235507192478"
+    },
+    "V[3]": {
+     "kind": "flow",
+     "value": "1.026638527365316228375982",
+     "tolerance": "0.000001336638527365316228375982"
+    },
+    "L[4]": {
+     "kind": "flow",
+     "value": "1.657361693503951189262071",
+     "tolerance": "0.000001967361693503951189262071"
+    },
+    "V[4]": {
+     "kind": "flow",
+     "value": "0.9991353908564121367295814",
+     "tolerance": "0.000001309135390856412136729581"
+    },
+    "L[5]": {
+     "kind": "flow",
+     "value": "1.642191167187105509355105",
+     "tolerance": "0.000001952191167187105509355105"
+    },
+    "V[5]": {
+     "kind": "flow",
+     "value": "1.010125946864739775272405",
+     "tolerance": "0.000001320125946864739775272405"
+    },
+    "L[6]": {
+     "kind": "flow",
+     "value": "1.618089366598028534974166",
+     "tolerance": "0.000001928089366598028534974166"
+    },
+    "V[6]": {
+     "kind": "flow",
+     "value": "0.9949554205478940953654384",
+     "tolerance": "0.000001304955420547894095365438"
+    },
+    "L[7]": {
+     "kind": "flow",
+     "value": "0.6472357466392114139896664",
+     "tolerance": "0.0000009572357466392114139896664"
+    },
+    "V[7]": {
+     "kind": "flow",
+     "value": "0.9708536199588171209844996",
+     "tolerance": "0.0000012808536199588171209845"
+    },
+    "top[A]": {
+     "kind": "flow",
+     "value": "0.2877720924965923090715899",
+     "tolerance": "0.0000005977720924965923090715899"
+    },
+    "top[B]": {
+     "kind": "flow",
+     "value": "0.06473854847836829118994003",
+     "tolerance": "0.00000037473854847836829118994"
+    },
+    "top[C]": {
+     "kind": "flow",
+     "value": "0.000253612385827985748803721",
+     "tolerance": "0.0000003102536123858279857488037"
+    },
+    "bottom[A]": {
+     "kind": "flow",
+     "value": "0.01222790750340769092841014",
+     "tolerance": "0.0000003222279075034076909284101"
+    },
+    "bottom[B]": {
+     "kind": "flow",
+     "value": "0.33526145152163170881006",
+     "tolerance": "0.00000064526145152163170881006"
+    },
+    "bottom[C]": {
+     "kind": "flow",
+     "value": "0.2997463876141720142511963",
+     "tolerance": "0.0000006097463876141720142511963"
+    },
+    "Q_condenser": {
+     "kind": "duty",
+     "value": "-20038.61269788819074681848",
+     "tolerance": "0.03003861269788819074681848"
+    },
+    "Q_reboiler": {
+     "kind": "duty",
+     "value": "31003.91122374150672777867",
+     "tolerance": "0.04100391122374150672777867"
+    }
+   },
+   "tool_model_sigma_min": "0.0476426",
    "max_ratio": "243.292",
    "argmax": "Q_reboiler",
    "quantities_over_one_tolerance": 22,
@@ -7735,6 +8037,24 @@
   "[PC-L] PC-L tool model: stage 7 2P, L and V > 1e-3",
   "[PC-L] PC-L tool model: overall component and energy closure",
   "[PC-L] PC-L: the tool-model root is regular, sigma_min > 1e-4",
+  "[PC-LI] PC-LI tool model: stage 1 temperature in the SYN-001 domain",
+  "[PC-LI] PC-LI tool model: stage 1 2P, L and V > 1e-3",
+  "[PC-LI] PC-LI tool model: stage 2 temperature in the SYN-001 domain",
+  "[PC-LI] PC-LI tool model: stage 2 2P, L and V > 1e-3",
+  "[PC-LI] PC-LI tool model: stage 3 temperature in the SYN-001 domain",
+  "[PC-LI] PC-LI tool model: stage 3 2P, L and V > 1e-3",
+  "[PC-LI] PC-LI tool model: stage 4 temperature in the SYN-001 domain",
+  "[PC-LI] PC-LI tool model: stage 4 2P, L and V > 1e-3",
+  "[PC-LI] PC-LI tool model: stage 5 temperature in the SYN-001 domain",
+  "[PC-LI] PC-LI tool model: stage 5 2P, L and V > 1e-3",
+  "[PC-LI] PC-LI tool model: stage 6 temperature in the SYN-001 domain",
+  "[PC-LI] PC-LI tool model: stage 6 2P, L and V > 1e-3",
+  "[PC-LI] PC-LI tool model: stage 7 temperature in the SYN-001 domain",
+  "[PC-LI] PC-LI tool model: stage 7 2P, L and V > 1e-3",
+  "[PC-LI] PC-LI tool model: overall component and energy closure",
+  "[PC-LI] PC-LI: the tool-model root is regular, sigma_min > 1e-4",
+  "[PC-LI] PC-LI: IDAES's registered h_form,ig equals L_i + P_r v_i = 25010, 30010, 35010 J/mol",
+  "[PC-LI] PC-LI: the tool model's h^V exceeds SYN-001's by P_r v_i = 10 J/mol at every stage",
   "[E1] E1: initializer flows positive",
   "[E1] E1 bubble_point: stage 1 temperature in the SYN-001 domain",
   "[E1] E1 bubble_point: stage 1 2P, L and V > 1e-3",
@@ -8008,6 +8328,7 @@
   "[post] RC4-z: moves some registered quantity of RC4 by >= 100 tolerances",
   "[post] PC-P: the tool model misses ours by >= 10 tolerances",
   "[post] PC-L: the tool model misses ours by >= 10 tolerances",
+  "[post] PC-LI: the tool model misses ours by >= 10 tolerances",
   "[post] E1: a feed one stage up moves RC1 by >= 100 tolerances",
   "[post] RC1: within each family the registered quantities differ pairwise",
   "[post] RC2: within each family the registered quantities differ pairwise",
@@ -8031,5 +8352,5 @@
   "[post] RC7: moves its ratio-partner base case RC1 by >= 100 tolerances",
   "[post] the inverse cases with registered wrong readings are exactly RC5, RC6 and RC7"
  ],
- "claim_count": 4558
+ "claim_count": 4577
 }

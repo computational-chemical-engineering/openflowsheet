@@ -13312,3 +13312,133 @@ count.
 - *Do it inside S03.* It is a phase-contract change that needs its own ADR, and Frank asked for a later package.
 
 **Watch for.** Citing S03 for one-phase sections. It makes no such claim.
+
+---
+
+## R-640 — S03 Amendment 2: IDAES's solve path is a closed three-position ladder; ε, the tolerances and the convergence test are unchanged; B2-4 endorsed
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 2 (brief `docs/briefs/S03-amendment-2.md`, items 1–2) |
+| Normative text | `docs/derivations/S03-spec.md` §18.1, §18.2; §5.1 rows 12–13 as completed; `tool_settings.IDAES_amendment_2` in `s03_cases.json` |
+| Evidence | WO-S03-2's records at `6d9486a0` (`qualification/idaes.json`: terminations, iterations, rule 0–2d values only); `docs/S03_BUILD_DECISIONS.md` B2-4 and the WO-S03-2 finding; no comparison exists (`comparison.json` absent at `2ebae2b4`) |
+| Affected packages | S03 (WO-S03-2b, WO-S03-4, WO-S03-5) |
+| Amends | R-628 (the qualification rule: IDAES gains a registered path ladder) |
+
+**Decision.**
+- Every IDAES attempt starts the same way, with B2-4 as recorded (S1–S6). The initializers and their full solve run at IDAES's
+  default SmoothVLE ε, and `eps = 1e-8 K` is set on every block before every solve that decides.
+- Three positions follow that start:
+  - P0: the final solve with Ipopt's defaults (the standing records);
+  - P1: the warm-start options `mu_init = bound_push = bound_frac = 1e-9`, `bound_mult_init_method = mu-based`;
+  - P2: an ε continuation through 1e-4 K and 1e-6 K, with the warm-start options.
+- The order is levels L1, L2, L3. At each level all three positions run before the level is judged. The selected attempt is the
+  first passing position at the first passing level.
+- The registered `tol`, `constr_viol_tol`, `max_iter`, MUMPS, ε and the "Optimal Solution Found" test are unchanged.
+- The ladder is closed for S03. A case with no passing position is final, not available. A harness defect is corrected and
+  disclosed.
+
+**Rejected alternatives, and why.**
+- *Change ε.* It is ADR 0014 D7's registered input, policed by rule 2b. Rule 2b admits at most 2e-7 K at a kink, a 20-fold gain,
+  for a semantic amendment of D7.
+- *Count "Solved To Acceptable Level".* D7 rejected it as a silent relaxation of `tol`.
+- *Raise `max_iter`.* The 500-iteration runs end 0.08–0.30 mol/s from closure, so more iterations would not reach a root.
+- *Change the scaling.* It changes what `tol` measures.
+- *Apply the new positions to the failed cases only.* One order covers every case.
+- *An initializer variant for the RC4 family.* It would be chosen per family after seeing the failure.
+- *Records stand, no change.* IDAES's path was a gap in §5.1, filled on the build lane. The change keeps the equations and the
+  convergence test, and no comparison exists.
+
+**Watch for.** A fourth position, a new option or a per-case path after WO-S03-2b. The ladder is closed. Watch also for a P0
+attempt that does not reproduce `6d9486a0`.
+
+---
+
+## R-641 — S03 Amendment 2: rule 2d gains a path-dependence condition for IDAES
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 2 |
+| Normative text | `docs/derivations/S03-spec.md` §18.4; §7.1 rule 2d as amended; A12 as amended in §18.7 |
+| Evidence | rerun movements at `6d9486a0`: ≤ 0.0069 tolerance (RC1 family, RC7), ≤ 1.8e-5 (RC2 family) |
+| Affected packages | S03 (WO-S03-2b, WO-S03-4) |
+| Amends | R-630 (rule 2d) |
+
+**Decision.**
+- At an attempt's level, two IDAES path positions whose final solves ended "Optimal Solution Found" and that differ on a
+  registered quantity by more than 0.1 tolerance give `NOT_COMPARABLE(reference_accuracy: path_dependence(<ratio>))` for that
+  level.
+- Like all of rule 2d, it can only remove a pair, never pass one.
+- It does not apply to DWSIM.
+
+**Rejected alternatives, and why.**
+- *Report path dependence without classifying it.* An `AGREE` could then rest on one of two answers that disagree.
+- *Apply it to DWSIM.* Its rungs differ in tolerance and method, its rerun already covers the tolerance neighbour, and its
+  records are final.
+
+**Watch for.** A record selected at a level whose Optimal positions were not all compared.
+
+---
+
+## R-642 — S03 Amendment 2: PC-LI, IDAES's second positive control (PC-L's mirror on RC1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 2 (brief item 3) |
+| Normative text | `docs/derivations/S03-spec.md` §18.3; §17.3's consequences for IDAES as amended |
+| Evidence | `docs/derivations/scripts/s03_reference.py --check`: 4577 claims; `ref.controls.PC-LI`: max 243.292 (`Q_reboiler`), 22/29 over one tolerance, tool-model σ_min 0.0476426 |
+| Affected packages | S03 (WO-S03-1c, WO-S03-2b, WO-S03-4, WO-S03-5) |
+| Amends | R-629 (the controls); R-636 (IDAES's pairs count if PC-P or PC-LI is `DISAGREE`) |
+
+**Decision.**
+- PC-LI is RC1 with IDAES's `h_form,ig,i = L_i + P_r v_i` (25010, 30010, 35010 J/mol). This is DWSIM's mapped value entered in
+  IDAES, so `h^V − h^L` is larger by `P_r v_i` = 10 J/mol.
+- Our side is RC1's record. The expected classification is `DISAGREE`.
+- (PC-LI, DWSIM) is `not_applicable`, with no record.
+- IDAES's pairs count if and only if PC-P or PC-LI classifies `DISAGREE`. Either one classified `AGREE` stops the comparison.
+
+**Rejected alternatives, and why.**
+- *Rule that IDAES has no other control.* Every IDAES pair would then hang on one control whose failure was a convergence
+  failure at 1.5e5 Pa.
+- *PC-P on RC2's configuration.* It would be chosen by where IDAES converges.
+- *PC-P at a lower pressure.* That tunes the control.
+- *An arbitrary `h_form` perturbation.* Its size would be a free parameter.
+- *ADR 0014 D7's T06 rejection of an IDAES PC-1 analogue does not apply.* It assumed a working IDAES control (PC-2, 4581×).
+
+**Watch for.** PC-LI's DISAGREE rests on duties and flows. `T[4]`–`T[7]` move 0.585–0.782 tolerance, as PC-L's do.
+
+---
+
+## R-643 — S03 Amendment 2: the IDAES records are superseded by a full blind re-run (WO-S03-2b); X31's and D19's outcomes pre-registered for both branches
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 2 (brief items 4–5) |
+| Normative text | `docs/derivations/S03-spec.md` §18.5, §18.6, §18.8 |
+| Evidence | WO-S03-2 outcome (`docs/S03_BUILD_DECISIONS.md`, section "WO-S03-2 outcome"); WO-S03-3b outcome (DWSIM 10 of 19) |
+| Affected packages | S03 (WO-S03-1c, WO-S03-2b, WO-S03-4, WO-S03-5); R01 and the release gate (they inherit the clause's outcome) |
+| Amends | none (it applies R-636 and R-637) |
+
+**Decision.**
+- WO-S03-2b re-runs all 20 IDAES pairs (19 + PC-LI) under the ladder. Its P0 attempts must reproduce the records at
+  `6d9486a0` exactly; otherwise it stops and reports. DWSIM's records and our records stand. Our records only regenerate
+  `cases_sha256`.
+- If the IDAES records stand: X31's reference clause is **not met**. RC1 and RC2 are unusable-IDAES (row 4), and RC3 and RC4
+  have no reference (row 7). D19 has one independent implementation, DWSIM, on at most nine states.
+- Under the re-run, the clause is **met where available (2 of 4)** if and only if IDAES has a `DISAGREE` control and qualifies
+  both RC3 and RC4. Otherwise it is **not met**.
+- "Met with two references" is unreachable in every branch, because DWSIM cannot express RC3 or RC4. S03 may close `tested`
+  in every branch.
+
+**Rejected alternatives, and why.**
+- *A top-up of the failed cases only.* The passing cases need P1 and P2 for the path-dependence check, and P0's reproduction
+  shows that the harness still runs B2-4.
+- *Treat an unusable IDAES pair as absent* (R-637's rejected alternative). This amendment does not reopen it, and doing so would
+  change no clause outcome in any branch.
+
+**Watch for.** A verdict that reports "met with two references", or that counts an IDAES pair without a `DISAGREE` IDAES
+control. Watch also for the release gate's handling of an unmet clause (Q-A2-4, Frank's call).

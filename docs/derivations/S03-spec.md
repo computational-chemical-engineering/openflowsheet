@@ -4,9 +4,9 @@ Design lane (`specifier`), 2026-10-24. Package S03 (plan v1.2 §4.5, `docs/imple
 part; X31 `:357`, with S02), brief `docs/briefs/S03-column-references.md`. Base: S02 (`docs/derivations/S02-spec.md` with
 §17–§19) and S06 (`docs/derivations/S06-spec.md` with §17). Precedent: T06 §9 (`docs/derivations/T06-corpus-spec.md`) and
 ADR 0014 D7. Reference generator `docs/derivations/scripts/s03_reference.py` (mpmath, 50 digits; it reuses the S02 and S06
-generators, which import nothing from `src/`). `--check` re-derives **4009 claims** (4558 after Amendment 1, §17) and byte-compares two files,
+generators, which import nothing from `src/`). `--check` re-derives **4009 claims** (4558 after Amendment 1, §17; 4577 after Amendment 2, §18) and byte-compares two files,
 `s03_cases.json` (inputs only) and `s03_reference.json` (twin values), in about one minute on 15 worker processes.
-Register R-628 to R-633; Amendment 1 (§17): R-634 to R-639.
+Register R-628 to R-633; Amendment 1 (§17): R-634 to R-639; Amendment 2 (§18): R-640 to R-643.
 
 ## 0. Authority and scope
 
@@ -33,6 +33,8 @@ layout and blindness (§8). The supported nonideal scope, which is none, with th
 decisions S02 deferred (§10). Assertions S03.A01–A17 (§11), work orders (§12) and the manifest check list (§13).
 
 **Amendment 1** (§17) adds RC6 and RC7 (recovery and temperature). It amends DWSIM's ladder (§5.2), the control rule (§7.2), rule 2d's thresholds for the new kinds, A03's exemptions and X31's per-case outcomes, and it queues the one-phase package (Q-S03-4).
+
+**Amendment 2** (§18) registers IDAES's solve path as a closed ladder and endorses B2-4. It adds IDAES's second positive control (PC-LI) and a path-dependence condition to rule 2d, supersedes the IDAES records by a full blind re-run (WO-S03-2b), and pre-registers X31's and D19's outcomes.
 
 **What it does not establish** is §14. Read it before citing anything here.
 
@@ -206,6 +208,9 @@ PC-P, `h^V` less `P_r v_i` for PC-L. It is regular (σ_min 0.0473614 and 0.04765
 distance to the tool-model twin, divided by the tolerance (§7.3). That line shows whether a `DISAGREE` came from the effect the
 control exists to show.
 
+*Amendment 2 (§18.3) registers PC-LI, IDAES's second control: RC1 with IDAES's `h_form,ig,i = L_i + P_r v_i`, PC-L's mirror
+(max 243.292, `Q_reboiler`). (PC-LI, DWSIM) is `not_applicable`.*
+
 ## 4. Registered quantities
 
 For each case the comparison reads exactly the quantities `s03_cases.json` lists under `quantities` (names and kinds), in
@@ -244,7 +249,8 @@ cancel in every balance, so they do not cancel in a stream's enthalpy.
 | 14 | DWSIM settings | Flash loops (PT and PH, external and internal) `1e-10`, 1000 iterations. The column solver and tolerance follow §5.2 | T06 §9.3 |
 | 15 | Accuracy rerun (rule 2d; `floor_rerun` in `s03_cases.json`) | IDAES: `tol = 1e-9`, `constr_viol_tol = 1e-8`. DWSIM: the selected column tolerance × 10. Everything else unchanged | §6 |
 
-Every setting is machine-readable in `s03_cases.json` → `tool_settings`. *Amended: row 9 gains recovery and temperature (§17.4).*
+Every setting is machine-readable in `s03_cases.json` → `tool_settings`. *Amended: row 9 gains recovery and temperature (§17.4).
+Rows 12–13 are completed for IDAES by §18.1–§18.2 (`tool_settings.IDAES_amendment_2`).*
 
 ### 5.2 DWSIM's column solver (pre-registered ladder; selected blind in qualification)
 
@@ -321,7 +327,7 @@ tool.
 | 2 | not converged: for IDAES, Ipopt's final solve did not end "Optimal Solution Found"; for DWSIM, the column or any object reported an error or hit its iteration limit. Or the tool's own overall component balance (inlets = products) misses by more than 3.1e-8 mol/s on any component. Or its own energy balance (Σ inlet enthalpies + duties = Σ product enthalpies, in its own datum) misses by more than 1e-3 W | `NOT_COMPARABLE(reference_accuracy: <value>)` |
 | 2b | (IDAES only) T06 rule 2b unchanged: SmoothVLE shift > 1e-7 K on any state block, or a block without `eps_1 = eps_2 = 1e-8 K` | `NOT_COMPARABLE(semantics: smooth_vle_shift(<K>))` |
 | 2c | semantics self-check fails: the stage count or `stage_map` disagrees with the case, an inlet enters another stage, a stage pressure is more than 1e-3 Pa from the registered value, an intermediate duty has \|Q\| > 1e-3 W, a fixed-zero liquid distillate carries more than 3.1e-8 mol/s, or a specification computed by §5.1 row 9 from the tool's own flows (or T) differs from the registered value by more than 1e-4 relative | `NOT_COMPARABLE(semantics: <check>(<value>))` |
-| 2d | accuracy check fails: a specification residual above its kind's threshold (§17.4: 1e-8 relative; purity 1e-8 absolute; recovery 1e-9 absolute; temperature 1e-9 relative), or the accuracy rerun (§5.1 row 15) did not converge, or it moves any registered quantity by more than 0.1 tolerance | `NOT_COMPARABLE(reference_accuracy: <check>(<value>))` |
+| 2d | accuracy check fails: a specification residual above its kind's threshold (§17.4: 1e-8 relative; purity 1e-8 absolute; recovery 1e-9 absolute; temperature 1e-9 relative), or the accuracy rerun (§5.1 row 15) did not converge, or it moves any registered quantity by more than 0.1 tolerance, or (IDAES, §18.4) two path positions of the attempt's level whose final solves ended "Optimal Solution Found" differ on a registered quantity by more than 0.1 tolerance | `NOT_COMPARABLE(reference_accuracy: <check>(<value>))` |
 | 3 | ours is not accepted: its outcome is not `CONVERGED`, it fails S02 §8 or S06 §8, or a registered quantity is more than 0.1 tolerance from the twin | `NOT_COMPARABLE(ours_not_verified)`, and a column finding (§7.5) |
 | 4 | every registered quantity within §6 | `AGREE`; otherwise `DISAGREE`, with the full table (quantity, ours, tool, twin, tolerance, ratio) |
 
@@ -332,7 +338,8 @@ agent. An inaccurate reference can therefore cost a false `DISAGREE`, never a fa
 ### 7.2 Positive controls
 
 *The second bullet is replaced by §17.3. A tool's pairs count only if at least one of its controls classifies
-`DISAGREE`, and a control that is `NOT_COMPARABLE` propagates nothing by itself.*
+`DISAGREE`, and a control that is `NOT_COMPARABLE` propagates nothing by itself. IDAES's controls are PC-P and PC-LI
+(§18.3).*
 
 - PC-P (both tools) and PC-L (DWSIM) **must classify `DISAGREE`**.
 - If rules 1–2d classify a control `NOT_COMPARABLE`, that tool's RC1 pair and its three RC1 perturbation pairs are
@@ -406,7 +413,7 @@ The classifier recomputes the rule values from the record's raw fields. It does 
 - Their only input file from this project is `s03_cases.json`.
 
 *Amended: §17.6 names the exempt modules, pins them by SHA-256 and
-scans every qualification commit.*
+scans every qualification commit. §18.7 adds WO-S03-2b's commit to the scan points.*
 
 **The gate never runs a tool.**
 - `tests/test_s03_references.py` recomputes every classification from the committed tool records, `s03_reference.json` and a
@@ -481,7 +488,7 @@ and RC4 (no reboiler, a vapour `bottom` inlet), and every equilibrium stage of e
 ## 11. Assertions
 
 `ref` = `s03_reference.json`, `cases` = `s03_cases.json`. Tolerances are as stated, with the reason after each table row where it
-is not exact. *Amended by §17.9: A01, A03, A06, A08, A09, A11, A12, A13.*
+is not exact. *Amended by §17.9: A01, A03, A06, A08, A09, A11, A12, A13; and by §18.7: A01, A02, A03, A08, A09, A11, A12, A13.*
 
 | Id | Assertion | Expected | Tolerance |
 | --- | --- | --- | --- |
@@ -505,7 +512,8 @@ is not exact. *Amended by §17.9: A01, A03, A06, A08, A09, A11, A12, A13.*
 
 ## 12. Work orders
 
-*Amendment 1's deltas (WO-S03-1b, WO-S03-2, WO-S03-3b, WO-S03-4, WO-S03-5) are in §17.10.*
+*Amendment 1's deltas (WO-S03-1b, WO-S03-2, WO-S03-3b, WO-S03-4, WO-S03-5) are in §17.10; Amendment 2's (WO-S03-1c,
+WO-S03-2b, WO-S03-4, WO-S03-5) are in §18.8.*
 
 Each is about 150k context. Run at most two agents at a time. WO-S03-2 and WO-S03-3 need the rebuilt `.venv-idaes` and
 `.venv-dwsim`.
@@ -559,7 +567,7 @@ the classifier decides reference verdicts.
 ## 13. Evidence manifest check list
 
 - `status: tested` requires a passing test for each of A01–A16, each citing its id, and A17's document.
-- `s03_reference.py --check` passes at the manifest commit (4558 claims after Amendment 1; both JSON files byte-identical). The S02 and S06
+- `s03_reference.py --check` passes at the manifest commit (4577 claims after Amendment 2; both JSON files byte-identical). The S02 and S06
   generators' `--check` pass too (A16).
 - `ruff check` and `ruff format --check` are clean. `scripts/gate.sh` passes before the merge, and CI is green on both
   architectures.
@@ -568,7 +576,7 @@ the classifier decides reference verdicts.
   - the qualification commit and the comparison commit;
   - the SHA-256 of every committed record and of `comparison.json`;
   - the DWSIM rung selected;
-  - each pair's level and classification;
+  - each pair's level (for IDAES, with its path position, §18.1) and classification;
   - the X31 count;
   - each control's classification.
 - `tested` records that the comparison was run and reproduces. It does not require every pair to be `AGREE`: the
@@ -603,7 +611,7 @@ the classifier decides reference verdicts.
 - **A `NOT_COMPARABLE`** is neither a failure nor a pass of our column. **An L3 `AGREE`** verifies our column against IDAES's
   tray equations as the harness connected them.
 - **Blindness is procedural** (§2.1).
-- **Amendment 1's own limits** are in §17.11.
+- **Amendment 1's own limits** are in §17.11, Amendment 2's in §18.9.
 
 ## 15. Open questions (each with a default)
 
@@ -629,7 +637,8 @@ the classifier decides reference verdicts.
    failure is rule 1 (`NOT_COMPARABLE(access)`), reported.
 7. **Q-S03-7** *Needs a fact.* Does IDAES accept a partial condenser with its liquid distillate fixed at exactly 0 (L2)?
    **Default:** try it first. If it fails to initialize or fails rules 2–2d, fall back to L3 (a `Flash` as the condenser),
-   with both attempts recorded (§2.3 step 1).
+   with both attempts recorded (§2.3 step 1). *Answered (WO-S03-2, B2-3): no. IDAES's partial `Condenser` has no
+   liquid-distillate variable, so every partial-condenser case went to L3 (a `Flash`), by inspection (§18).*
 
 ## 16. Decisions
 
@@ -641,6 +650,7 @@ Register R-628 to R-633.
 - R-632: the block rule closed as a limitation.
 - R-633: R-534 and R-508 resolved, and no ADR needed.
 - Amendment 1 (§17): R-634 to R-639.
+- Amendment 2 (§18): R-640 to R-643.
 
 ## 17. Amendment 1 (2026-10-24, design lane `specifier`)
 
@@ -805,7 +815,8 @@ cause is a rule 2 failure at every rung, and the build lane's reading (F4) is th
 **Pre-registered consequences.**
 - DWSIM's controls are PC-P, recorded as not available, and PC-L. DWSIM's pairs count if and only if (PC-L, DWSIM) is
   `DISAGREE`. The generator's PC-L discrimination is 243.292 tolerances.
-- IDAES's only control is PC-P. IDAES's pairs count if and only if (PC-P, IDAES) is `DISAGREE`.
+- IDAES's only control is PC-P. IDAES's pairs count if and only if (PC-P, IDAES) is `DISAGREE`. *Superseded by §18.3: IDAES's
+  controls are PC-P and PC-LI, and its pairs count if at least one of them is `DISAGREE`.*
 
 For a tool whose only control fails, this is stricter than §7.2: all of its pairs are lost, not four. For DWSIM's RC1 family it
 is less strict. Both directions follow from points 1–4 above. No tolerance, threshold or case changes.
@@ -915,6 +926,8 @@ Whether a later gate (R01, or a release) accepts the clause unmet is outside S03
 - If IDAES expresses all four cases and every comparable pair is `AGREE`, the clause is met where available, with 2 of 4 cases
   having two references. It is more if the top-up qualifies RC3 or RC4.
 
+*Updated by §18.6, after both qualifications.*
+
 *RC5–RC7* get the same per-case outcome, reported for each inverse kind (purity, recovery, temperature), outside the count.
 
 ### 17.6 A03's exemption list (B3-2); replaces §8's "other than T06's SYN-001 definitions"
@@ -941,8 +954,8 @@ The original exempted "T06's SYN-001 definitions" without naming files. Measured
    - `spikes/references/t06_fixtures.py`: `c6320cc81ea4bf08c36f7d7b5aca19180c2109fd66e4e23c84476d35286ba61f`
    - `spikes/references/t06_qualify_dwsim.py`: `e3c1218e435df89462a6aa6ee894f2eccd5576d7012182d31a7f23c92e4e46d0`
    - `spikes/references/t06_qualify_idaes.py`: `aead49938b96e43514ff4e4bcacece87c65d413efa8733e20793c8fd1c7e6eea`
-4. *Scan points.* HEAD, and every qualification commit in the manifest (DWSIM `95870140`, the DWSIM top-up, IDAES), read with
-   `git show`. The standing records were produced by the scripts as they were at those commits. Without history the test
+4. *Scan points.* HEAD, and every qualification commit in the manifest (DWSIM `95870140`, the DWSIM top-up, IDAES; §18.7:
+   IDAES's is WO-S03-2b's), read with `git show`. The standing records were produced by the scripts as they were at those commits. Without history the test
    refuses explicitly, following R-555's pattern as A09 does.
 5. *Input file.* `s03_cases.json` is still the only input file the scripts read from this project (unchanged).
 
@@ -1004,7 +1017,7 @@ history the check refuses explicitly.
 | A03 | as §17.6 |
 | A06 | adds RC6 and RC7 (every stage two-phase; RC6: total condenser plus two-phase ×6) |
 | A08 | the pair set adds RC6 and RC7 for both tools; §17.8's earlier-cases-file rule and DWSIM ladder conformance are checked |
-| A09 | applies to each qualification commit: DWSIM `95870140`, the DWSIM top-up, IDAES |
+| A09 | applies to each qualification commit: DWSIM `95870140`, the DWSIM top-up, IDAES (WO-S03-2b's, §18.7) |
 | A11 | replaced: (i) no control classifies `AGREE`; (ii) §17.3(b) is applied, checked both on the committed classification and by mutation: re-classifying with each tool's `DISAGREE` controls replaced by `NOT_COMPARABLE` copies turns every pair of that tool into `NOT_COMPARABLE(control_not_comparable: …)`, and the unaltered input reproduces `comparison.json`; (iii) (PC-L, IDAES) is `not_applicable`; (iv) (PC-P, DWSIM) is as recorded and changes no other DWSIM pair |
 | A12 | the RC1 part is unchanged. Added, independent of availability: one synthetic record per specification kind (RR partial and total, BR, D partial and total, B, duty, purity, recovery, temperature), with the specification residual at 2× rule 2c's threshold → rule 2c; at 2× the kind's rule 2d threshold (§17.4) → rule 2d; at 0.5× it → neither |
 | A13 | `comparison.json` also holds §17.5's table (the class of each pair, the outcome of each case, the clause's outcome) for RC1–RC4, and the same per inverse kind for RC5–RC7 |
@@ -1022,7 +1035,7 @@ history the check refuses explicitly.
 - There is no measured expectation yet; S06 solved J8 and J3 at S02's profile. A miss of more than 0.1 tolerance is a rule 3
   finding against S06.
 
-**WO-S03-2: IDAES** (unchanged except for the following).
+**WO-S03-2: IDAES** (unchanged except for the following). *Its records are superseded by WO-S03-2b (§18.8).*
 - Cases: RC1–RC7, the ten perturbed cases, PC-P, and a `not_applicable` record for PC-L, 19 records in all.
 - RC6 and RC7 are realized as §17.1 expects, recorded by structural inspection. The L2(b) equations are written from S06 §2,
   with ν* = 0.297 mol/s (RC6) and T* = 368 K on our stage 6 (RC7).
@@ -1087,7 +1100,9 @@ kind.
 3. **Q-A1-3** *Needs a fact*; WO-S03-2 and WO-S03-3b settle it. Do the tools meet the 1e-9 recovery and temperature thresholds?
    **Default: IDAES yes; DWSIM unknown.** A square Ipopt solve usually ends with residuals far below `constr_viol_tol`. That is
    not a guarantee, though: a 1e-9 mol/s residual on the ν* equation bounds the recovery error only at 3.3e-9, so this must be
-   measured. A miss is `NOT_COMPARABLE(reference_accuracy)`, reported. The thresholds are not relaxed.
+   measured. A miss is `NOT_COMPARABLE(reference_accuracy)`, reported. The thresholds are not relaxed. *Answered for IDAES
+   (WO-S03-2): yes; the RC6 and RC7 specification residuals are ≤ 2.1e-15. RC6 failed rule 2d on its rerun instead (0.340
+   tolerance; §18.1).*
 4. **Q-A1-4** *Needs the session's choice*: a name, not a scientific question. What is the queued package's id?
    **Default: S08.** It is unused as a package id in `docs/` at `4bd961e9`; W27-S08 is a case id, not a package.
 
@@ -1100,3 +1115,423 @@ Register R-634 to R-639.
 - R-637: X31's per-case outcomes.
 - R-638: A03's exemption list.
 - R-639: the one-phase column package queued (Q-S03-4).
+
+## 18. Amendment 2 (2026-10-24, design lane `specifier`)
+
+Brief `docs/briefs/S03-amendment-2.md`. This amendment rules on the blind IDAES qualification (WO-S03-2, records at
+`6d9486a0`; decisions B2-1…B2-8 and the finding in `docs/S03_BUILD_DECISIONS.md`, section "WO-S03-2"). It:
+- rules that a registered change to IDAES's solve path is admissible now, and registers it as a closed ladder (§18.1);
+- endorses B2-4 as the ladder's common start and completes §5.1 rows 12–13 (§18.2);
+- registers a second IDAES positive control, PC-LI (§18.3);
+- adds a path-dependence check to rule 2d for IDAES (§18.4);
+- supersedes the IDAES records by a full blind re-run, WO-S03-2b (§18.5);
+- pre-registers X31's and D19's outcomes for both branches (§18.6).
+
+Register R-640 to R-643.
+
+**Blindness of this amendment.** The author read no tool quantity, no `ours-*` record and no twin value against a tool record.
+Every IDAES fact used here is a termination message, an iteration count or a rule 0–2d value from
+`benchmarks/s03/references/qualification/idaes.json`, or a line of the build-decisions log. No comparison exists:
+`benchmarks/s03/references/comparison.json` is absent at `2ebae2b4`, and the classifier has never run. §2.3 step 3 therefore
+still permits a change, by amendment.
+
+**What it changes.** §0's header, §3.3 (a pointer), §5.1 rows 12–13, §7.1 rule 2d, §7.2 and §17.3's consequences for
+IDAES, §8 and §17.6 (A03's scan points), §11 and §17.9 (A01, A02, A03, A08, A09, A11, A12, A13), §12 and §17.10, §13, §14,
+§15 (Q-S03-7), §16, §17.5 ("Where it stands now"), §17.12 (Q-A1-3). Each carries a pointer here.
+
+**What it keeps.**
+- Every registered input, twin value and claim. The generator changes by additions only: PC-LI's case, its tool model and its
+  claims, and one new top-level key `tool_settings.IDAES_amendment_2`. Every earlier JSON value of both files is
+  byte-identical, `tool_settings.IDAES` included, and every earlier claim is present in its order. Only `cases_sha256` and
+  `claim_count` change. This was verified while authoring by a key-by-key comparison with the files at `2ebae2b4`.
+- IDAES's compared equations and convergence test: SmoothVLE `eps_1 = eps_2 = 1e-8 K` on every state block in every solve that
+  decides, `tol = 1e-10`, `constr_viol_tol = 1e-9`, `max_iter = 500`, MUMPS, and "converged iff Optimal Solution Found"
+  (§5.1 row 13, ADR 0014 D7). The accuracy rerun's `floor_rerun`.
+- Every tolerance and every threshold of rules 2–2d, the levels, the case list, and §17.3's and §17.5's rules.
+- DWSIM: every record, setting and rung.
+
+`--check` now re-derives **4577 claims** (4558 + 19) in about 40 s on 16 worker processes. `cases_sha256` is
+`c901d6c90f4b700b92ff98e2a01ae7e8f1d5557b80dd647e3b14e089d3703f39`.
+
+### 18.1 Item 1: IDAES's solve path is registered as a closed ladder; ε, the tolerances and the convergence test do not change
+
+**Facts** (rules 0–2d and termination fields of `qualification/idaes.json`; B2-4 and the finding):
+
+| Group | Cases (level) | Final solve | The final iterate against rules 2 and 2b |
+| --- | --- | --- | --- |
+| passes | RC1, RC1-RR, RC1-BR, RC1-z, RC7 (L3); RC2, RC2-B, RC2-z (L2) | "Optimal Solution Found" after 24–454 iterations (RC1-RR: 454 of 500), from the initializer's final state | balance ≤ 1.7e-10 mol/s, ≤ 1.7e-5 W; shift 5.0e-9 K on every record |
+| acceptable | RC3, RC3-Q, RC3-z, RC5 (L3); RC2-RR (L2) | "Solved To Acceptable Level" after 6–14 iterations | balance ≤ 2.6e-9 mol/s and ≤ 7.1e-4 W; shift ≤ 6.6e-8 K: rule 2's balance thresholds and rule 2b's are met, and only the convergence test fails |
+| lost | RC4, RC4-D, RC4-z, PC-P (L3); RC2-RR (L3) | 500 iterations | component balance 0.08–0.30 mol/s: no root nearby. For the RC4 family the initializer's full solve also failed |
+| RC6 | L2; L3 | L2 "Optimal" after 74 iterations, rerun moved 0.340 tolerance (2d); L3 local infeasibility after 287 | — |
+
+- *The kink.* IDAES's smooth maximum of two equal arguments exceeds them by ε/2. A SmoothVLE shift of exactly 5.0e-9 K = ε/2
+  on every passing record is therefore the signature of state blocks at the bubble or dew kink. That is consistent with the
+  engineer's diagnosis: `Tray` re-flashes each inlet, and a saturated inter-stage stream sits at the kink, where ε = 1e-8 K
+  gives curvature of order 1/ε (dual infeasibility up to 1.8e14).
+- *The path matters.* RC2 converged from one pilot start and stopped at "acceptable" from another (B2-4). The passing final
+  solves need 24–454 iterations from the initializer's final state.
+
+**The design lane's reading** (hypotheses that P1 and P2 test, not measurements):
+1. *A cold barrier restart.* The final solve runs with Ipopt's default `mu_init = 0.1` and `bound_push = bound_frac = 1e-2`.
+   The barrier term μ/x pushes every variable near a bound into the interior. At a saturated inlet the absent phase's flow is
+   such a variable, so the final solve does not start where the initializer left it.
+2. *The ε jump.* The final solve moves ε_1 from 0.01 K to 1e-8 K (six decades) and ε_2 from 5e-4 K to 1e-8 K in one step.
+
+**Ruling: a registered change is admissible now, under these conditions, all of which hold.**
+- No comparison has run, and nobody has seen an `ours` or twin value against a tool value (above).
+- It changes the path to the solution, not the equations, the tolerances or the convergence test that decide it.
+- It is one order of attempts for every IDAES case and control, with every attempt recorded.
+- It was decided from rules 0–2d values, termination messages and the mechanism above, by an author who has seen no tool
+  quantity.
+- It is post hoc with respect to convergence, and this section discloses that, as §17.2 did for DWSIM.
+- The standing selections come first in the order. No case moves to a new position unless its P0 attempt stops passing or
+  §18.4 removes its level.
+- Rule 2d checks whatever is selected, now including path dependence (§18.4).
+- The ladder is closed (below).
+
+**The ladder** (machine-readable: `tool_settings.IDAES_amendment_2`; it supersedes nothing).
+
+*Common start*, every position (B2-4 as recorded, endorsed in §18.2):
+- S1. Initial guesses on every tray inlet that is not a case inlet: the registered linear profile (320 K at stage 1 to 400 K at
+  stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), 1 mol/s,
+  the first inlet's composition, the registered pressure.
+- S2. Initializers: L1/L2 `TrayColumn.initialize()`; L3 IDAES's unit initializers in `TrayColumn.initialize`'s order.
+- S3. One full model solve with IDAES's initializer solver (`get_solver()`, MUMPS, IDAES's other defaults). Its final iterate
+  starts the position's solves, whatever its termination.
+- S4. S1–S3 run at IDAES's default SmoothVLE ε (`eps_1 = 0.01 K`, `eps_2 = 5e-4 K`).
+- S5. An L2(b) equation on another stage's variables (a stage temperature) is deactivated during S2, with the native variable
+  it replaces fixed at IDAES's own initial value, and restored before S3.
+- S6. An initializer exception is recorded and does not end the attempt.
+
+*Positions*. Each sets `eps_1 = eps_2 = 1e-8 K` on every SmoothVLE state block before its final solve, and every solve uses
+the registered options (`linear_solver = mumps`, `tol = 1e-10`, `constr_viol_tol = 1e-9`, `max_iter = 500`):
+
+| Position | After the common start | Mechanism addressed |
+| --- | --- | --- |
+| P0 | the final solve, Ipopt's defaults otherwise (B2-4, the standing records) | — |
+| P1 | the final solve with the **warm-start options** `mu_init = 1e-9`, `bound_push = 1e-9`, `bound_frac = 1e-9`, `bound_mult_init_method = mu-based` | reading 1 |
+| P2 | `eps_1 = eps_2 = 1e-4 K` and a solve; `1e-6 K` and a solve; `1e-8 K` and the final solve. Every solve uses the warm-start options and starts from the previous solve's final iterate, whatever its termination | readings 1 and 2 |
+
+The warm-start options act only on the initial iterate and the initial barrier state. They do not touch the termination test,
+the scaling or the equations.
+
+*Order and selection.*
+1. Levels L1, L2, L3 in turn, each only where it is structurally expressible (§2.3 step 1, B2-2, B2-3).
+2. At a level, every position P0, P1, P2 is run before the level is judged. Every position whose final solve ends "Optimal
+   Solution Found" also gets its accuracy rerun.
+3. The level passes if it shows no path dependence (§18.4) and some position passes rules 2–2d. The selected attempt is the
+   first such position in P0, P1, P2 order. The search stops at the first level that passes (B2-6).
+4. *Accuracy rerun* (rule 2d, §5.1 row 15): the attempt repeated from S1, with `floor_rerun`'s `tol = 1e-9` and
+   `constr_viol_tol = 1e-8` in place of the registered ones in every solve after S3.
+5. *Contingency*, decided now: if Ipopt rejects `bound_mult_init_method`, P1 and P2 run without it, and the record says so. No
+   other option is substituted.
+
+*Closure.* S03 registers no further IDAES position, Ipopt option, ε schedule or initializer variant. A case with no passing
+position after WO-S03-2b is `NOT_COMPARABLE(capability: …)` for IDAES (rule 0), and that is final for S03. A **harness defect** is
+different: if a record shows a path other than the registered one, the harness is corrected and the run repeated, and every
+run is disclosed.
+
+**Why this is not a search for a passing setting** (§17.2 rejected Modified Wang–Henke on that ground):
+1. The design lane never registered IDAES's path. §5.1 rows 12–13 did not say whether ε is set before or after the
+   initializers. That is a gap in this document (§12 rule 6), and B2-4 filled it on the build lane.
+2. P1 and P2 address two different mechanisms. They are not variants of one method.
+3. They come after P0, so no standing selection moves to them.
+4. The ladder is closed at three positions.
+5. The eight passes show that IDAES solves the registered equations at ε = 1e-8 K from this start. What remains open is the
+   path, not the model.
+
+**Rejected.**
+- *Changing ε.* It is a registered tool input (ADR 0014 D7, Amendment 2), policed by rule 2b's 1e-7 K shift threshold, and D7
+  rejected a per-fixture ε. At a kink the shift is ε/2, so rule 2b admits at most ε = 2e-7 K: a 20-fold gain in curvature at
+  the price of a semantic amendment of D7. Not admissible within S03, and not proposed as a finding while the path is untried.
+- *Counting "Solved To Acceptable Level".* ADR 0014 D7 rejected it as a silent relaxation of `tol`. The acceptable iterates
+  meet rule 2's balance thresholds, but the convergence test is registered, and it is the test.
+- *Raising `max_iter`.* It is registered (T06 §9.3). The 500-iteration runs end 0.08–0.30 mol/s from closure, not near a root.
+  More iterations along the same cold path is a longer search, not a better start.
+- *Another `nlp_scaling_method` or user scaling.* Ipopt's `tol` applies to the scaled NLP error, so a scaling change changes
+  what `tol = 1e-10` means.
+- *Another linear solver.* HSL's are not open source (ADR 0014 D7).
+- *The new positions for the failed cases only* (brief §5 item 1). One order applies to every case. The passing cases run P1
+  and P2 too, for the path-dependence check.
+- *An initializer variant for the RC4 family.* It would be chosen for one family after seeing its failure. A uniform change
+  would also move the start of every passing case, and the RC1 and RC2 families show that IDAES's own initializers work for
+  them. The RC4 family's initializer failure is outside this ladder and stays a result.
+
+### 18.2 Item 2: B2-4 endorsed; §5.1 rows 12–13 completed
+
+**Endorsed.** B2-4 becomes the common start S1–S6 of every position.
+- §5.1 row 13 says the initializers run "with MUMPS and IDAES's other defaults". IDAES's default SmoothVLE ε is one of those
+  defaults, so B2-4 is the literal reading.
+- The solves that decide — the final solve and the accuracy rerun — run on the registered equations. Rule 2b checks every
+  block, and every passing record shows 5.0e-9 K.
+- T06's application note set ε before the initializers on flash fixtures. For columns it fails: at ε = 1e-8 K
+  `TrayColumn.initialize` fails on RC2's condenser inlet, a saturated vapour, with IDAES's default guesses and with seeded ones
+  (B2-4). The note is superseded for S03's columns only. T06 is unchanged.
+
+**§5.1, completed.**
+- Row 12, IDAES: the common start S1–S6 of §18.1.
+- Row 13, IDAES: the initializers and their full solve run at IDAES's default SmoothVLE ε. `eps_1 = eps_2 = 1e-8 K` is set on
+  every block before every solve that decides. The final solve follows §18.1's positions.
+
+**Rejected** (B2-4's measured alternatives):
+- *ε before the initializers.* `TrayColumn.initialize` fails on RC2.
+- *An ε continuation without the warm-start options.* The RC2 pilot ended "acceptable". P2 is a continuation with the warm-start
+  options, a different path.
+- *No full initializer solve.* Rejected on the pilot.
+
+**Pilot runs.** B2-4 was fixed on pilot runs of RC2 and RC3, by convergence alone. WO-S03-2b records them in
+`qualification/idaes.json` (`pilot_runs`: case, variant, outcome), together with any pilot run made while building the ladder.
+No pilot outcome can change the ladder, the options or the order, which are fixed here.
+
+B2-1–B2-3 and B2-5–B2-8 are not changed. They are build choices for the package's `reviewer` pass.
+
+### 18.3 Item 3: PC-LI, IDAES's second positive control
+
+**The question.** IDAES's only control, PC-P, did not run (L3, 500 iterations). §17.3(b) then makes every IDAES pair
+`NOT_COMPARABLE(control_not_comparable)`. Is there a control IDAES can express that does what a control is for (§17.3 point 1):
+showing that the harness reads the tool's answer and resolves a known model difference at the registered tolerance?
+
+**Where a control can come from.** At `P_r`, IDAES's model gives SYN-001's rows exactly (generator claim, §3). A control must
+therefore either leave `P_r` (PC-P's kind) or perturb one of IDAES's mapping inputs (PC-L's kind). IDAES's mapping has no
+vaporization-enthalpy input (T06 §9.4), but its `h_form,ig` plays that role: IDAES's vapour enthalpy is
+`c_p (T − T_r) + h_form,ig`, and its liquid enthalpy carries no `h_form` (`spikes/references/idaes_representability.py:15–18`).
+
+**The control.**
+
+| Id | Tools | Definition | Our side | Expected | Twin discrimination (`ref.controls.PC-LI`) |
+| --- | --- | --- | --- | --- | --- |
+| PC-LI | IDAES | RC1, with IDAES's `h_form,ig,i = L_i + P_r v_i` = 25010, 30010, 35010 J/mol in place of 25000, 30000, 35000 (`tool_settings.IDAES_amendment_2.h_form_ig_J_per_mol_PC-LI`), so `h^V − h^L` is larger by `P_r v_i` = 10 J/mol | RC1's record | `DISAGREE` | max 243.292 (`Q_reboiler`: 31003.9112237… against 30993.9377085… W); `Q_condenser` 221.022 (−20038.6126978… against −20031.9749559… W); 22/29 over one tolerance. **Marginal on temperatures**: `T[4]`–`T[7]` move 0.585–0.782 tolerance, so the duties and flows carry PC-LI. Least: `bottom[C]` 0.048, `top[C]` 0.094 |
+| (PC-LI, DWSIM) | — | an IDAES input | — | `not_applicable`, a registered absence outside every count; no DWSIM record is needed or written | — |
+
+- *Tool model.* SYN-001 with `h^V` larger by `P_r v_i`, solved by Newton from the SYN-001 root (§3.3's method). It is regular,
+  with σ_min 0.0476426. The generator claims that the registered input equals `L_i + P_r v_i` and that the tool model's `h^V`
+  exceeds SYN-001's by exactly `P_r v_i` at every stage of its root.
+- *It is PC-L's mirror.* The same column, the same 10 J/mol, the opposite sign: `Q_reboiler` moves +9.9735 W against PC-L's
+  −9.9735 W, and the maximum ratio is PC-L's 243.292.
+- *It is the natural mistake for IDAES.* Entering DWSIM's mapped value `ΔH_f,ig = L_i + P_r v_i` (§5.1 row 1) as IDAES's
+  `h_form,ig` is the error a harness author working on both tools would make. Its size is fixed by SYN-001's constants, not
+  chosen.
+
+**Why it is admissible now.**
+- Its configuration and form are inherited from PC-L, registered for DWSIM before any tool ran. Nothing about it was chosen by
+  where IDAES converges. RC1 is also a configuration where IDAES's P0 converged. That follows from the inheritance and is
+  disclosed.
+- It is registered before WO-S03-2b, so PC-P's re-run outcome cannot have selected it.
+- ADR 0014 D7 rejected "an IDAES analogue of PC-1" for T06 because PC-2 already discriminated 4581× in IDAES
+  (`docs/adr/0014-t06-corpus-ensemble-and-reference-policy.md:101`). In S03 the premise fails: IDAES's only column control did
+  not run. The ADR's T06 decision is unchanged, and no ADR is needed.
+- It needs no new solve on our side (RC1's record), and one more IDAES run.
+
+**§17.3's consequences for IDAES, amended.** IDAES's controls are PC-P and PC-LI. IDAES's pairs count if and only if **at least
+one** of them classifies `DISAGREE`. Either one classified `AGREE` stops the comparison (§17.3(a)). A control that is
+`NOT_COMPARABLE` propagates nothing by itself (§17.3(c)).
+
+**Rejected.**
+- *IDAES has no other control.* PC-P could then fail for a reason unrelated to the harness, through a convergence failure at
+  1.5e5 Pa, and with it every IDAES pair. An admissible control that does not depend on convergence facts exists.
+- *PC-P on RC2's configuration*, where IDAES's L2 converged. It would be chosen by where IDAES converges (§17.3 rejected the
+  same for DWSIM). It would also need a new state on our side and a new tool-model root.
+- *PC-P at a lower pressure.* That tunes the control to the tool's convergence and lowers its discrimination (§17.3).
+- *An arbitrary `h_form` perturbation.* Its size would be a free parameter. PC-LI's is SYN-001's `P_r v_i`.
+
+### 18.4 Rule 2d: path dependence (IDAES)
+
+Rule 2d gains one condition, for IDAES: **at the attempt's level, two path positions whose final solves ended "Optimal
+Solution Found" differ on a registered quantity by more than 0.1 tolerance** →
+`NOT_COMPARABLE(reference_accuracy: path_dependence(<ratio>))`. It makes executable, per record, §18.1's claim that the
+positions change the path and not the answer.
+- *Threshold.* The rerun's 0.1 tolerance, unchanged.
+- *Above the floor.* Two "Optimal" solves of a regular root at `tol = 1e-10` and `constr_viol_tol = 1e-9` should agree far
+  inside it. The rerun, at ten times looser settings, moved ≤ 0.0069 tolerance on the RC1 family and RC7, and ≤ 1.8e-5 on the
+  RC2 family.
+- *What it catches.* A position that converges to a different root, or one under-resolved at the kink.
+- *What it can produce.* Like the rest of 2d, only `NOT_COMPARABLE`, never a pass (§7.1).
+- *DWSIM.* Not applied. Its rungs differ in tolerance and method, and rule 2d's rerun already compares the tolerance neighbour.
+  Its records are final (§17.8).
+
+The tool script computes the ratio with the tool's own value in the tolerance (B2-6). The classifier recomputes it from the
+record's raw quantities with the twin's value.
+
+### 18.5 Item 5: the IDAES re-run (WO-S03-2b) and what stands
+
+| Records | Under Amendment 2 |
+| --- | --- |
+| IDAES, 19 records at `6d9486a0` | **superseded** by WO-S03-2b's full blind run of 20 pairs (19 + PC-LI) under §18.1. The old records stay in history. The re-run's P0 attempts must reproduce them exactly (§18.8) |
+| DWSIM, 19 records (`95870140` and `5474531f`) | **stand**. §17.8's earlier-cases-file rule holds: the cases file changed by additions only, and `tool_settings.DWSIM` is unchanged |
+| (PC-LI, DWSIM) | `not_applicable`, with no record |
+| ours, 18 records | **stand**, except that `cases_sha256` is regenerated. PC-LI's our side is RC1's record (alias) |
+
+*Why a full re-run and not a top-up.* The ladder applies to every case. The passing cases need their P1 and P2 attempts for
+§18.4, and P0's reproduction is the check that the harness still runs B2-4's path.
+
+### 18.6 Item 4: X31 and D19 under the facts, both branches (pre-registered)
+
+Assumed in both branches:
+- our side is accepted (A06 measured: all 18 records within 0.1 tolerance, Q-S03-3);
+- (PC-L, DWSIM) is `DISAGREE`, so DWSIM's available pairs are comparable. Otherwise DWSIM's pairs are unusable too.
+
+A genuine `DISAGREE` in any case makes that case §17.5 row 2 ("not met: a disagreement finding"), whatever the tables say.
+"Comparable" below means an `AGREE` for the outcome shown.
+
+**Branch A — the IDAES records stand** (no admissible change, or WO-S03-2b not run). IDAES has no working control, so every
+available IDAES pair is unusable.
+
+| Case | DWSIM | IDAES | §17.5 row | Outcome |
+| --- | --- | --- | --- | --- |
+| RC1 | comparable | unusable | 4 | not met |
+| RC2 | comparable | unusable | 4 | not met |
+| RC3 | absent (N–S 1000 iterations; W–H rule 2) | absent ("acceptable") | 7 | not met |
+| RC4 | absent (no `V_1` specification at L1; L2(a) errors) | absent (500 iterations) | 7 | not met |
+| **X31 clause** | | | | **not met**; 0 cases with two references |
+| RC5 purity | comparable | absent | 6 | one reference (DWSIM) |
+| RC6 recovery | comparable | absent (2d 0.340) | 6 | one reference (DWSIM) |
+| RC7 temperature | absent (capability) | unusable | 4 | not met |
+
+*D19, branch A.* The column has one independent implementation, DWSIM 9.0.5, with PC-L as its working control. It covers at most
+nine registered states: RC1, RC1-RR, RC1-z, RC2, RC2-RR, RC2-B, RC2-z, RC5 and RC6. IDAES's records exist, but they are not
+references. The stripper (RC3 family), the refluxed absorber (RC4 family), the interior-stage temperature specification (RC7) and
+RC1-BR have no independent reference. All of this is numerical verification, not validation (§2.1).
+
+**Branch B — WO-S03-2b runs under §18** (this amendment's ruling). IDAES's outcomes are not yet measured, so the outcomes are
+given as functions of what WO-S03-2b finds.
+
+*B-i: an IDAES control (PC-P or PC-LI) classifies `DISAGREE`, and none `AGREE`.*
+
+| Case | DWSIM | IDAES after WO-S03-2b | Outcome |
+| --- | --- | --- | --- |
+| RC1, RC2 | comparable | comparable if P0 reproduces and §18.4 passes; absent otherwise | row 5, two references; row 6 if IDAES is absent |
+| RC3 | absent | comparable if some position qualifies; absent otherwise | row 6, one reference (IDAES); or row 7, not met |
+| RC4 | absent | as RC3 | row 6 or row 7 |
+| **X31 clause** | | | **met where available, 2 of 4 cases with two references**, if and only if IDAES qualifies both RC3 and RC4 (and RC1, RC2 stay at row 5 or 6). Otherwise **not met** |
+| RC5, RC6 | comparable | comparable or absent | row 5 or row 6 |
+| RC7 | absent | comparable if P0 reproduces and §18.4 passes | row 6, one reference (IDAES) |
+
+*B-ii: no IDAES control classifies `DISAGREE`.* As branch A, and any newly qualified IDAES pair is unusable too. RC3 and RC4 go to
+row 4 or row 7. The clause is **not met**.
+
+*B-iii: an IDAES control classifies `AGREE`.* The comparison stops (§17.3(a)). This document or the harness is wrong, and that
+is a design-lane finding. No clause outcome is recorded until the finding is resolved.
+
+*D19, branch B-i.* The column has two independent implementations on the states both tools qualify. Expected: RC1, RC1-RR,
+RC1-z, RC2, RC2-B and RC2-z, if IDAES's P0 passes reproduce and survive §18.4. It has one on the states only one tool qualifies:
+RC7 and RC1-BR (IDAES); RC2-RR, RC5 and RC6 (DWSIM), unless IDAES now qualifies them. It has none on the states neither tool
+qualifies. The disclosure adds that IDAES's path ladder was registered after its first qualification, post hoc with respect to
+convergence and before any comparison (§18.1).
+
+**In every branch, "met with two references" is unreachable.** DWSIM cannot express RC3 or RC4 under the registered rules, and
+its records are final. The best reachable clause outcome is "met where available" with 2 of 4. It needs IDAES to qualify the
+stripper and the refluxed absorber and to have a working control. S03's manifest may be `tested` in every branch (§13, §17.5).
+
+### 18.7 Assertions amended
+
+| Id | Change |
+| --- | --- |
+| A01 | 4577 claims (was 4558); `ref.cases_sha256` = SHA-256 of the current `cases` (`c901d6c9…703f39`) |
+| A02 | the our-side alias map is `{"PC-L": "RC1", "PC-LI": "RC1"}` |
+| A03 | the scan points add WO-S03-2b's qualification commit. The IDAES script still contains none of the seven strings |
+| A08 | (i) The pair set adds (PC-LI, IDAES). (ii) A pair whose `cases.<id>.tool_variant.<tool>` is `"not_applicable"` needs no record, and a record that exists for one must say `not_applicable`; this covers (PC-LI, DWSIM) and (PC-L, IDAES). (iii) IDAES ladder conformance: each record's settings carry `tool_settings.IDAES_amendment_2`. At every attempted level, all three positions are recorded, each as a run or with the reason none was made. The selected (level, position) is the first that passes in §18.1's order. A not-available record shows every position at every expressible level. (iv) `qualification/idaes.json` records the P0 reproduction of `6d9486a0` (§18.8) and `pilot_runs` |
+| A09 | the IDAES qualification commit is WO-S03-2b's |
+| A11 | (i) no control classifies `AGREE`. (ii) §17.3(b) for IDAES, by mutation: re-classifying with both PC-P and PC-LI replaced by `NOT_COMPARABLE` copies turns every IDAES pair into `NOT_COMPARABLE(control_not_comparable: …)`. Replacing only one, while the other is `DISAGREE`, changes no IDAES pair. Where the committed classification has no IDAES `DISAGREE` control, the test uses synthetic controls. (iii) (PC-L, IDAES) and (PC-LI, DWSIM) are `not_applicable`. (iv) as §17.9 |
+| A12 | added: on each IDAES record with a selected attempt, a copy with one extra "Optimal" position equal to the selected attempt's quantities, except one quantity moved by 0.2 tolerance → rule 2d `path_dependence`. Moved by 0.05 tolerance → not fired |
+| A13 | `comparison.json` also holds each IDAES pair's (level, position) and each IDAES record's largest path-dependence ratio (reported under §7.3) |
+
+### 18.8 Work-order deltas
+
+**WO-S03-1c: our side after Amendment 2** (build lane, small).
+- Add `"PC-LI": "RC1"` to `OURS_ALIASES` in `scripts/s03_references_ours.py`, and update A02's alias test and the docstrings.
+- Regenerate the 18 `ours-*.json`. Only `cases_sha256` may change, to
+  `c901d6c90f4b700b92ff98e2a01ae7e8f1d5557b80dd647e3b14e089d3703f39`; a byte diff must confirm this (1/1 per file).
+- Until this lands, these tests fail on `wp/S03` as a direct result of this amendment:
+  `test_a02_every_registered_case_has_our_record_or_an_alias` (measured while authoring) and A07 on the 18 records
+  (`cases_sha256` has moved).
+
+**WO-S03-2b: IDAES re-run under §18** (build lane, `opus-engineer`, worktree; it may run beside WO-S03-1c).
+1. `s03_qualify_idaes.py` reads `tool_settings.IDAES_amendment_2` and implements:
+   - S1–S6 unchanged from B2-4 at `787cd4fd`;
+   - the positions P0–P2, the order and selection, §18.4's check, the rerun definition and the contingency;
+   - PC-LI: T06's IDAES definitions with `h_form,ig` replaced by `h_form_ig_J_per_mol_PC-LI`, on PC-LI only, stated in its
+     Q-X1 answer.
+
+   Nothing else changes.
+2. Each attempt records:
+   - its level and position;
+   - every solve of its path (ε, options, termination, iterations, final constraint violation);
+   - the initializer full solve's termination and iterations, and any initializer exception;
+   - the rule 2–2d values.
+
+   Each level records its largest path-dependence ratio and the quantity it falls on. `qualification/idaes.json` adds
+   `pilot_runs` (§18.2) and `"supersedes": "6d9486a0"`.
+3. Before the recorded run, confirm that the bundled Ipopt (idaes-ext 3.4.2) accepts the four warm-start options, without
+   solving a case, and record the answer (Q-A2-2).
+4. Run all 20 IDAES pairs blind, in one run of `s03_qualify.sh idaes`.
+5. **P0 reproduction.** For each of the 18 cases the standing records ran, the new P0 attempt at each level the old record
+   attempted must reproduce the old attempt exactly: termination, iteration count and every rule value. For the eight
+   available cases, the registered quantities and the rerun quantities must reproduce bit for bit. The old records are read with
+   `git show 6d9486a0:…`; comparing IDAES with IDAES involves no `ours` or twin value. A difference stops the work order before
+   any commit, and it is reported to the design lane (Q-A2-3).
+6. Replace `qualification/idaes.json` and the 19 `results/idaes-*.json`, add `results/idaes-PC-LI.json`, log the work as
+   "WO-S03-2b" in `docs/S03_BUILD_DECISIONS.md`, and commit before WO-S03-4.
+7. No new position, option, initializer variant or level rule (§18.1's closure). A registered path that fails is a result.
+- *Expected outcomes:* none registered (Q-A2-1).
+
+**DWSIM: no work order.** Its records stand (§18.5).
+
+**WO-S03-4** (unchanged except for the following).
+- It starts after WO-S03-1c and WO-S03-2b are committed.
+- Rule 2d's path-dependence condition for IDAES (§18.4).
+- (PC-LI, IDAES) as a control under §18.3's amended consequences; `not_applicable` pairs read from `cases`.
+- IDAES ladder conformance (A08 (iii)).
+- Tests per §18.7.
+- The manifest adds:
+  - the IDAES qualification commit (WO-S03-2b's);
+  - each IDAES pair's (level, position);
+  - PC-LI's classification and its tool-model distance (§7.3).
+
+**WO-S03-5** (unchanged except for the following). It applies §17.3 with IDAES's two controls, reports the §18.6 branch that
+occurred and D19 as §18.6 states it, and discloses the post hoc ladder.
+
+**Review.** The package's single `reviewer` pass covers WO-S03-2b too: that P0 is B2-4's path unchanged, that the positions
+are as registered, and the PC-LI override.
+
+### 18.9 What Amendment 2 does not establish
+
+- **The ladder is not a claim about IDAES's solvers.** A case IDAES cannot qualify after WO-S03-2b is a fact about this tool, this
+  path and these settings, not about the case.
+- **Path independence is checked among three positions at one level.** It is not a uniqueness claim (§14).
+- **PC-LI** shows that the IDAES column harness passes `h_form,ig` through, and resolves a 10 J/mol enthalpy difference at RC1's
+  state, mainly through duties and flows. It does not show IDAES's missing Poynting factor at column level. That rests on T06's
+  PC-2 (a flash) and on §3's identity at `P_r`, as §17.11 says for DWSIM. Our Poynting terms stay without an independent check.
+- **The readings in §18.1 are hypotheses.** WO-S03-2b measures whether P1 or P2 helps. Nothing here predicts it.
+- **Branch outcomes (§18.6) are pre-registered mappings, not predictions.**
+- **Blindness stays procedural** (§2.1). The pilot runs are disclosed, not prevented.
+
+### 18.10 Open questions (each with a default)
+
+1. **Q-A2-1** *Needs a fact*; WO-S03-2b settles it. Does P1 or P2 qualify any IDAES case P0 did not, PC-P included, and does
+   PC-LI run? **Default: no expectation is registered.** A case with no passing position is `NOT_COMPARABLE(capability)` for
+   IDAES, final for S03. *For planning only:* PC-LI changes RC1's latent heats by 0.03–0.04 %, so it may well behave as RC1 at
+   P0. The RC4 family's initializer failure is untouched by the ladder.
+2. **Q-A2-2** *Needs a fact*; WO-S03-2b step 3 settles it. Does the bundled Ipopt accept the four warm-start options?
+   **Default: yes**; the contingency for `bound_mult_init_method` is registered in §18.1. Any other rejected option is recorded,
+   and the positions using it fail. Nothing is substituted.
+3. **Q-A2-3** *Needs a fact*; WO-S03-2b step 5 settles it. Does P0 reproduce the standing records exactly? **Default: yes**,
+   because MUMPS runs single-threaded (B2-5). If not, the work order stops and reports. A P0 that does not reproduce means the
+   harness no longer runs B2-4's path.
+4. **Q-A2-4** *Needs Frank's preference*. This is release scope, not S03's. In plain words: at best, S03 will report that two
+   independent simulators agree with our column on the two ordinary distillation columns, and that at most one (IDAES) checks
+   the stripper and the refluxed absorber. DWSIM cannot model those two under the registered rules. IDAES failed to converge them
+   on its first run. If IDAES fails again after the registered re-run, those two column types have no independent check, and
+   X31's "two independent references where available" is recorded as **not met**. Should the release gate accept that as a
+   recorded limitation, or should a later package add a third reference tool for those two column types (the original S03
+   brief excluded any other tool)? **Default: accept it as a recorded limitation.** S03 closes `tested` in either case (§13,
+   §17.5). A third tool would be a new package with its own ADR, not a change to S03.
+
+### 18.11 Decisions
+
+Register R-640 to R-643.
+- R-640: IDAES's solve path is a closed three-position ladder (P0 = B2-4, P1 warm start, P2 ε continuation). ε, the tolerances
+  and the convergence test are unchanged. B2-4 is endorsed and §5.1 rows 12–13 are completed.
+- R-641: rule 2d gains IDAES path dependence.
+- R-642: PC-LI is IDAES's second positive control.
+- R-643: the IDAES records at `6d9486a0` are superseded by WO-S03-2b's full blind re-run, whose P0 must reproduce them. X31's
+  and D19's outcomes are pre-registered for both branches.

@@ -33,6 +33,16 @@ Amendment 1 (spec §17) adds, without changing any earlier value:
 * DWSIM's amended column-solver ladder and the specification definitions, as new keys of
   ``tool_settings`` (the superseded key is kept so that the earlier records' settings still read).
 
+Amendment 2 (spec §18) adds, without changing any earlier value:
+
+* PC-LI, IDAES's second positive control: RC1 with IDAES's h_form,ig,i = L_i + P_r v_i (DWSIM's
+  mapped value entered in IDAES), so h^V - h^L is larger by P_r v_i; solved in that tool model by
+  Newton from the SYN-001 root, like PC-L, whose mirror it is. Our side is RC1's record;
+* the claim that PC-LI's registered IDAES input equals L_i + P_r v_i exactly, and that its tool
+  model's vapour enthalpy exceeds SYN-001's by exactly P_r v_i;
+* IDAES's path ladder (P0, P1, P2) and PC-LI's input, as one new top-level key of ``tool_settings``
+  (``IDAES_amendment_2``); ``tool_settings.IDAES`` is unchanged.
+
 It writes two files. ``s03_cases.json`` holds inputs only (cases, quantity names, tool
 settings): the tool scripts read it and nothing else of this project (spec §8, blindness).
 ``s03_reference.json`` holds the twin values and the claims; it records the SHA-256 of the cases
@@ -202,6 +212,8 @@ PERTURBED_BASE = {name: name.split("-")[0] for name in PERTURBED}
 CONTROLS: dict[str, tuple[str, dict[str, tuple[str, Any, str]], Any, Any]] = {
     "PC-P": ("PC-P", BASE_SPEC["RC1"], None, None),
     "PC-L": ("RC1", BASE_SPEC["RC1"], None, None),
+    # Amendment 2 (spec §18.3): IDAES's second control, PC-L's mirror on RC1
+    "PC-LI": ("RC1", BASE_SPEC["RC1"], None, None),
 }
 SENSITIVITY: dict[str, tuple[str, dict[str, tuple[str, Any, str]], Any, Any]] = {
     "E1": ("RC1", BASE_SPEC["RC1"], None, 3),
@@ -229,9 +241,18 @@ def h_vap_unmapped(t: Any, i: int) -> Any:
     return s2.C_P * (t - s2.T_REF) + s2.L_VAP[i] - s2.P_REF * s2.V_MOL[i]
 
 
+def h_vap_idaes_overmapped(t: Any, i: int) -> Any:
+    """IDAES with h_form,ig,i = L_i + P_r v_i (Amendment 2's PC-LI): IDAES's vapour enthalpy is
+    c_p (T - T_r) + h_form,ig (idaes_representability.py), so h^V is SYN-001's plus P_r v_i."""
+    return s2.C_P * (t - s2.T_REF) + s2.L_VAP[i] + s2.P_REF * s2.V_MOL[i]
+
+
+PC_LI_H_FORM_IG = ["25010", "30010", "35010"]  # spec §18.3: L_i + P_r v_i, J/mol (claimed below)
+
 TOOL_MODEL: dict[str, tuple[str, Callable[..., Any]]] = {
     "PC-P": ("ln_k", ln_k_without_poynting),
     "PC-L": ("h_vap", h_vap_unmapped),
+    "PC-LI": ("h_vap", h_vap_idaes_overmapped),
 }
 
 
@@ -396,7 +417,7 @@ def run_job(key: str) -> tuple[str, dict[str, Any], list[str]]:
     )
     admissible_inlets(case)
     out: dict[str, Any] = {}
-    if key == "PC-L":
+    if key in ("PC-L", "PC-LI"):
         syn = solve_syn(case)  # RC1 itself; its claims are RC1's job's, so they are dropped here
         s2.CLAIMS.clear()
         s6.CLAIMS.clear()
@@ -423,6 +444,26 @@ def run_job(key: str) -> tuple[str, dict[str, Any], list[str]]:
         tool = solve_tool_model(case, syn["x"], key)
         out["tool_model"] = record(case, tool["st"])
         out["tool_model_sigma_min"] = mp.nstr(tool["sigma_min"], 6)
+    if key == "PC-LI":
+        # Amendment 2 (spec §18.3): the registered IDAES input is L_i + P_r v_i exactly, and the
+        # tool model's h^V exceeds SYN-001's by exactly P_r v_i at every stage temperature of the
+        # tool-model root (so h^V - h^L is larger by P_r v_i; h^L is unchanged)
+        claim(
+            all(
+                abs(mpf(PC_LI_H_FORM_IG[i]) - (s2.L_VAP[i] + s2.P_REF * s2.V_MOL[i])) < mpf("1e-40")
+                for i in range(NC)
+            ),
+            "PC-LI: IDAES's registered h_form,ig equals L_i + P_r v_i = 25010, 30010, 35010 J/mol",
+        )
+        gap = max(
+            abs(h_vap_idaes_overmapped(t, i) - s2.h_vap(t, i) - s2.P_REF * s2.V_MOL[i])
+            for t in tool["st"]["T"].values()
+            for i in range(NC)
+        )
+        claim(
+            gap < mpf("1e-40"),
+            "PC-LI: the tool model's h^V exceeds SYN-001's by P_r v_i = 10 J/mol at every stage",
+        )
     # Amendment 1: appended after every earlier claim of the job, so those keep their order
     if key in CASES or key in PERTURBED:
         out["spec_response"] = spec_response(case, syn["x"], syn["st"])
@@ -494,6 +535,10 @@ def case_inputs(name: str, entry: tuple[str, dict[str, tuple[str, Any, str]], An
     variant = {
         "PC-P": {"IDAES": "registered settings", "DWSIM": "registered settings"},
         "PC-L": {"IDAES": "not_applicable", "DWSIM": "dH_vap_J_per_mol_PC-L in place of dH_vap"},
+        "PC-LI": {
+            "IDAES": "IDAES_amendment_2.h_form_ig_J_per_mol_PC-LI in place of h_form_ig_J_per_mol",
+            "DWSIM": "not_applicable",
+        },
     }.get(name, {"IDAES": "registered settings", "DWSIM": "registered settings"})
     return {
         "role": "positive_control" if name in CONTROLS else "comparison",
@@ -581,6 +626,74 @@ TOOL_SETTINGS: dict[str, Any] = {
         "semantics_threshold": "1e-4 relative (rule 2c)",
         "accuracy_threshold": "rule 2d: 1e-8 relative for a ratio, rate or duty; 1e-8 absolute for "
         "purity; 1e-9 absolute for recovery; 1e-9 relative for temperature",
+    },
+    # Amendment 2 (spec §18.1, §18.3): a new top-level key, so tool_settings.IDAES and every
+    # earlier key stay byte-identical (spec §17.8's earlier-cases-file rule)
+    "IDAES_amendment_2": {
+        "spec": "docs/derivations/S03-spec.md §18",
+        "registered_unchanged": "tool_settings.IDAES: linear_solver, tol, constr_viol_tol, "
+        "max_iter and smooth_vle for every solve that decides (the final solve and its accuracy "
+        "rerun); converged iff 'Optimal Solution Found'",
+        "common_start": [
+            "S1 initial guesses: every tray inlet that is not a case inlet at the registered "
+            "linear profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile "
+            "temperature of the stage above, a vapour inlet at that of the stage below), 1 mol/s, "
+            "the first inlet's composition, the registered pressure",
+            "S2 initializers: L1/L2 TrayColumn.initialize(); L3 IDAES's unit initializers in "
+            "TrayColumn.initialize's order (trays holding a case inlet, then the end units from "
+            "the nearest of them, then every other tray from its nearest initialized neighbours)",
+            "S3 one full model solve with IDAES's initializer solver (get_solver(), MUMPS, IDAES's "
+            "other defaults); its final iterate is the start of the position's solves whatever "
+            "its termination",
+            "S4 S1-S3 run at IDAES's default SmoothVLE eps (eps_1 = 0.01 K, eps_2 = 5e-4 K)",
+            "S5 an L2(b) equation on another stage's variables is deactivated during S2, with "
+            "the native variable it replaces fixed at IDAES's own initial value, and restored "
+            "before S3",
+            "S6 an initializer exception is recorded and does not end the attempt",
+        ],
+        "warm_start_options": {
+            "mu_init": "1e-9",
+            "bound_push": "1e-9",
+            "bound_frac": "1e-9",
+            "bound_mult_init_method": "mu-based",
+        },
+        "path_positions": [
+            {
+                "id": "P0",
+                "eps_schedule_K": [],
+                "warm_start": False,
+                "note": "B2-4 as recorded: eps_1 = eps_2 = 1e-8 K on every SmoothVLE block, then "
+                "the final solve with the registered options and Ipopt's defaults otherwise",
+            },
+            {
+                "id": "P1",
+                "eps_schedule_K": [],
+                "warm_start": True,
+                "note": "eps 1e-8 K on every block, then the final solve with the registered "
+                "options plus warm_start_options",
+            },
+            {
+                "id": "P2",
+                "eps_schedule_K": ["1e-4", "1e-6"],
+                "warm_start": True,
+                "note": "eps_1 = eps_2 = 1e-4 K, solve; 1e-6 K, solve; 1e-8 K, the final solve; "
+                "each solve with the registered options plus warm_start_options, from the previous "
+                "solve's final iterate whatever its termination",
+            },
+        ],
+        "order": "levels L1, L2, L3 (each only if structurally expressible); within a level every "
+        "position P0, P1, P2 is run before the level is judged, and every position whose final "
+        "solve ends 'Optimal Solution Found' also gets its accuracy rerun; the search stops at the "
+        "first level that passes",
+        "selection": "the first position, in P0, P1, P2 order, of the first level that shows no "
+        "path dependence and has a position passing rules 2-2d",
+        "path_dependence": "rule 2d (IDAES): two positions of one level whose final solves ended "
+        "'Optimal Solution Found' differ on a registered quantity by more than 0.1 tolerance",
+        "accuracy_rerun": "the attempt repeated from S1 with floor_rerun's tol and constr_viol_tol "
+        "in place of the registered ones in every solve after S3",
+        "contingency": "if Ipopt rejects bound_mult_init_method, P1 and P2 run without it and the "
+        "record says so; no other option is substituted",
+        "h_form_ig_J_per_mol_PC-LI": PC_LI_H_FORM_IG,
     },
 }
 
