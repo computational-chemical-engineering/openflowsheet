@@ -1,0 +1,1147 @@
+{
+ "tool": "IDAES",
+ "versions": {
+  "idaes_pse": "2.13.0",
+  "pyomo": "6.10.1",
+  "python": "3.13.5"
+ },
+ "environment_fingerprint": {
+  "measured": {
+   "pip_freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+   "idaes_data_bin_tree": "370a694825da3be3d7b0e68742bf2e704918260b05fa0f6c54d4d61458d1144d",
+   "ipopt_sha256": "8f8711b709b5f265ff7cb8b352c037bb999d88628384be8390f26530f08de94e"
+  },
+  "expected_docs_reference_environments_s3": {
+   "pip_freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+   "idaes_data_bin_tree": "370a694825da3be3d7b0e68742bf2e704918260b05fa0f6c54d4d61458d1144d",
+   "ipopt_sha256": "8f8711b709b5f265ff7cb8b352c037bb999d88628384be8390f26530f08de94e"
+  },
+  "matches": true
+ },
+ "input_file": "docs/derivations/scripts/s03_cases.json",
+ "cases_sha256": "a0ac8496b416b0a401e9906f576243a879eab18c991939d017f009b0a3f24fb2",
+ "settings": {
+  "registered": {
+   "version": "idaes-pse 2.13.0, extensions 3.4.2",
+   "linear_solver": "mumps",
+   "tol": "1e-10",
+   "constr_viol_tol": "1e-9",
+   "max_iter": 500,
+   "initializers": "linear_solver = mumps; IDAES's other defaults",
+   "smooth_vle": {
+    "eps_1_K": "1e-8",
+    "eps_2_K": "1e-8"
+   },
+   "floor_rerun": {
+    "tol": "1e-9",
+    "constr_viol_tol": "1e-8"
+   },
+   "h_form_liq_J_per_mol": [
+    "0",
+    "0",
+    "0"
+   ],
+   "h_form_ig_J_per_mol": [
+    "25000",
+    "30000",
+    "35000"
+   ],
+   "placeholders": {
+    "temperature_crit_K": "1000",
+    "pressure_crit_Pa": "1e7"
+   }
+  },
+  "final_solve_ipopt_options": {
+   "linear_solver": "mumps",
+   "tol": 1e-10,
+   "constr_viol_tol": 1e-09,
+   "max_iter": 500
+  },
+  "rerun_ipopt_options": {
+   "linear_solver": "mumps",
+   "tol": 1e-09,
+   "constr_viol_tol": 1e-08,
+   "max_iter": 500
+  },
+  "smooth_vle_eps_K": {
+   "eps_1": 1e-08,
+   "eps_2": 1e-08
+  },
+  "initializer_ipopt_options": {
+   "nlp_scaling_method": "gradient-based",
+   "tol": 1e-06,
+   "max_iter": 200,
+   "linear_solver": "mumps"
+  },
+  "threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  },
+  "property_package": "idaes_representability.build_property_package (SYN-001, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0)",
+  "initialization": [
+   "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+   "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+   "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+   "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+  ],
+  "temperature_profile_K": [
+   320.0,
+   400.0
+  ]
+ },
+ "sign_conversion": "identity: IDAES's heat_duty (Condenser, Reboiler, Flash) is the heat into the control volume, W, so Q_condenser = condenser heat_duty and Q_reboiler = reboiler heat_duty, Q > 0 into the stage",
+ "case": "RC3",
+ "case_definition": {
+  "role": "comparison",
+  "tool_variant": {
+   "IDAES": "registered settings",
+   "DWSIM": "registered settings"
+  },
+  "stage_count": 5,
+  "condenser": "none",
+  "reboiler": "partial",
+  "stage_pressures_Pa": [
+   "100000.0",
+   "100000.0",
+   "100000.0",
+   "100000.0",
+   "100000.0"
+  ],
+  "intermediate_duties_W": "0 on every stage that carries no end specification",
+  "inlets": [
+   {
+    "port": "top",
+    "stage": 1,
+    "phase": "LIQUID",
+    "n_mol_per_s": [
+     "0.3",
+     "0.4",
+     "0.3"
+    ],
+    "T_K": "300.0",
+    "P_Pa": "100000.0"
+   }
+  ],
+  "specifications": {
+   "reboiler": {
+    "kind": "duty",
+    "value": "30000"
+   }
+  },
+  "quantities": [
+   [
+    "T[1]",
+    "T"
+   ],
+   [
+    "T[2]",
+    "T"
+   ],
+   [
+    "T[3]",
+    "T"
+   ],
+   [
+    "T[4]",
+    "T"
+   ],
+   [
+    "T[5]",
+    "T"
+   ],
+   [
+    "L[1]",
+    "flow"
+   ],
+   [
+    "V[1]",
+    "flow"
+   ],
+   [
+    "L[2]",
+    "flow"
+   ],
+   [
+    "V[2]",
+    "flow"
+   ],
+   [
+    "L[3]",
+    "flow"
+   ],
+   [
+    "V[3]",
+    "flow"
+   ],
+   [
+    "L[4]",
+    "flow"
+   ],
+   [
+    "V[4]",
+    "flow"
+   ],
+   [
+    "L[5]",
+    "flow"
+   ],
+   [
+    "V[5]",
+    "flow"
+   ],
+   [
+    "top[A]",
+    "flow"
+   ],
+   [
+    "top[B]",
+    "flow"
+   ],
+   [
+    "top[C]",
+    "flow"
+   ],
+   [
+    "bottom[A]",
+    "flow"
+   ],
+   [
+    "bottom[B]",
+    "flow"
+   ],
+   [
+    "bottom[C]",
+    "flow"
+   ]
+  ]
+ },
+ "attempts": [
+  {
+   "level": "L3",
+   "converged": false,
+   "termination": "Solved To Acceptable Level.",
+   "ipopt_iterations": 13,
+   "wall_time_solve_s": 0.06006896495819092,
+   "rule2_component_max_mol_per_s": 1.2322726172797616e-10,
+   "rule2_energy_W": 0.0005021956967539154,
+   "rule2b_max_shift_K": 6.2836e-09,
+   "rule2c_failed_checks": [],
+   "rule2d_specification": {
+    "reboiler": 0.0
+   },
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "Solved To Acceptable Level."
+  }
+ ],
+ "available": false,
+ "level": null,
+ "not_available_reason": "L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit | L3: failed rules 2-2d (2: Solved To Acceptable Level.)",
+ "levels": {
+  "L1": {
+   "realization": {
+    "level": "L1",
+    "unit": "TrayColumn",
+    "expressible": false,
+    "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit"
+   }
+  },
+  "L2": {
+   "realization": {
+    "level": "L2",
+    "unit": "TrayColumn",
+    "expressible": false,
+    "reason": "IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no condenser (S02 'none' end), and no L1 or L2 realization removes a unit"
+   }
+  },
+  "L3": {
+   "realization": {
+    "level": "L3",
+    "unit": "composition of Tray, Condenser/Flash and Reboiler joined by Arcs",
+    "condenser": null,
+    "reboiler": "Reboiler",
+    "specifications": {
+     "reboiler": "native"
+    },
+    "expressible": true
+   },
+   "structural_inspection": {
+    "property_package": {
+     "every_state_block_uses_fs_props": true,
+     "state_block_count": 14,
+     "package": "idaes_representability.build_property_package: GenericParameterBlock, SYN-001 constants, Ideal EoS, SmoothVLE, h_form_ig = L_i, h_form_liq = 0"
+    },
+    "stage_map": {
+     "stage_count_registered": 5,
+     "stage_count_idaes": 5,
+     "map": {
+      "1": {
+       "unit": "fs.stage1",
+       "kind": "tray",
+       "idaes_class": "_ScalarTray"
+      },
+      "2": {
+       "unit": "fs.stage2",
+       "kind": "tray",
+       "idaes_class": "_ScalarTray"
+      },
+      "3": {
+       "unit": "fs.stage3",
+       "kind": "tray",
+       "idaes_class": "_ScalarTray"
+      },
+      "4": {
+       "unit": "fs.stage4",
+       "kind": "tray",
+       "idaes_class": "_ScalarTray"
+      },
+      "5": {
+       "unit": "fs.stage5",
+       "kind": "reboiler",
+       "idaes_class": "_ScalarReboiler"
+      }
+     },
+     "rule": "our j (S02 \u00a71.1, condenser = 1 and reboiler = N when present); TrayColumn tray k = j - 1"
+    },
+    "feed_stages": [
+     {
+      "inlet": "top",
+      "registered_stage": 1,
+      "idaes_unit": "fs.stage1",
+      "idaes_port": "fs.stage1.liq_in",
+      "unit_is_our_stage": true,
+      "declared_phase": "LIQUID",
+      "enters_whole": "yes: the whole stream enters this port; IDAES's Tray mixes its feed, liquid and vapour inlets into one equilibrium stage"
+     }
+    ],
+    "condenser_realization": "absent: the top inlet enters stage 1's liquid inlet (an ordinary Tray)",
+    "reboiler_realization": "kettle: IDAES Reboiler (equilibrium stage with duty; bottoms = liquid, vapor_reboil = vapour, returned to stage N-1)",
+    "specifications": {
+     "reboiler": {
+      "kind": "duty",
+      "registered": {
+       "kind": "duty",
+       "value": "30000"
+      },
+      "realization": "native",
+      "tool": "Reboiler.heat_duty fixed, W, heat into the reboiler"
+     }
+    },
+    "pressures": {
+     "fixed_pressure_variables_Pa": {
+      "fs.stage1.properties_in_liq[0.0].pressure": 100000.0
+     },
+     "unit_pressure_specifications_Pa": {},
+     "registered_Pa": [
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0
+     ],
+     "trays_have_pressure_change": [
+      false,
+      false,
+      false,
+      false
+     ],
+     "pressure_relation": "none: each Tray's outlet pressure equals its liquid inlet's (pressure_drop_equation without deltaP), the Reboiler has no pressure change, and the top unit's pressure is fixed"
+    },
+    "intermediate_stages": {
+     "trays_have_heat_transfer": [
+      false,
+      false,
+      false,
+      false
+     ],
+     "trays_side_draws": [
+      false,
+      false,
+      false,
+      false
+     ],
+     "efficiency": "1: IDAES's Tray is an equilibrium stage (no efficiency parameter)",
+     "hydraulics": "none: no holdup, hydraulics, entrainment or weeping in Tray"
+    },
+    "initialization": [
+     "Initial guesses (\u00a75.1 row 12): every tray inlet that is not a case inlet starts at the registered linear temperature profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), at IDAES's nominal flow of 1 mol/s (the property package's state-bound default), at the first inlet's composition and the registered pressure. Nothing of this project's results or the generator is used.",
+     "L1/L2: IDAES's own `TrayColumn.initialize()`. L3: IDAES's own unit initializers (`Tray`, `Condenser`, `Flash`, `Reboiler`) in `TrayColumn.initialize`'s order: the trays holding a case inlet first, then the end units from the nearest of them (propagate_state), then every other tray with its liquid inlet from the nearest initialized unit above and its vapour inlet from the nearest one below. Both are followed by one full model solve with IDAES's initializer solver (`get_solver()`, MUMPS; `TrayColumn.initialize` does not check its own last solve). An initializer exception is recorded and does not end the attempt; the final solve decides.",
+     "The initializers run at IDAES's default SmoothVLE eps (0.01 K, 5e-4 K). The registered eps_1 = eps_2 = 1e-8 K is set on every SmoothVLE state block after initialization and before the final solve, so the final solve and the accuracy rerun solve exactly the registered equations (rule 2b checks every block). Measured: at 1e-8 K IDAES's column initializer fails on the saturated inter-stage streams (docs/S03_BUILD_DECISIONS.md, WO-S03-2).",
+     "A specification equation (L2 b) on the end unit's own variables is a constraint of that unit and is active in its initializer. One on another stage's variables (a stage temperature) is deactivated during the initializers, with the end's native variable it replaces fixed at IDAES's own initial value for it (`Reboiler.boilup_ratio`: 0.5), and restored before the full solves."
+    ],
+    "degrees_of_freedom": 0
+   },
+   "failed_full_record": {
+    "record": {
+     "initialization_events": [
+      "fs.stage1.initialize: returned",
+      "fs.stage5.initialize: returned",
+      "fs.stage2.initialize: returned",
+      "fs.stage3.initialize: returned",
+      "fs.stage4.initialize: returned",
+      "full initializer solve: optimal"
+     ],
+     "wall_time_initialize_s": 0.9228282390395179,
+     "smooth_vle_eps_set_on": [
+      "fs.stage1.properties_in_liq[0.0][Vap,Liq]",
+      "fs.stage1.properties_in_vap[0.0][Vap,Liq]",
+      "fs.stage1.properties_out[0.0][Vap,Liq]",
+      "fs.stage2.properties_in_liq[0.0][Vap,Liq]",
+      "fs.stage2.properties_in_vap[0.0][Vap,Liq]",
+      "fs.stage2.properties_out[0.0][Vap,Liq]",
+      "fs.stage3.properties_in_liq[0.0][Vap,Liq]",
+      "fs.stage3.properties_in_vap[0.0][Vap,Liq]",
+      "fs.stage3.properties_out[0.0][Vap,Liq]",
+      "fs.stage4.properties_in_liq[0.0][Vap,Liq]",
+      "fs.stage4.properties_in_vap[0.0][Vap,Liq]",
+      "fs.stage4.properties_out[0.0][Vap,Liq]",
+      "fs.stage5.control_volume.properties_in[0.0][Vap,Liq]",
+      "fs.stage5.control_volume.properties_out[0.0][Vap,Liq]"
+     ],
+     "degrees_of_freedom": 0,
+     "ipopt_options": {
+      "linear_solver": "mumps",
+      "tol": 1e-10,
+      "constr_viol_tol": 1e-09,
+      "max_iter": 500
+     },
+     "wall_time_solve_s": 0.06006896495819092,
+     "solver_status": "ok",
+     "termination_condition": "optimal",
+     "ipopt": {
+      "linear_solver": "mumps",
+      "iterations": 13,
+      "exit": "Solved To Acceptable Level.",
+      "ipopt_version": "3.13.2",
+      "final_constraint_violation_unscaled": 7.54554639570415e-06,
+      "final_overall_nlp_error_scaled": 2.7719408990378724e-08
+     },
+     "converged": false,
+     "last_iterate_loaded_although_not_converged": true,
+     "termination": "Solved To Acceptable Level."
+    },
+    "raw": {
+     "stages": {
+      "1": {
+       "unit": "fs.stage1",
+       "T_K": 362.1983684139862,
+       "P_Pa": 100000.0,
+       "L_mol_per_s": 1.112997207375316,
+       "V_mol_per_s": 0.8012309582639232,
+       "x": [
+        0.1252619254953436,
+        0.45799410792278933,
+        0.4167439665819383
+       ],
+       "y": [
+        0.3743278044857873,
+        0.48672010466088556,
+        0.13895209085339827
+       ],
+       "duty_W": null
+      },
+      "2": {
+       "unit": "fs.stage2",
+       "T_K": 375.40980933397213,
+       "P_Pa": 100000.00000000147,
+       "L_mol_per_s": 1.08413014739455,
+       "V_mol_per_s": 0.9142281656478928,
+       "x": [
+        0.038080895758412246,
+        0.36224272707303834,
+        0.5996763771683478
+       ],
+       "y": [
+        0.15241184202813257,
+        0.5466046636402232,
+        0.3009834943314426
+       ],
+       "duty_W": null
+      },
+      "3": {
+       "unit": "fs.stage3",
+       "T_K": 385.73691780809287,
+       "P_Pa": 100000.00000000207,
+       "L_mol_per_s": 1.0675386322146252,
+       "V_mol_per_s": 0.885361105665728,
+       "x": [
+        0.00938468834158732,
+        0.22146519274752025,
+        0.7691501189094612
+       ],
+       "y": [
+        0.046543350913131706,
+        0.4322456390969038,
+        0.5212110099891976
+       ],
+       "duty_W": null
+      },
+      "4": {
+       "unit": "fs.stage4",
+       "T_K": 392.7141032462571,
+       "P_Pa": 100000.0000000015,
+       "L_mol_per_s": 1.0600568647173159,
+       "V_mol_per_s": 0.8687695906455752,
+       "x": [
+        0.002008935283218138,
+        0.11307537784952032,
+        0.8849156868672579
+       ],
+       "y": [
+        0.011443244512462914,
+        0.26059598227253233,
+        0.7279607732150011
+       ],
+       "duty_W": null
+      },
+      "5": {
+       "unit": "fs.stage5",
+       "T_K": 396.7201152549293,
+       "P_Pa": 100000.00000000148,
+       "L_mol_per_s": 0.19876904157169503,
+       "V_mol_per_s": 0.8612878231494913,
+       "x": [
+        0.00038725600344447213,
+        0.050434333325725854,
+        0.9491784106705436
+       ],
+       "y": [
+        0.002383188381240027,
+        0.12753175357573662,
+        0.8700850580427373
+       ],
+       "duty_W": 30000.0
+      }
+     },
+     "products": {
+      "TOP": {
+       "port": "fs.stage1.vap_out",
+       "flow_mol_per_s": 0.8012309582639232,
+       "component_mol_per_s": {
+        "A": 0.29992302549297783,
+        "B": 0.38997521586375833,
+        "C": 0.11133271690724401
+       },
+       "enth_mol_J_per_mol": 35042.95827323925,
+       "enthalpy_flow_W": 28077.50303767016,
+       "enthalpy_source": "fs.stage1.properties_out[0.0].enth_mol_phase[Vap]",
+       "T_K": 362.1983684139862,
+       "P_Pa": 100000.0
+      },
+      "BOTTOM": {
+       "port": "fs.stage5.bottoms",
+       "flow_mol_per_s": 0.19876904157169503,
+       "component_mol_per_s": {
+        "A": 7.697450464754276e-05,
+        "B": 0.010024784097461926,
+        "C": 0.1886672829695287
+       },
+       "enth_mol_J_per_mol": 9672.011525490161,
+       "enthalpy_flow_W": 1922.4964609920673,
+       "enthalpy_source": "fs.stage5.control_volume.properties_out[0.0].enth_mol_phase[Liq]",
+       "T_K": 396.7201152549293,
+       "P_Pa": 100000.00000000148
+      }
+     },
+     "inlets": {
+      "top": {
+       "port": "fs.stage1.liq_in",
+       "flow_mol_per_s": 1.0,
+       "component_mol_per_s": {
+        "A": 0.3,
+        "B": 0.4,
+        "C": 0.3
+       },
+       "enth_mol_J_per_mol": 8.579258995962542e-07,
+       "enthalpy_flow_W": 8.579258995962542e-07,
+       "enthalpy_source": "fs.stage1.properties_in_liq[0.0].enth_mol"
+      }
+     },
+     "variables": {
+      "fs.props.A.pressure_crit": 10000000.0,
+      "fs.props.A.temperature_crit": 1000.0,
+      "fs.props.A.dens_mol_liq_comp_coeff": 10000.0,
+      "fs.props.A.cp_mol_liq_comp_coeff": 100.0,
+      "fs.props.A.enth_mol_form_liq_comp_ref": 0.0,
+      "fs.props.A.cp_mol_ig_comp_coeff": 100.0,
+      "fs.props.A.enth_mol_form_ig_comp_ref": 25000.0,
+      "fs.props.A.syn_t_boil": 320.0,
+      "fs.props.A.syn_l_vap": 25000.0,
+      "fs.props.B.pressure_crit": 10000000.0,
+      "fs.props.B.temperature_crit": 1000.0,
+      "fs.props.B.dens_mol_liq_comp_coeff": 10000.0,
+      "fs.props.B.cp_mol_liq_comp_coeff": 100.0,
+      "fs.props.B.enth_mol_form_liq_comp_ref": 0.0,
+      "fs.props.B.cp_mol_ig_comp_coeff": 100.0,
+      "fs.props.B.enth_mol_form_ig_comp_ref": 30000.0,
+      "fs.props.B.syn_t_boil": 360.0,
+      "fs.props.B.syn_l_vap": 30000.0,
+      "fs.props.C.pressure_crit": 10000000.0,
+      "fs.props.C.temperature_crit": 1000.0,
+      "fs.props.C.dens_mol_liq_comp_coeff": 10000.0,
+      "fs.props.C.cp_mol_liq_comp_coeff": 100.0,
+      "fs.props.C.enth_mol_form_liq_comp_ref": 0.0,
+      "fs.props.C.cp_mol_ig_comp_coeff": 100.0,
+      "fs.props.C.enth_mol_form_ig_comp_ref": 35000.0,
+      "fs.props.C.syn_t_boil": 400.0,
+      "fs.props.C.syn_l_vap": 35000.0,
+      "fs.stage1.properties_in_liq[0.0].flow_mol": 1.0,
+      "fs.stage1.properties_in_liq[0.0].mole_frac_comp[A]": 0.3,
+      "fs.stage1.properties_in_liq[0.0].mole_frac_comp[B]": 0.4,
+      "fs.stage1.properties_in_liq[0.0].mole_frac_comp[C]": 0.3,
+      "fs.stage1.properties_in_liq[0.0].temperature": 300.0,
+      "fs.stage1.properties_in_liq[0.0].pressure": 100000.0,
+      "fs.stage1.properties_in_vap[0.0].flow_mol": 0.9142281656478928,
+      "fs.stage1.properties_in_vap[0.0].mole_frac_comp[A]": 0.15241184202813257,
+      "fs.stage1.properties_in_vap[0.0].mole_frac_comp[B]": 0.5466046636402232,
+      "fs.stage1.properties_in_vap[0.0].mole_frac_comp[C]": 0.3009834943314426,
+      "fs.stage1.properties_in_vap[0.0].temperature": 375.40980933397213,
+      "fs.stage1.properties_in_vap[0.0].pressure": 100000.00000000147,
+      "fs.stage1.properties_in_liq[0.0].flow_mol_phase[Liq]": 0.9999999999683142,
+      "fs.stage1.properties_in_liq[0.0].flow_mol_phase[Vap]": 3.168581177753304e-11,
+      "fs.stage1.properties_in_liq[0.0].mole_frac_phase_comp[Liq,A]": 0.29999999998896265,
+      "fs.stage1.properties_in_liq[0.0].mole_frac_phase_comp[Liq,B]": 0.400000000003545,
+      "fs.stage1.properties_in_liq[0.0].mole_frac_phase_comp[Liq,C]": 0.30000000000749233,
+      "fs.stage1.properties_in_liq[0.0].mole_frac_phase_comp[Vap,A]": 0.64833675394992,
+      "fs.stage1.properties_in_liq[0.0].mole_frac_phase_comp[Vap,B]": 0.2881210884802289,
+      "fs.stage1.properties_in_liq[0.0].mole_frac_phase_comp[Vap,C]": 0.06354215756985118,
+      "fs.stage1.properties_in_liq[0.0].phase_frac[Liq]": 0.9999999999683142,
+      "fs.stage1.properties_in_liq[0.0].phase_frac[Vap]": 3.168581191851936e-11,
+      "fs.stage1.properties_in_liq[0.0]._teq[Vap,Liq]": 348.58925262251955,
+      "fs.stage1.properties_in_liq[0.0]._t1_Vap_Liq": 348.58925262690855,
+      "fs.stage1.properties_in_liq[0.0].temperature_bubble[Vap,Liq]": 348.5892526221946,
+      "fs.stage1.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.6483367539506865,
+      "fs.stage1.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.2881210884815909,
+      "fs.stage1.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.0635421575677228,
+      "fs.stage1.properties_in_liq[0.0].temperature_dew[Vap,Liq]": 373.127810300714,
+      "fs.stage1.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.07871968820398992,
+      "fs.stage1.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.28113488150138216,
+      "fs.stage1.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.6401454302946281,
+      "fs.stage1.properties_in_vap[0.0].flow_mol_phase[Liq]": 2.8431727592330217e-10,
+      "fs.stage1.properties_in_vap[0.0].flow_mol_phase[Vap]": 0.9142281653635755,
+      "fs.stage1.properties_in_vap[0.0].mole_frac_phase_comp[Liq,A]": 0.038080895771306446,
+      "fs.stage1.properties_in_vap[0.0].mole_frac_phase_comp[Liq,B]": 0.36224272715681166,
+      "fs.stage1.properties_in_vap[0.0].mole_frac_phase_comp[Liq,C]": 0.5996763770716803,
+      "fs.stage1.properties_in_vap[0.0].mole_frac_phase_comp[Vap,A]": 0.15241184206368882,
+      "fs.stage1.properties_in_vap[0.0].mole_frac_phase_comp[Vap,B]": 0.5466046636975579,
+      "fs.stage1.properties_in_vap[0.0].mole_frac_phase_comp[Vap,C]": 0.3009834942385516,
+      "fs.stage1.properties_in_vap[0.0].phase_frac[Liq]": 3.109921262968004e-10,
+      "fs.stage1.properties_in_vap[0.0].phase_frac[Vap]": 0.9999999996890079,
+      "fs.stage1.properties_in_vap[0.0]._teq[Vap,Liq]": 375.4098093290363,
+      "fs.stage1.properties_in_vap[0.0]._t1_Vap_Liq": 375.40980933397213,
+      "fs.stage1.properties_in_vap[0.0].temperature_bubble[Vap,Liq]": 357.3458208125677,
+      "fs.stage1.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.4069055322939012,
+      "fs.stage1.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.5073912603234746,
+      "fs.stage1.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.08570320738262426,
+      "fs.stage1.properties_in_vap[0.0].temperature_dew[Vap,Liq]": 375.40980933396486,
+      "fs.stage1.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.03808089575841809,
+      "fs.stage1.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.3622427270731049,
+      "fs.stage1.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.5996763771684769,
+      "fs.stage1.properties_out[0.0].flow_mol": 1.9142281656392393,
+      "fs.stage1.properties_out[0.0].mole_frac_comp[A]": 0.22951245136113235,
+      "fs.stage1.properties_out[0.0].mole_frac_comp[B]": 0.4700178354512458,
+      "fs.stage1.properties_out[0.0].mole_frac_comp[C]": 0.3004697131878561,
+      "fs.stage1.properties_out[0.0].pressure": 100000.0,
+      "fs.stage1.properties_out[0.0].temperature": 362.1983684139862,
+      "fs.stage1.properties_out[0.0].flow_mol_phase[Liq]": 1.112997207375316,
+      "fs.stage1.properties_out[0.0].flow_mol_phase[Vap]": 0.8012309582639232,
+      "fs.stage1.properties_out[0.0].mole_frac_phase_comp[Liq,A]": 0.1252619254953436,
+      "fs.stage1.properties_out[0.0].mole_frac_phase_comp[Liq,B]": 0.4579941079227893,
+      "fs.stage1.properties_out[0.0].mole_frac_phase_comp[Liq,C]": 0.4167439665819383,
+      "fs.stage1.properties_out[0.0].mole_frac_phase_comp[Vap,A]": 0.3743278044857873,
+      "fs.stage1.properties_out[0.0].mole_frac_phase_comp[Vap,B]": 0.48672010466088556,
+      "fs.stage1.properties_out[0.0].mole_frac_phase_comp[Vap,C]": 0.13895209085339827,
+      "fs.stage1.properties_out[0.0].phase_frac[Liq]": 0.5814339311022001,
+      "fs.stage1.properties_out[0.0].phase_frac[Vap]": 0.4185660688977999,
+      "fs.stage1.properties_out[0.0]._teq[Vap,Liq]": 362.19836841582145,
+      "fs.stage1.properties_out[0.0]._t1_Vap_Liq": 362.19836841512944,
+      "fs.stage1.properties_out[0.0].temperature_bubble[Vap,Liq]": 352.56234862227683,
+      "fs.stage1.properties_out[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.5466393355812932,
+      "fs.stage1.properties_out[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.38044132228593713,
+      "fs.stage1.properties_out[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.07291934213276964,
+      "fs.stage1.properties_out[0.0].temperature_dew[Vap,Liq]": 374.2326919331266,
+      "fs.stage1.properties_out[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.05880792219839403,
+      "fs.stage1.properties_out[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.32104805859276664,
+      "fs.stage1.properties_out[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.6201440192088393,
+      "fs.stage2.properties_in_liq[0.0].flow_mol": 1.112997207375316,
+      "fs.stage2.properties_in_liq[0.0].mole_frac_comp[A]": 0.1252619254953436,
+      "fs.stage2.properties_in_liq[0.0].mole_frac_comp[B]": 0.45799410792278916,
+      "fs.stage2.properties_in_liq[0.0].mole_frac_comp[C]": 0.41674396658193813,
+      "fs.stage2.properties_in_liq[0.0].temperature": 362.1983684157892,
+      "fs.stage2.properties_in_liq[0.0].pressure": 99999.99999999929,
+      "fs.stage2.properties_in_vap[0.0].flow_mol": 0.885361105665728,
+      "fs.stage2.properties_in_vap[0.0].mole_frac_comp[A]": 0.04654335091350599,
+      "fs.stage2.properties_in_vap[0.0].mole_frac_comp[B]": 0.4322456390969037,
+      "fs.stage2.properties_in_vap[0.0].mole_frac_comp[C]": 0.521211009989159,
+      "fs.stage2.properties_in_vap[0.0].temperature": 385.7369178205004,
+      "fs.stage2.properties_in_vap[0.0].pressure": 100000.00000000207,
+      "fs.stage2.properties_in_liq[0.0].flow_mol_phase[Liq]": 1.1129972071726264,
+      "fs.stage2.properties_in_liq[0.0].flow_mol_phase[Vap]": 2.0268972083191994e-10,
+      "fs.stage2.properties_in_liq[0.0].mole_frac_phase_comp[Liq,A]": 0.12526192544998577,
+      "fs.stage2.properties_in_liq[0.0].mole_frac_phase_comp[Liq,B]": 0.45799410791755796,
+      "fs.stage2.properties_in_liq[0.0].mole_frac_phase_comp[Liq,C]": 0.4167439666325271,
+      "fs.stage2.properties_in_liq[0.0].mole_frac_phase_comp[Vap,A]": 0.37432780439051677,
+      "fs.stage2.properties_in_liq[0.0].mole_frac_phase_comp[Vap,B]": 0.4867201047194898,
+      "fs.stage2.properties_in_liq[0.0].mole_frac_phase_comp[Vap,C]": 0.13895209089006444,
+      "fs.stage2.properties_in_liq[0.0].phase_frac[Liq]": 0.9999999998178885,
+      "fs.stage2.properties_in_liq[0.0].phase_frac[Vap]": 1.821115783218588e-10,
+      "fs.stage2.properties_in_liq[0.0]._teq[Vap,Liq]": 362.1983684205154,
+      "fs.stage2.properties_in_liq[0.0]._t1_Vap_Liq": 362.1983684260427,
+      "fs.stage2.properties_in_liq[0.0].temperature_bubble[Vap,Liq]": 362.19836841581116,
+      "fs.stage2.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.37432780448570213,
+      "fs.stage2.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.4867201046620754,
+      "fs.stage2.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.1389520908522225,
+      "fs.stage2.properties_in_liq[0.0].temperature_dew[Vap,Liq]": 380.8472343938934,
+      "fs.stage2.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.02791548693460415,
+      "fs.stage2.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.2646009808711191,
+      "fs.stage2.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.707483532194277,
+      "fs.stage2.properties_in_vap[0.0].flow_mol_phase[Liq]": 3.2364379199143656e-10,
+      "fs.stage2.properties_in_vap[0.0].flow_mol_phase[Vap]": 0.8853611053420842,
+      "fs.stage2.properties_in_vap[0.0].mole_frac_phase_comp[Liq,A]": 0.009384688345006666,
+      "fs.stage2.properties_in_vap[0.0].mole_frac_phase_comp[Liq,B]": 0.22146519280504234,
+      "fs.stage2.properties_in_vap[0.0].mole_frac_phase_comp[Liq,C]": 0.7691501188493745,
+      "fs.stage2.properties_in_vap[0.0].mole_frac_phase_comp[Vap,A]": 0.04654335092692972,
+      "fs.stage2.properties_in_vap[0.0].mole_frac_phase_comp[Vap,B]": 0.43224563917395187,
+      "fs.stage2.properties_in_vap[0.0].mole_frac_phase_comp[Vap,C]": 0.5212110098985419,
+      "fs.stage2.properties_in_vap[0.0].phase_frac[Liq]": 3.6554792748291393e-10,
+      "fs.stage2.properties_in_vap[0.0].phase_frac[Vap]": 0.9999999996344521,
+      "fs.stage2.properties_in_vap[0.0]._teq[Vap,Liq]": 385.7369178047322,
+      "fs.stage2.properties_in_vap[0.0]._t1_Vap_Liq": 385.7369178079903,
+      "fs.stage2.properties_in_vap[0.0].temperature_bubble[Vap,Liq]": 371.7588699547928,
+      "fs.stage2.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.17219019663414728,
+      "fs.stage2.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.5934871775820265,
+      "fs.stage2.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.23432262578382626,
+      "fs.stage2.properties_in_vap[0.0].temperature_dew[Vap,Liq]": 385.73691780806166,
+      "fs.stage2.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.009384688341668617,
+      "fs.stage2.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.22146519274768722,
+      "fs.stage2.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.7691501189106442,
+      "fs.stage2.properties_out[0.0].flow_mol": 1.9983583130424427,
+      "fs.stage2.properties_out[0.0].mole_frac_comp[A]": 0.0903861158004066,
+      "fs.stage2.properties_out[0.0].mole_frac_comp[B]": 0.44658639756549173,
+      "fs.stage2.properties_out[0.0].mole_frac_comp[C]": 0.4630274866341017,
+      "fs.stage2.properties_out[0.0].pressure": 100000.00000000147,
+      "fs.stage2.properties_out[0.0].temperature": 375.40980933397213,
+      "fs.stage2.properties_out[0.0].flow_mol_phase[Liq]": 1.08413014739455,
+      "fs.stage2.properties_out[0.0].flow_mol_phase[Vap]": 0.9142281656478928,
+      "fs.stage2.properties_out[0.0].mole_frac_phase_comp[Liq,A]": 0.038080895758412246,
+      "fs.stage2.properties_out[0.0].mole_frac_phase_comp[Liq,B]": 0.36224272707303834,
+      "fs.stage2.properties_out[0.0].mole_frac_phase_comp[Liq,C]": 0.5996763771683478,
+      "fs.stage2.properties_out[0.0].mole_frac_phase_comp[Vap,A]": 0.15241184202813257,
+      "fs.stage2.properties_out[0.0].mole_frac_phase_comp[Vap,B]": 0.5466046636402232,
+      "fs.stage2.properties_out[0.0].mole_frac_phase_comp[Vap,C]": 0.3009834943314426,
+      "fs.stage2.properties_out[0.0].phase_frac[Liq]": 0.5425103898126944,
+      "fs.stage2.properties_out[0.0].phase_frac[Vap]": 0.4574896101873056,
+      "fs.stage2.properties_out[0.0]._teq[Vap,Liq]": 375.40980933397213,
+      "fs.stage2.properties_out[0.0]._t1_Vap_Liq": 375.4098093330408,
+      "fs.stage2.properties_out[0.0].temperature_bubble[Vap,Liq]": 366.19156424779396,
+      "fs.stage2.properties_out[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.29569876705385323,
+      "fs.stage2.properties_out[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.52905720024607,
+      "fs.stage2.properties_out[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.1752440327000769,
+      "fs.stage2.properties_out[0.0].temperature_dew[Vap,Liq]": 383.09453876299875,
+      "fs.stage2.properties_out[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.019231537030276823,
+      "fs.stage2.properties_out[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.24406214656447864,
+      "fs.stage2.properties_out[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.7367063164052445,
+      "fs.stage3.properties_in_liq[0.0].flow_mol": 1.0841301474167675,
+      "fs.stage3.properties_in_liq[0.0].mole_frac_comp[A]": 0.03808089575841256,
+      "fs.stage3.properties_in_liq[0.0].mole_frac_comp[B]": 0.36224272707303834,
+      "fs.stage3.properties_in_liq[0.0].mole_frac_comp[C]": 0.5996763771683504,
+      "fs.stage3.properties_in_liq[0.0].temperature": 375.40980933397213,
+      "fs.stage3.properties_in_liq[0.0].pressure": 100000.00000000147,
+      "fs.stage3.properties_in_vap[0.0].flow_mol": 0.8687695906057579,
+      "fs.stage3.properties_in_vap[0.0].mole_frac_comp[A]": 0.011443244512461617,
+      "fs.stage3.properties_in_vap[0.0].mole_frac_comp[B]": 0.26059598227253233,
+      "fs.stage3.properties_in_vap[0.0].mole_frac_comp[C]": 0.7279607732150011,
+      "fs.stage3.properties_in_vap[0.0].temperature": 392.71410324625697,
+      "fs.stage3.properties_in_vap[0.0].pressure": 100000.0000000015,
+      "fs.stage3.properties_in_liq[0.0].flow_mol_phase[Liq]": 1.084130147169027,
+      "fs.stage3.properties_in_liq[0.0].flow_mol_phase[Vap]": 2.47740561070136e-10,
+      "fs.stage3.properties_in_liq[0.0].mole_frac_phase_comp[Liq,A]": 0.038080895732286804,
+      "fs.stage3.properties_in_liq[0.0].mole_frac_phase_comp[Liq,B]": 0.36224272703090754,
+      "fs.stage3.properties_in_liq[0.0].mole_frac_phase_comp[Liq,C]": 0.5996763772366069,
+      "fs.stage3.properties_in_liq[0.0].mole_frac_phase_comp[Vap,A]": 0.15241184194706273,
+      "fs.stage3.properties_in_liq[0.0].mole_frac_phase_comp[Vap,B]": 0.5466046636426186,
+      "fs.stage3.properties_in_liq[0.0].mole_frac_phase_comp[Vap,C]": 0.30098349441012,
+      "fs.stage3.properties_in_liq[0.0].phase_frac[Liq]": 0.9999999997714839,
+      "fs.stage3.properties_in_liq[0.0].phase_frac[Vap]": 2.2851608173558133e-10,
+      "fs.stage3.properties_in_liq[0.0]._teq[Vap,Liq]": 375.40980933891274,
+      "fs.stage3.properties_in_liq[0.0]._t1_Vap_Liq": 375.40980931348685,
+      "fs.stage3.properties_in_liq[0.0].temperature_bubble[Vap,Liq]": 375.4098093339797,
+      "fs.stage3.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.15241184202815847,
+      "fs.stage3.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.5466046636403293,
+      "fs.stage3.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.30098349433151234,
+      "fs.stage3.properties_in_liq[0.0].temperature_dew[Vap,Liq]": 388.4915873576513,
+      "fs.stage3.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.007265494626826929,
+      "fs.stage3.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.17368788258509604,
+      "fs.stage3.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.8190466227880769,
+      "fs.stage3.properties_in_vap[0.0].flow_mol_phase[Liq]": 9.245818076582888e-10,
+      "fs.stage3.properties_in_vap[0.0].flow_mol_phase[Vap]": 0.868769589681176,
+      "fs.stage3.properties_in_vap[0.0].mole_frac_phase_comp[Liq,A]": 0.0020089352851827926,
+      "fs.stage3.properties_in_vap[0.0].mole_frac_phase_comp[Liq,B]": 0.11307537792935028,
+      "fs.stage3.properties_in_vap[0.0].mole_frac_phase_comp[Liq,C]": 0.8849156867747885,
+      "fs.stage3.properties_in_vap[0.0].mole_frac_phase_comp[Vap,A]": 0.011443244522515238,
+      "fs.stage3.properties_in_vap[0.0].mole_frac_phase_comp[Vap,B]": 0.26059598241522214,
+      "fs.stage3.properties_in_vap[0.0].mole_frac_phase_comp[Vap,C]": 0.7279607730037648,
+      "fs.stage3.properties_in_vap[0.0].phase_frac[Liq]": 1.0642456057123453e-09,
+      "fs.stage3.properties_in_vap[0.0].phase_frac[Vap]": 0.9999999989357544,
+      "fs.stage3.properties_in_vap[0.0]._teq[Vap,Liq]": 392.7141032412572,
+      "fs.stage3.properties_in_vap[0.0]._t1_Vap_Liq": 392.7141032462571,
+      "fs.stage3.properties_in_vap[0.0].temperature_bubble[Vap,Liq]": 383.54890151906534,
+      "fs.stage3.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.054284382822750964,
+      "fs.stage3.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.48219019853391704,
+      "fs.stage3.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.463525418643332,
+      "fs.stage3.properties_in_vap[0.0].temperature_dew[Vap,Liq]": 392.714103246257,
+      "fs.stage3.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.0020089352832172343,
+      "fs.stage3.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.11307537784952176,
+      "fs.stage3.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.8849156868672611,
+      "fs.stage3.properties_out[0.0].flow_mol": 1.9528997378801078,
+      "fs.stage3.properties_out[0.0].mole_frac_comp[A]": 0.026230834583396985,
+      "fs.stage3.properties_out[0.0].mole_frac_comp[B]": 0.31702402017488973,
+      "fs.stage3.properties_out[0.0].mole_frac_comp[C]": 0.6567451452417132,
+      "fs.stage3.properties_out[0.0].pressure": 100000.00000000207,
+      "fs.stage3.properties_out[0.0].temperature": 385.73691780809287,
+      "fs.stage3.properties_out[0.0].flow_mol_phase[Liq]": 1.0675386322146252,
+      "fs.stage3.properties_out[0.0].flow_mol_phase[Vap]": 0.885361105665728,
+      "fs.stage3.properties_out[0.0].mole_frac_phase_comp[Liq,A]": 0.00938468834158732,
+      "fs.stage3.properties_out[0.0].mole_frac_phase_comp[Liq,B]": 0.22146519274752025,
+      "fs.stage3.properties_out[0.0].mole_frac_phase_comp[Liq,C]": 0.7691501189094612,
+      "fs.stage3.properties_out[0.0].mole_frac_phase_comp[Vap,A]": 0.046543350913131706,
+      "fs.stage3.properties_out[0.0].mole_frac_phase_comp[Vap,B]": 0.4322456390969038,
+      "fs.stage3.properties_out[0.0].mole_frac_phase_comp[Vap,C]": 0.5212110099891976,
+      "fs.stage3.properties_out[0.0].phase_frac[Liq]": 0.5466428263095926,
+      "fs.stage3.properties_out[0.0].phase_frac[Vap]": 0.453357173690533,
+      "fs.stage3.properties_out[0.0]._teq[Vap,Liq]": 385.73691780809287,
+      "fs.stage3.properties_out[0.0]._t1_Vap_Liq": 385.7369177931646,
+      "fs.stage3.properties_out[0.0].temperature_bubble[Vap,Liq]": 378.8552881560404,
+      "fs.stage3.properties_out[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.1129166925569164,
+      "fs.stage3.properties_out[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.5220681602711359,
+      "fs.stage3.properties_out[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.3650151471719476,
+      "fs.stage3.properties_out[0.0].temperature_dew[Vap,Liq]": 390.42941221005077,
+      "fs.stage3.properties_out[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.004816004618709994,
+      "fs.stage3.properties_out[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.14515838302816478,
+      "fs.stage3.properties_out[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.8500256123531252,
+      "fs.stage4.properties_in_liq[0.0].flow_mol": 1.0675386322146252,
+      "fs.stage4.properties_in_liq[0.0].mole_frac_comp[A]": 0.009384688341587292,
+      "fs.stage4.properties_in_liq[0.0].mole_frac_comp[B]": 0.22146519274752025,
+      "fs.stage4.properties_in_liq[0.0].mole_frac_comp[C]": 0.7691501189087457,
+      "fs.stage4.properties_in_liq[0.0].temperature": 385.73691780809287,
+      "fs.stage4.properties_in_liq[0.0].pressure": 100000.00000000207,
+      "fs.stage4.properties_in_vap[0.0].flow_mol": 0.8612878231494913,
+      "fs.stage4.properties_in_vap[0.0].mole_frac_comp[A]": 0.002383188381240027,
+      "fs.stage4.properties_in_vap[0.0].mole_frac_comp[B]": 0.12753175357573662,
+      "fs.stage4.properties_in_vap[0.0].mole_frac_comp[C]": 0.8700850580427373,
+      "fs.stage4.properties_in_vap[0.0].temperature": 396.7201152272099,
+      "fs.stage4.properties_in_vap[0.0].pressure": 100000.00000000148,
+      "fs.stage4.properties_in_liq[0.0].flow_mol_phase[Liq]": 1.0675386319490463,
+      "fs.stage4.properties_in_liq[0.0].flow_mol_phase[Vap]": 2.6557871539275077e-10,
+      "fs.stage4.properties_in_liq[0.0].mole_frac_phase_comp[Liq,A]": 0.009384688332343093,
+      "fs.stage4.properties_in_liq[0.0].mole_frac_phase_comp[Liq,B]": 0.221465192695083,
+      "fs.stage4.properties_in_liq[0.0].mole_frac_phase_comp[Liq,C]": 0.7691501189713522,
+      "fs.stage4.properties_in_liq[0.0].mole_frac_phase_comp[Vap,A]": 0.046543350871101265,
+      "fs.stage4.properties_in_liq[0.0].mole_frac_phase_comp[Vap,B]": 0.43224563903708907,
+      "fs.stage4.properties_in_liq[0.0].mole_frac_phase_comp[Vap,C]": 0.5212110100905879,
+      "fs.stage4.properties_in_liq[0.0].phase_frac[Liq]": 0.9999999997512233,
+      "fs.stage4.properties_in_liq[0.0].phase_frac[Vap]": 2.487766781841494e-10,
+      "fs.stage4.properties_in_liq[0.0]._teq[Vap,Liq]": 385.73691781215035,
+      "fs.stage4.properties_in_liq[0.0]._t1_Vap_Liq": 385.73691781215035,
+      "fs.stage4.properties_in_liq[0.0].temperature_bubble[Vap,Liq]": 385.73691780813726,
+      "fs.stage4.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.046543350913173215,
+      "fs.stage4.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.4322456390973679,
+      "fs.stage4.properties_in_liq[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.5212110099889881,
+      "fs.stage4.properties_in_liq[0.0].temperature_dew[Vap,Liq]": 393.91414665440226,
+      "fs.stage4.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.0016095580085057591,
+      "fs.stage4.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.0934436561635561,
+      "fs.stage4.properties_in_liq[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.904946785826411,
+      "fs.stage4.properties_in_vap[0.0].flow_mol_phase[Liq]": 1.4090918022500885e-08,
+      "fs.stage4.properties_in_vap[0.0].flow_mol_phase[Vap]": 0.8612878090585732,
+      "fs.stage4.properties_in_vap[0.0].mole_frac_phase_comp[Liq,A]": 0.00038725600897434573,
+      "fs.stage4.properties_in_vap[0.0].mole_frac_phase_comp[Liq,B]": 0.05043433386124704,
+      "fs.stage4.properties_in_vap[0.0].mole_frac_phase_comp[Liq,C]": 0.9491784101294926,
+      "fs.stage4.properties_in_vap[0.0].mole_frac_phase_comp[Vap,A]": 0.0023831884137377173,
+      "fs.stage4.properties_in_vap[0.0].mole_frac_phase_comp[Vap,B]": 0.1275317548314213,
+      "fs.stage4.properties_in_vap[0.0].mole_frac_phase_comp[Vap,C]": 0.8700850567545549,
+      "fs.stage4.properties_in_vap[0.0].phase_frac[Liq]": 1.6360842849408457e-08,
+      "fs.stage4.properties_in_vap[0.0].phase_frac[Vap]": 0.9999999836391572,
+      "fs.stage4.properties_in_vap[0.0]._teq[Vap,Liq]": 396.72011522720084,
+      "fs.stage4.properties_in_vap[0.0]._t1_Vap_Liq": 396.7201152272099,
+      "fs.stage4.properties_in_vap[0.0].temperature_bubble[Vap,Liq]": 391.834520164377,
+      "fs.stage4.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.013343732471494563,
+      "fs.stage4.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.2879127287877551,
+      "fs.stage4.properties_in_vap[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.6987435387407505,
+      "fs.stage4.properties_in_vap[0.0].temperature_dew[Vap,Liq]": 396.7201152612021,
+      "fs.stage4.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.00038725600344510373,
+      "fs.stage4.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.050434333325736505,
+      "fs.stage4.properties_in_vap[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.9491784106708185,
+      "fs.stage4.properties_out[0.0].flow_mol": 1.9288264553628913,
+      "fs.stage4.properties_out[0.0].mole_frac_comp[A]": 0.006258276090810583,
+      "fs.stage4.properties_out[0.0].mole_frac_comp[B]": 0.17952065848419113,
+      "fs.stage4.properties_out[0.0].mole_frac_comp[C]": 0.8142210654249983,
+      "fs.stage4.properties_out[0.0].pressure": 100000.0000000015,
+      "fs.stage4.properties_out[0.0].temperature": 392.7141032462571,
+      "fs.stage4.properties_out[0.0].flow_mol_phase[Liq]": 1.0600568647173159,
+      "fs.stage4.properties_out[0.0].flow_mol_phase[Vap]": 0.8687695906455752,
+      "fs.stage4.properties_out[0.0].mole_frac_phase_comp[Liq,A]": 0.002008935283218138,
+      "fs.stage4.properties_out[0.0].mole_frac_phase_comp[Liq,B]": 0.11307537784952032,
+      "fs.stage4.properties_out[0.0].mole_frac_phase_comp[Liq,C]": 0.8849156868672579,
+      "fs.stage4.properties_out[0.0].mole_frac_phase_comp[Vap,A]": 0.011443244512462914,
+      "fs.stage4.properties_out[0.0].mole_frac_phase_comp[Vap,B]": 0.26059598227253233,
+      "fs.stage4.properties_out[0.0].mole_frac_phase_comp[Vap,C]": 0.7279607732150011,
+      "fs.stage4.properties_out[0.0].phase_frac[Liq]": 0.549586439863682,
+      "fs.stage4.properties_out[0.0].phase_frac[Vap]": 0.4504135601363179,
+      "fs.stage4.properties_out[0.0]._teq[Vap,Liq]": 392.7141032462571,
+      "fs.stage4.properties_out[0.0]._t1_Vap_Liq": 392.7141032600002,
+      "fs.stage4.properties_out[0.0].temperature_bubble[Vap,Liq]": 388.363608967123,
+      "fs.stage4.properties_out[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.03271817174848194,
+      "fs.stage4.properties_out[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.3732633882941006,
+      "fs.stage4.properties_out[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.5940184399574175,
+      "fs.stage4.properties_out[0.0].temperature_dew[Vap,Liq]": 395.19277464866764,
+      "fs.stage4.properties_out[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.001047166749347464,
+      "fs.stage4.properties_out[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.07353396637531816,
+      "fs.stage4.properties_out[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.9254188668753345,
+      "fs.stage5.boilup_ratio": 4.3331084974157195,
+      "fs.stage5.control_volume.properties_in[0.0].flow_mol": 1.0600568647208701,
+      "fs.stage5.control_volume.properties_in[0.0].mole_frac_comp[A]": 0.002008935283219866,
+      "fs.stage5.control_volume.properties_in[0.0].mole_frac_comp[B]": 0.11307537784953269,
+      "fs.stage5.control_volume.properties_in[0.0].mole_frac_comp[C]": 0.8849156868672579,
+      "fs.stage5.control_volume.properties_in[0.0].temperature": 392.7141032462571,
+      "fs.stage5.control_volume.properties_in[0.0].pressure": 100000.0000000015,
+      "fs.stage5.control_volume.heat[0.0]": 30000.0,
+      "fs.stage5.control_volume.properties_in[0.0].flow_mol_phase[Liq]": 1.0600568641972263,
+      "fs.stage5.control_volume.properties_in[0.0].flow_mol_phase[Vap]": 5.236145541749294e-10,
+      "fs.stage5.control_volume.properties_in[0.0].mole_frac_phase_comp[Liq,A]": 0.0020089352785686576,
+      "fs.stage5.control_volume.properties_in[0.0].mole_frac_phase_comp[Liq,B]": 0.11307537777665107,
+      "fs.stage5.control_volume.properties_in[0.0].mole_frac_phase_comp[Liq,C]": 0.884915686944817,
+      "fs.stage5.control_volume.properties_in[0.0].mole_frac_phase_comp[Vap,A]": 0.011443244487104305,
+      "fs.stage5.control_volume.properties_in[0.0].mole_frac_phase_comp[Vap,B]": 0.2605959821350774,
+      "fs.stage5.control_volume.properties_in[0.0].mole_frac_phase_comp[Vap,C]": 0.7279607733778549,
+      "fs.stage5.control_volume.properties_in[0.0].phase_frac[Liq]": 0.9999999995060231,
+      "fs.stage5.control_volume.properties_in[0.0].phase_frac[Vap]": 4.93949212618288e-10,
+      "fs.stage5.control_volume.properties_in[0.0]._teq[Vap,Liq]": 392.71410325124225,
+      "fs.stage5.control_volume.properties_in[0.0]._t1_Vap_Liq": 392.71410325124225,
+      "fs.stage5.control_volume.properties_in[0.0].temperature_bubble[Vap,Liq]": 392.7141032462558,
+      "fs.stage5.control_volume.properties_in[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.011443244512476337,
+      "fs.stage5.control_volume.properties_in[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.26059598227255,
+      "fs.stage5.control_volume.properties_in[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.7279607732149737,
+      "fs.stage5.control_volume.properties_in[0.0].temperature_dew[Vap,Liq]": 397.10986256471193,
+      "fs.stage5.control_volume.properties_in[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.0003240225000644699,
+      "fs.stage5.control_volume.properties_in[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.04431995633535119,
+      "fs.stage5.control_volume.properties_in[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.9553560211645833,
+      "fs.stage5.control_volume.properties_out[0.0].flow_mol": 1.0600568647211863,
+      "fs.stage5.control_volume.properties_out[0.0].mole_frac_comp[A]": 0.0020089352832288153,
+      "fs.stage5.control_volume.properties_out[0.0].mole_frac_comp[B]": 0.11307537784921895,
+      "fs.stage5.control_volume.properties_out[0.0].mole_frac_comp[C]": 0.8849156868675523,
+      "fs.stage5.control_volume.properties_out[0.0].pressure": 100000.00000000148,
+      "fs.stage5.control_volume.properties_out[0.0].temperature": 396.7201152549293,
+      "fs.stage5.control_volume.properties_out[0.0].flow_mol_phase[Liq]": 0.19876904157169503,
+      "fs.stage5.control_volume.properties_out[0.0].flow_mol_phase[Vap]": 0.8612878231494913,
+      "fs.stage5.control_volume.properties_out[0.0].mole_frac_phase_comp[Liq,A]": 0.0003872560034444722,
+      "fs.stage5.control_volume.properties_out[0.0].mole_frac_phase_comp[Liq,B]": 0.050434333325725854,
+      "fs.stage5.control_volume.properties_out[0.0].mole_frac_phase_comp[Liq,C]": 0.9491784106705435,
+      "fs.stage5.control_volume.properties_out[0.0].mole_frac_phase_comp[Vap,A]": 0.002383188381240027,
+      "fs.stage5.control_volume.properties_out[0.0].mole_frac_phase_comp[Vap,B]": 0.12753175357573662,
+      "fs.stage5.control_volume.properties_out[0.0].mole_frac_phase_comp[Vap,C]": 0.8700850580427373,
+      "fs.stage5.control_volume.properties_out[0.0].phase_frac[Liq]": 0.18750790470801215,
+      "fs.stage5.control_volume.properties_out[0.0].phase_frac[Vap]": 0.8124920952919878,
+      "fs.stage5.control_volume.properties_out[0.0]._teq[Vap,Liq]": 396.7201152612129,
+      "fs.stage5.control_volume.properties_out[0.0]._t1_Vap_Liq": 396.7201152669197,
+      "fs.stage5.control_volume.properties_out[0.0].temperature_bubble[Vap,Liq]": 392.7141032462722,
+      "fs.stage5.control_volume.properties_out[0.0]._mole_frac_tbub[Vap,Liq,A]": 0.011443244512530931,
+      "fs.stage5.control_volume.properties_out[0.0]._mole_frac_tbub[Vap,Liq,B]": 0.2605959822719207,
+      "fs.stage5.control_volume.properties_out[0.0]._mole_frac_tbub[Vap,Liq,C]": 0.7279607732155484,
+      "fs.stage5.control_volume.properties_out[0.0].temperature_dew[Vap,Liq]": 397.10986256471926,
+      "fs.stage5.control_volume.properties_out[0.0]._mole_frac_tdew[Vap,Liq,A]": 0.000324022500065869,
+      "fs.stage5.control_volume.properties_out[0.0]._mole_frac_tdew[Vap,Liq,B]": 0.04431995633522134,
+      "fs.stage5.control_volume.properties_out[0.0]._mole_frac_tdew[Vap,Liq,C]": 0.9553560211647129
+     },
+     "smooth_vle_parameters": {
+      "fs.stage1.properties_in_liq[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage1.properties_in_liq[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage1.properties_in_vap[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage1.properties_in_vap[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage1.properties_out[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage1.properties_out[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage2.properties_in_liq[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage2.properties_in_liq[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage2.properties_in_vap[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage2.properties_in_vap[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage2.properties_out[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage2.properties_out[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage3.properties_in_liq[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage3.properties_in_liq[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage3.properties_in_vap[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage3.properties_in_vap[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage3.properties_out[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage3.properties_out[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage4.properties_in_liq[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage4.properties_in_liq[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage4.properties_in_vap[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage4.properties_in_vap[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage4.properties_out[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage4.properties_out[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage5.control_volume.properties_in[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage5.control_volume.properties_in[0.0].eps_2_Vap_Liq": 1e-08,
+      "fs.stage5.control_volume.properties_out[0.0].eps_1_Vap_Liq": 1e-08,
+      "fs.stage5.control_volume.properties_out[0.0].eps_2_Vap_Liq": 1e-08
+     },
+     "constraint_residuals": {
+      "max_abs_violation": 7.54554639570415e-06,
+      "argmax": "fs.stage3.properties_in_vap[0.0].eq_mole_frac_tbub[Vap,Liq,B]",
+      "count_above_1e-8": 146
+     }
+    },
+    "rules": {
+     "rule2": {
+      "converged": false,
+      "component_balance": {
+       "residual_mol_per_s": {
+        "A": 2.374600516219516e-12,
+        "B": 3.877975718324933e-11,
+        "C": 1.2322726172797616e-10
+       },
+       "max_abs_mol_per_s": 1.2322726172797616e-10,
+       "tolerance_mol_per_s": 3.1e-08,
+       "passes": true
+      },
+      "energy_balance_W": 0.0005021956967539154,
+      "energy_threshold_W": 0.001,
+      "duties_W": {
+       "Q_reboiler": 30000.0
+      },
+      "passes": false
+     },
+     "rule2b": {
+      "shift_bound_K": 1e-07,
+      "max_shift_K": 6.2836e-09,
+      "argmax": "fs.stage5.control_volume.properties_out[0.0][Vap,Liq]",
+      "blocks": {
+       "fs.stage1.properties_in_liq[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 3.2495e-10
+       },
+       "fs.stage1.properties_in_vap[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 4.92856e-09
+       },
+       "fs.stage1.properties_out[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 1.83525e-09
+       },
+       "fs.stage2.properties_in_liq[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 4.70424e-09
+       },
+       "fs.stage2.properties_in_vap[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 3.32946e-09
+       },
+       "fs.stage2.properties_out[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 0.0
+       },
+       "fs.stage3.properties_in_liq[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 4.93304e-09
+       },
+       "fs.stage3.properties_in_vap[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 4.99977e-09
+       },
+       "fs.stage3.properties_out[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 0.0
+       },
+       "fs.stage4.properties_in_liq[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 4.01309e-09
+       },
+       "fs.stage4.properties_in_vap[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 9.06e-12
+       },
+       "fs.stage4.properties_out[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 0.0
+       },
+       "fs.stage5.control_volume.properties_in[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 4.98515e-09
+       },
+       "fs.stage5.control_volume.properties_out[0.0][Vap,Liq]": {
+        "eps_1_K": 1e-08,
+        "eps_2_K": 1e-08,
+        "shift_K": 6.2836e-09
+       }
+      },
+      "eps_as_registered_on_every_block": true,
+      "passes": true
+     },
+     "rule2c": {
+      "checks": {
+       "stage_count": {
+        "value": 5,
+        "registered": 5,
+        "passes": true
+       },
+       "feed_stage": {
+        "value": [
+         true
+        ],
+        "passes": true
+       },
+       "pressure_max_abs_dev_Pa": {
+        "value": 2.066371962428093e-09,
+        "threshold": 0.001,
+        "passes": true
+       },
+       "intermediate_duty_max_abs_W": {
+        "value": 0.0,
+        "threshold": 0.001,
+        "note": "IDAES Trays built with has_heat_transfer=False carry no heat term (Q = 0)",
+        "passes": true
+       },
+       "specification": {
+        "value": {
+         "reboiler": {
+          "kind": "duty",
+          "definition": "reboiler duty, W, into the stage",
+          "registered": 30000.0,
+          "idaes": 30000.0,
+          "relative_difference": 0.0,
+          "absolute_difference": 0.0,
+          "rule2c_threshold_relative": 0.0001,
+          "rule2c_passes": true,
+          "rule2d_threshold": 1e-08,
+          "rule2d_basis": "relative",
+          "rule2d_measure": 0.0,
+          "rule2d_passes": true
+         }
+        },
+        "passes": true
+       }
+      },
+      "passes": true
+     },
+     "rule2d_specification": {
+      "passes": true,
+      "max_measure_by_end": {
+       "reboiler": 0.0
+      }
+     }
+    }
+   }
+  }
+ }
+}
