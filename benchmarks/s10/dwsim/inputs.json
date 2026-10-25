@@ -1,0 +1,303 @@
+{
+ "authority": "docs/derivations/S10-spec.md section 8.2 with the I-states of section 15 A2-3",
+ "i_states": {
+  "fields": "closed_form.i_states.<id>.state (n, T, P) only",
+  "path": "benchmarks/s10/reference_values_real.yaml",
+  "sha256": "2e9d51307828572bcb4ea05735a36efdf912e43c9f1fbf31f1ead75a38b9cf80",
+  "states": {
+   "I1": {
+    "P": 101325.0,
+    "T": 365.51,
+    "n": [
+     0.1,
+     0.0,
+     0.9
+    ]
+   },
+   "I10": {
+    "P": 101325.0,
+    "T": 356.02,
+    "n": [
+     0.0,
+     0.4,
+     0.6
+    ]
+   },
+   "I11": {
+    "P": 101325.0,
+    "T": 353.34,
+    "n": [
+     0.2,
+     0.3,
+     0.5
+    ]
+   },
+   "I12": {
+    "P": 101325.0,
+    "T": 350.09,
+    "n": [
+     0.4,
+     0.2,
+     0.4
+    ]
+   },
+   "I13": {
+    "P": 101325.0,
+    "T": 351.15,
+    "n": [
+     0.1,
+     0.6,
+     0.3
+    ]
+   },
+   "I14": {
+    "P": 101325.0,
+    "T": 344.84,
+    "n": [
+     0.5,
+     0.5,
+     0.0
+    ]
+   },
+   "I2": {
+    "P": 101325.0,
+    "T": 357.42,
+    "n": [
+     0.3,
+     0.0,
+     0.7
+    ]
+   },
+   "I3": {
+    "P": 101325.0,
+    "T": 351.27,
+    "n": [
+     0.5,
+     0.0,
+     0.5
+    ]
+   },
+   "I4": {
+    "P": 101325.0,
+    "T": 345.66,
+    "n": [
+     0.7,
+     0.0,
+     0.30000000000000004
+    ]
+   },
+   "I5": {
+    "P": 101325.0,
+    "T": 340.29,
+    "n": [
+     0.9,
+     0.0,
+     0.09999999999999998
+    ]
+   },
+   "I6": {
+    "P": 101325.0,
+    "T": 343.62,
+    "n": [
+     0.4,
+     0.0,
+     0.6
+    ]
+   },
+   "I7": {
+    "P": 101325.0,
+    "T": 366.56,
+    "n": [
+     0.4,
+     0.0,
+     0.6
+    ]
+   },
+   "I8": {
+    "P": 101325.0,
+    "T": 360.93,
+    "n": [
+     0.0,
+     0.2,
+     0.8
+    ]
+   },
+   "I9": {
+    "P": 101325.0,
+    "T": 352.86,
+    "n": [
+     0.0,
+     0.6,
+     0.4
+    ]
+   }
+  }
+ },
+ "ladder": {
+  "converged": "no exception from the direct flash call and no solver error from CalculateFlowsheet4, with the stream calculated",
+  "selection": "the first rung at which every I-state converges is used for all of them; a state converged at no rung is NOT_COMPARABLE (spec 8.1's rule, B-53)",
+  "settings_per_rung": [
+   "PTFlash_External_Loop_Tolerance",
+   "PTFlash_Internal_Loop_Tolerance"
+  ],
+  "tolerances": [
+   1e-10,
+   1e-08
+  ]
+ },
+ "readback_compositions": {
+  "rule": "at each state's (T, P): the feed z, then these (B-51)",
+  "x": [
+   [
+    0.2,
+    0.3,
+    0.5
+   ],
+   [
+    0.6,
+    0.2,
+    0.2
+   ]
+  ]
+ },
+ "records": {
+  "R_J_per_mol_K": 8.31446261815324,
+  "T0_K": 298.15,
+  "components": [
+   {
+    "id": "CH3OH",
+    "ideal_gas_cp_b": [
+     5.71539582,
+     -15.2309129,
+     65.2441155,
+     -71.0806889,
+     26.1352698
+    ],
+    "molecular_weight_kg_per_mol": 0.032042,
+    "standard_formation_enthalpy_J_per_mol": -200938.85487320993,
+    "vapour_pressure_abcd": [
+     23.1903583383,
+     -6.06364641455,
+     -5.44295361639,
+     3.37780627462
+    ]
+   },
+   {
+    "id": "C2H5OH",
+    "ideal_gas_cp_b": [
+     4.85868178,
+     -3.7400674,
+     69.5550267,
+     -88.6541147,
+     35.168443
+    ],
+    "molecular_weight_kg_per_mol": 0.046069,
+    "standard_formation_enthalpy_J_per_mol": -234948.66126639748,
+    "vapour_pressure_abcd": [
+     24.8828829558,
+     -6.65074311339,
+     -5.23090979586,
+     0.747236411782
+    ]
+   },
+   {
+    "id": "H2O",
+    "ideal_gas_cp_b": [
+     4.19864056,
+     -2.0364341,
+     6.52040211,
+     -5.48797062,
+     1.77197817
+    ],
+    "molecular_weight_kg_per_mol": 0.018015,
+    "standard_formation_enthalpy_J_per_mol": -241824.62162536496,
+    "vapour_pressure_abcd": [
+     23.5265279527,
+     -7.11938661787,
+     -6.70379788914,
+     3.38417458422
+    ]
+   }
+  ],
+  "forms": "c_p^ig/R = sum_k b_k theta^k; ln(P_sat/Pa) = a + b/theta + c ln theta + d theta^2; theta = T / 1000 K; h^ig(298.15 K) = Delta_fH; Wilson Lambda_ij constant",
+  "path": "benchmarks/s10/records.yaml",
+  "reference_convention": "WILSON-IG-ref-v1",
+  "sha256": "d4a39730ee24c592b5a7a36977ec4d122817182f71166d75058d9d99d0934d55",
+  "theta_unit_K": 1000.0,
+  "wilson_lambda": [
+   {
+    "i": "CH3OH",
+    "j": "C2H5OH",
+    "value": 0.6109248362
+   },
+   {
+    "i": "C2H5OH",
+    "j": "CH3OH",
+    "value": 1.49887856
+   },
+   {
+    "i": "C2H5OH",
+    "j": "H2O",
+    "value": 0.1649874985
+   },
+   {
+    "i": "H2O",
+    "j": "C2H5OH",
+    "value": 0.8615311153
+   },
+   {
+    "i": "CH3OH",
+    "j": "H2O",
+    "value": 0.3674022637
+   },
+   {
+    "i": "H2O",
+    "j": "CH3OH",
+    "value": 1.134238098
+   }
+  ]
+ },
+ "settings": {
+  "compounds": "user compounds (OriginalDB = CurrentDB = 'User'), CAS 's10-<id>' so that DWSIM's embedded wilson_bips.csv supplies nothing; Molar_Weight = records.yaml molecular_weight in kg/kmol",
+  "flash": {
+   "flash_settings_fixed": {
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000"
+   },
+   "route": "one material stream at the registered (n, T, P), TP-flashed by CalculateFlowsheet4; the property package's flash (UniversalFlash) is also called directly with the same inputs for its raw arrays and iteration count",
+   "why": "VLE: the Wilson liquid is strictly convex in composition (spec 4.1), so no liquid split exists for the heuristic to look for; FailSafeCalculationMode 3 ('None'): a failed flash raises instead of being replaced by DWSIM's Raoult's-law flash (mode 1, the default); 1000 iterations: T06's value (B-52)"
+  },
+  "ideal_gas_cp": "IdealgasCpEquation '100' (A + B T + C T^2 + D T^3 + E T^4, J/(kmol K)) with coefficient k = 1000 R b_k / 1000^k (spec 8.2: the ideal-gas c_p polynomial)",
+  "ideal_gas_formation_enthalpy": "IG_Enthalpy_of_Formation_25C = Delta_fH / MW (kJ/kg); DWSIM's stream enthalpies carry no formation term, so the tool adds DWSIM's own AUX_HFm25 to DW_CalcEnthalpy",
+  "liquid_density": {
+   "equation": "1",
+   "value_kg_per_m3": 1000000000000.0,
+   "why": "the model's liquid molar volume is zero (spec 3.3, 3.7): DWSIM's Ideal-mode liquid enthalpy adds P / rho_L and its liquid fugacity a Poynting factor; at 1e12 kg/m3 P v <= 1e-8 J/mol and v (P - P_sat) / (R T) <= 1e-13 (B-50, ESC-50)"
+  },
+  "liquid_heat_capacity": "LiquidHeatCapacityEquation '1', constant 1000 R b_0 J/(kmol K): unused by the Ideal enthalpy mode, set only because AUX_HVAPi reads the vaporization equation only when this field is not '0' (docs/reference-environments.md section 6 quirk 4)",
+  "placeholders": {
+   "NBP_K": 350.0,
+   "P_c_Pa": 10000000.0,
+   "T_c_K": 1000.0,
+   "omega": 0.0,
+   "why": "required fields of a DWSIM compound that wilson-ig-v1 does not define; T_c > T / 0.98 keeps every state on the activity-coefficient branch of DW_CalcFugCoeff and AUX_HVAPi below T_c (T06's placeholders)"
+  },
+  "property_package": "Wilson",
+  "property_package_options": {
+   "AutoEstimateMissingNRTLUNIQUACParameters": false,
+   "EnthalpyEntropyCpCvCalculationMode": "Ideal",
+   "LiquidDensity_CorrectExpDataForPressure": false,
+   "LiquidFugacity_UsePoyntingCorrectionFactor": false,
+   "VaporPhaseFugacityCalculationMode": "Ideal"
+  },
+  "vaporization_enthalpy": "VaporizationEnthalpyEquation '100' (J/kmol) with A = -1000 R b 1000, B = R c 1000, C = 0, D = 2 R d 1e-6 1000, E = 0: Delta h(T) = -1000 R b + R c T + 2 R d T^3 / 1e6 (spec 8.2, eq. 100; the J/kmol unit is fixed by readback)",
+  "vapour_pressure": "VaporPressureEquation '101' (exp(A + B/T + C ln T + D T^E), Pa) with A = a - c ln 1000, B = 1000 b, C = c, D = d 1e-6, E = 2 (spec 8.2)",
+  "wilson": {
+   "R_cal_per_mol_K": 1.9872,
+   "rule": "per state (spec 8.2): A_ij = -1.9872 T ln(Lambda_ij V_i / V_j) cal/mol with V from DWSIM's GetArguments, stored as BIPs[cas_i][cas_j] = (A_ij, A_ji) for i < j (WilsonModel.GetBIPs returns A_ij for (i, j) and A_ji for (j, i))"
+  }
+ },
+ "written_by": "scripts/s10_dwsim_comparison.py --write-inputs"
+}

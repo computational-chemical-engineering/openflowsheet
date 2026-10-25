@@ -201,6 +201,60 @@ families:
       attempts: 5
       note: SYN-001's preregistered defaults.
 
+  - id: S10
+    title: wilson-ig-v1 closed-form verification on three synthetic components (S10-verification-v1)
+    kind: synthetic
+    provider: wilson-ig-v1
+    status: library-only (R-568, R-569, R-709); no revision can select the provider, so the family has no cases
+    derivation: docs/derivations/S10-spec.md
+    specification: docs/derivations/S10-spec.md
+    semantics:
+      - docs/adr/0001-state-units-zero-flow.md
+      - docs/adr/0047-s10-liquid-mixture-property-method.md
+    components: benchmarks/s10/verification-records.yaml
+    records_sha256: 234d165d4023859b61606441b0a41b54ce78c1446df91cc0bb275b2abdaab392
+    cases_directory: null
+    cases_absent_reason: >-
+      The provider is library-only (S10 spec §10): its registered states are the E-, F- and
+      R-states of S10 spec §7.1, asserted through the provider by tests/test_s10_provider.py and
+      tests/test_s10_flash.py, not flowsheet cases.
+    oracle: null
+    oracle_absent_reason: expected values come from s10_reference.py, independent of the implementation
+    reference: benchmarks/s10/reference_values.yaml
+    reference_sha256: 94727ac90c9b95e5978110b3d1d1c2edd262a8687bc1547d865b2dfe38f86525
+    reference_author: >-
+      design lane, mpmath at 50 significant digits (docs/derivations/scripts/s10_reference.py,
+      which imports nothing from openflowsheet or benchmarks; two-phase answers by Newton on the
+      equilibrium equations, not by the implementation's successive substitution)
+    independence: >-
+      algebraic reference for the synthetic model; not an experimental validation or a simulator
+      benchmark result
+    independence_limits: >-
+      The reference and the provider share the closed forms of S10 spec §3, so an agreement verifies
+      the transcription, the derivatives and the flash, not property data. The components are
+      invented (S10 spec §6): nothing about methanol, ethanol or water follows from this family.
+    property_domain:
+      temperature_K: { min: 300.0, max: 420.0 }
+      pressure_Pa: { min: 50000.0, max: 300000.0 }
+      note: >-
+        The verification records' declared domain, inclusive. Outside it the provider returns a
+        typed out_of_domain refusal.
+    reference_convention: S10-VER-ref-v1
+    state_definition: nTP-v1
+    tolerances:
+      source: docs/derivations/S10-spec.md §7.2-§7.3 (reference_values.yaml `tolerances`)
+      evaluate_phase:
+        TOL_VALUE: 1.0e-12
+        rule: >-
+          |impl - expected| <= TOL_VALUE * max(|expected|, s_q), with s_q = 1e3 J/mol (h),
+          10 J/(mol K) (dh/dT), 1e3/n_tot (dh/dn_j), 1 (ln phi), 1e-2 1/K (d ln phi/dT), 1/P
+          (d ln phi/dP), 1/n_tot (d ln phi/dn_j); the identity zeros of §3.6 exactly 0.0
+      trial_distance: { TOL_TM: 1.0e-12, unit: "1" }
+      flash: per state and output, reference_values.yaml `tolerances.flash.per_state`
+      component_balance: { relative: 1.0e-13, scale: n_tot, unit: mol/s }
+    budgets: null
+    budgets_absent_reason: no solve; the provider's own loops are capped at SS_MAX = 1000 (S10 spec §5.6)
+
 cases:
   - case_id: SYN-001-nominal
     family: SYN-001

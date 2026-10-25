@@ -161,3 +161,16 @@ Recommendations as put to Frank (session, 2026-10-22); each answer below is now 
   path position); DWSIM models neither. A later package brings in a third reference tool (candidates: COCO/ChemSep)
   for the column cases with fewer than two references: RC4 (none), RC3 and RC7 (IDAES only). Queued as S09
   (provisional). S03 itself closes with the gap recorded.
+
+## S10 — liquid-capable mixture property method (2026-10-25)
+
+All four answered with the recommended default (Frank, 2026-10-25):
+- **Q-F1** first mixtures → **methanol, ethanol, water** (incl. the ethanol–water azeotrope).
+- **Q-F2** flowsheets or library → **library only for now** (like S05/S07; flowsheet use with the binding package).
+- **Q-F3** ship fitted data → **decide after the rights check** (repository-only until then; come back to Frank).
+- **Q-F4** two liquid phases soon → **no** (Wilson only; would-split mixtures refused with a clear message).
+- **Q-F5** (IDAES coverage without the states its initializer cannot start) — **Frank: "Yes, enough"** (2026-10-25).
+  Note: the premise named I3 and I11; WO-S10-4b's record shows I11 does converge at 1e-4/MA27 (ESC-8), so only I3
+  drops out of the IDAES comparison.
+- **Q-F6** (try DWSIM's Inside-Out flash on new states in a later package?) — **Frank: "No"** (2026-10-25). DWSIM stays
+  a check on model expression, enthalpies' readbacks and phase labels; IDAES is the numerical reference.

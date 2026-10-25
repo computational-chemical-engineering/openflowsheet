@@ -1,0 +1,6387 @@
+{
+ "authority": "docs/derivations/S10-spec.md section 8.1 (as amended by section 15 A2-3 and section 16)",
+ "comparison": {
+  "assertion": "S10.A41",
+  "expected": "reference_values_real.yaml closed_form.i_states (two-phase) and phase (I6, I7)",
+  "selection": "per state, the selected attempt of run amendment_3 (qualification.json selection; spec 16 A3-2)",
+  "states": {
+   "I1": {
+    "all_within": true,
+    "argmax": "beta",
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 7.275957614183426e-11
+     },
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 7.275957614183426e-11,
+      "final_overall_nlp_error_scaled": 1.9613609811216355e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "max_ratio": 1.2982115382698112e-05,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 1.2982115382698112e-12,
+      "idaes": 0.2220695456250287,
+      "ours": 0.2220695456237305,
+      "quantity": "beta",
+      "ratio": 1.2982115382698112e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.820071870994866e-13,
+      "idaes": 0.049275710949026795,
+      "ours": 0.0492757109492088,
+      "quantity": "x_CH3OH",
+      "ratio": 1.820071870994866e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 6.977196598256796e-13,
+      "idaes": 0.27769194383772167,
+      "ours": 0.2776919438384194,
+      "quantity": "y_CH3OH",
+      "ratio": 6.977196598256796e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.0508570039188512e-21,
+      "idaes": 2.0508570039188512e-21,
+      "ours": 0.0,
+      "quantity": "x_C2H5OH",
+      "ratio": 2.0508570039188512e-14,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 6.346737120269172e-22,
+      "idaes": 6.346737120269172e-22,
+      "ours": 0.0,
+      "quantity": "y_C2H5OH",
+      "ratio": 6.346737120269172e-15,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.8207657603852567e-13,
+      "idaes": 0.9507242890509733,
+      "ours": 0.9507242890507912,
+      "quantity": "x_H2O",
+      "ratio": 1.8207657603852567e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 6.976641486744484e-13,
+      "idaes": 0.7223080561622782,
+      "ours": 0.7223080561615806,
+      "quantity": "y_H2O",
+      "ratio": 6.976641486744484e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.1809338406041983e-12,
+      "idaes": 5.635473106110631,
+      "ours": 5.635473106103976,
+      "quantity": "K_CH3OH",
+      "ratio": 1.1809338406041984e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 7.743481765013369e-13,
+      "idaes": 0.7597450327931524,
+      "ours": 0.7597450327925641,
+      "quantity": "K_H2O",
+      "ratio": 7.743481765013369e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 8.498318493366241e-09,
+      "idaes": -278817.9223019503,
+      "ours": -278817.9223019418,
+      "quantity": "h_L",
+      "ratio": 1.6996636986732483e-07,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.907472662627697e-08,
+      "idaes": -227961.26329674717,
+      "ours": -227961.2632967181,
+      "quantity": "h_V",
+      "ratio": 5.814945325255394e-07,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 365.51
+   },
+   "I10": {
+    "all_within": true,
+    "argmax": "K_C2H5OH",
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0186340659856796e-10
+     },
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.5486030821686138e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "max_ratio": 0.0010670579898934241,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 6.415667996861885e-11,
+      "idaes": 0.5810462568606262,
+      "ours": 0.5810462567964695,
+      "quantity": "beta",
+      "ratio": 0.0006415667996861885,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.0338747914954163e-24,
+      "idaes": 1.0338747914954163e-24,
+      "ours": 0.0,
+      "quantity": "x_CH3OH",
+      "ratio": 1.0338747914954163e-17,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 8.805606211987989e-24,
+      "idaes": 8.805606211987989e-24,
+      "ours": 0.0,
+      "quantity": "y_CH3OH",
+      "ratio": 8.805606211987989e-17,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.8601676582695745e-11,
+      "idaes": 0.2120240331919192,
+      "ours": 0.21202403322052088,
+      "quantity": "x_C2H5OH",
+      "ratio": 0.00028601676582695745,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.509814495648243e-11,
+      "idaes": 0.5355369456125392,
+      "ours": 0.5355369456276373,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.0001509814495648243,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.8601676582695745e-11,
+      "idaes": 0.7879759668080808,
+      "ours": 0.7879759667794791,
+      "quantity": "x_H2O",
+      "ratio": 0.00028601676582695745,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.509825597878489e-11,
+      "idaes": 0.46446305438746094,
+      "ours": 0.4644630543723627,
+      "quantity": "y_H2O",
+      "ratio": 0.0001509825597878489,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.0670579898934241e-10,
+      "idaes": 2.525831329355874,
+      "ours": 2.525831329086353,
+      "quantity": "K_C2H5OH",
+      "ratio": 0.0010670579898934241,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 3.790787990424062e-12,
+      "idaes": 0.5894380970385426,
+      "ours": 0.589438097040777,
+      "quantity": "K_H2O",
+      "ratio": 3.7907879904240623e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.994784153997898e-07,
+      "idaes": -279541.10611226625,
+      "ours": -279541.1061119668,
+      "quantity": "h_L",
+      "ratio": 5.989568307995796e-06,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.352163963019848e-07,
+      "idaes": -235076.26313211044,
+      "ours": -235076.26313197523,
+      "quantity": "h_V",
+      "ratio": 2.7043279260396957e-06,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 356.02
+   },
+   "I11": {
+    "all_within": true,
+    "argmax": "K_C2H5OH",
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.8189894035458565e-10
+     },
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.8917489796876905e-10,
+      "final_overall_nlp_error_scaled": 4.794930313024633e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "max_ratio": 0.0004862756525092268,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 4.765776662196686e-11,
+      "idaes": 0.5661150504900277,
+      "ours": 0.56611505044237,
+      "quantity": "beta",
+      "ratio": 0.00047657766621966857,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 6.412648190234904e-12,
+      "idaes": 0.13112674341751257,
+      "ours": 0.13112674342392522,
+      "quantity": "x_CH3OH",
+      "ratio": 6.412648190234904e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.327016605605195e-12,
+      "idaes": 0.25278621267711077,
+      "ours": 0.2527862126824378,
+      "quantity": "y_CH3OH",
+      "ratio": 5.327016605605195e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.2485096290149045e-11,
+      "idaes": 0.2043470065719362,
+      "ours": 0.2043470065844213,
+      "quantity": "x_C2H5OH",
+      "ratio": 0.00012485096290149045,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.655165142253281e-12,
+      "idaes": 0.3733108829876344,
+      "ours": 0.37331088299228954,
+      "quantity": "y_C2H5OH",
+      "ratio": 4.6551651422532814e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.889755019135464e-11,
+      "idaes": 0.6645262500105511,
+      "ours": 0.6645262499916536,
+      "quantity": "x_H2O",
+      "ratio": 0.0001889755019135464,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 9.982126236707245e-12,
+      "idaes": 0.3739029043352548,
+      "ours": 0.3739029043252727,
+      "quantity": "y_H2O",
+      "ratio": 9.982126236707245e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 2.7831010274279686e-11,
+      "idaes": 1.9278005850586084,
+      "ours": 1.9278005850049558,
+      "quantity": "K_CH3OH",
+      "ratio": 0.0002783101027427969,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 4.862756525092268e-11,
+      "idaes": 1.8268478175931484,
+      "ours": 1.8268478175043132,
+      "quantity": "K_C2H5OH",
+      "ratio": 0.0004862756525092268,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.7405293631474767e-12,
+      "idaes": 0.5626608494838513,
+      "ours": 0.5626608494848306,
+      "quantity": "K_H2O",
+      "ratio": 1.7405293631474767e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.282919690012932e-07,
+      "idaes": -273714.1189649937,
+      "ours": -273714.1189645654,
+      "quantity": "h_L",
+      "ratio": 8.565839380025864e-06,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.625747583806515e-07,
+      "idaes": -226155.0753536992,
+      "ours": -226155.07535343664,
+      "quantity": "h_V",
+      "ratio": 5.2514951676130295e-06,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 353.34
+   },
+   "I12": {
+    "all_within": true,
+    "argmax": "beta",
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.1827872842550278e-11
+     },
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 4.3655745685100555e-11,
+      "final_overall_nlp_error_scaled": 1.1118760995002812e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "max_ratio": 0.00030666136296986224,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 3.0666136296986224e-11,
+      "idaes": 0.5666484927754568,
+      "ours": 0.5666484927447907,
+      "quantity": "beta",
+      "ratio": 0.00030666136296986224,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 7.10798087055764e-12,
+      "idaes": 0.2843442058733107,
+      "ours": 0.2843442058804187,
+      "quantity": "x_CH3OH",
+      "ratio": 7.10798087055764e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.609956943430916e-12,
+      "idaes": 0.4884492120654293,
+      "ours": 0.48844921207103925,
+      "quantity": "y_CH3OH",
+      "ratio": 5.609956943430916e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.021089017314239e-12,
+      "idaes": 0.1648578736099593,
+      "ours": 0.16485787361398038,
+      "quantity": "x_C2H5OH",
+      "ratio": 4.021089017314239e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.811639809863209e-13,
+      "idaes": 0.22687537976781347,
+      "ours": 0.22687537976809463,
+      "quantity": "y_C2H5OH",
+      "ratio": 2.811639809863209e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.1128986621145032e-11,
+      "idaes": 0.5507979205167299,
+      "ours": 0.550797920505601,
+      "quantity": "x_H2O",
+      "ratio": 0.00011128986621145032,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.891009902114774e-12,
+      "idaes": 0.2846754081667571,
+      "ours": 0.2846754081608661,
+      "quantity": "y_H2O",
+      "ratio": 5.8910099021147744e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.3512614347964324e-11,
+      "idaes": 1.7178096193845334,
+      "ours": 1.7178096193613213,
+      "quantity": "K_CH3OH",
+      "ratio": 0.00013512614347964324,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 2.3151930616119697e-11,
+      "idaes": 1.3761877112680871,
+      "ours": 1.3761877112362257,
+      "quantity": "K_C2H5OH",
+      "ratio": 0.00023151930616119697,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 4.884757744334785e-13,
+      "idaes": 0.5168418353861784,
+      "ours": 0.516841835385926,
+      "quantity": "K_H2O",
+      "ratio": 4.884757744334785e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.7241261452436447e-07,
+      "idaes": -267227.60879359907,
+      "ours": -267227.60879322665,
+      "quantity": "h_L",
+      "ratio": 7.4482522904872894e-06,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.35304469242692e-07,
+      "idaes": -217818.729071419,
+      "ours": -217818.72907118368,
+      "quantity": "h_V",
+      "ratio": 4.70608938485384e-06,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 350.09
+   },
+   "I13": {
+    "all_within": true,
+    "argmax": "beta",
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.820766091346741e-11
+     },
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 3.634652986276756e-13,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "max_ratio": 0.008039040544360887,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 8.039040544360887e-10,
+      "idaes": 0.5322219935580852,
+      "ours": 0.5322219927541811,
+      "quantity": "beta",
+      "ratio": 0.008039040544360887,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.4790128283491697e-11,
+      "idaes": 0.0801472029540394,
+      "ours": 0.08014720297882953,
+      "quantity": "x_CH3OH",
+      "ratio": 0.00024790128283491697,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.4554636929584603e-11,
+      "idaes": 0.11744892532976817,
+      "ours": 0.1174489253643228,
+      "quantity": "y_CH3OH",
+      "ratio": 0.00034554636929584603,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 7.836897797375286e-11,
+      "idaes": 0.5675307536013809,
+      "ours": 0.5675307536797499,
+      "quantity": "x_C2H5OH",
+      "ratio": 0.0007836897797375286,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.326927539542112e-11,
+      "idaes": 0.6285377145906312,
+      "ours": 0.6285377146139005,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.00023269275395421118,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.0315909237945675e-10,
+      "idaes": 0.3523220434445797,
+      "ours": 0.3523220433414206,
+      "quantity": "x_H2O",
+      "ratio": 0.0010315909237945675,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.782396783615695e-11,
+      "idaes": 0.2540133600796007,
+      "ours": 0.2540133600217767,
+      "quantity": "y_H2O",
+      "ratio": 0.0005782396783615695,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.50976345583917e-11,
+      "idaes": 1.4654151486374332,
+      "ours": 1.4654151486153089,
+      "quantity": "K_CH3OH",
+      "ratio": 0.00015097634558391702,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.0106629980278484e-10,
+      "idaes": 1.1074954275202151,
+      "ours": 1.1074954274082847,
+      "quantity": "K_C2H5OH",
+      "ratio": 0.0010106629980278484,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 6.515623997933968e-11,
+      "idaes": 0.7209692518701488,
+      "ours": 0.7209692519171245,
+      "quantity": "K_H2O",
+      "ratio": 0.0006515623997933968,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.9596191123127937e-06,
+      "idaes": -272537.46987893456,
+      "ours": -272537.46987697494,
+      "quantity": "h_L",
+      "ratio": 3.9192382246255875e-05,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.6388075891882181e-06,
+      "idaes": -229653.32981095318,
+      "ours": -229653.32980931437,
+      "quantity": "h_V",
+      "ratio": 3.277615178376436e-05,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 351.15
+   },
+   "I14": {
+    "all_within": true,
+    "argmax": "beta",
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.093170329928398e-11
+     },
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4675408935575163e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "max_ratio": 3.45073969398868e-05,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 3.4507396939886803e-12,
+      "idaes": 0.4926828072269605,
+      "ours": 0.49268280722350977,
+      "quantity": "beta",
+      "ratio": 3.45073969398868e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.627964678149965e-13,
+      "idaes": 0.43333046259748986,
+      "ours": 0.43333046259795266,
+      "quantity": "x_CH3OH",
+      "ratio": 4.627964678149965e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.71289673953379e-13,
+      "idaes": 0.5686498535414445,
+      "ours": 0.5686498535419158,
+      "quantity": "y_CH3OH",
+      "ratio": 4.7128967395337895e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.628519789662278e-13,
+      "idaes": 0.5666695374025102,
+      "ours": 0.5666695374020474,
+      "quantity": "x_C2H5OH",
+      "ratio": 4.628519789662278e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.71289673953379e-13,
+      "idaes": 0.43135014645855546,
+      "ours": 0.43135014645808417,
+      "quantity": "y_C2H5OH",
+      "ratio": 4.7128967395337895e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.629368060410259e-25,
+      "idaes": 2.629368060410259e-25,
+      "ours": 0.0,
+      "quantity": "x_H2O",
+      "ratio": 2.629368060410259e-18,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.5786053346558711e-25,
+      "idaes": 1.5786053346558711e-25,
+      "ours": 0.0,
+      "quantity": "y_H2O",
+      "ratio": 1.5786053346558711e-18,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 2.390873928100702e-13,
+      "idaes": 1.3122775863317264,
+      "ours": 1.3122775863314127,
+      "quantity": "K_CH3OH",
+      "ratio": 2.390873928100702e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 2.758047081787055e-13,
+      "idaes": 0.76120228455507,
+      "ours": 0.76120228455486,
+      "quantity": "K_C2H5OH",
+      "ratio": 2.758047081787055e-06,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.6938429325819016e-08,
+      "idaes": -256676.01286163557,
+      "ours": -256676.01286161863,
+      "quantity": "h_L",
+      "ratio": 3.387685865163803e-07,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.5512341633439064e-08,
+      "idaes": -213012.98922869287,
+      "ours": -213012.98922867735,
+      "quantity": "h_V",
+      "ratio": 3.102468326687813e-07,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 344.84
+   },
+   "I2": {
+    "all_within": true,
+    "argmax": "K_CH3OH",
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.673470251262188e-10
+     },
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 2.3283064365386963e-10,
+      "final_overall_nlp_error_scaled": 6.10201725874116e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "max_ratio": 3.1083307602211557e-08,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 2.3869795029440866e-15,
+      "idaes": 0.4103398610377564,
+      "ours": 0.410339861037754,
+      "quantity": "beta",
+      "ratio": 2.3869795029440866e-08,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 7.771561172376096e-16,
+      "idaes": 0.15024997089737477,
+      "ours": 0.15024997089737555,
+      "quantity": "x_CH3OH",
+      "ratio": 7.771561172376096e-09,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.1102230246251565e-15,
+      "idaes": 0.5151914336251362,
+      "ours": 0.5151914336251373,
+      "quantity": "y_CH3OH",
+      "ratio": 1.1102230246251565e-08,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 9.672641339650231e-23,
+      "idaes": 9.672641339650231e-23,
+      "ours": 0.0,
+      "quantity": "x_C2H5OH",
+      "ratio": 9.67264133965023e-16,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.9713231697010185e-23,
+      "idaes": 4.9713231697010185e-23,
+      "ours": 0.0,
+      "quantity": "y_C2H5OH",
+      "ratio": 4.971323169701018e-16,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 6.661338147750939e-16,
+      "idaes": 0.8497500291026251,
+      "ours": 0.8497500291026244,
+      "quantity": "x_H2O",
+      "ratio": 6.661338147750939e-09,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 9.43689570931383e-16,
+      "idaes": 0.48480856637486364,
+      "ours": 0.4848085663748627,
+      "quantity": "y_H2O",
+      "ratio": 9.43689570931383e-09,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 3.1083307602211552e-15,
+      "idaes": 3.428895397104785,
+      "ours": 3.428895397104774,
+      "quantity": "K_CH3OH",
+      "ratio": 3.1083307602211557e-08,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.1675685368432629e-15,
+      "idaes": 0.5705308029078194,
+      "ours": 0.5705308029078188,
+      "quantity": "K_H2O",
+      "ratio": 1.167568536843263e-08,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.820766091346741e-11,
+      "idaes": -274656.4847262083,
+      "ours": -274656.4847262084,
+      "quantity": "h_L",
+      "ratio": 1.1641532182693481e-09,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "idaes": -218385.51781235845,
+      "ours": -218385.51781235845,
+      "quantity": "h_V",
+      "ratio": 0.0,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 357.42
+   },
+   "I3": {
+    "ladder_record": [
+     {
+      "constraint_residuals": {
+       "argmax": "fs.state[0].eq_temperature_bubble",
+       "count_above_1e-8": 7,
+       "max_abs_violation": 89844.1259265636
+      },
+      "eps_K": 0.0001,
+      "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+      "ipopt": {
+       "exit": "Restoration Failed!",
+       "final_constraint_violation_unscaled": 1.0,
+       "final_overall_nlp_error_scaled": 1.0,
+       "ipopt_version": "3.13.2",
+       "iterations": 7,
+       "linear_solver": "ma27"
+      },
+      "linear_solver": "ma27",
+      "termination_condition": "internalSolverError"
+     },
+     {
+      "constraint_residuals": {
+       "argmax": "fs.state[0].eq_temperature_bubble",
+       "count_above_1e-8": 7,
+       "max_abs_violation": 89844.1259265636
+      },
+      "eps_K": 0.0001,
+      "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+      "ipopt": {
+       "exit": "Restoration Failed!",
+       "final_constraint_violation_unscaled": 1.0,
+       "final_overall_nlp_error_scaled": 1.0,
+       "ipopt_version": "3.13.2",
+       "iterations": 9,
+       "linear_solver": "mumps"
+      },
+      "linear_solver": "mumps",
+      "termination_condition": "internalSolverError"
+     },
+     {
+      "constraint_residuals": {
+       "argmax": "fs.state[0].eq_temperature_bubble",
+       "count_above_1e-8": 7,
+       "max_abs_violation": 89844.1259265636
+      },
+      "eps_K": 1e-05,
+      "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+      "ipopt": {
+       "exit": "Restoration Failed!",
+       "final_constraint_violation_unscaled": 1.0,
+       "final_overall_nlp_error_scaled": 1.0,
+       "ipopt_version": "3.13.2",
+       "iterations": 7,
+       "linear_solver": "ma27"
+      },
+      "linear_solver": "ma27",
+      "termination_condition": "internalSolverError"
+     },
+     {
+      "constraint_residuals": {
+       "argmax": "fs.state[0].eq_temperature_bubble",
+       "count_above_1e-8": 7,
+       "max_abs_violation": 89844.1259265636
+      },
+      "eps_K": 1e-05,
+      "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+      "ipopt": {
+       "exit": "Restoration Failed!",
+       "final_constraint_violation_unscaled": 1.0,
+       "final_overall_nlp_error_scaled": 1.0,
+       "ipopt_version": "3.13.2",
+       "iterations": 9,
+       "linear_solver": "mumps"
+      },
+      "linear_solver": "mumps",
+      "termination_condition": "internalSolverError"
+     },
+     {
+      "constraint_residuals": {
+       "argmax": "fs.state[0].eq_temperature_bubble",
+       "count_above_1e-8": 7,
+       "max_abs_violation": 89844.1259265636
+      },
+      "eps_K": 1e-06,
+      "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+      "ipopt": {
+       "exit": "Restoration Failed!",
+       "final_constraint_violation_unscaled": 1.0,
+       "final_overall_nlp_error_scaled": 1.0,
+       "ipopt_version": "3.13.2",
+       "iterations": 7,
+       "linear_solver": "ma27"
+      },
+      "linear_solver": "ma27",
+      "termination_condition": "internalSolverError"
+     },
+     {
+      "constraint_residuals": {
+       "argmax": "fs.state[0].eq_temperature_bubble",
+       "count_above_1e-8": 7,
+       "max_abs_violation": 89844.1259265636
+      },
+      "eps_K": 1e-06,
+      "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+      "ipopt": {
+       "exit": "Restoration Failed!",
+       "final_constraint_violation_unscaled": 1.0,
+       "final_overall_nlp_error_scaled": 1.0,
+       "ipopt_version": "3.13.2",
+       "iterations": 9,
+       "linear_solver": "mumps"
+      },
+      "linear_solver": "mumps",
+      "termination_condition": "internalSolverError"
+     }
+    ],
+    "reason": "no_optimal_attempt",
+    "status": "NOT_COMPARABLE"
+   },
+   "I4": {
+    "all_within": true,
+    "argmax": "beta",
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0368239600211382e-10
+     },
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.593338575025152e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "max_ratio": 0.00019976909015895217,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 1.9976909015895217e-11,
+      "idaes": 0.622344603092385,
+      "ours": 0.6223446030724081,
+      "quantity": "beta",
+      "ratio": 0.00019976909015895217,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 7.905787136053277e-12,
+      "idaes": 0.5333481400298578,
+      "ours": 0.5333481400377635,
+      "quantity": "x_CH3OH",
+      "ratio": 7.905787136053277e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.7980729672426605e-12,
+      "idaes": 0.8011288183583293,
+      "ours": 0.8011288183621273,
+      "quantity": "y_CH3OH",
+      "ratio": 3.7980729672426605e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.702873172565584e-25,
+      "idaes": 4.702873172565584e-25,
+      "ours": 0.0,
+      "quantity": "x_C2H5OH",
+      "ratio": 4.702873172565584e-18,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.3990438684162957e-25,
+      "idaes": 3.3990438684162957e-25,
+      "ours": 0.0,
+      "quantity": "y_C2H5OH",
+      "ratio": 3.3990438684162957e-18,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 7.905842647204508e-12,
+      "idaes": 0.4666518599701423,
+      "ours": 0.46665185996223646,
+      "quantity": "x_H2O",
+      "ratio": 7.905842647204508e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.798100722818276e-12,
+      "idaes": 0.19887118164167072,
+      "ours": 0.19887118163787262,
+      "quantity": "y_H2O",
+      "ratio": 3.798100722818276e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.0082126307753373e-11,
+      "idaes": 1.5020748329852256,
+      "ours": 1.5020748329700815,
+      "quantity": "K_CH3OH",
+      "ratio": 0.00010082126307753373,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 2.1566666862273572e-12,
+      "idaes": 0.4261660537566379,
+      "ours": 0.4261660537557188,
+      "quantity": "K_H2O",
+      "ratio": 2.1566666862273572e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.684835974127054e-07,
+      "idaes": -257615.2030424907,
+      "ours": -257615.20304212222,
+      "quantity": "h_L",
+      "ratio": 7.3696719482541084e-06,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.5745172277092934e-07,
+      "idaes": -207015.39958390637,
+      "ours": -207015.39958374892,
+      "quantity": "h_V",
+      "ratio": 3.1490344554185867e-06,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 345.66
+   },
+   "I5": {
+    "all_within": true,
+    "argmax": "beta",
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.775291356258094e-11
+     },
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4665856757609436e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "max_ratio": 0.0007968870008312479,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 7.968870008312479e-11,
+      "idaes": 0.6839458360278097,
+      "ours": 0.683945835948121,
+      "quantity": "beta",
+      "ratio": 0.0007968870008312479,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.3345102800599307e-11,
+      "idaes": 0.8315173426177642,
+      "ours": 0.8315173426311093,
+      "quantity": "x_CH3OH",
+      "ratio": 0.00013345102800599307,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.4996007747831754e-12,
+      "idaes": 0.9316461156503866,
+      "ours": 0.9316461156558862,
+      "quantity": "y_CH3OH",
+      "ratio": 5.4996007747831754e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.115030750206159e-25,
+      "idaes": 2.115030750206159e-25,
+      "ours": 0.0,
+      "quantity": "x_C2H5OH",
+      "ratio": 2.115030750206159e-18,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.3369614621685708e-25,
+      "idaes": 1.3369614621685708e-25,
+      "ours": 0.0,
+      "quantity": "y_C2H5OH",
+      "ratio": 1.3369614621685708e-18,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.3345047289448075e-11,
+      "idaes": 0.16848265738223572,
+      "ours": 0.16848265736889068,
+      "quantity": "x_H2O",
+      "ratio": 0.00013345047289448075,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.499531385844136e-12,
+      "idaes": 0.06835388434961331,
+      "ours": 0.06835388434411378,
+      "quantity": "y_H2O",
+      "ratio": 5.4995313858441364e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.0146040459823366e-11,
+      "idaes": 1.1204169388907743,
+      "ours": 1.1204169388794065,
+      "quantity": "K_CH3OH",
+      "ratio": 0.00010146040459823367,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.2495054117994022e-12,
+      "idaes": 0.4057027910863206,
+      "ours": 0.4057027910858137,
+      "quantity": "K_H2O",
+      "ratio": 1.2495054117994023e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 6.218033377081156e-07,
+      "idaes": -244104.52081540867,
+      "ours": -244104.52081478687,
+      "quantity": "h_L",
+      "ratio": 1.2436066754162312e-05,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.275337465107441e-07,
+      "idaes": -201853.23838255985,
+      "ours": -201853.23838233232,
+      "quantity": "h_V",
+      "ratio": 4.550674930214882e-06,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 340.29
+   },
+   "I6": {
+    "all_within": true,
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.4551915228366852e-11
+     },
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "beta_idaes": 3.5210384881731134e-13,
+    "phase_idaes": "LIQUID",
+    "phase_ours": "LIQUID",
+    "phase_rule": "LIQUID if |beta| <= 1e-7, VAPOR if |beta - 1| <= 1e-7, else TWO_PHASE (B-36, ratified by spec 16 A3-5)",
+    "status": "compared",
+    "temperature": 343.62
+   },
+   "I7": {
+    "all_within": true,
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.820766091346741e-11
+     },
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "beta_idaes": 0.99999999995283,
+    "phase_idaes": "VAPOR",
+    "phase_ours": "VAPOR",
+    "phase_rule": "LIQUID if |beta| <= 1e-7, VAPOR if |beta - 1| <= 1e-7, else TWO_PHASE (B-36, ratified by spec 16 A3-5)",
+    "status": "compared",
+    "temperature": 366.56
+   },
+   "I8": {
+    "all_within": true,
+    "argmax": "K_C2H5OH",
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 8.003553375601768e-11
+     },
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.7462298274040225e-10,
+      "final_overall_nlp_error_scaled": 4.42659258069612e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "max_ratio": 0.0001670888097850501,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 8.093525849517391e-12,
+      "idaes": 0.3972689600660365,
+      "ours": 0.397268960057943,
+      "quantity": "beta",
+      "ratio": 8.093525849517391e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "idaes": 0.0,
+      "ours": 0.0,
+      "quantity": "x_CH3OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.59387357934416e-24,
+      "idaes": 3.59387357934416e-24,
+      "ours": 0.0,
+      "quantity": "y_CH3OH",
+      "ratio": 3.59387357934416e-17,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.8520324163162627e-12,
+      "idaes": 0.07013885528985107,
+      "ours": 0.0701388552917031,
+      "quantity": "x_C2H5OH",
+      "ratio": 1.8520324163162627e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.84969833788773e-12,
+      "idaes": 0.3970235549869092,
+      "ours": 0.3970235549907589,
+      "quantity": "y_C2H5OH",
+      "ratio": 3.84969833788773e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.8519630273772236e-12,
+      "idaes": 0.9298611447101489,
+      "ours": 0.929861144708297,
+      "quantity": "x_H2O",
+      "ratio": 1.8519630273772236e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.849920382492655e-12,
+      "idaes": 0.602976445013091,
+      "ours": 0.6029764450092411,
+      "quantity": "y_H2O",
+      "ratio": 3.849920382492655e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.670888097850501e-11,
+      "idaes": 5.660536564878292,
+      "ours": 5.660536564783711,
+      "quantity": "K_C2H5OH",
+      "ratio": 0.0001670888097850501,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 4.3930658198459325e-12,
+      "idaes": 0.6484585880841891,
+      "ours": 0.6484585880813404,
+      "quantity": "K_H2O",
+      "ratio": 4.3930658198459326e-05,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.9848812371492386e-08,
+      "idaes": -280677.1999340504,
+      "ours": -280677.19993403053,
+      "quantity": "h_L",
+      "ratio": 3.969762474298477e-07,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.530294634401798e-08,
+      "idaes": -236070.9305275785,
+      "ours": -236070.93052754318,
+      "quantity": "h_V",
+      "ratio": 7.060589268803596e-07,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 360.93
+   },
+   "I9": {
+    "all_within": true,
+    "argmax": "beta",
+    "attempt": {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 6.912159733474255e-11
+     },
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 2.0372681319713595e-10,
+      "final_overall_nlp_error_scaled": 5.0634959374961376e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "termination_condition": "optimal"
+    },
+    "max_ratio": 0.009853308169383013,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 9.853308169383013e-10,
+      "idaes": 0.6021219274312444,
+      "ours": 0.6021219264459136,
+      "quantity": "beta",
+      "ratio": 0.009853308169383013,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 9.192185920869736e-25,
+      "idaes": 9.192185920869736e-25,
+      "ours": 0.0,
+      "quantity": "x_CH3OH",
+      "ratio": 9.192185920869736e-18,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.3435500284489767e-24,
+      "idaes": 1.3435500284489767e-24,
+      "ours": 0.0,
+      "quantity": "y_CH3OH",
+      "ratio": 1.3435500284489767e-17,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.2759605311506448e-10,
+      "idaes": 0.5087310574191842,
+      "ours": 0.5087310576467803,
+      "quantity": "x_C2H5OH",
+      "ratio": 0.002275960531150645,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 9.765432906760907e-11,
+      "idaes": 0.660309896227106,
+      "ours": 0.6603098963247603,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.0009765432906760907,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.275962751596694e-10,
+      "idaes": 0.491268942580816,
+      "ours": 0.4912689423532197,
+      "quantity": "x_H2O",
+      "ratio": 0.002275962751596694,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 9.765427355645784e-11,
+      "idaes": 0.33969010377289394,
+      "ours": 0.33969010367523966,
+      "quantity": "y_H2O",
+      "ratio": 0.0009765427355645784,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 2.9948822442392854e-10,
+      "idaes": 1.2979547574250492,
+      "ours": 1.297954757036327,
+      "quantity": "K_C2H5OH",
+      "ratio": 0.0029948822442392854,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.7580186586981837e-10,
+      "idaes": 0.6914544648159056,
+      "ours": 0.6914544649374645,
+      "quantity": "K_H2O",
+      "ratio": 0.0017580186586981838,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.351065631955862e-06,
+      "idaes": -276722.0293487029,
+      "ours": -276722.02934635186,
+      "quantity": "h_L",
+      "ratio": 4.702131263911724e-05,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 8.621136657893658e-07,
+      "idaes": -234149.457379947,
+      "ours": -234149.4573790849,
+      "quantity": "h_V",
+      "ratio": 1.7242273315787315e-05,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 352.86
+   }
+  },
+  "tolerances": {
+   "I6_I7": "the phase identity, exact",
+   "K_relative": 1e-07,
+   "beta_x_y_absolute": 1e-07,
+   "h_absolute_J_per_mol": 0.05
+  },
+  "verdict": "the verdict agent's, per state (spec 8.1); nothing here classifies"
+ },
+ "envelope_equations": {
+  "all_hold": true,
+  "assertion": "S10.A44",
+  "checks": [
+   {
+    "contains": true,
+    "equation": "eq_temperature_bubble",
+    "holds": true,
+    "must_contain": true,
+    "pattern": "activity_coeff_comp_bubble["
+   },
+   {
+    "contains": false,
+    "equation": "eq_temperature_bubble",
+    "holds": true,
+    "must_contain": false,
+    "pattern": "activity_coeff_comp["
+   },
+   {
+    "contains": true,
+    "equation": "eq_temperature_dew",
+    "holds": true,
+    "must_contain": true,
+    "pattern": "activity_coeff_comp["
+   },
+   {
+    "contains": false,
+    "equation": "eq_temperature_dew",
+    "holds": true,
+    "must_contain": false,
+    "pattern": "activity_coeff_comp_dew["
+   }
+  ],
+  "rendering": "pyomo expression_to_string(expr, verbose=True): every named Expression appears by its name with its body in braces (B-42)"
+ },
+ "environment": {
+  "fingerprint_matches": true,
+  "package_sha256": "8b0ab12851ed4f0f530683ce7cee20bf698720d1fa13a4b5645fc03d751ed588",
+  "versions": {
+   "idaes_pse": "2.13.0",
+   "pyomo": "6.10.1",
+   "python": "3.13.5"
+  }
+ },
+ "inspection": {
+  "degrees_of_freedom": 0,
+  "wagner_parameter_references_in_active_constraints": []
+ },
+ "ladders": {
+  "amendment_3": {
+   "attempts": [
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 7.275957614183426e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 7.275957614183426e-11,
+      "final_overall_nlp_error_scaled": 1.9613609811216355e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I1",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0186340659856796e-10
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.5486030821686138e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I10",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.8189894035458565e-10
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.8917489796876905e-10,
+      "final_overall_nlp_error_scaled": 4.794930313024633e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I11",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.1827872842550278e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 4.3655745685100555e-11,
+      "final_overall_nlp_error_scaled": 1.1118760995002812e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I12",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.820766091346741e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 3.634652986276756e-13,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I13",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.093170329928398e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4675408935575163e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I14",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 8065.3632839036145
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 8065.3632839036145,
+      "final_overall_nlp_error_scaled": 0.999999996765856,
+      "ipopt_version": "3.13.2",
+      "iterations": 116,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I2",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 8065.363150548481
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 8065.363150548481,
+      "final_overall_nlp_error_scaled": 0.9999999967100136,
+      "ipopt_version": "3.13.2",
+      "iterations": 114,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I2",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 7,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 9,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0368239600211382e-10
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.593338575025152e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I4",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.775291356258094e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4665856757609436e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I5",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_dew",
+      "count_above_1e-8": 1,
+      "max_abs_violation": 1.0
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1397.6764776146676,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 3,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I6",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_dew",
+      "count_above_1e-8": 10,
+      "max_abs_violation": 1.0
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.1073813965801804,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 3,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I6",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.820766091346741e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I7",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 8.003553375601768e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.7462298274040225e-10,
+      "final_overall_nlp_error_scaled": 4.42659258069612e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I8",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 6.912159733474255e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 2.0372681319713595e-10,
+      "final_overall_nlp_error_scaled": 5.0634959374961376e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I9",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 7.275957614183426e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 7.275957614183426e-11,
+      "final_overall_nlp_error_scaled": 1.9613609811216355e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I1",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0186340659856796e-10
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.5486030821686138e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I10",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 9,
+      "max_abs_violation": 51982.716152424255
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 51982.716152424255,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 50,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I11",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_dew",
+      "count_above_1e-8": 4,
+      "max_abs_violation": 1.0
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 1,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I11",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Vap]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.9103830456733704e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 4.3655745685100555e-11,
+      "final_overall_nlp_error_scaled": 1.1118760995002812e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I12",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 92965.9152754591
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0000000000000824,
+      "final_overall_nlp_error_scaled": 1.0000000000000824,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I13",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 92965.9152754591
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0000000000000824,
+      "final_overall_nlp_error_scaled": 1.0000000000000824,
+      "ipopt_version": "3.13.2",
+      "iterations": 10,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I13",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.093170329928398e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4675408935575163e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I14",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 8,
+      "max_abs_violation": 60430.10316006573
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 60430.10316006573,
+      "final_overall_nlp_error_scaled": 0.9999999996636073,
+      "ipopt_version": "3.13.2",
+      "iterations": 46,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I2",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 5,
+      "max_abs_violation": 74.33140193048517
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 74.332415179171,
+      "final_overall_nlp_error_scaled": 0.9999999969991078,
+      "ipopt_version": "3.13.2",
+      "iterations": 71,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I2",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 7,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 9,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0368239600211382e-10
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.593338575025152e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I4",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.775291356258094e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4665856757609436e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I5",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.4551915228366852e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I6",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.820766091346741e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I7",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 8.003553375601768e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.7462298274040225e-10,
+      "final_overall_nlp_error_scaled": 4.42659258069612e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I8",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 6.912159733474255e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 2.0372681319713595e-10,
+      "final_overall_nlp_error_scaled": 5.0634959374961376e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I9",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 7.275957614183426e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 7.275957614183426e-11,
+      "final_overall_nlp_error_scaled": 1.9613609811216355e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I1",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0186340659856796e-10
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.5486030821686138e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I10",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[C2H5OH]",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 119.84159915565104
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 119.84261240490905,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 78,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I11",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_dew",
+      "count_above_1e-8": 4,
+      "max_abs_violation": 1.0
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 1,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I11",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_A[CH3OH]",
+      "count_above_1e-8": 12,
+      "max_abs_violation": 31.69696657531326
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 29.271235145852046,
+      "final_overall_nlp_error_scaled": 0.1388512497065696,
+      "ipopt_version": "3.13.2",
+      "iterations": 142,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I12",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Vap]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.9103830456733704e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 4.3655745685100555e-11,
+      "final_overall_nlp_error_scaled": 1.1118760995002812e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I12",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 92965.9152754591
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I13",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 4,
+      "max_abs_violation": 4.196556395619939
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 4.197569645614416,
+      "final_overall_nlp_error_scaled": 0.0041426791469177555,
+      "ipopt_version": "3.13.2",
+      "iterations": 105,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I13",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.093170329928398e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4675408935575163e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I14",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.673470251262188e-10
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 2.3283064365386963e-10,
+      "final_overall_nlp_error_scaled": 6.10201725874116e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I2",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 7,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 9,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_total",
+      "count_above_1e-8": 27,
+      "max_abs_violation": 1.0
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Maximum Number of Iterations Exceeded.",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 3000,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I4",
+     "termination_condition": "maxIterations"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0368239600211382e-10
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.593338575025152e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I4",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.775291356258094e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4665856757609436e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I5",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.820766091346741e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I6",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0913936421275139e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I7",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 8.003553375601768e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 1.7462298274040225e-10,
+      "final_overall_nlp_error_scaled": 4.42659258069612e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I8",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 6.912159733474255e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 2.0372681319713595e-10,
+      "final_overall_nlp_error_scaled": 5.0634959374961376e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I9",
+     "termination_condition": "optimal"
+    }
+   ],
+   "optimal_rungs_per_state": {
+    "I1": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I10": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I11": [
+     0.0001
+    ],
+    "I12": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I13": [
+     0.0001
+    ],
+    "I14": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I2": [
+     1e-06
+    ],
+    "I3": [],
+    "I4": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I5": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I6": [
+     1e-05,
+     1e-06
+    ],
+    "I7": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I8": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I9": [
+     0.0001,
+     1e-05,
+     1e-06
+    ]
+   },
+   "registered": {
+    "converged": "Pyomo optimal termination and Ipopt 'EXIT: Optimal Solution Found.'",
+    "dependence_ratio_max": 0.1,
+    "eps_K": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "ipopt_options": {
+     "constr_viol_tol": 1e-09,
+     "max_iter": 3000,
+     "tol": 1e-10
+    },
+    "linear_solvers": [
+     "ma27",
+     "mumps"
+    ],
+    "mumps": "only when the ma27 attempt at the same state and rung did not end optimal",
+    "selection": "per state: the first optimal attempt in the order (eps 1e-4 ma27, mumps; 1e-5 ma27, mumps; 1e-6 ma27, mumps); none: NOT_COMPARABLE(no_optimal_attempt)",
+    "use": "decides (spec 16 A3-2, A3-4)"
+   }
+  },
+  "registered_8_1": {
+   "attempts": [
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 7.275957614183426e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 7.275957614183426e-11,
+      "final_overall_nlp_error_scaled": 1.9613609811216355e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I1",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0186340659856796e-10
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.5486030821686138e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 11,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I10",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0186340659856796e-10
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.5486030821686138e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 7,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I10",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.8189894035458565e-10
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Search Direction is becoming Too Small.",
+      "final_constraint_violation_unscaled": 1.8917489796876905e-10,
+      "final_overall_nlp_error_scaled": 4.794930313024633e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 9,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I11",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_dew",
+      "count_above_1e-8": 4,
+      "max_abs_violation": 1.0
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 1,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I11",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.1827872842550278e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 4.3655745685100555e-11,
+      "final_overall_nlp_error_scaled": 1.1118760995002812e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I12",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.820766091346741e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 3.634652986276756e-13,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I13",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.093170329928398e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4675408935575163e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I14",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 8065.3632839036145
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 8065.3632839036145,
+      "final_overall_nlp_error_scaled": 0.999999996765856,
+      "ipopt_version": "3.13.2",
+      "iterations": 116,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I2",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 8065.363150548481
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 8065.363150548481,
+      "final_overall_nlp_error_scaled": 0.9999999967100136,
+      "ipopt_version": "3.13.2",
+      "iterations": 114,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I2",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 7,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 9,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0368239600211382e-10
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.593338575025152e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 12,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I4",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0368239600211382e-10
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.593338575025152e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 7,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I4",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.775291356258094e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4665856757609436e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I5",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_dew",
+      "count_above_1e-8": 1,
+      "max_abs_violation": 1.0
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1397.6764776146676,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 3,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I6",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_dew",
+      "count_above_1e-8": 10,
+      "max_abs_violation": 1.0
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.1073813965801804,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 3,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I6",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.820766091346741e-11
+     },
+     "converged": true,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I7",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 8.003553375601768e-11
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Search Direction is becoming Too Small.",
+      "final_constraint_violation_unscaled": 1.7462298274040225e-10,
+      "final_overall_nlp_error_scaled": 4.42659258069612e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 10,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I8",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 8.003553375601768e-11
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.7462298274040222e-10,
+      "final_overall_nlp_error_scaled": 4.426592580696133e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 6,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I8",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.874003257602453e-10
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.6007106751203537e-10,
+      "final_overall_nlp_error_scaled": 3.978461093746965e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 11,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I9",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.874003257602453e-10
+     },
+     "converged": false,
+     "eps_K": 0.0001,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.6007106751203537e-10,
+      "final_overall_nlp_error_scaled": 3.978461093746965e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 9,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I9",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 7.275957614183426e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 7.275957614183426e-11,
+      "final_overall_nlp_error_scaled": 1.9613609811216355e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I1",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0186340659856796e-10
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.5486030821686138e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 10,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I10",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0186340659856796e-10
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.5486030821686138e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I10",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 9,
+      "max_abs_violation": 51982.716152424255
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 51982.716152424255,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 50,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I11",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_dew",
+      "count_above_1e-8": 4,
+      "max_abs_violation": 1.0
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 1,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I11",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Vap]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.9103830456733704e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 4.3655745685100555e-11,
+      "final_overall_nlp_error_scaled": 1.1118760995002812e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I12",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 92965.9152754591
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0000000000000824,
+      "final_overall_nlp_error_scaled": 1.0000000000000824,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I13",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 92965.9152754591
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0000000000000824,
+      "final_overall_nlp_error_scaled": 1.0000000000000824,
+      "ipopt_version": "3.13.2",
+      "iterations": 10,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I13",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.093170329928398e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4675408935575163e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I14",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 8,
+      "max_abs_violation": 60430.10316006573
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 60430.10316006573,
+      "final_overall_nlp_error_scaled": 0.9999999996636073,
+      "ipopt_version": "3.13.2",
+      "iterations": 46,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I2",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 5,
+      "max_abs_violation": 74.33140193048517
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 74.332415179171,
+      "final_overall_nlp_error_scaled": 0.9999999969991078,
+      "ipopt_version": "3.13.2",
+      "iterations": 71,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I2",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 7,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 9,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0368239600211382e-10
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Search Direction is becoming Too Small.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.593338575025152e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I4",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0368239600211382e-10
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Search Direction is becoming Too Small.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.593338575025152e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I4",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.775291356258094e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4665856757609436e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I5",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.4551915228366852e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I6",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.820766091346741e-11
+     },
+     "converged": true,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I7",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 8.003553375601768e-11
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.7462298274040225e-10,
+      "final_overall_nlp_error_scaled": 4.42659258069612e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 12,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I8",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 8.003553375601768e-11
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Search Direction is becoming Too Small.",
+      "final_constraint_violation_unscaled": 1.7462298274040225e-10,
+      "final_overall_nlp_error_scaled": 4.42659258069612e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I8",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.874003257602453e-10
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.6007106751203537e-10,
+      "final_overall_nlp_error_scaled": 3.978461093746965e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I9",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.874003257602453e-10
+     },
+     "converged": false,
+     "eps_K": 1e-05,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.6007106751203537e-10,
+      "final_overall_nlp_error_scaled": 3.978461093746965e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I9",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 7.275957614183426e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 7.275957614183426e-11,
+      "final_overall_nlp_error_scaled": 1.9613609811216355e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I1",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0186340659856796e-10
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Search Direction is becoming Too Small.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.5486030821686138e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I10",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0186340659856796e-10
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Search Direction is becoming Too Small.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.5486030821686138e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I10",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[C2H5OH]",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 119.84159915565104
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 119.84261240490905,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 78,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I11",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_dew",
+      "count_above_1e-8": 4,
+      "max_abs_violation": 1.0
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 1,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I11",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_A[CH3OH]",
+      "count_above_1e-8": 12,
+      "max_abs_violation": 31.69696657531326
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 29.271235145852046,
+      "final_overall_nlp_error_scaled": 0.1388512497065696,
+      "ipopt_version": "3.13.2",
+      "iterations": 142,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I12",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Vap]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.9103830456733704e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 4.3655745685100555e-11,
+      "final_overall_nlp_error_scaled": 1.1118760995002812e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 0,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I12",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 92965.9152754591
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I13",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 4,
+      "max_abs_violation": 4.196556395619939
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 4.197569645614416,
+      "final_overall_nlp_error_scaled": 0.0041426791469177555,
+      "ipopt_version": "3.13.2",
+      "iterations": 105,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I13",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.093170329928398e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4675408935575163e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I14",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.673470251262188e-10
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Search Direction is becoming Too Small.",
+      "final_constraint_violation_unscaled": 1.455191522836685e-10,
+      "final_overall_nlp_error_scaled": 3.8137607867132246e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 11,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I2",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 8065.363045021724
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Converged to a point of local infeasibility. Problem may be infeasible.",
+      "final_constraint_violation_unscaled": 8065.363045021724,
+      "final_overall_nlp_error_scaled": 0.9999999966664779,
+      "ipopt_version": "3.13.2",
+      "iterations": 114,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I2",
+     "termination_condition": "infeasible"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 7,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 7,
+      "max_abs_violation": 89844.1259265636
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "ValueError: Cannot load a SolverResults object with bad status: error",
+     "ipopt": {
+      "exit": "Restoration Failed!",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 9,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I3",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_total",
+      "count_above_1e-8": 27,
+      "max_abs_violation": 1.0
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "InitializationError: fs.state failed to initialize successfully. Please check the output logs for more information.",
+     "ipopt": {
+      "exit": "Maximum Number of Iterations Exceeded.",
+      "final_constraint_violation_unscaled": 1.0,
+      "final_overall_nlp_error_scaled": 1.0,
+      "ipopt_version": "3.13.2",
+      "iterations": 3000,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I4",
+     "termination_condition": "maxIterations"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0368239600211382e-10
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Search Direction is becoming Too Small.",
+      "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+      "final_overall_nlp_error_scaled": 2.593338575025152e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I4",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.775291356258094e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.4665856757609436e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I5",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 5.820766091346741e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I6",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 1.0913936421275139e-11
+     },
+     "converged": true,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Optimal Solution Found.",
+      "final_constraint_violation_unscaled": 5.820766091346741e-11,
+      "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 4,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I7",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 8.003553375601768e-11
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.7462298274040225e-10,
+      "final_overall_nlp_error_scaled": 4.42659258069612e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 17,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I8",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 8.003553375601768e-11
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Search Direction is becoming Too Small.",
+      "final_constraint_violation_unscaled": 1.7462298274040225e-10,
+      "final_overall_nlp_error_scaled": 4.42659258069612e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I8",
+     "termination_condition": "internalSolverError"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.874003257602453e-10
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.6007106751203537e-10,
+      "final_overall_nlp_error_scaled": 3.978461093746965e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 8,
+      "linear_solver": "ma27"
+     },
+     "linear_solver": "ma27",
+     "state": "I9",
+     "termination_condition": "optimal"
+    },
+    {
+     "constraint_residuals": {
+      "argmax": "fs.state[0].eq_temperature_bubble",
+      "count_above_1e-8": 0,
+      "max_abs_violation": 2.874003257602453e-10
+     },
+     "converged": false,
+     "eps_K": 1e-06,
+     "initializer": "completed",
+     "ipopt": {
+      "exit": "Solved To Acceptable Level.",
+      "final_constraint_violation_unscaled": 1.6007106751203537e-10,
+      "final_overall_nlp_error_scaled": 3.978461093746965e-12,
+      "ipopt_version": "3.13.2",
+      "iterations": 12,
+      "linear_solver": "mumps"
+     },
+     "linear_solver": "mumps",
+     "state": "I9",
+     "termination_condition": "optimal"
+    }
+   ],
+   "optimal_rungs_per_state": {
+    "I1": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I10": [],
+    "I11": [],
+    "I12": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I13": [
+     0.0001
+    ],
+    "I14": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I2": [],
+    "I3": [],
+    "I4": [],
+    "I5": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I6": [
+     1e-05,
+     1e-06
+    ],
+    "I7": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "I8": [],
+    "I9": []
+   },
+   "registered": {
+    "eps_K": [
+     0.0001,
+     1e-05,
+     1e-06
+    ],
+    "ipopt_options": {
+     "constr_viol_tol": 1e-10,
+     "max_iter": 3000,
+     "tol": 1e-10
+    },
+    "linear_solvers": [
+     "ma27",
+     "mumps"
+    ],
+    "use": "reproduction of the WO-S10-4 record only (spec 16 A3-4); decides nothing"
+   }
+  }
+ },
+ "provenance": {
+  "inputs.json": "8d6c881dd282fd8d4dd59688853ad1935332092505a66d0b4eaa1331a0057368",
+  "qualification.json": "aecd227950f61f190e852ea2e8553bfae5e773de73146315bf4f007f02d8da1b",
+  "records.yaml": "d4a39730ee24c592b5a7a36977ec4d122817182f71166d75058d9d99d0934d55",
+  "reference_values_real.yaml": "2e9d51307828572bcb4ea05735a36efdf912e43c9f1fbf31f1ead75a38b9cf80",
+  "s10_reference.py": "c4dd73ff447005ee0ca3a6096db02e4d2a9240834db2c38a9feda44312c5ab7e"
+ },
+ "readbacks": {
+  "all_within": true,
+  "argmax": "RB-T360-x1 pressure_sat_comp H2O",
+  "assertion": "S10.A40",
+  "expected": "the generator's closed forms (s10_reference.Model on records.yaml, 50 digits) at the RB points' binary64 inputs",
+  "max_relative": 2.8638988458957382e-15,
+  "rows": [
+   {
+    "component": "CH3OH",
+    "generator": 111133.73011727055,
+    "idaes": 111133.73011727043,
+    "point": "RB-T340-x1",
+    "quantity": "pressure_sat_comp",
+    "relative": 9.991062771574096e-16
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 63032.79046316693,
+    "idaes": 63032.79046316694,
+    "point": "RB-T340-x1",
+    "quantity": "pressure_sat_comp",
+    "relative": 1.1761074990968091e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 27186.83315300899,
+    "idaes": 27186.83315300902,
+    "point": "RB-T340-x1",
+    "quantity": "pressure_sat_comp",
+    "relative": 1.2411693358832417e-15
+   },
+   {
+    "component": "CH3OH",
+    "generator": 111133.73011727055,
+    "idaes": 111133.73011727039,
+    "point": "RB-T340-x1",
+    "quantity": "p_sat_bubbleT",
+    "relative": 1.391928021186285e-15
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 63032.79046316693,
+    "idaes": 63032.79046316695,
+    "point": "RB-T340-x1",
+    "quantity": "p_sat_bubbleT",
+    "relative": 3.48473371117451e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 27186.83315300899,
+    "idaes": 27186.83315300901,
+    "point": "RB-T340-x1",
+    "quantity": "p_sat_bubbleT",
+    "relative": 8.397273452015427e-16
+   },
+   {
+    "component": "CH3OH",
+    "generator": 111133.73011727055,
+    "idaes": 111133.73011727039,
+    "point": "RB-T340-x1",
+    "quantity": "p_sat_dewT",
+    "relative": 1.391928021186285e-15
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 63032.79046316693,
+    "idaes": 63032.79046316695,
+    "point": "RB-T340-x1",
+    "quantity": "p_sat_dewT",
+    "relative": 3.48473371117451e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 27186.83315300899,
+    "idaes": 27186.83315300901,
+    "point": "RB-T340-x1",
+    "quantity": "p_sat_dewT",
+    "relative": 8.397273452015427e-16
+   },
+   {
+    "component": "CH3OH",
+    "generator": 0.9802382561181454,
+    "idaes": 0.9802382561181449,
+    "point": "RB-T340-x1",
+    "quantity": "activity_coeff_comp",
+    "relative": 6.212928346578547e-16
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 1.33633463576632,
+    "idaes": 1.3363346357663197,
+    "point": "RB-T340-x1",
+    "quantity": "activity_coeff_comp",
+    "relative": 2.1663936394173624e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 1.3568956084687218,
+    "idaes": 1.3568956084687216,
+    "point": "RB-T340-x1",
+    "quantity": "activity_coeff_comp",
+    "relative": 8.359227959722831e-17
+   },
+   {
+    "component": "CH3OH",
+    "generator": 0.9802382561181454,
+    "idaes": 0.9802382561181451,
+    "point": "RB-T340-x1",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 3.9477177863995033e-16
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 1.33633463576632,
+    "idaes": 1.3363346357663197,
+    "point": "RB-T340-x1",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 2.1663936394173624e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 1.3568956084687218,
+    "idaes": 1.3568956084687216,
+    "point": "RB-T340-x1",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 8.359227959722831e-17
+   },
+   {
+    "component": null,
+    "generator": -270614.28104314057,
+    "idaes": -270614.28104314057,
+    "point": "RB-T340-x1",
+    "quantity": "enth_mol_phase.Liq",
+    "relative": 3.9090509193152516e-17
+   },
+   {
+    "component": null,
+    "generator": -229640.07726366233,
+    "idaes": -229640.0772636623,
+    "point": "RB-T340-x1",
+    "quantity": "enth_mol_phase.Vap",
+    "relative": 7.064059365830019e-17
+   },
+   {
+    "component": "CH3OH",
+    "generator": 111133.73011727055,
+    "idaes": 111133.73011727043,
+    "point": "RB-T340-x2",
+    "quantity": "pressure_sat_comp",
+    "relative": 9.991062771574096e-16
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 63032.79046316693,
+    "idaes": 63032.79046316694,
+    "point": "RB-T340-x2",
+    "quantity": "pressure_sat_comp",
+    "relative": 1.1761074990968091e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 27186.83315300899,
+    "idaes": 27186.83315300902,
+    "point": "RB-T340-x2",
+    "quantity": "pressure_sat_comp",
+    "relative": 1.2411693358832417e-15
+   },
+   {
+    "component": "CH3OH",
+    "generator": 111133.73011727055,
+    "idaes": 111133.73011727039,
+    "point": "RB-T340-x2",
+    "quantity": "p_sat_bubbleT",
+    "relative": 1.391928021186285e-15
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 63032.79046316693,
+    "idaes": 63032.79046316695,
+    "point": "RB-T340-x2",
+    "quantity": "p_sat_bubbleT",
+    "relative": 3.48473371117451e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 27186.83315300899,
+    "idaes": 27186.83315300901,
+    "point": "RB-T340-x2",
+    "quantity": "p_sat_bubbleT",
+    "relative": 8.397273452015427e-16
+   },
+   {
+    "component": "CH3OH",
+    "generator": 111133.73011727055,
+    "idaes": 111133.73011727039,
+    "point": "RB-T340-x2",
+    "quantity": "p_sat_dewT",
+    "relative": 1.391928021186285e-15
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 63032.79046316693,
+    "idaes": 63032.79046316695,
+    "point": "RB-T340-x2",
+    "quantity": "p_sat_dewT",
+    "relative": 3.48473371117451e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 27186.83315300899,
+    "idaes": 27186.83315300901,
+    "point": "RB-T340-x2",
+    "quantity": "p_sat_dewT",
+    "relative": 8.397273452015427e-16
+   },
+   {
+    "component": "CH3OH",
+    "generator": 0.994302664617942,
+    "idaes": 0.994302664617942,
+    "point": "RB-T340-x2",
+    "quantity": "activity_coeff_comp",
+    "relative": 2.394606218791236e-17
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 1.0776175640441303,
+    "idaes": 1.0776175640441303,
+    "point": "RB-T340-x2",
+    "quantity": "activity_coeff_comp",
+    "relative": 7.493747043449136e-17
+   },
+   {
+    "component": "H2O",
+    "generator": 1.5719944138289808,
+    "idaes": 1.5719944138289808,
+    "point": "RB-T340-x2",
+    "quantity": "activity_coeff_comp",
+    "relative": 7.400810233046971e-18
+   },
+   {
+    "component": "CH3OH",
+    "generator": 0.994302664617942,
+    "idaes": 0.994302664617942,
+    "point": "RB-T340-x2",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 2.394606218791236e-17
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 1.0776175640441303,
+    "idaes": 1.0776175640441303,
+    "point": "RB-T340-x2",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 7.493747043449136e-17
+   },
+   {
+    "component": "H2O",
+    "generator": 1.5719944138289808,
+    "idaes": 1.5719944138289808,
+    "point": "RB-T340-x2",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 7.400810233046971e-18
+   },
+   {
+    "component": null,
+    "generator": -252955.43505229347,
+    "idaes": -252955.43505229347,
+    "point": "RB-T340-x2",
+    "quantity": "enth_mol_phase.Liq",
+    "relative": 3.876000642409251e-17
+   },
+   {
+    "component": null,
+    "generator": -213922.71567561984,
+    "idaes": -213922.71567561984,
+    "point": "RB-T340-x2",
+    "quantity": "enth_mol_phase.Vap",
+    "relative": 1.8360592121481792e-17
+   },
+   {
+    "component": "CH3OH",
+    "generator": 229913.8888036096,
+    "idaes": 229913.88880360944,
+    "point": "RB-T360-x1",
+    "quantity": "pressure_sat_comp",
+    "relative": 6.7531602467372015e-16
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 140028.86898245668,
+    "idaes": 140028.8689824566,
+    "point": "RB-T360-x1",
+    "quantity": "pressure_sat_comp",
+    "relative": 6.443497949448385e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 62192.30249250338,
+    "idaes": 62192.30249250321,
+    "point": "RB-T360-x1",
+    "quantity": "pressure_sat_comp",
+    "relative": 2.8638988458957382e-15
+   },
+   {
+    "component": "CH3OH",
+    "generator": 229913.8888036096,
+    "idaes": 229913.88880360927,
+    "point": "RB-T360-x1",
+    "quantity": "p_sat_bubbleT",
+    "relative": 1.434830744071832e-15
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 140028.86898245668,
+    "idaes": 140028.86898245654,
+    "point": "RB-T360-x1",
+    "quantity": "p_sat_bubbleT",
+    "relative": 1.0600330846581894e-15
+   },
+   {
+    "component": "H2O",
+    "generator": 62192.30249250338,
+    "idaes": 62192.30249250325,
+    "point": "RB-T360-x1",
+    "quantity": "p_sat_bubbleT",
+    "relative": 2.1619511138534524e-15
+   },
+   {
+    "component": "CH3OH",
+    "generator": 229913.8888036096,
+    "idaes": 229913.88880360927,
+    "point": "RB-T360-x1",
+    "quantity": "p_sat_dewT",
+    "relative": 1.434830744071832e-15
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 140028.86898245668,
+    "idaes": 140028.86898245654,
+    "point": "RB-T360-x1",
+    "quantity": "p_sat_dewT",
+    "relative": 1.0600330846581894e-15
+   },
+   {
+    "component": "H2O",
+    "generator": 62192.30249250338,
+    "idaes": 62192.30249250325,
+    "point": "RB-T360-x1",
+    "quantity": "p_sat_dewT",
+    "relative": 2.1619511138534524e-15
+   },
+   {
+    "component": "CH3OH",
+    "generator": 0.9802382561181454,
+    "idaes": 0.9802382561181449,
+    "point": "RB-T360-x1",
+    "quantity": "activity_coeff_comp",
+    "relative": 6.212928346578547e-16
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 1.33633463576632,
+    "idaes": 1.3363346357663197,
+    "point": "RB-T360-x1",
+    "quantity": "activity_coeff_comp",
+    "relative": 2.1663936394173624e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 1.3568956084687218,
+    "idaes": 1.3568956084687216,
+    "point": "RB-T360-x1",
+    "quantity": "activity_coeff_comp",
+    "relative": 8.359227959722831e-17
+   },
+   {
+    "component": "CH3OH",
+    "generator": 0.9802382561181454,
+    "idaes": 0.9802382561181451,
+    "point": "RB-T360-x1",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 3.9477177863995033e-16
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 1.33633463576632,
+    "idaes": 1.3363346357663197,
+    "point": "RB-T360-x1",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 2.1663936394173624e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 1.3568956084687218,
+    "idaes": 1.3568956084687216,
+    "point": "RB-T360-x1",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 8.359227959722831e-17
+   },
+   {
+    "component": null,
+    "generator": -268963.7407156358,
+    "idaes": -268963.7407156358,
+    "point": "RB-T360-x1",
+    "quantity": "enth_mol_phase.Liq",
+    "relative": 1.5690623895497044e-17
+   },
+   {
+    "component": null,
+    "generator": -228672.03075285984,
+    "idaes": -228672.03075285984,
+    "point": "RB-T360-x1",
+    "quantity": "enth_mol_phase.Vap",
+    "relative": 3.681898614309569e-17
+   },
+   {
+    "component": "CH3OH",
+    "generator": 229913.8888036096,
+    "idaes": 229913.88880360944,
+    "point": "RB-T360-x2",
+    "quantity": "pressure_sat_comp",
+    "relative": 6.7531602467372015e-16
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 140028.86898245668,
+    "idaes": 140028.8689824566,
+    "point": "RB-T360-x2",
+    "quantity": "pressure_sat_comp",
+    "relative": 6.443497949448385e-16
+   },
+   {
+    "component": "H2O",
+    "generator": 62192.30249250338,
+    "idaes": 62192.30249250321,
+    "point": "RB-T360-x2",
+    "quantity": "pressure_sat_comp",
+    "relative": 2.8638988458957382e-15
+   },
+   {
+    "component": "CH3OH",
+    "generator": 229913.8888036096,
+    "idaes": 229913.88880360927,
+    "point": "RB-T360-x2",
+    "quantity": "p_sat_bubbleT",
+    "relative": 1.434830744071832e-15
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 140028.86898245668,
+    "idaes": 140028.86898245654,
+    "point": "RB-T360-x2",
+    "quantity": "p_sat_bubbleT",
+    "relative": 1.0600330846581894e-15
+   },
+   {
+    "component": "H2O",
+    "generator": 62192.30249250338,
+    "idaes": 62192.30249250325,
+    "point": "RB-T360-x2",
+    "quantity": "p_sat_bubbleT",
+    "relative": 2.1619511138534524e-15
+   },
+   {
+    "component": "CH3OH",
+    "generator": 229913.8888036096,
+    "idaes": 229913.88880360927,
+    "point": "RB-T360-x2",
+    "quantity": "p_sat_dewT",
+    "relative": 1.434830744071832e-15
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 140028.86898245668,
+    "idaes": 140028.86898245654,
+    "point": "RB-T360-x2",
+    "quantity": "p_sat_dewT",
+    "relative": 1.0600330846581894e-15
+   },
+   {
+    "component": "H2O",
+    "generator": 62192.30249250338,
+    "idaes": 62192.30249250325,
+    "point": "RB-T360-x2",
+    "quantity": "p_sat_dewT",
+    "relative": 2.1619511138534524e-15
+   },
+   {
+    "component": "CH3OH",
+    "generator": 0.994302664617942,
+    "idaes": 0.994302664617942,
+    "point": "RB-T360-x2",
+    "quantity": "activity_coeff_comp",
+    "relative": 2.394606218791236e-17
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 1.0776175640441303,
+    "idaes": 1.0776175640441303,
+    "point": "RB-T360-x2",
+    "quantity": "activity_coeff_comp",
+    "relative": 7.493747043449136e-17
+   },
+   {
+    "component": "H2O",
+    "generator": 1.5719944138289808,
+    "idaes": 1.5719944138289808,
+    "point": "RB-T360-x2",
+    "quantity": "activity_coeff_comp",
+    "relative": 7.400810233046971e-18
+   },
+   {
+    "component": "CH3OH",
+    "generator": 0.994302664617942,
+    "idaes": 0.994302664617942,
+    "point": "RB-T360-x2",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 2.394606218791236e-17
+   },
+   {
+    "component": "C2H5OH",
+    "generator": 1.0776175640441303,
+    "idaes": 1.0776175640441303,
+    "point": "RB-T360-x2",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 7.493747043449136e-17
+   },
+   {
+    "component": "H2O",
+    "generator": 1.5719944138289808,
+    "idaes": 1.5719944138289808,
+    "point": "RB-T360-x2",
+    "quantity": "activity_coeff_comp_bubble",
+    "relative": 7.400810233046971e-18
+   },
+   {
+    "component": null,
+    "generator": -251365.21955444518,
+    "idaes": -251365.21955444518,
+    "point": "RB-T360-x2",
+    "quantity": "enth_mol_phase.Liq",
+    "relative": 5.558841950002847e-17
+   },
+   {
+    "component": null,
+    "generator": -212923.6939111708,
+    "idaes": -212923.6939111708,
+    "point": "RB-T360-x2",
+    "quantity": "enth_mol_phase.Vap",
+    "relative": 3.258799087238449e-17
+   }
+  ],
+  "tolerance_relative": 1e-10
+ },
+ "reproduction": {
+  "attempts_compared": 67,
+  "attempts_run_r": 67,
+  "attempts_source": 67,
+  "attempts_with_quantities_compared": 53,
+  "differences": [],
+  "fields": [
+   "initializer",
+   "stage_reached",
+   "solver_status",
+   "termination_condition",
+   "converged",
+   "ipopt.iterations",
+   "ipopt.exit",
+   "ipopt.final_constraint_violation_unscaled",
+   "ipopt.final_overall_nlp_error_scaled"
+  ],
+  "fields_where_recorded": [
+   "quantities",
+   "constraint_residuals"
+  ],
+  "identical": true,
+  "source": "benchmarks/s10/idaes/qualification.json at e63f98c2 (WO-S10-4)",
+  "source_sha256": "a77c10fe48e52716c2126886bce59ec558e42f31380207d7b3ccd60824af7bd7"
+ },
+ "rung_and_setting_dependence": {
+  "assertion": "S10.A43",
+  "computed_from": "tool records only, before any difference to our values exists",
+  "rung_dependence": {
+   "I1": {
+    "others": [
+     {
+      "argmax": "beta",
+      "eps_K": 1e-05,
+      "linear_solver": "ma27",
+      "max_ratio": 1.2873868637797159e-05,
+      "ratios": {
+       "K_CH3OH": 1.1711623341144313e-05,
+       "K_H2O": 7.68064543439871e-06,
+       "beta": 1.2873868637797159e-05,
+       "h_L": 1.6880221664905548e-07,
+       "h_V": 5.774199962615967e-07,
+       "x_C2H5OH": 1.7771458472818954e-19,
+       "x_CH3OH": 1.8050144712233873e-06,
+       "x_H2O": 1.8052226380405045e-06,
+       "y_C2H5OH": 4.459020489543665e-18,
+       "y_CH3OH": 6.919465000976288e-06,
+       "y_H2O": 6.9189098894639756e-06
+      }
+     },
+     {
+      "argmax": "beta",
+      "eps_K": 1e-06,
+      "linear_solver": "ma27",
+      "max_ratio": 1.2972400931232642e-05,
+      "ratios": {
+       "K_CH3OH": 1.1779393466789476e-05,
+       "K_H2O": 7.739097834964908e-06,
+       "beta": 1.2972400931232642e-05,
+       "h_L": 1.6996636986732483e-07,
+       "h_V": 5.8033037930727e-07,
+       "x_C2H5OH": 9.693522803355793e-20,
+       "x_CH3OH": 1.818059591762733e-06,
+       "x_H2O": 1.8185453143360064e-06,
+       "y_C2H5OH": 3.4896682092080855e-18,
+       "y_CH3OH": 6.974421040695233e-06,
+       "y_H2O": 6.972200594645983e-06
+      }
+     }
+    ],
+    "selected": "0.0001/ma27"
+   },
+   "I10": {
+    "others": [
+     {
+      "argmax": "K_C2H5OH",
+      "eps_K": 1e-05,
+      "linear_solver": "ma27",
+      "max_ratio": 0.0010563576437202845,
+      "ratios": {
+       "K_C2H5OH": 0.0010563576437202845,
+       "K_H2O": 3.751045554485808e-05,
+       "beta": 0.0006351563719420028,
+       "h_L": 5.9301964938640594e-06,
+       "h_V": 2.6781344786286354e-06,
+       "x_C2H5OH": 0.00028315294553493686,
+       "x_CH3OH": 3.736045247126712e-20,
+       "x_H2O": 0.0002831546108694738,
+       "y_C2H5OH": 0.00014947820758948183,
+       "y_CH3OH": 2.0194839173657902e-20,
+       "y_H2O": 0.00014947987292401876
+      }
+     },
+     {
+      "argmax": "K_C2H5OH",
+      "eps_K": 1e-06,
+      "linear_solver": "ma27",
+      "max_ratio": 0.001066718659055041,
+      "ratios": {
+       "K_C2H5OH": 0.001066718659055041,
+       "K_H2O": 3.789846226553299e-05,
+       "beta": 0.0006413580777575589,
+       "h_L": 5.9872400015592575e-06,
+       "h_V": 2.703745849430561e-06,
+       "x_C2H5OH": 0.0002859251724274259,
+       "x_CH3OH": 2.3224065049706588e-20,
+       "x_H2O": 0.00028592461731591357,
+       "y_C2H5OH": 0.00015093148952871616,
+       "y_CH3OH": 4.392377520270594e-20,
+       "y_H2O": 0.00015093259975174078
+      }
+     }
+    ],
+    "selected": "0.0001/ma27"
+   },
+   "I11": {
+    "others": [],
+    "selected": "0.0001/ma27"
+   },
+   "I12": {
+    "others": [
+     {
+      "argmax": "beta",
+      "eps_K": 1e-05,
+      "linear_solver": "ma27",
+      "max_ratio": 0.0003035260931483208,
+      "ratios": {
+       "K_C2H5OH": 0.00022912974797855193,
+       "K_CH3OH": 0.00013373013212351513,
+       "K_H2O": 4.858980658610328e-06,
+       "beta": 0.0003035260931483208,
+       "h_L": 7.3714181780815125e-06,
+       "h_V": 4.658359102904797e-06,
+       "x_C2H5OH": 3.979733209646952e-05,
+       "x_CH3OH": 7.035039217839767e-05,
+       "x_H2O": 0.00011014744671911103,
+       "y_C2H5OH": 2.784716901516049e-06,
+       "y_CH3OH": 5.5527804576627204e-05,
+       "y_H2O": 5.8311688810874784e-05
+      }
+     },
+     {
+      "argmax": "beta",
+      "eps_K": 1e-06,
+      "linear_solver": "mumps",
+      "max_ratio": 0.00030662250516400036,
+      "ratios": {
+       "K_C2H5OH": 0.0002314934905374462,
+       "K_CH3OH": 0.000135113217446759,
+       "K_H2O": 4.88046156337872e-06,
+       "beta": 0.00030662250516400036,
+       "h_L": 7.44708813726902e-06,
+       "h_V": 4.704343155026436e-06,
+       "x_C2H5OH": 4.0205894169531575e-05,
+       "x_CH3OH": 7.107203714440402e-05,
+       "x_H2O": 0.00011127654353515481,
+       "y_C2H5OH": 2.8105295868385838e-06,
+       "y_CH3OH": 5.6092352984649096e-05,
+       "y_H2O": 5.8901772348463055e-05
+      }
+     }
+    ],
+    "selected": "0.0001/ma27"
+   },
+   "I13": {
+    "others": [],
+    "selected": "0.0001/ma27"
+   },
+   "I14": {
+    "others": [
+     {
+      "argmax": "beta",
+      "eps_K": 1e-05,
+      "linear_solver": "ma27",
+      "max_ratio": 3.3777980412708075e-05,
+      "ratios": {
+       "K_C2H5OH": 2.706999145317484e-06,
+       "K_CH3OH": 2.3350361081232693e-06,
+       "beta": 3.3777980412708075e-05,
+       "h_L": 3.3120159059762955e-07,
+       "h_V": 3.0384398996829987e-07,
+       "x_C2H5OH": 4.529709940470639e-06,
+       "x_CH3OH": 4.528044605933701e-06,
+       "x_H2O": 1.3883951931889808e-20,
+       "y_C2H5OH": 4.615197113366776e-06,
+       "y_CH3OH": 4.614086890342151e-06,
+       "y_H2O": 8.70902439363997e-21
+      }
+     },
+     {
+      "argmax": "beta",
+      "eps_K": 1e-06,
+      "linear_solver": "ma27",
+      "max_ratio": 3.397726544562829e-05,
+      "ratios": {
+       "K_C2H5OH": 2.7186672450817836e-06,
+       "K_CH3OH": 2.3502646044805947e-06,
+       "beta": 3.397726544562829e-05,
+       "h_L": 3.3352989703416824e-07,
+       "h_V": 3.050081431865692e-07,
+       "x_C2H5OH": 4.557465516086268e-06,
+       "x_CH3OH": 4.55580018154933e-06,
+       "x_H2O": 3.1806871698511196e-20,
+       "y_C2H5OH": 4.6418424659577795e-06,
+       "y_CH3OH": 4.6418424659577795e-06,
+       "y_H2O": 2.398137151871876e-20
+      }
+     }
+    ],
+    "selected": "0.0001/ma27"
+   },
+   "I2": {
+    "others": [],
+    "selected": "1e-06/ma27"
+   },
+   "I4": {
+    "others": [
+     {
+      "argmax": "beta",
+      "eps_K": 1e-05,
+      "linear_solver": "ma27",
+      "max_ratio": 0.00019780954652048877,
+      "ratios": {
+       "K_CH3OH": 9.983970334039407e-05,
+       "K_H2O": 2.134132209160646e-05,
+       "beta": 0.00019780954652048877,
+       "h_L": 7.297494448721409e-06,
+       "h_V": 3.1176023185253143e-06,
+       "x_C2H5OH": 6.058451752097371e-21,
+       "x_CH3OH": 7.828626635841829e-05,
+       "x_H2O": 7.828515613539366e-05,
+       "y_C2H5OH": 1.2874209973206913e-20,
+       "y_CH3OH": 3.760769473615255e-05,
+       "y_H2O": 3.760658451312793e-05
+      }
+     },
+     {
+      "argmax": "beta",
+      "eps_K": 1e-06,
+      "linear_solver": "mumps",
+      "max_ratio": 0.00019982238086413417,
+      "ratios": {
+       "K_CH3OH": 0.00010085674113926867,
+       "K_H2O": 2.155754886572796e-05,
+       "beta": 0.00019982238086413417,
+       "h_L": 7.3714181780815125e-06,
+       "h_V": 3.1496165320277214e-06,
+       "x_C2H5OH": 4.291403324402304e-21,
+       "x_CH3OH": 7.908229626707453e-05,
+       "x_H2O": 7.908174115556221e-05,
+       "y_C2H5OH": 1.0602290566170399e-20,
+       "y_CH3OH": 3.798850123359898e-05,
+       "y_H2O": 3.7989056345111294e-05
+      }
+     }
+    ],
+    "selected": "0.0001/ma27"
+   },
+   "I5": {
+    "others": [
+     {
+      "argmax": "beta",
+      "eps_K": 1e-05,
+      "linear_solver": "ma27",
+      "max_ratio": 0.0007889677799965966,
+      "ratios": {
+       "K_CH3OH": 0.00010045364849252069,
+       "K_H2O": 1.2351385624506254e-05,
+       "beta": 0.0007889677799965966,
+       "h_L": 1.2312084436416626e-05,
+       "h_V": 4.505272954702377e-06,
+       "x_C2H5OH": 1.199068575935938e-20,
+       "x_CH3OH": 0.00013212653193761525,
+       "x_H2O": 0.00013212597682610294,
+       "y_C2H5OH": 1.0602290566170399e-20,
+       "y_CH3OH": 5.444977801971618e-05,
+       "y_H2O": 5.444811268517924e-05
+      }
+     },
+     {
+      "argmax": "beta",
+      "eps_K": 1e-06,
+      "linear_solver": "ma27",
+      "max_ratio": 0.0007969735982271686,
+      "ratios": {
+       "K_CH3OH": 0.00010146833181062696,
+       "K_H2O": 1.2508736831642424e-05,
+       "beta": 0.0007969735982271686,
+       "h_L": 1.243839506059885e-05,
+       "h_V": 4.551839083433151e-06,
+       "x_C2H5OH": 9.844984097158227e-21,
+       "x_CH3OH": 0.00013346324045926394,
+       "x_H2O": 0.00013346435068228857,
+       "y_C2H5OH": 7.509955817704032e-21,
+       "y_CH3OH": 5.500155886295488e-05,
+       "y_H2O": 5.5001836418711036e-05
+      }
+     }
+    ],
+    "selected": "0.0001/ma27"
+   },
+   "I6": {
+    "others": [
+     {
+      "eps_K": 1e-06,
+      "linear_solver": "ma27",
+      "max_ratio": null,
+      "phase": "LIQUID",
+      "phase_equal": true,
+      "phase_reference": "LIQUID"
+     }
+    ],
+    "selected": "1e-05/ma27"
+   },
+   "I7": {
+    "others": [
+     {
+      "eps_K": 1e-05,
+      "linear_solver": "ma27",
+      "max_ratio": null,
+      "phase": "VAPOR",
+      "phase_equal": true,
+      "phase_reference": "VAPOR"
+     },
+     {
+      "eps_K": 1e-06,
+      "linear_solver": "ma27",
+      "max_ratio": null,
+      "phase": "VAPOR",
+      "phase_equal": true,
+      "phase_reference": "VAPOR"
+     }
+    ],
+    "selected": "0.0001/ma27"
+   },
+   "I8": {
+    "others": [
+     {
+      "argmax": "K_C2H5OH",
+      "eps_K": 1e-05,
+      "linear_solver": "ma27",
+      "max_ratio": 0.00016545383772135886,
+      "ratios": {
+       "K_C2H5OH": 0.00016545383772135886,
+       "K_H2O": 4.3502634325568e-05,
+       "beta": 8.014588992466543e-05,
+       "h_L": 3.923196345567703e-07,
+       "h_V": 6.990740075707436e-07,
+       "x_C2H5OH": 1.8339496588026805e-05,
+       "x_CH3OH": 0.0,
+       "x_H2O": 1.833977414378296e-05,
+       "y_C2H5OH": 3.812228310806631e-05,
+       "y_CH3OH": 5.806016262426647e-20,
+       "y_H2O": 3.812394844260325e-05
+      }
+     },
+     {
+      "argmax": "K_C2H5OH",
+      "eps_K": 1e-06,
+      "linear_solver": "ma27",
+      "max_ratio": 0.00016702290879707803,
+      "ratios": {
+       "K_C2H5OH": 0.00016702290879707803,
+       "K_H2O": 4.390326467041364e-05,
+       "beta": 8.089140468570122e-05,
+       "h_L": 3.969762474298477e-07,
+       "h_V": 7.060589268803596e-07,
+       "x_C2H5OH": 1.8511719934721782e-05,
+       "x_CH3OH": 0.0,
+       "x_H2O": 1.851185871259986e-05,
+       "y_C2H5OH": 3.847422380687249e-05,
+       "y_CH3OH": 1.1410084133116715e-19,
+       "y_H2O": 3.847699936443405e-05
+      }
+     }
+    ],
+    "selected": "0.0001/ma27"
+   },
+   "I9": {
+    "others": [
+     {
+      "argmax": "beta",
+      "eps_K": 1e-05,
+      "linear_solver": "ma27",
+      "max_ratio": 0.009754803631523146,
+      "ratios": {
+       "K_C2H5OH": 0.0029649530771603976,
+       "K_H2O": 0.0017404546250985092,
+       "beta": 0.009754803631523146,
+       "h_L": 4.6550994738936424e-05,
+       "h_V": 1.7070560716092587e-05,
+       "x_C2H5OH": 0.0022532109511530507,
+       "x_CH3OH": 4.190429128534015e-20,
+       "x_H2O": 0.002253211506264563,
+       "y_C2H5OH": 0.0009667777689514878,
+       "y_CH3OH": 6.68954047627418e-20,
+       "y_H2O": 0.0009667777689514878
+      }
+     },
+     {
+      "argmax": "beta",
+      "eps_K": 1e-06,
+      "linear_solver": "ma27",
+      "max_ratio": 0.00985272197162601,
+      "ratios": {
+       "K_C2H5OH": 0.002994718013565076,
+       "K_H2O": 0.001757933560387888,
+       "beta": 0.00985272197162601,
+       "h_L": 4.70189843326807e-05,
+       "h_V": 1.724052708595991e-05,
+       "x_C2H5OH": 0.002275829524833739,
+       "x_CH3OH": 1.804913751145675e-19,
+       "x_H2O": 0.0022758317452797883,
+       "y_C2H5OH": 0.0009764822284097363,
+       "y_CH3OH": 2.7439737727207675e-19,
+       "y_H2O": 0.0009764811181867117
+      }
+     }
+    ],
+    "selected": "0.0001/ma27"
+   }
+  },
+  "setting_dependence": {
+   "I1": [
+    {
+     "argmax": "beta",
+     "eps_K": 0.0001,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_CH3OH": 0.0,
+      "K_H2O": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    },
+    {
+     "argmax": "beta",
+     "eps_K": 1e-05,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_CH3OH": 0.0,
+      "K_H2O": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    },
+    {
+     "argmax": "beta",
+     "eps_K": 1e-06,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_CH3OH": 0.0,
+      "K_H2O": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    }
+   ],
+   "I10": [],
+   "I11": [],
+   "I12": [
+    {
+     "argmax": "beta",
+     "eps_K": 0.0001,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_C2H5OH": 0.0,
+      "K_CH3OH": 0.0,
+      "K_H2O": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    },
+    {
+     "argmax": "beta",
+     "eps_K": 1e-05,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_C2H5OH": 0.0,
+      "K_CH3OH": 0.0,
+      "K_H2O": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    },
+    {
+     "argmax": "beta",
+     "eps_K": 1e-06,
+     "linear_solver": "mumps",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_C2H5OH": 0.0,
+      "K_CH3OH": 0.0,
+      "K_H2O": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    }
+   ],
+   "I13": [
+    {
+     "argmax": "beta",
+     "eps_K": 0.0001,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_C2H5OH": 0.0,
+      "K_CH3OH": 0.0,
+      "K_H2O": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    }
+   ],
+   "I14": [
+    {
+     "argmax": "beta",
+     "eps_K": 0.0001,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_C2H5OH": 0.0,
+      "K_CH3OH": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    },
+    {
+     "argmax": "beta",
+     "eps_K": 1e-05,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_C2H5OH": 0.0,
+      "K_CH3OH": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    },
+    {
+     "argmax": "beta",
+     "eps_K": 1e-06,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_C2H5OH": 0.0,
+      "K_CH3OH": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    }
+   ],
+   "I2": [],
+   "I4": [],
+   "I5": [
+    {
+     "argmax": "beta",
+     "eps_K": 0.0001,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_CH3OH": 0.0,
+      "K_H2O": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    },
+    {
+     "argmax": "beta",
+     "eps_K": 1e-05,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_CH3OH": 0.0,
+      "K_H2O": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    },
+    {
+     "argmax": "beta",
+     "eps_K": 1e-06,
+     "linear_solver": "ma27",
+     "max_ratio": 0.0,
+     "ratios": {
+      "K_CH3OH": 0.0,
+      "K_H2O": 0.0,
+      "beta": 0.0,
+      "h_L": 0.0,
+      "h_V": 0.0,
+      "x_C2H5OH": 0.0,
+      "x_CH3OH": 0.0,
+      "x_H2O": 0.0,
+      "y_C2H5OH": 0.0,
+      "y_CH3OH": 0.0,
+      "y_H2O": 0.0
+     }
+    }
+   ],
+   "I6": [
+    {
+     "eps_K": 1e-05,
+     "linear_solver": "ma27",
+     "max_ratio": null,
+     "phase": "LIQUID",
+     "phase_equal": true,
+     "phase_reference": "LIQUID"
+    },
+    {
+     "eps_K": 1e-06,
+     "linear_solver": "ma27",
+     "max_ratio": null,
+     "phase": "LIQUID",
+     "phase_equal": true,
+     "phase_reference": "LIQUID"
+    }
+   ],
+   "I7": [
+    {
+     "eps_K": 0.0001,
+     "linear_solver": "ma27",
+     "max_ratio": null,
+     "phase": "VAPOR",
+     "phase_equal": true,
+     "phase_reference": "VAPOR"
+    },
+    {
+     "eps_K": 1e-05,
+     "linear_solver": "ma27",
+     "max_ratio": null,
+     "phase": "VAPOR",
+     "phase_equal": true,
+     "phase_reference": "VAPOR"
+    },
+    {
+     "eps_K": 1e-06,
+     "linear_solver": "ma27",
+     "max_ratio": null,
+     "phase": "VAPOR",
+     "phase_equal": true,
+     "phase_reference": "VAPOR"
+    }
+   ],
+   "I8": [],
+   "I9": []
+  },
+  "spec": {
+   "compared_by_phase_identity": [
+    "I6",
+    "I7"
+   ],
+   "ratio_max": 0.1,
+   "tolerances": {
+    "K_relative": 1e-07,
+    "beta_x_y_absolute": 1e-07,
+    "h_absolute_J_per_mol": 0.05
+   }
+  }
+ },
+ "selection": {
+  "rule": "per state, the first converged attempt of run amendment_3 in the order (eps 1e-4 ma27, mumps; 1e-5 ma27, mumps; 1e-6 ma27, mumps); none: NOT_COMPARABLE(no_optimal_attempt); a failed A43 check: NOT_COMPARABLE(reference_accuracy: ...) (spec 16 A3-2, A3-4)",
+  "states": {
+   "I1": {
+    "attempt_index": 0,
+    "eps_K": 0.0001,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I10": {
+    "attempt_index": 1,
+    "eps_K": 0.0001,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I11": {
+    "attempt_index": 2,
+    "eps_K": 0.0001,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I12": {
+    "attempt_index": 3,
+    "eps_K": 0.0001,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I13": {
+    "attempt_index": 4,
+    "eps_K": 0.0001,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I14": {
+    "attempt_index": 5,
+    "eps_K": 0.0001,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I2": {
+    "attempt_index": 44,
+    "eps_K": 1e-06,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I3": {
+    "reason": "no_optimal_attempt",
+    "status": "NOT_COMPARABLE"
+   },
+   "I4": {
+    "attempt_index": 10,
+    "eps_K": 0.0001,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I5": {
+    "attempt_index": 11,
+    "eps_K": 0.0001,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I6": {
+    "attempt_index": 31,
+    "eps_K": 1e-05,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I7": {
+    "attempt_index": 14,
+    "eps_K": 0.0001,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I8": {
+    "attempt_index": 15,
+    "eps_K": 0.0001,
+    "linear_solver": "ma27",
+    "status": "selected"
+   },
+   "I9": {
+    "attempt_index": 16,
+    "eps_K": 0.0001,
+    "linear_solver": "ma27",
+    "status": "selected"
+   }
+  }
+ },
+ "smoothing": {
+  "a_all_within_at_selected_rung": true,
+  "a_at_selected_rung": {
+   "I1": {
+    "K_relative_over_tau_K": 0.000565,
+    "beta_x_y": 6.2e-11,
+    "eps_K": 0.0001,
+    "h_over_tau_h": 2.78e-05,
+    "within": true
+   },
+   "I10": {
+    "K_relative_over_tau_K": 0.00364,
+    "beta_x_y": 2.19e-10,
+    "eps_K": 0.0001,
+    "h_over_tau_h": 2.04e-05,
+    "within": true
+   },
+   "I11": {
+    "K_relative_over_tau_K": 0.00258,
+    "beta_x_y": 2.52e-10,
+    "eps_K": 0.0001,
+    "h_over_tau_h": 4.54e-05,
+    "within": true
+   },
+   "I12": {
+    "K_relative_over_tau_K": 0.00185,
+    "beta_x_y": 2.45e-10,
+    "eps_K": 0.0001,
+    "h_over_tau_h": 5.96e-05,
+    "within": true
+   },
+   "I13": {
+    "K_relative_over_tau_K": 0.00974,
+    "beta_x_y": 7.75e-09,
+    "eps_K": 0.0001,
+    "h_over_tau_h": 0.000378,
+    "within": true
+   },
+   "I14": {
+    "K_relative_over_tau_K": 0.00225,
+    "beta_x_y": 2.82e-09,
+    "eps_K": 0.0001,
+    "h_over_tau_h": 0.000277,
+    "within": true
+   },
+   "I2": {
+    "K_relative_over_tau_K": 5.1499999999999985e-08,
+    "beta_x_y": 4.46e-15,
+    "eps_K": 1e-06,
+    "h_over_tau_h": 1.6799999999999992e-09,
+    "within": true
+   },
+   "I4": {
+    "K_relative_over_tau_K": 0.000899,
+    "beta_x_y": 1.78e-10,
+    "eps_K": 0.0001,
+    "h_over_tau_h": 6.58e-05,
+    "within": true
+   },
+   "I5": {
+    "K_relative_over_tau_K": 0.002,
+    "beta_x_y": 1.57e-09,
+    "eps_K": 0.0001,
+    "h_over_tau_h": 0.000246,
+    "within": true
+   },
+   "I8": {
+    "K_relative_over_tau_K": 0.00113,
+    "beta_x_y": 5.49e-11,
+    "eps_K": 0.0001,
+    "h_over_tau_h": 4.78e-06,
+    "within": true
+   },
+   "I9": {
+    "K_relative_over_tau_K": 0.012,
+    "beta_x_y": 3.95e-09,
+    "eps_K": 0.0001,
+    "h_over_tau_h": 0.000188,
+    "within": true
+   }
+  },
+  "a_predicted_per_rung": {
+   "I1": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.000565,
+     "beta_x_y": 6.2e-11,
+     "h_over_tau_h": 2.78e-05
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 5.650000000000001e-06,
+     "beta_x_y": 6.2e-13,
+     "h_over_tau_h": 2.780000000000001e-07
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 5.6499999999999977e-08,
+     "beta_x_y": 6.2e-15,
+     "h_over_tau_h": 2.779999999999999e-09
+    }
+   },
+   "I10": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.00364,
+     "beta_x_y": 2.19e-10,
+     "h_over_tau_h": 2.04e-05
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 3.6400000000000004e-05,
+     "beta_x_y": 2.19e-12,
+     "h_over_tau_h": 2.0400000000000005e-07
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 3.6399999999999987e-07,
+     "beta_x_y": 2.19e-14,
+     "h_over_tau_h": 2.0399999999999996e-09
+    }
+   },
+   "I11": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.00258,
+     "beta_x_y": 2.52e-10,
+     "h_over_tau_h": 4.54e-05
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 2.5800000000000004e-05,
+     "beta_x_y": 2.52e-12,
+     "h_over_tau_h": 4.5400000000000007e-07
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 2.579999999999999e-07,
+     "beta_x_y": 2.52e-14,
+     "h_over_tau_h": 4.539999999999998e-09
+    }
+   },
+   "I12": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.00185,
+     "beta_x_y": 2.45e-10,
+     "h_over_tau_h": 5.96e-05
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 1.8500000000000006e-05,
+     "beta_x_y": 2.45e-12,
+     "h_over_tau_h": 5.960000000000001e-07
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 1.8499999999999995e-07,
+     "beta_x_y": 2.45e-14,
+     "h_over_tau_h": 5.959999999999998e-09
+    }
+   },
+   "I13": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.00974,
+     "beta_x_y": 7.75e-09,
+     "h_over_tau_h": 0.000378
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 9.740000000000002e-05,
+     "beta_x_y": 7.75e-11,
+     "h_over_tau_h": 3.780000000000001e-06
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 9.739999999999997e-07,
+     "beta_x_y": 7.75e-13,
+     "h_over_tau_h": 3.779999999999999e-08
+    }
+   },
+   "I14": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.00225,
+     "beta_x_y": 2.82e-09,
+     "h_over_tau_h": 0.000277
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 2.25e-05,
+     "beta_x_y": 2.82e-11,
+     "h_over_tau_h": 2.7700000000000006e-06
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 2.249999999999999e-07,
+     "beta_x_y": 2.82e-13,
+     "h_over_tau_h": 2.769999999999999e-08
+    }
+   },
+   "I2": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.000515,
+     "beta_x_y": 4.46e-11,
+     "h_over_tau_h": 1.68e-05
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 5.1500000000000015e-06,
+     "beta_x_y": 4.46e-13,
+     "h_over_tau_h": 1.6800000000000002e-07
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 5.1499999999999985e-08,
+     "beta_x_y": 4.46e-15,
+     "h_over_tau_h": 1.6799999999999992e-09
+    }
+   },
+   "I3": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.00066,
+     "beta_x_y": 6.92e-11,
+     "h_over_tau_h": 2.77e-05
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 6.600000000000001e-06,
+     "beta_x_y": 6.92e-13,
+     "h_over_tau_h": 2.7700000000000006e-07
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 6.599999999999998e-08,
+     "beta_x_y": 6.92e-15,
+     "h_over_tau_h": 2.769999999999999e-09
+    }
+   },
+   "I4": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.000899,
+     "beta_x_y": 1.78e-10,
+     "h_over_tau_h": 6.58e-05
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 8.990000000000002e-06,
+     "beta_x_y": 1.78e-12,
+     "h_over_tau_h": 6.580000000000001e-07
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 8.989999999999996e-08,
+     "beta_x_y": 1.78e-14,
+     "h_over_tau_h": 6.5799999999999975e-09
+    }
+   },
+   "I5": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.002,
+     "beta_x_y": 1.57e-09,
+     "h_over_tau_h": 0.000246
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 2.0000000000000005e-05,
+     "beta_x_y": 1.57e-11,
+     "h_over_tau_h": 2.4600000000000006e-06
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 1.9999999999999994e-07,
+     "beta_x_y": 1.57e-13,
+     "h_over_tau_h": 2.4599999999999992e-08
+    }
+   },
+   "I8": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.00113,
+     "beta_x_y": 5.49e-11,
+     "h_over_tau_h": 4.78e-06
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 1.1300000000000002e-05,
+     "beta_x_y": 5.49e-13,
+     "h_over_tau_h": 4.780000000000001e-08
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 1.1299999999999995e-07,
+     "beta_x_y": 5.49e-15,
+     "h_over_tau_h": 4.779999999999998e-10
+    }
+   },
+   "I9": {
+    "0.0001": {
+     "K_relative_over_tau_K": 0.012,
+     "beta_x_y": 3.95e-09,
+     "h_over_tau_h": 0.000188
+    },
+    "1.0e-5": {
+     "K_relative_over_tau_K": 0.00012000000000000003,
+     "beta_x_y": 3.95e-11,
+     "h_over_tau_h": 1.8800000000000002e-06
+    },
+    "1.0e-6": {
+     "K_relative_over_tau_K": 1.1999999999999995e-06,
+     "beta_x_y": 3.95e-13,
+     "h_over_tau_h": 1.8799999999999993e-08
+    }
+   }
+  },
+  "a_worst_predicted_per_rung": {
+   "0.0001": {
+    "K_relative_over_tau_K": 0.012,
+    "beta_x_y": 7.75e-09,
+    "h_over_tau_h": 0.000378
+   },
+   "1.0e-5": {
+    "K_relative_over_tau_K": 0.00012000000000000003,
+    "beta_x_y": 7.75e-11,
+    "h_over_tau_h": 3.780000000000001e-06
+   },
+   "1.0e-6": {
+    "K_relative_over_tau_K": 1.1999999999999995e-06,
+    "beta_x_y": 7.75e-13,
+    "h_over_tau_h": 3.779999999999999e-08
+   }
+  },
+  "assertion": "S10.A42",
+  "b_all_within": true,
+  "b_max_ratio": 0.009858388239081249,
+  "b_shift_at_selected_attempt": {
+   "I1": {
+    "K_relative_over_tau_K": 1.1840711522381754e-05,
+    "T_eq_minus_T_K": 2.1373125491663814e-11,
+    "beta_x_y_over_tau": 1.29948602989316e-05,
+    "diagnostic_envelope": {
+     "generator_d_d_I_K": 5.010556807614137,
+     "generator_d_d_gamma_at_z_K": 4.799495485405714,
+     "idaes_d_b_K": 4.804946784915671,
+     "idaes_d_d_K": 5.010556807614705
+    },
+    "eps_K": 0.0001,
+    "h_over_tau_h": 5.813490133732557e-07,
+    "linear_solver": "ma27",
+    "within": true
+   },
+   "I10": {
+    "K_relative_over_tau_K": 0.0010654878224158892,
+    "T_eq_minus_T_K": 4.978915058018174e-10,
+    "beta_x_y_over_tau": 0.0006422800424843446,
+    "diagnostic_envelope": {
+     "generator_d_d_I_K": 4.159854225285187,
+     "generator_d_d_gamma_at_z_K": 2.2825495116730963,
+     "idaes_d_b_K": 2.275145945773147,
+     "idaes_d_d_K": 4.159854225506592
+    },
+    "eps_K": 0.0001,
+    "h_over_tau_h": 5.984655899737845e-06,
+    "linear_solver": "ma27",
+    "within": true
+   },
+   "I11": {
+    "K_relative_over_tau_K": 0.0004875857939623529,
+    "T_eq_minus_T_K": 3.1457147997571155e-10,
+    "beta_x_y_over_tau": 0.0004750029347633245,
+    "diagnostic_envelope": {
+     "generator_d_d_I_K": 3.699757692747653,
+     "generator_d_d_gamma_at_z_K": 2.521391260952896,
+     "idaes_d_b_K": 2.524495316268542,
+     "idaes_d_d_K": 3.6997576928607145
+    },
+    "eps_K": 0.0001,
+    "h_over_tau_h": 8.556344255339354e-06,
+    "linear_solver": "ma27",
+    "within": true
+   },
+   "I12": {
+    "K_relative_over_tau_K": 0.00023197117116069424,
+    "T_eq_minus_T_K": 1.999751475523226e-10,
+    "beta_x_y_over_tau": 0.00030596197575505357,
+    "diagnostic_envelope": {
+     "generator_d_d_I_K": 3.5721034138958885,
+     "generator_d_d_gamma_at_z_K": 2.7772402197367683,
+     "idaes_d_b_K": 2.778259219019276,
+     "idaes_d_d_K": 3.572103413946934
+    },
+    "eps_K": 0.0001,
+    "h_over_tau_h": 7.439075488946401e-06,
+    "linear_solver": "ma27",
+    "within": true
+   },
+   "I13": {
+    "K_relative_over_tau_K": 0.001011156882668729,
+    "T_eq_minus_T_K": 8.948290997068398e-10,
+    "beta_x_y_over_tau": 0.008035565315367421,
+    "diagnostic_envelope": {
+     "generator_d_d_I_K": 0.6469982505969369,
+     "generator_d_d_gamma_at_z_K": 0.5352952590734503,
+     "idaes_d_b_K": 0.5253371285738808,
+     "idaes_d_d_K": 0.646998250791853
+    },
+    "eps_K": 0.0001,
+    "h_over_tau_h": 3.919351456715958e-05,
+    "linear_solver": "ma27",
+    "within": true
+   },
+   "I14": {
+    "K_relative_over_tau_K": 2.75207412414602e-06,
+    "T_eq_minus_T_K": 6.536993168992922e-12,
+    "beta_x_y_over_tau": 3.438458406890277e-05,
+    "diagnostic_envelope": {
+     "generator_d_d_I_K": 0.9345246476484022,
+     "generator_d_d_gamma_at_z_K": 0.9390851535011961,
+     "idaes_d_b_K": 0.932245367101018,
+     "idaes_d_d_K": 0.9345246476483453
+    },
+    "eps_K": 0.0001,
+    "h_over_tau_h": 3.3861624615383334e-07,
+    "linear_solver": "ma27",
+    "within": true
+   },
+   "I2": {
+    "K_relative_over_tau_K": 0.0,
+    "T_eq_minus_T_K": 0.0,
+    "beta_x_y_over_tau": 0.0,
+    "diagnostic_envelope": {
+     "generator_d_d_I_K": 7.157672396131659,
+     "generator_d_d_gamma_at_z_K": 6.084366811699965,
+     "idaes_d_b_K": 6.0785856709757695,
+     "idaes_d_d_K": 7.157672396131659
+    },
+    "eps_K": 1e-06,
+    "h_over_tau_h": 0.0,
+    "linear_solver": "ma27",
+    "within": true
+   },
+   "I4": {
+    "K_relative_over_tau_K": 0.00010081021173391491,
+    "T_eq_minus_T_K": 1.6052581486292183e-10,
+    "beta_x_y_over_tau": 0.00019905201043002307,
+    "diagnostic_envelope": {
+     "generator_d_d_I_K": 3.9309302441758973,
+     "generator_d_d_gamma_at_z_K": 3.132321368058683,
+     "idaes_d_b_K": 3.1385237833342217,
+     "idaes_d_d_K": 3.9309302442047738
+    },
+    "eps_K": 0.0001,
+    "h_over_tau_h": 7.35208232072182e-06,
+    "linear_solver": "ma27",
+    "within": true
+   },
+   "I5": {
+    "K_relative_over_tau_K": 0.00010136045602848752,
+    "T_eq_minus_T_K": 2.184492586820852e-10,
+    "beta_x_y_over_tau": 0.000797339794189611,
+    "diagnostic_envelope": {
+     "generator_d_d_I_K": 1.2208287437361491,
+     "generator_d_d_gamma_at_z_K": 1.1019852048857501,
+     "idaes_d_b_K": 1.1031470556847012,
+     "idaes_d_d_K": 1.2208287437526906
+    },
+    "eps_K": 0.0001,
+    "h_over_tau_h": 1.2451607744878856e-05,
+    "linear_solver": "ma27",
+    "within": true
+   },
+   "I8": {
+    "K_relative_over_tau_K": 0.00016699232219252735,
+    "T_eq_minus_T_K": 1.368789526168257e-10,
+    "beta_x_y_over_tau": 8.103233994916083e-05,
+    "diagnostic_envelope": {
+     "generator_d_d_I_K": 6.31583572890986,
+     "generator_d_d_gamma_at_z_K": 4.689359683822886,
+     "idaes_d_b_K": 4.69296003375041,
+     "idaes_d_d_K": 6.315835728924128
+    },
+    "eps_K": 0.0001,
+    "h_over_tau_h": 7.062953955028206e-07,
+    "linear_solver": "ma27",
+    "within": true
+   },
+   "I9": {
+    "K_relative_over_tau_K": 0.002998938271048246,
+    "T_eq_minus_T_K": 1.656871972954832e-09,
+    "beta_x_y_over_tau": 0.009858388239081249,
+    "diagnostic_envelope": {
+     "generator_d_d_I_K": 1.003878934609304,
+     "generator_d_d_gamma_at_z_K": 0.6108569893399931,
+     "idaes_d_b_K": 0.602822452837529,
+     "idaes_d_d_K": 1.0038789353826019
+    },
+    "eps_K": 0.0001,
+    "h_over_tau_h": 4.705516403191723e-05,
+    "linear_solver": "ma27",
+    "within": true
+   }
+  },
+  "bound": {
+   "K_relative_over_tau_K": 0.1,
+   "beta_x_y": 1e-08,
+   "h_over_tau_h": 0.1
+  },
+  "rule": "(a) (eps^2/(4 d_b) + eps^2/(4 d_d^I)) |dq/dT| <= tau/10 for beta, x, y and <= 0.1 of the tolerance for K and h (reference_values_real.yaml measured.smoothing_predicted, smoothing_predicted_K_h_at_1e-4); (b) |T_eq - T| x max_abs_dq_dT, max_abs_dlnK_dT, max_abs_dh_dT <= 0.1 of the tolerance at each selected two-phase attempt (spec 16 A3-7)"
+ },
+ "tau_mapping_check": {
+  "liquid_coefficients_declared_J_per_kmol_factor": 999.9999999999999,
+  "max_abs_tau_difference": 0.0,
+  "max_relative_coefficient_difference": 2.1931474400725246e-16,
+  "relative_coefficient_difference": {
+   "C2H5OH.cp_liq": 2.0039392321110643e-16,
+   "C2H5OH.cp_vap": 1.7588854767181035e-16,
+   "C2H5OH.dh_form": 0.0,
+   "C2H5OH.psat": 0.0,
+   "CH3OH.cp_liq": 1.7915317251000898e-16,
+   "CH3OH.cp_vap": 1.7915317251000898e-16,
+   "CH3OH.dh_form": 0.0,
+   "CH3OH.psat": 0.0,
+   "H2O.cp_liq": 2.1931474400725246e-16,
+   "H2O.cp_vap": 2.1931474400725246e-16,
+   "H2O.dh_form": 0.0,
+   "H2O.psat": 0.0
+  },
+  "rule": "tau[j, i] = -ln Lambda_ij (spec 8.1); generator transcription reference_values_real.yaml idaes_mapping",
+  "tau_difference": {
+   "C2H5OH,CH3OH": 0.0,
+   "C2H5OH,H2O": 0.0,
+   "CH3OH,C2H5OH": 0.0,
+   "CH3OH,H2O": 0.0,
+   "H2O,C2H5OH": 0.0,
+   "H2O,CH3OH": 0.0
+  },
+  "untransposed_tau_max_abs_ln_gamma_shift_at_rb_points": 0.14963048157973735
+ },
+ "written_by": "scripts/s10_idaes_comparison.py --write"
+}

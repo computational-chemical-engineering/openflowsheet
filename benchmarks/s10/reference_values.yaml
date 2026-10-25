@@ -1,0 +1,1411 @@
+generator: docs/derivations/scripts/s10_reference.py
+spec: docs/derivations/S10-spec.md
+adr: docs/adr/0047-s10-liquid-mixture-property-method.md
+records: benchmarks/s10/verification-records.yaml
+records_sha256: 234d165d4023859b61606441b0a41b54ce78c1446df91cc0bb275b2abdaab392
+data_set: S10-verification-v1
+reference_convention: S10-VER-ref-v1
+components:
+- VA
+- VB
+- VC
+domain:
+  T:
+  - 300.0
+  - 420.0
+  P:
+  - 50000.0
+  - 300000.0
+method_constants:
+  R: '8.31446261815324'
+  T0: '298.15'
+  EPS_TPD: 1.0e-10
+  DELTA_K: 1.0e-13
+  DELTA_SS: 1.0e-13
+  SS_MAX: 1000
+closed_form:
+  pure:
+    VA:
+      lnpsat_350K: 11.979289889849207
+      dlnpsat_dT_350K: 0.03643469387755102
+      d2lnpsat_dT2_350K: -0.00023917784256559767
+      T_sat_101325Pa: 338.0482643850619
+      dhvap_at_T_sat_101325Pa: 37494.04016206415
+      cp_ig_350K: 48.56578947776466
+      h_ig_298_15K: -201000.0
+      h_ig_350K: -198566.8068830534
+      h0L_350K: -235676.33216352583
+      cp0L_350K: 80.11917511365621
+    VB:
+      lnpsat_350K: 11.472934138846563
+      dlnpsat_dT_350K: 0.03794897959183673
+      d2lnpsat_dT2_350K: -0.00025215743440233233
+      T_sat_101325Pa: 351.4072278106799
+      dhvap_at_T_sat_101325Pa: 38601.42722725337
+      cp_ig_350K: 74.12235336069577
+      h_ig_298_15K: -234500.0
+      h_ig_350K: -230841.86959319183
+      h0L_350K: -269493.7276893317
+      cp0L_350K: 110.08240418420854
+    VC:
+      lnpsat_350K: 10.650574908207673
+      dlnpsat_dT_350K: 0.04063367346938776
+      d2lnpsat_dT2_350K: -0.00026400874635568514
+      T_sat_101325Pa: 373.17649794157177
+      dhvap_at_T_sat_101325Pa: 40649.60703551967
+      cp_ig_350K: 32.30378667333642
+      h_ig_298_15K: -241800.0
+      h_ig_350K: -240131.26053179146
+      h0L_350K: -281517.53752147645
+      cp0L_350K: 64.70940472758868
+  saturation:
+    azeotrope_VB_VC_101325Pa:
+      x_VB: 0.8376545822035395
+      T: 350.039749454704
+    T_sat_101325Pa:
+      VA: 338.0482643850619
+      VB: 351.4072278106799
+      VC: 373.17649794157177
+  evaluate_phase:
+    E1:
+      state:
+        n:
+        - 0.6
+        - 1.0
+        - 0.4
+        T: 350.0
+        P: 120000.0
+      why: ternary interior with n_tot = 2 (the 1/n_tot of the n-derivatives is visible); every Wilson term active; three
+        distinct ln phi values
+      LIQUID:
+        values:
+          lnphi_VA: 0.2752702854482009
+          lnphi_VB: -0.11778448037897911
+          lnphi_VC: -0.3989398301898547
+          h: -261753.2709980189
+        derivatives:
+          lnphi_VA:
+            T: 0.03643469387755102
+            P: -8.333333333333334e-06
+            n_VA: 0.012685672707233581
+            n_VB: -0.03181819009245998
+            n_VC: 0.06051696617029958
+          lnphi_VB:
+            T: 0.03794897959183673
+            P: -8.333333333333334e-06
+            n_VA: -0.03181819009245998
+            n_VB: -0.07914624959793433
+            n_VC: 0.2455929091335258
+          lnphi_VC:
+            T: 0.04063367346938776
+            P: -8.333333333333334e-06
+            n_VA: 0.06051696617029958
+            n_VB: 0.2455929091335258
+            n_VC: -0.7047577220892638
+          h:
+            T: 92.01883557171887
+            P: 0.0
+            n_VA: 13038.469417246528
+            n_VB: -3870.2283456564
+            n_VC: -9882.13326172879
+      VAPOR:
+        values:
+          lnphi_VA: 0.0
+          lnphi_VB: 0.0
+          lnphi_VC: 0.0
+          h: -223017.22896787024
+        derivatives:
+          lnphi_VA:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VB:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VC:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          h:
+            T: 58.09167085834457
+            P: 0.0
+            n_VA: 12225.211042408415
+            n_VB: -3912.320312660802
+            n_VC: -8557.015781960616
+    E2:
+      state:
+        n:
+        - 0.0
+        - 0.7
+        - 0.8
+        T: 365.0
+        P: 100000.0
+      why: 'VA absent: ln gamma_VA at infinite dilution and its n_VA-derivative at n_VA = 0 (no log(0) on the path); the azeotropic
+        pair VB-VC'
+      LIQUID:
+        values:
+          lnphi_VA: 1.163875260086173
+          lnphi_VB: 0.883360295111153
+          lnphi_VC: -0.06670371232120728
+          h: -274623.3060197894
+        derivatives:
+          lnphi_VA:
+            T: 0.03308510227059486
+            P: -1.0e-05
+            n_VA: -0.35752238547485254
+            n_VB: -0.4085618956226982
+            n_VC: 0.3574916586698608
+          lnphi_VB:
+            T: 0.03442500469131169
+            P: -1.0e-05
+            n_VA: -0.4085618956226982
+            n_VB: -0.4091364974938481
+            n_VC: 0.35799443530711705
+          lnphi_VC:
+            T: 0.036929115218615124
+            P: -1.0e-05
+            n_VA: 0.3574916586698608
+            n_VB: 0.35799443530711705
+            n_VC: -0.3132451308937274
+          h:
+            T: 85.18524086930621
+            P: 0.0
+            n_VA: 26762.46417342293
+            n_VB: 4517.298639273193
+            n_VC: -3952.6363093640434
+      VAPOR:
+        values:
+          lnphi_VA: 0.0
+          lnphi_VB: 0.0
+          lnphi_VC: 0.0
+          h: -235011.57106783352
+        derivatives:
+          lnphi_VA:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VB:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VC:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          h:
+            T: 52.79733262043062
+            P: 0.0
+            n_VA: 24786.75994849455
+            n_VB: 3531.0625811932164
+            n_VC: -3089.679758544064
+    E3:
+      state:
+        n:
+        - 0.0
+        - 0.0
+        - 1.5
+        T: 330.0
+        P: 80000.0
+      why: 'pure VC: ln gamma_VC vanishes exactly (registered because it vanishes), so lnphi_VC = ln(P_sat,VC/P); VA and VB
+        at infinite dilution in VC'
+      LIQUID:
+        values:
+          lnphi_VA: 0.8583106206005088
+          lnphi_VB: 0.42696675372832976
+          lnphi_VC: -1.5080884880176615
+          h: -282820.99780931213
+        derivatives:
+          lnphi_VA:
+            T: 0.041704517906336086
+            P: -1.25e-05
+            n_VA: -1.8146296296296296
+            n_VB: -1.4437566137566138
+            n_VC: 0.0
+          lnphi_VB:
+            T: 0.04352038567493113
+            P: -1.25e-05
+            n_VA: -1.4437566137566138
+            n_VB: -1.1780952380952383
+            n_VC: 0.0
+          lnphi_VC:
+            T: 0.04643536271808999
+            P: -1.25e-05
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          h:
+            T: 65.62912716888205
+            P: 0.0
+            n_VA: 30356.118999684557
+            n_VB: 7412.357543884753
+            n_VC: 0.0
+      VAPOR:
+        values:
+          lnphi_VA: 0.0
+          lnphi_VB: 0.0
+          lnphi_VC: 0.0
+          h: -240776.33178274604
+        derivatives:
+          lnphi_VA:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VB:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VC:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          h:
+            T: 32.20581889016784
+            P: 0.0
+            n_VA: 27500.43921182872
+            n_VB: 5652.789991905294
+            n_VC: 0.0
+    E4:
+      state:
+        n:
+        - 1.0e-09
+        - 1.0
+        - 1.0e-07
+        T: 355.0
+        P: 150000.0
+      why: 'near-pure VB with traces of VA and VC: cancellation in S_k and in the projected n-derivatives'
+      LIQUID:
+        values:
+          lnphi_VA: 0.31327247432525457
+          lnphi_VB: -0.2588135443485408
+          lnphi_VC: 0.43607426515761094
+          h: -268943.82966589276
+        derivatives:
+          lnphi_VA:
+            T: 0.0352662824836342
+            P: -6.666666666666667e-06
+            n_VA: -0.17749934110199017
+            n_VB: 1.5926066123332462e-07
+            n_VC: -1.5908316189222265
+          lnphi_VB:
+            T: 0.03671802221781392
+            P: -6.666666666666667e-06
+            n_VA: 1.5926066123332462e-07
+            n_VB: -5.2084978671690755e-14
+            n_VC: 5.192571801045743e-07
+          lnphi_VC:
+            T: 0.039343119420749854
+            P: -6.666666666666667e-06
+            n_VA: -1.5908316189222265
+            n_VB: 5.192571801045743e-07
+            n_VC: -5.176663484856522
+          h:
+            T: 109.87448429141493
+            P: 0.0
+            n_VA: 33667.543237892656
+            n_VB: 0.0011914075435339978
+            n_VC: -12250.750867718905
+      VAPOR:
+        values:
+          lnphi_VA: 0.0
+          lnphi_VB: 0.0
+          lnphi_VC: 0.0
+          h: -230469.57861081048
+        derivatives:
+          lnphi_VA:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VB:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VC:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          h:
+            T: 74.79368818772227
+            P: 0.0
+            n_VA: 32146.36645245158
+            n_VB: 0.0009178631754824406
+            n_VC: -9500.095419348923
+    E5:
+      state:
+        n:
+        - 0.5
+        - 0.25
+        - 0.25
+        T: 300.0
+        P: 300000.0
+      why: 'domain corner (T_lo, P_hi), inclusive: the provider must answer on the boundary'
+      LIQUID:
+        values:
+          lnphi_VA: -2.7862795116224284
+          lnphi_VB: -3.2530630113385426
+          lnphi_VC: -3.8789147364799557
+          h: -259824.86025539468
+        derivatives:
+          lnphi_VA:
+            T: 0.051866666666666665
+            P: -3.3333333333333333e-06
+            n_VA: -0.05240590072320842
+            n_VB: -0.12786489151873767
+            n_VC: 0.2326766929651545
+          lnphi_VB:
+            T: 0.05433333333333333
+            P: -3.3333333333333333e-06
+            n_VA: -0.12786489151873767
+            n_VB: -0.22526627218934916
+            n_VC: 0.4809960552268245
+          lnphi_VC:
+            T: 0.05755555555555556
+            P: -3.3333333333333333e-06
+            n_VA: 0.2326766929651545
+            n_VB: 0.4809960552268245
+            n_VC: -0.9463494411571335
+          h:
+            T: 85.43455390351107
+            P: 0.0
+            n_VA: 20096.772929649298
+            n_VB: -15208.845945734665
+            n_VC: -24984.69991356393
+      VAPOR:
+        values:
+          lnphi_VA: 0.0
+          lnphi_VB: 0.0
+          lnphi_VC: 0.0
+          h: -219487.24486342425
+        derivatives:
+          lnphi_VA:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VB:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VC:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          h:
+            T: 47.499818208186916
+            P: 0.0
+            n_VA: 18571.06903921818
+            n_VB: -14888.73913493577
+            n_VC: -22253.39894350059
+    E6:
+      state:
+        n:
+        - 0.2
+        - 0.3
+        - 0.5
+        T: 420.0
+        P: 50000.0
+      why: domain corner (T_hi, P_lo), inclusive; the largest d ln P_sat/dT curvature terms
+      LIQUID:
+        values:
+          lnphi_VA: 3.38609978529813
+          lnphi_VB: 3.1558948987305504
+          lnphi_VC: 2.3849871915671987
+          h: -263171.19578393555
+        derivatives:
+          lnphi_VA:
+            T: 0.023982585034013605
+            P: -2.0e-05
+            n_VA: -0.417495377695388
+            n_VB: -0.4817717324676259
+            n_VC: 0.45606119055873073
+          lnphi_VB:
+            T: 0.02494829931972789
+            P: -2.0e-05
+            n_VA: -0.4817717324676259
+            n_VB: -0.5179765731983598
+            n_VC: 0.5034946369060662
+          lnphi_VC:
+            T: 0.026764535147392292
+            P: -2.0e-05
+            n_VA: 0.45606119055873073
+            n_VB: 0.5034946369060662
+            n_VC: -0.48452125836713206
+          h:
+            T: 77.49461979262784
+            P: 0.0
+            n_VA: 32975.66319425326
+            n_VB: 1247.3097050435165
+            n_VC: -13938.651100727415
+      VAPOR:
+        values:
+          lnphi_VA: 0.0
+          lnphi_VB: 0.0
+          lnphi_VC: 0.0
+          h: -225531.61020841566
+        derivatives:
+          lnphi_VA:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VB:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          lnphi_VC:
+            T: 0.0
+            P: 0.0
+            n_VA: 0.0
+            n_VB: 0.0
+            n_VC: 0.0
+          h:
+            T: 51.85647544179523
+            P: 0.0
+            n_VA: 30510.644529783945
+            n_VB: 198.67637650183752
+            n_VC: -12323.463637814682
+  flash:
+    F1:
+      state:
+        n: &id001
+        - 0.6
+        - 0.8
+        - 0.6
+        T: 320.0
+        P: 200000.0
+      why: 'subcooled ternary liquid: decided by the closed-form vapour trial alone'
+      phase_signature: LIQUID
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: 0.8358835348475964
+        tm_liquid_trial: null
+      vapor_fraction: 0.0
+      outlets: the feed state bitwise in the named phase; the other outlet dormant (zeros, same T and P)
+      deciding_tm: 0.8358835348475964
+    F2:
+      state:
+        n: *id001
+        T: 415.0
+        P: 60000.0
+      why: 'superheated ternary vapour: decided by the liquid-trial search'
+      phase_signature: VAPOR
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -13.529929224428919
+        tm_liquid_trial: 0.9250634036296058
+      vapor_fraction: 1.0
+      outlets: the feed state bitwise in the named phase; the other outlet dormant (zeros, same T and P)
+      deciding_tm: 0.9250634036296058
+    F3:
+      state:
+        n: *id001
+        T: 348.7
+        P: 101325.0
+      why: ternary two-phase interior (T midway between bubble and dew, to 0.01 K)
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.08244136844823574
+        tm_liquid_trial: -0.08474888876158986
+      vapor_fraction: 0.7187564250357618
+      x:
+        VA: 0.2012284095774087
+        VB: 0.34502689260012553
+        VC: 0.4537446978224658
+      y:
+        VA: 0.3386485243508897
+        VB: 0.421510532238045
+        VC: 0.23984094341106524
+      vapor_n:
+        VA: 0.4868116054121632
+        VB: 0.6059268065326768
+        VC: 0.3447744381266834
+      liquid_n:
+        VA: 0.11318839458783678
+        VB: 0.19407319346732319
+        VC: 0.2552255618733166
+      k_values:
+        VA: 1.6829061317041227
+        VB: 1.2216744296699256
+        VC: 0.5285812584963946
+    F4:
+      state:
+        n:
+        - 0.0
+        - 0.9
+        - 1.1
+        T: 356.39
+        P: 101325.0
+      why: 'VB-VC two-phase with VA absent: outlets carry exactly zero VA; K_VA reported at infinite dilution'
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.16790161248450194
+        tm_liquid_trial: -0.16993072589847502
+      vapor_fraction: 0.6321240653401033
+      x:
+        VA: 0.0
+        VB: 0.2428762291274961
+        VC: 0.7571237708725039
+      y:
+        VA: 0.0
+        VB: 0.570539392467219
+        VC: 0.4294606075327811
+      vapor_n:
+        VA: 0.0
+        VB: 0.7213033604061023
+        VC: 0.5429447702741044
+      liquid_n:
+        VA: 0.0
+        VB: 0.1786966395938977
+        VC: 0.5570552297258957
+      k_values:
+        VA: 3.221780071773851
+        VB: 2.3490952347078746
+        VC: 0.5672264219598783
+    F5:
+      state:
+        n:
+        - 0.0
+        - 1.75531
+        - 0.24469
+        T: 350.121666
+        P: 101325.0
+      why: 'VB-VC 0.04 above the azeotrope, inside its narrow band: K_i close to 1, Rachford-Rice ill-conditioned'
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.0014508500888894976
+        tm_liquid_trial: -0.0014464593196291359
+      vapor_fraction: 0.6420938370277465
+      x:
+        VA: 0.0
+        VB: 0.8907831335584794
+        VC: 0.10921686644152064
+      y:
+        VA: 0.0
+        VB: 0.8703373158268383
+        VC: 0.12966268417316174
+      vapor_n:
+        VA: 0.0
+        VB: 1.1176764532553685
+        VC: 0.16651122080012454
+      liquid_n:
+        VA: 0.0
+        VB: 0.6376335467446315
+        VC: 0.07817877919987545
+      k_values:
+        VA: 1.528110649078827
+        VB: 0.9770473676909838
+        VC: 1.1872038486160805
+    F6a:
+      state:
+        n:
+        - 0.0
+        - 1.0
+        - 0.0
+        T: 350.91
+        P: 101325.0
+      why: 'pure VB 0.5 K below saturation: liquid, no special pure-component branch'
+      phase_signature: LIQUID
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: 0.01855062143115306
+        tm_liquid_trial: null
+      vapor_fraction: 0.0
+      outlets: the feed state bitwise in the named phase; the other outlet dormant (zeros, same T and P)
+      deciding_tm: 0.01855062143115306
+    F6b:
+      state:
+        n:
+        - 0.0
+        - 1.0
+        - 0.0
+        T: 351.91
+        P: 101325.0
+      why: 'pure VB 0.5 K above saturation: vapour, no special pure-component branch'
+      phase_signature: VAPOR
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.019050285493067778
+        tm_liquid_trial: 0.018694156475163825
+      vapor_fraction: 1.0
+      outlets: the feed state bitwise in the named phase; the other outlet dormant (zeros, same T and P)
+      deciding_tm: 0.018694156475163825
+    F7:
+      state:
+        n: *id001
+        T: 351.07884208465003
+        P: 120000.0
+      why: 'bubble side, tm_V = -3e-11 inside the band [-EPS_TPD, 0): kept single-phase liquid'
+      phase_signature: LIQUID
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -2.999980363080423e-11
+        tm_liquid_trial: null
+      vapor_fraction: 0.0
+      outlets: the feed state bitwise in the named phase; the other outlet dormant (zeros, same T and P)
+      deciding_tm: -2.999980363080423e-11
+    F8:
+      state:
+        n: *id001
+        T: 351.07884235040547
+        P: 120000.0
+      why: 'bubble side, tm_V = -1e-8 outside the band: two-phase with a vapour fraction near 1e-8'
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -9.99999927398959e-09
+        tm_liquid_trial: -0.16984448644170969
+      vapor_fraction: 1.292520244260273e-07
+      x:
+        VA: 0.2999999838908226
+        VB: 0.4000000002854505
+        VC: 0.3000000158237269
+      y:
+        VA: 0.4246338335214887
+        VB: 0.39779152025052544
+        VC: 0.17757464622798588
+      vapor_n:
+        VA: 1.0976956524487413e-07
+        VB: 1.0283071858377488e-07
+        VC: 4.590376502340557e-08
+      liquid_n:
+        VA: 0.5999998902304348
+        VB: 0.7999998971692814
+        VC: 0.599999954096235
+      k_values:
+        VA: 1.4154461877438747
+        VB: 0.9944787999166272
+        VC: 0.5919154562055913
+    F9:
+      state:
+        n:
+        - 0.0
+        - 0.0
+        - 0.0
+        T: 350.0
+        P: 100000.0
+      why: 'dormant feed: ZERO_FLOW, two dormant outlets (ADR 0001 D3.4)'
+      phase_signature: ZERO_FLOW
+      vapor_fraction: null
+    F10:
+      state:
+        n: *id001
+        T: 355.15033506427227
+        P: 120000.0
+      why: 'dew side, tm_L = -1e-8 outside the band: two-phase with a liquid fraction near 1e-8'
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.16270307089341696
+        tm_liquid_trial: -1.000000101072375e-08
+      vapor_fraction: 0.9999999751368185
+      x:
+        VA: 0.1467700987038707
+        VB: 0.2644413435525568
+        VC: 0.5887885577435725
+      y:
+        VA: 0.3000000038097829
+        VB: 0.4000000033704196
+        VC: 0.2999999928197975
+      vapor_n:
+        VA: 0.5999999927016567
+        VB: 0.7999999868502938
+        VC: 0.5999999707216864
+      liquid_n:
+        VA: 7.298343210143146e-09
+        VB: 1.3149706249717439e-08
+        VC: 2.9278313570449694e-08
+      k_values:
+        VA: 2.0440130957128746
+        VB: 1.512622791870368
+        VC: 0.5095207589792405
+    F11:
+      state:
+        n: *id001
+        T: 355.1503353265463
+        P: 120000.0
+      why: 'dew side, tm_L = -3e-11 inside the band: kept single-phase vapour'
+      phase_signature: VAPOR
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.16270308203639
+        tm_liquid_trial: -2.999990266755934e-11
+      vapor_fraction: 1.0
+      outlets: the feed state bitwise in the named phase; the other outlet dormant (zeros, same T and P)
+      deciding_tm: -2.999990266755934e-11
+    F12:
+      state:
+        n:
+        - 0.0
+        - 1.675309164407079
+        - 0.324690835592921
+        T: 350.039749454704
+        P: 101325.0
+      why: 'the VB-VC azeotrope at its boiling point: both trial distances within roundoff of 0; the step order makes it LIQUID'
+      phase_signature: LIQUID
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: 8.73939399547253e-16
+        tm_liquid_trial: null
+      vapor_fraction: 0.0
+      outlets: the feed state bitwise in the named phase; the other outlet dormant (zeros, same T and P)
+      deciding_tm: 8.73939399547253e-16
+  stability_queries:
+    F1:
+      LIQUID:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm: 0.8358835348475964
+      VAPOR:
+        label: UNSTABLE
+        tm: -6.538804673576248
+    F2:
+      LIQUID:
+        label: UNSTABLE
+        tm: -13.529929224428919
+      VAPOR:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm: 0.9250634036296058
+    F3:
+      LIQUID:
+        label: UNSTABLE
+        tm: -0.08244136844823574
+      VAPOR:
+        label: UNSTABLE
+        tm: -0.08474888876158986
+    F7:
+      LIQUID:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm: -2.999980363080423e-11
+      VAPOR:
+        label: UNSTABLE
+        tm: -0.1698444985823734
+    F11:
+      LIQUID:
+        label: UNSTABLE
+        tm: -0.16270308203639
+      VAPOR:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm: -2.999990266755934e-11
+tolerances:
+  evaluate_phase:
+    rule: '|impl - expected| <= TOL_VALUE * max(|expected|, s_q); exact equality where expected is 0'
+    TOL_VALUE: 1.0e-12
+    s_q:
+      h: 1000.0
+      dh/dT: 10.0
+      dh/dn_j: 1e3 / n_tot
+      dh/dP: exactly 0
+      lnphi: 1.0
+      dlnphi/dT: 0.01
+      dlnphi/dP: 1 / P
+      dlnphi/dn_j: 1 / n_tot
+  tm:
+    rule: '|impl - expected| <= TOL_TM'
+    TOL_TM: 1.0e-12
+  flash:
+    rule: '|impl - expected| <= 10 (S_q A (DELTA_K + f_lnK) + 64 eps max(|q|, s_q)); k_values relative: 10 (A (DELTA_K + f_lnK)
+      + 64 eps); an absent component k: 10 (S_k A (DELTA_K + f_lnK) + 64 eps); A = ||(I - dPhi/dlnK)^-1||_inf'
+    per_state:
+      F3:
+        rho: 0.474
+        A: 2.94
+        lnK_floor: 3.55e-15
+        per_output:
+          beta: 1.28e-11
+          x_VA: 1.8e-12
+          x_VB: 1.77e-12
+          x_VC: 3.43e-12
+          y_VA: 1.9e-12
+          y_VB: 8.47e-13
+          y_VC: 2.61e-12
+          nV_VA: 6.29e-12
+          nV_VB: 9.9e-12
+          nV_VC: 9.88e-12
+          nL_VA: 6.29e-12
+          nL_VB: 9.9e-12
+          nL_VC: 9.88e-12
+          k_relative: 3.19e-12
+      F4:
+        rho: 0.347
+        A: 2.23
+        lnK_floor: 2.0e-15
+        per_output:
+          beta: 4.85e-12
+          x_VB: 1.42e-12
+          x_VC: 1.42e-12
+          y_VB: 1.84e-12
+          y_VC: 1.84e-12
+          nV_VB: 3.51e-12
+          nV_VC: 6.48e-12
+          nL_VB: 3.51e-12
+          nL_VC: 6.48e-12
+          k_relative: 2.42e-12
+          k_relative_VA: 2.22e-12
+      F5:
+        rho: 0.377
+        A: 27.4
+        lnK_floor: 1.72e-15
+        per_output:
+          beta: 7.15e-09
+          x_VB: 1.33e-10
+          x_VC: 1.33e-10
+          y_VB: 1.54e-10
+          y_VC: 1.54e-10
+          nV_VB: 1.26e-08
+          nV_VC: 1.66e-09
+          nL_VB: 1.26e-08
+          nL_VC: 1.66e-09
+          k_relative: 2.8e-11
+          k_relative_VA: 6.37e-11
+      F8:
+        rho: 0.24
+        A: 2.3
+        lnK_floor: 2.11e-15
+        per_output:
+          beta: 2.32e-11
+          x_VA: 3.02e-12
+          x_VB: 1.93e-13
+          x_VC: 2.97e-12
+          y_VA: 3.22e-12
+          y_VB: 1.13e-12
+          y_VC: 2.23e-12
+          nV_VA: 1.99e-11
+          nV_VB: 1.86e-11
+          nV_VC: 8.48e-12
+          nL_VA: 1.99e-11
+          nL_VB: 1.86e-11
+          nL_VC: 8.48e-12
+          k_relative: 2.49e-12
+      F10:
+        rho: 0.47
+        A: 2.77
+        lnK_floor: 1.55e-15
+        per_output:
+          beta: 7.13e-12
+          x_VA: 1.08e-12
+          x_VB: 1.51e-12
+          x_VC: 2.45e-12
+          y_VA: 1.21e-12
+          y_VB: 1.09e-12
+          y_VC: 2.16e-12
+          nV_VA: 2.34e-12
+          nV_VB: 3.98e-12
+          nV_VC: 8.51e-12
+          nL_VA: 2.34e-12
+          nL_VB: 3.98e-12
+          nL_VC: 8.51e-12
+          k_relative: 2.95e-12
+measured:
+  binary64_floor_evaluate_phase:
+    E1.LIQUID: 2.84e-15
+    E1.VAPOR: 8.66e-16
+    E2.LIQUID: 3.14e-15
+    E2.VAPOR: 5.22e-15
+    E3.LIQUID: 2.09e-15
+    E3.VAPOR: 4.14e-16
+    E4.LIQUID: 6.93e-14
+    E4.VAPOR: 7.2e-15
+    E5.LIQUID: 8.15e-16
+    E5.VAPOR: 1.3e-15
+    E6.LIQUID: 3.55e-14
+    E6.VAPOR: 1.75e-14
+  binary64_floor_flash:
+    F1:
+      tm_floor: 1.11e-16
+    F2:
+      tm_floor: 1.78e-14
+    F3:
+      tm_floor: 1.71e-15
+    F4:
+      tm_floor: 2.22e-15
+    F5:
+      tm_floor: 1.15e-15
+    F6a:
+      tm_floor: 5.41e-16
+    F6b:
+      tm_floor: 1.35e-16
+    F7:
+      tm_floor: 1.58e-15
+    F8:
+      tm_floor: 1.33e-15
+    F10:
+      tm_floor: 6.27e-16
+    F11:
+      tm_floor: 1.61e-15
+    F12:
+      tm_floor: 3.19e-16
+  classification_margins:
+    F1: 0.836
+    F2: 0.925
+    F3: 0.0824
+    F4: 0.168
+    F5: 0.00145
+    F6a: 0.0186
+    F6b: 0.0187
+    F7: 3.0e-11
+    F8: 9.9e-09
+    F10: 9.9e-09
+    F11: 3.0e-11
+    F12: 8.74e-16
+  ss_iterations_max:
+    liquid_trial: 40
+    two_phase: 39
+mutations:
+  M01_lambda_transposed:
+    max_ratio_to_tolerance: 1930000000000.0
+    where: E3.LIQUID.dlnphi_VB/dn_VB
+  M02_S_transposed:
+    max_ratio_to_tolerance: 1400000000000.0
+    where: E3.LIQUID.dlnphi_VB/dn_VB
+  M03_third_term_dropped:
+    max_ratio_to_tolerance: 700000000000.0
+    where: E3.LIQUID.lnphi_VB
+  M04_psat_d_dropped:
+    max_ratio_to_tolerance: 2120000000000.0
+    where: E6.LIQUID.dh/dn_VB
+  M05_psat_c_dropped:
+    max_ratio_to_tolerance: 8870000000000.0
+    where: E3.LIQUID.lnphi_VB
+  M06_psat_ln_T_not_theta:
+    max_ratio_to_tolerance: 55300000000000.0
+    where: E1.LIQUID.lnphi_VB
+  M07_latent_without_c:
+    max_ratio_to_tolerance: 5320000000000.0
+    where: E6.LIQUID.dh/dn_VB
+  M08_latent_dropped:
+    max_ratio_to_tolerance: 841000000000.0
+    where: E6.LIQUID.dh/dn_VB
+  M09_n_derivative_unprojected:
+    max_ratio_to_tolerance: 1000000000000.0
+    where: E2.LIQUID.dlnphi_VA/dn_VA
+  M10_n_derivative_without_1_over_ntot:
+    max_ratio_to_tolerance: 1000000000000.0
+    where: E1.LIQUID.dh/dn_VA
+  M11_dP_sign:
+    max_ratio_to_tolerance: 2000000000000.0
+    where: E3.LIQUID.dlnphi_VA/dP
+  M12_cp_index_shift:
+    max_ratio_to_tolerance: 2070000000000.0
+    where: E6.VAPOR.dh/dn_VB
+  M13_formation_dropped:
+    max_ratio_to_tolerance: 3050000000000.0
+    where: E6.VAPOR.dh/dn_VB
+  M14_R_rounded_8_314:
+    max_ratio_to_tolerance: 192000000.0
+    where: E6.LIQUID.dh/dn_VB
+generator_claims:
+- id: REC-01
+  holds: true
+  statement: every Wilson Lambda_ij of the records is present and strictly positive (the convexity theorem of spec section
+    4.1 needs Lambda > 0)
+- id: REC-02
+  holds: true
+  statement: the six off-diagonal Lambda_ij are pairwise distinct and |Lambda_ij - Lambda_ji| >= 0.3, so a transposed or permuted
+    index changes every Wilson term
+- id: REC-03
+  holds: true
+  statement: every ideal-gas c_p coefficient and every vapour-pressure coefficient of the verification records is nonzero,
+    so a dropped term changes a value
+- id: PURE-VA-1
+  holds: true
+  statement: h^ig_VA(298.15 K) equals the record's formation enthalpy exactly (the datum of S10-VER-ref-v1)
+- id: PURE-VA-2
+  holds: true
+  statement: the implied enthalpy of vaporization of VA exceeds 10 kJ/mol on the whole domain (P_sat strictly increasing in
+    T), min 35174.6 J/mol
+- id: PURE-VA-3
+  holds: true
+  statement: VA boils at 101 325 Pa inside the domain (338.048264 K)
+- id: PURE-VB-1
+  holds: true
+  statement: h^ig_VB(298.15 K) equals the record's formation enthalpy exactly (the datum of S10-VER-ref-v1)
+- id: PURE-VB-2
+  holds: true
+  statement: the implied enthalpy of vaporization of VB exceeds 10 kJ/mol on the whole domain (P_sat strictly increasing in
+    T), min 36591 J/mol
+- id: PURE-VB-3
+  holds: true
+  statement: VB boils at 101 325 Pa inside the domain (351.407228 K)
+- id: PURE-VC-1
+  holds: true
+  statement: h^ig_VC(298.15 K) equals the record's formation enthalpy exactly (the datum of S10-VER-ref-v1)
+- id: PURE-VC-2
+  holds: true
+  statement: the implied enthalpy of vaporization of VC exceeds 10 kJ/mol on the whole domain (P_sat strictly increasing in
+    T), min 39254.8 J/mol
+- id: PURE-VC-3
+  holds: true
+  statement: VC boils at 101 325 Pa inside the domain (373.176498 K)
+- id: CONS-VA
+  holds: true
+  statement: 'h0L_VA - h^ig_VA = -T^2 d[R ln P_sat]/dT (Gibbs-Helmholtz on mu0L - mu^ig(P0) = RT ln(P_sat/P0)) at T_lo, 350
+    K, T_hi: worst relative 2.98e-31'
+- id: CONS-VB
+  holds: true
+  statement: 'h0L_VB - h^ig_VB = -T^2 d[R ln P_sat]/dT (Gibbs-Helmholtz on mu0L - mu^ig(P0) = RT ln(P_sat/P0)) at T_lo, 350
+    K, T_hi: worst relative 4.89e-31'
+- id: CONS-VC
+  holds: true
+  statement: 'h0L_VC - h^ig_VC = -T^2 d[R ln P_sat]/dT (Gibbs-Helmholtz on mu0L - mu^ig(P0) = RT ln(P_sat/P0)) at T_lo, 350
+    K, T_hi: worst relative 3.81e-31'
+- id: DOM-E1
+  holds: true
+  statement: E1 is inside the closed domain
+- id: DOM-E2
+  holds: true
+  statement: E2 is inside the closed domain
+- id: DOM-E3
+  holds: true
+  statement: E3 is inside the closed domain
+- id: DOM-E4
+  holds: true
+  statement: E4 is inside the closed domain
+- id: DOM-E5
+  holds: true
+  statement: E5 is inside the closed domain
+- id: DOM-E6
+  holds: true
+  statement: E6 is inside the closed domain
+- id: ZERO-ALL
+  holds: true
+  statement: the 102 derivatives that vanish in the model (every VAPOR lnphi derivative and dh/dP in both phases, at the six
+    E-states) are exactly zero in the 50-digit closed forms and in a plain binary64 transcription; the implementation must
+    return them as 0.0 exactly
+- id: FLOOR-E
+  holds: true
+  statement: the binary64 transcription's worst scaled error over every E-state value and derivative is 6.93e-14 <= TOL_VALUE/10
+    = 1e-13 (spec section 7.2)
+- id: VAN-02
+  holds: true
+  statement: at pure VC (E3) d lnphi_VC/dn_j = 0 (Gibbs-Duhem with x_VC = 1), d lnphi_i/dn_VC = 0 and dh/dn_VC = 0 (homogeneity
+    with one flowing component) exactly at 50 digits; at E1 the same entries are nonzero (n_tot |d lnphi/dn| > 1e-3, |dh/dn_VC|
+    > 1 J/mol per mol/s)
+- id: VAN-01
+  holds: true
+  statement: ln gamma_VC = 0 exactly for pure VC (E3), and every ln gamma_i at E1 has magnitude > 1e-3, min 0.0088
+- id: DIST-01
+  holds: true
+  statement: at E1 the three liquid ln phi values differ pairwise by more than 0.05 (a permuted component index is caught)
+- id: DIST-02
+  holds: true
+  statement: at E1 the three liquid n-derivative rows of ln phi are pairwise distinct by more than 0.05
+- id: ID-GD
+  holds: true
+  statement: Gibbs-Duhem sum_i x_i d lnphi_i/dn_j = 0 at every E-state (4.5e-51)
+- id: ID-SYM
+  holds: true
+  statement: d lnphi_i/dn_j = d lnphi_j/dn_i at every E-state (5.3e-51)
+- id: ID-HOM
+  holds: true
+  statement: sum_j n_j dX/dn_j = 0 for every X at every E-state (2.2e-46)
+- id: ID-ROW
+  holds: true
+  statement: sum_k x_k G_ik = -1 for every i at every E-state (5.3e-51)
+- id: ID-GSYM
+  holds: true
+  statement: G_ij = G_ji at every E-state (0.0e+00)
+- id: ID-GE
+  holds: true
+  statement: sum_i x_i ln gamma_i = -sum_i x_i ln S_i (= g^E/RT) at every E-state (1.0e-51)
+- id: FD-01
+  holds: true
+  statement: every analytic derivative at every E-state and phase equals a 50-digit central difference (step 1e-15 relative),
+    |FD - analytic| / max(|analytic|, s_q) = 1.9e-29
+- id: CONS-MIX
+  holds: true
+  statement: 'h^L - sum_i x_i h^ig_i = -T^2 d/dT[(G^L - sum_i x_i mu^ig_i(P0))/T] at every E-state (caloric and equilibrium
+    parts from one potential; h^E = 0): 9.5e-31'
+- id: IDAES-MAP
+  holds: true
+  statement: IDAES 2.13's Wilson with vol_mol_comp = 1 and tau[j,i] = -ln Lambda_ij reproduces ln gamma at every E-state (0.0e+00);
+    the transposed mapping tau[i,j] = -ln Lambda_ij is off by 0.046 at E1
+- id: CVX-01
+  holds: true
+  statement: the projected Hessian of n g_mix/RT of the verification liquid is positive definite on the interior grid of step
+    0.05 (min eigenvalue 1.9403); spec section 4.1 proves it for every Lambda > 0, this is the executable illustration
+- id: AZ-01
+  holds: true
+  statement: 'VB-VC has a minimum-boiling azeotrope at 101 325 Pa: x_VB = 0.837655, T = 350.039749 K, below both pure boiling
+    points'
+- id: AZ-02
+  holds: true
+  statement: 'VA-VB and VA-VC have no azeotrope at 101 325 Pa: alpha_VA > 1 along the bubble curve at x = 0, 0.05, ..., 1'
+- id: F5-BAND
+  holds: true
+  statement: the near-azeotrope feed of F5 has a two-phase band 0.075716 K wide at 101 325 Pa (> 1e-3 K, so a registered temperature
+    lies inside it)
+- id: DOM-F1
+  holds: true
+  statement: F1 is inside the closed domain
+- id: PHASE-F1
+  holds: true
+  statement: F1 is LIQUID (got LIQUID)
+- id: DOM-F2
+  holds: true
+  statement: F2 is inside the closed domain
+- id: PHASE-F2
+  holds: true
+  statement: F2 is VAPOR (got VAPOR)
+- id: DOM-F3
+  holds: true
+  statement: F3 is inside the closed domain
+- id: PHASE-F3
+  holds: true
+  statement: F3 is TWO_PHASE (got TWO_PHASE)
+- id: SS-F3
+  holds: true
+  statement: 'F3: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.4743 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 2.9388)'
+- id: BETA-F3
+  holds: true
+  statement: 'F3: 0 < beta < 1 (beta = 7.187564e-01)'
+- id: BAL-F3
+  holds: true
+  statement: 'F3: the 50-digit outlets close the component balance'
+- id: DOM-F4
+  holds: true
+  statement: F4 is inside the closed domain
+- id: PHASE-F4
+  holds: true
+  statement: F4 is TWO_PHASE (got TWO_PHASE)
+- id: SS-F4
+  holds: true
+  statement: 'F4: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.3472 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 2.2288)'
+- id: BETA-F4
+  holds: true
+  statement: 'F4: 0 < beta < 1 (beta = 6.321241e-01)'
+- id: BAL-F4
+  holds: true
+  statement: 'F4: the 50-digit outlets close the component balance'
+- id: DOM-F5
+  holds: true
+  statement: F5 is inside the closed domain
+- id: PHASE-F5
+  holds: true
+  statement: F5 is TWO_PHASE (got TWO_PHASE)
+- id: SS-F5
+  holds: true
+  statement: 'F5: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.3771 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 27.3740)'
+- id: BETA-F5
+  holds: true
+  statement: 'F5: 0 < beta < 1 (beta = 6.420938e-01)'
+- id: BAL-F5
+  holds: true
+  statement: 'F5: the 50-digit outlets close the component balance'
+- id: DOM-F6a
+  holds: true
+  statement: F6a is inside the closed domain
+- id: PHASE-F6a
+  holds: true
+  statement: F6a is LIQUID (got LIQUID)
+- id: DOM-F6b
+  holds: true
+  statement: F6b is inside the closed domain
+- id: PHASE-F6b
+  holds: true
+  statement: F6b is VAPOR (got VAPOR)
+- id: DOM-F7
+  holds: true
+  statement: F7 is inside the closed domain
+- id: PHASE-F7
+  holds: true
+  statement: F7 is LIQUID (got LIQUID)
+- id: DOM-F8
+  holds: true
+  statement: F8 is inside the closed domain
+- id: PHASE-F8
+  holds: true
+  statement: F8 is TWO_PHASE (got TWO_PHASE)
+- id: SS-F8
+  holds: true
+  statement: 'F8: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.2396 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 2.2993)'
+- id: BETA-F8
+  holds: true
+  statement: 'F8: 0 < beta < 1 (beta = 1.292520e-07)'
+- id: BAL-F8
+  holds: true
+  statement: 'F8: the 50-digit outlets close the component balance'
+- id: PHASE-F9
+  holds: true
+  statement: F9 is ZERO_FLOW (got ZERO_FLOW)
+- id: DOM-F10
+  holds: true
+  statement: F10 is inside the closed domain
+- id: PHASE-F10
+  holds: true
+  statement: F10 is TWO_PHASE (got TWO_PHASE)
+- id: SS-F10
+  holds: true
+  statement: 'F10: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.4697 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 2.7677)'
+- id: BETA-F10
+  holds: true
+  statement: 'F10: 0 < beta < 1 (beta = 1.000000e+00)'
+- id: BAL-F10
+  holds: true
+  statement: 'F10: the 50-digit outlets close the component balance'
+- id: DOM-F11
+  holds: true
+  statement: F11 is inside the closed domain
+- id: PHASE-F11
+  holds: true
+  statement: F11 is VAPOR (got VAPOR)
+- id: DOM-F12
+  holds: true
+  statement: F12 is inside the closed domain
+- id: PHASE-F12
+  holds: true
+  statement: F12 is LIQUID (got LIQUID)
+- id: FLOOR-TM
+  holds: true
+  statement: the binary64 floor of the trial distances over every F-state is 1.78e-14 <= TOL_TM/10
+- id: FLOOR-LNK
+  holds: true
+  statement: DELTA_K = 1e-13 is at least 10 x the binary64 floor of ln K at the two-phase solutions (3.55e-15)
+- id: SS-CAP
+  holds: true
+  statement: SS needs at most 40 (liquid trial) and 39 (two-phase) iterations at the registered states to reach its stop test,
+    <= SS_MAX/10 = 100
+- id: BAND-F7
+  holds: true
+  statement: F7's deciding distance -3.0000e-11 lies inside [-EPS_TPD, 0) with 10 x TOL_TM to spare on both sides
+- id: BAND-F11
+  holds: true
+  statement: F11's deciding distance -3.0000e-11 lies inside [-EPS_TPD, 0) with 10 x TOL_TM to spare on both sides
+- id: BAND-F8
+  holds: true
+  statement: F8's deciding distance -1.0000e-08 lies below -EPS_TPD by more than 10 x TOL_TM
+- id: BAND-F10
+  holds: true
+  statement: F10's deciding distance -1.0000e-08 lies below -EPS_TPD by more than 10 x TOL_TM
+- id: MARGIN-F1
+  holds: true
+  statement: F1's trial distances are at least 1e-4 from 0 and from -EPS_TPD (0.836)
+- id: MARGIN-F2
+  holds: true
+  statement: F2's trial distances are at least 1e-4 from 0 and from -EPS_TPD (0.925)
+- id: MARGIN-F3
+  holds: true
+  statement: F3's trial distances are at least 1e-4 from 0 and from -EPS_TPD (0.0824)
+- id: MARGIN-F4
+  holds: true
+  statement: F4's trial distances are at least 1e-4 from 0 and from -EPS_TPD (0.168)
+- id: MARGIN-F6a
+  holds: true
+  statement: F6a's trial distances are at least 1e-4 from 0 and from -EPS_TPD (0.0186)
+- id: MARGIN-F6b
+  holds: true
+  statement: F6b's trial distances are at least 1e-4 from 0 and from -EPS_TPD (0.0187)
+- id: AZ-F12
+  holds: true
+  statement: at the azeotrope (F12) the vapour-trial distance is within 1e-12 of zero (8.739e-16); step 2 keeps the liquid
+- id: PURE-01
+  holds: true
+  statement: 'one flowing component never reaches step 4: F6a is LIQUID, F6b VAPOR'
+- id: ZC-F4
+  holds: true
+  statement: 'F4: both outlets carry exactly zero VA, and K_VA (infinite dilution in the liquid) is reported and positive'
+- id: CVX-02
+  holds: true
+  statement: 'the liquid-trial search at F2 and F10 reaches the same stationary point from the Wilson start, the uniform start
+    and three near-pure starts (9.1e-50): one stationary point, as strict convexity requires'
+- id: STAB-01
+  holds: true
+  statement: the registered stability() queries return both STABLE_WITHIN_TESTED_SCOPE and UNSTABLE (no assertion is satisfiable
+    by a constant label)
+- id: MUT-M01
+  holds: true
+  statement: mutation M01_lambda_transposed moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance
+    (max 1.93e+12 x, at E3.LIQUID.dlnphi_VB/dn_VB)
+- id: MUT-M02
+  holds: true
+  statement: mutation M02_S_transposed moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance (max
+    1.4e+12 x, at E3.LIQUID.dlnphi_VB/dn_VB)
+- id: MUT-M03
+  holds: true
+  statement: mutation M03_third_term_dropped moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance
+    (max 7e+11 x, at E3.LIQUID.lnphi_VB)
+- id: MUT-M04
+  holds: true
+  statement: mutation M04_psat_d_dropped moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance
+    (max 2.12e+12 x, at E6.LIQUID.dh/dn_VB)
+- id: MUT-M05
+  holds: true
+  statement: mutation M05_psat_c_dropped moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance
+    (max 8.87e+12 x, at E3.LIQUID.lnphi_VB)
+- id: MUT-M06
+  holds: true
+  statement: mutation M06_psat_ln_T_not_theta moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance
+    (max 5.53e+13 x, at E1.LIQUID.lnphi_VB)
+- id: MUT-M07
+  holds: true
+  statement: mutation M07_latent_without_c moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance
+    (max 5.32e+12 x, at E6.LIQUID.dh/dn_VB)
+- id: MUT-M08
+  holds: true
+  statement: mutation M08_latent_dropped moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance
+    (max 8.41e+11 x, at E6.LIQUID.dh/dn_VB)
+- id: MUT-M09
+  holds: true
+  statement: mutation M09_n_derivative_unprojected moves at least one registered evaluate_phase assertion by >= 1e3 x its
+    tolerance (max 1e+12 x, at E2.LIQUID.dlnphi_VA/dn_VA)
+- id: MUT-M10
+  holds: true
+  statement: mutation M10_n_derivative_without_1_over_ntot moves at least one registered evaluate_phase assertion by >= 1e3
+    x its tolerance (max 1e+12 x, at E1.LIQUID.dh/dn_VA)
+- id: MUT-M11
+  holds: true
+  statement: mutation M11_dP_sign moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance (max 2e+12
+    x, at E3.LIQUID.dlnphi_VA/dP)
+- id: MUT-M12
+  holds: true
+  statement: mutation M12_cp_index_shift moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance
+    (max 2.07e+12 x, at E6.VAPOR.dh/dn_VB)
+- id: MUT-M13
+  holds: true
+  statement: mutation M13_formation_dropped moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance
+    (max 3.05e+12 x, at E6.VAPOR.dh/dn_VB)
+- id: MUT-M14
+  holds: true
+  statement: mutation M14_R_rounded_8_314 moves at least one registered evaluate_phase assertion by >= 1e3 x its tolerance
+    (max 1.92e+08 x, at E6.LIQUID.dh/dn_VB)
+- id: MUT-F01
+  holds: true
+  statement: a flash that evaluates K at the vapour composition moves F3's beta by 1.626e-02, >= 1e3 x its tolerance 1.28e-11

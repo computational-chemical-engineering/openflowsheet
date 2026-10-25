@@ -16,6 +16,9 @@ the project had already rejected that option on purpose.
 `docs/adr/` remains the normative authority. This register is the index that makes the ADRs
 findable by the question they answer rather than by their number.
 
+**Numbering note (S10, 2026-10-24).** S10's entries start at **R-700**, not after R-627: R-628…R-643 are held by
+S03 on `wp/S03` and are not on `main` yet. ADR 0047 is S10's. The next package on `main` continues after S03's range.
+
 ---
 
 ## R-001 — Transient extension: neutralize the lock-in points now, keep dynamics deferred
@@ -13479,3 +13482,697 @@ control. Watch also for the release gate's handling of an unmet clause (Q-A2-4, 
 
 **Watch for.** A live-solve gate that compares derived differences or ratios to a relative tolerance. An edit to an S03 tool
 script without a new qualification run. A re-run in which a tool loses every control, where §19.4 decides the relabelling.
+
+---
+
+## R-700 — S10's method: γ–φ with a Wilson liquid (constant Λ > 0), an ideal-gas vapour and a DIPPR-101 vapour pressure, all caloric terms from one potential
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D1, Proposed |
+| Normative text | `docs/derivations/S10-spec.md` §3; ADR 0047 D1 |
+| Evidence | `benchmarks/s10/reference_values.yaml` claims CONS-VA/VB/VC, CONS-MIX (Gibbs–Helmholtz at 50 digits) |
+| Affected packages | S10, S10-C |
+
+**Decision.**
+- Liquid fugacity: ln f_i^L = ln(x_i γ_i P_i^sat). The vapour is an ideal gas.
+- Vapour pressure: ln(P^sat/Pa) = a + b/θ + c ln θ + d θ², with θ = T/1000 K. The ideal gas is NASA-7.
+- h_i^0L = h_i^ig − R T² d ln P_i^sat/dT. With constant Λ, h^E = 0 and v^E = 0.
+- There is no Poynting factor and no liquid volume.
+- Provider `wilson-ig-v1`. It offers `h` and `lnphi_<c>`, the latter with ln φ^L = ln γ + ln(P^sat/P) and ln φ^V = 0.
+
+**Rejected alternatives, and why.**
+- *A cubic liquid with k_ij:* ADR 0026's blockers still hold — a symmetric-model trivial solution, no open k_ij, and
+  van der Waals mixing is poor for alcohol–water.
+- *NRTL first:* non-convex, so a false LLE and a multi-start stability test. It is the planned second γ model.
+- *UNIQUAC:* more data, and no case needs it.
+- *T-dependent Λ:* IDAES carries constant τ and no h^E, and an h^E path needs its own tests. Deferred to a v2.
+- *Poynting:* needs v^L data, and both reference tools omit it. Its effect is ≤ 4.8 × 10⁻³ (spec §3.7).
+- *An independent liquid c_p or ΔH_vap:* inconsistent with the equilibrium potential (blueprint §6.2).
+- *Antoine:* its curvature gives a poor implied c_p^L.
+- *IDAES's Wagner form:* it makes IDAES's enthalpy non-polynomial, and DWSIM's support for it is unknown.
+
+**Watch for.**
+- Adding a T-dependent Λ, a Poynting term or a liquid volume is a new provider version with new tests, not an edit of
+  `v1`.
+- Pairing a separately chosen ΔH_vap with this vapour pressure breaks the consistency claims.
+
+---
+
+## R-701 — S10 stability: the Wilson liquid is strictly convex for every Λ > 0, so a closed-form vapour trial and one convex liquid-trial search are a global test within the model; ε_tpd = 1e-10, scope `S10-tpd-v1`
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D2, Proposed |
+| Normative text | S10 spec §4 (the theorem and its consequences), §4.3 (the labels) |
+| Evidence | Claims CVX-01 (minimum eigenvalue 1.94 on the grid) and CVX-02 (one stationary point from five starts); FLOOR-TM (1.78e-14) |
+| Affected packages | S10, S10-C; any later γ model |
+
+**Decision.**
+- The convexity proof: f(x) = Σ x_i ln(x_i/(Λx)_i) is a sum of jointly convex perspectives, and it is strict on the
+  simplex because Λ > 0.
+- Consequences:
+  - at most one liquid and one vapour;
+  - each trial distance has a single stationary point, which is its global minimum;
+  - a converged L–V tangent is the global minimum;
+  - there is no trivial solution, because the two phases use different models.
+- Labels:
+  - `STABLE_WITHIN_TESTED_SCOPE`: the deciding distance is ≥ −1e-10, or a converged two-phase result.
+  - `UNSTABLE`: the deciding distance is < −1e-10.
+  - `UNKNOWN`: a search reached its cap, or the state is dormant or out of domain.
+
+**Rejected alternatives, and why.**
+- *Multi-start searches from pure-component trials:* unnecessary under the theorem, and they would turn
+  `STABLE_WITHIN_TESTED_SCOPE` into a statement about initial guesses.
+- *A tighter ε_tpd:* R-540 set 1e-10 for `pr-lib-v1`, and that is 5600× above the measured floor.
+- *Bubble/dew checks alone:* blueprint §6.3 forbids treating them as a stability proof.
+
+**Watch for.** The theorem needs Λ > 0 and the Wilson form. NRTL does not inherit it: an NRTL route needs a
+multi-start scope of its own and a new scope id.
+
+---
+
+## R-702 — S10's TP flash: request checks in `pr-c1-v1`'s order, then a vapour trial, a liquid-trial SS search and a two-phase SS with Rachford–Rice inside; no pure-component branch; ties go to the liquid; δ = 1e-13, SS_MAX = 1000
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D3, Proposed |
+| Normative text | S10 spec §5.4, §5.6 |
+| Evidence | Claims SS-F3…F10 (spectral radius ≤ 0.48), SS-CAP (≤ 40 iterations), FLOOR-LNK (δ_K is 28× the floor), PURE-01, AZ-F12 |
+| Affected packages | S10 |
+
+**Decision.**
+- Steps:
+  - tm_V ≥ −ε gives LIQUID;
+  - otherwise, tm_L ≥ −ε gives VAPOR;
+  - otherwise the flash runs SS on K from K(w*).
+- tm_L is evaluated by the full, second-order formula.
+- Reported quantities come from the K used in the last Rachford–Rice solve.
+- A cap gives `not_converged` with `UNKNOWN`.
+- Single-phase results report no K.
+- The expectations are solved by Newton in the generator, not by SS.
+
+**Rejected alternatives, and why.**
+- *SYN-001's dormant-before-domain order:* `pr-c1-v1`'s order, ratified in M01 Amendment 1, is the newer precedent.
+- *A special pure-component branch:* the general steps decide it (PURE-01).
+- *Splitting inside the ε band:* this would give vapour fractions of order 1e-10 with no physical resolution behind
+  them.
+- *Newton acceleration:* not needed at these contraction rates, and it would add an algorithm to verify.
+
+**Watch for.** A tolerance tightened below §5.6's floors; K reported for single-phase results.
+
+---
+
+## R-703 — S10's contract needs no frozen change: the stability label travels in `FlashResult.message`, with a full `StabilityReport` from a provider method outside the Protocol; flash derivatives are refused; the provider has no PH flash
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D4, Proposed |
+| Normative text | S10 spec §5.2–§5.5, §5.8; findings F-1 and F-2 |
+| Evidence | `src/openflowsheet/thermo/__init__.py`: `FlashRequest` has no enthalpy field; `FlashResult` has one `liquid` and no stability field; `Phase` is {LIQUID, VAPOR} |
+| Affected packages | S10, S10-C |
+
+**Decision.**
+- The message grammar is `stability: <LABEL>; scope: S10-tpd-v1; tm_vapour_trial: R; tm_liquid_trial:
+  R|not_evaluated[; fugacity_residual: R]`. Refusals keep the form `<code>: …`.
+- The method is `stability(state, phase, context) -> StabilityReport` (`thermo/stability.py`).
+- A PH flash belongs to the consumer package S10-C.
+
+**Rejected alternatives, and why.**
+- *An optional typed field on `FlashResult`:* a frozen field-set change, recorded as finding F-2 with the default "not
+  now".
+- *A `"PH"` flash specification:* `FlashRequest` cannot carry the enthalpy target.
+
+**Watch for.** A consumer parsing the message instead of calling `stability()` for anything beyond the label.
+
+---
+
+## R-704 — S10's conventions `WILSON-IG-ref-v1` (real) and `S10-VER-ref-v1` (verification) are formation data from the NASA polynomial's own H(298.15 K); neither is reaction-registered
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D5, Proposed |
+| Normative text | S10 spec §3.1; finding F-3 |
+| Evidence | Claims PURE-*-1 (h^ig(298.15 K) = Δ_fH exactly) |
+| Affected packages | S10, S10-C |
+
+**Decision.**
+- Δ_fH_i = R(a₁T₀ + … + a₅T₀⁵/5 + a₆), from NASA TM-4513, which C12 cleared.
+- The conventions are not added to ADR 0011 D2's set.
+- Streams never mix with another convention.
+
+**Rejected alternatives, and why.**
+- *ATcT formation enthalpies, as for C1:* C12's row RC-05 is unresolved.
+- *A pure-liquid datum like SYN-001's:* it gives no route to a later reactor.
+- *Registering the conventions as reaction-consistent now:* no S10 consumer reacts.
+
+**Watch for.** A reacting unit on these conventions needs a new entry, and it amends ADR 0011 D2.
+
+---
+
+## R-705 — S10 verifies on three synthetic components (`S10-verification-v1`); its tolerances come from measured floors and from the SS error amplification
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D6, Proposed |
+| Normative text | S10 spec §6, §7 |
+| Evidence | `s10_reference.py --check`: 113 claims, including FLOOR-E (6.93e-14 ≤ 1e-13), FLOOR-TM, FLOOR-LNK, and MUT-* (each of fifteen mutations ≥ 1e3× a tolerance) |
+| Affected packages | S10 |
+
+**Decision.**
+- The provider takes a records path.
+- The verification uses invented coefficients, all nonzero, with Λ distinct and asymmetric and one azeotropic pair.
+- Tolerances:
+  - `evaluate_phase`: 1e-12·max(|x|, s_q);
+  - trial distances: 1e-12;
+  - two-phase outputs: 10·(S_q·A·(δ_K + f_lnK) + 64ε·max(|q|, s_q)), with A = ‖(I − ∂Φ/∂ln K)⁻¹‖_∞.
+
+**Rejected alternatives, and why.**
+- *Verification on the real records only:* it waits for rights-pending data, and real Λ may hide index errors.
+- *An a-posteriori bound from ‖∂Φ‖_∞:* it measured 1.16 at F3, so it is not a contraction in that norm. The
+  first-order amplification is exact to first order.
+
+**Watch for.** A tolerance loosened to pass. If measurement contradicts §7, the spec is amended.
+
+---
+
+## R-706 — S10's real data: NASA TM-4513 ideal-gas data; a vapour pressure fitted by the project to CoolProp 8.0.0 reference-EOS saturation pressures; Wilson Λ fitted by the project to published binary VLE; no CAS RNs; not package data until rights are vetted and Frank decides
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D7, Proposed; shipping is Frank's (Q-F3) |
+| Normative text | S10 spec §9.1–§9.5 |
+| Evidence | Cantera 3.2.0 `nasa_gas.yaml` (`4de6199d…`) carries CH3OH, C2H5OH and H2O, and no C2H6O2; `docs/C12_DECISIONS.md`; `docs/l01-rights-check.md` RC-03, RC-07 |
+| Affected packages | S10 (WO-S10-3) |
+
+**Decision.**
+- The fits are by the project's own scripts, with `--check`:
+  - vapour pressure: least squares on a 61-point grid, claim max |Δ ln P| ≤ 2e-3;
+  - Λ: Gauss–Newton on ln γ with θ = −ln Λ, plus a grid-scan claim.
+- Transcription is double-entry.
+- Rights rows S10-RC-01…09 follow C12's format.
+
+**Rejected alternatives, and why.**
+- *DECHEMA parameters:* a copyrighted compilation.
+- *DWSIM's or ChemSep's embedded databanks:* GPL-3 or Artistic-2.0, with unknown upstream.
+- *Constants from REFPROP-derived tables:* NIST SRD terms (C12 RC-02).
+- *Ethylene glycol–water:* no NASA data.
+
+**Watch for.** Any record entering a `PACKAGED` path before every row it depends on is `permitted` and Frank has
+decided.
+
+---
+
+## R-707 — S10's independent references: IDAES 2.13's `activity_coeff_prop_pack` Wilson is primary, with tau[j,i] = −ln Λ_ij (IDAES's transposed index), the DIPPR form in its three vapour-pressure sites, and a pre-registered ε/solver ladder; DWSIM 9.0.5 is secondary and may be NOT_COMPARABLE
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D8, Proposed |
+| Normative text | S10 spec §8 |
+| Evidence | Read from the installed IDAES source (`activity_coeff_prop_pack.py`). Claim IDAES-MAP: exact at 50 digits; the untransposed mapping is off by 0.046 |
+| Affected packages | S10 (WO-S10-4/5), R01 (candidate comparisons) |
+
+**Decision.**
+- Comparison states I1–I14 are rule-defined.
+- Tolerances: 1e-7 for fractions and K, 0.05 J/mol for h.
+- Smoothing ε ∈ (1e-4, 1e-5, 1e-6) K; Ipopt `tol` = 1e-10.
+- The `verdict` agent judges.
+
+**Rejected alternatives, and why.**
+- *IDAES's default smoothing ε = 0.01 K:* its predicted error exceeds the tolerance by about 10³.
+- *IDAES's eNRTL modular route:* no Wilson.
+- *DWSIM as primary:* its Wilson form cannot be read, and constant Λ may be representable only state by state.
+
+**Watch for.**
+- Comparing before the readbacks pass.
+- Per-state hand tuning of IDAES starts.
+- Treating agreement as validation.
+
+---
+
+## R-708 — S10's empirical validation bands are pre-registered before any data are transcribed: ternary 1.0 K and 0.015 in y; isothermal 3 % in P and 0.015 in y; pure-component ΔH_vap 5 % and c_p^L 25 %. Fit quality is never validation
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D9, Proposed |
+| Normative text | S10 spec §9.4, §9.6 |
+| Evidence | None yet: the bands are set before the data, as the S03 lesson requires |
+| Affected packages | S10 (WO-S10-6) |
+
+**Decision.**
+- The held-out datasets are the 1993 ternary (VAL-1) and the 1995 isothermal binaries (VAL-2). Their bibliographic
+  details are to be verified (Q-N1).
+- The pure-component reference for VAL-3 is CoolProp's reference EOS.
+- A result outside a band is reported and stated in `uncertainty`.
+
+**Rejected alternatives, and why.**
+- *Bands set after seeing the data:* that is fitting the criterion.
+- *Counting fit residuals as validation:* circular.
+- *A tighter c_p^L band:* the ideal-gas Clapeyron slope error is of order 20 % for methanol, which is a known weakness
+  and not a defect of the implementation.
+
+**Watch for.** A band moved after a miss. A miss needs a new entry and, where warranted, a model version (Q-N5).
+
+---
+
+## R-709 — S10 is library-only by default; S03's S11 refusal of the column stays; the PH flash and the column go to S10-C with an `architect` pass; LLE is out (an interface ADR first)
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; ADR 0047 D10–D11, Proposed; the flowsheet question is Frank's (Q-F2) |
+| Normative text | S10 spec §10, §13 F-1 |
+| Evidence | R-568 and R-569 (library-only registration); Frank's Q-8 for S05 and S07 (library only) |
+| Affected packages | S10, S10-C, S03 |
+
+**Decision.**
+- `LIBRARY_ONLY_PROVIDERS["wilson-ig-v1"] = "S10"`, with a U02 row.
+- Column cases C-MW and C-EW are registered for S10-C, as definitions only.
+
+**Rejected alternatives, and why.**
+- *Relaxing S11 in S10:* K(x) changes the cascade's Jacobian structure, which needs a design pass.
+- *Admitting the provider to flowsheets now:* Frank's scope call.
+
+**Watch for.** A unit accepting `wilson-ig-v1` without S10-C's design.
+
+---
+
+## R-710 — S10's default chemistry is methanol, ethanol and water (each pair, the ternary, and the ethanol–water azeotrope) at 3e4–2e5 Pa and 300–400 K, pending Frank's Q-F1
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S10; the choice is Frank's (Q-F1); this is the recommended default |
+| Normative text | S10 spec §9.5, §12 |
+| Evidence | NASA TM-4513 coverage (`nasa_gas.yaml`); an open multi-binary dataset from one laboratory (Q-N1) |
+| Affected packages | S10 (WO-S10-3 onward) |
+
+**Decision.** The default proceeds unless Frank names another chemistry.
+
+**Rejected alternatives, and why.**
+- *Ethylene glycol–water:* no NASA data.
+- *An LLE system:* outside the model and the interface.
+
+**Watch for.** Frank's answer. A different chemistry re-runs WO-S10-3 only, because the verification is synthetic.
+
+## R-711 — S10 review errata: the flowing set is defined on z; the two-phase SS's δ_K floor depends on the state and exceeds δ_K near an azeotrope, which fails honestly and is fixed in S10-C
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`reviewer`), S10, WO-S10-1/2 review |
+| Normative text | S10 spec §14 (Amendment 1, E-1 and E-2) |
+| Evidence | `docs/reviews/S10-review-wo1-wo2.md`, findings 1 and 2 |
+| Affected packages | S10 (build-lane fix for E-1 and a near-azeotrope test); S10-C (the E-2 remedy, inside its `architect` pass, R-709) |
+
+**Decision.**
+- **E-1.** F = {i : n_i/n_tot > 0} in binary64. A subnormal flow whose z_i underflows is treated as absent. The flash
+  and `stability()` then return results instead of raising.
+- **E-2.** Near an azeotrope, the two-phase SS's step has a noise floor of about u‖G‖/min|K_i − 1|. Once |K_i − 1| ≲
+  1e-4, that floor is above δ_K = 1e-13.
+  - S10 keeps δ_K and the code. Such states come back `not_converged` with stability UNKNOWN, as §5.4 requires.
+  - §5.6's floor and §7.3's A·δ_K bound are stated to hold at the registered states only.
+
+**Rejected alternatives, and why.**
+- *Change S10's stop rule now* (a floor estimate or stagnation detection): it changes numerics and the stated accuracy
+  at review time, for a library-only TP flash whose failure here is already honest. S10-C's PH flash must search
+  inside the sliver, so the stop is designed there.
+- *Keep F on n_i > 0 and take ln z_i = ln n_i − ln n_tot*: z_i is still 0.0 in Rachford–Rice and in x, so the
+  component's outlets would be zero anyway. Defining F on z is the consistent form.
+
+**Watch for.**
+- S10-C reopening δ_K: the stop rule and the accuracy it states move together.
+- WO-S10-3 re-measuring ρ and the iteration counts on the real records (review finding 4).
+
+## R-712 — S10's Λ fit runs Gauss–Newton from the best point of a step-0.005 grid, with claims for a strict local minimum, the box, and agreement with the θ = 0 start; on the curve θ_12 + θ_21 = 0 Wilson's J has rank 1
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 2 (ESC-1, B-25, B-26, B-27) |
+| Normative text | S10 spec §15 A2-1, which replaces §9.4's "Solver" list and amends S10.A33 |
+| Evidence | `docs/S10_DECISIONS.md` ESC-1; `docs/derivations/scripts/s10_records.py` (claims `WILSON-SINGULAR-CURVE`, `LAMBDA-GRID64-`, `-CONV-`, `-BOX-`, `LAMBDA-`, `-MIN-`, `-V1-`, `LAMBDA-CURVE-methanol+ethanol`) |
+| Affected packages | S10 (WO-S10-3 records, A33's test) |
+
+**Decision.**
+- Gauss–Newton at 50 digits starts from θ_g, the point of least binary64 Φ on {m × 0.005 : m = −600…1200}².
+- The step, halving and stop rules are unchanged: B-26's minimum-norm step, B-27's "step taken" below 1e-30, and a cap
+  of 200 iterations.
+- The grid-global claim keeps its 1e-12 margin. Added claims: |Φ_binary64 − Φ_50| ≤ 1e-14 at θ_g; θ* inside (−3, 6)²;
+  |∇Φ(θ*)| ≤ 1e-20 with a positive-definite Hessian; and, for the two water binaries, convergence from θ = 0 to the same
+  θ* and the same stored Λ.
+- Why: on Λ_12 Λ_21 = 1, ∂ln γ_i/∂θ_21 = Λ_21 ∂ln γ_i/∂θ_12 at every x, so J has rank 1 there. θ = 0 lies on that
+  curve. Methanol + ethanol's Φ has a second local minimum on it, at Φ = 4.5643e-4, above Φ* = 4.3535e-4. The θ = 0
+  start is drawn to that second minimum, and §9.4's step-0.05 grid would have certified it.
+- Results: Λ (CH3OH, C2H5OH) = (0.6109248362, 1.49887856). The water binaries are unchanged, as LAMBDA-V1 asserts.
+
+**Rejected alternatives, and why.**
+- *Multi-start from every local minimum of the grid* (the build lane's option (a)). Measured: 98 starts for methanol +
+  ethanol, an aliasing count; 39 hit the cap; 488 s; the same θ*.
+- *Λ = 1 for methanol + ethanol.* The data reject it: AAD(T) is 0.066 K against 0.025 K. It would also make the τ
+  transposition invisible for that pair.
+- *§9.4 as written.* It gives no records.
+- *Levenberg–Marquardt from θ = 0.* It converges to the same wrong, genuine local minimum: the start was the defect, not
+  the step.
+
+**Watch for.**
+- Do not restore the θ = 0 start or the 0.05 grid as "the spec's original".
+- Do not read physical meaning into the individual Λ_ME and Λ_EM. Only θ_12 + θ_21 is well determined (JᵀJ eigenvalues
+  1.07e-3 and 8.69).
+
+## R-713 — S10's fit pressure is 101.3 kPa as Table II prints it; methanol + ethanol's 11 points stand
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 2 (ESC-2; B-24 confirmed) |
+| Normative text | S10 spec §15 A2-2 |
+| Evidence | `docs/S10_DECISIONS.md` B-24 and the Q-N1 note; `s10_records.py` `P_TABLE` |
+| Affected packages | S10 (records; VAL-1 in WO-S10-6) |
+
+**Decision.**
+- The fit data are taken at the printed 101.3 kPa, and VAL-1 at Table V's printed pressure.
+- The registered model states stay at 101 325 Pa.
+- The substitution rule's 15-point minimum does not apply, because the paper is the recalled one.
+- The effect lies below the data's resolution: about 0.006 K in a bubble temperature, against T printed to 0.01 K. Λ
+  moves by at most 2.8e-3 relative.
+
+**Rejected alternative.** *101.325 kPa.* It would reinterpret a printed value rather than transcribe it.
+
+**Watch for.** "Correcting" the pressure to 1 atm in a later transcription or in VAL-1.
+
+## R-714 — S10's mid-band I-states sit midway between the bubble temperature and the lower of the true and IDAES-approximate dew temperatures; I10 is z_E = 0.4
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 2 (ESC-3) |
+| Normative text | S10 spec §15 A2-3, which amends §8.1 |
+| Evidence | `docs/S10_DECISIONS.md` ESC-3, B-31; `s10_reference.py --real` (claims `ENV-I*`, `SMOOTH-I`; 88 claims hold) |
+| Affected packages | S10 (WO-S10-3 real section, WO-S10-4 IDAES comparison) |
+
+**Decision.**
+- The mid-band rule is T = ½ (T_bub + min(T_dew, T_dew^γ(z))), rounded to 0.01 K.
+- I10 changes from z_E = 0.85 to z_E = 0.4. At 0.85 it lies 0.031 from the model azeotrope, with a band of 0.007 K.
+- The 0.5 K margin and S10.A42 are unchanged.
+- No state's margin can shrink under the new rule, up to rounding. I9 goes from 0.281 to 0.603 K, and I13 from 0.425 to
+  0.525 K.
+
+**Rejected alternatives, and why.**
+- *Move only I9 and I13.* That is a rule with exceptions.
+- *Drop the margin.* It loosens a claim to pass.
+- *Keep I10 near the azeotrope.* No temperature rule can place it, and a comparison there would compare the
+  conditioning, not the implementations.
+
+**Watch for.** I13's margin (0.525 K) and the smoothing at ε = 1e-4 (8.47e-9 against 1e-8) are the tightest numbers.
+If the records ever change, the generator, not a person, decides whether they still hold.
+
+## R-715 — S10-RC-03: CoolProp output is permitted with conditions (cite CoolProp with its MIT notice, the three EOS sources, and IAPWS for water)
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 2 |
+| Normative text | S10 spec §15 A2-4 |
+| Evidence | `docs/s10-rights-check.md` row S10-RC-03 (C12's open question A32-Q3) |
+| Affected packages | S10 (rights check; shipping stays Q-F3) |
+
+**Decision.**
+- Computed saturation pressures and project-fitted coefficients are neither a copy nor a portion of CoolProp, and they
+  reproduce no EOS coefficient, form or table.
+- The conditions are citation, and IAPWS attribution for the water points (as S10-RC-04).
+- This is a technical reading, not legal advice. S10-RC-05 (the paper's numbers) stays unresolved, and shipping is
+  Frank's decision (Q-F3).
+
+**Rejected alternative.** *Treat computed values as carrying the EOS papers' terms.* S10 reproduces nothing from those
+papers but numbers computed from them, and it cites them.
+
+**Watch for.** A later package that copies EOS coefficients (rather than outputs) needs its own row.
+
+## R-716 — S10's IDAES `constr_viol_tol` is 1e-9, because 1e-10 lies below the binary64 floor of the Pa-scale bubble row; `tol` stays 1e-10
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 3 (ESC-4) |
+| Normative text | S10 spec §16 A3-1, which amends §8.1 |
+| Evidence | `docs/S10_DECISIONS.md` ESC-4; `benchmarks/s10/idaes/qualification.json` (termination fields); `s10_reference.py --real` claims CVT-8.1-BELOW-FLOOR, CVT-FLOOR, CVT-EFFECT |
+| Affected packages | S10 (WO-S10-4b) |
+
+**Decision.**
+- `constr_viol_tol` = 1e-9 on IDAES's unscaled rows. `tol` = 1e-10, `max_iter`, the rungs and "Optimal Solution
+  Found only" are unchanged.
+- The floor of the bubble row is one binary64 step of T_bub: |dr/dT|·ulp(T_bub) = 2.11–2.29e-10 Pa at the I-states.
+  The enthalpy rows are floored at 4 ulp(|h|) = 2.33e-10. 1e-9 is at least 3× the worst floor.
+- Its estimated effect on the compared mole fractions is at most 9.24e-14, against 1e-3 τ.
+
+**Rejected alternatives, and why.**
+- *Count "Solved To Acceptable Level".* It silently relaxes `tol` (ADR 0014 D7).
+- *Scale the row, or rewrite it in log form.* The first changes what `tol` means; the second changes the tool's
+  equations.
+
+**Watch for.** Any tolerance on an unscaled Pa-scale row needs its floor computed from the coarsest variable's ulp
+times the row's sensitivity, not from ulp(P). T06 M6 (a) and S03 met the same floor.
+
+## R-717 — S10's IDAES comparison takes each state at its first converged attempt in the registered order, with tool-side rung- and setting-dependence checks first; the ladder is closed
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 3 (ESC-5; B-36, B-37, B-40, B-41) |
+| Normative text | S10 spec §16 A3-2, A3-4, A3-5 (S10.A43, A44) |
+| Evidence | `docs/S10_DECISIONS.md` ESC-5; `qualification.json` `optimal_rungs_per_state`; `reference_values_real.yaml` `idaes_ladders.amendment_3` |
+| Affected packages | S10 (WO-S10-4b) |
+
+**Decision.**
+- Attempt order: ε 1e-4, 1e-5, 1e-6; MA27, then MUMPS only after a non-optimal MA27 attempt. Each state is selected at
+  its first converged attempt. A state with none is `NOT_COMPARABLE(no_optimal_attempt)`.
+- Before any comparison, tool-only checks run at 0.1 tolerance: rung dependence, and setting dependence against a
+  reproduction run at §8.1's settings. Either can only give `NOT_COMPARABLE`.
+- The path of an attempt is registered: an initializer exception is recorded and the final solve still runs (B-40).
+  B-36 is ratified, and B-37 is superseded.
+- Closure: no further rung, option, solver, path or initializer variant. IDAES's initializer failures (I3, I11) are
+  results.
+- **Erratum (R-720, spec §17 A4-1):** I11's initializer completes at 1e-4 with MA27, and I11 is selected there and
+  compared. Only I3 has no optimal attempt.
+
+**Rejected alternatives, and why.**
+- *The rung with the most optimal states.* It discards converged states for no reason.
+- *The finest converged rung.* It departs from the registered order and gains nothing that A42 does not already bound.
+- *S03's warm-start and continuation positions for the failing states.* They would be chosen after seeing those
+  failures.
+
+**Watch for.** States converged at one rung only get no rung-dependence check.
+
+## R-718 — IDAES 2.13's dew temperature takes γ at the flash liquid, so its two-phase region is the true one; S10's I-states do not move, and the claims use IDAES's actual dew
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 3 (ESC-6; B-31 amended) |
+| Normative text | S10 spec §16 A3-3, which corrects §8 and withdraws A2-3's reason (R-714's rule stands) |
+| Evidence | `qualification.json` `inspection` (`eq_temperature_dew` uses `activity_coeff_comp`); `s10_reference.py --real` claims ENV-I*, SMOOTH-I, SMOOTH-I-KH, IDAES-DEW-I7 |
+| Affected packages | S10 (WO-S10-4b); any later package that reads IDAES's activity-coefficient package |
+
+**Decision.**
+- The dew equation is Σ z_i P/(γ_i(x) P_i^sat) = 1, with x the state block's liquid. By Cauchy–Schwarz, T_dew^I > T at
+  every two-phase state, and it equals the true dew at the boundary and at a vapour state.
+- The I-states keep A2-3's temperatures, because the tool has already run on them. The γ(z) dew is only that rule's
+  input.
+- The margin and smoothing claims use T_dew^I. It is computed from our flash's liquid and never compared. The least
+  margin is 0.525 K (I13, bubble side), and the worst prediction is 7.75e-9 at 1e-4.
+
+**Rejected alternative.** *Re-place the I-states by IDAES's actual dew.* That would choose states after seeing which
+ones converge.
+
+**Watch for.** S10.A44 pins the reading. A new IDAES version must pass it before any S10-style comparison reuses it.
+
+## R-719 — S10's DWSIM records stand: B-50's settings are ratified, two-phase states are NOT_COMPARABLE on DWSIM's own residual (gate 1e-8), and there is no Inside-Out rerun
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 3 (ESC-50, ESC-51, ESC-52; B-50 to B-54) |
+| Normative text | S10 spec §16 A3-6, which amends §8.2 and S10.A45 |
+| Evidence | `docs/S10_DECISIONS.md` on `wp/S10-dwsim` (WO-S10-5); `benchmarks/s10/dwsim/qualification.json`; DWSIM 9.0.5 `NestedLoops.vb` `ConvergeVF` (hard-coded \|ΔV\| < 1e-6) |
+| Affected packages | S10 (WO-S10-5b) |
+
+**Decision.**
+- B-50 is ratified. Every setting expresses a property of the model (v = 0, no Poynting, h^E = 0, one liquid) or
+  forbids a silent substitution.
+- At a two-phase state, g = max(DWSIM's own equilibrium residual, its own balance residual). If g > 0.1 τ = 1e-8, every
+  A41 quantity (β, x, y, K, h) is `NOT_COMPARABLE(reference_accuracy: dwsim_flash_floor(g))`. This is so at all 12
+  states (g ≥ 3.3e-8). The differences stay as unclassified diagnostics.
+- I6 and I7 are compared on the phase identity. The readbacks (γ to 4.9e-16) are the mapping evidence.
+- ESC-52 (DWSIM's 10-step c_p quadrature, up to 0.026 J/mol) is recorded. Any future DWSIM h comparison carries it in
+  its floor.
+
+**Rejected alternatives, and why.**
+- *Keep h compared.* DWSIM's own floors can take the whole h tolerance.
+- *A pre-registered Inside-Out rerun.* A comparison already exists, so the setting would be chosen after seeing DWSIM
+  against our values (S03 §17.2's blindness condition).
+
+**Watch for.** A tool's convergence floor must be read from its source before its tolerance ladder is registered. A
+registered rung that never acts is a document defect.
+
+## R-720 — S10 errata: I11 converges at 1e-4/MA27 and is compared; A44's text is Pyomo's verbose rendering; the A2-1 grid claim holds by construction; the methanol + ethanol Λ are not determined by Table II
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`reviewer`), S10 final review (ESC-7, ESC-8; reference verdicts F1; validation verdict F1) |
+| Normative text | S10 spec §17 A4-1, A4-2 (corrects §15 A2-1 and A2-6, §16 A3-1, A3-2, A3-4, A3-8, A3-9, A3-10, §7.5) |
+| Evidence | `benchmarks/s10/idaes/qualification.json` (I11's attempts); `docs/reviews/S10-review-final.md` (the 79-variant fit probe, the VAL-1 sensitivity probe) |
+| Affected packages | S10; S10-C (its column cases use ternary temperatures) |
+
+**Decision.**
+- I11 is not an initializer failure at every attempt. At 1e-4 with MA27 it completes, stalls at the floor under §8.1's
+  settings and ends optimal under 1e-9. A3-2's rule selected it, and it is compared. Q-F5's premise shrinks to I3, and
+  Frank's answer covers it a fortiori.
+- S10.A44's "text" is `expression_to_string(expr, verbose=True)`. The plain rendering inlines named Expressions.
+- LAMBDA-⟨binary⟩ cannot fail under A2-1's procedure, because Gauss–Newton descends from the grid's best point. It is a
+  guard, not evidence. LAMBDA-MIN is the evidence of a minimum.
+- The single start is fail-safe on 79 perturbed variants of the data (all claims hold; at most 102 of 200 iterations).
+  But the methanol + ethanol minimum moves between three basins under one printed digit of y_1. The committed data's
+  second minimum would move ternary bubble temperatures by up to 0.46 K. Only θ_12 + θ_21 is determined.
+- §7.5's S10.A50–A53 becomes four rows (VAL-1, VAL-2, VAL-3, fit quality).
+
+**Rejected alternative.** *Re-select the methanol + ethanol Λ by their ternary performance.* VAL-1 is held out, so that
+would fit to the validation data. Another determination of that pair must be registered blind, as a new data set.
+
+**Watch for.** A near-ideal binary fitted with Wilson can have near-degenerate minima, and its individual Λ then carry
+no meaning. Predictions that combine such a pair with others inherit the ambiguity.
+
+## R-721 — S10's validation status is stated in the records' `uncertainty`, with a lineage that keeps earlier records hashes verifiable; S10 closes as `tested` with VAL-2 pending
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`reviewer`), S10 final review (validation verdict F2; brief rulings 2 and 3) |
+| Normative text | S10 spec §17 A4-3 (amends §9.5), A4-4 |
+| Evidence | `docs/reviews/S10-validation-verdicts.md`; `benchmarks/s10/records.yaml` (`74dc4e54…`) and the files that cite it |
+| Affected packages | S10 (records, both reference records, the manifest); any later package that edits `records.yaml` |
+
+**Decision.**
+- `uncertainty` is replaced by A4-3's exact string: VAL-1 within band; methanol latent heat not validated within band
+  (+5.72 %); VAL-2 pending; the methanol + ethanol Λ undetermined. It is re-emitted with the hash cascade. The tool
+  records are not touched.
+- `benchmarks/s10/records-lineage.json` lists each records change. A test reconstructs every earlier records,
+  real-section and `inputs.json` hash from HEAD, so the tool records stay verifiable.
+- S10 may close as `tested`. The manifest reports validation separately: A50 within band, A51
+  `insufficient_evidence: pending` (2 tests skipped, not passed), A52 not validated within band for one cell, and A53
+  met for fit quality. VAL-2 is a later work order with its own verdict.
+
+**Rejected alternatives, and why.**
+- *Record the status only in the report and the manifest.* The provider's `describe()` would keep saying "not yet
+  validated" while a known 5.72 % miss exists.
+- *Hold S10 open until VAL-2.* `tested` attests verification. Validation must be distinguished, not completed, and
+  the data may never come.
+- *Mark VAL-2 `BLOCKED`.* No route was tried and failed.
+
+**Watch for.** Every later records edit adds a lineage step and runs the cascade in one commit. A records hash that
+appears in a tool record but cannot be reconstructed from HEAD is a provenance defect.
+
+---
+
+## R-722 — T08.A32 admits `benchmarks/s10/records.yaml`, vetted by `records-vetting.json`; records without identifiers are identified by name and composition; (v) holds per reference convention, with (v′) across conventions
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10 Amendment 5; amends R-529 (L01 §12.4) and R-158's "Also decided" |
+| Normative text | S10 spec §18 A5-1; T08 release spec §9 (T08.A32) as amended by M01 §3.5 and L01 §12.4 |
+| Evidence | CI run 40180210113 (T08.A32 fails on all three jobs); `benchmarks/s10/records-vetting.json` (`7deac2a4…`, 36 equalities true, NASA re-read equal); `tests/test_t08_w2_inventory.py` A32 tests |
+| Affected packages | S10, T08 (test), L01 and M01 (unchanged checks), any later record file or convention |
+
+**Decision.**
+- `benchmarks/s10/records.yaml` (CH3OH, C2H5OH, H2O) is a vetted record file. The predicate `_s10_vetted` requires:
+  twelve named equalities per record, each against a closed form of the committed inputs or a registered constant;
+  the NASA-7 literals re-read from Cantera 3.2.0's file (SHA-256 checked); and the records' and both inputs'
+  SHA-256 equal to the files now.
+- (ii′): a file registered as identity-without-identifiers (S10's alone) carries no `identifiers`, and each record's
+  name and composition equal the registered pair. This is R-706 made executable.
+- (v) is the whole-mapping equality within one reference convention. (v′) applies across conventions: equal name and
+  composition, at least one shared parameter outside the convention data {`standard_formation_enthalpy`}, and every
+  such parameter equal in value, unit, dimension and kind.
+
+**Rejected alternatives, and why.**
+- *Add CAS RNs, InChI and InChIKey to the S10 records.* That contradicts R-706 and Frank's 2026-10-23 direction to
+  drop CAS RNs (CAS licence).
+- *Apply (v) across conventions.* That forbids S10 any real water record unless R-704 adopts ATcT (RC-05
+  unresolved). Its reason, one stream seen by two routes, does not arise across conventions (ADR 0001 D5.2).
+- *Vet by `s10_records.py --check` alone.* The generator would then vet itself. The vetting uses independent closed
+  forms; the generator's exact reproduction stays S10.A31.
+- *Compare molar masses across conventions.* The two water values come from two atomic-weight tables, both
+  unresolved under RC-08, and neither is a transcription error. That is Frank's clean-up question (Q-A5.2).
+
+**Watch for.** A new convention holding a substance already held elsewhere needs (v′)'s shared parameters to exist.
+Moving M01 or L01 to identity-without-identifiers after the CAS clean-up takes its own amendment.
+
+---
+
+## R-723 — S10's saturation check: bitwise on x86-64; elsewhere pressures within 1e-10 relative (R-627 class T) and deviations within 2.1e-10; superancillaries switched on explicitly
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10 Amendment 5 |
+| Normative text | S10 spec §18 A5-2 (amends §9.2's `--check`) |
+| Evidence | CI run 40180210113 (aarch64: "water cross-check worst 3.542e-11; saturation-points.json DIFFERS"). `s10_saturation_points.py --floor` on x86-64: the committed pressures are CoolProp 8.0.0's superancillary values (≤ 17.3 u from the exact series); a priori per-machine bound A ≤ 4.14e-13, 2A = 8.27e-13; the iterative solver differs by up to 2.66e-10, 1.74e-10 and 2.26e-8 |
+| Affected packages | S10 |
+
+**Decision.**
+- On x86-64, byte equality, unchanged.
+- Elsewhere, `classed_problems`:
+  - structure, strings, integers and non-pressure floats exact;
+  - pressures |Δ| ≤ 1e-10·|x| (R-627's class T, s_f = 0);
+  - `relative_deviation` and `worst_relative` |Δ| ≤ 2.1e-10, the sum of their two pressures' bounds, rounded up.
+- `compute()` sets `ENABLE_SUPERANCILLARIES` true.
+- `--floor` asserts F1 (each point within its A of the exact series), F2 (2·max A ≤ B_P/100) and F3 (the iterative
+  solver lands beyond B_P somewhere) on the running machine.
+
+**Rejected alternatives, and why.**
+- *Run the check on x86-64 only.* The aarch64 job would then never confirm the provenance, and a skip on aarch64 would
+  read as coverage.
+- *A tighter class for the series values (about 1e-12).* It adds no detection worth having between 1e-12 and 1e-10,
+  and a second constant against R-627's single class-T bound.
+- *Loosen x86-64 too.* A difference there is a code, configuration or wheel change, which is what the check exists to
+  catch.
+
+**Watch for.** If S10.A55 fails on aarch64, or the classed worst pressure ratio exceeds 1e-11, A's estimate is wrong.
+That goes to the design lane, never into the harness (Q-A5.1).
+
+---
+
+## R-724 — S10's manifest: A4-4's validation block stays the value of check `S10.validation` (`not_applicable`); requirements are D08 and D19; VAL-2 is WO-S10-8
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10 Amendment 5 (rulings on build decisions B-81 and B-83) |
+| Normative text | S10 spec §18 A5-3, A5-4 |
+| Evidence | `schemas/evidence-manifest.schema.json` (top level `additionalProperties: false`; a check's `value` typed `{}`); S10 spec §8's title "(D19)"; `tests/test_requirements_ledger.py::test_every_cited_evidence_manifest_exists_and_says_what_is_claimed` |
+| Affected packages | S10 (manifest, ledger rows D08 and D19, T08 harvest) |
+
+**Decision.**
+- B-81 is confirmed. A4-4's block, verbatim, is the `value` of check `S10.validation`, with result `not_applicable`,
+  and it is not counted in `status`.
+- B-83 is corrected. The manifest lists `["D08", "D19"]`, and D19's row cites S10 with its status unmoved
+  (`planned`). WO-S10-7a regenerates the manifest after Amendment 5 is applied and CI is green.
+- §17 A4-4's VAL-2 work order is renamed WO-S10-8.
+
+**Rejected alternatives, and why.**
+- *A schema field for validation.* An ADR for one block.
+- *One `pass`/`fail` check per VAL id.* A validation miss would read as a failed verification check.
+- *D08 only.* It under-reports the D19 evidence that §8 registered.
+
+**Watch for.** VAL-2's later manifest keeps both requirements and adds its verdict to the same validation block.

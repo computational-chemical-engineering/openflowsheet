@@ -70,13 +70,14 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
     assert facts["providers"] == ["pr-c1-v1", "syn001"]  # M01 adds `pr-c1-v1` (ADR 0026)
     # The axis is the selectable providers (spec §5.7 Amendment S04, R-568); the module scan also
     # finds S04's library-only `pr-lib-v1` (R-569), S05's `iapws95-v1` (spec S05 §8 F-2) and S07's
-    # `coolprop-heos-v1` (S07 spec §3.4, R-621).
+    # `coolprop-heos-v1` (S07 spec §3.4, R-621) and S10's `wilson-ig-v1` (S10 spec §10, R-709).
     assert facts["scanned_providers"] == [
         "coolprop-heos-v1",
         "iapws95-v1",
         "pr-c1-v1",
         "pr-lib-v1",
         "syn001",
+        "wilson-ig-v1",
     ]
     assert facts["unit_spellings"] == facts["adr_0016_spellings"]
 
@@ -333,7 +334,12 @@ def test_d1_a_u04_item_that_loses_its_model_id_trips_the_wire(envelope: dict[str
 #: The provider modules of `openflowsheet.thermo` that no revision can select, and the package
 #: whose harvest items name each under U02. The commit that makes one selectable removes it here,
 #: adds it to the providers axis and reclassifies its package's U02 items (L01 spec §13.4).
-LIBRARY_ONLY_PROVIDERS = {"pr-lib-v1": "S04", "iapws95-v1": "S05", "coolprop-heos-v1": "S07"}
+LIBRARY_ONLY_PROVIDERS = {
+    "pr-lib-v1": "S04",
+    "iapws95-v1": "S05",
+    "coolprop-heos-v1": "S07",
+    "wilson-ig-v1": "S10",
+}
 
 
 def library_only_provider_problems(

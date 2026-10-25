@@ -1,0 +1,2086 @@
+schema_version: 1
+generator: docs/derivations/scripts/s10_reference.py --real
+records_sha256: d4a39730ee24c592b5a7a36977ec4d122817182f71166d75058d9d99d0934d55
+spec: docs/derivations/S10-spec.md sections 8.1, 9.7 and 16
+status: 'complete (WO-S10-3): RE1-RE3 (section 7.2), I1-I14 (sections 7.3, 8.1, 15 A2-3); IDAES''s dew, the ladders and the
+  constr_viol_tol claims (section 16)'
+method_constants:
+  EPS_TPD: 1.0e-10
+  DELTA_K: 1.0e-13
+  DELTA_SS: 1.0e-13
+  SS_MAX: 1000
+closed_form:
+  evaluate_phase:
+    RE1:
+      state:
+        n:
+        - 0.6
+        - 0.4
+        - 1.0
+        T: 350.0
+        P: 101325.0
+      LIQUID:
+        values:
+          lnphi_CH3OH: 0.5038846478779312
+          lnphi_C2H5OH: 0.2484174249227696
+          lnphi_H2O: -0.6215822597893068
+          h: -266145.970722236
+        derivatives:
+          lnphi_CH3OH:
+            T: 0.03631232274989522
+            P: -9.869232667160129e-06
+            n_CH3OH: -0.009075177385819325
+            n_C2H5OH: -0.2602549245176834
+            n_H2O: 0.10954707623856497
+          lnphi_C2H5OH:
+            T: 0.03986938944611679
+            P: -9.869232667160129e-06
+            n_CH3OH: -0.2602549245176834
+            n_C2H5OH: -0.3457953786429059
+            n_H2O: 0.2944711061677724
+          lnphi_H2O:
+            T: 0.0413326557327989
+            P: -9.869232667160129e-06
+            n_CH3OH: 0.10954707623856497
+            n_C2H5OH: 0.2944711061677724
+            n_H2O: -0.18351668821024794
+          h:
+            T: 78.54211614818384
+            P: 0.0
+            n_CH3OH: 15297.404124197967
+            n_C2H5OH: -2911.1464247237764
+            n_H2O: -8013.983904629268
+      VAPOR:
+        values:
+          lnphi_CH3OH: 0.0
+          lnphi_C2H5OH: 0.0
+          lnphi_H2O: 0.0
+          h: -225879.83421562117
+        derivatives:
+          lnphi_CH3OH:
+            T: 0.0
+            P: 0.0
+            n_CH3OH: 0.0
+            n_C2H5OH: 0.0
+            n_H2O: 0.0
+          lnphi_C2H5OH:
+            T: 0.0
+            P: 0.0
+            n_CH3OH: 0.0
+            n_C2H5OH: 0.0
+            n_H2O: 0.0
+          lnphi_H2O:
+            T: 0.0
+            P: 0.0
+            n_CH3OH: 0.0
+            n_C2H5OH: 0.0
+            n_H2O: 0.0
+          h:
+            T: 45.84438780092198
+            P: 0.0
+            n_CH3OH: 13656.779688432642
+            n_C2H5OH: -2740.296103333364
+            n_H2O: -7097.949371726239
+    RE2:
+      state:
+        n:
+        - 1.0
+        - 0.0
+        - 1.0
+        T: 345.0
+        P: 101325.0
+      LIQUID:
+        values:
+          lnphi_CH3OH: 0.40044891796521176
+          lnphi_C2H5OH: 0.06856319701898123
+          lnphi_H2O: -0.9006079587565908
+          h: -259216.35045367223
+        derivatives:
+          lnphi_CH3OH:
+            T: 0.03749831848151847
+            P: -9.869232667160129e-06
+            n_CH3OH: -0.14536993038694718
+            n_C2H5OH: -0.306353221202932
+            n_H2O: 0.14536993038694718
+          lnphi_C2H5OH:
+            T: 0.041230394500464805
+            P: -9.869232667160129e-06
+            n_CH3OH: -0.306353221202932
+            n_C2H5OH: -0.33945883229569085
+            n_H2O: 0.306353221202932
+          lnphi_H2O:
+            T: 0.04271799452416368
+            P: -9.869232667160129e-06
+            n_CH3OH: 0.14536993038694718
+            n_C2H5OH: 0.306353221202932
+            n_H2O: -0.14536993038694718
+          h:
+            T: 70.9532549081841
+            P: 0.0
+            n_CH3OH: 11651.853468594076
+            n_C2H5OH: -6655.330231452105
+            n_H2O: -11651.853468594076
+      VAPOR:
+        values:
+          lnphi_CH3OH: 0.0
+          lnphi_C2H5OH: 0.0
+          lnphi_H2O: 0.0
+          h: -219524.1591262906
+        derivatives:
+          lnphi_CH3OH:
+            T: 0.0
+            P: 0.0
+            n_CH3OH: 0.0
+            n_C2H5OH: 0.0
+            n_H2O: 0.0
+          lnphi_C2H5OH:
+            T: 0.0
+            P: 0.0
+            n_CH3OH: 0.0
+            n_C2H5OH: 0.0
+            n_H2O: 0.0
+          lnphi_H2O:
+            T: 0.0
+            P: 0.0
+            n_CH3OH: 0.0
+            n_C2H5OH: 0.0
+            n_H2O: 0.0
+          h:
+            T: 40.53195454955286
+            P: 0.0
+            n_CH3OH: 10360.46788635628
+            n_C2H5OH: -6100.0306465237445
+            n_H2O: -10360.46788635628
+    RE3:
+      state:
+        n:
+        - 0.0
+        - 0.0
+        - 1.0
+        T: 360.0
+        P: 80000.0
+      LIQUID:
+        values:
+          lnphi_CH3OH: 1.9227380544550277
+          lnphi_C2H5OH: 2.5001764330138876
+          lnphi_H2O: -0.2517953967267402
+          h: -281490.09398123913
+        derivatives:
+          lnphi_CH3OH:
+            T: 0.03410010009063998
+            P: -1.25e-05
+            n_CH3OH: -3.1571285349413625
+            n_C2H5OH: -8.770442129239452
+            n_H2O: 0.0
+          lnphi_C2H5OH:
+            T: 0.037325167522658964
+            P: -1.25e-05
+            n_CH3OH: -8.770442129239452
+            n_C2H5OH: -10.379894712008598
+            n_H2O: 0.0
+          lnphi_H2O:
+            T: 0.03874848361560445
+            P: -1.25e-05
+            n_CH3OH: 0.0
+            n_C2H5OH: 0.0
+            n_H2O: 0.0
+          h:
+            T: 67.81731178891499
+            P: 0.0
+            n_CH3OH: 46658.511963696634
+            n_C2H5OH: 10648.836242879917
+            n_H2O: 0.0
+      VAPOR:
+        values:
+          lnphi_CH3OH: 0.0
+          lnphi_C2H5OH: 0.0
+          lnphi_H2O: 0.0
+          h: -239736.4966994833
+        derivatives:
+          lnphi_CH3OH:
+            T: 0.0
+            P: 0.0
+            n_CH3OH: 0.0
+            n_C2H5OH: 0.0
+            n_H2O: 0.0
+          lnphi_C2H5OH:
+            T: 0.0
+            P: 0.0
+            n_CH3OH: 0.0
+            n_C2H5OH: 0.0
+            n_H2O: 0.0
+          lnphi_H2O:
+            T: 0.0
+            P: 0.0
+            n_CH3OH: 0.0
+            n_C2H5OH: 0.0
+            n_H2O: 0.0
+          h:
+            T: 33.958627214193896
+            P: 0.0
+            n_CH3OH: 41649.62605120755
+            n_C2H5OH: 9115.135787939911
+            n_H2O: 0.0
+  flash:
+    I1:
+      state:
+        n: &id001
+        - 0.1
+        - 0.0
+        - 0.9
+        T: 365.51
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.1892890122094955
+        tm_liquid_trial: -0.2044851665868512
+      vapor_fraction: 0.2220695456237305
+      x:
+        CH3OH: 0.0492757109492088
+        C2H5OH: 0.0
+        H2O: 0.9507242890507912
+      y:
+        CH3OH: 0.2776919438384194
+        C2H5OH: 0.0
+        H2O: 0.7223080561615806
+      vapor_n:
+        CH3OH: 0.06166692379156828
+        C2H5OH: 0.0
+        H2O: 0.1604026218321622
+      liquid_n:
+        CH3OH: 0.038333076208431724
+        C2H5OH: 0.0
+        H2O: 0.7395973781678378
+      k_values:
+        CH3OH: 5.635473106103976
+        C2H5OH: 8.18977938951178
+        H2O: 0.7597450327925641
+    I2:
+      state:
+        n: &id002
+        - 0.3
+        - 0.0
+        - 0.7
+        T: 357.42
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.2518475277740571
+        tm_liquid_trial: -0.32698629255168
+      vapor_fraction: 0.410339861037754
+      x:
+        CH3OH: 0.15024997089737555
+        C2H5OH: 0.0
+        H2O: 0.8497500291026244
+      y:
+        CH3OH: 0.5151914336251373
+        C2H5OH: 0.0
+        H2O: 0.4848085663748627
+      vapor_n:
+        CH3OH: 0.2114035812815801
+        C2H5OH: 0.0
+        H2O: 0.1989362797561739
+      liquid_n:
+        CH3OH: 0.08859641871841988
+        C2H5OH: 0.0
+        H2O: 0.5010637202438261
+      k_values:
+        CH3OH: 3.428895397104774
+        C2H5OH: 3.732390945351868
+        H2O: 0.5705308029078188
+    I3:
+      state:
+        n: &id003
+        - 0.5
+        - 0.0
+        - 0.5
+        T: 351.27
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.20374680340294993
+        tm_liquid_trial: -0.3035201046160477
+      vapor_fraction: 0.5393419817979258
+      x:
+        CH3OH: 0.30233474735623767
+        C2H5OH: 0.0
+        H2O: 0.6976652526437623
+      y:
+        CH3OH: 0.6688281028054732
+        C2H5OH: 0.0
+        H2O: 0.3311718971945268
+      vapor_n:
+        CH3OH: 0.3607270744492508
+        C2H5OH: 0.0
+        H2O: 0.17861490734867502
+      liquid_n:
+        CH3OH: 0.13927292555074924
+        C2H5OH: 0.0
+        H2O: 0.321385092651325
+      k_values:
+        CH3OH: 2.212210500625654
+        C2H5OH: 1.9061303297584842
+        H2O: 0.47468595567798444
+    I4:
+      state:
+        n: &id004
+        - 0.7
+        - 0.0
+        - 0.30000000000000004
+        T: 345.66
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.1279961533138249
+        tm_liquid_trial: -0.18841431438725553
+      vapor_fraction: 0.6223446030724081
+      x:
+        CH3OH: 0.5333481400377635
+        C2H5OH: 0.0
+        H2O: 0.46665185996223646
+      y:
+        CH3OH: 0.8011288183621273
+        C2H5OH: 0.0
+        H2O: 0.19887118163787262
+      vapor_n:
+        CH3OH: 0.4985781964734455
+        C2H5OH: 0.0
+        H2O: 0.12376640659896261
+      liquid_n:
+        CH3OH: 0.20142180352655448
+        C2H5OH: 0.0
+        H2O: 0.17623359340103742
+      k_values:
+        CH3OH: 1.5020748329700815
+        C2H5OH: 1.0582215510534119
+        H2O: 0.4261660537557188
+    I5:
+      state:
+        n: &id005
+        - 0.9
+        - 0.0
+        - 0.09999999999999998
+        T: 340.29
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.043994807893750314
+        tm_liquid_trial: -0.05185350623286234
+      vapor_fraction: 0.683945835948121
+      x:
+        CH3OH: 0.8315173426311093
+        C2H5OH: 0.0
+        H2O: 0.16848265736889068
+      y:
+        CH3OH: 0.9316461156558862
+        C2H5OH: 0.0
+        H2O: 0.06835388434411378
+      vapor_n:
+        CH3OH: 0.6371954813800849
+        C2H5OH: 0.0
+        H2O: 0.046750354568036084
+      liquid_n:
+        CH3OH: 0.2628045186199151
+        C2H5OH: 0.0
+        H2O: 0.05324964543196389
+      k_values:
+        CH3OH: 1.1204169388794065
+        C2H5OH: 0.6677997432109132
+        H2O: 0.4057027910858137
+    I6:
+      state:
+        n: &id006
+        - 0.4
+        - 0.0
+        - 0.6
+        T: 343.62
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind sub
+      phase_signature: LIQUID
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: 0.17540440064857804
+        tm_liquid_trial: null
+      vapor_fraction: 0.0
+      outlets: the feed state bitwise in the named phase; the other outlet dormant (zeros, same T and P)
+      deciding_tm: 0.17540440064857804
+    I7:
+      state:
+        n: &id007
+        - 0.4
+        - 0.0
+        - 0.6
+        T: 366.56
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind sup
+      phase_signature: VAPOR
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.9063215918867334
+        tm_liquid_trial: 0.1704473135170289
+      vapor_fraction: 1.0
+      outlets: the feed state bitwise in the named phase; the other outlet dormant (zeros, same T and P)
+      deciding_tm: 0.1704473135170289
+    I8:
+      state:
+        n: &id008
+        - 0.0
+        - 0.2
+        - 0.8
+        T: 360.93
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.19717537251133213
+        tm_liquid_trial: -0.2793343658638885
+      vapor_fraction: 0.397268960057943
+      x:
+        CH3OH: 0.0
+        C2H5OH: 0.0701388552917031
+        H2O: 0.929861144708297
+      y:
+        CH3OH: 0.0
+        C2H5OH: 0.3970235549907589
+        H2O: 0.6029764450092411
+      vapor_n:
+        CH3OH: 0.0
+        C2H5OH: 0.15772513480968636
+        H2O: 0.23954382524825668
+      liquid_n:
+        CH3OH: 0.0
+        C2H5OH: 0.04227486519031366
+        H2O: 0.5604561747517434
+      k_values:
+        CH3OH: 3.5664061464910772
+        C2H5OH: 5.660536564783711
+        H2O: 0.6484585880813404
+    I9:
+      state:
+        n: &id009
+        - 0.0
+        - 0.6
+        - 0.4
+        T: 352.86
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.024177260201181914
+        tm_liquid_trial: -0.05178533465362701
+      vapor_fraction: 0.6021219264459136
+      x:
+        CH3OH: 0.0
+        C2H5OH: 0.5087310576467803
+        H2O: 0.4912689423532197
+      y:
+        CH3OH: 0.0
+        C2H5OH: 0.6603098963247603
+        H2O: 0.33969010367523966
+      vapor_n:
+        CH3OH: 0.0
+        C2H5OH: 0.3975870668263662
+        H2O: 0.20453485961954743
+      liquid_n:
+        CH3OH: 0.0
+        C2H5OH: 0.20241293317363382
+        H2O: 0.1954651403804526
+      k_values:
+        CH3OH: 1.4751845262671355
+        C2H5OH: 1.297954757036327
+        H2O: 0.6914544649374645
+    I10:
+      state:
+        n: &id010
+        - 0.0
+        - 0.4
+        - 0.6
+        T: 356.02
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.0931689506552712
+        tm_liquid_trial: -0.20630095155688713
+      vapor_fraction: 0.5810462567964695
+      x:
+        CH3OH: 0.0
+        C2H5OH: 0.21202403322052088
+        H2O: 0.7879759667794791
+      y:
+        CH3OH: 0.0
+        C2H5OH: 0.5355369456276373
+        H2O: 0.4644630543723627
+      vapor_n:
+        CH3OH: 0.0
+        C2H5OH: 0.3111717376331531
+        H2O: 0.26987451916331645
+      liquid_n:
+        CH3OH: 0.0
+        C2H5OH: 0.08882826236684692
+        H2O: 0.3301254808366835
+      k_values:
+        CH3OH: 2.017427419520421
+        C2H5OH: 2.525831329086353
+        H2O: 0.589438097040777
+    I11:
+      state:
+        n: &id011
+        - 0.2
+        - 0.3
+        - 0.5
+        T: 353.34
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.10241730550939915
+        tm_liquid_trial: -0.18584198321196538
+      vapor_fraction: 0.56611505044237
+      x:
+        CH3OH: 0.13112674342392522
+        C2H5OH: 0.2043470065844213
+        H2O: 0.6645262499916536
+      y:
+        CH3OH: 0.2527862126824378
+        C2H5OH: 0.37331088299228954
+        H2O: 0.3739029043252727
+      vapor_n:
+        CH3OH: 0.14310607954385393
+        C2H5OH: 0.21133690935586566
+        H2O: 0.21167206154265036
+      liquid_n:
+        CH3OH: 0.05689392045614609
+        C2H5OH: 0.08866309064413432
+        H2O: 0.2883279384573496
+      k_values:
+        CH3OH: 1.9278005850049558
+        C2H5OH: 1.8268478175043132
+        H2O: 0.5626608494848306
+    I12:
+      state:
+        n: &id012
+        - 0.4
+        - 0.2
+        - 0.4
+        T: 350.09
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.11260813733064741
+        tm_liquid_trial: -0.17619031891398557
+      vapor_fraction: 0.5666484927447907
+      x:
+        CH3OH: 0.2843442058804187
+        C2H5OH: 0.16485787361398038
+        H2O: 0.550797920505601
+      y:
+        CH3OH: 0.48844921207103925
+        C2H5OH: 0.22687537976809463
+        H2O: 0.2846754081608661
+      vapor_n:
+        CH3OH: 0.276779009802435
+        C2H5OH: 0.1285585919864928
+        H2O: 0.16131089095586287
+      liquid_n:
+        CH3OH: 0.12322099019756502
+        C2H5OH: 0.07144140801350722
+        H2O: 0.23868910904413715
+      k_values:
+        CH3OH: 1.7178096193613213
+        C2H5OH: 1.3761877112362257
+        H2O: 0.516841835385926
+    I13:
+      state:
+        n: &id013
+        - 0.1
+        - 0.6
+        - 0.3
+        T: 351.15
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.020938281719892884
+        tm_liquid_trial: -0.029875524291556207
+      vapor_fraction: 0.5322219927541811
+      x:
+        CH3OH: 0.08014720297882953
+        C2H5OH: 0.5675307536797499
+        H2O: 0.3523220433414206
+      y:
+        CH3OH: 0.1174489253643228
+        C2H5OH: 0.6285377146139005
+        H2O: 0.2540133600217767
+      vapor_n:
+        CH3OH: 0.06250890110423697
+        C2H5OH: 0.3345215949929689
+        H2O: 0.13519149665697522
+      liquid_n:
+        CH3OH: 0.03749109889576304
+        C2H5OH: 0.26547840500703107
+        H2O: 0.16480850334302477
+      k_values:
+        CH3OH: 1.4654151486153089
+        C2H5OH: 1.1074954274082847
+        H2O: 0.7209692519171245
+    I14:
+      state:
+        n: &id014
+        - 0.5
+        - 0.5
+        - 0.0
+        T: 344.84
+        P: 101325.0
+      why: spec 8.1 and 15 A2-3, kind mid
+      phase_signature: TWO_PHASE
+      stability:
+        label: STABLE_WITHIN_TESTED_SCOPE
+        tm_vapour_trial: -0.03705182776659145
+        tm_liquid_trial: -0.03781791633808129
+      vapor_fraction: 0.49268280722350977
+      x:
+        CH3OH: 0.43333046259795266
+        C2H5OH: 0.5666695374020474
+        H2O: 0.0
+      y:
+        CH3OH: 0.5686498535419158
+        C2H5OH: 0.43135014645808417
+        H2O: 0.0
+      vapor_n:
+        CH3OH: 0.28016400617026876
+        C2H5OH: 0.212518801053241
+        H2O: 0.0
+      liquid_n:
+        CH3OH: 0.21983599382973124
+        C2H5OH: 0.287481198946759
+        H2O: 0.0
+      k_values:
+        CH3OH: 1.3122775863314127
+        C2H5OH: 0.76120228455486
+        H2O: 0.6936057972281274
+  i_states:
+    I1:
+      state:
+        n: *id001
+        T: 365.51
+        P: 101325.0
+      kind: mid
+      bubble_T: 360.7050532150843
+      dew_T: 370.56861627778443
+      dew_T_gamma_at_z: 370.3094954854057
+      phase: TWO_PHASE
+      idaes_dew_T: 370.5205568076141
+      max_abs_dq_dT: 0.0608
+      max_abs_dlnK_dT: 0.0554
+      max_abs_dh_dT: 1360.0
+      closed_form:
+        beta: 0.2220695456237305
+        x:
+        - 0.0492757109492088
+        - 0.0
+        - 0.9507242890507912
+        y:
+        - 0.2776919438384194
+        - 0.0
+        - 0.7223080561615806
+        K:
+        - 5.635473106103976
+        - null
+        - 0.7597450327925641
+        h_L: -278817.9223019418
+        h_V: -227961.2632967181
+    I2:
+      state:
+        n: *id002
+        T: 357.42
+        P: 101325.0
+      kind: mid
+      bubble_T: 351.3414143290243
+      dew_T: 364.8205450705859
+      dew_T_gamma_at_z: 363.5043668117
+      phase: TWO_PHASE
+      idaes_dew_T: 364.5776723961317
+      max_abs_dq_dT: 0.0587
+      max_abs_dlnK_dT: 0.0678
+      max_abs_dh_dT: 1100.0
+      closed_form:
+        beta: 0.410339861037754
+        x:
+        - 0.15024997089737555
+        - 0.0
+        - 0.8497500291026244
+        y:
+        - 0.5151914336251373
+        - 0.0
+        - 0.4848085663748627
+        K:
+        - 3.428895397104774
+        - null
+        - 0.5705308029078188
+        h_L: -274656.4847262084
+        h_V: -218385.51781235845
+    I3:
+      state:
+        n: *id003
+        T: 351.27
+        P: 101325.0
+      kind: mid
+      bubble_T: 346.3502506308986
+      dew_T: 357.9901301785716
+      dew_T_gamma_at_z: 356.1800806507247
+      phase: TWO_PHASE
+      idaes_dew_T: 357.53829780930647
+      max_abs_dq_dT: 0.0763
+      max_abs_dlnK_dT: 0.0728
+      max_abs_dh_dT: 1530.0
+      closed_form:
+        beta: 0.5393419817979258
+        x:
+        - 0.30233474735623767
+        - 0.0
+        - 0.6976652526437623
+        y:
+        - 0.6688281028054732
+        - 0.0
+        - 0.3311718971945268
+        K:
+        - 2.212210500625654
+        - null
+        - 0.47468595567798444
+        h_L: -267989.52146588307
+        h_V: -212258.33797100722
+    I4:
+      state:
+        n: *id004
+        T: 345.66
+        P: 101325.0
+      kind: mid
+      bubble_T: 342.52147621666575
+      dew_T: 349.95660998993066
+      dew_T_gamma_at_z: 348.7923213680587
+      phase: TWO_PHASE
+      idaes_dew_T: 349.5909302441759
+      max_abs_dq_dT: 0.124
+      max_abs_dlnK_dT: 0.0628
+      max_abs_dh_dT: 2290.0
+      closed_form:
+        beta: 0.6223446030724081
+        x:
+        - 0.5333481400377635
+        - 0.0
+        - 0.46665185996223646
+        y:
+        - 0.8011288183621273
+        - 0.0
+        - 0.19887118163787262
+        K:
+        - 1.5020748329700815
+        - null
+        - 0.4261660537557188
+        h_L: -257615.20304212222
+        h_V: -207015.39958374892
+    I5:
+      state:
+        n: *id005
+        T: 340.29
+        P: 101325.0
+      kind: mid
+      bubble_T: 339.1868529443154
+      dew_T: 341.55926338335894
+      dew_T_gamma_at_z: 341.39198520488577
+      phase: TWO_PHASE
+      idaes_dew_T: 341.51082874373617
+      max_abs_dq_dT: 0.365
+      max_abs_dlnK_dT: 0.0464
+      max_abs_dh_dT: 2850.0
+      closed_form:
+        beta: 0.683945835948121
+        x:
+        - 0.8315173426311093
+        - 0.0
+        - 0.16848265736889068
+        y:
+        - 0.9316461156558862
+        - 0.0
+        - 0.06835388434411378
+        K:
+        - 1.1204169388794065
+        - null
+        - 0.4057027910858137
+        h_L: -244104.52081478687
+        h_V: -201853.23838233232
+    I6:
+      state:
+        n: *id006
+        T: 343.62
+        P: 101325.0
+      kind: sub
+      bubble_T: 348.6155803604359
+      dew_T: 361.55813562309294
+      dew_T_gamma_at_z: 359.86529936163475
+      phase: LIQUID
+      idaes_dew_T: 359.86529936163475
+    I7:
+      state:
+        n: *id007
+        T: 366.56
+        P: 101325.0
+      kind: sup
+      bubble_T: 348.6155803604359
+      dew_T: 361.55813562309294
+      dew_T_gamma_at_z: 359.86529936163475
+      phase: VAPOR
+      idaes_dew_T: 361.55813562309294
+    I8:
+      state:
+        n: *id008
+        T: 360.93
+        P: 101325.0
+      kind: mid
+      bubble_T: 356.2370399662496
+      dew_T: 367.4624808751474
+      dew_T_gamma_at_z: 365.6193596838229
+      phase: TWO_PHASE
+      idaes_dew_T: 367.24583572890987
+      max_abs_dq_dT: 0.0592
+      max_abs_dlnK_dT: 0.122
+      max_abs_dh_dT: 258.0
+      closed_form:
+        beta: 0.397268960057943
+        x:
+        - 0.0
+        - 0.0701388552917031
+        - 0.929861144708297
+        y:
+        - 0.0
+        - 0.3970235549907589
+        - 0.6029764450092411
+        K:
+        - null
+        - 5.660536564783711
+        - 0.6484585880813404
+        h_L: -280677.19993403053
+        h_V: -236070.93052754318
+    I9:
+      state:
+        n: *id009
+        T: 352.86
+        P: 101325.0
+      kind: mid
+      bubble_T: 352.2571775471625
+      dew_T: 354.12594477316844
+      dew_T_gamma_at_z: 353.47085698934
+      phase: TWO_PHASE
+      idaes_dew_T: 353.8638789346093
+      max_abs_dq_dT: 0.595
+      max_abs_dlnK_dT: 0.181
+      max_abs_dh_dT: 1420.0
+      closed_form:
+        beta: 0.6021219264459136
+        x:
+        - 0.0
+        - 0.5087310576467803
+        - 0.4912689423532197
+        y:
+        - 0.0
+        - 0.6603098963247603
+        - 0.33969010367523966
+        K:
+        - null
+        - 1.297954757036327
+        - 0.6914544649374645
+        h_L: -276722.02934635186
+        h_V: -234149.4573790849
+    I10:
+      state:
+        n: *id010
+        T: 356.02
+        P: 101325.0
+      kind: mid
+      bubble_T: 353.7448540542269
+      dew_T: 360.82413670729767
+      dew_T_gamma_at_z: 358.3025495116731
+      phase: TWO_PHASE
+      idaes_dew_T: 360.17985422528517
+      max_abs_dq_dT: 0.129
+      max_abs_dlnK_dT: 0.214
+      max_abs_dh_dT: 601.0
+      closed_form:
+        beta: 0.5810462567964695
+        x:
+        - 0.0
+        - 0.21202403322052088
+        - 0.7879759667794791
+        y:
+        - 0.0
+        - 0.5355369456276373
+        - 0.4644630543723627
+        K:
+        - null
+        - 2.525831329086353
+        - 0.589438097040777
+        h_L: -279541.1061119668
+        h_V: -235076.26313197523
+    I11:
+      state:
+        n: *id011
+        T: 353.34
+        P: 101325.0
+      kind: mid
+      bubble_T: 350.81550468373143
+      dew_T: 357.6622264167078
+      dew_T_gamma_at_z: 355.86139126095287
+      phase: TWO_PHASE
+      idaes_dew_T: 357.0397576927476
+      max_abs_dq_dT: 0.151
+      max_abs_dlnK_dT: 0.155
+      max_abs_dh_dT: 1360.0
+      closed_form:
+        beta: 0.56611505044237
+        x:
+        - 0.13112674342392522
+        - 0.2043470065844213
+        - 0.6645262499916536
+        y:
+        - 0.2527862126824378
+        - 0.37331088299228954
+        - 0.3739029043252727
+        K:
+        - 1.9278005850049558
+        - 1.8268478175043132
+        - 0.5626608494848306
+        h_L: -273714.1189645654
+        h_V: -226155.07535343664
+    I12:
+      state:
+        n: *id012
+        T: 350.09
+        P: 101325.0
+      kind: mid
+      bubble_T: 347.3117407809807
+      dew_T: 354.16572026530025
+      dew_T_gamma_at_z: 352.86724021973674
+      phase: TWO_PHASE
+      idaes_dew_T: 353.66210341389586
+      max_abs_dq_dT: 0.153
+      max_abs_dlnK_dT: 0.116
+      max_abs_dh_dT: 1860.0
+      closed_form:
+        beta: 0.5666484927447907
+        x:
+        - 0.2843442058804187
+        - 0.16485787361398038
+        - 0.550797920505601
+        y:
+        - 0.48844921207103925
+        - 0.22687537976809463
+        - 0.2846754081608661
+        K:
+        - 1.7178096193613213
+        - 1.3761877112362257
+        - 0.516841835385926
+        h_L: -267227.60879322665
+        h_V: -217818.72907118368
+    I13:
+      state:
+        n: *id013
+        T: 351.15
+        P: 101325.0
+      kind: mid
+      bubble_T: 350.6246628714261
+      dew_T: 351.8881778694155
+      dew_T_gamma_at_z: 351.6852952590734
+      phase: TWO_PHASE
+      idaes_dew_T: 351.7969982505969
+      max_abs_dq_dT: 0.898
+      max_abs_dlnK_dT: 0.113
+      max_abs_dh_dT: 2190.0
+      closed_form:
+        beta: 0.5322219927541811
+        x:
+        - 0.08014720297882953
+        - 0.5675307536797499
+        - 0.3523220433414206
+        y:
+        - 0.1174489253643228
+        - 0.6285377146139005
+        - 0.2540133600217767
+        K:
+        - 1.4654151486153089
+        - 1.1074954274082847
+        - 0.7209692519171245
+        h_L: -272537.46987697494
+        h_V: -229653.32980931437
+    I14:
+      state:
+        n: *id014
+        T: 344.84
+        P: 101325.0
+      kind: mid
+      bubble_T: 343.907754632899
+      dew_T: 345.7732279050877
+      dew_T_gamma_at_z: 345.77908515350117
+      phase: TWO_PHASE
+      idaes_dew_T: 345.7745246476484
+      max_abs_dq_dT: 0.526
+      max_abs_dlnK_dT: 0.0421
+      max_abs_dh_dT: 2590.0
+      closed_form:
+        beta: 0.49268280722350977
+        x:
+        - 0.43333046259795266
+        - 0.5666695374020474
+        - 0.0
+        y:
+        - 0.5686498535419158
+        - 0.43135014645808417
+        - 0.0
+        K:
+        - 1.3122775863314127
+        - 0.76120228455486
+        - null
+        h_L: -256676.01286161863
+        h_V: -213012.98922867735
+idaes_mapping:
+  tau:
+    C2H5OH,CH3OH: 0.49278134505377763
+    H2O,CH3OH: 1.0012979448156294
+    CH3OH,C2H5OH: -0.40471720182930904
+    H2O,C2H5OH: 1.801885574618662
+    CH3OH,H2O: -0.12596114622938523
+    C2H5OH,H2O: 0.14904410608077048
+  components:
+    CH3OH:
+      cp_mol_ig_comp_coeff_A_E:
+      - 47.52044489333929
+      - -0.12663685594739796
+      - 0.0005424697593792224
+      - -5.9099773073163e-07
+      - 2.173007237674493e-10
+      dh_form_Vap: -200938.85487320993
+      cp_mol_liq_comp_coeff_A_E:
+      - 92.77567926915593
+      - -0.12663685594739796
+      - 0.00037396189536907377
+      - -5.9099773073163e-07
+      - 2.173007237674493e-10
+      dh_form_Liq: -239350.65506407525
+      pressure_sat_a_b_c_d:
+      - 23.1903583383
+      - -6.06364641455
+      - -5.44295361639
+      - 3.37780627462
+    C2H5OH:
+      cp_mol_ig_comp_coeff_A_E:
+      - 40.39732803331225
+      - -0.03109665058667358
+      - 0.0005783126694018005
+      - -7.371113226186196e-07
+      - 2.92406704662153e-10
+      dh_form_Vap: -234948.66126639748
+      cp_mol_liq_comp_coeff_A_E:
+      - 83.8895319899218
+      - -0.03109665058667358
+      - 0.0005410354541256941
+      - -7.371113226186196e-07
+      - 2.92406704662153e-10
+      dh_form_Liq: -277608.14213280275
+      pressure_sat_a_b_c_d:
+      - 24.8828829558
+      - -6.65074311339
+      - -5.23090979586
+      - 0.747236411782
+    H2O:
+      cp_mol_ig_comp_coeff_A_E:
+      - 34.90943998318199
+      - -0.016931855198782538
+      - 5.421363959892251e-05
+      - -4.5629526569513256e-08
+      - 1.4733046254648587e-11
+      dh_form_Vap: -241824.62162536496
+      cp_mol_liq_comp_coeff_A_E:
+      - 90.6479169320911
+      - -0.016931855198782538
+      - -0.00011461191884388634
+      - -4.5629526569513256e-08
+      - 1.4733046254648587e-11
+      dh_form_Liq: -285891.56217734155
+      pressure_sat_a_b_c_d:
+      - 23.5265279527
+      - -7.11938661787
+      - -6.70379788914
+      - 3.38417458422
+idaes_ladders:
+  registered_8_1:
+    eps_K:
+    - 0.0001
+    - 1.0e-05
+    - 1.0e-06
+    ipopt_options:
+      tol: 1.0e-10
+      constr_viol_tol: 1.0e-10
+      max_iter: 3000
+    linear_solvers:
+    - ma27
+    - mumps
+    use: reproduction of the WO-S10-4 record only (spec 16 A3-4); decides nothing
+  amendment_3:
+    eps_K:
+    - 0.0001
+    - 1.0e-05
+    - 1.0e-06
+    ipopt_options:
+      tol: 1.0e-10
+      constr_viol_tol: 1.0e-09
+      max_iter: 3000
+    linear_solvers:
+    - ma27
+    - mumps
+    mumps: only when the ma27 attempt at the same state and rung did not end optimal
+    converged: 'Pyomo optimal termination and Ipopt ''EXIT: Optimal Solution Found.'''
+    selection: 'per state: the first optimal attempt in the order (eps 1e-4 ma27, mumps; 1e-5 ma27, mumps; 1e-6 ma27, mumps);
+      none: NOT_COMPARABLE(no_optimal_attempt)'
+    dependence_ratio_max: 0.1
+    use: decides (spec 16 A3-2, A3-4)
+tolerances:
+  evaluate_phase_relative: 1.0e-12
+  tm:
+    rule: '|impl - expected| <= TOL_TM'
+    TOL_TM: 1.0e-12
+  flash:
+    rule: '|impl - expected| <= 10 (S_q A (DELTA_K + f_lnK) + 64 eps max(|q|, s_q)); k_values relative: 10 (A (DELTA_K + f_lnK)
+      + 64 eps); an absent component k: 10 (S_k A (DELTA_K + f_lnK) + 64 eps); A = ||(I - dPhi/dlnK)^-1||_inf; single-phase
+      outlets bitwise; component balance <= 1e-13 n_tot (spec 7.3)'
+    per_state:
+      I1:
+        rho: 0.13
+        A: 1.62
+        lnK_floor: 1.33e-15
+        per_output:
+          beta: 2.69e-12
+          x_CH3OH: 4.79e-13
+          x_H2O: 4.79e-13
+          y_CH3OH: 1.58e-12
+          y_H2O: 1.58e-12
+          nV_CH3OH: 5.3e-13
+          nV_H2O: 2.3e-12
+          nL_CH3OH: 5.3e-13
+          nL_H2O: 2.3e-12
+          k_relative: 1.78e-12
+          k_relative_C2H5OH: 2.24e-12
+      I2:
+        rho: 0.278
+        A: 1.9
+        lnK_floor: 2.66e-15
+        per_output:
+          beta: 2.74e-12
+          x_CH3OH: 8.23e-13
+          x_H2O: 8.23e-13
+          y_CH3OH: 1.47e-12
+          y_H2O: 1.47e-12
+          nV_CH3OH: 9.34e-13
+          nV_H2O: 1.95e-12
+          nL_CH3OH: 9.34e-13
+          nL_H2O: 1.95e-12
+          k_relative: 2.09e-12
+          k_relative_C2H5OH: 2.7e-12
+      I3:
+        rho: 0.339
+        A: 1.98
+        lnK_floor: 2.0e-15
+        per_output:
+          beta: 3.39e-12
+          x_CH3OH: 1.3e-12
+          x_H2O: 1.3e-12
+          y_CH3OH: 1.36e-12
+          y_H2O: 1.36e-12
+          nV_CH3OH: 1.66e-12
+          nV_H2O: 1.88e-12
+          nL_CH3OH: 1.66e-12
+          nL_H2O: 1.88e-12
+          k_relative: 2.16e-12
+          k_relative_C2H5OH: 2.65e-12
+      I4:
+        rho: 0.276
+        A: 1.66
+        lnK_floor: 1.22e-15
+        per_output:
+          beta: 4.68e-12
+          x_CH3OH: 1.71e-12
+          x_H2O: 1.71e-12
+          y_CH3OH: 1.14e-12
+          y_H2O: 1.14e-12
+          nV_CH3OH: 3.15e-12
+          nV_H2O: 1.67e-12
+          nL_CH3OH: 3.15e-12
+          nL_H2O: 1.67e-12
+          k_relative: 1.83e-12
+          k_relative_C2H5OH: 1.9e-12
+      I5:
+        rho: 0.106
+        A: 1.85
+        lnK_floor: 1.69e-15
+        per_output:
+          beta: 1.66e-11
+          x_CH3OH: 2.77e-12
+          x_H2O: 2.77e-12
+          y_CH3OH: 1.34e-12
+          y_H2O: 1.34e-12
+          nV_CH3OH: 1.47e-11
+          nV_H2O: 2.09e-12
+          nL_CH3OH: 1.47e-11
+          nL_H2O: 2.09e-12
+          k_relative: 2.02e-12
+          k_relative_C2H5OH: 1.56e-12
+      I8:
+        rho: 0.44
+        A: 3.24
+        lnK_floor: 1.55e-15
+        per_output:
+          beta: 4.28e-12
+          x_C2H5OH: 7.98e-13
+          x_H2O: 7.98e-13
+          y_C2H5OH: 2.55e-12
+          y_H2O: 2.55e-12
+          nV_C2H5OH: 8.28e-13
+          nV_H2O: 3.59e-12
+          nL_C2H5OH: 8.28e-13
+          nL_H2O: 3.59e-12
+          k_relative: 3.43e-12
+          k_relative_CH3OH: 3.15e-12
+      I9:
+        rho: 0.525
+        A: 4.58
+        lnK_floor: 1.89e-15
+        per_output:
+          beta: 4.77e-11
+          x_C2H5OH: 7.83e-12
+          x_H2O: 7.83e-12
+          y_C2H5OH: 7.04e-12
+          y_H2O: 7.04e-12
+          nV_C2H5OH: 2.74e-11
+          nV_H2O: 2.05e-11
+          nL_C2H5OH: 2.74e-11
+          nL_H2O: 2.05e-11
+          k_relative: 4.8e-12
+          k_relative_CH3OH: 7.24e-13
+      I10:
+        rho: 0.65
+        A: 5.52
+        lnK_floor: 3.22e-15
+        per_output:
+          beta: 1.18e-11
+          x_C2H5OH: 3.08e-12
+          x_H2O: 3.08e-12
+          y_C2H5OH: 4.52e-12
+          y_H2O: 4.52e-12
+          nV_C2H5OH: 3.85e-12
+          nV_H2O: 8.11e-12
+          nL_C2H5OH: 3.85e-12
+          nL_H2O: 8.11e-12
+          k_relative: 5.84e-12
+          k_relative_CH3OH: 5.02e-12
+      I11:
+        rho: 0.519
+        A: 3.98
+        lnK_floor: 2.0e-15
+        per_output:
+          beta: 1.12e-11
+          x_CH3OH: 1.4e-12
+          x_C2H5OH: 1.99e-12
+          x_H2O: 3.25e-12
+          y_CH3OH: 1.54e-12
+          y_C2H5OH: 2.01e-12
+          y_H2O: 3.41e-12
+          nV_CH3OH: 2.13e-12
+          nV_C2H5OH: 3.2e-12
+          nV_H2O: 6.11e-12
+          nL_CH3OH: 2.13e-12
+          nL_C2H5OH: 3.2e-12
+          nL_H2O: 6.11e-12
+          k_relative: 4.2e-12
+      I12:
+        rho: 0.39
+        A: 2.96
+        lnK_floor: 1.5e-15
+        per_output:
+          beta: 9.41e-12
+          x_CH3OH: 2.08e-12
+          x_C2H5OH: 9.35e-13
+          x_H2O: 2.87e-12
+          y_CH3OH: 2.0e-12
+          y_C2H5OH: 7.75e-13
+          y_H2O: 2.41e-12
+          nV_CH3OH: 3.62e-12
+          nV_C2H5OH: 2.01e-12
+          nV_H2O: 4.07e-12
+          nL_CH3OH: 3.62e-12
+          nL_C2H5OH: 2.01e-12
+          nL_H2O: 4.07e-12
+          k_relative: 3.15e-12
+      I13:
+        rho: 0.329
+        A: 2.85
+        lnK_floor: 2.33e-15
+        per_output:
+          beta: 5.52e-11
+          x_CH3OH: 1.93e-12
+          x_C2H5OH: 4.24e-12
+          x_H2O: 6.04e-12
+          y_CH3OH: 2.43e-12
+          y_C2H5OH: 2.85e-12
+          y_H2O: 5.13e-12
+          nV_CH3OH: 5.39e-12
+          nV_C2H5OH: 3.33e-11
+          nV_H2O: 1.68e-11
+          nL_CH3OH: 5.39e-12
+          nL_C2H5OH: 3.33e-11
+          nL_H2O: 1.68e-11
+          k_relative: 3.06e-12
+      I14:
+        rho: 0.00625
+        A: 1.02
+        lnK_floor: 2.39e-15
+        per_output:
+          beta: 1.41e-11
+          x_CH3OH: 2.04e-12
+          x_C2H5OH: 2.04e-12
+          y_CH3OH: 2.03e-12
+          y_C2H5OH: 2.03e-12
+          nV_CH3OH: 7.17e-12
+          nV_C2H5OH: 7.11e-12
+          nL_CH3OH: 7.17e-12
+          nL_C2H5OH: 7.11e-12
+          k_relative: 1.19e-12
+          k_relative_H2O: 1.05e-12
+  idaes_beta_x_y: 1.0e-07
+measured:
+  evaluate_phase_floors:
+    RE1.LIQUID: 5.66e-15
+    RE1.VAPOR: 2.33e-15
+    RE2.LIQUID: 2.32e-15
+    RE2.VAPOR: 1.13e-15
+    RE3.LIQUID: 1.48e-15
+    RE3.VAPOR: 4.62e-16
+  binary64_floor_flash:
+    I1:
+      tm_floor: 2.78e-16
+    I2:
+      tm_floor: 6.11e-16
+    I3:
+      tm_floor: 1.78e-15
+    I4:
+      tm_floor: 1.67e-15
+    I5:
+      tm_floor: 1.45e-15
+    I6:
+      tm_floor: 8.33e-16
+    I7:
+      tm_floor: 3.33e-16
+    I8:
+      tm_floor: 1.78e-15
+    I9:
+      tm_floor: 5.31e-16
+    I10:
+      tm_floor: 2.78e-15
+    I11:
+      tm_floor: 1.61e-15
+    I12:
+      tm_floor: 5.0e-16
+    I13:
+      tm_floor: 1.17e-15
+    I14:
+      tm_floor: 2.11e-15
+  classification_margins:
+    I1: 0.189
+    I2: 0.252
+    I3: 0.204
+    I4: 0.128
+    I5: 0.044
+    I6: 0.175
+    I7: 0.17
+    I8: 0.197
+    I9: 0.0242
+    I10: 0.0932
+    I11: 0.102
+    I12: 0.113
+    I13: 0.0209
+    I14: 0.0371
+  ss_iterations_max:
+    liquid_trial: 60
+    two_phase: 67
+  smoothing_predicted:
+    I1:
+      '0.0001': 6.2e-11
+      '1.0e-5': 6.2e-13
+      '1.0e-6': 6.2e-15
+    I2:
+      '0.0001': 4.46e-11
+      '1.0e-5': 4.46e-13
+      '1.0e-6': 4.46e-15
+    I3:
+      '0.0001': 6.92e-11
+      '1.0e-5': 6.92e-13
+      '1.0e-6': 6.92e-15
+    I4:
+      '0.0001': 1.78e-10
+      '1.0e-5': 1.78e-12
+      '1.0e-6': 1.78e-14
+    I5:
+      '0.0001': 1.57e-09
+      '1.0e-5': 1.57e-11
+      '1.0e-6': 1.57e-13
+    I8:
+      '0.0001': 5.49e-11
+      '1.0e-5': 5.49e-13
+      '1.0e-6': 5.49e-15
+    I9:
+      '0.0001': 3.95e-09
+      '1.0e-5': 3.95e-11
+      '1.0e-6': 3.95e-13
+    I10:
+      '0.0001': 2.19e-10
+      '1.0e-5': 2.19e-12
+      '1.0e-6': 2.19e-14
+    I11:
+      '0.0001': 2.52e-10
+      '1.0e-5': 2.52e-12
+      '1.0e-6': 2.52e-14
+    I12:
+      '0.0001': 2.45e-10
+      '1.0e-5': 2.45e-12
+      '1.0e-6': 2.45e-14
+    I13:
+      '0.0001': 7.75e-09
+      '1.0e-5': 7.75e-11
+      '1.0e-6': 7.75e-13
+    I14:
+      '0.0001': 2.82e-09
+      '1.0e-5': 2.82e-11
+      '1.0e-6': 2.82e-13
+  smoothing_predicted_K_h_at_1e-4:
+    I1:
+      K_relative_over_tau_K: 0.000565
+      h_over_tau_h: 2.78e-05
+    I2:
+      K_relative_over_tau_K: 0.000515
+      h_over_tau_h: 1.68e-05
+    I3:
+      K_relative_over_tau_K: 0.00066
+      h_over_tau_h: 2.77e-05
+    I4:
+      K_relative_over_tau_K: 0.000899
+      h_over_tau_h: 6.58e-05
+    I5:
+      K_relative_over_tau_K: 0.002
+      h_over_tau_h: 0.000246
+    I8:
+      K_relative_over_tau_K: 0.00113
+      h_over_tau_h: 4.78e-06
+    I9:
+      K_relative_over_tau_K: 0.012
+      h_over_tau_h: 0.000188
+    I10:
+      K_relative_over_tau_K: 0.00364
+      h_over_tau_h: 2.04e-05
+    I11:
+      K_relative_over_tau_K: 0.00258
+      h_over_tau_h: 4.54e-05
+    I12:
+      K_relative_over_tau_K: 0.00185
+      h_over_tau_h: 5.96e-05
+    I13:
+      K_relative_over_tau_K: 0.00974
+      h_over_tau_h: 0.000378
+    I14:
+      K_relative_over_tau_K: 0.00225
+      h_over_tau_h: 0.000277
+  idaes_row_floors:
+    I1:
+      bubble_row_step_Pa: 2.11e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I2:
+      bubble_row_step_Pa: 2.17e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I3:
+      bubble_row_step_Pa: 2.21e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I4:
+      bubble_row_step_Pa: 2.23e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I5:
+      bubble_row_step_Pa: 2.26e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I6:
+      bubble_row_step_Pa: 2.19e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I7:
+      bubble_row_step_Pa: 2.19e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I8:
+      bubble_row_step_Pa: 2.24e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I9:
+      bubble_row_step_Pa: 2.29e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I10:
+      bubble_row_step_Pa: 2.27e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I11:
+      bubble_row_step_Pa: 2.24e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I12:
+      bubble_row_step_Pa: 2.23e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I13:
+      bubble_row_step_Pa: 2.28e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I14:
+      bubble_row_step_Pa: 2.25e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+  constr_viol_tol_effect_estimate:
+    I1: 2.1e-14
+    I2: 3.29e-14
+    I3: 4.12e-14
+    I4: 3.84e-14
+    I5: 4.5e-14
+    I8: 4.93e-14
+    I9: 6.54e-14
+    I10: 9.24e-14
+    I11: 6.98e-14
+    I12: 5.65e-14
+    I13: 3.9e-14
+    I14: 1.32e-14
+generator_claims:
+- id: REC-01
+  holds: true
+  statement: every Wilson Lambda_ij of the records is present and strictly positive (the convexity theorem of spec section
+    4.1 needs Lambda > 0)
+- id: REAL-CONV
+  holds: true
+  statement: 'the real records: convention WILSON-IG-ref-v1, components (CH3OH, C2H5OH, H2O)'
+- id: DOM-RE1
+  holds: true
+  statement: RE1 is inside the closed domain
+- id: ZERO-RE1-LIQUID-h-P
+  holds: true
+  statement: RE1 LIQUID dh/dP vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_CH3OH-None
+  holds: true
+  statement: RE1 VAPOR dlnphi_CH3OH/dNone vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_C2H5OH-None
+  holds: true
+  statement: RE1 VAPOR dlnphi_C2H5OH/dNone vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_H2O-None
+  holds: true
+  statement: RE1 VAPOR dlnphi_H2O/dNone vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_CH3OH-T
+  holds: true
+  statement: RE1 VAPOR dlnphi_CH3OH/dT vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_CH3OH-P
+  holds: true
+  statement: RE1 VAPOR dlnphi_CH3OH/dP vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_CH3OH-n_CH3OH
+  holds: true
+  statement: RE1 VAPOR dlnphi_CH3OH/dn_CH3OH vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_CH3OH-n_C2H5OH
+  holds: true
+  statement: RE1 VAPOR dlnphi_CH3OH/dn_C2H5OH vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_CH3OH-n_H2O
+  holds: true
+  statement: RE1 VAPOR dlnphi_CH3OH/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_C2H5OH-T
+  holds: true
+  statement: RE1 VAPOR dlnphi_C2H5OH/dT vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_C2H5OH-P
+  holds: true
+  statement: RE1 VAPOR dlnphi_C2H5OH/dP vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_C2H5OH-n_CH3OH
+  holds: true
+  statement: RE1 VAPOR dlnphi_C2H5OH/dn_CH3OH vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_C2H5OH-n_C2H5OH
+  holds: true
+  statement: RE1 VAPOR dlnphi_C2H5OH/dn_C2H5OH vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_C2H5OH-n_H2O
+  holds: true
+  statement: RE1 VAPOR dlnphi_C2H5OH/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_H2O-T
+  holds: true
+  statement: RE1 VAPOR dlnphi_H2O/dT vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_H2O-P
+  holds: true
+  statement: RE1 VAPOR dlnphi_H2O/dP vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_H2O-n_CH3OH
+  holds: true
+  statement: RE1 VAPOR dlnphi_H2O/dn_CH3OH vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_H2O-n_C2H5OH
+  holds: true
+  statement: RE1 VAPOR dlnphi_H2O/dn_C2H5OH vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-lnphi_H2O-n_H2O
+  holds: true
+  statement: RE1 VAPOR dlnphi_H2O/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE1-VAPOR-h-P
+  holds: true
+  statement: RE1 VAPOR dh/dP vanishes in both transcriptions
+- id: DOM-RE2
+  holds: true
+  statement: RE2 is inside the closed domain
+- id: ZERO-RE2-LIQUID-h-P
+  holds: true
+  statement: RE2 LIQUID dh/dP vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_CH3OH-None
+  holds: true
+  statement: RE2 VAPOR dlnphi_CH3OH/dNone vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_C2H5OH-None
+  holds: true
+  statement: RE2 VAPOR dlnphi_C2H5OH/dNone vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_H2O-None
+  holds: true
+  statement: RE2 VAPOR dlnphi_H2O/dNone vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_CH3OH-T
+  holds: true
+  statement: RE2 VAPOR dlnphi_CH3OH/dT vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_CH3OH-P
+  holds: true
+  statement: RE2 VAPOR dlnphi_CH3OH/dP vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_CH3OH-n_CH3OH
+  holds: true
+  statement: RE2 VAPOR dlnphi_CH3OH/dn_CH3OH vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_CH3OH-n_C2H5OH
+  holds: true
+  statement: RE2 VAPOR dlnphi_CH3OH/dn_C2H5OH vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_CH3OH-n_H2O
+  holds: true
+  statement: RE2 VAPOR dlnphi_CH3OH/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_C2H5OH-T
+  holds: true
+  statement: RE2 VAPOR dlnphi_C2H5OH/dT vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_C2H5OH-P
+  holds: true
+  statement: RE2 VAPOR dlnphi_C2H5OH/dP vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_C2H5OH-n_CH3OH
+  holds: true
+  statement: RE2 VAPOR dlnphi_C2H5OH/dn_CH3OH vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_C2H5OH-n_C2H5OH
+  holds: true
+  statement: RE2 VAPOR dlnphi_C2H5OH/dn_C2H5OH vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_C2H5OH-n_H2O
+  holds: true
+  statement: RE2 VAPOR dlnphi_C2H5OH/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_H2O-T
+  holds: true
+  statement: RE2 VAPOR dlnphi_H2O/dT vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_H2O-P
+  holds: true
+  statement: RE2 VAPOR dlnphi_H2O/dP vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_H2O-n_CH3OH
+  holds: true
+  statement: RE2 VAPOR dlnphi_H2O/dn_CH3OH vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_H2O-n_C2H5OH
+  holds: true
+  statement: RE2 VAPOR dlnphi_H2O/dn_C2H5OH vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-lnphi_H2O-n_H2O
+  holds: true
+  statement: RE2 VAPOR dlnphi_H2O/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE2-VAPOR-h-P
+  holds: true
+  statement: RE2 VAPOR dh/dP vanishes in both transcriptions
+- id: DOM-RE3
+  holds: true
+  statement: RE3 is inside the closed domain
+- id: ZERO-RE3-LIQUID-lnphi_CH3OH-n_H2O
+  holds: true
+  statement: RE3 LIQUID dlnphi_CH3OH/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE3-LIQUID-lnphi_C2H5OH-n_H2O
+  holds: true
+  statement: RE3 LIQUID dlnphi_C2H5OH/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE3-LIQUID-lnphi_H2O-n_CH3OH
+  holds: true
+  statement: RE3 LIQUID dlnphi_H2O/dn_CH3OH vanishes in both transcriptions
+- id: ZERO-RE3-LIQUID-lnphi_H2O-n_C2H5OH
+  holds: true
+  statement: RE3 LIQUID dlnphi_H2O/dn_C2H5OH vanishes in both transcriptions
+- id: ZERO-RE3-LIQUID-lnphi_H2O-n_H2O
+  holds: true
+  statement: RE3 LIQUID dlnphi_H2O/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE3-LIQUID-h-P
+  holds: true
+  statement: RE3 LIQUID dh/dP vanishes in both transcriptions
+- id: ZERO-RE3-LIQUID-h-n_H2O
+  holds: true
+  statement: RE3 LIQUID dh/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_CH3OH-None
+  holds: true
+  statement: RE3 VAPOR dlnphi_CH3OH/dNone vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_C2H5OH-None
+  holds: true
+  statement: RE3 VAPOR dlnphi_C2H5OH/dNone vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_H2O-None
+  holds: true
+  statement: RE3 VAPOR dlnphi_H2O/dNone vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_CH3OH-T
+  holds: true
+  statement: RE3 VAPOR dlnphi_CH3OH/dT vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_CH3OH-P
+  holds: true
+  statement: RE3 VAPOR dlnphi_CH3OH/dP vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_CH3OH-n_CH3OH
+  holds: true
+  statement: RE3 VAPOR dlnphi_CH3OH/dn_CH3OH vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_CH3OH-n_C2H5OH
+  holds: true
+  statement: RE3 VAPOR dlnphi_CH3OH/dn_C2H5OH vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_CH3OH-n_H2O
+  holds: true
+  statement: RE3 VAPOR dlnphi_CH3OH/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_C2H5OH-T
+  holds: true
+  statement: RE3 VAPOR dlnphi_C2H5OH/dT vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_C2H5OH-P
+  holds: true
+  statement: RE3 VAPOR dlnphi_C2H5OH/dP vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_C2H5OH-n_CH3OH
+  holds: true
+  statement: RE3 VAPOR dlnphi_C2H5OH/dn_CH3OH vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_C2H5OH-n_C2H5OH
+  holds: true
+  statement: RE3 VAPOR dlnphi_C2H5OH/dn_C2H5OH vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_C2H5OH-n_H2O
+  holds: true
+  statement: RE3 VAPOR dlnphi_C2H5OH/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_H2O-T
+  holds: true
+  statement: RE3 VAPOR dlnphi_H2O/dT vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_H2O-P
+  holds: true
+  statement: RE3 VAPOR dlnphi_H2O/dP vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_H2O-n_CH3OH
+  holds: true
+  statement: RE3 VAPOR dlnphi_H2O/dn_CH3OH vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_H2O-n_C2H5OH
+  holds: true
+  statement: RE3 VAPOR dlnphi_H2O/dn_C2H5OH vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-lnphi_H2O-n_H2O
+  holds: true
+  statement: RE3 VAPOR dlnphi_H2O/dn_H2O vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-h-P
+  holds: true
+  statement: RE3 VAPOR dh/dP vanishes in both transcriptions
+- id: ZERO-RE3-VAPOR-h-n_H2O
+  holds: true
+  statement: RE3 VAPOR dh/dn_H2O vanishes in both transcriptions
+- id: FLOOR-RE
+  holds: true
+  statement: the binary64 transcription's worst scaled error over every RE-state value and derivative is 5.66e-15 <= TOL_VALUE/10
+    (spec 7.2, re-measured on the real records)
+- id: DOM-I1
+  holds: true
+  statement: I1 is inside the closed domain
+- id: SS-I1
+  holds: true
+  statement: 'I1: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.1296 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 1.6198)'
+- id: BETA-I1
+  holds: true
+  statement: 'I1: 0 < beta < 1 (beta = 2.220695e-01)'
+- id: BAL-I1
+  holds: true
+  statement: 'I1: the 50-digit outlets close the component balance'
+- id: ENV-I1
+  holds: true
+  statement: I1 at 365.51 K is two-phase and >= 0.5 K inside the true envelope (bubble 4.805 K, dew 5.059 K) and from IDAES's
+    dew (gamma at the flash liquid, 5.011 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: DOM-I2
+  holds: true
+  statement: I2 is inside the closed domain
+- id: SS-I2
+  holds: true
+  statement: 'I2: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.2779 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 1.8962)'
+- id: BETA-I2
+  holds: true
+  statement: 'I2: 0 < beta < 1 (beta = 4.103399e-01)'
+- id: BAL-I2
+  holds: true
+  statement: 'I2: the 50-digit outlets close the component balance'
+- id: ENV-I2
+  holds: true
+  statement: I2 at 357.42 K is two-phase and >= 0.5 K inside the true envelope (bubble 6.079 K, dew 7.401 K) and from IDAES's
+    dew (gamma at the flash liquid, 7.158 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: DOM-I3
+  holds: true
+  statement: I3 is inside the closed domain
+- id: SS-I3
+  holds: true
+  statement: 'I3: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.3391 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 1.9765)'
+- id: BETA-I3
+  holds: true
+  statement: 'I3: 0 < beta < 1 (beta = 5.393420e-01)'
+- id: BAL-I3
+  holds: true
+  statement: 'I3: the 50-digit outlets close the component balance'
+- id: ENV-I3
+  holds: true
+  statement: I3 at 351.27 K is two-phase and >= 0.5 K inside the true envelope (bubble 4.92 K, dew 6.72 K) and from IDAES's
+    dew (gamma at the flash liquid, 6.268 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: DOM-I4
+  holds: true
+  statement: I4 is inside the closed domain
+- id: SS-I4
+  holds: true
+  statement: 'I4: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.2757 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 1.6632)'
+- id: BETA-I4
+  holds: true
+  statement: 'I4: 0 < beta < 1 (beta = 6.223446e-01)'
+- id: BAL-I4
+  holds: true
+  statement: 'I4: the 50-digit outlets close the component balance'
+- id: ENV-I4
+  holds: true
+  statement: I4 at 345.66 K is two-phase and >= 0.5 K inside the true envelope (bubble 3.139 K, dew 4.297 K) and from IDAES's
+    dew (gamma at the flash liquid, 3.931 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: DOM-I5
+  holds: true
+  statement: I5 is inside the closed domain
+- id: SS-I5
+  holds: true
+  statement: 'I5: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.1058 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 1.8483)'
+- id: BETA-I5
+  holds: true
+  statement: 'I5: 0 < beta < 1 (beta = 6.839458e-01)'
+- id: BAL-I5
+  holds: true
+  statement: 'I5: the 50-digit outlets close the component balance'
+- id: ENV-I5
+  holds: true
+  statement: I5 at 340.29 K is two-phase and >= 0.5 K inside the true envelope (bubble 1.103 K, dew 1.269 K) and from IDAES's
+    dew (gamma at the flash liquid, 1.221 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: DOM-I6
+  holds: true
+  statement: I6 is inside the closed domain
+- id: PHASE-I6
+  holds: true
+  statement: I6 at 343.62 K is LIQUID (spec 8.1)
+- id: DOM-I7
+  holds: true
+  statement: I7 is inside the closed domain
+- id: PHASE-I7
+  holds: true
+  statement: I7 at 366.56 K is VAPOR (spec 8.1)
+- id: IDAES-DEW-I7
+  holds: true
+  statement: 'I7: with gamma at the incipient dew liquid the dew equation gives the true dew (|diff| = 2.1e-35 K <= 1e-12
+    K), and with gamma at z it does not (-1.693 K) (section 16 A3-3)'
+- id: DOM-I8
+  holds: true
+  statement: I8 is inside the closed domain
+- id: SS-I8
+  holds: true
+  statement: 'I8: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.4404 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 3.2391)'
+- id: BETA-I8
+  holds: true
+  statement: 'I8: 0 < beta < 1 (beta = 3.972690e-01)'
+- id: BAL-I8
+  holds: true
+  statement: 'I8: the 50-digit outlets close the component balance'
+- id: ENV-I8
+  holds: true
+  statement: I8 at 360.93 K is two-phase and >= 0.5 K inside the true envelope (bubble 4.693 K, dew 6.532 K) and from IDAES's
+    dew (gamma at the flash liquid, 6.316 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: DOM-I9
+  holds: true
+  statement: I9 is inside the closed domain
+- id: SS-I9
+  holds: true
+  statement: 'I9: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.5246 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 4.5758)'
+- id: BETA-I9
+  holds: true
+  statement: 'I9: 0 < beta < 1 (beta = 6.021219e-01)'
+- id: BAL-I9
+  holds: true
+  statement: 'I9: the 50-digit outlets close the component balance'
+- id: ENV-I9
+  holds: true
+  statement: I9 at 352.86 K is two-phase and >= 0.5 K inside the true envelope (bubble 0.6028 K, dew 1.266 K) and from IDAES's
+    dew (gamma at the flash liquid, 1.004 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: DOM-I10
+  holds: true
+  statement: I10 is inside the closed domain
+- id: SS-I10
+  holds: true
+  statement: 'I10: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.6496 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 5.5157)'
+- id: BETA-I10
+  holds: true
+  statement: 'I10: 0 < beta < 1 (beta = 5.810463e-01)'
+- id: BAL-I10
+  holds: true
+  statement: 'I10: the 50-digit outlets close the component balance'
+- id: ENV-I10
+  holds: true
+  statement: I10 at 356.02 K is two-phase and >= 0.5 K inside the true envelope (bubble 2.275 K, dew 4.804 K) and from IDAES's
+    dew (gamma at the flash liquid, 4.16 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: DOM-I11
+  holds: true
+  statement: I11 is inside the closed domain
+- id: SS-I11
+  holds: true
+  statement: 'I11: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.5188 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 3.9811)'
+- id: BETA-I11
+  holds: true
+  statement: 'I11: 0 < beta < 1 (beta = 5.661151e-01)'
+- id: BAL-I11
+  holds: true
+  statement: 'I11: the 50-digit outlets close the component balance'
+- id: ENV-I11
+  holds: true
+  statement: I11 at 353.34 K is two-phase and >= 0.5 K inside the true envelope (bubble 2.524 K, dew 4.322 K) and from IDAES's
+    dew (gamma at the flash liquid, 3.7 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: DOM-I12
+  holds: true
+  statement: I12 is inside the closed domain
+- id: SS-I12
+  holds: true
+  statement: 'I12: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.3895 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 2.9630)'
+- id: BETA-I12
+  holds: true
+  statement: 'I12: 0 < beta < 1 (beta = 5.666485e-01)'
+- id: BAL-I12
+  holds: true
+  statement: 'I12: the 50-digit outlets close the component balance'
+- id: ENV-I12
+  holds: true
+  statement: I12 at 350.09 K is two-phase and >= 0.5 K inside the true envelope (bubble 2.778 K, dew 4.076 K) and from IDAES's
+    dew (gamma at the flash liquid, 3.572 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: DOM-I13
+  holds: true
+  statement: I13 is inside the closed domain
+- id: SS-I13
+  holds: true
+  statement: 'I13: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.3289 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 2.8535)'
+- id: BETA-I13
+  holds: true
+  statement: 'I13: 0 < beta < 1 (beta = 5.322220e-01)'
+- id: BAL-I13
+  holds: true
+  statement: 'I13: the 50-digit outlets close the component balance'
+- id: ENV-I13
+  holds: true
+  statement: I13 at 351.15 K is two-phase and >= 0.5 K inside the true envelope (bubble 0.5253 K, dew 0.7382 K) and from IDAES's
+    dew (gamma at the flash liquid, 0.647 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: DOM-I14
+  holds: true
+  statement: I14 is inside the closed domain
+- id: SS-I14
+  holds: true
+  statement: 'I14: the two-phase SS map converges, spectral radius of dPhi/dlnK = 0.0063 < 0.9 (error amplification ||(I -
+    dPhi/dlnK)^-1||_inf = 1.0199)'
+- id: BETA-I14
+  holds: true
+  statement: 'I14: 0 < beta < 1 (beta = 4.926828e-01)'
+- id: BAL-I14
+  holds: true
+  statement: 'I14: the 50-digit outlets close the component balance'
+- id: ENV-I14
+  holds: true
+  statement: I14 at 344.84 K is two-phase and >= 0.5 K inside the true envelope (bubble 0.9322 K, dew 0.9332 K) and from IDAES's
+    dew (gamma at the flash liquid, 0.9345 K) (spec 8.1, 15 A2-3, 16 A3-3)
+- id: FLOOR-TM
+  holds: true
+  statement: the binary64 floor of the trial distances over every I-state is 2.78e-15 <= TOL_TM/10 (spec 7.3, re-measured
+    on the real states)
+- id: FLOOR-LNK
+  holds: true
+  statement: DELTA_K = 1e-13 is at least 10 x the binary64 floor of ln K at the two-phase I-states (3.22e-15)
+- id: SS-CAP
+  holds: true
+  statement: SS needs at most 60 (liquid trial) and 67 (two-phase) iterations at the I-states to reach its stop test, <= SS_MAX/10
+    = 100
+- id: MARGIN-I1
+  holds: true
+  statement: I1's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.189; spec 7.3)
+- id: MARGIN-I2
+  holds: true
+  statement: I2's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.252; spec 7.3)
+- id: MARGIN-I3
+  holds: true
+  statement: I3's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.204; spec 7.3)
+- id: MARGIN-I4
+  holds: true
+  statement: I4's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.128; spec 7.3)
+- id: MARGIN-I5
+  holds: true
+  statement: I5's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.044; spec 7.3)
+- id: MARGIN-I6
+  holds: true
+  statement: I6's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.175; spec 7.3)
+- id: MARGIN-I7
+  holds: true
+  statement: I7's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.17; spec 7.3)
+- id: MARGIN-I8
+  holds: true
+  statement: I8's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.197; spec 7.3)
+- id: MARGIN-I9
+  holds: true
+  statement: I9's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.0242; spec 7.3)
+- id: MARGIN-I10
+  holds: true
+  statement: I10's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.0932; spec 7.3)
+- id: MARGIN-I11
+  holds: true
+  statement: I11's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.102; spec 7.3)
+- id: MARGIN-I12
+  holds: true
+  statement: I12's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.113; spec 7.3)
+- id: MARGIN-I13
+  holds: true
+  statement: I13's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.0209; spec 7.3)
+- id: MARGIN-I14
+  holds: true
+  statement: I14's trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD (0.0371; spec 7.3)
+- id: SMOOTH-I
+  holds: true
+  statement: 'the predicted smoothing error (eps^2/(4 d_b) + eps^2/(4 d_d)) |dq/dT| is <= tau/10 = 1e-8 at every rung, worst
+    {''0.0001'': 7.75e-09, ''1.0e-5'': 7.75e-11, ''1.0e-6'': 7.75e-13} (S10.A42; d_d to IDAES''s dew, section 16 A3-3)'
+- id: SMOOTH-I-KH
+  holds: true
+  statement: the same prediction for K (relative, tau_K = 1e-7) and for h^L, h^V (tau_h = 0.05 J/mol) at eps = 1e-4 is at
+    most 0.012 of the tolerance, <= 0.1 (S10.A42; section 16 A3-4)
+- id: CVT-8.1-BELOW-FLOOR
+  holds: true
+  statement: 'section 8.1''s constr_viol_tol = 1e-10 is below the worst binary64 row floor over the I-states (2.33e-10): ESC-4''s
+    finding (section 16 A3-1)'
+- id: CVT-FLOOR
+  holds: true
+  statement: constr_viol_tol = 1e-09 >= 3 x the worst binary64 row floor over the I-states (2.33e-10; the bubble row's step
+    |dr/dT| ulp(T_bub), or 4 ulp(|h|) for an enthalpy row) (section 16 A3-1)
+- id: CVT-EFFECT
+  holds: true
+  statement: the estimated effect A constr_viol_tol / (P min(1, K_min)) of constr_viol_tol on the compared mole fractions
+    is at most 9.24e-14 <= 1e-3 tau = 1e-10 at the two-phase I-states (section 16 A3-1)
