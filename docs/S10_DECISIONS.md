@@ -465,3 +465,23 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
   rows 12-13. `docs/s10-rights-check.md` updated as A6-6 (RC-06, files checked, per-file map, `report.json` row); the
   paper's notice read from its first page (1995 ACS, article code 0021-9568/95/1740-0679$09.00/0; no reuse statement
   in the paper). No script or test changed. Nothing computed on the 1995 data.
+- **MEASURED (step 2, x86-64, Python 3.13.5):** `s10_validation.py --write` printed `VAL-1 within band; VAL-2 within
+  band; VAL-3 not validated within band`. methanol + water (52): AAD_P 0.01086763935 (1.087 %), AAD_y 0.004754833453,
+  max |r| 0.02670, max |dy1| 0.01703, within band. ethanol + water (107): AAD_P 0.00289894189 (0.2899 %), AAD_y
+  0.004075153801, max |r| 0.02124, max |dy1| 0.01543, within band. Pooled (not judged): 0.5505 %, 0.004297. Below the
+  records' 30 kPa bound: measured 1 (methanol + water) + 39 (ethanol + water) = 40 of 159; computed 1 + 39 = 40. No
+  refusal, no non-finite value; C1-C5 hold. Worst A51.2-A51.5: set S (126 states) P over P_eval 6.7e-16, y 2.2e-16;
+  closed form P 1.1e-15, y 4.4e-16; bubble condition 8.9e-16 at 47 in-domain states; swapped-Lambda change at least
+  1.5e-4. Set R (42 states) 7.8e-16, 2.2e-16; 8.9e-16, 2.2e-16; 8.9e-16 at 14 states; at least 2.8e-3. S reproduces
+  A6-3's floors (none exceeds them). `pytest tests/test_s10_validation.py`: 11 passed, 0 skipped. `--check`: OK.
+  `report.json`'s convention, records, VAL-1 and VAL-3 objects are byte-identical to `d42fcf08`'s (compared by
+  `json.dumps`), and the Markdown diff is the VAL-2 section only. Observation, not a change: A6-1 expected the water-rich
+  end of every isotherm below the domain; for methanol + water only one printed point (of 52) is, as Table 2 has few
+  water-rich points. `s10_evidence_manifest.py`'s `validation_check` still requires a PENDING VAL-2 and now refuses;
+  that is step 5's edit.
+- B-89 (step 2, format and structure only; no number depends on it): (a) the per-isotherm table prints T as the
+  stored float's repr (`323.15`), which A6-7's template leaves unformatted; (b) `bubble_p(provider, n, t, p_eval)` takes
+  the lnphi names from `provider.describe().components`, so the one function serves set S's synthetic records and the
+  real ones; (c) the refusal is carried by `Val2RefusedError` (ruff N818) and turned into A6-3's `SystemExit` message in
+  `val2()`. Alternative for (a): `f"{T:.2f}"`, identical output for these three T. Reversible by: editing
+  `_markdown_val2` / `bubble_p`.
