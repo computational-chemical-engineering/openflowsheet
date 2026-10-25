@@ -13426,6 +13426,8 @@ times the row's sensitivity, not from ulp(P). T06 M6 (a) and S03 met the same fl
   B-36 is ratified, and B-37 is superseded.
 - Closure: no further rung, option, solver, path or initializer variant. IDAES's initializer failures (I3, I11) are
   results.
+- **Erratum (R-720, spec §17 A4-1):** I11's initializer completes at 1e-4 with MA27, and I11 is selected there and
+  compared. Only I3 has no optimal attempt.
 
 **Rejected alternatives, and why.**
 - *The rung with the most optimal states.* It discards converged states for no reason.
@@ -13485,3 +13487,61 @@ ones converge.
 
 **Watch for.** A tool's convergence floor must be read from its source before its tolerance ladder is registered. A
 registered rung that never acts is a document defect.
+
+## R-720 — S10 errata: I11 converges at 1e-4/MA27 and is compared; A44's text is Pyomo's verbose rendering; the A2-1 grid claim holds by construction; the methanol + ethanol Λ are not determined by Table II
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`reviewer`), S10 final review (ESC-7, ESC-8; reference verdicts F1; validation verdict F1) |
+| Normative text | S10 spec §17 A4-1, A4-2 (corrects §15 A2-1 and A2-6, §16 A3-1, A3-2, A3-4, A3-8, A3-9, A3-10, §7.5) |
+| Evidence | `benchmarks/s10/idaes/qualification.json` (I11's attempts); `docs/reviews/S10-review-final.md` (the 79-variant fit probe, the VAL-1 sensitivity probe) |
+| Affected packages | S10; S10-C (its column cases use ternary temperatures) |
+
+**Decision.**
+- I11 is not an initializer failure at every attempt. At 1e-4 with MA27 it completes, stalls at the floor under §8.1's
+  settings and ends optimal under 1e-9. A3-2's rule selected it, and it is compared. Q-F5's premise shrinks to I3, and
+  Frank's answer covers it a fortiori.
+- S10.A44's "text" is `expression_to_string(expr, verbose=True)`. The plain rendering inlines named Expressions.
+- LAMBDA-⟨binary⟩ cannot fail under A2-1's procedure, because Gauss–Newton descends from the grid's best point. It is a
+  guard, not evidence. LAMBDA-MIN is the evidence of a minimum.
+- The single start is fail-safe on 79 perturbed variants of the data (all claims hold; at most 102 of 200 iterations).
+  But the methanol + ethanol minimum moves between three basins under one printed digit of y_1. The committed data's
+  second minimum would move ternary bubble temperatures by up to 0.46 K. Only θ_12 + θ_21 is determined.
+- §7.5's S10.A50–A53 becomes four rows (VAL-1, VAL-2, VAL-3, fit quality).
+
+**Rejected alternative.** *Re-select the methanol + ethanol Λ by their ternary performance.* VAL-1 is held out, so that
+would fit to the validation data. Another determination of that pair must be registered blind, as a new data set.
+
+**Watch for.** A near-ideal binary fitted with Wilson can have near-degenerate minima, and its individual Λ then carry
+no meaning. Predictions that combine such a pair with others inherit the ambiguity.
+
+## R-721 — S10's validation status is stated in the records' `uncertainty`, with a lineage that keeps earlier records hashes verifiable; S10 closes as `tested` with VAL-2 pending
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`reviewer`), S10 final review (validation verdict F2; brief rulings 2 and 3) |
+| Normative text | S10 spec §17 A4-3 (amends §9.5), A4-4 |
+| Evidence | `docs/reviews/S10-validation-verdicts.md`; `benchmarks/s10/records.yaml` (`74dc4e54…`) and the files that cite it |
+| Affected packages | S10 (records, both reference records, the manifest); any later package that edits `records.yaml` |
+
+**Decision.**
+- `uncertainty` is replaced by A4-3's exact string: VAL-1 within band; methanol latent heat not validated within band
+  (+5.72 %); VAL-2 pending; the methanol + ethanol Λ undetermined. It is re-emitted with the hash cascade. The tool
+  records are not touched.
+- `benchmarks/s10/records-lineage.json` lists each records change. A test reconstructs every earlier records,
+  real-section and `inputs.json` hash from HEAD, so the tool records stay verifiable.
+- S10 may close as `tested`. The manifest reports validation separately: A50 within band, A51
+  `insufficient_evidence: pending` (2 tests skipped, not passed), A52 not validated within band for one cell, and A53
+  met for fit quality. VAL-2 is a later work order with its own verdict.
+
+**Rejected alternatives, and why.**
+- *Record the status only in the report and the manifest.* The provider's `describe()` would keep saying "not yet
+  validated" while a known 5.72 % miss exists.
+- *Hold S10 open until VAL-2.* `tested` attests verification. Validation must be distinguished, not completed, and
+  the data may never come.
+- *Mark VAL-2 `BLOCKED`.* No route was tried and failed.
+
+**Watch for.** Every later records edit adds a lineage step and runs the cascade in one commit. A records hash that
+appears in a tool record but cannot be reconstructed from HEAD is a provenance defect.
