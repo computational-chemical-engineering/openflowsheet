@@ -92,24 +92,28 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-25, workstation; no cloud sessions).** `main` = `4819e406` (S03 merged). Last full gate: PASS at
-`3ad02fd0` (wp/S03 head, tree identical to the merge): 11976 passed, 3137 skipped (CoolProp tests skip without the
-extra). CI 40140766357 green on both architectures. Ledger synced with the manifests (27 packages; new test keeps it so).
-Plan packages with tested/reviewed manifests: 31 of 34 (Phase 0, v0.0 reviewed; v0.1, v0.2 tested; v0.3 S01–S05, S07
-tested; R01, R02, R03 open). **S03** (verdict `docs/reviews/S03-verdicts.md`, review `docs/reviews/S03-review.md`,
-manifest `evidence/S03/930aad1b…` tested): 23 AGREE; X31 not met (RC1, RC2 two references; RC3 IDAES only; RC4 none).
-HARVEST_SIZE (50, 613, 79). IDAES/DWSIM environments live in worktree `.claude/worktrees/s03` (kept for S10's checks).
+**Position (2026-10-25, workstation; no cloud sessions).** `main` = `30b7b4b8` (S10 merged at wp/S10 `7cf51876`; tree
+identical). Last full gate: PASS at `7cf51876`: 12234 passed, 3139 skipped. CI 40193243573 green (x86-64, aarch64,
+default-install, identity). Plan packages with tested/reviewed manifests: 31 of 34 plus S10 (v0.3 S01–S05, S07, S10
+tested; R01–R03 open). **S10** (`wilson-ig-v1`, library-only, ADR 0047 Proposed; manifest `evidence/S10/f974cc87…`
+tested 53/56; D08 and D19 cited, D19 stays planned): IDAES 13 AGREE + I3 NOT_COMPARABLE; VAL-1 within band, VAL-3 methanol
+Δh +5.72 % vs 5 % (missed, stated), VAL-2 pending. HARVEST_SIZE (52, 688, 85). IDAES/DWSIM environments live in worktree
+`.claude/worktrees/s03` (symlinked into `s10`).
 
 **Next actions (in order):**
-1. **S10** (liquid mixtures, Wilson + ideal gas, `wilson-ig-v1`, library-only; ADR 0047 Proposed; wp/S10, worktree
-   `s10`): WO-1, WO-2 (+review, fixes) done; WO-3 data done to the fit (Kurihara 1993 double-entered and image-checked);
-   Amendment 2 (ESC-1..3) with the specifier; then WO-3 remainder, WO-4 IDAES, WO-5 DWSIM, WO-6 validation (needs
-   Kurihara et al. 1995 from Frank, `/home/frankp/s10-papers/`). Frank: Q-F1 methanol/ethanol/water, Q-F2 library only,
-   Q-F3 ship after rights check, Q-F4 no LLE.
-2. Queued: S08 one-phase column sections; S09 third column reference tool (RC4); S10-C (PH flash, column; architect).
-3. Design-lane leftovers: S07 B-42 harvest classes, F-20.2, Q-A1-2; ADR 0046 acceptance; S03 B6-1..B6-4.
+1. **S10 WO-S10-8 (VAL-2)** on wp/S10 (worktree `s10`, head `d42fcf08`, past the merge): Amendment 6 (§19, R-725…727)
+   pre-registered the aggregation blind (per binary, both must pass; ΔP/P on measured P; y1; closed-form bubble P at
+   P_eval 101325 Pa; all 159 points). Kurihara et al. 1995 double-entered, byte-identical (SHA-256 `e1290279…`), files
+   in the scratchpad `val2-{A,B}/` until WO-S10-8 commits them. Then `verdict`, lineage step, manifest, gate, merge.
+2. Queued: S08 one-phase column sections; S09 third column reference tool (RC4); S10-C (PH flash, column; architect;
+   includes review S-4: fit methanol+ethanol from non-Table-V data, and E-2's azeotrope stop rule).
+3. Design-lane leftovers: S07 B-42 harvest classes, F-20.2, Q-A1-2; ADR 0046/0047 acceptance; S03 B6-1..B6-4; S10 B-86
+   (8 new harvest items classed P; limitations[28] arguable E→U02), B-87 (HG(b) kept an old note).
 4. Binding package (S05/S07/S10 into flowsheets); S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
 5. Workstation backlog: M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
+6. For Frank (defaults set): Q-A6.3 extend the S10 records' P domain below 30 kPa (no); Q-A6.2 register the 1995
+   isothermal ternary (no); one water molar mass across conventions (not compared); M01/L01 adopt (ii′) after the CAS
+   clean-up (unchanged); Q-F3 ship S10 data after the rights check (RC-05/06/08 unresolved).
 
 **History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
