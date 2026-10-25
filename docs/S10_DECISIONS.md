@@ -331,3 +331,35 @@ spikes/references/s10_qualify_dwsim.py` (4 s), `--write`, `tests/test_s10_dwsim.
   corrected (row 8 T 351.78, OCR 361.78). Transcription B (wp/s10-tb 3ea5675b): read from 300 dpi image crops only, no
   OCR, never saw A. `diff` empty. Final `benchmarks/s10/vle/kurihara1993_ternary.csv` = A byte for byte; A and B kept.
   Held out from every fit (VAL-1, §9.6); its bands were fixed before transcription.
+
+## WO-S10-6 (spec §9.6; A50–A53: VAL-1 and VAL-3; VAL-2 pending)
+
+The spec §11 names neither the script nor the report path; B-70 fixes them. Result (the bands are untouched, R-708):
+VAL-1 within band (AAD(T) 0.2097 K, AAD(y) 0.00565 / 0.00544, max |Δy| 0.0210 / 0.0210 for CH3OH / C2H5OH);
+VAL-3 **not validated within band**: CH3OH Δh max 5.72 % (band 5 %); every other VAL-3 cell is inside its band.
+`docs/s10-validation-report.md` and `benchmarks/s10/validation/report.json` hold the numbers. The records' `uncertainty`
+string is not changed (it waits for the verdict on the bands and VAL-2).
+
+- B-70. DECISION: where do the script and the report live? → `scripts/s10_validation.py` (`--emit-eos`, `--write`,
+  `--check`); `benchmarks/s10/validation/{val3-eos.json,report.json}` and the generated `docs/s10-validation-report.md`.
+  The CoolProp output is committed (`val3-eos.json`, written by `--emit-eos` in `~/.cache/of-rca-6fec822/venv-xcheck`,
+  CoolProp 8.0.0), so `--check` and the tests never need CoolProp. Alternative: one script that needs CoolProp.
+  Reversible by: moving the files.
+- B-71. DECISION: VAL-3's temperature grid and the statistic the band applies to → 11 points, equally spaced from 300 K
+  to T_b(101 325 Pa) of CoolProp (the ends included); the band is applied to the **maximum** absolute relative
+  deviation over the grid (the stricter reading of "within"). The mean (signed) is reported beside it. Under the mean
+  reading CH3OH Δh (mean +4.0 %) would be inside 5 %. Alternative: the mean, or a different grid. Reversible by:
+  `VAL3_POINTS` and the `max(...)` in `val3()`, then `--emit-eos` and `--write`. **Open for the `verdict` agent:** the
+  reading of "within 5 %".
+- B-72. DECISION: Δh and c_p^0L as the provider reports them → Δh_i = h^ig − h^L of the pure component through
+  `evaluate_phase` at 101 325 Pa (§9.6 states the registered states stay there); c_p^0L = the T-derivative of the pure
+  liquid `h`. EOS side: ΔH_vap = HMOLAR(Q=1) − HMOLAR(Q=0), c_p = CPMOLAR(Q=0), both at the saturation T. Alternative:
+  the provider's internal `_pure` quantities. Reversible by: `val3()`.
+- B-73. DECISION: VAL-1's `y_i` and the bubble solve → the bubble T by bisection on Σ x_i K_i = 1 over [300, 400] K
+  with K_i = exp(lnphi_i) from `evaluate_phase` (no new model code); y_i = x_i K_i/Σ. The table has y1, y2 only, so
+  y_H2O is 1 − y1 − y2. The band is **judged on the two measured fractions**; water's closure AAD (0.00599) and max
+  (0.0308) are reported and would also be inside the bands. Alternative: judging all three. Reversible by: the
+  `checks` dict in `val1()`.
+- B-74. DECISION: tests → `tests/test_s10_validation.py` requires the report to be the script's output, the bands to
+  equal §9.6's, and each verdict to follow from the raw points; it does not require a band to be met. The VAL-2
+  assertions (A51 and the VAL-2 part of A53) are skipped with "VAL-2 data not yet supplied". Reversible by: editing.
