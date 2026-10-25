@@ -1,0 +1,66 @@
+{
+ "schema_version": 1,
+ "what": "NASA-7 low-range coefficients (200-1000 K) as printed in Cantera 3.2.0's nasa_gas.yaml, which cites McBride, Gordon, Reno, NASA TM-4513 (1993). Strings are the file's own decimal literals (S10 spec sections 3.1 and 9.5; rights row S10-RC-01).",
+ "generator": "docs/derivations/scripts/s10_records.py --extract-nasa",
+ "source_file": "cantera/data/nasa_gas.yaml (Cantera 3.2.0)",
+ "source_sha256": "4de6199d65d2d3db782e30573720c723130953707336add59713b02d8667e4db",
+ "species": [
+  {
+   "id": "CH3OH",
+   "nasa_species": "CH3OH",
+   "note": "L 8/88",
+   "temperature_ranges_K": [
+    "200.0",
+    "1000.0",
+    "6000.0"
+   ],
+   "low_range_a1_a7": [
+    "5.71539582",
+    "-0.0152309129",
+    "6.52441155e-05",
+    "-7.10806889e-08",
+    "2.61352698e-11",
+    "-2.56427656e+04",
+    "-1.50409823"
+   ]
+  },
+  {
+   "id": "C2H5OH",
+   "nasa_species": "C2H5OH",
+   "note": "L 8/88",
+   "temperature_ranges_K": [
+    "200.0",
+    "1000.0",
+    "6000.0"
+   ],
+   "low_range_a1_a7": [
+    "4.85868178",
+    "-3.7400674e-03",
+    "6.95550267e-05",
+    "-8.86541147e-08",
+    "3.5168443e-11",
+    "-2.99961309e+04",
+    "4.80192294"
+   ]
+  },
+  {
+   "id": "H2O",
+   "nasa_species": "H2O",
+   "note": "L 8/89",
+   "temperature_ranges_K": [
+    "200.0",
+    "1000.0",
+    "6000.0"
+   ],
+   "low_range_a1_a7": [
+    "4.19864056",
+    "-2.0364341e-03",
+    "6.52040211e-06",
+    "-5.48797062e-09",
+    "1.77197817e-12",
+    "-3.02937267e+04",
+    "-0.849032208"
+   ]
+  }
+ ]
+}
