@@ -392,3 +392,26 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
 - B-83. DECISION: the manifest lists `requirements: ["D08"]` only (the brief's ledger entry). §8's comparisons are
   D19-shaped, but D19's row is not edited here; a limitation says so. Alternative: list D19 and add S10 to D19's row.
   Reversible by: `requirements` in the generator, and the ledger.
+- **MEASURED (manifest):** `evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json`, generated from a clean
+  tree at `c4f3751e`: `status: tested`, 48 of 51 checks pass (A01-A08, A10-A28, A30-A34, A40-A45; tests "240 passed, 2
+  skipped (VAL-2)"; generators 113/160/25 claims; both comparisons; the validation report; ruff; format; the reference
+  record); `S10.validation` `not_applicable` (A4-4's block verbatim, B-81); `S10.gate`, `S10.ci` `unsupported`. Review
+  fields `pending`. A first manifest at `c8892a26` was dropped unpushed (wording of two limitations; regenerated, as
+  S07's B-41).
+- B-84. DECISION (harvest classes, build-lane draft for design-lane review): limitations[0], [1], [3], [4], [5], [7],
+  [9], [22], [24], [25], [27] and checks[S10.validation] -> E to U02 (`wilson-ig-v1` library-only: its scope, its
+  validation status, the undetermined methanol-ethanol Lambda); [2], [6], [8], [10]-[21], [23], [26], [28]-[33] and
+  checks[S10.gate], checks[S10.ci] -> P (scope statements, rights process, tool-qualification and measurement records,
+  provenance, process). Alternative: the rights items [6], [12], [26], [30] -> E to L40. Reversible by: editing those
+  harvest entries' class and `to`, then `t08_support_matrix.py --emit`.
+- **MEASURED (HARVEST_SIZE):** `matrix.harvest_items()` = (51, 647, 82), was (50, 613, 79). `--emit` regenerated
+  `docs/support-matrix.md`; `--check`: 0 problems. T08 C3 (`wilson-ig-v1: S10 has no U02 item in the harvest`) passes.
+- HG line: `S10 HG c4f3751e208c540076d2dd8109d673769745a0dc..HEAD: PASS (37 appended; HARVEST_SIZE (50, 613, 79) -> (51, 647, 82))`.
+  Measured at `870518e2` by S05's `check_harvest` (R-617) adapted to S10 (a scratch script, not committed).
+- **OPEN (design lane), found by WO-S10-7:** `tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_rights`
+  fails on `benchmarks/s10/records.yaml` (`synthetic: false` since WO-S10-3, `3e6986ee`): T08.A32 admits a real
+  records file only through `VETTED_RECORD_FILES`, and "adding a file takes a design-lane amendment that names its
+  vetting" (M01 spec §3.5, R-158; L01 spec §12.4, R-529). The failure predates WO-S10-7 and is not caused by A4-3.
+  Not resolved here: which file vets `records.yaml` and with which retrieval predicate is a design-lane choice.
+  Default the build lane would propose: vet by `s10_records.py --check` reproducing the records from the committed
+  inputs plus `nasa7-low.json`'s retrieval hash, with the rights condition read from `docs/s10-rights-check.md`.
