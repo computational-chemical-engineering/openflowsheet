@@ -323,3 +323,11 @@ spikes/references/s10_qualify_dwsim.py` (4 s), `--write`, `tests/test_s10_dwsim.
   this work order. Only that one hash changes (the states are identical). The tool's own record is untouched, so
   `qualification.json`'s `inputs_sha256` is the hash of the earlier `inputs.json`; the run's states are the same.
   Alternative: leave `inputs.json` stale (`--check` fails). Reversible by: `git checkout` of `inputs.json`.
+
+## Double-entry check of the VAL-1 ternary data (orchestrator, 2026-10-25)
+
+- Table V of Kurihara, Nakamichi and Kojima (1993), methanol + ethanol + water at 101.3 kPa, 38 rows, T in K.
+  Transcription A (wp/s10-ta 21bb2e73): OCR text layer checked row by row against the 300 dpi image; one OCR error
+  corrected (row 8 T 351.78, OCR 361.78). Transcription B (wp/s10-tb 3ea5675b): read from 300 dpi image crops only, no
+  OCR, never saw A. `diff` empty. Final `benchmarks/s10/vle/kurihara1993_ternary.csv` = A byte for byte; A and B kept.
+  Held out from every fit (VAL-1, §9.6); its bands were fixed before transcription.
