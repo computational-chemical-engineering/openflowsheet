@@ -174,3 +174,5 @@ All four answered with the recommended default (Frank, 2026-10-25):
   drops out of the IDAES comparison.
 - **Q-F6** (try DWSIM's Inside-Out flash on new states in a later package?) — **Frank: "No"** (2026-10-25). DWSIM stays
   a check on model expression, enthalpies' readbacks and phase labels; IDAES is the numerical reference.
+- **Q-S09-1** (which third column reference tool should S09 plan for: BioSTEAM, ChemSep-LITE under Wine, or both?) —
+  **Frank: "BioSTEAM first (Rec.)"** (2026-10-25). Survey and feasibility spike: `docs/briefs/S09-third-reference-tool.md`.

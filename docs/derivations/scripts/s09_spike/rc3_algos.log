@@ -1,0 +1,5 @@
+None | RuntimeError: Failed to extrapolate vapor pressure method 'USER_METHOD' at T=-6.055454452393343e-06 K for comp | iter 10 | T1 None T5 None B None None
+inside out | None | iter 2 | T1 368.3997865585687 T5 368.3997865585687 B 0.2117017324298718 {'component_abs_kmolh': 0.0, 'energy_abs_W': 0.0, 'adiabatic_stage_max_abs_W': 1448.0353312282466}
+phenomena | None | iter 17 | T1 359.13672575875205 T5 390.3287549597959 B 0.2302689999960496 {'component_abs_kmolh': 8.881784197001252e-16, 'energy_abs_W': 4.042198674546348e-12, 'adiabatic_stage_max_abs_W': 5292.293717645169}
+simultaneous correction | RuntimeError: Failed to extrapolate vapor pressure method 'USER_METHOD' at T=-6.055454452393343e-06 K for comp | iter 0 | T1 None T5 None B None None
+sequential modular | None | iter 17 | T1 361.4403461086962 T5 395.936745710872 B 0.19794462369488208 {'component_abs_kmolh': 0.044632585343066244, 'energy_abs_W': 4.042198674546348e-12, 'adiabatic_stage_max_abs_W': 12.419870668575943}

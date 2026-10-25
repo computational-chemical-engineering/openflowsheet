@@ -1,0 +1,730 @@
+{
+ "generator": "docs/derivations/scripts/s09_reference.py",
+ "spec": "docs/derivations/S09-spec.md",
+ "note": "Inputs only. No tool value, no value of ours and no twin value enters a BioSTEAM run through this file; the readback expectations are SYN-001's closed forms (S09 §4.3).",
+ "s03_pins": {
+  "docs/derivations/scripts/s03_cases.json": "c901d6c90f4b700b92ff98e2a01ae7e8f1d5557b80dd647e3b14e089d3703f39",
+  "docs/derivations/scripts/s03_reference.json": "95ef9bd2551267e37c225764b5ed159d9f14911c2bb8b05a5905b8b65cec0c67",
+  "benchmarks/s03/references/comparison.json": "5c7d139c0547f17bfa318f33b106cdb5749b9eaacbccb07cf1dedd570593585d"
+ },
+ "tool": "BioSTEAM",
+ "pairs": [
+  "RC1",
+  "RC2",
+  "RC3",
+  "RC4",
+  "RC5",
+  "RC6",
+  "RC7",
+  "RC1-RR",
+  "RC1-BR",
+  "RC1-z",
+  "RC2-RR",
+  "RC2-B",
+  "RC2-z",
+  "RC3-Q",
+  "RC3-z",
+  "RC4-D",
+  "RC4-z",
+  "PC-P",
+  "PC-LB"
+ ],
+ "not_applicable": {
+  "PC-L": "DWSIM's mapping input (S03 §3.3)",
+  "PC-LI": "IDAES's mapping input (S03 §18.3)"
+ },
+ "ours_aliases": {
+  "PC-LB": "RC1"
+ },
+ "controls": {
+  "PC-P": {
+   "inputs": "s03_cases.json cases.PC-P",
+   "expected": "DISAGREE",
+   "tool_model_distance": "not_applicable: BioSTEAM's model at 1.5e5 Pa also lacks v (P - P_r) in h^L, which S03's PC-P tool model keeps (S09 §7)"
+  },
+  "PC-LB": {
+   "inputs": "s03_cases.json cases.RC1",
+   "role": "positive_control",
+   "expected": "DISAGREE",
+   "tool_variant": "Hvap_J_per_mol_PC-LB in place of L_i",
+   "Hvap_J_per_mol_PC-LB": [
+    "25010",
+    "30010",
+    "35010"
+   ],
+   "tool_model": "s03_reference.json controls.PC-LI.tool_model (claim C4)"
+  }
+ },
+ "tool_settings": {
+  "BioSTEAM": {
+   "environment": {
+    "python": "3.13.5",
+    "biosteam": "2.54.0",
+    "thermosteam": "0.54.2",
+    "thermo": "0.6.1",
+    "chemicals": "1.5.2",
+    "flexsolve": "0.5.10",
+    "numba": "0.68.0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "lock": "spikes/references/biosteam-requirements.lock"
+   },
+   "mapping": {
+    "constants": "spikes/references/t06_fixtures.py (T_BOIL, L_VAP, CP, V_LIQ, MW, P_REF, R_GAS)",
+    "chemical": "thermosteam.Chemical.blank(ID, phase_ref='l', MW=1000*MW, Tb=T_BOIL[ID])",
+    "Psat": "Psat.add_method(f=P_REF*exp((L/R_GAS)*(1/T_b - 1/T)), Tmin=200.0, Tmax=600.0)",
+    "Hvap": "Hvap.add_method(f=L (constant), Tmin=200.0, Tmax=600.0); PC-LB: Hvap_J_per_mol_PC-LB",
+    "Cn": "Cn.l.add_method(CP); Cn.g.add_method(CP)",
+    "V": "V.l.add_method(V_LIQ)",
+    "finish": "reset_free_energies(); Chemicals([...]).compile(skip_checks=True)",
+    "thermo": "IdealThermo(chemicals, mixture=IdealMixture.from_chemicals(chemicals), skip_checks=True)",
+    "datum": "the tool's default (Chemical.T_ref = 298.15 K); no subclass; offset 185 J/mol (C4)",
+    "specifications_by_weight": false
+   },
+   "readback": {
+    "temperatures_K": [
+     "310",
+     "347",
+     "385",
+     "430"
+    ],
+    "Psat_Pa": {
+     "A": [
+      "73852.10058501417914360476",
+      "207741.1142075781509144168",
+      "488605.1695545122313511412",
+      "1106402.61309492733112889"
+     ],
+     "B": [
+      "19857.9866060236335135583",
+      "68695.25473799137013146944",
+      "191712.0713429424969886068",
+      "511205.6225258024898361191"
+     ],
+     "C": [
+      "4710.831315518042975090367",
+      "20041.07434490073871245524",
+      "66363.7380628621904079128",
+      "208385.755965860040671266"
+     ]
+    },
+    "Psat_relative": "1e-14",
+    "latent_relative": "1e-12",
+    "cp_J_per_mol": "1e-9",
+    "datum_offset_J_per_mol": "185",
+    "datum_offset_abs_J_per_mol": "1e-9",
+    "liquid_pressure_dependence": "H(T, 1.5 P_r) - H(T, P_r) == 0 exactly for a liquid stream",
+    "methods": "Psat and Hvap: exactly {'USER_METHOD'}",
+    "thermo_classes": {
+     "Gamma": "IdealActivityCoefficients",
+     "Phi": "IdealFugacityCoefficients",
+     "PCF": "MockPoyntingCorrectionFactors",
+     "mixture": "IdealMixture",
+     "include_excess_energies": false
+    }
+   },
+   "common": {
+    "early_termination": false,
+    "tolerance": "1e-10",
+    "relative_tolerance": "1e-10",
+    "maxiter": 500,
+    "max_attempts": 1,
+    "use_cache": true,
+    "phases": [
+     "g",
+     "l"
+    ],
+    "other_attributes": "the tool's defaults, recorded per run"
+   },
+   "rungs": [
+    [
+     "inside out",
+     "fixed-point"
+    ],
+    [
+     "phenomena",
+     "fixed-point"
+    ],
+    [
+     "simultaneous correction",
+     "hybr"
+    ],
+    [
+     "sequential modular",
+     "fixed-point"
+    ]
+   ],
+   "rungs_source": "MultiStageEquilibrium.default_algorithms and default_methods (biosteam/units/stage.py:2185-2200), one algorithm per rung, in that order",
+   "solve_path": [
+    "P1 build: MultiStageEquilibrium(ins=inlets, outs=['vapor', 'liquid'] (+ ['distillate'] for a total condenser), N_stages=N, feed_stages=[s-1], P=[P]*N, phases=('g','l'), stage_specifications={...}, [bottom_side_draws={0: 1/(1+RR)}], maxiter=500, max_attempts=1, use_cache=True); then algorithms=(rung,), methods=(method,), early_termination=False, tolerance=relative_tolerance=1e-10",
+    "P2 simulate()  (pass 1)",
+    "P3 re-store every registered native specification through the stage's attribute setter (Reflux r: stage.B = 1/r, or inf for r = 0, or 0 for r = inf; Boilup b: stage.B = b; Duty q: stage.Q = 3.6 q; Flow f: stage.F = f; Temperature t: stage.T = t); never specify_variables",
+    "P4 simulate()  (pass 2); the record is pass 2"
+   ],
+   "native_specifications": {
+    "reflux_ratio_partial": "stage 0: ('Reflux', RR)",
+    "reflux_ratio_total": "stage 0: ('Reflux', inf) with bottom_side_draws={0: 1/(1+RR)}",
+    "boilup_ratio": "stage N-1: ('Boilup', BR)",
+    "bottoms_rate": "stage N-1: ('Flow', B / sum of the registered inlet flows)",
+    "duty": "the end stage: ('Duty', 3.6 Q) in kJ/h",
+    "temperature_end_stage": "the end stage that carries the slot: ('Temperature', T)",
+    "not_native": [
+     "distillate_rate",
+     "purity",
+     "recovery",
+     "temperature on a stage other than the end stage that carries the slot"
+    ]
+   },
+   "outer_loop": {
+    "level": "L2(c)",
+    "adjusted": {
+     "condenser": [
+      "Reflux",
+      "stage 0"
+     ],
+     "reboiler": [
+      "Boilup",
+      "stage N-1"
+     ]
+    },
+    "residual": "g(x) = (s(x) - s*)/|s*| for a relative kind, s(x) - s* for an absolute kind, with s computed from the tool's record by S03 §5.1 row 9 and §17.4",
+    "starts": [
+     "1",
+     "2"
+    ],
+    "expansion": "if g(1) g(2) > 0: x = 4, 8, 16, 32 when |g(2)| <= |g(1)|, else 0.5, 0.25, 0.125, 0.0625; the first sign change against the previous point gives the bracket",
+    "solver": "flexsolve.IQ_interpolation(g, a, b, g(a), g(b), None, 0.0, ytol, (), 50, False, True, True)",
+    "ytol": {
+     "boilup_ratio": [
+      "1E-9",
+      "relative"
+     ],
+     "bottoms_rate": [
+      "1E-9",
+      "relative"
+     ],
+     "distillate_rate": [
+      "1E-9",
+      "relative"
+     ],
+     "duty": [
+      "1E-9",
+      "relative"
+     ],
+     "purity": [
+      "1E-9",
+      "absolute"
+     ],
+     "recovery": [
+      "1E-10",
+      "absolute"
+     ],
+     "reflux_ratio": [
+      "1E-9",
+      "relative"
+     ],
+     "temperature": [
+      "1E-10",
+      "relative"
+     ]
+    },
+    "evaluation": "every g(x) is a fresh build and the full solve path P1-P4 at the rung's settings, and its state must pass rule 2 (BioSTEAM) and rule 2c's pressure and read-back checks, or the attempt fails",
+    "record": "one final fresh evaluation at the returned x; |g| <= ytol or the attempt fails"
+   },
+   "floor_rerun": {
+    "tolerance": "1e-9",
+    "relative_tolerance": "1e-9",
+    "ytol_factor": "10"
+   },
+   "rule2": {
+    "stage_component_mol_per_s": "3.1e-8",
+    "equilibrium": "1e-8",
+    "overall_component_mol_per_s": "3.1e-8",
+    "overall_energy_W": "1e-3",
+    "iteration_cap": "no pass's iteration counter reaches maxiter",
+    "exception": "no pass raised"
+   },
+   "rule2c_added": {
+    "specification_readback": "exact",
+    "total_condenser_vapour_mol_per_s": "3.1e-8",
+    "property_readback": "readback block"
+   },
+   "units": {
+    "flow": "kmol/h = 3.6 mol/s",
+    "duty": "kJ/h = 3.6 W"
+   }
+  }
+ },
+ "x31_three_tool": {
+  "rows": {
+   "1": "any pair ours: not met (a column finding)",
+   "2": "any genuine DISAGREE: not met (a disagreement finding)",
+   "3": "any pair access: blocked",
+   "4": "any pair unusable: not met",
+   "5": "two or more pairs AGREE, the others absent: two (or three) references",
+   "6": "exactly one pair AGREE, the others absent: one reference",
+   "7": "every pair absent: no reference, not met"
+  },
+  "clause": {
+   "met with two references": "every counted case is row 5",
+   "met where available": "every counted case is row 5 or row 6 (report the count of row 5)",
+   "not met": "any counted case is row 1, 2, 4 or 7",
+   "blocked": "no case is not met and some case is row 3"
+  },
+  "counted": [
+   "RC1",
+   "RC2",
+   "RC3",
+   "RC4"
+  ],
+  "pre_registered": {
+   "RC1": {
+    "S03": {
+     "DWSIM": [
+      "comparable",
+      "AGREE"
+     ],
+     "IDAES": [
+      "comparable",
+      "AGREE"
+     ]
+    },
+    "AGREE": [
+     5,
+     "three references (BioSTEAM, DWSIM, IDAES)"
+    ],
+    "DISAGREE": [
+     2,
+     "not met: a disagreement finding, until the design lane resolves it"
+    ],
+    "absent": [
+     5,
+     "two references (DWSIM, IDAES)"
+    ],
+    "unusable": [
+     4,
+     "not met: an available reference could not be shown to see a known difference"
+    ],
+    "access": [
+     3,
+     "blocked"
+    ],
+    "ours": [
+     1,
+     "not met: a column finding (S02 or S06)"
+    ]
+   },
+   "RC2": {
+    "S03": {
+     "DWSIM": [
+      "comparable",
+      "AGREE"
+     ],
+     "IDAES": [
+      "comparable",
+      "AGREE"
+     ]
+    },
+    "AGREE": [
+     5,
+     "three references (BioSTEAM, DWSIM, IDAES)"
+    ],
+    "DISAGREE": [
+     2,
+     "not met: a disagreement finding, until the design lane resolves it"
+    ],
+    "absent": [
+     5,
+     "two references (DWSIM, IDAES)"
+    ],
+    "unusable": [
+     4,
+     "not met: an available reference could not be shown to see a known difference"
+    ],
+    "access": [
+     3,
+     "blocked"
+    ],
+    "ours": [
+     1,
+     "not met: a column finding (S02 or S06)"
+    ]
+   },
+   "RC3": {
+    "S03": {
+     "DWSIM": [
+      "absent",
+      "NOT_COMPARABLE"
+     ],
+     "IDAES": [
+      "comparable",
+      "AGREE"
+     ]
+    },
+    "AGREE": [
+     5,
+     "two references (BioSTEAM, IDAES)"
+    ],
+    "DISAGREE": [
+     2,
+     "not met: a disagreement finding, until the design lane resolves it"
+    ],
+    "absent": [
+     6,
+     "one reference (IDAES), absent: BioSTEAM, DWSIM"
+    ],
+    "unusable": [
+     4,
+     "not met: an available reference could not be shown to see a known difference"
+    ],
+    "access": [
+     3,
+     "blocked"
+    ],
+    "ours": [
+     1,
+     "not met: a column finding (S02 or S06)"
+    ]
+   },
+   "RC4": {
+    "S03": {
+     "DWSIM": [
+      "absent",
+      "NOT_COMPARABLE"
+     ],
+     "IDAES": [
+      "absent",
+      "NOT_COMPARABLE"
+     ]
+    },
+    "AGREE": [
+     6,
+     "one reference (BioSTEAM), absent: DWSIM, IDAES"
+    ],
+    "DISAGREE": [
+     2,
+     "not met: a disagreement finding, until the design lane resolves it"
+    ],
+    "absent": [
+     7,
+     "no reference: not met"
+    ],
+    "unusable": [
+     4,
+     "not met: an available reference could not be shown to see a known difference"
+    ],
+    "access": [
+     3,
+     "blocked"
+    ],
+    "ours": [
+     1,
+     "not met: a column finding (S02 or S06)"
+    ]
+   },
+   "RC5": {
+    "S03": {
+     "DWSIM": [
+      "comparable",
+      "AGREE"
+     ],
+     "IDAES": [
+      "comparable",
+      "AGREE"
+     ]
+    },
+    "AGREE": [
+     5,
+     "three references (BioSTEAM, DWSIM, IDAES)"
+    ],
+    "DISAGREE": [
+     2,
+     "not met: a disagreement finding, until the design lane resolves it"
+    ],
+    "absent": [
+     5,
+     "two references (DWSIM, IDAES)"
+    ],
+    "unusable": [
+     4,
+     "not met: an available reference could not be shown to see a known difference"
+    ],
+    "access": [
+     3,
+     "blocked"
+    ],
+    "ours": [
+     1,
+     "not met: a column finding (S02 or S06)"
+    ]
+   },
+   "RC6": {
+    "S03": {
+     "DWSIM": [
+      "comparable",
+      "AGREE"
+     ],
+     "IDAES": [
+      "comparable",
+      "AGREE"
+     ]
+    },
+    "AGREE": [
+     5,
+     "three references (BioSTEAM, DWSIM, IDAES)"
+    ],
+    "DISAGREE": [
+     2,
+     "not met: a disagreement finding, until the design lane resolves it"
+    ],
+    "absent": [
+     5,
+     "two references (DWSIM, IDAES)"
+    ],
+    "unusable": [
+     4,
+     "not met: an available reference could not be shown to see a known difference"
+    ],
+    "access": [
+     3,
+     "blocked"
+    ],
+    "ours": [
+     1,
+     "not met: a column finding (S02 or S06)"
+    ]
+   },
+   "RC7": {
+    "S03": {
+     "DWSIM": [
+      "absent",
+      "NOT_COMPARABLE"
+     ],
+     "IDAES": [
+      "comparable",
+      "AGREE"
+     ]
+    },
+    "AGREE": [
+     5,
+     "two references (BioSTEAM, IDAES)"
+    ],
+    "DISAGREE": [
+     2,
+     "not met: a disagreement finding, until the design lane resolves it"
+    ],
+    "absent": [
+     6,
+     "one reference (IDAES), absent: BioSTEAM, DWSIM"
+    ],
+    "unusable": [
+     4,
+     "not met: an available reference could not be shown to see a known difference"
+    ],
+    "access": [
+     3,
+     "blocked"
+    ],
+    "ours": [
+     1,
+     "not met: a column finding (S02 or S06)"
+    ]
+   }
+  }
+ },
+ "blindness": {
+  "forbidden_strings": [
+   "s03_reference",
+   "s02_reference",
+   "s06_reference",
+   "openflowsheet",
+   "ours-",
+   "comparison",
+   "twin",
+   "s09_spike",
+   "compare_ours",
+   "1.2341901"
+  ],
+  "exempt_modules_sha256": {
+   "spikes/references/t06_fixtures.py": "c6320cc81ea4bf08c36f7d7b5aca19180c2109fd66e4e23c84476d35286ba61f"
+  },
+  "exempt_strings": [
+   "twin",
+   "comparison"
+  ],
+  "input_files": [
+   "docs/derivations/scripts/s03_cases.json",
+   "docs/derivations/scripts/s09_cases.json"
+  ]
+ },
+ "claim_count": 167,
+ "claims": [
+  "C1 docs/derivations/scripts/s03_cases.json has the pinned SHA-256 c901d6c90f4b",
+  "C1 docs/derivations/scripts/s03_reference.json has the pinned SHA-256 95ef9bd25512",
+  "C1 benchmarks/s03/references/comparison.json has the pinned SHA-256 5c7d139c0547",
+  "C2 RC1 is a case of s03_cases.json",
+  "C2 RC2 is a case of s03_cases.json",
+  "C2 RC3 is a case of s03_cases.json",
+  "C2 RC4 is a case of s03_cases.json",
+  "C2 RC5 is a case of s03_cases.json",
+  "C2 RC6 is a case of s03_cases.json",
+  "C2 RC7 is a case of s03_cases.json",
+  "C2 RC1-RR is a case of s03_cases.json",
+  "C2 RC1-BR is a case of s03_cases.json",
+  "C2 RC1-z is a case of s03_cases.json",
+  "C2 RC2-RR is a case of s03_cases.json",
+  "C2 RC2-B is a case of s03_cases.json",
+  "C2 RC2-z is a case of s03_cases.json",
+  "C2 RC3-Q is a case of s03_cases.json",
+  "C2 RC3-z is a case of s03_cases.json",
+  "C2 RC4-D is a case of s03_cases.json",
+  "C2 RC4-z is a case of s03_cases.json",
+  "C2 PC-P is a case of s03_cases.json",
+  "C2 every S03 case other than PC-L and PC-LI is a BioSTEAM pair",
+  "C2 RC1 has role comparison in S03",
+  "C2 RC2 has role comparison in S03",
+  "C2 RC3 has role comparison in S03",
+  "C2 RC4 has role comparison in S03",
+  "C2 RC5 has role comparison in S03",
+  "C2 RC6 has role comparison in S03",
+  "C2 RC7 has role comparison in S03",
+  "C2 RC1-RR has role comparison in S03",
+  "C2 RC1-BR has role comparison in S03",
+  "C2 RC1-z has role comparison in S03",
+  "C2 RC2-RR has role comparison in S03",
+  "C2 RC2-B has role comparison in S03",
+  "C2 RC2-z has role comparison in S03",
+  "C2 RC3-Q has role comparison in S03",
+  "C2 RC3-z has role comparison in S03",
+  "C2 RC4-D has role comparison in S03",
+  "C2 RC4-z has role comparison in S03",
+  "C3 PC-LI's stage_count equals RC1's, so PC-LI's tool-model root is on RC1's inputs",
+  "C3 PC-LI's condenser equals RC1's, so PC-LI's tool-model root is on RC1's inputs",
+  "C3 PC-LI's reboiler equals RC1's, so PC-LI's tool-model root is on RC1's inputs",
+  "C3 PC-LI's stage_pressures_Pa equals RC1's, so PC-LI's tool-model root is on RC1's inputs",
+  "C3 PC-LI's intermediate_duties_W equals RC1's, so PC-LI's tool-model root is on RC1's inputs",
+  "C3 PC-LI's inlets equals RC1's, so PC-LI's tool-model root is on RC1's inputs",
+  "C3 PC-LI's specifications equals RC1's, so PC-LI's tool-model root is on RC1's inputs",
+  "C3 PC-LI's quantities equals RC1's, so PC-LI's tool-model root is on RC1's inputs",
+  "C3 Hvap_PC-LB[A] = L + P_r v = 25010 J/mol = S03's PC-LI h_form,ig[A]",
+  "C3 PC-LB shifts h^V - h^L of A by exactly P_r v = 10 J/mol",
+  "C3 Hvap_PC-LB[B] = L + P_r v = 30010 J/mol = S03's PC-LI h_form,ig[B]",
+  "C3 PC-LB shifts h^V - h^L of B by exactly P_r v = 10 J/mol",
+  "C3 Hvap_PC-LB[C] = L + P_r v = 35010 J/mol = S03's PC-LI h_form,ig[C]",
+  "C3 PC-LB shifts h^V - h^L of C by exactly P_r v = 10 J/mol",
+  "C4 the default-datum offset c_p (T_r - 298.15 K) is exactly 185 J/mol",
+  "C4 A at 310 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 A at 310 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4 A at 347 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 A at 347 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4 A at 385 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 A at 385 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4 A at 430 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 A at 430 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4 B at 310 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 B at 310 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4 B at 347 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 B at 347 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4 B at 385 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 B at 385 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4 B at 430 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 B at 430 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4 C at 310 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 C at 310 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4 C at 347 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 C at 347 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4 C at 385 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 C at 385 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4 C at 430 K: PC-LB's h^V - h^L equals PC-LI's",
+  "C4 C at 430 K: h^L offset to PC-LI's model is the common 185 J/mol",
+  "C4b spikes/references/t06_fixtures.py has S03 §17.6's pinned SHA-256",
+  "C4b t06_fixtures T_BOIL[A] = 320 K",
+  "C4b t06_fixtures L_VAP[A] = 25000 J/mol",
+  "C4b t06_fixtures T_BOIL[B] = 360 K",
+  "C4b t06_fixtures L_VAP[B] = 30000 J/mol",
+  "C4b t06_fixtures T_BOIL[C] = 400 K",
+  "C4b t06_fixtures L_VAP[C] = 35000 J/mol",
+  "C4b t06_fixtures CP = 100",
+  "C4b t06_fixtures V_LIQ = 1e-4",
+  "C4b t06_fixtures T_REF = 300",
+  "C4b t06_fixtures P_REF = 1e5",
+  "C4b t06_fixtures R_GAS = 8.31446261815324",
+  "C4 the reused PC-LI tool-model discrimination is 243.292 tolerances (Q_reboiler) >= 100",
+  "C5 Psat_A(310 K) closed form, two forms agree to 1e-40",
+  "C5 Psat_A(347 K) closed form, two forms agree to 1e-40",
+  "C5 Psat_A(385 K) closed form, two forms agree to 1e-40",
+  "C5 Psat_A(430 K) closed form, two forms agree to 1e-40",
+  "C5 Psat_B(310 K) closed form, two forms agree to 1e-40",
+  "C5 Psat_B(347 K) closed form, two forms agree to 1e-40",
+  "C5 Psat_B(385 K) closed form, two forms agree to 1e-40",
+  "C5 Psat_B(430 K) closed form, two forms agree to 1e-40",
+  "C5 Psat_C(310 K) closed form, two forms agree to 1e-40",
+  "C5 Psat_C(347 K) closed form, two forms agree to 1e-40",
+  "C5 Psat_C(385 K) closed form, two forms agree to 1e-40",
+  "C5 Psat_C(430 K) closed form, two forms agree to 1e-40",
+  "C6 an equilibrium residual of 1e-8 bounds a temperature-only error by 1.575e-6 K = 0.00387 tolerance at T_max 397.3721 K",
+  "C7 outer ytol for boilup_ratio is rule 2d's 1E-8 / 10",
+  "C7 outer ytol for bottoms_rate is rule 2d's 1E-8 / 10",
+  "C7 outer ytol for distillate_rate is rule 2d's 1E-8 / 10",
+  "C7 outer ytol for duty is rule 2d's 1E-8 / 10",
+  "C7 outer ytol for purity is rule 2d's 1E-8 / 10",
+  "C7 outer ytol for recovery is rule 2d's 1E-9 / 10",
+  "C7 outer ytol for reflux_ratio is rule 2d's 1E-8 / 10",
+  "C7 outer ytol for temperature is rule 2d's 1E-9 / 10",
+  "C8 the bracket search covers [1/16, 32]",
+  "C8 1 mol/s = 3.6 kmol/h and 1 W = 3.6 kJ/h exactly",
+  "C9 RC1: the three-tool table gives S03's committed row 5",
+  "C9 RC2: the three-tool table gives S03's committed row 5",
+  "C9 RC3: the three-tool table gives S03's committed row 6",
+  "C9 RC4: the three-tool table gives S03's committed row 7",
+  "C9 on S03's two tools the clause is S03's committed 'not met'",
+  "C9 purity (RC5): S03's committed row",
+  "C9 recovery (RC6): S03's committed row",
+  "C9 temperature (RC7): S03's committed row",
+  "C10 RC1 with BioSTEAM AGREE matches a row",
+  "C10 RC1 with BioSTEAM DISAGREE matches a row",
+  "C10 RC1 with BioSTEAM absent matches a row",
+  "C10 RC1 with BioSTEAM unusable matches a row",
+  "C10 RC1 with BioSTEAM access matches a row",
+  "C10 RC1 with BioSTEAM ours matches a row",
+  "C10 RC2 with BioSTEAM AGREE matches a row",
+  "C10 RC2 with BioSTEAM DISAGREE matches a row",
+  "C10 RC2 with BioSTEAM absent matches a row",
+  "C10 RC2 with BioSTEAM unusable matches a row",
+  "C10 RC2 with BioSTEAM access matches a row",
+  "C10 RC2 with BioSTEAM ours matches a row",
+  "C10 RC3 with BioSTEAM AGREE matches a row",
+  "C10 RC3 with BioSTEAM DISAGREE matches a row",
+  "C10 RC3 with BioSTEAM absent matches a row",
+  "C10 RC3 with BioSTEAM unusable matches a row",
+  "C10 RC3 with BioSTEAM access matches a row",
+  "C10 RC3 with BioSTEAM ours matches a row",
+  "C10 RC4 with BioSTEAM AGREE matches a row",
+  "C10 RC4 with BioSTEAM DISAGREE matches a row",
+  "C10 RC4 with BioSTEAM absent matches a row",
+  "C10 RC4 with BioSTEAM unusable matches a row",
+  "C10 RC4 with BioSTEAM access matches a row",
+  "C10 RC4 with BioSTEAM ours matches a row",
+  "C10 RC5 with BioSTEAM AGREE matches a row",
+  "C10 RC5 with BioSTEAM DISAGREE matches a row",
+  "C10 RC5 with BioSTEAM absent matches a row",
+  "C10 RC5 with BioSTEAM unusable matches a row",
+  "C10 RC5 with BioSTEAM access matches a row",
+  "C10 RC5 with BioSTEAM ours matches a row",
+  "C10 RC6 with BioSTEAM AGREE matches a row",
+  "C10 RC6 with BioSTEAM DISAGREE matches a row",
+  "C10 RC6 with BioSTEAM absent matches a row",
+  "C10 RC6 with BioSTEAM unusable matches a row",
+  "C10 RC6 with BioSTEAM access matches a row",
+  "C10 RC6 with BioSTEAM ours matches a row",
+  "C10 RC7 with BioSTEAM AGREE matches a row",
+  "C10 RC7 with BioSTEAM DISAGREE matches a row",
+  "C10 RC7 with BioSTEAM absent matches a row",
+  "C10 RC7 with BioSTEAM unusable matches a row",
+  "C10 RC7 with BioSTEAM access matches a row",
+  "C10 RC7 with BioSTEAM ours matches a row",
+  "C10 every counted BioSTEAM pair AGREE gives 'met where available, 3 of 4'; 'two references' is unreachable",
+  "C10 BioSTEAM absent on RC4 leaves the clause not met",
+  "C11 S03's comparison schema is unchanged"
+ ]
+}

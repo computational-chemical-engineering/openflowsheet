@@ -1,0 +1,4 @@
+phenomena            specify_variables  pass1 B 0.0153810275943 | set B 1 | pass2 B 0.0153810275943 L1/V1 65.0151619499 V1 0.203252135201 | adiabatic 1.963e+05 W equilibrium 1.100e-11 stage balance 1.891e-12
+phenomena            attribute_setter   pass1 B 0.0153810275943 | set B 1 | pass2 B 1 L1/V1 1 V1 0.546550309927 | adiabatic 9.700e-08 W equilibrium 4.284e-12 stage balance 2.342e-12
+sequential modular   specify_variables  pass1 B 0.0153810275943 | set B 1 | pass2 B 0.0153810275943 L1/V1 65.01516195 V1 0.0201276053199 | adiabatic 4.576e-08 W equilibrium 3.183e-13 stage balance 2.035e-11
+sequential modular   attribute_setter   pass1 B 0.0153810275943 | set B 1 | pass2 B 1 L1/V1 1 V1 0.546550309938 | adiabatic 2.491e-08 W equilibrium 1.354e-14 stage balance 2.923e-11

@@ -14270,3 +14270,210 @@ is not reopened by a result.
 
 **Watch for.** A WO-S10-8 commit that changes report.json's VAL-1 or VAL-3 bytes, or any records line besides
 `uncertainty`.
+
+---
+
+## R-740 — S09: BioSTEAM 2.54.0 is the third column reference; S09 extends S03 without re-judging it; no ADR
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S09 specification; tool choice Frank, Q-S09-1 "BioSTEAM first" |
+| Normative text | `docs/derivations/S09-spec.md` §0, §2.1, §16 |
+| Evidence | — (qualification is WO-S09-2) |
+| Affected packages | S09; S03 (records read, never changed); R01 |
+| Amends | R-628's "No other tool", for S09 only. S03's records and classifications are unchanged |
+
+**Numbering.** S09's entries start at R-740. R-728…R-732 are held by S08 on `wp/S08` (unmerged), and R-733…R-739 are
+left unused.
+
+**Decision.**
+- BioSTEAM 2.54.0 (thermosteam 0.54.2) runs every S03 compared case, PC-P and its own control PC-LB: 20 pairs.
+- S03's cases, tolerances, rules, records and verdict stand. S09 pins three S03 files by SHA-256.
+- No ADR. No frozen interface and no accepted ADR changes. ADR 0014 D7's semantics apply unchanged, and the blueprint
+  names BioSTEAM as a useful overlapping reference (`docs/blueprint-v3.1.md:531`).
+
+**Rejected alternatives, and why.**
+- *An ADR against ADR 0014 D7* (S03 Q-A2-4's expectation): it would record no change to D7 (spec §16 F-1).
+- *Only the gap cases:* the cases where IDAES and DWSIM agree are where a BioSTEAM harness defect shows first.
+
+**Watch for.** A S09 commit that changes any byte under `benchmarks/s03/references/` (S09.A02).
+
+## R-741 — S09: BioSTEAM's levels are L1 and a new L2(c): one registered specification met by a registered outer loop on the same end's native specification
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S09 specification |
+| Normative text | `docs/derivations/S09-spec.md` §2.2, §5.4 |
+| Evidence | Non-registered probes `docs/derivations/scripts/s09_design/floor_probe.log` (A1, D1T) |
+| Affected packages | S09 |
+
+**Decision.**
+- L1: the native `MultiStageEquilibrium` with native specifications and side draws of S03 §5.1 row 9's definitions.
+- L2(c): exactly one registered specification without a native option is met by a one-dimensional loop that adjusts
+  the same end's native specification (`Reflux` on stage 0 or `Boilup` on stage N−1). It runs under conditions C1–C6:
+  the tool's model, the same end, a registered loop, rule 2d's residual per record, an answer the loop cannot steer, and
+  every evaluation recorded.
+- L2(a) adds nothing for BioSTEAM. L2(b) is for equation-oriented tools only. L3 is not admissible (S03 §2.2's DWSIM
+  reason).
+
+**Rejected alternatives, and why.**
+- *Declare RC4, RC5, RC6 and RC7 `NOT_COMPARABLE(capability)` for BioSTEAM:* the specification equation is S03 L2(b)'s.
+  Only its solution method differs, and its accuracy is checked per record.
+- *A harness secant from the spike's starts (1.0, 1.5):* those starts bracket the twin's reflux ratio (R-747).
+- *A stage cascade (L3):* it would be the harness author's column.
+
+**Watch for.** An L2(c) record whose adjusted specification is not its end's, or a case realized with two loops.
+
+## R-742 — S09: BioSTEAM's SYN-001 definition is pure-component user methods with the tool's default datum, readback-checked per run
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S09 specification |
+| Normative text | `docs/derivations/S09-spec.md` §4 |
+| Evidence | `docs/derivations/scripts/s09_design/datum_probe.log`; spike `check_pure.log` |
+| Affected packages | S09 |
+
+**Decision.**
+- `Chemical.blank` with `Psat`, `Hvap`, `Cn` and `V` user methods, `IdealThermo` with an explicit `IdealMixture`.
+  SYN-001's constants are imported from the pinned `t06_fixtures.py`. This is T06's mapping principle for a third tool,
+  not user-written thermodynamics.
+- The datum is the tool's default, 298.15 K. It differs from SYN-001's by 185 J/mol for every component and phase, which
+  cancels in every balance.
+- The §4.3 readback is part of Q-X1 in every case's process. A failure is rule 2c.
+
+**Rejected alternatives, and why.**
+- *The spike's subclass overriding the read-only `Chemical.T_ref`:* it gives the same balances, and it overrides a
+  tool attribute.
+- *Treating the hooks as user-written thermodynamics:* the K form, the mixture enthalpy, the flash and every MESH
+  equation stay the tool's. IDAES and DWSIM take SYN-001 the same way.
+
+**Watch for.** A harness that enters any SYN-001 constant other than through `t06_fixtures.py`.
+
+## R-743 — S09: BioSTEAM's solve path is two passes with attribute-setter re-specification; the ladder is the tool's default chain, one algorithm per rung, all run
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S09 specification |
+| Normative text | `docs/derivations/S09-spec.md` §5 |
+| Evidence | `docs/derivations/scripts/s09_design/respec_probe.log`, `floor_probe.log`; `biosteam/units/stage.py` 2.54.0 |
+| Affected packages | S09 |
+
+**Decision.**
+- Every run builds, simulates, re-stores each registered specification through the stage's attribute setter, and
+  simulates again. The record is pass 2.
+- The rungs are inside out, phenomena, simultaneous correction and sequential modular, with the tool's default methods
+  and in the tool's order. Every rung runs, and the first passing one is selected.
+- The common settings are `early_termination=False`, tolerances 1e-10, `maxiter` 500, `max_attempts` 1 and
+  `use_cache=True`.
+- The L2(c) loop starts at 1 and 2, expands by factors of 2 for four steps, then calls flexsolve's `IQ_interpolation`.
+  It terminates at rule 2d's threshold / 10, and its final evaluation is fresh.
+
+**Rejected alternatives, and why.**
+- *`specify_variables` for the re-specification:* it discards the tool's cached point, so the initializer overwrites
+  the specification again (measured). Without `P=…` it also resets the pressure to 101325 Pa.
+- *The spike's setting alone (phenomena, fixed-point):* a single rung chosen from residuals by an author who later saw
+  a comparison. The full chain makes the selection mechanical.
+- *`early_termination=True`:* the tool swallows its own stop and returns silently.
+
+**Watch for.** A record whose pass 2 shows a re-specification other than the attribute setter, or a missing rung.
+
+## R-744 — S09: BioSTEAM convergence is the harness's: per-stage balance and equilibrium, the iteration cap and exceptions; specification read-back; path dependence across rungs
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S09 specification |
+| Normative text | `docs/derivations/S09-spec.md` §6 |
+| Evidence | Floors and catches: `docs/derivations/scripts/s09_design/floor_probe.log`, `respec_probe.log` |
+| Affected packages | S09 |
+
+**Decision.**
+- Rule 2 for BioSTEAM:
+  - B1: no exception;
+  - B2: no pass at `maxiter`;
+  - B3: stage component balance ≤ 3.1e-8 mol/s;
+  - B4: stage equilibrium `|y − (Psat/P) x|` ≤ 1e-8 (claim C6 bounds it at 0.0039 tolerance in temperature);
+  - B5: S03's closures.
+- Rule 2c adds an exact specification read-back, total-condenser vapour ≤ 3.1e-8 mol/s and the property readback.
+- Rule 2d keeps S03 §17.4's thresholds, the rerun at 1e-9, and path dependence among passing rungs ≤ 0.1 tolerance.
+
+**Rejected alternatives, and why.**
+- *The tool's convergence report:* `_run` swallows exceptions, and its stored residual is a constant 1e6.
+- *Balances alone:* simultaneous correction returned a state with passing balances and an equilibrium residual of
+  0.25 (probe D1).
+- *An equilibrium threshold of 1e-10:* the rerun's floor is 1.4e-10.
+
+**Watch for.** A threshold relaxed after a registered record fails it. That record is `NOT_COMPARABLE` and goes to the
+design lane.
+
+## R-745 — S09: PC-LB is BioSTEAM's positive control (Hvap = L + P_r v, PC-LI's tool model); PC-P runs with its tool-model distance not applicable
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S09 specification |
+| Normative text | `docs/derivations/S09-spec.md` §7; claims C3, C4 in `s09_reference.py` |
+| Evidence | `ref.controls.PC-LI` (243.292 tolerances) |
+| Affected packages | S09 |
+
+**Decision.**
+- PC-LB is RC1 with BioSTEAM's `Hvap_i` = 25010, 30010, 35010 J/mol. Its tool model equals PC-LI's, so it reuses PC-LI's
+  tool-model twin, and it must classify `DISAGREE`.
+- PC-P runs. Its tool model differs from S03's, so its distance is reported `not_applicable`.
+- S03 §17.3 applies with BioSTEAM's two controls.
+
+**Rejected alternatives, and why.**
+- *PC-P alone:* it can fail through convergence, as it did in both S03 tools.
+- *A new perturbation size:* it would be a free parameter. 10 J/mol is fixed by SYN-001.
+
+**Watch for.** PC-LB not `DISAGREE` while PC-P is: then Q-S09-4's tool model is added by amendment.
+
+## R-746 — S09: the X31 reference clause for three tools; S03's rows 1–4 kept, rows 5–7 count AGREEs; outcomes pre-registered
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S09 specification |
+| Normative text | `docs/derivations/S09-spec.md` §8; claims C9, C10 |
+| Evidence | Reduction to S03's committed rows and clause (claim C9) |
+| Affected packages | S09; the ledger rows X31 and D19; R01 |
+
+**Decision.**
+- IDAES's and DWSIM's pair classes are read from S03's pinned `comparison.json`.
+- Row 5 is two or more `AGREE`, row 6 exactly one, and row 7 none.
+- The best reachable clause is "met where available, 3 of 4"; "met with two references" is unreachable.
+- S03's verdict stands as its record. The ledger cites S09's verdict as the later evidence.
+
+**Rejected alternatives, and why.**
+- *Re-classifying IDAES and DWSIM:* S09 adds a tool.
+- *Relaxing row 4 for a third tool whose controls fail:* that is S03's rule, and the signal is needed.
+
+**Watch for.** A three-tool outcome that does not reduce to S03's on two tools (claim C9).
+
+## R-747 — S09 blindness: the spike's settings are not registered as such; a fresh agent qualifies from a harness written from the spec; three forbidden strings added
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S09 specification |
+| Normative text | `docs/derivations/S09-spec.md` §9 |
+| Evidence | `docs/derivations/scripts/s09_spike/` (design-time record, not evidence) |
+| Affected packages | S09 (WO-S09-2, A03, the verdict's disclosure) |
+
+**Decision.**
+- The spike compared informally with our results, ran RC4 at the twin's reflux ratio, and used starts that bracket it.
+  Its settings are not registered as such.
+- The ladder comes from the tool's documentation and source, and from non-registered probes.
+- WO-S09-2 is a fresh agent that does not open the spike, the brief or any results.
+- A03 forbids `s09_spike`, `compare_ours` and `1.2341901`, besides S03's seven strings.
+
+**Rejected alternatives, and why.**
+- *Register the spike's settings and let any agent qualify:* the exposure is real, and removing it costs one fresh agent.
+- *Discard the spike's tool facts:* they are about the tool, not about agreement, and each was re-established without
+  the S03 cases.
+
+**Watch for.** A WO-S09-2 brief that quotes a tool, ours or twin value, or a harness that imports from `s09_spike/`.
