@@ -315,3 +315,24 @@ def test_a45_single_phase_states_raw(qual: dict[str, Any]) -> None:
         beta = vf if vf is not None else 1.0 - q["liquid_molarfraction"]
         assert beta in (0.0, 1.0), (sid, beta)
         assert doc["comparison"]["states"][sid]["beta_dwsim"] == beta
+
+
+#: The tool script and the project modules it imports (S10 spec §8, blindness).
+HELPERS = ("s10_qualify_dwsim.py", "t06_fixtures.py")
+
+
+def test_blindness_inputs_hold_only_the_states_and_the_tool_reads_nothing_else() -> None:
+    """Blindness (final review S-3): every I-state the tool is given holds exactly (n, T, P), and
+    the tool script and the helpers it imports import nothing of this project and name neither
+    the expectation (`reference_values`) nor the comparison record (`comparison.json`)."""
+    inputs = json.loads((DWSIM / "inputs.json").read_text("utf-8"))
+    states = inputs["i_states"]["states"]
+    assert len(states) == 14  # I1-I14 (spec §15 A2-3)
+    for sid, state in states.items():
+        assert set(state) == {"n", "T", "P"}, sid
+    spikes = REPO_ROOT / "spikes" / "references"
+    for name in HELPERS:
+        src = (spikes / name).read_text("utf-8")
+        assert "import openflowsheet" not in src and "from openflowsheet" not in src, name
+        assert "reference_values" not in src, name
+        assert "comparison.json" not in src, name
