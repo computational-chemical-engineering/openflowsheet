@@ -1,0 +1,8275 @@
+{
+ "authority": "docs/derivations/S10-spec.md section 8.2 (I-states of section 15 A2-3)",
+ "comparison": {
+  "assertion": "S10.A45",
+  "expected": "reference_values_real.yaml closed_form.i_states (two-phase) and phase (I6, I7)",
+  "selected_tolerance": 1e-10,
+  "states": {
+   "I1": {
+    "all_within": false,
+    "argmax": "K_CH3OH",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 1.2868190338481733e-08,
+     "max_abs_component_balance": 5.070291020432616e-09,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 4.865957745788627e-07
+    },
+    "max_ratio": 6.195564850306284,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 3.0405956352730357e-07,
+      "dwsim": 0.22206924156416696,
+      "ours": 0.2220695456237305,
+      "quantity": "beta",
+      "ratio": 3.0405956352730357,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.0550990851605526e-08,
+      "dwsim": 0.049275761500199654,
+      "ours": 0.0492757109492088,
+      "quantity": "x_CH3OH",
+      "ratio": 0.5055099085160553,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.1283272832729452e-07,
+      "dwsim": 0.2776920566711477,
+      "ours": 0.2776919438384194,
+      "quantity": "y_CH3OH",
+      "ratio": 1.1283272832729452,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "x_C2H5OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.055099083772774e-08,
+      "dwsim": 0.9507242384998004,
+      "ours": 0.9507242890507912,
+      "quantity": "x_H2O",
+      "ratio": 0.5055099083772774,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.1283272838280567e-07,
+      "dwsim": 0.7223079433288522,
+      "ours": 0.7223080561615806,
+      "quantity": "y_H2O",
+      "ratio": 1.1283272838280567,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 6.195564850306284e-07,
+      "dwsim": 5.6354696146100665,
+      "ours": 5.635473106103976,
+      "quantity": "K_CH3OH",
+      "ratio": 6.195564850306284,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 1.0304034063261387e-07,
+      "dwsim": 0.7597449545081771,
+      "ours": 0.7597450327925641,
+      "quantity": "K_H2O",
+      "ratio": 1.0304034063261387,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.003366013988852501,
+      "dwsim": -278817.9256679558,
+      "ours": -278817.9223019418,
+      "quantity": "h_L",
+      "ratio": 0.06732027977705002,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.00565016470500268,
+      "dwsim": -227961.2689468828,
+      "ours": -227961.2632967181,
+      "quantity": "h_V",
+      "ratio": 0.11300329410005361,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 365.51,
+    "tolerance": 1e-10
+   },
+   "I10": {
+    "all_within": false,
+    "argmax": "K_C2H5OH",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 3.1253621763260864e-08,
+     "max_abs_component_balance": 2.3185778905175415e-08,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 2.070669445164124e-06
+    },
+    "max_ratio": 66.9326867236701,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 2.43210193584531e-06,
+      "dwsim": 0.5810438246945336,
+      "ours": 0.5810462567964695,
+      "quantity": "beta",
+      "ratio": 24.3210193584531,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "x_CH3OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "y_CH3OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.508762144192266e-06,
+      "dwsim": 0.21202554198266507,
+      "ours": 0.21202403322052088,
+      "quantity": "x_C2H5OH",
+      "ratio": 15.08762144192266,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.2636052365854198e-07,
+      "dwsim": 0.535537171988161,
+      "ours": 0.5355369456276373,
+      "quantity": "y_C2H5OH",
+      "ratio": 2.26360523658542,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.508762143997977e-06,
+      "dwsim": 0.7879744580173351,
+      "ours": 0.7879759667794791,
+      "quantity": "x_H2O",
+      "ratio": 15.08762143997977,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.2636052354751968e-07,
+      "dwsim": 0.46446282801183914,
+      "ours": 0.4644630543723627,
+      "quantity": "y_H2O",
+      "ratio": 2.2636052354751968,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 6.69326867236701e-06,
+      "dwsim": 2.5258144230186463,
+      "ours": 2.525831329086353,
+      "quantity": "K_C2H5OH",
+      "ratio": 66.9326867236701,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 1.4273743124904705e-06,
+      "dwsim": 0.5894389383895755,
+      "ours": 0.589438097040777,
+      "quantity": "K_H2O",
+      "ratio": 14.273743124904705,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.011908833286724985,
+      "dwsim": -279541.0942031335,
+      "ours": -279541.1061119668,
+      "quantity": "h_L",
+      "ratio": 0.2381766657344997,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.003129058633930981,
+      "dwsim": -235076.26626103386,
+      "ours": -235076.26313197523,
+      "quantity": "h_V",
+      "ratio": 0.06258117267861962,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 356.02,
+    "tolerance": 1e-10
+   },
+   "I11": {
+    "all_within": false,
+    "argmax": "K_C2H5OH",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 1.3180037479508432e-08,
+     "max_abs_component_balance": 1.1329572089167155e-08,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 9.080668456587011e-07
+    },
+    "max_ratio": 21.85917945887063,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 1.2699336425781027e-06,
+      "dwsim": 0.5661137805087274,
+      "ours": 0.56611505044237,
+      "quantity": "beta",
+      "ratio": 12.699336425781027,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.031053461526433e-07,
+      "dwsim": 0.13112694652927137,
+      "ours": 0.13112674342392522,
+      "quantity": "x_CH3OH",
+      "ratio": 2.031053461526433,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.0886875306814758e-07,
+      "dwsim": 0.25278632155119085,
+      "ours": 0.2527862126824378,
+      "quantity": "y_CH3OH",
+      "ratio": 1.0886875306814758,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.563420794301276e-07,
+      "dwsim": 0.20434746292650072,
+      "ours": 0.2043470065844213,
+      "quantity": "x_C2H5OH",
+      "ratio": 4.563420794301276,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.763875101534751e-08,
+      "dwsim": 0.37331090063104055,
+      "ours": 0.37331088299228954,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.1763875101534751,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 6.594474256660376e-07,
+      "dwsim": 0.6645255905442279,
+      "ours": 0.6645262499916536,
+      "quantity": "x_H2O",
+      "ratio": 6.5944742566603765,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.2650750413900624e-07,
+      "dwsim": 0.37390277781776854,
+      "ours": 0.3739029043252727,
+      "quantity": "y_H2O",
+      "ratio": 1.2650750413900624,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 1.1182469613908538e-06,
+      "dwsim": 1.9277984292478094,
+      "ours": 1.9278005850049558,
+      "quantity": "K_CH3OH",
+      "ratio": 11.182469613908538,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 2.185917945887063e-06,
+      "dwsim": 1.8268438241648846,
+      "ours": 1.8268478175043132,
+      "quantity": "K_C2H5OH",
+      "ratio": 21.85917945887063,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 6.540146769511649e-07,
+      "dwsim": 0.5626612174732843,
+      "ours": 0.5626608494848306,
+      "quantity": "K_H2O",
+      "ratio": 6.54014676951165,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.009244684653822333,
+      "dwsim": -273714.10971988074,
+      "ours": -273714.1189645654,
+      "quantity": "h_L",
+      "ratio": 0.18489369307644665,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.002316858299309388,
+      "dwsim": -226155.07767029494,
+      "ours": -226155.07535343664,
+      "quantity": "h_V",
+      "ratio": 0.046337165986187756,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 353.34,
+    "tolerance": 1e-10
+   },
+   "I12": {
+    "all_within": false,
+    "argmax": "K_C2H5OH",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 6.469343735057169e-09,
+     "max_abs_component_balance": 5.730565305039309e-09,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 4.3814458179595826e-07
+    },
+    "max_ratio": 8.306987960818311,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 6.188525029093839e-07,
+      "dwsim": 0.5666478738922878,
+      "ours": 0.5666484927447907,
+      "quantity": "beta",
+      "ratio": 6.188525029093839,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.67016422580879e-07,
+      "dwsim": 0.2843443728968413,
+      "ours": 0.2843442058804187,
+      "quantity": "x_CH3OH",
+      "ratio": 1.67016422580879,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 8.742442136888684e-08,
+      "dwsim": 0.4884492994954606,
+      "ours": 0.48844921207103925,
+      "quantity": "y_CH3OH",
+      "ratio": 0.8742442136888684,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.185638773548714e-07,
+      "dwsim": 0.16485799217785774,
+      "ours": 0.16485787361398038,
+      "quantity": "x_C2H5OH",
+      "ratio": 1.185638773548714,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.5299089378982842e-08,
+      "dwsim": 0.22687535446900525,
+      "ours": 0.22687537976809463,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.2529908937898284,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.85580299963506e-07,
+      "dwsim": 0.550797634925301,
+      "ours": 0.550797920505601,
+      "quantity": "x_H2O",
+      "ratio": 2.85580299963506,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 6.212533215643745e-08,
+      "dwsim": 0.28467534603553396,
+      "ours": 0.2846754081608661,
+      "quantity": "y_H2O",
+      "ratio": 0.6212533215643745,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 4.083902149353531e-07,
+      "dwsim": 1.7178089178246816,
+      "ours": 1.7178096193613213,
+      "quantity": "K_CH3OH",
+      "ratio": 4.083902149353531,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 8.30698796081831e-07,
+      "dwsim": 1.3761865680387508,
+      "ours": 1.3761877112362257,
+      "quantity": "K_C2H5OH",
+      "ratio": 8.306987960818311,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 3.0025269505859376e-07,
+      "dwsim": 0.51684199056908,
+      "ours": 0.516841835385926,
+      "quantity": "K_H2O",
+      "ratio": 3.0025269505859375,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0033862076234072447,
+      "dwsim": -267227.60540701903,
+      "ours": -267227.60879322665,
+      "quantity": "h_L",
+      "ratio": 0.0677241524681449,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.004446701554115862,
+      "dwsim": -217818.73351788524,
+      "ours": -217818.72907118368,
+      "quantity": "h_V",
+      "ratio": 0.08893403108231723,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 350.09,
+    "tolerance": 1e-10
+   },
+   "I13": {
+    "all_within": false,
+    "argmax": "beta",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 2.4224775179005056e-10,
+     "max_abs_component_balance": 4.5507147135262305e-10,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 1.0886494058683365e-07
+    },
+    "max_ratio": 6.783006915034306,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 6.783006915034306e-07,
+      "dwsim": 0.5322213144534896,
+      "ours": 0.5322219927541811,
+      "quantity": "beta",
+      "ratio": 6.783006915034306,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.9497320605244006e-08,
+      "dwsim": 0.08014722247615014,
+      "ours": 0.08014720297882953,
+      "quantity": "x_CH3OH",
+      "ratio": 0.19497320605244006,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.007899636309208e-08,
+      "dwsim": 0.11744895544331917,
+      "ours": 0.1174489253643228,
+      "quantity": "y_CH3OH",
+      "ratio": 0.3007899636309208,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 9.397260514187877e-08,
+      "dwsim": 0.5675308476523551,
+      "ours": 0.5675307536797499,
+      "quantity": "x_C2H5OH",
+      "ratio": 0.9397260514187877,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.37317701443385e-09,
+      "dwsim": 0.6285377092407235,
+      "ours": 0.6285377146139005,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.0537317701443385,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.1346992578875614e-07,
+      "dwsim": 0.3523219298714948,
+      "ours": 0.3523220433414206,
+      "quantity": "x_H2O",
+      "ratio": 1.1346992578875614,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.4705819390291595e-08,
+      "dwsim": 0.2540133353159573,
+      "ours": 0.2540133600217767,
+      "quantity": "y_H2O",
+      "ratio": 0.24705819390291595,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.2833893665955061e-08,
+      "dwsim": 1.465415167422291,
+      "ours": 1.4654151486153089,
+      "quantity": "K_CH3OH",
+      "ratio": 0.12833893665955062,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 1.7413018644437916e-07,
+      "dwsim": 1.1074952345598994,
+      "ours": 1.1074954274082847,
+      "quantity": "K_C2H5OH",
+      "ratio": 1.7413018644437916,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 2.248012723168626e-07,
+      "dwsim": 0.7209694139919296,
+      "ours": 0.7209692519171245,
+      "quantity": "K_H2O",
+      "ratio": 2.248012723168626,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0032219498534686863,
+      "dwsim": -272537.4730989248,
+      "ours": -272537.46987697494,
+      "quantity": "h_L",
+      "ratio": 0.06443899706937373,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.004489824495976791,
+      "dwsim": -229653.33429913886,
+      "ours": -229653.32980931437,
+      "quantity": "h_V",
+      "ratio": 0.08979648991953582,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 351.15,
+    "tolerance": 1e-10
+   },
+   "I14": {
+    "all_within": false,
+    "argmax": "beta",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 5.750412200272868e-10,
+     "max_abs_component_balance": 1.0623778647686532e-09,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 3.267512823788784e-08
+    },
+    "max_ratio": 4.248382773908155,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 4.248382773908155e-07,
+      "dwsim": 0.49268323206178716,
+      "ours": 0.49268280722350977,
+      "quantity": "beta",
+      "ratio": 4.248382773908155,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.593167534678756e-08,
+      "dwsim": 0.4333304066662773,
+      "ours": 0.43333046259795266,
+      "quantity": "x_CH3OH",
+      "ratio": 0.5593167534678756,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.6935979486638644e-08,
+      "dwsim": 0.5686497966059363,
+      "ours": 0.5686498535419158,
+      "quantity": "y_CH3OH",
+      "ratio": 0.5693597948663864,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.5931675180254103e-08,
+      "dwsim": 0.5666695933337226,
+      "ours": 0.5666695374020474,
+      "quantity": "x_C2H5OH",
+      "ratio": 0.559316751802541,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 5.6935979486638644e-08,
+      "dwsim": 0.43135020339406366,
+      "ours": 0.43135014645808417,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.5693597948663864,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "x_H2O",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "y_H2O",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 2.8949108799118098e-08,
+      "dwsim": 1.3122776243206793,
+      "ours": 1.3122775863314127,
+      "quantity": "K_CH3OH",
+      "ratio": 0.289491087991181,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 3.3292347819522316e-08,
+      "dwsim": 0.7612023098970713,
+      "ours": 0.76120228455486,
+      "quantity": "K_C2H5OH",
+      "ratio": 0.33292347819522317,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.008354500227142125,
+      "dwsim": -256676.02121611885,
+      "ours": -256676.01286161863,
+      "quantity": "h_L",
+      "ratio": 0.1670900045428425,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.008851424092426896,
+      "dwsim": -213012.99808010145,
+      "ours": -213012.98922867735,
+      "quantity": "h_V",
+      "ratio": 0.17702848184853792,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 344.84,
+    "tolerance": 1e-10
+   },
+   "I2": {
+    "all_within": false,
+    "argmax": "K_CH3OH",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 3.581538709645972e-08,
+     "max_abs_component_balance": 2.0609422379546082e-08,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 8.656934496287193e-07
+    },
+    "max_ratio": 13.182381031166859,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 6.313848252004206e-07,
+      "dwsim": 0.4103392296529288,
+      "ours": 0.410339861037754,
+      "quantity": "beta",
+      "ratio": 6.313848252004206,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.446518951315646e-07,
+      "dwsim": 0.15025021554927068,
+      "ours": 0.15024997089737555,
+      "quantity": "x_CH3OH",
+      "ratio": 2.446518951315646,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.5973967304461212e-07,
+      "dwsim": 0.5151915933648104,
+      "ours": 0.5151914336251373,
+      "quantity": "y_CH3OH",
+      "ratio": 1.5973967304461212,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "x_C2H5OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 2.4465189507605345e-07,
+      "dwsim": 0.8497497844507294,
+      "ours": 0.8497500291026244,
+      "quantity": "x_H2O",
+      "ratio": 2.4465189507605345,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.5973967298910097e-07,
+      "dwsim": 0.4848084066351897,
+      "ours": 0.4848085663748627,
+      "quantity": "y_H2O",
+      "ratio": 1.5973967298910097,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 1.3182381031166858e-06,
+      "dwsim": 3.42889087700421,
+      "ours": 3.428895397104774,
+      "quantity": "K_CH3OH",
+      "ratio": 13.182381031166859,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 4.157978641001662e-08,
+      "dwsim": 0.5705307791852698,
+      "ours": 0.5705308029078188,
+      "quantity": "K_H2O",
+      "ratio": 0.4157978641001662,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.005977719265501946,
+      "dwsim": -274656.4787484891,
+      "ours": -274656.4847262084,
+      "quantity": "h_L",
+      "ratio": 0.11955438531003892,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.004037406819406897,
+      "dwsim": -218385.52184976527,
+      "ours": -218385.51781235845,
+      "quantity": "h_V",
+      "ratio": 0.08074813638813794,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 357.42,
+    "tolerance": 1e-10
+   },
+   "I3": {
+    "all_within": false,
+    "argmax": "K_CH3OH",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 2.5528844456240443e-08,
+     "max_abs_component_balance": 1.741427364914144e-08,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 6.419638787385292e-07
+    },
+    "max_ratio": 10.59928085927507,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 6.860747345793783e-07,
+      "dwsim": 0.5393412957231912,
+      "ours": 0.5393419817979258,
+      "quantity": "beta",
+      "ratio": 6.860747345793783,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.727017148791312e-07,
+      "dwsim": 0.30233512005795254,
+      "ours": 0.30233474735623767,
+      "quantity": "x_CH3OH",
+      "ratio": 3.7270171487913117,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.1558408252732022e-07,
+      "dwsim": 0.6688282183895558,
+      "ours": 0.6688281028054732,
+      "quantity": "y_CH3OH",
+      "ratio": 1.1558408252732022,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "x_C2H5OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.727017149346423e-07,
+      "dwsim": 0.6976648799420474,
+      "ours": 0.6976652526437623,
+      "quantity": "x_H2O",
+      "ratio": 3.7270171493464233,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.1558408252732022e-07,
+      "dwsim": 0.33117178161044425,
+      "ours": 0.3311718971945268,
+      "quantity": "y_H2O",
+      "ratio": 1.1558408252732022,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 1.059928085927507e-06,
+      "dwsim": 2.2122081558416125,
+      "ours": 2.212210500625654,
+      "quantity": "K_CH3OH",
+      "ratio": 10.59928085927507,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 1.8519753784968027e-07,
+      "dwsim": 0.4746860435886547,
+      "ours": 0.47468595567798444,
+      "quantity": "K_H2O",
+      "ratio": 1.8519753784968027,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.011765332368668169,
+      "dwsim": -267989.5097005507,
+      "ours": -267989.52146588307,
+      "quantity": "h_L",
+      "ratio": 0.23530664737336338,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.004723534279037267,
+      "dwsim": -212258.3426945415,
+      "ours": -212258.33797100722,
+      "quantity": "h_V",
+      "ratio": 0.09447068558074534,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 351.27,
+    "tolerance": 1e-10
+   },
+   "I4": {
+    "all_within": false,
+    "argmax": "beta",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 5.6905440128925194e-09,
+     "max_abs_component_balance": 4.462662821863362e-09,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 1.92038176138094e-07
+    },
+    "max_ratio": 3.6882062759424628,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 3.688206275942463e-07,
+      "dwsim": 0.6223442342517805,
+      "ours": 0.6223446030724081,
+      "quantity": "beta",
+      "ratio": 3.6882062759424628,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.801780420418453e-07,
+      "dwsim": 0.5333483202158056,
+      "ours": 0.5333481400377635,
+      "quantity": "x_CH3OH",
+      "ratio": 1.8017804204184529,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.2187421667172487e-08,
+      "dwsim": 0.801128860549549,
+      "ours": 0.8011288183621273,
+      "quantity": "y_CH3OH",
+      "ratio": 0.42187421667172487,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "x_C2H5OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.8017804198633414e-07,
+      "dwsim": 0.4666516797841945,
+      "ours": 0.46665185996223646,
+      "quantity": "x_H2O",
+      "ratio": 1.8017804198633414,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.2187421611661335e-08,
+      "dwsim": 0.198871139450451,
+      "ours": 0.19887118163787262,
+      "quantity": "y_H2O",
+      "ratio": 0.42187421611661335,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 2.8516438087131055e-07,
+      "dwsim": 1.5020744046318417,
+      "ours": 1.5020748329700815,
+      "quantity": "K_CH3OH",
+      "ratio": 2.8516438087131055,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 1.7397370793132465e-07,
+      "dwsim": 0.4261661278974074,
+      "ours": 0.4261660537557188,
+      "quantity": "K_H2O",
+      "ratio": 1.7397370793132465,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0024881892022676766,
+      "dwsim": -257615.200553933,
+      "ours": -257615.20304212222,
+      "quantity": "h_L",
+      "ratio": 0.04976378404535353,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.006261163071030751,
+      "dwsim": -207015.405844912,
+      "ours": -207015.39958374892,
+      "quantity": "h_V",
+      "ratio": 0.12522326142061502,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 345.66,
+    "tolerance": 1e-10
+   },
+   "I5": {
+    "all_within": false,
+    "argmax": "beta",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 2.6675145931171896e-10,
+     "max_abs_component_balance": 2.3976737380352557e-10,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 6.685101717437737e-08
+    },
+    "max_ratio": 1.5157927668596471,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 1.5157927668596471e-07,
+      "dwsim": 0.6839459875273977,
+      "ours": 0.683945835948121,
+      "quantity": "beta",
+      "ratio": 1.5157927668596471,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.201677423181337e-08,
+      "dwsim": 0.8315173106143351,
+      "ours": 0.8315173426311093,
+      "quantity": "x_CH3OH",
+      "ratio": 0.3201677423181337,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 7.045365735258713e-09,
+      "dwsim": 0.9316461086105204,
+      "ours": 0.9316461156558862,
+      "quantity": "y_CH3OH",
+      "ratio": 0.07045365735258713,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "x_C2H5OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.2016774398346826e-08,
+      "dwsim": 0.16848268938566507,
+      "ours": 0.16848265736889068,
+      "quantity": "x_H2O",
+      "ratio": 0.32016774398346826,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 7.0453657630142885e-09,
+      "dwsim": 0.06835389138947955,
+      "ours": 0.06835388434411378,
+      "quantity": "y_H2O",
+      "ratio": 0.07045365763014289,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 3.0941761228040275e-08,
+      "dwsim": 1.12041697354708,
+      "ours": 1.1204169388794065,
+      "quantity": "K_CH3OH",
+      "ratio": 0.30941761228040277,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 8.695815748340834e-08,
+      "dwsim": 0.4057027558066465,
+      "ours": 0.4057027910858137,
+      "quantity": "K_H2O",
+      "ratio": 0.8695815748340834,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.007377349451417103,
+      "dwsim": -244104.52819213632,
+      "ours": -244104.52081478687,
+      "quantity": "h_L",
+      "ratio": 0.14754698902834207,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.006739097705576569,
+      "dwsim": -201853.24512143002,
+      "ours": -201853.23838233232,
+      "quantity": "h_V",
+      "ratio": 0.13478195411153138,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 340.29,
+    "tolerance": 1e-10
+   },
+   "I6": {
+    "all_within": true,
+    "beta_dwsim": 0.0,
+    "phase_dwsim": "LIQUID",
+    "phase_ours": "LIQUID",
+    "phase_rule": "LIQUID if |beta| <= 1e-7, VAPOR if |beta - 1| <= 1e-7, else TWO_PHASE (B-36's rule)",
+    "status": "compared",
+    "temperature": 343.62,
+    "tolerance": 1e-10
+   },
+   "I7": {
+    "all_within": true,
+    "beta_dwsim": 1.0,
+    "phase_dwsim": "VAPOR",
+    "phase_ours": "VAPOR",
+    "phase_rule": "LIQUID if |beta| <= 1e-7, VAPOR if |beta - 1| <= 1e-7, else TWO_PHASE (B-36's rule)",
+    "status": "compared",
+    "temperature": 366.56,
+    "tolerance": 1e-10
+   },
+   "I8": {
+    "all_within": false,
+    "argmax": "K_C2H5OH",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 4.2793180252695236e-08,
+     "max_abs_component_balance": 2.0945949788149667e-08,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 1.924130505480525e-06
+    },
+    "max_ratio": 38.27222493236786,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 8.610630329308755e-07,
+      "dwsim": 0.39726809899491006,
+      "ours": 0.397268960057943,
+      "quantity": "beta",
+      "ratio": 8.610630329308755,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "x_CH3OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "y_CH3OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.030609040527432e-07,
+      "dwsim": 0.07013915835260716,
+      "ours": 0.0701388552917031,
+      "quantity": "x_C2H5OH",
+      "ratio": 3.030609040527432,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.9598328315773017e-07,
+      "dwsim": 0.3970237509740421,
+      "ours": 0.3970235549907589,
+      "quantity": "y_C2H5OH",
+      "ratio": 1.9598328315773017,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 3.0306090426091004e-07,
+      "dwsim": 0.9298608416473927,
+      "ours": 0.929861144708297,
+      "quantity": "x_H2O",
+      "ratio": 3.0306090426091004,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 1.9598328304670787e-07,
+      "dwsim": 0.602976249025958,
+      "ours": 0.6029764450092411,
+      "quantity": "y_H2O",
+      "ratio": 1.9598328304670787,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 3.827222493236786e-06,
+      "dwsim": 5.660514900650846,
+      "ours": 5.660536564783711,
+      "quantity": "K_C2H5OH",
+      "ratio": 38.27222493236786,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 8.941694348081521e-10,
+      "dwsim": 0.6484585886611722,
+      "ours": 0.6484585880813404,
+      "quantity": "K_H2O",
+      "ratio": 0.008941694348081522,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.000939910183660686,
+      "dwsim": -280677.2008739407,
+      "ours": -280677.19993403053,
+      "quantity": "h_L",
+      "ratio": 0.01879820367321372,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.003866076236590743,
+      "dwsim": -236070.93439361942,
+      "ours": -236070.93052754318,
+      "quantity": "h_V",
+      "ratio": 0.07732152473181486,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 360.93,
+    "tolerance": 1e-10
+   },
+   "I9": {
+    "all_within": false,
+    "argmax": "beta",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 1.0658325215564972e-09,
+     "max_abs_component_balance": 1.687573332346316e-09,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 2.8074475195994634e-07
+    },
+    "max_ratio": 13.653320866113816,
+    "rows": [
+     {
+      "basis": "absolute",
+      "delta": 1.3653320866113816e-06,
+      "dwsim": 0.602120561113827,
+      "ours": 0.6021219264459136,
+      "quantity": "beta",
+      "ratio": 13.653320866113816,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "x_CH3OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0,
+      "dwsim": 0.0,
+      "ours": 0.0,
+      "quantity": "y_CH3OH",
+      "ratio": 0.0,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.1183766508190445e-07,
+      "dwsim": 0.5087314694844454,
+      "ours": 0.5087310576467803,
+      "quantity": "x_C2H5OH",
+      "ratio": 4.1183766508190445,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 6.876719105264328e-08,
+      "dwsim": 0.6603099650919514,
+      "ours": 0.6603098963247603,
+      "quantity": "y_C2H5OH",
+      "ratio": 0.6876719105264328,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 4.118376651374156e-07,
+      "dwsim": 0.4912685305155546,
+      "ours": 0.4912689423532197,
+      "quantity": "x_H2O",
+      "ratio": 4.118376651374156,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 6.876719116366559e-08,
+      "dwsim": 0.3396900349080485,
+      "ours": 0.33969010367523966,
+      "quantity": "y_H2O",
+      "ratio": 0.6876719116366559,
+      "tolerance": 1e-07,
+      "within": true
+     },
+     {
+      "basis": "relative",
+      "delta": 7.05394680611624e-07,
+      "dwsim": 1.2979538414659457,
+      "ours": 1.297954757036327,
+      "quantity": "K_C2H5OH",
+      "ratio": 7.05394680611624,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "relative",
+      "delta": 6.358736388505745e-07,
+      "dwsim": 0.6914549046151313,
+      "ours": 0.6914544649374645,
+      "quantity": "K_H2O",
+      "ratio": 6.358736388505745,
+      "tolerance": 1e-07,
+      "within": false
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0001351092359982431,
+      "dwsim": -276722.0294814611,
+      "ours": -276722.02934635186,
+      "quantity": "h_L",
+      "ratio": 0.002702184719964862,
+      "tolerance": 0.05,
+      "within": true
+     },
+     {
+      "basis": "absolute",
+      "delta": 0.0043158123444300145,
+      "dwsim": -234149.46169489724,
+      "ours": -234149.4573790849,
+      "quantity": "h_V",
+      "ratio": 0.08631624688860029,
+      "tolerance": 0.05,
+      "within": true
+     }
+    ],
+    "status": "compared",
+    "temperature": 352.86,
+    "tolerance": 1e-10
+   }
+  },
+  "tolerances": {
+   "I6_I7": "the phase identity, exact",
+   "K_relative": 1e-07,
+   "beta_x_y_absolute": 1e-07,
+   "h_absolute_J_per_mol": 0.05
+  },
+  "verdict": "the verdict agent's, per state; nothing here classifies"
+ },
+ "environment": {
+  "fingerprint_matches": true,
+  "versions": {
+   "dotnet_runtime": "8.0.31",
+   "dwsim": "DWSIM version 9.0.5.0 (10/2/2025 11:49:46\u202fPM)",
+   "python": "3.13.5",
+   "pythonnet": "3.1.0"
+  }
+ },
+ "ladder": {
+  "attempts": [
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 10,
+    "solver_errors": [],
+    "state": "I1",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 10,
+    "solver_errors": [],
+    "state": "I1",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 34,
+    "solver_errors": [],
+    "state": "I10",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 34,
+    "solver_errors": [],
+    "state": "I10",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 25,
+    "solver_errors": [],
+    "state": "I11",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 25,
+    "solver_errors": [],
+    "state": "I11",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 19,
+    "solver_errors": [],
+    "state": "I12",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 19,
+    "solver_errors": [],
+    "state": "I12",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 16,
+    "solver_errors": [],
+    "state": "I13",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 16,
+    "solver_errors": [],
+    "state": "I13",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 4,
+    "solver_errors": [],
+    "state": "I14",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 4,
+    "solver_errors": [],
+    "state": "I14",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 15,
+    "solver_errors": [],
+    "state": "I2",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 15,
+    "solver_errors": [],
+    "state": "I2",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 17,
+    "solver_errors": [],
+    "state": "I3",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 17,
+    "solver_errors": [],
+    "state": "I3",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 15,
+    "solver_errors": [],
+    "state": "I4",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 15,
+    "solver_errors": [],
+    "state": "I4",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 10,
+    "solver_errors": [],
+    "state": "I5",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 10,
+    "solver_errors": [],
+    "state": "I5",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 4,
+    "solver_errors": [],
+    "state": "I6",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 4,
+    "solver_errors": [],
+    "state": "I6",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 0,
+    "solver_errors": [],
+    "state": "I7",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 0,
+    "solver_errors": [],
+    "state": "I7",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 20,
+    "solver_errors": [],
+    "state": "I8",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 20,
+    "solver_errors": [],
+    "state": "I8",
+    "tolerance": 1e-08
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 26,
+    "solver_errors": [],
+    "state": "I9",
+    "tolerance": 1e-10
+   },
+   {
+    "converged": true,
+    "exception": null,
+    "iterations": 26,
+    "solver_errors": [],
+    "state": "I9",
+    "tolerance": 1e-08
+   }
+  ],
+  "converged_rungs_per_state": {
+   "I1": [
+    1e-10,
+    1e-08
+   ],
+   "I10": [
+    1e-10,
+    1e-08
+   ],
+   "I11": [
+    1e-10,
+    1e-08
+   ],
+   "I12": [
+    1e-10,
+    1e-08
+   ],
+   "I13": [
+    1e-10,
+    1e-08
+   ],
+   "I14": [
+    1e-10,
+    1e-08
+   ],
+   "I2": [
+    1e-10,
+    1e-08
+   ],
+   "I3": [
+    1e-10,
+    1e-08
+   ],
+   "I4": [
+    1e-10,
+    1e-08
+   ],
+   "I5": [
+    1e-10,
+    1e-08
+   ],
+   "I6": [
+    1e-10,
+    1e-08
+   ],
+   "I7": [
+    1e-10,
+    1e-08
+   ],
+   "I8": [
+    1e-10,
+    1e-08
+   ],
+   "I9": [
+    1e-10,
+    1e-08
+   ]
+  },
+  "not_comparable": [],
+  "selected_tolerance": 1e-10
+ },
+ "provenance": {
+  "inputs.json": "28676a25b544724ed38ae93e24c3cf5915a41776bde75866effd423a4a68517a",
+  "qualification.json": "e4d0907340c4ac0297131a5ba1a5817102cca70442328347ce91e996bfe8e28f",
+  "records.yaml": "74dc4e54101f6197cc4f9c2dc66e1856b99a7f047b5904a31b6a910b33f5a8f1",
+  "reference_values_real.yaml": "fa7c43f753baf0fae7695146f664a1b022de522a76dcb15246da81c6c8e00723",
+  "s10_reference.py": "e9f97327408fc9b326c9bc1ba77c9c4756740e6c26148c9630f33279247f0049"
+ },
+ "readbacks": {
+  "gamma_gate": {
+   "all_within": true,
+   "argmax": "I8 CH3OH [0.0, 0.2, 0.8]",
+   "expected": "exp(ln gamma) of s10_reference.Model on records.yaml (50 digits)",
+   "max_relative": 4.934970293149433e-16,
+   "rows": [
+    {
+     "component": "CH3OH",
+     "dwsim": 1.8274808066468728,
+     "generator": 1.827480806646873,
+     "relative": 1.449053428248958e-16,
+     "state": "I1",
+     "x": [
+      0.1,
+      0.0,
+      0.9
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 3.6782398316793126,
+     "generator": 3.678239831679312,
+     "relative": 1.1426744146357763e-16,
+     "state": "I1",
+     "x": [
+      0.1,
+      0.0,
+      0.9
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.0133643646671484,
+     "generator": 1.0133643646671484,
+     "relative": 2.8872753837998284e-20,
+     "state": "I1",
+     "x": [
+      0.1,
+      0.0,
+      0.9
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I1",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I1",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I1",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I1",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I1",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I1",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.8556902903917147,
+     "generator": 0.8556902903917144,
+     "relative": 3.952607850750862e-16,
+     "state": "I10",
+     "x": [
+      0.0,
+      0.4,
+      0.6
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.4138558996157324,
+     "generator": 1.4138558996157329,
+     "relative": 2.6594063856461534e-16,
+     "state": "I10",
+     "x": [
+      0.0,
+      0.4,
+      0.6
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.335816774199211,
+     "generator": 1.335816774199211,
+     "relative": 1.8378146934537104e-18,
+     "state": "I10",
+     "x": [
+      0.0,
+      0.4,
+      0.6
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I10",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I10",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I10",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I10",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I10",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I10",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I11",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I11",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I11",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.0155557764128478,
+     "generator": 1.0155557764128478,
+     "relative": 7.884653711997085e-17,
+     "state": "I12",
+     "x": [
+      0.4,
+      0.2,
+      0.4
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.2364575278840901,
+     "generator": 1.2364575278840901,
+     "relative": 7.97361136323519e-17,
+     "state": "I12",
+     "x": [
+      0.4,
+      0.2,
+      0.4
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3864130938210275,
+     "generator": 1.3864130938210273,
+     "relative": 1.1071348075436251e-16,
+     "state": "I12",
+     "x": [
+      0.4,
+      0.2,
+      0.4
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I12",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I12",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I12",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I12",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I12",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I12",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.8923924842992225,
+     "generator": 0.8923924842992226,
+     "relative": 1.223180777165362e-16,
+     "state": "I13",
+     "x": [
+      0.1,
+      0.6,
+      0.3
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.093741289565077,
+     "generator": 1.0937412895650773,
+     "relative": 2.319356156378466e-16,
+     "state": "I13",
+     "x": [
+      0.1,
+      0.6,
+      0.3
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.7545375215403192,
+     "generator": 1.754537521540319,
+     "relative": 6.861358254353371e-17,
+     "state": "I13",
+     "x": [
+      0.1,
+      0.6,
+      0.3
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I13",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I13",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I13",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I13",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I13",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I13",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9957658076336791,
+     "generator": 0.9957658076336792,
+     "relative": 1.2770767122780654e-16,
+     "state": "I14",
+     "x": [
+      0.5,
+      0.5,
+      0.0
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 0.9978892720597311,
+     "generator": 0.997889272059731,
+     "relative": 1.4820422673398963e-16,
+     "state": "I14",
+     "x": [
+      0.5,
+      0.5,
+      0.0
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 2.0299757842142205,
+     "generator": 2.0299757842142205,
+     "relative": 5.6974601100034525e-18,
+     "state": "I14",
+     "x": [
+      0.5,
+      0.5,
+      0.0
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I14",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I14",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I14",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I14",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I14",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I14",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.327383460596781,
+     "generator": 1.3273834605967814,
+     "relative": 3.0119552833124735e-16,
+     "state": "I2",
+     "x": [
+      0.3,
+      0.0,
+      0.7
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.9386531913809018,
+     "generator": 1.938653191380902,
+     "relative": 8.830947374778665e-17,
+     "state": "I2",
+     "x": [
+      0.3,
+      0.0,
+      0.7
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.093954147869922,
+     "generator": 1.093954147869922,
+     "relative": 7.195085037471574e-17,
+     "state": "I2",
+     "x": [
+      0.3,
+      0.0,
+      0.7
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I2",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I2",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I2",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.994302664617942,
+     "generator": 0.994302664617942,
+     "relative": 2.394606218791236e-17,
+     "state": "I2",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I2",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I2",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.124650126375782,
+     "generator": 1.124650126375782,
+     "relative": 4.1722381310695253e-17,
+     "state": "I3",
+     "x": [
+      0.5,
+      0.0,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3959206012954868,
+     "generator": 1.3959206012954866,
+     "relative": 1.4865169780797038e-16,
+     "state": "I3",
+     "x": [
+      0.5,
+      0.0,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.2187184677874359,
+     "generator": 1.2187184677874359,
+     "relative": 3.509190430358481e-17,
+     "state": "I3",
+     "x": [
+      0.5,
+      0.0,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I3",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I3",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I3",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I3",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I3",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I3",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.0360783670986928,
+     "generator": 1.0360783670986928,
+     "relative": 9.905323445280021e-17,
+     "state": "I4",
+     "x": [
+      0.7,
+      0.0,
+      0.30000000000000004
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.1523315162909444,
+     "generator": 1.1523315162909442,
+     "relative": 2.6584604911333656e-16,
+     "state": "I4",
+     "x": [
+      0.7,
+      0.0,
+      0.30000000000000004
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3751141204253614,
+     "generator": 1.3751141204253614,
+     "relative": 1.3758230287724935e-17,
+     "state": "I4",
+     "x": [
+      0.7,
+      0.0,
+      0.30000000000000004
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I4",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I4",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I4",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I4",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I4",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I4",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.0033786468137174,
+     "generator": 1.0033786468137174,
+     "relative": 4.7791782189287425e-17,
+     "state": "I5",
+     "x": [
+      0.9,
+      0.0,
+      0.09999999999999998
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0249634904300273,
+     "generator": 1.0249634904300275,
+     "relative": 1.146799109916672e-16,
+     "state": "I5",
+     "x": [
+      0.9,
+      0.0,
+      0.09999999999999998
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.558511878532063,
+     "generator": 1.558511878532063,
+     "relative": 1.0254880051319026e-18,
+     "state": "I5",
+     "x": [
+      0.9,
+      0.0,
+      0.09999999999999998
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I5",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I5",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I5",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I5",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I5",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I5",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.2053364660483437,
+     "generator": 1.2053364660483434,
+     "relative": 1.9993408010412102e-16,
+     "state": "I6",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.6069139293748662,
+     "generator": 1.606913929374866,
+     "relative": 7.737325613289624e-17,
+     "state": "I6",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.1518934047133325,
+     "generator": 1.1518934047133325,
+     "relative": 1.9634643992794858e-17,
+     "state": "I6",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I6",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I6",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I6",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I6",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I6",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I6",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.2053364660483437,
+     "generator": 1.2053364660483434,
+     "relative": 1.9993408010412102e-16,
+     "state": "I7",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.6069139293748662,
+     "generator": 1.606913929374866,
+     "relative": 7.737325613289624e-17,
+     "state": "I7",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.1518934047133325,
+     "generator": 1.1518934047133325,
+     "relative": 1.9634643992794858e-17,
+     "state": "I7",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I7",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I7",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I7",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I7",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I7",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I7",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.0414479374058503,
+     "generator": 1.0414479374058498,
+     "relative": 4.934970293149433e-16,
+     "state": "I8",
+     "x": [
+      0.0,
+      0.2,
+      0.8
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 2.2064102247999844,
+     "generator": 2.2064102247999844,
+     "relative": 5.884346358535403e-17,
+     "state": "I8",
+     "x": [
+      0.0,
+      0.2,
+      0.8
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.1117166730497725,
+     "generator": 1.1117166730497725,
+     "relative": 9.723559917356833e-17,
+     "state": "I8",
+     "x": [
+      0.0,
+      0.2,
+      0.8
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I8",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I8",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I8",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I8",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I8",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I8",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.836372701037658,
+     "generator": 0.8363727010376577,
+     "relative": 3.3199264110593774e-16,
+     "state": "I9",
+     "x": [
+      0.0,
+      0.6,
+      0.4
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.138518576992344,
+     "generator": 1.138518576992344,
+     "relative": 7.114481441129622e-17,
+     "state": "I9",
+     "x": [
+      0.0,
+      0.6,
+      0.4
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.6517813193423372,
+     "generator": 1.6517813193423374,
+     "relative": 1.5625415909727606e-16,
+     "state": "I9",
+     "x": [
+      0.0,
+      0.6,
+      0.4
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9802382561181453,
+     "generator": 0.9802382561181454,
+     "relative": 1.6825072262204597e-16,
+     "state": "I9",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3363346357663202,
+     "generator": 1.33633463576632,
+     "relative": 1.1567950138154414e-16,
+     "state": "I9",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.3568956084687216,
+     "generator": 1.3568956084687218,
+     "relative": 8.359227959722831e-17,
+     "state": "I9",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 0.9943026646179418,
+     "generator": 0.994302664617942,
+     "relative": 2.472629784815555e-16,
+     "state": "I9",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0776175640441303,
+     "generator": 1.0776175640441303,
+     "relative": 7.493747043449136e-17,
+     "state": "I9",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.5719944138289808,
+     "generator": 1.5719944138289808,
+     "relative": 7.400810233046971e-18,
+     "state": "I9",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    }
+   ],
+   "rule": "spec 8.2: gamma at the state's (T, x) matches ours to 1e-9 relative before the flash; x = the feed z and the two RB compositions (B-51)",
+   "tolerance_relative": 1e-09
+  },
+  "informative": {
+   "note": "no tolerance is registered for these rows (spec 8.2 gates gamma only); they show what DWSIM evaluates from the mapping, the units fixed by readback, and DWSIM's own numerics (its ideal-gas enthalpy is a midpoint-rule integral of c_p, PropertyPackage.vb AUX_INT_CPDTi)",
+   "rows": [
+    {
+     "component": "CH3OH",
+     "dwsim": 4.98806976966747,
+     "generator": 4.988069769667484,
+     "quantity": "phi_L",
+     "relative": 2.9086749572387047e-15,
+     "state": "I1",
+     "x": [
+      0.1,
+      0.0,
+      0.9
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 6.2212950695856595,
+     "generator": 6.221295069585687,
+     "quantity": "phi_L",
+     "relative": 4.435980356308484e-15,
+     "state": "I1",
+     "x": [
+      0.1,
+      0.0,
+      0.9
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.7672022613808293,
+     "generator": 0.76720226138083,
+     "quantity": "phi_L",
+     "relative": 1.0458779556575532e-15,
+     "state": "I1",
+     "x": [
+      0.1,
+      0.0,
+      0.9
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006754603838882997,
+     "component": null,
+     "dwsim": -276450.06378972717,
+     "generator": -276450.05703512335,
+     "quantity": "h_L",
+     "relative": 2.4433360265231615e-08,
+     "state": "I1",
+     "x": [
+      0.1,
+      0.0,
+      0.9
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006754605805676002,
+     "component": null,
+     "dwsim": -235376.30860415546,
+     "generator": -235376.30184954967,
+     "quantity": "h_V",
+     "relative": 2.8697051285959463e-08,
+     "state": "I1",
+     "x": [
+      0.1,
+      0.0,
+      0.9
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 2.6755393515655594,
+     "generator": 2.675539351565567,
+     "quantity": "phi_L",
+     "relative": 2.817524644957423e-15,
+     "state": "I1",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 2.260247417584485,
+     "generator": 2.2602474175844947,
+     "quantity": "phi_L",
+     "relative": 4.3318550305783126e-15,
+     "state": "I1",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.0272843762537995,
+     "generator": 1.0272843762538009,
+     "quantity": "phi_L",
+     "relative": 1.2139714687123116e-15,
+     "state": "I1",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.010296609455898977,
+     "component": null,
+     "dwsim": -268510.96973921324,
+     "generator": -268510.9594426038,
+     "quantity": "h_L",
+     "relative": 3.834707334580864e-08,
+     "state": "I1",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.010296612423958677,
+     "component": null,
+     "dwsim": -228400.83193783776,
+     "generator": -228400.82164122534,
+     "quantity": "h_V",
+     "relative": 4.50813282980773e-08,
+     "state": "I1",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 2.7139278537106577,
+     "generator": 2.7139278537106653,
+     "quantity": "phi_L",
+     "relative": 2.859427559744944e-15,
+     "state": "I1",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.8226589740957277,
+     "generator": 1.8226589740957355,
+     "quantity": "phi_L",
+     "relative": 4.260835508181269e-15,
+     "state": "I1",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.1901323070145282,
+     "generator": 1.1901323070145295,
+     "quantity": "phi_L",
+     "relative": 1.1885601589201178e-15,
+     "state": "I1",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.017905024000870063,
+     "component": null,
+     "dwsim": -250928.86947356412,
+     "generator": -250928.85156854012,
+     "quantity": "h_L",
+     "relative": 7.135498325101681e-08,
+     "state": "I1",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.017905027240576184,
+     "component": null,
+     "dwsim": -212643.1124375588,
+     "generator": -212643.09453253157,
+     "quantity": "h_V",
+     "relative": 8.420225110031472e-08,
+     "state": "I1",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 7.312863544228964e-10,
+     "component": "CH3OH",
+     "dwsim": 276564.42003290425,
+     "generator": 276564.420032905,
+     "quantity": "P_sat_Pa",
+     "relative": 2.6441808904265045e-15,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "absolute": 5.270743012002871e-12,
+     "component": "CH3OH",
+     "dwsim": 36617.53694536261,
+     "generator": 36617.536945362604,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.439404026509866e-16,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "absolute": 3.76837916987527e-15,
+     "component": "CH3OH",
+     "dwsim": 48.72533971121861,
+     "generator": 48.725339711218616,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 7.733920773481301e-17,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "absolute": 0.025008856520231822,
+     "component": "CH3OH",
+     "dwsim": -197819.5611807407,
+     "generator": -197819.5361718842,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.264225819360014e-07,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "absolute": 7.468344543099224e-10,
+     "component": "C2H5OH",
+     "dwsim": 171378.9072416108,
+     "generator": 171378.90724161157,
+     "quantity": "P_sat_Pa",
+     "relative": 4.357796804346689e-15,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "absolute": 1.1737569370651442e-12,
+     "component": "C2H5OH",
+     "dwsim": 40007.283798357865,
+     "generator": 40007.283798357865,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 2.9338581018922416e-17,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "absolute": 3.1681441759521735e-15,
+     "component": "C2H5OH",
+     "dwsim": 75.51725483777244,
+     "generator": 75.51725483777244,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 4.19525866341148e-17,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "absolute": 0.009772210770603307,
+     "component": "C2H5OH",
+     "dwsim": -230207.59810548127,
+     "generator": -230207.5883332705,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 4.244955972718032e-08,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "absolute": 8.339859985423316e-11,
+     "component": "H2O",
+     "dwsim": 76711.56776856475,
+     "generator": 76711.56776856484,
+     "quantity": "P_sat_Pa",
+     "relative": 1.0871711044394606e-15,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "absolute": 5.403467280682229e-12,
+     "component": "H2O",
+     "dwsim": 41568.890545597125,
+     "generator": 41568.89054559712,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.299882486580954e-16,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "absolute": 9.15524763594888e-15,
+     "component": "H2O",
+     "dwsim": 33.998300958027684,
+     "generator": 33.99830095802768,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 2.692854459771803e-16,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "absolute": 0.004726355759281184,
+     "component": "H2O",
+     "dwsim": -239549.28054009046,
+     "generator": -239549.2758137347,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.9730202661753133e-08,
+     "state": "I1",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.692342040364315,
+     "generator": 1.692342040364325,
+     "quantity": "phi_L",
+     "relative": 5.9410955094705594e-15,
+     "state": "I10",
+     "x": [
+      0.0,
+      0.4,
+      0.6
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.6809053391683186,
+     "generator": 1.6809053391683326,
+     "quantity": "phi_L",
+     "relative": 8.290123175690865e-15,
+     "state": "I10",
+     "x": [
+      0.0,
+      0.4,
+      0.6
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.7013446916465595,
+     "generator": 0.7013446916465635,
+     "quantity": "phi_L",
+     "relative": 5.744162961581489e-15,
+     "state": "I10",
+     "x": [
+      0.0,
+      0.4,
+      0.6
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.004624430847817377,
+     "component": null,
+     "dwsim": -277573.08006650064,
+     "generator": -277573.0754420698,
+     "quantity": "h_L",
+     "relative": 1.6660228447778635e-08,
+     "state": "I10",
+     "x": [
+      0.0,
+      0.4,
+      0.6
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.0046244338104431525,
+     "component": null,
+     "dwsim": -236289.89976457963,
+     "generator": -236289.89514014582,
+     "quantity": "h_V",
+     "relative": 1.9571018082260167e-08,
+     "state": "I10",
+     "x": [
+      0.0,
+      0.4,
+      0.6
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.938666862332557,
+     "generator": 1.9386668623325694,
+     "quantity": "phi_L",
+     "relative": 6.463120563634611e-15,
+     "state": "I10",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.5887418405126434,
+     "generator": 1.5887418405126559,
+     "quantity": "phi_L",
+     "relative": 7.88403607716421e-15,
+     "state": "I10",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.7124117247955339,
+     "generator": 0.7124117247955382,
+     "quantity": "phi_L",
+     "relative": 5.905008034762818e-15,
+     "state": "I10",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006928638353255258,
+     "component": null,
+     "dwsim": -269291.3444223912,
+     "generator": -269291.3374937528,
+     "quantity": "h_L",
+     "relative": 2.57291542228535e-08,
+     "state": "I10",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006928641286877455,
+     "component": null,
+     "dwsim": -228866.72011824892,
+     "generator": -228866.71318960763,
+     "quantity": "h_V",
+     "relative": 3.02736959443173e-08,
+     "state": "I10",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.9664827555877753,
+     "generator": 1.9664827555877882,
+     "quantity": "phi_L",
+     "relative": 6.592577438292853e-15,
+     "state": "I10",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.2811582265743233,
+     "generator": 1.2811582265743335,
+     "quantity": "phi_L",
+     "relative": 7.931192195225385e-15,
+     "state": "I10",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.8253451811143245,
+     "generator": 0.8253451811143293,
+     "quantity": "phi_L",
+     "relative": 5.7545838246956265e-15,
+     "state": "I10",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.011929206615384495,
+     "component": null,
+     "dwsim": -251680.9148626121,
+     "generator": -251680.90293340548,
+     "quantity": "h_L",
+     "relative": 4.739813977280967e-08,
+     "state": "I10",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.011929209867868149,
+     "component": null,
+     "dwsim": -213124.9359869669,
+     "generator": -213124.92405775705,
+     "quantity": "h_V",
+     "relative": 5.597285216925319e-08,
+     "state": "I10",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 1.2714277610469147e-09,
+     "component": "CH3OH",
+     "dwsim": 200395.5860728726,
+     "generator": 200395.58607287388,
+     "quantity": "P_sat_Pa",
+     "relative": 6.34458964871891e-15,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "absolute": 2.469841015819686e-13,
+     "component": "CH3OH",
+     "dwsim": 36838.86688009093,
+     "generator": 36838.86688009093,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 6.704443499467348e-18,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "absolute": 2.8209745188928775e-14,
+     "component": "CH3OH",
+     "dwsim": 48.015296086700864,
+     "generator": 48.01529608670089,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 5.875158020058989e-16,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "absolute": 0.016537624792129984,
+     "component": "CH3OH",
+     "dwsim": -198278.57669430546,
+     "generator": -198278.56015668067,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 8.34060161575809e-08,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "absolute": 9.61305267717941e-10,
+     "component": "C2H5OH",
+     "dwsim": 120463.29016805746,
+     "generator": 120463.29016805842,
+     "quantity": "P_sat_Pa",
+     "relative": 7.980068171613304e-15,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "absolute": 8.417022332044274e-12,
+     "component": "C2H5OH",
+     "dwsim": 40373.979704288206,
+     "generator": 40373.9797042882,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 2.084764096503047e-16,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "absolute": 5.9244636404195085e-15,
+     "component": "C2H5OH",
+     "dwsim": 74.06265849832546,
+     "generator": 74.06265849832546,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 7.999258682502545e-17,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "absolute": 0.0069773558790966386,
+     "component": "C2H5OH",
+     "dwsim": -230917.3507328564,
+     "generator": -230917.3437555005,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 3.021581560579698e-08,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "absolute": 3.0882023518317686e-10,
+     "component": "H2O",
+     "dwsim": 53198.72624274283,
+     "generator": 53198.726242743134,
+     "quantity": "P_sat_Pa",
+     "relative": 5.805030627501221e-15,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "absolute": 1.3975400799280039e-11,
+     "component": "H2O",
+     "dwsim": 41889.31403368116,
+     "generator": 41889.31403368115,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 3.3362687171346617e-16,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "absolute": 3.905552771871279e-15,
+     "component": "H2O",
+     "dwsim": 33.9305876171568,
+     "generator": 33.930587617156796,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 1.1510418905614412e-16,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "absolute": 0.0030558191170786753,
+     "component": "H2O",
+     "dwsim": -239871.5991190618,
+     "generator": -239871.5960632427,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.2739395440021175e-08,
+     "state": "I10",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.7638959183684355,
+     "generator": 1.763895918368436,
+     "quantity": "phi_L",
+     "relative": 2.2008587326792093e-16,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.4324092507150745,
+     "generator": 1.4324092507150756,
+     "quantity": "phi_L",
+     "relative": 7.918069098061928e-16,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.6398306932423795,
+     "generator": 0.6398306932423785,
+     "quantity": "phi_L",
+     "relative": 1.5055392980507412e-15,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006109070351242378,
+     "component": null,
+     "dwsim": -269512.18528509117,
+     "generator": -269512.17917602084,
+     "quantity": "h_L",
+     "relative": 2.2667140200935e-08,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006109073299433128,
+     "component": null,
+     "dwsim": -228997.2382467169,
+     "generator": -228997.23213764362,
+     "quantity": "h_V",
+     "relative": 2.6677498423916063e-08,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.7638959183684355,
+     "generator": 1.763895918368436,
+     "quantity": "phi_L",
+     "relative": 2.2008587326792093e-16,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.4324092507150745,
+     "generator": 1.4324092507150756,
+     "quantity": "phi_L",
+     "relative": 7.918069098061928e-16,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.6398306932423795,
+     "generator": 0.6398306932423785,
+     "quantity": "phi_L",
+     "relative": 1.5055392980507412e-15,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006109070351242378,
+     "component": null,
+     "dwsim": -269512.18528509117,
+     "generator": -269512.17917602084,
+     "quantity": "h_L",
+     "relative": 2.2667140200935e-08,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006109073299433128,
+     "component": null,
+     "dwsim": -228997.2382467169,
+     "generator": -228997.23213764362,
+     "quantity": "h_V",
+     "relative": 2.6677498423916063e-08,
+     "state": "I11",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.7892042070341934,
+     "generator": 1.7892042070341942,
+     "quantity": "phi_L",
+     "relative": 4.693852998439009e-16,
+     "state": "I11",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.155091940414076,
+     "generator": 1.1550919404140771,
+     "quantity": "phi_L",
+     "relative": 1.0101286662133688e-15,
+     "state": "I11",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.7412584058020629,
+     "generator": 0.7412584058020618,
+     "quantity": "phi_L",
+     "relative": 1.5269892671532482e-15,
+     "state": "I11",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.01049020207261973,
+     "component": null,
+     "dwsim": -251893.70651988214,
+     "generator": -251893.69602968005,
+     "quantity": "h_L",
+     "relative": 4.16453537264533e-08,
+     "state": "I11",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.010490205344995755,
+     "component": null,
+     "dwsim": -213259.75312249456,
+     "generator": -213259.7426322892,
+     "quantity": "h_V",
+     "relative": 4.9189805893573536e-08,
+     "state": "I11",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 2.978282626214884e-11,
+     "component": "CH3OH",
+     "dwsim": 182329.91093049146,
+     "generator": 182329.9109304915,
+     "quantity": "P_sat_Pa",
+     "relative": 1.6334580601809634e-16,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "absolute": 7.677409842701052e-12,
+     "component": "CH3OH",
+     "dwsim": 36903.34016989441,
+     "generator": 36903.3401698944,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 2.0804105556180125e-16,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "absolute": 2.648486218194105e-16,
+     "component": "CH3OH",
+     "dwsim": 47.81721124282208,
+     "generator": 47.81721124282208,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 5.538771813238426e-18,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "absolute": 0.01451324339165144,
+     "component": "CH3OH",
+     "dwsim": -198406.989980663,
+     "generator": -198406.9754674196,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 7.314885657351629e-08,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "absolute": 1.0404179380466669e-10,
+     "component": "C2H5OH",
+     "dwsim": 108609.67264047237,
+     "generator": 108609.67264047248,
+     "quantity": "P_sat_Pa",
+     "relative": 9.579422465351986e-16,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "absolute": 3.0248444015411934e-12,
+     "component": "C2H5OH",
+     "dwsim": 40477.97117118603,
+     "generator": 40477.97117118603,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 7.47281623564772e-17,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "absolute": 1.647648981408704e-14,
+     "component": "C2H5OH",
+     "dwsim": 73.65224361811613,
+     "generator": 73.65224361811615,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 2.237065567142389e-16,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "absolute": 0.006246118048838149,
+     "component": "C2H5OH",
+     "dwsim": -231115.2879232877,
+     "generator": -231115.28167716964,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 2.7025984623392223e-08,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "absolute": 7.610474437210726e-11,
+     "component": "H2O",
+     "dwsim": 47778.800806899766,
+     "generator": 47778.80080689969,
+     "quantity": "P_sat_Pa",
+     "relative": 1.5928558918774087e-15,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "absolute": 2.0003093095529506e-12,
+     "component": "H2O",
+     "dwsim": 41981.77530608504,
+     "generator": 41981.77530608504,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 4.764708721746258e-17,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "absolute": 1.9988622605746843e-15,
+     "component": "H2O",
+     "dwsim": 33.912003886574645,
+     "generator": 33.912003886574645,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 5.89426171116361e-17,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "absolute": 0.002665178447101117,
+     "component": "H2O",
+     "dwsim": -239962.50774719604,
+     "generator": -239962.5050820176,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.1106645374410376e-08,
+     "state": "I11",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.6260982597555163,
+     "generator": 1.6260982597555114,
+     "quantity": "phi_L",
+     "relative": 2.9517072335984396e-15,
+     "state": "I12",
+     "x": [
+      0.4,
+      0.2,
+      0.4
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.1659896894055606,
+     "generator": 1.1659896894055595,
+     "quantity": "phi_L",
+     "relative": 1.019274963511353e-15,
+     "state": "I12",
+     "x": [
+      0.4,
+      0.2,
+      0.4
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.572427238868327,
+     "generator": 0.5724272388683272,
+     "quantity": "phi_L",
+     "relative": 3.4159801869442453e-16,
+     "state": "I12",
+     "x": [
+      0.4,
+      0.2,
+      0.4
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006882694077441273,
+     "component": null,
+     "dwsim": -261476.60221317102,
+     "generator": -261476.59533047694,
+     "quantity": "h_L",
+     "relative": 2.6322409731327284e-08,
+     "state": "I12",
+     "x": [
+      0.4,
+      0.2,
+      0.4
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006882697062637227,
+     "component": null,
+     "dwsim": -221724.64589321223,
+     "generator": -221724.63901051518,
+     "quantity": "h_V",
+     "relative": 3.104164288349938e-08,
+     "state": "I12",
+     "x": [
+      0.4,
+      0.2,
+      0.4
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.5695481818337014,
+     "generator": 1.5695481818336972,
+     "quantity": "phi_L",
+     "relative": 2.7504123781908805e-15,
+     "state": "I12",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.2601746293424898,
+     "generator": 1.2601746293424885,
+     "quantity": "phi_L",
+     "relative": 1.029044735598226e-15,
+     "state": "I12",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.5602399530486376,
+     "generator": 0.5602399530486379,
+     "quantity": "phi_L",
+     "relative": 5.132075324143477e-16,
+     "state": "I12",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.005192979785236914,
+     "component": null,
+     "dwsim": -269780.25840540073,
+     "generator": -269780.25321242097,
+     "quantity": "h_L",
+     "relative": 1.9248924720772798e-08,
+     "state": "I12",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.005192982772042479,
+     "component": null,
+     "dwsim": -229154.89819083564,
+     "generator": -229154.89299785288,
+     "quantity": "h_V",
+     "relative": 2.266145271482873e-08,
+     "state": "I12",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.592067979088749,
+     "generator": 1.5920679790887446,
+     "quantity": "phi_L",
+     "relative": 2.7340235155585896e-15,
+     "state": "I12",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0162022879572619,
+     "generator": 1.0162022879572608,
+     "quantity": "phi_L",
+     "relative": 1.0000706527696019e-15,
+     "state": "I12",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.6490507236515757,
+     "generator": 0.6490507236515759,
+     "quantity": "phi_L",
+     "relative": 3.5038806567373653e-16,
+     "state": "I12",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.008889150200678621,
+     "component": null,
+     "dwsim": -252151.99066250765,
+     "generator": -252151.98177335746,
+     "quantity": "h_L",
+     "relative": 3.525314430670818e-08,
+     "state": "I12",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.00888915344312735,
+     "component": null,
+     "dwsim": -213422.50993234653,
+     "generator": -213422.50104319307,
+     "quantity": "h_V",
+     "relative": 4.1650497954422976e-08,
+     "state": "I12",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 4.712330903710989e-10,
+     "component": "CH3OH",
+     "dwsim": 162240.62724719022,
+     "generator": 162240.62724718975,
+     "quantity": "P_sat_Pa",
+     "relative": 2.904531980470763e-15,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "absolute": 3.1623692764307155e-12,
+     "component": "CH3OH",
+     "dwsim": 36982.67294095175,
+     "generator": 36982.67294095175,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 8.550948390020108e-17,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "absolute": 1.3077037481199407e-14,
+     "component": "CH3OH",
+     "dwsim": 47.57851784221458,
+     "generator": 47.578517842214595,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 2.748517203618448e-16,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "absolute": 0.012268582021382445,
+     "component": "CH3OH",
+     "dwsim": -198562.0053370997,
+     "generator": -198561.99306851768,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 6.178716194266307e-08,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "absolute": 8.795936704326309e-11,
+     "component": "C2H5OH",
+     "dwsim": 95550.31419574458,
+     "generator": 95550.31419574449,
+     "quantity": "P_sat_Pa",
+     "relative": 9.205554977356686e-16,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "absolute": 7.147633256722743e-13,
+     "component": "C2H5OH",
+     "dwsim": 40604.33393802788,
+     "generator": 40604.33393802788,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.7603128936018935e-17,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "absolute": 1.2106012161093691e-14,
+     "component": "C2H5OH",
+     "dwsim": 73.15485098017578,
+     "generator": 73.15485098017577,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 1.654847491162862e-16,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "absolute": 0.005403720891954379,
+     "component": "C2H5OH",
+     "dwsim": -231353.84850900524,
+     "generator": -231353.84310528435,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 2.3356953225519826e-08,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "absolute": 1.4374708744678673e-11,
+     "component": "H2O",
+     "dwsim": 41835.43147192797,
+     "generator": 41835.43147192799,
+     "quantity": "P_sat_Pa",
+     "relative": 3.436013025065668e-16,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "absolute": 4.854330469413802e-12,
+     "component": "H2O",
+     "dwsim": 42095.05088993874,
+     "generator": 42095.050889938735,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.153183181107414e-16,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "absolute": 5.094504632200861e-15,
+     "component": "H2O",
+     "dwsim": 33.88979327721787,
+     "generator": 33.88979327721786,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 1.5032563316417749e-16,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "absolute": 0.002236300176348164,
+     "component": "H2O",
+     "dwsim": -240072.68514142823,
+     "generator": -240072.68290512805,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 9.315096367011091e-09,
+     "state": "I12",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.4847368275140305,
+     "generator": 1.4847368275140225,
+     "quantity": "phi_L",
+     "relative": 5.385699958181255e-15,
+     "state": "I13",
+     "x": [
+      0.1,
+      0.6,
+      0.3
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0757426932847614,
+     "generator": 1.0757426932847642,
+     "quantity": "phi_L",
+     "relative": 2.7514134939922874e-15,
+     "state": "I13",
+     "x": [
+      0.1,
+      0.6,
+      0.3
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.7567299433254486,
+     "generator": 0.7567299433254403,
+     "quantity": "phi_L",
+     "relative": 1.1071390500987502e-14,
+     "state": "I13",
+     "x": [
+      0.1,
+      0.6,
+      0.3
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.005412515387327892,
+     "component": null,
+     "dwsim": -271278.82218057656,
+     "generator": -271278.8167680612,
+     "quantity": "h_L",
+     "relative": 1.9951854154375426e-08,
+     "state": "I13",
+     "x": [
+      0.1,
+      0.6,
+      0.3
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.005412519020854909,
+     "component": null,
+     "dwsim": -230627.91185990052,
+     "generator": -230627.9064473815,
+     "quantity": "h_V",
+     "relative": 2.3468621400722782e-08,
+     "state": "I13",
+     "x": [
+      0.1,
+      0.6,
+      0.3
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.630892084147967,
+     "generator": 1.6308920841479582,
+     "quantity": "phi_L",
+     "relative": 5.455475697264637e-15,
+     "state": "I13",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3143439256833855,
+     "generator": 1.3143439256833886,
+     "quantity": "phi_L",
+     "relative": 2.315465025009361e-15,
+     "state": "I13",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.5852274598229444,
+     "generator": 0.5852274598229381,
+     "quantity": "phi_L",
+     "relative": 1.0751721740307836e-14,
+     "state": "I13",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.005482423760258085,
+     "component": null,
+     "dwsim": -269692.79409970366,
+     "generator": -269692.7886172799,
+     "quantity": "h_L",
+     "relative": 2.0328403248624397e-08,
+     "state": "I13",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.005482426764500526,
+     "component": null,
+     "dwsim": -229103.5510783895,
+     "generator": -229103.54559596273,
+     "quantity": "h_V",
+     "relative": 2.3929907982171085e-08,
+     "state": "I13",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.6542920405844528,
+     "generator": 1.6542920405844441,
+     "quantity": "phi_L",
+     "relative": 5.2743532298850184e-15,
+     "state": "I13",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0598842996379558,
+     "generator": 1.0598842996379585,
+     "quantity": "phi_L",
+     "relative": 2.605741674680359e-15,
+     "state": "I13",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.6779993183847051,
+     "generator": 0.6779993183846977,
+     "quantity": "phi_L",
+     "relative": 1.076864206202445e-14,
+     "state": "I13",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.009394145214665611,
+     "component": null,
+     "dwsim": -252067.7223748218,
+     "generator": -252067.7129806766,
+     "quantity": "h_L",
+     "relative": 3.72683399376332e-08,
+     "state": "I13",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.009394148464360144,
+     "component": null,
+     "dwsim": -213369.5143939201,
+     "generator": -213369.50499977166,
+     "quantity": "h_V",
+     "relative": 4.4027605839785765e-08,
+     "state": "I13",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 9.33290908506053e-10,
+     "component": "CH3OH",
+     "dwsim": 168581.6069663533,
+     "generator": 168581.60696635238,
+     "quantity": "P_sat_Pa",
+     "relative": 5.5361372174624646e-15,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "absolute": 1.1625930887739852e-11,
+     "component": "CH3OH",
+     "dwsim": 36956.66074439839,
+     "generator": 36956.660744398374,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 3.145828290101136e-16,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "absolute": 2.36128231025063e-14,
+     "component": "CH3OH",
+     "dwsim": 47.65618213859047,
+     "generator": 47.65618213859049,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 4.954828952482404e-16,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "absolute": 0.012975680147472888,
+     "component": "CH3OH",
+     "dwsim": -198511.53166930762,
+     "generator": -198511.51869362747,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 6.536487269284806e-08,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "absolute": 2.542155259963611e-10,
+     "component": "C2H5OH",
+     "dwsim": 99657.59676168193,
+     "generator": 99657.59676168217,
+     "quantity": "P_sat_Pa",
+     "relative": 2.550889588520618e-15,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "absolute": 6.363032884303957e-12,
+     "component": "C2H5OH",
+     "dwsim": 40563.08981613653,
+     "generator": 40563.089816136526,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.5686755898394752e-16,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "absolute": 4.389576777451201e-15,
+     "component": "C2H5OH",
+     "dwsim": 73.31703625419324,
+     "generator": 73.31703625419324,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 5.987117049074862e-17,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "absolute": 0.005672801224728902,
+     "component": "C2H5OH",
+     "dwsim": -231276.2186815546,
+     "generator": -231276.21300875337,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 2.4528251958683695e-08,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "absolute": 4.766648763399639e-10,
+     "component": "H2O",
+     "dwsim": 43701.35181841939,
+     "generator": 43701.35181841891,
+     "quantity": "P_sat_Pa",
+     "relative": 1.0907325666275223e-14,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "absolute": 1.291292871285303e-11,
+     "component": "H2O",
+     "dwsim": 42057.967855193085,
+     "generator": 42057.9678551931,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 3.0702692905450513e-16,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "absolute": 7.979245656072989e-15,
+     "component": "H2O",
+     "dwsim": 33.89699784925614,
+     "generator": 33.89699784925613,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 2.3539682456710816e-16,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "absolute": 0.002370900716984734,
+     "component": "H2O",
+     "dwsim": -240036.75828012315,
+     "generator": -240036.75590922244,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 9.877240291821667e-09,
+     "state": "I13",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.3135467304761517,
+     "generator": 1.3135467304761579,
+     "quantity": "phi_L",
+     "relative": 4.745500419358212e-15,
+     "state": "I14",
+     "x": [
+      0.5,
+      0.5,
+      0.0
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 0.7605569250570254,
+     "generator": 0.760556925057025,
+     "quantity": "phi_L",
+     "relative": 5.750788800789122e-16,
+     "state": "I14",
+     "x": [
+      0.5,
+      0.5,
+      0.0
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.6721844634623529,
+     "generator": 0.6721844634623519,
+     "quantity": "phi_L",
+     "relative": 1.5389296126951524e-15,
+     "state": "I14",
+     "x": [
+      0.5,
+      0.5,
+      0.0
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006636618770998264,
+     "component": null,
+     "dwsim": -254234.54042034186,
+     "generator": -254234.53378372308,
+     "quantity": "h_L",
+     "relative": 2.6104316641121717e-08,
+     "state": "I14",
+     "x": [
+      0.5,
+      0.5,
+      0.0
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006636622733658078,
+     "component": null,
+     "dwsim": -215273.29387212553,
+     "generator": -215273.2872355028,
+     "quantity": "h_V",
+     "relative": 3.0828826088384124e-08,
+     "state": "I14",
+     "x": [
+      0.5,
+      0.5,
+      0.0
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.293063837441294,
+     "generator": 1.2930638374413002,
+     "quantity": "phi_L",
+     "relative": 4.777489692684198e-15,
+     "state": "I14",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0185083554689183,
+     "generator": 1.0185083554689176,
+     "quantity": "phi_L",
+     "relative": 6.897168534836085e-16,
+     "state": "I14",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.44930789502300766,
+     "generator": 0.44930789502300694,
+     "quantity": "phi_L",
+     "relative": 1.5752662359167533e-15,
+     "state": "I14",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.0038914719029631835,
+     "component": null,
+     "dwsim": -270213.8906244471,
+     "generator": -270213.8867329752,
+     "quantity": "h_L",
+     "relative": 1.4401450458424174e-08,
+     "state": "I14",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.003891474821433916,
+     "component": null,
+     "dwsim": -229408.1545254499,
+     "generator": -229408.15063397508,
+     "quantity": "h_V",
+     "relative": 1.6963106196007985e-08,
+     "state": "I14",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.3116166514256289,
+     "generator": 1.3116166514256353,
+     "quantity": "phi_L",
+     "relative": 4.855469795479145e-15,
+     "state": "I14",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 0.8213230904919353,
+     "generator": 0.8213230904919349,
+     "quantity": "phi_L",
+     "relative": 5.403786837312337e-16,
+     "state": "I14",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.5205334121926356,
+     "generator": 0.5205334121926347,
+     "quantity": "phi_L",
+     "relative": 1.648797992387772e-15,
+     "state": "I14",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006628734758140911,
+     "component": null,
+     "dwsim": -252569.74755776292,
+     "generator": -252569.74092902816,
+     "quantity": "h_L",
+     "relative": 2.6245165924304366e-08,
+     "state": "I14",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006628738020544799,
+     "component": null,
+     "dwsim": -213683.73416359373,
+     "generator": -213683.72753485572,
+     "quantity": "h_V",
+     "relative": 3.102125789837474e-08,
+     "state": "I14",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 6.081354249307398e-10,
+     "component": "CH3OH",
+     "dwsim": 133661.0691441405,
+     "generator": 133661.0691441411,
+     "quantity": "P_sat_Pa",
+     "relative": 4.549832115100934e-15,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "absolute": 1.0894740976122051e-11,
+     "component": "CH3OH",
+     "dwsim": 37113.45342467539,
+     "generator": 37113.45342467538,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 2.9355233670813657e-16,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "absolute": 1.4737405974840754e-14,
+     "component": "CH3OH",
+     "dwsim": 47.1966016358522,
+     "generator": 47.19660163585221,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 3.1225565960337485e-16,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "absolute": 0.009114291880950214,
+     "component": "CH3OH",
+     "dwsim": -198810.78484971286,
+     "generator": -198810.775735421,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 4.584405371004431e-08,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "absolute": 3.6095985149476395e-11,
+     "component": "C2H5OH",
+     "dwsim": 77226.43442426976,
+     "generator": 77226.43442426973,
+     "quantity": "P_sat_Pa",
+     "relative": 4.674045282366762e-16,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "absolute": 1.855387363367341e-12,
+     "component": "C2H5OH",
+     "dwsim": 40809.0396717652,
+     "generator": 40809.0396717652,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 4.5465107199056173e-17,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "absolute": 5.497863236762472e-15,
+     "component": "C2H5OH",
+     "dwsim": 72.35225582082509,
+     "generator": 72.35225582082509,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 7.598744744569562e-17,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "absolute": 0.004158953499054451,
+     "component": "C2H5OH",
+     "dwsim": -231735.80289453812,
+     "generator": -231735.79873558463,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.7946961676818453e-08,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "absolute": 5.441290242987365e-11,
+     "component": "H2O",
+     "dwsim": 33551.67647316893,
+     "generator": 33551.67647316888,
+     "quantity": "P_sat_Pa",
+     "relative": 1.621764041310645e-15,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "absolute": 3.009695153986631e-12,
+     "component": "H2O",
+     "dwsim": 42280.66702507093,
+     "generator": 42280.66702507093,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 7.118371978857357e-17,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "absolute": 1.4764734404272734e-15,
+     "component": "H2O",
+     "dwsim": 33.854681034125825,
+     "generator": 33.854681034125825,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 4.36120913069296e-17,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "absolute": 0.0016418608194278237,
+     "component": "H2O",
+     "dwsim": -240250.51337429183,
+     "generator": -240250.511732431,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 6.8339534745981216e-09,
+     "state": "I14",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 2.756315111608507,
+     "generator": 2.756315111608525,
+     "quantity": "phi_L",
+     "relative": 6.43582520239123e-15,
+     "state": "I2",
+     "x": [
+      0.3,
+      0.0,
+      0.7
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 2.4312225725636285,
+     "generator": 2.4312225725636534,
+     "quantity": "phi_L",
+     "relative": 1.0157065174940755e-14,
+     "state": "I2",
+     "x": [
+      0.3,
+      0.0,
+      0.7
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.6070757061307098,
+     "generator": 0.6070757061307138,
+     "quantity": "phi_L",
+     "relative": 6.607802874039934e-15,
+     "state": "I2",
+     "x": [
+      0.3,
+      0.0,
+      0.7
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.0075891032293648715,
+     "component": null,
+     "dwsim": -267670.85598541796,
+     "generator": -267670.8483963147,
+     "quantity": "h_L",
+     "relative": 2.8352371111135756e-08,
+     "state": "I2",
+     "x": [
+      0.3,
+      0.0,
+      0.7
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.007589105506494693,
+     "component": null,
+     "dwsim": -227340.24786982805,
+     "generator": -227340.24028072253,
+     "quantity": "h_V",
+     "relative": 3.3382147820040884e-08,
+     "state": "I2",
+     "x": [
+      0.3,
+      0.0,
+      0.7
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 2.0354672169114463,
+     "generator": 2.035467216911459,
+     "quantity": "phi_L",
+     "relative": 6.318442089008802e-15,
+     "state": "I2",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.6758680435562914,
+     "generator": 1.675868043556308,
+     "quantity": "phi_L",
+     "relative": 9.971415086000863e-15,
+     "state": "I2",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.7529916690390903,
+     "generator": 0.7529916690390954,
+     "quantity": "phi_L",
+     "relative": 6.744167023302232e-15,
+     "state": "I2",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.007379879061031628,
+     "component": null,
+     "dwsim": -269176.0589608121,
+     "generator": -269176.05158093304,
+     "quantity": "h_L",
+     "relative": 2.741655142680003e-08,
+     "state": "I2",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.007379882019343271,
+     "component": null,
+     "dwsim": -228798.35555201516,
+     "generator": -228798.34817213315,
+     "quantity": "h_V",
+     "relative": 3.2254961971102704e-08,
+     "state": "I2",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 2.0646719967166702,
+     "generator": 2.0646719967166827,
+     "quantity": "phi_L",
+     "relative": 6.067890192421129e-15,
+     "state": "I2",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3514166215716732,
+     "generator": 1.351416621571687,
+     "quantity": "phi_L",
+     "relative": 1.023293024746392e-14,
+     "state": "I2",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.872357969177182,
+     "generator": 0.8723579691771878,
+     "quantity": "phi_L",
+     "relative": 6.674446013538825e-15,
+     "state": "I2",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.012724100433980003,
+     "component": null,
+     "dwsim": -251569.8258043731,
+     "generator": -251569.81308027267,
+     "quantity": "h_L",
+     "relative": 5.057880465936471e-08,
+     "state": "I2",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.012724103651560365,
+     "component": null,
+     "dwsim": -213054.29080399376,
+     "generator": -213054.27807989012,
+     "quantity": "h_V",
+     "relative": 5.972235697979807e-08,
+     "state": "I2",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 1.2731546549375634e-09,
+     "component": "CH3OH",
+     "dwsim": 210401.6186537147,
+     "generator": 210401.61865371597,
+     "quantity": "P_sat_Pa",
+     "relative": 6.051068727911984e-15,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "absolute": 1.7740559432083168e-11,
+     "component": "CH3OH",
+     "dwsim": 36805.52906792764,
+     "generator": 36805.52906792762,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 4.820079993780693e-16,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "absolute": 9.526655054511105e-15,
+     "component": "CH3OH",
+     "dwsim": 48.11921231273756,
+     "generator": 48.11921231273757,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 1.9798027849240828e-16,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "absolute": 0.017658568211054174,
+     "component": "CH3OH",
+     "dwsim": -198211.28369408808,
+     "generator": -198211.26603551986,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 8.908962928418873e-08,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "absolute": 1.2913382970437749e-09,
+     "component": "C2H5OH",
+     "dwsim": 127069.46671030892,
+     "generator": 127069.46671031021,
+     "quantity": "P_sat_Pa",
+     "relative": 1.016245940488391e-14,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "absolute": 3.5170810771446006e-12,
+     "component": "C2H5OH",
+     "dwsim": 40319.73151925293,
+     "generator": 40319.73151925293,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 8.72297742227071e-17,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "absolute": 6.616847719188997e-15,
+     "component": "C2H5OH",
+     "dwsim": 74.27713327878767,
+     "generator": 74.27713327878767,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 8.908324038777435e-17,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "absolute": 0.007371192202597196,
+     "component": "C2H5OH",
+     "dwsim": -230813.51327827372,
+     "generator": -230813.5059070815,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 3.1935705727569575e-08,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "absolute": 3.710246970155809e-10,
+     "component": "H2O",
+     "dwsim": 56228.99830259461,
+     "generator": 56228.998302594984,
+     "quantity": "P_sat_Pa",
+     "relative": 6.598458237134522e-15,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "absolute": 9.422067736715682e-13,
+     "component": "H2O",
+     "dwsim": 41841.356278877014,
+     "generator": 41841.356278877014,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 2.251855239566475e-17,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "absolute": 1.7763348263512232e-15,
+     "component": "H2O",
+     "dwsim": 33.940391010483246,
+     "generator": 33.940391010483246,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 5.2336899295077735e-17,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "absolute": 0.0032736214552657045,
+     "component": "H2O",
+     "dwsim": -239824.08965943087,
+     "generator": -239824.0863858094,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.3650094553052395e-08,
+     "state": "I2",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.8792688542207248,
+     "generator": 1.8792688542207205,
+     "quantity": "phi_L",
+     "relative": 2.285201521272538e-15,
+     "state": "I3",
+     "x": [
+      0.5,
+      0.0,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.3794807236810116,
+     "generator": 1.379480723681018,
+     "quantity": "phi_L",
+     "relative": 4.70323930865388e-15,
+     "state": "I3",
+     "x": [
+      0.5,
+      0.0,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.5282247525851824,
+     "generator": 0.5282247525851794,
+     "quantity": "phi_L",
+     "relative": 5.74693104945552e-15,
+     "state": "I3",
+     "x": [
+      0.5,
+      0.0,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.007721848927951209,
+     "component": null,
+     "dwsim": -258773.002794552,
+     "generator": -258772.99507270308,
+     "quantity": "h_L",
+     "relative": 2.984024250977862e-08,
+     "state": "I3",
+     "x": [
+      0.5,
+      0.0,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.007721851470099086,
+     "component": null,
+     "dwsim": -219269.25154384106,
+     "generator": -219269.2438219896,
+     "quantity": "h_V",
+     "relative": 3.521629999494117e-08,
+     "state": "I3",
+     "x": [
+      0.5,
+      0.0,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.6379593806429296,
+     "generator": 1.637959380642926,
+     "quantity": "phi_L",
+     "relative": 2.1103842249123613e-15,
+     "state": "I3",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.320596507219758,
+     "generator": 1.3205965072197643,
+     "quantity": "phi_L",
+     "relative": 4.759889654355282e-15,
+     "state": "I3",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.5881143726069499,
+     "generator": 0.5881143726069464,
+     "quantity": "phi_L",
+     "relative": 5.8027263348655554e-15,
+     "state": "I3",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.005515759939296828,
+     "component": null,
+     "dwsim": -269682.8943752232,
+     "generator": -269682.8888594633,
+     "quantity": "h_L",
+     "relative": 2.0452761992516303e-08,
+     "state": "I3",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.005515762921136413,
+     "component": null,
+     "dwsim": -229097.73366946453,
+     "generator": -229097.7281537016,
+     "quantity": "h_V",
+     "relative": 2.4076026268736672e-08,
+     "state": "I3",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.6614607382890438,
+     "generator": 1.6614607382890405,
+     "quantity": "phi_L",
+     "relative": 2.061959187917756e-15,
+     "state": "I3",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0649263688202377,
+     "generator": 1.064926368820243,
+     "quantity": "phi_L",
+     "relative": 4.919844467577168e-15,
+     "state": "I3",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.6813438724840359,
+     "generator": 0.6813438724840319,
+     "quantity": "phi_L",
+     "relative": 5.940419244210848e-15,
+     "state": "I3",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.009452358957050693,
+     "component": null,
+     "dwsim": -252058.18426327824,
+     "generator": -252058.17481091927,
+     "quantity": "h_L",
+     "relative": 3.750070381228997e-08,
+     "state": "I3",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.009452362220530511,
+     "component": null,
+     "dwsim": -213363.50952311137,
+     "generator": -213363.50007074914,
+     "quantity": "h_V",
+     "relative": 4.4301683359132206e-08,
+     "state": "I3",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 3.8650585059801484e-10,
+     "component": "CH3OH",
+     "dwsim": 169312.13733780393,
+     "generator": 169312.13733780355,
+     "quantity": "P_sat_Pa",
+     "relative": 2.2828006111982196e-15,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "absolute": 7.2468720384022264e-12,
+     "component": "CH3OH",
+     "dwsim": 36953.72433864328,
+     "generator": 36953.724338643275,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.961066757978714e-16,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "absolute": 2.9737918451573275e-15,
+     "component": "CH3OH",
+     "dwsim": 47.664985781268506,
+     "generator": 47.664985781268506,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 6.238944156626551e-17,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "absolute": 0.01305724555154387,
+     "component": "CH3OH",
+     "dwsim": -198505.81248082104,
+     "generator": -198505.7994235755,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 6.577765279130243e-08,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "absolute": 4.925812717141521e-10,
+     "component": "C2H5OH",
+     "dwsim": 100131.68671431542,
+     "generator": 100131.68671431592,
+     "quantity": "P_sat_Pa",
+     "relative": 4.919334607031315e-15,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "absolute": 8.792566137496321e-12,
+     "component": "C2H5OH",
+     "dwsim": 40558.42252213714,
+     "generator": 40558.42252213713,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 2.1678767542542526e-16,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "absolute": 2.4442924290918853e-14,
+     "component": "C2H5OH",
+     "dwsim": 73.33539946284122,
+     "generator": 73.3353994628412,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 3.3330321331792843e-16,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "absolute": 0.005703617063490481,
+     "component": "C2H5OH",
+     "dwsim": -231267.41956623262,
+     "generator": -231267.41386261556,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 2.4662432844424488e-08,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "absolute": 2.5771760236228605e-10,
+     "component": "H2O",
+     "dwsim": 43916.929520943944,
+     "generator": 43916.92952094369,
+     "quantity": "P_sat_Pa",
+     "relative": 5.868297378107508e-15,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "absolute": 1.6277034973401036e-12,
+     "component": "H2O",
+     "dwsim": 42053.77816278371,
+     "generator": 42053.77816278371,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 3.8705285671111727e-17,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "absolute": 8.121353771004114e-15,
+     "component": "H2O",
+     "dwsim": 33.89781587811796,
+     "generator": 33.89781587811795,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 2.395833938152543e-16,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "absolute": 0.0023864573886543013,
+     "component": "H2O",
+     "dwsim": -240032.69060686108,
+     "generator": -240032.68822040368,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 9.942218313461538e-09,
+     "state": "I3",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.4093319858286646,
+     "generator": 1.4093319858286657,
+     "quantity": "phi_L",
+     "relative": 8.521606075268513e-16,
+     "state": "I4",
+     "x": [
+      0.7,
+      0.0,
+      0.30000000000000004
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 0.9084166820040083,
+     "generator": 0.9084166820040124,
+     "quantity": "phi_L",
+     "relative": 4.562943088348605e-15,
+     "state": "I4",
+     "x": [
+      0.7,
+      0.0,
+      0.30000000000000004
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.47154587744586546,
+     "generator": 0.471545877445863,
+     "quantity": "phi_L",
+     "relative": 5.206894836667758e-15,
+     "state": "I4",
+     "x": [
+      0.7,
+      0.0,
+      0.30000000000000004
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.007216756031752117,
+     "component": null,
+     "dwsim": -249847.67591168062,
+     "generator": -249847.6686949246,
+     "quantity": "h_L",
+     "relative": 2.8884624257047222e-08,
+     "state": "I4",
+     "x": [
+      0.7,
+      0.0,
+      0.30000000000000004
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.0072167588236264684,
+     "component": null,
+     "dwsim": -211207.26695752205,
+     "generator": -211207.25974076323,
+     "quantity": "h_V",
+     "relative": 3.416908506120647e-08,
+     "state": "I4",
+     "x": [
+      0.7,
+      0.0,
+      0.30000000000000004
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.3333751306368298,
+     "generator": 1.333375130636831,
+     "quantity": "phi_L",
+     "relative": 9.318327911690797e-16,
+     "state": "I4",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.0534717298866048,
+     "generator": 1.0534717298866096,
+     "quantity": "phi_L",
+     "relative": 4.6935482329361066e-15,
+     "state": "I4",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.4652984947168638,
+     "generator": 0.4652984947168614,
+     "quantity": "phi_L",
+     "relative": 5.138410929872764e-15,
+     "state": "I4",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.004080392173680676,
+     "component": null,
+     "dwsim": -270146.1142007508,
+     "generator": -270146.1101203586,
+     "quantity": "h_L",
+     "relative": 1.510438988687541e-08,
+     "state": "I4",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.004080395151839351,
+     "component": null,
+     "dwsim": -229368.71401394304,
+     "generator": -229368.70993354789,
+     "quantity": "h_V",
+     "relative": 1.77896765126399e-08,
+     "state": "I4",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.3525063289997772,
+     "generator": 1.3525063289997785,
+     "quantity": "phi_L",
+     "relative": 1.0298524175121346e-15,
+     "state": "I4",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 0.8495174853406059,
+     "generator": 0.8495174853406101,
+     "quantity": "phi_L",
+     "relative": 4.972385888243032e-15,
+     "state": "I4",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.5390588855124918,
+     "generator": 0.5390588855124889,
+     "quantity": "phi_L",
+     "relative": 5.3630980046367014e-15,
+     "state": "I4",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.0069557614033483785,
+     "component": null,
+     "dwsim": -252504.45566508014,
+     "generator": -252504.44870931873,
+     "quantity": "h_L",
+     "relative": 2.754708457178828e-08,
+     "state": "I4",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006955764636645899,
+     "component": null,
+     "dwsim": -213643.07051432674,
+     "generator": -213643.0635585621,
+     "quantity": "h_V",
+     "relative": 3.2557877240602485e-08,
+     "state": "I4",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 1.0940004714734579e-10,
+     "component": "CH3OH",
+     "dwsim": 137827.95587554894,
+     "generator": 137827.95587554906,
+     "quantity": "P_sat_Pa",
+     "relative": 7.937435221496568e-16,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "absolute": 6.1250862408832406e-12,
+     "component": "CH3OH",
+     "dwsim": 37092.814436084416,
+     "generator": 37092.81443608441,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.6512864645085195e-16,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "absolute": 1.4216847260761956e-14,
+     "component": "CH3OH",
+     "dwsim": 47.25594689544178,
+     "generator": 47.255946895441795,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 3.0084779154289434e-16,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "absolute": 0.009569506577565131,
+     "component": "CH3OH",
+     "dwsim": -198772.05976791008,
+     "generator": -198772.0501984035,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 4.814311955837538e-08,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "absolute": 3.924789619002088e-10,
+     "component": "C2H5OH",
+     "dwsim": 79877.46495064726,
+     "generator": 79877.46495064766,
+     "quantity": "P_sat_Pa",
+     "relative": 4.913512993216575e-15,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "absolute": 1.1184039473459302e-11,
+     "component": "C2H5OH",
+     "dwsim": 40777.01961585569,
+     "generator": 40777.01961585567,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 2.742730974166272e-16,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "absolute": 2.608642257196903e-14,
+     "component": "C2H5OH",
+     "dwsim": 72.47753228566953,
+     "generator": 72.47753228566955,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 3.599242654834001e-16,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "absolute": 0.004343289384089444,
+     "component": "C2H5OH",
+     "dwsim": -231676.4228679535,
+     "generator": -231676.4185246641,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.8747222577713753e-08,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "absolute": 1.8230645188955157e-10,
+     "component": "H2O",
+     "dwsim": 34745.760604525545,
+     "generator": 34745.76060452536,
+     "quantity": "P_sat_Pa",
+     "relative": 5.246868933581716e-15,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "absolute": 1.5277545297797915e-11,
+     "component": "H2O",
+     "dwsim": 42251.46282967427,
+     "generator": 42251.46282967425,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 3.6158618600698757e-16,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "absolute": 7.126998609001475e-15,
+     "component": "H2O",
+     "dwsim": 33.8601021422106,
+     "generator": 33.86010214221059,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 2.1048367128570572e-16,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "absolute": 0.001727014041468359,
+     "component": "H2O",
+     "dwsim": -240222.75039994996,
+     "generator": -240222.7486729359,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 7.189219384962139e-09,
+     "state": "I4",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.1129325680179272,
+     "generator": 1.1129325680179256,
+     "quantity": "phi_L",
+     "relative": 1.4784258908420577e-15,
+     "state": "I5",
+     "x": [
+      0.9,
+      0.0,
+      0.09999999999999998
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 0.6455431184219164,
+     "generator": 0.6455431184219174,
+     "quantity": "phi_L",
+     "relative": 1.5013120526758903e-15,
+     "state": "I5",
+     "x": [
+      0.9,
+      0.0,
+      0.09999999999999998
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.4235549667761746,
+     "generator": 0.42355496677617327,
+     "quantity": "phi_L",
+     "relative": 3.190611858268658e-15,
+     "state": "I5",
+     "x": [
+      0.9,
+      0.0,
+      0.09999999999999998
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006269932591703605,
+     "component": null,
+     "dwsim": -240913.615266677,
+     "generator": -240913.6089967444,
+     "quantity": "h_L",
+     "relative": 2.6025647192842205e-08,
+     "state": "I5",
+     "x": [
+      0.9,
+      0.0,
+      0.09999999999999998
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006269935699294001,
+     "component": null,
+     "dwsim": -203162.7516839577,
+     "generator": -203162.745414022,
+     "quantity": "h_V",
+     "relative": 3.0861640929869315e-08,
+     "state": "I5",
+     "x": [
+      0.9,
+      0.0,
+      0.09999999999999998
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.087265593218789,
+     "generator": 1.0872655932187874,
+     "quantity": "phi_L",
+     "relative": 1.37484398580316e-15,
+     "state": "I5",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 0.8416510793627128,
+     "generator": 0.8416510793627139,
+     "quantity": "phi_L",
+     "relative": 1.3484363218484438e-15,
+     "state": "I5",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.36876194675206836,
+     "generator": 0.36876194675206714,
+     "quantity": "phi_L",
+     "relative": 3.247876619399956e-15,
+     "state": "I5",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.0029378876764300766,
+     "component": null,
+     "dwsim": -270590.276923748,
+     "generator": -270590.27398586035,
+     "quantity": "h_L",
+     "relative": 1.0857329175784033e-08,
+     "state": "I5",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.00293789059787695,
+     "component": null,
+     "dwsim": -229626.22558063726,
+     "generator": -229626.22264274667,
+     "quantity": "h_V",
+     "relative": 1.2794229526859096e-08,
+     "state": "I5",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.1028656244921649,
+     "generator": 1.1028656244921635,
+     "quantity": "phi_L",
+     "relative": 1.2389569676872005e-15,
+     "state": "I5",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 0.6787057385501751,
+     "generator": 0.678705738550176,
+     "quantity": "phi_L",
+     "relative": 1.3346017054879678e-15,
+     "state": "I5",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.42721909976637246,
+     "generator": 0.4272190997663711,
+     "quantity": "phi_L",
+     "relative": 3.1796822522550307e-15,
+     "state": "I5",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.004984054459402115,
+     "component": null,
+     "dwsim": -252932.31548591115,
+     "generator": -252932.3105018567,
+     "quantity": "h_L",
+     "relative": 1.9705092044242916e-08,
+     "state": "I5",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.004984057685153348,
+     "component": null,
+     "dwsim": -213908.45051625167,
+     "generator": -213908.445532194,
+     "quantity": "h_V",
+     "relative": 2.3299957478318592e-08,
+     "state": "I5",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 1.6685468313063627e-10,
+     "component": "CH3OH",
+     "dwsim": 112388.17251345437,
+     "generator": 112388.1725134542,
+     "quantity": "P_sat_Pa",
+     "relative": 1.4846284924747021e-15,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "absolute": 8.123718093194898e-12,
+     "component": "CH3OH",
+     "dwsim": 37229.389310730076,
+     "generator": 37229.38931073007,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 2.1820712731523428e-16,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "absolute": 8.466235155551456e-15,
+     "component": "CH3OH",
+     "dwsim": 46.86943847803971,
+     "generator": 46.869438478039704,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 1.8063444817070384e-16,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "absolute": 0.006831226942925358,
+     "component": "CH3OH",
+     "dwsim": -199024.78142466227,
+     "generator": -199024.77459343534,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 3.4323500463096017e-08,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "absolute": 9.217848370173815e-11,
+     "component": "C2H5OH",
+     "dwsim": 63816.5720875168,
+     "generator": 63816.57208751689,
+     "quantity": "P_sat_Pa",
+     "relative": 1.4444286285908033e-15,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "absolute": 1.7974311110729652e-12,
+     "component": "C2H5OH",
+     "dwsim": 40987.02488546994,
+     "generator": 40987.02488546994,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 4.3853661398833605e-17,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "absolute": 1.4573817779306777e-15,
+     "component": "C2H5OH",
+     "dwsim": 71.65775057025317,
+     "generator": 71.65775057025317,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 2.033808996700032e-17,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "absolute": 0.003208293074594234,
+     "component": "C2H5OH",
+     "dwsim": -232063.42428965497,
+     "generator": -232063.42108136188,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.3825070145240168e-08,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "absolute": 8.868518974277151e-11,
+     "component": "H2O",
+     "dwsim": 27536.977805403985,
+     "generator": 27536.977805403898,
+     "quantity": "P_sat_Pa",
+     "relative": 3.2205854385867937e-15,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "absolute": 1.8007819887243166e-12,
+     "component": "H2O",
+     "dwsim": 42444.13203065339,
+     "generator": 42444.13203065339,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 4.242711306768582e-17,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "absolute": 2.24533422714685e-16,
+     "component": "H2O",
+     "dwsim": 33.82503090334533,
+     "generator": 33.82503090334533,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 6.63808477681179e-18,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "absolute": 0.0012183146429428045,
+     "component": "H2O",
+     "dwsim": -240404.4840176167,
+     "generator": -240404.48279930206,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 5.0677700713255655e-09,
+     "state": "I5",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.518549728932757,
+     "generator": 1.5185497289327639,
+     "quantity": "phi_L",
+     "relative": 4.5735458898037514e-15,
+     "state": "I6",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.1643469297570233,
+     "generator": 1.164346929757025,
+     "quantity": "phi_L",
+     "relative": 1.4684818728219126e-15,
+     "state": "I6",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.36195951296386164,
+     "generator": 0.36195951296386064,
+     "quantity": "phi_L",
+     "relative": 2.8241068847823263e-15,
+     "state": "I6",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.004296985040463421,
+     "component": null,
+     "dwsim": -263974.6898717402,
+     "generator": -263974.68557475513,
+     "quantity": "h_L",
+     "relative": 1.6278019352907064e-08,
+     "state": "I6",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.004296987453950056,
+     "component": null,
+     "dwsim": -223722.41075761538,
+     "generator": -223722.4064606279,
+     "quantity": "h_V",
+     "relative": 1.920678184152407e-08,
+     "state": "I6",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.2349585199208812,
+     "generator": 1.2349585199208872,
+     "quantity": "phi_L",
+     "relative": 4.906474086712705e-15,
+     "state": "I6",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 0.9682890301957836,
+     "generator": 0.9682890301957848,
+     "quantity": "phi_L",
+     "relative": 1.253149111957602e-15,
+     "state": "I6",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.4263773640637953,
+     "generator": 0.42637736406379406,
+     "quantity": "phi_L",
+     "relative": 2.8703655093894202e-15,
+     "state": "I6",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.0036201172753976586,
+     "component": null,
+     "dwsim": -270314.7605382349,
+     "generator": -270314.75691811764,
+     "quantity": "h_L",
+     "relative": 1.3392229549991776e-08,
+     "state": "I6",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.0036201202647950584,
+     "component": null,
+     "dwsim": -229466.7552057494,
+     "generator": -229466.75158562913,
+     "quantity": "h_V",
+     "relative": 1.57762300628732e-08,
+     "state": "I6",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.2526776417732097,
+     "generator": 1.252677641773216,
+     "quantity": "phi_L",
+     "relative": 4.953282244652272e-15,
+     "state": "I6",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 0.7808263275402352,
+     "generator": 0.7808263275402363,
+     "quantity": "phi_L",
+     "relative": 1.4006641563069228e-15,
+     "state": "I6",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.4939678707102709,
+     "generator": 0.49396787071026943,
+     "quantity": "phi_L",
+     "relative": 2.9560817111029614e-15,
+     "state": "I6",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.0061596842365052645,
+     "component": null,
+     "dwsim": -252666.91765022872,
+     "generator": -252666.91149054447,
+     "quantity": "h_L",
+     "relative": 2.4378673883999164e-08,
+     "state": "I6",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.006159687452551491,
+     "component": null,
+     "dwsim": -213744.1401336687,
+     "generator": -213744.13397398125,
+     "quantity": "h_V",
+     "relative": 2.881804210496509e-08,
+     "state": "I6",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 6.086548994555036e-10,
+     "component": "CH3OH",
+     "dwsim": 127654.85457231682,
+     "generator": 127654.85457231743,
+     "quantity": "P_sat_Pa",
+     "relative": 4.767972996363378e-15,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "absolute": 8.408078200913499e-12,
+     "component": "CH3OH",
+     "dwsim": 37144.304776478515,
+     "generator": 37144.30477647851,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 2.26362513755753e-16,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "absolute": 1.1927698978296357e-14,
+     "component": "CH3OH",
+     "dwsim": 47.108522075754315,
+     "generator": 47.10852207575433,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 2.5319620426885077e-16,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "absolute": 0.008462088079976173,
+     "component": "CH3OH",
+     "dwsim": -198868.31029675054,
+     "generator": -198868.30183466247,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 4.255121606565277e-08,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "absolute": 1.0516838542555952e-10,
+     "component": "C2H5OH",
+     "dwsim": 73418.65080697065,
+     "generator": 73418.65080697075,
+     "quantity": "P_sat_Pa",
+     "relative": 1.4324478081470585e-15,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "absolute": 6.25334292455935e-12,
+     "component": "C2H5OH",
+     "dwsim": 40856.711247487634,
+     "generator": 40856.71124748763,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.5305546466234191e-16,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "absolute": 1.958176426493926e-15,
+     "component": "C2H5OH",
+     "dwsim": 72.16592990750762,
+     "generator": 72.16592990750762,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 2.7134361450114312e-17,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "absolute": 0.003891919383432469,
+     "component": "C2H5OH",
+     "dwsim": -231823.95871323333,
+     "generator": -231823.95482131394,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.6788253769686123e-08,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "absolute": 9.516561528301013e-11,
+     "component": "H2O",
+     "dwsim": 31839.359007520838,
+     "generator": 31839.359007520743,
+     "quantity": "P_sat_Pa",
+     "relative": 2.988929998890089e-15,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "absolute": 2.244926954823764e-12,
+     "component": "H2O",
+     "dwsim": 42324.26200589302,
+     "generator": 42324.26200589302,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 5.3041136417480624e-17,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "absolute": 7.181372159118355e-15,
+     "component": "H2O",
+     "dwsim": 33.84665911415074,
+     "generator": 33.84665911415073,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 2.121737372926104e-16,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "absolute": 0.0015202536726291699,
+     "component": "H2O",
+     "dwsim": -240291.81106485857,
+     "generator": -240291.8095446049,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 6.3266978408890305e-09,
+     "state": "I6",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 3.4054343791042956,
+     "generator": 3.4054343791042805,
+     "quantity": "phi_L",
+     "relative": 4.4263965068818625e-15,
+     "state": "I7",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 2.82229299906502,
+     "generator": 2.8222929990650183,
+     "quantity": "phi_L",
+     "relative": 6.255727072326856e-16,
+     "state": "I7",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.9069130670750416,
+     "generator": 0.9069130670750354,
+     "quantity": "phi_L",
+     "relative": 6.913139758794735e-15,
+     "state": "I7",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.013393597276483421,
+     "component": null,
+     "dwsim": -262373.4500098797,
+     "generator": -262373.43661628244,
+     "quantity": "h_L",
+     "relative": 5.1047840243337495e-08,
+     "state": "I7",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.013393599649444353,
+     "component": null,
+     "dwsim": -222815.49070628505,
+     "generator": -222815.4773126854,
+     "quantity": "h_V",
+     "relative": 6.011072395410219e-08,
+     "state": "I7",
+     "x": [
+      0.4,
+      0.0,
+      0.6
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 2.7694649179925235,
+     "generator": 2.769464917992512,
+     "quantity": "phi_L",
+     "relative": 4.211543748061523e-15,
+     "state": "I7",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 2.3470627878610877,
+     "generator": 2.3470627878610864,
+     "quantity": "phi_L",
+     "relative": 5.2533513294358e-16,
+     "state": "I7",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.0683161766025344,
+     "generator": 1.068316176602527,
+     "quantity": "phi_L",
+     "relative": 6.840466775524244e-15,
+     "state": "I7",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.010713438183855886,
+     "component": null,
+     "dwsim": -268424.78842435725,
+     "generator": -268424.77771091904,
+     "quantity": "h_L",
+     "relative": 3.991225502808745e-08,
+     "state": "I7",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.010713441122136883,
+     "component": null,
+     "dwsim": -228348.92728893197,
+     "generator": -228348.91657549085,
+     "quantity": "h_V",
+     "relative": 4.691697811754268e-08,
+     "state": "I7",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 2.809201059373857,
+     "generator": 2.8092010593738452,
+     "quantity": "phi_L",
+     "relative": 4.107807396320207e-15,
+     "state": "I7",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.8926667141745543,
+     "generator": 1.8926667141745532,
+     "quantity": "phi_L",
+     "relative": 6.113909518203744e-16,
+     "state": "I7",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.2376685806489818,
+     "generator": 1.2376685806489731,
+     "quantity": "phi_L",
+     "relative": 7.020866967245015e-15,
+     "state": "I7",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.018651349671149155,
+     "component": null,
+     "dwsim": -250845.80548376328,
+     "generator": -250845.7868324136,
+     "quantity": "h_L",
+     "relative": 7.435384866005283e-08,
+     "state": "I7",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.01865135290903082,
+     "component": null,
+     "dwsim": -212589.37525529513,
+     "generator": -212589.35660394223,
+     "quantity": "h_V",
+     "relative": 8.77341801442046e-08,
+     "state": "I7",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 1.20760279998407e-09,
+     "component": "CH3OH",
+     "dwsim": 286273.29229820485,
+     "generator": 286273.2922982036,
+     "quantity": "P_sat_Pa",
+     "relative": 4.218356488268353e-15,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "absolute": 1.4182804323593622e-11,
+     "component": "CH3OH",
+     "dwsim": 36593.72477017346,
+     "generator": 36593.724770173445,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 3.875747662384356e-16,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "absolute": 9.724599537469744e-16,
+     "component": "CH3OH",
+     "dwsim": 48.80468592145157,
+     "generator": 48.80468592145157,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 1.992554475838846e-17,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "absolute": 0.026073745733547923,
+     "component": "CH3OH",
+     "dwsim": -197768.35899532688,
+     "generator": -197768.33292158114,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.3183984184104262e-07,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "absolute": 8.9468592713968e-11,
+     "component": "C2H5OH",
+     "dwsim": 177961.51548795952,
+     "generator": 177961.51548795943,
+     "quantity": "P_sat_Pa",
+     "relative": 5.027412385686347e-16,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "absolute": 7.618180888635673e-12,
+     "component": "C2H5OH",
+     "dwsim": 39966.86117262384,
+     "generator": 39966.86117262383,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.9061243903371406e-16,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "absolute": 5.446698654217663e-16,
+     "component": "C2H5OH",
+     "dwsim": 75.67827370791426,
+     "generator": 75.67827370791426,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 7.197176134381169e-18,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "absolute": 0.010095358336148736,
+     "component": "C2H5OH",
+     "dwsim": -230128.22077690443,
+     "generator": -230128.2106815461,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 4.3868408424375236e-08,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "absolute": 5.561506780059965e-10,
+     "component": "H2O",
+     "dwsim": 79775.58179026788,
+     "generator": 79775.58179026733,
+     "quantity": "P_sat_Pa",
+     "relative": 6.971439950988201e-15,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "absolute": 8.239811335812162e-13,
+     "component": "H2O",
+     "dwsim": 41534.11565921276,
+     "generator": 41534.11565921276,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.983865842581019e-17,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "absolute": 1.2696054187183736e-14,
+     "component": "H2O",
+     "dwsim": 34.005972167198266,
+     "generator": 34.00597216719825,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 3.733477791712773e-16,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "absolute": 0.004940168954267585,
+     "component": "H2O",
+     "dwsim": -239513.57851359053,
+     "generator": -239513.57357342157,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 2.062584128558043e-08,
+     "state": "I7",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 2.4390428567116853,
+     "generator": 2.439042856711685,
+     "quantity": "phi_L",
+     "relative": 1.8085291216313723e-16,
+     "state": "I8",
+     "x": [
+      0.0,
+      0.2,
+      0.8
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 3.15658201739507,
+     "generator": 3.156582017395067,
+     "quantity": "phi_L",
+     "relative": 1.0025009325877663e-15,
+     "state": "I8",
+     "x": [
+      0.0,
+      0.2,
+      0.8
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.7073237112904042,
+     "generator": 0.7073237112903984,
+     "quantity": "phi_L",
+     "relative": 8.21626175939197e-15,
+     "state": "I8",
+     "x": [
+      0.0,
+      0.2,
+      0.8
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.00476793515207753,
+     "component": null,
+     "dwsim": -279288.82406757056,
+     "generator": -279288.8192996354,
+     "quantity": "h_L",
+     "relative": 1.707170077210375e-08,
+     "state": "I8",
+     "x": [
+      0.0,
+      0.2,
+      0.8
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.004767937581817292,
+     "component": null,
+     "dwsim": -237874.3042858954,
+     "generator": -237874.2995179578,
+     "quantity": "h_V",
+     "relative": 2.0043937455535613e-08,
+     "state": "I8",
+     "x": [
+      0.0,
+      0.2,
+      0.8
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 2.2956914412983993,
+     "generator": 2.2956914412984006,
+     "quantity": "phi_L",
+     "relative": 5.477080647563232e-16,
+     "state": "I8",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.9118157779859588,
+     "generator": 1.9118157779859568,
+     "quantity": "phi_L",
+     "relative": 1.0284918425600784e-15,
+     "state": "I8",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.8633174808675176,
+     "generator": 0.8633174808675107,
+     "quantity": "phi_L",
+     "relative": 7.989015938447237e-15,
+     "state": "I8",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.0085808366197225,
+     "component": null,
+     "dwsim": -268887.2651542934,
+     "generator": -268887.25657345675,
+     "quantity": "h_L",
+     "relative": 3.191239603197156e-08,
+     "state": "I8",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.00858083961796375,
+     "component": null,
+     "dwsim": -228626.40111745882,
+     "generator": -228626.3925366192,
+     "quantity": "h_V",
+     "relative": 3.7532148072490584e-08,
+     "state": "I8",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 2.3286299050018764,
+     "generator": 2.328629905001878,
+     "quantity": "phi_L",
+     "relative": 6.733473877937416e-16,
+     "state": "I8",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.5416844003245782,
+     "generator": 1.5416844003245767,
+     "quantity": "phi_L",
+     "relative": 1.0428679485417627e-15,
+     "state": "I8",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 1.0001729306325848,
+     "generator": 1.0001729306325766,
+     "quantity": "phi_L",
+     "relative": 8.110387577571243e-15,
+     "state": "I8",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.01484844993565046,
+     "component": null,
+     "dwsim": -251291.5271400616,
+     "generator": -251291.51229161167,
+     "quantity": "h_L",
+     "relative": 5.90885454118305e-08,
+     "state": "I8",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.014848453169724992,
+     "component": null,
+     "dwsim": -212876.51229057193,
+     "generator": -212876.49744211877,
+     "quantity": "h_V",
+     "relative": 6.975149134893246e-08,
+     "state": "I8",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 9.668144043157055e-11,
+     "component": "CH3OH",
+     "dwsim": 237300.40511857392,
+     "generator": 237300.405118574,
+     "quantity": "P_sat_Pa",
+     "relative": 4.074221465541151e-16,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "absolute": 1.1904212841116884e-11,
+     "component": "CH3OH",
+     "dwsim": 36722.98642959339,
+     "generator": 36722.98642959337,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 3.2416243880219457e-16,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "absolute": 7.703996336740297e-15,
+     "component": "CH3OH",
+     "dwsim": 48.38103315896639,
+     "generator": 48.381033158966396,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 1.592358788913652e-16,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "absolute": 0.020663336569123402,
+     "component": "CH3OH",
+     "dwsim": -198041.92930034714,
+     "generator": -198041.90863701058,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.0433820150156736e-07,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "absolute": 1.504556050999153e-10,
+     "component": "C2H5OH",
+     "dwsim": 144959.74924225602,
+     "generator": 144959.74924225587,
+     "quantity": "P_sat_Pa",
+     "relative": 1.0379129785087776e-15,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "absolute": 2.408778245875035e-12,
+     "component": "C2H5OH",
+     "dwsim": 40183.953642116554,
+     "generator": 40183.953642116554,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 5.99437842111785e-17,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "absolute": 7.132274467769893e-16,
+     "component": "C2H5OH",
+     "dwsim": 74.81504858007963,
+     "generator": 74.81504858007963,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 9.533208362667485e-18,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "absolute": 0.008389778946403168,
+     "component": "C2H5OH",
+     "dwsim": -230551.85759259874,
+     "generator": -230551.84920281978,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 3.638998765532589e-08,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "absolute": 5.222247986530688e-10,
+     "component": "H2O",
+     "dwsim": 64467.482393593185,
+     "generator": 64467.48239359266,
+     "quantity": "P_sat_Pa",
+     "relative": 8.100592411298693e-15,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "absolute": 4.4668404480659324e-12,
+     "component": "H2O",
+     "dwsim": 41722.16131656784,
+     "generator": 41722.16131656785,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.0706157847801026e-16,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "absolute": 1.0162684673309608e-14,
+     "component": "H2O",
+     "dwsim": 33.96525436365142,
+     "generator": 33.96525436365141,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 2.9920826043291484e-16,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "absolute": 0.0038624772571766684,
+     "component": "H2O",
+     "dwsim": -239704.91595921956,
+     "generator": -239704.9120967423,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.6113467276873385e-08,
+     "state": "I8",
+     "x": null
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.479513720472568,
+     "generator": 1.4795137204725701,
+     "quantity": "phi_L",
+     "relative": 1.5401902752022338e-15,
+     "state": "I9",
+     "x": [
+      0.0,
+      0.6,
+      0.4
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.1977062529371907,
+     "generator": 1.1977062529371953,
+     "quantity": "phi_L",
+     "relative": 3.945994742445767e-15,
+     "state": "I9",
+     "x": [
+      0.0,
+      0.6,
+      0.4
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.7638837710971618,
+     "generator": 0.7638837710971617,
+     "quantity": "phi_L",
+     "relative": 9.910261264218747e-17,
+     "state": "I9",
+     "x": [
+      0.0,
+      0.6,
+      0.4
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.004710622155915781,
+     "component": null,
+     "dwsim": -275779.2281999845,
+     "generator": -275779.2234893624,
+     "quantity": "h_L",
+     "relative": 1.7081135033718316e-08,
+     "state": "I9",
+     "x": [
+      0.0,
+      0.6,
+      0.4
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.0047106257327795545,
+     "component": null,
+     "dwsim": -234681.88780157073,
+     "generator": -234681.883090945,
+     "quantity": "h_V",
+     "relative": 2.0072387654031527e-08,
+     "state": "I9",
+     "x": [
+      0.0,
+      0.6,
+      0.4
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.7340067979975828,
+     "generator": 1.7340067979975864,
+     "quantity": "phi_L",
+     "relative": 2.0458011446126914e-15,
+     "state": "I9",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.4058060901404403,
+     "generator": 1.4058060901404457,
+     "quantity": "phi_L",
+     "relative": 3.762141084515751e-15,
+     "state": "I9",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.6275107499066254,
+     "generator": 0.6275107499066253,
+     "quantity": "phi_L",
+     "relative": 2.4248647626505015e-16,
+     "state": "I9",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.005968413030878983,
+     "component": null,
+     "dwsim": -269551.7596622016,
+     "generator": -269551.7536937886,
+     "quantity": "h_L",
+     "relative": 2.2141992953453808e-08,
+     "state": "I9",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.00596841600225973,
+     "component": null,
+     "dwsim": -229020.56597737476,
+     "generator": -229020.56000895877,
+     "quantity": "h_V",
+     "relative": 2.6060612208904996e-08,
+     "state": "I9",
+     "x": [
+      0.2,
+      0.3,
+      0.5
+     ]
+    },
+    {
+     "component": "CH3OH",
+     "dwsim": 1.7588862390888134,
+     "generator": 1.7588862390888174,
+     "quantity": "phi_L",
+     "relative": 2.239827401493104e-15,
+     "state": "I9",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "C2H5OH",
+     "dwsim": 1.1336392052031292,
+     "generator": 1.1336392052031337,
+     "quantity": "phi_L",
+     "relative": 3.8416742279174506e-15,
+     "state": "I9",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "component": "H2O",
+     "dwsim": 0.7269854713319227,
+     "generator": 0.7269854713319225,
+     "quantity": "phi_L",
+     "relative": 2.567650304966276e-16,
+     "state": "I9",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.010243858475928382,
+     "component": null,
+     "dwsim": -251931.8370425996,
+     "generator": -251931.82679874112,
+     "quantity": "h_L",
+     "relative": 4.0661232072563086e-08,
+     "state": "I9",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute_J_per_mol": 0.010243861711434625,
+     "component": null,
+     "dwsim": -213283.84162224023,
+     "generator": -213283.83137837853,
+     "quantity": "h_V",
+     "relative": 4.802924649858427e-08,
+     "state": "I9",
+     "x": [
+      0.6,
+      0.2,
+      0.2
+     ]
+    },
+    {
+     "absolute": 3.3797779837266166e-10,
+     "component": "CH3OH",
+     "dwsim": 179240.34050955126,
+     "generator": 179240.3405095516,
+     "quantity": "P_sat_Pa",
+     "relative": 1.885612342689402e-15,
+     "state": "I9",
+     "x": null
+    },
+    {
+     "absolute": 1.1535567020807096e-11,
+     "component": "CH3OH",
+     "dwsim": 36914.97812335381,
+     "generator": 36914.978123353794,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 3.1249014918172918e-16,
+     "state": "I9",
+     "x": null
+    },
+    {
+     "absolute": 3.335451258340662e-15,
+     "component": "CH3OH",
+     "dwsim": 47.78185190739578,
+     "generator": 47.78185190739578,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 6.98058180081629e-17,
+     "state": "I9",
+     "x": null
+    },
+    {
+     "absolute": 0.01416733440558001,
+     "component": "CH3OH",
+     "dwsim": -198429.93340845424,
+     "generator": -198429.91924111982,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 7.139716863143373e-08,
+     "state": "I9",
+     "x": null
+    },
+    {
+     "absolute": 4.195809860050069e-10,
+     "component": "C2H5OH",
+     "dwsim": 106592.53922711963,
+     "generator": 106592.53922712005,
+     "quantity": "P_sat_Pa",
+     "relative": 3.936307259844825e-15,
+     "state": "I9",
+     "x": null
+    },
+    {
+     "absolute": 5.477593359503571e-12,
+     "component": "C2H5OH",
+     "dwsim": 40496.61652858364,
+     "generator": 40496.61652858365,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 1.3526051875561832e-16,
+     "state": "I9",
+     "x": null
+    },
+    {
+     "absolute": 1.0639012061805558e-14,
+     "component": "C2H5OH",
+     "dwsim": 73.57875966674803,
+     "generator": 73.57875966674804,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 1.445935227773835e-16,
+     "state": "I9",
+     "x": null
+    },
+    {
+     "absolute": 0.0061185177138316695,
+     "component": "C2H5OH",
+     "dwsim": -231150.6232361765,
+     "generator": -231150.61711765878,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 2.646983075419289e-08,
+     "state": "I9",
+     "x": null
+    },
+    {
+     "absolute": 1.0526494379671005e-11,
+     "component": "H2O",
+     "dwsim": 46858.81974814754,
+     "generator": 46858.819748147536,
+     "quantity": "P_sat_Pa",
+     "relative": 2.246427553286198e-16,
+     "state": "I9",
+     "x": null
+    },
+    {
+     "absolute": 2.6217052145047928e-12,
+     "component": "H2O",
+     "dwsim": 41998.42620316797,
+     "generator": 41998.42620316797,
+     "quantity": "dh_vap_J_per_mol",
+     "relative": 6.24238918340001e-17,
+     "state": "I9",
+     "x": null
+    },
+    {
+     "absolute": 4.852445934607201e-15,
+     "component": "H2O",
+     "dwsim": 33.908700981009794,
+     "generator": 33.90870098100979,
+     "quantity": "cp_ig_J_per_mol_K",
+     "relative": 1.431032683123061e-16,
+     "state": "I9",
+     "x": null
+    },
+    {
+     "absolute": 0.0025987876598280372,
+     "component": "H2O",
+     "dwsim": -239978.78464966197,
+     "generator": -239978.78205087432,
+     "quantity": "h_ig_J_per_mol",
+     "relative": 1.0829239308653159e-08,
+     "state": "I9",
+     "x": null
+    }
+   ],
+   "worst_per_quantity": {
+    "P_sat_Pa": {
+     "absolute": 4.766648763399639e-10,
+     "at": "I13 H2O None",
+     "relative": 1.0907325666275223e-14
+    },
+    "cp_ig_J_per_mol_K": {
+     "absolute": 2.8209745188928775e-14,
+     "at": "I10 CH3OH None",
+     "relative": 5.875158020058989e-16
+    },
+    "dh_vap_J_per_mol": {
+     "absolute": 1.7740559432083168e-11,
+     "at": "I2 CH3OH None",
+     "relative": 4.820079993780693e-16
+    },
+    "h_L": {
+     "absolute": 0.018651349671149155,
+     "at": "I7 None [0.6, 0.2, 0.2]",
+     "relative": 7.435384866005283e-08
+    },
+    "h_V": {
+     "absolute": 0.01865135290903082,
+     "at": "I7 None [0.6, 0.2, 0.2]",
+     "relative": 8.77341801442046e-08
+    },
+    "h_ig_J_per_mol": {
+     "absolute": 0.026073745733547923,
+     "at": "I7 CH3OH None",
+     "relative": 1.3183984184104262e-07
+    },
+    "phi_L": {
+     "absolute": null,
+     "at": "I13 H2O [0.1, 0.6, 0.3]",
+     "relative": 1.1071390500987502e-14
+    }
+   }
+  }
+ },
+ "settings_readback": {
+  "RET_VNAMES": [
+   "S10-CH3OH",
+   "S10-C2H5OH",
+   "S10-H2O"
+  ],
+  "compounds": {
+   "C2H5OH": {
+    "Acentric_Factor": 0.0,
+    "CAS_Number": "s10-c2h5oh",
+    "Critical_Pressure": 10000000.0,
+    "Critical_Temperature": 1000.0,
+    "HVap_A": 55297354.99922125,
+    "HVap_B": -43492.203956609555,
+    "HVap_C": 0.0,
+    "HVap_D": 0.012425738425368798,
+    "HVap_E": 0.0,
+    "IG_Enthalpy_of_Formation_25C": -5099.929698200471,
+    "Ideal_Gas_Heat_Capacity_Const_A": 40397.328033312246,
+    "Ideal_Gas_Heat_Capacity_Const_B": -31.096650586673583,
+    "Ideal_Gas_Heat_Capacity_Const_C": 0.5783126694018005,
+    "Ideal_Gas_Heat_Capacity_Const_D": -0.0007371113226186197,
+    "Ideal_Gas_Heat_Capacity_Const_E": 2.9240670466215304e-07,
+    "IdealgasCpEquation": "100",
+    "LiquidDensityEquation": "1",
+    "LiquidHeatCapacityEquation": "1",
+    "Liquid_Density_Const_A": 1000000000000.0,
+    "Liquid_Heat_Capacity_Const_A": 40397.328033312246,
+    "Molar_Weight": 46.068999999999996,
+    "NBP": 350.0,
+    "OriginalDB": "User",
+    "VaporPressureEquation": "101",
+    "Vapor_Pressure_Constant_A": 61.01672771203128,
+    "Vapor_Pressure_Constant_B": -6650.74311339,
+    "Vapor_Pressure_Constant_C": -5.23090979586,
+    "Vapor_Pressure_Constant_D": 7.472364117819999e-07,
+    "Vapor_Pressure_Constant_E": 2.0,
+    "VaporizationEnthalpyEquation": "100"
+   },
+   "CH3OH": {
+    "Acentric_Factor": 0.0,
+    "CAS_Number": "s10-ch3oh",
+    "Critical_Pressure": 10000000.0,
+    "Critical_Temperature": 1000.0,
+    "HVap_A": 50415961.4434749,
+    "HVap_B": -45255.23437581664,
+    "HVap_C": 0.0,
+    "HVap_D": 0.05616928800338289,
+    "HVap_E": 0.0,
+    "IG_Enthalpy_of_Formation_25C": -6271.108385032455,
+    "Ideal_Gas_Heat_Capacity_Const_A": 47520.44489333929,
+    "Ideal_Gas_Heat_Capacity_Const_B": -126.63685594739796,
+    "Ideal_Gas_Heat_Capacity_Const_C": 0.5424697593792224,
+    "Ideal_Gas_Heat_Capacity_Const_D": -0.00059099773073163,
+    "Ideal_Gas_Heat_Capacity_Const_E": 2.1730072376744933e-07,
+    "IdealgasCpEquation": "100",
+    "LiquidDensityEquation": "1",
+    "LiquidHeatCapacityEquation": "1",
+    "Liquid_Density_Const_A": 1000000000000.0,
+    "Liquid_Heat_Capacity_Const_A": 47520.44489333929,
+    "Molar_Weight": 32.042,
+    "NBP": 350.0,
+    "OriginalDB": "User",
+    "VaporPressureEquation": "101",
+    "Vapor_Pressure_Constant_A": 60.788949915172935,
+    "Vapor_Pressure_Constant_B": -6063.64641455,
+    "Vapor_Pressure_Constant_C": -5.44295361639,
+    "Vapor_Pressure_Constant_D": 3.37780627462e-06,
+    "Vapor_Pressure_Constant_E": 2.0,
+    "VaporizationEnthalpyEquation": "100"
+   },
+   "H2O": {
+    "Acentric_Factor": 0.0,
+    "CAS_Number": "s10-h2o",
+    "Critical_Pressure": 10000000.0,
+    "Critical_Temperature": 1000.0,
+    "HVap_A": 59193873.898460545,
+    "HVap_B": -55738.47694890913,
+    "HVap_C": 0.0,
+    "HVap_D": 0.05627518614760294,
+    "HVap_E": 0.0,
+    "IG_Enthalpy_of_Formation_25C": -13423.51493896003,
+    "Ideal_Gas_Heat_Capacity_Const_A": 34909.43998318199,
+    "Ideal_Gas_Heat_Capacity_Const_B": -16.931855198782536,
+    "Ideal_Gas_Heat_Capacity_Const_C": 0.05421363959892251,
+    "Ideal_Gas_Heat_Capacity_Const_D": -4.562952656951325e-05,
+    "Ideal_Gas_Heat_Capacity_Const_E": 1.4733046254648587e-08,
+    "IdealgasCpEquation": "100",
+    "LiquidDensityEquation": "1",
+    "LiquidHeatCapacityEquation": "1",
+    "Liquid_Density_Const_A": 1000000000000.0,
+    "Liquid_Heat_Capacity_Const_A": 34909.43998318199,
+    "Molar_Weight": 18.015,
+    "NBP": 350.0,
+    "OriginalDB": "User",
+    "VaporPressureEquation": "101",
+    "Vapor_Pressure_Constant_A": 69.83472321063614,
+    "Vapor_Pressure_Constant_B": -7119.38661787,
+    "Vapor_Pressure_Constant_C": -6.70379788914,
+    "Vapor_Pressure_Constant_D": 3.38417458422e-06,
+    "Vapor_Pressure_Constant_E": 2.0,
+    "VaporizationEnthalpyEquation": "100"
+   }
+  },
+  "flash_algorithm": "DWSIM.Thermodynamics.PropertyPackages.Auxiliary.FlashAlgorithms.UniversalFlash",
+  "flash_settings": {
+   "CalculateBubbleAndDewPoints": "False",
+   "CheckIncipientLiquidForStability": "False",
+   "FailSafeCalculationMode": "3",
+   "ForceEquilibriumCalculationType": "VLE",
+   "GM_OptimizationMethod": "IPOPT",
+   "GibbsMinimizationExternalSolver": "",
+   "GibbsMinimizationExternalSolverConfigData": "",
+   "HandleSolidsInDefaultEqCalcMode": "False",
+   "IO_FastMode": "True",
+   "ImmiscibleWaterOption": "False",
+   "NL_FastMode": "True",
+   "PHFlash_External_Loop_Tolerance": "0.0001",
+   "PHFlash_Internal_Loop_Tolerance": "0.0001",
+   "PHFlash_MaximumTemperatureChange": "30.0",
+   "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+   "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+   "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+   "PTFlash_DampingFactor": "1.0",
+   "PTFlash_External_Loop_Tolerance": "0.0001",
+   "PTFlash_Internal_Loop_Tolerance": "0.0001",
+   "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+   "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+   "PVFlash_FivePointStencilNumericalDerivative": "False",
+   "PVFlash_FixedDampingFactor": "1.0",
+   "PVFlash_MaximumTemperatureChange": "10.0",
+   "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+   "PVFlash_TryIdealCalcOnFailure": "True",
+   "Replace_PTFlash": "False",
+   "ST_Number_of_Random_Tries": "20",
+   "ThreePhaseFlashStabTestCompIds": "",
+   "ThreePhaseFlashStabTestSeverity": "0",
+   "UseIOFlash": "False",
+   "UsePhaseIdentificationAlgorithm": "False",
+   "ValidateEquilibriumCalc": "False",
+   "ValidationGibbsTolerance": "0.01"
+  },
+  "options": {
+   "ActivityCoefficientModels_IgnoreMissingInteractionParameters": "False",
+   "AutoEstimateMissingNRTLUNIQUACParameters": "False",
+   "EnthalpyEntropyCpCvCalculationMode": "Ideal",
+   "LiquidDensityCalculationMode_Subcritical": "Rackett_and_ExpData",
+   "LiquidDensity_CorrectExpDataForPressure": "False",
+   "LiquidFugacity_UsePoyntingCorrectionFactor": "False",
+   "UseHenryConstants": "True",
+   "VaporPhaseFugacityCalculationMode": "Ideal"
+  },
+  "property_package": "Wilson"
+ },
+ "wilson_mapping_check": {
+  "form": "Lambda_ij = V_j / V_i exp(-A_ij / (1.9872 T)) (DWSIM 9.0.5 WilsonModel.vb)",
+  "max_abs_applied_A_vs_rule_cal_per_mol": 0.0,
+  "max_relative_effective_lambda_vs_records": 3.364567117869105e-16,
+  "per_state": {
+   "I1": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.16498749849999997,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I10": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.16498749849999997,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I11": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.16498749849999997,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I12": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.16498749849999997,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I13": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.16498749849999997,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I14": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.16498749849999997,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I2": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999996,
+     1.0,
+     0.16498749849999997,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I3": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.1649874985,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I4": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.16498749849999997,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I5": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362000002,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.16498749849999994,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I6": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.1649874985,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I7": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.16498749849999997,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I8": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.16498749849999997,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   },
+   "I9": {
+    "effective_lambda": [
+     1.0,
+     0.6109248362,
+     0.3674022637,
+     1.4988785599999999,
+     1.0,
+     0.1649874985,
+     1.134238098,
+     0.8615311153000003,
+     1.0
+    ]
+   }
+  }
+ },
+ "written_by": "scripts/s10_dwsim_comparison.py --write"
+}

@@ -428,6 +428,31 @@ def state_rows(qty: dict[str, Any], cf: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+def self_consistency(qty: dict[str, Any], state: dict[str, Any], model: Any) -> dict[str, Any]:
+    """Diagnostic, not a difference to our values: how well DWSIM's own two-phase result solves
+    its own equations. ln K_i - ln(gamma_i(x) P_i^sat / P) uses the generator's closed forms,
+    which the readbacks show DWSIM evaluates identically (Lambda to 3e-16, gamma, P_sat to
+    1e-14); the balance and Rachford-Rice residuals use the record alone."""
+    t, p = mpf(state["T"]), mpf(state["P"])
+    z = [mpf(v) / sum(mpf(u) for u in state["n"]) for v in state["n"]]
+    x, y, b = [mpf(v) for v in qty["x"]], [mpf(v) for v in qty["y"]], mpf(beta(qty))
+    lg = model.lngamma(x)
+    eq = [
+        float(abs(mp.log(y[i] / x[i]) - (lg[i] + model.lnpsat(i, t) - mp.log(p))))
+        for i in range(3)
+        if x[i] > 0
+    ]
+    bal = [float(abs(z[i] - (1 - b) * x[i] - b * y[i])) for i in range(3)]
+    k = [y[i] / x[i] for i in range(3) if x[i] > 0]
+    zk = [z[i] for i in range(3) if x[i] > 0]
+    rr = float(abs(sum(zi * (ki - 1) / (1 + b * (ki - 1)) for zi, ki in zip(zk, k, strict=True))))
+    return {
+        "max_abs_lnK_minus_ln_gamma_psat_over_p": max(eq),
+        "max_abs_component_balance": max(bal),
+        "abs_rachford_rice_residual": rr,
+    }
+
+
 def ladder(q: dict[str, Any]) -> dict[str, Any]:
     """The selection rule, recomputed from the attempts' own convergence flags."""
     conv: dict[str, list[float]] = {sid: [] for sid in q["states"]}
@@ -450,7 +475,11 @@ def ladder(q: dict[str, Any]) -> dict[str, Any]:
 
 
 def a45(
-    q: dict[str, Any], real: dict[str, Any], gate: dict[str, Any], lad: dict[str, Any]
+    q: dict[str, Any],
+    real: dict[str, Any],
+    gate: dict[str, Any],
+    lad: dict[str, Any],
+    model: Any,
 ) -> dict[str, Any]:
     states: dict[str, Any] = {}
     tol = lad["selected_tolerance"]
@@ -492,6 +521,7 @@ def a45(
                     "max_ratio": worst["ratio"],
                     "argmax": worst["quantity"],
                     "all_within": all(r["within"] for r in rows),
+                    "dwsim_self_consistency": self_consistency(qty, entry["state"], model),
                 }
             )
         else:
@@ -545,7 +575,7 @@ def comparison() -> dict[str, Any]:
         "wilson_mapping_check": wilson_mapping_check(q, model),
         "readbacks": rb,
         "ladder": lad,
-        "comparison": a45(q, real, rb["gamma_gate"], lad),
+        "comparison": a45(q, real, rb["gamma_gate"], lad, model),
     }
 
 
