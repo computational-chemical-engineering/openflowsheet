@@ -1,0 +1,18 @@
+# S08 build decisions
+
+Build-lane choices the design note (`docs/derivations/S08-design.md`, ADR 0048) left to the engineer. One line
+each; each is isolated and revertible. Measurements go in the run log below.
+
+## WO-1 (design note §5.5, §7 A12; S02 §8 item 6)
+
+- DECISION W1-1: how the failure strings name `<bubble|dew>` while `saturation_errors` keeps §5.5's `-> dict[int, float]` → a private `_saturation_pairs` returns `(bubble, dew)` errors per `TWO_PHASE` stage; `saturation_errors` is the larger of the two (F4's definition of the error); `acceptance_failures` emits one `§8.6: TWO_PHASE stage <j>: <side> error <e> K` per side over `τ₆`, so a stage can carry two strings. Alternative: one string per stage naming the larger side, or a public pair-valued helper. Reversible by: the item-6 loop in `acceptance_failures` and `_saturation_pairs` (`column_solve.py`).
+- DECISION W1-2: `<e>` is printed with `repr` (`{error!r}`), as every other §8 failure string in `acceptance_failures`; a non-`inside` band position prints `inf`. Alternative: `%g` or a fixed precision. Reversible by: one f-string.
+- DECISION W1-3: cases §5.5 does not name → a `BandError` from `band_temperature` (a provider refusal or an exhausted bisection) and a phase of the stage with no positive flow are `inf`, i.e. item-6 failures, never a raise out of acceptance (the latter is already a `V_j, L_j > 0` failure; `band_temperature` would raise `ValueError` on it). Alternative: let `BandError` propagate, or skip the stage. Reversible by: the `try`/`any` guards in `_saturation_pairs`.
+- DECISION W1-4: the band temperatures are evaluated under `DECLARATION_CONTEXT`, as `_admissibility` and §18.2's `_bubble_temperature` evaluate theirs. Alternative: a new context. Reversible by: one argument.
+- DECISION W1-5: how A12 reaches F1's Stage-A state now that `solve_column(F1)` raises `AcceptanceDefectError` (item 6, until WO-3's Stage B) → the test wraps `column_solve.acceptance_failures` with a recorder that returns `()`, then calls the real function on the recorded arguments. F1's spec is inline (§6.2) until WO-G registers it. The interim `AcceptanceDefectError` on F1 is not pinned by a test; WO-3 replaces it with trigger (ii). Alternative: compile and call `solve_target` piecewise in the test. Reversible by: `_solve_recording` in `tests/test_s08_item6.py`.
+
+## Run log
+
+- MEASURED (WO-1, `tests/test_s08_item6.py::test_a12_item_6_passes_on_every_registered_converged_root`): 47 registered configurations, 42 `CONVERGED`; every `TWO_PHASE` stage passes item 6; the largest error is **2.4221981220762245e-06 K** (≤ 1e-5 K, A12; equal to `measured.txt`'s scan value), 41x under `τ₆ = 1e-4 K`.
+- MEASURED (WO-1, F1 Stage A, acceptance bypassed): stage 4 bubble error 0.37868952299868397 K, dew error 0.3558233184687083 K; stages 1–3 ≤ 2.69e-7 K. `acceptance_failures` returns exactly the two stage-4 `§8.6` strings (item 6 is the only failed item: §5.1 trigger (ii)'s premise holds on F1).
+- MEASURED (WO-1, constructed near-trivial state): M1 stage 3 moved −0.5 K with `v_i = 1e-9 · K_i l_i`; its equilibrium rows ≤ 1e-3 × `EQUILIBRIUM_TOLERANCE`, `V_3 > 0`; item 6 flags stage 3 alone with bubble error 0.5 K.
