@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "what": "The steps by which benchmarks/s10/records.yaml changed after the tool records cited it (S10 spec §17 A4-3, R-721). Each step changes one line, `<key>: <JSON string>`; tests/test_s10_records.py::test_records_lineage_reconstructs_the_cited_hashes walks the steps back from HEAD and rebuilds the hashes the tool records cite.",
+ "steps": [
+  {
+   "from_sha256": "74dc4e54101f6197cc4f9c2dc66e1856b99a7f047b5904a31b6a910b33f5a8f1",
+   "to_sha256": "d4a39730ee24c592b5a7a36977ec4d122817182f71166d75058d9d99d0934d55",
+   "key": "uncertainty",
+   "from_value": "not yet validated (S10 spec §9.6)",
+   "to_value": "Validation (S10 spec §9.6; docs/s10-validation-report.md): VAL-1 within band (38 held-out ternary points, 101.3 kPa, 339.7-368.0 K: AAD(T) 0.21 K, AAD(y) <= 0.0057, max |dy| 0.021). VAL-3: latent heat of methanol not validated within band (+5.72 % at T_b(101325 Pa) against 5 %, from the ideal-gas vapour); ethanol and water latent heats and all liquid c_p within band, the c_p low by up to 19.7 % (methanol). VAL-2 (constant Lambda off the 101.3 kPa isobar) pending: no data. The methanol-ethanol Lambda are individually undetermined by the binary data; the fit's second minimum moves ternary bubble temperatures by up to 0.46 K (S10 spec §17 A4-2).",
+   "authority": "S10 spec §17 A4-3",
+   "commit": "recorded by the next commit (S10_DECISIONS B-80)"
+  }
+ ],
+ "dwsim_inputs_b62": {
+  "what": "benchmarks/s10/dwsim/qualification.json's inputs_sha256 is of inputs.json as first written at ae9aab8c, before B-62 regenerated it (6c812ff4) for Amendment 3's real section. That file differs from the regenerated one only in the real section's SHA-256 (S10 reference verdicts, finding F3).",
+  "commit": "ae9aab8c",
+  "real_section_sha256": "fa7c43f753baf0fae7695146f664a1b022de522a76dcb15246da81c6c8e00723",
+  "inputs_sha256": "28676a25b544724ed38ae93e24c3cf5915a41776bde75866effd423a4a68517a"
+ }
+}

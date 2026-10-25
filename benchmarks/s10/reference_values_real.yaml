@@ -1,6 +1,6 @@
 schema_version: 1
 generator: docs/derivations/scripts/s10_reference.py --real
-records_sha256: 74dc4e54101f6197cc4f9c2dc66e1856b99a7f047b5904a31b6a910b33f5a8f1
+records_sha256: d4a39730ee24c592b5a7a36977ec4d122817182f71166d75058d9d99d0934d55
 spec: docs/derivations/S10-spec.md sections 8.1, 9.7 and 16
 status: 'complete (WO-S10-3): RE1-RE3 (section 7.2), I1-I14 (sections 7.3, 8.1, 15 A2-3); IDAES''s dew, the ladders and the
   constr_viol_tol claims (section 16)'

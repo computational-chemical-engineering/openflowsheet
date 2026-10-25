@@ -363,3 +363,19 @@ string is not changed (it waits for the verdict on the bands and VAL-2).
 - B-74. DECISION: tests → `tests/test_s10_validation.py` requires the report to be the script's output, the bands to
   equal §9.6's, and each verdict to follow from the raw points; it does not require a band to be met. The VAL-2
   assertions (A51 and the VAL-2 part of A53) are skipped with "VAL-2 data not yet supplied". Reversible by: editing.
+
+## WO-S10-7 (close-out: review-final S-1 to S-3, the manifest, the ledger, the harvest)
+
+S-1 (spec §17 A4-3, R-721): the records' `uncertainty` is A4-3's string, held as `UNCERTAINTY` in
+`s10_records.py`. Cascade: `records.yaml` `74dc4e54…` → `d4a39730…` (the `uncertainty` line only), `fit-report.json`
+the `records_sha256` line only; `reference_values_real.yaml` `52e46110…` → `2e9d5130…` (its `records_sha256` only);
+IDAES `inputs.json` `92aa171f…` → `8d6c881d…`, DWSIM `0dc64095…` → `e9428f4b…` (the two hash lines each); both
+`comparison.json` change only in `provenance`. Neither `qualification.json` touched. Every `--check` reproduces (25,
+113, 160 claims; both comparisons; the validation report). The lineage test rebuilds IDAES's `92aa171f…` and, with
+B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so the manifest cites one hash per tool.
+
+- B-80. DECISION: A4-3 step 5's `commit` field cannot name the commit that carries it → the A4-3 commit writes
+  "recorded by the next commit (S10_DECISIONS B-80)", and the next commit replaces it with the A4-3 commit's hash,
+  changing nothing else. The lineage file is a JSON object: `steps` (the list A4-3 names, exactly its seven keys) and
+  `dwsim_inputs_b62` (B-62's real-section hash, which A4-3 step 6 says the file records). Alternative: name the parent
+  commit, or leave the field out. Reversible by: editing `records-lineage.json`.

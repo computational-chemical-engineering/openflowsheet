@@ -469,3 +469,57 @@ def test_a34_real_flash_through_the_provider(
         assert ratios[key] <= 1.0, (sid, key, ratios[key])
         worst = max(worst, (ratios[key], f"{sid}.{key}"))
     assert worst[0] <= 1.0, worst
+
+
+def test_records_lineage_reconstructs_the_cited_hashes() -> None:
+    """S10 spec §17 A4-3 step 6 (R-721): walking `records-lineage.json` back from HEAD rebuilds
+    the records' first SHA-256, and with it the `inputs.json` hashes both qualification records
+    cite (IDAES `inputs.sha256`; DWSIM `inputs_sha256`, through B-62's real-section hash)."""
+    import hashlib
+
+    def digest(data: bytes) -> str:
+        return hashlib.sha256(data).hexdigest()
+
+    def swap(data: bytes, old: str, new: str) -> bytes:
+        assert data.count(old.encode("utf-8")) == 1, old
+        return data.replace(old.encode("utf-8"), new.encode("utf-8"))
+
+    lineage = json.loads((S10 / "records-lineage.json").read_text("utf-8"))
+    steps = lineage["steps"]
+    keys = {"from_sha256", "to_sha256", "key", "from_value", "to_value", "authority", "commit"}
+    assert steps and all(set(step) == keys for step in steps)
+    assert steps[0]["from_sha256"] == (
+        "74dc4e54101f6197cc4f9c2dc66e1856b99a7f047b5904a31b6a910b33f5a8f1"
+    )
+    records = RECORDS.read_bytes()
+    assert digest(records) == steps[-1]["to_sha256"]
+    for later, earlier in zip(steps[1:], steps[:-1], strict=True):
+        assert later["from_sha256"] == earlier["to_sha256"]
+    for step in reversed(steps):
+        assert digest(records) == step["to_sha256"]
+        line = "{}: {}".format
+        records = swap(
+            records,
+            line(step["key"], json.dumps(step["to_value"], ensure_ascii=False)) + "\n",
+            line(step["key"], json.dumps(step["from_value"], ensure_ascii=False)) + "\n",
+        )
+        assert digest(records) == step["from_sha256"], step["authority"]
+    head, first = steps[-1]["to_sha256"], steps[0]["from_sha256"]
+
+    real_path = S10 / "reference_values_real.yaml"
+    real_head = digest(real_path.read_bytes())
+    real_first = digest(
+        swap(real_path.read_bytes(), f"records_sha256: {head}\n", f"records_sha256: {first}\n")
+    )
+
+    idaes = json.loads((S10 / "idaes" / "qualification.json").read_text("utf-8"))
+    rebuilt = swap((S10 / "idaes" / "inputs.json").read_bytes(), head, first)
+    rebuilt = swap(rebuilt, real_head, real_first)
+    assert digest(rebuilt) == idaes["inputs"]["sha256"]
+
+    b62 = lineage["dwsim_inputs_b62"]
+    dwsim = json.loads((S10 / "dwsim" / "qualification.json").read_text("utf-8"))
+    assert b62["inputs_sha256"] == dwsim["inputs_sha256"]
+    rebuilt = swap((S10 / "dwsim" / "inputs.json").read_bytes(), head, first)
+    rebuilt = swap(rebuilt, real_head, b62["real_section_sha256"])
+    assert digest(rebuilt) == dwsim["inputs_sha256"]

@@ -647,6 +647,18 @@ def q(s: str) -> str:
     return json.dumps(s, ensure_ascii=False)
 
 
+#: The records' validation status (S10 spec §17 A4-3, R-721; replaced "not yet validated (S10 spec
+#: §9.6)"). A change is a new step of benchmarks/s10/records-lineage.json.
+UNCERTAINTY = (
+    "Validation (S10 spec §9.6; docs/s10-validation-report.md): VAL-1 within band (38 held-out "
+    "ternary points, 101.3 kPa, 339.7-368.0 K: AAD(T) 0.21 K, AAD(y) <= 0.0057, max |dy| 0.021). "
+    "VAL-3: latent heat of methanol not validated within band (+5.72 % at T_b(101325 Pa) against "
+    "5 %, from the ideal-gas vapour); ethanol and water latent heats and all liquid c_p within "
+    "band, the c_p low by up to 19.7 % (methanol). VAL-2 (constant Lambda off the 101.3 kPa "
+    "isobar) pending: no data. The methanol-ethanol Lambda are individually undetermined by the "
+    "binary data; the fit's second minimum moves ternary bubble temperatures by up to 0.46 K "
+    "(S10 spec §17 A4-2)."
+)
 MW_PROV = "CIAAW 2021 conventional atomic weights (H 1.008, C 12.011, O 15.999); S10 Q-N6 default"
 DHF_MEANING = (
     "H(298.15 K) of the NASA-7 polynomial, R (a1 T0 + ... + a5 T0^5/5 + a6); "
@@ -691,7 +703,7 @@ def records_text(
         "data_set: S10-wilson-ig-real-v1",
         "reference_convention: WILSON-IG-ref-v1",
         "synthetic: false",
-        f"uncertainty: {q('not yet validated (S10 spec §9.6)')}",
+        f"uncertainty: {q(UNCERTAINTY)}",
         "data_provenance: "
         + q(
             "Ideal gas: NASA TM-4513 (McBride, Gordon, Reno 1993) via Cantera 3.2.0 nasa_gas.yaml. "

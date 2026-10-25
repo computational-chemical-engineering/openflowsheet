@@ -155,7 +155,16 @@ def test_a01_the_default_records_are_the_real_records() -> None:
     assert real.is_file()
     caps = WilsonIdealGasProvider().describe()
     assert caps.reference_convention == "WILSON-IG-ref-v1"
-    assert caps.uncertainty == "not yet validated (S10 spec §9.6)"  # spec §9.5, before WO-S10-6
+    assert caps.uncertainty == (  # spec §17 A4-3 (R-721), replacing §9.5's "not yet validated"
+        "Validation (S10 spec §9.6; docs/s10-validation-report.md): VAL-1 within band (38 "
+        "held-out ternary points, 101.3 kPa, 339.7-368.0 K: AAD(T) 0.21 K, AAD(y) <= 0.0057, "
+        "max |dy| 0.021). VAL-3: latent heat of methanol not validated within band (+5.72 % at "
+        "T_b(101325 Pa) against 5 %, from the ideal-gas vapour); ethanol and water latent heats "
+        "and all liquid c_p within band, the c_p low by up to 19.7 % (methanol). VAL-2 "
+        "(constant Lambda off the 101.3 kPa isobar) pending: no data. The methanol-ethanol "
+        "Lambda are individually undetermined by the binary data; the fit's second minimum "
+        "moves ternary bubble temperatures by up to 0.46 K (S10 spec §17 A4-2)."
+    )
     assert caps.uncertainty == yaml.safe_load(real.read_text("utf-8"))["uncertainty"]
     with pytest.raises(RecordError, match=r"^records_missing: "):
         WilsonIdealGasProvider(REPO_ROOT / "benchmarks" / "s10" / "no-such-records.yaml")
