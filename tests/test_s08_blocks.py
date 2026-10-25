@@ -1,8 +1,10 @@
-"""S08 WO-2 — sources, candidates and the block endpoint: S08 design note §5.2, §5.3, §7 A01–A04.
+"""S08 WO-2 — sources, candidates and the block endpoint: S08 design note §5.2, §5.3, §7 A01–A04,
+and Amendment 1's A04 row for `bubble_point_refused` (§13.3, §13.6) and A18 (§13.2, §13.6).
 
 Expectations are the design note's tables (§5.2's candidate lists, §6.2's closed forms for P1's
 and P2's all-one-phase endpoints), S02 §18.2's `x⁰` (A03: the builder at all-2P), the target's
-own rows at the endpoint (A02) and the refusal codes of §5.3 (A04). §6.2's P2, P3, F1 and D1 are
+own rows at the endpoint (A02), the refusal codes of §5.3 and §13.3 (A04) and §13.2's reading of
+inlet sources (A18). §6.2's P2, P3, F1 and D1 are
 inline until WO-G registers them; WO-4 wires in their 50-digit roots. Each test names the
 assertion of §7 it closes.
 """
@@ -43,13 +45,16 @@ from openflowsheet.models.syn001.column_blocks import (
     sources,
 )
 from openflowsheet.models.syn001.column_solve import (
+    REENTRY_OUTCOMES,
     BubblePointEndpoint,
+    ColumnSolution,
     bubble_point_endpoint,
     compile_column,
     lifted_splits,
     slots,
+    solve_column,
 )
-from openflowsheet.models.syn001.saturation_band import BandTemperature
+from openflowsheet.models.syn001.saturation_band import BandError, BandTemperature
 from openflowsheet.orchestrator.region import KIND_TOLERANCE
 from openflowsheet.orchestrator.roots import branch_found
 from openflowsheet.thermo.syn001 import C_P
@@ -289,6 +294,48 @@ def test_a04_a_bubble_point_outside_the_domain(monkeypatch: pytest.MonkeyPatch) 
     assert calls == [P3.pressures[0], P3.pressures[1]]
 
 
+def _band_refused_once(monkeypatch: pytest.MonkeyPatch) -> list[float]:
+    """The builder's `band_temperature` (Stage A's is `column_solve`'s, untouched) raises
+    `BandError` on its second call: stage 2 of sweep 1, a core stage of P3's `(0, 2)`."""
+    real = blocks_module.band_temperature
+    calls: list[float] = []
+
+    def refused_once(provider: Any, flows: Any, pressure: float, *rest: Any, **kw: Any) -> Any:
+        calls.append(pressure)
+        if len(calls) == 2:
+            raise BandError("not_converged", "stubbed")
+        return real(provider, flows, pressure, *rest, **kw)
+
+    monkeypatch.setattr(blocks_module, "band_temperature", refused_once)
+    return calls
+
+
+def test_a04_a_refused_bubble_point(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A04 (Amendment 1, §13.3, §13.6): `band_temperature` raising `BandError` at a core stage
+    refuses P3's `(0, 2)` with `bubble_point_refused`, with no region solve (W2-4 reversed)."""
+    _no_region_solve(monkeypatch)
+    calls = _band_refused_once(monkeypatch)
+    _refused(block_endpoint(P3, PROVIDER, _initial(P3), (0, 2)), "bubble_point_refused")
+    assert calls == [P3.pressures[0], P3.pressures[1]]
+
+
+def test_a04_a_refused_bubble_point_returns_stage_a(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A04 (§13.6): `solve_column(P3)` under the same stub returns Stage A's typed answer, with
+    the refusal recorded as the candidate's endpoint and cause; nothing escapes `solve_column`."""
+    _band_refused_once(monkeypatch)
+    answer = solve_column(P3, PROVIDER)
+    assert isinstance(answer, ColumnSolution), answer
+    assert answer.outcome in REENTRY_OUTCOMES
+    reentry = answer.reentry
+    assert reentry is not None and reentry.accepted is None
+    cause = f"initialization_failed({BLOCK_ENDPOINT_ID}, bubble_point_refused)"
+    (candidate,) = reentry.candidates
+    assert (candidate.a, candidate.c, candidate.endpoint, candidate.cause) == (0, 2, cause, cause)
+    assert candidate.outcome is None and candidate.result is None
+    assert answer.result is reentry.stage_a.result
+    assert (answer.outcome, answer.cause) == (reentry.stage_a.outcome, reentry.stage_a.cause)
+
+
 def test_a04_sweeps_exhausted(monkeypatch: pytest.MonkeyPatch) -> None:
     """A04: `max_sweeps = 1` refuses P3's `(0, 2)` with `sweeps_exhausted`."""
     _no_region_solve(monkeypatch)
@@ -311,3 +358,13 @@ def test_a04_no_energy_root_on_the_domain(monkeypatch: pytest.MonkeyPatch) -> No
     spec = replace(SPECS["P1"], reboiler_spec=EndSpecification("duty", 1.0e5))
     found = block_endpoint(spec, PROVIDER, _initial(spec), (0, 5))
     _refused(found, "block_energy_outside_domain")
+
+
+# -- A18: inlet sources at any port (Amendment 1, §13.2) ------------------------------------------
+
+
+def test_a18_a_flowing_inlet_is_a_source_of_its_declared_phase_at_any_port() -> None:
+    """A18: D1's top `VAPOR` inlet is a vapour source at stage 1, and F1's bottom `LIQUID` inlet
+    a liquid source at stage 5 (§13.2's physical reading, not the table's literal one)."""
+    assert (1, "inlet") in sources(D1).vapor
+    assert (5, "inlet") in sources(F1).liquid

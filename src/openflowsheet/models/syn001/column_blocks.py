@@ -36,7 +36,7 @@ from openflowsheet.models.syn001.column_solve import (
     _admissibility,
     stage_ratios,
 )
-from openflowsheet.models.syn001.saturation_band import band_temperature
+from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
 from openflowsheet.models.syn001.tp_state import enthalpy_flow
 from openflowsheet.orchestrator.region import Regime
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
@@ -193,8 +193,17 @@ class _RefusalError(Exception):
 
 
 def _bubble(provider: PropertyProvider, flows: list[float], pressure: float, where: str) -> float:
-    """§5.3 steps 3c and 7: the bubble temperature, or the refusal `bubble_point_outside_domain`."""
-    band = band_temperature(provider, flows, pressure, 0.0, DECLARATION_CONTEXT)
+    """§5.3 steps 3c and 7: the bubble temperature, or the refusal `bubble_point_outside_domain`
+    (a band position other than `inside`) or `bubble_point_refused` (`band_temperature` raises
+    `BandError`: a provider refusal or an exhausted bisection; Amendment 1, §13.3)."""
+    try:
+        band = band_temperature(provider, flows, pressure, 0.0, DECLARATION_CONTEXT)
+    except BandError as error:
+        raise _RefusalError(
+            "bubble_point_refused",
+            f"{where}: the bubble temperature at P = {pressure!r} Pa was refused"
+            f" ({error.status}): {error.message}",
+        ) from error
     if band.position != "inside" or band.temperature is None:
         raise _RefusalError(
             "bubble_point_outside_domain",
