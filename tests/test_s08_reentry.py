@@ -3,10 +3,10 @@ A06, A14 (a), (d), (e), A15 and A16.
 
 Expectations are the design note's: §6.1's new expectations for S02's P1 (the closed form
 `ref.phase_case.P1` of `s02_reference.json`, and Stage A's held branch, the values S02 A12 held
-before S08), §5.1's trigger, §5.6's records and §5.7's final answer. F1 and P3 are §6.2's, inline
-in `test_s08_blocks.py` until WO-G's roots are wired in by WO-4; here they are used for their
-structure only (A09's Stage-A rejection and Stage-B route, A15's determinism), never for root
-values. Each test names the assertion of §7 it closes.
+before S08), §5.1's trigger, §5.6's records and §5.7's final answer. F1 and P3 are §6.2's (inline
+in `test_s08_blocks.py`, equal to WO-G's registered inputs); A09 checks F1's root against WO-G's
+50-digit record (`test_s08_roots.check_root`, WO-4). Each test names the assertion of §7 it
+closes.
 """
 
 from __future__ import annotations
@@ -24,6 +24,7 @@ from test_s02_column_wo3 import _closed_form, attempt_list
 from test_s06_column_wo1 import J_CASES, U_SETS
 from test_s06_column_wo2 import _stubbed
 from test_s08_blocks import F1, P3
+from test_s08_roots import check_root
 
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
 import openflowsheet.models.syn001.column_blocks as blocks_module
@@ -170,9 +171,9 @@ def check_a05(answer: Any) -> None:
 
 
 def check_a09_route(answer: Any) -> None:
-    """A09's route (§6.2, §7; the root values are WO-4's, from WO-G): F1's Stage A converges to a
-    state that fails §8 on item 6 alone, at stage 4, by ≥ 0.1 K; Stage B's only candidate
-    `(0, 2)` then gives an accepted `(2P, 2P, 2P, L, L)` root from the block endpoint."""
+    """A09 (§6.2, §7): F1's Stage A converges to a state that fails §8 on item 6 alone, at stage 4,
+    by ≥ 0.1 K; Stage B's only candidate `(0, 2)` then gives an accepted `(2P, 2P, 2P, L, L)` root
+    from the block endpoint, WO-G's root (state tolerance; `v_4`, `v_5` exactly `+0.0`)."""
     assert isinstance(answer, ColumnSolution), answer
     assert answer.outcome == "CONVERGED" and answer.signature == CORE3_L2
     reentry = answer.reentry
@@ -192,6 +193,7 @@ def check_a09_route(answer: Any) -> None:
     declared = compile_column(F1, PROVIDER).spec
     regimes = dict(zip(F1.equilibrium_stages(), answer.signature, strict=True))
     assert acceptance_failures(F1, PROVIDER, declared, answer.state, regimes) == ()
+    check_root("F1", answer)
 
 
 # -- A05, A06: P1 (§6.1) -------------------------------------------------------------------------
@@ -260,7 +262,7 @@ def test_a15_stage_b_is_deterministic(name: str) -> None:
 
 def test_p3_goes_through_stage_b() -> None:
     """P3 (§6.2): Stage A typed, then the candidate `(0, 2)` accepted at `(2P, 2P, 2P, L, L)`.
-    (WO-4's A08 compares the root with WO-G's.)"""
+    (`test_s08_roots.py`'s A08 compares the root with WO-G's.)"""
     answer = solved("P3")
     assert answer.outcome == "CONVERGED" and answer.signature == CORE3_L2
     reentry = answer.reentry
@@ -435,8 +437,12 @@ def test_an_item_6_rejection_with_no_accepted_candidate_raises(
 # -- A14 (a), (d), (e): mutations ----------------------------------------------------------------
 
 
+def test_a09_f1_is_rejected_by_item_6_then_wo_g_s_root_through_stage_b() -> None:
+    check_a09_route(solved("F1"))
+
+
 def test_a14_the_f1_route_holds_unmutated() -> None:
-    """The baseline of mutations (d) and (e): A09's route holds on the unmutated code."""
+    """The baseline of mutations (d) and (e): A09 holds on the unmutated code."""
     check_a09_route(solved("F1"))
 
 
