@@ -1233,6 +1233,17 @@ packages:
     evidence:
       - evidence/S07/7bfab70d82fe85717cd1a4471e578255216091cc/manifest.json
 
+  - id: S08
+    phase: "v0.3"
+    lead: Fable
+    second: Opus
+    depends_on: [S02, S03]
+    # WO-4: the manifest at 38457cb8 is `tested` (24 of 26 checks pass; gate and CI `unsupported`, they run before
+    # merge). No requirement row names S08 (the design note and ADR 0048 name none; docs/S08_DECISIONS.md W4-8).
+    status: tested
+    evidence:
+      - evidence/S08/38457cb8355b3470ce43868d86c956cc3ef5076c/manifest.json
+
   - id: S10
     phase: "v0.3"
     lead: Fable

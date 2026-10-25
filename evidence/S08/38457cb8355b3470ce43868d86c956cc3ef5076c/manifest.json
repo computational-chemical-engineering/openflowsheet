@@ -1,0 +1,565 @@
+{
+  "work_package": "S08",
+  "commit": "38457cb8355b3470ce43868d86c956cc3ef5076c",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S08 acceptance: docs/derivations/S08-design.md §7 (S08.A01–A16) against docs/derivations/scripts/s08_reference.json (P2, P3, F1, D1) and s02_reference.json (P1), gates §9",
+    "case_hash": "55eed532c8a2a0421ccb00c8c1cc4c598c71db7763eb78afff4c6e57c64bd52c",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S08/38457cb8355b3470ce43868d86c956cc3ef5076c/artifacts/s08-tests.junit.xml tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_cascade_wo4.py tests/test_s01_evidence_manifest.py tests/test_s01_review_adversarial.py tests/test_s02_column_wo1.py tests/test_s02_column_wo2.py tests/test_s02_column_wo2b.py tests/test_s02_column_wo3.py tests/test_s02_evidence_manifest.py tests/test_s03_ours.py tests/test_s03_references.py tests/test_s03_s11_refusal.py tests/test_s06_column_wo1.py tests/test_s06_column_wo2.py tests/test_s06_evidence_manifest.py tests/test_s08_blocks.py tests/test_s08_identity.py tests/test_s08_item6.py tests/test_s08_reentry.py tests/test_s08_roots.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "164beb18384da3a4bff003dabdebce77fea5de93138f258755d8fca1d0071786"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s08_identity.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "478b121e4cf5397a7587b1f420e8b0ca3adb93086c6d28e7a3c51b30097adaf7"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s08_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "06e9d9a27684535feec7040e63723b4f79377bebe389ec10c9f6ff79ca7bafa7"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check src/openflowsheet/models/syn001/column_blocks.py src/openflowsheet/models/syn001/column_solve.py tests/test_s08_blocks.py tests/test_s08_identity.py tests/test_s08_item6.py tests/test_s08_reentry.py tests/test_s08_roots.py scripts/s08_identity.py scripts/s08_evidence_manifest.py docs/derivations/scripts/s08_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check src/openflowsheet/models/syn001/column_blocks.py src/openflowsheet/models/syn001/column_solve.py tests/test_s08_blocks.py tests/test_s08_identity.py tests/test_s08_item6.py tests/test_s08_reentry.py tests/test_s08_roots.py scripts/s08_identity.py scripts/s08_evidence_manifest.py docs/derivations/scripts/s08_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "5b9f70ad96522f492ef846065642c069b5627379aff2ab3f74acd2e3b9ecfe34"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/mypy",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "ec21cafb79de86d2a0a28d4646d59acfcbb4bc782bc0c864ef5f26c34cbe1a40"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S08.A01",
+      "description": "Candidate lists for the specs of §5.2's table",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 18,
+        "outcomes": {
+          "passed": 18
+        },
+        "selectors": [
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[D1]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[F1]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[J5]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[M1]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[M2]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[M3]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[M4]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[P1]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[P2]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[P3]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[U1]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[U2]",
+          "tests/test_s08_blocks.py::test_a01_candidate_lists[V-M1.duty+duty]",
+          "tests/test_s08_blocks.py::test_a01_u_sets_fix_stages_2_and_7[U1]",
+          "tests/test_s08_blocks.py::test_a01_u_sets_fix_stages_2_and_7[U2]",
+          "tests/test_s08_blocks.py::test_a01_sources_of_p3",
+          "tests/test_s08_blocks.py::test_a01_signature",
+          "tests/test_s08_roots.py::test_a01_candidate_lists_equal_wo_g_s_transcription"
+        ],
+        "not_passed": []
+      },
+      "expected": "as tabled",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S08.A02",
+      "description": "At every built endpoint of P1, P2, P3, F1 and D1: every target row except the continued slots within kind tolerance; block duty slots within `ENERGY_TOLERANCE`; pins `+0.0` with the sign bit checked; the branch found equals `σ(a, c)`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 7,
+        "outcomes": {
+          "passed": 7
+        },
+        "selectors": [
+          "tests/test_s08_blocks.py::test_a02_the_block_endpoint_identity[D1]",
+          "tests/test_s08_blocks.py::test_a02_the_block_endpoint_identity[F1]",
+          "tests/test_s08_blocks.py::test_a02_the_block_endpoint_identity[P1]",
+          "tests/test_s08_blocks.py::test_a02_the_block_endpoint_identity[P2]",
+          "tests/test_s08_blocks.py::test_a02_the_block_endpoint_identity[P3]",
+          "tests/test_s08_blocks.py::test_a02_p1_endpoint_is_the_closed_form",
+          "tests/test_s08_blocks.py::test_a02_p2_endpoint_is_the_closed_form"
+        ],
+        "not_passed": []
+      },
+      "expected": "pass",
+      "tolerance": "as stated"
+    },
+    {
+      "id": "S08.A03",
+      "description": "The builder at all-2P equals S02 §18.2's `x⁰` on M1–M4. This tests the builder only; Stage A never calls it",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s08_blocks.py::test_a03_the_builder_at_all_2p_is_the_bubble_point_endpoint[M1]",
+          "tests/test_s08_blocks.py::test_a03_the_builder_at_all_2p_is_the_bubble_point_endpoint[M2]",
+          "tests/test_s08_blocks.py::test_a03_the_builder_at_all_2p_is_the_bubble_point_endpoint[M3]",
+          "tests/test_s08_blocks.py::test_a03_the_builder_at_all_2p_is_the_bubble_point_endpoint[M4]"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "1e-12 relative"
+    },
+    {
+      "id": "S08.A04",
+      "description": "Refusals, with no `solve_region` call (stubbed to raise): `band_temperature` stubbed to answer `below` at a core stage gives `bubble_point_outside_domain`; `max_sweeps = 1` on P3's `(0,2)` gives `sweeps_exhausted`; P1's `(0,5)` at `Q_r* = 8 kW` gives `inadmissible_endpoint(5)` (`T_5 ≈ 380` K, bubble ≈ 350 K)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s08_blocks.py::test_a04_a_bubble_point_outside_the_domain",
+          "tests/test_s08_blocks.py::test_a04_sweeps_exhausted",
+          "tests/test_s08_blocks.py::test_a04_an_inadmissible_block_stage",
+          "tests/test_s08_blocks.py::test_a04_no_energy_root_on_the_domain"
+        ],
+        "not_passed": []
+      },
+      "expected": "codes",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S08.A05",
+      "description": "P1 as §6.1, top level",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08_reentry.py::test_a05_p1_top_level"
+        ],
+        "not_passed": []
+      },
+      "expected": "§6.1",
+      "tolerance": "as stated"
+    },
+    {
+      "id": "S08.A06",
+      "description": "P1's `reentry.stage_a` equals today's held branch",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08_reentry.py::test_a06_p1_stage_a_is_the_held_branch"
+        ],
+        "not_passed": []
+      },
+      "expected": "§6.1",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S08.A07",
+      "description": "P2",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08_roots.py::test_a07_p2_is_the_closed_form_through_stage_b"
+        ],
+        "not_passed": []
+      },
+      "expected": "the closed form of §6.2, through Stage B",
+      "tolerance": "—"
+    },
+    {
+      "id": "S08.A08",
+      "description": "P3",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08_roots.py::test_a08_p3_is_wo_g_s_root_through_stage_b"
+        ],
+        "not_passed": []
+      },
+      "expected": "WO-G's root, through Stage B",
+      "tolerance": "—"
+    },
+    {
+      "id": "S08.A09",
+      "description": "F1: Stage A is rejected by item 6 at stage 4 with error ≥ 0.1 K, then Stage B gives WO-G's root",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08_reentry.py::test_a09_f1_is_rejected_by_item_6_then_wo_g_s_root_through_stage_b"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "—"
+    },
+    {
+      "id": "S08.A10",
+      "description": "D1 gives WO-G's root through Stage A with `reentry is None`. With Stage A forced to fail (stub `HOMOTOPY_STALLED`), Stage B's `(2,0)` gives the same root",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s08_roots.py::test_a10_d1_is_wo_g_s_root_through_stage_a",
+          "tests/test_s08_roots.py::test_a10_d1_through_stage_b_when_stage_a_fails"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "—"
+    },
+    {
+      "id": "S08.A11",
+      "description": "Core decoupling: stages 1–3 of P3 equal those of F1 (`T`, `l`, `v`, `Q_1`)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08_roots.py::test_a11_p3_and_f1_share_their_core"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "state tolerance"
+    },
+    {
+      "id": "S08.A12",
+      "description": "Item 6 passes on all 42 registered `CONVERGED` roots; the largest error, ≤ 1e-5 K, is recorded. `saturation_errors` flags F1's Stage-A state at stage 4 (≥ 0.3 K)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s08_item6.py::test_a12_item_6_passes_on_every_registered_converged_root",
+          "tests/test_s08_item6.py::test_a12_f1_stage_a_is_flagged_at_stage_4_only"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "as stated"
+    },
+    {
+      "id": "S08.A13",
+      "description": "Bit-identity, gate G1",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests and gate G1",
+        "nodes": 10,
+        "outcomes": {
+          "passed": 10
+        },
+        "selectors": [
+          "tests/test_s08_identity.py::test_a13_the_verdict_passes_on_the_registered_change_only",
+          "tests/test_s08_identity.py::test_a13_the_verdict_fails_on_any_other_outcome[changes0]",
+          "tests/test_s08_identity.py::test_a13_the_verdict_fails_on_any_other_outcome[changes1]",
+          "tests/test_s08_identity.py::test_a13_the_verdict_fails_on_any_other_outcome[changes2]",
+          "tests/test_s08_identity.py::test_a13_the_verdict_fails_on_any_other_outcome[changes3]",
+          "tests/test_s08_identity.py::test_a13_the_verdict_fails_on_any_other_outcome[changes4]",
+          "tests/test_s08_identity.py::test_a13_the_verdict_fails_on_any_other_outcome[changes5]",
+          "tests/test_s08_identity.py::test_a13_the_verdict_fails_on_any_other_outcome[changes6]",
+          "tests/test_s08_identity.py::test_a13_the_verdict_fails_on_any_other_outcome[changes7]",
+          "tests/test_s08_identity.py::test_a13_the_gate_covers_52_configurations"
+        ],
+        "not_passed": [],
+        "G1": "pass"
+      },
+      "expected": "equal",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S08.A14",
+      "description": "Each mutation in the next table makes its named assertion fail",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_s08_reentry.py::test_a14_the_f1_route_holds_unmutated",
+          "tests/test_s08_reentry.py::test_a14a_stage_b_disabled_fails_a05",
+          "tests/test_s08_reentry.py::test_a14d_an_infinite_tolerance_fails_a09",
+          "tests/test_s08_reentry.py::test_a14e_no_item_6_trigger_fails_a09",
+          "tests/test_s08_roots.py::test_a14b_stripping_the_l_block_fails_a08",
+          "tests/test_s08_roots.py::test_a14c_the_core_bottom_s_bubble_temperature_on_the_l_block_fails_a08"
+        ],
+        "not_passed": []
+      },
+      "expected": "as tabled",
+      "tolerance": "—"
+    },
+    {
+      "id": "S08.A15",
+      "description": "P1 and P3 solved twice give identical final `state_sha256` and identical `reentry` records",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s08_reentry.py::test_a15_stage_b_is_deterministic[P1]",
+          "tests/test_s08_reentry.py::test_a15_stage_b_is_deterministic[P3]"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S08.A16",
+      "description": "Exclusions: S02 A22 is unchanged with no Stage B; S06's unsupported answer (`test_s06_column_wo2.py:732`) is unchanged with no Stage B; U1 and U2 have `reentry.candidates == ()` and an unchanged top level",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_s08_reentry.py::test_a16_an_endpoint_failure_does_not_start_stage_b",
+          "tests/test_s08_reentry.py::test_a16_the_unsupported_answer_does_not_start_stage_b",
+          "tests/test_s08_reentry.py::test_a16_a_defect_other_than_item_6_does_not_start_stage_b",
+          "tests/test_s08_reentry.py::test_a16_an_accepted_stage_a_has_no_reentry",
+          "tests/test_s08_reentry.py::test_a16_u1_u2_have_no_candidate[U1]",
+          "tests/test_s08_reentry.py::test_a16_u1_u2_have_no_candidate[U2]"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S08.G1",
+      "description": "§9 G1: scripts/s08_identity.py, the pre-existing fields of the 52 registered configurations on the merge base 390e0af5 and on this commit; equal except P1, whose reentry.stage_a equals P1's merge-base digest",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s08_identity.py",
+        "exit_code": 0,
+        "line": "S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL"
+      },
+      "expected": "S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL"
+    },
+    {
+      "id": "S08.G2",
+      "description": "§9 G2: git diff --stat $(git merge-base main HEAD)..HEAD is empty over orchestrator, numerics, thermo, compile, models/syn001/cascade.py, cascade_solve.py, column.py and schemas",
+      "result": "pass",
+      "value": {
+        "merge_base": "390e0af5892b89071d329b21496adfa9dfad698e",
+        "paths": [
+          "src/openflowsheet/orchestrator",
+          "src/openflowsheet/numerics",
+          "src/openflowsheet/thermo",
+          "src/openflowsheet/compile",
+          "src/openflowsheet/models/syn001/cascade.py",
+          "src/openflowsheet/models/syn001/cascade_solve.py",
+          "src/openflowsheet/models/syn001/column.py",
+          "schemas"
+        ],
+        "diff_stat": ""
+      },
+      "expected": "empty"
+    },
+    {
+      "id": "S08.G3-suites",
+      "description": "§9 G3: the S01, S02, S06 and S03 suites pass (S08's A01–A16 are judged per assertion)",
+      "result": "pass",
+      "value": {
+        "judged_by": "the S01, S02, S06 and S03 suites",
+        "nodes": 814,
+        "outcomes": {
+          "passed": 814
+        },
+        "not_passed": [],
+        "per_suite": {
+          "test_s01": 138,
+          "test_s02": 187,
+          "test_s06": 179,
+          "test_s03": 310
+        }
+      },
+      "expected": "every node passed"
+    },
+    {
+      "id": "S08.G5",
+      "description": "§9 G5: P1's Stage-B iterations (≤ 1), P3's iterations, the largest item-6 error on the registered roots (≤ 1e-5 K) and the wall times of P1 and P3",
+      "result": "pass",
+      "value": {
+        "measured_at": "38457cb8355b3470ce43868d86c956cc3ef5076c",
+        "P1": {
+          "outcome": "CONVERGED",
+          "stage_b_iterations": [
+            0
+          ],
+          "first_call_s": 0.84,
+          "warm_best_s": 0.702
+        },
+        "P3": {
+          "outcome": "CONVERGED",
+          "stage_b_iterations": [
+            4
+          ],
+          "first_call_s": 0.87,
+          "warm_best_s": 0.683
+        },
+        "item_6_roots": 42,
+        "item_6_largest_error_K": 2.4221981220762245e-06
+      },
+      "expected": "P1 one attempt, ≤ 1 iteration; 42 roots, largest item-6 error ≤ 1e-5 K"
+    },
+    {
+      "id": "S08.generator",
+      "description": "WO-G: s08_reference.py --check re-derives every claim (84) and byte-compares s08_reference.json",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s08_reference.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0, '84 claims passed'"
+    },
+    {
+      "id": "S08.ruff",
+      "description": "ruff check is clean on S08's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check src/openflowsheet/models/syn001/column_blocks.py src/openflowsheet/models/syn001/column_solve.py tests/test_s08_blocks.py tests/test_s08_identity.py tests/test_s08_item6.py tests/test_s08_reentry.py tests/test_s08_roots.py scripts/s08_identity.py scripts/s08_evidence_manifest.py docs/derivations/scripts/s08_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S08.format",
+      "description": "ruff format --check is clean on S08's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check src/openflowsheet/models/syn001/column_blocks.py src/openflowsheet/models/syn001/column_solve.py tests/test_s08_blocks.py tests/test_s08_identity.py tests/test_s08_item6.py tests/test_s08_reentry.py tests/test_s08_roots.py scripts/s08_identity.py scripts/s08_evidence_manifest.py docs/derivations/scripts/s08_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S08.mypy",
+      "description": "mypy (the project's configuration) is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/mypy",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S08.gate",
+      "description": "§9 G4: scripts/gate.sh passes before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; it runs once before merge (CLAUDE.md)"
+    },
+    {
+      "id": "S08.ci",
+      "description": "§9 G4: CI is green on x86-64 and aarch64 before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; it runs once before merge (CLAUDE.md)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S08/38457cb8355b3470ce43868d86c956cc3ef5076c/artifacts/s08-tests.junit.xml",
+      "sha256": "e69fa2230a7452f8faadb2506b59db3058a76cf01cbabf9e3ace88826e241cde",
+      "description": "JUnit report of the S08, S01, S02, S06 and S03 test run (ignored; kept by hash)"
+    },
+    {
+      "path": "docs/derivations/scripts/s08_reference.json",
+      "sha256": "55eed532c8a2a0421ccb00c8c1cc4c598c71db7763eb78afff4c6e57c64bd52c",
+      "description": "WO-G's 50-digit reference roots and candidate lists (R-732)"
+    },
+    {
+      "path": "docs/derivations/S08-design.md",
+      "sha256": "ec3208777c43fda3da080f415acb95f33519ed9f279e6a6d95570c48fb57f9ea",
+      "description": "the S08 design note the checks are read from (§7, §9, §11)"
+    },
+    {
+      "path": "docs/adr/0048-s08-one-phase-column-sections.md",
+      "sha256": "20c8fa0fc07cd37a9f0238b3dc82c1ad730dedea34ff2c40906209e78403240a",
+      "description": "ADR 0048, the decision S08 implements"
+    },
+    {
+      "path": "docs/S08_DECISIONS.md",
+      "sha256": "06a188d158eccb5127d6b2829907af5dfa8f0a52076c0e704f8bfb2364b2c87a",
+      "description": "S08's build decisions with the measured facts"
+    }
+  ],
+  "limitations": [
+    "Convergence for block roots that §5.2 does not generate.",
+    "Any claim about a column's transition regime, where no regular root exists.",
+    "Root selection or uniqueness. When Stage A converges, its root is returned even if a block root also exists.",
+    "Any claim beyond SYN-001's composition-independent `K`.",
+    "Anything about S01's `solve_cascade`.",
+    "The near-trivial split outside S02 columns (F4). It may exist wherever a division-free equilibrium row meets a `TWO_PHASE`-always-admissible branch.",
+    "requirements is empty: neither the design note nor ADR 0048 names a requirement S08 contributes to (docs/S08_DECISIONS.md W4-8); the D/A mapping is the design lane's.",
+    "scripts/gate.sh and CI on x86-64 and aarch64 (§9 G4) were not run by this generator (they run once before merge into main); S08.gate and S08.ci are unsupported here. Item 6's margin across architectures (§10 Q5) is therefore not yet shown on aarch64.",
+    "Review: the design lane's one reviewer pass on WO-1 to WO-4 (§8) is pending; the review fields stay pending and the human numerical and process-model review is pending; this manifest claims neither.",
+    "The root agreement is numerical verification against WO-G's 50-digit generator (s08_reference.py, which imports nothing from src/ but shares SYN-001 and S02's rows), not empirical validation.",
+    "The T08 support envelope does not yet carry S08's harvest (it follows the review)."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
