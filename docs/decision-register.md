@@ -14270,3 +14270,109 @@ is not reopened by a result.
 
 **Watch for.** A WO-S10-8 commit that changes report.json's VAL-1 or VAL-3 bytes, or any records line besides
 `uncertainty`.
+
+---
+
+## R-728 — S08: one-phase column sections are reached by block openings in the column's initializer; ADR 0005 D4 is unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`architect`), S08 design |
+| Normative text | `docs/derivations/S08-design.md` §4, §5.1–§5.4, §5.6–§5.7; ADR 0048 (Proposed) |
+| Evidence | `docs/derivations/scripts/s08_design/measured.txt`: block closure in the contract leaves P1 `HOMOTOPY_STALLED` (attempt `(2P,L,L,L,L)` `LINE_SEARCH_FAILED`, 0 iterations); P3's conforming restart `(2P,2P,2P,2P,L)` fails the same way; block openings converge P1/P2/P3/F1/D1 in 0/0/4/4/5 iterations; topological candidate all-2P on 47/47 registered configurations |
+| Affected packages | S08; S02 (§7 step 7, P1, A12); S03 (limitation sentence) |
+| Amends | R-632 (its limitation is narrowed; its two rejections stand) |
+
+**Decision.**
+- After today's path ends typed (set `T_B`), or converges onto a near-trivial split (R-729), `solve_column` builds
+  block-conforming openings `V^a 2P^b L^c` from the column's sources.
+- Sources are inlets, condenser and reboiler, and intermediate duties.
+- It solves from each opening under the unchanged contract and returns the first accepted root.
+- Stage A is today's path, untouched.
+
+**Rejected alternatives, and why.**
+- *A block rule in D4.* Measured insufficient: its openings inherit the failed attempt's state. It also moves the shared
+  function.
+- *A screen around `solve_region`.* It has the same opening problem, and it is a second decision function.
+- *A signature-switching homotopy.* It is T04-scale. For P1's topology no regular signature lies between 2P×5 and L×5.
+- *Topology first.* It would move unregistered cases that converge today.
+- *A thermal predictor in Stage A.* It is a bit-identity risk.
+- *A new ADR 0010 edge.* It moves column structure into the generic ladder.
+
+**Watch for.** Any change under `orchestrator/` in an S08 commit (G2). Any registered digest other than P1's moving (G1).
+
+---
+
+## R-729 — S02 §8 item 6: every `TWO_PHASE` column stage lies within 1e-4 K of its liquid's bubble and its vapour's dew temperature
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`architect`), S08 design |
+| Normative text | `docs/derivations/S08-design.md` §5.5 |
+| Evidence | F1 on today's path returns `CONVERGED` with stage 4 "two-phase" at `V_4 = 5.6e-6` mol/s, rows ≤ 1.2e-8, `T_bub(l_4) − T_4 = 0.379 K`; the largest error on the 42 registered `CONVERGED` roots is 2.42e-6 K (J8, RC6) |
+| Affected packages | S08, S02 (§8), S06 and S03 (their roots pass) |
+
+**Decision.**
+- `τ₆ = 1e-4 K`: S02's state tolerance in `T`, 41× above the largest registered error.
+- A near-trivial split is never a success.
+- A `CONVERGED` answer that fails only item 6 triggers R-728's block re-entry. Otherwise it is a defect, as §8.
+
+**Rejected alternatives, and why.**
+- *No check.* It keeps a false success that the division-free row admits: `|1 − ΣKx| ≤ Σ|r_i|/(LV)`.
+- *`TEMPERATURE_TOLERANCE` (1e-6 K).* Registered roots measure 2.42e-6 K.
+- *Two-phase admissibility in K03 §8.2 for every lifted split.* It is a shared-contract change, handed on (R-731).
+
+**Watch for.** A registered root whose saturation error exceeds 1e-5 K on either architecture.
+
+---
+
+## R-730 — S08's cases: P1 asserts its closed form through the block re-entry; P2, P3, F1 and D1 are registered by `specifier` (WO-G); S01's `not_two_phase` gate is unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`architect`), S08 design |
+| Normative text | `docs/derivations/S08-design.md` §6, §7 |
+| Evidence | Float prototype roots in `measured.txt` (P2 V×5 closed form; P3 and F1 `(2P,2P,2P,L,L)`, with the same core to 3e-10 mol/s; D1 `(V,V,2P,2P,2P)`). The `not_two_phase` gate is on `solve_cascade` only (`cascade_solve.py:675-691`) |
+| Affected packages | S08, S02 (A12, P1's held branch), S01 (none) |
+
+**Decision.**
+- **P1.** `CONVERGED` L×5 equal to `ref.phase_case.P1`. Its held typed branch is asserted as `reentry.stage_a`, exactly.
+- **New cases** (N = 5):
+  - P2: all vapour.
+  - P3: weak reboiler quenched by a cold feed.
+  - F1: flooded bottom below a vapour feed.
+  - D1: dry top above a liquid feed.
+  - Their 50-digit roots and claims go in `s08_reference.py`.
+- **S01's `not_two_phase` gate** is not touched.
+
+**Rejected alternatives, and why.**
+- *Keep A12's typed branch for P1.* S08 exists to remove it.
+- *Register only P1.* It would not exercise a core with a block, a V-block, or the near-trivial split.
+- *Relax S01's gate.* P1 never meets it. S01's block cascades C4 and C5 already converge through the target.
+
+**Watch for.** A WO-G claim that fails, in particular F1's 0.3 K subcooling of stage 4. Then change only that case's inputs, and
+record why.
+
+---
+
+## R-731 — Two findings handed on, not acted on in S08: dotted column ids read as dormancy items; `TWO_PHASE` always admissible in the contract
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`architect`), S08 design (findings F4, F5) |
+| Normative text | `docs/derivations/S08-design.md` §3 F4–F5, §10 Q3–Q4 |
+| Evidence | `phase_contract._is_item("S02.stage.2")` is `True`, so `adjacent()` is `False` for any two column signatures and `_changes()` gives `""` (P1's cause `phase_wall(stall, )`); `region._admissible` returns `True` for `TWO_PHASE` (F1's near-trivial root) |
+| Affected packages | the contract's owners (T03, T05b); S01 cascades; flash units |
+
+**Decision.**
+- S08 does not change either. Both changes would move registered column records or shared-contract records.
+- Default: queue a small contract-owner package after S08 for each. Whether to queue them is Frank's call.
+
+**Rejected alternatives, and why.**
+- *Fix them inside S08.* That would break S08's bit-identity premise and widen it into the shared contract.
+
+**Watch for.** Any column cause string with an empty change list, cited as evidence of a phase decision.
