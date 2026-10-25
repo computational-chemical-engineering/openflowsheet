@@ -2,19 +2,14 @@
  "authority": "docs/derivations/S10-spec.md section 8.2 (I-states of section 15 A2-3)",
  "comparison": {
   "assertion": "S10.A45",
+  "classification": "spec section 16 A3-6: a two-phase state with g > the gate is NOT_COMPARABLE for every A41 quantity (h included), differences kept as diagnostics; I6 and I7 are compared on the phase identity; B-50's settings are ratified",
   "expected": "reference_values_real.yaml closed_form.i_states (two-phase) and phase (I6, I7)",
   "selected_tolerance": 1e-10,
   "states": {
    "I1": {
-    "all_within": false,
-    "argmax": "K_CH3OH",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 1.2868190338481733e-08,
-     "max_abs_component_balance": 5.070291020432616e-09,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 4.865957745788627e-07
-    },
-    "max_ratio": 6.195564850306284,
-    "rows": [
+    "diagnostic_argmax": "K_CH3OH",
+    "diagnostic_max_ratio": 6.195564850306284,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 3.0405956352730357e-07,
@@ -22,8 +17,7 @@
       "ours": 0.2220695456237305,
       "quantity": "beta",
       "ratio": 3.0405956352730357,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -32,8 +26,7 @@
       "ours": 0.0492757109492088,
       "quantity": "x_CH3OH",
       "ratio": 0.5055099085160553,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -42,8 +35,7 @@
       "ours": 0.2776919438384194,
       "quantity": "y_CH3OH",
       "ratio": 1.1283272832729452,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -52,8 +44,7 @@
       "ours": 0.0,
       "quantity": "x_C2H5OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -62,8 +53,7 @@
       "ours": 0.0,
       "quantity": "y_C2H5OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -72,8 +62,7 @@
       "ours": 0.9507242890507912,
       "quantity": "x_H2O",
       "ratio": 0.5055099083772774,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -82,8 +71,7 @@
       "ours": 0.7223080561615806,
       "quantity": "y_H2O",
       "ratio": 1.1283272838280567,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -92,8 +80,7 @@
       "ours": 5.635473106103976,
       "quantity": "K_CH3OH",
       "ratio": 6.195564850306284,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -102,8 +89,7 @@
       "ours": 0.7597450327925641,
       "quantity": "K_H2O",
       "ratio": 1.0304034063261387,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -112,8 +98,7 @@
       "ours": -278817.9223019418,
       "quantity": "h_L",
       "ratio": 0.06732027977705002,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -122,24 +107,25 @@
       "ours": -227961.2632967181,
       "quantity": "h_V",
       "ratio": 0.11300329410005361,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 1.2868190338481733e-08,
+     "max_abs_component_balance": 5.070291020432616e-09,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 4.865957745788627e-07
+    },
+    "g": 4.865957745788627e-07,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(4.86596e-07)",
+    "status": "NOT_COMPARABLE",
     "temperature": 365.51,
     "tolerance": 1e-10
    },
    "I10": {
-    "all_within": false,
-    "argmax": "K_C2H5OH",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 3.1253621763260864e-08,
-     "max_abs_component_balance": 2.3185778905175415e-08,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 2.070669445164124e-06
-    },
-    "max_ratio": 66.9326867236701,
-    "rows": [
+    "diagnostic_argmax": "K_C2H5OH",
+    "diagnostic_max_ratio": 66.9326867236701,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 2.43210193584531e-06,
@@ -147,8 +133,7 @@
       "ours": 0.5810462567964695,
       "quantity": "beta",
       "ratio": 24.3210193584531,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -157,8 +142,7 @@
       "ours": 0.0,
       "quantity": "x_CH3OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -167,8 +151,7 @@
       "ours": 0.0,
       "quantity": "y_CH3OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -177,8 +160,7 @@
       "ours": 0.21202403322052088,
       "quantity": "x_C2H5OH",
       "ratio": 15.08762144192266,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -187,8 +169,7 @@
       "ours": 0.5355369456276373,
       "quantity": "y_C2H5OH",
       "ratio": 2.26360523658542,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -197,8 +178,7 @@
       "ours": 0.7879759667794791,
       "quantity": "x_H2O",
       "ratio": 15.08762143997977,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -207,8 +187,7 @@
       "ours": 0.4644630543723627,
       "quantity": "y_H2O",
       "ratio": 2.2636052354751968,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -217,8 +196,7 @@
       "ours": 2.525831329086353,
       "quantity": "K_C2H5OH",
       "ratio": 66.9326867236701,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -227,8 +205,7 @@
       "ours": 0.589438097040777,
       "quantity": "K_H2O",
       "ratio": 14.273743124904705,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -237,8 +214,7 @@
       "ours": -279541.1061119668,
       "quantity": "h_L",
       "ratio": 0.2381766657344997,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -247,24 +223,25 @@
       "ours": -235076.26313197523,
       "quantity": "h_V",
       "ratio": 0.06258117267861962,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 3.1253621763260864e-08,
+     "max_abs_component_balance": 2.3185778905175415e-08,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 2.070669445164124e-06
+    },
+    "g": 2.070669445164124e-06,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(2.07067e-06)",
+    "status": "NOT_COMPARABLE",
     "temperature": 356.02,
     "tolerance": 1e-10
    },
    "I11": {
-    "all_within": false,
-    "argmax": "K_C2H5OH",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 1.3180037479508432e-08,
-     "max_abs_component_balance": 1.1329572089167155e-08,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 9.080668456587011e-07
-    },
-    "max_ratio": 21.85917945887063,
-    "rows": [
+    "diagnostic_argmax": "K_C2H5OH",
+    "diagnostic_max_ratio": 21.85917945887063,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 1.2699336425781027e-06,
@@ -272,8 +249,7 @@
       "ours": 0.56611505044237,
       "quantity": "beta",
       "ratio": 12.699336425781027,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -282,8 +258,7 @@
       "ours": 0.13112674342392522,
       "quantity": "x_CH3OH",
       "ratio": 2.031053461526433,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -292,8 +267,7 @@
       "ours": 0.2527862126824378,
       "quantity": "y_CH3OH",
       "ratio": 1.0886875306814758,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -302,8 +276,7 @@
       "ours": 0.2043470065844213,
       "quantity": "x_C2H5OH",
       "ratio": 4.563420794301276,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -312,8 +285,7 @@
       "ours": 0.37331088299228954,
       "quantity": "y_C2H5OH",
       "ratio": 0.1763875101534751,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -322,8 +294,7 @@
       "ours": 0.6645262499916536,
       "quantity": "x_H2O",
       "ratio": 6.5944742566603765,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -332,8 +303,7 @@
       "ours": 0.3739029043252727,
       "quantity": "y_H2O",
       "ratio": 1.2650750413900624,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -342,8 +312,7 @@
       "ours": 1.9278005850049558,
       "quantity": "K_CH3OH",
       "ratio": 11.182469613908538,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -352,8 +321,7 @@
       "ours": 1.8268478175043132,
       "quantity": "K_C2H5OH",
       "ratio": 21.85917945887063,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -362,8 +330,7 @@
       "ours": 0.5626608494848306,
       "quantity": "K_H2O",
       "ratio": 6.54014676951165,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -372,8 +339,7 @@
       "ours": -273714.1189645654,
       "quantity": "h_L",
       "ratio": 0.18489369307644665,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -382,24 +348,25 @@
       "ours": -226155.07535343664,
       "quantity": "h_V",
       "ratio": 0.046337165986187756,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 1.3180037479508432e-08,
+     "max_abs_component_balance": 1.1329572089167155e-08,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 9.080668456587011e-07
+    },
+    "g": 9.080668456587011e-07,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(9.08067e-07)",
+    "status": "NOT_COMPARABLE",
     "temperature": 353.34,
     "tolerance": 1e-10
    },
    "I12": {
-    "all_within": false,
-    "argmax": "K_C2H5OH",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 6.469343735057169e-09,
-     "max_abs_component_balance": 5.730565305039309e-09,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 4.3814458179595826e-07
-    },
-    "max_ratio": 8.306987960818311,
-    "rows": [
+    "diagnostic_argmax": "K_C2H5OH",
+    "diagnostic_max_ratio": 8.306987960818311,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 6.188525029093839e-07,
@@ -407,8 +374,7 @@
       "ours": 0.5666484927447907,
       "quantity": "beta",
       "ratio": 6.188525029093839,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -417,8 +383,7 @@
       "ours": 0.2843442058804187,
       "quantity": "x_CH3OH",
       "ratio": 1.67016422580879,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -427,8 +392,7 @@
       "ours": 0.48844921207103925,
       "quantity": "y_CH3OH",
       "ratio": 0.8742442136888684,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -437,8 +401,7 @@
       "ours": 0.16485787361398038,
       "quantity": "x_C2H5OH",
       "ratio": 1.185638773548714,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -447,8 +410,7 @@
       "ours": 0.22687537976809463,
       "quantity": "y_C2H5OH",
       "ratio": 0.2529908937898284,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -457,8 +419,7 @@
       "ours": 0.550797920505601,
       "quantity": "x_H2O",
       "ratio": 2.85580299963506,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -467,8 +428,7 @@
       "ours": 0.2846754081608661,
       "quantity": "y_H2O",
       "ratio": 0.6212533215643745,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -477,8 +437,7 @@
       "ours": 1.7178096193613213,
       "quantity": "K_CH3OH",
       "ratio": 4.083902149353531,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -487,8 +446,7 @@
       "ours": 1.3761877112362257,
       "quantity": "K_C2H5OH",
       "ratio": 8.306987960818311,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -497,8 +455,7 @@
       "ours": 0.516841835385926,
       "quantity": "K_H2O",
       "ratio": 3.0025269505859375,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -507,8 +464,7 @@
       "ours": -267227.60879322665,
       "quantity": "h_L",
       "ratio": 0.0677241524681449,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -517,24 +473,25 @@
       "ours": -217818.72907118368,
       "quantity": "h_V",
       "ratio": 0.08893403108231723,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 6.469343735057169e-09,
+     "max_abs_component_balance": 5.730565305039309e-09,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 4.3814458179595826e-07
+    },
+    "g": 4.3814458179595826e-07,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(4.38145e-07)",
+    "status": "NOT_COMPARABLE",
     "temperature": 350.09,
     "tolerance": 1e-10
    },
    "I13": {
-    "all_within": false,
-    "argmax": "beta",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 2.4224775179005056e-10,
-     "max_abs_component_balance": 4.5507147135262305e-10,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 1.0886494058683365e-07
-    },
-    "max_ratio": 6.783006915034306,
-    "rows": [
+    "diagnostic_argmax": "beta",
+    "diagnostic_max_ratio": 6.783006915034306,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 6.783006915034306e-07,
@@ -542,8 +499,7 @@
       "ours": 0.5322219927541811,
       "quantity": "beta",
       "ratio": 6.783006915034306,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -552,8 +508,7 @@
       "ours": 0.08014720297882953,
       "quantity": "x_CH3OH",
       "ratio": 0.19497320605244006,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -562,8 +517,7 @@
       "ours": 0.1174489253643228,
       "quantity": "y_CH3OH",
       "ratio": 0.3007899636309208,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -572,8 +526,7 @@
       "ours": 0.5675307536797499,
       "quantity": "x_C2H5OH",
       "ratio": 0.9397260514187877,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -582,8 +535,7 @@
       "ours": 0.6285377146139005,
       "quantity": "y_C2H5OH",
       "ratio": 0.0537317701443385,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -592,8 +544,7 @@
       "ours": 0.3523220433414206,
       "quantity": "x_H2O",
       "ratio": 1.1346992578875614,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -602,8 +553,7 @@
       "ours": 0.2540133600217767,
       "quantity": "y_H2O",
       "ratio": 0.24705819390291595,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -612,8 +562,7 @@
       "ours": 1.4654151486153089,
       "quantity": "K_CH3OH",
       "ratio": 0.12833893665955062,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -622,8 +571,7 @@
       "ours": 1.1074954274082847,
       "quantity": "K_C2H5OH",
       "ratio": 1.7413018644437916,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -632,8 +580,7 @@
       "ours": 0.7209692519171245,
       "quantity": "K_H2O",
       "ratio": 2.248012723168626,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -642,8 +589,7 @@
       "ours": -272537.46987697494,
       "quantity": "h_L",
       "ratio": 0.06443899706937373,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -652,24 +598,25 @@
       "ours": -229653.32980931437,
       "quantity": "h_V",
       "ratio": 0.08979648991953582,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 2.4224775179005056e-10,
+     "max_abs_component_balance": 4.5507147135262305e-10,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 1.0886494058683365e-07
+    },
+    "g": 1.0886494058683365e-07,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(1.08865e-07)",
+    "status": "NOT_COMPARABLE",
     "temperature": 351.15,
     "tolerance": 1e-10
    },
    "I14": {
-    "all_within": false,
-    "argmax": "beta",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 5.750412200272868e-10,
-     "max_abs_component_balance": 1.0623778647686532e-09,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 3.267512823788784e-08
-    },
-    "max_ratio": 4.248382773908155,
-    "rows": [
+    "diagnostic_argmax": "beta",
+    "diagnostic_max_ratio": 4.248382773908155,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 4.248382773908155e-07,
@@ -677,8 +624,7 @@
       "ours": 0.49268280722350977,
       "quantity": "beta",
       "ratio": 4.248382773908155,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -687,8 +633,7 @@
       "ours": 0.43333046259795266,
       "quantity": "x_CH3OH",
       "ratio": 0.5593167534678756,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -697,8 +642,7 @@
       "ours": 0.5686498535419158,
       "quantity": "y_CH3OH",
       "ratio": 0.5693597948663864,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -707,8 +651,7 @@
       "ours": 0.5666695374020474,
       "quantity": "x_C2H5OH",
       "ratio": 0.559316751802541,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -717,8 +660,7 @@
       "ours": 0.43135014645808417,
       "quantity": "y_C2H5OH",
       "ratio": 0.5693597948663864,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -727,8 +669,7 @@
       "ours": 0.0,
       "quantity": "x_H2O",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -737,8 +678,7 @@
       "ours": 0.0,
       "quantity": "y_H2O",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -747,8 +687,7 @@
       "ours": 1.3122775863314127,
       "quantity": "K_CH3OH",
       "ratio": 0.289491087991181,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -757,8 +696,7 @@
       "ours": 0.76120228455486,
       "quantity": "K_C2H5OH",
       "ratio": 0.33292347819522317,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -767,8 +705,7 @@
       "ours": -256676.01286161863,
       "quantity": "h_L",
       "ratio": 0.1670900045428425,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -777,24 +714,25 @@
       "ours": -213012.98922867735,
       "quantity": "h_V",
       "ratio": 0.17702848184853792,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 5.750412200272868e-10,
+     "max_abs_component_balance": 1.0623778647686532e-09,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 3.267512823788784e-08
+    },
+    "g": 3.267512823788784e-08,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(3.26751e-08)",
+    "status": "NOT_COMPARABLE",
     "temperature": 344.84,
     "tolerance": 1e-10
    },
    "I2": {
-    "all_within": false,
-    "argmax": "K_CH3OH",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 3.581538709645972e-08,
-     "max_abs_component_balance": 2.0609422379546082e-08,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 8.656934496287193e-07
-    },
-    "max_ratio": 13.182381031166859,
-    "rows": [
+    "diagnostic_argmax": "K_CH3OH",
+    "diagnostic_max_ratio": 13.182381031166859,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 6.313848252004206e-07,
@@ -802,8 +740,7 @@
       "ours": 0.410339861037754,
       "quantity": "beta",
       "ratio": 6.313848252004206,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -812,8 +749,7 @@
       "ours": 0.15024997089737555,
       "quantity": "x_CH3OH",
       "ratio": 2.446518951315646,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -822,8 +758,7 @@
       "ours": 0.5151914336251373,
       "quantity": "y_CH3OH",
       "ratio": 1.5973967304461212,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -832,8 +767,7 @@
       "ours": 0.0,
       "quantity": "x_C2H5OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -842,8 +776,7 @@
       "ours": 0.0,
       "quantity": "y_C2H5OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -852,8 +785,7 @@
       "ours": 0.8497500291026244,
       "quantity": "x_H2O",
       "ratio": 2.4465189507605345,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -862,8 +794,7 @@
       "ours": 0.4848085663748627,
       "quantity": "y_H2O",
       "ratio": 1.5973967298910097,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -872,8 +803,7 @@
       "ours": 3.428895397104774,
       "quantity": "K_CH3OH",
       "ratio": 13.182381031166859,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -882,8 +812,7 @@
       "ours": 0.5705308029078188,
       "quantity": "K_H2O",
       "ratio": 0.4157978641001662,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -892,8 +821,7 @@
       "ours": -274656.4847262084,
       "quantity": "h_L",
       "ratio": 0.11955438531003892,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -902,24 +830,25 @@
       "ours": -218385.51781235845,
       "quantity": "h_V",
       "ratio": 0.08074813638813794,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 3.581538709645972e-08,
+     "max_abs_component_balance": 2.0609422379546082e-08,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 8.656934496287193e-07
+    },
+    "g": 8.656934496287193e-07,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(8.65693e-07)",
+    "status": "NOT_COMPARABLE",
     "temperature": 357.42,
     "tolerance": 1e-10
    },
    "I3": {
-    "all_within": false,
-    "argmax": "K_CH3OH",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 2.5528844456240443e-08,
-     "max_abs_component_balance": 1.741427364914144e-08,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 6.419638787385292e-07
-    },
-    "max_ratio": 10.59928085927507,
-    "rows": [
+    "diagnostic_argmax": "K_CH3OH",
+    "diagnostic_max_ratio": 10.59928085927507,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 6.860747345793783e-07,
@@ -927,8 +856,7 @@
       "ours": 0.5393419817979258,
       "quantity": "beta",
       "ratio": 6.860747345793783,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -937,8 +865,7 @@
       "ours": 0.30233474735623767,
       "quantity": "x_CH3OH",
       "ratio": 3.7270171487913117,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -947,8 +874,7 @@
       "ours": 0.6688281028054732,
       "quantity": "y_CH3OH",
       "ratio": 1.1558408252732022,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -957,8 +883,7 @@
       "ours": 0.0,
       "quantity": "x_C2H5OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -967,8 +892,7 @@
       "ours": 0.0,
       "quantity": "y_C2H5OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -977,8 +901,7 @@
       "ours": 0.6976652526437623,
       "quantity": "x_H2O",
       "ratio": 3.7270171493464233,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -987,8 +910,7 @@
       "ours": 0.3311718971945268,
       "quantity": "y_H2O",
       "ratio": 1.1558408252732022,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -997,8 +919,7 @@
       "ours": 2.212210500625654,
       "quantity": "K_CH3OH",
       "ratio": 10.59928085927507,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -1007,8 +928,7 @@
       "ours": 0.47468595567798444,
       "quantity": "K_H2O",
       "ratio": 1.8519753784968027,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1017,8 +937,7 @@
       "ours": -267989.52146588307,
       "quantity": "h_L",
       "ratio": 0.23530664737336338,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -1027,24 +946,25 @@
       "ours": -212258.33797100722,
       "quantity": "h_V",
       "ratio": 0.09447068558074534,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 2.5528844456240443e-08,
+     "max_abs_component_balance": 1.741427364914144e-08,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 6.419638787385292e-07
+    },
+    "g": 6.419638787385292e-07,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(6.41964e-07)",
+    "status": "NOT_COMPARABLE",
     "temperature": 351.27,
     "tolerance": 1e-10
    },
    "I4": {
-    "all_within": false,
-    "argmax": "beta",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 5.6905440128925194e-09,
-     "max_abs_component_balance": 4.462662821863362e-09,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 1.92038176138094e-07
-    },
-    "max_ratio": 3.6882062759424628,
-    "rows": [
+    "diagnostic_argmax": "beta",
+    "diagnostic_max_ratio": 3.6882062759424628,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 3.688206275942463e-07,
@@ -1052,8 +972,7 @@
       "ours": 0.6223446030724081,
       "quantity": "beta",
       "ratio": 3.6882062759424628,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1062,8 +981,7 @@
       "ours": 0.5333481400377635,
       "quantity": "x_CH3OH",
       "ratio": 1.8017804204184529,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1072,8 +990,7 @@
       "ours": 0.8011288183621273,
       "quantity": "y_CH3OH",
       "ratio": 0.42187421667172487,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1082,8 +999,7 @@
       "ours": 0.0,
       "quantity": "x_C2H5OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1092,8 +1008,7 @@
       "ours": 0.0,
       "quantity": "y_C2H5OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1102,8 +1017,7 @@
       "ours": 0.46665185996223646,
       "quantity": "x_H2O",
       "ratio": 1.8017804198633414,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1112,8 +1026,7 @@
       "ours": 0.19887118163787262,
       "quantity": "y_H2O",
       "ratio": 0.42187421611661335,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -1122,8 +1035,7 @@
       "ours": 1.5020748329700815,
       "quantity": "K_CH3OH",
       "ratio": 2.8516438087131055,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -1132,8 +1044,7 @@
       "ours": 0.4261660537557188,
       "quantity": "K_H2O",
       "ratio": 1.7397370793132465,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1142,8 +1053,7 @@
       "ours": -257615.20304212222,
       "quantity": "h_L",
       "ratio": 0.04976378404535353,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -1152,24 +1062,25 @@
       "ours": -207015.39958374892,
       "quantity": "h_V",
       "ratio": 0.12522326142061502,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 5.6905440128925194e-09,
+     "max_abs_component_balance": 4.462662821863362e-09,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 1.92038176138094e-07
+    },
+    "g": 1.92038176138094e-07,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(1.92038e-07)",
+    "status": "NOT_COMPARABLE",
     "temperature": 345.66,
     "tolerance": 1e-10
    },
    "I5": {
-    "all_within": false,
-    "argmax": "beta",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 2.6675145931171896e-10,
-     "max_abs_component_balance": 2.3976737380352557e-10,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 6.685101717437737e-08
-    },
-    "max_ratio": 1.5157927668596471,
-    "rows": [
+    "diagnostic_argmax": "beta",
+    "diagnostic_max_ratio": 1.5157927668596471,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 1.5157927668596471e-07,
@@ -1177,8 +1088,7 @@
       "ours": 0.683945835948121,
       "quantity": "beta",
       "ratio": 1.5157927668596471,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1187,8 +1097,7 @@
       "ours": 0.8315173426311093,
       "quantity": "x_CH3OH",
       "ratio": 0.3201677423181337,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1197,8 +1106,7 @@
       "ours": 0.9316461156558862,
       "quantity": "y_CH3OH",
       "ratio": 0.07045365735258713,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1207,8 +1115,7 @@
       "ours": 0.0,
       "quantity": "x_C2H5OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1217,8 +1124,7 @@
       "ours": 0.0,
       "quantity": "y_C2H5OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1227,8 +1133,7 @@
       "ours": 0.16848265736889068,
       "quantity": "x_H2O",
       "ratio": 0.32016774398346826,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1237,8 +1142,7 @@
       "ours": 0.06835388434411378,
       "quantity": "y_H2O",
       "ratio": 0.07045365763014289,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -1247,8 +1151,7 @@
       "ours": 1.1204169388794065,
       "quantity": "K_CH3OH",
       "ratio": 0.30941761228040277,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -1257,8 +1160,7 @@
       "ours": 0.4057027910858137,
       "quantity": "K_H2O",
       "ratio": 0.8695815748340834,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1267,8 +1169,7 @@
       "ours": -244104.52081478687,
       "quantity": "h_L",
       "ratio": 0.14754698902834207,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -1277,11 +1178,18 @@
       "ours": -201853.23838233232,
       "quantity": "h_V",
       "ratio": 0.13478195411153138,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 2.6675145931171896e-10,
+     "max_abs_component_balance": 2.3976737380352557e-10,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 6.685101717437737e-08
+    },
+    "g": 6.685101717437737e-08,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(6.6851e-08)",
+    "status": "NOT_COMPARABLE",
     "temperature": 340.29,
     "tolerance": 1e-10
    },
@@ -1306,15 +1214,9 @@
     "tolerance": 1e-10
    },
    "I8": {
-    "all_within": false,
-    "argmax": "K_C2H5OH",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 4.2793180252695236e-08,
-     "max_abs_component_balance": 2.0945949788149667e-08,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 1.924130505480525e-06
-    },
-    "max_ratio": 38.27222493236786,
-    "rows": [
+    "diagnostic_argmax": "K_C2H5OH",
+    "diagnostic_max_ratio": 38.27222493236786,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 8.610630329308755e-07,
@@ -1322,8 +1224,7 @@
       "ours": 0.397268960057943,
       "quantity": "beta",
       "ratio": 8.610630329308755,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1332,8 +1233,7 @@
       "ours": 0.0,
       "quantity": "x_CH3OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1342,8 +1242,7 @@
       "ours": 0.0,
       "quantity": "y_CH3OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1352,8 +1251,7 @@
       "ours": 0.0701388552917031,
       "quantity": "x_C2H5OH",
       "ratio": 3.030609040527432,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1362,8 +1260,7 @@
       "ours": 0.3970235549907589,
       "quantity": "y_C2H5OH",
       "ratio": 1.9598328315773017,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1372,8 +1269,7 @@
       "ours": 0.929861144708297,
       "quantity": "x_H2O",
       "ratio": 3.0306090426091004,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1382,8 +1278,7 @@
       "ours": 0.6029764450092411,
       "quantity": "y_H2O",
       "ratio": 1.9598328304670787,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -1392,8 +1287,7 @@
       "ours": 5.660536564783711,
       "quantity": "K_C2H5OH",
       "ratio": 38.27222493236786,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -1402,8 +1296,7 @@
       "ours": 0.6484585880813404,
       "quantity": "K_H2O",
       "ratio": 0.008941694348081522,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1412,8 +1305,7 @@
       "ours": -280677.19993403053,
       "quantity": "h_L",
       "ratio": 0.01879820367321372,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -1422,24 +1314,25 @@
       "ours": -236070.93052754318,
       "quantity": "h_V",
       "ratio": 0.07732152473181486,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 4.2793180252695236e-08,
+     "max_abs_component_balance": 2.0945949788149667e-08,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 1.924130505480525e-06
+    },
+    "g": 1.924130505480525e-06,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(1.92413e-06)",
+    "status": "NOT_COMPARABLE",
     "temperature": 360.93,
     "tolerance": 1e-10
    },
    "I9": {
-    "all_within": false,
-    "argmax": "beta",
-    "dwsim_self_consistency": {
-     "abs_rachford_rice_residual": 1.0658325215564972e-09,
-     "max_abs_component_balance": 1.687573332346316e-09,
-     "max_abs_lnK_minus_ln_gamma_psat_over_p": 2.8074475195994634e-07
-    },
-    "max_ratio": 13.653320866113816,
-    "rows": [
+    "diagnostic_argmax": "beta",
+    "diagnostic_max_ratio": 13.653320866113816,
+    "diagnostic_rows": [
      {
       "basis": "absolute",
       "delta": 1.3653320866113816e-06,
@@ -1447,8 +1340,7 @@
       "ours": 0.6021219264459136,
       "quantity": "beta",
       "ratio": 13.653320866113816,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1457,8 +1349,7 @@
       "ours": 0.0,
       "quantity": "x_CH3OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1467,8 +1358,7 @@
       "ours": 0.0,
       "quantity": "y_CH3OH",
       "ratio": 0.0,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1477,8 +1367,7 @@
       "ours": 0.5087310576467803,
       "quantity": "x_C2H5OH",
       "ratio": 4.1183766508190445,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1487,8 +1376,7 @@
       "ours": 0.6603098963247603,
       "quantity": "y_C2H5OH",
       "ratio": 0.6876719105264328,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1497,8 +1385,7 @@
       "ours": 0.4912689423532197,
       "quantity": "x_H2O",
       "ratio": 4.118376651374156,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1507,8 +1394,7 @@
       "ours": 0.33969010367523966,
       "quantity": "y_H2O",
       "ratio": 0.6876719116366559,
-      "tolerance": 1e-07,
-      "within": true
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -1517,8 +1403,7 @@
       "ours": 1.297954757036327,
       "quantity": "K_C2H5OH",
       "ratio": 7.05394680611624,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "relative",
@@ -1527,8 +1412,7 @@
       "ours": 0.6914544649374645,
       "quantity": "K_H2O",
       "ratio": 6.358736388505745,
-      "tolerance": 1e-07,
-      "within": false
+      "tolerance": 1e-07
      },
      {
       "basis": "absolute",
@@ -1537,8 +1421,7 @@
       "ours": -276722.02934635186,
       "quantity": "h_L",
       "ratio": 0.002702184719964862,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      },
      {
       "basis": "absolute",
@@ -1547,11 +1430,18 @@
       "ours": -234149.4573790849,
       "quantity": "h_V",
       "ratio": 0.08631624688860029,
-      "tolerance": 0.05,
-      "within": true
+      "tolerance": 0.05
      }
     ],
-    "status": "compared",
+    "dwsim_self_consistency": {
+     "abs_rachford_rice_residual": 1.0658325215564972e-09,
+     "max_abs_component_balance": 1.687573332346316e-09,
+     "max_abs_lnK_minus_ln_gamma_psat_over_p": 2.8074475195994634e-07
+    },
+    "g": 2.8074475195994634e-07,
+    "gate": 1e-08,
+    "reason": "reference_accuracy: dwsim_flash_floor(2.80745e-07)",
+    "status": "NOT_COMPARABLE",
     "temperature": 352.86,
     "tolerance": 1e-10
    }
@@ -1560,9 +1450,10 @@
    "I6_I7": "the phase identity, exact",
    "K_relative": 1e-07,
    "beta_x_y_absolute": 1e-07,
+   "dwsim_flash_floor_gate_g": 1e-08,
    "h_absolute_J_per_mol": 0.05
   },
-  "verdict": "the verdict agent's, per state; nothing here classifies"
+  "verdict": "the verdict agent's, per state"
  },
  "environment": {
   "fingerprint_matches": true,
@@ -1862,11 +1753,11 @@
   "selected_tolerance": 1e-10
  },
  "provenance": {
-  "inputs.json": "28676a25b544724ed38ae93e24c3cf5915a41776bde75866effd423a4a68517a",
+  "inputs.json": "0dc64095f4e2f99dc53fd0f74b3e3e7edb429b5c2013539e9340c95fec8d51e4",
   "qualification.json": "e4d0907340c4ac0297131a5ba1a5817102cca70442328347ce91e996bfe8e28f",
   "records.yaml": "74dc4e54101f6197cc4f9c2dc66e1856b99a7f047b5904a31b6a910b33f5a8f1",
-  "reference_values_real.yaml": "fa7c43f753baf0fae7695146f664a1b022de522a76dcb15246da81c6c8e00723",
-  "s10_reference.py": "e9f97327408fc9b326c9bc1ba77c9c4756740e6c26148c9630f33279247f0049"
+  "reference_values_real.yaml": "52e46110ccd3243a03553a53123e8519fc4b9b5831b264a729104b2f49c6b04b",
+  "s10_reference.py": "c4dd73ff447005ee0ca3a6096db02e4d2a9240834db2c38a9feda44312c5ab7e"
  },
  "readbacks": {
   "gamma_gate": {

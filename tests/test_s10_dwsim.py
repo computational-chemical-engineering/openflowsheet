@@ -256,7 +256,7 @@ def test_a45_ladder_is_the_registered_one(qual: dict[str, Any]) -> None:
         )
 
 
-def test_a45_comparison_recomputes(qual: dict[str, Any], real: dict[str, Any]) -> None:
+def test_a45_comparison_recomputes(qual: dict[str, Any], real: dict[str, Any], model: Any) -> None:
     script = _module("s10_dwsim_comparison", REPO_ROOT / "scripts" / "s10_dwsim_comparison.py")
     assert (DWSIM / "inputs.json").read_text(encoding="utf-8") == script.dumps(script.inputs())
     assert (DWSIM / "comparison.json").read_text(encoding="utf-8") == script.dumps(
@@ -270,15 +270,38 @@ def test_a45_comparison_recomputes(qual: dict[str, Any], real: dict[str, Any]) -
     selected = next((t for t in (1e-10, 1e-8) if all(t in v for v in conv.values())), None)
     assert doc["ladder"]["selected_tolerance"] == selected
     gate = doc["readbacks"]["gamma_gate"]["all_within"]
+    n_not_comparable = n_phase = 0
     for sid, entry in doc["comparison"]["states"].items():
         if not gate or not conv[sid]:
             assert entry["status"] == "NOT_COMPARABLE" and "rows" not in entry
         elif selected is None:
             assert entry["status"] == "NO_SELECTED_RUNG" and "rows" not in entry
         else:
-            assert entry["status"] == "compared"
-            if real["closed_form"]["i_states"][sid]["phase"] == "TWO_PHASE":
-                assert len(entry["rows"]) >= 9
+            ours = real["closed_form"]["i_states"][sid]["phase"]
+            if ours == "TWO_PHASE":
+                # A3-6: g > 1e-8 makes every A41 quantity NOT_COMPARABLE; the differences stay
+                # as unclassified diagnostics, and g is recomputable from the record.
+                a = next(
+                    a for a in qual["attempts"] if a["state"] == sid and a["tolerance"] == selected
+                )
+                sc = script.self_consistency(
+                    a["quantities"], real["closed_form"]["i_states"][sid]["state"], model
+                )
+                g = max(
+                    sc["max_abs_lnK_minus_ln_gamma_psat_over_p"], sc["max_abs_component_balance"]
+                )
+                assert entry["g"] == g and g > 1e-8
+                assert entry["status"] == "NOT_COMPARABLE"
+                assert entry["reason"] == f"reference_accuracy: dwsim_flash_floor({g:.6g})"
+                assert "rows" not in entry and len(entry["diagnostic_rows"]) >= 9
+                assert all("within" not in r for r in entry["diagnostic_rows"])
+                n_not_comparable += 1
+            else:
+                assert entry["status"] == "compared" and entry["phase_ours"] == ours
+                assert entry["all_within"] and entry["phase_dwsim"] == ours
+                n_phase += 1
+    assert (n_not_comparable, n_phase) == (12, 2)
+    assert doc["comparison"]["tolerances"]["dwsim_flash_floor_gate_g"] == 1e-8
 
 
 def test_a45_single_phase_states_raw(qual: dict[str, Any]) -> None:
