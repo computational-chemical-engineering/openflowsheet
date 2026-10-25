@@ -1,0 +1,1757 @@
+{
+  "work_package": "S10",
+  "commit": "f6f27c3f8aca7cb360287e531cd03e2033c32e16",
+  "requirements": [
+    "D08",
+    "D19"
+  ],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S10 acceptance: docs/derivations/S10-spec.md §7.5 (A01–A45, amended by §14, §16 A3-7 and §17), against benchmarks/s10/reference_values.yaml, reference_values_real.yaml and the committed tool records; validation (A50–A53, §9.6) reported apart (§17 A4-4)",
+    "case_hash": "3ccb4180bdfdc1144253bacb8280328d3473f43d4f718febeac44d52da6da94f",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S10/f6f27c3f8aca7cb360287e531cd03e2033c32e16/artifacts/s10-tests.junit.xml tests/test_s10_dwsim.py tests/test_s10_flash.py tests/test_s10_idaes.py tests/test_s10_provider.py tests/test_s10_records.py tests/test_s10_validation.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "b81d8e2d2d68739a8df29c0a88a43eff17cc6b78ad58d11d329cce3f16e83b60"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s10_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "18c557df07eb811ee8c36e24f32d730e6fa6fef6bf5bd419cb81102ad5b494a8"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s10_reference.py --real --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "fff7333e2b8beaee0d8bb330e4c94ed86fd0f797526dfa34c6bbb6957b095e8d"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s10_records.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "8d747b5bd1d3ddbadb3aa02c85b94271c28b5898cb98fd499c51c6fa98a46b72"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s10_idaes_comparison.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "448a837e5865b973f48bda4a3ad21e8179300018585ebb3ea4eb4c432cb42239"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s10_dwsim_comparison.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "448a837e5865b973f48bda4a3ad21e8179300018585ebb3ea4eb4c432cb42239"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s10_validation.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "5a736a3e0336b53c812359b73448c3c0f8ff1f2872c4acc98468b11e42d9fa57"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check src/openflowsheet/thermo/wilson_ig.py src/openflowsheet/thermo/stability.py scripts/s10_idaes_comparison.py scripts/s10_dwsim_comparison.py scripts/s10_validation.py scripts/s10_evidence_manifest.py tests/test_s10_dwsim.py tests/test_s10_flash.py tests/test_s10_idaes.py tests/test_s10_provider.py tests/test_s10_records.py tests/test_s10_validation.py docs/derivations/scripts/s10_reference.py docs/derivations/scripts/s10_records.py docs/derivations/scripts/s10_saturation_points.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check src/openflowsheet/thermo/wilson_ig.py src/openflowsheet/thermo/stability.py scripts/s10_idaes_comparison.py scripts/s10_dwsim_comparison.py scripts/s10_validation.py scripts/s10_evidence_manifest.py tests/test_s10_dwsim.py tests/test_s10_flash.py tests/test_s10_idaes.py tests/test_s10_provider.py tests/test_s10_records.py tests/test_s10_validation.py docs/derivations/scripts/s10_reference.py docs/derivations/scripts/s10_records.py docs/derivations/scripts/s10_saturation_points.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "d41ae50829b47e318b0787bc39d2a2ea2d52b518cfc7900d2efd569e6d26ab88"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S10.A01",
+      "description": "`describe()` has the values of §5.2 for the verification records.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a01_describe_is_spec_5_2",
+          "tests/test_s10_provider.py::test_a01_the_default_records_are_the_real_records"
+        ],
+        "not_passed": []
+      },
+      "expected": "§5.2; `data_sha256` = SHA-256 of the file",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A02",
+      "description": "`load_records` hands over floats bitwise, and refuses each of five malformed copies (one per §5.1 code) with that code.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 21,
+        "outcomes": {
+          "passed": 21
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a02_the_loader_hands_over_the_files_floats_bitwise",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[component_synthetic_flag]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[component_unknown_key]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[convention]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[domain_lo_ge_hi]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[domain_outside_nasa]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[duplicate_id]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[kind]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[lambda_diagonal]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[lambda_duplicate]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[lambda_missing]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[lambda_nan]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[lambda_negative]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[lambda_zero]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[parameter_missing]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[real_convention_on_synthetic_data]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[schema_version]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[top_missing_key]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[top_unknown_key]",
+          "tests/test_s10_provider.py::test_a02_a_malformed_copy_is_refused_with_its_code[unit]",
+          "tests/test_s10_provider.py::test_a02_every_spec_code_is_exercised"
+        ],
+        "not_passed": []
+      },
+      "expected": "the file's floats; the codes",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A03",
+      "description": "`reference_values.yaml`'s `records_sha256` equals the verification file's SHA-256.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a03_the_reference_was_generated_from_these_records"
+        ],
+        "not_passed": []
+      },
+      "expected": "`234d165d…`",
+      "tolerance": "exact: a moved fixture invalidates every expectation"
+    },
+    {
+      "id": "S10.A04",
+      "description": "`evaluate_phase` values at E1–E6, both phases.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 13,
+        "outcomes": {
+          "passed": 13
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a04_values[E1-LIQUID]",
+          "tests/test_s10_provider.py::test_a04_values[E1-VAPOR]",
+          "tests/test_s10_provider.py::test_a04_values[E2-LIQUID]",
+          "tests/test_s10_provider.py::test_a04_values[E2-VAPOR]",
+          "tests/test_s10_provider.py::test_a04_values[E3-LIQUID]",
+          "tests/test_s10_provider.py::test_a04_values[E3-VAPOR]",
+          "tests/test_s10_provider.py::test_a04_values[E4-LIQUID]",
+          "tests/test_s10_provider.py::test_a04_values[E4-VAPOR]",
+          "tests/test_s10_provider.py::test_a04_values[E5-LIQUID]",
+          "tests/test_s10_provider.py::test_a04_values[E5-VAPOR]",
+          "tests/test_s10_provider.py::test_a04_values[E6-LIQUID]",
+          "tests/test_s10_provider.py::test_a04_values[E6-VAPOR]",
+          "tests/test_s10_provider.py::test_a04_a05_worst_agreement"
+        ],
+        "not_passed": []
+      },
+      "expected": "YAML `closed_form.evaluate_phase.‹E›.‹phase›.values`",
+      "tolerance": "§7.2"
+    },
+    {
+      "id": "S10.A05",
+      "description": "`evaluate_phase` derivatives at E1–E6, both phases, every input.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 13,
+        "outcomes": {
+          "passed": 13
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a05_derivatives[E1-LIQUID]",
+          "tests/test_s10_provider.py::test_a05_derivatives[E1-VAPOR]",
+          "tests/test_s10_provider.py::test_a05_derivatives[E2-LIQUID]",
+          "tests/test_s10_provider.py::test_a05_derivatives[E2-VAPOR]",
+          "tests/test_s10_provider.py::test_a05_derivatives[E3-LIQUID]",
+          "tests/test_s10_provider.py::test_a05_derivatives[E3-VAPOR]",
+          "tests/test_s10_provider.py::test_a05_derivatives[E4-LIQUID]",
+          "tests/test_s10_provider.py::test_a05_derivatives[E4-VAPOR]",
+          "tests/test_s10_provider.py::test_a05_derivatives[E5-LIQUID]",
+          "tests/test_s10_provider.py::test_a05_derivatives[E5-VAPOR]",
+          "tests/test_s10_provider.py::test_a05_derivatives[E6-LIQUID]",
+          "tests/test_s10_provider.py::test_a05_derivatives[E6-VAPOR]",
+          "tests/test_s10_provider.py::test_a04_a05_worst_agreement"
+        ],
+        "not_passed": []
+      },
+      "expected": "`….derivatives`",
+      "tolerance": "§7.2"
+    },
+    {
+      "id": "S10.A06",
+      "description": "The 102 identity zeros are present and exactly `0.0`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a06_the_102_identity_zeros_are_present_and_exactly_zero"
+        ],
+        "not_passed": []
+      },
+      "expected": "0.0",
+      "tolerance": "exact: they are identities of the model"
+    },
+    {
+      "id": "S10.A07",
+      "description": "E3's structural zeros are within TOL_VALUE·s_q of 0, and the same entries at E1 match A05 (nonzero).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a07_e3s_structural_zeros_vanish_there_and_not_at_e1"
+        ],
+        "not_passed": []
+      },
+      "expected": "0 and the YAML values",
+      "tolerance": "§7.2"
+    },
+    {
+      "id": "S10.A08",
+      "description": "On the implementation's own derivatives at E1–E6: n_tot·\\|Σ_i x_i ∂ln φ_i/∂n_j\\| ≤ 10⁻¹¹; n_tot·\\|∂ln φ_i/∂n_j − ∂ln φ_j/∂n_i\\| ≤ 10⁻¹¹; \\|Σ_j n_j ∂X/∂n_j\\| ≤ 10⁻¹¹·max(1, \\|X\\|).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 12,
+        "outcomes": {
+          "passed": 12
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E1-LIQUID]",
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E1-VAPOR]",
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E2-LIQUID]",
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E2-VAPOR]",
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E3-LIQUID]",
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E3-VAPOR]",
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E4-LIQUID]",
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E4-VAPOR]",
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E5-LIQUID]",
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E5-VAPOR]",
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E6-LIQUID]",
+          "tests/test_s10_provider.py::test_a08_the_implementations_own_identities[E6-VAPOR]"
+        ],
+        "not_passed": []
+      },
+      "expected": "0",
+      "tolerance": "Three entries, each within 10⁻¹²·s_q (A05), plus the sum's rounding. A broken projection gives O(1) (M09)."
+    },
+    {
+      "id": "S10.A10",
+      "description": "R1–R5, R8, R9 through `evaluate_phase`: status and message code.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 12,
+        "outcomes": {
+          "passed": 12
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a10_refusals[R1]",
+          "tests/test_s10_provider.py::test_a10_refusals[R2]",
+          "tests/test_s10_provider.py::test_a10_refusals[R3]",
+          "tests/test_s10_provider.py::test_a10_refusals[R4]",
+          "tests/test_s10_provider.py::test_a10_refusals[R5]",
+          "tests/test_s10_provider.py::test_a10_refusals[R8]",
+          "tests/test_s10_provider.py::test_a10_refusals[R9]",
+          "tests/test_s10_provider.py::test_a10_the_domain_corners_are_inclusive",
+          "tests/test_s10_provider.py::test_a10_properties_the_method_does_not_offer[v]",
+          "tests/test_s10_provider.py::test_a10_properties_the_method_does_not_offer[Z]",
+          "tests/test_s10_provider.py::test_a10_properties_the_method_does_not_offer[g]",
+          "tests/test_s10_provider.py::test_a10_properties_the_method_does_not_offer[s]"
+        ],
+        "not_passed": []
+      },
+      "expected": "§7.1 R-states",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A11",
+      "description": "R10: `unsupported`, `dormant_state`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a11_a_dormant_state_is_refused",
+          "tests/test_s10_provider.py::test_a11_the_answer_holds_exactly_what_was_asked"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A12",
+      "description": "`phase_signature` and `vapor_fraction` of F1–F12. 0.0 or 1.0 exactly for single-phase results; None for F9.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 13,
+        "outcomes": {
+          "passed": 13
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F1]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F10]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F11]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F12]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F2]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F3]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F4]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F5]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F6a]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F6b]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F7]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F8]",
+          "tests/test_s10_flash.py::test_a12_phase_signature_and_vapour_fraction[F9]"
+        ],
+        "not_passed": []
+      },
+      "expected": "§7.1, YAML `closed_form.flash`",
+      "tolerance": "labels exact; β per §7.3"
+    },
+    {
+      "id": "S10.A13",
+      "description": "Single-phase outlets are bitwise: the feed in the named phase, the other dormant at the same T and P; `k_values` == {}.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 7,
+        "outcomes": {
+          "passed": 7
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a13_single_phase_outlets_are_bitwise[F1]",
+          "tests/test_s10_flash.py::test_a13_single_phase_outlets_are_bitwise[F2]",
+          "tests/test_s10_flash.py::test_a13_single_phase_outlets_are_bitwise[F6a]",
+          "tests/test_s10_flash.py::test_a13_single_phase_outlets_are_bitwise[F6b]",
+          "tests/test_s10_flash.py::test_a13_single_phase_outlets_are_bitwise[F7]",
+          "tests/test_s10_flash.py::test_a13_single_phase_outlets_are_bitwise[F11]",
+          "tests/test_s10_flash.py::test_a13_single_phase_outlets_are_bitwise[F12]"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A14",
+      "description": "Two-phase β, `vapor.n`, `liquid.n` at F3, F4, F5, F8 and F10.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a14_a15_two_phase_outputs[F3]",
+          "tests/test_s10_flash.py::test_a14_a15_two_phase_outputs[F4]",
+          "tests/test_s10_flash.py::test_a14_a15_two_phase_outputs[F5]",
+          "tests/test_s10_flash.py::test_a14_a15_two_phase_outputs[F8]",
+          "tests/test_s10_flash.py::test_a14_a15_two_phase_outputs[F10]",
+          "tests/test_s10_flash.py::test_a14_a15_worst_agreement"
+        ],
+        "not_passed": []
+      },
+      "expected": "YAML `vapor_fraction`, `vapor_n`, `liquid_n`",
+      "tolerance": "§7.3, per state and output"
+    },
+    {
+      "id": "S10.A15",
+      "description": "Two-phase `k_values`, including F4's K_VA. F4's outlets have VA exactly 0.0.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 11,
+        "outcomes": {
+          "passed": 11
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a14_a15_two_phase_outputs[F3]",
+          "tests/test_s10_flash.py::test_a14_a15_two_phase_outputs[F4]",
+          "tests/test_s10_flash.py::test_a14_a15_two_phase_outputs[F5]",
+          "tests/test_s10_flash.py::test_a14_a15_two_phase_outputs[F8]",
+          "tests/test_s10_flash.py::test_a14_a15_two_phase_outputs[F10]",
+          "tests/test_s10_flash.py::test_a15_absent_components_are_exact_zeros_with_k_at_infinite_dilution[F3]",
+          "tests/test_s10_flash.py::test_a15_absent_components_are_exact_zeros_with_k_at_infinite_dilution[F4]",
+          "tests/test_s10_flash.py::test_a15_absent_components_are_exact_zeros_with_k_at_infinite_dilution[F5]",
+          "tests/test_s10_flash.py::test_a15_absent_components_are_exact_zeros_with_k_at_infinite_dilution[F8]",
+          "tests/test_s10_flash.py::test_a15_absent_components_are_exact_zeros_with_k_at_infinite_dilution[F10]",
+          "tests/test_s10_flash.py::test_a14_a15_worst_agreement"
+        ],
+        "not_passed": []
+      },
+      "expected": "YAML `k_values`",
+      "tolerance": "§7.3 relative; zeros exact"
+    },
+    {
+      "id": "S10.A16",
+      "description": "Component balance of every two-phase result.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 5,
+        "outcomes": {
+          "passed": 5
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a16_component_balance[F3]",
+          "tests/test_s10_flash.py::test_a16_component_balance[F4]",
+          "tests/test_s10_flash.py::test_a16_component_balance[F5]",
+          "tests/test_s10_flash.py::test_a16_component_balance[F8]",
+          "tests/test_s10_flash.py::test_a16_component_balance[F10]"
+        ],
+        "not_passed": []
+      },
+      "expected": "n",
+      "tolerance": "10⁻¹³ n_tot (§7.3)"
+    },
+    {
+      "id": "S10.A17",
+      "description": "Every `ok` non-dormant message follows §5.4's grammar. Its label is STABLE_WITHIN_TESTED_SCOPE. Its tm values parse with `float()` and match `closed_form.flash.‹F›.stability`. `tm_liquid_trial: not_evaluated` appears exactly for F1, F6a, F7 and F12. `fugacity_residual` ≤ 10⁻¹².",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 14,
+        "outcomes": {
+          "passed": 14
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F1]",
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F2]",
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F3]",
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F4]",
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F5]",
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F6a]",
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F6b]",
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F7]",
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F8]",
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F10]",
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F11]",
+          "tests/test_s10_flash.py::test_a17_the_message_grammar[F12]",
+          "tests/test_s10_flash.py::test_a17_the_liquid_trial_is_not_evaluated_exactly_for_f1_f6a_f7_f12",
+          "tests/test_s10_flash.py::test_a17_the_resolution_band_decides_f7_f8_f10_f11"
+        ],
+        "not_passed": []
+      },
+      "expected": "YAML",
+      "tolerance": "TOL_TM; the residual ≤ 10 δ_K"
+    },
+    {
+      "id": "S10.A18",
+      "description": "F9: `ok`, ZERO_FLOW, both outlets dormant, `vapor_fraction` None, and the message `stability: UNKNOWN; scope: S10-tpd-v1; reason: dormant_state…`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a18_the_dormant_feed"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A19",
+      "description": "R1–R7 through `flash`: status, code, no outlets.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 7,
+        "outcomes": {
+          "passed": 7
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a19_refusals[R1]",
+          "tests/test_s10_flash.py::test_a19_refusals[R2]",
+          "tests/test_s10_flash.py::test_a19_refusals[R3]",
+          "tests/test_s10_flash.py::test_a19_refusals[R4]",
+          "tests/test_s10_flash.py::test_a19_refusals[R5]",
+          "tests/test_s10_flash.py::test_a19_refusals[R6]",
+          "tests/test_s10_flash.py::test_a19_refusals[R7]"
+        ],
+        "not_passed": []
+      },
+      "expected": "§7.1",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A20",
+      "description": "**Unsupported is a result.** With `SS_MAX` patched to 1 in the test (pytest `monkeypatch`; there is no production knob), F2 returns `not_converged`, no outlets, `stability: UNKNOWN`, reason `stability_not_converged`. With the two-phase cap patched to 1, F3 returns `not_converged` with `two_phase_not_converged`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a20_the_liquid_trial_cap_is_not_converged",
+          "tests/test_s10_flash.py::test_a20_the_two_phase_cap_is_not_converged",
+          "tests/test_s10_flash.py::test_a20_no_rachford_rice_bracket_is_not_converged"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact: neither may come back `ok`"
+    },
+    {
+      "id": "S10.A21",
+      "description": "`stability()` for F1, F2, F3, F7 and F11, as LIQUID and as VAPOR: label, `tm`, `scope` == `\"S10-tpd-v1\"`, `epsilon` == 1e-10. Both labels occur (STAB-01).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 12,
+        "outcomes": {
+          "passed": 12
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a21_stability_queries[LIQUID-F1]",
+          "tests/test_s10_flash.py::test_a21_stability_queries[LIQUID-F11]",
+          "tests/test_s10_flash.py::test_a21_stability_queries[LIQUID-F2]",
+          "tests/test_s10_flash.py::test_a21_stability_queries[LIQUID-F3]",
+          "tests/test_s10_flash.py::test_a21_stability_queries[LIQUID-F7]",
+          "tests/test_s10_flash.py::test_a21_stability_queries[VAPOR-F1]",
+          "tests/test_s10_flash.py::test_a21_stability_queries[VAPOR-F11]",
+          "tests/test_s10_flash.py::test_a21_stability_queries[VAPOR-F2]",
+          "tests/test_s10_flash.py::test_a21_stability_queries[VAPOR-F3]",
+          "tests/test_s10_flash.py::test_a21_stability_queries[VAPOR-F7]",
+          "tests/test_s10_flash.py::test_a21_both_labels_occur",
+          "tests/test_s10_flash.py::test_a21_the_flash_and_stability_state_the_same_distances"
+        ],
+        "not_passed": []
+      },
+      "expected": "YAML `closed_form.stability_queries`",
+      "tolerance": "TOL_TM"
+    },
+    {
+      "id": "S10.A22",
+      "description": "`stability()` on a dormant state, an out-of-domain state and a wrong length: UNKNOWN with reasons `dormant_state`, `out_of_domain` and `state_length`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 7,
+        "outcomes": {
+          "passed": 7
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a22_stability_reports_unknown[LIQUID-state0-dormant_state]",
+          "tests/test_s10_flash.py::test_a22_stability_reports_unknown[LIQUID-state1-out_of_domain]",
+          "tests/test_s10_flash.py::test_a22_stability_reports_unknown[LIQUID-state2-state_length]",
+          "tests/test_s10_flash.py::test_a22_stability_reports_unknown[VAPOR-state0-dormant_state]",
+          "tests/test_s10_flash.py::test_a22_stability_reports_unknown[VAPOR-state1-out_of_domain]",
+          "tests/test_s10_flash.py::test_a22_stability_reports_unknown[VAPOR-state2-state_length]",
+          "tests/test_s10_flash.py::test_a22_an_unknown_phase_is_reported_not_raised"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A23",
+      "description": "**Permutation.** A test-built copy of the verification records lists the components as (VC, VA, VB), with the Λ entries unchanged by id. At E1 and F3 with n permuted, its answers are the permuted answers.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_s10_flash.py::test_a23_permuted_records_give_the_permuted_flash",
+          "tests/test_s10_provider.py::test_a23_permuted_records_give_the_permuted_answers",
+          "tests/test_s10_provider.py::test_a23_a_permuted_index_would_be_caught"
+        ],
+        "not_passed": []
+      },
+      "expected": "the permuted YAML values",
+      "tolerance": "§7.2 and §7.3: a permuted index fails by O(0.05) (DIST-01)"
+    },
+    {
+      "id": "S10.A24",
+      "description": "Two identical calls give bitwise-identical results: no hidden state.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a24_identical_calls_are_bitwise_identical"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A25",
+      "description": "`s10_reference.py --check` passes.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a25_the_generator_rederives_every_claim_and_the_committed_bytes"
+        ],
+        "not_passed": []
+      },
+      "expected": "113 claims",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A26",
+      "description": "`thermo/syn001.py`, `pr_c1.py`, `pr_lib.py`, `iapws95.py` and `coolprop_heos.py` are byte-identical to `main`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a26_the_other_providers_are_byte_identical_to_main"
+        ],
+        "not_passed": []
+      },
+      "expected": "`git diff` empty",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A27",
+      "description": "`LIBRARY_ONLY_PROVIDERS` has `\"wilson-ig-v1\": \"S10\"`. T08.A20's tripwire passes, and the provider is not in `SELECTABLE_BASES`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a27_library_only_registration",
+          "tests/test_s10_provider.py::test_a27_the_u02_note_names_the_provider",
+          "tests/test_s10_provider.py::test_a27_the_registry_carries_the_s10_family"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A28",
+      "description": "No S10 records file is in a `PACKAGED` path.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_provider.py::test_a28_no_s10_records_file_is_packaged"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact (R-706)"
+    },
+    {
+      "id": "S10.A30",
+      "description": "`records.yaml` validates against ComponentRecord and §5.1. Every parameter has provenance and every component has rights. There are no CAS RNs.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_records.py::test_a30_records_validate"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A31",
+      "description": "`s10_records.py --check` reproduces `records.yaml` byte-for-byte from the committed inputs (§9.2–§9.5).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_records.py::test_a31_records_check_reproduces_the_committed_files"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A32",
+      "description": "The vapour-pressure fit claim holds for each component.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10_records.py::test_a32_the_vapour_pressure_fit_meets_its_claim",
+          "tests/test_s10_records.py::test_a32_the_fit_catches_a_wrong_coefficient"
+        ],
+        "not_passed": []
+      },
+      "expected": "max \\|Δ ln P\\| ≤ 2 × 10⁻³ on 290–410 K",
+      "tolerance": "fit quality (§9.3), not validation"
+    },
+    {
+      "id": "S10.A33",
+      "description": "The Λ fit claims hold: converged, the grid scan finds no lower objective, and the residuals are reported. **Amended by §15 A2-1:** every claim listed there is present and holds.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10_records.py::test_a33_the_lambda_fit_claims_hold",
+          "tests/test_s10_records.py::test_a33_the_stored_lambda_are_amendment_2s"
+        ],
+        "not_passed": []
+      },
+      "expected": "§9.4, §15 A2-1",
+      "tolerance": "—"
+    },
+    {
+      "id": "S10.A34",
+      "description": "The real-record E- and F-states (§9.7) through the provider.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_s10_records.py::test_a34_real_e_states_through_the_provider",
+          "tests/test_s10_records.py::test_a34_the_real_section_is_on_the_committed_records",
+          "tests/test_s10_records.py::test_a34_real_flash_through_the_provider"
+        ],
+        "not_passed": []
+      },
+      "expected": "the generator's real section",
+      "tolerance": "§7.2 and §7.3, re-derived for those states"
+    },
+    {
+      "id": "S10.A40",
+      "description": "IDAES mapping readbacks (P^sat, γ, h^L, h^V at the RB points), before any flash comparison.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_s10_idaes.py::test_a40_environment_and_structure",
+          "tests/test_s10_idaes.py::test_a40_tau_mapping",
+          "tests/test_s10_idaes.py::test_a40_readbacks"
+        ],
+        "not_passed": []
+      },
+      "expected": "the generator's values",
+      "tolerance": "10⁻¹⁰ relative (§8.1)"
+    },
+    {
+      "id": "S10.A41",
+      "description": "IDAES comparisons at I1–I14. **Amended by §16 A3-7** (one selected attempt per state). [amended by §16 A3-7: IDAES comparisons at I1–I14, each state at its selected attempt (A3-2). Status: `compared`, or `NOT_COMPARABLE(no_optimal_attempt \\| reference_accuracy: rung_dependence(r) \\| setting_dependence(r))`.]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s10_idaes.py::test_a41_ladders_are_the_registered_ones",
+          "tests/test_s10_idaes.py::test_a41_reproduction_of_the_wo_s10_4_record",
+          "tests/test_s10_idaes.py::test_a41_every_attempt_recorded_and_selection",
+          "tests/test_s10_idaes.py::test_a41_comparison_statuses_and_recomputes"
+        ],
+        "not_passed": []
+      },
+      "expected": "the generator's real section",
+      "tolerance": "§8.1; verdict by `verdict`"
+    },
+    {
+      "id": "S10.A42",
+      "description": "The predicted smoothing error at the chosen ladder rung is ≤ τ/10 at every compared state. **Amended by §16 A3-7** (IDAES's actual dew; K and h; the measured shift). [amended by §16 A3-7: (a) The prediction with d_d^I is ≤ τ/10 for β, x and y, and ≤ 0.1 of the tolerance for K and h, at every rung (SMOOTH-I, SMOOTH-I-KH). (b) At each selected two-phase attempt, \\|T_eq − T\\| times each of `max_abs_dq_dT`, `max_abs_dlnK_dT` and `max_abs_dh_dT` is ≤ 0.1 of the corresponding tolerance.]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10_idaes.py::test_a42_a_predicted_smoothing_at_every_rung",
+          "tests/test_s10_idaes.py::test_a42_b_measured_smoothing_shift"
+        ],
+        "not_passed": []
+      },
+      "expected": "claim",
+      "tolerance": "§8.1"
+    },
+    {
+      "id": "S10.A43",
+      "description": "**New, §16 A3-4:** IDAES rung- and setting-dependence checks, on tool records only. [amended by §16 A3-7: A3-4's rung- and setting-dependence checks, on tool records only.]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_idaes.py::test_a43_rung_and_setting_dependence"
+        ],
+        "not_passed": []
+      },
+      "expected": "ratio ≤ 0.1",
+      "tolerance": "§16 A3-4"
+    },
+    {
+      "id": "S10.A44",
+      "description": "**New, §16 A3-4:** IDAES's bubble and dew equations reference the γ that §16 A3-3 reads. [amended by §16 A3-7: IDAES's bubble and dew equations reference the γ that A3-3 reads.]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_idaes.py::test_a44_envelope_equations_as_read"
+        ],
+        "not_passed": []
+      },
+      "expected": "four string patterns",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A45",
+      "description": "DWSIM qualification and comparisons, or NOT_COMPARABLE. **Amended by §16 A3-6** (two-phase states gated by DWSIM's own residual). [amended by §16 A3-7: DWSIM: the readbacks (qualification). Two-phase states are gated by A3-6; I6 and I7 are compared on the phase identity.]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 9,
+        "outcomes": {
+          "passed": 9
+        },
+        "selectors": [
+          "tests/test_s10_dwsim.py::test_a45_environment_and_blindness",
+          "tests/test_s10_dwsim.py::test_a45_settings_read_back",
+          "tests/test_s10_dwsim.py::test_a45_compound_mapping",
+          "tests/test_s10_dwsim.py::test_a45_wilson_mapping",
+          "tests/test_s10_dwsim.py::test_a45_gamma_readback_gate",
+          "tests/test_s10_dwsim.py::test_a45_pure_component_readbacks",
+          "tests/test_s10_dwsim.py::test_a45_ladder_is_the_registered_one",
+          "tests/test_s10_dwsim.py::test_a45_comparison_recomputes",
+          "tests/test_s10_dwsim.py::test_a45_single_phase_states_raw"
+        ],
+        "not_passed": []
+      },
+      "expected": "§8.2",
+      "tolerance": "§8.2"
+    },
+    {
+      "id": "S10.A54",
+      "description": "**New, §18 A5-2:** the saturation check passes with CoolProp 8.0.0, bitwise on x86-64 and classed elsewhere; exit 2 without it.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_records.py::test_a54_saturation_check_never_passes_without_coolprop"
+        ],
+        "not_passed": []
+      },
+      "expected": "§18 A5-2",
+      "tolerance": "exact; B_P = 1e-10, B_D = 2.1e-10 off x86-64"
+    },
+    {
+      "id": "S10.A55",
+      "description": "**New, §18 A5-2:** the floor claims F1-F3 hold on the running machine.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_records.py::test_a55_saturation_floor_claims_hold_where_coolprop_runs"
+        ],
+        "not_passed": []
+      },
+      "expected": "§18 A5-2",
+      "tolerance": "F1 per point; F2 2·max A ≤ B_P/100"
+    },
+    {
+      "id": "S10.A56",
+      "description": "**New, §18 A5-2:** the classed comparator admits and refuses the registered edits.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_records.py::test_a56_saturation_classed_comparison_catches_what_it_must"
+        ],
+        "not_passed": []
+      },
+      "expected": "§18 A5-2",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A57",
+      "description": "**New, §18 A5-1:** T08.A32's vetting of the S10 records reproduces (`PARTIAL`, exit 2, without Cantera's file).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_records.py::test_a57_records_vetting_check_reproduces"
+        ],
+        "not_passed": []
+      },
+      "expected": "§18 A5-1",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10.A58",
+      "description": "**New, §18 A5-1:** the 36 equalities hold, each control turns exactly its own, and the worst \\|Δ ln P\\| agree with the fit report.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10_records.py::test_a58_records_vetting_equalities_and_controls"
+        ],
+        "not_passed": []
+      },
+      "expected": "§18 A5-1",
+      "tolerance": "exact; 10⁻³ relative"
+    },
+    {
+      "id": "S10.tests",
+      "description": "§19 A6-10: every S10 test passed and none was skipped",
+      "result": "pass",
+      "value": {
+        "summary": "248 passed, 0 skipped",
+        "outcomes": {
+          "passed": 248
+        },
+        "skipped": []
+      },
+      "expected": "every test passed; no failure, error or skip"
+    },
+    {
+      "id": "S10.generator",
+      "description": "§7.4, A25: s10_reference.py --check re-derives the 113 claims and byte-compares reference_values.yaml",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s10_reference.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0, output matching ^113 claims hold; reference_values\\.yaml matches$"
+    },
+    {
+      "id": "S10.generator_real",
+      "description": "§9.7, §16: s10_reference.py --real --check re-derives the 160 claims and byte-compares reference_values_real.yaml",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s10_reference.py --real --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0, output matching ^160 claims hold; reference_values_real\\.yaml matches$"
+    },
+    {
+      "id": "S10.records",
+      "description": "§9.3-9.5, A31: s10_records.py --check re-fits and byte-compares records.yaml and fit-report.json (25 claims)",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s10_records.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0, output matching ^25 claims hold; records\\.yaml and fit-report\\.json match$"
+    },
+    {
+      "id": "S10.idaes_comparison",
+      "description": "§8.1: inputs.json and comparison.json recompute identically",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s10_idaes_comparison.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S10.dwsim_comparison",
+      "description": "§8.2: inputs.json and comparison.json recompute identically",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s10_dwsim_comparison.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S10.validation_report",
+      "description": "§9.6: docs/s10-validation-report.md is the script's output",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s10_validation.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S10.ruff",
+      "description": "ruff check is clean on S10's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check src/openflowsheet/thermo/wilson_ig.py src/openflowsheet/thermo/stability.py scripts/s10_idaes_comparison.py scripts/s10_dwsim_comparison.py scripts/s10_validation.py scripts/s10_evidence_manifest.py tests/test_s10_dwsim.py tests/test_s10_flash.py tests/test_s10_idaes.py tests/test_s10_provider.py tests/test_s10_records.py tests/test_s10_validation.py docs/derivations/scripts/s10_reference.py docs/derivations/scripts/s10_records.py docs/derivations/scripts/s10_saturation_points.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S10.format",
+      "description": "ruff format --check is clean on S10's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check src/openflowsheet/thermo/wilson_ig.py src/openflowsheet/thermo/stability.py scripts/s10_idaes_comparison.py scripts/s10_dwsim_comparison.py scripts/s10_validation.py scripts/s10_evidence_manifest.py tests/test_s10_dwsim.py tests/test_s10_flash.py tests/test_s10_idaes.py tests/test_s10_provider.py tests/test_s10_records.py tests/test_s10_validation.py docs/derivations/scripts/s10_reference.py docs/derivations/scripts/s10_records.py docs/derivations/scripts/s10_saturation_points.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S10.reference_record",
+      "description": "§8: each tool's environment, provenance hashes, per-state status (the verdicts are the verdict agent's document), and the qualification's cited inputs hash",
+      "result": "pass",
+      "value": {
+        "records_sha256": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6",
+        "records_lineage": {
+          "path": "benchmarks/s10/records-lineage.json",
+          "sha256": "1116ce165ff0a837b1d57d0b1af3eda33804b27c44aeae654c4e8c43aa3a26c4",
+          "steps": [
+            {
+              "from_sha256": "74dc4e54101f6197cc4f9c2dc66e1856b99a7f047b5904a31b6a910b33f5a8f1",
+              "to_sha256": "d4a39730ee24c592b5a7a36977ec4d122817182f71166d75058d9d99d0934d55",
+              "key": "uncertainty",
+              "authority": "S10 spec §17 A4-3",
+              "commit": "d6dd3c136db30543d4a55a1832a5ffa4e6c6396e"
+            },
+            {
+              "from_sha256": "d4a39730ee24c592b5a7a36977ec4d122817182f71166d75058d9d99d0934d55",
+              "to_sha256": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6",
+              "key": "uncertainty",
+              "authority": "S10 spec §19 A6-9",
+              "commit": "8ddeac6a2debbb4c24c415e45075b791f0f77139"
+            }
+          ]
+        },
+        "verdict_document": {
+          "path": "docs/reviews/S10-reference-verdicts.md",
+          "present": true,
+          "sha256": "f0e01b65df8adaf848294c4a659098d0d3334a0062304d6898e8972cc522b605"
+        },
+        "tools": {
+          "idaes": {
+            "environment_versions": {
+              "idaes_pse": "2.13.0",
+              "pyomo": "6.10.1",
+              "python": "3.13.5"
+            },
+            "fingerprint_matches": true,
+            "provenance": {
+              "inputs.json": "d5677286e7fc360c840f104a887cacb768c9a0cff1944bb1692896ba29b20384",
+              "qualification.json": "aecd227950f61f190e852ea2e8553bfae5e773de73146315bf4f007f02d8da1b",
+              "records.yaml": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6",
+              "reference_values_real.yaml": "3ccb4180bdfdc1144253bacb8280328d3473f43d4f718febeac44d52da6da94f",
+              "s10_reference.py": "c4dd73ff447005ee0ca3a6096db02e4d2a9240834db2c38a9feda44312c5ab7e"
+            },
+            "qualification_cites_inputs_sha256": "92aa171f38b419622e5d6750dbe936d55a76b1f586258d83c637de84ba9070f1",
+            "inputs_sha256_at_head": "d5677286e7fc360c840f104a887cacb768c9a0cff1944bb1692896ba29b20384",
+            "cited_hash_rebuilt_by": "tests/test_s10_records.py::test_records_lineage_reconstructs_the_cited_hashes (spec §17 A4-3)",
+            "statuses": {
+              "NOT_COMPARABLE": 1,
+              "compared": 13
+            },
+            "states": {
+              "I1": {
+                "status": "compared",
+                "max_ratio": 1.2982115382698112e-05,
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_temperature_bubble",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 7.275957614183426e-11
+                  },
+                  "eps_K": 0.0001,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 7.275957614183426e-11,
+                    "final_overall_nlp_error_scaled": 1.9613609811216355e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 4,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I2": {
+                "status": "compared",
+                "max_ratio": 3.1083307602211557e-08,
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_temperature_bubble",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 1.673470251262188e-10
+                  },
+                  "eps_K": 1e-06,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 2.3283064365386963e-10,
+                    "final_overall_nlp_error_scaled": 6.10201725874116e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 4,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I3": {
+                "status": "NOT_COMPARABLE",
+                "reason": "no_optimal_attempt"
+              },
+              "I4": {
+                "status": "compared",
+                "max_ratio": 0.00019976909015895217,
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_temperature_bubble",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 1.0368239600211382e-10
+                  },
+                  "eps_K": 0.0001,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+                    "final_overall_nlp_error_scaled": 2.593338575025152e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 4,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I5": {
+                "status": "compared",
+                "max_ratio": 0.0007968870008312479,
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_temperature_bubble",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 5.775291356258094e-11
+                  },
+                  "eps_K": 0.0001,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 5.820766091346741e-11,
+                    "final_overall_nlp_error_scaled": 1.4665856757609436e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 4,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I6": {
+                "status": "compared",
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_phase_equilibrium[CH3OH]",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 1.4551915228366852e-11
+                  },
+                  "eps_K": 1e-05,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 5.820766091346741e-11,
+                    "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 4,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I7": {
+                "status": "compared",
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 5.820766091346741e-11
+                  },
+                  "eps_K": 0.0001,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 5.820766091346741e-11,
+                    "final_overall_nlp_error_scaled": 1.5118593361344496e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 4,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I8": {
+                "status": "compared",
+                "max_ratio": 0.0001670888097850501,
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_temperature_bubble",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 8.003553375601768e-11
+                  },
+                  "eps_K": 0.0001,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 1.7462298274040225e-10,
+                    "final_overall_nlp_error_scaled": 4.42659258069612e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 4,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I9": {
+                "status": "compared",
+                "max_ratio": 0.009853308169383013,
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_temperature_bubble",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 6.912159733474255e-11
+                  },
+                  "eps_K": 0.0001,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 2.0372681319713595e-10,
+                    "final_overall_nlp_error_scaled": 5.0634959374961376e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 4,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I10": {
+                "status": "compared",
+                "max_ratio": 0.0010670579898934241,
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_temperature_bubble",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 1.0186340659856796e-10
+                  },
+                  "eps_K": 0.0001,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 1.0186340659856796e-10,
+                    "final_overall_nlp_error_scaled": 2.5486030821686138e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 4,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I11": {
+                "status": "compared",
+                "max_ratio": 0.0004862756525092268,
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_temperature_bubble",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 1.8189894035458565e-10
+                  },
+                  "eps_K": 0.0001,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 1.8917489796876905e-10,
+                    "final_overall_nlp_error_scaled": 4.794930313024633e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 0,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I12": {
+                "status": "compared",
+                "max_ratio": 0.00030666136296986224,
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_temperature_bubble",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 2.1827872842550278e-11
+                  },
+                  "eps_K": 0.0001,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 4.3655745685100555e-11,
+                    "final_overall_nlp_error_scaled": 1.1118760995002812e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 0,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I13": {
+                "status": "compared",
+                "max_ratio": 0.008039040544360887,
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_enth_mol_phase[Liq]",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 5.820766091346741e-11
+                  },
+                  "eps_K": 0.0001,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 5.820766091346741e-11,
+                    "final_overall_nlp_error_scaled": 3.634652986276756e-13,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 0,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              },
+              "I14": {
+                "status": "compared",
+                "max_ratio": 3.45073969398868e-05,
+                "all_within": true,
+                "attempt": {
+                  "constraint_residuals": {
+                    "argmax": "fs.state[0].eq_temperature_bubble",
+                    "count_above_1e-8": 0,
+                    "max_abs_violation": 5.093170329928398e-11
+                  },
+                  "eps_K": 0.0001,
+                  "initializer": "completed",
+                  "ipopt": {
+                    "exit": "Optimal Solution Found.",
+                    "final_constraint_violation_unscaled": 5.820766091346741e-11,
+                    "final_overall_nlp_error_scaled": 1.4675408935575163e-12,
+                    "ipopt_version": "3.13.2",
+                    "iterations": 4,
+                    "linear_solver": "ma27"
+                  },
+                  "linear_solver": "ma27",
+                  "termination_condition": "optimal"
+                }
+              }
+            }
+          },
+          "dwsim": {
+            "environment_versions": {
+              "dotnet_runtime": "8.0.31",
+              "dwsim": "DWSIM version 9.0.5.0 (10/2/2025 11:49:46 PM)",
+              "python": "3.13.5",
+              "pythonnet": "3.1.0"
+            },
+            "fingerprint_matches": true,
+            "provenance": {
+              "inputs.json": "771d2f2258f738f94cd9472f83ebd0ebe0bb19c8eefb63de4969070f3368bec5",
+              "qualification.json": "e4d0907340c4ac0297131a5ba1a5817102cca70442328347ce91e996bfe8e28f",
+              "records.yaml": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6",
+              "reference_values_real.yaml": "3ccb4180bdfdc1144253bacb8280328d3473f43d4f718febeac44d52da6da94f",
+              "s10_reference.py": "c4dd73ff447005ee0ca3a6096db02e4d2a9240834db2c38a9feda44312c5ab7e"
+            },
+            "qualification_cites_inputs_sha256": "28676a25b544724ed38ae93e24c3cf5915a41776bde75866effd423a4a68517a",
+            "inputs_sha256_at_head": "771d2f2258f738f94cd9472f83ebd0ebe0bb19c8eefb63de4969070f3368bec5",
+            "cited_hash_rebuilt_by": "tests/test_s10_records.py::test_records_lineage_reconstructs_the_cited_hashes (spec §17 A4-3)",
+            "statuses": {
+              "NOT_COMPARABLE": 12,
+              "compared": 2
+            },
+            "states": {
+              "I1": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(4.86596e-07)"
+              },
+              "I2": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(8.65693e-07)"
+              },
+              "I3": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(6.41964e-07)"
+              },
+              "I4": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(1.92038e-07)"
+              },
+              "I5": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(6.6851e-08)"
+              },
+              "I6": {
+                "status": "compared",
+                "all_within": true
+              },
+              "I7": {
+                "status": "compared",
+                "all_within": true
+              },
+              "I8": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(1.92413e-06)"
+              },
+              "I9": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(2.80745e-07)"
+              },
+              "I10": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(2.07067e-06)"
+              },
+              "I11": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(9.08067e-07)"
+              },
+              "I12": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(4.38145e-07)"
+              },
+              "I13": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(1.08865e-07)"
+              },
+              "I14": {
+                "status": "NOT_COMPARABLE",
+                "reason": "reference_accuracy: dwsim_flash_floor(3.26751e-08)"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "S10.validation",
+      "description": "empirical validation (S10 spec §9.6), reported apart from numerical verification; not a verification check and not counted in status (§17 A4-4)",
+      "result": "not_applicable",
+      "value": {
+        "validation": {
+          "kind": "empirical validation (S10 spec §9.6), reported apart from numerical verification",
+          "S10.A50 (VAL-1)": "within band",
+          "S10.A51 (VAL-2)": "within band: methanol-water within band (AAD(dP/P) 1.09 %, AAD(y1) 0.0048); ethanol-water within band (AAD(dP/P) 0.29 %, AAD(y1) 0.0041); 159 points at 323.15-333.15 K, judged per binary (S10 spec §19 A6-4)",
+          "S10.A52 (VAL-3)": "not validated within band: CH3OH latent heat +5.72 % against 5 % (ideal-gas vapour); the other five cells within band",
+          "S10.A53": "met for the fit-quality report; VAL-2's data entered no fit",
+          "not_established": "constant-Lambda extrapolation outside 323.15-333.15 K (VAL-2) and the 101.3 kPa isobar (VAL-1), and for methanol-ethanol off the isobar; the records' P domain below 30 kPa (not extended by VAL-2); individual methanol-ethanol Lambda (S10 spec §17 A4-2)"
+        },
+        "tests": {
+          "what_they_check": "the report is the script's output, the bands are §9.6's and each verdict follows from the raw points; not that a band is met (B-74)",
+          "per_assertion": {
+            "S10.A50": {
+              "statement": "VAL-1: ternary bubble T and y at Table V's x and 101.3 kPa (§15 A2-2).",
+              "band": "AAD(T) ≤ 1.0 K; AAD(y_i) ≤ 0.015 and max \\|Δy\\| ≤ 0.05 on the measured y_1, y_2 (B-73)",
+              "nodes": {
+                "tests/test_s10_validation.py::test_a50_val1_numbers_follow_from_the_rows": "passed",
+                "tests/test_s10_validation.py::test_a50_bubble_point_is_a_bubble_point": "passed"
+              }
+            },
+            "S10.A51": {
+              "statement": "VAL-2: isothermal binaries of Kurihara et al. (1995), bubble P and y.",
+              "band": "AAD(ΔP/P) ≤ 3 %; AAD(y_i) ≤ 0.015",
+              "nodes": {
+                "tests/test_s10_validation.py::test_a51_val2_transcription_is_double_entered": "passed",
+                "tests/test_s10_validation.py::test_a51_val2_bubble_pressure_is_the_closed_form": "passed",
+                "tests/test_s10_validation.py::test_a51_val2_isothermal_binaries": "passed"
+              }
+            },
+            "S10.A52": {
+              "statement": "VAL-3: Δh_i and c_p,i^0L against CoolProp 8.0.0, pure components, T ∈ [300 K, T_b(101 325 Pa)].",
+              "band": "max over the closed range (B-71, validation verdict ruling 1): 5 % and 25 %",
+              "nodes": {
+                "tests/test_s10_validation.py::test_a52_val3_verdicts_follow_from_the_points": "passed",
+                "tests/test_s10_validation.py::test_a52_eos_file_provenance": "passed"
+              }
+            },
+            "S10.A53": {
+              "statement": "The fit-quality report, kept apart from validation.",
+              "band": "reported",
+              "nodes": {
+                "tests/test_s10_validation.py::test_a53_fit_quality_is_reported_apart_from_validation": "passed",
+                "tests/test_s10_validation.py::test_a53_val2_is_in_the_report": "passed"
+              }
+            }
+          }
+        },
+        "report": {
+          "path": "benchmarks/s10/validation/report.json",
+          "sha256": "0efa1c6da9419d7bf0d510f0fb25a8e8c5040aec3de9e1107c395125ae09b3d4"
+        },
+        "verdict_documents": [
+          {
+            "path": "docs/reviews/S10-validation-verdicts.md",
+            "sha256": "3775006288d3108746e599bfd096ad98fd955c095f88510a4fca520003c9e66d"
+          },
+          {
+            "path": "docs/reviews/S10-validation-verdict-val2.md",
+            "sha256": "c0abc483d238717949a98b8f2020f2798fcea0f859be6c3a473e9e1254def834"
+          }
+        ]
+      }
+    },
+    {
+      "id": "S10.gate",
+      "description": "scripts/gate.sh passes before the merge",
+      "result": "unsupported",
+      "value": "not run by this generator; it runs once before merge"
+    },
+    {
+      "id": "S10.ci",
+      "description": "CI is green on both architectures",
+      "result": "unsupported",
+      "value": "not measured by this generator; checked before merge"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S10/f6f27c3f8aca7cb360287e531cd03e2033c32e16/artifacts/s10-tests.junit.xml",
+      "sha256": "2f286daaed453c3d67b874f4955b35bb99bdbfbdd73126c4467504880a5c5857",
+      "description": "JUnit report of the S10 test run (ignored; kept by hash)"
+    },
+    {
+      "path": "benchmarks/s10/records.yaml",
+      "sha256": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6",
+      "description": "the real records of wilson-ig-v1 (spec §9.3-9.5, §17 A4-3)"
+    },
+    {
+      "path": "benchmarks/s10/records-lineage.json",
+      "sha256": "1116ce165ff0a837b1d57d0b1af3eda33804b27c44aeae654c4e8c43aa3a26c4",
+      "description": "the records' change steps (spec §17 A4-3)"
+    },
+    {
+      "path": "benchmarks/s10/fit-report.json",
+      "sha256": "fef462e78f2a231760f0e2f3df9abda5e6cc5f21c8d77d1f871b7b370af1c437",
+      "description": "the fit claims and fit quality (not validation)"
+    },
+    {
+      "path": "benchmarks/s10/reference_values.yaml",
+      "sha256": "94727ac90c9b95e5978110b3d1d1c2edd262a8687bc1547d865b2dfe38f86525",
+      "description": "the synthetic verification expectation"
+    },
+    {
+      "path": "benchmarks/s10/reference_values_real.yaml",
+      "sha256": "3ccb4180bdfdc1144253bacb8280328d3473f43d4f718febeac44d52da6da94f",
+      "description": "the real section: E-, F- and I-state expectations (spec §9.7, §16)"
+    },
+    {
+      "path": "benchmarks/s10/idaes/qualification.json",
+      "sha256": "aecd227950f61f190e852ea2e8553bfae5e773de73146315bf4f007f02d8da1b",
+      "description": "the IDAES tool record (§8.1)"
+    },
+    {
+      "path": "benchmarks/s10/idaes/comparison.json",
+      "sha256": "f606e2c68fcc30c85567c73bfbd2438abc4a0b4421b5603d0f31b5326d35fe07",
+      "description": "the IDAES comparison (§8.1)"
+    },
+    {
+      "path": "benchmarks/s10/dwsim/qualification.json",
+      "sha256": "e4d0907340c4ac0297131a5ba1a5817102cca70442328347ce91e996bfe8e28f",
+      "description": "the DWSIM tool record (§8.2)"
+    },
+    {
+      "path": "benchmarks/s10/dwsim/comparison.json",
+      "sha256": "872f36886c69ea86574452d62eaaec755d649ea78a8d1c0c08b3be80d24f406f",
+      "description": "the DWSIM comparison (§8.2)"
+    },
+    {
+      "path": "benchmarks/s10/validation/report.json",
+      "sha256": "0efa1c6da9419d7bf0d510f0fb25a8e8c5040aec3de9e1107c395125ae09b3d4",
+      "description": "the empirical validation numbers (§9.6)"
+    },
+    {
+      "path": "benchmarks/s10/vle/kurihara1995_binaries.csv",
+      "sha256": "e129027986fa9c15ebf8e00d5fa040497708cb0c7a9d483263eefe2ba98090bb",
+      "description": "VAL-2's held-out data: Kurihara et al. 1995 Tables 2-3, double-entered (spec §19 A6-1, A6-6)"
+    },
+    {
+      "path": "docs/derivations/S10-spec.md",
+      "sha256": "d55660ea2cc664d0cafdbb657cd0bc6b0f1ba3adbd9372c3cf7c50ef0072c5e0",
+      "description": "the S10 specification the checks are read from (§0, §7.5, §14-§19)"
+    }
+  ],
+  "limitations": [
+    "§0: **Nothing about a real mixture follows from the verification.** It runs on three invented components (`VA`, `VB`, `VC`; §6). It shows that an implementation computes the closed forms of §3–§5. It says nothing about methanol, ethanol or water.",
+    "§0: **Agreement with IDAES or DWSIM (§8) is numerical verification of the same equations, not validation.** The two tools receive our parameters. An error shared by the matched inputs passes.",
+    "§0: **Fit quality is not validation** (§9.4). The Wilson parameters are fitted to binary data. Agreement with those data is reported as fit quality and never as validation.",
+    "§0: **The validation bands (§9.6) are fitness statements on the held-out datasets only.** Inside a band the claim is still limited to those datasets' T, P and composition ranges.",
+    "§0: **The stability label is global only within the model** (§4): one Wilson liquid and one ideal-gas vapour. It does *not* establish that the real mixture has no second liquid phase.",
+    "§0: **No column, PH-flash or flowsheet claim.** The column's refusal S11 (`wp/S03`) is unchanged by S10 (§10).",
+    "§0: **No claim on rights.** §9.1 lists the rights rows and their status. Nothing ships on this document's authority.",
+    "§0: **Excluded:** LLE, electrolytes, high pressure (P > 2 × 10⁵ Pa), excess enthalpy, liquid volume and transport properties. So is derivative-based optimisation across a phase boundary (blueprint §6.3).",
+    "§15 A2-6 (as written at Amendment 2): **The global claim is relative to the grid.** No point of the step-0.005 grid lies below Φ* − 10⁻¹². A minimum in a valley narrower than the grid spacing is not excluded.",
+    "§15 A2-6 (as written at Amendment 2): (**Replaced by §17 A4-2 item 3:** not determined by Table II; up to 0.46 K in ternary predictions.) **The individual Λ of methanol + ethanol are weakly determined.** The sum θ_12 + θ_21 is well determined, and the difference is not (finding 2). The records carry the least-squares point and claim no parameter uncertainty. Do not read physical meaning into Λ_ME or Λ_EM individually.",
+    "§15 A2-6 (as written at Amendment 2): **Fit quality is not validation.** Validation is §9.6's.",
+    "§15 A2-6 (as written at Amendment 2): **The IDAES comparison covers no near-azeotrope state**, now that I10 has moved out of that region.",
+    "§15 A2-6 (as written at Amendment 2): **A2-4 is not a legal opinion.** Shipping is Frank's decision.",
+    "§15 A2-6 (as written at Amendment 2): **The synthetic verification set is not touched.**",
+    "§16 A3-9 (as written at Amendment 3): **Agreement with IDAES.** No comparison has been computed, and nothing here predicts A41's outcome.",
+    "§16 A3-9 (as written at Amendment 3): **That every floor stall converges at 10⁻⁹.** The floor derivation explains the stalls. WO-S10-4b decides.",
+    "§16 A3-9 (as written at Amendment 3): **A rung-dependence check for a state converged at one rung.** There is none.",
+    "§16 A3-9 (as written at Amendment 3): **Anything about our flash or the states from IDAES's initializer failures** (I3 and I11, and others at some rungs). (**Corrected by §17 A4-1:** I11 converges at 10⁻⁴ with MA27.) They are a property of IDAES 2.13's initializer from this start.",
+    "§16 A3-9 (as written at Amendment 3): **That the generator's T_dew^I equals IDAES's.** It equals it only to within the flash agreement. It is used for margins and predictions, and it is never compared.",
+    "§16 A3-9 (as written at Amendment 3): **The theorem of A3-3 for any version but IDAES 2.13.0.** It holds for that version's equations as read; A44 guards the reading.",
+    "§16 A3-9 (as written at Amendment 3): **A rigorous bound in CVT-EFFECT.** It is a first-order, row-wise estimate with a margin of 10³.",
+    "§16 A3-9 (as written at Amendment 3): **That DWSIM's flash agrees with ours at 10⁻⁷.** DWSIM's readbacks verify the model functions. Its flash is limited by its own 10⁻⁶ stop, and β, x, y, K and h are not compared at two-phase states.",
+    "§16 A3-9 (as written at Amendment 3): **Validation.** Agreement with either tool would be numerical verification by an independent implementation (D19), not empirical validation (§9.6).",
+    "§17 A4-5: **Any change to a selection, classification, verdict or band.** I11 was already compared, and A44 was already judged on the verbose rendering.",
+    "§17 A4-5: **That the methanol + ethanol Λ are wrong.** They are the registered least-squares point. A4-2 shows that they are not identifiable from Table II, and it says what that does to predictions.",
+    "§17 A4-5: **VAL-2.** It remains untested.",
+    "§17 A4-5: **A legal reading of any rights row**, or permission to ship. Q-F3 stays Frank's.",
+    "§18 A5-7: **Any rights verdict, or that the records may ship.** T08.A32 checks that a rights statement exists and that the values are their sources'. RC-05, RC-06 and RC-08 stay unresolved, and Q-F3 stays Frank's.",
+    "§18 A5-7: **That the Λ are vetted by T08.A32.** They are S10.A31's and A33's.",
+    "§18 A5-7: **That the stored fit is the best or the unique one.** The vetting checks its claim against the source points.",
+    "§18 A5-7: **aarch64's actual floor.** It is bounded by 2A, measured by the next CI run (Q-A5.1), and not yet observed beyond item 2.",
+    "§18 A5-7: **That water's two molar masses or two formation enthalpies are reconciled** (Q-A5.2, R-704).",
+    "§18 A5-7: **That D19 is met.**",
+    "§18 A5-7: **Anything about M01's or L01's records** beyond their unchanged checks.",
+    "§19 A6-13: **Any VAL-2 result.** Nothing has been computed on the 1995 data.",
+    "§19 A6-13: **That the 1995 data are right, or that the transcription is.** Double entry shows that two independent entries agree, one of them made from the page image. It does not check the paper.",
+    "§19 A6-13: **A pressure domain below 30 kPa.** VAL-2 computes model bubble pressures there through (3.10). A result within band would be a fitness statement at those points. `describe().domain` is unchanged (Q-A6.3).",
+    "§19 A6-13: **Constant-Λ extrapolation outside 323.15–333.15 K, for the methanol + ethanol pair, or for the ternary.** VAL-2 has no data on the last two.",
+    "§19 A6-13: **That the paper's pressure scale equals the project's.** The paper's pressures rest on Bridgeman and Aldrich's (1964) vapour pressures of water. The project's water P^sat is fitted to IAPWS-95 through CoolProp. A difference between the two enters every ΔP/P as a common factor. It is not corrected, since that would need the 1964 table and a choice of interpolation, and it is not measured here.",
+    "§19 A6-13: **A rights verdict,** or permission to ship. RC-06 stays unresolved, and Q-F3 stays Frank's.",
+    "Validation is reported apart from verification (spec §9.6, §17 A4-4, §19) in the check S10.validation: VAL-1 within band; VAL-2 within band (methanol-water within band, ethanol-water within band; judged per binary); VAL-3 not validated within band for the CH3OH latent heat (+5.72 % against 5 %). `tested` attests numerical verification only.",
+    "Every IDAES and DWSIM state not compared, with its reason: idaes I3: NOT_COMPARABLE (no_optimal_attempt); dwsim I1: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(4.86596e-07)); dwsim I2: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(8.65693e-07)); dwsim I3: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(6.41964e-07)); dwsim I4: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(1.92038e-07)); dwsim I5: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(6.6851e-08)); dwsim I8: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(1.92413e-06)); dwsim I9: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(2.80745e-07)); dwsim I10: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(2.07067e-06)); dwsim I11: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(9.08067e-07)); dwsim I12: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(4.38145e-07)); dwsim I13: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(1.08865e-07)); dwsim I14: NOT_COMPARABLE (reference_accuracy: dwsim_flash_floor(3.26751e-08))",
+    "requirements lists D08 and D19; §8's comparisons are D19's matched-model evidence for the property method (S10 spec §18 A5-3)",
+    "Rights (docs/s10-rights-check.md): RC-05 and RC-06 (the 1993 paper's Tables II and V) and RC-08 (atomic weights) are unresolved; no S10 file is in a PACKAGED path (A28) and `wilson-ig-v1` is library-only (A27). Shipping is Frank's decision (Q-F3).",
+    "The qualification records cite inputs.json hashes from before spec §17 A4-3 (IDAES 92aa171f..., DWSIM 28676a25...); records-lineage.json and its test rebuild both from HEAD, so the tool records are not re-run.",
+    "scripts/gate.sh and CI on both architectures were not run by this generator (they run once before merge into main); S10.gate and S10.ci are unsupported here.",
+    "Review: the design lane's final review (docs/reviews/S10-review-final.md, R-720, R-721) was applied by WO-S10-7 (S-1 to S-3); the human numerical and process-model review is pending, and this manifest claims neither `reviewed` nor `released`."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

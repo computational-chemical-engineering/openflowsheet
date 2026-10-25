@@ -450,3 +450,83 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
   harvests. The corrected wording is carried by the entries WO-S10-7a appended for the manifest at `f974cc87`
   (`limitations[36]`: "requirements lists D08 and D19 …"; and the A5-7 D19 scope line). Alternative: edit the old note
   and accept an HG(b) exception. Reversible by: editing that one note.
+
+## WO-S10-8 (spec §19 A6-10; VAL-2, A51 and A53)
+
+- B-88 (step 1, the transcription; spec §19 A6-1, A6-6): Kurihara, Minoura, Takeda and Kojima (1995), Tables 2
+  (methanol + water) and 3 (ethanol + water), P, x1, y1 at 323.15, 328.15 and 333.15 K, 159 rows. Entry A (an
+  opus-engineer agent): the PDF text layer as a draft, every P, x1 and y1 re-read against 300 dpi page crops, no
+  discrepancy. Entry B (an independent opus-engineer agent): the 300 dpi page image only, no text layer; every value read
+  twice, row counts confirmed by a pixel line profile. The two files are byte-identical, SHA-256
+  `e129027986fa9c15ebf8e00d5fa040497708cb0c7a9d483263eefe2ba98090bb`, 7504 bytes, 160 lines. Copied unchanged to
+  `benchmarks/s10/vle/kurihara1995_binaries.csv` (= entry A), `.A.csv` and `.B.csv`; all three hash to it. Both entries
+  note, as printed and not as reading doubts, that ethanol + water's P is not monotone in x1 near the azeotrope
+  (x1 about 0.9): 323.15 K rows 26-28, 328.15 K rows 29-30, 333.15 K rows 25-26; and y1 0.6688 then 0.6682 at 333.15 K
+  rows 12-13. `docs/s10-rights-check.md` updated as A6-6 (RC-06, files checked, per-file map, `report.json` row); the
+  paper's notice read from its first page (1995 ACS, article code 0021-9568/95/1740-0679$09.00/0; no reuse statement
+  in the paper). No script or test changed. Nothing computed on the 1995 data.
+- **MEASURED (step 2, x86-64, Python 3.13.5):** `s10_validation.py --write` printed `VAL-1 within band; VAL-2 within
+  band; VAL-3 not validated within band`. methanol + water (52): AAD_P 0.01086763935 (1.087 %), AAD_y 0.004754833453,
+  max |r| 0.02670, max |dy1| 0.01703, within band. ethanol + water (107): AAD_P 0.00289894189 (0.2899 %), AAD_y
+  0.004075153801, max |r| 0.02124, max |dy1| 0.01543, within band. Pooled (not judged): 0.5505 %, 0.004297. Below the
+  records' 30 kPa bound: measured 1 (methanol + water) + 39 (ethanol + water) = 40 of 159; computed 1 + 39 = 40. No
+  refusal, no non-finite value; C1-C5 hold. Worst A51.2-A51.5: set S (126 states) P over P_eval 6.7e-16, y 2.2e-16;
+  closed form P 1.1e-15, y 4.4e-16; bubble condition 8.9e-16 at 47 in-domain states; swapped-Lambda change at least
+  1.5e-4. Set R (42 states) 7.8e-16, 2.2e-16; 8.9e-16, 2.2e-16; 8.9e-16 at 14 states; at least 2.8e-3. S reproduces
+  A6-3's floors (none exceeds them). `pytest tests/test_s10_validation.py`: 11 passed, 0 skipped. `--check`: OK.
+  `report.json`'s convention, records, VAL-1 and VAL-3 objects are byte-identical to `d42fcf08`'s (compared by
+  `json.dumps`), and the Markdown diff is the VAL-2 section only. Observation, not a change: A6-1 expected the water-rich
+  end of every isotherm below the domain; for methanol + water only one printed point (of 52) is, as Table 2 has few
+  water-rich points. `s10_evidence_manifest.py`'s `validation_check` still requires a PENDING VAL-2 and now refuses;
+  that is step 5's edit.
+- B-89 (step 2, format and structure only; no number depends on it): (a) the per-isotherm table prints T as the
+  stored float's repr (`323.15`), which A6-7's template leaves unformatted; (b) `bubble_p(provider, n, t, p_eval)` takes
+  the lnphi names from `provider.describe().components`, so the one function serves set S's synthetic records and the
+  real ones; (c) the refusal is carried by `Val2RefusedError` (ruff N818) and turned into A6-3's `SystemExit` message in
+  `val2()`. Alternative for (a): `f"{T:.2f}"`, identical output for these three T. Reversible by: editing
+  `_markdown_val2` / `bubble_p`.
+- **Step 4 (spec §19 A6-9, A4-3 steps 1-4), MEASURED:** `UNCERTAINTY`'s VAL-2 sentence is A6-9's, slots from the
+  committed `report.json`'s `"VAL-2"` (verdict `within band`, both binaries `within band`; 1.09 %, 0.0048; 0.29 %,
+  0.0041; 1 + 39 = 40 below the domain), equal to the verdict's values (`S10-validation-verdict-val2.md`). Cascade:
+  `records.yaml` `d4a39730…` → `033e10b3…` (the `uncertainty` line only); `fit-report.json` `0031b510…` → `fef462e7…`
+  (its `records_sha256` line); `reference_values_real.yaml` `2e9d5130…` → `3ccb4180…` (its `records_sha256`); IDAES
+  `inputs.json` `8d6c881d…` → `d5677286…`, DWSIM `e9428f4b…` → `771d2f22…` (two hash lines each); IDAES
+  `comparison.json` `67d26532…` → `f606e2c6…`, DWSIM `a808cd09…` → `872f3688…` (three hash lines each);
+  `records-vetting.json` `7deac2a4…` → `f6a19d20…` (its `records_sha256` line; `--emit --nasa-yaml` with Cantera
+  3.2.0's file `4de6199d…` from `~/.cache/of-rc-c899c85/venv-xcheck`). Neither `qualification.json` changed
+  (`aecd2279…`, `e4d09073…`). Restricted diff: with every 64-hex string masked, the only changed lines besides
+  `uncertainty` are `inputs.json`/`records.yaml`/`reference_values_real.yaml`/`sha256`/`records_sha256` hash lines.
+  Lineage step 2 appended (authority `S10 spec §19 A6-9`, `commit` written by the next commit, B-80). Checks:
+  `s10_validation.py`, `s10_records.py` (25 claims), `s10_reference.py --real` (160 claims), both comparisons,
+  `s10_records_vetting.py --nasa-yaml` (12 controls) `--check` all pass; `tests/test_s10_records.py
+  tests/test_s10_provider.py` 113 passed, 0 skipped; ruff check and format clean.
+- **Step 5, MEASURED (manifest):** `evidence/S10/f6f27c3f8aca7cb360287e531cd03e2033c32e16/manifest.json`, generated from a
+  clean tree at `f6f27c3f` (the generator commit): `status: tested`, 53 of 56 checks pass (tests "248 passed, 0
+  skipped"); `S10.validation` `not_applicable` with A6-9's block (checked equal to the spec's text with the slots
+  filled), both verdict documents cited by path and SHA-256 (`37750062…`, `c0abc483…`); `S10.gate`, `S10.ci`
+  `unsupported`; `requirements: ["D08", "D19"]`; review fields `pending`. Limitations 47 (was 41): the six §19 A6-13
+  items and A6-9's validation sentence added, the old validation sentence gone. D08, D19 and the S10 package entry of
+  `docs/requirements.yaml` cite it. B-90 (step 5, generator form only): the two validation verdict documents are the
+  list `verdict_documents` (was the object `verdict_document`), and `validation_check` also refuses unless the
+  block's AAD values equal the report's under A6-9's formats. Alternative: keep the old key for the first file and add
+  a second key. Reversible by: `validation_check()` and a regeneration.
+- **OPEN (design lane), observations from step 5, not changed:** (a) §19 A6-13's first item ("Any VAL-2 result.
+  Nothing has been computed on the 1995 data.") is harvested verbatim into the manifest that reports VAL-2's result, as
+  A6-10 orders (`limitations[34]`); A2-6 and A3-9 carry "(as written at Amendment N)" in their names, A6-13 is named
+  "§19 A6-13" as A6-10 says. (b) the generator's rights limitation still reads "RC-05 and RC-06 (the 1993 paper's
+  Tables II and V)"; RC-06 now also covers the 1995 paper (B-88). A6-10 lists no edit to it.
+- B-91. DECISION (harvest classes of the `f6f27c3f` manifest, build-lane draft for design-lane review, B-86's way): the
+  40 limitations and 2 checks (S10.gate, S10.ci) whose text equals the `f974cc87` manifest's keep that entry's class, `to` and note
+  (42 of 50; the S10.validation check's text changed). New: limitations[34] (A6-13 "Any VAL-2 result", as A4-5's
+  "VAL-2. It remains untested." was), [36] (P domain below 30 kPa, the provider's scope), [37] (constant-Lambda
+  extrapolation outside 323.15-333.15 K), [38] (the paper's pressure scale against the project's, a caveat on the
+  validation status), [40] (A6-9's validation sentence, as the old one was) and checks[S10.validation] -> E to U02;
+  [35] (the 1995 data and transcription are not checked against the paper: provenance) and [39] (rights) -> P.
+  Alternative: [38] -> P (a measurement record), [35] -> E to U02. Reversible by: editing those entries before merge,
+  then `t08_support_matrix.py --emit`.
+- **MEASURED (HARVEST_SIZE):** `matrix.harvest_items()` = (53, 735, 88), was (52, 688, 85); pinned in
+  `tests/test_m07a_harvest.py`. The harvest diff is 319 lines appended, 0 deleted, the old file a byte prefix of the new
+  (HG(b), R-617). `--emit` regenerated `docs/support-matrix.md` (S10: E 40, P 91); `--check`: 0 problems.
+  `pytest -q tests/test_s10_*.py tests/test_requirements_ledger.py tests/test_t08_*.py tests/test_m07a*.py`: 1033
+  passed, 2 skipped (T08's: the archived pre-0.1.0 history, and `test_t08_w1_ledger.py:87` "not in A02"; S10's tests
+  0 skipped). `ruff check .`, `ruff format --check .` clean. Every A6-10 `--check` passes.

@@ -20,9 +20,31 @@ is "not validated within band"; the band is not moved (R-708). The records'
 Max |dT| 0.8616 K; mean dT (calc - exp) 0.1848 K.
 Verdict, judged on the measured y_1, y_2: **within band**. If the closure fraction of water were judged too: {'aad_y': True, 'max_abs_dy': True}.
 
-## VAL-2
+## VAL-2: isothermal binaries, bubble P and y, 159 rows, 323.15-333.15 K (Kurihara et al. 1995)
 
-PENDING: VAL-2 data not yet supplied.
+Judged per binary on y_1; both binaries must be within band (spec §19 A6-4). dP/P = (P_calc - P_exp) / P_exp.
+P_calc from the closed form through the provider at 101325 Pa (spec §19 A6-3).
+
+| Binary | Rows | AAD(dP/P) | Band | AAD(y_1) | Band | Verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| methanol+water | 52 | 1.087 % | <= 3 % | 0.004755 | <= 0.015 | within band |
+| ethanol+water | 107 | 0.2899 % | <= 3 % | 0.004075 | <= 0.015 | within band |
+
+Per isotherm, reported and not judged:
+
+| Binary | T (K) | Rows | AAD(dP/P) | mean dP/P | AAD(y_1) | mean dy_1 |
+| --- | --- | --- | --- | --- | --- | --- |
+| methanol+water | 323.15 | 14 | 1.009 % | 1.009 % | 0.007768 | -0.007768 |
+| methanol+water | 328.15 | 20 | 1.126 % | 1.126 % | 0.005101 | -0.005087 |
+| methanol+water | 333.15 | 18 | 1.104 % | 1.104 % | 0.002027 | -0.0007059 |
+| ethanol+water | 323.15 | 37 | 0.3821 % | -0.1543 % | 0.003475 | -0.001475 |
+| ethanol+water | 328.15 | 34 | 0.2468 % | -0.1762 % | 0.003547 | -0.001522 |
+| ethanol+water | 333.15 | 36 | 0.2359 % | -0.1027 % | 0.00519 | -0.004821 |
+
+Pooled over 159 rows, reported and not judged: AAD(dP/P) 0.5505 %, AAD(y_1) 0.004297.
+Measured pressures below the records' P domain (30000 Pa): 40 of 159; computed: 40 of 159.
+
+VAL-2 verdict: **within band**.
 
 ## VAL-3: Δh and c_p^0L against CoolProp 8.0.0, T in [300 K, T_b(101325 Pa)]
 

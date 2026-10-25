@@ -14176,3 +14176,97 @@ That goes to the design lane, never into the harness (Q-A5.1).
 - *D08 only.* It under-reports the D19 evidence that §8 registered.
 
 **Watch for.** VAL-2's later manifest keeps both requirements and adds its verdict to the same validation block.
+
+---
+
+## R-725 — S10's VAL-2 bubble pressure is the closed form through `evaluate_phase` at P_eval = 101 325 Pa, with no iteration; a refusal stops the run as a defect and is never dropped or counted
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10 Amendment 6, before any model value was computed on the 1995 data |
+| Normative text | S10 spec §19 A6-3 |
+| Evidence | S10 spec (3.10): x_i K_i P = x_i γ_i P_i^sat at every P; floors measured on the synthetic records (A6-3: P_eval spread 6.7e-16, closed form 1.1e-15, 50 digits 3.9e-15); `saturation-points.json` (water below 3e4 Pa at 323–333 K) |
+| Affected packages | S10 (WO-S10-8: `scripts/s10_validation.py`, `tests/test_s10_validation.py`) |
+
+**Decision.**
+- For each point, one `evaluate_phase` call at (T, n, P_eval = 101 325 Pa), with n the binary embedded in the records'
+  order. Then P_calc = P_eval Σ n_i K_i and y_i = n_i K_i / Σ n_j K_j. This is the model's bubble pressure exactly,
+  for any in-domain P_eval.
+- Every point's state is admitted by §5.3, so a refusal or a non-finite value is a defect. The script writes nothing,
+  exits 1, and the work order escalates it. The point is never dropped, imputed or counted.
+
+**Rejected alternatives, and why.**
+- *A root search in P, as VAL-1 searches in T.* P is explicit in this model. A search adds a stopping rule and a
+  failure mode, and it would call the provider at pressures below the records' domain, where it refuses.
+- *Evaluating at the measured P.* The provider refuses below 3e4 Pa, which would remove the water-rich and low-T
+  points by the domain declaration rather than by the model.
+- *Counting a refusal as a miss, or excluding it.* The first reports a software defect as a validation result; the
+  second silently narrows the data.
+
+**Watch for.** A change of P_eval, or a provider whose liquid ln φ is not exactly ln γ + ln P^sat − ln P. S10.A51.2
+fails on the second.
+
+---
+
+## R-726 — S10's VAL-2 is judged per binary (both must be within band), with ΔP/P over the measured P and y_1 only; all 159 points enter, including those below the records' 30 kPa bound, which is not extended
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10 Amendment 6, before any model value was computed on the 1995 data |
+| Normative text | S10 spec §19 A6-4, A6-5 |
+| Evidence | Kurihara et al. (1995), Tables 2 and 3 (52 and 107 points; stated accuracies ± 0.03 kPa, ± 0.01 K, ± 0.001); §9.4 (Λ per binary); B-73 (the measured fractions are judged) |
+| Affected packages | S10 (WO-S10-8; the VAL-2 verdict; the records' `uncertainty`; the manifest) |
+
+**Decision.**
+- Each binary's AAD(ΔP/P) and AAD(y_1) are means over its own points, all three isotherms together. Each binary is
+  `within band` if both are inside §9.6's band, compared on the stored 10-digit values. VAL-2 is `within band` only if
+  both binaries are.
+- ΔP/P = (P_calc − P_exp)/P_exp. y_1 is judged; y_2 = 1 − y_1 carries no measurement of its own.
+- All 159 points enter, with no outlier rule and no pressure rule. The points below the records' lower P bound are
+  counted in the report and in `uncertainty`. The domain is not extended.
+- The pooled and per-isotherm means are reported and never judged.
+- The transcription is pinned by SHA-256. After the computation it changes only by an amendment that reports the
+  verdicts before and after.
+
+**Rejected alternatives, and why.**
+- *Pooled over 159 points.* Two-thirds of it is ethanol + water, so a methanol + water miss could pass.
+- *Each (binary, T) block to pass.* Twelve statistics on blocks of 14–37 points, a split the model does not make.
+- *P_calc as the denominator.* It makes the metric's scale depend on the thing judged.
+- *Judging only the points inside the records' domain.* It selects by composition and temperature, which is the
+  extrapolation VAL-2 tests.
+- *A maximum-deviation band.* §9.6 has none for VAL-2, and adding one moves the band (R-708).
+
+**Watch for.** A reading of the aggregation proposed after the numbers are known. This entry was registered blind and
+is not reopened by a result.
+
+---
+
+## R-727 — S10's VAL-2 files, tests, report and templates: `kurihara1995_binaries{,.A,.B}.csv` (RC-06, unresolved, repository only), S10.A51.1–A51.10 and A53.1–A53.2, and WO-S10-8 in five steps
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10 Amendment 6 |
+| Normative text | S10 spec §19 A6-6 to A6-10 |
+| Evidence | The double entry: two byte-identical files, SHA-256 `e1290279…98090bb`, one entered from the page image only; `docs/s10-rights-check.md` RC-06 |
+| Affected packages | S10 (WO-S10-8); T08 (the harvest of the next S10 manifest); the requirements ledger rows D08 and D19 |
+
+**Decision.**
+- The transcription and both entries are committed under `benchmarks/s10/vle/`, as for 1993. Their rights row is
+  RC-06, unresolved as RC-05, and they are repository only.
+- `report.json`'s VAL-2 object, its Markdown section, the records' `uncertainty` sentence and the manifest's validation
+  block follow §19's fixed templates, with slots for the result only.
+- The tests: A51.1 (the double entry), A51.2–A51.5 (the closed form on registered non-data states, synthetic and
+  real), A51.6–A51.10 (every stored number follows from the rows, and every model value from an independent closed
+  form), A53.1–A53.2 (the verdict is in the report; the 1995 data entered no fit). No test is skipped.
+- WO-S10-8 runs: the transcription; the computation with its tests; a `verdict` in its own file; the records sentence
+  with a lineage step and the hash cascade; the manifest, ledger and harvest.
+
+**Rejected alternatives, and why.**
+- *A new rights row.* RC-06 already names this paper as validation data.
+- *Rewriting the VAL-1/VAL-3 verdict record.* It is archival. The VAL-2 verdict goes in its own file.
+
+**Watch for.** A WO-S10-8 commit that changes report.json's VAL-1 or VAL-3 bytes, or any records line besides
+`uncertainty`.

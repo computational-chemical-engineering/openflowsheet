@@ -3,7 +3,7 @@
  "what": "T08.A32 (iv) for benchmarks/s10/records.yaml: twelve equalities per record against closed forms of the committed inputs and constants registered in S10 spec section 18 A5-1, and the NASA-7 literals re-read from Cantera 3.2.0's file. Vetting of these bytes; it decides no rights question and no shipping (Q-F3).",
  "generator": "docs/derivations/scripts/s10_records_vetting.py",
  "specification": "docs/derivations/S10-spec.md section 18 A5-1 (R-722)",
- "records_sha256": "d4a39730ee24c592b5a7a36977ec4d122817182f71166d75058d9d99d0934d55",
+ "records_sha256": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6",
  "inputs_sha256": {
   "benchmarks/s10/nasa7-low.json": "b6fa77123e7ae7fcffb54890a0b93f98b798d4bb36c9327789a5dcee0bc67f51",
   "benchmarks/s10/saturation-points.json": "204d67b9a04e8aed11a868f8de58b520e601165dfc20a37e8687bee62ce85140"
