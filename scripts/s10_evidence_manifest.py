@@ -9,7 +9,7 @@ script, schema, derivation or S10 benchmark file differs from it; S01's rule):
    assertions its function name carries (`test_a33_…` cites A33). `S10.Axx` passes only if at
    least one node cites it and every node citing it passed. The verification assertions are
    A01–A08, A10–A28, A30–A34, A40–A45 and A54–A58 (A09 is reserved). `S10.tests` records the
-   count; every skip must be one of VAL-2's (A4-4: "N passed, 2 skipped (VAL-2)").
+   count; it passes only if every test passed and none was skipped (§19 A6-10).
 2. **The generators' `--check`**: `s10_reference.py` (113 claims, A25), `s10_reference.py --real`
    (160 claims), `s10_records.py` (25 claims, A31).
 3. **The comparisons' and the validation report's `--check`**: both `inputs.json` and both
@@ -20,16 +20,17 @@ script, schema, derivation or S10 benchmark file differs from it; S01's rule):
    `records-lineage.json`, spec §17 A4-3), and the `verdict` agent's document.
 
 **Validation is not verification** (spec §9.6, §17 A4-4). A50–A53 are not in `status`. The
-validation block A4-4 gives is recorded verbatim as the value of the check `S10.validation`
+validation block §19 A6-9 gives is recorded verbatim as the value of the check `S10.validation`
 (`not_applicable`: the frozen manifest schema has no top-level field for it, B-81), beside the
 outcomes of the tests that check each verdict follows from the raw points (B-74). The block is
-refused unless `benchmarks/s10/validation/report.json` carries the verdicts it states.
+refused unless `benchmarks/s10/validation/report.json` carries the verdicts and the values it
+states.
 
 `scripts/gate.sh` and CI on both architectures are not run here (they run once before merge):
 their checks are `unsupported`. `status` is computed, never written: `tested` iff every
 verification assertion, the test count and every tool check pass; otherwise `implemented`. Both
 review fields stay `pending`; `reviewed` is the `reviewer`'s. The limitations are §0's items, the
-"does not establish" lists of A2-6, A3-9 and A4-5, then what this run found.
+"does not establish" lists of A2-6, A3-9, A4-5, A5-7 and A6-13, then what this run found.
 
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/s10_evidence_manifest.py [--commit SHA] [--out PATH]
@@ -73,7 +74,11 @@ LINEAGE = BENCH / "records-lineage.json"
 REAL = BENCH / "reference_values_real.yaml"
 REPORT = BENCH / "validation" / "report.json"
 VERDICTS = ROOT / "docs" / "reviews" / "S10-reference-verdicts.md"
-VALIDATION_VERDICTS = ROOT / "docs" / "reviews" / "S10-validation-verdicts.md"
+VALIDATION_VERDICTS = (
+    ROOT / "docs" / "reviews" / "S10-validation-verdicts.md",
+    ROOT / "docs" / "reviews" / "S10-validation-verdict-val2.md",
+)
+TRANSCRIPTION = BENCH / "vle" / "kurihara1995_binaries.csv"
 DERIVATIONS = ROOT / "docs" / "derivations" / "scripts"
 GENERATORS = (
     DERIVATIONS / "s10_reference.py",
@@ -107,18 +112,31 @@ CLAIMS = {
     "S10.generator_real": r"^160 claims hold; reference_values_real\.yaml matches$",
     "S10.records": r"^25 claims hold; records\.yaml and fit-report\.json match$",
 }
-VAL2_SKIP = "VAL-2 data not yet supplied"
-#: Spec §17 A4-4, verbatim.
+#: VAL-2's verdicts, pinned from the `verdict` agent's document (spec §19 A6-4, A6-10 step 3).
+VAL2_VERDICTS = {
+    "VAL-2": "within band",
+    "methanol+water": "within band",
+    "ethanol+water": "within band",
+}
+#: The values the block below states, as A6-9 formats them from `report.json`'s "VAL-2".
+VAL2_VALUES = {
+    "methanol+water": ("1.09", "0.0048"),
+    "ethanol+water": ("0.29", "0.0041"),
+}
+#: Spec §19 A6-9, verbatim with its slots filled from `report.json`.
 VALIDATION = {
     "kind": "empirical validation (S10 spec §9.6), reported apart from numerical verification",
     "S10.A50 (VAL-1)": "within band",
-    "S10.A51 (VAL-2)": "insufficient_evidence: pending; Kurihara et al. (1995) data not supplied; "
-    "nothing computed; 2 tests skipped, not passed",
+    "S10.A51 (VAL-2)": "within band: methanol-water within band (AAD(dP/P) 1.09 %, AAD(y1) "
+    "0.0048); ethanol-water within band (AAD(dP/P) 0.29 %, AAD(y1) 0.0041); 159 points at "
+    "323.15-333.15 K, judged per binary (S10 spec §19 A6-4)",
     "S10.A52 (VAL-3)": "not validated within band: CH3OH latent heat +5.72 % against 5 % "
     "(ideal-gas vapour); the other five cells within band",
-    "S10.A53": "met for the fit-quality report; its VAL-2 part pending",
-    "not_established": "constant-Lambda extrapolation in T (VAL-2); individual methanol-ethanol "
-    "Lambda (S10 spec §17 A4-2)",
+    "S10.A53": "met for the fit-quality report; VAL-2's data entered no fit",
+    "not_established": "constant-Lambda extrapolation outside 323.15-333.15 K (VAL-2) and the "
+    "101.3 kPa isobar (VAL-1), and for methanol-ethanol off the isobar; the records' P domain "
+    "below 30 kPa (not extended by VAL-2); individual methanol-ethanol Lambda (S10 spec §17 "
+    "A4-2)",
 }
 REQUIRED_CHECKS = (
     "S10.tests",
@@ -208,6 +226,7 @@ def limitations_of_the_spec(document: str) -> list[str]:
         ("### A3-9.", "§16 A3-9 (as written at Amendment 3)"),
         ("### A4-5.", "§17 A4-5"),
         ("### A5-7.", "§18 A5-7"),
+        ("### A6-13.", "§19 A6-13"),
     ):
         found = bullets(section(document, heading))
         if not found:
@@ -239,21 +258,18 @@ def assertion_checks(
 def test_count(tests: Sequence[Node]) -> dict[str, Any]:
     outcomes = Counter(item.outcome for item in tests)
     skipped = [item for item in tests if item.outcome == "skipped"]
-    val2 = all(
-        VAL2_SKIP in item.message and set(cited(item.node)) & {"A51", "A53"} for item in skipped
-    )
-    ok = set(outcomes) <= {"passed", "skipped"} and val2 and outcomes["passed"] > 0
-    summary = f"{outcomes['passed']} passed, {outcomes['skipped']} skipped (VAL-2)"
+    ok = set(outcomes) == {"passed"} and outcomes["passed"] > 0
+    summary = f"{outcomes['passed']} passed, {outcomes['skipped']} skipped"
     return check(
         "S10.tests",
-        "§17 A4-4: the S10 tests pass; every skip is VAL-2's (data not supplied), not a pass",
+        "§19 A6-10: every S10 test passed and none was skipped",
         "pass" if ok else "fail",
         {
             "summary": summary,
             "outcomes": dict(sorted(outcomes.items())),
             "skipped": [item.node for item in skipped],
         },
-        "no failure or error; skips only VAL-2's",
+        "every test passed; no failure, error or skip",
     )
 
 
@@ -267,8 +283,20 @@ def validation_check(rows: Mapping[str, tuple[str, str, str]], tests: Sequence[N
         if report[name]["verdict"] != verdict:
             found = report[name]["verdict"]
             raise SystemExit(f"report.json's {name} is {found!r}, not {verdict!r}")
-    if not report["VAL-2"]["verdict"].startswith("PENDING"):
-        raise SystemExit(f"report.json's VAL-2 is {report['VAL-2']['verdict']!r}, not pending")
+    val2 = report["VAL-2"]
+    found_val2 = {"VAL-2": val2["verdict"]}
+    found_val2.update((binary["system"], binary["verdict"]) for binary in val2["binaries"])
+    if found_val2 != VAL2_VERDICTS:
+        raise SystemExit(f"report.json's VAL-2 verdicts are {found_val2}, not {VAL2_VERDICTS}")
+    values = {
+        binary["system"]: (
+            f"{100 * binary['aad_dP_over_P']:.2f}",
+            f"{binary['aad_y1']:.4f}",
+        )
+        for binary in val2["binaries"]
+    }
+    if values != VAL2_VALUES:
+        raise SystemExit(f"report.json's VAL-2 values are {values}, not {VAL2_VALUES}")
     by_id = {}
     for identifier in VALIDATION_IDS:
         citing = [item for item in tests if identifier in cited(item.node)]
@@ -289,10 +317,9 @@ def validation_check(rows: Mapping[str, tuple[str, str, str]], tests: Sequence[N
                 "per_assertion": by_id,
             },
             "report": {"path": shown(REPORT), "sha256": sha256_file(REPORT)},
-            "verdict_document": {
-                "path": shown(VALIDATION_VERDICTS),
-                "sha256": sha256_file(VALIDATION_VERDICTS),
-            },
+            "verdict_documents": [
+                {"path": shown(path), "sha256": sha256_file(path)} for path in VALIDATION_VERDICTS
+            ],
         },
     )
 
@@ -367,11 +394,10 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], record: Mapping[str,
         if s["status"] != "compared"
     ]
     items = [
-        "Validation is reported apart from verification (spec §9.6, §17 A4-4) in the check "
-        "S10.validation: VAL-1 within band; VAL-2 insufficient evidence: pending (Kurihara et al. "
-        "1995 not supplied; its 2 tests skipped, not passed); VAL-3 not validated within band "
-        "for the CH3OH latent heat (+5.72 % against 5 %). `tested` attests numerical "
-        "verification only.",
+        "Validation is reported apart from verification (spec §9.6, §17 A4-4, §19) in the check "
+        "S10.validation: VAL-1 within band; VAL-2 within band (methanol-water within band, "
+        "ethanol-water within band; judged per binary); VAL-3 not validated within band for the "
+        "CH3OH latent heat (+5.72 % against 5 %). `tested` attests numerical verification only.",
         "Every IDAES and DWSIM state not compared, with its reason: " + "; ".join(lost),
         "requirements lists D08 and D19; §8's comparisons are D19's matched-model evidence for "
         "the property method (S10 spec §18 A5-3)",
@@ -541,7 +567,12 @@ def build(commit: str) -> dict[str, Any]:
                     (BENCH / "dwsim" / "qualification.json", "the DWSIM tool record (§8.2)"),
                     (BENCH / "dwsim" / "comparison.json", "the DWSIM comparison (§8.2)"),
                     (REPORT, "the empirical validation numbers (§9.6)"),
-                    (SPEC, "the S10 specification the checks are read from (§0, §7.5, §14-§18)"),
+                    (
+                        TRANSCRIPTION,
+                        "VAL-2's held-out data: Kurihara et al. 1995 Tables 2-3, double-entered "
+                        "(spec §19 A6-1, A6-6)",
+                    ),
+                    (SPEC, "the S10 specification the checks are read from (§0, §7.5, §14-§19)"),
                 )
             ),
         ],
