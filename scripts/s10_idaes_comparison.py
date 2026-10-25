@@ -1,19 +1,22 @@
-"""S10 WO-S10-4: the IDAES reference comparison, recomputed from the committed records alone.
+"""S10 WO-S10-4 and 4b: the IDAES reference comparison, recomputed from the committed records alone.
 
 Authority: `docs/derivations/S10-spec.md` §8.1 (the mapping, the readbacks S10.A40, the
-pre-registered ladder, the tolerances S10.A41, the smoothing claim S10.A42), as amended by §15
-A2-3 (the I-states). Two documents, both under `benchmarks/s10/idaes/`:
+tolerances S10.A41), as amended by §15 A2-3 (the I-states) and §16 (Amendment 3: the ladder
+`amendment_3`, the per-state selection, S10.A42-A44). Two documents, both under
+`benchmarks/s10/idaes/`:
 
 * `inputs.json` (`--write-inputs`): the only input of the tool script
   `spikes/references/s10_qualify_idaes.py`, which runs in the IDAES environment (no YAML reader,
   no `openflowsheet`). It carries the record values of `benchmarks/s10/records.yaml` verbatim,
   the I-state definitions (`n`, `T`, `P` only) of `reference_values_real.yaml`, §8.1's readback
-  points and its ladder. No expected value of any kind is written to it.
+  points, both ladders (`registered_8_1` for reproduction, `amendment_3`) and the tolerances
+  S10.A43 compares tool attempts at. No expected value of any kind is written to it.
 * `comparison.json` (`--write`): from the tool's `qualification.json`, the generator's real
   section and the generator's closed forms (`docs/derivations/scripts/s10_reference.py`, 50
-  digits): the τ mapping check, A40's readback table, A41's per-state table and A42's smoothing
-  table. It is mechanical: no tolerance, setting, mapping or state is chosen here, and the
-  verdict per state is the `verdict` agent's (§8.1).
+  digits): the tau mapping check, A40's readback table, the reproduction, the selection and A43
+  as the tool record holds them, A41's per-state table at each state's selected attempt, A42's
+  smoothing tables and A44's envelope-equation patterns. It is mechanical: no tolerance,
+  setting, mapping or state is chosen here, and the verdict per state is the `verdict` agent's.
 
     python scripts/s10_idaes_comparison.py --write-inputs | --write | --check
 
@@ -291,11 +294,17 @@ def phase_identity(beta: float) -> str:
     return "TWO_PHASE"
 
 
-def selected_attempt(q: dict[str, Any], sid: str, eps: float | None) -> dict[str, Any] | None:
-    for a in q["ladder"]["attempts"]:
-        if a["state"] == sid and a["eps_K"] == eps and a["converged"]:
-            return dict(a)
-    return None
+def run_attempts(q: dict[str, Any], run: str = "amendment_3") -> list[dict[str, Any]]:
+    attempts: list[dict[str, Any]] = q["ladders"][run]["attempts"]
+    return attempts
+
+
+def selected_attempt(q: dict[str, Any], sid: str) -> dict[str, Any] | None:
+    """The state's selected attempt of run A3 (spec §16 A3-2 item 4), or None."""
+    sel = q["selection"]["states"][sid]
+    if "attempt_index" not in sel:
+        return None
+    return dict(run_attempts(q)[sel["attempt_index"]])
 
 
 def summary(a: dict[str, Any]) -> dict[str, Any]:
@@ -366,30 +375,19 @@ RUNG_KEY = {1e-4: "0.0001", 1e-5: "1.0e-5", 1e-6: "1.0e-6"}  # the real section'
 
 
 def a41(q: dict[str, Any], real: dict[str, Any]) -> dict[str, Any]:
-    eps = q["ladder"]["selected_rung_eps_K"]
     states: dict[str, Any] = {}
     for sid, entry in real["closed_form"]["i_states"].items():
-        tried = [summary(t) for t in q["ladder"]["attempts"] if t["state"] == sid]
-        if sid in q["ladder"]["not_comparable"]:
+        sel = q["selection"]["states"][sid]
+        if sel["status"] != "selected":
+            # no_optimal_attempt, or a failed A43 check (spec §16 A3-2 items 5-6)
             states[sid] = {
                 "status": "NOT_COMPARABLE",
-                "reason": "optimal at no rung (spec 8.1)",
-                "ladder_record": tried,
+                "reason": sel["reason"],
+                "ladder_record": [summary(t) for t in run_attempts(q) if t["state"] == sid],
             }
             continue
-        a = selected_attempt(q, sid, eps) if eps is not None else None
-        if a is None:
-            # Spec 8.1 selects the first rung at which every I-state ends optimal; when there is
-            # none, it does not say which rung the others are compared at (escalated, B-37).
-            states[sid] = {
-                "status": "NO_SELECTED_RUNG",
-                "optimal_rungs": q["ladder"]["optimal_rungs_per_state"][sid],
-                "reason": "no rung at which every I-state ends optimal; the rung for "
-                "this state is a design-lane ruling (S10_DECISIONS B-37); no "
-                "difference to our values is computed before it",
-                "ladder_record": tried,
-            }
-            continue
+        a = selected_attempt(q, sid)
+        assert a is not None
         qty = a["quantities"]
         rec: dict[str, Any] = {
             "status": "compared",
@@ -415,14 +413,15 @@ def a41(q: dict[str, Any], real: dict[str, Any]) -> dict[str, Any]:
                     "phase_idaes": got,
                     "beta_idaes": qty["beta"],
                     "phase_rule": "LIQUID if |beta| <= 1e-7, VAPOR if |beta - 1| <= 1e-7, "
-                    "else TWO_PHASE (B-36)",
+                    "else TWO_PHASE (B-36, ratified by spec 16 A3-5)",
                     "all_within": got == entry["phase"],
                 }
             )
         states[sid] = rec
     return {
         "assertion": "S10.A41",
-        "selected_rung_eps_K": eps,
+        "selection": "per state, the selected attempt of run amendment_3 (qualification.json "
+        "selection; spec 16 A3-2)",
         "tolerances": {
             "beta_x_y_absolute": TOL_ABS_BETA_X_Y,
             "K_relative": TOL_REL_K,
@@ -437,46 +436,111 @@ def a41(q: dict[str, Any], real: dict[str, Any]) -> dict[str, Any]:
 
 
 def a42(q: dict[str, Any], real: dict[str, Any]) -> dict[str, Any]:
-    """The claim from the generator's prediction at every rung, and, from the tool's own record
-    alone, IDAES's envelope and its smoothing shift at every optimal two-phase attempt."""
-    predicted = {}
-    tool = {}
+    """Spec §16 A3-7: (a) the generator's prediction (with IDAES's dew d_d^I) at each state's
+    selected rung and at every rung; (b) at each selected two-phase attempt, the tool's own
+    smoothing shift |T_eq - T| times each sensitivity, against 0.1 of the tolerance."""
+    meas = real["measured"]
+    kh = meas["smoothing_predicted_K_h_at_1e-4"]
+    predicted: dict[str, Any] = {}
+    at_selected: dict[str, Any] = {}
+    shift: dict[str, Any] = {}
     for sid, entry in real["closed_form"]["i_states"].items():
         if entry["phase"] != "TWO_PHASE":
             continue
+        # The prediction is (eps^2/(4 d_b) + eps^2/(4 d_d^I)) |dq/dT|: K and h scale from 1e-4 by
+        # (eps / 1e-4)^2, as beta, x and y do in measured.smoothing_predicted (B-45).
         predicted[sid] = {
-            RUNG_KEY[e]: real["measured"]["smoothing_predicted"][sid][RUNG_KEY[e]]
+            RUNG_KEY[e]: {
+                "beta_x_y": meas["smoothing_predicted"][sid][RUNG_KEY[e]],
+                "K_relative_over_tau_K": kh[sid]["K_relative_over_tau_K"] * (e / 1e-4) ** 2,
+                "h_over_tau_h": kh[sid]["h_over_tau_h"] * (e / 1e-4) ** 2,
+            }
             for e in LADDER["eps_K"]
         }
-        t, dq = entry["state"]["T"], entry["max_abs_dq_dT"]
-        for a in q["ladder"]["attempts"]:
-            if a["state"] != sid or not a["converged"]:
-                continue
-            qty, eps = a["quantities"], a["eps_K"]
-            db, dd = t - qty["temperature_bubble"], qty["temperature_dew"] - t
-            tool[f"{sid}@{RUNG_KEY[eps]}"] = {
-                "idaes_d_b_K": db,
-                "idaes_d_d_K": dd,
-                "generator_d_d_gamma_at_z_K": entry["idaes_dew_T_gamma_at_z"] - t,
-                "idaes_T_dew_minus_generator_T_dew_gamma_at_z_K": qty["temperature_dew"]
-                - entry["idaes_dew_T_gamma_at_z"],
-                "predicted_with_idaes_envelope": (eps**2 / (4 * db) + eps**2 / (4 * dd)) * dq,
-                "T_eq_minus_T_K": qty["temperature_equilibrium"] - t,
-                "abs_T_eq_minus_T_times_dq_dT": abs(qty["temperature_equilibrium"] - t) * dq,
-            }
-    eps = q["ladder"]["selected_rung_eps_K"]
-    worst = {e: max(v[RUNG_KEY[e]] for v in predicted.values()) for e in LADDER["eps_K"]}
+        a = selected_attempt(q, sid)
+        if a is None:
+            continue
+        eps, t, qty = a["eps_K"], entry["state"]["T"], a["quantities"]
+        p = predicted[sid][RUNG_KEY[eps]]
+        at_selected[sid] = {
+            "eps_K": eps,
+            **p,
+            "within": p["beta_x_y"] <= TAU_A42
+            and p["K_relative_over_tau_K"] <= 0.1
+            and p["h_over_tau_h"] <= 0.1,
+        }
+        d_t = abs(qty["temperature_equilibrium"] - t)
+        rows = {
+            "beta_x_y_over_tau": d_t * entry["max_abs_dq_dT"] / TOL_ABS_BETA_X_Y,
+            "K_relative_over_tau_K": d_t * entry["max_abs_dlnK_dT"] / TOL_REL_K,
+            "h_over_tau_h": d_t * entry["max_abs_dh_dT"] / TOL_ABS_H,
+        }
+        shift[sid] = {
+            "eps_K": eps,
+            "linear_solver": a["linear_solver"],
+            "T_eq_minus_T_K": qty["temperature_equilibrium"] - t,
+            **rows,
+            "within": all(v <= 0.1 for v in rows.values()),
+            "diagnostic_envelope": {
+                "idaes_d_b_K": t - qty["temperature_bubble"],
+                "idaes_d_d_K": qty["temperature_dew"] - t,
+                "generator_d_d_I_K": entry["idaes_dew_T"] - t,
+                "generator_d_d_gamma_at_z_K": entry["dew_T_gamma_at_z"] - t,
+            },
+        }
+    worst = {
+        RUNG_KEY[e]: {
+            k: max(v[RUNG_KEY[e]][k] for v in predicted.values())
+            for k in ("beta_x_y", "K_relative_over_tau_K", "h_over_tau_h")
+        }
+        for e in LADDER["eps_K"]
+    }
     return {
         "assertion": "S10.A42",
-        "bound": TAU_A42,
-        "rule": "(eps^2/(4 d_b) + eps^2/(4 d_d)) |dq/dT| <= tau/10 at the chosen rung, with d_b to "
-        "the true bubble, d_d to the dew with gamma(z) (B-31) and |dq/dT| = max_abs_dq_dT "
-        "(reference_values_real.yaml measured.smoothing_predicted)",
-        "selected_rung_eps_K": eps,
-        "predicted_generator": predicted,
-        "worst_predicted_per_rung": {RUNG_KEY[e]: w for e, w in worst.items()},
-        "within_per_rung": {RUNG_KEY[e]: w <= TAU_A42 for e, w in worst.items()},
-        "tool_envelope_at_optimal_attempts": tool,
+        "bound": {"beta_x_y": TAU_A42, "K_relative_over_tau_K": 0.1, "h_over_tau_h": 0.1},
+        "rule": "(a) (eps^2/(4 d_b) + eps^2/(4 d_d^I)) |dq/dT| <= tau/10 for beta, x, y and <= 0.1 "
+        "of the tolerance for K and h (reference_values_real.yaml measured.smoothing_predicted, "
+        "smoothing_predicted_K_h_at_1e-4); (b) |T_eq - T| x max_abs_dq_dT, max_abs_dlnK_dT, "
+        "max_abs_dh_dT <= 0.1 of the tolerance at each selected two-phase attempt (spec 16 A3-7)",
+        "a_predicted_per_rung": predicted,
+        "a_worst_predicted_per_rung": worst,
+        "a_at_selected_rung": at_selected,
+        "a_all_within_at_selected_rung": all(v["within"] for v in at_selected.values()),
+        "b_shift_at_selected_attempt": shift,
+        "b_all_within": all(v["within"] for v in shift.values()),
+        "b_max_ratio": max(
+            max(v[k] for k in ("beta_x_y_over_tau", "K_relative_over_tau_K", "h_over_tau_h"))
+            for v in shift.values()
+        ),
+    }
+
+
+#: spec §16 A3-4 (S10.A44): exact substrings of the envelope equations' text.
+A44_PATTERNS = (
+    ("eq_temperature_bubble", "activity_coeff_comp_bubble[", True),
+    ("eq_temperature_bubble", "activity_coeff_comp[", False),
+    ("eq_temperature_dew", "activity_coeff_comp[", True),
+    ("eq_temperature_dew", "activity_coeff_comp_dew[", False),
+)
+
+
+def a44(q: dict[str, Any]) -> dict[str, Any]:
+    eqs = q["inspection"]["envelope_equations"]
+    checks = [
+        {
+            "equation": eq,
+            "pattern": pat,
+            "must_contain": want,
+            "contains": pat in eqs[eq],
+            "holds": (pat in eqs[eq]) == want,
+        }
+        for eq, pat, want in A44_PATTERNS
+    ]
+    return {
+        "assertion": "S10.A44",
+        "rendering": eqs["rendering"],
+        "checks": checks,
+        "all_hold": all(c["holds"] for c in checks),
     }
 
 
@@ -488,7 +552,8 @@ def comparison() -> dict[str, Any]:
     model, model_t = g.Model(rec), g.Model(rec, g.Mut(lam_transposed=True))
     insp = q["inspection"]
     return {
-        "authority": "docs/derivations/S10-spec.md section 8.1 (as amended by section 15 A2-3)",
+        "authority": "docs/derivations/S10-spec.md section 8.1 (as amended by section 15 A2-3 "
+        "and section 16)",
         "written_by": "scripts/s10_idaes_comparison.py --write",
         "provenance": {
             p.name: sha256(p) for p in (QUALIFICATION, INPUTS, RECORDS, REAL, GENERATOR)
@@ -503,21 +568,26 @@ def comparison() -> dict[str, Any]:
             "wagner_parameter_references_in_active_constraints": insp[
                 "wagner_parameter_references_in_active_constraints"
             ],
-            "dew_equation": insp["psat_sites_CH3OH_and_dew_equation"]["eq_temperature_dew"],
         },
         "tau_mapping_check": tau_mapping_check(q, real, g, model, model_t),
         "readbacks": readbacks(q, model),
-        "ladder": {
-            "optimal_rungs_per_state": q["ladder"]["optimal_rungs_per_state"],
-            "selected_rung_eps_K": q["ladder"]["selected_rung_eps_K"],
-            "not_comparable": q["ladder"]["not_comparable"],
-            "attempts": [
-                {"state": a["state"], **summary(a), "converged": a["converged"]}
-                for a in q["ladder"]["attempts"]
-            ],
+        "ladders": {
+            name: {
+                "registered": run["registered"],
+                "optimal_rungs_per_state": run["optimal_rungs_per_state"],
+                "attempts": [
+                    {"state": a["state"], **summary(a), "converged": a["converged"]}
+                    for a in run["attempts"]
+                ],
+            }
+            for name, run in q["ladders"].items()
         },
+        "reproduction": q["reproduction"],
+        "selection": q["selection"],
+        "rung_and_setting_dependence": q["a43"],
         "comparison": a41(q, real),
         "smoothing": a42(q, real),
+        "envelope_equations": a44(q),
     }
 
 
