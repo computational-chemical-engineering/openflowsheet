@@ -485,3 +485,18 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
   real ones; (c) the refusal is carried by `Val2RefusedError` (ruff N818) and turned into A6-3's `SystemExit` message in
   `val2()`. Alternative for (a): `f"{T:.2f}"`, identical output for these three T. Reversible by: editing
   `_markdown_val2` / `bubble_p`.
+- **Step 4 (spec §19 A6-9, A4-3 steps 1-4), MEASURED:** `UNCERTAINTY`'s VAL-2 sentence is A6-9's, slots from the
+  committed `report.json`'s `"VAL-2"` (verdict `within band`, both binaries `within band`; 1.09 %, 0.0048; 0.29 %,
+  0.0041; 1 + 39 = 40 below the domain), equal to the verdict's values (`S10-validation-verdict-val2.md`). Cascade:
+  `records.yaml` `d4a39730…` → `033e10b3…` (the `uncertainty` line only); `fit-report.json` `0031b510…` → `fef462e7…`
+  (its `records_sha256` line); `reference_values_real.yaml` `2e9d5130…` → `3ccb4180…` (its `records_sha256`); IDAES
+  `inputs.json` `8d6c881d…` → `d5677286…`, DWSIM `e9428f4b…` → `771d2f22…` (two hash lines each); IDAES
+  `comparison.json` `67d26532…` → `f606e2c6…`, DWSIM `a808cd09…` → `872f3688…` (three hash lines each);
+  `records-vetting.json` `7deac2a4…` → `f6a19d20…` (its `records_sha256` line; `--emit --nasa-yaml` with Cantera
+  3.2.0's file `4de6199d…` from `~/.cache/of-rc-c899c85/venv-xcheck`). Neither `qualification.json` changed
+  (`aecd2279…`, `e4d09073…`). Restricted diff: with every 64-hex string masked, the only changed lines besides
+  `uncertainty` are `inputs.json`/`records.yaml`/`reference_values_real.yaml`/`sha256`/`records_sha256` hash lines.
+  Lineage step 2 appended (authority `S10 spec §19 A6-9`, `commit` written by the next commit, B-80). Checks:
+  `s10_validation.py`, `s10_records.py` (25 claims), `s10_reference.py --real` (160 claims), both comparisons,
+  `s10_records_vetting.py --nasa-yaml` (12 controls) `--check` all pass; `tests/test_s10_records.py
+  tests/test_s10_provider.py` 113 passed, 0 skipped; ruff check and format clean.
