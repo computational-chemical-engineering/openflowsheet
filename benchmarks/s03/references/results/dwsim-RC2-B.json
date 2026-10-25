@@ -1,0 +1,1218 @@
+{
+ "tool": "DWSIM",
+ "versions": {
+  "dwsim": "DWSIM version 9.0.5.0 (10/2/2025 11:49:46\u202fPM)",
+  "pythonnet": "3.1.0",
+  "dotnet_runtime": "8.0.31",
+  "python": "3.13.5"
+ },
+ "environment_fingerprint": {
+  "measured": {
+   "pip_freeze_sha256": "d0a428cc7c06a7605bcfdaeb1e62ac3e9630b02c04224dea8e5928bc2e02635a",
+   "dotnet_tree": "f03ce7f0101336009c4bd090fd3006d187ba419b03bf86c84d0b56367b6e1058",
+   "dwsim_tree": "b8de32e026197858b552b7b310c621a9e919952288900a66c73ac2a0353ea87e",
+   "automation_dll_sha256": "ce32c2a422e20c553769a355fdf6fc0cf94eac85ae6ba37d4df045cd2208aa31"
+  },
+  "expected_docs_reference_environments_s3": {
+   "pip_freeze_sha256": "d0a428cc7c06a7605bcfdaeb1e62ac3e9630b02c04224dea8e5928bc2e02635a",
+   "dotnet_tree": "f03ce7f0101336009c4bd090fd3006d187ba419b03bf86c84d0b56367b6e1058",
+   "dwsim_tree": "b8de32e026197858b552b7b310c621a9e919952288900a66c73ac2a0353ea87e",
+   "automation_dll_sha256": "ce32c2a422e20c553769a355fdf6fc0cf94eac85ae6ba37d4df045cd2208aa31"
+  },
+  "matches": true
+ },
+ "input_file": "docs/derivations/scripts/s03_cases.json",
+ "settings": {
+  "registered": {
+   "version": "9.0.5 via pythonnet 3.1.0",
+   "property_package": "Raoult's Law, user compounds (docs/reference-environments.md \u00a75.0)",
+   "dH_vap_J_per_mol": [
+    "25010",
+    "30010",
+    "35010"
+   ],
+   "dH_vap_J_per_mol_PC-L": [
+    "25000",
+    "30000",
+    "35000"
+   ],
+   "dH_f_ig_J_per_mol": "equal to dH_vap (T06 \u00a79.3)",
+   "liquid_density_pressure_correction": false,
+   "placeholders": {
+    "T_c_K": "1000",
+    "P_c_Pa": "1e7",
+    "omega": "0",
+    "NBP_K": [
+     "320",
+     "360",
+     "400"
+    ]
+   },
+   "flash_loop_tolerances": "1e-10 (PT and PH, external and internal), 1000 iterations",
+   "column_method_order": [
+    "Napthali-Sandholm",
+    "Russell inside-out",
+    "Wang-Henke / Burningham-Otto"
+   ],
+   "column_tolerance_ladder": [
+    "1e-10",
+    "1e-9",
+    "1e-8",
+    "1e-7",
+    "1e-6"
+   ],
+   "column_max_iterations": 1000,
+   "floor_rerun": "the selected column tolerance times 10, everything else unchanged"
+  },
+  "flash_settings_applied": {
+   "PTFlash_External_Loop_Tolerance": "1E-10",
+   "PTFlash_Internal_Loop_Tolerance": "1E-10",
+   "PHFlash_External_Loop_Tolerance": "1E-10",
+   "PHFlash_Internal_Loop_Tolerance": "1E-10",
+   "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+   "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+   "PHFlash_Maximum_Number_Of_External_Iterations": "1000",
+   "PHFlash_Maximum_Number_Of_Internal_Iterations": "1000"
+  },
+  "property_package_options_applied": {
+   "LiquidDensity_CorrectExpDataForPressure": false
+  },
+  "method_names_dwsim": {
+   "Napthali-Sandholm": "Napthali-Sandholm (Simultaneous Correction)",
+   "Russell inside-out": "Russell (Inside-Out)",
+   "Wang-Henke": "Wang-Henke (Bubble Point)",
+   "Burningham-Otto": "Burningham-Otto (Sum Rates)"
+  },
+  "column_other": "DWSIM defaults (SolverScheme, Broyden acceleration, internal initial estimates); stage efficiency 1; CondenserDeltaP 0"
+ },
+ "sign_conversion": "Q_condenser = -1000 E(Q-COND) and Q_reboiler = +1000 E(Q-REB), W, Q > 0 into the stage; E in kW as DWSIM reports its energy streams (condenser: heat removed; reboiler: heat supplied)",
+ "case": "RC2-B",
+ "case_definition": {
+  "role": "comparison",
+  "tool_variant": {
+   "IDAES": "registered settings",
+   "DWSIM": "registered settings"
+  },
+  "stage_count": 7,
+  "condenser": "total",
+  "reboiler": "partial",
+  "stage_pressures_Pa": [
+   "100000.0",
+   "100000.0",
+   "100000.0",
+   "100000.0",
+   "100000.0",
+   "100000.0",
+   "100000.0"
+  ],
+  "intermediate_duties_W": "0 on every stage that carries no end specification",
+  "inlets": [
+   {
+    "port": "feed",
+    "stage": 4,
+    "phase": "LIQUID",
+    "n_mol_per_s": [
+     "0.3",
+     "0.4",
+     "0.3"
+    ],
+    "T_K": "340.0",
+    "P_Pa": "100000.0"
+   }
+  ],
+  "specifications": {
+   "condenser": {
+    "kind": "reflux_ratio",
+    "value": "1.5"
+   },
+   "reboiler": {
+    "kind": "bottoms_rate",
+    "value": "0.561"
+   }
+  },
+  "quantities": [
+   [
+    "T[1]",
+    "T"
+   ],
+   [
+    "T[2]",
+    "T"
+   ],
+   [
+    "T[3]",
+    "T"
+   ],
+   [
+    "T[4]",
+    "T"
+   ],
+   [
+    "T[5]",
+    "T"
+   ],
+   [
+    "T[6]",
+    "T"
+   ],
+   [
+    "T[7]",
+    "T"
+   ],
+   [
+    "L[2]",
+    "flow"
+   ],
+   [
+    "V[2]",
+    "flow"
+   ],
+   [
+    "L[3]",
+    "flow"
+   ],
+   [
+    "V[3]",
+    "flow"
+   ],
+   [
+    "L[4]",
+    "flow"
+   ],
+   [
+    "V[4]",
+    "flow"
+   ],
+   [
+    "L[5]",
+    "flow"
+   ],
+   [
+    "V[5]",
+    "flow"
+   ],
+   [
+    "L[6]",
+    "flow"
+   ],
+   [
+    "V[6]",
+    "flow"
+   ],
+   [
+    "L[7]",
+    "flow"
+   ],
+   [
+    "V[7]",
+    "flow"
+   ],
+   [
+    "reflux",
+    "flow"
+   ],
+   [
+    "top[A]",
+    "flow"
+   ],
+   [
+    "top[B]",
+    "flow"
+   ],
+   [
+    "top[C]",
+    "flow"
+   ],
+   [
+    "bottom[A]",
+    "flow"
+   ],
+   [
+    "bottom[B]",
+    "flow"
+   ],
+   [
+    "bottom[C]",
+    "flow"
+   ],
+   [
+    "Q_condenser",
+    "duty"
+   ],
+   [
+    "Q_reboiler",
+    "duty"
+   ]
+  ]
+ },
+ "attempts": [
+  {
+   "level": "L1",
+   "tolerance": 1e-10,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "converged": true,
+   "termination": "calculated, no error reported",
+   "wall_time_s": 30.839976788964123,
+   "rule2_component_max_mol_per_s": 1.6653345369377348e-16,
+   "rule2_energy_W": 3.637978807091713e-12,
+   "rule2c_failed_checks": [],
+   "rule2d_specification_max": 1.9790071740198866e-16,
+   "rerun_max_ratio": 2.177702926790609e-09,
+   "passes": true,
+   "failed_rule": null,
+   "reason": "passes rules 2-2d",
+   "rung_index": 0
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-10,
+   "method": "Russell inside-out",
+   "dwsim_method_name": "Russell (Inside-Out)",
+   "converged": false,
+   "termination": "COL: Unable to find column solver with name 'Russell (Inside-Out)'.",
+   "wall_time_s": 0.00760645791888237,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: Unable to find column solver with name 'Russell (Inside-Out)'.",
+   "rung_index": 1
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-10,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "converged": true,
+   "termination": "calculated, no error reported",
+   "wall_time_s": 0.08941189700271934,
+   "rule2_component_max_mol_per_s": 1.8230800202800879e-10,
+   "rule2_energy_W": 3.11822077492252e-07,
+   "rule2c_failed_checks": [],
+   "rule2d_specification_max": 1.4802973661668753e-16,
+   "rerun_max_ratio": 0.0059985229034500475,
+   "passes": true,
+   "failed_rule": null,
+   "reason": "passes rules 2-2d",
+   "rung_index": 2
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-09,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "converged": true,
+   "termination": "calculated, no error reported",
+   "wall_time_s": 0.14073117298539728,
+   "rule2_component_max_mol_per_s": 1.1102230246251565e-16,
+   "rule2_energy_W": 3.637978807091713e-12,
+   "rule2c_failed_checks": [],
+   "rule2d_specification_max": 2.9605947323337506e-16,
+   "rerun_max_ratio": 3.015280975556235e-09,
+   "passes": true,
+   "failed_rule": null,
+   "reason": "passes rules 2-2d",
+   "rung_index": 3
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-09,
+   "method": "Russell inside-out",
+   "dwsim_method_name": "Russell (Inside-Out)",
+   "converged": false,
+   "termination": "COL: Unable to find column solver with name 'Russell (Inside-Out)'.",
+   "wall_time_s": 0.005921097006648779,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: Unable to find column solver with name 'Russell (Inside-Out)'.",
+   "rung_index": 4
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-09,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "converged": true,
+   "termination": "calculated, no error reported",
+   "wall_time_s": 0.12399522901978344,
+   "rule2_component_max_mol_per_s": 5.98908922455621e-10,
+   "rule2_energy_W": 3.118257154710591e-07,
+   "rule2c_failed_checks": [],
+   "rule2d_specification_max": 1.4802973661668753e-16,
+   "rerun_max_ratio": 0.0237053049469413,
+   "passes": true,
+   "failed_rule": null,
+   "reason": "passes rules 2-2d",
+   "rung_index": 5
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-08,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "converged": true,
+   "termination": "calculated, no error reported",
+   "wall_time_s": 0.0717072980478406,
+   "rule2_component_max_mol_per_s": 6.661338147750939e-16,
+   "rule2_energy_W": 1.0913936421275139e-11,
+   "rule2c_failed_checks": [],
+   "rule2d_specification_max": 1.9790071740198866e-16,
+   "rerun_max_ratio": 3.015280975556244e-09,
+   "passes": true,
+   "failed_rule": null,
+   "reason": "passes rules 2-2d",
+   "rung_index": 6
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-08,
+   "method": "Russell inside-out",
+   "dwsim_method_name": "Russell (Inside-Out)",
+   "converged": false,
+   "termination": "COL: Unable to find column solver with name 'Russell (Inside-Out)'.",
+   "wall_time_s": 0.009173728991299868,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: Unable to find column solver with name 'Russell (Inside-Out)'.",
+   "rung_index": 7
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-08,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "converged": true,
+   "termination": "calculated, no error reported",
+   "wall_time_s": 0.07643500692211092,
+   "rule2_component_max_mol_per_s": 2.727181924733202e-09,
+   "rule2_energy_W": 3.118257154710591e-07,
+   "rule2c_failed_checks": [],
+   "rule2d_specification_max": 1.4802973661668753e-16,
+   "rerun_max_ratio": 0.03128257825932997,
+   "passes": true,
+   "failed_rule": null,
+   "reason": "passes rules 2-2d",
+   "rung_index": 8
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-07,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "converged": true,
+   "termination": "calculated, no error reported",
+   "wall_time_s": 0.07130921690259129,
+   "rule2_component_max_mol_per_s": 1.5543122344752192e-15,
+   "rule2_energy_W": 1.0913936421275139e-11,
+   "rule2c_failed_checks": [],
+   "rule2d_specification_max": 1.9790071740198866e-16,
+   "rerun_max_ratio": 1.390379560950939e-08,
+   "passes": true,
+   "failed_rule": null,
+   "reason": "passes rules 2-2d",
+   "rung_index": 9
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-07,
+   "method": "Russell inside-out",
+   "dwsim_method_name": "Russell (Inside-Out)",
+   "converged": false,
+   "termination": "COL: Unable to find column solver with name 'Russell (Inside-Out)'.",
+   "wall_time_s": 0.0060275159776210785,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: Unable to find column solver with name 'Russell (Inside-Out)'.",
+   "rung_index": 10
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-07,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "converged": true,
+   "termination": "calculated, no error reported",
+   "wall_time_s": 0.07204066298436373,
+   "rule2_component_max_mol_per_s": 6.018984033406838e-09,
+   "rule2_energy_W": 3.118257154710591e-07,
+   "rule2c_failed_checks": [],
+   "rule2d_specification_max": 1.4802973661668753e-16,
+   "rerun_max_ratio": 0.18466763112248738,
+   "passes": false,
+   "failed_rule": "2d",
+   "reason": "accuracy rerun",
+   "rung_index": 11
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-06,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "converged": true,
+   "termination": "calculated, no error reported",
+   "wall_time_s": 0.07647418999113142,
+   "rule2_component_max_mol_per_s": 6.439293542825908e-15,
+   "rule2_energy_W": 2.9103830456733704e-11,
+   "rule2c_failed_checks": [],
+   "rule2d_specification_max": 1.4802973661668753e-16,
+   "rerun_max_ratio": 5.011541782428907e-08,
+   "passes": true,
+   "failed_rule": null,
+   "reason": "passes rules 2-2d",
+   "rung_index": 12
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-06,
+   "method": "Russell inside-out",
+   "dwsim_method_name": "Russell (Inside-Out)",
+   "converged": false,
+   "termination": "COL: Unable to find column solver with name 'Russell (Inside-Out)'.",
+   "wall_time_s": 0.0026466218987479806,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: Unable to find column solver with name 'Russell (Inside-Out)'.",
+   "rung_index": 13
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-06,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "converged": true,
+   "termination": "calculated, no error reported",
+   "wall_time_s": 0.04323334409855306,
+   "rule2_component_max_mol_per_s": 2.956563055489525e-08,
+   "rule2_energy_W": 3.11822077492252e-07,
+   "rule2c_failed_checks": [],
+   "rule2d_specification_max": 1.4802973661668753e-16,
+   "rerun_max_ratio": 0.7206948611664696,
+   "passes": false,
+   "failed_rule": "2d",
+   "reason": "accuracy rerun",
+   "rung_index": 14
+  }
+ ],
+ "available": true,
+ "level": "L1",
+ "realization": {
+  "level": "L1",
+  "condenser_spec": [
+   "Stream_Ratio",
+   1.5,
+   "",
+   ""
+  ],
+  "reboiler_spec": [
+   "Product_Molar_Flow_Rate",
+   0.561,
+   "mol/s",
+   ""
+  ],
+  "condenser_type": "Total_Condenser",
+  "expressible": true
+ },
+ "settings_used": {
+  "column_tolerance": 1e-10,
+  "method": "Napthali-Sandholm",
+  "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+  "rung_index": 0,
+  "uniform": false,
+  "max_iterations": 1000
+ },
+ "stage_map": {
+  "stage_count_registered": 7,
+  "stage_count_dwsim": 7,
+  "index_base": "DWSIM Stages list, 0-based: our j is index j - 1",
+  "map": {
+   "1": {
+    "dwsim_index": 0,
+    "dwsim_name": "Condenser"
+   },
+   "2": {
+    "dwsim_index": 1,
+    "dwsim_name": "Stage1"
+   },
+   "3": {
+    "dwsim_index": 2,
+    "dwsim_name": "Stage2"
+   },
+   "4": {
+    "dwsim_index": 3,
+    "dwsim_name": "Stage3"
+   },
+   "5": {
+    "dwsim_index": 4,
+    "dwsim_name": "Stage4"
+   },
+   "6": {
+    "dwsim_index": 5,
+    "dwsim_name": "Stage5"
+   },
+   "7": {
+    "dwsim_index": 6,
+    "dwsim_name": "Reboiler"
+   }
+  }
+ },
+ "feed_stages": [
+  {
+   "inlet": "IN1-feed",
+   "registered_stage": 4,
+   "dwsim_associated_stage": "Stage3",
+   "dwsim_stage_index_0_based": 3,
+   "declared_phase": "LIQUID",
+   "enters_whole": true
+  }
+ ],
+ "condenser_realization": "total: DWSIM Total_Condenser, subcooling 0 K (saturated liquid)",
+ "reboiler_realization": "kettle: DWSIM's reboiler stage (last stage), liquid bottoms and vapour boil-up",
+ "specifications": {
+  "registered": {
+   "condenser": {
+    "kind": "reflux_ratio",
+    "value": "1.5"
+   },
+   "reboiler": {
+    "kind": "bottoms_rate",
+    "value": "0.561"
+   }
+  },
+  "dwsim": {
+   "C": {
+    "SType": "Stream_Ratio",
+    "SpecValue": 1.5,
+    "SpecUnit": "",
+    "ComponentID": ""
+   },
+   "R": {
+    "SType": "Product_Molar_Flow_Rate",
+    "SpecValue": 0.561,
+    "SpecUnit": "mol/s",
+    "ComponentID": ""
+   }
+  },
+  "realization": {
+   "condenser_type": "Total_Condenser",
+   "condenser_spec": [
+    "Stream_Ratio",
+    1.5,
+    "",
+    ""
+   ],
+   "reboiler_spec": [
+    "Product_Molar_Flow_Rate",
+    0.561,
+    "mol/s",
+    ""
+   ]
+  }
+ },
+ "structural_inspection": {
+  "property_package": {
+   "package": "Raoult's Law",
+   "compounds": [
+    "SYN001-A",
+    "SYN001-B",
+    "SYN001-C"
+   ],
+   "t06_definitions": "t06_qualify_dwsim.Sheet (user compounds, Raoult's Law)",
+   "vaporization_enthalpy_mapped": true,
+   "applies_to": "the whole column: one property package per DWSIM flowsheet"
+  },
+  "stage_map": {
+   "stage_count_registered": 7,
+   "stage_count_dwsim": 7,
+   "index_base": "DWSIM Stages list, 0-based: our j is index j - 1",
+   "map": {
+    "1": {
+     "dwsim_index": 0,
+     "dwsim_name": "Condenser"
+    },
+    "2": {
+     "dwsim_index": 1,
+     "dwsim_name": "Stage1"
+    },
+    "3": {
+     "dwsim_index": 2,
+     "dwsim_name": "Stage2"
+    },
+    "4": {
+     "dwsim_index": 3,
+     "dwsim_name": "Stage3"
+    },
+    "5": {
+     "dwsim_index": 4,
+     "dwsim_name": "Stage4"
+    },
+    "6": {
+     "dwsim_index": 5,
+     "dwsim_name": "Stage5"
+    },
+    "7": {
+     "dwsim_index": 6,
+     "dwsim_name": "Reboiler"
+    }
+   }
+  },
+  "feed_stages": [
+   {
+    "inlet": "IN1-feed",
+    "registered_stage": 4,
+    "dwsim_associated_stage": "Stage3",
+    "dwsim_stage_index_0_based": 3,
+    "declared_phase": "LIQUID",
+    "enters_whole": true
+   }
+  ],
+  "condenser_realization": "total: DWSIM Total_Condenser, subcooling 0 K (saturated liquid)",
+  "reboiler_realization": "kettle: DWSIM's reboiler stage (last stage), liquid bottoms and vapour boil-up",
+  "specifications": {
+   "registered": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "1.5"
+    },
+    "reboiler": {
+     "kind": "bottoms_rate",
+     "value": "0.561"
+    }
+   },
+   "dwsim": {
+    "C": {
+     "SType": "Stream_Ratio",
+     "SpecValue": 1.5,
+     "SpecUnit": "",
+     "ComponentID": ""
+    },
+    "R": {
+     "SType": "Product_Molar_Flow_Rate",
+     "SpecValue": 0.561,
+     "SpecUnit": "mol/s",
+     "ComponentID": ""
+    }
+   },
+   "realization": {
+    "condenser_type": "Total_Condenser",
+    "condenser_spec": [
+     "Stream_Ratio",
+     1.5,
+     "",
+     ""
+    ],
+    "reboiler_spec": [
+     "Product_Molar_Flow_Rate",
+     0.561,
+     "mol/s",
+     ""
+    ]
+   }
+  },
+  "pressures": {
+   "stage_P_Pa": [
+    100000.0,
+    100000.0,
+    100000.0,
+    100000.0,
+    100000.0,
+    100000.0,
+    100000.0
+   ],
+   "CondenserDeltaP": 0.0,
+   "ColumnPressureDrop": "nan",
+   "pressure_drop_relation": "none: every stage pressure is set directly"
+  },
+  "intermediate_stages": {
+   "efficiency": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+   ],
+   "duty_input_kW": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "side_draws": [],
+   "hydraulics": "none: DWSIM's equilibrium-stage MESH model"
+  },
+  "initialization": {
+   "InitialEstimatesProvider": "Internal (Default)",
+   "UseTemperatureEstimates": false,
+   "UseVaporFlowEstimates": false,
+   "UseLiquidFlowEstimates": false,
+   "UseCompositionEstimates": false,
+   "note": "DWSIM's own estimator; no value of this project is entered"
+  }
+ },
+ "converged": true,
+ "termination": "calculated, no error reported",
+ "raw_output": {
+  "wall_time_s": 30.839976788964123,
+  "solver_errors": [],
+  "column_error_message": "",
+  "calculated": {
+   "COL": true,
+   "IN1-feed": true,
+   "TOP": true,
+   "Q-COND": true,
+   "BOTTOM": true,
+   "Q-REB": true
+  },
+  "converged": true,
+  "termination": "calculated, no error reported",
+  "profile": {
+   "T_K": [
+    329.33207146833075,
+    340.34310561236055,
+    348.71195654109476,
+    355.30533366814217,
+    361.45038968006486,
+    367.2997080470569,
+    375.1694805703733
+   ],
+   "L_mol_per_s": [
+    0.6584999999999999,
+    0.6160064950503525,
+    0.5870780706101285,
+    1.5963559213911458,
+    1.5793267038091863,
+    1.5518840320534344,
+    0.5609999999999999
+   ],
+   "V_mol_per_s": [
+    0.0,
+    1.0974999999999997,
+    1.0550064950503524,
+    1.0260780706101287,
+    1.0353559213911459,
+    1.0183267038091863,
+    0.9908840320534348
+   ],
+   "LSS_mol_per_s": [
+    0.439,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "VSS_mol_per_s": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "x": [
+    [
+     0.6672310193792008,
+     0.32708264879524757,
+     0.005686331825551572
+    ],
+    [
+     0.38050479719436153,
+     0.5835235733669654,
+     0.03597162943867302
+    ],
+    [
+     0.23057464678979633,
+     0.6595589887875737,
+     0.10986636442262995
+    ],
+    [
+     0.16408104988179517,
+     0.590562464548203,
+     0.2453564855700018
+    ],
+    [
+     0.08379463631117069,
+     0.6367682317714622,
+     0.27943713191736697
+    ],
+    [
+     0.03667721853313853,
+     0.6028852218231009,
+     0.3604375596437607
+    ],
+    [
+     0.012630271822692775,
+     0.45706010192314867,
+     0.5303096262541586
+    ]
+   ],
+   "y": [
+    [
+     0.6672310193792009,
+     0.3270826487952475,
+     0.005686331825551571
+    ],
+    [
+     0.6672310193792009,
+     0.32708264879524757,
+     0.005686331825551573
+    ],
+    [
+     0.49981478450693906,
+     0.4768156370507903,
+     0.023369578442270608
+    ],
+    [
+     0.4173948830441041,
+     0.5173114177330224,
+     0.0652936992228734
+    ],
+    [
+     0.24614354137457137,
+     0.6628997389919749,
+     0.0909567196334538
+    ],
+    [
+     0.12299935158446955,
+     0.7357701144362175,
+     0.14123053397931293
+    ],
+    [
+     0.0502916644906576,
+     0.6854457330610714,
+     0.264262602448271
+    ]
+   ],
+   "P_Pa": [
+    100000.0,
+    100000.0,
+    100000.0,
+    100000.0,
+    100000.0,
+    100000.0,
+    100000.0
+   ],
+   "stage_duty_input_kW": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "internal_iterations": 0,
+   "external_iterations": 0
+  },
+  "streams": {
+   "IN1-feed": {
+    "T_K": 340.0,
+    "P_Pa": 100000.0,
+    "molar_flow_mol_per_s": 1.0,
+    "mass_flow_kg_per_s": 0.1,
+    "mass_enthalpy_kJ_per_kg": -258.15,
+    "vapor_molar_fraction": null,
+    "overall_mol_per_s": {
+     "A": 0.3,
+     "B": 0.4,
+     "C": 0.3
+    },
+    "vapor_mol_per_s": {
+     "A": 0.0,
+     "B": 0.0,
+     "C": 0.0
+    },
+    "liquid_mol_per_s": {
+     "A": 0.3,
+     "B": 0.4,
+     "C": 0.3
+    },
+    "vapor_mole_fractions": {
+     "A": 0.6599458064224776,
+     "B": 0.28077319407469814,
+     "C": 0.0592809995028242
+    },
+    "liquid_mole_fractions": {
+     "A": 0.3,
+     "B": 0.4,
+     "C": 0.3
+    },
+    "calculated": true
+   },
+   "TOP": {
+    "T_K": 329.33207146833075,
+    "P_Pa": 100000.0,
+    "molar_flow_mol_per_s": 0.439,
+    "mass_flow_kg_per_s": 0.043899999999999995,
+    "mass_enthalpy_kJ_per_kg": -235.74069415398677,
+    "vapor_molar_fraction": null,
+    "overall_mol_per_s": {
+     "A": 0.29291441750746916,
+     "B": 0.1435892828211137,
+     "C": 0.00249629967141714
+    },
+    "vapor_mol_per_s": {
+     "A": 0.0,
+     "B": 0.0,
+     "C": 0.0
+    },
+    "liquid_mol_per_s": {
+     "A": 0.29291441750746916,
+     "B": 0.1435892828211137,
+     "C": 0.00249629967141714
+    },
+    "vapor_mole_fractions": {
+     "A": null,
+     "B": null,
+     "C": null
+    },
+    "liquid_mole_fractions": {
+     "A": 0.6672310193792008,
+     "B": 0.32708264879524757,
+     "C": 0.005686331825551572
+    },
+    "calculated": true
+   },
+   "BOTTOM": {
+    "T_K": 375.1694805703733,
+    "P_Pa": 100000.0,
+    "molar_flow_mol_per_s": 0.5609999999999999,
+    "mass_flow_kg_per_s": 0.0561,
+    "mass_enthalpy_kJ_per_kg": -248.8644871512,
+    "vapor_molar_fraction": null,
+    "overall_mol_per_s": {
+     "A": 0.0070855824925306465,
+     "B": 0.25641071717888636,
+     "C": 0.2975037003285829
+    },
+    "vapor_mol_per_s": {
+     "A": 0.0,
+     "B": 0.0,
+     "C": 0.0
+    },
+    "liquid_mol_per_s": {
+     "A": 0.0070855824925306465,
+     "B": 0.25641071717888636,
+     "C": 0.2975037003285829
+    },
+    "vapor_mole_fractions": {
+     "A": null,
+     "B": null,
+     "C": null
+    },
+    "liquid_mole_fractions": {
+     "A": 0.012630271822692775,
+     "B": 0.45706010192314867,
+     "C": 0.5303096262541586
+    },
+    "calculated": true
+   }
+  },
+  "energy_streams_kW": {
+   "Q-COND": 30.503234524356614,
+   "Q-REB": 32.007920321814275
+  },
+  "column_reported": {
+   "CondenserDuty_kW": 30.503234524356614,
+   "ReboilerDuty_kW": -32.007920321814275,
+   "RefluxRatio": 1.4999999999999998,
+   "specs_calculated": {
+    "C": 1.4999999999999998,
+    "R": 0.5609999999999999
+   }
+  }
+ },
+ "rule_values": {
+  "rule2": {
+   "converged": true,
+   "component_balance": {
+    "residual_mol_per_s": {
+     "A": 1.6653345369377348e-16,
+     "B": 0.0,
+     "C": -5.551115123125783e-17
+    },
+    "max_abs_mol_per_s": 1.6653345369377348e-16,
+    "tolerance_mol_per_s": 3.1e-08,
+    "passes": true
+   },
+   "energy_balance_W": 3.637978807091713e-12,
+   "energy_terms": {
+    "inlets_W": {
+     "IN1-feed": -25814.999999999996
+    },
+    "products_W": {
+     "TOP": -10349.016473360018,
+     "BOTTOM": -13961.297729182319
+    },
+    "duties_W": {
+     "Q_condenser": -30503.234524356612,
+     "Q_reboiler": 32007.920321814276
+    }
+   },
+   "passes": true
+  },
+  "rule2c": {
+   "checks": {
+    "stage_count": {
+     "value": 7,
+     "registered": 7,
+     "passes": true
+    },
+    "feed_stage": {
+     "value": [
+      true
+     ],
+     "passes": true
+    },
+    "pressure_max_abs_dev_Pa": {
+     "value": 0.0,
+     "passes": true
+    },
+    "intermediate_duty_max_abs_W": {
+     "value": 0.0,
+     "passes": true
+    },
+    "specification": {
+     "value": {
+      "condenser": {
+       "kind": "reflux_ratio",
+       "definition": "reflux L(0) / distillate D",
+       "registered": 1.5,
+       "dwsim": 1.4999999999999998,
+       "relative_difference": -1.4802973661668753e-16,
+       "absolute_difference": -2.220446049250313e-16,
+       "rule2c_passes": true,
+       "rule2d_measure": 1.4802973661668753e-16,
+       "rule2d_passes": true
+      },
+      "reboiler": {
+       "kind": "bottoms_rate",
+       "definition": "bottoms L_N (BOTTOM stream)",
+       "registered": 0.561,
+       "dwsim": 0.5609999999999999,
+       "relative_difference": -1.9790071740198866e-16,
+       "absolute_difference": -1.1102230246251565e-16,
+       "rule2c_passes": true,
+       "rule2d_measure": 1.9790071740198866e-16,
+       "rule2d_passes": true
+      }
+     },
+     "passes": true
+    }
+   },
+   "passes": true
+  },
+  "rule2d_specification": {
+   "passes": true,
+   "max_measure": 1.9790071740198866e-16
+  }
+ },
+ "registered_quantities": {
+  "T[1]": 329.33207146833075,
+  "T[2]": 340.34310561236055,
+  "T[3]": 348.71195654109476,
+  "T[4]": 355.30533366814217,
+  "T[5]": 361.45038968006486,
+  "T[6]": 367.2997080470569,
+  "T[7]": 375.1694805703733,
+  "L[2]": 0.6160064950503525,
+  "V[2]": 1.0974999999999997,
+  "L[3]": 0.5870780706101285,
+  "V[3]": 1.0550064950503524,
+  "L[4]": 1.5963559213911458,
+  "V[4]": 1.0260780706101287,
+  "L[5]": 1.5793267038091863,
+  "V[5]": 1.0353559213911459,
+  "L[6]": 1.5518840320534344,
+  "V[6]": 1.0183267038091863,
+  "L[7]": 0.5609999999999999,
+  "V[7]": 0.9908840320534348,
+  "reflux": 0.6584999999999999,
+  "top[A]": 0.29291441750746916,
+  "top[B]": 0.1435892828211137,
+  "top[C]": 0.00249629967141714,
+  "bottom[A]": 0.0070855824925306465,
+  "bottom[B]": 0.25641071717888636,
+  "bottom[C]": 0.2975037003285829,
+  "Q_condenser": -30503.234524356612,
+  "Q_reboiler": 32007.920321814276
+ },
+ "accuracy_rerun": {
+  "tolerance": 1e-09,
+  "converged": true,
+  "termination": "calculated, no error reported",
+  "wall_time_s": 0.10499139700550586,
+  "quantities": {
+   "T[1]": 329.33207146833,
+   "T[2]": 340.3431056123598,
+   "T[3]": 348.7119565410942,
+   "T[4]": 355.3053336681418,
+   "T[5]": 361.4503896800645,
+   "T[6]": 367.29970804705647,
+   "T[7]": 375.16948057037285,
+   "L[2]": 0.6160064950503519,
+   "V[2]": 1.0974999999999995,
+   "L[3]": 0.5870780706101276,
+   "V[3]": 1.0550064950503515,
+   "L[4]": 1.5963559213911436,
+   "V[4]": 1.0260780706101273,
+   "L[5]": 1.5793267038091845,
+   "V[5]": 1.0353559213911432,
+   "L[6]": 1.5518840320534328,
+   "V[6]": 1.0183267038091843,
+   "L[7]": 0.5610000000000002,
+   "V[7]": 0.9908840320534328,
+   "reflux": 0.6584999999999998,
+   "top[A]": 0.2929144175074692,
+   "top[B]": 0.14358928282111352,
+   "top[C]": 0.0024962996714172066,
+   "bottom[A]": 0.007085582492530809,
+   "bottom[B]": 0.2564107171788864,
+   "bottom[C]": 0.2975037003285829,
+   "Q_condenser": -30503.234524356605,
+   "Q_reboiler": 32007.92032181421
+  },
+  "movement": {
+   "ratio_to_tolerance": {
+    "T[1]": 2.177702926790609e-09,
+    "T[2]": 2.109259275700251e-09,
+    "T[3]": 1.5846535869315501e-09,
+    "T[4]": 9.336313536409544e-10,
+    "T[5]": 9.181859075679206e-10,
+    "T[6]": 1.2052682289108685e-09,
+    "T[7]": 1.180642220699982e-09,
+    "L[2]": 7.193619249278292e-10,
+    "V[2]": 1.5775815625224253e-10,
+    "L[3]": 9.90079290530477e-10,
+    "V[3]": 6.506770648496893e-10,
+    "L[4]": 1.1647594367530082e-09,
+    "V[4]": 9.971480401154996e-10,
+    "L[5]": 9.402062839734545e-10,
+    "V[5]": 1.980543004817009e-09,
+    "L[6]": 8.348061467399769e-10,
+    "V[6]": 1.5044502520310332e-09,
+    "L[7]": 2.5493066007466283e-10,
+    "V[7]": 1.536187235053398e-09,
+    "reflux": 1.1463324983223097e-10,
+    "top[A]": 9.207136140606578e-11,
+    "top[B]": 3.671459181266654e-10,
+    "top[C]": 2.1233266770160718e-10,
+    "bottom[A]": 5.115232415452135e-10,
+    "bottom[B]": 9.800512163283458e-11,
+    "bottom[C]": 0.0,
+    "Q_condenser": 1.7963892759744978e-10,
+    "Q_reboiler": 1.5588398098738032e-09
+   },
+   "max_ratio": 2.177702926790609e-09,
+   "max_quantity": "T[1]",
+   "tolerance_value_used": "the tool's own value (the script reads no other)",
+   "passes": true
+  },
+  "passes": true
+ }
+}

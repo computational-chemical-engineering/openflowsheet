@@ -12949,6 +12949,542 @@ package for both providers.
 
 ---
 
+## R-628 — S03 references: IDAES and DWSIM, three expressibility levels, a blind pre-registered "where available" rule
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 specification, brief `docs/briefs/S03-column-references.md` |
+| Normative text | `docs/derivations/S03-spec.md` §2, §8 |
+| Evidence | — (qualification is WO-S03-2/3) |
+| Affected packages | S03; R01 (may count S03's pairs under its own rules) |
+
+**Decision.**
+- The two references are the T06 environments: IDAES 2.13.0 and DWSIM 9.0.5. No other tool.
+- A tool expresses a case at L1 (its native column and specifications), L2 (the native column with a variable fixed at a
+  value S02 implies exactly, or, in IDAES, an S02/S06 specification equation), or L3 (IDAES only: its own `Tray`,
+  `Condenser`, `Reboiler` and `Flash` units joined by `Arc`s).
+- User-written thermodynamics or balances, another property method, changed inputs, and values from our side or the twin are
+  never admissible. A case a tool cannot express is `NOT_COMPARABLE(capability)`. A different model is never substituted.
+- Levels and DWSIM's solver rung are selected blind: the tool scripts read only `s03_cases.json`, which A03 checks
+  statically. The selection is committed before the comparison runs.
+- X31's "where available" counts RC1–RC4 with a comparable classification from every available tool.
+
+**Rejected alternatives, and why.**
+- *A DWSIM column built from vessels and recycles (L3 for DWSIM).* It is the harness author's column. Its tear tolerances
+  would need per-case registration (T06 measured 0.0306 mol/s of `Recycle` balance error at the defaults).
+- *A third tool.* The brief rules it out, and its licence and environment are not recorded.
+- *Our own second MESH code as a "reference".* That is the twin. It shares SYN-001 and S02's definitions, so it is not
+  independent.
+- *Choosing levels after seeing the comparison.* That would steer toward agreement. Selection is blind and committed first.
+
+**Watch for.** A tool unavailable for an RC case (Q-S03-1). A partial condenser that IDAES accepts only at L3 (Q-S03-7).
+
+---
+
+## R-629 — S03 cases at P_r (RC1–RC5), a ten-case perturbation study, positive controls PC-P and PC-L
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 specification |
+| Normative text | `docs/derivations/S03-spec.md` §3, §4 |
+| Evidence | `docs/derivations/scripts/s03_reference.py --check` (4009 claims; `s03_cases.json`, `s03_reference.json` byte-identical): rows identical to the tools' model at P_r (15 claims); perturbations ≥ 8382 tolerances; PC-P 176×, PC-L 243×, E1 1.07e6× |
+| Affected packages | S03 |
+
+**Decision.**
+- The cases are RC1–RC4, S02's M1–M4 with every stage and inlet pressure at P_r = 1e5 Pa, and RC5, S06's J1 on RC1
+  (purity of A 0.85, BR 1.5). X31's four are RC1–RC4.
+- The perturbation study is ten registered neighbouring states: each end specification +2 %, and the feed (0.28, 0.4, 0.32).
+  They are compared like the base cases, and their finite-difference responses are reported. No sensitivity capability is
+  claimed.
+- Positive controls:
+  - PC-P: RC1's column at 1.5e5 Pa, both tools; the missing Poynting factor makes it `DISAGREE`.
+  - PC-L: DWSIM with ΔH_vap = L_i unmapped; it must also `DISAGREE`.
+  - (PC-L, IDAES) is `not_applicable`.
+- E1 (generator only) shows that a feed one stage off costs 1.07e6 tolerances.
+- The registered quantities are every stage's T, every equilibrium stage's L and V, the reflux, the products' component
+  flows, and the end duties that are not specified.
+
+**Rejected alternatives, and why.**
+- *Comparing M1–M4 at S02's 1.00–1.06 bar profile.* Both tools lack the Poynting factor, which moves results up to 176
+  tolerances. A declared difference inside a tolerance is tuning (ADR 0014 D7).
+- *Adding a Poynting factor to the tools.* That is a user-written phase equilibrium, which §2.2 forbids. IDAES's
+  `pressure_sat_comp` is a function of T alone.
+- *P1 against the tools.* Our side ends `HOMOTOPY_STALLED`, so P1 would only be `NOT_COMPARABLE(ours_not_verified)`.
+- *Every S06 inverse kind.* One kind exercises the shared slot mechanism. Recovery and temperature are Frank's call
+  (Q-S03-5).
+- *Comparing stream enthalpies.* Each tool's datum differs by per-component constants.
+
+**Watch for.** PC-L is marginal on the stripping-section temperatures (0.59–0.78 tolerance); the duties carry it.
+
+---
+
+## R-630 — S03 tolerances and verdict mechanics: T06's formula and rule order, plus a semantics self-check (2c) and an accuracy check (2d)
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 specification |
+| Normative text | `docs/derivations/S03-spec.md` §5.2, §6, §7 |
+| Evidence | S02 §18.5 (our deviation ≤ 8.5e-3 of S02's state tolerance); `ref.perturbations` (largest specification response 1.64e6 tolerances per unit relative change, RC3-Q) |
+| Affected packages | S03 |
+
+**Decision.**
+- The tolerance is `|ours − tool| ≤ a_k + 1e-6 |v|`, with flow 3.1e-7 mol/s, T 1e-5 K and duty 1e-2 W (T06 §9.4), and v the
+  twin value.
+- The rules run in this order:
+  - 0 capability;
+  - 1 access;
+  - 2 convergence and the tool's own component closure (≤ 3.1e-8 mol/s) and energy closure (≤ 1e-3 W);
+  - 2b IDAES SmoothVLE;
+  - 2c semantics (stage map, feed stage, pressures within 1e-3 Pa, adiabatic stages, zero liquid distillate, specification
+    residual > 1e-4 relative);
+  - 2d accuracy (specification residual > 1e-8 relative; a rerun at 10× looser settings moving a quantity by more than 0.1
+    tolerance);
+  - 3 ours not accepted, or more than 0.1 tolerance from the twin;
+  - 4 `AGREE`/`DISAGREE`.
+- DWSIM's column solver comes from a pre-registered ladder: tolerances 1e-10 to 1e-6, methods simultaneous correction, then
+  inside-out, then bubble point or sum rates. The ladder is selected blind, uniformly where possible.
+- The `verdict` agent issues the recorded verdicts. `tested` does not require every pair to be `AGREE`.
+
+**Rejected alternatives, and why.**
+- *Trusting a solver's tolerance setting as its accuracy.* DWSIM's column tolerance semantics are not documented to this
+  precision. Rule 2d measures the floor instead.
+- *One specification threshold.* It would label a definition mismatch as an accuracy failure, or the reverse.
+- *Rule 3 at S02's state tolerance.* For flows that equals the comparison tolerance, so our own error could decide a
+  classification.
+- *Requiring all `AGREE` for `tested`.* The classification is the measured result. Requiring agreement would make the gate
+  select its outcome.
+
+**Watch for.** A DWSIM case that no rung brings through 2d (Q-S03-2). Any genuine `DISAGREE`, which goes to the design lane
+with no input changed.
+
+---
+
+## R-631 — Column supported nonideal scope: none; S11 refuses any provider other than SYN-001 by identity, before evaluation
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 specification |
+| Normative text | `docs/derivations/S03-spec.md` §9; A04, A05 |
+| Evidence | `models/syn001/blocks.py:50–100` (`LnKBlock` inputs `(T, P)`, lnK at a probe composition); `models/syn001/column.py:614` (`validate` accepts any provider) |
+| Affected packages | S03 (WO-S03-1), S01, S02, S06 (validation only) |
+
+**Decision.**
+- The column's thermodynamic scope is SYN-001 only.
+- S11, checked before R1, refuses a provider whose `describe()` is not (`syn001`, `SYN-001-ref-v1`). It returns
+  `CAPABILITY_UNAVAILABLE` `unsupported(column_property_method:<provider_id>)` and makes no provider evaluation.
+- A wrapper that delegates `describe()` (the property cache) passes.
+
+**Rejected alternatives, and why.**
+- *Gate on declared capabilities (LIQUID and VAPOR phases, `lnK`).* A composition-dependent liquid provider declares exactly
+  what SYN-001 declares, and the column would evaluate it at a probe composition, silently wrong.
+- *Leave it to the provider to fail.* Today nothing refuses it. A non-SYN-001 provider reaches R5's admissibility
+  evaluation, whose failure is coded `INVALID_SPECIFICATION`, or it passes R5 and fails, or silently succeeds, during
+  evaluation. None of these is a capability refusal before evaluation.
+
+**Watch for.** A future liquid-capable mixture method. It needs a column package that makes K composition-dependent, and
+then S11's allow-list grows by decision, not by default.
+
+---
+
+## R-632 — R-533 / R-554 closed: the phase contract learns no block rule; column phase-transition robustness is a registered limitation
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 specification (closes the question R-533 and R-554 left to S03) |
+| Normative text | `docs/derivations/S03-spec.md` §10.1, §14; Q-S03-4 |
+| Evidence | P1: `HOMOTOPY_STALLED`; attempt 1 `(2P, L, 2P, 2P, 2P)` (S02 WO-3, `474e4b5`); every registered flowing column case (M1–M4, J1–J8, RC1–RC5 and perturbations) is all-two-phase at its root |
+| Affected packages | S02, S03, T05b (contract, unchanged) |
+
+**Decision.**
+- No block rule is added to ADR 0005 D4's decision function, and no model-side signature screen is added.
+- A column whose regular signature has a LIQUID or VAPOR block may end in a typed S01 §4.5 outcome, as P1 does. S02 A12
+  asserts it.
+- Reopening needs a registered use case and an ADR against ADR 0005 D4.
+
+**Rejected alternatives, and why.**
+- *Teach the contract the block rule.* It is model structure inside the single decision function, which R-533 and S02 §18.3
+  declined, and it would not cover the measured end-stage restarts.
+- *A screen around `solve_region`.* That is a second decision function.
+- *An annotation code on P1's result.* The attempt records already name every signature, and A12 checks them.
+
+**Watch for.** Q-S03-4 (Frank: whether a later package should do this).
+
+---
+
+## R-633 — R-534 and R-508 resolved by S03; S03 needs no ADR
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 specification |
+| Normative text | `docs/derivations/S03-spec.md` §0, §10.2, §10.3 |
+| Evidence | — |
+| Affected packages | S01, S02, S03 |
+
+**Decision.**
+- The independent references attach to RC1–RC4, S02's configurations at P_r. M1–M4 keep generator-only matching, and S02
+  §14 stands for them unamended.
+- S01's cascade receives no separate tool comparison. It is exercised inside RC3 and RC4 and on every equilibrium stage.
+- S03 applies ADR 0014 D7's semantics to columns unchanged. Its additions (levels, rules 2c and 2d, DWSIM's ladder) are
+  specification content, and S11 changes no frozen interface, so no ADR is needed.
+
+**Rejected alternatives, and why.**
+- *Amend S02 to move M1–M4 to P_r.* It would re-register S02's validated roots for no gain. The RC cases add the P_r states
+  beside them.
+- *A new ADR for S03's reference policy.* Nothing in ADR 0014 D7 changes. The column checks are the analogue of T06 §9.3's
+  rows.
+
+**Watch for.** A request to compare at a non-P_r state. It needs an ADR, because it departs from ADR 0014 D7.
+
+---
+
+## R-634 — S03 Amendment 1: RC6 (recovery) and RC7 (temperature); rule 2d's thresholds tightened to 1e-9 for the new kinds
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 1; Frank's answer to Q-S03-5 ("All three") |
+| Normative text | `docs/derivations/S03-spec.md` §17.1, §17.4 |
+| Evidence | `docs/derivations/scripts/s03_reference.py --check`: 4558 claims (`ref.amendment_1`) |
+| Affected packages | S03 (WO-S03-1b, WO-S03-2, WO-S03-3b, WO-S03-4), S06 (its recovery and temperature slots gain a reference) |
+| Amends | R-629 (the case list); R-630 (rule 2d's threshold for the new kinds; §6's 0.016) |
+
+**Decision.**
+- RC6 is S06's J8 at P_r: RC2's column, RR 1.5, reboiler recovery of C 0.99. RC7 is S06's J3 at P_r: RC1's column, RR 2, and
+  stage 6's temperature, 368 K, in the reboiler slot. Like RC5, neither has perturbed cases, and neither is counted in X31.
+- The generator claims that each inverse case moves its ratio-partner base case by ≥ 100 tolerances. Measured: 48029.9,
+  31543.8 and 168655.
+- Rule 2d's specification threshold, per kind: ratio, rate and duty 1e-8 relative; purity 1e-8 absolute (both unchanged);
+  recovery 1e-9 absolute; temperature 1e-9 relative. The generator claims that a threshold-sized error moves no registered
+  quantity by more than 0.05 tolerance, at all 28 specified ends. The largest are 0.0303 (RC6) and 0.0233 (RC7).
+- Rule 2c stays at 1e-4. The generator claims that every registered wrong reading of a purity, recovery or temperature misses
+  by more than 1e-3.
+- §6's 0.016 is corrected to the measured 0.0167.
+
+**Rejected alternatives, and why.**
+- *1e-8 for recovery and temperature.* At 1e-8 the specification error alone moves `top[B]` by 0.30 and 0.23 tolerance.
+- *An end-stage temperature case,* which DWSIM may be able to express. A stage-index error would hide in it. RC7 misses by
+  1.45–2.08 % when stage 5 or 7 is read for stage 6.
+- *Perturbed neighbours for RC6 and RC7.* Q-S03-5's accepted costing was two cases, and the partner claim already resolves each
+  inverse specification.
+
+**Watch for.** A request to loosen 1e-9 because a tool misses it. A miss is `NOT_COMPARABLE(reference_accuracy)`, which is a
+result.
+
+---
+
+## R-635 — S03 Amendment 1: DWSIM's column-solver ladder is Napthali–Sandholm then Wang–Henke; eleven blind records stand, six are re-qualified
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 1 (Q3-1, Q3-2 of `docs/S03_BUILD_DECISIONS.md`) |
+| Normative text | `docs/derivations/S03-spec.md` §17.2, §17.8 |
+| Evidence | `docs/S03_BUILD_DECISIONS.md:64–94` (F1–F3; records at `95870140`) |
+| Affected packages | S03 (WO-S03-3b, WO-S03-4) |
+| Amends | R-630 (the ladder's methods) |
+
+**Decision.**
+- The methods, at each tolerance and for every case, are Napthali–Sandholm, then Wang–Henke. Russell inside-out does not exist
+  in DWSIM 9.0.5. Burningham–Otto runs only in `AbsorptionColumn`, which has no condenser and no reboiler.
+- The order of attempts is written down: L1 first, then L2(a). L2(a) applies only to a method under which L1 was structurally
+  inexpressible and an L2(a) realization exists. Within each level, tightest tolerance first, then the methods in order.
+- Eleven records stand: the RC1 family less RC1-BR, PC-L, the RC2 family and RC5 as available; RC1-BR and PC-P as not
+  available. The RC3 and RC4 families (six cases) are superseded and re-qualified in a blind top-up run, together with RC6 and
+  RC7.
+- Ladder conformance and the earlier-cases-file rule are checked by WO-S03-4, not assumed.
+
+**Rejected alternatives, and why.**
+- *No amendment* (the build lane's default for Q3-1). It would keep a ladder built on a false premise, and leave RC3 and RC4
+  with one runnable method.
+- *Adding Modified Wang–Henke.* It is a second variant of the bubble-point method, added after seeing failures. At 1e-10 and
+  1e-9 it would precede the RC1 family's selected rung.
+- *Loosening rule 2d for RC1-BR (0.1006).* Forbidden.
+
+**Watch for.** Any per-case change of ladder or rung after the classifier has run. Blindness holds only before the first
+comparison.
+
+---
+
+## R-636 — S03 Amendment 1: a tool's pairs count only if at least one of its positive controls classifies DISAGREE
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 1 |
+| Normative text | `docs/derivations/S03-spec.md` §17.3 (replaces §7.2's second bullet); A11 as amended in §17.9 |
+| Evidence | DWSIM PC-P not available (`docs/S03_BUILD_DECISIONS.md:73`); T06 PC-2 DWSIM `DISAGREE` (`docs/reviews/T06-verdicts.md:84`) |
+| Affected packages | S03 (WO-S03-4, WO-S03-5) |
+| Amends | R-630 (§7.2's propagation rule) |
+
+**Decision.**
+- An `AGREE` on a control stops the comparison (unchanged).
+- If none of a tool's controls classifies `DISAGREE`, every pair of that tool is `NOT_COMPARABLE(control_not_comparable)`.
+- A `NOT_COMPARABLE` control propagates nothing by itself.
+- DWSIM's pairs therefore count if and only if PC-L is `DISAGREE`, and IDAES's if and only if PC-P is `DISAGREE`.
+
+**Rejected alternatives, and why.**
+- *§7.2 read literally* (DWSIM loses the RC1 family). It drops the one configuration with a working control and keeps the ones
+  with none. It also never protects a tool whose only control fails.
+- *A replacement PC-P on a configuration where DWSIM converged.* The control would be chosen after seeing convergence, at the
+  cost of three more solves, and it would guard nothing in the harness that PC-L does not.
+- *PC-P at a lower pressure.* That tunes the control to the tool.
+
+**Watch for.** Reading (b) as permission to drop a control. Every registered control is still run and classified.
+
+---
+
+## R-637 — S03 Amendment 1: X31's reference clause is decided by a pre-registered per-case table
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 1 |
+| Normative text | `docs/derivations/S03-spec.md` §17.5 (replaces §2.3 step 5's last two sentences); A13 as amended |
+| Evidence | — |
+| Affected packages | S03 (WO-S03-4, WO-S03-5), R01 (inherits the clause's outcome) |
+| Amends | R-628 ("where available", §2.3 step 5) |
+
+**Decision.**
+- Each (case, tool) pair is in one class: comparable, absent (rule 0), unusable (§17.3(b)), access or ours.
+- Each of RC1–RC4 is decided by the first matching row: column finding, disagreement finding, blocked, unusable, two
+  references, one reference, no reference.
+- The clause is met with two references, met where available (with the count), not met, or blocked.
+- A case that neither tool expresses is "not met". No case changes, no tool is added and no tolerance moves.
+
+**Rejected alternatives, and why.**
+- *Read a case that no tool expresses as "met where available".* Silence would then count as success.
+- *Count an unusable pair as absent.* An available reference that could not be shown to see a known difference is not the same
+  as one the tool cannot express.
+
+**Watch for.** A verdict that departs from the table. The `verdict` agent's judgment is D19's "verified", not the clause's
+count.
+
+---
+
+## R-638 — S03 Amendment 1: A03 exempts three pinned T06 modules from the strings `twin` and `comparison` only
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 1 (B3-2) |
+| Normative text | `docs/derivations/S03-spec.md` §17.6 (replaces §8's "other than T06's SYN-001 definitions") |
+| Evidence | string counts and SHA-256 measured at `4bd961e9`; the files are unchanged since `5a350199` |
+| Affected packages | S03 (WO-S03-2, WO-S03-3b, WO-S03-4) |
+| Amends | R-628 (A03's blindness check) |
+
+**Decision.**
+- The exemption covers `spikes/references/t06_fixtures.py`, `t06_qualify_dwsim.py` and `t06_qualify_idaes.py`, each pinned by
+  SHA-256, and only for the strings `twin` and `comparison`.
+- The other five strings stay forbidden in them.
+- The scan covers every transitive in-repo import, function-level ones included, at HEAD and at every qualification commit.
+
+**Rejected alternatives, and why.**
+- *Exempt whole modules from every string.* That would open an unguarded import path.
+- *Edit the T06 modules to remove the words.* It changes a qualified T06 artefact for wording, and it would not certify the
+  runs already made with them.
+
+**Watch for.** A changed hash. It fails A03 until the design lane re-registers the module.
+
+---
+
+## R-639 — Q-S03-4 answered: a later package for one-phase column sections is queued; S03 keeps the typed failure
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | Frank ("Yes, plan a package", `docs/FRANK_QUESTIONS.md:155`); recorded by the design lane (`specifier`), S03 Amendment 1 |
+| Normative text | `docs/derivations/S03-spec.md` §17.7, §14 |
+| Evidence | — |
+| Affected packages | S03 (limitation only); the queued package (provisional id S08); ADR 0005 D4 (its future ADR) |
+| Amends | R-632 (its "Reopening … is Frank's call" is answered) |
+
+**Decision.**
+- R-632's limitation stands for S03.
+- A later package (provisional id S08) is queued. It teaches the column to converge to regular roots with all-liquid or
+  all-vapour sections.
+- Its entry conditions are a registered use case (P1 is the first candidate) and an ADR against ADR 0005 D4.
+- S03 neither depends on it nor anticipates it.
+
+**Rejected alternatives, and why.**
+- *Do it inside S03.* It is a phase-contract change that needs its own ADR, and Frank asked for a later package.
+
+**Watch for.** Citing S03 for one-phase sections. It makes no such claim.
+
+---
+
+## R-640 — S03 Amendment 2: IDAES's solve path is a closed three-position ladder; ε, the tolerances and the convergence test are unchanged; B2-4 endorsed
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 2 (brief `docs/briefs/S03-amendment-2.md`, items 1–2) |
+| Normative text | `docs/derivations/S03-spec.md` §18.1, §18.2; §5.1 rows 12–13 as completed; `tool_settings.IDAES_amendment_2` in `s03_cases.json` |
+| Evidence | WO-S03-2's records at `6d9486a0` (`qualification/idaes.json`: terminations, iterations, rule 0–2d values only); `docs/S03_BUILD_DECISIONS.md` B2-4 and the WO-S03-2 finding; no comparison exists (`comparison.json` absent at `2ebae2b4`) |
+| Affected packages | S03 (WO-S03-2b, WO-S03-4, WO-S03-5) |
+| Amends | R-628 (the qualification rule: IDAES gains a registered path ladder) |
+
+**Decision.**
+- Every IDAES attempt starts the same way, with B2-4 as recorded (S1–S6). The initializers and their full solve run at IDAES's
+  default SmoothVLE ε, and `eps = 1e-8 K` is set on every block before every solve that decides.
+- Three positions follow that start:
+  - P0: the final solve with Ipopt's defaults (the standing records);
+  - P1: the warm-start options `mu_init = bound_push = bound_frac = 1e-9`, `bound_mult_init_method = mu-based`;
+  - P2: an ε continuation through 1e-4 K and 1e-6 K, with the warm-start options.
+- The order is levels L1, L2, L3. At each level all three positions run before the level is judged. The selected attempt is the
+  first passing position at the first passing level.
+- The registered `tol`, `constr_viol_tol`, `max_iter`, MUMPS, ε and the "Optimal Solution Found" test are unchanged.
+- The ladder is closed for S03. A case with no passing position is final, not available. A harness defect is corrected and
+  disclosed.
+
+**Rejected alternatives, and why.**
+- *Change ε.* It is ADR 0014 D7's registered input, policed by rule 2b. Rule 2b admits at most 2e-7 K at a kink, a 20-fold gain,
+  for a semantic amendment of D7.
+- *Count "Solved To Acceptable Level".* D7 rejected it as a silent relaxation of `tol`.
+- *Raise `max_iter`.* The 500-iteration runs end 0.08–0.30 mol/s from closure, so more iterations would not reach a root.
+- *Change the scaling.* It changes what `tol` measures.
+- *Apply the new positions to the failed cases only.* One order covers every case.
+- *An initializer variant for the RC4 family.* It would be chosen per family after seeing the failure.
+- *Records stand, no change.* IDAES's path was a gap in §5.1, filled on the build lane. The change keeps the equations and the
+  convergence test, and no comparison exists.
+
+**Watch for.** A fourth position, a new option or a per-case path after WO-S03-2b. The ladder is closed. Watch also for a P0
+attempt that does not reproduce `6d9486a0`.
+
+---
+
+## R-641 — S03 Amendment 2: rule 2d gains a path-dependence condition for IDAES
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 2 |
+| Normative text | `docs/derivations/S03-spec.md` §18.4; §7.1 rule 2d as amended; A12 as amended in §18.7 |
+| Evidence | rerun movements at `6d9486a0`: ≤ 0.0069 tolerance (RC1 family, RC7), ≤ 1.8e-5 (RC2 family) |
+| Affected packages | S03 (WO-S03-2b, WO-S03-4) |
+| Amends | R-630 (rule 2d) |
+
+**Decision.**
+- At an attempt's level, two IDAES path positions whose final solves ended "Optimal Solution Found" and that differ on a
+  registered quantity by more than 0.1 tolerance give `NOT_COMPARABLE(reference_accuracy: path_dependence(<ratio>))` for that
+  level.
+- Like all of rule 2d, it can only remove a pair, never pass one.
+- It does not apply to DWSIM.
+
+**Rejected alternatives, and why.**
+- *Report path dependence without classifying it.* An `AGREE` could then rest on one of two answers that disagree.
+- *Apply it to DWSIM.* Its rungs differ in tolerance and method, its rerun already covers the tolerance neighbour, and its
+  records are final.
+
+**Watch for.** A record selected at a level whose Optimal positions were not all compared.
+
+---
+
+## R-642 — S03 Amendment 2: PC-LI, IDAES's second positive control (PC-L's mirror on RC1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 2 (brief item 3) |
+| Normative text | `docs/derivations/S03-spec.md` §18.3; §17.3's consequences for IDAES as amended |
+| Evidence | `docs/derivations/scripts/s03_reference.py --check`: 4577 claims; `ref.controls.PC-LI`: max 243.292 (`Q_reboiler`), 22/29 over one tolerance, tool-model σ_min 0.0476426 |
+| Affected packages | S03 (WO-S03-1c, WO-S03-2b, WO-S03-4, WO-S03-5) |
+| Amends | R-629 (the controls); R-636 (IDAES's pairs count if PC-P or PC-LI is `DISAGREE`) |
+
+**Decision.**
+- PC-LI is RC1 with IDAES's `h_form,ig,i = L_i + P_r v_i` (25010, 30010, 35010 J/mol). This is DWSIM's mapped value entered in
+  IDAES, so `h^V − h^L` is larger by `P_r v_i` = 10 J/mol.
+- Our side is RC1's record. The expected classification is `DISAGREE`.
+- (PC-LI, DWSIM) is `not_applicable`, with no record.
+- IDAES's pairs count if and only if PC-P or PC-LI classifies `DISAGREE`. Either one classified `AGREE` stops the comparison.
+
+**Rejected alternatives, and why.**
+- *Rule that IDAES has no other control.* Every IDAES pair would then hang on one control whose failure was a convergence
+  failure at 1.5e5 Pa.
+- *PC-P on RC2's configuration.* It would be chosen by where IDAES converges.
+- *PC-P at a lower pressure.* That tunes the control.
+- *An arbitrary `h_form` perturbation.* Its size would be a free parameter.
+- *ADR 0014 D7's T06 rejection of an IDAES PC-1 analogue does not apply.* It assumed a working IDAES control (PC-2, 4581×).
+
+**Watch for.** PC-LI's DISAGREE rests on duties and flows. `T[4]`–`T[7]` move 0.585–0.782 tolerance, as PC-L's do.
+
+---
+
+## R-643 — S03 Amendment 2: the IDAES records are superseded by a full blind re-run (WO-S03-2b); X31's and D19's outcomes pre-registered for both branches
+
+| | |
+| --- | --- |
+| Date | 2026-10-24 |
+| Decided by | design lane (`specifier`), S03 Amendment 2 (brief items 4–5) |
+| Normative text | `docs/derivations/S03-spec.md` §18.5, §18.6, §18.8 |
+| Evidence | WO-S03-2 outcome (`docs/S03_BUILD_DECISIONS.md`, section "WO-S03-2 outcome"); WO-S03-3b outcome (DWSIM 10 of 19) |
+| Affected packages | S03 (WO-S03-1c, WO-S03-2b, WO-S03-4, WO-S03-5); R01 and the release gate (they inherit the clause's outcome) |
+| Amends | none (it applies R-636 and R-637) |
+
+**Decision.**
+- WO-S03-2b re-runs all 20 IDAES pairs (19 + PC-LI) under the ladder. Its P0 attempts must reproduce the records at
+  `6d9486a0` exactly; otherwise it stops and reports. DWSIM's records and our records stand. Our records only regenerate
+  `cases_sha256`.
+- If the IDAES records stand: X31's reference clause is **not met**. RC1 and RC2 are unusable-IDAES (row 4), and RC3 and RC4
+  have no reference (row 7). D19 has one independent implementation, DWSIM, on at most nine states.
+- Under the re-run, the clause is **met where available (2 of 4)** if and only if IDAES has a `DISAGREE` control and qualifies
+  both RC3 and RC4. Otherwise it is **not met**.
+- "Met with two references" is unreachable in every branch, because DWSIM cannot express RC3 or RC4. S03 may close `tested`
+  in every branch.
+
+**Rejected alternatives, and why.**
+- *A top-up of the failed cases only.* The passing cases need P1 and P2 for the path-dependence check, and P0's reproduction
+  shows that the harness still runs B2-4.
+- *Treat an unusable IDAES pair as absent* (R-637's rejected alternative). This amendment does not reopen it, and doing so would
+  change no clause outcome in any branch.
+
+**Watch for.** A verdict that reports "met with two references", or that counts an IDAES pair without a `DISAGREE` IDAES
+control. Watch also for the release gate's handling of an unmet clause (Q-A2-4, Frank's call).
+
+## R-644 — S03 review: A10 re-scoped (byte identity on the committed inputs, classifications exact on a live solve, our values through A07); §17.8 condition 2 means additions only; §18.1's "Ipopt rejects" means the solver; §17.3(b)'s reading; the tool scripts are not edited to satisfy lint
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`reviewer`), S03's review pass (brief `docs/briefs/S03-review.md` §4) |
+| Normative text | `docs/derivations/S03-spec.md` §19 |
+| Evidence | `docs/reviews/S03-review.md` (the reviewer's probe of A10's conditioning; the IDAES position recomputation); CI run 40131170434; `docs/S03_BUILD_DECISIONS.md` B2b-1, B4-4, B4-9; `docs/reviews/S03-verdicts.md` F-1, F-4 |
+| Affected packages | S03 (the A10 test, the ruff configuration); S09 inherits the A10 form for any live-solve gate over a comparison document |
+| Amends | S03 §8's last bullet and §11 A10; §17.8 condition 2 and §18.5's DWSIM row (wording) |
+
+**Decision.**
+- A10 has two parts. (i) The document recomputed from the committed files must be byte-identical to `comparison.json`. (ii)
+  Recomputed from a live solve, its classifications, controls and X31 outcomes must equal `comparison.json`'s exactly. Our
+  values are compared to 1e-12 relative by A07 alone.
+- §17.8 condition 2 means additions only, recursively: no earlier `tool_settings` key is removed and no earlier leaf value
+  changes (B4-9).
+- §18.1's "Ipopt rejects" means the solver. The options-file route for `bound_mult_init_method` stands (B2b-1), and the
+  contingency did not apply.
+- §17.3(b)'s "every pair of that tool" means the tool's available non-control pairs classified by rules 2–2d or 4 (B4-4).
+- The S03 tool scripts stay byte-identical to their qualification commits. Ruff's E501 is waived for those two files
+  in `pyproject.toml`.
+
+**Rejected alternatives, and why.**
+- *Keep 1e-12 relative on every float of the live document.* A ratio of a near-zero difference has a condition number
+  above 1e12. A change of about one unit in the last place of our values breaks 932 floats and three reason strings. The rule
+  would demand bit identity across architectures.
+- *Relax only the response table.* The live test stops at its first failure, and the response table sorts before `rows`. CI
+  never compared the rows, and they fail the same way.
+- *Rewrap the tool scripts at HEAD* (option b). HEAD would then hold a script that never ran, and a wrap risks changing a
+  string literal. A03 scans HEAD, so the scan would read code that produced nothing.
+- *Read "Ipopt rejects" as the command-line route.* The registered option set is what matters, and Ipopt applies and
+  validates it through its options file. Reversing would reopen six IDAES pairs to drop an option the solver accepts.
+
+**Watch for.** A live-solve gate that compares derived differences or ratios to a relative tolerance. An edit to an S03 tool
+script without a new qualification run. A re-run in which a tool loses every control, where §19.4 decides the relabelling.
+
+---
+
 ## R-700 — S10's method: γ–φ with a Wilson liquid (constant Λ > 0), an ideal-gas vapour and a DIPPR-101 vapour pressure, all caloric terms from one potential
 
 | | |

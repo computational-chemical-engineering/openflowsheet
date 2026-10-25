@@ -92,25 +92,24 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-24, workstation; no cloud sessions from 2026-10-23, Frank).** `main` = `a40a6b80`. Last full
-gate: PASS at `c80dc6e5` (wp/S07 head; tree identical to the merge): 11653 passed, 3137 skipped (CoolProp tests skip
-without the `coolprop` extra; S05+S07 suites with it: 3847 passed, 2 skipped). CI 40045965622 green on both architectures.
-On `main`: C1–C4, C7–C9, C12, D1, D2, S01, S02, S04 (+ development-half re-take), **S05** (`iapws95-v1`, ADR 0045 Accepted,
-manifest `evidence/S05/01cdeed4…` tested, coefficients packaged with the IAPWS attribution; library only, Frank Q-8),
-**S06**, **C2 Amendment 2**, **S07** (`coolprop-heos-v1` over CoolProp 8.0.0, optional extra with its own lock; 123
-fluids, tier A the nine S04 fluids cross-checked, tier B 114 self-consistent; ADR 0046 Proposed; manifest
-`evidence/S07/7bfab70d…` tested 64/65, the 65th the gate `unsupported`; aarch64 agrees with x86-64 within spec §20,
-R-627, not bitwise; library only). HARVEST_SIZE (48, 552, 74). pr-lib-v1 stays unshipped (Frank, C12).
+**Position (2026-10-25, workstation; no cloud sessions).** `main` = `4819e406` (S03 merged). Last full gate: PASS at
+`3ad02fd0` (wp/S03 head, tree identical to the merge): 11976 passed, 3137 skipped (CoolProp tests skip without the
+extra). CI 40140766357 green on both architectures. Ledger synced with the manifests (27 packages; new test keeps it so).
+Plan packages with tested/reviewed manifests: 31 of 34 (Phase 0, v0.0 reviewed; v0.1, v0.2 tested; v0.3 S01–S05, S07
+tested; R01, R02, R03 open). **S03** (verdict `docs/reviews/S03-verdicts.md`, review `docs/reviews/S03-review.md`,
+manifest `evidence/S03/930aad1b…` tested): 23 AGREE; X31 not met (RC1, RC2 two references; RC3 IDAES only; RC4 none).
+HARVEST_SIZE (50, 613, 79). IDAES/DWSIM environments live in worktree `.claude/worktrees/s03` (kept for S10's checks).
 
 **Next actions (in order):**
-1. Design-lane review items left by S07: harvest classes B-42 (build-lane draft); spec §20 F-20.2 (G3's Psat
-   allowance can move A08's sat_hi slope past 1e-8; a later tolerance pass); Q-A1-2 (AlyLee constants, n-Heptane, D6);
-   ADR 0046 acceptance.
-2. Binding package (S05 + S07 as selectable pure-fluid bases; needs its own ADR, `SELECTABLE_BASES` changes shape).
-3. S07b cryogenic liquids (run-time melting guard); WO-S07-4 published check values (optional).
-4. `components-crosscheck.json` projection re-take (needs the sources environment); pr-lib-v1 clean-up (drop CAS RNs,
-   F-4: W27 identity key).
-5. Workstation backlog: S03 (column references, L4), M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
+1. **S10** (liquid mixtures, Wilson + ideal gas, `wilson-ig-v1`, library-only; ADR 0047 Proposed; wp/S10, worktree
+   `s10`): WO-1, WO-2 (+review, fixes) done; WO-3 data done to the fit (Kurihara 1993 double-entered and image-checked);
+   Amendment 2 (ESC-1..3) with the specifier; then WO-3 remainder, WO-4 IDAES, WO-5 DWSIM, WO-6 validation (needs
+   Kurihara et al. 1995 from Frank, `/home/frankp/s10-papers/`). Frank: Q-F1 methanol/ethanol/water, Q-F2 library only,
+   Q-F3 ship after rights check, Q-F4 no LLE.
+2. Queued: S08 one-phase column sections; S09 third column reference tool (RC4); S10-C (PH flash, column; architect).
+3. Design-lane leftovers: S07 B-42 harvest classes, F-20.2, Q-A1-2; ADR 0046 acceptance; S03 B6-1..B6-4.
+4. Binding package (S05/S07/S10 into flowsheets); S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
+5. Workstation backlog: M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
 
 **History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
