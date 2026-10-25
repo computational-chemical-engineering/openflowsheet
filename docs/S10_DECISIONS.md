@@ -175,3 +175,72 @@ to `verdict`. ESC-6 needs a ruling but blocks nothing.
   rendered at 300 dpi (`pdftoppm -r 300`, the scan's native resolution) and all 49 (x1, y1, T) rows read off the image
   by the orchestrator: every value matches. The final `benchmarks/s10/vle/kurihara1993_binaries.csv` is A, byte for
   byte; A and B are kept for the audit trail. The paper itself is not in the repository.
+
+## WO-S10-5 (spec §8.2, §15 A2-3; A45)
+
+DWSIM 9.0.5 can express the model: its `WilsonModel.vb` (tag v9.0.5) has Λ_ij = (V_j/V_i)·exp(−A_ij/(1.9872 T)), A in
+cal/mol, V = MW/ρ_L(298.15 K) from `GetArguments`, and ln γ_i = 1 − ln S_i − Σ_k x_k Λ_ki/S_k, our (3.8) with the same
+indexing. The harness (`ae9aab8c`) fixed every mapping and setting before the tool ran on a registered state.
+
+- DECISION B-50: settings §8.2 does not name, which the model needs (`SETTINGS` in `scripts/s10_dwsim_comparison.py`) →
+  liquid density eq. 1 at 1e12 kg/m3 (v = 0 of §3.3: kills DWSIM's P/ρ_L in the Ideal-mode liquid enthalpy, ≤ 1e-8
+  J/mol, and the Poynting factor); `LiquidFugacity_UsePoyntingCorrectionFactor` off (DWSIM default on); enthalpy mode
+  `Ideal` (default `LeeKesler`; `Excess` would add DWSIM's h^E from its T-dependent Λ, which the model does not have);
+  vapour fugacity `Ideal` (the default, set explicitly); `AutoEstimateMissingNRTLUNIQUACParameters` off before any
+  stream exists (default on: setting a stream runs a UNIFAC estimation through Ipopt, whose `libIpopt39.so` does not
+  load in this environment, and the .NET finalizer then aborts the process); flash `ForceEquilibriumCalculationType`
+  `VLE` (the Wilson liquid cannot split, §4.1) and `FailSafeCalculationMode` 3 (the default 1 silently replaces a failed
+  flash by a Raoult's-law flash). Placeholders T_c 1000 K, P_c 1e7 Pa, ω 0, NBP 350 K (unused on the equation paths).
+  Escalated as ESC-50. Alternative: DWSIM defaults (then h^L carries P v ≈ 3-4 J/mol and K a Poynting factor ≈ 7e-4).
+  Reversible by: `SETTINGS` and a rerun (4 s).
+- DECISION B-51: the compositions of §8.2's γ readback "at the state's (T, x)" → the feed z and §8.1's two RB
+  compositions, at each state's T (A_ij is per state). 126 rows. Alternative: z only. Reversible by: `READBACK_X`.
+- DECISION B-52: PT-flash iteration limits (§8.2 registers tolerances only) → 1000 external and internal, T06's values.
+  Alternative: DWSIM's 100. No attempt reached either (most iterations 34). Reversible by: `SETTINGS`.
+- DECISION B-53: the ladder's selection rule (§8.2 gives the rungs only) → §8.1's: the first rung at which every
+  I-state converges, for all; converged = no exception from the direct flash, no solver error, stream calculated.
+  Alternative: per-state first rung (same result here: all converge at both). Reversible by: `LADDER`, `ladder()`.
+- DECISION B-54: a diagnostic in `comparison.json`, `dwsim_self_consistency` per two-phase state: DWSIM's own
+  equilibrium residual |ln K_i − ln(γ_i(x) P_i^sat/P)| at its own (x, y), with the generator's closed forms (which the
+  readbacks show DWSIM evaluates identically), and its balance and Rachford–Rice residuals. Not a difference to our
+  values; it separates a model difference from a convergence floor. Alternative: leave it out. Reversible by:
+  `self_consistency()` (`f3388de2`).
+
+### Escalations (WO-S10-5), for the design-lane ruling round
+
+- **ESC-50. B-50's settings are outside §8.2's text (spec gap).** Each one expresses a property of `wilson-ig-v1`
+  (v = 0, no Poynting, h^E = 0, one liquid) or stops DWSIM substituting another model; none is a convergence knob.
+  **The choice made:** B-50, committed before the run. Needs: ratification, or the setting to use instead.
+- **ESC-51. The registered flash ladder does not control DWSIM's convergence; DWSIM's PT flash stops at a hard-coded
+  |ΔV| < 1e-6 (a registered setting that seems ineffective; a contradicting measurement).** `NestedLoops.vb`
+  (`ConvergeVF`, v9.0.5) exits on `Math.Abs(e3) < 0.000001` before testing `Abs(F) < etol`; the tolerance setting
+  reaches only the second test. Measured: both rungs give bit-identical outputs and iteration counts at all 14 states.
+  At the 12 two-phase states |Δβ| 1.5e-7 (I5) to 2.4e-6 (I10), |Δx|, |Δy| up to 1.5e-6, K up to 6.7e-6 relative (I10
+  K_C2H5OH, 67× the tolerance); 0 of 12 within §8.1's 1e-7. DWSIM's own equilibrium residual (B-54) is 3.3e-8 (I14) to
+  2.1e-6 (I10), the same size and ordering as the differences, and its balance residual 2.4e-10 to 2.3e-8: the
+  differences are DWSIM's convergence floor, not a model difference (γ, Λ, P^sat agree to ≤ 1.1e-14). h^L and h^V are
+  within 0.05 J/mol at every state (worst 0.012), I6 LIQUID and I7 VAPOR as ours. Not tried: the Inside-Out flash
+  (`UseIOFlash`) or any other setting outside the ladder. **The choice I would make:** record β, x, y, K at the
+  two-phase states as `NOT_COMPARABLE` (tool floor ≈ 1e-6 above the 1e-7 tolerance, shown by B-54), h and the phase
+  identities as compared. Needs: the `verdict`'s reading of A45, or a ruling to rerun with a pre-registered
+  Inside-Out flash.
+- **ESC-52 (for the record). DWSIM's ideal-gas enthalpy is a 10-step midpoint integral of c_p** (`AUX_INT_CPDTi`),
+  so its h^ig differs from (3.2) by up to 0.026 J/mol (I7 CH3OH, ΔT = 68 K), 52 % of §8.1's 0.05 J/mol tolerance.
+  `tests/test_s10_dwsim.py` reproduces DWSIM's sum to ≤ 1e-9 J/mol. No compared h exceeds the tolerance.
+
+### Run log (WO-S10-5)
+
+- 2026-10-25. DWSIM 9.0.5.0, .NET 8.0.31, pythonnet 3.1.0, fingerprint matches `docs/reference-environments.md` §3.
+  Harness smoke tests on dummy Λ and dummy states only (scratchpad, not recorded). Registered run (4 s): mapping —
+  applied A equals the rule exactly, effective Λ vs records 3.4e-16; γ gate 126 rows, worst 4.93e-16 (I8 CH3OH at
+  z); informative P^sat 1.1e-14, Δh_vap 4.8e-16 (J/kmol fixed), c_p^ig 5.9e-16, h^ig 0.026 J/mol (ESC-52), φ^L 1.1e-14.
+  Ladder: 28 attempts, all converged, rung 1e-10 selected, iterations 0-34. A45 table: see ESC-51. Reproduction: a
+  second run is identical apart from wall times. `tests/test_s10_dwsim.py` 9 passed; a mutation (one γ by 1e-8, one A by
+  1e-9) fails 3 of 9. `s10_dwsim_comparison.py --check` both documents identical. ruff, ruff format clean.
+
+## Where WO-S10-5 stopped
+
+Done (2026-10-25): harness (`ae9aab8c`), records and tests (`f3388de2`). Next: the `verdict` on A45 from
+`benchmarks/s10/dwsim/{qualification,comparison}.json`, with ESC-50 and ESC-51 in the ruling round. A rerun after a
+ruling: edit `SETTINGS`/`LADDER`, `python scripts/s10_dwsim_comparison.py --write-inputs`, `.venv-dwsim/bin/python
+spikes/references/s10_qualify_dwsim.py` (4 s), `--write`, `tests/test_s10_dwsim.py`. .NET 8 support ends 2026-11-10.

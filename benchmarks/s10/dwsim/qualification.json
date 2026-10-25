@@ -1,0 +1,5363 @@
+{
+ "attempts": [
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     5.635470338723453,
+     8.18976986357563,
+     0.75974505212941
+    ],
+    "L": 0.777930758435833,
+    "V": 0.22206924156416696,
+    "ecount": 10,
+    "x": [
+     0.049275761500199654,
+     0.0,
+     0.9507242384998003
+    ],
+    "y": [
+     0.2776920566711477,
+     0.0,
+     0.7223079433288522
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -12819.816870682598,
+    "h_L_AUX_MMM_kg_per_kmol": 18.7061911065633,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -2085.297916160837,
+    "h_L_J_per_mol": -278817.9256679558,
+    "h_V_AUX_HFm25_kJ_per_kg": -10518.895819944544,
+    "h_V_AUX_MMM_kg_per_kmol": 21.91018647892619,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 114.54489549476318,
+    "h_V_J_per_mol": -227961.2689468828,
+    "liquid_molarfraction": 0.777930758435833,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -39007.98133382283,
+     "mixture": -29788.181433070542,
+     "vapor": 2509.7000204993737
+    },
+    "vapor_molarfraction": 0.22206924156416696,
+    "x": [
+     0.049275761500199654,
+     0.0,
+     0.9507242384998004
+    ],
+    "y": [
+     0.2776920566711477,
+     0.0,
+     0.7223079433288522
+    ]
+   },
+   "solver_errors": [],
+   "state": "I1",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.10661796003114432
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     5.635470338723453,
+     8.18976986357563,
+     0.75974505212941
+    ],
+    "L": 0.777930758435833,
+    "V": 0.22206924156416696,
+    "ecount": 10,
+    "x": [
+     0.049275761500199654,
+     0.0,
+     0.9507242384998003
+    ],
+    "y": [
+     0.2776920566711477,
+     0.0,
+     0.7223079433288522
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -12819.816870682598,
+    "h_L_AUX_MMM_kg_per_kmol": 18.7061911065633,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -2085.297916160837,
+    "h_L_J_per_mol": -278817.9256679558,
+    "h_V_AUX_HFm25_kJ_per_kg": -10518.895819944544,
+    "h_V_AUX_MMM_kg_per_kmol": 21.91018647892619,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 114.54489549476318,
+    "h_V_J_per_mol": -227961.2689468828,
+    "liquid_molarfraction": 0.777930758435833,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -39007.98133382283,
+     "mixture": -29788.181433070542,
+     "vapor": 2509.7000204993737
+    },
+    "vapor_molarfraction": 0.22206924156416696,
+    "x": [
+     0.049275761500199654,
+     0.0,
+     0.9507242384998004
+    ],
+    "y": [
+     0.2776920566711477,
+     0.0,
+     0.7223079433288522
+    ]
+   },
+   "solver_errors": [],
+   "state": "I1",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.01040837203618139
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     2.0174204342240087,
+     2.525815166646789,
+     0.5894391119270211
+    ],
+    "L": 0.41895617530546636,
+    "V": 0.5810438246945336,
+    "ecount": 34,
+    "x": [
+     0.0,
+     0.21202554198266507,
+     0.787974458017335
+    ],
+    "y": [
+     0.0,
+     0.535537171988161,
+     0.46446282801183914
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -10030.676117676618,
+    "h_L_AUX_MMM_kg_per_kmol": 23.96316455478169,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1634.7737257311844,
+    "h_L_J_per_mol": -279541.0942031335,
+    "h_V_AUX_HFm25_kJ_per_kg": -7207.923328583629,
+    "h_V_AUX_MMM_kg_per_kmol": 33.03895982295587,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 92.80022783455433,
+    "h_V_J_per_mol": -235076.26626103386,
+    "liquid_molarfraction": 0.41895617530546636,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -39174.351799529926,
+     "mixture": -14630.843195575038,
+     "vapor": 3066.0229989869913
+    },
+    "vapor_molarfraction": 0.5810438246945336,
+    "x": [
+     0.0,
+     0.21202554198266507,
+     0.7879744580173351
+    ],
+    "y": [
+     0.0,
+     0.535537171988161,
+     0.46446282801183914
+    ]
+   },
+   "solver_errors": [],
+   "state": "I10",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.01836867700330913
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     2.0174204342240087,
+     2.525815166646789,
+     0.5894391119270211
+    ],
+    "L": 0.41895617530546636,
+    "V": 0.5810438246945336,
+    "ecount": 34,
+    "x": [
+     0.0,
+     0.21202554198266507,
+     0.787974458017335
+    ],
+    "y": [
+     0.0,
+     0.535537171988161,
+     0.46446282801183914
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -10030.676117676618,
+    "h_L_AUX_MMM_kg_per_kmol": 23.96316455478169,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1634.7737257311844,
+    "h_L_J_per_mol": -279541.0942031335,
+    "h_V_AUX_HFm25_kJ_per_kg": -7207.923328583629,
+    "h_V_AUX_MMM_kg_per_kmol": 33.03895982295587,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 92.80022783455433,
+    "h_V_J_per_mol": -235076.26626103386,
+    "liquid_molarfraction": 0.41895617530546636,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -39174.351799529926,
+     "mixture": -14630.843195575038,
+     "vapor": 3066.0229989869913
+    },
+    "vapor_molarfraction": 0.5810438246945336,
+    "x": [
+     0.0,
+     0.21202554198266507,
+     0.7879744580173351
+    ],
+    "y": [
+     0.0,
+     0.535537171988161,
+     0.46446282801183914
+    ]
+   },
+   "solver_errors": [],
+   "state": "I10",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.011583674000576138
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.9277987352086787,
+     1.8268441141032492,
+     0.5626613067732404
+    ],
+    "L": 0.4338862194912726,
+    "V": 0.5661137805087274,
+    "ecount": 25,
+    "x": [
+     0.13112694652927137,
+     0.20434746292650072,
+     0.6645255905442279
+    ],
+    "y": [
+     0.25278632155119085,
+     0.37331090063104055,
+     0.37390277781776854
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -9186.601125371983,
+    "h_L_AUX_MMM_kg_per_kmol": 25.58708140390614,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1510.7545205945557,
+    "h_L_J_per_mol": -273714.10971988074,
+    "h_V_AUX_HFm25_kJ_per_kg": -7146.2991864783635,
+    "h_V_AUX_MMM_kg_per_kmol": 32.03369773870176,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 86.38747990494723,
+    "h_V_J_per_mol": -226155.07767029494,
+    "liquid_molarfraction": 0.4338862194912726,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38655.79889977209,
+     "mixture": -15205.606013214023,
+     "vapor": 2767.310419683252
+    },
+    "vapor_molarfraction": 0.5661137805087274,
+    "x": [
+     0.13112694652927137,
+     0.20434746292650072,
+     0.6645255905442279
+    ],
+    "y": [
+     0.25278632155119085,
+     0.37331090063104055,
+     0.37390277781776854
+    ]
+   },
+   "solver_errors": [],
+   "state": "I11",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.010619458043947816
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.9277987352086787,
+     1.8268441141032492,
+     0.5626613067732404
+    ],
+    "L": 0.4338862194912726,
+    "V": 0.5661137805087274,
+    "ecount": 25,
+    "x": [
+     0.13112694652927137,
+     0.20434746292650072,
+     0.6645255905442279
+    ],
+    "y": [
+     0.25278632155119085,
+     0.37331090063104055,
+     0.37390277781776854
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -9186.601125371983,
+    "h_L_AUX_MMM_kg_per_kmol": 25.58708140390614,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1510.7545205945557,
+    "h_L_J_per_mol": -273714.10971988074,
+    "h_V_AUX_HFm25_kJ_per_kg": -7146.2991864783635,
+    "h_V_AUX_MMM_kg_per_kmol": 32.03369773870176,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 86.38747990494723,
+    "h_V_J_per_mol": -226155.07767029494,
+    "liquid_molarfraction": 0.4338862194912726,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38655.79889977209,
+     "mixture": -15205.606013214023,
+     "vapor": 2767.310419683252
+    },
+    "vapor_molarfraction": 0.5661137805087274,
+    "x": [
+     0.13112694652927137,
+     0.20434746292650072,
+     0.6645255905442279
+    ],
+    "y": [
+     0.25278632155119085,
+     0.37331090063104055,
+     0.37390277781776854
+    ]
+   },
+   "solver_errors": [],
+   "state": "I11",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.012255889945663512
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.7178090684634986,
+     1.376186688719878,
+     0.5168420358922036
+    ],
+    "L": 0.43335212610771223,
+    "V": 0.5666478738922878,
+    "ecount": 19,
+    "x": [
+     0.2843443728968413,
+     0.16485799217785774,
+     0.550797634925301
+    ],
+    "y": [
+     0.4884492994954606,
+     0.22687535446900525,
+     0.28467534603553396
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -8602.289848964992,
+    "h_L_AUX_MMM_kg_per_kmol": 26.628424631181616,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1433.13692179854,
+    "h_L_J_per_mol": -267227.60540701903,
+    "h_V_AUX_HFm25_kJ_per_kg": -7053.642921316936,
+    "h_V_AUX_MMM_kg_per_kmol": 31.231239518296295,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 79.2564775678878,
+    "h_V_J_per_mol": -217818.73351788524,
+    "liquid_molarfraction": 0.43335212610771223,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38162.17850827605,
+     "mixture": -15135.050209344932,
+     "vapor": 2475.2780342991814
+    },
+    "vapor_molarfraction": 0.5666478738922878,
+    "x": [
+     0.2843443728968413,
+     0.16485799217785774,
+     0.550797634925301
+    ],
+    "y": [
+     0.4884492994954606,
+     0.22687535446900525,
+     0.28467534603553396
+    ]
+   },
+   "solver_errors": [],
+   "state": "I12",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.02060513594187796
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.7178090684634986,
+     1.376186688719878,
+     0.5168420358922036
+    ],
+    "L": 0.43335212610771223,
+    "V": 0.5666478738922878,
+    "ecount": 19,
+    "x": [
+     0.2843443728968413,
+     0.16485799217785774,
+     0.550797634925301
+    ],
+    "y": [
+     0.4884492994954606,
+     0.22687535446900525,
+     0.28467534603553396
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -8602.289848964992,
+    "h_L_AUX_MMM_kg_per_kmol": 26.628424631181616,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1433.13692179854,
+    "h_L_J_per_mol": -267227.60540701903,
+    "h_V_AUX_HFm25_kJ_per_kg": -7053.642921316936,
+    "h_V_AUX_MMM_kg_per_kmol": 31.231239518296295,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 79.2564775678878,
+    "h_V_J_per_mol": -217818.73351788524,
+    "liquid_molarfraction": 0.43335212610771223,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38162.17850827605,
+     "mixture": -15135.050209344932,
+     "vapor": 2475.2780342991814
+    },
+    "vapor_molarfraction": 0.5666478738922878,
+    "x": [
+     0.2843443728968413,
+     0.16485799217785774,
+     0.550797634925301
+    ],
+    "y": [
+     0.4884492994954606,
+     0.22687535446900525,
+     0.28467534603553396
+    ]
+   },
+   "solver_errors": [],
+   "state": "I12",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.011301522026769817
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.46541519466913,
+     1.1074952551518416,
+     0.7209694273970982
+    ],
+    "L": 0.46777868554651036,
+    "V": 0.5322213144534896,
+    "ecount": 16,
+    "x": [
+     0.08014722247615014,
+     0.5675308476523551,
+     0.3523219298714948
+    ],
+    "y": [
+     0.11744895544331917,
+     0.6285377092407235,
+     0.2540133353159573
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -6692.541331292813,
+    "h_L_AUX_MMM_kg_per_kmol": 35.06073548971213,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1080.7546162179133,
+    "h_L_J_per_mol": -272537.4730989248,
+    "h_V_AUX_HFm25_kJ_per_kg": -6239.388705176033,
+    "h_V_AUX_MMM_kg_per_kmol": 37.29545339304269,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 81.71227531984819,
+    "h_V_J_per_mol": -229653.33429913886,
+    "liquid_molarfraction": 0.46777868554651036,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -37892.0517285016,
+     "mixture": -16103.151638521615,
+     "vapor": 3047.496355830871
+    },
+    "vapor_molarfraction": 0.5322213144534896,
+    "x": [
+     0.08014722247615014,
+     0.5675308476523551,
+     0.3523219298714948
+    ],
+    "y": [
+     0.11744895544331917,
+     0.6285377092407235,
+     0.2540133353159573
+    ]
+   },
+   "solver_errors": [],
+   "state": "I13",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.010047742049209774
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.46541519466913,
+     1.1074952551518416,
+     0.7209694273970982
+    ],
+    "L": 0.46777868554651036,
+    "V": 0.5322213144534896,
+    "ecount": 16,
+    "x": [
+     0.08014722247615014,
+     0.5675308476523551,
+     0.3523219298714948
+    ],
+    "y": [
+     0.11744895544331917,
+     0.6285377092407235,
+     0.2540133353159573
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -6692.541331292813,
+    "h_L_AUX_MMM_kg_per_kmol": 35.06073548971213,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1080.7546162179133,
+    "h_L_J_per_mol": -272537.4730989248,
+    "h_V_AUX_HFm25_kJ_per_kg": -6239.388705176033,
+    "h_V_AUX_MMM_kg_per_kmol": 37.29545339304269,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 81.71227531984819,
+    "h_V_J_per_mol": -229653.33429913886,
+    "liquid_molarfraction": 0.46777868554651036,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -37892.0517285016,
+     "mixture": -16103.151638521615,
+     "vapor": 3047.496355830871
+    },
+    "vapor_molarfraction": 0.5322213144534896,
+    "x": [
+     0.08014722247615014,
+     0.5675308476523551,
+     0.3523219298714948
+    ],
+    "y": [
+     0.11744895544331917,
+     0.6285377092407235,
+     0.2540133353159573
+    ]
+   },
+   "solver_errors": [],
+   "state": "I13",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.009935943991877139
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.312277583101657,
+     0.7612022859874851,
+     0.6936058540733563
+    ],
+    "L": 0.5073167679382129,
+    "V": 0.49268323206178716,
+    "ecount": 4,
+    "x": [
+     0.4333304066662773,
+     0.5666695933337226,
+     0.0
+    ],
+    "y": [
+     0.5686497966059363,
+     0.43135020339406366,
+     0.0
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -5506.563252911367,
+    "h_L_AUX_MMM_kg_per_kmol": 39.990674385692124,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -911.8336648448507,
+    "h_L_J_per_mol": -256676.02121611885,
+    "h_V_AUX_HFm25_kJ_per_kg": -5660.13553105188,
+    "h_V_AUX_MMM_kg_per_kmol": 38.092549303008525,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 68.14964463398636,
+    "h_V_J_per_mol": -213012.99808010145,
+    "liquid_molarfraction": 0.5073167679382129,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -36464.84318472275,
+     "mixture": -17220.223828775335,
+     "vapor": 2595.9936982026356
+    },
+    "vapor_molarfraction": 0.49268323206178716,
+    "x": [
+     0.4333304066662773,
+     0.5666695933337226,
+     0.0
+    ],
+    "y": [
+     0.5686497966059363,
+     0.43135020339406366,
+     0.0
+    ]
+   },
+   "solver_errors": [],
+   "state": "I14",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.00851071102079004
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.312277583101657,
+     0.7612022859874851,
+     0.6936058540733563
+    ],
+    "L": 0.5073167679382129,
+    "V": 0.49268323206178716,
+    "ecount": 4,
+    "x": [
+     0.4333304066662773,
+     0.5666695933337226,
+     0.0
+    ],
+    "y": [
+     0.5686497966059363,
+     0.43135020339406366,
+     0.0
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -5506.563252911367,
+    "h_L_AUX_MMM_kg_per_kmol": 39.990674385692124,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -911.8336648448507,
+    "h_L_J_per_mol": -256676.02121611885,
+    "h_V_AUX_HFm25_kJ_per_kg": -5660.13553105188,
+    "h_V_AUX_MMM_kg_per_kmol": 38.092549303008525,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 68.14964463398636,
+    "h_V_J_per_mol": -213012.99808010145,
+    "liquid_molarfraction": 0.5073167679382129,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -36464.84318472275,
+     "mixture": -17220.223828775335,
+     "vapor": 2595.9936982026356
+    },
+    "vapor_molarfraction": 0.49268323206178716,
+    "x": [
+     0.4333304066662773,
+     0.5666695933337226,
+     0.0
+    ],
+    "y": [
+     0.5686497966059363,
+     0.43135020339406366,
+     0.0
+    ]
+   },
+   "solver_errors": [],
+   "state": "I14",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.012193061062134802
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     3.428891677301127,
+     3.7323827125096702,
+     0.5705309123461197
+    ],
+    "L": 0.5896607703470712,
+    "V": 0.4103392296529288,
+    "ecount": 15,
+    "x": [
+     0.15025021554927068,
+     0.0,
+     0.8497497844507294
+    ],
+    "y": [
+     0.5151915933648104,
+     0.0,
+     0.4848084066351897
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -11712.303454962019,
+    "h_L_AUX_MMM_kg_per_kmol": 20.12255977350962,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1936.8784503173044,
+    "h_L_J_per_mol": -274656.4787484891,
+    "h_V_AUX_HFm25_kJ_per_kg": -8745.906918518598,
+    "h_V_AUX_MMM_kg_per_kmol": 25.241592480128197,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 94.0945567711231,
+    "h_V_J_per_mol": -218385.52184976527,
+    "liquid_molarfraction": 0.5896607703470712,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38974.95239053265,
+     "mixture": -22007.40548676563,
+     "vapor": 2375.0964566149764
+    },
+    "vapor_molarfraction": 0.4103392296529288,
+    "x": [
+     0.15025021554927068,
+     0.0,
+     0.8497497844507294
+    ],
+    "y": [
+     0.5151915933648104,
+     0.0,
+     0.4848084066351897
+    ]
+   },
+   "solver_errors": [],
+   "state": "I2",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.009261903003789485
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     3.428891677301127,
+     3.7323827125096702,
+     0.5705309123461197
+    ],
+    "L": 0.5896607703470712,
+    "V": 0.4103392296529288,
+    "ecount": 15,
+    "x": [
+     0.15025021554927068,
+     0.0,
+     0.8497497844507294
+    ],
+    "y": [
+     0.5151915933648104,
+     0.0,
+     0.4848084066351897
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -11712.303454962019,
+    "h_L_AUX_MMM_kg_per_kmol": 20.12255977350962,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1936.8784503173044,
+    "h_L_J_per_mol": -274656.4787484891,
+    "h_V_AUX_HFm25_kJ_per_kg": -8745.906918518598,
+    "h_V_AUX_MMM_kg_per_kmol": 25.241592480128197,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 94.0945567711231,
+    "h_V_J_per_mol": -218385.52184976527,
+    "liquid_molarfraction": 0.5896607703470712,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38974.95239053265,
+     "mixture": -22007.40548676563,
+     "vapor": 2375.0964566149764
+    },
+    "vapor_molarfraction": 0.4103392296529288,
+    "x": [
+     0.15025021554927068,
+     0.0,
+     0.8497497844507294
+    ],
+    "y": [
+     0.5151915933648104,
+     0.0,
+     0.4848084066351897
+    ]
+   },
+   "solver_errors": [],
+   "state": "I2",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.009971159044653177
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     2.212208578921755,
+     1.9061271345762645,
+     0.474686134371359
+    ],
+    "L": 0.4606587042768088,
+    "V": 0.5393412957231912,
+    "ecount": 17,
+    "x": [
+     0.30233512005795254,
+     0.0,
+     0.6976648799420474
+    ],
+    "y": [
+     0.6688282183895558,
+     0.0,
+     0.33117178161044425
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -10310.249649776337,
+    "h_L_AUX_MMM_kg_per_kmol": 22.2558547290529,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1731.0542211873744,
+    "h_L_J_per_mol": -267989.5097005507,
+    "h_V_AUX_HFm25_kJ_per_kg": -7828.659355143839,
+    "h_V_AUX_MMM_kg_per_kmol": 27.3966534193503,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 81.05823592746455,
+    "h_V_J_per_mol": -212258.3426945415,
+    "liquid_molarfraction": 0.4606587042768088,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38526.09127486001,
+     "mixture": -16549.651075599988,
+     "vapor": 2220.724396488675
+    },
+    "vapor_molarfraction": 0.5393412957231912,
+    "x": [
+     0.30233512005795254,
+     0.0,
+     0.6976648799420474
+    ],
+    "y": [
+     0.6688282183895558,
+     0.0,
+     0.33117178161044425
+    ]
+   },
+   "solver_errors": [],
+   "state": "I3",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.010512226028367877
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     2.212208578921755,
+     1.9061271345762645,
+     0.474686134371359
+    ],
+    "L": 0.4606587042768088,
+    "V": 0.5393412957231912,
+    "ecount": 17,
+    "x": [
+     0.30233512005795254,
+     0.0,
+     0.6976648799420474
+    ],
+    "y": [
+     0.6688282183895558,
+     0.0,
+     0.33117178161044425
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -10310.249649776337,
+    "h_L_AUX_MMM_kg_per_kmol": 22.2558547290529,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1731.0542211873744,
+    "h_L_J_per_mol": -267989.5097005507,
+    "h_V_AUX_HFm25_kJ_per_kg": -7828.659355143839,
+    "h_V_AUX_MMM_kg_per_kmol": 27.3966534193503,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 81.05823592746455,
+    "h_V_J_per_mol": -212258.3426945415,
+    "liquid_molarfraction": 0.4606587042768088,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38526.09127486001,
+     "mixture": -16549.651075599988,
+     "vapor": 2220.724396488675
+    },
+    "vapor_molarfraction": 0.5393412957231912,
+    "x": [
+     0.30233512005795254,
+     0.0,
+     0.6976648799420474
+    ],
+    "y": [
+     0.6688282183895558,
+     0.0,
+     0.33117178161044425
+    ]
+   },
+   "solver_errors": [],
+   "state": "I3",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.015533269033767283
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.5020745111392306,
+     1.0582210584774747,
+     0.426166158115512
+    ],
+    "L": 0.37765576574821946,
+    "V": 0.6223442342517805,
+    "ecount": 15,
+    "x": [
+     0.5333483202158056,
+     0.0,
+     0.4666516797841945
+    ],
+    "y": [
+     0.801128860549549,
+     0.0,
+     0.198871139450451
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -8629.427252329286,
+    "h_L_AUX_MMM_kg_per_kmol": 25.496276887667108,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1474.604865338254,
+    "h_L_J_per_mol": -257615.200553933,
+    "h_V_AUX_HFm25_kJ_per_kg": -7147.092448050972,
+    "h_V_AUX_MMM_kg_per_kmol": 29.252434526928525,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 70.23169465478657,
+    "h_V_J_per_mol": -207015.405844912,
+    "liquid_molarfraction": 0.37765576574821946,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -37596.933946565194,
+     "mixture": -12920.125010191254,
+     "vapor": 2054.4480496043802
+    },
+    "vapor_molarfraction": 0.6223442342517805,
+    "x": [
+     0.5333483202158056,
+     0.0,
+     0.4666516797841945
+    ],
+    "y": [
+     0.801128860549549,
+     0.0,
+     0.198871139450451
+    ]
+   },
+   "solver_errors": [],
+   "state": "I4",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.009425811003893614
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.5020745111392306,
+     1.0582210584774747,
+     0.426166158115512
+    ],
+    "L": 0.37765576574821946,
+    "V": 0.6223442342517805,
+    "ecount": 15,
+    "x": [
+     0.5333483202158056,
+     0.0,
+     0.4666516797841945
+    ],
+    "y": [
+     0.801128860549549,
+     0.0,
+     0.198871139450451
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -8629.427252329286,
+    "h_L_AUX_MMM_kg_per_kmol": 25.496276887667108,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1474.604865338254,
+    "h_L_J_per_mol": -257615.200553933,
+    "h_V_AUX_HFm25_kJ_per_kg": -7147.092448050972,
+    "h_V_AUX_MMM_kg_per_kmol": 29.252434526928525,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 70.23169465478657,
+    "h_V_J_per_mol": -207015.405844912,
+    "liquid_molarfraction": 0.37765576574821946,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -37596.933946565194,
+     "mixture": -12920.125010191254,
+     "vapor": 2054.4480496043802
+    },
+    "vapor_molarfraction": 0.6223442342517805,
+    "x": [
+     0.5333483202158056,
+     0.0,
+     0.4666516797841945
+    ],
+    "y": [
+     0.801128860549549,
+     0.0,
+     0.198871139450451
+    ]
+   },
+   "solver_errors": [],
+   "state": "I4",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.009416665998287499
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.1204169611354846,
+     0.6677997992228596,
+     0.4057027513124104
+    ],
+    "L": 0.31605401247260234,
+    "V": 0.6839459875273977,
+    "ecount": 10,
+    "x": [
+     0.831517310614335,
+     0.0,
+     0.16848268938566507
+    ],
+    "y": [
+     0.9316461086105204,
+     0.0,
+     0.06835389138947955
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -7002.579143241992,
+    "h_L_AUX_MMM_kg_per_kmol": 29.67869331598728,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1222.3290625597233,
+    "h_L_J_per_mol": -244104.52819213632,
+    "h_V_AUX_HFm25_kJ_per_kg": -6554.4588832367235,
+    "h_V_AUX_MMM_kg_per_kmol": 31.08319996547977,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 60.49283901980874,
+    "h_V_J_per_mol": -201853.24512143002,
+    "liquid_molarfraction": 0.31605401247260234,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -36277.12937892826,
+     "mixture": -10179.501128302736,
+     "vapor": 1880.3110117322924
+    },
+    "vapor_molarfraction": 0.6839459875273977,
+    "x": [
+     0.8315173106143351,
+     0.0,
+     0.16848268938566507
+    ],
+    "y": [
+     0.9316461086105204,
+     0.0,
+     0.06835389138947955
+    ]
+   },
+   "solver_errors": [],
+   "state": "I5",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.008889264077879488
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.1204169611354846,
+     0.6677997992228596,
+     0.4057027513124104
+    ],
+    "L": 0.31605401247260234,
+    "V": 0.6839459875273977,
+    "ecount": 10,
+    "x": [
+     0.831517310614335,
+     0.0,
+     0.16848268938566507
+    ],
+    "y": [
+     0.9316461086105204,
+     0.0,
+     0.06835389138947955
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -7002.579143241992,
+    "h_L_AUX_MMM_kg_per_kmol": 29.67869331598728,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1222.3290625597233,
+    "h_L_J_per_mol": -244104.52819213632,
+    "h_V_AUX_HFm25_kJ_per_kg": -6554.4588832367235,
+    "h_V_AUX_MMM_kg_per_kmol": 31.08319996547977,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 60.49283901980874,
+    "h_V_J_per_mol": -201853.24512143002,
+    "liquid_molarfraction": 0.31605401247260234,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -36277.12937892826,
+     "mixture": -10179.501128302736,
+     "vapor": 1880.3110117322924
+    },
+    "vapor_molarfraction": 0.6839459875273977,
+    "x": [
+     0.8315173106143351,
+     0.0,
+     0.16848268938566507
+    ],
+    "y": [
+     0.9316461086105204,
+     0.0,
+     0.06835389138947955
+    ]
+   },
+   "solver_errors": [],
+   "state": "I5",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.009181119967252016
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.5467605254092112,
+     1.2073168986830383,
+     0.35774164585144197
+    ],
+    "L": 1.0,
+    "V": 0.0,
+    "ecount": 4,
+    "x": [
+     0.4,
+     0.0,
+     0.6
+    ],
+    "y": [
+     0.7424309183835188,
+     0.0,
+     0.2575690816164812
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -9543.393871297605,
+    "h_L_AUX_MMM_kg_per_kmol": 23.625799999999998,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1629.7596249539586,
+    "h_L_J_per_mol": -263974.6898717402,
+    "h_V_AUX_HFm25_kJ_per_kg": -7438.502247796185,
+    "h_V_AUX_MMM_kg_per_kmol": 28.429078492165623,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 67.9600262227583,
+    "h_V_J_per_mol": -209537.7233469317,
+    "liquid_molarfraction": 1.0,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38504.37494723723,
+     "mixture": -38504.37494723723,
+     "vapor": null
+    },
+    "vapor_molarfraction": null,
+    "x": [
+     0.4,
+     0.0,
+     0.6
+    ],
+    "y": [
+     0.7424309183835188,
+     0.0,
+     0.2575690816164812
+    ]
+   },
+   "solver_errors": [],
+   "state": "I6",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.02400096703786403
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.5467605254092112,
+     1.2073168986830383,
+     0.35774164585144197
+    ],
+    "L": 1.0,
+    "V": 0.0,
+    "ecount": 4,
+    "x": [
+     0.4,
+     0.0,
+     0.6
+    ],
+    "y": [
+     0.7424309183835188,
+     0.0,
+     0.2575690816164812
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -9543.393871297605,
+    "h_L_AUX_MMM_kg_per_kmol": 23.625799999999998,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1629.7596249539586,
+    "h_L_J_per_mol": -263974.6898717402,
+    "h_V_AUX_HFm25_kJ_per_kg": -7438.502247796185,
+    "h_V_AUX_MMM_kg_per_kmol": 28.429078492165623,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 67.9600262227583,
+    "h_V_J_per_mol": -209537.7233469317,
+    "liquid_molarfraction": 1.0,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38504.37494723723,
+     "mixture": -38504.37494723723,
+     "vapor": null
+    },
+    "vapor_molarfraction": null,
+    "x": [
+     0.4,
+     0.0,
+     0.6
+    ],
+    "y": [
+     0.7424309183835188,
+     0.0,
+     0.2575690816164812
+    ]
+   },
+   "solver_errors": [],
+   "state": "I6",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.01148941705469042
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     5.107549061817368,
+     6.311885932883665,
+     0.7988333188670205
+    ],
+    "L": 0.0,
+    "V": 1.0,
+    "ecount": 0,
+    "x": [
+     0.09442299087530728,
+     0.0,
+     0.9055770091246926
+    ],
+    "y": [
+     0.4,
+     0.0,
+     0.6
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": "nan",
+    "h_L_AUX_MMM_kg_per_kmol": "nan",
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": "nan",
+    "h_L_J_per_mol": "nan",
+    "h_V_AUX_HFm25_kJ_per_kg": -9543.393871297605,
+    "h_V_AUX_MMM_kg_per_kmol": 23.625799999999998,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 112.36970677047412,
+    "h_V_J_per_mol": -222815.49070628505,
+    "liquid_molarfraction": 0.0,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": "nan",
+     "mixture": 2654.8242182178674,
+     "vapor": 2654.8242182178674
+    },
+    "vapor_molarfraction": 1.0,
+    "x": [
+     "nan",
+     "nan",
+     "nan"
+    ],
+    "y": [
+     0.4,
+     0.0,
+     0.6
+    ]
+   },
+   "solver_errors": [],
+   "state": "I7",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.009328598040156066
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     5.107549061817368,
+     6.311885932883665,
+     0.7988333188670205
+    ],
+    "L": 0.0,
+    "V": 1.0,
+    "ecount": 0,
+    "x": [
+     0.09442299087530728,
+     0.0,
+     0.9055770091246926
+    ],
+    "y": [
+     0.4,
+     0.0,
+     0.6
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": "nan",
+    "h_L_AUX_MMM_kg_per_kmol": "nan",
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": "nan",
+    "h_L_J_per_mol": "nan",
+    "h_V_AUX_HFm25_kJ_per_kg": -9543.393871297605,
+    "h_V_AUX_MMM_kg_per_kmol": 23.625799999999998,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 112.36970677047412,
+    "h_V_J_per_mol": -222815.49070628505,
+    "liquid_molarfraction": 0.0,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": "nan",
+     "mixture": 2654.8242182178674,
+     "vapor": 2654.8242182178674
+    },
+    "vapor_molarfraction": 1.0,
+    "x": [
+     "nan",
+     "nan",
+     "nan"
+    ],
+    "y": [
+     0.4,
+     0.0,
+     0.6
+    ]
+   },
+   "solver_errors": [],
+   "state": "I7",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.009236356941983104
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     3.5663968769432373,
+     5.660516415445352,
+     0.6484587621933551
+    ],
+    "L": 0.60273190100509,
+    "V": 0.39726809899491006,
+    "ecount": 20,
+    "x": [
+     0.0,
+     0.07013915835260716,
+     0.9298608416473928
+    ],
+    "y": [
+     0.0,
+     0.3970237509740421,
+     0.602976249025958
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -12077.574172510236,
+    "h_L_AUX_MMM_kg_per_kmol": 19.98268394842404,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1968.4469524986844,
+    "h_L_J_per_mol": -280677.2008739407,
+    "h_V_AUX_HFm25_kJ_per_kg": -8201.346227527278,
+    "h_V_AUX_MMM_kg_per_kmol": 29.15310430982578,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 103.72026341840748,
+    "h_V_J_per_mol": -236070.93439361942,
+    "liquid_molarfraction": 0.60273190100509,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -39334.85332101968,
+     "mixture": -22507.125048242295,
+     "vapor": 3023.7676584794403
+    },
+    "vapor_molarfraction": 0.39726809899491006,
+    "x": [
+     0.0,
+     0.07013915835260716,
+     0.9298608416473927
+    ],
+    "y": [
+     0.0,
+     0.3970237509740421,
+     0.602976249025958
+    ]
+   },
+   "solver_errors": [],
+   "state": "I8",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.011225449969060719
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     3.5663968769432373,
+     5.660516415445352,
+     0.6484587621933551
+    ],
+    "L": 0.60273190100509,
+    "V": 0.39726809899491006,
+    "ecount": 20,
+    "x": [
+     0.0,
+     0.07013915835260716,
+     0.9298608416473928
+    ],
+    "y": [
+     0.0,
+     0.3970237509740421,
+     0.602976249025958
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -12077.574172510236,
+    "h_L_AUX_MMM_kg_per_kmol": 19.98268394842404,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1968.4469524986844,
+    "h_L_J_per_mol": -280677.2008739407,
+    "h_V_AUX_HFm25_kJ_per_kg": -8201.346227527278,
+    "h_V_AUX_MMM_kg_per_kmol": 29.15310430982578,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 103.72026341840748,
+    "h_V_J_per_mol": -236070.93439361942,
+    "liquid_molarfraction": 0.60273190100509,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -39334.85332101968,
+     "mixture": -22507.125048242295,
+     "vapor": 3023.7676584794403
+    },
+    "vapor_molarfraction": 0.39726809899491006,
+    "x": [
+     0.0,
+     0.07013915835260716,
+     0.9298608416473927
+    ],
+    "y": [
+     0.0,
+     0.3970237509740421,
+     0.602976249025958
+    ]
+   },
+   "solver_errors": [],
+   "state": "I8",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.013555987039580941
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.4751844548873958,
+     1.297953901784282,
+     0.6914549367483307
+    ],
+    "L": 0.39787943888617305,
+    "V": 0.602120561113827,
+    "ecount": 26,
+    "x": [
+     0.0,
+     0.5087314694844454,
+     0.4912685305155546
+    ],
+    "y": [
+     0.0,
+     0.6603099650919514,
+     0.3396900349080485
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-10",
+    "PTFlash_Internal_Loop_Tolerance": "1E-10",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -7381.514348191471,
+    "h_L_AUX_MMM_kg_per_kmol": 32.286952644916624,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1189.1932229062681,
+    "h_L_J_per_mol": -276722.0294814611,
+    "h_V_AUX_HFm25_kJ_per_kg": -6493.942802760004,
+    "h_V_AUX_MMM_kg_per_kmol": 36.539335760689596,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 85.79506771540328,
+    "h_V_J_per_mol": -234149.46169489724,
+    "liquid_molarfraction": 0.39787943888617305,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38395.42527363046,
+     "mixture": -13389.165674361033,
+     "vapor": 3134.8947858642205
+    },
+    "vapor_molarfraction": 0.602120561113827,
+    "x": [
+     0.0,
+     0.5087314694844454,
+     0.4912685305155546
+    ],
+    "y": [
+     0.0,
+     0.6603099650919514,
+     0.3396900349080485
+    ]
+   },
+   "solver_errors": [],
+   "state": "I9",
+   "stream_calculated": true,
+   "tolerance": 1e-10,
+   "wall_time_s": 0.009858005912974477
+  },
+  {
+   "converged": true,
+   "direct_flash": {
+    "K": [
+     1.4751844548873958,
+     1.297953901784282,
+     0.6914549367483307
+    ],
+    "L": 0.39787943888617305,
+    "V": 0.602120561113827,
+    "ecount": 26,
+    "x": [
+     0.0,
+     0.5087314694844454,
+     0.4912685305155546
+    ],
+    "y": [
+     0.0,
+     0.6603099650919514,
+     0.3396900349080485
+    ]
+   },
+   "exception": null,
+   "flash_settings_readback": {
+    "CalculateBubbleAndDewPoints": "False",
+    "CheckIncipientLiquidForStability": "False",
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "GM_OptimizationMethod": "IPOPT",
+    "GibbsMinimizationExternalSolver": "",
+    "GibbsMinimizationExternalSolverConfigData": "",
+    "HandleSolidsInDefaultEqCalcMode": "False",
+    "IO_FastMode": "True",
+    "ImmiscibleWaterOption": "False",
+    "NL_FastMode": "True",
+    "PHFlash_External_Loop_Tolerance": "0.0001",
+    "PHFlash_Internal_Loop_Tolerance": "0.0001",
+    "PHFlash_MaximumTemperatureChange": "30.0",
+    "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+    "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+    "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+    "PTFlash_DampingFactor": "1.0",
+    "PTFlash_External_Loop_Tolerance": "1E-08",
+    "PTFlash_Internal_Loop_Tolerance": "1E-08",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+    "PVFlash_FivePointStencilNumericalDerivative": "False",
+    "PVFlash_FixedDampingFactor": "1.0",
+    "PVFlash_MaximumTemperatureChange": "10.0",
+    "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+    "PVFlash_TryIdealCalcOnFailure": "True",
+    "Replace_PTFlash": "False",
+    "ST_Number_of_Random_Tries": "20",
+    "ThreePhaseFlashStabTestCompIds": "",
+    "ThreePhaseFlashStabTestSeverity": "0",
+    "UseIOFlash": "False",
+    "UsePhaseIdentificationAlgorithm": "False",
+    "ValidateEquilibriumCalc": "False",
+    "ValidationGibbsTolerance": "0.01"
+   },
+   "quantities": {
+    "h_L_AUX_HFm25_kJ_per_kg": -7381.514348191471,
+    "h_L_AUX_MMM_kg_per_kmol": 32.286952644916624,
+    "h_L_DW_CalcEnthalpy_kJ_per_kg": -1189.1932229062681,
+    "h_L_J_per_mol": -276722.0294814611,
+    "h_V_AUX_HFm25_kJ_per_kg": -6493.942802760004,
+    "h_V_AUX_MMM_kg_per_kmol": 36.539335760689596,
+    "h_V_DW_CalcEnthalpy_kJ_per_kg": 85.79506771540328,
+    "h_V_J_per_mol": -234149.46169489724,
+    "liquid_molarfraction": 0.39787943888617305,
+    "stream_molar_enthalpy_kJ_per_kmol": {
+     "liquid": -38395.42527363046,
+     "mixture": -13389.165674361033,
+     "vapor": 3134.8947858642205
+    },
+    "vapor_molarfraction": 0.602120561113827,
+    "x": [
+     0.0,
+     0.5087314694844454,
+     0.4912685305155546
+    ],
+    "y": [
+     0.0,
+     0.6603099650919514,
+     0.3396900349080485
+    ]
+   },
+   "solver_errors": [],
+   "state": "I9",
+   "stream_calculated": true,
+   "tolerance": 1e-08,
+   "wall_time_s": 0.01043847796972841
+  }
+ ],
+ "authority": "docs/derivations/S10-spec.md section 8.2 with the I-states of section 15 A2-3",
+ "environment_fingerprint": {
+  "expected_docs_reference_environments_s3": {
+   "automation_dll_sha256": "ce32c2a422e20c553769a355fdf6fc0cf94eac85ae6ba37d4df045cd2208aa31",
+   "dotnet_tree": "f03ce7f0101336009c4bd090fd3006d187ba419b03bf86c84d0b56367b6e1058",
+   "dwsim_tree": "b8de32e026197858b552b7b310c621a9e919952288900a66c73ac2a0353ea87e",
+   "pip_freeze_sha256": "d0a428cc7c06a7605bcfdaeb1e62ac3e9630b02c04224dea8e5928bc2e02635a"
+  },
+  "matches": true,
+  "measured": {
+   "automation_dll_sha256": "ce32c2a422e20c553769a355fdf6fc0cf94eac85ae6ba37d4df045cd2208aa31",
+   "dotnet_tree": "f03ce7f0101336009c4bd090fd3006d187ba419b03bf86c84d0b56367b6e1058",
+   "dwsim_tree": "b8de32e026197858b552b7b310c621a9e919952288900a66c73ac2a0353ea87e",
+   "pip_freeze_sha256": "d0a428cc7c06a7605bcfdaeb1e62ac3e9630b02c04224dea8e5928bc2e02635a"
+  }
+ },
+ "inputs_echo": {
+  "R_J_per_mol_K": 8.31446261815324,
+  "T0_K": 298.15,
+  "components": [
+   {
+    "id": "CH3OH",
+    "ideal_gas_cp_b": [
+     5.71539582,
+     -15.2309129,
+     65.2441155,
+     -71.0806889,
+     26.1352698
+    ],
+    "molecular_weight_kg_per_mol": 0.032042,
+    "standard_formation_enthalpy_J_per_mol": -200938.85487320993,
+    "vapour_pressure_abcd": [
+     23.1903583383,
+     -6.06364641455,
+     -5.44295361639,
+     3.37780627462
+    ]
+   },
+   {
+    "id": "C2H5OH",
+    "ideal_gas_cp_b": [
+     4.85868178,
+     -3.7400674,
+     69.5550267,
+     -88.6541147,
+     35.168443
+    ],
+    "molecular_weight_kg_per_mol": 0.046069,
+    "standard_formation_enthalpy_J_per_mol": -234948.66126639748,
+    "vapour_pressure_abcd": [
+     24.8828829558,
+     -6.65074311339,
+     -5.23090979586,
+     0.747236411782
+    ]
+   },
+   {
+    "id": "H2O",
+    "ideal_gas_cp_b": [
+     4.19864056,
+     -2.0364341,
+     6.52040211,
+     -5.48797062,
+     1.77197817
+    ],
+    "molecular_weight_kg_per_mol": 0.018015,
+    "standard_formation_enthalpy_J_per_mol": -241824.62162536496,
+    "vapour_pressure_abcd": [
+     23.5265279527,
+     -7.11938661787,
+     -6.70379788914,
+     3.38417458422
+    ]
+   }
+  ],
+  "forms": "c_p^ig/R = sum_k b_k theta^k; ln(P_sat/Pa) = a + b/theta + c ln theta + d theta^2; theta = T / 1000 K; h^ig(298.15 K) = Delta_fH; Wilson Lambda_ij constant",
+  "path": "benchmarks/s10/records.yaml",
+  "reference_convention": "WILSON-IG-ref-v1",
+  "sha256": "74dc4e54101f6197cc4f9c2dc66e1856b99a7f047b5904a31b6a910b33f5a8f1",
+  "theta_unit_K": 1000.0,
+  "wilson_lambda": [
+   {
+    "i": "CH3OH",
+    "j": "C2H5OH",
+    "value": 0.6109248362
+   },
+   {
+    "i": "C2H5OH",
+    "j": "CH3OH",
+    "value": 1.49887856
+   },
+   {
+    "i": "C2H5OH",
+    "j": "H2O",
+    "value": 0.1649874985
+   },
+   {
+    "i": "H2O",
+    "j": "C2H5OH",
+    "value": 0.8615311153
+   },
+   {
+    "i": "CH3OH",
+    "j": "H2O",
+    "value": 0.3674022637
+   },
+   {
+    "i": "H2O",
+    "j": "CH3OH",
+    "value": 1.134238098
+   }
+  ]
+ },
+ "inputs_sha256": "28676a25b544724ed38ae93e24c3cf5915a41776bde75866effd423a4a68517a",
+ "ladder_settings": {
+  "converged": "no exception from the direct flash call and no solver error from CalculateFlowsheet4, with the stream calculated",
+  "selection": "the first rung at which every I-state converges is used for all of them; a state converged at no rung is NOT_COMPARABLE (spec 8.1's rule, B-53)",
+  "settings_per_rung": [
+   "PTFlash_External_Loop_Tolerance",
+   "PTFlash_Internal_Loop_Tolerance"
+  ],
+  "tolerances": [
+   1e-10,
+   1e-08
+  ]
+ },
+ "settings": {
+  "compounds": "user compounds (OriginalDB = CurrentDB = 'User'), CAS 's10-<id>' so that DWSIM's embedded wilson_bips.csv supplies nothing; Molar_Weight = records.yaml molecular_weight in kg/kmol",
+  "flash": {
+   "flash_settings_fixed": {
+    "FailSafeCalculationMode": "3",
+    "ForceEquilibriumCalculationType": "VLE",
+    "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+    "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000"
+   },
+   "route": "one material stream at the registered (n, T, P), TP-flashed by CalculateFlowsheet4; the property package's flash (UniversalFlash) is also called directly with the same inputs for its raw arrays and iteration count",
+   "why": "VLE: the Wilson liquid is strictly convex in composition (spec 4.1), so no liquid split exists for the heuristic to look for; FailSafeCalculationMode 3 ('None'): a failed flash raises instead of being replaced by DWSIM's Raoult's-law flash (mode 1, the default); 1000 iterations: T06's value (B-52)"
+  },
+  "ideal_gas_cp": "IdealgasCpEquation '100' (A + B T + C T^2 + D T^3 + E T^4, J/(kmol K)) with coefficient k = 1000 R b_k / 1000^k (spec 8.2: the ideal-gas c_p polynomial)",
+  "ideal_gas_formation_enthalpy": "IG_Enthalpy_of_Formation_25C = Delta_fH / MW (kJ/kg); DWSIM's stream enthalpies carry no formation term, so the tool adds DWSIM's own AUX_HFm25 to DW_CalcEnthalpy",
+  "liquid_density": {
+   "equation": "1",
+   "value_kg_per_m3": 1000000000000.0,
+   "why": "the model's liquid molar volume is zero (spec 3.3, 3.7): DWSIM's Ideal-mode liquid enthalpy adds P / rho_L and its liquid fugacity a Poynting factor; at 1e12 kg/m3 P v <= 1e-8 J/mol and v (P - P_sat) / (R T) <= 1e-13 (B-50, ESC-50)"
+  },
+  "liquid_heat_capacity": "LiquidHeatCapacityEquation '1', constant 1000 R b_0 J/(kmol K): unused by the Ideal enthalpy mode, set only because AUX_HVAPi reads the vaporization equation only when this field is not '0' (docs/reference-environments.md section 6 quirk 4)",
+  "placeholders": {
+   "NBP_K": 350.0,
+   "P_c_Pa": 10000000.0,
+   "T_c_K": 1000.0,
+   "omega": 0.0,
+   "why": "required fields of a DWSIM compound that wilson-ig-v1 does not define; T_c > T / 0.98 keeps every state on the activity-coefficient branch of DW_CalcFugCoeff and AUX_HVAPi below T_c (T06's placeholders)"
+  },
+  "property_package": "Wilson",
+  "property_package_options": {
+   "AutoEstimateMissingNRTLUNIQUACParameters": false,
+   "EnthalpyEntropyCpCvCalculationMode": "Ideal",
+   "LiquidDensity_CorrectExpDataForPressure": false,
+   "LiquidFugacity_UsePoyntingCorrectionFactor": false,
+   "VaporPhaseFugacityCalculationMode": "Ideal"
+  },
+  "vaporization_enthalpy": "VaporizationEnthalpyEquation '100' (J/kmol) with A = -1000 R b 1000, B = R c 1000, C = 0, D = 2 R d 1e-6 1000, E = 0: Delta h(T) = -1000 R b + R c T + 2 R d T^3 / 1e6 (spec 8.2, eq. 100; the J/kmol unit is fixed by readback)",
+  "vapour_pressure": "VaporPressureEquation '101' (exp(A + B/T + C ln T + D T^E), Pa) with A = a - c ln 1000, B = 1000 b, C = c, D = d 1e-6, E = 2 (spec 8.2)",
+  "wilson": {
+   "R_cal_per_mol_K": 1.9872,
+   "rule": "per state (spec 8.2): A_ij = -1.9872 T ln(Lambda_ij V_i / V_j) cal/mol with V from DWSIM's GetArguments, stored as BIPs[cas_i][cas_j] = (A_ij, A_ji) for i < j (WilsonModel.GetBIPs returns A_ij for (i, j) and A_ji for (j, i))"
+  }
+ },
+ "settings_readback": {
+  "RET_VNAMES": [
+   "S10-CH3OH",
+   "S10-C2H5OH",
+   "S10-H2O"
+  ],
+  "compounds": {
+   "C2H5OH": {
+    "Acentric_Factor": 0.0,
+    "CAS_Number": "s10-c2h5oh",
+    "Critical_Pressure": 10000000.0,
+    "Critical_Temperature": 1000.0,
+    "HVap_A": 55297354.99922125,
+    "HVap_B": -43492.203956609555,
+    "HVap_C": 0.0,
+    "HVap_D": 0.012425738425368798,
+    "HVap_E": 0.0,
+    "IG_Enthalpy_of_Formation_25C": -5099.929698200471,
+    "Ideal_Gas_Heat_Capacity_Const_A": 40397.328033312246,
+    "Ideal_Gas_Heat_Capacity_Const_B": -31.096650586673583,
+    "Ideal_Gas_Heat_Capacity_Const_C": 0.5783126694018005,
+    "Ideal_Gas_Heat_Capacity_Const_D": -0.0007371113226186197,
+    "Ideal_Gas_Heat_Capacity_Const_E": 2.9240670466215304e-07,
+    "IdealgasCpEquation": "100",
+    "LiquidDensityEquation": "1",
+    "LiquidHeatCapacityEquation": "1",
+    "Liquid_Density_Const_A": 1000000000000.0,
+    "Liquid_Heat_Capacity_Const_A": 40397.328033312246,
+    "Molar_Weight": 46.068999999999996,
+    "NBP": 350.0,
+    "OriginalDB": "User",
+    "VaporPressureEquation": "101",
+    "Vapor_Pressure_Constant_A": 61.01672771203128,
+    "Vapor_Pressure_Constant_B": -6650.74311339,
+    "Vapor_Pressure_Constant_C": -5.23090979586,
+    "Vapor_Pressure_Constant_D": 7.472364117819999e-07,
+    "Vapor_Pressure_Constant_E": 2.0,
+    "VaporizationEnthalpyEquation": "100"
+   },
+   "CH3OH": {
+    "Acentric_Factor": 0.0,
+    "CAS_Number": "s10-ch3oh",
+    "Critical_Pressure": 10000000.0,
+    "Critical_Temperature": 1000.0,
+    "HVap_A": 50415961.4434749,
+    "HVap_B": -45255.23437581664,
+    "HVap_C": 0.0,
+    "HVap_D": 0.05616928800338289,
+    "HVap_E": 0.0,
+    "IG_Enthalpy_of_Formation_25C": -6271.108385032455,
+    "Ideal_Gas_Heat_Capacity_Const_A": 47520.44489333929,
+    "Ideal_Gas_Heat_Capacity_Const_B": -126.63685594739796,
+    "Ideal_Gas_Heat_Capacity_Const_C": 0.5424697593792224,
+    "Ideal_Gas_Heat_Capacity_Const_D": -0.00059099773073163,
+    "Ideal_Gas_Heat_Capacity_Const_E": 2.1730072376744933e-07,
+    "IdealgasCpEquation": "100",
+    "LiquidDensityEquation": "1",
+    "LiquidHeatCapacityEquation": "1",
+    "Liquid_Density_Const_A": 1000000000000.0,
+    "Liquid_Heat_Capacity_Const_A": 47520.44489333929,
+    "Molar_Weight": 32.042,
+    "NBP": 350.0,
+    "OriginalDB": "User",
+    "VaporPressureEquation": "101",
+    "Vapor_Pressure_Constant_A": 60.788949915172935,
+    "Vapor_Pressure_Constant_B": -6063.64641455,
+    "Vapor_Pressure_Constant_C": -5.44295361639,
+    "Vapor_Pressure_Constant_D": 3.37780627462e-06,
+    "Vapor_Pressure_Constant_E": 2.0,
+    "VaporizationEnthalpyEquation": "100"
+   },
+   "H2O": {
+    "Acentric_Factor": 0.0,
+    "CAS_Number": "s10-h2o",
+    "Critical_Pressure": 10000000.0,
+    "Critical_Temperature": 1000.0,
+    "HVap_A": 59193873.898460545,
+    "HVap_B": -55738.47694890913,
+    "HVap_C": 0.0,
+    "HVap_D": 0.05627518614760294,
+    "HVap_E": 0.0,
+    "IG_Enthalpy_of_Formation_25C": -13423.51493896003,
+    "Ideal_Gas_Heat_Capacity_Const_A": 34909.43998318199,
+    "Ideal_Gas_Heat_Capacity_Const_B": -16.931855198782536,
+    "Ideal_Gas_Heat_Capacity_Const_C": 0.05421363959892251,
+    "Ideal_Gas_Heat_Capacity_Const_D": -4.562952656951325e-05,
+    "Ideal_Gas_Heat_Capacity_Const_E": 1.4733046254648587e-08,
+    "IdealgasCpEquation": "100",
+    "LiquidDensityEquation": "1",
+    "LiquidHeatCapacityEquation": "1",
+    "Liquid_Density_Const_A": 1000000000000.0,
+    "Liquid_Heat_Capacity_Const_A": 34909.43998318199,
+    "Molar_Weight": 18.015,
+    "NBP": 350.0,
+    "OriginalDB": "User",
+    "VaporPressureEquation": "101",
+    "Vapor_Pressure_Constant_A": 69.83472321063614,
+    "Vapor_Pressure_Constant_B": -7119.38661787,
+    "Vapor_Pressure_Constant_C": -6.70379788914,
+    "Vapor_Pressure_Constant_D": 3.38417458422e-06,
+    "Vapor_Pressure_Constant_E": 2.0,
+    "VaporizationEnthalpyEquation": "100"
+   }
+  },
+  "flash_algorithm": "DWSIM.Thermodynamics.PropertyPackages.Auxiliary.FlashAlgorithms.UniversalFlash",
+  "flash_settings": {
+   "CalculateBubbleAndDewPoints": "False",
+   "CheckIncipientLiquidForStability": "False",
+   "FailSafeCalculationMode": "3",
+   "ForceEquilibriumCalculationType": "VLE",
+   "GM_OptimizationMethod": "IPOPT",
+   "GibbsMinimizationExternalSolver": "",
+   "GibbsMinimizationExternalSolverConfigData": "",
+   "HandleSolidsInDefaultEqCalcMode": "False",
+   "IO_FastMode": "True",
+   "ImmiscibleWaterOption": "False",
+   "NL_FastMode": "True",
+   "PHFlash_External_Loop_Tolerance": "0.0001",
+   "PHFlash_Internal_Loop_Tolerance": "0.0001",
+   "PHFlash_MaximumTemperatureChange": "30.0",
+   "PHFlash_Maximum_Number_Of_External_Iterations": "100",
+   "PHFlash_Maximum_Number_Of_Internal_Iterations": "100",
+   "PHFlash_Use_Interpolated_Result_In_Oscillating_Temperature_Cases": "False",
+   "PTFlash_DampingFactor": "1.0",
+   "PTFlash_External_Loop_Tolerance": "0.0001",
+   "PTFlash_Internal_Loop_Tolerance": "0.0001",
+   "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+   "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+   "PVFlash_FivePointStencilNumericalDerivative": "False",
+   "PVFlash_FixedDampingFactor": "1.0",
+   "PVFlash_MaximumTemperatureChange": "10.0",
+   "PVFlash_TemperatureDerivativeEpsilon": "0.1",
+   "PVFlash_TryIdealCalcOnFailure": "True",
+   "Replace_PTFlash": "False",
+   "ST_Number_of_Random_Tries": "20",
+   "ThreePhaseFlashStabTestCompIds": "",
+   "ThreePhaseFlashStabTestSeverity": "0",
+   "UseIOFlash": "False",
+   "UsePhaseIdentificationAlgorithm": "False",
+   "ValidateEquilibriumCalc": "False",
+   "ValidationGibbsTolerance": "0.01"
+  },
+  "options": {
+   "ActivityCoefficientModels_IgnoreMissingInteractionParameters": "False",
+   "AutoEstimateMissingNRTLUNIQUACParameters": "False",
+   "EnthalpyEntropyCpCvCalculationMode": "Ideal",
+   "LiquidDensityCalculationMode_Subcritical": "Rackett_and_ExpData",
+   "LiquidDensity_CorrectExpDataForPressure": "False",
+   "LiquidFugacity_UsePoyntingCorrectionFactor": "False",
+   "UseHenryConstants": "True",
+   "VaporPhaseFugacityCalculationMode": "Ideal"
+  },
+  "property_package": "Wilson"
+ },
+ "states": {
+  "I1": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     621.6568358032436,
+     309.0257175902697
+    ],
+    [
+     -557.6921963831642,
+     0.0,
+     626.7964068236528
+    ],
+    [
+     326.7677011906304,
+     790.2447292240631,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      621.6568358032436,
+      309.0257175902697
+     ],
+     [
+      -557.6921963831642,
+      0.0,
+      626.7964068236528
+     ],
+     [
+      326.7677011906304,
+      790.2447292240631,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -12243.26490522304,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 19.4177,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1993.7489424379687,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 121.52501820472897,
+      "gamma": [
+       1.8274808066468728,
+       3.6782398316793126,
+       1.0133643646671484
+      ],
+      "h_L_J_per_mol": -276450.06378972717,
+      "h_V_J_per_mol": -235376.30860415546,
+      "phi_L": [
+       4.98806976966747,
+       6.2212950695856595,
+       0.7672022613808293
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.1,
+       0.0,
+       0.9
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1263.0158627189733,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 108.89940107283147,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -268510.96973921324,
+      "h_V_J_per_mol": -228400.83193783776,
+      "phi_L": [
+       2.6755393515655594,
+       2.260247417584485,
+       1.0272843762537995
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1092.656512430112,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 102.20513902751597,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -250928.86947356412,
+      "h_V_J_per_mol": -212643.1124375588,
+      "phi_L": [
+       2.7139278537106577,
+       1.8226589740957277,
+       1.1901323070145282
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.6392206220619603,
+      "AUX_HVAPi_kJ_per_kg": 868.4209294397072,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 102.91222212151727,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 171378.9072416108,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.5206709853073654,
+      "AUX_HVAPi_kJ_per_kg": 1142.7981070271085,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 97.3501558101623,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 276564.42003290425,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.8872218128241844,
+      "AUX_HVAPi_kJ_per_kg": 2307.4599248180475,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 126.30258591587526,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 76711.56776856475,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 365.51,
+    "n": [
+     0.1,
+     0.0,
+     0.9
+    ]
+   },
+   "wall_time_s": 0.21393295307643712
+  },
+  "I10": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     605.5163105870448,
+     301.0022597917644
+    ],
+    [
+     -543.2124312777601,
+     0.0,
+     610.5224392146777
+    ],
+    [
+     318.2835954635666,
+     769.7270348235368,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      605.5163105870448,
+      301.0022597917644
+     ],
+     [
+      -543.2124312777601,
+      0.0,
+      610.5224392146777
+     ],
+     [
+      318.2835954635666,
+      769.7270348235368,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -8177.224351729612,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.236599999999996,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1316.8029998263378,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 95.2346619373767,
+      "gamma": [
+       0.8556902903917147,
+       1.4138558996157324,
+       1.335816774199211
+      ],
+      "h_L_J_per_mol": -277573.08006650064,
+      "h_V_J_per_mol": -236289.89976457963,
+      "phi_L": [
+       1.692342040364315,
+       1.6809053391683186,
+       0.7013446916465595
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.0,
+       0.4,
+       0.6
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1289.7075670614051,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 92.96429985000934,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -269291.3444223912,
+      "h_V_J_per_mol": -228866.72011824892,
+      "phi_L": [
+       1.938666862332557,
+       1.5887418405126434,
+       0.7124117247955339
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1116.1271256580005,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 87.16788949851846,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -251680.9148626121,
+      "h_V_J_per_mol": -213124.9359869669,
+      "phi_L": [
+       1.9664827555877753,
+       1.2811582265743233,
+       0.8253451811143245
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.6076463239559242,
+      "AUX_HVAPi_kJ_per_kg": 876.380640002783,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 87.50592662182963,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 120463.29016805746,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.498511206750542,
+      "AUX_HVAPi_kJ_per_kg": 1149.7056014010027,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 83.02472314164162,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 200395.5860728726,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.8834630928202498,
+      "AUX_HVAPi_kJ_per_kg": 2325.2464076425845,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 108.41090792690161,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 53198.72624274283,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 356.02,
+    "n": [
+     0.0,
+     0.4,
+     0.6
+    ]
+   },
+   "wall_time_s": 0.008406743058003485
+  },
+  "I11": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     600.9581854469592,
+     298.7364150183193
+    ],
+    [
+     -539.1233089929884,
+     0.0,
+     605.9266296053992
+    ],
+    [
+     315.88766255012814,
+     763.932786036033,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      600.9581854469592,
+      298.7364150183193
+     ],
+     [
+      -539.1233089929884,
+      0.0,
+      605.9266296053992
+     ],
+     [
+      315.88766255012814,
+      763.932786036033,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1297.2611424668896,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 88.50009647246193,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -269512.18528509117,
+      "h_V_J_per_mol": -228997.2382467169,
+      "phi_L": [
+       1.7638959183684355,
+       1.4324092507150745,
+       0.6398306932423795
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1297.2611424668896,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 88.50009647246193,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -269512.18528509117,
+      "h_V_J_per_mol": -228997.2382467169,
+      "phi_L": [
+       1.7638959183684355,
+       1.4324092507150745,
+       0.6398306932423795
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1122.768148605072,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 82.96037637425546,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -251893.70651988214,
+      "h_V_J_per_mol": -213259.75312249456,
+      "phi_L": [
+       1.7892042070341934,
+       1.155091940414076,
+       0.7412584058020629
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.5987376243920237,
+      "AUX_HVAPi_kJ_per_kg": 878.6379381186055,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 83.20938902754102,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 108609.67264047237,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.4923291693034793,
+      "AUX_HVAPi_kJ_per_kg": 1151.717750761326,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 79.01706799035388,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 182329.91093049146,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.8824315229849928,
+      "AUX_HVAPi_kJ_per_kg": 2330.378867948101,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 103.36463381453908,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 47778.800806899766,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 353.34,
+    "n": [
+     0.2,
+     0.3,
+     0.5
+    ]
+   },
+   "wall_time_s": 0.008061385015025735
+  },
+  "I12": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     595.4306083181241,
+     295.98865549828326
+    ],
+    [
+     -534.1644853267542,
+     0.0,
+     600.3533530269831
+    ],
+    [
+     312.98214689017476,
+     756.9061783646199,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      595.4306083181241,
+      295.98865549828326
+     ],
+     [
+      -534.1644853267542,
+      0.0,
+      600.3533530269831
+     ],
+     [
+      312.98214689017476,
+      756.9061783646199,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -7664.883155110699,
+      "AUX_LIQDENS_kg_per_m3": 999999999999.9999,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1278.5850393158432,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 81.07909125880664,
+      "gamma": [
+       1.0155557764128478,
+       1.2364575278840901,
+       1.3864130938210275
+      ],
+      "h_L_J_per_mol": -261476.60221317102,
+      "h_V_J_per_mol": -221724.64589321223,
+      "phi_L": [
+       1.6260982597555163,
+       1.1659896894055606,
+       0.572427238868327
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.4,
+       0.2,
+       0.4
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1306.4302360109264,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 83.10754247785556,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -269780.25840540073,
+      "h_V_J_per_mol": -229154.89819083564,
+      "phi_L": [
+       1.5695481818337014,
+       1.2601746293424898,
+       0.5602399530486376
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1130.8289482625676,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 77.88089288845678,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -252151.99066250765,
+      "h_V_J_per_mol": -213422.50993234653,
+      "phi_L": [
+       1.592067979088749,
+       1.0162022879572619,
+       0.6490507236515757
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.5879409359911392,
+      "AUX_HVAPi_kJ_per_kg": 881.3808404356049,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 78.03105683631576,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 95550.31419574458,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.4848797778607634,
+      "AUX_HVAPi_kJ_per_kg": 1154.1936502388037,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 74.179187819432,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 162240.62724719022,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.881198627655724,
+      "AUX_HVAPi_kJ_per_kg": 2336.666716066541,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 97.2487640264618,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 41835.43147192797,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 350.09,
+    "n": [
+     0.4,
+     0.2,
+     0.4
+    ]
+   },
+   "wall_time_s": 0.009101301082409918
+  },
+  "I13": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     597.2334488586057,
+     296.88484783404886
+    ],
+    [
+     -535.7818247378952,
+     0.0,
+     602.1710986187127
+    ],
+    [
+     313.92979199772884,
+     759.1979334820654,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      597.2334488586057,
+      296.88484783404886
+     ],
+     [
+      -535.7818247378952,
+      0.0,
+      602.1710986187127
+     ],
+     [
+      313.92979199772884,
+      759.1979334820654,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -6444.408946037915,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 36.250099999999996,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1039.1241250591734,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 82.27720405925703,
+      "gamma": [
+       0.8923924842992225,
+       1.093741289565077,
+       1.7545375215403192
+      ],
+      "h_L_J_per_mol": -271278.82218057656,
+      "h_V_J_per_mol": -230627.91185990052,
+      "phi_L": [
+       1.4847368275140305,
+       1.0757426932847614,
+       0.7567299433254486
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.1,
+       0.6,
+       0.3
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1303.4386328252945,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 84.86380389149951,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -269692.79409970366,
+      "h_V_J_per_mol": -229103.5510783895,
+      "phi_L": [
+       1.630892084147967,
+       1.3143439256833855,
+       0.5852274598229444
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1128.199016058404,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 79.53483266832058,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -252067.7223748218,
+      "h_V_J_per_mol": -213369.5143939201,
+      "phi_L": [
+       1.6542920405844528,
+       1.0598842996379558,
+       0.6779993183847051
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.5914614220884598,
+      "AUX_HVAPi_kJ_per_kg": 880.485571992805,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 79.71613416490128,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 99657.59676168193,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.487303605848276,
+      "AUX_HVAPi_kJ_per_kg": 1153.3818346045312,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 75.75442244249226,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 168581.6069663533,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.881598548390571,
+      "AUX_HVAPi_kJ_per_kg": 2334.608262847243,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 99.24303886993022,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 43701.35181841939,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 351.15,
+    "n": [
+     0.1,
+     0.6,
+     0.3
+    ]
+   },
+   "wall_time_s": 0.008247375953942537
+  },
+  "I14": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     586.5014452638518,
+     291.54996704284036
+    ],
+    [
+     -526.1540778659142,
+     0.0,
+     591.3503677849262
+    ],
+    [
+     308.28862159332704,
+     745.5555044338756,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      586.5014452638518,
+      291.54996704284036
+     ],
+     [
+      -526.1540778659142,
+      0.0,
+      591.3503677849262
+     ],
+     [
+      308.28862159332704,
+      745.5555044338756,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -5580.360207136095,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 39.055499999999995,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -929.2105427030289,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 68.37613646421615,
+      "gamma": [
+       0.9957658076336791,
+       0.9978892720597311,
+       2.0299757842142205
+      ],
+      "h_L_J_per_mol": -254234.54042034186,
+      "h_V_J_per_mol": -215273.29387212553,
+      "phi_L": [
+       1.3135467304761517,
+       0.7605569250570254,
+       0.6721844634623529
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.5,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1321.2620638926328,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 74.44523787970493,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -270213.8906244471,
+      "h_V_J_per_mol": -229408.1545254499,
+      "phi_L": [
+       1.293063837441294,
+       1.0185083554689183,
+       0.44930789502300766
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1143.86673913877,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 69.72833589303836,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -252569.74755776292,
+      "h_V_J_per_mol": -213683.73416359373,
+      "phi_L": [
+       1.3116166514256289,
+       0.8213230904919353,
+       0.5205334121926356
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.5705193475183985,
+      "AUX_HVAPi_kJ_per_kg": 885.8242998928824,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 69.7401370088197,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 77226.43442426976,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.4729605404110915,
+      "AUX_HVAPi_kJ_per_kg": 1158.2751833429681,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 66.41501852247276,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 133661.0691441405,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.8792495716972426,
+      "AUX_HVAPi_kJ_per_kg": 2346.970137389449,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 87.37764368987759,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 33551.67647316893,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 344.84,
+    "n": [
+     0.5,
+     0.5,
+     0.0
+    ]
+   },
+   "wall_time_s": 0.00844785908702761
+  },
+  "I2": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     607.8974207348508,
+     302.18591004654917
+    ],
+    [
+     -545.3485399339841,
+     0.0,
+     612.9232352792262
+    ],
+    [
+     319.53520220939265,
+     772.7538812050686,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      607.8974207348508,
+      302.18591004654917
+     ],
+     [
+      -545.3485399339841,
+      0.0,
+      612.9232352792262
+     ],
+     [
+      319.53520220939265,
+      772.7538812050686,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -10329.74209717449,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 22.223100000000002,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1714.9706560155666,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 99.83502436160595,
+      "gamma": [
+       1.327383460596781,
+       1.9386531913809018,
+       1.093954147869922
+      ],
+      "h_L_J_per_mol": -267670.85598541796,
+      "h_V_J_per_mol": -227340.24786982805,
+      "phi_L": [
+       2.756315111608507,
+       2.4312225725636285,
+       0.6070757061307098
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.3,
+       0.0,
+       0.7
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1285.7643773068148,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 95.30262120864025,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -269176.0589608121,
+      "h_V_J_per_mol": -228798.35555201516,
+      "phi_L": [
+       2.0354672169114463,
+       1.6758680435562914,
+       0.7529916690390903
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1112.6601430027667,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 89.37265770815388,
+      "gamma": [
+       0.994302664617942,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -251569.8258043731,
+      "h_V_J_per_mol": -213054.29080399376,
+      "phi_L": [
+       2.0646719967166702,
+       1.3514166215716732,
+       0.872357969177182
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.6123018359154242,
+      "AUX_HVAPi_kJ_per_kg": 875.2030979455368,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 89.75988165846341,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 127069.46671030892,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.5017543322120204,
+      "AUX_HVAPi_kJ_per_kg": 1148.6651603497794,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 85.12487295180807,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 210401.6186537147,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.8840072722999304,
+      "AUX_HVAPi_kJ_per_kg": 2322.584306348988,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 111.04812467022363,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 56228.99830259461,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 357.42,
+    "n": [
+     0.3,
+     0.0,
+     0.7
+    ]
+   },
+   "wall_time_s": 0.008233428932726383
+  },
+  "I3": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     597.4375440141318,
+     296.9863035701732
+    ],
+    [
+     -535.9649197655715,
+     0.0,
+     602.376881138531
+    ],
+    [
+     314.03707257594243,
+     759.4573774576252,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      597.4375440141318,
+      296.9863035701732
+     ],
+     [
+      -535.9649197655715,
+      0.0,
+      602.376881138531
+     ],
+     [
+      314.03707257594243,
+      759.4573774576252,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -8845.186017911079,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 25.0285,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1493.947481681466,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 84.40324851454895,
+      "gamma": [
+       1.124650126375782,
+       1.3959206012954868,
+       1.2187184677874359
+      ],
+      "h_L_J_per_mol": -258773.002794552,
+      "h_V_J_per_mol": -219269.25154384106,
+      "phi_L": [
+       1.8792688542207248,
+       1.3794807236810116,
+       0.5282247525851824
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.5,
+       0.0,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1303.1000255836695,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 85.06278082195512,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -269682.8943752232,
+      "h_V_J_per_mol": -229097.73366946453,
+      "phi_L": [
+       1.6379593806429296,
+       1.320596507219758,
+       0.5881143726069499
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1127.9013407714815,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 79.72223891040139,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -252058.18426327824,
+      "h_V_J_per_mol": -213363.50952311137,
+      "phi_L": [
+       1.6614607382890438,
+       1.0649263688202377,
+       0.6813438724840359
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.5918600243730325,
+      "AUX_HVAPi_kJ_per_kg": 880.3842610461946,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 79.90713278267042,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 100131.68671431542,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.4875783590683636,
+      "AUX_HVAPi_kJ_per_kg": 1153.290192205333,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 75.93291281408445,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 169312.13733780393,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.881643956598277,
+      "AUX_HVAPi_kJ_per_kg": 2334.37569596357,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 99.46883255641869,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 43916.929520943944,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 351.27,
+    "n": [
+     0.5,
+     0.0,
+     0.5
+    ]
+   },
+   "wall_time_s": 0.00813772901892662
+  },
+  "I4": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     587.8960954932811,
+     292.2432479063572
+    ],
+    [
+     -527.4052272217026,
+     0.0,
+     592.756548337019
+    ],
+    [
+     309.02170554445377,
+     747.3283716002015,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      587.8960954932811,
+      292.2432479063572
+     ],
+     [
+      -527.4052272217026,
+      0.0,
+      592.756548337019
+     ],
+     [
+      309.02170554445377,
+      747.3283716002015,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -7659.889016589714,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 27.833900000000003,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1316.4914371620275,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 71.75846508518009,
+      "gamma": [
+       1.0360783670986928,
+       1.1523315162909444,
+       1.3751141204253614
+      ],
+      "h_L_J_per_mol": -249847.67591168062,
+      "h_V_J_per_mol": -211207.26695752205,
+      "phi_L": [
+       1.4093319858286646,
+       0.9084166820040083,
+       0.47154587744586546
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.7,
+       0.0,
+       0.30000000000000004
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1318.9438591870155,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 75.79424944421241,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -270146.1142007508,
+      "h_V_J_per_mol": -229368.71401394304,
+      "phi_L": [
+       1.3333751306368298,
+       1.0534717298866048,
+       0.4652984947168638
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1141.829041969967,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 70.9974092738189,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -252504.45566508014,
+      "h_V_J_per_mol": -213643.07051432674,
+      "phi_L": [
+       1.3525063289997772,
+       0.8495174853406059,
+       0.5390588855124918
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.573238669944421,
+      "AUX_HVAPi_kJ_per_kg": 885.1292542893418,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 71.0290737468575,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 79877.46495064726,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.4748126488808995,
+      "AUX_HVAPi_kJ_per_kg": 1157.6310603609143,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 67.62359107733135,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 137827.95587554894,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.8795504936003664,
+      "AUX_HVAPi_kJ_per_kg": 2345.3490330099507,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 88.918746900638,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 34745.760604525545,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 345.66,
+    "n": [
+     0.7,
+     0.0,
+     0.30000000000000004
+    ]
+   },
+   "wall_time_s": 0.008887962088920176
+  },
+  "I5": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     578.7628372834827,
+     287.70310371478996
+    ],
+    [
+     -519.2117247331864,
+     0.0,
+     583.5477805751439
+    ],
+    [
+     304.22089966939245,
+     735.7182536938974,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      578.7628372834827,
+      287.70310371478996
+     ],
+     [
+      -519.2117247331864,
+      0.0,
+      583.5477805751439
+     ],
+     [
+      304.22089966939245,
+      735.7182536938974,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -6691.6486848075965,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 30.639300000000002,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1171.2468534937668,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 60.85908831036367,
+      "gamma": [
+       1.0033786468137174,
+       1.0249634904300273,
+       1.558511878532063
+      ],
+      "h_L_J_per_mol": -240913.615266677,
+      "h_V_J_per_mol": -203162.7516839577,
+      "phi_L": [
+       1.1129325680179272,
+       0.6455431184219164,
+       0.4235549667761746
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.9,
+       0.0,
+       0.09999999999999998
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1334.1358693043755,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 66.98640014934765,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -270590.276923748,
+      "h_V_J_per_mol": -229626.22558063726,
+      "phi_L": [
+       1.087265593218789,
+       0.8416510793627128,
+       0.36876194675206836
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1155.1821354357626,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 62.715154672827964,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -252932.31548591115,
+      "h_V_J_per_mol": -213908.45051625167,
+      "phi_L": [
+       1.1028656244921649,
+       0.6787057385501751,
+       0.42721909976637246
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.5554440202794326,
+      "AUX_HVAPi_kJ_per_kg": 889.6877484961676,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 62.62860007255437,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 63816.5720875168,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.462750092941755,
+      "AUX_HVAPi_kJ_per_kg": 1161.8934308323473,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 59.73639125359421,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 112388.17251345437,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.8776037137577202,
+      "AUX_HVAPi_kJ_per_kg": 2356.0439650654116,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 78.8308413959625,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 27536.977805403985,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 340.29,
+    "n": [
+     0.9,
+     0.0,
+     0.09999999999999998
+    ]
+   },
+   "wall_time_s": 0.008168975939042866
+  },
+  "I6": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     584.4264778493354,
+     290.5185003922423
+    ],
+    [
+     -524.2926117512048,
+     0.0,
+     589.2582455001054
+    ],
+    [
+     307.19793571482154,
+     742.9178240156837,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      584.4264778493354,
+      290.5185003922423
+     ],
+     [
+      -524.2926117512048,
+      0.0,
+      589.2582455001054
+     ],
+     [
+      307.19793571482154,
+      742.9178240156837,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -9543.393871297605,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 23.625799999999998,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1629.7596249539586,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 73.98285632180014,
+      "gamma": [
+       1.2053364660483437,
+       1.6069139293748662,
+       1.1518934047133325
+      ],
+      "h_L_J_per_mol": -263974.6898717402,
+      "h_V_J_per_mol": -223722.41075761538,
+      "phi_L": [
+       1.518549728932757,
+       1.1643469297570233,
+       0.36195951296386164
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.4,
+       0.0,
+       0.6
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1324.7121885236736,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 72.44087758132977,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -270314.7605382349,
+      "h_V_J_per_mol": -229466.7552057494,
+      "phi_L": [
+       1.2349585199208812,
+       0.9682890301957836,
+       0.4263773640637953
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1146.8993242603538,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 67.84312366923827,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -252666.91765022872,
+      "h_V_J_per_mol": -213744.1401336687,
+      "phi_L": [
+       1.2526776417732097,
+       0.7808263275402352,
+       0.4939678707102709
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.5664748509302922,
+      "AUX_HVAPi_kJ_per_kg": 886.8590863159096,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 67.8265765083705,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 73418.65080697065,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.4702116620608674,
+      "AUX_HVAPi_kJ_per_kg": 1159.2380243579837,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 64.61970465200007,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 127654.85457231682,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.8788042805523586,
+      "AUX_HVAPi_kJ_per_kg": 2349.3900641628097,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 85.0852378854502,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 31839.359007520838,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 343.62,
+    "n": [
+     0.4,
+     0.0,
+     0.6
+    ]
+   },
+   "wall_time_s": 0.009063612087629735
+  },
+  "I7": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     623.442668414098,
+     309.91345528135827
+    ],
+    [
+     -559.2942778753321,
+     0.0,
+     628.5970038720641
+    ],
+    [
+     327.70640624999993,
+     792.5148640102119,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      623.442668414098,
+      309.91345528135827
+     ],
+     [
+      -559.2942778753321,
+      0.0,
+      628.5970038720641
+     ],
+     [
+      327.70640624999993,
+      792.5148640102119,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -9543.393871297605,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 23.625799999999998,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1561.9845713320512,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 112.36970677047412,
+      "gamma": [
+       1.2053364660483437,
+       1.6069139293748662,
+       1.1518934047133325
+      ],
+      "h_L_J_per_mol": -262373.4500098797,
+      "h_V_J_per_mol": -222815.49070628505,
+      "phi_L": [
+       3.4054343791042956,
+       2.82229299906502,
+       0.9069130670750416
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.4,
+       0.0,
+       0.6
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1260.06814257176,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 110.67473229827456,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -268424.78842435725,
+      "h_V_J_per_mol": -228348.92728893197,
+      "phi_L": [
+       2.7694649179925235,
+       2.3470627878610877,
+       1.0683161766025344
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1090.06416520457,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 103.8822247981809,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -250845.80548376328,
+      "h_V_J_per_mol": -212589.37525529513,
+      "phi_L": [
+       2.809201059373857,
+       1.8926667141745543,
+       1.2376685806489818
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.6427157895312308,
+      "AUX_HVAPi_kJ_per_kg": 867.5434928612265,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 104.63523170663677,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 177961.51548795952,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.5231473042085877,
+      "AUX_HVAPi_kJ_per_kg": 1142.0549519434946,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 98.94812676746237,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 286273.29229820485,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.887647636258577,
+      "AUX_HVAPi_kJ_per_kg": 2305.52959529352,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 128.28438033718714,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 79775.58179026788,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 366.56,
+    "n": [
+     0.4,
+     0.0,
+     0.6
+    ]
+   },
+   "wall_time_s": 0.009001454920507967
+  },
+  "I8": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     613.8672040339927,
+     305.1534903281881
+    ],
+    [
+     -550.7040694935171,
+     0.0,
+     618.9423739839156
+    ],
+    [
+     322.67315912214224,
+     780.3426174901947,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      613.8672040339927,
+      305.1534903281881
+     ],
+     [
+      -550.7040694935171,
+      0.0,
+      618.9423739839156
+     ],
+     [
+      322.67315912214224,
+      780.3426174901947,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -10177.409000058049,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 23.625799999999998,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1643.939867179064,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 108.99632044951127,
+      "gamma": [
+       1.0414479374058503,
+       2.2064102247999844,
+       1.1117166730497725
+      ],
+      "h_L_J_per_mol": -279288.82406757056,
+      "h_V_J_per_mol": -237874.3042858954,
+      "phi_L": [
+       2.4390428567116853,
+       3.15658201739507,
+       0.7073237112904042
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.0,
+       0.2,
+       0.8
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1275.886559553769,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 101.18409971696019,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -268887.2651542934,
+      "h_V_J_per_mol": -228626.40111745882,
+      "phi_L": [
+       2.2956914412983993,
+       1.9118157779859588,
+       0.8633174808675176
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1103.9747093746694,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 94.92095411355434,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -251291.5271400616,
+      "h_V_J_per_mol": -212876.51229057193,
+      "phi_L": [
+       2.3286299050018764,
+       1.5416844003245782,
+       1.0001729306325848
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.6239781323683962,
+      "AUX_HVAPi_kJ_per_kg": 872.2558258724209,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 95.43952926694148,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 144959.74924225602,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.509925508987154,
+      "AUX_HVAPi_kJ_per_kg": 1146.0890840020406,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 90.41026068481386,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 237300.40511857392,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.8853874195754325,
+      "AUX_HVAPi_kJ_per_kg": 2315.9678776890282,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 117.66337308606148,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 64467.482393593185,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 360.93,
+    "n": [
+     0.0,
+     0.2,
+     0.8
+    ]
+   },
+   "wall_time_s": 0.009704006020911038
+  },
+  "I9": {
+   "applied_bips_cal_per_mol": [
+    [
+     0.0,
+     600.1418048248544,
+     298.33059207382166
+    ],
+    [
+     -538.3909288822831,
+     0.0,
+     605.1034995261253
+    ],
+    [
+     315.4585402372735,
+     762.8950101337936,
+     0.0
+    ]
+   ],
+   "readback": {
+    "bips_cal_per_mol": [
+     [
+      0.0,
+      600.1418048248544,
+      298.33059207382166
+     ],
+     [
+      -538.3909288822831,
+      0.0,
+      605.1034995261253
+     ],
+     [
+      315.4585402372735,
+      762.8950101337936,
+      0.0
+     ]
+    ],
+    "cas_ids": [
+     "s10-ch3oh",
+     "s10-c2h5oh",
+     "s10-h2o"
+    ],
+    "molar_volumes_m3_per_kmol": [
+     3.2042000000000004e-11,
+     4.6068999999999994e-11,
+     1.8015000000000002e-11
+    ],
+    "points": [
+     {
+      "AUX_HFm25_kJ_per_kg": -6821.141474255884,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 34.8474,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1092.7696984567015,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 86.58200062024059,
+      "gamma": [
+       0.836372701037658,
+       1.138518576992344,
+       1.6517813193423372
+      ],
+      "h_L_J_per_mol": -275779.2281999845,
+      "h_V_J_per_mol": -234681.88780157073,
+      "phi_L": [
+       1.479513720472568,
+       1.1977062529371907,
+       0.7638837710971618
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.0,
+       0.6,
+       0.4
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -7921.053753420155,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 29.2366,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1298.6147327308222,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 87.70220168791602,
+      "gamma": [
+       0.9802382561181453,
+       1.3363346357663202,
+       1.3568956084687216
+      ],
+      "h_L_J_per_mol": -269551.7596622016,
+      "h_V_J_per_mol": -229020.56597737476,
+      "phi_L": [
+       1.7340067979975828,
+       1.4058060901404403,
+       0.6275107499066254
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.2,
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "AUX_HFm25_kJ_per_kg": -6738.592144756209,
+      "AUX_LIQDENS_kg_per_m3": 1000000000000.0,
+      "AUX_MMM_kg_per_kmol": 32.042,
+      "DW_CalcEnthalpy_L_kJ_per_kg": -1123.9581655427608,
+      "DW_CalcEnthalpy_V_kJ_per_kg": 82.20859746701885,
+      "gamma": [
+       0.9943026646179418,
+       1.0776175640441303,
+       1.5719944138289808
+      ],
+      "h_L_J_per_mol": -251931.8370425996,
+      "h_V_J_per_mol": -213283.84162224023,
+      "phi_L": [
+       1.7588862390888134,
+       1.1336392052031292,
+       0.7269854713319227
+      ],
+      "phi_V": [
+       1.0,
+       1.0,
+       1.0
+      ],
+      "x": [
+       0.6,
+       0.2,
+       0.2
+      ]
+     }
+    ],
+    "pure": {
+     "C2H5OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.5971425398152344,
+      "AUX_HVAPi_kJ_per_kg": 879.0426648849258,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 82.44238056439167,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 106592.53922711963,
+      "IG_Enthalpy_of_Formation_25C": -5099.929698200471
+     },
+     "CH3OH": {
+      "AUX_CPi_kJ_per_kg_K": 1.491225638455645,
+      "AUX_HVAPi_kJ_per_kg": 1152.0809600946823,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 78.30102567741444,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 179240.34050955126,
+      "IG_Enthalpy_of_Formation_25C": -6271.108385032455
+     },
+     "H2O": {
+      "AUX_CPi_kJ_per_kg_K": 1.8822481810163638,
+      "AUX_HVAPi_kJ_per_kg": 2331.3031475530374,
+      "AUX_INT_CPDTi_298_15_kJ_per_kg": 102.46111438817594,
+      "AUX_LIQDENSi_kg_per_m3": 1000000000000.0,
+      "AUX_PVAPi_Pa": 46858.81974814754,
+      "IG_Enthalpy_of_Formation_25C": -13423.51493896003
+     }
+    }
+   },
+   "state": {
+    "P": 101325.0,
+    "T": 352.86,
+    "n": [
+     0.0,
+     0.6,
+     0.4
+    ]
+   },
+   "wall_time_s": 0.00761105609126389
+  }
+ },
+ "tool": "DWSIM",
+ "versions": {
+  "dotnet_runtime": "8.0.31",
+  "dwsim": "DWSIM version 9.0.5.0 (10/2/2025 11:49:46\u202fPM)",
+  "python": "3.13.5",
+  "pythonnet": "3.1.0"
+ },
+ "wall_time_runtime_start_s": 1.4853838150156662,
+ "written_by": "spikes/references/s10_qualify_dwsim.py"
+}
