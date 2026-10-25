@@ -500,3 +500,18 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
   `s10_validation.py`, `s10_records.py` (25 claims), `s10_reference.py --real` (160 claims), both comparisons,
   `s10_records_vetting.py --nasa-yaml` (12 controls) `--check` all pass; `tests/test_s10_records.py
   tests/test_s10_provider.py` 113 passed, 0 skipped; ruff check and format clean.
+- **Step 5, MEASURED (manifest):** `evidence/S10/f6f27c3f8aca7cb360287e531cd03e2033c32e16/manifest.json`, generated from a
+  clean tree at `f6f27c3f` (the generator commit): `status: tested`, 53 of 56 checks pass (tests "248 passed, 0
+  skipped"); `S10.validation` `not_applicable` with A6-9's block (checked equal to the spec's text with the slots
+  filled), both verdict documents cited by path and SHA-256 (`37750062…`, `c0abc483…`); `S10.gate`, `S10.ci`
+  `unsupported`; `requirements: ["D08", "D19"]`; review fields `pending`. Limitations 47 (was 41): the six §19 A6-13
+  items and A6-9's validation sentence added, the old validation sentence gone. D08, D19 and the S10 package entry of
+  `docs/requirements.yaml` cite it. B-90 (step 5, generator form only): the two validation verdict documents are the
+  list `verdict_documents` (was the object `verdict_document`), and `validation_check` also refuses unless the
+  block's AAD values equal the report's under A6-9's formats. Alternative: keep the old key for the first file and add
+  a second key. Reversible by: `validation_check()` and a regeneration.
+- **OPEN (design lane), observations from step 5, not changed:** (a) §19 A6-13's first item ("Any VAL-2 result.
+  Nothing has been computed on the 1995 data.") is harvested verbatim into the manifest that reports VAL-2's result, as
+  A6-10 orders (`limitations[34]`); A2-6 and A3-9 carry "(as written at Amendment N)" in their names, A6-13 is named
+  "§19 A6-13" as A6-10 says. (b) the generator's rights limitation still reads "RC-05 and RC-06 (the 1993 paper's
+  Tables II and V)"; RC-06 now also covers the 1995 paper (B-88). A6-10 lists no edit to it.
