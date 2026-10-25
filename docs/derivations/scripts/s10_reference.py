@@ -1760,6 +1760,225 @@ def build() -> dict[str, Any]:
     return doc
 
 
+# ============================================================================================
+# 9. The real section (spec section 9.7; WO-S10-3): reads records.yaml, emits
+#    reference_values_real.yaml. Built so far: RE1-RE3, the I-states with their envelope claims,
+#    the IDAES mapping table and the smoothing claim. The section 7.3 flash tolerances of the
+#    I-states (re-measured floors) are the next work order's (docs/S10_DECISIONS.md).
+# ============================================================================================
+
+REAL_RECORDS_YAML = ROOT / "benchmarks" / "s10" / "records.yaml"
+REAL_OUT_YAML = ROOT / "benchmarks" / "s10" / "reference_values_real.yaml"
+
+RE_STATES: dict[str, dict[str, Any]] = {
+    "RE1": {"n": [0.6, 0.4, 1.0], "T": 350.0, "P": 101325.0},
+    "RE2": {"n": [1.0, 0.0, 1.0], "T": 345.0, "P": 101325.0},
+    "RE3": {"n": [0.0, 0.0, 1.0], "T": 360.0, "P": 80000.0},
+}
+#: Spec section 8.1, in the order (CH3OH, C2H5OH, H2O). Kind "mid": T midway between bubble and
+#: dew, rounded to 0.01 K; "sub"/"sup": the rounded bubble (dew) temperature -/+ 5 K (B-30).
+I_STATES: dict[str, tuple[list[float], str]] = {
+    **{f"I{k + 1}": ([zm, 0.0, 1.0 - zm], "mid") for k, zm in enumerate((0.1, 0.3, 0.5, 0.7, 0.9))},
+    "I6": ([0.4, 0.0, 0.6], "sub"),
+    "I7": ([0.4, 0.0, 0.6], "sup"),
+    **{f"I{k + 8}": ([0.0, ze, 1.0 - ze], "mid") for k, ze in enumerate((0.2, 0.6, 0.85))},
+    "I11": ([0.2, 0.3, 0.5], "mid"),
+    "I12": ([0.4, 0.2, 0.4], "mid"),
+    "I13": ([0.1, 0.6, 0.3], "mid"),
+    "I14": ([0.5, 0.5, 0.0], "mid"),
+}
+IDAES_RUNGS = (mpf("1e-4"), mpf("1e-5"), mpf("1e-6"))  # eps_1 = eps_2, K (spec section 8.1)
+TAU_IDAES = mpf("1e-7")  # beta, x_i, y_i (S10.A41)
+ENVELOPE_MARGIN = mpf("0.5")  # K
+
+
+def idaes_dew_t(model: Model, z: Sequence[mpf], p: mpf) -> mpf:
+    """IDAES's approximate dew point, gamma at the feed: sum_i z_i P / (gamma_i(z) P_i^sat) = 1."""
+    lg = model.lngamma(z)
+
+    def f(t: mpf) -> mpf:
+        return 1 - mp.fsum(
+            z[i] * p / mp.exp(lg[i] + model.lnpsat(i, t)) for i in range(model.n) if z[i] > 0
+        )
+
+    return bisect(f, mpf(280), mpf(450), 180)
+
+
+def build_real(records: Path) -> dict[str, Any]:
+    CLAIMS.clear()
+    rec = load_records(records)
+    model, f64, fl = Model(rec), Float64Model(rec), Flash(Model(rec))
+    ids = rec.ids
+    claim(
+        "REAL-CONV",
+        rec.convention == "WILSON-IG-ref-v1" and ids == ("CH3OH", "C2H5OH", "H2O"),
+        "the real records: convention WILSON-IG-ref-v1, components (CH3OH, C2H5OH, H2O)",
+    )
+
+    # ---- RE1-RE3: evaluate_phase (spec 9.7), tolerances as section 7.2 ----
+    ev: dict[str, Any] = {}
+    floors: dict[str, float] = {}
+    worst_floor = 0.0
+    for sid, st in RE_STATES.items():
+        nst, t, p = st["n"], st["T"], st["P"]
+        claim(
+            f"DOM-{sid}",
+            rec.t_lo <= t <= rec.t_hi and rec.p_lo <= p <= rec.p_hi,
+            f"{sid} is inside the closed domain",
+        )
+        ev[sid] = {"state": {"n": nst, "T": t, "P": p}}
+        nt = float(sum(mpf(v) for v in nst))
+        for phase in ("LIQUID", "VAPOR"):
+            r, rf = model.evaluate(nst, t, p, phase), f64.evaluate(nst, t, p, phase)
+            ev[sid][phase] = {
+                "values": {k: nstr(v) for k, v in r["values"].items()},
+                "derivatives": {
+                    k: {w: nstr(v) for w, v in row.items()} for k, row in r["derivatives"].items()
+                },
+            }
+            fl_max = 0.0
+            pairs = [(k, None, v, rf["values"][k]) for k, v in r["values"].items()] + [
+                (k, w, v, rf["derivatives"][k][w])
+                for k, row in r["derivatives"].items()
+                for w, v in row.items()
+            ]
+            for prop, wrt, v, vf in pairs:
+                if v == 0:
+                    claim(
+                        f"ZERO-{sid}-{phase}-{prop}-{wrt}",
+                        vf == 0.0,
+                        f"{sid} {phase} d{prop}/d{wrt} vanishes in both transcriptions",
+                    )
+                    continue
+                s = scale(prop.split("_")[0], wrt, nt, p)
+                fl_max = max(fl_max, float(abs(mpf(vf) - v)) / max(float(abs(v)), s))
+            floors[f"{sid}.{phase}"] = g3(fl_max)
+            worst_floor = max(worst_floor, fl_max)
+    claim(
+        "FLOOR-RE",
+        worst_floor <= TOL_VALUE / 10,
+        f"the binary64 transcription's worst scaled error over every RE-state value and "
+        f"derivative is {worst_floor:.3g} <= TOL_VALUE/10 (spec 7.2, re-measured on the real "
+        "records)",
+    )
+
+    # ---- I1-I14 (spec 8.1): the states, their envelopes and the 50-digit flash ----
+    patm = mpf(P_ATM)
+    istates: dict[str, Any] = {}
+    smoothing: dict[str, dict[str, float]] = {}
+    for sid, (zl, kind) in I_STATES.items():
+        z = [mpf(v) for v in zl]
+        tb, td, td_ida = bubble_t(fl, z, patm), dew_t(fl, z, patm), idaes_dew_t(model, z, patm)
+        if kind == "mid":
+            t = round(float((tb + td) / 2), 2)
+        elif kind == "sub":
+            t = round(round(float(tb), 2) - 5.0, 2)
+        else:
+            t = round(round(float(td), 2) + 5.0, 2)
+        out = fl.flash(zl, t, P_ATM)
+        entry: dict[str, Any] = {
+            "state": {"n": zl, "T": t, "P": P_ATM},
+            "kind": kind,
+            "bubble_T": nstr(tb),
+            "dew_T": nstr(td),
+            "idaes_dew_T_gamma_at_z": nstr(td_ida),
+            "phase": out["phase"],
+        }
+        if kind == "mid":
+            tt = mpf(t)
+            d_b, d_d, d_di = tt - tb, td - tt, td_ida - tt
+            claim(
+                f"ENV-{sid}",
+                min(d_b, d_d, d_di) >= ENVELOPE_MARGIN and out["phase"] == "TWO_PHASE",
+                f"{sid} at {t} K is two-phase and >= 0.5 K inside the true envelope (bubble "
+                f"{mp.nstr(d_b, 4)} K, dew {mp.nstr(d_d, 4)} K) and IDAES's approximate one (dew "
+                f"with gamma(z) {mp.nstr(d_di, 4)} K) (spec 8.1)",
+            )
+            if out["phase"] != "TWO_PHASE":  # reached only when claims are collected, not raised
+                istates[sid] = entry
+                continue
+            act = out["act"]
+            q0 = [out["beta"], *[out["x"][i] for i in act], *[out["y"][i] for i in act]]
+            h = mpf("1e-12")
+            qp, qm = (fl.flash(zl, tt + s, P_ATM) for s in (h, -h))
+            dq = max(
+                abs(a - b) / (2 * h)
+                for a, b in zip(
+                    [qp["beta"], *[qp["x"][i] for i in act], *[qp["y"][i] for i in act]],
+                    [qm["beta"], *[qm["x"][i] for i in act], *[qm["y"][i] for i in act]],
+                    strict=True,
+                )
+            )
+            pred = {
+                mp.nstr(eps, 1): g3(float((eps**2 / (4 * d_b) + eps**2 / (4 * d_di)) * dq))
+                for eps in IDAES_RUNGS
+            }
+            smoothing[sid] = pred
+            entry["max_abs_dq_dT"] = g3(float(dq))
+            entry["closed_form"] = {
+                "beta": nstr(q0[0]),
+                "x": [nstr(out["x"][i]) for i in range(3)],
+                "y": [nstr(out["y"][i]) for i in range(3)],
+                "K": [nstr(out["k"][i]) if i in act else None for i in range(3)],
+                "h_L": nstr(model.evaluate(out["x"], t, P_ATM, "LIQUID")["values"]["h"]),
+                "h_V": nstr(model.evaluate(out["y"], t, P_ATM, "VAPOR")["values"]["h"]),
+            }
+        else:
+            want = "LIQUID" if kind == "sub" else "VAPOR"
+            claim(f"PHASE-{sid}", out["phase"] == want, f"{sid} at {t} K is {want} (spec 8.1)")
+        istates[sid] = entry
+    worst_by_rung = {
+        r: max(s[r] for s in smoothing.values()) for r in next(iter(smoothing.values()))
+    }
+    claim(
+        "SMOOTH-I",
+        all(v <= float(TAU_IDAES) / 10 for v in worst_by_rung.values()),
+        "the predicted smoothing error (eps^2/(4 d_b) + eps^2/(4 d_d)) |dq/dT| is <= tau/10 = "
+        f"1e-8 at every rung, worst {worst_by_rung} (S10.A42; d_d to IDAES's approximate dew)",
+    )
+
+    # ---- the IDAES mapping table (spec 8.1) ----
+    t0 = mpf("298.15")
+    mapping = {
+        "tau": {
+            f"{ids[j]},{ids[i]}": nstr(-mp.log(mpf(rec.lam[i][j])))
+            for i in range(3)
+            for j in range(3)
+            if i != j
+        },
+        "components": {},
+    }
+    for i, c in enumerate(ids):
+        b = [mpf(v) for v in rec.b[i]]
+        a_, b_, c_, d_ = (mpf(v) for v in rec.psat[i])
+        mapping["components"][c] = {
+            "cp_mol_ig_comp_coeff_A_E": [nstr(R * b[k] / THETA_UNIT**k) for k in range(5)],
+            "dh_form_Vap": nstr(mpf(rec.dhf[i])),
+            "cp_mol_liq_comp_coeff_A_E": [
+                nstr(R * (b[0] - c_)),
+                nstr(R * b[1] / THETA_UNIT),
+                nstr(R * (b[2] - 6 * d_) / THETA_UNIT**2),
+                nstr(R * b[3] / THETA_UNIT**3),
+                nstr(R * b[4] / THETA_UNIT**4),
+            ],
+            "dh_form_Liq": nstr(model.h0l(i, t0)),
+            "pressure_sat_a_b_c_d": [nstr(v) for v in (a_, b_, c_, d_)],
+        }
+    return {
+        "schema_version": 1,
+        "generator": "docs/derivations/scripts/s10_reference.py --real",
+        "records_sha256": rec.sha256,
+        "spec": "docs/derivations/S10-spec.md sections 8.1 and 9.7",
+        "status": "partial (WO-S10-3): the I-state flash tolerances of section 7.3 are not yet "
+        "derived",
+        "closed_form": {"evaluate_phase": ev, "i_states": istates},
+        "idaes_mapping": mapping,
+        "tolerances": {"evaluate_phase_relative": TOL_VALUE, "idaes_beta_x_y": float(TAU_IDAES)},
+        "measured": {"evaluate_phase_floors": floors, "smoothing_predicted": smoothing},
+        "generator_claims": CLAIMS,
+    }
+
+
 def dump_yaml(doc: dict[str, Any]) -> str:
     return yaml.safe_dump(doc, sort_keys=False, width=120, allow_unicode=False)
 
@@ -1769,7 +1988,26 @@ def main() -> int:
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--check", action="store_true")
     g.add_argument("--emit", action="store_true")
+    ap.add_argument("--real", action="store_true", help="the real section (spec 9.7)")
+    ap.add_argument("--records", type=Path, default=None, help="with --real: other records")
+    ap.add_argument("--out", type=Path, default=None, help="with --records: the output file")
     args = ap.parse_args()
+    if args.real:
+        records, out = args.records or REAL_RECORDS_YAML, args.out or REAL_OUT_YAML
+        if args.records is not None and args.out is None:
+            print("refused: --records needs --out (never the committed real section)")
+            return 2
+        if not records.exists():
+            print(f"UNAVAILABLE: {records} is absent (WO-S10-3 records)")
+            return 2
+        text = dump_yaml(build_real(records))
+        if args.emit:
+            out.write_text(text, encoding="utf-8")
+            print(f"wrote {out}; {len(CLAIMS)} claims hold")
+            return 0
+        ok = out.exists() and out.read_text(encoding="utf-8") == text
+        print(f"{len(CLAIMS)} claims hold; {out.name} {'matches' if ok else 'DIFFERS'}")
+        return 0 if ok else 1
     text = dump_yaml(build())
     if args.emit:
         OUT_YAML.write_text(text, encoding="utf-8")

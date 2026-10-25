@@ -277,3 +277,51 @@ def test_a33_the_lambda_fit_claims_hold() -> None:
         assert fit["grid_margin_over_phi_star"] >= -1e-12
         assert len(fit["per_point"]) == fit["points"]
     assert all(c["holds"] for c in report["claims"])
+
+
+# ================================================================================ S10.A34
+
+
+REAL_REFERENCE = S10 / "reference_values_real.yaml"
+REAL_PROPERTIES = ("h", "lnphi_CH3OH", "lnphi_C2H5OH", "lnphi_H2O")
+REAL_INPUTS = ("T", "P", "n_CH3OH", "n_C2H5OH", "n_H2O")
+
+
+def test_a34_real_e_states_through_the_provider() -> None:
+    # The evaluate_phase half of A34 (spec §9.7, tolerances of §7.2). The I-state flash half
+    # waits for the section 7.3 tolerances of the real section (WO-S10-3 stopped before them).
+    if not REAL_REFERENCE.exists():
+        pytest.skip("reference_values_real.yaml awaits records.yaml (WO-S10-3)")
+    from openflowsheet.thermo import PropertyRequest, StreamState
+    from openflowsheet.thermo.wilson_ig import WilsonIdealGasProvider
+
+    reference = yaml.safe_load(REAL_REFERENCE.read_text(encoding="utf-8"))
+    provider = WilsonIdealGasProvider(None)
+    tol = reference["tolerances"]["evaluate_phase_relative"]
+    for sid, entry in reference["closed_form"]["evaluate_phase"].items():
+        st = entry["state"]
+        n_tot, pressure = sum(st["n"]), st["P"]
+        for phase in ("LIQUID", "VAPOR"):
+            request = PropertyRequest(
+                state=StreamState(n=tuple(st["n"]), temperature=st["T"], pressure=pressure),
+                phase=phase,  # type: ignore[arg-type]
+                properties=REAL_PROPERTIES,
+                derivatives=REAL_INPUTS,
+            )
+            result = provider.evaluate_phase(request, None)  # type: ignore[arg-type]
+            want = entry[phase]
+            for prop in REAL_PROPERTIES:
+                w = want["values"][prop]
+                s = 1.0e3 if prop == "h" else 1.0
+                assert abs(result.values[prop] - w) <= tol * max(abs(w), s), (sid, phase, prop)
+                for wrt in REAL_INPUTS:
+                    w = want["derivatives"][prop][wrt]
+                    if w == 0.0:
+                        assert result.derivatives[prop][wrt] == 0.0, (sid, phase, prop, wrt)
+                        continue
+                    if prop == "h":
+                        s = {"T": 10.0, "P": 0.0}.get(wrt, 1.0e3 / n_tot)
+                    else:
+                        s = {"T": 1.0e-2, "P": 1.0 / pressure}.get(wrt, 1.0 / n_tot)
+                    got = result.derivatives[prop][wrt]
+                    assert abs(got - w) <= tol * max(abs(w), s), (sid, phase, prop, wrt)
