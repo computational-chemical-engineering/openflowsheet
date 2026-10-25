@@ -48,6 +48,12 @@ each; each is isolated and revertible. Measurements go in the run log below.
 - DECISION B-30: I6 and I7's temperatures → the bubble (dew) temperature rounded to 0.01 K, then −5 K (+5 K), rounded again to 0.01 K. Alternative: unrounded T_bub − 5. Reversible by: `build_real` (`57b5255b`).
 - DECISION B-31: "IDAES's approximate envelope, dew with γ(z)" → Σ_i z_i P / (γ_i(z) P_i^sat(T)) = 1; bubble with γ(z) is the true bubble. The smoothing claim uses d_b to the true bubble and d_d to this approximate dew, |∂q/∂T| = max over β, x_i, y_i by a 50-digit central difference (h = 1e-12 K). Alternative: d_d to the true dew (larger, less conservative). Reversible by: `idaes_dew_t`, `build_real` (`57b5255b`).
 
+### WO-S10-3 remainder (spec §15 A2-5)
+
+- DECISION B-32: where the I-states' §7.3 flash expectations live in `reference_values_real.yaml` → the synthetic layout, `closed_form.flash` (per I-state: `state`, `phase_signature`, `stability`, the outputs), `tolerances.tm`, `tolerances.flash.per_state`, `measured.{binary64_floor_flash, classification_margins, ss_iterations_max}`, written by `flash_record()`, now shared by the synthetic F-states and the I-states (factored out inertly: `--check` 113 claims, byte-identical, `cbf7bbbb`); `closed_form.i_states` keeps the IDAES-oriented entries unchanged. Alternative: fold the flash fields into `i_states`. Reversible by: `build_real` (`d48f45f0`).
+- DECISION B-33: the I-states' classification margin → `MARGIN-<I>`: both trial distances more than 10 TOL_TM from 0 and from −EPS_TPD, §7.3's stated rule, for all 14 I-states (the synthetic `MARGIN-*` bound of 1e-4 was set for its chosen clear states); plus `DOM-<I>`. Measured: least margin 0.0209 (I13), so the 1e-4 bound would hold as well. Alternative: 1e-4. Reversible by: one bound in `build_real` (`d48f45f0`).
+- DECISION B-34: the tests once the records exist → the committed records' and real section's absence fails A30, A31, A33, A34 instead of skipping; provider A01 asserts that the default records are the real ones with §9.5's uncertainty string; the `UNAVAILABLE` test runs on an absent `--vle` path with `--out-dir`. §9.5's string "not yet validated (S10 spec §9.6)" was already in `records_text` (`a8411958`), so no generator change. Alternative: keep the skips. Reversible by: the test helpers (`3e6986ee`, `d48f45f0`).
+
 ### Escalations (WO-S10-3), for the design-lane ruling round
 
 **Ruled (2026-10-25):** spec §15 (Amendment 2), register R-712–R-715. ESC-1 → A2-1 (Gauss–Newton from the best point of
@@ -102,6 +108,18 @@ rule on min(T_dew, IDAES dew); I10 is z_E = 0.4); RC-03 → A2-4. The remainder 
 
 - 2026-10-25, WO-S10-3. Saturation points: 61 × 3, CoolProp 8.0.0 (`ae81610e`), EOS keys deReuck-BOOK-1993, Schroeder-JPCRD-2014, Wagner-JPCRD-2002; water vs `iapws95-v1` worst 3.5e-11 relative (290-410 K). Vapour-pressure fit (290-410 K, no narrowing): worst |Δ ln P| CH3OH 1.60e-4, C2H5OH 5.63e-5, H2O 9.25e-5. Δ_fH from the polynomials: −200938.85, −234948.66, −241824.62 J/mol. Transcription A: 11 / 20 / 18 rows, (T, x1, y1) multiset equal to the PDF text layer. **Provisional, transcription A, not committed:** methanol+ethanol fails §9.4 (ESC-1); with GN from (0.485, −0.40): Φ* 4.35349e-4, Λ (0.6109248362, 1.49887856), AAD T 0.025 K, y 0.0013. ethanol+water: 24 iterations, Φ* 0.0122794, grid min 0.0122811, Λ (0.1649874985, 0.8615311153), AAD T 0.049 K (max 0.35), y 0.0054 (max 0.016). methanol+water: 32 iterations, Φ* 0.0094319, grid min 0.0097278, Λ (0.3674022637, 1.134238098), AAD T 0.141 K, y 0.0041. Model azeotrope x_E 0.8814 at 351.320 K; the data's sign change interpolates to 0.900 (rows 16-17). Real section on those records: RE floors ≤ 5.7e-15; ESC-3. Tests: `tests/test_s10_records.py` 14 passed, 4 skipped (A30, A33, A34 pass on the provisional files); `test_s10_provider.py` unchanged; `s10_reference.py --check` 113 claims, matches.
 
+- 2026-10-25, WO-S10-3 remainder. `s10_records.py --emit` (18 s): 25 claims hold, `--check` matches. Stored Λ, iterations
+  and AAD equal §15 A2-1's table: ME 0.6109248362 / 1.49887856 (19 it., Φ* 4.35348996646e-4, grid margin 5.29e-7), EW
+  0.1649874985 / 0.8615311153 (21, margin 1.76e-6), MW 0.3674022637 / 1.134238098 (28, margin 8.34e-7); ME's θ = 0 run
+  stops at the cap (Φ 4.6126e-4), its second minimum Φ 4.564308503e-4. `s10_reference.py --real` (27 s): I-state T,
+  bubble, dew and IDAES dew equal A2-3's table; 155 claims (88 + DOM 14, SS 12, BETA 12, BAL 12, MARGIN 14, FLOOR-TM,
+  FLOOR-LNK, SS-CAP). Floors: tm 2.78e-15 (TOL_TM/10 = 1e-13), ln K 3.22e-15; SS 60 (liquid trial) and 67 (two-phase)
+  iterations; A 1.02-5.52 (I14-I10), ρ ≤ 0.65; β tolerances 2.7e-12 (I1) to 5.5e-11 (I13); least classification margin
+  0.0209 (I13). A34 flash half: worst 0.059 of tolerance (I2 K_CH3OH). Mutations against A34's two-phase checks:
+  Λ_MW changed in its 10th digit 138× (I9 K_CH3OH), Λ_EW transposed 4.8e11×. Tests: `test_s10_records.py` 21,
+  `test_s10_provider.py` 87, `test_s10_flash.py` 102, `test_requirements_ledger.py` 15, all passed, none skipped;
+  `s10_reference.py --check` 113 claims, matches. ruff, ruff format, mypy clean on the touched tests.
+
 ## Where WO-S10-2b stopped
 
 Complete: review findings 2 and 3 fixed, finding 1 recorded by E-2 with its outcome test; the stop rule is S10-C's.
@@ -109,11 +127,11 @@ B-16…B-18 are test-design choices for the next ruling round.
 
 ## Where WO-S10-3 stopped
 
-Complete: §9.2 (script, JSON, cross-check), §9.3, §9.5, the §9.4 fit code, transcription A, the rights check, tests
-for A30-A34 that skip until the records exist, the real section's first part. Not done: transcription B and the
-diff (separate agent); `records.yaml` and `fit-report.json` (wait for B and the ESC-1 ruling; then `s10_records.py
---emit`); `reference_values_real.yaml` (waits for the records and ESC-3); the §7.3 flash tolerances of the I-states
-in the real section and A34's flash half.
+Complete (2026-10-25): every item of §9.1-§9.5, §9.7 and §15 A2-5. `records.yaml` and `fit-report.json` emitted
+(25 claims, `--check` matches; Λ as §15 A2-1), `reference_values_real.yaml` emitted (155 claims, `--real --check`
+matches; I-states as §15 A2-3, with §7.3's flash tolerances), RC-03 per A2-4, tests for A30-A34 all running. Open:
+the S10 `reviewer` pass over the fit and the generator extension (§11), WO-S10-4 (IDAES) and WO-S10-6 (validation);
+RC-05 and RC-08 stay unresolved (Q-F3, Q-N6).
 
 ## Double-entry check of the 1993 fit data (orchestrator, 2026-10-25)
 
