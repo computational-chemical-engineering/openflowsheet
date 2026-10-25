@@ -14376,3 +14376,39 @@ record why.
 - *Fix them inside S08.* That would break S08's bit-identity premise and widen it into the shared contract.
 
 **Watch for.** Any column cause string with an empty change list, cited as evidence of a phase decision.
+
+---
+
+## R-732 — S08 WO-G: P2, P3, F1 and D1 are registered at 50 digits with §6.2's inputs unchanged; roots by core decoupling; block margins judged in kelvin
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S08 WO-G |
+| Normative text | `docs/derivations/S08-design.md` §5.2, §6.2, §7 (A01, A07–A11); `docs/derivations/scripts/s08_reference.py` and `s08_reference.json` |
+| Evidence | `s08_reference.py --check`: 84 claims, byte-identical. Scaled `σ_min`: P2 0.0352, P3 0.0921, F1 0.0549, D1 0.0713. F1 stage 4 subcooled 0.37504 K. Smallest block margin 0.3449 K (D1 stage 2, superheated by pressure alone). P3 and F1 stages 1–3 equal below 1e-40. Scratch, not evidence: the S08 prototype's roots (block opening + today's target solve; D1 also through today's `solve_column`) sit within 6.1e-3 of S02's state tolerance of these roots |
+| Affected packages | S08 (WO-2's A01; WO-4's A07–A11) |
+
+**Decision.**
+- §6.2's inputs are registered unchanged. Every claim held (§10 Q2), so no input was changed.
+- **Roots by core decoupling.** An L-block sends no vapour up and a V-block no liquid down, so the core is an S02 column of its own.
+  - The generator solves it as `s02_reference.py` does: initializer, pre-solve, 16-step path.
+  - It completes the blocks by explicit energy passes, which are exact because `C_P` is constant.
+  - It claims that the assembled state is a root of the full column's rows below 1e-40.
+- **Candidates.** An independent transcription of §5.2 reproduces §5.2's table for all 13 specifications.
+  - A top inlet declared `VAPOR` and a bottom inlet declared `LIQUID` are not sources, as the table reads. No registered list
+    depends on this, and that is a claim.
+  - (V3)'s "flowing inlet" includes the top and bottom ports. §5.2's table forces it: without it, P1 and P2 have no candidate.
+- **Block admissibility** is claimed as a temperature margin of at least 0.1 K, which is 1000× S02's state tolerance in `T`.
+  The margin is `T_bub − T` on a `LIQUID` stage and `T − T_dew` on a `VAPOR` stage.
+- P1 stays in `s02_reference.json`. The L-block pass reproduces it exactly, as a cross-check.
+
+**Rejected alternatives, and why.**
+- *Start Newton from the float prototype's values.* The start would come from the implementation under test.
+- *Transcribe §5.3's endpoint in 50 digits as the start.* No claim needs it, and the endpoint identity is WO-2's A02.
+- *S02's `1 − ΣKx ≥ 0.02` margin on block stages.* F1's stage 4 measures 0.0097 by design: its subcooling comes from pressure
+  alone. That rule would refuse the case its role.
+
+**Watch for.**
+- An implementation root for A08–A10 that deviates from these roots by more than 1/10 of the state tolerance.
+- A later edit to §5.2's source table that makes a registered list depend on the inlet-port reading.
