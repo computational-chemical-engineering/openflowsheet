@@ -563,6 +563,8 @@ Each item has a default, so the work can proceed unattended.
 - Anything about S01's `solve_cascade`.
 - The near-trivial split outside S02 columns (F4). It may exist wherever a division-free equilibrium row meets a
   `TWO_PHASE`-always-admissible branch.
+- That item 6 holds at every correct root. On stages with `L·V < ~0.1 (mol/s)²` it is a measured margin on the registered
+  roots, not a consequence of the row tolerances (Amendment 1, §13.4).
 
 ## 12. Decisions
 
@@ -573,3 +575,118 @@ Each item has a default, so the work can proceed unattended.
 - DECISION: the order of Stage A → today's all-2P path first, then block candidates. Alternative: topology first.
   Reversible by: swapping the order, a performance step that needs G1 re-run.
 - DECISION: S01's `not_two_phase` gate → unchanged (F6). Alternative: relax it. Reversible by: a later S01 amendment.
+
+## 13. Amendment 1 (2026-10-26, design lane `reviewer`): review errata
+
+Review: `docs/reviews/S08-review.md`. Register R-733 to R-736. These errata change no registered state, outcome or digest.
+§13.3 and §13.5–§13.6 are build-lane work before `reviewed`. `scripts/s08_evidence_manifest.py` reads §7 for A01–A16. It
+must also read §13.6 for A17 and A18.
+
+### 13.1 §3 F1, §4: the premise (R-733)
+
+- **F1's heading** now reads: *"The contract's restarts propose signatures without the column's source structure. Closed to the
+  block rule, they still have no regular root."*
+- **F1 gains a bullet.** Every failing restart measured here fails (V2):
+  - P1's `(2P, L, L, L, L)` has no vapour source under stage 1. §4 (c) itself says P1's only regular signatures are 2P×5 and L×5.
+  - P3's `(2P, 2P, 2P, 2P, L)` has no vapour source at stage 4. Its inflows are a cold liquid feed, `Q_4 = 0`, and liquid from
+    stage 3 at `P_4 > P_3`.
+  - P2's restart does not conform to the block rule at all.
+  - A rebuilt opening at the same signature (`S08_SWEEP=1`) cannot help.
+  - No measurement opens a source-valid signature from Stage A's failed end state. The evidence therefore does not separate the
+    opening from the signature.
+  - F2 shows that a source-valid signature, opened from a structured endpoint, converges.
+- **§4, "Why this route", first bullet** now reads: *"It removes the actual obstacle, restarts at signatures with no regular root
+  (F1), by solving only signatures that satisfy §5.2 (V2)."*
+- **Rejection (a)** now reads: *"Measured insufficient on P1 and P3 (F1): the block rule alone admits signatures with no
+  regular root. Adding (V2) to D4 would put column source structure into the shared function, which is R-533's objection. It
+  would also move the shared function."* Its third sub-bullet is unchanged.
+- **Rejection (b)** now reads: *"It needs the same source structure to choose a regular restart, and it is the second decision
+  function R-632 rejected."*
+- ADR 0048 Context item 2 and R-728's rejections (a) and (b) read as above.
+
+### 13.2 §5.2: inlet sources at any port (R-734)
+
+- Every flowing inlet is a source of its declared phase, at its stage, whichever port it uses: top, side or bottom.
+  - Declared `LIQUID`: a liquid source `(stage, inlet)`.
+  - Declared `VAPOR`: a vapour source `(stage, inlet)`.
+- §5.2's table names the common ports only. The physical reading is the general one. For example, a flowing `VAPOR` top inlet
+  feeds stage 1's vapour exactly as a side feed would.
+- This is `column_blocks.sources` (W2-1), and WO-G's `end_ports_any_phase=True`.
+- WO-G's executable claim stands: no registered candidate list depends on the reading. A18 pins it.
+
+### 13.3 §5.3: the full refusal list (R-734)
+
+Every way the builder can fail to build a candidate refuses it. Stage B never turns a typed Stage-A answer into an exception,
+except through §5.4's defect row.
+
+| Reason | Where |
+| --- | --- |
+| `bubble_point_outside_domain` | steps 3c, 7: band position not `inside` |
+| `bubble_point_refused` | steps 3c, 7: `band_temperature` raises `BandError` (a provider refusal or an exhausted bisection). This reverses W2-4 |
+| `sweeps_exhausted` | step 3d |
+| `block_energy_outside_domain` | step 5/6: no sign change on the domain |
+| `block_energy_refused(<status>)` | step 5/6: an enthalpy evaluation refused (W2-3) |
+| `block_energy_not_converged` | step 5/6: the evaluation budget is spent (W2-2; unreachable by construction) |
+| `inadmissible_endpoint(<stage>)` | step 9 |
+
+Stage A's `s02-bubble-point-v1` endpoint is unchanged. It still propagates `BandError`, as before S08.
+
+### 13.4 §5.5, §10 Q5, §11: what item 6 rests on (R-735)
+
+- Item 6 is not implied by the row tolerances.
+  - F4's bound gives `|T_j − T_bub| ≲ Σ_i tol_i / (L_j V_j Σ_i x_i ∂K_i/∂T)`.
+  - For SYN-001 (`tol = 9.3e-8`, `∂ln K/∂T ≈ 0.026` K⁻¹ at 370 K) that is about `1.1e-5 / (L_j V_j)` K, with L, V in mol/s.
+  - This exceeds `τ₆` when `L_j V_j < ~0.1 (mol/s)²`.
+  - On such stages, item 6 tightens convergence beyond the kind tolerance.
+- The registered roots pass with a 41× margin because Newton stops well inside tolerance, a measured fact (A12), not a bound.
+- A correct root whose final Newton step lands near tolerance on a low-traffic stage fails item 6. With no accepted candidate it
+  raises (§5.7 item 3). Q6's default stands, because a typed alternative needs a frozen `SolveOutcome`.
+- §11 gains the matching item (inserted there, tagged with this amendment).
+
+### 13.5 §7 A14 (b): the mutation as intended (R-736)
+
+- Row (b) of the mutation table now reads:
+  - Mutation: *"after §5.3 step 5, x⁰'s L-block vapour is set to `v_ij = K_ij(T_s, P_s*) ρ_s l_ij`, using the core bottom
+    `s`'s `K` and `ρ`, with `V_j` their sum. The candidate is then built, not refused."*
+  - Assertion that must fail: *"A08, by the candidate converging to a near-trivial split that item 6 rejects"*.
+- The test asserts P3's candidate record `(0, 2, "built", "CONVERGED", "near_trivial_split(4,5)")`, and that A08 fails.
+- The reviewer measured exactly that record on `2ae64c2b`. Under the same mutation F1 raises `AcceptanceDefectError`, with the
+  note "tried: (0, 2) near_trivial_split(4,5)".
+- W4-5's mutation leaves x⁰'s L-block vapour at `+0.0`, because step 5 resets it. It does not test exact zeros, and it is
+  withdrawn.
+
+### 13.6 §7: two new assertions (R-736)
+
+| Id | Assertion | Expected | Tolerance |
+| --- | --- | --- | --- |
+| S08.A17 | §5.4's candidate rows, with `target_attempt` stubbed for Stage-B calls (`initializer_source` = `s08-block-endpoint-v1`) and `candidates` stubbed to `[(0, 2), X]` on P3, where `X` is a second candidate | (i) first typed → recorded with its outcome and cause, the second accepted, `accepted == 1`; (ii) first `CONVERGED` with a single-phase `temperature` stage → cause `unsupported(temperature_specification_on_single_phase_stage:<j>)`, the second tried; (iii) first `CONVERGED` failing a non-item-6 §8 item → `AcceptanceDefectError`, no second solve | exact |
+| S08.A18 | §13.2's reading | `(1, "inlet") ∈ sources(D1).vapor` and `(5, "inlet") ∈ sources(F1).liquid` | exact |
+
+- A04 gains a row: `band_temperature` stubbed to raise `BandError` at a core stage refuses P3's `(0, 2)` with
+  `bubble_point_refused`, with no region solve.
+- `solve_column(P3)` under the same stub returns Stage A's typed answer, with that refusal recorded.
+- §5.4's "near-trivial" row is covered by §13.5.
+
+### 13.7 §5.1: item 6 before S06 item 3 (W3-6, confirmed)
+
+- Trigger (ii) is evaluated before S06 item 3. A state that fails only item 6 and also has a single-phase
+  `temperature`-specified stage starts Stage B. With no accepted candidate it raises (§5.7 item 3).
+- Before S08 such a state returned `CAPABILITY_UNAVAILABLE`. That answer described a near-trivial false root.
+
+### 13.8 §5.7 item 3 (W3-5, confirmed)
+
+"The message names the candidates tried" is met by an exception note (`add_note`). `failures` and `str(error)` stay S02 §8's.
+
+### 13.9 §7 A12 (W3-8, confirmed)
+
+- A12's 42 are the roots that Stage A converges to.
+- P1's Stage-B root has no `TWO_PHASE` stage, so item 6 holds there vacuously. The registered `CONVERGED` count is now 43.
+
+### 13.10 Requirements (R-736)
+
+- S08 evidences X31's "invalid specs/phases" clause. It changes the expected outcome of S02's phase case P1, and adds P2, P3, F1,
+  D1 and item 6. It does not touch X31's reference clause.
+- `docs/requirements.yaml`: X31's `owner_packages` becomes `[S02, S03, S08]`. S08's manifest lists `requirements: [X31]`. The
+  verdict stays `null`.
+- The S08 ledger entry keeps `depends_on: [S02, S03]`. S06 is not a ledger package; a comment names it as the source of G1's and
+  A16's S06 cases.

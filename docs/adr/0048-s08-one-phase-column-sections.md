@@ -71,7 +71,9 @@ ADR against D4 as an entry condition.
 ## What changed since R-632
 
 1. **A registered use case exists**: P1, now joined by P2, P3, F1 and D1 (§6).
-2. **Measured: the binding constraint is the restart opening, not the block rule.**
+2. **Measured: the binding constraint is the restart opening, not the block rule.** *Amended 2026-10-26 (S08-design §13.1,
+   R-733): every measured failing restart has a signature with no regular root, because it fails §5.2 (V2). The evidence
+   does not separate the opening from the signature. The route stands, because it solves only (V2)-valid signatures.*
    - A block closure inserted into the contract does not rescue P1. Attempt `(2P, L, L, L, L)` ends `LINE_SEARCH_FAILED` after 0
      iterations, both with and without an energy-consistent rebuild of the closed units.
    - P3's contract restart `(2P, 2P, 2P, 2P, L)` already conforms, and it fails the same way.

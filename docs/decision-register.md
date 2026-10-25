@@ -14412,3 +14412,100 @@ record why.
 **Watch for.**
 - An implementation root for A08–A10 that deviates from these roots by more than 1/10 of the state tolerance.
 - A later edit to §5.2's source table that makes a registered list depend on the inlet-port reading.
+
+---
+
+## R-733 — S08 review: the measured restart failures are signatures with no regular root; the route stands, and its reason is corrected
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S08 review |
+| Normative text | `docs/derivations/S08-design.md` §13.1 (amends §3 F1, §4); ADR 0048 Context item 2 (pointer) |
+| Evidence | `docs/derivations/scripts/s08_design/measured.txt`. P1's closure `(2P,L,L,L,L)` has no vapour source under stage 1; §4 (c) says P1's only regular signatures are 2P×5 and L×5. P3's restart `(2P,2P,2P,2P,L)` has none at stage 4. No run opens a (V2)-valid signature from the failed state. `docs/reviews/S08-review.md` finding 4 |
+| Affected packages | S08 (records only) |
+| Amends | R-728's rejections (a) and (b): the reasons, not the decisions |
+
+**Decision.**
+- The probes do not show that restarts fail because they open from the failed attempt's state.
+- They show that the contract's restarts, even when closed to the block rule, use signatures with no regular root.
+- Rejection (a) stands for that reason: the source condition (V2) would have to enter D4, which is R-533's objection.
+- Rejection (b) stands as the second decision function.
+
+**Rejected alternatives, and why.**
+- *Keep "the obstacle is the opening".* No measurement isolates the opening from the signature.
+- *Measure a (V2)-valid restart from the failed state now.* It would not change the route. It would matter only if rejection (a)
+  were reopened.
+
+**Watch for.** A later proposal to add a block rule to D4 that cites F1 as evidence about openings.
+
+---
+
+## R-734 — S08 review: inlet sources are read at any port; every builder failure refuses the candidate (W2-4 reversed)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S08 review |
+| Normative text | `docs/derivations/S08-design.md` §13.2, §13.3 |
+| Evidence | `column_blocks.sources` (W2-1); WO-G's executable claim that no registered list depends on the port reading (R-732). `column_blocks._bubble` lets `BandError` escape `solve_column` after a typed Stage A (`docs/reviews/S08-review.md` finding 3) |
+| Affected packages | S08 (`column_blocks.py`, `tests/test_s08_blocks.py`) |
+
+**Decision.**
+- Every flowing inlet is a source of its declared phase at its stage, at any port (top, side or bottom).
+- A `BandError` in steps 3c or 7 of §5.3 refuses the candidate with `bubble_point_refused`.
+- §5.3's refusal list is complete: it includes W2-2's `block_energy_not_converged` and W2-3's `block_energy_refused(<status>)`.
+- Stage B never turns a typed Stage-A answer into an exception, except through §5.4's defect row.
+
+**Rejected alternatives, and why.**
+- *The table's literal port reading.* A `VAPOR` top inlet feeds stage 1's vapour exactly as a side feed would.
+- *Propagate `BandError`, as §18.2's endpoint does.* Stage A's endpoint has no answer to fall back on. Stage B has one.
+
+**Watch for.** A registered list that comes to depend on the port reading (A18 pins it).
+
+---
+
+## R-735 — S08 review: item 6 tightens convergence on low-traffic stages; this is a recorded limitation, and Q6's raise stands
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S08 review |
+| Normative text | `docs/derivations/S08-design.md` §13.4, §11 |
+| Evidence | F4's row bound, with `tol = 9.3e-8` and SYN-001's measured `∂ln K/∂T` (0.019–0.036 K⁻¹ at 340–400 K; 0.026 at 370 K), gives `|T − T_bub| ≲ 1.1e-5/(L V)` K. This exceeds 1e-4 K when `L·V < ~0.1 (mol/s)²`. Registered roots pass with a 41× margin (A12), because Newton stops well inside tolerance |
+| Affected packages | S08 (records only) |
+
+**Decision.**
+- Item 6 stays at `τ₆ = 1e-4 K`.
+- §11 records that, on low-traffic stages, it is a measured margin and not a consequence of the row tolerances.
+- A correct root that fails it there, with no accepted candidate, raises, as Q6's default says.
+
+**Rejected alternatives, and why.**
+- *Scale `τ₆` with the row bound.* At F1's false root, that bound admits about 3 K, so it would re-admit F4's false success.
+- *A typed outcome.* It needs a frozen `SolveOutcome`.
+
+**Watch for.** Any `AcceptanceDefectError` from item 6 on a case whose two-phase stage has `L·V < 0.1 (mol/s)²`.
+
+---
+
+## R-736 — S08 review: A14 (b) mutates x⁰'s exact zeros; A17 and A18 are added; S08 evidences X31's phases clause
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S08 review |
+| Normative text | `docs/derivations/S08-design.md` §13.5, §13.6, §13.10 |
+| Evidence | Reviewer's scratch run on `2ae64c2b`, with x⁰'s L-block vapour set to `K(T_s) ρ_s l`. P3: candidate `(0, 2)` is built, converges, and is recorded `near_trivial_split(4,5)`; Stage A's `HOMOTOPY_STALLED` is returned. F1: `AcceptanceDefectError`, with the note "tried: (0, 2) near_trivial_split(4,5)". W4-5's mutation leaves those columns at `+0.0` (`column_blocks.py` step 5) |
+| Affected packages | S08 (tests, manifest, ledger); X31 |
+
+**Decision.**
+- A14 (b) is the design's mutation of x⁰'s exact zeros, and it must fail A08 through item 6.
+- A17 pins §5.4's candidate rows and the candidate order. A18 pins the port reading.
+- S08 is an owner of X31, for the "invalid specs/phases" clause only. Its manifest lists X31, and the verdict stays `null`.
+- `depends_on` stays `[S02, S03]`.
+
+**Rejected alternatives, and why.**
+- *Keep W4-5's mutation.* It breaks the L-block mass balance, not the zeros, and it is refused before any solve.
+- *No requirement for S08.* S08 changes the expected outcome of S02's phase case P1, which is X31 evidence.
+
+**Watch for.** S06 entering the ledger: then it belongs in S08's `depends_on`.

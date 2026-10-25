@@ -457,10 +457,11 @@ is empty**: no activity-coefficient liquid, no equation-of-state fugacities in e
 
 **Decision.** S03 does not teach the phase contract the block rule, and specifies no model-side signature screen.
 R-533 is closed as a **registered limitation**:
-- *the column has no phase-transition robustness*;
+- *the column has no phase-transition robustness* beyond S08's block re-entry;
 - the column converges to a block root `V^a 2P^b L^c` that §5.2 of S08-design generates (S08); other one-phase-section roots may still end typed;
-- P1 does end that way (`HOMOTOPY_STALLED`; attempt 1 `(2P, L, 2P, 2P, 2P)` breaks the rule);
-- that outcome is S02 A12's typed branch, never a success.
+- P1's all-two-phase path (S08's Stage A) still ends that way (`HOMOTOPY_STALLED`; attempt 1 `(2P, L, 2P, 2P, 2P)` breaks the
+  rule), and S08's Stage B then converges P1 to `LIQUID ×5`, the closed form (S08-design §6.1);
+- that typed outcome is recorded as `reentry.stage_a` (S02 A12 as amended by S02 Amendment 4), never returned as a success.
 
 **Reasons.**
 1. The contract is ADR 0005 D4's single decision function (T05b's owner). A column rule inside it is the model-specific screen
@@ -470,7 +471,8 @@ R-533 is closed as a **registered limitation**:
 3. The failure is honest: typed, with every attempted signature in the records (S02 A12).
 
 **Reopening** needs a registered use case whose regular signature is not all-two-phase, and an ADR against ADR 0005 D4. Whether
-to schedule that is Frank's call (Q-S03-4). *Answered: Frank asked for a later package (§17.7).*
+to schedule that is Frank's call (Q-S03-4). *Answered: Frank asked for a later package (§17.7).* *Reopened by S08 (ADR 0048):
+block openings from the column's sources in its initializer; ADR 0005 D4 unchanged.*
 
 ### 10.2 R-534 — S02's cases and the independent reference
 
@@ -603,8 +605,8 @@ the classifier decides reference verdicts.
   as a capability.
 - **Inverse specifications: one state per kind** (Amendment 1, §17.1): purity (RC5), recovery (RC6) and temperature (RC7). Each
   may end with one reference or none (§17.11). RC7's is expected to be IDAES alone.
-- **No phase-transition robustness** (§10.1). The column converges to a block root `V^a 2P^b L^c` that §5.2 of S08-design generates (S08); other one-phase-section roots may still end typed. A later
-  package is queued for it (Q-S03-4, §17.7); S03 neither depends on it nor anticipates it. No partial dormancy, no subcooled condenser, no total reboiler, no side draws,
+- **No phase-transition robustness** (§10.1). The column converges to a block root `V^a 2P^b L^c` that §5.2 of S08-design generates (S08); other one-phase-section roots may still end typed. That
+  package is S08 (Q-S03-4, §17.7; ADR 0048); S03's own cases and verdicts do not depend on it. No partial dormancy, no subcooled condenser, no total reboiler, no side draws,
   pump-arounds, hydraulics, efficiencies or rate-based models (deferred by the plan).
 - **Supported nonideal scope: none** (§9).
 - **Refusals are not compared with the tools.** S1–S10 and S11 are our contract (S02 A02–A03, A04 here). The tools' error
