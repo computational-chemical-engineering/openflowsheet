@@ -1,0 +1,6 @@
+biosteam==2.54.0
+# Build tools for the source distributions (numpoly compiles Cython code; the others are pure
+# Python): pinned and hash-locked so the build runs with --no-build-isolation.
+setuptools
+wheel
+cython
