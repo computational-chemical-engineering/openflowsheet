@@ -1,0 +1,808 @@
+{
+ "tool": "DWSIM",
+ "versions": {
+  "dwsim": "DWSIM version 9.0.5.0 (10/2/2025 11:49:46\u202fPM)",
+  "pythonnet": "3.1.0",
+  "dotnet_runtime": "8.0.31",
+  "python": "3.13.5"
+ },
+ "environment_fingerprint": {
+  "measured": {
+   "pip_freeze_sha256": "d0a428cc7c06a7605bcfdaeb1e62ac3e9630b02c04224dea8e5928bc2e02635a",
+   "dotnet_tree": "f03ce7f0101336009c4bd090fd3006d187ba419b03bf86c84d0b56367b6e1058",
+   "dwsim_tree": "b8de32e026197858b552b7b310c621a9e919952288900a66c73ac2a0353ea87e",
+   "automation_dll_sha256": "ce32c2a422e20c553769a355fdf6fc0cf94eac85ae6ba37d4df045cd2208aa31"
+  },
+  "expected_docs_reference_environments_s3": {
+   "pip_freeze_sha256": "d0a428cc7c06a7605bcfdaeb1e62ac3e9630b02c04224dea8e5928bc2e02635a",
+   "dotnet_tree": "f03ce7f0101336009c4bd090fd3006d187ba419b03bf86c84d0b56367b6e1058",
+   "dwsim_tree": "b8de32e026197858b552b7b310c621a9e919952288900a66c73ac2a0353ea87e",
+   "automation_dll_sha256": "ce32c2a422e20c553769a355fdf6fc0cf94eac85ae6ba37d4df045cd2208aa31"
+  },
+  "matches": true
+ },
+ "input_file": "docs/derivations/scripts/s03_cases.json",
+ "settings": {
+  "registered": {
+   "version": "9.0.5 via pythonnet 3.1.0",
+   "property_package": "Raoult's Law, user compounds (docs/reference-environments.md \u00a75.0)",
+   "dH_vap_J_per_mol": [
+    "25010",
+    "30010",
+    "35010"
+   ],
+   "dH_vap_J_per_mol_PC-L": [
+    "25000",
+    "30000",
+    "35000"
+   ],
+   "dH_f_ig_J_per_mol": "equal to dH_vap (T06 \u00a79.3)",
+   "liquid_density_pressure_correction": false,
+   "placeholders": {
+    "T_c_K": "1000",
+    "P_c_Pa": "1e7",
+    "omega": "0",
+    "NBP_K": [
+     "320",
+     "360",
+     "400"
+    ]
+   },
+   "flash_loop_tolerances": "1e-10 (PT and PH, external and internal), 1000 iterations",
+   "column_method_order": [
+    "Napthali-Sandholm",
+    "Russell inside-out",
+    "Wang-Henke / Burningham-Otto"
+   ],
+   "column_tolerance_ladder": [
+    "1e-10",
+    "1e-9",
+    "1e-8",
+    "1e-7",
+    "1e-6"
+   ],
+   "column_max_iterations": 1000,
+   "floor_rerun": "the selected column tolerance times 10, everything else unchanged",
+   "column_method_order_amendment_1": {
+    "supersedes": "column_method_order",
+    "methods": [
+     "Napthali-Sandholm",
+     "Wang-Henke"
+    ],
+    "applies_to": "every case and control",
+    "order": "levels L1 then L2; within a level, tolerances tightest first; within a tolerance, the methods in this order",
+    "reason": "Russell inside-out does not exist in DWSIM 9.0.5; Burningham-Otto runs only in AbsorptionColumn, which has no condenser and no reboiler (spec \u00a717.2)"
+   }
+  },
+  "flash_settings_applied": {
+   "PTFlash_External_Loop_Tolerance": "1E-10",
+   "PTFlash_Internal_Loop_Tolerance": "1E-10",
+   "PHFlash_External_Loop_Tolerance": "1E-10",
+   "PHFlash_Internal_Loop_Tolerance": "1E-10",
+   "PTFlash_Maximum_Number_Of_External_Iterations": "1000",
+   "PTFlash_Maximum_Number_Of_Internal_Iterations": "1000",
+   "PHFlash_Maximum_Number_Of_External_Iterations": "1000",
+   "PHFlash_Maximum_Number_Of_Internal_Iterations": "1000"
+  },
+  "property_package_options_applied": {
+   "LiquidDensity_CorrectExpDataForPressure": false
+  },
+  "method_names_dwsim": {
+   "Napthali-Sandholm": "Napthali-Sandholm (Simultaneous Correction)",
+   "Wang-Henke": "Wang-Henke (Bubble Point)"
+  },
+  "ladder": "column_method_order_amendment_1 (spec \u00a717.2)",
+  "recovery_percent_conversion": "DWSIM Component_Recovery value = 100 x the registered recovery fraction (spec \u00a717.4)",
+  "column_other": "DWSIM defaults (SolverScheme, Broyden acceleration, internal initial estimates); stage efficiency 1; CondenserDeltaP 0",
+  "stage_number_readers": {
+   "column_spec_type": "DWSIM.UnitOperations.UnitOperations.Auxiliary.SepOps.ColumnSpec",
+   "assemblies": [
+    "DWSIM.Automation",
+    "DWSIM.Drawing.SkiaSharp",
+    "DWSIM.DrawingTools.Point",
+    "DWSIM.DynamicsManager",
+    "DWSIM.ExtensionMethods",
+    "DWSIM.FileStorage",
+    "DWSIM.FlowsheetBase",
+    "DWSIM.GlobalSettings",
+    "DWSIM.Interfaces",
+    "DWSIM.Logging",
+    "DWSIM.MathOps.SwarmOps",
+    "DWSIM.SharedClasses",
+    "DWSIM.Thermodynamics",
+    "DWSIM.Thermodynamics.AdvancedEOS.GERG2008",
+    "DWSIM.Thermodynamics.AdvancedEOS.PCSAFT2",
+    "DWSIM.Thermodynamics.AdvancedEOS.PRSRKTDep",
+    "DWSIM.Thermodynamics.ThermoC",
+    "DWSIM.Thermodynamics.resources",
+    "DWSIM.UnitOperations",
+    "DWSIM.UnitOperations.resources"
+   ],
+   "methods_scanned": 24156,
+   "callers": [
+    {
+     "assembly": "DWSIM.UnitOperations",
+     "type": "DWSIM.UnitOperations.UnitOperations.Column",
+     "method": "GetSolverInputData",
+     "accessor": "get_StageNumber"
+    },
+    {
+     "assembly": "DWSIM.UnitOperations",
+     "type": "DWSIM.UnitOperations.UnitOperations.Column",
+     "method": "GetSolverInputData",
+     "accessor": "set_StageNumber"
+    },
+    {
+     "assembly": "DWSIM.UnitOperations",
+     "type": "DWSIM.UnitOperations.UnitOperations.Column",
+     "method": "GetSolverInputData_New",
+     "accessor": "get_StageNumber"
+    },
+    {
+     "assembly": "DWSIM.UnitOperations",
+     "type": "DWSIM.UnitOperations.UnitOperations.Column",
+     "method": "GetSolverInputData_New",
+     "accessor": "set_StageNumber"
+    },
+    {
+     "assembly": "DWSIM.UnitOperations",
+     "type": "DWSIM.UnitOperations.UnitOperations.Column",
+     "method": "get_Specs",
+     "accessor": "set_StageNumber"
+    }
+   ]
+  }
+ },
+ "sign_conversion": "Q_condenser = -1000 E(Q-COND) and Q_reboiler = +1000 E(Q-REB), W, Q > 0 into the stage; E in kW as DWSIM reports its energy streams (condenser: heat removed; reboiler: heat supplied)",
+ "case": "RC4-D",
+ "case_definition": {
+  "role": "comparison",
+  "tool_variant": {
+   "IDAES": "registered settings",
+   "DWSIM": "registered settings"
+  },
+  "stage_count": 5,
+  "condenser": "partial",
+  "reboiler": "none",
+  "stage_pressures_Pa": [
+   "100000.0",
+   "100000.0",
+   "100000.0",
+   "100000.0",
+   "100000.0"
+  ],
+  "intermediate_duties_W": "0 on every stage that carries no end specification",
+  "inlets": [
+   {
+    "port": "bottom",
+    "stage": 5,
+    "phase": "VAPOR",
+    "n_mol_per_s": [
+     "0.3",
+     "0.4",
+     "0.3"
+    ],
+    "T_K": "385.0",
+    "P_Pa": "100000.0"
+   }
+  ],
+  "specifications": {
+   "condenser": {
+    "kind": "distillate_rate",
+    "value": "0.51"
+   }
+  },
+  "quantities": [
+   [
+    "T[1]",
+    "T"
+   ],
+   [
+    "T[2]",
+    "T"
+   ],
+   [
+    "T[3]",
+    "T"
+   ],
+   [
+    "T[4]",
+    "T"
+   ],
+   [
+    "T[5]",
+    "T"
+   ],
+   [
+    "L[1]",
+    "flow"
+   ],
+   [
+    "V[1]",
+    "flow"
+   ],
+   [
+    "L[2]",
+    "flow"
+   ],
+   [
+    "V[2]",
+    "flow"
+   ],
+   [
+    "L[3]",
+    "flow"
+   ],
+   [
+    "V[3]",
+    "flow"
+   ],
+   [
+    "L[4]",
+    "flow"
+   ],
+   [
+    "V[4]",
+    "flow"
+   ],
+   [
+    "L[5]",
+    "flow"
+   ],
+   [
+    "V[5]",
+    "flow"
+   ],
+   [
+    "top[A]",
+    "flow"
+   ],
+   [
+    "top[B]",
+    "flow"
+   ],
+   [
+    "top[C]",
+    "flow"
+   ],
+   [
+    "bottom[A]",
+    "flow"
+   ],
+   [
+    "bottom[B]",
+    "flow"
+   ],
+   [
+    "bottom[C]",
+    "flow"
+   ],
+   [
+    "Q_condenser",
+    "duty"
+   ]
+  ]
+ },
+ "attempts": [
+  {
+   "level": "L1",
+   "tolerance": 1e-10,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "structurally_expressible": false,
+   "converged": null,
+   "passes": false,
+   "failed_rule": "structural",
+   "reason": "condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1",
+   "rung_index": 0
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-10,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "structurally_expressible": false,
+   "converged": null,
+   "passes": false,
+   "failed_rule": "structural",
+   "reason": "condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1",
+   "rung_index": 1
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-09,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "structurally_expressible": false,
+   "converged": null,
+   "passes": false,
+   "failed_rule": "structural",
+   "reason": "condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1",
+   "rung_index": 2
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-09,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "structurally_expressible": false,
+   "converged": null,
+   "passes": false,
+   "failed_rule": "structural",
+   "reason": "condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1",
+   "rung_index": 3
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-08,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "structurally_expressible": false,
+   "converged": null,
+   "passes": false,
+   "failed_rule": "structural",
+   "reason": "condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1",
+   "rung_index": 4
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-08,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "structurally_expressible": false,
+   "converged": null,
+   "passes": false,
+   "failed_rule": "structural",
+   "reason": "condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1",
+   "rung_index": 5
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-07,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "structurally_expressible": false,
+   "converged": null,
+   "passes": false,
+   "failed_rule": "structural",
+   "reason": "condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1",
+   "rung_index": 6
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-07,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "structurally_expressible": false,
+   "converged": null,
+   "passes": false,
+   "failed_rule": "structural",
+   "reason": "condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1",
+   "rung_index": 7
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-06,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "structurally_expressible": false,
+   "converged": null,
+   "passes": false,
+   "failed_rule": "structural",
+   "reason": "condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1",
+   "rung_index": 8
+  },
+  {
+   "level": "L1",
+   "tolerance": 1e-06,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "structurally_expressible": false,
+   "converged": null,
+   "passes": false,
+   "failed_rule": "structural",
+   "reason": "condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1",
+   "rung_index": 9
+  },
+  {
+   "level": "L2",
+   "tolerance": 1e-10,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "converged": false,
+   "termination": "COL: Error evaluating error functions.",
+   "wall_time_s": 0.004955085925757885,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: Error evaluating error functions.",
+   "structurally_expressible": true,
+   "rung_index": 0
+  },
+  {
+   "level": "L2",
+   "tolerance": 1e-10,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "converged": false,
+   "termination": "COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.",
+   "wall_time_s": 0.005528126028366387,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.",
+   "structurally_expressible": true,
+   "rung_index": 1
+  },
+  {
+   "level": "L2",
+   "tolerance": 1e-09,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "converged": false,
+   "termination": "COL: Error evaluating error functions.",
+   "wall_time_s": 0.003957609995268285,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: Error evaluating error functions.",
+   "structurally_expressible": true,
+   "rung_index": 2
+  },
+  {
+   "level": "L2",
+   "tolerance": 1e-09,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "converged": false,
+   "termination": "COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.",
+   "wall_time_s": 0.004007595009170473,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.",
+   "structurally_expressible": true,
+   "rung_index": 3
+  },
+  {
+   "level": "L2",
+   "tolerance": 1e-08,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "converged": false,
+   "termination": "COL: Error evaluating error functions.",
+   "wall_time_s": 0.004898501909337938,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: Error evaluating error functions.",
+   "structurally_expressible": true,
+   "rung_index": 4
+  },
+  {
+   "level": "L2",
+   "tolerance": 1e-08,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "converged": false,
+   "termination": "COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.",
+   "wall_time_s": 0.004310384974814951,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.",
+   "structurally_expressible": true,
+   "rung_index": 5
+  },
+  {
+   "level": "L2",
+   "tolerance": 1e-07,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "converged": false,
+   "termination": "COL: Error evaluating error functions.",
+   "wall_time_s": 0.004874696955084801,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: Error evaluating error functions.",
+   "structurally_expressible": true,
+   "rung_index": 6
+  },
+  {
+   "level": "L2",
+   "tolerance": 1e-07,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "converged": false,
+   "termination": "COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.",
+   "wall_time_s": 0.004726555896922946,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.",
+   "structurally_expressible": true,
+   "rung_index": 7
+  },
+  {
+   "level": "L2",
+   "tolerance": 1e-06,
+   "method": "Napthali-Sandholm",
+   "dwsim_method_name": "Napthali-Sandholm (Simultaneous Correction)",
+   "converged": false,
+   "termination": "COL: Error evaluating error functions.",
+   "wall_time_s": 0.008534155902452767,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: Error evaluating error functions.",
+   "structurally_expressible": true,
+   "rung_index": 8
+  },
+  {
+   "level": "L2",
+   "tolerance": 1e-06,
+   "method": "Wang-Henke",
+   "dwsim_method_name": "Wang-Henke (Bubble Point)",
+   "converged": false,
+   "termination": "COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.",
+   "wall_time_s": 0.008135506068356335,
+   "passes": false,
+   "failed_rule": "2",
+   "reason": "COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.",
+   "structurally_expressible": true,
+   "rung_index": 9
+  }
+ ],
+ "available": false,
+ "level": null,
+ "not_available_reason": "L1 Napthali-Sandholm: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1 | L1 Wang-Henke: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec \u00a75.1 row 9). No native option of the Full_Reflux condenser is V_1 | L2 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Error evaluating error functions.) | L2 Wang-Henke: no tolerance passed rules 2-2d (2: COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.) | L3: L3 is not admissible for DWSIM (spec \u00a72.2)",
+ "structural_inspection": {
+  "L1": {
+   "Napthali-Sandholm": null,
+   "Wang-Henke": null
+  },
+  "L2": {
+   "Napthali-Sandholm": {
+    "property_package": {
+     "package": "Raoult's Law",
+     "compounds": [
+      "SYN001-A",
+      "SYN001-B",
+      "SYN001-C"
+     ],
+     "t06_definitions": "t06_qualify_dwsim.Sheet (user compounds, Raoult's Law)",
+     "vaporization_enthalpy_mapped": true,
+     "applies_to": "the whole column: one property package per DWSIM flowsheet"
+    },
+    "stage_map": {
+     "stage_count_registered": 5,
+     "stage_count_dwsim": 5,
+     "index_base": "DWSIM Stages list, 0-based: our j is index j - 1",
+     "map": {
+      "1": {
+       "dwsim_index": 0,
+       "dwsim_name": "Condenser"
+      },
+      "2": {
+       "dwsim_index": 1,
+       "dwsim_name": "Stage1"
+      },
+      "3": {
+       "dwsim_index": 2,
+       "dwsim_name": "Stage2"
+      },
+      "4": {
+       "dwsim_index": 3,
+       "dwsim_name": "Stage3"
+      },
+      "5": {
+       "dwsim_index": 4,
+       "dwsim_name": "Reboiler"
+      }
+     }
+    },
+    "feed_stages": [
+     {
+      "inlet": "IN1-bottom",
+      "registered_stage": 5,
+      "dwsim_associated_stage": "Reboiler",
+      "dwsim_stage_index_0_based": 4,
+      "declared_phase": "VAPOR",
+      "enters_whole": true
+     }
+    ],
+    "condenser_realization": "partial (S02) at L2(a): DWSIM Partial_Condenser, vapour product rate set, liquid distillate fixed at 0",
+    "reboiler_realization": "absent: DWSIM RefluxedAbsorber, the last stage is an ordinary stage fed by the bottom inlet",
+    "specifications": {
+     "registered": {
+      "condenser": {
+       "kind": "distillate_rate",
+       "value": "0.51"
+      }
+     },
+     "dwsim": {
+      "C": {
+       "SType": "Product_Molar_Flow_Rate",
+       "SpecValue": 0.0,
+       "SpecUnit": "mol/s",
+       "ComponentID": ""
+      },
+      "R": {
+       "SType": "Product_Molar_Flow_Rate",
+       "SpecValue": 0.0,
+       "SpecUnit": "mol/s",
+       "ComponentID": ""
+      }
+     },
+     "realization": {
+      "condenser_type": "Partial_Condenser",
+      "vapor_flow_rate_mol_per_s": 0.51,
+      "liquid_distillate": "fixed at 0 mol/s by the condenser specification (L2 a)",
+      "condenser_spec": [
+       "Product_Molar_Flow_Rate",
+       0.0,
+       "mol/s",
+       ""
+      ],
+      "reboiler_spec": null
+     }
+    },
+    "pressures": {
+     "stage_P_Pa": [
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0
+     ],
+     "CondenserDeltaP": 0.0,
+     "ColumnPressureDrop": "nan",
+     "pressure_drop_relation": "none: every stage pressure is set directly"
+    },
+    "intermediate_stages": {
+     "efficiency": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "duty_input_kW": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "side_draws": [],
+     "hydraulics": "none: DWSIM's equilibrium-stage MESH model"
+    },
+    "initialization": {
+     "InitialEstimatesProvider": "Internal (Default)",
+     "UseTemperatureEstimates": false,
+     "UseVaporFlowEstimates": false,
+     "UseLiquidFlowEstimates": false,
+     "UseCompositionEstimates": false,
+     "note": "DWSIM's own estimator; no value of this project is entered"
+    }
+   },
+   "Wang-Henke": {
+    "property_package": {
+     "package": "Raoult's Law",
+     "compounds": [
+      "SYN001-A",
+      "SYN001-B",
+      "SYN001-C"
+     ],
+     "t06_definitions": "t06_qualify_dwsim.Sheet (user compounds, Raoult's Law)",
+     "vaporization_enthalpy_mapped": true,
+     "applies_to": "the whole column: one property package per DWSIM flowsheet"
+    },
+    "stage_map": {
+     "stage_count_registered": 5,
+     "stage_count_dwsim": 5,
+     "index_base": "DWSIM Stages list, 0-based: our j is index j - 1",
+     "map": {
+      "1": {
+       "dwsim_index": 0,
+       "dwsim_name": "Condenser"
+      },
+      "2": {
+       "dwsim_index": 1,
+       "dwsim_name": "Stage1"
+      },
+      "3": {
+       "dwsim_index": 2,
+       "dwsim_name": "Stage2"
+      },
+      "4": {
+       "dwsim_index": 3,
+       "dwsim_name": "Stage3"
+      },
+      "5": {
+       "dwsim_index": 4,
+       "dwsim_name": "Reboiler"
+      }
+     }
+    },
+    "feed_stages": [
+     {
+      "inlet": "IN1-bottom",
+      "registered_stage": 5,
+      "dwsim_associated_stage": "Reboiler",
+      "dwsim_stage_index_0_based": 4,
+      "declared_phase": "VAPOR",
+      "enters_whole": true
+     }
+    ],
+    "condenser_realization": "partial (S02) at L2(a): DWSIM Partial_Condenser, vapour product rate set, liquid distillate fixed at 0",
+    "reboiler_realization": "absent: DWSIM RefluxedAbsorber, the last stage is an ordinary stage fed by the bottom inlet",
+    "specifications": {
+     "registered": {
+      "condenser": {
+       "kind": "distillate_rate",
+       "value": "0.51"
+      }
+     },
+     "dwsim": {
+      "C": {
+       "SType": "Product_Molar_Flow_Rate",
+       "SpecValue": 0.0,
+       "SpecUnit": "mol/s",
+       "ComponentID": ""
+      },
+      "R": {
+       "SType": "Product_Molar_Flow_Rate",
+       "SpecValue": 0.0,
+       "SpecUnit": "mol/s",
+       "ComponentID": ""
+      }
+     },
+     "realization": {
+      "condenser_type": "Partial_Condenser",
+      "vapor_flow_rate_mol_per_s": 0.51,
+      "liquid_distillate": "fixed at 0 mol/s by the condenser specification (L2 a)",
+      "condenser_spec": [
+       "Product_Molar_Flow_Rate",
+       0.0,
+       "mol/s",
+       ""
+      ],
+      "reboiler_spec": null
+     }
+    },
+    "pressures": {
+     "stage_P_Pa": [
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0,
+      100000.0
+     ],
+     "CondenserDeltaP": 0.0,
+     "ColumnPressureDrop": "nan",
+     "pressure_drop_relation": "none: every stage pressure is set directly"
+    },
+    "intermediate_stages": {
+     "efficiency": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "duty_input_kW": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "side_draws": [],
+     "hydraulics": "none: DWSIM's equilibrium-stage MESH model"
+    },
+    "initialization": {
+     "InitialEstimatesProvider": "Internal (Default)",
+     "UseTemperatureEstimates": false,
+     "UseVaporFlowEstimates": false,
+     "UseLiquidFlowEstimates": false,
+     "UseCompositionEstimates": false,
+     "note": "DWSIM's own estimator; no value of this project is entered"
+    }
+   }
+  },
+  "L3": {}
+ }
+}

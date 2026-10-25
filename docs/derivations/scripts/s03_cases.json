@@ -1,0 +1,3168 @@
+{
+ "generator": "docs/derivations/scripts/s03_reference.py",
+ "spec": "docs/derivations/S03-spec.md",
+ "note": "Inputs only. Tool scripts read this file and nothing else of this project.",
+ "components": [
+  "A",
+  "B",
+  "C"
+ ],
+ "cases": {
+  "RC1": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "partial",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "2"
+    },
+    "reboiler": {
+     "kind": "boilup_ratio",
+     "value": "1.5"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC2": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "total",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "1.5"
+    },
+    "reboiler": {
+     "kind": "bottoms_rate",
+     "value": "0.55"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "reflux",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC3": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 5,
+   "condenser": "none",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "top",
+     "stage": 1,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "300.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "reboiler": {
+     "kind": "duty",
+     "value": "30000"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ]
+   ]
+  },
+  "RC4": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 5,
+   "condenser": "partial",
+   "reboiler": "none",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "bottom",
+     "stage": 5,
+     "phase": "VAPOR",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "385.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "distillate_rate",
+     "value": "0.5"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ]
+   ]
+  },
+  "RC5": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "partial",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "purity",
+     "value": "0.85",
+     "component": "A"
+    },
+    "reboiler": {
+     "kind": "boilup_ratio",
+     "value": "1.5"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC6": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "total",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "1.5"
+    },
+    "reboiler": {
+     "kind": "recovery",
+     "value": "0.99",
+     "component": "C"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "reflux",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC7": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "partial",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "2"
+    },
+    "reboiler": {
+     "kind": "temperature",
+     "value": "368",
+     "stage": 6
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC1-RR": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "partial",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "2.04"
+    },
+    "reboiler": {
+     "kind": "boilup_ratio",
+     "value": "1.5"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC1-BR": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "partial",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "2"
+    },
+    "reboiler": {
+     "kind": "boilup_ratio",
+     "value": "1.53"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC1-z": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "partial",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.28",
+      "0.4",
+      "0.32"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "2"
+    },
+    "reboiler": {
+     "kind": "boilup_ratio",
+     "value": "1.5"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC2-RR": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "total",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "1.53"
+    },
+    "reboiler": {
+     "kind": "bottoms_rate",
+     "value": "0.55"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "reflux",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC2-B": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "total",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "1.5"
+    },
+    "reboiler": {
+     "kind": "bottoms_rate",
+     "value": "0.561"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "reflux",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC2-z": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "total",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.28",
+      "0.4",
+      "0.32"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "1.5"
+    },
+    "reboiler": {
+     "kind": "bottoms_rate",
+     "value": "0.55"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "reflux",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "RC3-Q": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 5,
+   "condenser": "none",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "top",
+     "stage": 1,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "300.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "reboiler": {
+     "kind": "duty",
+     "value": "30600"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ]
+   ]
+  },
+  "RC3-z": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 5,
+   "condenser": "none",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "top",
+     "stage": 1,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.28",
+      "0.4",
+      "0.32"
+     ],
+     "T_K": "300.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "reboiler": {
+     "kind": "duty",
+     "value": "30000"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ]
+   ]
+  },
+  "RC4-D": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 5,
+   "condenser": "partial",
+   "reboiler": "none",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "bottom",
+     "stage": 5,
+     "phase": "VAPOR",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "385.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "distillate_rate",
+     "value": "0.51"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ]
+   ]
+  },
+  "RC4-z": {
+   "role": "comparison",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 5,
+   "condenser": "partial",
+   "reboiler": "none",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "bottom",
+     "stage": 5,
+     "phase": "VAPOR",
+     "n_mol_per_s": [
+      "0.28",
+      "0.4",
+      "0.32"
+     ],
+     "T_K": "385.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "distillate_rate",
+     "value": "0.5"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ]
+   ]
+  },
+  "PC-P": {
+   "role": "positive_control",
+   "tool_variant": {
+    "IDAES": "registered settings",
+    "DWSIM": "registered settings"
+   },
+   "stage_count": 7,
+   "condenser": "partial",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "150000.0",
+    "150000.0",
+    "150000.0",
+    "150000.0",
+    "150000.0",
+    "150000.0",
+    "150000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "150000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "2"
+    },
+    "reboiler": {
+     "kind": "boilup_ratio",
+     "value": "1.5"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "PC-L": {
+   "role": "positive_control",
+   "tool_variant": {
+    "IDAES": "not_applicable",
+    "DWSIM": "dH_vap_J_per_mol_PC-L in place of dH_vap"
+   },
+   "stage_count": 7,
+   "condenser": "partial",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "2"
+    },
+    "reboiler": {
+     "kind": "boilup_ratio",
+     "value": "1.5"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  },
+  "PC-LI": {
+   "role": "positive_control",
+   "tool_variant": {
+    "IDAES": "IDAES_amendment_2.h_form_ig_J_per_mol_PC-LI in place of h_form_ig_J_per_mol",
+    "DWSIM": "not_applicable"
+   },
+   "stage_count": 7,
+   "condenser": "partial",
+   "reboiler": "partial",
+   "stage_pressures_Pa": [
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0",
+    "100000.0"
+   ],
+   "intermediate_duties_W": "0 on every stage that carries no end specification",
+   "inlets": [
+    {
+     "port": "feed",
+     "stage": 4,
+     "phase": "LIQUID",
+     "n_mol_per_s": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T_K": "340.0",
+     "P_Pa": "100000.0"
+    }
+   ],
+   "specifications": {
+    "condenser": {
+     "kind": "reflux_ratio",
+     "value": "2"
+    },
+    "reboiler": {
+     "kind": "boilup_ratio",
+     "value": "1.5"
+    }
+   },
+   "quantities": [
+    [
+     "T[1]",
+     "T"
+    ],
+    [
+     "T[2]",
+     "T"
+    ],
+    [
+     "T[3]",
+     "T"
+    ],
+    [
+     "T[4]",
+     "T"
+    ],
+    [
+     "T[5]",
+     "T"
+    ],
+    [
+     "T[6]",
+     "T"
+    ],
+    [
+     "T[7]",
+     "T"
+    ],
+    [
+     "L[1]",
+     "flow"
+    ],
+    [
+     "V[1]",
+     "flow"
+    ],
+    [
+     "L[2]",
+     "flow"
+    ],
+    [
+     "V[2]",
+     "flow"
+    ],
+    [
+     "L[3]",
+     "flow"
+    ],
+    [
+     "V[3]",
+     "flow"
+    ],
+    [
+     "L[4]",
+     "flow"
+    ],
+    [
+     "V[4]",
+     "flow"
+    ],
+    [
+     "L[5]",
+     "flow"
+    ],
+    [
+     "V[5]",
+     "flow"
+    ],
+    [
+     "L[6]",
+     "flow"
+    ],
+    [
+     "V[6]",
+     "flow"
+    ],
+    [
+     "L[7]",
+     "flow"
+    ],
+    [
+     "V[7]",
+     "flow"
+    ],
+    [
+     "top[A]",
+     "flow"
+    ],
+    [
+     "top[B]",
+     "flow"
+    ],
+    [
+     "top[C]",
+     "flow"
+    ],
+    [
+     "bottom[A]",
+     "flow"
+    ],
+    [
+     "bottom[B]",
+     "flow"
+    ],
+    [
+     "bottom[C]",
+     "flow"
+    ],
+    [
+     "Q_condenser",
+     "duty"
+    ],
+    [
+     "Q_reboiler",
+     "duty"
+    ]
+   ]
+  }
+ },
+ "tool_settings": {
+  "SYN-001_mapping": "T06 §9.3 unchanged (ref.closed_form.dwsim_input_mapping, ref.closed_form.reference_tool_settings in t06_reference.json)",
+  "IDAES": {
+   "version": "idaes-pse 2.13.0, extensions 3.4.2",
+   "linear_solver": "mumps",
+   "tol": "1e-10",
+   "constr_viol_tol": "1e-9",
+   "max_iter": 500,
+   "initializers": "linear_solver = mumps; IDAES's other defaults",
+   "smooth_vle": {
+    "eps_1_K": "1e-8",
+    "eps_2_K": "1e-8"
+   },
+   "floor_rerun": {
+    "tol": "1e-9",
+    "constr_viol_tol": "1e-8"
+   },
+   "h_form_liq_J_per_mol": [
+    "0",
+    "0",
+    "0"
+   ],
+   "h_form_ig_J_per_mol": [
+    "25000",
+    "30000",
+    "35000"
+   ],
+   "placeholders": {
+    "temperature_crit_K": "1000",
+    "pressure_crit_Pa": "1e7"
+   }
+  },
+  "DWSIM": {
+   "version": "9.0.5 via pythonnet 3.1.0",
+   "property_package": "Raoult's Law, user compounds (docs/reference-environments.md §5.0)",
+   "dH_vap_J_per_mol": [
+    "25010",
+    "30010",
+    "35010"
+   ],
+   "dH_vap_J_per_mol_PC-L": [
+    "25000",
+    "30000",
+    "35000"
+   ],
+   "dH_f_ig_J_per_mol": "equal to dH_vap (T06 §9.3)",
+   "liquid_density_pressure_correction": false,
+   "placeholders": {
+    "T_c_K": "1000",
+    "P_c_Pa": "1e7",
+    "omega": "0",
+    "NBP_K": [
+     "320",
+     "360",
+     "400"
+    ]
+   },
+   "flash_loop_tolerances": "1e-10 (PT and PH, external and internal), 1000 iterations",
+   "column_method_order": [
+    "Napthali-Sandholm",
+    "Russell inside-out",
+    "Wang-Henke / Burningham-Otto"
+   ],
+   "column_tolerance_ladder": [
+    "1e-10",
+    "1e-9",
+    "1e-8",
+    "1e-7",
+    "1e-6"
+   ],
+   "column_max_iterations": 1000,
+   "floor_rerun": "the selected column tolerance times 10, everything else unchanged",
+   "column_method_order_amendment_1": {
+    "supersedes": "column_method_order",
+    "methods": [
+     "Napthali-Sandholm",
+     "Wang-Henke"
+    ],
+    "applies_to": "every case and control",
+    "order": "levels L1 then L2; within a level, tolerances tightest first; within a tolerance, the methods in this order",
+    "reason": "Russell inside-out does not exist in DWSIM 9.0.5; Burningham-Otto runs only in AbsorptionColumn, which has no condenser and no reboiler (spec §17.2)"
+   }
+  },
+  "tool_initial_guess": "the tool's own initializer or estimator; if it needs a temperature profile: linear from 320 K (stage 1) to 400 K (stage N), from SYN-001's T_b alone",
+  "specification_definitions_amendment_1": {
+   "note": "spec §5.1 row 9 with §17.4; molar; our stage numbering; the condenser end's product is v_1 (partial) or d (total), the reboiler end's product is l_N",
+   "reflux_ratio": "L_1/V_1 (partial condenser); sum(r)/D (total condenser)",
+   "boilup_ratio": "V_N/L_N",
+   "distillate_rate": "V_1 (partial condenser); D (total condenser)",
+   "bottoms_rate": "L_N",
+   "duty": "the end stage's duty, positive into the stage",
+   "purity": "n_c/P: the component's mole fraction in the end's product",
+   "recovery": "n_c/F_c: the end's product flow of c over the inlets' total flow of c",
+   "temperature": "T_s of the named stage s (s = 1 with a total condenser means T_c)",
+   "semantics_threshold": "1e-4 relative (rule 2c)",
+   "accuracy_threshold": "rule 2d: 1e-8 relative for a ratio, rate or duty; 1e-8 absolute for purity; 1e-9 absolute for recovery; 1e-9 relative for temperature"
+  },
+  "IDAES_amendment_2": {
+   "spec": "docs/derivations/S03-spec.md §18",
+   "registered_unchanged": "tool_settings.IDAES: linear_solver, tol, constr_viol_tol, max_iter and smooth_vle for every solve that decides (the final solve and its accuracy rerun); converged iff 'Optimal Solution Found'",
+   "common_start": [
+    "S1 initial guesses: every tray inlet that is not a case inlet at the registered linear profile (320 K at stage 1 to 400 K at stage N; a liquid inlet at the profile temperature of the stage above, a vapour inlet at that of the stage below), 1 mol/s, the first inlet's composition, the registered pressure",
+    "S2 initializers: L1/L2 TrayColumn.initialize(); L3 IDAES's unit initializers in TrayColumn.initialize's order (trays holding a case inlet, then the end units from the nearest of them, then every other tray from its nearest initialized neighbours)",
+    "S3 one full model solve with IDAES's initializer solver (get_solver(), MUMPS, IDAES's other defaults); its final iterate is the start of the position's solves whatever its termination",
+    "S4 S1-S3 run at IDAES's default SmoothVLE eps (eps_1 = 0.01 K, eps_2 = 5e-4 K)",
+    "S5 an L2(b) equation on another stage's variables is deactivated during S2, with the native variable it replaces fixed at IDAES's own initial value, and restored before S3",
+    "S6 an initializer exception is recorded and does not end the attempt"
+   ],
+   "warm_start_options": {
+    "mu_init": "1e-9",
+    "bound_push": "1e-9",
+    "bound_frac": "1e-9",
+    "bound_mult_init_method": "mu-based"
+   },
+   "path_positions": [
+    {
+     "id": "P0",
+     "eps_schedule_K": [],
+     "warm_start": false,
+     "note": "B2-4 as recorded: eps_1 = eps_2 = 1e-8 K on every SmoothVLE block, then the final solve with the registered options and Ipopt's defaults otherwise"
+    },
+    {
+     "id": "P1",
+     "eps_schedule_K": [],
+     "warm_start": true,
+     "note": "eps 1e-8 K on every block, then the final solve with the registered options plus warm_start_options"
+    },
+    {
+     "id": "P2",
+     "eps_schedule_K": [
+      "1e-4",
+      "1e-6"
+     ],
+     "warm_start": true,
+     "note": "eps_1 = eps_2 = 1e-4 K, solve; 1e-6 K, solve; 1e-8 K, the final solve; each solve with the registered options plus warm_start_options, from the previous solve's final iterate whatever its termination"
+    }
+   ],
+   "order": "levels L1, L2, L3 (each only if structurally expressible); within a level every position P0, P1, P2 is run before the level is judged, and every position whose final solve ends 'Optimal Solution Found' also gets its accuracy rerun; the search stops at the first level that passes",
+   "selection": "the first position, in P0, P1, P2 order, of the first level that shows no path dependence and has a position passing rules 2-2d",
+   "path_dependence": "rule 2d (IDAES): two positions of one level whose final solves ended 'Optimal Solution Found' differ on a registered quantity by more than 0.1 tolerance",
+   "accuracy_rerun": "the attempt repeated from S1 with floor_rerun's tol and constr_viol_tol in place of the registered ones in every solve after S3",
+   "contingency": "if Ipopt rejects bound_mult_init_method, P1 and P2 run without it and the record says so; no other option is substituted",
+   "h_form_ig_J_per_mol_PC-LI": [
+    "25010",
+    "30010",
+    "35010"
+   ]
+  }
+ }
+}

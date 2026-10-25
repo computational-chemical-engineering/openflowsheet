@@ -1,0 +1,1271 @@
+{
+  "work_package": "S03",
+  "commit": "930aad1b162d0dc27276e64a5b67ce857a7cdf97",
+  "requirements": [
+    "D19"
+  ],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S03 acceptance: docs/derivations/S03-spec.md §11 (A01–A17, amended by §17.9, §18.7 and §19.1) against docs/derivations/scripts/s03_reference.json and the committed tool records, check list §13",
+    "case_hash": "95ef9bd2551267e37c225764b5ed159d9f14911c2bb8b05a5905b8b65cec0c67",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/artifacts/s03-tests.junit.xml tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_cascade_wo4.py tests/test_s01_evidence_manifest.py tests/test_s01_review_adversarial.py tests/test_s02_column_wo1.py tests/test_s02_column_wo2.py tests/test_s02_column_wo2b.py tests/test_s02_column_wo3.py tests/test_s02_evidence_manifest.py tests/test_s03_ours.py tests/test_s03_references.py tests/test_s03_s11_refusal.py tests/test_s06_column_wo1.py tests/test_s06_column_wo2.py tests/test_s06_evidence_manifest.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "5ce96fcf7596438d1de714f1e6f5e39c4c586b45bc8ec52895caf75ea6a91c25"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s03_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "8e217b6c22b92c9d84e742969a7c47bdd8c9b667494d273740460fb4b1129c80"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s03_reference_comparison.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "6653039e7ece9324453dd2452f4a92657d2ecdfee6c6f81775d25de1d575fb1a"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py scripts/s03_reference_comparison.py scripts/s03_references_ours.py scripts/s03_evidence_manifest.py tests/test_s03_ours.py tests/test_s03_references.py tests/test_s03_s11_refusal.py docs/derivations/scripts/s03_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py scripts/s03_reference_comparison.py scripts/s03_references_ours.py scripts/s03_evidence_manifest.py tests/test_s03_ours.py tests/test_s03_references.py tests/test_s03_s11_refusal.py docs/derivations/scripts/s03_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "2ce9758b9f8abd876ec3e76c589e099e8b05377b1e7ea2331e81ee80f07bdff8"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S03.A01",
+      "description": "`s03_reference.py --check` passes: every claim holds and both files are byte-identical [amended: 17.9: 4558 claims (was 4009); `ref.cases_sha256` = SHA-256 of the current `cases` 18.7: 4577 claims (was 4558); `ref.cases_sha256` = SHA-256 of the current `cases` (`c901d6c9…703f39`)]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s03_references.py::test_a01_the_generator_checks_and_the_twin_hashes_the_cases"
+        ],
+        "not_passed": []
+      },
+      "expected": "4009 claims; `ref.cases_sha256` = SHA-256 of `cases`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A02",
+      "description": "The registered inputs our side and the tools use are `cases`'s, and the classifier's quantity list per case is `cases.cases.‹case›.quantities` [amended: 18.7: the our-side alias map is `{\"PC-L\": \"RC1\", \"PC-LI\": \"RC1\"}`]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 84,
+        "outcomes": {
+          "passed": 84
+        },
+        "selectors": [
+          "tests/test_s03_ours.py::test_a02_the_inputs_are_the_registered_file",
+          "tests/test_s03_ours.py::test_a02_every_registered_case_has_our_record_or_an_alias",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC1]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC2]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC3]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC4]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC5]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC6]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC7]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC1-RR]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC1-BR]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC1-z]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC2-RR]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC2-B]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC2-z]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC3-Q]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC3-z]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC4-D]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[RC4-z]",
+          "tests/test_s03_ours.py::test_a02_the_spec_is_the_registered_case[PC-P]",
+          "tests/test_s03_ours.py::test_a02_rc1_to_rc4_are_s02s_cases_at_p_r[RC1]",
+          "tests/test_s03_ours.py::test_a02_rc1_to_rc4_are_s02s_cases_at_p_r[RC2]",
+          "tests/test_s03_ours.py::test_a02_rc1_to_rc4_are_s02s_cases_at_p_r[RC3]",
+          "tests/test_s03_ours.py::test_a02_rc1_to_rc4_are_s02s_cases_at_p_r[RC4]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC1]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC2]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC3]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC4]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC5]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC6]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC7]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC1-RR]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC1-BR]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC1-z]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC2-RR]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC2-B]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC2-z]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC3-Q]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC3-z]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC4-D]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[RC4-z]",
+          "tests/test_s03_ours.py::test_a02_our_quantity_list_is_the_registered_one[PC-P]",
+          "tests/test_s03_ours.py::test_a02_quantity_names_outside_section_4_are_refused",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC1-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC1-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC2-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC2-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC3-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC3-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC4-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC4-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC5-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC5-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC6-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC6-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC7-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC7-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC1-RR-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC1-RR-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC1-BR-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC1-BR-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC1-z-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC1-z-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC2-RR-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC2-RR-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC2-B-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC2-B-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC2-z-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC2-z-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC3-Q-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC3-Q-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC3-z-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC3-z-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC4-D-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC4-D-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC4-z-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[RC4-z-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[PC-P-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[PC-P-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[PC-L-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[PC-L-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[PC-LI-DWSIM]",
+          "tests/test_s03_references.py::test_a02_the_tools_ran_the_registered_inputs[PC-LI-IDAES]",
+          "tests/test_s03_references.py::test_a02_the_classifier_reads_the_registered_quantity_lists"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A03",
+      "description": "Blindness (§8): forbidden strings absent from the tool scripts and their in-repo imports other than T06's SYN-001 definitions; `s03_cases.json` is their only project input file [amended: 17.9: as §17.6 18.7: the scan points add WO-S03-2b's qualification commit. The IDAES script still contains none of the seven strings]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s03_references.py::test_a03_the_tool_scripts_are_blind[HEAD]",
+          "tests/test_s03_references.py::test_a03_the_tool_scripts_are_blind[95870140]",
+          "tests/test_s03_references.py::test_a03_the_tool_scripts_are_blind[5474531f]",
+          "tests/test_s03_references.py::test_a03_the_tool_scripts_are_blind[2eb71ac0]"
+        ],
+        "not_passed": []
+      },
+      "expected": "pass",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A04",
+      "description": "S11: M1's `ColumnSpec` with each non-SYN-001 provider in `thermo/` that implements `describe()` (`pr_c1`, `pr_lib`, `iapws95`, each built as its own tests build it; one that cannot be built without external data is listed with the reason) and with two spies — (i) `provider_id = \"s03-spy\"`, `reference_convention = \"SYN-001-ref-v1\"`, phases LIQUID and VAPOR, properties including `lnK` and `h`; (ii) `provider_id = \"syn001\"`, `reference_convention = \"spy-ref\"`. Each spy counts its `evaluate_phase` and `flash` calls",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 13,
+        "outcomes": {
+          "passed": 13
+        },
+        "selectors": [
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[coolprop_heos]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[iapws95]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[pr_c1]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[pr_lib]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[spy_provider_id]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[spy_reference_convention]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_guards_s01s_cascade_entry_point[coolprop_heos]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_guards_s01s_cascade_entry_point[iapws95]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_guards_s01s_cascade_entry_point[pr_c1]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_guards_s01s_cascade_entry_point[pr_lib]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_guards_s01s_cascade_entry_point[spy_provider_id]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_guards_s01s_cascade_entry_point[spy_reference_convention]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_precedes_r1"
+        ],
+        "not_passed": []
+      },
+      "expected": "`validate` and `solve_column` return `CAPABILITY_UNAVAILABLE` `unsupported(column_property_method:‹provider_id›)`; spy call counts 0",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A05",
+      "description": "Not vacuous: the SYN-001 provider, bare and wrapped in the property cache, passes S11. M1's `validate` returns `None`, and S02 A06 still holds",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s03_s11_refusal.py::test_a05_syn001_passes_s11[bare]",
+          "tests/test_s03_s11_refusal.py::test_a05_syn001_passes_s11[property_cache]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`None`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A06",
+      "description": "Our side on RC1–RC5, the ten perturbed cases and PC-P (inputs from `cases`): `CONVERGED`, S02 §8 and S06 §8 accepted, every stage two-phase (RC2: total condenser plus two-phase ×6), every registered quantity within 0.1 × its §6 tolerance of `ref` (`ref.controls.PC-P.ours` for PC-P) [amended: 17.9: adds RC6 and RC7 (every stage two-phase; RC6: total condenser plus two-phase ×6)]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 18,
+        "outcomes": {
+          "passed": 18
+        },
+        "selectors": [
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC1]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC2]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC3]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC4]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC5]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC6]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC7]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC1-RR]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC1-BR]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC1-z]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC2-RR]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC2-B]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC2-z]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC3-Q]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC3-z]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC4-D]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[RC4-z]",
+          "tests/test_s03_ours.py::test_a06_our_side_is_within_a_tenth_of_a_tolerance_of_the_twin[PC-P]"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "0.1 × §6. *Floor:* S02's measured deviations are ≤ 8.5e-3 of this. *Catch:* rule 3"
+    },
+    {
+      "id": "S03.A07",
+      "description": "`ours-‹case›.json` reproduces from a live solve",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 18,
+        "outcomes": {
+          "passed": 18
+        },
+        "selectors": [
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC1]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC2]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC3]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC4]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC5]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC6]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC7]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC1-RR]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC1-BR]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC1-z]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC2-RR]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC2-B]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC2-z]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC3-Q]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC3-z]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC4-D]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[RC4-z]",
+          "tests/test_s03_ours.py::test_a07_our_committed_record_is_what_a_live_solve_produces[PC-P]"
+        ],
+        "not_passed": []
+      },
+      "expected": "non-floats exact; floats 1e-12 relative",
+      "tolerance": "T06 A50's rule (cross-architecture last bits)"
+    },
+    {
+      "id": "S03.A08",
+      "description": "Every tool record carries §8's fields and `s03_cases.json`'s settings; every (case, tool) pair registered in §3 and §7.2 has a record (a `NOT_COMPARABLE(capability)` record included) [amended: 17.9: the pair set adds RC6 and RC7 for both tools; §17.8's earlier-cases-file rule and DWSIM ladder conformance are checked 18.7: (i) The pair set adds (PC-LI, IDAES). (ii) A pair whose `cases.‹id›.tool_variant.‹tool›` is `\"not_applicable\"` needs no record, and a record that exists for one must say `not_applicable`; this covers (PC-LI, DWSIM) and (PC-L, IDAES). (iii) IDAES ladder conformance: each record's settings carry `tool_settings.IDAES_amendment_2`. At every attempted level, all three positions are recorded, each as a run or with the reason none was made. The selected (level, position) is the first that passes in §18.1's order. A not-available record shows every position at every expressible level. (iv) `qualification/idaes.json` records the P0 reproduction of `6d9486a0` (§18.8) and `pilot_runs`]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 122,
+        "outcomes": {
+          "passed": 122
+        },
+        "selectors": [
+          "tests/test_s03_references.py::test_a08_every_registered_pair_has_its_record",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC1-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC1-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC2-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC2-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC3-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC3-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC4-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC4-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC5-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC5-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC6-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC6-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC7-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC7-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC1-RR-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC1-RR-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC1-BR-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC1-BR-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC1-z-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC1-z-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC2-RR-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC2-RR-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC2-B-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC2-B-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC2-z-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC2-z-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC3-Q-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC3-Q-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC3-z-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC3-z-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC4-D-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC4-D-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC4-z-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[RC4-z-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[PC-P-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[PC-P-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[PC-L-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[PC-L-IDAES]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[PC-LI-DWSIM]",
+          "tests/test_s03_references.py::test_a08_every_record_carries_section_8s_fields_and_the_settings[PC-LI-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC1-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC1-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC2-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC2-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC3-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC3-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC4-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC4-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC5-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC5-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC6-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC6-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC7-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC7-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC1-RR-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC1-RR-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC1-BR-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC1-BR-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC1-z-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC1-z-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC2-RR-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC2-RR-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC2-B-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC2-B-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC2-z-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC2-z-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC3-Q-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC3-Q-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC3-z-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC3-z-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC4-D-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC4-D-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC4-z-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[RC4-z-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[PC-P-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[PC-P-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[PC-L-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[PC-L-IDAES]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[PC-LI-DWSIM]",
+          "tests/test_s03_references.py::test_a08_records_from_an_earlier_cases_file_stand[PC-LI-IDAES]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC1]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC2]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC3]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC4]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC5]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC6]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC7]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC1-RR]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC1-BR]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC1-z]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC2-RR]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC2-B]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC2-z]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC3-Q]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC3-z]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC4-D]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[RC4-z]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[PC-P]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[PC-L]",
+          "tests/test_s03_references.py::test_a08_dwsim_ladder_conformance[PC-LI]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC1]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC2]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC3]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC4]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC5]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC6]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC7]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC1-RR]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC1-BR]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC1-z]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC2-RR]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC2-B]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC2-z]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC3-Q]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC3-z]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC4-D]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[RC4-z]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[PC-P]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[PC-L]",
+          "tests/test_s03_references.py::test_a08_idaes_ladder_conformance[PC-LI]",
+          "tests/test_s03_references.py::test_a08_the_idaes_qualification_records_p0s_reproduction_and_the_pilots"
+        ],
+        "not_passed": []
+      },
+      "expected": "set equality",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A09",
+      "description": "The qualification records' commit is an ancestor of `comparison.json`'s commit (manifest fields; checked with `git merge-base --is-ancestor`; without history the test refuses explicitly, per R-555's pattern) [amended: 17.9: applies to each qualification commit: DWSIM `95870140`, the DWSIM top-up, IDAES (WO-S03-2b's, §18.7) 18.7: the IDAES qualification commit is WO-S03-2b's]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s03_references.py::test_a09_the_qualification_commits_precede_the_comparison"
+        ],
+        "not_passed": []
+      },
+      "expected": "pass",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A10",
+      "description": "(i) The classifier's document recomputed from the committed tool records, `ours-‹case›.json`, `cases` and `ref` is byte-identical to `comparison.json`, and so is `SHA256SUMS`. (ii) Recomputed with a live solve of our side in place of `ours-‹case›.json` (aliases applied), these equal `comparison.json`'s: every pair's `classification`, `category`, `rule` and `label`; every per-quantity `within_tolerance` and `quantities_outside`; the `controls` block and `comparison_stopped`; and under `x31` every pair class, case row, case outcome and clause outcome. *Replaced by erratum §19.1*",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s03_references.py::test_a10_the_comparison_recomputes_identically_from_the_committed_files",
+          "tests/test_s03_references.py::test_a10_the_comparison_recomputes_from_a_live_solve_of_our_side"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "(i) exact; (ii) exact. Floats that depend on our values are not compared in (ii): A07 pins our values to 1e-12 relative, and (i) pins the document as a function of them"
+    },
+    {
+      "id": "S03.A11",
+      "description": "PC-P is `DISAGREE` in each tool where RC1 is available; (PC-L, DWSIM) is `DISAGREE`; (PC-L, IDAES) is `not_applicable`. Rule 2 on a control propagates as §7.2 says [amended: 17.9: replaced: (i) no control classifies `AGREE`; (ii) §17.3(b) is applied, checked both on the committed classification and by mutation: re-classifying with each tool's `DISAGREE` controls replaced by `NOT_COMPARABLE` copies turns every pair of that tool into `NOT_COMPARABLE(control_not_comparable: …)`, and the unaltered input reproduces `comparison.json`; (iii) (PC-L, IDAES) is `not_applicable`; (iv) (PC-P, DWSIM) is as recorded and changes no other DWSIM pair 18.7: (i) no control classifies `AGREE`. (ii) §17.3(b) for IDAES, by mutation: re-classifying with both PC-P and PC-LI replaced by `NOT_COMPARABLE` copies turns every IDAES pair into `NOT_COMPARABLE(control_not_comparable: …)`. Replacing only one, while the other is `DISAGREE`, changes no IDAES pair. Where the committed classification has no IDAES `DISAGREE` control, the test uses synthetic controls. (iii) (PC-L, IDAES) and (PC-LI, DWSIM) are `not_applicable`. (iv) as §17.9]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 5,
+        "outcomes": {
+          "passed": 5
+        },
+        "selectors": [
+          "tests/test_s03_references.py::test_a11_no_control_agrees_and_each_tool_has_a_working_control",
+          "tests/test_s03_references.py::test_a11_without_a_disagreeing_control_every_pair_of_the_tool_is_lost[DWSIM]",
+          "tests/test_s03_references.py::test_a11_without_a_disagreeing_control_every_pair_of_the_tool_is_lost[IDAES]",
+          "tests/test_s03_references.py::test_a11_one_disagreeing_control_is_enough_for_idaes",
+          "tests/test_s03_references.py::test_a11_dwsim_pc_p_is_as_recorded_and_moves_no_other_pair"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A12",
+      "description": "Rules 2c and 2d actually fire. On each available tool's committed RC1 record, the classifier is run on copies each altered in exactly one raw field: `L[1]` × (1 + 2e-4), which breaks RR's definition, so rule 2c; `L[1]` × (1 + 2e-8), so rule 2d's residual; a stage pressure + 0.01 Pa, so 2c; an accuracy-rerun quantity moved by 0.2 tolerance, so 2d. The unaltered record classifies by rule 4 [amended: 17.9: the RC1 part is unchanged. Added, independent of availability: one synthetic record per specification kind (RR partial and total, BR, D partial and total, B, duty, purity, recovery, temperature), with the specification residual at 2× rule 2c's threshold → rule 2c; at 2× the kind's rule 2d threshold (§17.4) → rule 2d; at 0.5× it → neither 18.7: added: on each IDAES record with a selected attempt, a copy with one extra \"Optimal\" position equal to the selected attempt's quantities, except one quantity moved by 0.2 tolerance → rule 2d `path_dependence`. Moved by 0.05 tolerance → not fired]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 18,
+        "outcomes": {
+          "passed": 18
+        },
+        "selectors": [
+          "tests/test_s03_references.py::test_a12_rules_2c_and_2d_fire_on_the_rc1_record[DWSIM]",
+          "tests/test_s03_references.py::test_a12_rules_2c_and_2d_fire_on_the_rc1_record[IDAES]",
+          "tests/test_s03_references.py::test_a12_idaes_stage_map_kinds_and_tray_order_are_checked[RC1]",
+          "tests/test_s03_references.py::test_a12_idaes_stage_map_kinds_and_tray_order_are_checked[RC2]",
+          "tests/test_s03_references.py::test_a12_idaes_stage_map_kinds_and_tray_order_are_checked[RC3]",
+          "tests/test_s03_references.py::test_a12_idaes_feed_tray_out_of_place_is_a_stage_map_fault",
+          "tests/test_s03_references.py::test_a12_idaes_a_position_without_raw_fields_is_an_error",
+          "tests/test_s03_references.py::test_a12_idaes_path_dependence_fires_at_two_tenths_not_at_five_hundredths",
+          "tests/test_s03_references.py::test_a12_each_specification_kind_meets_its_thresholds[RR partial]",
+          "tests/test_s03_references.py::test_a12_each_specification_kind_meets_its_thresholds[RR total]",
+          "tests/test_s03_references.py::test_a12_each_specification_kind_meets_its_thresholds[BR]",
+          "tests/test_s03_references.py::test_a12_each_specification_kind_meets_its_thresholds[D partial]",
+          "tests/test_s03_references.py::test_a12_each_specification_kind_meets_its_thresholds[D total]",
+          "tests/test_s03_references.py::test_a12_each_specification_kind_meets_its_thresholds[B]",
+          "tests/test_s03_references.py::test_a12_each_specification_kind_meets_its_thresholds[duty]",
+          "tests/test_s03_references.py::test_a12_each_specification_kind_meets_its_thresholds[purity]",
+          "tests/test_s03_references.py::test_a12_each_specification_kind_meets_its_thresholds[recovery]",
+          "tests/test_s03_references.py::test_a12_each_specification_kind_meets_its_thresholds[temperature]"
+        ],
+        "not_passed": []
+      },
+      "expected": "the four expected labels; unaltered: rule 4",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A13",
+      "description": "`comparison.json` holds the X31 count (§2.3 step 5), the perturbation response table (§7.4), each control's tool-model distance (§7.3) and every `NOT_COMPARABLE`/`DISAGREE` with its reason. No registered pair is missing [amended: 17.9: `comparison.json` also holds §17.5's table (the class of each pair, the outcome of each case, the clause's outcome) for RC1–RC4, and the same per inverse kind for RC5–RC7 18.7: `comparison.json` also holds each IDAES pair's (level, position) and each IDAES record's largest path-dependence ratio (reported under §7.3)]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s03_references.py::test_a13_the_document_is_complete",
+          "tests/test_s03_references.py::test_a13_each_working_control_is_carried_by_its_effect"
+        ],
+        "not_passed": []
+      },
+      "expected": "present, complete",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A14",
+      "description": "The classifier's tolerances are §6's formula evaluated unrounded from `ref`'s 25-digit values, with no per-case or per-tool factor (a test feeds a synthetic pair at 0.999 and 1.001 tolerances for each kind)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 19,
+        "outcomes": {
+          "passed": 19
+        },
+        "selectors": [
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC1]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC2]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC3]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC4]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC5]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC6]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC7]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC1-RR]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC1-BR]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC1-z]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC2-RR]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC2-B]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC2-z]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC3-Q]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC3-z]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC4-D]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[RC4-z]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[PC-P]",
+          "tests/test_s03_references.py::test_a14_the_tolerance_is_section_6s_formula_unrounded[PC-L]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`AGREE` / `DISAGREE`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A15",
+      "description": "S01's, S02's and S06's suites pass unchanged on `wp/S03`",
+      "result": "pass",
+      "value": {
+        "judged_by": "the S01, S02 and S06 suites",
+        "nodes": 504,
+        "outcomes": {
+          "passed": 504
+        },
+        "not_passed": []
+      },
+      "expected": "as registered",
+      "tolerance": "as registered"
+    },
+    {
+      "id": "S03.A16",
+      "description": "`s02_reference.py --check` and `s06_reference.py --check` still pass, since S03's generator imports them",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s03_ours.py::test_a16_the_s02_and_s06_generators_still_check"
+        ],
+        "not_passed": []
+      },
+      "expected": "pass",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S03.A17",
+      "description": "`docs/reviews/S03-verdicts.md` exists, is written by the `verdict` agent, and records §7.5's items",
+      "result": "pass",
+      "value": {
+        "judged_by": "the verdict agent's document (WO-S03-5)",
+        "path": "docs/reviews/S03-verdicts.md",
+        "present": true,
+        "sha256": "ae5827caccf134b39457bf3f820da95c46894105e0364741e4ec96f6d92c3fa8"
+      },
+      "expected": "present",
+      "tolerance": "—"
+    },
+    {
+      "id": "S03.generator",
+      "description": "§13: s03_reference.py --check re-derives every claim (4577) and byte-compares both JSON files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s03_reference.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S03.comparison",
+      "description": "§8, A10: comparison.json and SHA256SUMS recompute identically from the committed records",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s03_reference_comparison.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S03.ruff",
+      "description": "§13: ruff check is clean on S03's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py scripts/s03_reference_comparison.py scripts/s03_references_ours.py scripts/s03_evidence_manifest.py tests/test_s03_ours.py tests/test_s03_references.py tests/test_s03_s11_refusal.py docs/derivations/scripts/s03_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S03.format",
+      "description": "§13: ruff format --check is clean on S03's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py scripts/s03_reference_comparison.py scripts/s03_references_ours.py scripts/s03_evidence_manifest.py tests/test_s03_ours.py tests/test_s03_references.py tests/test_s03_s11_refusal.py docs/derivations/scripts/s03_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S03.comparison_record",
+      "description": "§13's list: fingerprints, qualification and comparison commits (ancestry), record hashes, the DWSIM rung, each pair's level/position and classification, §17.5's table and X31 count, each control's classification and tool-model distance",
+      "result": "pass",
+      "value": {
+        "environment_fingerprints": {
+          "DWSIM": {
+            "measured": {
+              "pip_freeze_sha256": "d0a428cc7c06a7605bcfdaeb1e62ac3e9630b02c04224dea8e5928bc2e02635a",
+              "dotnet_tree": "f03ce7f0101336009c4bd090fd3006d187ba419b03bf86c84d0b56367b6e1058",
+              "dwsim_tree": "b8de32e026197858b552b7b310c621a9e919952288900a66c73ac2a0353ea87e",
+              "automation_dll_sha256": "ce32c2a422e20c553769a355fdf6fc0cf94eac85ae6ba37d4df045cd2208aa31"
+            },
+            "expected_docs_reference_environments_s3": {
+              "pip_freeze_sha256": "d0a428cc7c06a7605bcfdaeb1e62ac3e9630b02c04224dea8e5928bc2e02635a",
+              "dotnet_tree": "f03ce7f0101336009c4bd090fd3006d187ba419b03bf86c84d0b56367b6e1058",
+              "dwsim_tree": "b8de32e026197858b552b7b310c621a9e919952288900a66c73ac2a0353ea87e",
+              "automation_dll_sha256": "ce32c2a422e20c553769a355fdf6fc0cf94eac85ae6ba37d4df045cd2208aa31"
+            },
+            "matches": true
+          },
+          "IDAES": {
+            "measured": {
+              "pip_freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+              "idaes_data_bin_tree": "370a694825da3be3d7b0e68742bf2e704918260b05fa0f6c54d4d61458d1144d",
+              "ipopt_sha256": "8f8711b709b5f265ff7cb8b352c037bb999d88628384be8390f26530f08de94e"
+            },
+            "expected_docs_reference_environments_s3": {
+              "pip_freeze_sha256": "dfeec96faebeb6bedab5eb1c069df7344282d0002fe92fb191f2c55c73af82c6",
+              "idaes_data_bin_tree": "370a694825da3be3d7b0e68742bf2e704918260b05fa0f6c54d4d61458d1144d",
+              "ipopt_sha256": "8f8711b709b5f265ff7cb8b352c037bb999d88628384be8390f26530f08de94e"
+            },
+            "matches": true
+          }
+        },
+        "qualification_commits": {
+          "DWSIM": [
+            "958701409a162efe1c1be9dcad70b26a8cbbf546",
+            "5474531f519ef2781fc9563cd3177f5f6684b590"
+          ],
+          "IDAES": [
+            "2eb71ac05b8ad489ddab525755b0e45415a878fb"
+          ]
+        },
+        "comparison_commit": "959131dcfc9ec9b2a068cb89b4cd73b989dfc326",
+        "qualification_commits_are_ancestors": {
+          "958701409a162efe1c1be9dcad70b26a8cbbf546": true,
+          "5474531f519ef2781fc9563cd3177f5f6684b590": true,
+          "2eb71ac05b8ad489ddab525755b0e45415a878fb": true
+        },
+        "record_sha256": {
+          "qualification/dwsim.json": "2ac3bb976d28f8c9d05397cabbad8e7d10236ef3d71c6077ce08f7421153b400",
+          "qualification/idaes.json": "bd5df2923b9168111e42b65c419b423c20916545db2693ad09399b669b13917b",
+          "results/dwsim-PC-L.json": "a60b51d2b53a8a3d2ecc47669f5868339016c189c03d577ead990f65005ec854",
+          "results/dwsim-PC-P.json": "cca0b1b61f1353d06eee8bedc30cd71eeec2069e8d059932c96c3557f360d0fc",
+          "results/dwsim-RC1-BR.json": "40b4eb40375b91dd2b338b38c17fd1ff79ee67d38eda52bccbbcb08cbd8e431c",
+          "results/dwsim-RC1-RR.json": "bcb2dd09f0caacaec8fea61c3f11633823514b5576da2c025b22d7bac4573c3e",
+          "results/dwsim-RC1-z.json": "15166bb38df63a6d7e0a8cc8ce749fd803978195601fbf40bf3d88216aebbf57",
+          "results/dwsim-RC1.json": "7f40fa25b4bfb43675fa5924a240baf1b5953efcc947f006a0e01adab0178522",
+          "results/dwsim-RC2-B.json": "b119045075051b1a2e2c31580c6aa0cdcbc18290fd5140383df1c03336c55632",
+          "results/dwsim-RC2-RR.json": "ff8ba8a8d293276e76dec993435f8609020d1d04abcc307c4a60ecf6cfb6bf8d",
+          "results/dwsim-RC2-z.json": "05d0d3c8736b9bf6c5be763c4b13cec63c96b7099fd30e6cf8342c774405ebbc",
+          "results/dwsim-RC2.json": "483a93c8a61297601ff30440c15668974a64550a220d54890125af90b17fefd3",
+          "results/dwsim-RC3-Q.json": "e40f73db4fcf0f108775cb528b6e787ea01a3884e2235b7b84944e5e811cd21b",
+          "results/dwsim-RC3-z.json": "5b721e800c833a3d135bfb19f41ede5c514bdd7ba78f4f62be0cd3aa78fc50e0",
+          "results/dwsim-RC3.json": "6963ca4008fc202379609513343ab5a8fd5d5afdb3098d5598d6e9dbd4422615",
+          "results/dwsim-RC4-D.json": "2540b25e4859becf242d6399580b1d43e203adebba04f48f7199a1040837420a",
+          "results/dwsim-RC4-z.json": "83a6a9b45532dabb403bd50d1a9634619d9d136aaeed6bf8b83ba2a6d2eb2289",
+          "results/dwsim-RC4.json": "2ddeb7c00adf3ad7426aa8973b38f99982f350b7482fb3170c1c802280dfef19",
+          "results/dwsim-RC5.json": "424e9539f1c2a44be4757f179b98740a658aa3632debcdc5b1921d1ec251560e",
+          "results/dwsim-RC6.json": "30ecd9f46c3376e681ba9e6839318bff5a43f03baac120d5da84a8585f3ec970",
+          "results/dwsim-RC7.json": "8247ea670b0cef057c638e9efe4f89941a76fbe94f81d18a48261d54f572a1e6",
+          "results/idaes-PC-L.json": "99371d9b961630dea82f8f1dd87d50e0d874733b4cd6fc77cad3a852590a4a1a",
+          "results/idaes-PC-LI.json": "68e53d5a8b05011c73142e987dabf1ee948f1893d731903efd87faa96c7b1c50",
+          "results/idaes-PC-P.json": "aceec9346b0b9b63e4b6297f3a554153d2ee3b099201fffd3149529cd7e38064",
+          "results/idaes-RC1-BR.json": "2c1c7679d5bb74f19dab8fa19e73ae53ad76e589f71ccf39a03f747023a290b6",
+          "results/idaes-RC1-RR.json": "97f50a8f1b94a207f7457a52a684f251e3c82fc99bfea8ab835a4947da7706cc",
+          "results/idaes-RC1-z.json": "163588f95291f985435fa5a3033c3473997eefb8a4660dd12840a7a1b2ddab69",
+          "results/idaes-RC1.json": "8d62700803d802faefe148e31db63e80f11a92db2050a45b716096bec26eff50",
+          "results/idaes-RC2-B.json": "032ab531a9f678f7866b9bc04982ce003e072fd64011ab6d68989a3f57401cd6",
+          "results/idaes-RC2-RR.json": "0e1560b795a3ade6e68e8ced40ce4a1002e57db0a91e066c9aa8800d11aa5ece",
+          "results/idaes-RC2-z.json": "532962a5dbb04229ffe62c381486b565c0554d7618b0c7a2b634acff0ddcb3ac",
+          "results/idaes-RC2.json": "3e0b32bf7ca959b32d02d93a15356419f4782fb6491405363c3b5729bd34bc58",
+          "results/idaes-RC3-Q.json": "2e6f818769b224c0c5fff785b32e05084e8bf791d530466038167cad84738fc2",
+          "results/idaes-RC3-z.json": "560517ee3df2b724ddf4f89029956f86bca812c8f1b8af78d069c9072a3a5e1e",
+          "results/idaes-RC3.json": "05cdaf0530685badd872650df94a63afbe21ce3d130cfdf1ff5fb7b8c014233b",
+          "results/idaes-RC4-D.json": "5cdf3687bdd0a33f666f24b1d88a97132d96c3ffd3e0ab67115f2259e76ff0b0",
+          "results/idaes-RC4-z.json": "299703c5b04aca48f2dbbe06b3568602d58e327c5e3a4e6a85da945eb2b40953",
+          "results/idaes-RC4.json": "c181aadce6f1603621eedb62863d2388b9f8950c0eeb7f22672271e1e1c20784",
+          "results/idaes-RC5.json": "1667facdf496f4708d658e5f3767bfdb668fb08c0541c29e5c024d52b2daf59b",
+          "results/idaes-RC6.json": "76d1583b23ac4f409ea70d0049b3232e193ed9de4a68cbd75b6c8051b2176386",
+          "results/idaes-RC7.json": "79e60a53922543acb77c2c7caf02d27f595ca060859ef3f98be20f0f8ad65ef1",
+          "results/ours-PC-P.json": "d2f1d5cf48cca184c296feb413d525a4ff9ddc30be534519d5534ac969fdc1e4",
+          "results/ours-RC1-BR.json": "0fe9b345bf52cac7373b109140e864fdf417ff135774a3f857c65f142311ac82",
+          "results/ours-RC1-RR.json": "99e29accc828a0f1b6644833018b825623c4465a51706a38064b3edf47e688d8",
+          "results/ours-RC1-z.json": "5da84ac489de2ea72d861222956507f66c795aca9c502eb6f67f29c7d0ee44b3",
+          "results/ours-RC1.json": "4a0f9a99541b605182cefdd9c5f4c5e196610908ff9c6a1f66926416706af2b2",
+          "results/ours-RC2-B.json": "d71a55b06c903ff9517f2975f9e54b974dfe8771dbd06bb20895d9562ddfaf73",
+          "results/ours-RC2-RR.json": "072d98d600d99fdd5fc6f9c3a46f1c8a4759a0d91152c5b997c173bbf5bb1389",
+          "results/ours-RC2-z.json": "689f7c6670a8123e0267bb5203d757ffb0fbc7fa6c7265253f9afcc5dca26408",
+          "results/ours-RC2.json": "e968ff618a11197e15a150027ab4e7993f6d9788ba7628e25bfc052a3b653fe5",
+          "results/ours-RC3-Q.json": "dbebf394d45fbdbe2e9d49a2fc95933757ec2d8e843798f929c42dfd82668411",
+          "results/ours-RC3-z.json": "5d7bd5260dfe0121b753bff1b4033b0821c404da96fa7af7c95774b9c615a6d5",
+          "results/ours-RC3.json": "8956b48c137b6a67736e92845a61a09bb5a9ed0fea6ab1fee01dba2bf7cc6be2",
+          "results/ours-RC4-D.json": "e4c2fc0d64e2721b28faf39d8e54d56f5915debd9ea0b0b31e2a532a7b34800a",
+          "results/ours-RC4-z.json": "c650b14e2a4d67cac5a382a31cce60ea76a31de7541bfdbe09df60f6ee5d2dd6",
+          "results/ours-RC4.json": "22050e619549031796ddc884e0a122755c746d8584cfc0d207027928ddf71912",
+          "results/ours-RC5.json": "403816e2e02c25e01f245f6a5b0eae72160e0797efe968254b6ba3e19d8d2bd1",
+          "results/ours-RC6.json": "0f0f1f557d9bdb82a4d422075f2488d01876ba3fde0c01ff7e829fe12b61840a",
+          "results/ours-RC7.json": "ab4cf57f795b2e0780d2a78d7ff567fbf4cdc136bedde886dddd50da9097bf19",
+          "comparison.json": "5c7d139c0547f17bfa318f33b106cdb5749b9eaacbccb07cf1dedd570593585d"
+        },
+        "dwsim_rung_selected": {
+          "uniform": null,
+          "per_case": {
+            "RC1": {
+              "method": "Wang-Henke",
+              "tolerance": 1e-08
+            },
+            "RC2": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            },
+            "RC5": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            },
+            "RC6": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            },
+            "RC1-RR": {
+              "method": "Wang-Henke",
+              "tolerance": 1e-08
+            },
+            "RC1-z": {
+              "method": "Wang-Henke",
+              "tolerance": 1e-08
+            },
+            "RC2-RR": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            },
+            "RC2-B": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            },
+            "RC2-z": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            },
+            "PC-L": {
+              "method": "Wang-Henke",
+              "tolerance": 1e-08
+            }
+          }
+        },
+        "pairs": {
+          "RC1/DWSIM": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L1",
+            "rung": {
+              "method": "Wang-Henke",
+              "tolerance": 1e-08
+            }
+          },
+          "RC1/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L3",
+            "position": "P0"
+          },
+          "RC2/DWSIM": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L1",
+            "rung": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            }
+          },
+          "RC2/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L2",
+            "position": "P0"
+          },
+          "RC3/DWSIM": {
+            "classification": "NOT_COMPARABLE(capability: L1 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Solver reached the maximum number of iterations without converging.) | L1 Wang-Henke: no tolerance passed rules 2-2d (2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.226615978819172E-07 [Tolerance = 1E-07]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -2.059233651516756E-09 [Tolerance = 1E-09]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -6.590786997971714E-08 [Tolerance = 1E-08]; 2: tool-internal balance) | L3: L3 is not admissible for DWSIM (spec §2.2))",
+            "rule": 0
+          },
+          "RC3/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L3",
+            "position": "P1"
+          },
+          "RC4/DWSIM": {
+            "classification": "NOT_COMPARABLE(capability: L1 Napthali-Sandholm: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L1 Wang-Henke: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L2 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Error evaluating error functions.) | L2 Wang-Henke: no tolerance passed rules 2-2d (2: COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.) | L3: L3 is not admissible for DWSIM (spec §2.2))",
+            "rule": 0
+          },
+          "RC4/IDAES": {
+            "classification": "NOT_COMPARABLE(capability: L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L3: no position passes rules 2-2d (P0 2: Maximum Number of Iterations Exceeded.; P1 2: Maximum Number of Iterations Exceeded.; P2 2: Maximum Number of Iterations Exceeded.))",
+            "rule": 0
+          },
+          "RC5/DWSIM": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L1",
+            "rung": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            }
+          },
+          "RC5/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L3",
+            "position": "P1"
+          },
+          "RC6/DWSIM": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L1",
+            "rung": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            }
+          },
+          "RC6/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L2",
+            "position": "P1"
+          },
+          "RC7/DWSIM": {
+            "classification": "NOT_COMPARABLE(capability: L1 Napthali-Sandholm: structurally inexpressible: condenser: Napthali-Sandholm's condenser Stream_Ratio is L(0)/LSS(0) (NewtonRaphson.vb l. 446-448), the reflux over the liquid distillate, which a Full_Reflux condenser holds at 0; S02's reflux ratio on a partial condenser is L_1/V_1 (spec §5.1 row 9, §17.2 F2): not this specification. Wang-Henke's is L(0)/(LSS(0) + V(0)) = L_1/V_1 || reboiler: DWSIM's reboiler Temperature specification is the reboiler stage's temperature Tj(ns), our stage 7 (NewtonRaphson.vb l. 492-494 and 919; BubblePoint.vb l. 291-293 and 659-661); its condenser one is Tj(0), our stage 1. ColumnSpec.StageNumber selects no stage: the column reads it only as the -1 sentinel of its default distillate-rate specification and in a log line (RigorousColumn.vb l. 3646-3660 and 4651-4665), and no other method of the loaded DWSIM assemblies calls its accessors (settings.stage_number_readers, an IL scan made by this script). The registered specification is T of stage 6 (spec §17.4): another stage, not this specification | L1 Wang-Henke: structurally inexpressible: reboiler: DWSIM's reboiler Temperature specification is the reboiler stage's temperature Tj(ns), our stage 7 (NewtonRaphson.vb l. 492-494 and 919; BubblePoint.vb l. 291-293 and 659-661); its condenser one is Tj(0), our stage 1. ColumnSpec.StageNumber selects no stage: the column reads it only as the -1 sentinel of its default distillate-rate specification and in a log line (RigorousColumn.vb l. 3646-3660 and 4651-4665), and no other method of the loaded DWSIM assemblies calls its accessors (settings.stage_number_readers, an IL scan made by this script). The registered specification is T of stage 6 (spec §17.4): another stage, not this specification | L2 Napthali-Sandholm: structurally inexpressible: no L2(a) realization: DWSIM's only one is a Partial_Condenser with its liquid distillate fixed at 0 and a vapour-rate specification, for a partial condenser's distillate_rate (spec §17.2) | L2 Wang-Henke: structurally inexpressible: no L2(a) realization: DWSIM's only one is a Partial_Condenser with its liquid distillate fixed at 0 and a vapour-rate specification, for a partial condenser's distillate_rate (spec §17.2) | L3: L3 is not admissible for DWSIM (spec §2.2))",
+            "rule": 0
+          },
+          "RC7/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L3",
+            "position": "P0"
+          },
+          "RC1-RR/DWSIM": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L1",
+            "rung": {
+              "method": "Wang-Henke",
+              "tolerance": 1e-08
+            }
+          },
+          "RC1-RR/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L3",
+            "position": "P0"
+          },
+          "RC1-BR/DWSIM": {
+            "classification": "NOT_COMPARABLE(capability: L1: no rung passed rules 2-2d (2: COL: Error evaluating error functions.; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.8827279868229484E-08 [Tolerance = 1E-08]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -6.319475151506104E-09 [Tolerance = 1E-09]; 2: COL: Unable to find column solver with name 'Russell (Inside-Out)'.; 2: tool-internal balance; 2d: accuracy rerun; 2d: specification residual) | L2: L2(a) needs DWSIM's Partial_Condenser with its liquid distillate fixed at 0; DWSIM fixes that rate only through the condenser specification slot, which the registered reflux_ratio specification occupies | L3: L3 is not admissible for DWSIM (spec §2.2))",
+            "rule": 0
+          },
+          "RC1-BR/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L3",
+            "position": "P0"
+          },
+          "RC1-z/DWSIM": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L1",
+            "rung": {
+              "method": "Wang-Henke",
+              "tolerance": 1e-08
+            }
+          },
+          "RC1-z/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L3",
+            "position": "P0"
+          },
+          "RC2-RR/DWSIM": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L1",
+            "rung": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            }
+          },
+          "RC2-RR/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L2",
+            "position": "P1"
+          },
+          "RC2-B/DWSIM": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L1",
+            "rung": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            }
+          },
+          "RC2-B/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L2",
+            "position": "P0"
+          },
+          "RC2-z/DWSIM": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L1",
+            "rung": {
+              "method": "Napthali-Sandholm",
+              "tolerance": 1e-10
+            }
+          },
+          "RC2-z/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L2",
+            "position": "P0"
+          },
+          "RC3-Q/DWSIM": {
+            "classification": "NOT_COMPARABLE(capability: L1 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Solver reached the maximum number of iterations without converging.) | L1 Wang-Henke: no tolerance passed rules 2-2d (2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.0028683955867236E-07 [Tolerance = 1E-07]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.8599647052429868E-09 [Tolerance = 1E-09]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -4.650285204463702E-08 [Tolerance = 1E-08]; 2: tool-internal balance) | L3: L3 is not admissible for DWSIM (spec §2.2))",
+            "rule": 0
+          },
+          "RC3-Q/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L3",
+            "position": "P1"
+          },
+          "RC3-z/DWSIM": {
+            "classification": "NOT_COMPARABLE(capability: L1 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Solver reached the maximum number of iterations without converging.) | L1 Wang-Henke: no tolerance passed rules 2-2d (2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -4.695004988370909E-08 [Tolerance = 1E-08]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -4.695004988370909E-08 [Tolerance = 1E-09]; 2: COL: Failed to fulfill mass balance for SYN001-C: Relative Error = 2.0140275523716777E-07 [Tolerance = 1E-07]; 2: tool-internal balance) | L3: L3 is not admissible for DWSIM (spec §2.2))",
+            "rule": 0
+          },
+          "RC3-z/IDAES": {
+            "classification": "AGREE",
+            "rule": 4,
+            "level": "L3",
+            "position": "P1"
+          },
+          "RC4-D/DWSIM": {
+            "classification": "NOT_COMPARABLE(capability: L1 Napthali-Sandholm: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L1 Wang-Henke: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L2 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Error evaluating error functions.) | L2 Wang-Henke: no tolerance passed rules 2-2d (2: COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.) | L3: L3 is not admissible for DWSIM (spec §2.2))",
+            "rule": 0
+          },
+          "RC4-D/IDAES": {
+            "classification": "NOT_COMPARABLE(capability: L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L3: no position passes rules 2-2d (P0 2: Maximum Number of Iterations Exceeded.; P1 2: Maximum Number of Iterations Exceeded.; P2 2: Maximum Number of Iterations Exceeded.))",
+            "rule": 0
+          },
+          "RC4-z/DWSIM": {
+            "classification": "NOT_COMPARABLE(capability: L1 Napthali-Sandholm: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L1 Wang-Henke: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L2 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Error evaluating error functions.) | L2 Wang-Henke: no tolerance passed rules 2-2d (2: COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.) | L3: L3 is not admissible for DWSIM (spec §2.2))",
+            "rule": 0
+          },
+          "RC4-z/IDAES": {
+            "classification": "NOT_COMPARABLE(capability: L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L3: no position passes rules 2-2d (P0 2: Maximum Number of Iterations Exceeded.; P1 2: Maximum Number of Iterations Exceeded.; P2 2: Maximum Number of Iterations Exceeded.))",
+            "rule": 0
+          },
+          "PC-P/DWSIM": {
+            "classification": "NOT_COMPARABLE(capability: L1: no rung passed rules 2-2d (2: COL: Error evaluating error functions.; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.5368517005306023E-07 [Tolerance = 1E-07]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -3.131585044520898E-08 [Tolerance = 1E-09]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -9.062406547410973E-08 [Tolerance = 1E-08]; 2: COL: Unable to find column solver with name 'Russell (Inside-Out)'.; 2: tool-internal balance) | L2: L2(a) needs DWSIM's Partial_Condenser with its liquid distillate fixed at 0; DWSIM fixes that rate only through the condenser specification slot, which the registered reflux_ratio specification occupies | L3: L3 is not admissible for DWSIM (spec §2.2))",
+            "rule": 0
+          },
+          "PC-P/IDAES": {
+            "classification": "NOT_COMPARABLE(capability: L1: S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, §5.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection | L2: S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, §5.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection | L3: no position passes rules 2-2d (P0 2: Maximum Number of Iterations Exceeded.; P1 2: Maximum Number of Iterations Exceeded.; P2 2: Maximum Number of Iterations Exceeded.))",
+            "rule": 0
+          },
+          "PC-L/DWSIM": {
+            "classification": "DISAGREE",
+            "rule": 4,
+            "level": "L1",
+            "rung": {
+              "method": "Wang-Henke",
+              "tolerance": 1e-08
+            }
+          },
+          "PC-L/IDAES": {
+            "classification": "not_applicable",
+            "rule": "registered_absence"
+          },
+          "PC-LI/DWSIM": {
+            "classification": "not_applicable",
+            "rule": "registered_absence"
+          },
+          "PC-LI/IDAES": {
+            "classification": "DISAGREE",
+            "rule": 4,
+            "level": "L3",
+            "position": "P0"
+          }
+        },
+        "x31": {
+          "clause": "not met",
+          "cases_with_two_references": 2,
+          "cases": {
+            "RC1": {
+              "row": 5,
+              "outcome": "two references",
+              "classes": {
+                "DWSIM": "comparable",
+                "IDAES": "comparable"
+              }
+            },
+            "RC2": {
+              "row": 5,
+              "outcome": "two references",
+              "classes": {
+                "DWSIM": "comparable",
+                "IDAES": "comparable"
+              }
+            },
+            "RC3": {
+              "row": 6,
+              "outcome": "one reference (IDAES), absent: DWSIM: L1 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Solver reached the maximum number of iterations without converging.) | L1 Wang-Henke: no tolerance passed rules 2-2d (2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.226615978819172E-07 [Tolerance = 1E-07]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -2.059233651516756E-09 [Tolerance = 1E-09]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -6.590786997971714E-08 [Tolerance = 1E-08]; 2: tool-internal balance) | L3: L3 is not admissible for DWSIM (spec §2.2)",
+              "classes": {
+                "DWSIM": "absent",
+                "IDAES": "comparable"
+              }
+            },
+            "RC4": {
+              "row": 7,
+              "outcome": "no reference: not met",
+              "classes": {
+                "DWSIM": "absent",
+                "IDAES": "absent"
+              }
+            }
+          },
+          "inverse_kinds": {
+            "purity": {
+              "case": "RC5",
+              "row": 5,
+              "outcome": "two references"
+            },
+            "recovery": {
+              "case": "RC6",
+              "row": 5,
+              "outcome": "two references"
+            },
+            "temperature": {
+              "case": "RC7",
+              "row": 6,
+              "outcome": "one reference (IDAES), absent: DWSIM: L1 Napthali-Sandholm: structurally inexpressible: condenser: Napthali-Sandholm's condenser Stream_Ratio is L(0)/LSS(0) (NewtonRaphson.vb l. 446-448), the reflux over the liquid distillate, which a Full_Reflux condenser holds at 0; S02's reflux ratio on a partial condenser is L_1/V_1 (spec §5.1 row 9, §17.2 F2): not this specification. Wang-Henke's is L(0)/(LSS(0) + V(0)) = L_1/V_1 || reboiler: DWSIM's reboiler Temperature specification is the reboiler stage's temperature Tj(ns), our stage 7 (NewtonRaphson.vb l. 492-494 and 919; BubblePoint.vb l. 291-293 and 659-661); its condenser one is Tj(0), our stage 1. ColumnSpec.StageNumber selects no stage: the column reads it only as the -1 sentinel of its default distillate-rate specification and in a log line (RigorousColumn.vb l. 3646-3660 and 4651-4665), and no other method of the loaded DWSIM assemblies calls its accessors (settings.stage_number_readers, an IL scan made by this script). The registered specification is T of stage 6 (spec §17.4): another stage, not this specification | L1 Wang-Henke: structurally inexpressible: reboiler: DWSIM's reboiler Temperature specification is the reboiler stage's temperature Tj(ns), our stage 7 (NewtonRaphson.vb l. 492-494 and 919; BubblePoint.vb l. 291-293 and 659-661); its condenser one is Tj(0), our stage 1. ColumnSpec.StageNumber selects no stage: the column reads it only as the -1 sentinel of its default distillate-rate specification and in a log line (RigorousColumn.vb l. 3646-3660 and 4651-4665), and no other method of the loaded DWSIM assemblies calls its accessors (settings.stage_number_readers, an IL scan made by this script). The registered specification is T of stage 6 (spec §17.4): another stage, not this specification | L2 Napthali-Sandholm: structurally inexpressible: no L2(a) realization: DWSIM's only one is a Partial_Condenser with its liquid distillate fixed at 0 and a vapour-rate specification, for a partial condenser's distillate_rate (spec §17.2) | L2 Wang-Henke: structurally inexpressible: no L2(a) realization: DWSIM's only one is a Partial_Condenser with its liquid distillate fixed at 0 and a vapour-rate specification, for a partial condenser's distillate_rate (spec §17.2) | L3: L3 is not admissible for DWSIM (spec §2.2)"
+            }
+          }
+        },
+        "controls": {
+          "DWSIM": {
+            "agree": [],
+            "controls": {
+              "PC-L": "DISAGREE",
+              "PC-P": "NOT_COMPARABLE(capability: L1: no rung passed rules 2-2d (2: COL: Error evaluating error functions.; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.5368517005306023E-07 [Tolerance = 1E-07]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -3.131585044520898E-08 [Tolerance = 1E-09]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -9.062406547410973E-08 [Tolerance = 1E-08]; 2: COL: Unable to find column solver with name 'Russell (Inside-Out)'.; 2: tool-internal balance) | L2: L2(a) needs DWSIM's Partial_Condenser with its liquid distillate fixed at 0; DWSIM fixes that rate only through the condenser specification slot, which the registered reflux_ratio specification occupies | L3: L3 is not admissible for DWSIM (spec §2.2))"
+            },
+            "disagree": [
+              "PC-L"
+            ],
+            "pairs_count": true
+          },
+          "IDAES": {
+            "agree": [],
+            "controls": {
+              "PC-LI": "DISAGREE",
+              "PC-P": "NOT_COMPARABLE(capability: L1: S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, §5.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection | L2: S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, §5.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection | L3: no position passes rules 2-2d (P0 2: Maximum Number of Iterations Exceeded.; P1 2: Maximum Number of Iterations Exceeded.; P2 2: Maximum Number of Iterations Exceeded.))"
+            },
+            "disagree": [
+              "PC-LI"
+            ],
+            "pairs_count": true
+          }
+        },
+        "control_tool_model_distance": {
+          "PC-L/DWSIM": {
+            "argmax": "top[B]",
+            "max_ratio": 0.032578161783367504,
+            "registered_discrimination": "243.292"
+          },
+          "PC-LI/IDAES": {
+            "argmax": "Q_reboiler",
+            "max_ratio": 0.00045738206839448354,
+            "registered_discrimination": "243.292"
+          },
+          "PC-P/DWSIM": {
+            "max_ratio": null,
+            "reason": "no tool values (not available)"
+          },
+          "PC-P/IDAES": {
+            "max_ratio": null,
+            "reason": "no tool values (not available)"
+          }
+        },
+        "comparison_stopped": false
+      }
+    },
+    {
+      "id": "S03.gate",
+      "description": "§13: scripts/gate.sh passes before the merge",
+      "result": "unsupported",
+      "value": "not run by this generator; it runs once before merge"
+    },
+    {
+      "id": "S03.ci",
+      "description": "§13: CI is green on both architectures",
+      "result": "unsupported",
+      "value": "not measured by this generator; checked before merge"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/artifacts/s03-tests.junit.xml",
+      "sha256": "a2ee46369636f0a5fd0585fefda7d6b629c22dd9a7543f560b3fa013595923fc",
+      "description": "JUnit report of the S03, S01, S02 and S06 test run (ignored; kept by hash)"
+    },
+    {
+      "path": "benchmarks/s03/references/comparison.json",
+      "sha256": "5c7d139c0547f17bfa318f33b106cdb5749b9eaacbccb07cf1dedd570593585d",
+      "description": "the classification of every (case, tool) pair (WO-S03-4)"
+    },
+    {
+      "path": "benchmarks/s03/references/SHA256SUMS",
+      "sha256": "fb65ba284a1a558f582ef2e6100002b0769f2a11d19fd718905243a271596f70",
+      "description": "SHA-256 of every committed qualification and tool record and of comparison.json"
+    },
+    {
+      "path": "benchmarks/s03/references/qualification/dwsim.json",
+      "sha256": "2ac3bb976d28f8c9d05397cabbad8e7d10236ef3d71c6077ce08f7421153b400",
+      "description": "DWSIM qualification record (levels, attempts, structural inspections, selection)"
+    },
+    {
+      "path": "benchmarks/s03/references/qualification/idaes.json",
+      "sha256": "bd5df2923b9168111e42b65c419b423c20916545db2693ad09399b669b13917b",
+      "description": "IDAES qualification record (levels, attempts, structural inspections, selection)"
+    },
+    {
+      "path": "docs/derivations/scripts/s03_reference.json",
+      "sha256": "95ef9bd2551267e37c225764b5ed159d9f14911c2bb8b05a5905b8b65cec0c67",
+      "description": "the design lane's 50-digit twin values and control discriminations (ref)"
+    },
+    {
+      "path": "docs/derivations/scripts/s03_cases.json",
+      "sha256": "c901d6c90f4b700b92ff98e2a01ae7e8f1d5557b80dd647e3b14e089d3703f39",
+      "description": "the registered inputs and tool settings (cases)"
+    },
+    {
+      "path": "docs/derivations/S03-spec.md",
+      "sha256": "30f8b7d83beb8511590491d8043f80d6b43a216d9bb9be656254436f83549cfa",
+      "description": "the S03 specification the checks are read from (§11, §13, §14, §17, §18)"
+    }
+  ],
+  "limitations": [
+    "**Not empirical validation.** SYN-001 is synthetic. An `AGREE` verifies that two independently written implementations of the same equations (§5's matched model) give the same root at a registered state. It says nothing about real chemistry, plant data or the property model.",
+    "**Only at `P_r`.** At every RC state SYN-001's Poynting factor is 1 and its `v_i (P − P_r)` term is 0. **Our Poynting terms are not independently verified.** S02's generator covers them for M1–M4, and the generator is not independent. M1–M4 at their own pressure profile have no independent reference (S02 §14 stands for them).",
+    "**Only the registered states.** Seven configurations (Amendment 1), ten neighbouring states and PC-P. Nothing for another N, feed stage, specification pair or state. No uniqueness claim. A tool converging from its own initializer says nothing about our solver's robustness.",
+    "**No sensitivity capability.** The perturbation study gives finite-difference responses of three implementations at registered states. No derivative of our solution is verified, and S02 §14's \"no sensitivity results\" stands for the column as a capability.",
+    "**Inverse specifications: one state per kind** (Amendment 1, §17.1): purity (RC5), recovery (RC6) and temperature (RC7). Each may end with one reference or none (§17.11). RC7's is expected to be IDAES alone.",
+    "**No phase-transition robustness** (§10.1). A column with a one-phase (dry or flooded) section ends in a typed failure. A later package is queued for it (Q-S03-4, §17.7); S03 neither depends on it nor anticipates it. No partial dormancy, no subcooled condenser, no total reboiler, no side draws, pump-arounds, hydraulics, efficiencies or rate-based models (deferred by the plan).",
+    "**Supported nonideal scope: none** (§9).",
+    "**Refusals are not compared with the tools.** S1–S10 and S11 are our contract (S02 A02–A03, A04 here). The tools' error behaviour is not comparable.",
+    "**IDAES at ε = 1e-8 K.** Agreement verifies SmoothVLE's sharp limit only to within that ε (T06 A2).",
+    "**A `NOT_COMPARABLE`** is neither a failure nor a pass of our column. **An L3 `AGREE`** verifies our column against IDAES's tray equations as the harness connected them.",
+    "**Blindness is procedural** (§2.1).",
+    "**Amendment 1's own limits** are in §17.11, Amendment 2's in §18.9.",
+    "17.11: **One state per inverse kind.** RC5, RC6 and RC7 are one state each, with no perturbed neighbour. An `AGREE` verifies the slot at that state. The partner claim shows only that a dropped inverse specification cannot pass.",
+    "17.11: **RC6 and RC7 may have one reference, or none.** If DWSIM cannot express RC7 (the default expectation) and IDAES can, the temperature kind has one reference. If neither can, it has none, reported per §17.5 outside X31's count.",
+    "17.11: **The ladder amendment is not a claim about DWSIM's solvers.** It records which methods DWSIM 9.0.5 dispatches for these units. A case DWSIM cannot qualify is a fact about this tool and these settings, not about the case.",
+    "17.11: **§17.3 does not re-prove DWSIM's K at column level away from the reference pressure.** That rests on T06's PC-2 (a flash) and on §3's identity at `P_r`. Our Poynting terms stay without an independent check (§14).",
+    "17.11: **The 1e-9 thresholds** are derived from the twin's response at the registered states only. They say nothing about other states.",
+    "17.11: **The queued one-phase package** (§17.7) has not started, and nothing here anticipates its outcome.",
+    "17.11: **The exemption** (§17.6) covers three pinned files only. Every other import must pass the full list of strings.",
+    "18.9: **The ladder is not a claim about IDAES's solvers.** A case IDAES cannot qualify after WO-S03-2b is a fact about this tool, this path and these settings, not about the case.",
+    "18.9: **Path independence is checked among three positions at one level.** It is not a uniqueness claim (§14).",
+    "18.9: **PC-LI** shows that the IDAES column harness passes `h_form,ig` through, and resolves a 10 J/mol enthalpy difference at RC1's state, mainly through duties and flows. It does not show IDAES's missing Poynting factor at column level. That rests on T06's PC-2 (a flash) and on §3's identity at `P_r`, as §17.11 says for DWSIM. Our Poynting terms stay without an independent check.",
+    "18.9: **The readings in §18.1 are hypotheses.** WO-S03-2b measures whether P1 or P2 helps. Nothing here predicts it.",
+    "18.9: **Branch outcomes (§18.6) are pre-registered mappings, not predictions.**",
+    "18.9: **Blindness stays procedural** (§2.1). The pilot runs are disclosed, not prevented.",
+    "requirements lists D19 only: X31 (the reference clause) is a requirement id outside the manifest schema's D/A pattern. Its verdict and D19's evidence fields in docs/requirements.yaml are filled from the verdict agent's document (docs/reviews/S03-verdicts.md, A17), not by the build lane (§13).",
+    "X31 reference clause as §17.5's table classifies it mechanically: not met; 2 of 4 cases with two references. Per case: RC1 row 5 (two references); RC2 row 5 (two references); RC3 row 6 (one reference (IDAES), absent: DWSIM: L1 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Solver reached the m); RC4 row 7 (no reference: not met). The recorded verdict is A17's.",
+    "Every NOT_COMPARABLE and DISAGREE pair, with its reason: RC3/DWSIM: NOT_COMPARABLE(capability: L1 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Solver reached the maximum number of iterations without converging.) | L1 Wang-Henke: no tolerance passed rules 2-2d (2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.226615978819172E-07 [Tolerance = 1E-07]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -2.059233651516756E-09 [Tolerance = 1E-09]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -6.590786997971714E-08 [Tolerance = 1E-08]; 2: tool-internal balance) | L3: L3 is not admissible for DWSIM (spec §2.2)) || RC4/DWSIM: NOT_COMPARABLE(capability: L1 Napthali-Sandholm: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L1 Wang-Henke: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L2 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Error evaluating error functions.) | L2 Wang-Henke: no tolerance passed rules 2-2d (2: COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.) | L3: L3 is not admissible for DWSIM (spec §2.2)) || RC4/IDAES: NOT_COMPARABLE(capability: L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L3: no position passes rules 2-2d (P0 2: Maximum Number of Iterations Exceeded.; P1 2: Maximum Number of Iterations Exceeded.; P2 2: Maximum Number of Iterations Exceeded.)) || RC7/DWSIM: NOT_COMPARABLE(capability: L1 Napthali-Sandholm: structurally inexpressible: condenser: Napthali-Sandholm's condenser Stream_Ratio is L(0)/LSS(0) (NewtonRaphson.vb l. 446-448), the reflux over the liquid distillate, which a Full_Reflux condenser holds at 0; S02's reflux ratio on a partial condenser is L_1/V_1 (spec §5.1 row 9, §17.2 F2): not this specification. Wang-Henke's is L(0)/(LSS(0) + V(0)) = L_1/V_1 || reboiler: DWSIM's reboiler Temperature specification is the reboiler stage's temperature Tj(ns), our stage 7 (NewtonRaphson.vb l. 492-494 and 919; BubblePoint.vb l. 291-293 and 659-661); its condenser one is Tj(0), our stage 1. ColumnSpec.StageNumber selects no stage: the column reads it only as the -1 sentinel of its default distillate-rate specification and in a log line (RigorousColumn.vb l. 3646-3660 and 4651-4665), and no other method of the loaded DWSIM assemblies calls its accessors (settings.stage_number_readers, an IL scan made by this script). The registered specification is T of stage 6 (spec §17.4): another stage, not this specification | L1 Wang-Henke: structurally inexpressible: reboiler: DWSIM's reboiler Temperature specification is the reboiler stage's temperature Tj(ns), our stage 7 (NewtonRaphson.vb l. 492-494 and 919; BubblePoint.vb l. 291-293 and 659-661); its condenser one is Tj(0), our stage 1. ColumnSpec.StageNumber selects no stage: the column reads it only as the -1 sentinel of its default distillate-rate specification and in a log line (RigorousColumn.vb l. 3646-3660 and 4651-4665), and no other method of the loaded DWSIM assemblies calls its accessors (settings.stage_number_readers, an IL scan made by this script). The registered specification is T of stage 6 (spec §17.4): another stage, not this specification | L2 Napthali-Sandholm: structurally inexpressible: no L2(a) realization: DWSIM's only one is a Partial_Condenser with its liquid distillate fixed at 0 and a vapour-rate specification, for a partial condenser's distillate_rate (spec §17.2) | L2 Wang-Henke: structurally inexpressible: no L2(a) realization: DWSIM's only one is a Partial_Condenser with its liquid distillate fixed at 0 and a vapour-rate specification, for a partial condenser's distillate_rate (spec §17.2) | L3: L3 is not admissible for DWSIM (spec §2.2)) || RC1-BR/DWSIM: NOT_COMPARABLE(capability: L1: no rung passed rules 2-2d (2: COL: Error evaluating error functions.; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.8827279868229484E-08 [Tolerance = 1E-08]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -6.319475151506104E-09 [Tolerance = 1E-09]; 2: COL: Unable to find column solver with name 'Russell (Inside-Out)'.; 2: tool-internal balance; 2d: accuracy rerun; 2d: specification residual) | L2: L2(a) needs DWSIM's Partial_Condenser with its liquid distillate fixed at 0; DWSIM fixes that rate only through the condenser specification slot, which the registered reflux_ratio specification occupies | L3: L3 is not admissible for DWSIM (spec §2.2)) || RC3-Q/DWSIM: NOT_COMPARABLE(capability: L1 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Solver reached the maximum number of iterations without converging.) | L1 Wang-Henke: no tolerance passed rules 2-2d (2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.0028683955867236E-07 [Tolerance = 1E-07]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.8599647052429868E-09 [Tolerance = 1E-09]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -4.650285204463702E-08 [Tolerance = 1E-08]; 2: tool-internal balance) | L3: L3 is not admissible for DWSIM (spec §2.2)) || RC3-z/DWSIM: NOT_COMPARABLE(capability: L1 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Solver reached the maximum number of iterations without converging.) | L1 Wang-Henke: no tolerance passed rules 2-2d (2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -4.695004988370909E-08 [Tolerance = 1E-08]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -4.695004988370909E-08 [Tolerance = 1E-09]; 2: COL: Failed to fulfill mass balance for SYN001-C: Relative Error = 2.0140275523716777E-07 [Tolerance = 1E-07]; 2: tool-internal balance) | L3: L3 is not admissible for DWSIM (spec §2.2)) || RC4-D/DWSIM: NOT_COMPARABLE(capability: L1 Napthali-Sandholm: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L1 Wang-Henke: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L2 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Error evaluating error functions.) | L2 Wang-Henke: no tolerance passed rules 2-2d (2: COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.) | L3: L3 is not admissible for DWSIM (spec §2.2)) || RC4-D/IDAES: NOT_COMPARABLE(capability: L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L3: no position passes rules 2-2d (P0 2: Maximum Number of Iterations Exceeded.; P1 2: Maximum Number of Iterations Exceeded.; P2 2: Maximum Number of Iterations Exceeded.)) || RC4-z/DWSIM: NOT_COMPARABLE(capability: L1 Napthali-Sandholm: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L1 Wang-Henke: structurally inexpressible: condenser: condenser specification distillate_rate: DWSIM's native rate option on the condenser (Product_Molar_Flow_Rate) is the liquid distillate LSS(0) (NewtonRaphson.vb l. 443-445, BubblePoint.vb l. 977-983), which a Full_Reflux condenser holds at 0; S02's D is the vapour distillate V_1 (spec §5.1 row 9). No native option of the Full_Reflux condenser is V_1 | L2 Napthali-Sandholm: no tolerance passed rules 2-2d (2: COL: Error evaluating error functions.) | L2 Wang-Henke: no tolerance passed rules 2-2d (2: COL: A convergence error was found while trying to solve the column. Possible reasons are: unfeasible specs, initial estimates far from solution and/or very non-ideal (wide-boiling or azeotropic) mixtures being fed to the column.) | L3: L3 is not admissible for DWSIM (spec §2.2)) || RC4-z/IDAES: NOT_COMPARABLE(capability: L1: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L2: IDAES's TrayColumn always builds a Condenser and a kettle Reboiler; the case has no reboiler (S02 'none' end), and no L1 or L2 realization removes a unit | L3: no position passes rules 2-2d (P0 2: Maximum Number of Iterations Exceeded.; P1 2: Maximum Number of Iterations Exceeded.; P2 2: Maximum Number of Iterations Exceeded.)) || PC-P/DWSIM: NOT_COMPARABLE(capability: L1: no rung passed rules 2-2d (2: COL: Error evaluating error functions.; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -1.5368517005306023E-07 [Tolerance = 1E-07]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -3.131585044520898E-08 [Tolerance = 1E-09]; 2: COL: Failed to fulfill mass balance for SYN001-A: Relative Error = -9.062406547410973E-08 [Tolerance = 1E-08]; 2: COL: Unable to find column solver with name 'Russell (Inside-Out)'.; 2: tool-internal balance) | L2: L2(a) needs DWSIM's Partial_Condenser with its liquid distillate fixed at 0; DWSIM fixes that rate only through the condenser specification slot, which the registered reflux_ratio specification occupies | L3: L3 is not admissible for DWSIM (spec §2.2)) || PC-P/IDAES: NOT_COMPARABLE(capability: L1: S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, §5.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection | L2: S02's partial condenser (vapour distillate, all liquid refluxed) is not IDAES's partial Condenser: that unit splits its liquid into reflux and a liquid distillate by reflux_split_fraction = RR/(1+RR), so its reflux_ratio is reflux over liquid distillate (not L_1/V_1, §5.1 row 9), and its liquid distillate flow is an Expression (1 - RR/(1+RR))*F_liq, not a variable: there is no tool variable to fix at 0 (L2 a), and the expression is 0 only at reflux_ratio = infinity. See structural_inspection | L3: no position passes rules 2-2d (P0 2: Maximum Number of Iterations Exceeded.; P1 2: Maximum Number of Iterations Exceeded.; P2 2: Maximum Number of Iterations Exceeded.)) || PC-L/DWSIM: DISAGREE || PC-LI/IDAES: DISAGREE",
+    "scripts/gate.sh and CI on both architectures were not run by this generator (they run once before merge into main); S03.gate and S03.ci are unsupported here.",
+    "Review: the design lane's reviewer pass (docs/reviews/S03-review.md, R-644) was applied by WO-S03-6 (F1-F3 and rulings 1-6, spec §19); the human numerical and process-model review is pending, and this manifest claims neither `reviewed` nor `released`."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
