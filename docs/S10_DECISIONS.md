@@ -415,3 +415,11 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
   Not resolved here: which file vets `records.yaml` and with which retrieval predicate is a design-lane choice.
   Default the build lane would propose: vet by `s10_records.py --check` reproducing the records from the committed
   inputs plus `nasa7-low.json`'s retrieval hash, with the rights condition read from `docs/s10-rights-check.md`.
+- **CI (run 40180210113, head `ba5968e8`):** check (x86-64) failure, 1 failed of 15 257 (T08.A32 above); default-install
+  failure, 1 failed (T08.A32); check (aarch64) failure, 2 failed: T08.A32 and
+  `tests/test_s10_records.py::test_saturation_check_never_passes_without_coolprop`. The second is
+  `s10_saturation_points.py --check` with CoolProp installed: "water cross-check worst 3.542e-11;
+  saturation-points.json DIFFERS" on aarch64. The check byte-compares CoolProp output written on x86-64, and CoolProp
+  is not bit-identical across architectures (S07 spec §20, R-627). It predates WO-S10-7 (WO-S10-3). **OPEN (design
+  lane):** whether that check compares within a tolerance off x86-64, or is run on x86-64 only. Not changed here (a
+  tolerance is the design lane's).
