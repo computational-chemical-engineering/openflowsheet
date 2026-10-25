@@ -5613,3 +5613,240 @@ harvest:
   class: P
   to: []
   note: CI on both architectures is checked before merge, not by the generator; unsupported here
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[0]
+  sha256: 0c92df03cd3d63bde6f25602cbd2f48f7a71f2d23734225514c85089e89f4e7b
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); its synthetic verification says nothing about a real mixture (S10 spec §0)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[1]
+  sha256: 0cfe5365e8a9c692e100739d0f58461e90f60f7b80bfba706e7dc20e37579d00
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); agreement with IDAES or DWSIM is numerical verification of the same equations, not validation (spec §0, §8)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[2]
+  sha256: b818333e084f93ecbab3c73a2c28aa9a2260e91d107e6479aad94d560c014328
+  class: P
+  to: []
+  note: 'S10 scope statement: fit quality is reported as fit quality, never as validation (spec §0, §9.4)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[3]
+  sha256: 61bfd04263b07d5c86f6e15d40bf55aa60f2ab1300425be207b0659f503fb79d
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); the validation bands are fitness statements on the held-out datasets only (spec §0, §9.6)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[4]
+  sha256: 51132cd5b0989b6d86c076848ff526562bb1980ba2faa925780082707ac301b0
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); its stability label is global only within the model; no second liquid phase is excluded for the real mixture (spec §0, §4)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[5]
+  sha256: 47c68212dcb5a882a8c86c6ed4b888e87f57f79426077345b364bd91549bb5fd
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); no column, PH-flash or flowsheet claim (spec §0, §10)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[6]
+  sha256: 8aef823ee3cb608edf87333d630c5522ea856a1af9c8b6dbeb3f89d696e84d97
+  class: P
+  to: []
+  note: 'S10 rights: no claim on rights, nothing ships on the spec''s authority (spec §0, §9.1; docs/s10-rights-check.md); process'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[7]
+  sha256: 0c469a700a005cc0012854b40550f2c39f0d42984c1239078cc0c492a4f962e4
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); LLE, electrolytes, P > 2e5 Pa, excess enthalpy, liquid volume and transport properties are excluded (spec §0)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[8]
+  sha256: 4dc815d8b7b0072405cafc37795e3438d8826b60995177624201b84e937f9c7b
+  class: P
+  to: []
+  note: 'S10 fit procedure record: the grid-global claim is relative to the step-0.005 grid (spec §15 A2-6)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[9]
+  sha256: bfa3bcc9d9062ea9b4b358d61351e384fae1c17d9d9e26f4990355a041a610b0
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); the individual methanol-ethanol Lambda are not determined by the binary data; up to 0.46 K in ternary predictions (spec §17 A4-2)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[10]
+  sha256: 5cdbdf0837688ffdad27c767d5e15fd92abb4d6683398552fc72cac079d2265a
+  class: P
+  to: []
+  note: 'S10 scope statement: fit quality is not validation (spec §15 A2-6)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[11]
+  sha256: e81dabeb5c358c59eaa53949b8528d84535dd6983aec959bac654241dceda75b
+  class: P
+  to: []
+  note: 'S10 comparison coverage record: no near-azeotrope state in the IDAES comparison (spec §15 A2-6)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[12]
+  sha256: a8c9f41600352f65156ba2cd0dc70771d25dba6a519f28fb34793fdf9ca31ec5
+  class: P
+  to: []
+  note: 'S10 rights: A2-4 is not a legal opinion; shipping is Frank''s decision (Q-F3); process'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[13]
+  sha256: 0f08a474e56fc139de2169dd5a67942d0822af43215251b95e512bd9f0ef577d
+  class: P
+  to: []
+  note: 'S10 record: the synthetic verification set is untouched by Amendment 2'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[14]
+  sha256: ada005600739e7281604662edc444aa7d1f99d386683a91af4ce019776d1fb73
+  class: P
+  to: []
+  note: 'S10 history: Amendment 3''s statement before the comparison was computed (spec §16 A3-9, at its date)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[15]
+  sha256: a75f6282f3da19a921c588ff7e0f05be846eee531f7d434fee1dea10606b6024
+  class: P
+  to: []
+  note: 'S10 tool-qualification record: floor stalls explained, not claimed to converge (spec §16 A3-9)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[16]
+  sha256: 436c50a98ea5aec72cf1c7f76d862dae635c56a892e36d988b35323601ab0d44
+  class: P
+  to: []
+  note: 'S10 tool-qualification record: no rung-dependence check for a state converged at one rung (spec §16 A3-9)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[17]
+  sha256: 25cb42f455f800352495ac987d5c98b8fbc46f0818c370d20646095847963de9
+  class: P
+  to: []
+  note: 'S10 tool-qualification record: IDAES initializer failures are results, not statements on our flash (spec §16 A3-9, §17 A4-1)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[18]
+  sha256: 1177e52badcdc46c3cf4bfe4ba3860a0b0f5030ac06bc4a7f7034340cc4a87a0
+  class: P
+  to: []
+  note: 'S10 measurement record: the generator''s T_dew^I equals IDAES''s only within the flash agreement (spec §16 A3-9)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[19]
+  sha256: 705a0ee4555bc0c2d109fbcba88e3f584ec8053377debdf755cff8e70f32800d
+  class: P
+  to: []
+  note: 'S10 tool-version record: the A3-3 theorem holds for IDAES 2.13.0''s equations as read, guarded by A44 (spec §16 A3-9)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[20]
+  sha256: cc8b3227b73f2abab28449e2c7c3fe8269456adc3684c90ede42877152243469
+  class: P
+  to: []
+  note: 'S10 measurement record: CVT-EFFECT is a first-order estimate, not a rigorous bound (spec §16 A3-9)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[21]
+  sha256: 819fcea54b1c0fe3bb2749eb3083ff3a6d7049f60693b420916f0d0f0d6d5b6a
+  class: P
+  to: []
+  note: 'S10 tool-qualification record: DWSIM''s flash is limited by its own 1e-6 stop (spec §16 A3-9, A3-6)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[22]
+  sha256: 0c0c8226b7f5f1d1b6a1a7814e7515ce6b5ea82d4a8753544eb3013be48b3ee9
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); agreement with either tool is numerical verification by an independent implementation (D19), not validation (spec §16 A3-9)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[23]
+  sha256: 4f009618659ce71771c74bb72ba9eea467fb16fff8937599c6e00c9eafb7fa40
+  class: P
+  to: []
+  note: 'S10 record: Amendment 4 changes no selection, classification, verdict or band (spec §17 A4-5)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[24]
+  sha256: 25337544f98dc0552b0160e0656d8bd920be330d3d2d10f8bc391369b4f6f2ec
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); the methanol-ethanol Lambda are the least-squares point, not identifiable from Table II (spec §17 A4-2, A4-5)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[25]
+  sha256: d06d79bead70f6581621180665a4ee8db7802aebda2e5a0e2b13a13c1afdd3bc
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); VAL-2 (constant-Lambda extrapolation in T) is untested (spec §17 A4-5)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[26]
+  sha256: 693e92c0518a5d87336bdf02de6dff1e1b9cd4348f4d20c417a95b7b3591fc16
+  class: P
+  to: []
+  note: 'S10 rights: no legal reading of any rights row; Q-F3 stays Frank''s (spec §17 A4-5); process'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[27]
+  sha256: 7b719913251bc61171476cebfcd91ea22e95d527ad413d3ca4b4de788b7cf499
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); validation reported apart: VAL-1 within band, VAL-2 pending, VAL-3 methanol latent heat not validated within band (+5.72 %) (spec §9.6, §17 A4-4)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[28]
+  sha256: ed1fdf5b21c7cbfa1cc0321298ea03152cb4d30a9865e79797208eabd15ac345
+  class: P
+  to: []
+  note: 'S10 measurement record: every IDAES and DWSIM state not compared, with its reason (comparison.json; reference verdicts)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[29]
+  sha256: 54ecfdb8e8217fe43919f9e877b536cc2ba37f9757fdd4366229c7d2141eae4f
+  class: P
+  to: []
+  note: 'S10 provenance: requirements lists D08; D19''s ledger row not edited by WO-S10-7 (B-83)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[30]
+  sha256: 4b2904f5dabf055f69971172d812c0191d1c1f5cb294287f4f06262c3cc374f9
+  class: P
+  to: []
+  note: 'S10 rights: RC-05, RC-06 and RC-08 unresolved; no S10 file is packaged (A28); shipping is Frank''s (Q-F3); process'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[31]
+  sha256: 86239dd5bc82c637f727e808e719b5b00ba319cb74507b4d423ffb818cb02d69
+  class: P
+  to: []
+  note: 'S10 provenance: the qualification records cite pre-A4-3 inputs hashes, rebuilt from HEAD by records-lineage.json and its test'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[32]
+  sha256: 264f1cd849c7785d390a9ebb023f637aa852f3b4214904cc967ce6a9db31624b
+  class: P
+  to: []
+  note: scripts/gate.sh and CI run once before merge, not by the generator; process note
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: limitations[33]
+  sha256: 7f3b58f59943cb30a43a1e253abf2aab5bbafb5fdaead2507cf94f623b3bc0e3
+  class: P
+  to: []
+  note: S10 final review applied by WO-S10-7; human numerical and process-model review pending; neither reviewed nor released claimed
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: checks[48]
+  check_id: S10.validation
+  sha256: cdc392f1becafd2d1abfed3a27bd12f88154766b2cbc9d9f30c3ac2e9e03f3d5
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; S10.A27, R-569, R-709); empirical validation recorded apart from verification (not_applicable, B-81): VAL-1 within band, VAL-2 pending, VAL-3 one cell outside band (spec §17 A4-4)'
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: checks[49]
+  check_id: S10.gate
+  sha256: 127fd0b034da144b3366b6c8cbad56e3bb2ad2556619386b3ee7b1108bf63f60
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S10/c4f3751e208c540076d2dd8109d673769745a0dc/manifest.json
+  item: checks[50]
+  check_id: S10.ci
+  sha256: d85cad33c596132f094cdca259ee1b670539cfe8236b4bbbb9211916bc90cfea
+  class: P
+  to: []
+  note: CI on both architectures is checked before merge, not by the generator; unsupported here
