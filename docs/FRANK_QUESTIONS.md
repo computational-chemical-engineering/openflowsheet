@@ -157,3 +157,8 @@ All four answered with the recommended default (Frank, 2026-10-25):
 - **Q-F2** flowsheets or library → **library only for now** (like S05/S07; flowsheet use with the binding package).
 - **Q-F3** ship fitted data → **decide after the rights check** (repository-only until then; come back to Frank).
 - **Q-F4** two liquid phases soon → **no** (Wilson only; would-split mixtures refused with a clear message).
+- **Q-F5** (IDAES coverage without the states its initializer cannot start) — **Frank: "Yes, enough"** (2026-10-25).
+  Note: the premise named I3 and I11; WO-S10-4b's record shows I11 does converge at 1e-4/MA27 (ESC-8), so only I3
+  drops out of the IDAES comparison.
+- **Q-F6** (try DWSIM's Inside-Out flash on new states in a later package?) — **Frank: "No"** (2026-10-25). DWSIM stays
+  a check on model expression, enthalpies' readbacks and phase labels; IDAES is the numerical reference.
