@@ -379,3 +379,16 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
   changing nothing else. The lineage file is a JSON object: `steps` (the list A4-3 names, exactly its seven keys) and
   `dwsim_inputs_b62` (B-62's real-section hash, which A4-3 step 6 says the file records). Alternative: name the parent
   commit, or leave the field out. Reversible by: editing `records-lineage.json`.
+- B-81. DECISION: where the manifest carries A4-4's validation block → the frozen manifest schema
+  (`schemas/evidence-manifest.schema.json`, top level `additionalProperties: false`) has no field for it, so the block
+  is the value of a check `S10.validation` (`{"validation": <A4-4's block verbatim>, ...}`) with result
+  `not_applicable` and kept out of `status`; a limitation repeats it in one line. The generator refuses the block
+  unless `validation/report.json` carries the verdicts it states. Alternative: a schema change (an ADR), or one check
+  per VAL id with `pass`/`fail` (would read as verification). Reversible by: `validation_check()` in
+  `scripts/s10_evidence_manifest.py` and a regeneration. **For the design lane** at the next ruling round.
+- B-82. DECISION: the test count → the manifest reports the count measured at C_m in A4-4's form ("N passed, 2
+  skipped (VAL-2)"); N is 240, not A4-4's 237, because WO-S10-7 adds the lineage test (A4-3 step 6) and the two
+  blindness tests (S-3). The generator requires every skip to be VAL-2's. Alternative: none. Reversible by: no action.
+- B-83. DECISION: the manifest lists `requirements: ["D08"]` only (the brief's ledger entry). §8's comparisons are
+  D19-shaped, but D19's row is not edited here; a limitation says so. Alternative: list D19 and add S10 to D19's row.
+  Reversible by: `requirements` in the generator, and the ledger.
