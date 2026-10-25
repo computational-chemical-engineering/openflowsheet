@@ -92,26 +92,25 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-25, workstation; no cloud sessions).** `main` = `30b7b4b8` (S10 merged at wp/S10 `7cf51876`; tree
-identical). Last full gate: PASS at `7cf51876`: 12234 passed, 3139 skipped. CI 40193243573 green (x86-64, aarch64,
-default-install, identity). Plan packages with tested/reviewed manifests: 31 of 34 plus S10 (v0.3 S01–S05, S07, S10
-tested; R01–R03 open). **S10** (`wilson-ig-v1`, library-only, ADR 0047 Proposed; manifest `evidence/S10/f974cc87…`
-tested 53/56; D08 and D19 cited, D19 stays planned): IDAES 13 AGREE + I3 NOT_COMPARABLE; VAL-1 within band, VAL-3 methanol
-Δh +5.72 % vs 5 % (missed, stated), VAL-2 pending. HARVEST_SIZE (52, 688, 85). IDAES/DWSIM environments live in worktree
-`.claude/worktrees/s03` (symlinked into `s10`).
+**Position (2026-10-25, workstation; no cloud sessions).** `main` = `329757c2` (S10 complete, merged at wp/S10
+`6bc159e9`; tree identical). Last full gate: PASS at `6bc159e9`: 12244 passed, 3137 skipped. CI 40200526990 green (x86-64,
+aarch64, default-install, identity). v0.3 packages tested: S01–S05, S07, S10; R01–R03 open. **S10** (`wilson-ig-v1`,
+library-only, ADR 0047 Proposed; manifest `evidence/S10/f6f27c3f…` tested 53/56, 248 passed 0 skipped; D08 and D19 cited,
+D19 stays planned): IDAES 13 AGREE + I3 NOT_COMPARABLE; VAL-1 within band; VAL-2 within band for both binaries
+(methanol+water AAD_P 1.09 %, AAD_y 0.0048; ethanol+water 0.29 %, 0.0041; 40/159 points below the records' 30 kPa bound;
+verdict `docs/reviews/S10-validation-verdict-val2.md`); VAL-3 methanol Δh +5.72 % vs 5 % (missed, stated). HARVEST_SIZE
+(53, 735, 88). IDAES/DWSIM environments live in worktree `.claude/worktrees/s03`.
 
 **Next actions (in order):**
-1. **S10 WO-S10-8 (VAL-2)** on wp/S10 (worktree `s10`, head `d42fcf08`, past the merge): Amendment 6 (§19, R-725…727)
-   pre-registered the aggregation blind (per binary, both must pass; ΔP/P on measured P; y1; closed-form bubble P at
-   P_eval 101325 Pa; all 159 points). Kurihara et al. 1995 double-entered, byte-identical (SHA-256 `e1290279…`), files
-   in the scratchpad `val2-{A,B}/` until WO-S10-8 commits them. Then `verdict`, lineage step, manifest, gate, merge.
-2. Queued: S08 one-phase column sections; S09 third column reference tool (RC4); S10-C (PH flash, column; architect;
+1. Queued: S08 one-phase column sections; S09 third column reference tool (RC4); S10-C (PH flash, column; architect;
    includes review S-4: fit methanol+ethanol from non-Table-V data, and E-2's azeotrope stop rule).
-3. Design-lane leftovers: S07 B-42 harvest classes, F-20.2, Q-A1-2; ADR 0046/0047 acceptance; S03 B6-1..B6-4; S10 B-86
-   (8 new harvest items classed P; limitations[28] arguable E→U02), B-87 (HG(b) kept an old note).
-4. Binding package (S05/S07/S10 into flowsheets); S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
-5. Workstation backlog: M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
-6. For Frank (defaults set): Q-A6.3 extend the S10 records' P domain below 30 kPa (no); Q-A6.2 register the 1995
+2. Design-lane leftovers: S07 B-42 harvest classes, F-20.2, Q-A1-2; ADR 0046/0047 acceptance; S03 B6-1..B6-4; S10 B-86,
+   B-87, B-90, B-91 (harvest classes), verdict F1 (A51.10 storage floor 5e-10 not 5e-11), F2 (A6-1 water-rich premise);
+   **S10 stale limitations, at the next S10 change (Frank 2026-10-25: "Do it later")**: A6-13's first item ("Any VAL-2
+   result. Nothing has been computed") and the generator's RC-06 sentence (1993 only; now also the 1995 paper).
+3. Binding package (S05/S07/S10 into flowsheets); S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
+4. Workstation backlog: M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
+5. For Frank (defaults set): Q-A6.3 extend the S10 records' P domain below 30 kPa (no); Q-A6.2 register the 1995
    isothermal ternary (no); one water molar mass across conventions (not compared); M01/L01 adopt (ii′) after the CAS
    clean-up (unchanged); Q-F3 ship S10 data after the rights check (RC-05/06/08 unresolved).
 
