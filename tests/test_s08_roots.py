@@ -26,6 +26,7 @@ from test_s08_blocks import D1, EXPECTED_CANDIDATES, F1, P2, P3
 import openflowsheet.models.syn001.column_blocks as blocks_module
 import openflowsheet.models.syn001.column_solve as solve_module
 from openflowsheet.models.syn001.cascade import (
+    _k_values,
     liquid_id,
     stage_duty_id,
     stage_temperature_id,
@@ -250,28 +251,47 @@ def test_a11_p3_and_f1_share_their_core() -> None:
 # -- A14 (b), (c): mutations that must break A08 ---------------------------------------------------
 
 
-def test_a14b_stripping_the_l_block_fails_a08(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A14 (b): with the L-block given `S_ij = K_ij ρ` in the tridiagonal (the core bottom's `T`
-    and `ρ` on the L-block stages, so its vapour is no longer exactly zero), P3's only candidate
-    is refused (its L-block energy has no root on the domain), Stage A's typed answer is
-    returned, and A08 fails."""
-    real = blocks_module._core_flows
+def test_a14b_vapour_on_the_l_block_fails_a08(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A14 (b) as Amendment 1 §13.5 states it: after §5.3 step 5, x⁰'s L-block vapour is set to
+    `v_ij = K_ij(T_s, P_s*) ρ_s l_ij` with the core bottom `s`'s `K` and `ρ` (`V_j` their sum, as
+    `_initial_state` forms every total). The candidate is built, converges to a near-trivial
+    split that item 6 rejects (`near_trivial_split(4,5)`), Stage A's typed answer is returned,
+    and A08 fails."""
+    (candidate,) = candidates(P3)
+    stages = P3.equilibrium_stages()
+    l_block = stages[len(stages) - candidate[1] :]
+    bottom = l_block[0] - 1  # the core bottom `s`
+    ratios: dict[str, float] = {}
+    real_ratios, real_state = blocks_module.stage_ratios, blocks_module._initial_state
 
-    def stripped(*args: Any) -> Any:
-        spec, provider, carry, core, temperatures, rho, phi = args
-        bottom = core[-1]
-        temperatures = {j: temperatures.get(j, temperatures[bottom]) for j in carry}
-        rho = {j: rho.get(j, rho[bottom]) for j in carry}
-        return real(spec, provider, carry, carry, temperatures, rho, phi)
+    def recorded(spec: Any, initial: Any, **kwargs: Any) -> Any:
+        rho, phi = real_ratios(spec, initial, **kwargs)
+        ratios["rho"] = rho[bottom]
+        return rho, phi
 
-    monkeypatch.setattr(blocks_module, "_core_flows", stripped)
+    def vapour(
+        spec: Any, provider: Any, context: Any, liquid: Any, vapor: Any, profile: Any, **kw: Any
+    ) -> Any:
+        k = _k_values(
+            provider, context, spec.components, profile[bottom - 1], spec.pressures[bottom - 1]
+        )
+        vapor = dict(vapor)
+        for j in l_block:
+            vapor[j] = [k[i] * ratios["rho"] * liquid[j][i] for i in range(len(k))]
+        return real_state(spec, provider, context, liquid, vapor, profile, **kw)
+
+    monkeypatch.setattr(blocks_module, "stage_ratios", recorded)
+    monkeypatch.setattr(blocks_module, "_initial_state", vapour)
     answer = solve_column(P3, PROVIDER)
     with pytest.raises(AssertionError):
         check_a08(answer)
     assert isinstance(answer, ColumnSolution) and answer.outcome in REENTRY_OUTCOMES
-    assert answer.reentry is not None and [r.endpoint for r in answer.reentry.candidates] == [
-        "initialization_failed(s08-block-endpoint-v1, block_energy_outside_domain)"
+    reentry = answer.reentry
+    assert reentry is not None and reentry.accepted is None
+    assert [(r.a, r.c, r.endpoint, r.outcome, r.cause) for r in reentry.candidates] == [
+        (*candidate, "built", "CONVERGED", "near_trivial_split(4,5)")
     ]
+    assert answer.result is reentry.stage_a.result
 
 
 def test_a14c_the_core_bottom_s_bubble_temperature_on_the_l_block_fails_a08(

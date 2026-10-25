@@ -1,5 +1,5 @@
 """S08 WO-3 — Stage B in `solve_column`: S08 design note §5.1, §5.4, §5.6, §5.7, §6.1 and §7 A05,
-A06, A14 (a), (d), (e), A15 and A16.
+A06, A14 (a), (d), (e), A15 and A16; Amendment 1's A17 (§13.6, §5.4's candidate rows).
 
 Expectations are the design note's: §6.1's new expectations for S02's P1 (the closed form
 `ref.phase_case.P1` of `s02_reference.json`, and Stage A's held branch, the values S02 A12 held
@@ -14,6 +14,7 @@ from __future__ import annotations
 import hashlib
 import math
 from collections.abc import Mapping
+from dataclasses import replace
 from functools import cache
 from typing import Any
 
@@ -432,6 +433,91 @@ def test_an_item_6_rejection_with_no_accepted_candidate_raises(
     assert any(
         "no Stage-B candidate was accepted; tried: none" in n for n in raised.value.__notes__
     )
+
+
+# -- A17: §5.4's candidate rows (Amendment 1, §13.6) ----------------------------------------------
+
+#: A17's candidates on P3: `(0, 2)`, then `X`. `X` is `(0, 2)` again, the one candidate that builds
+#: and converges on P3, so the second solve is real and its acceptance is WO-G's root (S08 WO-5).
+A17_CANDIDATES = ((0, 2), (0, 2))
+
+
+def _first_candidate(
+    monkeypatch: pytest.MonkeyPatch, row: str
+) -> list[tuple[RegionResult, tuple[str, ...]]]:
+    """P3 with `candidates` stubbed to `A17_CANDIDATES` and the first Stage-B `target_attempt`
+    (`initializer_source` = `s08-block-endpoint-v1`) answering §5.4's `row`; Stage A's call and
+    every later Stage-B call pass through. Returns each Stage-B call's (result, failures)."""
+    real = solve_module.target_attempt
+    calls: list[tuple[RegionResult, tuple[str, ...]]] = []
+
+    def stubbed(*args: Any, **kwargs: Any) -> Any:
+        found = real(*args, **kwargs)
+        if kwargs.get("initializer_source", PRESOLVE_ID) != BLOCK_ENDPOINT_ID:
+            return found
+        result, recovered_from, regimes, failures, unsupported = found
+        if not calls:
+            assert result.outcome == "CONVERGED" and failures == () and unsupported is None
+            if row == "typed":
+                result = replace(
+                    result, outcome="HOMOTOPY_STALLED", message="homotopy_stalled(stub)"
+                )
+            elif row == "unsupported":
+                unsupported = 4
+            else:
+                failures = ("§8.1: stub, not item 6",)
+        calls.append((result, failures))
+        return result, recovered_from, regimes, failures, unsupported
+
+    monkeypatch.setattr(blocks_module, "candidates", lambda spec: A17_CANDIDATES)
+    monkeypatch.setattr(solve_module, "target_attempt", stubbed)
+    return calls
+
+
+@pytest.mark.parametrize(
+    ("row", "outcome", "cause"),
+    [
+        ("typed", "HOMOTOPY_STALLED", "homotopy_stalled(stub)"),
+        (
+            "unsupported",
+            "CONVERGED",
+            "unsupported(temperature_specification_on_single_phase_stage:4)",
+        ),
+    ],
+)
+def test_a17_a_failed_first_candidate_is_recorded_and_the_second_accepted(
+    monkeypatch: pytest.MonkeyPatch, row: str, outcome: str, cause: str
+) -> None:
+    """A17 (i), (ii): the first candidate ends typed, or `CONVERGED` with a single-phase
+    `temperature`-specified stage (`unsupported(…)`); it is recorded with its outcome and cause,
+    the second is tried and accepted, `accepted == 1`. A loop that stops after the first built
+    candidate fails here."""
+    calls = _first_candidate(monkeypatch, row)
+    answer = solve_column(P3, PROVIDER)
+    assert len(calls) == 2
+    assert isinstance(answer, ColumnSolution), answer
+    assert (answer.outcome, answer.cause, answer.signature) == ("CONVERGED", "", CORE3_L2)
+    reentry = answer.reentry
+    assert reentry is not None and reentry.accepted == 1
+    assert [(c.a, c.c, c.endpoint, c.outcome, c.cause) for c in reentry.candidates] == [
+        (0, 2, "built", outcome, cause),
+        (0, 2, "built", "CONVERGED", ""),
+    ]
+    assert reentry.candidates[0].result is calls[0][0]
+    assert answer.result is calls[1][0] is reentry.candidates[1].result
+    assert _source(answer.result) == BLOCK_ENDPOINT_ID
+
+
+def test_a17_a_defect_of_the_first_candidate_raises_with_no_second_solve(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A17 (iii): the first candidate `CONVERGED` failing a §8 item other than item 6 raises
+    `AcceptanceDefectError` with that failure, and the second candidate is never solved."""
+    calls = _first_candidate(monkeypatch, "defect")
+    with pytest.raises(AcceptanceDefectError) as raised:
+        solve_column(P3, PROVIDER)
+    assert len(calls) == 1
+    assert raised.value.failures == ("§8.1: stub, not item 6",)
 
 
 # -- A14 (a), (d), (e): mutations ----------------------------------------------------------------
