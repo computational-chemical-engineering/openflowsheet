@@ -14081,3 +14081,98 @@ no meaning. Predictions that combine such a pair with others inherit the ambigui
 
 **Watch for.** Every later records edit adds a lineage step and runs the cascade in one commit. A records hash that
 appears in a tool record but cannot be reconstructed from HEAD is a provenance defect.
+
+---
+
+## R-722 — T08.A32 admits `benchmarks/s10/records.yaml`, vetted by `records-vetting.json`; records without identifiers are identified by name and composition; (v) holds per reference convention, with (v′) across conventions
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10 Amendment 5; amends R-529 (L01 §12.4) and R-158's "Also decided" |
+| Normative text | S10 spec §18 A5-1; T08 release spec §9 (T08.A32) as amended by M01 §3.5 and L01 §12.4 |
+| Evidence | CI run 40180210113 (T08.A32 fails on all three jobs); `benchmarks/s10/records-vetting.json` (`7deac2a4…`, 36 equalities true, NASA re-read equal); `tests/test_t08_w2_inventory.py` A32 tests |
+| Affected packages | S10, T08 (test), L01 and M01 (unchanged checks), any later record file or convention |
+
+**Decision.**
+- `benchmarks/s10/records.yaml` (CH3OH, C2H5OH, H2O) is a vetted record file. The predicate `_s10_vetted` requires:
+  twelve named equalities per record, each against a closed form of the committed inputs or a registered constant;
+  the NASA-7 literals re-read from Cantera 3.2.0's file (SHA-256 checked); and the records' and both inputs'
+  SHA-256 equal to the files now.
+- (ii′): a file registered as identity-without-identifiers (S10's alone) carries no `identifiers`, and each record's
+  name and composition equal the registered pair. This is R-706 made executable.
+- (v) is the whole-mapping equality within one reference convention. (v′) applies across conventions: equal name and
+  composition, at least one shared parameter outside the convention data {`standard_formation_enthalpy`}, and every
+  such parameter equal in value, unit, dimension and kind.
+
+**Rejected alternatives, and why.**
+- *Add CAS RNs, InChI and InChIKey to the S10 records.* That contradicts R-706 and Frank's 2026-10-23 direction to
+  drop CAS RNs (CAS licence).
+- *Apply (v) across conventions.* That forbids S10 any real water record unless R-704 adopts ATcT (RC-05
+  unresolved). Its reason, one stream seen by two routes, does not arise across conventions (ADR 0001 D5.2).
+- *Vet by `s10_records.py --check` alone.* The generator would then vet itself. The vetting uses independent closed
+  forms; the generator's exact reproduction stays S10.A31.
+- *Compare molar masses across conventions.* The two water values come from two atomic-weight tables, both
+  unresolved under RC-08, and neither is a transcription error. That is Frank's clean-up question (Q-A5.2).
+
+**Watch for.** A new convention holding a substance already held elsewhere needs (v′)'s shared parameters to exist.
+Moving M01 or L01 to identity-without-identifiers after the CAS clean-up takes its own amendment.
+
+---
+
+## R-723 — S10's saturation check: bitwise on x86-64; elsewhere pressures within 1e-10 relative (R-627 class T) and deviations within 2.1e-10; superancillaries switched on explicitly
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10 Amendment 5 |
+| Normative text | S10 spec §18 A5-2 (amends §9.2's `--check`) |
+| Evidence | CI run 40180210113 (aarch64: "water cross-check worst 3.542e-11; saturation-points.json DIFFERS"). `s10_saturation_points.py --floor` on x86-64: the committed pressures are CoolProp 8.0.0's superancillary values (≤ 17.3 u from the exact series); a priori per-machine bound A ≤ 4.14e-13, 2A = 8.27e-13; the iterative solver differs by up to 2.66e-10, 1.74e-10 and 2.26e-8 |
+| Affected packages | S10 |
+
+**Decision.**
+- On x86-64, byte equality, unchanged.
+- Elsewhere, `classed_problems`:
+  - structure, strings, integers and non-pressure floats exact;
+  - pressures |Δ| ≤ 1e-10·|x| (R-627's class T, s_f = 0);
+  - `relative_deviation` and `worst_relative` |Δ| ≤ 2.1e-10, the sum of their two pressures' bounds, rounded up.
+- `compute()` sets `ENABLE_SUPERANCILLARIES` true.
+- `--floor` asserts F1 (each point within its A of the exact series), F2 (2·max A ≤ B_P/100) and F3 (the iterative
+  solver lands beyond B_P somewhere) on the running machine.
+
+**Rejected alternatives, and why.**
+- *Run the check on x86-64 only.* The aarch64 job would then never confirm the provenance, and a skip on aarch64 would
+  read as coverage.
+- *A tighter class for the series values (about 1e-12).* It adds no detection worth having between 1e-12 and 1e-10,
+  and a second constant against R-627's single class-T bound.
+- *Loosen x86-64 too.* A difference there is a code, configuration or wheel change, which is what the check exists to
+  catch.
+
+**Watch for.** If S10.A55 fails on aarch64, or the classed worst pressure ratio exceeds 1e-11, A's estimate is wrong.
+That goes to the design lane, never into the harness (Q-A5.1).
+
+---
+
+## R-724 — S10's manifest: A4-4's validation block stays the value of check `S10.validation` (`not_applicable`); requirements are D08 and D19; VAL-2 is WO-S10-8
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10 Amendment 5 (rulings on build decisions B-81 and B-83) |
+| Normative text | S10 spec §18 A5-3, A5-4 |
+| Evidence | `schemas/evidence-manifest.schema.json` (top level `additionalProperties: false`; a check's `value` typed `{}`); S10 spec §8's title "(D19)"; `tests/test_requirements_ledger.py::test_every_cited_evidence_manifest_exists_and_says_what_is_claimed` |
+| Affected packages | S10 (manifest, ledger rows D08 and D19, T08 harvest) |
+
+**Decision.**
+- B-81 is confirmed. A4-4's block, verbatim, is the `value` of check `S10.validation`, with result `not_applicable`,
+  and it is not counted in `status`.
+- B-83 is corrected. The manifest lists `["D08", "D19"]`, and D19's row cites S10 with its status unmoved
+  (`planned`). WO-S10-7a regenerates the manifest after Amendment 5 is applied and CI is green.
+- §17 A4-4's VAL-2 work order is renamed WO-S10-8.
+
+**Rejected alternatives, and why.**
+- *A schema field for validation.* An ADR for one block.
+- *One `pass`/`fail` check per VAL id.* A validation miss would read as a failed verification check.
+- *D08 only.* It under-reports the D19 evidence that §8 registered.
+
+**Watch for.** VAL-2's later manifest keeps both requirements and adds its verdict to the same validation block.

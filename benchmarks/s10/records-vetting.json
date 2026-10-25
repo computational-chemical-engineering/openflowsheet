@@ -1,0 +1,86 @@
+{
+ "schema_version": 1,
+ "what": "T08.A32 (iv) for benchmarks/s10/records.yaml: twelve equalities per record against closed forms of the committed inputs and constants registered in S10 spec section 18 A5-1, and the NASA-7 literals re-read from Cantera 3.2.0's file. Vetting of these bytes; it decides no rights question and no shipping (Q-F3).",
+ "generator": "docs/derivations/scripts/s10_records_vetting.py",
+ "specification": "docs/derivations/S10-spec.md section 18 A5-1 (R-722)",
+ "records_sha256": "d4a39730ee24c592b5a7a36977ec4d122817182f71166d75058d9d99d0934d55",
+ "inputs_sha256": {
+  "benchmarks/s10/nasa7-low.json": "b6fa77123e7ae7fcffb54890a0b93f98b798d4bb36c9327789a5dcee0bc67f51",
+  "benchmarks/s10/saturation-points.json": "204d67b9a04e8aed11a868f8de58b520e601165dfc20a37e8687bee62ce85140"
+ },
+ "constants": {
+  "R_J_per_mol_K": "8.31446261815324",
+  "T0_K": "298.15",
+  "atomic_weights_g_per_mol": {
+   "H": "1.008",
+   "C": "12.011",
+   "O": "15.999"
+  },
+  "vapour_pressure_claim_abs_dlnP": "0.002"
+ },
+ "retrieval": {
+  "CH3OH": {
+   "equal": {
+    "name": true,
+    "elemental_composition": true,
+    "source_species": true,
+    "no_identifiers": true,
+    "parameter_keys_units": true,
+    "molar_mass_ciaaw2021": true,
+    "nasa7_low_range_decimal": true,
+    "nasa7_range_200_1000": true,
+    "nasa7_note_quoted": true,
+    "formation_enthalpy_h298": true,
+    "vapour_pressure_within_claim": true,
+    "vapour_pressure_source_quoted": true
+   },
+   "worst_abs_dlnP": 0.0001603
+  },
+  "C2H5OH": {
+   "equal": {
+    "name": true,
+    "elemental_composition": true,
+    "source_species": true,
+    "no_identifiers": true,
+    "parameter_keys_units": true,
+    "molar_mass_ciaaw2021": true,
+    "nasa7_low_range_decimal": true,
+    "nasa7_range_200_1000": true,
+    "nasa7_note_quoted": true,
+    "formation_enthalpy_h298": true,
+    "vapour_pressure_within_claim": true,
+    "vapour_pressure_source_quoted": true
+   },
+   "worst_abs_dlnP": 5.635e-05
+  },
+  "H2O": {
+   "equal": {
+    "name": true,
+    "elemental_composition": true,
+    "source_species": true,
+    "no_identifiers": true,
+    "parameter_keys_units": true,
+    "molar_mass_ciaaw2021": true,
+    "nasa7_low_range_decimal": true,
+    "nasa7_range_200_1000": true,
+    "nasa7_note_quoted": true,
+    "formation_enthalpy_h298": true,
+    "vapour_pressure_within_claim": true,
+    "vapour_pressure_source_quoted": true
+   },
+   "worst_abs_dlnP": 9.249e-05
+  }
+ },
+ "retrieval_all_equal": true,
+ "retrieval_failures": [],
+ "nasa7_retrieval": {
+  "source_file": "cantera/data/nasa_gas.yaml (Cantera 3.2.0)",
+  "source_sha256": "4de6199d65d2d3db782e30573720c723130953707336add59713b02d8667e4db",
+  "compared": "low-range a1..a7 literals, temperature ranges, note, composition",
+  "equal": {
+   "CH3OH": true,
+   "C2H5OH": true,
+   "H2O": true
+  }
+ }
+}

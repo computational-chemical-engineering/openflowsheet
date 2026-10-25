@@ -13,8 +13,10 @@ cannot be obtained) and read what they contain.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -32,6 +34,8 @@ from conftest import REPO_ROOT, load_json, sha256_of
 from test_schemas_p01 import validator_for
 
 SUMMARIES = REPO_ROOT / "docs" / "t08-a30"
+L01_RECORDS = "benchmarks/l01/components.yaml"
+S10_RECORDS = "benchmarks/s10/records.yaml"
 MACHINES = ("x86_64", "aarch64")
 
 # ADR 0006 D4 (the eight unresolved objects) and D2 (the METIS 4.x carrier's three SONAME copies),
@@ -487,10 +491,46 @@ def _l01_vetted(vetting: dict[str, Any], component: str, path: str) -> bool:
     )
 
 
-#: T08.A32's vetted record files (M01 spec §3.5, R-158; L01 spec §12.4, R-529): the only files
-#: whose real (`synthetic: false`) records the repository may hold, each with its registered ids,
-#: the JSON that vets them and the retrieval predicate (iv). Adding a file takes a design-lane
-#: amendment that names its vetting.
+#: The twelve equalities of S10's vetting (S10 spec §18 A5-1, R-722), per record.
+S10_VETTING_EQUALITIES = frozenset(
+    {
+        "name",
+        "elemental_composition",
+        "source_species",
+        "no_identifiers",
+        "parameter_keys_units",
+        "molar_mass_ciaaw2021",
+        "nasa7_low_range_decimal",
+        "nasa7_range_200_1000",
+        "nasa7_note_quoted",
+        "formation_enthalpy_h298",
+        "vapour_pressure_within_claim",
+        "vapour_pressure_source_quoted",
+    }
+)
+
+
+def _s10_vetted(vetting: dict[str, Any], component: str, path: str) -> bool:
+    """S10's vetting of these bytes and of these inputs (S10 spec §18 A5-1 (iv), R-722)."""
+    equal = vetting["retrieval"][component]["equal"]
+    inputs = vetting["inputs_sha256"]
+    return (
+        set(equal) == S10_VETTING_EQUALITIES
+        and all(flag is True for flag in equal.values())
+        and vetting["retrieval_all_equal"] is True
+        and vetting["retrieval_failures"] == []
+        and vetting["nasa7_retrieval"]["equal"][component] is True
+        and vetting["records_sha256"] == sha256_of(REPO_ROOT / path)
+        and set(inputs)
+        == {"benchmarks/s10/nasa7-low.json", "benchmarks/s10/saturation-points.json"}
+        and all(digest == sha256_of(REPO_ROOT / name) for name, digest in inputs.items())
+    )
+
+
+#: T08.A32's vetted record files (M01 spec §3.5, R-158; L01 spec §12.4, R-529; S10 spec §18 A5-1,
+#: R-722): the only files whose real (`synthetic: false`) records the repository may hold, each
+#: with its registered ids, the JSON that vets them and the retrieval predicate (iv). Adding a file
+#: takes a design-lane amendment that names its vetting.
 VETTED_RECORD_FILES: dict[str, tuple[tuple[str, ...], Path, Any]] = {
     "benchmarks/m01/components.yaml": (
         ("H2", "N2", "NH3", "Ar", "CH4"),
@@ -502,21 +542,90 @@ VETTED_RECORD_FILES: dict[str, tuple[tuple[str, ...], Path, Any]] = {
         REPO_ROOT / "benchmarks" / "l01" / "components-crosscheck.json",
         _l01_vetted,
     ),
+    "benchmarks/s10/records.yaml": (
+        ("CH3OH", "C2H5OH", "H2O"),
+        REPO_ROOT / "benchmarks" / "s10" / "records-vetting.json",
+        _s10_vetted,
+    ),
 }
+
+#: Vetted files whose records carry no `identifiers` (no CAS RN, InChI or InChIKey: R-706, S10
+#: spec §9.1). For these, (ii) is replaced by (ii'): no `identifiers` key, and the record's name and
+#: elemental composition equal the registered pair (S10 spec §18 A5-1, R-722).
+IDENTITY_WITHOUT_IDENTIFIERS: dict[str, dict[str, tuple[str, dict[str, int]]]] = {
+    "benchmarks/s10/records.yaml": {
+        "CH3OH": ("methanol", {"C": 1, "H": 4, "O": 1}),
+        "C2H5OH": ("ethanol", {"C": 2, "H": 6, "O": 1}),
+        "H2O": ("water", {"H": 2, "O": 1}),
+    },
+}
+
+#: Parameters that are a reference convention's formation datum rather than a property of the
+#: substance (ADR 0001 D5; R-704): (v) compares them within a convention, (v') never across
+#: conventions, whose streams never mix (ADR 0001 D5.2). S10 spec §18 A5-1, R-722.
+CONVENTION_DATUM_PARAMETERS = frozenset({"standard_formation_enthalpy"})
+#: The fields of a shared parameter that (v') compares across conventions.
+CROSS_CONVENTION_FIELDS = ("value", "unit", "dimension", "kind")
+
+
+def _one_datum_problems(copies: dict[str, tuple[str, dict[str, Any]]]) -> list[str]:
+    """(v) and (v') for one id; `copies` maps each vetted file to (its convention, the record).
+
+    (v): within one reference convention, the same whole mapping in every file. (v'): across
+    conventions, the same name and elemental composition, at least one shared parameter outside
+    `CONVENTION_DATUM_PARAMETERS`, and every such shared parameter equal in
+    `CROSS_CONVENTION_FIELDS`.
+    """
+    problems = []
+    groups: dict[str, list[tuple[str, dict[str, Any]]]] = {}
+    for path, (convention, record) in sorted(copies.items()):
+        groups.setdefault(convention, []).append((path, record))
+    for convention, group in groups.items():
+        first_path, first = group[0]
+        for path, record in group[1:]:
+            if record != first:
+                problems.append(f"(v) {path} != {first_path} under {convention}")
+    heads = [(convention, *group[0]) for convention, group in groups.items()]
+    for index, (c0, p0, r0) in enumerate(heads):
+        for c1, p1, r1 in heads[index + 1 :]:
+            where = f"(v') {p0} ({c0}) and {p1} ({c1})"
+            if (r0["name"], r0["elemental_composition"]) != (
+                r1["name"],
+                r1["elemental_composition"],
+            ):
+                problems.append(f"{where}: identity differs")
+            shared = (set(r0["parameters"]) & set(r1["parameters"])) - CONVENTION_DATUM_PARAMETERS
+            if not shared:
+                problems.append(f"{where}: no shared parameter outside the conventions' data")
+            for key in sorted(shared):
+                q0, q1 = r0["parameters"][key], r1["parameters"][key]
+                if any(q0[field] != q1[field] for field in CROSS_CONVENTION_FIELDS):
+                    problems.append(f"{where}: {key} differs")
+    return problems
+
+
+def _vetted_conventions() -> dict[str, str]:
+    return {
+        path: yaml.safe_load((REPO_ROOT / path).read_text(encoding="utf-8"))["reference_convention"]
+        for path in VETTED_RECORD_FILES
+    }
 
 
 def test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_rights() -> None:
-    """T08.A32 as amended by M01 spec §3.5 (R-158) and L01 spec §12.4 (R-529): amended for real
-    records, not relaxed.
+    """T08.A32 as amended by M01 spec §3.5 (R-158), L01 spec §12.4 (R-529) and S10 spec §18 A5-1
+    (R-722): amended for real records, not relaxed.
 
     A `synthetic: true` record keeps the v0.1 rule unchanged (it validates and states its rights).
     A `synthetic: false` record must (i) resolve, as a symlink resolves to its single copy, to a
     file of `VETTED_RECORD_FILES` and carry one of its ids, (ii) carry `identifiers` with `cas`,
-    `inchi` and `inchikey`, (iii) carry non-empty `rights.source` and `rights.redistribution` and a
-    `provenance` on every parameter and on the molecular weight, (iv) be covered by its file's
-    retrieval equality, and (v) where its id is in more than one vetted file, be the same whole
-    mapping in each. The real (file, id) pairs are the registry's, each once. Whether the rights
-    statements are correct, and whether the records ship, is not decided here (L01-Q4, M01 Q-N4).
+    `inchi` and `inchikey`, or, in a file of `IDENTITY_WITHOUT_IDENTIFIERS`, (ii') carry no
+    `identifiers` and the registered name and composition, (iii) carry non-empty `rights.source`
+    and `rights.redistribution` and a `provenance` on every parameter and on the molecular weight,
+    (iv) be covered by its file's retrieval equality, and (v) where its id is in more than one
+    vetted file, be the same whole mapping in each file of the same reference convention, and
+    (v') agree with the files of other conventions as `_one_datum_problems` states. The real
+    (file, id) pairs are the registry's, each once. Whether the rights statements are correct, and
+    whether the records ship, is not decided here (L01-Q4, M01 Q-N4, S10 Q-F3).
     """
     validator = validator_for("component_record")
     records = _component_records()
@@ -526,8 +635,9 @@ def test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_ri
     vettings = {
         path: load_json(json_path) for path, (_, json_path, _) in VETTED_RECORD_FILES.items()
     }
+    conventions = _vetted_conventions()
     real = []
-    by_id: dict[str, dict[str, dict[str, Any]]] = {}
+    by_id: dict[str, dict[str, tuple[str, dict[str, Any]]]] = {}
     for path, record in records:
         where = (path, record["id"])
         assert [error.message for error in validator.iter_errors(record)] == [], where
@@ -545,19 +655,101 @@ def test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_ri
         assert record["id"] in ids, where
         if not linked:
             real.append((single, record["id"]))
-            by_id.setdefault(record["id"], {})[single] = record
-        identifiers = record["identifiers"]
-        assert all(identifiers.get(key, "").strip() for key in ("cas", "inchi", "inchikey")), where
+            by_id.setdefault(record["id"], {})[single] = (conventions[single], record)
+        identity = IDENTITY_WITHOUT_IDENTIFIERS.get(single)
+        if identity is None:  # (ii)
+            identifiers = record["identifiers"]
+            keys = ("cas", "inchi", "inchikey")
+            assert all(identifiers.get(key, "").strip() for key in keys), where
+        else:  # (ii')
+            assert "identifiers" not in record, where
+            pair = (record["name"], record["elemental_composition"])
+            assert pair == identity[record["id"]], where
         quantities = [record["molecular_weight"], *record["parameters"].values()]
         assert all(str(quantity.get("provenance", "")).strip() for quantity in quantities), where
         assert vetted(vettings[single], record["id"], single), where  # (iv)
-    for component, copies in by_id.items():  # (v): one datum per substance
-        first = next(iter(copies.values()))
-        assert all(copy == first for copy in copies.values()), (component, sorted(copies))
+    for component, copies in by_id.items():  # (v), (v'): one datum per substance and convention
+        assert _one_datum_problems(copies) == [], component
     assert len(real) == len(set(real)), "a real record appears twice"
     assert set(real) == {
         (path, component) for path, (ids, _, _) in VETTED_RECORD_FILES.items() for component in ids
     }
+
+
+def test_a32_one_datum_rule_within_and_across_conventions() -> None:
+    """(v) and (v') at registered states (S10 spec §18 A5-1, assertion T08.A32-v): H2O is held by
+    L01 (`PR-C1-ref-v1`) and S10 (`WILSON-IG-ref-v1`), CH4 by M01 and L01 (both `PR-C1-ref-v1`)."""
+
+    def record(path: str, component: str) -> dict[str, Any]:
+        doc = yaml.safe_load((REPO_ROOT / path).read_text(encoding="utf-8"))
+        return next(r for r in doc["components"] if r["id"] == component)
+
+    l01, s10 = record("benchmarks/l01/components.yaml", "H2O"), record(S10_RECORDS, "H2O")
+    m01_ch4, l01_ch4 = (record(p, "CH4") for p in ("benchmarks/m01/components.yaml", L01_RECORDS))
+    across = {L01_RECORDS: ("PR-C1-ref-v1", l01), S10_RECORDS: ("WILSON-IG-ref-v1", s10)}
+    assert _one_datum_problems(across) == []
+    # What (v') leaves out differs at this state, so the exclusion is not vacuous: the datum
+    # (ATcT against the NASA polynomial's own H(298.15 K)) and the molar mass (two tables).
+    datum = "standard_formation_enthalpy"
+    assert l01["parameters"][datum]["value"] != s10["parameters"][datum]["value"]
+    assert l01["molecular_weight"]["value"] != s10["molecular_weight"]["value"]
+    within = {"benchmarks/m01/components.yaml": ("PR-C1-ref-v1", m01_ch4)}
+    within[L01_RECORDS] = ("PR-C1-ref-v1", l01_ch4)
+    assert _one_datum_problems(within) == []
+    # (v) is unchanged within a convention: the two H2O records under one label fail.
+    same = {L01_RECORDS: ("PR-C1-ref-v1", l01), S10_RECORDS: ("PR-C1-ref-v1", s10)}
+    assert _one_datum_problems(same) == [f"(v) {S10_RECORDS} != {L01_RECORDS} under PR-C1-ref-v1"]
+    nudged = copy.deepcopy(s10)
+    nudged["parameters"]["ideal_gas_cp_b0"]["value"] = math.nextafter(4.19864056, math.inf)
+    renamed = copy.deepcopy(s10)
+    renamed["name"] = "steam"
+    datum_only = copy.deepcopy(s10)
+    datum_only["parameters"] = {datum: s10["parameters"][datum]}
+    where = f"(v') {L01_RECORDS} (PR-C1-ref-v1) and {S10_RECORDS} (WILSON-IG-ref-v1)"
+    for mutated, expected in (
+        (nudged, f"{where}: ideal_gas_cp_b0 differs"),
+        (renamed, f"{where}: identity differs"),
+        (datum_only, f"{where}: no shared parameter outside the conventions' data"),
+    ):
+        problems = _one_datum_problems({**across, S10_RECORDS: ("WILSON-IG-ref-v1", mutated)})
+        assert problems == [expected]
+
+
+def test_a32_s10_vetting_predicate_refuses_each_defect() -> None:
+    """`_s10_vetted` (S10 spec §18 A5-1 (iv)) holds on the committed vetting and fails on each
+    single defect: a false or missing equality, a recorded failure, the NASA re-read false, a
+    stale records hash, a stale or extra input hash."""
+    vetting = load_json(REPO_ROOT / "benchmarks" / "s10" / "records-vetting.json")
+    assert isinstance(vetting, dict)
+    assert all(_s10_vetted(vetting, cid, S10_RECORDS) for cid in ("CH3OH", "C2H5OH", "H2O"))
+
+    def false_flag(v: dict[str, Any]) -> None:
+        v["retrieval"]["H2O"]["equal"]["formation_enthalpy_h298"] = False
+
+    def missing_flag(v: dict[str, Any]) -> None:
+        del v["retrieval"]["H2O"]["equal"]["no_identifiers"]
+
+    def failure(v: dict[str, Any]) -> None:
+        v["retrieval_failures"] = ["CH3OH.name"]
+
+    def nasa(v: dict[str, Any]) -> None:
+        v["nasa7_retrieval"]["equal"]["H2O"] = False
+
+    def records_hash(v: dict[str, Any]) -> None:
+        v["records_sha256"] = "0" * 64
+
+    def input_hash(v: dict[str, Any]) -> None:
+        v["inputs_sha256"]["benchmarks/s10/saturation-points.json"] = "0" * 64
+
+    def extra_input(v: dict[str, Any]) -> None:
+        v["inputs_sha256"]["benchmarks/s10/fit-report.json"] = sha256_of(
+            REPO_ROOT / "benchmarks" / "s10" / "fit-report.json"
+        )
+
+    for defect in (false_flag, missing_flag, failure, nasa, records_hash, input_hash, extra_input):
+        mutated = copy.deepcopy(vetting)
+        defect(mutated)
+        assert not _s10_vetted(mutated, "H2O", S10_RECORDS), defect.__name__
 
 
 def test_a32_the_envelope_states_reference_data_and_openidaes_are_not_distributed() -> None:

@@ -9,9 +9,13 @@ absence fails A30, A31, A33 and A34 rather than skipping them.
 
 from __future__ import annotations
 
+import copy
 import csv
+import hashlib
 import importlib.util
 import json
+import math
+import platform
 import re
 import subprocess
 import sys
@@ -88,16 +92,142 @@ def test_water_saturation_agrees_with_iapws95_v1(saturation: dict[str, Any]) -> 
         assert abs(point["P_coolprop_Pa"] / sat.pressure - 1.0) <= 1e-8
 
 
-def test_saturation_check_never_passes_without_coolprop() -> None:
-    script = SCRIPTS / "s10_saturation_points.py"
-    run = subprocess.run(
-        [sys.executable, str(script), "--check"], capture_output=True, text=True, check=False
-    )
+def _coolprop_800() -> bool:
     if importlib.util.find_spec("CoolProp") is None:
+        return False
+    from CoolProp import __version__
+
+    return bool(__version__ == "8.0.0")
+
+
+def _saturation_script(mode: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(SCRIPTS / "s10_saturation_points.py"), mode],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_a54_saturation_check_never_passes_without_coolprop() -> None:
+    # S10 spec §9.2 rule 5, as amended by §18 A5-2 (R-723), assertion S10.A54: with CoolProp 8.0.0
+    # the check passes, byte for byte on x86-64 and within A5-2's classes elsewhere; without it,
+    # exit 2.
+    run = _saturation_script("--check")
+    if not _coolprop_800():
         assert run.returncode == 2
         assert run.stdout.strip() == "UNAVAILABLE: CoolProp 8.0.0 not importable"
+        return
+    assert run.returncode == 0, run.stdout + run.stderr
+    mode = "bitwise" if platform.machine() == "x86_64" else "classed"
+    assert f"saturation-points.json matches ({mode}, {platform.machine()}" in run.stdout
+
+
+def test_a55_saturation_floor_claims_hold_where_coolprop_runs() -> None:
+    # S10 spec §18 A5-2, assertion S10.A55: F1-F3 on the running machine (on aarch64 this measures
+    # that architecture's floor against the exact series); without CoolProp 8.0.0, exit 2.
+    run = _saturation_script("--floor")
+    if not _coolprop_800():
+        assert run.returncode == 2
+        assert run.stdout.strip() == "UNAVAILABLE: CoolProp 8.0.0 not importable"
+        return
+    assert run.returncode == 0, run.stdout + run.stderr
+    assert run.stdout.startswith(f"floor claims F1-F3 hold on {platform.machine()}")
+
+
+def test_a56_saturation_classed_comparison_catches_what_it_must(saturation: dict[str, Any]) -> None:
+    # S10 spec §18 A5-2, assertion S10.A56: the off-x86-64 comparison, tool-free, on every
+    # machine. Each registered edit of the committed document is admitted or refused as stated.
+    sp = _script("s10_saturation_points")
+    assert sp.classed_problems(saturation, copy.deepcopy(saturation)) == ([], 0.0, 0.0)
+
+    def points(doc: dict[str, Any]) -> list[list[float]]:
+        return list(doc["components"][1]["points_T_K_P_Pa"])
+
+    def edit(change: Any) -> tuple[list[str], float, float]:
+        doc = copy.deepcopy(saturation)
+        change(doc)
+        problems, ratio, delta = sp.classed_problems(saturation, doc)
+        return problems, ratio, delta
+
+    def scale(factor: float) -> Any:
+        return lambda d: points(d)[30].__setitem__(1, points(d)[30][1] * factor)
+
+    def deviation(delta: float) -> Any:
+        return lambda d: d["water_crosscheck"]["points"][0].__setitem__(
+            "relative_deviation", d["water_crosscheck"]["points"][0]["relative_deviation"] + delta
+        )
+
+    def iapws(factor: float) -> Any:
+        p = saturation["water_crosscheck"]["points"][4]["P_iapws95_v1_Pa"]
+        return lambda d: d["water_crosscheck"]["points"][4].__setitem__(
+            "P_iapws95_v1_Pa", p * factor
+        )
+
+    admitted = (scale(1 + 5e-11), deviation(2.0e-10), iapws(1 - 9e-11))
+    refused = (
+        scale(1 + 2e-10),
+        deviation(2.2e-10),
+        iapws(1 + 1.1e-10),
+        lambda d: points(d)[0].__setitem__(0, math.nextafter(290.0, 291.0)),
+        lambda d: d["coolprop"].__setitem__("gitrevision", "0" * 40),
+        lambda d: d["components"][0].__setitem__("eos_bibtex_key", "x"),
+        lambda d: d["grid_T_K"].__setitem__("count", 60),
+        lambda d: d["components"][2]["points_T_K_P_Pa"].pop(),
+        lambda d: d["water_crosscheck"].__setitem__("extra", 1),
+    )
+    for change in admitted:
+        assert edit(change)[0] == []
+    for change in refused:
+        assert len(edit(change)[0]) == 1
+    assert sp.B_P == 1e-10 and sp.B_D == 2.1e-10
+    assert edit(scale(1 + 5e-11))[1] == pytest.approx(5e-11, rel=1e-3)
+
+
+# ================================================================================ S10.A57, A58
+
+
+def test_a57_records_vetting_check_reproduces() -> None:
+    # S10 spec §18 A5-1, assertion S10.A57: T08.A32's vetting of records.yaml is reproduced from the
+    # committed inputs; the NASA re-read needs Cantera 3.2.0's file, and without it exit 2.
+    run = subprocess.run(
+        [sys.executable, str(SCRIPTS / "s10_records_vetting.py"), "--check"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    vs = _script("s10_records_vetting")
+    path = vs.nasa_path(None)
+    vetted = path is not None and hashlib.sha256(path.read_bytes()).hexdigest() == vs.NASA_SHA256
+    if vetted:
+        assert run.returncode == 0, run.stdout + run.stderr
+        assert run.stdout.strip() == "12 controls hold; records-vetting.json matches"
     else:
-        assert run.returncode in (0, 2), run.stdout + run.stderr
+        assert run.returncode == 2, run.stdout + run.stderr
+        assert run.stdout.startswith("PARTIAL: records-vetting.json's tool-free part matches")
+
+
+def test_a58_records_vetting_equalities_and_controls() -> None:
+    # S10 spec §18 A5-1, assertion S10.A58: every equality holds on the committed records, each
+    # registered control turns exactly its own equality false, and the vetting's independent
+    # max |delta ln P| agrees with the generator's fit report.
+    vs = _script("s10_records_vetting")
+    records = yaml.safe_load(RECORDS.read_text(encoding="utf-8"))
+    nasa = json.loads(NASA.read_text(encoding="utf-8"))
+    sat = json.loads(SATURATION.read_text(encoding="utf-8"))
+    blocks = vs.vet(records, nasa, sat)
+    assert list(blocks) == list(IDS)
+    assert all(all(b["equal"].values()) and len(b["equal"]) == 12 for b in blocks.values())
+    assert vs.control_problems(records, nasa, sat) == []
+    mutated = copy.deepcopy(records)
+    mutated["components"][2]["parameters"]["standard_formation_enthalpy"]["unit"] = "kJ/mol"
+    false = {f for f, ok in vs.vet(mutated, nasa, sat)["H2O"]["equal"].items() if not ok}
+    assert false == {"parameter_keys_units"}
+    report = json.loads(FIT_REPORT.read_text(encoding="utf-8"))
+    for row in report["vapour_pressure"]:
+        assert blocks[row["id"]]["worst_abs_dlnP"] == pytest.approx(
+            row["max_abs_delta_ln_P"], rel=1e-3
+        )
 
 
 # ================================================================================ S10.A32
