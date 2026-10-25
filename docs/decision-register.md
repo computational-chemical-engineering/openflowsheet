@@ -13276,3 +13276,108 @@ decided.
 **Watch for.**
 - S10-C reopening δ_K: the stop rule and the accuracy it states move together.
 - WO-S10-3 re-measuring ρ and the iteration counts on the real records (review finding 4).
+
+## R-712 — S10's Λ fit runs Gauss–Newton from the best point of a step-0.005 grid, with claims for a strict local minimum, the box, and agreement with the θ = 0 start; on the curve θ_12 + θ_21 = 0 Wilson's J has rank 1
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 2 (ESC-1, B-25, B-26, B-27) |
+| Normative text | S10 spec §15 A2-1, which replaces §9.4's "Solver" list and amends S10.A33 |
+| Evidence | `docs/S10_DECISIONS.md` ESC-1; `docs/derivations/scripts/s10_records.py` (claims `WILSON-SINGULAR-CURVE`, `LAMBDA-GRID64-`, `-CONV-`, `-BOX-`, `LAMBDA-`, `-MIN-`, `-V1-`, `LAMBDA-CURVE-methanol+ethanol`) |
+| Affected packages | S10 (WO-S10-3 records, A33's test) |
+
+**Decision.**
+- Gauss–Newton at 50 digits starts from θ_g, the point of least binary64 Φ on {m × 0.005 : m = −600…1200}².
+- The step, halving and stop rules are unchanged: B-26's minimum-norm step, B-27's "step taken" below 1e-30, and a cap
+  of 200 iterations.
+- The grid-global claim keeps its 1e-12 margin. Added claims: |Φ_binary64 − Φ_50| ≤ 1e-14 at θ_g; θ* inside (−3, 6)²;
+  |∇Φ(θ*)| ≤ 1e-20 with a positive-definite Hessian; and, for the two water binaries, convergence from θ = 0 to the same
+  θ* and the same stored Λ.
+- Why: on Λ_12 Λ_21 = 1, ∂ln γ_i/∂θ_21 = Λ_21 ∂ln γ_i/∂θ_12 at every x, so J has rank 1 there. θ = 0 lies on that
+  curve. Methanol + ethanol's Φ has a second local minimum on it, at Φ = 4.5643e-4, above Φ* = 4.3535e-4. The θ = 0
+  start is drawn to that second minimum, and §9.4's step-0.05 grid would have certified it.
+- Results: Λ (CH3OH, C2H5OH) = (0.6109248362, 1.49887856). The water binaries are unchanged, as LAMBDA-V1 asserts.
+
+**Rejected alternatives, and why.**
+- *Multi-start from every local minimum of the grid* (the build lane's option (a)). Measured: 98 starts for methanol +
+  ethanol, an aliasing count; 39 hit the cap; 488 s; the same θ*.
+- *Λ = 1 for methanol + ethanol.* The data reject it: AAD(T) is 0.066 K against 0.025 K. It would also make the τ
+  transposition invisible for that pair.
+- *§9.4 as written.* It gives no records.
+- *Levenberg–Marquardt from θ = 0.* It converges to the same wrong, genuine local minimum: the start was the defect, not
+  the step.
+
+**Watch for.**
+- Do not restore the θ = 0 start or the 0.05 grid as "the spec's original".
+- Do not read physical meaning into the individual Λ_ME and Λ_EM. Only θ_12 + θ_21 is well determined (JᵀJ eigenvalues
+  1.07e-3 and 8.69).
+
+## R-713 — S10's fit pressure is 101.3 kPa as Table II prints it; methanol + ethanol's 11 points stand
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 2 (ESC-2; B-24 confirmed) |
+| Normative text | S10 spec §15 A2-2 |
+| Evidence | `docs/S10_DECISIONS.md` B-24 and the Q-N1 note; `s10_records.py` `P_TABLE` |
+| Affected packages | S10 (records; VAL-1 in WO-S10-6) |
+
+**Decision.**
+- The fit data are taken at the printed 101.3 kPa, and VAL-1 at Table V's printed pressure.
+- The registered model states stay at 101 325 Pa.
+- The substitution rule's 15-point minimum does not apply, because the paper is the recalled one.
+- The effect lies below the data's resolution: about 0.006 K in a bubble temperature, against T printed to 0.01 K. Λ
+  moves by at most 2.8e-3 relative.
+
+**Rejected alternative.** *101.325 kPa.* It would reinterpret a printed value rather than transcribe it.
+
+**Watch for.** "Correcting" the pressure to 1 atm in a later transcription or in VAL-1.
+
+## R-714 — S10's mid-band I-states sit midway between the bubble temperature and the lower of the true and IDAES-approximate dew temperatures; I10 is z_E = 0.4
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 2 (ESC-3) |
+| Normative text | S10 spec §15 A2-3, which amends §8.1 |
+| Evidence | `docs/S10_DECISIONS.md` ESC-3, B-31; `s10_reference.py --real` (claims `ENV-I*`, `SMOOTH-I`; 88 claims hold) |
+| Affected packages | S10 (WO-S10-3 real section, WO-S10-4 IDAES comparison) |
+
+**Decision.**
+- The mid-band rule is T = ½ (T_bub + min(T_dew, T_dew^γ(z))), rounded to 0.01 K.
+- I10 changes from z_E = 0.85 to z_E = 0.4. At 0.85 it lies 0.031 from the model azeotrope, with a band of 0.007 K.
+- The 0.5 K margin and S10.A42 are unchanged.
+- No state's margin can shrink under the new rule, up to rounding. I9 goes from 0.281 to 0.603 K, and I13 from 0.425 to
+  0.525 K.
+
+**Rejected alternatives, and why.**
+- *Move only I9 and I13.* That is a rule with exceptions.
+- *Drop the margin.* It loosens a claim to pass.
+- *Keep I10 near the azeotrope.* No temperature rule can place it, and a comparison there would compare the
+  conditioning, not the implementations.
+
+**Watch for.** I13's margin (0.525 K) and the smoothing at ε = 1e-4 (8.47e-9 against 1e-8) are the tightest numbers.
+If the records ever change, the generator, not a person, decides whether they still hold.
+
+## R-715 — S10-RC-03: CoolProp output is permitted with conditions (cite CoolProp with its MIT notice, the three EOS sources, and IAPWS for water)
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 2 |
+| Normative text | S10 spec §15 A2-4 |
+| Evidence | `docs/s10-rights-check.md` row S10-RC-03 (C12's open question A32-Q3) |
+| Affected packages | S10 (rights check; shipping stays Q-F3) |
+
+**Decision.**
+- Computed saturation pressures and project-fitted coefficients are neither a copy nor a portion of CoolProp, and they
+  reproduce no EOS coefficient, form or table.
+- The conditions are citation, and IAPWS attribution for the water points (as S10-RC-04).
+- This is a technical reading, not legal advice. S10-RC-05 (the paper's numbers) stays unresolved, and shipping is
+  Frank's decision (Q-F3).
+
+**Rejected alternative.** *Treat computed values as carrying the EOS papers' terms.* S10 reproduces nothing from those
+papers but numbers computed from them, and it cites them.
+
+**Watch for.** A later package that copies EOS coefficients (rather than outputs) needs its own row.

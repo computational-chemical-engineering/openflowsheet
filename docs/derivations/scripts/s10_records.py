@@ -16,8 +16,8 @@ Outputs: ``benchmarks/s10/records.yaml`` (the records of ``wilson-ig-v1``, spec 
 deviations, the ethanol-water azeotrope; fit quality, not validation).
 
 It imports nothing from ``openflowsheet``. Everything is computed in mpmath at 50 digits, except the
-grid scan of section 9.4, which runs in binary64 and re-evaluates its best point at 50 digits
-(build decision B-25).
+grid scan of the Lambda fit (section 15, A2-1, which replaced section 9.4's solver), which runs in
+binary64 and re-evaluates its best point at 50 digits (build decision B-25).
 
 Run from the repository root::
 
@@ -83,8 +83,29 @@ LAMBDA_DIGITS = 10
 X_WINDOW = (mpf("0.02"), mpf("0.98"))  # 0.02 <= x_i <= 0.98 enters the objective
 GN_STEP_TOL = mpf("1e-30")
 GN_MAX_IT = 200
-GRID = np.arange(-60, 121) * 0.05  # theta in [-3, 6], step 0.05 (181 values)
+#: theta in [-3, 6], step 0.005: m * 0.005 in binary64, m = -600..1200 (1801 values; spec section
+#: 15, A2-1, which replaced section 9.4's step 0.05).
+GRID = np.arange(-600, 1201) * 0.005
+GRID_BOX = (mpf(-3), mpf(6))
 GRID_MARGIN = 1e-12
+#: |Phi_binary64 - Phi_50| at the grid's best point (A2-1 claim LAMBDA-GRID64): ~430x above the
+#: measured worst (2.3e-17, ethanol+water), 100x below GRID_MARGIN, which it must not eat.
+GRID_F64_TOL = 1e-14
+#: Central-difference step of the Hessian of Phi at theta* (A2-1 claim LAMBDA-MIN): at 50 digits
+#: the truncation error is ~h^2 = 1e-30 and the rounding error ~1e-50/h = 1e-35.
+HESS_H = mpf("1e-15")
+#: |grad Phi(theta*)|_inf bound (A2-1 claim LAMBDA-MIN): measured worst 6.3e-29; a theta error
+#: that moves Lambda's 10th digit (1e-10) gives |grad Phi| >= 2e-13 (smallest eigenvalue 2.2e-3).
+GRAD_TOL = mpf("1e-20")
+#: Agreement of the theta = 0 start with the adopted theta* where both converge (A2-1 claim
+#: LAMBDA-V1): measured worst 1.05e-27 (ethanol+water); Lambda's 10th digit is ~1e-10.
+V1_TOL = mpf("1e-24")
+#: The binaries on which section 9.4's original start (theta = 0) must converge (A2-1).
+V1_REQUIRED = ("ethanol+water", "methanol+water")
+#: The binary whose Phi has a second local minimum on the singular curve theta_12 + theta_21 = 0,
+#: and the start of the secant search for it, theta = (-a, a) (A2-1 claim LAMBDA-CURVE).
+CURVE_BINARY = "methanol+ethanol"
+CURVE_START = mpf("0.16")
 
 #: The binaries of Table II, as (CSV label, i, j) with i, j indices into COMPONENTS.
 BINARIES = (("methanol+ethanol", 0, 1), ("ethanol+water", 1, 2), ("methanol+water", 0, 2))
@@ -281,6 +302,30 @@ def objective(b: dict[str, Any], t12: mpf, t21: mpf) -> tuple[mpf, list[mpf], li
     return mp.fsum(r * r for r in res), res, jac
 
 
+def singular_curve_claim() -> None:
+    """Spec section 15, A2-1: on the curve Lambda_12 Lambda_21 = 1 (theta_12 + theta_21 = 0),
+    d ln gamma_i / d theta_21 = Lambda_21 d ln gamma_i / d theta_12 for i = 1, 2 at every x, so
+    the two columns of J are proportional for any data set; off the curve they are not."""
+    xs = (mpf("0.2"), mpf("0.7"))
+
+    def dev(t12: mpf, t21: mpf) -> mpf:
+        out = mpf(0)
+        for x1 in xs:
+            _, jac = ln_gamma_binary(x1, t12, t21)
+            out = max(out, *(abs(jac[i][1] - mp.exp(-t21) * jac[i][0]) for i in range(2)))
+        return out
+
+    on = max(dev(-a, a) for a in (mpf("0.3"), mpf("-0.7")))
+    off = dev(mpf("0.5"), mpf("-0.3"))
+    claim(
+        "WILSON-SINGULAR-CURVE",
+        on <= mpf("1e-45") and off >= mpf("1e-3"),
+        "on theta_12 + theta_21 = 0, d ln gamma_i/d theta_21 = Lambda_21 d ln gamma_i/d theta_12 "
+        f"(worst {mp.nstr(on, 3)} <= 1e-45 at theta_21 = 0.3, -0.7; x1 = 0.2, 0.7); off it, at "
+        f"theta = (0.5, -0.3), the columns differ by {mp.nstr(off, 3)} >= 1e-3 (A2-1)",
+    )
+
+
 def gn_step(jac: list[list[mpf]], res: list[mpf]) -> list[mpf]:
     """The minimum-norm least-squares solution of J step = -r (build decision B-26).
 
@@ -300,8 +345,14 @@ def gn_step(jac: list[list[mpf]], res: list[mpf]) -> list[mpf]:
     return step
 
 
-def gauss_newton(b: dict[str, Any]) -> dict[str, Any]:
-    th = [mpf(0), mpf(0)]
+def gn_run(b: dict[str, Any], start: Sequence[Any] = (0, 0)) -> dict[str, Any]:
+    """Gauss-Newton at 50 digits from `start` (spec section 15, A2-1; B-26, B-27).
+
+    Each iteration takes the minimum-norm step, halves it while Phi increases (down to a factor
+    2^-200), and accepts the trial if Phi does not increase. It stops when the step taken, after
+    halving, is shorter than 1e-30 (B-27), and gives up after 200 iterations. Never raises.
+    """
+    th = [mpf(start[0]), mpf(start[1])]
     phi, res, jac = objective(b, *th)
     for it in range(1, GN_MAX_IT + 1):
         step = gn_step(jac, res)
@@ -316,12 +367,52 @@ def gauss_newton(b: dict[str, Any]) -> dict[str, Any]:
         if phi_t <= phi:
             th, phi, res, jac = trial, phi_t, res_t, jac_t
         if taken < GN_STEP_TOL:
-            return {"theta": th, "phi": phi, "res": res, "iterations": it, "last_step": taken}
-    raise SystemExit(f"{b['label']}: Gauss-Newton did not converge in {GN_MAX_IT} iterations")
+            return {
+                "converged": True,
+                "theta": th,
+                "phi": phi,
+                "res": res,
+                "jac": jac,
+                "iterations": it,
+                "last_step": taken,
+            }
+    return {"converged": False, "theta": th, "phi": phi, "iterations": GN_MAX_IT}
+
+
+def gauss_newton(b: dict[str, Any], start: Sequence[Any] = (0, 0)) -> dict[str, Any]:
+    """gn_run, refusing a run that reaches the iteration cap."""
+    out = gn_run(b, start)
+    if not out["converged"]:
+        raise SystemExit(f"{b['label']}: Gauss-Newton did not converge in {GN_MAX_IT} iterations")
+    return out
+
+
+def gradient(b: dict[str, Any], t12: mpf, t21: mpf) -> list[mpf]:
+    """grad Phi = 2 J^T r, with J = d r / d theta as `objective` returns it."""
+    _, res, jac = objective(b, t12, t21)
+    return [2 * mp.fsum(res[k] * jac[k][c] for k in range(len(res))) for c in range(2)]
+
+
+def hessian_eigenvalues(b: dict[str, Any], th: Sequence[mpf]) -> list[mpf]:
+    """Eigenvalues of the Hessian of Phi at th: a central difference of the analytic gradient
+    with step HESS_H at 50 digits, symmetrised (A2-1 claim LAMBDA-MIN)."""
+    cols = []
+    for c in range(2):
+        e = [HESS_H if k == c else mpf(0) for k in range(2)]
+        gp = gradient(b, th[0] + e[0], th[1] + e[1])
+        gm = gradient(b, th[0] - e[0], th[1] - e[1])
+        cols.append([(gp[k] - gm[k]) / (2 * HESS_H) for k in range(2)])
+    h = mp.matrix(2, 2)
+    for r in range(2):
+        for c in range(2):
+            h[r, c] = (cols[c][r] + cols[r][c]) / 2
+    e, _ = mp.eigsy(h)
+    return sorted([e[0], e[1]])
 
 
 def grid_scan(b: dict[str, Any]) -> tuple[float, float, float]:
-    """Phi on theta in [-3, 6]^2, step 0.05, in binary64 (B-25): (min Phi, theta_12, theta_21)."""
+    """Phi on theta in [-3, 6]^2, step 0.005, in binary64 (B-25, A2-1): (min Phi, theta_12,
+    theta_21). Ties go to the first point in (theta_12, theta_21) row-major order."""
     t12, t21 = np.meshgrid(GRID, GRID, indexing="ij")
     l12, l21 = np.exp(-t12), np.exp(-t21)
     phi = np.zeros_like(t12)
@@ -362,19 +453,86 @@ def bubble(
 
 
 def fit_binary(b: dict[str, Any], psat: list[dict[str, Any]]) -> dict[str, Any]:
-    gn = gauss_newton(b)
-    t12, t21 = gn["theta"]
+    """The Lambda fit of one binary, spec section 15, A2-1 (which replaced section 9.4's
+    solver): Gauss-Newton from the best point of the step-0.005 grid, and its claims."""
+    lab = b["label"]
     gmin, g12, g21 = grid_scan(b)
     gmin_mp, _, _ = objective(b, mpf(g12), mpf(g21))
+    f64_err = abs(mpf(gmin) - gmin_mp)
     claim(
-        f"LAMBDA-{b['label']}",
-        float(gmin_mp) >= float(gn["phi"]) - GRID_MARGIN,
-        f"{b['label']}: Gauss-Newton converged in {gn['iterations']} iterations "
-        f"(last step {mp.nstr(gn['last_step'], 3)} < 1e-30) to Phi* = {mp.nstr(gn['phi'], 12)}; "
-        f"the grid scan of [-3, 6]^2 (step 0.05) finds no Phi below Phi* - 1e-12 (its minimum "
-        f"{mp.nstr(gmin_mp, 12)} at theta = ({g12:g}, {g21:g})) (S10.A33)",
+        f"LAMBDA-GRID64-{lab}",
+        f64_err <= GRID_F64_TOL,
+        f"{lab}: the binary64 grid objective at its best point agrees with the 50-digit one to "
+        f"{mp.nstr(f64_err, 3)} <= 1e-14 (B-25, A2-1)",
     )
+    gn = gn_run(b, (g12, g21))
+    claim(
+        f"LAMBDA-CONV-{lab}",
+        gn["converged"],
+        f"{lab}: Gauss-Newton from the grid's best point ({g12:g}, {g21:g}) converged in "
+        f"{gn['iterations']} iterations (last step {mp.nstr(gn.get('last_step', mpf(1)), 3)} "
+        "< 1e-30; cap 200) (A2-1)",
+    )
+    t12, t21 = gn["theta"]
+    claim(
+        f"LAMBDA-BOX-{lab}",
+        all(GRID_BOX[0] < v < GRID_BOX[1] for v in (t12, t21)),
+        f"{lab}: theta* = ({mp.nstr(t12, 8)}, {mp.nstr(t21, 8)}) lies inside the open box "
+        "(-3, 6)^2 the grid covers (A2-1)",
+    )
+    claim(
+        f"LAMBDA-{lab}",
+        float(gmin_mp) >= float(gn["phi"]) - GRID_MARGIN,
+        f"{lab}: Phi* = {mp.nstr(gn['phi'], 12)}; the grid scan of [-3, 6]^2 (step 0.005) finds "
+        f"no Phi below Phi* - 1e-12 (its minimum {mp.nstr(gmin_mp, 12)} at theta = "
+        f"({g12:g}, {g21:g})) (S10.A33, A2-1)",
+    )
+    grad = gradient(b, t12, t21)
+    eig = hessian_eigenvalues(b, (t12, t21))
+    jtj = mp.matrix(gn["jac"]).T * mp.matrix(gn["jac"])
+    jtj_eig = sorted(mp.eigsy(jtj)[0][k] for k in range(2))
+    gnorm = max(abs(v) for v in grad)
+    claim(
+        f"LAMBDA-MIN-{lab}",
+        gnorm <= GRAD_TOL and eig[0] > 0,
+        f"{lab}: theta* is a strict local minimum: |grad Phi|_inf = {mp.nstr(gnorm, 3)} <= 1e-20 "
+        f"and the Hessian's eigenvalues ({mp.nstr(eig[0], 6)}, {mp.nstr(eig[1], 6)}) are "
+        "positive (central difference of the analytic gradient, h = 1e-15, 50 digits) (A2-1)",
+    )
+    curve = None
+    if lab == CURVE_BINARY:
+        a = mp.findroot(lambda s: (lambda gr: gr[1] - gr[0])(gradient(b, -s, s)), CURVE_START)
+        c_phi = objective(b, -a, a)[0]
+        c_grad = max(abs(v) for v in gradient(b, -a, a))
+        c_eig = hessian_eigenvalues(b, (-a, a))
+        claim(
+            f"LAMBDA-CURVE-{lab}",
+            c_grad <= GRAD_TOL and c_eig[0] > 0 and c_phi > gmin_mp + GRID_MARGIN,
+            f"{lab}: Phi has a second local minimum on the singular curve, theta = (-a, a) with "
+            f"a = {mp.nstr(a, 9)}: |grad Phi|_inf = {mp.nstr(c_grad, 3)} <= 1e-20, Hessian "
+            f"eigenvalues ({mp.nstr(c_eig[0], 4)}, {mp.nstr(c_eig[1], 4)}) > 0, Phi = "
+            f"{mp.nstr(c_phi, 10)}, above the grid's best point by {mp.nstr(c_phi - gmin_mp, 3)} "
+            "> 1e-12, so the grid claim refuses it (A2-1)",
+        )
+        curve = {
+            "what": "the second local minimum of Phi, on theta_12 + theta_21 = 0, where J has "
+            "rank 1 (spec section 15, A2-1); the theta = 0 start is drawn to it",
+            "theta": [g(-a, 10), g(a, 10)],
+            "phi": g(c_phi, 10),
+            "hessian_eigenvalues": [g(v, 6) for v in c_eig],
+        }
+    v1 = gn_run(b, (0, 0))
+    v1_dev = max(abs(v1["theta"][k] - gn["theta"][k]) for k in range(2))
     lam_stored = [sig_float(mp.exp(-t12), LAMBDA_DIGITS), sig_float(mp.exp(-t21), LAMBDA_DIGITS)]
+    if lab in V1_REQUIRED:
+        lam_v1 = [sig_float(mp.exp(-v), LAMBDA_DIGITS) for v in v1["theta"]]
+        claim(
+            f"LAMBDA-V1-{lab}",
+            v1["converged"] and v1_dev <= V1_TOL and lam_v1 == lam_stored,
+            f"{lab}: section 9.4's original start theta = 0 also converges ({v1['iterations']} "
+            f"iterations) to theta* within {mp.nstr(v1_dev, 3)} <= 1e-24, with the same stored "
+            "Lambda: Amendment 2 leaves this binary's result unchanged (A2-1)",
+        )
     lam = [[mpf(1), mpf(lam_stored[0])], [mpf(lam_stored[1]), mpf(1)]]
     ci, cj = psat[b["i"]]["stored"], psat[b["j"]]["stored"]
     dev_t, dev_y, points = [], [], []
@@ -404,10 +562,25 @@ def fit_binary(b: dict[str, Any], psat: list[dict[str, Any]]) -> dict[str, Any]:
         "residuals_in_objective": len(gn["res"]),
         "theta_star": [mp.nstr(t12, 20), mp.nstr(t21, 20)],
         "phi_star": g(gn["phi"], 15),
+        "gauss_newton_start": [g12, g21],
         "gauss_newton_iterations": gn["iterations"],
+        "grid_step": 0.005,
         "grid_min_phi": g(gmin_mp, 15),
         "grid_min_theta": [g12, g21],
         "grid_margin_over_phi_star": g(gmin_mp - gn["phi"], 6),
+        "grad_phi_inf_norm": g(gnorm, 3),
+        "hessian_eigenvalues": [g(v, 6) for v in eig],
+        "jtj_eigenvalues": [g(v, 6) for v in jtj_eig],
+        "start_theta_zero": {
+            "what": "section 9.4's original start, run under the same rules for comparison "
+            "(spec section 15, A2-1); not the adopted result",
+            "converged": v1["converged"],
+            "iterations": v1["iterations"],
+            "theta": [g(v, 8) for v in v1["theta"]],
+            "phi": g(v1["phi"], 8),
+            "max_abs_theta_minus_theta_star": g(v1_dev, 3),
+        },
+        "second_local_minimum": curve,
         "lambda_stored": {
             f"{b['ids'][0]}->{b['ids'][1]}": lam_stored[0],
             f"{b['ids'][1]}->{b['ids'][0]}": lam_stored[1],
@@ -607,6 +780,7 @@ def build(vle_path: Path) -> tuple[str, str]:
         and {r["system"] for r in rows} == {b[0] for b in BINARIES},
         "the transcription holds Table II's three binaries and nothing else (spec 9.4)",
     )
+    singular_curve_claim()
     fits, data = [], []
     for label, i, j in BINARIES:
         b = binary_data(rows, label, i, j, ps)
@@ -633,7 +807,7 @@ def build(vle_path: Path) -> tuple[str, str]:
         f.pop("_lam")
     report = {
         "schema_version": 1,
-        "what": "S10 fit claims and fit quality (spec sections 9.3-9.4). Fit quality, not "
+        "what": "S10 fit claims and fit quality (spec sections 9.3-9.4 and 15). Fit quality, not "
         "validation: the same data were used to fit.",
         "generator": "docs/derivations/scripts/s10_records.py",
         "inputs_sha256": {

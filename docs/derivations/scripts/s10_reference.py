@@ -1775,13 +1775,16 @@ RE_STATES: dict[str, dict[str, Any]] = {
     "RE2": {"n": [1.0, 0.0, 1.0], "T": 345.0, "P": 101325.0},
     "RE3": {"n": [0.0, 0.0, 1.0], "T": 360.0, "P": 80000.0},
 }
-#: Spec section 8.1, in the order (CH3OH, C2H5OH, H2O). Kind "mid": T midway between bubble and
-#: dew, rounded to 0.01 K; "sub"/"sup": the rounded bubble (dew) temperature -/+ 5 K (B-30).
+#: Spec section 8.1 as amended by section 15 (A2-3), in the order (CH3OH, C2H5OH, H2O). Kind
+#: "mid": T midway between the bubble temperature and the lower of the true dew temperature and
+#: IDAES's approximate one (gamma at z, B-31), rounded to 0.01 K (A2-3); "sub"/"sup": the rounded
+#: bubble (dew) temperature -/+ 5 K (B-30). I10 is z_E = 0.4 (A2-3 replaced z_E = 0.85, which
+#: lies 0.03 from the model azeotrope, where the band is 0.007 K).
 I_STATES: dict[str, tuple[list[float], str]] = {
     **{f"I{k + 1}": ([zm, 0.0, 1.0 - zm], "mid") for k, zm in enumerate((0.1, 0.3, 0.5, 0.7, 0.9))},
     "I6": ([0.4, 0.0, 0.6], "sub"),
     "I7": ([0.4, 0.0, 0.6], "sup"),
-    **{f"I{k + 8}": ([0.0, ze, 1.0 - ze], "mid") for k, ze in enumerate((0.2, 0.6, 0.85))},
+    **{f"I{k + 8}": ([0.0, ze, 1.0 - ze], "mid") for k, ze in enumerate((0.2, 0.6, 0.4))},
     "I11": ([0.2, 0.3, 0.5], "mid"),
     "I12": ([0.4, 0.2, 0.4], "mid"),
     "I13": ([0.1, 0.6, 0.3], "mid"),
@@ -1869,8 +1872,8 @@ def build_real(records: Path) -> dict[str, Any]:
     for sid, (zl, kind) in I_STATES.items():
         z = [mpf(v) for v in zl]
         tb, td, td_ida = bubble_t(fl, z, patm), dew_t(fl, z, patm), idaes_dew_t(model, z, patm)
-        if kind == "mid":
-            t = round(float((tb + td) / 2), 2)
+        if kind == "mid":  # A2-3: the band both envelopes agree is two-phase
+            t = round(float((tb + min(td, td_ida)) / 2), 2)
         elif kind == "sub":
             t = round(round(float(tb), 2) - 5.0, 2)
         else:
@@ -1892,7 +1895,7 @@ def build_real(records: Path) -> dict[str, Any]:
                 min(d_b, d_d, d_di) >= ENVELOPE_MARGIN and out["phase"] == "TWO_PHASE",
                 f"{sid} at {t} K is two-phase and >= 0.5 K inside the true envelope (bubble "
                 f"{mp.nstr(d_b, 4)} K, dew {mp.nstr(d_d, 4)} K) and IDAES's approximate one (dew "
-                f"with gamma(z) {mp.nstr(d_di, 4)} K) (spec 8.1)",
+                f"with gamma(z) {mp.nstr(d_di, 4)} K) (spec 8.1, 15 A2-3)",
             )
             if out["phase"] != "TWO_PHASE":  # reached only when claims are collected, not raised
                 istates[sid] = entry
