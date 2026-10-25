@@ -100,7 +100,7 @@ from openflowsheet.models.syn001.column import (
     specified_quantity,
     validate,
 )
-from openflowsheet.models.syn001.saturation_band import band_temperature
+from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.orchestrator.execution import Region
 from openflowsheet.orchestrator.homotopy import Continuation, HomotopyRecord
@@ -166,6 +166,11 @@ CONTINUED_KIND: Final[Mapping[str, str]] = {
 
 #: S06 §8 item 4: the binary64 slack on a recovery's and a purity's bound, `2⁻⁵²`.
 QUOTIENT_SLACK: Final = 2.0**-52
+
+#: S08 §5.5 (S02 §8 item 6): a `TWO_PHASE` stage of an accepted state lies within this many K of
+#: the bubble temperature of its liquid and the dew temperature of its vapour (S02's state
+#: tolerance in `T`; 41x the largest registered error, 2.42e-6 K).
+TWO_PHASE_SATURATION_TOLERANCE: Final = 1e-4
 
 #: `ref.cases.*.presolve_slots`'s kind letter of a kept ratio row.
 RATIO_LETTER: Final[Mapping[str, str]] = {"reflux_ratio": "RR", "boilup_ratio": "BR"}
@@ -475,6 +480,53 @@ def _admissibility(
     return admissible, (f"equivalent temperature error {error!r} K" if status == "ok" else message)
 
 
+def _saturation_pairs(
+    spec: ColumnSpec,
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    regimes: Mapping[int, Regime],
+) -> dict[int, tuple[float, float]]:
+    """S08 §5.5: `(|T_j − T_bub(l_j, P_j)|, |T_j − T_dew(v_j, P_j)|)` for every `TWO_PHASE` stage
+    `j`, through `band_temperature` at `β = 0` and `β = 1`. A band position other than `inside`, a
+    band refusal (`BandError`) or a phase with no positive flow is `inf` (a failure)."""
+    unit, components = spec.unit_id, spec.components
+    pairs: dict[int, tuple[float, float]] = {}
+    for stage, regime in regimes.items():
+        if regime != "TWO_PHASE":
+            continue
+        temperature = float(state[stage_temperature_id(unit, stage)])
+        pressure = float(state[stage_pressure_id(unit, stage)])
+        errors: list[float] = []
+        for outlet, beta in ((liquid_id, 0.0), (vapor_id, 1.0)):
+            flows = tuple(float(state[outlet(unit, stage, c)]) for c in components)
+            error = math.inf
+            if any(value > 0.0 for value in flows):
+                try:
+                    band = band_temperature(provider, flows, pressure, beta, DECLARATION_CONTEXT)
+                except BandError:
+                    band = None
+                if band is not None and band.position == "inside" and band.temperature is not None:
+                    error = abs(temperature - band.temperature)
+            errors.append(error)
+        pairs[stage] = (errors[0], errors[1])
+    return pairs
+
+
+def saturation_errors(
+    spec: ColumnSpec,
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    regimes: Mapping[int, Regime],
+) -> dict[int, float]:
+    """S08 §5.5 (S02 §8 item 6): for every `TWO_PHASE` stage `j`, the larger of
+    `|T_j − T_bub(l_j, P_j)|` and `|T_j − T_dew(v_j, P_j)|` in K; `inf` where either temperature
+    is not `inside` the band. Item 6 holds iff every value is `≤ TWO_PHASE_SATURATION_TOLERANCE`."""
+    return {
+        stage: max(bubble, dew)
+        for stage, (bubble, dew) in _saturation_pairs(spec, provider, state, regimes).items()
+    }
+
+
 def acceptance_failures(
     spec: ColumnSpec,
     provider: PropertyProvider,
@@ -486,7 +538,8 @@ def acceptance_failures(
     column zero, `V_j, L_j > 0` on a `TWO_PHASE` stage, R-007 admissibility on a single-phase
     one), plus items 1–5. Item 1 is the first clause, over the declared S02 rows (S06 §8 item 1:
     the inverse rows are among them). S06 §8 items 2 and 4 are the defect clauses below; item 3
-    is not a defect (`single_phase_specified_stage`). Empty when the answer is accepted."""
+    is not a defect (`single_phase_specified_stage`). Item 6 is S08 §5.5's saturation
+    consistency (`saturation_errors`). Empty when the answer is accepted."""
     failures: list[str] = []
     residuals, pinned = system_residuals(spec, declared, state, regimes)
     for row, value in residuals.items():
@@ -535,6 +588,12 @@ def acceptance_failures(
             value = state[column]
             if column in held and value == 0.0 and math.copysign(1.0, value) < 0.0:
                 failures.append(f"§8.5: product {port} column {column} is -0.0")
+    # Item 6 (S08 §5.5): every TWO_PHASE stage sits at the bubble temperature of its liquid and
+    # the dew temperature of its vapour; the rows alone admit a near-trivial split (S08 §3 F4).
+    for stage, errors in _saturation_pairs(spec, provider, state, regimes).items():
+        for side, error in zip(("bubble", "dew"), errors, strict=True):
+            if not error <= TWO_PHASE_SATURATION_TOLERANCE:
+                failures.append(f"§8.6: TWO_PHASE stage {stage}: {side} error {error!r} K")
     # S06 §8 item 4: every inverse quantity meets its target within the bound its rows imply.
     for end in spec.ends():
         given = spec.end_specification(end)
