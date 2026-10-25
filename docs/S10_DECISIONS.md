@@ -450,3 +450,18 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
   harvests. The corrected wording is carried by the entries WO-S10-7a appended for the manifest at `f974cc87`
   (`limitations[36]`: "requirements lists D08 and D19 …"; and the A5-7 D19 scope line). Alternative: edit the old note
   and accept an HG(b) exception. Reversible by: editing that one note.
+
+## WO-S10-8 (spec §19 A6-10; VAL-2, A51 and A53)
+
+- B-88 (step 1, the transcription; spec §19 A6-1, A6-6): Kurihara, Minoura, Takeda and Kojima (1995), Tables 2
+  (methanol + water) and 3 (ethanol + water), P, x1, y1 at 323.15, 328.15 and 333.15 K, 159 rows. Entry A (an
+  opus-engineer agent): the PDF text layer as a draft, every P, x1 and y1 re-read against 300 dpi page crops, no
+  discrepancy. Entry B (an independent opus-engineer agent): the 300 dpi page image only, no text layer; every value read
+  twice, row counts confirmed by a pixel line profile. The two files are byte-identical, SHA-256
+  `e129027986fa9c15ebf8e00d5fa040497708cb0c7a9d483263eefe2ba98090bb`, 7504 bytes, 160 lines. Copied unchanged to
+  `benchmarks/s10/vle/kurihara1995_binaries.csv` (= entry A), `.A.csv` and `.B.csv`; all three hash to it. Both entries
+  note, as printed and not as reading doubts, that ethanol + water's P is not monotone in x1 near the azeotrope
+  (x1 about 0.9): 323.15 K rows 26-28, 328.15 K rows 29-30, 333.15 K rows 25-26; and y1 0.6688 then 0.6682 at 333.15 K
+  rows 12-13. `docs/s10-rights-check.md` updated as A6-6 (RC-06, files checked, per-file map, `report.json` row); the
+  paper's notice read from its first page (1995 ACS, article code 0021-9568/95/1740-0679$09.00/0; no reuse statement
+  in the paper). No script or test changed. Nothing computed on the 1995 data.
