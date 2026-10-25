@@ -203,8 +203,8 @@ def limitations_of_the_spec(document: str) -> list[str]:
     scope = section(document, "## 0.").split("**What this document does NOT establish.**", 1)[1]
     items = [f"§0: {item}" for item in numbered(scope)]
     for heading, name in (
-        ("### A2-6.", "§15 A2-6"),
-        ("### A3-9.", "§16 A3-9"),
+        ("### A2-6.", "§15 A2-6 (as written at Amendment 2)"),
+        ("### A3-9.", "§16 A3-9 (as written at Amendment 3)"),
         ("### A4-5.", "§17 A4-5"),
     ):
         found = bullets(section(document, heading))
@@ -371,9 +371,9 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], record: Mapping[str,
         "for the CH3OH latent heat (+5.72 % against 5 %). `tested` attests numerical "
         "verification only.",
         "Every IDAES and DWSIM state not compared, with its reason: " + "; ".join(lost),
-        "requirements lists D08 (the second real provider family on the property contract). "
-        "§8's tool comparisons are numerical verification of the same equations (D19-shaped); "
-        "D19's ledger row is not edited by this work order.",
+        "requirements lists D08 (`wilson-ig-v1`, a further real provider on the property "
+        "contract). §8's tool comparisons are numerical verification of the same equations "
+        "(D19-shaped); D19's ledger row is not edited by this work order.",
         "Rights (docs/s10-rights-check.md): RC-05 and RC-06 (the 1993 paper's Tables II and V) "
         "and RC-08 (atomic weights) are unresolved; no S10 file is in a PACKAGED path (A28) and "
         "`wilson-ig-v1` is library-only (A27). Shipping is Frank's decision (Q-F3).",
