@@ -1,9 +1,10 @@
-"""Generate `evidence/S08/<commit>/manifest.json` by running, not by transcribing. S08 (WO-4).
+"""Generate `evidence/S08/<commit>/manifest.json` by running, not by transcribing. S08 (WO-4, WO-5).
 
 The design note `docs/derivations/S08-design.md` (ADR 0048) is the check list: §7's assertion
-table (S08.A01–A16) and §9's gates. Everything recorded is produced here, at the checked-out
-commit (the script refuses to run when `HEAD` is not `--commit` or when a tracked source, test,
-script, schema or derivation file differs from it; S01's rule):
+table (S08.A01–A16), Amendment 1 §13.6's (S08.A17, A18) and §9's gates. Everything recorded is
+produced here, at the checked-out commit (the script refuses to run when `HEAD` is not
+`--commit` or when a tracked source, test, script, schema or derivation file differs from it;
+S01's rule):
 
 1. **The S08, S01, S02, S06 and S03 tests** (`tests/test_s08_*.py`, `tests/test_s01_*.py`,
    `tests/test_s02_*.py`, `tests/test_s06_*.py`, `tests/test_s03_*.py`; one `pytest --junitxml`
@@ -27,9 +28,10 @@ script, schema or derivation file differs from it; S01's rule):
 
 `scripts/gate.sh` and CI on both architectures (G4) are not run here (they run once before
 merge): their checks are `unsupported`. `status` is computed, never written: `tested` iff every
-assertion A01–A16 and every required check passes; otherwise `implemented`. Both review fields
+assertion A01–A18 and every required check passes; otherwise `implemented`. Both review fields
 stay `pending`; `reviewed` is the design lane's `reviewer`'s. The limitations are §11's items
-verbatim, then what this run found.
+verbatim, then what this run found. `requirements` is `[X31]`, the "invalid specs/phases" clause
+only (§13.10; the verdict stays the design lane's).
 
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/s08_evidence_manifest.py [--commit SHA] [--out PATH]
@@ -64,7 +66,7 @@ from s01_evidence_manifest import (  # noqa: E402  (S01's generic helpers, uncha
     shown,
     text,
 )
-from s02_evidence_manifest import _verdict, bullets, section  # noqa: E402
+from s02_evidence_manifest import _verdict, bullets, section, subsection  # noqa: E402
 from s08_identity import PASS_LINE  # noqa: E402
 
 NOTE = ROOT / "docs" / "derivations" / "S08-design.md"
@@ -78,8 +80,12 @@ SOURCES = (
     "src/openflowsheet/models/syn001/column_solve.py",
 )
 SCRIPTS = ("scripts/s08_identity.py", "scripts/s08_evidence_manifest.py")
-#: §7's assertion ids.
-ASSERTIONS = tuple(f"A{index:02d}" for index in range(1, 17))
+#: §7's assertion ids, then Amendment 1 §13.6's.
+NOTE_ASSERTIONS = tuple(f"A{index:02d}" for index in range(1, 17))
+AMENDMENT_ASSERTIONS = ("A17", "A18")
+ASSERTIONS = NOTE_ASSERTIONS + AMENDMENT_ASSERTIONS
+#: The requirement S08 evidences: X31's "invalid specs/phases" clause (§13.10, R-736).
+REQUIREMENTS = ["X31"]
 #: The non-assertion checks `status` also requires.
 REQUIRED_CHECKS = (
     "S08.G1",
@@ -116,16 +122,26 @@ GENERATOR_LINE = "84 claims passed"
 # -- the note ------------------------------------------------------------------------------------
 
 
-def assertion_table(document: str) -> dict[str, tuple[str, str, str]]:
-    """§7's table: id → (assertion, expected, tolerance), exactly S08.A01–A16."""
+def _table(body: str) -> dict[str, tuple[str, str, str]]:
     rows: dict[str, tuple[str, str, str]] = {}
-    for line in section(document, 7).splitlines():
+    for line in body.splitlines():
         cells = [cell.strip() for cell in line.strip().strip("|").split(" | ")]
         match = re.fullmatch(r"S08\.(A\d{2})", cells[0])
         if match and len(cells) == 4:
             rows[match.group(1)] = (cells[1], cells[2], cells[3])
-    if tuple(sorted(rows)) != ASSERTIONS:
-        raise SystemExit(f"§7's ids are {sorted(rows)}, not {ASSERTIONS}")
+    return rows
+
+
+def assertion_table(document: str) -> dict[str, tuple[str, str, str]]:
+    """§7's table and §13.6's: id → (assertion, expected, tolerance), exactly S08.A01–A16 from
+    §7 and S08.A17, A18 from §13.6."""
+    rows = _table(section(document, 7))
+    if tuple(sorted(rows)) != NOTE_ASSERTIONS:
+        raise SystemExit(f"§7's ids are {sorted(rows)}, not {NOTE_ASSERTIONS}")
+    amended = _table(subsection(document, "13.6"))
+    if tuple(sorted(amended)) != AMENDMENT_ASSERTIONS:
+        raise SystemExit(f"§13.6's ids are {sorted(amended)}, not {AMENDMENT_ASSERTIONS}")
+    rows.update(amended)
     return {identifier: rows[identifier] for identifier in ASSERTIONS}
 
 
@@ -181,7 +197,7 @@ def lower_suites(tests: Sequence[Node]) -> dict[str, Any]:
         result = "fail"
     return check(
         "S08.G3-suites",
-        "§9 G3: the S01, S02, S06 and S03 suites pass (S08's A01–A16 are judged per assertion)",
+        "§9 G3: the S01, S02, S06 and S03 suites pass (S08's A01–A18 are judged per assertion)",
         result,
         value,
         "every node passed",
@@ -301,18 +317,23 @@ def status(entries: Sequence[Mapping[str, Any]]) -> str:
 
 def found_limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
     items = [
-        "requirements is empty: neither the design note nor ADR 0048 names a requirement S08 "
-        "contributes to (docs/S08_DECISIONS.md W4-8); the D/A mapping is the design lane's.",
+        'requirements is [X31] for its "invalid specs/phases" clause only (S08-design §13.10, '
+        "R-736): S08 changes the expected outcome of S02's phase case P1 and adds P2, P3, F1, D1 "
+        "and item 6. It does not touch X31's reference clause, and X31's verdict stays null "
+        "(the design lane's).",
         "scripts/gate.sh and CI on x86-64 and aarch64 (§9 G4) were not run by this generator "
         "(they run once before merge into main); S08.gate and S08.ci are unsupported here. "
         "Item 6's margin across architectures (§10 Q5) is therefore not yet shown on aarch64.",
-        "Review: the design lane's one reviewer pass on WO-1 to WO-4 (§8) is pending; the review "
-        "fields stay pending and the human numerical and process-model review is pending; this "
-        "manifest claims neither.",
+        "Review: the design lane's one reviewer pass on WO-1 to WO-4 (docs/reviews/S08-review.md) "
+        "set a build-lane work order before reviewed; WO-5 carries it (A14 (b) per §13.5, A17, "
+        "A18, bubble_point_refused per §13.3). Whether it is closed is the reviewer's to judge: "
+        "the review fields stay pending and the human numerical and process-model review is "
+        "pending; this manifest claims neither.",
         "The root agreement is numerical verification against WO-G's 50-digit generator "
         "(s08_reference.py, which imports nothing from src/ but shares SYN-001 and S02's rows), "
         "not empirical validation.",
-        "The T08 support envelope does not yet carry S08's harvest (it follows the review).",
+        "The T08 support envelope's harvest of this manifest follows its generation, in a later "
+        "commit.",
     ]
     for entry in entries:
         if entry["result"] == "pass" or entry["id"] in ("S08.gate", "S08.ci"):
@@ -415,12 +436,12 @@ def build(commit: str) -> dict[str, Any]:
     manifest: dict[str, Any] = {
         "work_package": "S08",
         "commit": commit,
-        "requirements": [],
+        "requirements": REQUIREMENTS,
         "status": status(entries),
         "inputs": {
-            "case_id": "S08 acceptance: docs/derivations/S08-design.md §7 (S08.A01–A16) against "
-            "docs/derivations/scripts/s08_reference.json (P2, P3, F1, D1) and s02_reference.json "
-            "(P1), gates §9",
+            "case_id": "S08 acceptance: docs/derivations/S08-design.md §7 and §13.6 (S08.A01–A18) "
+            "against docs/derivations/scripts/s08_reference.json (P2, P3, F1, D1) and "
+            "s02_reference.json (P1), gates §9",
             "case_hash": sha256_file(REFERENCE),
             "environment_lock_hash": sha256_file(LOCK),
         },
@@ -441,7 +462,7 @@ def build(commit: str) -> dict[str, Any]:
             {
                 "path": shown(NOTE),
                 "sha256": sha256_file(NOTE),
-                "description": "the S08 design note the checks are read from (§7, §9, §11)",
+                "description": "the S08 design note the checks are read from (§7, §9, §11, §13.6)",
             },
             {
                 "path": shown(ADR),

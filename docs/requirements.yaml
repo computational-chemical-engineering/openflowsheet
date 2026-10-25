@@ -890,7 +890,10 @@ gates:
 
   - id: X31
     required_evidence: "Four matched column cases, invalid specs/phases, two independent references where available"
-    owner_packages: [S02, S03]
+    owner_packages: [S02, S03, S08]
+    # S08 (S08-design §13.10, R-736) evidences the "invalid specs/phases" clause only: it changes the expected outcome
+    # of S02's phase case P1 (CONVERGED at LIQUID x5 through Stage B) and adds P2, P3, F1, D1 and S02 §8 item 6. It
+    # does not touch the reference clause below.
     # S03's manifest `evidence/S03/930aad1b...` (`tested`) carries the reference clause as S03 spec §17.5's
     # table classifies it, and the `verdict` agent's document (docs/reviews/S03-verdicts.md, verdict 3)
     # finds it NOT MET: 2 of the 4 matched cases have two independent references (RC1 and RC2, DWSIM and
@@ -1238,8 +1241,9 @@ packages:
     lead: Fable
     second: Opus
     depends_on: [S02, S03]
-    # WO-4: the manifest at 38457cb8 is `tested` (24 of 26 checks pass; gate and CI `unsupported`, they run before
-    # merge). No requirement row names S08 (the design note and ADR 0048 name none; docs/S08_DECISIONS.md W4-8).
+    # S06 is not a ledger package and cannot be listed: it is the source of G1's and A16's S06 cases (J1-J8, V, U)
+    # (S08-design §13.10).
+    # S08 evidences X31's "invalid specs/phases" clause (S08-design §13.10, R-736; the review's ruling 3).
     status: tested
     evidence:
       - evidence/S08/38457cb8355b3470ce43868d86c956cc3ef5076c/manifest.json
