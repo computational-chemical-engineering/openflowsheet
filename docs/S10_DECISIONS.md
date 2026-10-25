@@ -110,3 +110,13 @@ for A30-A34 that skip until the records exist, the real section's first part. No
 diff (separate agent); `records.yaml` and `fit-report.json` (wait for B and the ESC-1 ruling; then `s10_records.py
 --emit`); `reference_values_real.yaml` (waits for the records and ESC-3); the §7.3 flash tolerances of the I-states
 in the real section and A34's flash half.
+
+## Double-entry check of the 1993 fit data (orchestrator, 2026-10-25)
+
+- Transcription A (WO-S10-3, worktree s10) and transcription B (independent `sonnet-implementer`, worktree s10-txb,
+  commit 6abc6af7 on wp/S10-txb, never saw A): `diff` empty, 49 rows (methanol+ethanol 11, methanol+water 20,
+  ethanol+water 18), Table II, T in K, as printed.
+- Both agents leaned on the PDF's OCR text layer, so an OCR misread could be common to both. Independent check: page 1
+  rendered at 300 dpi (`pdftoppm -r 300`, the scan's native resolution) and all 49 (x1, y1, T) rows read off the image
+  by the orchestrator: every value matches. The final `benchmarks/s10/vle/kurihara1993_binaries.csv` is A, byte for
+  byte; A and B are kept for the audit trail. The paper itself is not in the repository.
