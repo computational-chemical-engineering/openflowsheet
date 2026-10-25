@@ -1,0 +1,291 @@
+{
+ "authority": "docs/derivations/S10-spec.md section 8.1 as amended by section 15 A2-3",
+ "i_states": {
+  "fields": "closed_form.i_states.<id>.state (n, T, P) only",
+  "path": "benchmarks/s10/reference_values_real.yaml",
+  "sha256": "fa7c43f753baf0fae7695146f664a1b022de522a76dcb15246da81c6c8e00723",
+  "states": {
+   "I1": {
+    "P": 101325.0,
+    "T": 365.51,
+    "n": [
+     0.1,
+     0.0,
+     0.9
+    ]
+   },
+   "I10": {
+    "P": 101325.0,
+    "T": 356.02,
+    "n": [
+     0.0,
+     0.4,
+     0.6
+    ]
+   },
+   "I11": {
+    "P": 101325.0,
+    "T": 353.34,
+    "n": [
+     0.2,
+     0.3,
+     0.5
+    ]
+   },
+   "I12": {
+    "P": 101325.0,
+    "T": 350.09,
+    "n": [
+     0.4,
+     0.2,
+     0.4
+    ]
+   },
+   "I13": {
+    "P": 101325.0,
+    "T": 351.15,
+    "n": [
+     0.1,
+     0.6,
+     0.3
+    ]
+   },
+   "I14": {
+    "P": 101325.0,
+    "T": 344.84,
+    "n": [
+     0.5,
+     0.5,
+     0.0
+    ]
+   },
+   "I2": {
+    "P": 101325.0,
+    "T": 357.42,
+    "n": [
+     0.3,
+     0.0,
+     0.7
+    ]
+   },
+   "I3": {
+    "P": 101325.0,
+    "T": 351.27,
+    "n": [
+     0.5,
+     0.0,
+     0.5
+    ]
+   },
+   "I4": {
+    "P": 101325.0,
+    "T": 345.66,
+    "n": [
+     0.7,
+     0.0,
+     0.30000000000000004
+    ]
+   },
+   "I5": {
+    "P": 101325.0,
+    "T": 340.29,
+    "n": [
+     0.9,
+     0.0,
+     0.09999999999999998
+    ]
+   },
+   "I6": {
+    "P": 101325.0,
+    "T": 343.62,
+    "n": [
+     0.4,
+     0.0,
+     0.6
+    ]
+   },
+   "I7": {
+    "P": 101325.0,
+    "T": 366.56,
+    "n": [
+     0.4,
+     0.0,
+     0.6
+    ]
+   },
+   "I8": {
+    "P": 101325.0,
+    "T": 360.93,
+    "n": [
+     0.0,
+     0.2,
+     0.8
+    ]
+   },
+   "I9": {
+    "P": 101325.0,
+    "T": 352.86,
+    "n": [
+     0.0,
+     0.6,
+     0.4
+    ]
+   }
+  }
+ },
+ "ladder": {
+  "eps_K": [
+   0.0001,
+   1e-05,
+   1e-06
+  ],
+  "initializer": "the package's own state-block initialize() from the registered state, no per-state tuning",
+  "ipopt_options": {
+   "constr_viol_tol": 1e-10,
+   "max_iter": 3000,
+   "tol": 1e-10
+  },
+  "linear_solvers": [
+   "ma27",
+   "mumps"
+  ],
+  "selection": "the first rung at which every I-state ends optimal is used for all of them; a state optimal at no rung is NOT_COMPARABLE"
+ },
+ "readback_points": [
+  {
+   "P": 101325.0,
+   "T": 340.0,
+   "id": "RB-T340-x1",
+   "x": [
+    0.2,
+    0.3,
+    0.5
+   ]
+  },
+  {
+   "P": 101325.0,
+   "T": 340.0,
+   "id": "RB-T340-x2",
+   "x": [
+    0.6,
+    0.2,
+    0.2
+   ]
+  },
+  {
+   "P": 101325.0,
+   "T": 360.0,
+   "id": "RB-T360-x1",
+   "x": [
+    0.2,
+    0.3,
+    0.5
+   ]
+  },
+  {
+   "P": 101325.0,
+   "T": 360.0,
+   "id": "RB-T360-x2",
+   "x": [
+    0.6,
+    0.2,
+    0.2
+   ]
+  }
+ ],
+ "records": {
+  "R_J_per_mol_K": 8.31446261815324,
+  "T0_K": 298.15,
+  "components": [
+   {
+    "id": "CH3OH",
+    "ideal_gas_cp_b": [
+     5.71539582,
+     -15.2309129,
+     65.2441155,
+     -71.0806889,
+     26.1352698
+    ],
+    "standard_formation_enthalpy_J_per_mol": -200938.85487320993,
+    "vapour_pressure_abcd": [
+     23.1903583383,
+     -6.06364641455,
+     -5.44295361639,
+     3.37780627462
+    ]
+   },
+   {
+    "id": "C2H5OH",
+    "ideal_gas_cp_b": [
+     4.85868178,
+     -3.7400674,
+     69.5550267,
+     -88.6541147,
+     35.168443
+    ],
+    "standard_formation_enthalpy_J_per_mol": -234948.66126639748,
+    "vapour_pressure_abcd": [
+     24.8828829558,
+     -6.65074311339,
+     -5.23090979586,
+     0.747236411782
+    ]
+   },
+   {
+    "id": "H2O",
+    "ideal_gas_cp_b": [
+     4.19864056,
+     -2.0364341,
+     6.52040211,
+     -5.48797062,
+     1.77197817
+    ],
+    "standard_formation_enthalpy_J_per_mol": -241824.62162536496,
+    "vapour_pressure_abcd": [
+     23.5265279527,
+     -7.11938661787,
+     -6.70379788914,
+     3.38417458422
+    ]
+   }
+  ],
+  "forms": "c_p^ig/R = sum_k b_k theta^k; ln(P_sat/Pa) = a + b/theta + c ln theta + d theta^2; theta = T / 1000 K; h^ig(298.15 K) = Delta_fH; Wilson Lambda_ij constant",
+  "path": "benchmarks/s10/records.yaml",
+  "reference_convention": "WILSON-IG-ref-v1",
+  "sha256": "74dc4e54101f6197cc4f9c2dc66e1856b99a7f047b5904a31b6a910b33f5a8f1",
+  "theta_unit_K": 1000.0,
+  "wilson_lambda": [
+   {
+    "i": "CH3OH",
+    "j": "C2H5OH",
+    "value": 0.6109248362
+   },
+   {
+    "i": "C2H5OH",
+    "j": "CH3OH",
+    "value": 1.49887856
+   },
+   {
+    "i": "C2H5OH",
+    "j": "H2O",
+    "value": 0.1649874985
+   },
+   {
+    "i": "H2O",
+    "j": "C2H5OH",
+    "value": 0.8615311153
+   },
+   {
+    "i": "CH3OH",
+    "j": "H2O",
+    "value": 0.3674022637
+   },
+   {
+    "i": "H2O",
+    "j": "CH3OH",
+    "value": 1.134238098
+   }
+  ]
+ },
+ "written_by": "scripts/s10_idaes_comparison.py --write-inputs"
+}
