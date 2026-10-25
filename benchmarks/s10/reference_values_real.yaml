@@ -1,8 +1,9 @@
 schema_version: 1
 generator: docs/derivations/scripts/s10_reference.py --real
 records_sha256: 74dc4e54101f6197cc4f9c2dc66e1856b99a7f047b5904a31b6a910b33f5a8f1
-spec: docs/derivations/S10-spec.md sections 8.1 and 9.7
-status: 'complete (WO-S10-3): RE1-RE3 (section 7.2), I1-I14 (sections 7.3, 8.1, 15 A2-3)'
+spec: docs/derivations/S10-spec.md sections 8.1, 9.7 and 16
+status: 'complete (WO-S10-3): RE1-RE3 (section 7.2), I1-I14 (sections 7.3, 8.1, 15 A2-3); IDAES''s dew, the ladders and the
+  constr_viol_tol claims (section 16)'
 method_constants:
   EPS_TPD: 1.0e-10
   DELTA_K: 1.0e-13
@@ -684,9 +685,12 @@ closed_form:
       kind: mid
       bubble_T: 360.7050532150843
       dew_T: 370.56861627778443
-      idaes_dew_T_gamma_at_z: 370.3094954854057
+      dew_T_gamma_at_z: 370.3094954854057
       phase: TWO_PHASE
+      idaes_dew_T: 370.5205568076141
       max_abs_dq_dT: 0.0608
+      max_abs_dlnK_dT: 0.0554
+      max_abs_dh_dT: 1360.0
       closed_form:
         beta: 0.2220695456237305
         x:
@@ -711,9 +715,12 @@ closed_form:
       kind: mid
       bubble_T: 351.3414143290243
       dew_T: 364.8205450705859
-      idaes_dew_T_gamma_at_z: 363.5043668117
+      dew_T_gamma_at_z: 363.5043668117
       phase: TWO_PHASE
+      idaes_dew_T: 364.5776723961317
       max_abs_dq_dT: 0.0587
+      max_abs_dlnK_dT: 0.0678
+      max_abs_dh_dT: 1100.0
       closed_form:
         beta: 0.410339861037754
         x:
@@ -738,9 +745,12 @@ closed_form:
       kind: mid
       bubble_T: 346.3502506308986
       dew_T: 357.9901301785716
-      idaes_dew_T_gamma_at_z: 356.1800806507247
+      dew_T_gamma_at_z: 356.1800806507247
       phase: TWO_PHASE
+      idaes_dew_T: 357.53829780930647
       max_abs_dq_dT: 0.0763
+      max_abs_dlnK_dT: 0.0728
+      max_abs_dh_dT: 1530.0
       closed_form:
         beta: 0.5393419817979258
         x:
@@ -765,9 +775,12 @@ closed_form:
       kind: mid
       bubble_T: 342.52147621666575
       dew_T: 349.95660998993066
-      idaes_dew_T_gamma_at_z: 348.7923213680587
+      dew_T_gamma_at_z: 348.7923213680587
       phase: TWO_PHASE
+      idaes_dew_T: 349.5909302441759
       max_abs_dq_dT: 0.124
+      max_abs_dlnK_dT: 0.0628
+      max_abs_dh_dT: 2290.0
       closed_form:
         beta: 0.6223446030724081
         x:
@@ -792,9 +805,12 @@ closed_form:
       kind: mid
       bubble_T: 339.1868529443154
       dew_T: 341.55926338335894
-      idaes_dew_T_gamma_at_z: 341.39198520488577
+      dew_T_gamma_at_z: 341.39198520488577
       phase: TWO_PHASE
+      idaes_dew_T: 341.51082874373617
       max_abs_dq_dT: 0.365
+      max_abs_dlnK_dT: 0.0464
+      max_abs_dh_dT: 2850.0
       closed_form:
         beta: 0.683945835948121
         x:
@@ -819,8 +835,9 @@ closed_form:
       kind: sub
       bubble_T: 348.6155803604359
       dew_T: 361.55813562309294
-      idaes_dew_T_gamma_at_z: 359.86529936163475
+      dew_T_gamma_at_z: 359.86529936163475
       phase: LIQUID
+      idaes_dew_T: 359.86529936163475
     I7:
       state:
         n: *id007
@@ -829,8 +846,9 @@ closed_form:
       kind: sup
       bubble_T: 348.6155803604359
       dew_T: 361.55813562309294
-      idaes_dew_T_gamma_at_z: 359.86529936163475
+      dew_T_gamma_at_z: 359.86529936163475
       phase: VAPOR
+      idaes_dew_T: 361.55813562309294
     I8:
       state:
         n: *id008
@@ -839,9 +857,12 @@ closed_form:
       kind: mid
       bubble_T: 356.2370399662496
       dew_T: 367.4624808751474
-      idaes_dew_T_gamma_at_z: 365.6193596838229
+      dew_T_gamma_at_z: 365.6193596838229
       phase: TWO_PHASE
+      idaes_dew_T: 367.24583572890987
       max_abs_dq_dT: 0.0592
+      max_abs_dlnK_dT: 0.122
+      max_abs_dh_dT: 258.0
       closed_form:
         beta: 0.397268960057943
         x:
@@ -866,9 +887,12 @@ closed_form:
       kind: mid
       bubble_T: 352.2571775471625
       dew_T: 354.12594477316844
-      idaes_dew_T_gamma_at_z: 353.47085698934
+      dew_T_gamma_at_z: 353.47085698934
       phase: TWO_PHASE
+      idaes_dew_T: 353.8638789346093
       max_abs_dq_dT: 0.595
+      max_abs_dlnK_dT: 0.181
+      max_abs_dh_dT: 1420.0
       closed_form:
         beta: 0.6021219264459136
         x:
@@ -893,9 +917,12 @@ closed_form:
       kind: mid
       bubble_T: 353.7448540542269
       dew_T: 360.82413670729767
-      idaes_dew_T_gamma_at_z: 358.3025495116731
+      dew_T_gamma_at_z: 358.3025495116731
       phase: TWO_PHASE
+      idaes_dew_T: 360.17985422528517
       max_abs_dq_dT: 0.129
+      max_abs_dlnK_dT: 0.214
+      max_abs_dh_dT: 601.0
       closed_form:
         beta: 0.5810462567964695
         x:
@@ -920,9 +947,12 @@ closed_form:
       kind: mid
       bubble_T: 350.81550468373143
       dew_T: 357.6622264167078
-      idaes_dew_T_gamma_at_z: 355.86139126095287
+      dew_T_gamma_at_z: 355.86139126095287
       phase: TWO_PHASE
+      idaes_dew_T: 357.0397576927476
       max_abs_dq_dT: 0.151
+      max_abs_dlnK_dT: 0.155
+      max_abs_dh_dT: 1360.0
       closed_form:
         beta: 0.56611505044237
         x:
@@ -947,9 +977,12 @@ closed_form:
       kind: mid
       bubble_T: 347.3117407809807
       dew_T: 354.16572026530025
-      idaes_dew_T_gamma_at_z: 352.86724021973674
+      dew_T_gamma_at_z: 352.86724021973674
       phase: TWO_PHASE
+      idaes_dew_T: 353.66210341389586
       max_abs_dq_dT: 0.153
+      max_abs_dlnK_dT: 0.116
+      max_abs_dh_dT: 1860.0
       closed_form:
         beta: 0.5666484927447907
         x:
@@ -974,9 +1007,12 @@ closed_form:
       kind: mid
       bubble_T: 350.6246628714261
       dew_T: 351.8881778694155
-      idaes_dew_T_gamma_at_z: 351.6852952590734
+      dew_T_gamma_at_z: 351.6852952590734
       phase: TWO_PHASE
+      idaes_dew_T: 351.7969982505969
       max_abs_dq_dT: 0.898
+      max_abs_dlnK_dT: 0.113
+      max_abs_dh_dT: 2190.0
       closed_form:
         beta: 0.5322219927541811
         x:
@@ -1001,9 +1037,12 @@ closed_form:
       kind: mid
       bubble_T: 343.907754632899
       dew_T: 345.7732279050877
-      idaes_dew_T_gamma_at_z: 345.77908515350117
+      dew_T_gamma_at_z: 345.77908515350117
       phase: TWO_PHASE
+      idaes_dew_T: 345.7745246476484
       max_abs_dq_dT: 0.526
+      max_abs_dlnK_dT: 0.0421
+      max_abs_dh_dT: 2590.0
       closed_form:
         beta: 0.49268280722350977
         x:
@@ -1089,6 +1128,38 @@ idaes_mapping:
       - -7.11938661787
       - -6.70379788914
       - 3.38417458422
+idaes_ladders:
+  registered_8_1:
+    eps_K:
+    - 0.0001
+    - 1.0e-05
+    - 1.0e-06
+    ipopt_options:
+      tol: 1.0e-10
+      constr_viol_tol: 1.0e-10
+      max_iter: 3000
+    linear_solvers:
+    - ma27
+    - mumps
+    use: reproduction of the WO-S10-4 record only (spec 16 A3-4); decides nothing
+  amendment_3:
+    eps_K:
+    - 0.0001
+    - 1.0e-05
+    - 1.0e-06
+    ipopt_options:
+      tol: 1.0e-10
+      constr_viol_tol: 1.0e-09
+      max_iter: 3000
+    linear_solvers:
+    - ma27
+    - mumps
+    mumps: only when the ma27 attempt at the same state and rung did not end optimal
+    converged: 'Pyomo optimal termination and Ipopt ''EXIT: Optimal Solution Found.'''
+    selection: 'per state: the first optimal attempt in the order (eps 1e-4 ma27, mumps; 1e-5 ma27, mumps; 1e-6 ma27, mumps);
+      none: NOT_COMPARABLE(no_optimal_attempt)'
+    dependence_ratio_max: 0.1
+    use: decides (spec 16 A3-2, A3-4)
 tolerances:
   evaluate_phase_relative: 1.0e-12
   tm:
@@ -1358,53 +1429,146 @@ measured:
     two_phase: 67
   smoothing_predicted:
     I1:
-      '0.0001': 6.33e-11
-      '1.0e-5': 6.33e-13
-      '1.0e-6': 6.33e-15
+      '0.0001': 6.2e-11
+      '1.0e-5': 6.2e-13
+      '1.0e-6': 6.2e-15
     I2:
-      '0.0001': 4.83e-11
-      '1.0e-5': 4.83e-13
-      '1.0e-6': 4.83e-15
+      '0.0001': 4.46e-11
+      '1.0e-5': 4.46e-13
+      '1.0e-6': 4.46e-15
     I3:
-      '0.0001': 7.77e-11
-      '1.0e-5': 7.77e-13
-      '1.0e-6': 7.77e-15
+      '0.0001': 6.92e-11
+      '1.0e-5': 6.92e-13
+      '1.0e-6': 6.92e-15
     I4:
-      '0.0001': 1.98e-10
-      '1.0e-5': 1.98e-12
-      '1.0e-6': 1.98e-14
+      '0.0001': 1.78e-10
+      '1.0e-5': 1.78e-12
+      '1.0e-6': 1.78e-14
     I5:
-      '0.0001': 1.65e-09
-      '1.0e-5': 1.65e-11
-      '1.0e-6': 1.65e-13
+      '0.0001': 1.57e-09
+      '1.0e-5': 1.57e-11
+      '1.0e-6': 1.57e-13
     I8:
-      '0.0001': 6.3e-11
-      '1.0e-5': 6.3e-13
-      '1.0e-6': 6.3e-15
+      '0.0001': 5.49e-11
+      '1.0e-5': 5.49e-13
+      '1.0e-6': 5.49e-15
     I9:
-      '0.0001': 4.9e-09
-      '1.0e-5': 4.9e-11
-      '1.0e-6': 4.9e-13
+      '0.0001': 3.95e-09
+      '1.0e-5': 3.95e-11
+      '1.0e-6': 3.95e-13
     I10:
-      '0.0001': 2.83e-10
-      '1.0e-5': 2.83e-12
-      '1.0e-6': 2.83e-14
+      '0.0001': 2.19e-10
+      '1.0e-5': 2.19e-12
+      '1.0e-6': 2.19e-14
     I11:
-      '0.0001': 3.0e-10
-      '1.0e-5': 3.0e-12
-      '1.0e-6': 3.0e-14
+      '0.0001': 2.52e-10
+      '1.0e-5': 2.52e-12
+      '1.0e-6': 2.52e-14
     I12:
-      '0.0001': 2.76e-10
-      '1.0e-5': 2.76e-12
-      '1.0e-6': 2.76e-14
+      '0.0001': 2.45e-10
+      '1.0e-5': 2.45e-12
+      '1.0e-6': 2.45e-14
     I13:
-      '0.0001': 8.47e-09
-      '1.0e-5': 8.47e-11
-      '1.0e-6': 8.47e-13
+      '0.0001': 7.75e-09
+      '1.0e-5': 7.75e-11
+      '1.0e-6': 7.75e-13
     I14:
-      '0.0001': 2.81e-09
-      '1.0e-5': 2.81e-11
-      '1.0e-6': 2.81e-13
+      '0.0001': 2.82e-09
+      '1.0e-5': 2.82e-11
+      '1.0e-6': 2.82e-13
+  smoothing_predicted_K_h_at_1e-4:
+    I1:
+      K_relative_over_tau_K: 0.000565
+      h_over_tau_h: 2.78e-05
+    I2:
+      K_relative_over_tau_K: 0.000515
+      h_over_tau_h: 1.68e-05
+    I3:
+      K_relative_over_tau_K: 0.00066
+      h_over_tau_h: 2.77e-05
+    I4:
+      K_relative_over_tau_K: 0.000899
+      h_over_tau_h: 6.58e-05
+    I5:
+      K_relative_over_tau_K: 0.002
+      h_over_tau_h: 0.000246
+    I8:
+      K_relative_over_tau_K: 0.00113
+      h_over_tau_h: 4.78e-06
+    I9:
+      K_relative_over_tau_K: 0.012
+      h_over_tau_h: 0.000188
+    I10:
+      K_relative_over_tau_K: 0.00364
+      h_over_tau_h: 2.04e-05
+    I11:
+      K_relative_over_tau_K: 0.00258
+      h_over_tau_h: 4.54e-05
+    I12:
+      K_relative_over_tau_K: 0.00185
+      h_over_tau_h: 5.96e-05
+    I13:
+      K_relative_over_tau_K: 0.00974
+      h_over_tau_h: 0.000378
+    I14:
+      K_relative_over_tau_K: 0.00225
+      h_over_tau_h: 0.000277
+  idaes_row_floors:
+    I1:
+      bubble_row_step_Pa: 2.11e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I2:
+      bubble_row_step_Pa: 2.17e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I3:
+      bubble_row_step_Pa: 2.21e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I4:
+      bubble_row_step_Pa: 2.23e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I5:
+      bubble_row_step_Pa: 2.26e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I6:
+      bubble_row_step_Pa: 2.19e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I7:
+      bubble_row_step_Pa: 2.19e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I8:
+      bubble_row_step_Pa: 2.24e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I9:
+      bubble_row_step_Pa: 2.29e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I10:
+      bubble_row_step_Pa: 2.27e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I11:
+      bubble_row_step_Pa: 2.24e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I12:
+      bubble_row_step_Pa: 2.23e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I13:
+      bubble_row_step_Pa: 2.28e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+    I14:
+      bubble_row_step_Pa: 2.25e-10
+      enthalpy_rows_4ulp_J_per_mol: 2.33e-10
+  constr_viol_tol_effect_estimate:
+    I1: 2.1e-14
+    I2: 3.29e-14
+    I3: 4.12e-14
+    I4: 3.84e-14
+    I5: 4.5e-14
+    I8: 4.93e-14
+    I9: 6.54e-14
+    I10: 9.24e-14
+    I11: 6.98e-14
+    I12: 5.65e-14
+    I13: 3.9e-14
+    I14: 1.32e-14
 generator_claims:
 - id: REC-01
   holds: true
@@ -1642,8 +1806,8 @@ generator_claims:
   statement: 'I1: the 50-digit outlets close the component balance'
 - id: ENV-I1
   holds: true
-  statement: I1 at 365.51 K is two-phase and >= 0.5 K inside the true envelope (bubble 4.805 K, dew 5.059 K) and IDAES's approximate
-    one (dew with gamma(z) 4.799 K) (spec 8.1, 15 A2-3)
+  statement: I1 at 365.51 K is two-phase and >= 0.5 K inside the true envelope (bubble 4.805 K, dew 5.059 K) and from IDAES's
+    dew (gamma at the flash liquid, 5.011 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: DOM-I2
   holds: true
   statement: I2 is inside the closed domain
@@ -1659,8 +1823,8 @@ generator_claims:
   statement: 'I2: the 50-digit outlets close the component balance'
 - id: ENV-I2
   holds: true
-  statement: I2 at 357.42 K is two-phase and >= 0.5 K inside the true envelope (bubble 6.079 K, dew 7.401 K) and IDAES's approximate
-    one (dew with gamma(z) 6.084 K) (spec 8.1, 15 A2-3)
+  statement: I2 at 357.42 K is two-phase and >= 0.5 K inside the true envelope (bubble 6.079 K, dew 7.401 K) and from IDAES's
+    dew (gamma at the flash liquid, 7.158 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: DOM-I3
   holds: true
   statement: I3 is inside the closed domain
@@ -1676,8 +1840,8 @@ generator_claims:
   statement: 'I3: the 50-digit outlets close the component balance'
 - id: ENV-I3
   holds: true
-  statement: I3 at 351.27 K is two-phase and >= 0.5 K inside the true envelope (bubble 4.92 K, dew 6.72 K) and IDAES's approximate
-    one (dew with gamma(z) 4.91 K) (spec 8.1, 15 A2-3)
+  statement: I3 at 351.27 K is two-phase and >= 0.5 K inside the true envelope (bubble 4.92 K, dew 6.72 K) and from IDAES's
+    dew (gamma at the flash liquid, 6.268 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: DOM-I4
   holds: true
   statement: I4 is inside the closed domain
@@ -1693,8 +1857,8 @@ generator_claims:
   statement: 'I4: the 50-digit outlets close the component balance'
 - id: ENV-I4
   holds: true
-  statement: I4 at 345.66 K is two-phase and >= 0.5 K inside the true envelope (bubble 3.139 K, dew 4.297 K) and IDAES's approximate
-    one (dew with gamma(z) 3.132 K) (spec 8.1, 15 A2-3)
+  statement: I4 at 345.66 K is two-phase and >= 0.5 K inside the true envelope (bubble 3.139 K, dew 4.297 K) and from IDAES's
+    dew (gamma at the flash liquid, 3.931 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: DOM-I5
   holds: true
   statement: I5 is inside the closed domain
@@ -1710,8 +1874,8 @@ generator_claims:
   statement: 'I5: the 50-digit outlets close the component balance'
 - id: ENV-I5
   holds: true
-  statement: I5 at 340.29 K is two-phase and >= 0.5 K inside the true envelope (bubble 1.103 K, dew 1.269 K) and IDAES's approximate
-    one (dew with gamma(z) 1.102 K) (spec 8.1, 15 A2-3)
+  statement: I5 at 340.29 K is two-phase and >= 0.5 K inside the true envelope (bubble 1.103 K, dew 1.269 K) and from IDAES's
+    dew (gamma at the flash liquid, 1.221 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: DOM-I6
   holds: true
   statement: I6 is inside the closed domain
@@ -1724,6 +1888,10 @@ generator_claims:
 - id: PHASE-I7
   holds: true
   statement: I7 at 366.56 K is VAPOR (spec 8.1)
+- id: IDAES-DEW-I7
+  holds: true
+  statement: 'I7: with gamma at the incipient dew liquid the dew equation gives the true dew (|diff| = 2.1e-35 K <= 1e-12
+    K), and with gamma at z it does not (-1.693 K) (section 16 A3-3)'
 - id: DOM-I8
   holds: true
   statement: I8 is inside the closed domain
@@ -1739,8 +1907,8 @@ generator_claims:
   statement: 'I8: the 50-digit outlets close the component balance'
 - id: ENV-I8
   holds: true
-  statement: I8 at 360.93 K is two-phase and >= 0.5 K inside the true envelope (bubble 4.693 K, dew 6.532 K) and IDAES's approximate
-    one (dew with gamma(z) 4.689 K) (spec 8.1, 15 A2-3)
+  statement: I8 at 360.93 K is two-phase and >= 0.5 K inside the true envelope (bubble 4.693 K, dew 6.532 K) and from IDAES's
+    dew (gamma at the flash liquid, 6.316 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: DOM-I9
   holds: true
   statement: I9 is inside the closed domain
@@ -1756,8 +1924,8 @@ generator_claims:
   statement: 'I9: the 50-digit outlets close the component balance'
 - id: ENV-I9
   holds: true
-  statement: I9 at 352.86 K is two-phase and >= 0.5 K inside the true envelope (bubble 0.6028 K, dew 1.266 K) and IDAES's
-    approximate one (dew with gamma(z) 0.6109 K) (spec 8.1, 15 A2-3)
+  statement: I9 at 352.86 K is two-phase and >= 0.5 K inside the true envelope (bubble 0.6028 K, dew 1.266 K) and from IDAES's
+    dew (gamma at the flash liquid, 1.004 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: DOM-I10
   holds: true
   statement: I10 is inside the closed domain
@@ -1773,8 +1941,8 @@ generator_claims:
   statement: 'I10: the 50-digit outlets close the component balance'
 - id: ENV-I10
   holds: true
-  statement: I10 at 356.02 K is two-phase and >= 0.5 K inside the true envelope (bubble 2.275 K, dew 4.804 K) and IDAES's
-    approximate one (dew with gamma(z) 2.283 K) (spec 8.1, 15 A2-3)
+  statement: I10 at 356.02 K is two-phase and >= 0.5 K inside the true envelope (bubble 2.275 K, dew 4.804 K) and from IDAES's
+    dew (gamma at the flash liquid, 4.16 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: DOM-I11
   holds: true
   statement: I11 is inside the closed domain
@@ -1790,8 +1958,8 @@ generator_claims:
   statement: 'I11: the 50-digit outlets close the component balance'
 - id: ENV-I11
   holds: true
-  statement: I11 at 353.34 K is two-phase and >= 0.5 K inside the true envelope (bubble 2.524 K, dew 4.322 K) and IDAES's
-    approximate one (dew with gamma(z) 2.521 K) (spec 8.1, 15 A2-3)
+  statement: I11 at 353.34 K is two-phase and >= 0.5 K inside the true envelope (bubble 2.524 K, dew 4.322 K) and from IDAES's
+    dew (gamma at the flash liquid, 3.7 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: DOM-I12
   holds: true
   statement: I12 is inside the closed domain
@@ -1807,8 +1975,8 @@ generator_claims:
   statement: 'I12: the 50-digit outlets close the component balance'
 - id: ENV-I12
   holds: true
-  statement: I12 at 350.09 K is two-phase and >= 0.5 K inside the true envelope (bubble 2.778 K, dew 4.076 K) and IDAES's
-    approximate one (dew with gamma(z) 2.777 K) (spec 8.1, 15 A2-3)
+  statement: I12 at 350.09 K is two-phase and >= 0.5 K inside the true envelope (bubble 2.778 K, dew 4.076 K) and from IDAES's
+    dew (gamma at the flash liquid, 3.572 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: DOM-I13
   holds: true
   statement: I13 is inside the closed domain
@@ -1824,8 +1992,8 @@ generator_claims:
   statement: 'I13: the 50-digit outlets close the component balance'
 - id: ENV-I13
   holds: true
-  statement: I13 at 351.15 K is two-phase and >= 0.5 K inside the true envelope (bubble 0.5253 K, dew 0.7382 K) and IDAES's
-    approximate one (dew with gamma(z) 0.5353 K) (spec 8.1, 15 A2-3)
+  statement: I13 at 351.15 K is two-phase and >= 0.5 K inside the true envelope (bubble 0.5253 K, dew 0.7382 K) and from IDAES's
+    dew (gamma at the flash liquid, 0.647 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: DOM-I14
   holds: true
   statement: I14 is inside the closed domain
@@ -1841,8 +2009,8 @@ generator_claims:
   statement: 'I14: the 50-digit outlets close the component balance'
 - id: ENV-I14
   holds: true
-  statement: I14 at 344.84 K is two-phase and >= 0.5 K inside the true envelope (bubble 0.9322 K, dew 0.9332 K) and IDAES's
-    approximate one (dew with gamma(z) 0.9391 K) (spec 8.1, 15 A2-3)
+  statement: I14 at 344.84 K is two-phase and >= 0.5 K inside the true envelope (bubble 0.9322 K, dew 0.9332 K) and from IDAES's
+    dew (gamma at the flash liquid, 0.9345 K) (spec 8.1, 15 A2-3, 16 A3-3)
 - id: FLOOR-TM
   holds: true
   statement: the binary64 floor of the trial distances over every I-state is 2.78e-15 <= TOL_TM/10 (spec 7.3, re-measured
@@ -1899,4 +2067,20 @@ generator_claims:
 - id: SMOOTH-I
   holds: true
   statement: 'the predicted smoothing error (eps^2/(4 d_b) + eps^2/(4 d_d)) |dq/dT| is <= tau/10 = 1e-8 at every rung, worst
-    {''0.0001'': 8.47e-09, ''1.0e-5'': 8.47e-11, ''1.0e-6'': 8.47e-13} (S10.A42; d_d to IDAES''s approximate dew)'
+    {''0.0001'': 7.75e-09, ''1.0e-5'': 7.75e-11, ''1.0e-6'': 7.75e-13} (S10.A42; d_d to IDAES''s dew, section 16 A3-3)'
+- id: SMOOTH-I-KH
+  holds: true
+  statement: the same prediction for K (relative, tau_K = 1e-7) and for h^L, h^V (tau_h = 0.05 J/mol) at eps = 1e-4 is at
+    most 0.012 of the tolerance, <= 0.1 (S10.A42; section 16 A3-4)
+- id: CVT-8.1-BELOW-FLOOR
+  holds: true
+  statement: 'section 8.1''s constr_viol_tol = 1e-10 is below the worst binary64 row floor over the I-states (2.33e-10): ESC-4''s
+    finding (section 16 A3-1)'
+- id: CVT-FLOOR
+  holds: true
+  statement: constr_viol_tol = 1e-09 >= 3 x the worst binary64 row floor over the I-states (2.33e-10; the bubble row's step
+    |dr/dT| ulp(T_bub), or 4 ulp(|h|) for an enthalpy row) (section 16 A3-1)
+- id: CVT-EFFECT
+  holds: true
+  statement: the estimated effect A constr_viol_tol / (P min(1, K_min)) of constr_viol_tol on the compared mole fractions
+    is at most 9.24e-14 <= 1e-3 tau = 1e-10 at the two-phase I-states (section 16 A3-1)

@@ -13381,3 +13381,107 @@ If the records ever change, the generator, not a person, decides whether they st
 papers but numbers computed from them, and it cites them.
 
 **Watch for.** A later package that copies EOS coefficients (rather than outputs) needs its own row.
+
+## R-716 — S10's IDAES `constr_viol_tol` is 1e-9, because 1e-10 lies below the binary64 floor of the Pa-scale bubble row; `tol` stays 1e-10
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 3 (ESC-4) |
+| Normative text | S10 spec §16 A3-1, which amends §8.1 |
+| Evidence | `docs/S10_DECISIONS.md` ESC-4; `benchmarks/s10/idaes/qualification.json` (termination fields); `s10_reference.py --real` claims CVT-8.1-BELOW-FLOOR, CVT-FLOOR, CVT-EFFECT |
+| Affected packages | S10 (WO-S10-4b) |
+
+**Decision.**
+- `constr_viol_tol` = 1e-9 on IDAES's unscaled rows. `tol` = 1e-10, `max_iter`, the rungs and "Optimal Solution
+  Found only" are unchanged.
+- The floor of the bubble row is one binary64 step of T_bub: |dr/dT|·ulp(T_bub) = 2.11–2.29e-10 Pa at the I-states.
+  The enthalpy rows are floored at 4 ulp(|h|) = 2.33e-10. 1e-9 is at least 3× the worst floor.
+- Its estimated effect on the compared mole fractions is at most 9.24e-14, against 1e-3 τ.
+
+**Rejected alternatives, and why.**
+- *Count "Solved To Acceptable Level".* It silently relaxes `tol` (ADR 0014 D7).
+- *Scale the row, or rewrite it in log form.* The first changes what `tol` means; the second changes the tool's
+  equations.
+
+**Watch for.** Any tolerance on an unscaled Pa-scale row needs its floor computed from the coarsest variable's ulp
+times the row's sensitivity, not from ulp(P). T06 M6 (a) and S03 met the same floor.
+
+## R-717 — S10's IDAES comparison takes each state at its first converged attempt in the registered order, with tool-side rung- and setting-dependence checks first; the ladder is closed
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 3 (ESC-5; B-36, B-37, B-40, B-41) |
+| Normative text | S10 spec §16 A3-2, A3-4, A3-5 (S10.A43, A44) |
+| Evidence | `docs/S10_DECISIONS.md` ESC-5; `qualification.json` `optimal_rungs_per_state`; `reference_values_real.yaml` `idaes_ladders.amendment_3` |
+| Affected packages | S10 (WO-S10-4b) |
+
+**Decision.**
+- Attempt order: ε 1e-4, 1e-5, 1e-6; MA27, then MUMPS only after a non-optimal MA27 attempt. Each state is selected at
+  its first converged attempt. A state with none is `NOT_COMPARABLE(no_optimal_attempt)`.
+- Before any comparison, tool-only checks run at 0.1 tolerance: rung dependence, and setting dependence against a
+  reproduction run at §8.1's settings. Either can only give `NOT_COMPARABLE`.
+- The path of an attempt is registered: an initializer exception is recorded and the final solve still runs (B-40).
+  B-36 is ratified, and B-37 is superseded.
+- Closure: no further rung, option, solver, path or initializer variant. IDAES's initializer failures (I3, I11) are
+  results.
+
+**Rejected alternatives, and why.**
+- *The rung with the most optimal states.* It discards converged states for no reason.
+- *The finest converged rung.* It departs from the registered order and gains nothing that A42 does not already bound.
+- *S03's warm-start and continuation positions for the failing states.* They would be chosen after seeing those
+  failures.
+
+**Watch for.** States converged at one rung only get no rung-dependence check.
+
+## R-718 — IDAES 2.13's dew temperature takes γ at the flash liquid, so its two-phase region is the true one; S10's I-states do not move, and the claims use IDAES's actual dew
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 3 (ESC-6; B-31 amended) |
+| Normative text | S10 spec §16 A3-3, which corrects §8 and withdraws A2-3's reason (R-714's rule stands) |
+| Evidence | `qualification.json` `inspection` (`eq_temperature_dew` uses `activity_coeff_comp`); `s10_reference.py --real` claims ENV-I*, SMOOTH-I, SMOOTH-I-KH, IDAES-DEW-I7 |
+| Affected packages | S10 (WO-S10-4b); any later package that reads IDAES's activity-coefficient package |
+
+**Decision.**
+- The dew equation is Σ z_i P/(γ_i(x) P_i^sat) = 1, with x the state block's liquid. By Cauchy–Schwarz, T_dew^I > T at
+  every two-phase state, and it equals the true dew at the boundary and at a vapour state.
+- The I-states keep A2-3's temperatures, because the tool has already run on them. The γ(z) dew is only that rule's
+  input.
+- The margin and smoothing claims use T_dew^I. It is computed from our flash's liquid and never compared. The least
+  margin is 0.525 K (I13, bubble side), and the worst prediction is 7.75e-9 at 1e-4.
+
+**Rejected alternative.** *Re-place the I-states by IDAES's actual dew.* That would choose states after seeing which
+ones converge.
+
+**Watch for.** S10.A44 pins the reading. A new IDAES version must pass it before any S10-style comparison reuses it.
+
+## R-719 — S10's DWSIM records stand: B-50's settings are ratified, two-phase states are NOT_COMPARABLE on DWSIM's own residual (gate 1e-8), and there is no Inside-Out rerun
+
+| | |
+| --- | --- |
+| Date | 2026-10-25 |
+| Decided by | design lane (`specifier`), S10, Amendment 3 (ESC-50, ESC-51, ESC-52; B-50 to B-54) |
+| Normative text | S10 spec §16 A3-6, which amends §8.2 and S10.A45 |
+| Evidence | `docs/S10_DECISIONS.md` on `wp/S10-dwsim` (WO-S10-5); `benchmarks/s10/dwsim/qualification.json`; DWSIM 9.0.5 `NestedLoops.vb` `ConvergeVF` (hard-coded \|ΔV\| < 1e-6) |
+| Affected packages | S10 (WO-S10-5b) |
+
+**Decision.**
+- B-50 is ratified. Every setting expresses a property of the model (v = 0, no Poynting, h^E = 0, one liquid) or
+  forbids a silent substitution.
+- At a two-phase state, g = max(DWSIM's own equilibrium residual, its own balance residual). If g > 0.1 τ = 1e-8, every
+  A41 quantity (β, x, y, K, h) is `NOT_COMPARABLE(reference_accuracy: dwsim_flash_floor(g))`. This is so at all 12
+  states (g ≥ 3.3e-8). The differences stay as unclassified diagnostics.
+- I6 and I7 are compared on the phase identity. The readbacks (γ to 4.9e-16) are the mapping evidence.
+- ESC-52 (DWSIM's 10-step c_p quadrature, up to 0.026 J/mol) is recorded. Any future DWSIM h comparison carries it in
+  its floor.
+
+**Rejected alternatives, and why.**
+- *Keep h compared.* DWSIM's own floors can take the whole h tolerance.
+- *A pre-registered Inside-Out rerun.* A comparison already exists, so the setting would be chosen after seeing DWSIM
+  against our values (S03 §17.2's blindness condition).
+
+**Watch for.** A tool's convergence floor must be read from its source before its tolerance ladder is registered. A
+registered rung that never acts is a document defect.

@@ -1802,9 +1802,10 @@ RE_STATES: dict[str, dict[str, Any]] = {
 }
 #: Spec section 8.1 as amended by section 15 (A2-3), in the order (CH3OH, C2H5OH, H2O). Kind
 #: "mid": T midway between the bubble temperature and the lower of the true dew temperature and
-#: IDAES's approximate one (gamma at z, B-31), rounded to 0.01 K (A2-3); "sub"/"sup": the rounded
-#: bubble (dew) temperature -/+ 5 K (B-30). I10 is z_E = 0.4 (A2-3 replaced z_E = 0.85, which
-#: lies 0.03 from the model azeotrope, where the band is 0.007 K).
+#: the dew with gamma at z (B-31), rounded to 0.01 K (A2-3); "sub"/"sup": the rounded bubble (dew)
+#: temperature -/+ 5 K (B-30). I10 is z_E = 0.4 (A2-3 replaced z_E = 0.85, which lies 0.03 from
+#: the model azeotrope, where the band is 0.007 K). Section 16 (A3-3): the dew with gamma at z is
+#: the rule's input only; it is not IDAES's dew, which takes gamma at the flash liquid.
 I_STATES: dict[str, tuple[list[float], str]] = {
     **{f"I{k + 1}": ([zm, 0.0, 1.0 - zm], "mid") for k, zm in enumerate((0.1, 0.3, 0.5, 0.7, 0.9))},
     "I6": ([0.4, 0.0, 0.6], "sub"),
@@ -1817,12 +1818,45 @@ I_STATES: dict[str, tuple[list[float], str]] = {
 }
 IDAES_RUNGS = (mpf("1e-4"), mpf("1e-5"), mpf("1e-6"))  # eps_1 = eps_2, K (spec section 8.1)
 TAU_IDAES = mpf("1e-7")  # beta, x_i, y_i (S10.A41)
+TAU_IDAES_K_REL = mpf("1e-7")  # K_i, relative (S10.A41)
+TAU_IDAES_H = mpf("0.05")  # h^L, h^V, J/mol (S10.A41)
 ENVELOPE_MARGIN = mpf("0.5")  # K
+#: The IDAES ladders (spec section 8.1, and section 16 A3-1/A3-2, which decides). The comparison
+#: script's LADDER must equal "amendment_3" (WO-S10-4b test); "registered_8_1" is run once more,
+#: only to show that the corrected harness reproduces the committed WO-S10-4 record.
+IDAES_LADDERS: dict[str, dict[str, Any]] = {
+    "registered_8_1": {
+        "eps_K": [1e-4, 1e-5, 1e-6],
+        "ipopt_options": {"tol": 1e-10, "constr_viol_tol": 1e-10, "max_iter": 3000},
+        "linear_solvers": ["ma27", "mumps"],
+        "use": "reproduction of the WO-S10-4 record only (spec 16 A3-4); decides nothing",
+    },
+    "amendment_3": {
+        "eps_K": [1e-4, 1e-5, 1e-6],
+        "ipopt_options": {"tol": 1e-10, "constr_viol_tol": 1e-9, "max_iter": 3000},
+        "linear_solvers": ["ma27", "mumps"],
+        "mumps": "only when the ma27 attempt at the same state and rung did not end optimal",
+        "converged": "Pyomo optimal termination and Ipopt 'EXIT: Optimal Solution Found.'",
+        "selection": "per state: the first optimal attempt in the order (eps 1e-4 ma27, mumps; "
+        "1e-5 ma27, mumps; 1e-6 ma27, mumps); none: NOT_COMPARABLE(no_optimal_attempt)",
+        "dependence_ratio_max": 0.1,
+        "use": "decides (spec 16 A3-2, A3-4)",
+    },
+}
+#: Section 16 A3-1: constr_viol_tol must be >= CVT_FLOOR_FACTOR binary64 floors of IDAES's
+#: Pa-scale and J/mol-scale rows, and its estimated effect on the compared mole fractions must be
+#: <= CVT_EFFECT_FRACTION tau.
+CVT_FLOOR_FACTOR = 3
+CVT_EFFECT_FRACTION = mpf("1e-3")
 
 
-def idaes_dew_t(model: Model, z: Sequence[mpf], p: mpf) -> mpf:
-    """IDAES's approximate dew point, gamma at the feed: sum_i z_i P / (gamma_i(z) P_i^sat) = 1."""
-    lg = model.lngamma(z)
+def dew_t_gamma_at(model: Model, z: Sequence[mpf], xg: Sequence[mpf], p: mpf) -> mpf:
+    """The dew equation with gamma frozen at xg: sum_i z_i P / (gamma_i(xg) P_i^sat(T)) = 1.
+
+    xg = z gives the dew with gamma at the feed (B-31; A2-3's rule input). xg = the flash liquid
+    at the state gives IDAES 2.13's `temperature_dew` there (spec 16 A3-3: its eq_temperature_dew
+    divides by activity_coeff_comp, the gamma of the state block's liquid)."""
+    lg = model.lngamma(xg)
 
     def f(t: mpf) -> mpf:
         return 1 - mp.fsum(
@@ -1899,11 +1933,16 @@ def build_real(records: Path) -> dict[str, Any]:
     tol_flash: dict[str, Any] = {}
     worst_tm_floor = worst_lnk_floor = 0.0
     ss_trial_max = ss_two_max = 0
+    row_floors: dict[str, dict[str, float]] = {}
+    cvt_effect: dict[str, float] = {}
+    smoothing_kh: dict[str, dict[str, float]] = {}
+    cvt = IDAES_LADDERS["amendment_3"]["ipopt_options"]["constr_viol_tol"]
     for sid, (zl, kind) in I_STATES.items():
         z = [mpf(v) for v in zl]
-        tb, td, td_ida = bubble_t(fl, z, patm), dew_t(fl, z, patm), idaes_dew_t(model, z, patm)
-        if kind == "mid":  # A2-3: the band both envelopes agree is two-phase
-            t = round(float((tb + min(td, td_ida)) / 2), 2)
+        tb, td = bubble_t(fl, z, patm), dew_t(fl, z, patm)
+        td_gz = dew_t_gamma_at(model, z, z, patm)
+        if kind == "mid":  # A2-3's rule; td_gz is its input, not IDAES's dew (section 16 A3-3)
+            t = round(float((tb + min(td, td_gz)) / 2), 2)
         elif kind == "sub":
             t = round(round(float(tb), 2) - 5.0, 2)
         else:
@@ -1930,27 +1969,49 @@ def build_real(records: Path) -> dict[str, Any]:
         measured_flash[sid] = {"tm_floor": g3(fr["tm_floor"])}
         if fr["tolerance"] is not None:
             tol_flash[sid] = fr["tolerance"]
+        # section 16 A3-1: the binary64 floor of IDAES's rows at this state. The bubble row
+        # sum_i z_i gamma_i(z) P_i^sat(T_bub) - P (Pa) moves by |dr/dT| ulp(T_bub) per ulp of
+        # T_bub; an enthalpy row (J/mol, its h variable free) is floored at a few ulp(|h|).
+        lg_z = model.lngamma(z)
+        drdt = mp.fsum(
+            z[i] * mp.exp(lg_z[i] + model.lnpsat(i, tb)) * model.dlnpsat(i, tb)
+            for i in range(model.n)
+            if z[i] > 0
+        )
+        h_max = max(
+            max(abs(model.h0l(i, mpf(t))), abs(model.h_ig(i, mpf(t)))) for i in range(model.n)
+        )
+        row_floors[sid] = {
+            "bubble_row_step_Pa": g3(float(abs(drdt)) * math.ulp(float(tb))),
+            "enthalpy_rows_4ulp_J_per_mol": g3(4 * math.ulp(float(h_max))),
+        }
         entry: dict[str, Any] = {
             "state": {"n": zl, "T": t, "P": P_ATM},
             "kind": kind,
             "bubble_T": nstr(tb),
             "dew_T": nstr(td),
-            "idaes_dew_T_gamma_at_z": nstr(td_ida),
+            "dew_T_gamma_at_z": nstr(td_gz),
             "phase": out["phase"],
         }
         if kind == "mid":
             tt = mpf(t)
-            d_b, d_d, d_di = tt - tb, td - tt, td_ida - tt
+            two = out["phase"] == "TWO_PHASE"
+            # IDAES 2.13's dew at this state: gamma at the flash liquid (section 16 A3-3)
+            td_i = dew_t_gamma_at(model, z, out["x"], patm) if two else mpf(-1)
+            d_b, d_d, d_di = tt - tb, td - tt, td_i - tt
             claim(
                 f"ENV-{sid}",
-                min(d_b, d_d, d_di) >= ENVELOPE_MARGIN and out["phase"] == "TWO_PHASE",
+                two and min(d_b, d_d, d_di) >= ENVELOPE_MARGIN,
                 f"{sid} at {t} K is two-phase and >= 0.5 K inside the true envelope (bubble "
-                f"{mp.nstr(d_b, 4)} K, dew {mp.nstr(d_d, 4)} K) and IDAES's approximate one (dew "
-                f"with gamma(z) {mp.nstr(d_di, 4)} K) (spec 8.1, 15 A2-3)",
+                f"{mp.nstr(d_b, 4)} K, dew {mp.nstr(d_d, 4)} K) and from IDAES's dew (gamma at "
+                f"the flash liquid, {mp.nstr(d_di, 4)} K) (spec 8.1, 15 A2-3, 16 A3-3)",
             )
-            if out["phase"] != "TWO_PHASE":  # reached only when claims are collected, not raised
+            if not two:  # reached only when claims are collected, not raised
                 istates[sid] = entry
                 continue
+            entry["idaes_dew_T"] = nstr(td_i)
+            act_k = [out["k"][i] for i in out["act"]]
+            cvt_effect[sid] = g3(fr["tolerance"]["A"] * cvt / (P_ATM * float(min(mpf(1), *act_k))))
             act = out["act"]
             q0 = [out["beta"], *[out["x"][i] for i in act], *[out["y"][i] for i in act]]
             h = mpf("1e-12")
@@ -1963,12 +2024,33 @@ def build_real(records: Path) -> dict[str, Any]:
                     strict=True,
                 )
             )
-            pred = {
+            pred = {  # d_di: to IDAES's own dew (section 16 A3-3)
                 mp.nstr(eps, 1): g3(float((eps**2 / (4 * d_b) + eps**2 / (4 * d_di)) * dq))
                 for eps in IDAES_RUNGS
             }
             smoothing[sid] = pred
             entry["max_abs_dq_dT"] = g3(float(dq))
+            # section 16 A3-4: the same prediction for K (relative) and h, so that the
+            # rung-dependence threshold provably sits above the smoothing for every A41 quantity.
+            # h: the larger of the total derivative and the composition-only one, whichever
+            # temperature IDAES evaluates its enthalpies at.
+            dlnk = max(abs(mp.log(qp["k"][i]) - mp.log(qm["k"][i])) / (2 * h) for i in act)
+            dh = max(
+                abs(
+                    model.evaluate(qp[xy], tt + s, P_ATM, ph)["values"]["h"]
+                    - model.evaluate(qm[xy], tt - s, P_ATM, ph)["values"]["h"]
+                )
+                / (2 * h)
+                for xy, ph in (("x", "LIQUID"), ("y", "VAPOR"))
+                for s in (h, mpf(0))
+            )
+            shift = IDAES_RUNGS[0] ** 2 / (4 * d_b) + IDAES_RUNGS[0] ** 2 / (4 * d_di)
+            smoothing_kh[sid] = {
+                "K_relative_over_tau_K": g3(float(shift * dlnk / TAU_IDAES_K_REL)),
+                "h_over_tau_h": g3(float(shift * dh / TAU_IDAES_H)),
+            }
+            entry["max_abs_dlnK_dT"] = g3(float(dlnk))
+            entry["max_abs_dh_dT"] = g3(float(dh))
             entry["closed_form"] = {
                 "beta": nstr(q0[0]),
                 "x": [nstr(out["x"][i]) for i in range(3)],
@@ -1980,6 +2062,19 @@ def build_real(records: Path) -> dict[str, Any]:
         else:
             want = "LIQUID" if kind == "sub" else "VAPOR"
             claim(f"PHASE-{sid}", out["phase"] == want, f"{sid} at {t} K is {want} (spec 8.1)")
+            if kind == "sub":  # IDAES's liquid at a liquid state is z (section 16 A3-3)
+                entry["idaes_dew_T"] = nstr(td_gz)
+            else:  # at a vapour state its liquid is the incipient dew liquid: the dew is exact
+                x_d = fl.liquid_trial(td, patm, z)["w"]
+                td_i = dew_t_gamma_at(model, z, x_d, patm)
+                entry["idaes_dew_T"] = nstr(td_i)
+                claim(
+                    f"IDAES-DEW-{sid}",
+                    abs(td_i - td) <= mpf("1e-12") and abs(td_gz - td) >= mpf("0.1"),
+                    f"{sid}: with gamma at the incipient dew liquid the dew equation gives the "
+                    f"true dew (|diff| = {mp.nstr(abs(td_i - td), 2)} K <= 1e-12 K), and with "
+                    f"gamma at z it does not ({mp.nstr(td_gz - td, 4)} K) (section 16 A3-3)",
+                )
         istates[sid] = entry
     claim(
         "FLOOR-TM",
@@ -2020,7 +2115,42 @@ def build_real(records: Path) -> dict[str, Any]:
         "SMOOTH-I",
         all(v <= float(TAU_IDAES) / 10 for v in worst_by_rung.values()),
         "the predicted smoothing error (eps^2/(4 d_b) + eps^2/(4 d_d)) |dq/dT| is <= tau/10 = "
-        f"1e-8 at every rung, worst {worst_by_rung} (S10.A42; d_d to IDAES's approximate dew)",
+        f"1e-8 at every rung, worst {worst_by_rung} (S10.A42; d_d to IDAES's dew, section 16 "
+        "A3-3)",
+    )
+    worst_kh = max(max(v.values()) for v in smoothing_kh.values())
+    claim(
+        "SMOOTH-I-KH",
+        worst_kh <= 0.1,
+        "the same prediction for K (relative, tau_K = 1e-7) and for h^L, h^V (tau_h = 0.05 "
+        f"J/mol) at eps = 1e-4 is at most {worst_kh:.3g} of the tolerance, <= 0.1 (S10.A42; "
+        "section 16 A3-4)",
+    )
+    # ---- section 16 A3-1: constr_viol_tol between the floor and the smallest error worth
+    #      catching ----
+    floor_worst = max(max(v.values()) for v in row_floors.values())
+    cvt_reg = IDAES_LADDERS["registered_8_1"]["ipopt_options"]["constr_viol_tol"]
+    claim(
+        "CVT-8.1-BELOW-FLOOR",
+        cvt_reg < floor_worst,
+        f"section 8.1's constr_viol_tol = {cvt_reg:.0e} is below the worst binary64 row floor "
+        f"over the I-states ({floor_worst:.3g}): ESC-4's finding (section 16 A3-1)",
+    )
+    claim(
+        "CVT-FLOOR",
+        cvt >= CVT_FLOOR_FACTOR * floor_worst,
+        f"constr_viol_tol = {cvt:.0e} >= {CVT_FLOOR_FACTOR} x the worst binary64 row floor over "
+        f"the I-states ({floor_worst:.3g}; the bubble row's step |dr/dT| ulp(T_bub), or 4 "
+        "ulp(|h|) for an enthalpy row) (section 16 A3-1)",
+    )
+    eff_worst = max(cvt_effect.values())
+    claim(
+        "CVT-EFFECT",
+        eff_worst <= float(CVT_EFFECT_FRACTION * TAU_IDAES),
+        f"the estimated effect A constr_viol_tol / (P min(1, K_min)) of constr_viol_tol on the "
+        f"compared mole fractions is at most {eff_worst:.3g} <= 1e-3 tau = "
+        f"{float(CVT_EFFECT_FRACTION * TAU_IDAES):.0e} at the two-phase I-states (section 16 "
+        "A3-1)",
     )
 
     # ---- the IDAES mapping table (spec 8.1) ----
@@ -2054,8 +2184,9 @@ def build_real(records: Path) -> dict[str, Any]:
         "schema_version": 1,
         "generator": "docs/derivations/scripts/s10_reference.py --real",
         "records_sha256": rec.sha256,
-        "spec": "docs/derivations/S10-spec.md sections 8.1 and 9.7",
-        "status": "complete (WO-S10-3): RE1-RE3 (section 7.2), I1-I14 (sections 7.3, 8.1, 15 A2-3)",
+        "spec": "docs/derivations/S10-spec.md sections 8.1, 9.7 and 16",
+        "status": "complete (WO-S10-3): RE1-RE3 (section 7.2), I1-I14 (sections 7.3, 8.1, 15 "
+        "A2-3); IDAES's dew, the ladders and the constr_viol_tol claims (section 16)",
         "method_constants": {
             "EPS_TPD": float(EPS_TPD),
             "DELTA_K": float(DELTA_K),
@@ -2064,6 +2195,7 @@ def build_real(records: Path) -> dict[str, Any]:
         },
         "closed_form": {"evaluate_phase": ev, "flash": flash_out, "i_states": istates},
         "idaes_mapping": mapping,
+        "idaes_ladders": IDAES_LADDERS,
         "tolerances": {
             "evaluate_phase_relative": TOL_VALUE,
             "tm": {"rule": "|impl - expected| <= TOL_TM", "TOL_TM": TOL_TM},
@@ -2082,6 +2214,9 @@ def build_real(records: Path) -> dict[str, Any]:
             "classification_margins": margins,
             "ss_iterations_max": {"liquid_trial": ss_trial_max, "two_phase": ss_two_max},
             "smoothing_predicted": smoothing,
+            "smoothing_predicted_K_h_at_1e-4": smoothing_kh,
+            "idaes_row_floors": row_floors,
+            "constr_viol_tol_effect_estimate": cvt_effect,
         },
         "generator_claims": CLAIMS,
     }
