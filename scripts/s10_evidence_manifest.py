@@ -8,8 +8,8 @@ script, schema, derivation or S10 benchmark file differs from it; S01's rule):
 1. **The S10 tests** (`tests/test_s10_*.py`, one `pytest --junitxml` run). A test cites the
    assertions its function name carries (`test_a33_…` cites A33). `S10.Axx` passes only if at
    least one node cites it and every node citing it passed. The verification assertions are
-   A01–A08, A10–A28, A30–A34, A40–A45 and A54–A58 (A09 is reserved). `S10.tests` records the count; every
-   skip must be one of VAL-2's (A4-4: "N passed, 2 skipped (VAL-2)").
+   A01–A08, A10–A28, A30–A34, A40–A45 and A54–A58 (A09 is reserved). `S10.tests` records the
+   count; every skip must be one of VAL-2's (A4-4: "N passed, 2 skipped (VAL-2)").
 2. **The generators' `--check`**: `s10_reference.py` (113 claims, A25), `s10_reference.py --real`
    (160 claims), `s10_records.py` (25 claims, A31).
 3. **The comparisons' and the validation report's `--check`**: both `inputs.json` and both
