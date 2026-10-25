@@ -443,3 +443,10 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
   editing those entries' class and `to`, then `t08_support_matrix.py --emit`.
 - **MEASURED (HARVEST_SIZE):** `matrix.harvest_items()` = (52, 688, 85), was (51, 647, 82). Pinned in
   `tests/test_m07a_harvest.py`. `--emit` regenerated `docs/support-matrix.md`; `--check`: 0 problems.
+- B-87 (orchestrator, WO-S10-7a items 4-5): item 5 done (`records-vetting.json` in the rights check's per-file map,
+  RC-07, repository only). Item 4's reword of the support-envelope note that cites B-83 is **not** applied to the
+  existing entry (`support_envelope.yaml`, manifest `c4f3751e…`, `limitations[29]`): HG(b) (S05 IAPWS-95 spec, R-617)
+  says the harvest only appends, so an earlier entry's note is not rewritten. That entry stays true of the manifest it
+  harvests. The corrected wording is carried by the entries WO-S10-7a appended for the manifest at `f974cc87`
+  (`limitations[36]`: "requirements lists D08 and D19 …"; and the A5-7 D19 scope line). Alternative: edit the old note
+  and accept an HG(b) exception. Reversible by: editing that one note.
