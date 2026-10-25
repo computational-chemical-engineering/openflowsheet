@@ -515,3 +515,18 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
   A6-10 orders (`limitations[34]`); A2-6 and A3-9 carry "(as written at Amendment N)" in their names, A6-13 is named
   "§19 A6-13" as A6-10 says. (b) the generator's rights limitation still reads "RC-05 and RC-06 (the 1993 paper's
   Tables II and V)"; RC-06 now also covers the 1995 paper (B-88). A6-10 lists no edit to it.
+- B-91. DECISION (harvest classes of the `f6f27c3f` manifest, build-lane draft for design-lane review, B-86's way): the
+  40 limitations and 2 checks (S10.gate, S10.ci) whose text equals the `f974cc87` manifest's keep that entry's class, `to` and note
+  (42 of 50; the S10.validation check's text changed). New: limitations[34] (A6-13 "Any VAL-2 result", as A4-5's
+  "VAL-2. It remains untested." was), [36] (P domain below 30 kPa, the provider's scope), [37] (constant-Lambda
+  extrapolation outside 323.15-333.15 K), [38] (the paper's pressure scale against the project's, a caveat on the
+  validation status), [40] (A6-9's validation sentence, as the old one was) and checks[S10.validation] -> E to U02;
+  [35] (the 1995 data and transcription are not checked against the paper: provenance) and [39] (rights) -> P.
+  Alternative: [38] -> P (a measurement record), [35] -> E to U02. Reversible by: editing those entries before merge,
+  then `t08_support_matrix.py --emit`.
+- **MEASURED (HARVEST_SIZE):** `matrix.harvest_items()` = (53, 735, 88), was (52, 688, 85); pinned in
+  `tests/test_m07a_harvest.py`. The harvest diff is 319 lines appended, 0 deleted, the old file a byte prefix of the new
+  (HG(b), R-617). `--emit` regenerated `docs/support-matrix.md` (S10: E 40, P 91); `--check`: 0 problems.
+  `pytest -q tests/test_s10_*.py tests/test_requirements_ledger.py tests/test_t08_*.py tests/test_m07a*.py`: 1033
+  passed, 2 skipped (T08's: the archived pre-0.1.0 history, and `test_t08_w1_ledger.py:87` "not in A02"; S10's tests
+  0 skipped). `ruff check .`, `ruff format --check .` clean. Every A6-10 `--check` passes.
