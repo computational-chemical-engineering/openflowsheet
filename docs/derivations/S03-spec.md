@@ -458,7 +458,7 @@ is empty**: no activity-coefficient liquid, no equation-of-state fugacities in e
 **Decision.** S03 does not teach the phase contract the block rule, and specifies no model-side signature screen.
 R-533 is closed as a **registered limitation**:
 - *the column has no phase-transition robustness*;
-- a run whose regular signature would be a block other than all-two-phase (S02 §4.3) may end in a typed S01 §4.5 outcome;
+- the column converges to a block root `V^a 2P^b L^c` that §5.2 of S08-design generates (S08); other one-phase-section roots may still end typed;
 - P1 does end that way (`HOMOTOPY_STALLED`; attempt 1 `(2P, L, 2P, 2P, 2P)` breaks the rule);
 - that outcome is S02 A12's typed branch, never a success.
 
@@ -603,7 +603,7 @@ the classifier decides reference verdicts.
   as a capability.
 - **Inverse specifications: one state per kind** (Amendment 1, §17.1): purity (RC5), recovery (RC6) and temperature (RC7). Each
   may end with one reference or none (§17.11). RC7's is expected to be IDAES alone.
-- **No phase-transition robustness** (§10.1). A column with a one-phase (dry or flooded) section ends in a typed failure. A later
+- **No phase-transition robustness** (§10.1). The column converges to a block root `V^a 2P^b L^c` that §5.2 of S08-design generates (S08); other one-phase-section roots may still end typed. A later
   package is queued for it (Q-S03-4, §17.7); S03 neither depends on it nor anticipates it. No partial dormancy, no subcooled condenser, no total reboiler, no side draws,
   pump-arounds, hydraulics, efficiencies or rate-based models (deferred by the plan).
 - **Supported nonideal scope: none** (§9).
