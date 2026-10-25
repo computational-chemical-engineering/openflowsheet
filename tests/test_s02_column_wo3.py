@@ -9,7 +9,6 @@ assertion of §10 it closes.
 
 from __future__ import annotations
 
-import typing
 from typing import Any
 
 import numpy as np
@@ -36,7 +35,7 @@ from openflowsheet.models.syn001.column_solve import (
     stage_unit,
 )
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS
-from openflowsheet.orchestrator.region import RegionResult, SolveOutcome
+from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.thermo.syn001 import C_P, h_liquid, h_vapor
 
 # -- A11: §4.3's circulation vector on the compiled Jacobian -------------------------------------
@@ -173,8 +172,6 @@ def test_a11_the_same_vector_is_not_null_at_m1s_two_phase_root() -> None:
 
 # -- A12: the phase case P1 ----------------------------------------------------------------------
 
-#: S01 §4.5's typed outcomes: every `SolveOutcome`.
-TYPED_OUTCOMES = frozenset(typing.get_args(SolveOutcome))
 _P1: list[ColumnSolution] = []
 
 
@@ -187,15 +184,15 @@ def p1() -> ColumnSolution:
     return _P1[0]
 
 
-def attempt_list(answer: ColumnSolution) -> list[dict[str, Any]]:
-    """Every attempt of the solve and of the recovery, in order: which solve, its outcome, what
+def attempt_list(result: RegionResult, recovered_from: RegionResult | None) -> list[dict[str, Any]]:
+    """Every attempt of a solve and of its recovery, in order: which solve, its outcome, what
     Newton ended on, and the attempted signature (top to bottom)."""
     solves: list[tuple[str, RegionResult]] = []
-    if answer.recovered_from is not None:
-        solves.append(("target", answer.recovered_from))
-        solves.append(("edge 3", answer.result))
+    if recovered_from is not None:
+        solves.append(("target", recovered_from))
+        solves.append(("edge 3", result))
     else:
-        solves.append(("target", answer.result))
+        solves.append(("target", result))
     return [
         {
             "solve": which,
@@ -227,17 +224,17 @@ def _closed_form(spec: ColumnSpec) -> dict[str, float]:
     return stages_state(spec, stages)
 
 
-def test_a12_p1_is_the_closed_form_or_a_typed_outcome() -> None:
-    """A12: P1's outcome is `CONVERGED` with signature LIQUID ×5 equal to the closed form
-    (`ref.phase_case.P1`, distillate `+0.0` sign-checked), or a typed S01 §4.5 outcome whose
-    attempt records name every attempted signature. Never an unaccepted `CONVERGED` (§8 runs in
-    `solve_target`; a failing root raises)."""
+def test_a12_p1_is_the_closed_form() -> None:
+    """A12, its `CONVERGED` branch only (S08 design note §6.1 withdraws the typed branch for P1):
+    P1's outcome is `CONVERGED` with signature LIQUID ×5 equal to the closed form
+    (`ref.phase_case.P1`, distillate `+0.0` sign-checked), passing §8, and its attempt records
+    name every attempted signature. S08's Stage B reaches it (Stage A is held below)."""
     spec = SPECS["P1"]
     record = REFERENCE["phase_case"]["P1"]
     assert record["signature"] == ["LIQUID"] * spec.stage_count
     answer = p1()
-    assert answer.outcome in TYPED_OUTCOMES
-    attempts = attempt_list(answer)
+    assert answer.outcome == "CONVERGED"
+    attempts = attempt_list(answer.result, answer.recovered_from)
     assert attempts
     for attempt in attempts:
         assert len(attempt["signature"]) == len(spec.equilibrium_stages())
@@ -246,9 +243,6 @@ def test_a12_p1_is_the_closed_form_or_a_typed_outcome() -> None:
     for result in (answer.result, answer.recovered_from):
         for attempt in result.attempts if result is not None else ():
             assert {unit for unit, _ in attempt.signature} == names
-    if answer.outcome != "CONVERGED":
-        assert answer.cause
-        return
     regimes = dict(zip(spec.equilibrium_stages(), answer.signature, strict=True))
     declared = compile_column(spec, PROVIDER).spec
     assert acceptance_failures(spec, PROVIDER, declared, answer.state, regimes) == ()
@@ -266,18 +260,26 @@ def test_a12_p1_is_the_closed_form_or_a_typed_outcome() -> None:
 
 
 def test_a12_p1_measured_branch_is_held() -> None:
-    """A12's measured branch (§18.5, WO-3), held as a regression value: `HOMOTOPY_STALLED`,
+    """A12's measured branch (§18.5, WO-3), held as a regression value, is now S08's Stage A
+    inside P1's answer (S08 design note §6.1: `reentry.stage_a`, exactly): `HOMOTOPY_STALLED`,
     `homotopy_stalled(BOUND_BLOCKED)`; the target's attempts 2P×5 (Newton `BOUND_BLOCKED`) then
     `(2P, L, 2P, 2P, 2P)` (`LINE_SEARCH_FAILED`, closing `ACTIVE_SET_CYCLING`), then edge 3 from
     2P×5. `(2P, L, 2P, 2P, 2P)` breaks §4.3's block rule (R-533). A move of this branch is
     re-registered with the design lane, not re-baselined here."""
-    answer = p1()
-    assert (answer.outcome, answer.cause) == ("HOMOTOPY_STALLED", "homotopy_stalled(BOUND_BLOCKED)")
+    reentry = p1().reentry
+    assert reentry is not None and reentry.trigger == "HOMOTOPY_STALLED"
+    stage_a = reentry.stage_a
+    assert (stage_a.outcome, stage_a.cause) == (
+        "HOMOTOPY_STALLED",
+        "homotopy_stalled(BOUND_BLOCKED)",
+    )
+    assert stage_a.failures == ()
     two_phase, broken = ["TWO_PHASE"] * 5, ["TWO_PHASE", "LIQUID"] + ["TWO_PHASE"] * 3
-    assert [(a["solve"], a["solver_outcome"], a["signature"]) for a in attempt_list(answer)] == [
+    attempts = attempt_list(stage_a.result, stage_a.recovered_from)
+    assert [(a["solve"], a["solver_outcome"], a["signature"]) for a in attempts] == [
         ("target", "BOUND_BLOCKED", two_phase),
         ("target", "LINE_SEARCH_FAILED", broken),
         ("edge 3", "HOMOTOPY_STALLED", two_phase),
     ]
-    assert answer.recovered_from is not None
-    assert answer.recovered_from.outcome == "ACTIVE_SET_CYCLING"
+    assert stage_a.recovered_from is not None
+    assert stage_a.recovered_from.outcome == "ACTIVE_SET_CYCLING"

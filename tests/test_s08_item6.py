@@ -128,6 +128,12 @@ def test_a12_item_6_passes_on_every_registered_converged_root() -> None:
         answer = solve_column(spec, PROVIDER)
         if not (isinstance(answer, ColumnSolution) and answer.outcome == "CONVERGED"):
             continue
+        if answer.reentry is not None:
+            # S08 §6.1: P1 now converges through Stage B, at LIQUID ×5: no TWO_PHASE stage, so
+            # item 6 holds vacuously. The 42 are the roots Stage A converges to (`reentry` None).
+            assert name == "S02.P1", name
+            assert saturation_errors(spec, PROVIDER, answer.state, _regimes(spec, answer)) == {}
+            continue
         converged += 1
         errors = saturation_errors(spec, PROVIDER, answer.state, _regimes(spec, answer))
         assert errors, name

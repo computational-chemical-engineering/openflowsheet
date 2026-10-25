@@ -13,7 +13,12 @@ them, calling `orchestrator.region.solve_region` unchanged, through S01's `run_r
 5. recovery edge 3 (ADR 0010 D3, ADR 0044's trigger) on its triggers, continuing every
    `variable − parameter` slot from `p⁰` = its column at the opening;
 
-and holds a `CONVERGED` answer to §8 before returning it.
+and holds a `CONVERGED` answer to §8 before returning it. That is Stage A. S08 adds step 7, Stage B
+(S08 design note §5.1, ADR 0048): when Stage A ends in a typed outcome of `REENTRY_OUTCOMES`, or
+converges to a state that fails §8 on item 6 alone (a near-trivial split, S08 §3 F4), the
+column's initializer builds block openings `V^a 2P^b L^c` from its sources (`column_blocks`) and
+solves from each in turn; the first accepted answer is returned, and `ColumnSolution.reentry`
+records Stage A and every candidate (§5.6–§5.7).
 
 Each equilibrium stage is one lifted split keyed `<U>.stage.<j>`, as S01's (spec §4.1), PH-type.
 The total condenser is not a split (§4.1). The withdrawn Newton profile pre-solve's rows
@@ -26,7 +31,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 from openflowsheet.canonical import state_sha256
 from openflowsheet.compile.casadi_backend import compile_problem
@@ -122,6 +127,10 @@ from openflowsheet.orchestrator.region import (
 from openflowsheet.orchestrator.trace import SolvePolicy, Trace, fraction_string
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
+if TYPE_CHECKING:
+    # `column_blocks` imports this module; Stage B imports it at call time (`_stage_b`).
+    from openflowsheet.models.syn001.column_blocks import BlockEndpoint
+
 #: Spec §18.2's registered easy endpoint, the target's `initializer_source`.
 PRESOLVE_ID: Final = "s02-bubble-point-v1"
 
@@ -171,6 +180,29 @@ QUOTIENT_SLACK: Final = 2.0**-52
 #: the bubble temperature of its liquid and the dew temperature of its vapour (S02's state
 #: tolerance in `T`; 41x the largest registered error, 2.42e-6 K).
 TWO_PHASE_SATURATION_TOLERANCE: Final = 1e-4
+
+#: The prefix of every item-6 failure string of `acceptance_failures`.
+ITEM_6_PREFIX: Final = "§8.6: "
+
+#: S08 §5.1 trigger (i): the typed region outcomes of Stage A that start Stage B, `T_B`.
+REENTRY_OUTCOMES: Final = frozenset(
+    {
+        "HOMOTOPY_STALLED",
+        "ACTIVE_SET_CYCLING",
+        "ATTEMPTS_EXHAUSTED",
+        "LINE_SEARCH_FAILED",
+        "LINEAR_SOLVE_FAILED",
+        "BOUND_BLOCKED",
+        "STAGNATION",
+        "PTC_STALLED",
+        "EVALUATION_ERROR",
+    }
+)
+#: S08 §5.1 trigger (i): `BUDGET_EXHAUSTED` starts Stage B only on these budgets (never on
+#: `property_calls`).
+REENTRY_BUDGETS: Final = frozenset({"newton_iterations", "ptc_steps"})
+#: S08 §5.1 trigger (ii) and §5.4: the code of a `CONVERGED` state that fails §8 on item 6 alone.
+NEAR_TRIVIAL_SPLIT: Final = "near_trivial_split"
 
 #: `ref.cases.*.presolve_slots`'s kind letter of a kept ratio row.
 RATIO_LETTER: Final[Mapping[str, str]] = {"reflux_ratio": "RR", "boilup_ratio": "BR"}
@@ -593,7 +625,7 @@ def acceptance_failures(
     for stage, errors in _saturation_pairs(spec, provider, state, regimes).items():
         for side, error in zip(("bubble", "dew"), errors, strict=True):
             if not error <= TWO_PHASE_SATURATION_TOLERANCE:
-                failures.append(f"§8.6: TWO_PHASE stage {stage}: {side} error {error!r} K")
+                failures.append(f"{ITEM_6_PREFIX}TWO_PHASE stage {stage}: {side} error {error!r} K")
     # S06 §8 item 4: every inverse quantity meets its target within the bound its rows imply.
     for end in spec.ends():
         given = spec.end_specification(end)
@@ -1041,11 +1073,62 @@ def unreached_specifications(
 
 
 @dataclass(frozen=True)
+class StageARecord:
+    """S08 §5.6: Stage A's answer when it started Stage B — its outcome and cause (on trigger
+    (ii) `CONVERGED` with cause `near_trivial_split(<stages>)`), its region results, the
+    `state_sha256` of its endpoint `x⁰` and of its final state, and its item-6 failure strings
+    (`()` on a typed outcome)."""
+
+    outcome: str
+    cause: str
+    result: RegionResult
+    recovered_from: RegionResult | None
+    endpoint_sha256: str
+    final_sha256: str | None
+    failures: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class CandidateRecord:
+    """S08 §5.6: one Stage-B candidate `(a, c)` — its signature `σ(a, c)` over the equilibrium
+    stages, `endpoint` `"built"` or the refusal's cause (then nothing was solved: every later
+    field is `None` and `cause` is the refusal's), the endpoint's `state_sha256`, and the solve's
+    outcome, cause (`""` when accepted; the region's message, `near_trivial_split(<stages>)` or
+    `unsupported(…)` otherwise) and region results."""
+
+    a: int
+    c: int
+    signature: tuple[Regime, ...]
+    endpoint: str
+    endpoint_sha256: str | None
+    outcome: str | None
+    cause: str
+    result: RegionResult | None
+    recovered_from: RegionResult | None
+
+
+@dataclass(frozen=True)
+class BlockReentry:
+    """S08 §5.6: Stage B's record — its trigger (Stage A's outcome, or `near_trivial_split`),
+    Stage A, every candidate tried in §5.2's order, and the index of the accepted one (`None`
+    when none was accepted)."""
+
+    trigger: str
+    stage_a: StageARecord
+    candidates: tuple[CandidateRecord, ...]
+    accepted: int | None
+
+
+@dataclass(frozen=True)
 class ColumnSolution:
     """Spec §7's answer and §18.2's records: the outcome, the final signature by equilibrium
     stage (top to bottom), the state, the sweeps' start `T⁰` (shifted when asked; A14), the easy
     endpoint with `ρ`, `φ`, sweeps and last `max |ΔT|`, the continued slots with `p⁰`, and the
-    `state_sha256` of `x_K`, `x⁰` and the answer."""
+    `state_sha256` of `x_K`, `x⁰` and the answer.
+
+    S08 §5.6: the top-level fields always describe the returned solve. When a Stage-B candidate is
+    accepted they are that candidate's (`endpoint` is then its `BlockEndpoint`); otherwise they
+    are Stage A's. `reentry` is `None` whenever Stage B did not run."""
 
     outcome: str
     cause: str
@@ -1053,7 +1136,7 @@ class ColumnSolution:
     state: Mapping[str, float]
     initial: ProfileInitial
     profile: tuple[float, ...]
-    endpoint: BubblePointEndpoint
+    endpoint: BubblePointEndpoint | BlockEndpoint
     #: Continued parameter id → `p⁰` (the slot's column at `x⁰`), in stage order.
     continued: Mapping[str, float]
     initial_sha256: str
@@ -1067,6 +1150,8 @@ class ColumnSolution:
     inverse: tuple[InverseRecord, ...] = ()
     #: S06 §7.3: per inverse end on a non-`CONVERGED` answer; empty on a `CONVERGED` one.
     unreached: tuple[UnreachedSpecification, ...] = ()
+    #: S08 §5.6: Stage B's record; not part of any `state_sha256`.
+    reentry: BlockReentry | None = None
 
 
 def continuation(spec: ColumnSpec, profile: Sequence[float]) -> Continuation:
@@ -1133,6 +1218,52 @@ def _as_cascade(spec: ColumnSpec) -> CascadeSpec:
     )
 
 
+def target_attempt(
+    spec: ColumnSpec,
+    provider: PropertyProvider,
+    target: CompiledCascade,
+    x0: Mapping[str, float],
+    profile: Sequence[float],
+    *,
+    policy: SolvePolicy = S02_TARGET_POLICY,
+    trace: Trace | None = None,
+    initializer_source: str = PRESOLVE_ID,
+) -> tuple[RegionResult, RegionResult | None, dict[int, Regime], tuple[str, ...], int | None]:
+    """Spec §7 steps 4–5 and §8 from an easy endpoint `x⁰` whose id is `initializer_source`
+    (S08 §5.1): the target under `policy`, edge 3 on its triggers (continuing the slots §7.3
+    replaced at `profile`), and §8 evaluated on a `CONVERGED` answer, without raising. Returns
+    the final result, the failed solve edge 3 recovered from (or `None`), the final regimes by
+    stage, §8's failures and S06 §8 item 3's single-phase `temperature`-specified stage (or
+    `None`); the last two are empty and `None` unless the answer is `CONVERGED`."""
+    state = {name: float(x0[name]) for name in target.spec.variable_ids}
+    result = run_region(
+        target, provider, state, policy, initializer_source=initializer_source, trace=trace
+    )
+    recovered_from: RegionResult | None = None
+    if policy.globalization.eo_recovery == "homotopy" and eo_recovery_due(
+        result.outcome, result.budget, attempts=solver_outcomes(result.attempts)
+    ):
+        recovered_from = result
+        result = recover(spec, profile, target, provider, result, policy, trace)
+    regimes = regimes_of(spec, result.attempts[-1].signature) if result.attempts else {}
+    failures: tuple[str, ...] = ()
+    unsupported: int | None = None
+    if result.outcome == "CONVERGED":
+        failures = acceptance_failures(spec, provider, target.spec, result.state, regimes)
+        unsupported = single_phase_specified_stage(spec, regimes)
+    return result, recovered_from, regimes, failures, unsupported
+
+
+def _unsupported(
+    spec: ColumnSpec, regimes: Mapping[int, Regime], stage: int
+) -> UnsupportedAnswerError:
+    """S06 §8 item 3's answer for a single-phase `temperature`-specified `stage`."""
+    return UnsupportedAnswerError(
+        f"unsupported(temperature_specification_on_single_phase_stage:{stage})",
+        f"{spec.unit_id} stage {stage} is {regimes[stage]} at the CONVERGED state",
+    )
+
+
 def solve_target(
     spec: ColumnSpec,
     provider: PropertyProvider,
@@ -1142,37 +1273,65 @@ def solve_target(
     *,
     policy: SolvePolicy = S02_TARGET_POLICY,
     trace: Trace | None = None,
+    initializer_source: str = PRESOLVE_ID,
 ) -> tuple[RegionResult, RegionResult | None, dict[int, Regime]]:
-    """Spec §7 steps 4–5 and §8 from an easy endpoint `x⁰`: the target under `policy`, edge 3
-    on its triggers (continuing the slots §7.3 replaced at `profile`), and acceptance of a
-    `CONVERGED` answer (`AcceptanceDefectError` on a failure). S06 §8 item 3 is decided after
+    """Spec §7 steps 4–5 and §8 from an easy endpoint `x⁰`: `target_attempt`, and acceptance of
+    a `CONVERGED` answer (`AcceptanceDefectError` on a failure). S06 §8 item 3 is decided after
     the defect clauses (S06 §17.3, R-610): a defect-free `CONVERGED` answer whose
     `temperature`-specified stage is single-phase raises `UnsupportedAnswerError` (never a
     success, and not a defect); a defective one is a defect whatever the regime. Returns the
     final result, the failed solve edge 3 recovered from (or `None`), and the final regimes by
     stage."""
-    state = {name: float(x0[name]) for name in target.spec.variable_ids}
-    result = run_region(
-        target, provider, state, policy, initializer_source=PRESOLVE_ID, trace=trace
+    result, recovered_from, regimes, failures, unsupported = target_attempt(
+        spec,
+        provider,
+        target,
+        x0,
+        profile,
+        policy=policy,
+        trace=trace,
+        initializer_source=initializer_source,
     )
-    recovered_from: RegionResult | None = None
-    if policy.globalization.eo_recovery == "homotopy" and eo_recovery_due(
-        result.outcome, result.budget, attempts=solver_outcomes(result.attempts)
-    ):
-        recovered_from = result
-        result = recover(spec, profile, target, provider, result, policy, trace)
-    regimes = regimes_of(spec, result.attempts[-1].signature) if result.attempts else {}
-    if result.outcome == "CONVERGED":
-        failures = acceptance_failures(spec, provider, target.spec, result.state, regimes)
-        if failures:
-            raise AcceptanceDefectError(failures)
-        stage = single_phase_specified_stage(spec, regimes)
-        if stage is not None:
-            raise UnsupportedAnswerError(
-                f"unsupported(temperature_specification_on_single_phase_stage:{stage})",
-                f"{spec.unit_id} stage {stage} is {regimes[stage]} at the CONVERGED state",
-            )
+    if failures:
+        raise AcceptanceDefectError(failures)
+    if unsupported is not None:
+        raise _unsupported(spec, regimes, unsupported)
     return result, recovered_from, regimes
+
+
+def _item_6_stages(
+    spec: ColumnSpec,
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    regimes: Mapping[int, Regime],
+    failures: Sequence[str],
+) -> tuple[int, ...]:
+    """The `TWO_PHASE` stages that fail item 6, top to bottom, when §8's `failures` are all item
+    6's; `()` when there is none or another item failed as well."""
+    if not failures or not all(failure.startswith(ITEM_6_PREFIX) for failure in failures):
+        return ()
+    errors = saturation_errors(spec, provider, state, regimes)
+    return tuple(
+        stage for stage, error in errors.items() if not error <= TWO_PHASE_SATURATION_TOLERANCE
+    )
+
+
+def _near_trivial_cause(stages: Sequence[int]) -> str:
+    return f"{NEAR_TRIVIAL_SPLIT}({','.join(str(stage) for stage in stages)})"
+
+
+def reentry_trigger(result: RegionResult, near_trivial: Sequence[int]) -> str | None:
+    """S08 §5.1: Stage B's trigger on Stage A's final `result` — its outcome when that is in
+    `REENTRY_OUTCOMES`, or `BUDGET_EXHAUSTED` on a budget of `REENTRY_BUDGETS` (trigger (i));
+    `near_trivial_split` when it is `CONVERGED` and fails §8 on item 6 alone, at the stages
+    `near_trivial` (trigger (ii)); `None` otherwise."""
+    if result.outcome == "CONVERGED":
+        return NEAR_TRIVIAL_SPLIT if near_trivial else None
+    if result.outcome in REENTRY_OUTCOMES:
+        return result.outcome
+    if result.outcome == "BUDGET_EXHAUSTED" and result.budget in REENTRY_BUDGETS:
+        return result.outcome
+    return None
 
 
 def solve_column(
@@ -1185,14 +1344,17 @@ def solve_column(
     max_sweeps: int = MAX_SWEEPS,
     trace: Trace | None = None,
 ) -> ColumnSolution | CascadeFailure | DormantAnswer:
-    """Spec §7, steps 1–5 (step 3 as §18.2), and §8 on a `CONVERGED` answer.
+    """Spec §7, steps 1–5 (step 3 as §18.2), and §8 on a `CONVERGED` answer (Stage A); then S08's
+    step 7 (Stage B, §5.1) on its trigger.
 
     `profile_shift` (K) moves the sweeps' start and `ratio_scale` the stage ratios no
     specification holds (spec §18.6 A14); `max_sweeps` is §18.2's cap (A22). A failed endpoint
     returns its typed `CascadeFailure` before any region solve. A `CONVERGED` answer that fails §8
-    raises `AcceptanceDefectError`; one S06 §8 item 3 does not offer is the `CascadeFailure`
-    `CAPABILITY_UNAVAILABLE` with its cause. S06: `inverse` holds §7.5's records and `unreached`
-    §7.3's report.
+    raises `AcceptanceDefectError`, unless it fails item 6 alone (S08 §5.1 trigger (ii)); one S06
+    §8 item 3 does not offer is the `CascadeFailure` `CAPABILITY_UNAVAILABLE` with its cause.
+    S06: `inverse` holds §7.5's records and `unreached` §7.3's report. S08: Stage B's first
+    accepted candidate is the answer; when none is accepted a typed Stage-A answer is returned
+    with `reentry`, and an item-6 rejection raises `AcceptanceDefectError` (§5.7).
 
     C8: every `ColumnSolution` and `CascadeFailure` for a duty-only specification carries
     `column_warnings(spec)`; the dormant answer has no ends and none.
@@ -1222,16 +1384,63 @@ def solve_column(
     order = target.spec.variable_ids
     x0 = {name: float(endpoint.state[name]) for name in order}
     profile = tuple(t + float(profile_shift) for t in initial.profile)
-    replaced = [slot for slot in slots(spec, initial.profile) if slot.parameter]
-    continued = {slot.parameter: x0[slot.variable] for slot in replaced}
-    try:
-        result, recovered_from, regimes = solve_target(
-            spec, provider, target, x0, initial.profile, policy=policy, trace=trace
-        )
-    except UnsupportedAnswerError as unsupported:
+    result, recovered_from, regimes, failures, unsupported = target_attempt(
+        spec, provider, target, x0, initial.profile, policy=policy, trace=trace
+    )
+    near_trivial = _item_6_stages(spec, provider, result.state, regimes, failures)
+    trigger = reentry_trigger(result, near_trivial)
+    if failures and trigger is None:
+        raise AcceptanceDefectError(failures)
+    if not failures and unsupported is not None:
+        scope = _unsupported(spec, regimes, unsupported)
         return CascadeFailure(
-            "CAPABILITY_UNAVAILABLE", unsupported.cause, unsupported.detail, warnings=warnings
+            "CAPABILITY_UNAVAILABLE", scope.cause, scope.detail, warnings=warnings
         )
+    answer = _column_answer(
+        spec, initial, profile, endpoint, target, x0, result, recovered_from, regimes, warnings
+    )
+    if trigger is None:
+        return answer
+    stage_a = StageARecord(
+        outcome=answer.outcome,
+        cause=_near_trivial_cause(near_trivial) if failures else answer.cause,
+        result=result,
+        recovered_from=recovered_from,
+        endpoint_sha256=answer.endpoint_sha256,
+        final_sha256=answer.final_sha256,
+        failures=failures,
+    )
+    return _stage_b(
+        spec,
+        provider,
+        target,
+        initial,
+        answer,
+        BlockReentry(trigger, stage_a, (), None),
+        policy=policy,
+        profile_shift=profile_shift,
+        ratio_scale=ratio_scale,
+        max_sweeps=max_sweeps,
+        trace=trace,
+    )
+
+
+def _column_answer(
+    spec: ColumnSpec,
+    initial: ProfileInitial,
+    profile: tuple[float, ...],
+    endpoint: BubblePointEndpoint | BlockEndpoint,
+    target: CompiledCascade,
+    x0: Mapping[str, float],
+    result: RegionResult,
+    recovered_from: RegionResult | None,
+    regimes: Mapping[int, Regime],
+    warnings: tuple[str, ...],
+) -> ColumnSolution:
+    """The `ColumnSolution` of one solve from the endpoint `x⁰` (Stage A's, or a Stage-B
+    candidate's: S08 §5.6's top-level fields)."""
+    order = target.spec.variable_ids
+    replaced = [slot for slot in slots(spec, initial.profile) if slot.parameter]
     return ColumnSolution(
         outcome=result.outcome,
         cause=result.message if result.outcome != "CONVERGED" else "",
@@ -1240,7 +1449,7 @@ def solve_column(
         initial=initial,
         profile=profile,
         endpoint=endpoint,
-        continued=continued,
+        continued={slot.parameter: x0[slot.variable] for slot in replaced},
         initial_sha256=state_sha256(dict(initial.state), order),
         endpoint_sha256=state_sha256(x0, order),
         result=result,
@@ -1252,6 +1461,104 @@ def solve_column(
     )
 
 
+def _stage_b(
+    spec: ColumnSpec,
+    provider: PropertyProvider,
+    target: CompiledCascade,
+    initial: ProfileInitial,
+    answer: ColumnSolution,
+    reentry: BlockReentry,
+    *,
+    policy: SolvePolicy,
+    profile_shift: float,
+    ratio_scale: float,
+    max_sweeps: int,
+    trace: Trace | None,
+) -> ColumnSolution:
+    """S08 §5.1 Stage B and §5.7 after Stage A's `answer` triggered it: for each candidate of
+    §5.2, in order, its §5.3 endpoint (a refusal is recorded and the next candidate tried), then
+    §5.4's solve from it under the same policy; the first accepted answer is returned with
+    `reentry`. None accepted: Stage A's typed `answer` with `reentry`, or, when Stage A failed
+    item 6, `AcceptanceDefectError` with Stage A's failures. A candidate's §8 failure other than
+    item 6 is a defect and raises."""
+    from openflowsheet.models.syn001 import column_blocks
+
+    order = target.spec.variable_ids
+    records: list[CandidateRecord] = []
+    for index, candidate in enumerate(column_blocks.candidates(spec)):
+        a, c = candidate
+        signature = column_blocks.block_signature(spec, candidate)
+        built = column_blocks.block_endpoint(
+            spec,
+            provider,
+            initial,
+            candidate,
+            profile_shift=profile_shift,
+            ratio_scale=ratio_scale,
+            max_sweeps=max_sweeps,
+        )
+        if isinstance(built, CascadeFailure):
+            records.append(
+                CandidateRecord(a, c, signature, built.cause, None, None, built.cause, None, None)
+            )
+            continue
+        x0 = {name: float(built.state[name]) for name in order}
+        result, recovered_from, regimes, failures, unsupported = target_attempt(
+            spec,
+            provider,
+            target,
+            x0,
+            initial.profile,
+            policy=policy,
+            trace=trace,
+            initializer_source=column_blocks.BLOCK_ENDPOINT_ID,
+        )
+        cause = result.message if result.outcome != "CONVERGED" else ""
+        if failures:
+            near_trivial = _item_6_stages(spec, provider, result.state, regimes, failures)
+            if not near_trivial:
+                raise AcceptanceDefectError(failures)
+            cause = _near_trivial_cause(near_trivial)
+        elif result.outcome == "CONVERGED" and unsupported is not None:
+            cause = _unsupported(spec, regimes, unsupported).cause
+        records.append(
+            CandidateRecord(
+                a,
+                c,
+                signature,
+                "built",
+                state_sha256(x0, order),
+                result.outcome,
+                cause,
+                result,
+                recovered_from,
+            )
+        )
+        if result.outcome == "CONVERGED" and not cause:
+            accepted = _column_answer(
+                spec,
+                initial,
+                answer.profile,
+                built,
+                target,
+                x0,
+                result,
+                recovered_from,
+                regimes,
+                answer.warnings,
+            )
+            return replace(
+                accepted, reentry=replace(reentry, candidates=tuple(records), accepted=index)
+            )
+    reentry = replace(reentry, candidates=tuple(records))
+    if reentry.stage_a.failures:
+        refused = AcceptanceDefectError(reentry.stage_a.failures)
+        tried = "; ".join(f"({r.a}, {r.c}) {r.cause}" for r in records) or "none"
+        refused.add_note(f"S08 §5.7: no Stage-B candidate was accepted; tried: {tried}")
+        raise refused
+    return replace(answer, reentry=reentry)
+
+
 __all__ = [
     "CONTINUED_KIND",
     "FD_COLUMN_SCALE",
@@ -1259,14 +1566,21 @@ __all__ = [
     "PRESOLVE_EQUATIONS",
     "PRESOLVE_ID",
     "QUOTIENT_SLACK",
+    "ITEM_6_PREFIX",
+    "NEAR_TRIVIAL_SPLIT",
     "RATIO_LETTER",
+    "REENTRY_BUDGETS",
+    "REENTRY_OUTCOMES",
     "S02_TARGET_POLICY",
     "SWEEP_TOLERANCE",
+    "BlockReentry",
     "BubblePointEndpoint",
+    "CandidateRecord",
     "Closure",
     "ColumnSolution",
     "InverseRecord",
     "Slot",
+    "StageARecord",
     "UnreachedSpecification",
     "UnsupportedAnswerError",
     "acceptance_failures",
@@ -1285,6 +1599,7 @@ __all__ = [
     "product_columns",
     "products",
     "recover",
+    "reentry_trigger",
     "regimes_of",
     "single_phase_specified_stage",
     "singular_pairs",
@@ -1296,6 +1611,7 @@ __all__ = [
     "stage_ratios",
     "sweep_flows",
     "system_residuals",
+    "target_attempt",
     "target_bound",
     "unreached_specifications",
     "zero_flow_forms",
