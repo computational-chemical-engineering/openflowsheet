@@ -148,14 +148,15 @@ def test_a01_describe_is_spec_5_2(provider: WilsonIdealGasProvider) -> None:
     assert isinstance(provider, PropertyProvider)
 
 
-def test_a01_the_default_records_are_refused_until_wo_s10_3() -> None:
-    """`None` is the real records, a source checkout's `benchmarks/s10/records.yaml` (spec §5.1);
-    before WO-S10-3 the file is absent and construction is an explicit refusal."""
+def test_a01_the_default_records_are_the_real_records() -> None:
+    """`None` is the real records, a source checkout's `benchmarks/s10/records.yaml` (spec §5.1),
+    committed by WO-S10-3; a missing file is an explicit refusal."""
     real = REPO_ROOT / wilson_ig.RECORDS_PATH
-    if real.is_file():
-        pytest.skip("benchmarks/s10/records.yaml exists (WO-S10-3); A34 covers it")
-    with pytest.raises(RecordError, match=r"^records_missing: "):
-        WilsonIdealGasProvider()
+    assert real.is_file()
+    caps = WilsonIdealGasProvider().describe()
+    assert caps.reference_convention == "WILSON-IG-ref-v1"
+    assert caps.uncertainty == "not yet validated (S10 spec §9.6)"  # spec §9.5, before WO-S10-6
+    assert caps.uncertainty == yaml.safe_load(real.read_text("utf-8"))["uncertainty"]
     with pytest.raises(RecordError, match=r"^records_missing: "):
         WilsonIdealGasProvider(REPO_ROOT / "benchmarks" / "s10" / "no-such-records.yaml")
 

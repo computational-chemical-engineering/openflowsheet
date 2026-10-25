@@ -1787,9 +1787,9 @@ def build() -> dict[str, Any]:
 
 # ============================================================================================
 # 9. The real section (spec section 9.7; WO-S10-3): reads records.yaml, emits
-#    reference_values_real.yaml. Built so far: RE1-RE3, the I-states with their envelope claims,
-#    the IDAES mapping table and the smoothing claim. The section 7.3 flash tolerances of the
-#    I-states (re-measured floors) are the next work order's (docs/S10_DECISIONS.md).
+#    reference_values_real.yaml: RE1-RE3 (section 7.2), the I-states with their envelope claims,
+#    their flash through section 7.3 with the floors re-measured on the real states, the IDAES
+#    mapping table and the smoothing claim.
 # ============================================================================================
 
 REAL_RECORDS_YAML = ROOT / "benchmarks" / "s10" / "records.yaml"
@@ -1894,6 +1894,11 @@ def build_real(records: Path) -> dict[str, Any]:
     patm = mpf(P_ATM)
     istates: dict[str, Any] = {}
     smoothing: dict[str, dict[str, float]] = {}
+    flash_out: dict[str, Any] = {}
+    measured_flash: dict[str, Any] = {}
+    tol_flash: dict[str, Any] = {}
+    worst_tm_floor = worst_lnk_floor = 0.0
+    ss_trial_max = ss_two_max = 0
     for sid, (zl, kind) in I_STATES.items():
         z = [mpf(v) for v in zl]
         tb, td, td_ida = bubble_t(fl, z, patm), dew_t(fl, z, patm), idaes_dew_t(model, z, patm)
@@ -1904,6 +1909,27 @@ def build_real(records: Path) -> dict[str, Any]:
         else:
             t = round(round(float(td), 2) + 5.0, 2)
         out = fl.flash(zl, t, P_ATM)
+        claim(
+            f"DOM-{sid}",
+            rec.t_lo <= t <= rec.t_hi and rec.p_lo <= P_ATM <= rec.p_hi,
+            f"{sid} is inside the closed domain",
+        )
+        # section 7.3 through the provider's flash (A34): same tolerances as the F-states, the
+        # floors re-measured at this state (spec 9.7)
+        fentry: dict[str, Any] = {
+            "state": {"n": zl, "T": t, "P": P_ATM},
+            "why": f"spec 8.1 and 15 A2-3, kind {kind}",
+            "phase_signature": out["phase"],
+        }
+        fr = flash_record(fl, f64, ids, sid, zl, t, P_ATM, out, fentry)
+        flash_out[sid] = fentry
+        worst_tm_floor = max(worst_tm_floor, fr["tm_floor"])
+        worst_lnk_floor = max(worst_lnk_floor, fr["lnk_floor"])
+        ss_trial_max = max(ss_trial_max, fr["ss_trial"])
+        ss_two_max = max(ss_two_max, fr["ss_two"])
+        measured_flash[sid] = {"tm_floor": g3(fr["tm_floor"])}
+        if fr["tolerance"] is not None:
+            tol_flash[sid] = fr["tolerance"]
         entry: dict[str, Any] = {
             "state": {"n": zl, "T": t, "P": P_ATM},
             "kind": kind,
@@ -1955,6 +1981,38 @@ def build_real(records: Path) -> dict[str, Any]:
             want = "LIQUID" if kind == "sub" else "VAPOR"
             claim(f"PHASE-{sid}", out["phase"] == want, f"{sid} at {t} K is {want} (spec 8.1)")
         istates[sid] = entry
+    claim(
+        "FLOOR-TM",
+        worst_tm_floor <= TOL_TM / 10,
+        f"the binary64 floor of the trial distances over every I-state is {worst_tm_floor:.3g} "
+        "<= TOL_TM/10 (spec 7.3, re-measured on the real states)",
+    )
+    claim(
+        "FLOOR-LNK",
+        float(DELTA_K) >= 10 * worst_lnk_floor,
+        f"DELTA_K = {float(DELTA_K):.0e} is at least 10 x the binary64 floor of ln K at the "
+        f"two-phase I-states ({worst_lnk_floor:.3g})",
+    )
+    claim(
+        "SS-CAP",
+        ss_trial_max <= SS_MAX // 10 and ss_two_max <= SS_MAX // 10,
+        f"SS needs at most {ss_trial_max} (liquid trial) and {ss_two_max} (two-phase) iterations "
+        f"at the I-states to reach its stop test, <= SS_MAX/10 = {SS_MAX // 10}",
+    )
+    # spec 7.3: every classification sits at least 10 TOL_TM from 0 and from -EPS_TPD
+    margins = {}
+    for sid, e in flash_out.items():
+        tv, tl = mpf(e["stability"]["tm_vapour_trial"]), e["stability"]["tm_liquid_trial"]
+        dists = [abs(tv), abs(tv + EPS_TPD)]
+        if tl is not None:
+            dists += [abs(mpf(tl)), abs(mpf(tl) + EPS_TPD)]
+        margins[sid] = g3(float(min(dists)))
+        claim(
+            f"MARGIN-{sid}",
+            margins[sid] > 10 * TOL_TM,
+            f"{sid}'s trial distances are more than 10 x TOL_TM from 0 and from -EPS_TPD "
+            f"({margins[sid]:.3g}; spec 7.3)",
+        )
     worst_by_rung = {
         r: max(s[r] for s in smoothing.values()) for r in next(iter(smoothing.values()))
     }
@@ -1997,12 +2055,34 @@ def build_real(records: Path) -> dict[str, Any]:
         "generator": "docs/derivations/scripts/s10_reference.py --real",
         "records_sha256": rec.sha256,
         "spec": "docs/derivations/S10-spec.md sections 8.1 and 9.7",
-        "status": "partial (WO-S10-3): the I-state flash tolerances of section 7.3 are not yet "
-        "derived",
-        "closed_form": {"evaluate_phase": ev, "i_states": istates},
+        "status": "complete (WO-S10-3): RE1-RE3 (section 7.2), I1-I14 (sections 7.3, 8.1, 15 A2-3)",
+        "method_constants": {
+            "EPS_TPD": float(EPS_TPD),
+            "DELTA_K": float(DELTA_K),
+            "DELTA_SS": float(DELTA_SS),
+            "SS_MAX": SS_MAX,
+        },
+        "closed_form": {"evaluate_phase": ev, "flash": flash_out, "i_states": istates},
         "idaes_mapping": mapping,
-        "tolerances": {"evaluate_phase_relative": TOL_VALUE, "idaes_beta_x_y": float(TAU_IDAES)},
-        "measured": {"evaluate_phase_floors": floors, "smoothing_predicted": smoothing},
+        "tolerances": {
+            "evaluate_phase_relative": TOL_VALUE,
+            "tm": {"rule": "|impl - expected| <= TOL_TM", "TOL_TM": TOL_TM},
+            "flash": {
+                "rule": "|impl - expected| <= 10 (S_q A (DELTA_K + f_lnK) + 64 eps max(|q|, s_q)); "
+                "k_values relative: 10 (A (DELTA_K + f_lnK) + 64 eps); an absent component k: "
+                "10 (S_k A (DELTA_K + f_lnK) + 64 eps); A = ||(I - dPhi/dlnK)^-1||_inf; "
+                "single-phase outlets bitwise; component balance <= 1e-13 n_tot (spec 7.3)",
+                "per_state": tol_flash,
+            },
+            "idaes_beta_x_y": float(TAU_IDAES),
+        },
+        "measured": {
+            "evaluate_phase_floors": floors,
+            "binary64_floor_flash": measured_flash,
+            "classification_margins": margins,
+            "ss_iterations_max": {"liquid_trial": ss_trial_max, "two_phase": ss_two_max},
+            "smoothing_predicted": smoothing,
+        },
         "generator_claims": CLAIMS,
     }
 

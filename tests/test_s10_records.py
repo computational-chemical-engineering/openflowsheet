@@ -335,10 +335,7 @@ REAL_INPUTS = ("T", "P", "n_CH3OH", "n_C2H5OH", "n_H2O")
 
 
 def test_a34_real_e_states_through_the_provider() -> None:
-    # The evaluate_phase half of A34 (spec §9.7, tolerances of §7.2). The I-state flash half
-    # waits for the section 7.3 tolerances of the real section (WO-S10-3 stopped before them).
-    if not REAL_REFERENCE.exists():
-        pytest.skip("reference_values_real.yaml awaits records.yaml (WO-S10-3)")
+    # The evaluate_phase half of A34 (spec §9.7, tolerances of §7.2).
     from openflowsheet.thermo import PropertyRequest, StreamState
     from openflowsheet.thermo.wilson_ig import WilsonIdealGasProvider
 
@@ -351,7 +348,7 @@ def test_a34_real_e_states_through_the_provider() -> None:
         for phase in ("LIQUID", "VAPOR"):
             request = PropertyRequest(
                 state=StreamState(n=tuple(st["n"]), temperature=st["T"], pressure=pressure),
-                phase=phase,  # type: ignore[arg-type]
+                phase=phase,
                 properties=REAL_PROPERTIES,
                 derivatives=REAL_INPUTS,
             )
@@ -372,3 +369,103 @@ def test_a34_real_e_states_through_the_provider() -> None:
                         s = {"T": 1.0e-2, "P": 1.0 / pressure}.get(wrt, 1.0 / n_tot)
                     got = result.derivatives[prop][wrt]
                     assert abs(got - w) <= tol * max(abs(w), s), (sid, phase, prop, wrt)
+
+
+# -- S10.A34, the flash half: I1-I14 (spec §8.1 as amended by §15 A2-3) through the provider's
+#    flash, with §7.3's tolerances from the real section (floors re-measured on these states).
+
+TOL_BALANCE = 1.0e-13  # spec §7.3: |n^V_i + n^L_i - n_i| <= 1e-13 n_tot
+
+
+@pytest.fixture(scope="module")
+def real_reference() -> dict[str, Any]:
+    reference: dict[str, Any] = yaml.safe_load(REAL_REFERENCE.read_text(encoding="utf-8"))
+    return reference
+
+
+@pytest.fixture(scope="module")
+def real_flashes(real_reference: dict[str, Any]) -> dict[str, Any]:
+    from openflowsheet.thermo import FlashRequest, StreamState
+    from openflowsheet.thermo.wilson_ig import WilsonIdealGasProvider
+
+    provider = WilsonIdealGasProvider(None)
+    out = {}
+    for sid, entry in real_reference["closed_form"]["flash"].items():
+        st = entry["state"]
+        state = StreamState(n=tuple(st["n"]), temperature=st["T"], pressure=st["P"])
+        out[sid] = (state, provider.flash(FlashRequest(state=state), None))  # type: ignore[arg-type]
+    return out
+
+
+def _real_tm(message: str, key: str) -> float | None:
+    match = re.search(rf"{key}: ([^;]+)", message)
+    assert match is not None, message
+    return None if match.group(1) == "not_evaluated" else float(match.group(1))
+
+
+def test_a34_the_real_section_is_on_the_committed_records(real_reference: dict[str, Any]) -> None:
+    import hashlib
+
+    assert real_reference["records_sha256"] == hashlib.sha256(RECORDS.read_bytes()).hexdigest()
+    assert sorted(real_reference["closed_form"]["flash"], key=lambda k: int(k[1:])) == [
+        f"I{k}" for k in range(1, 15)
+    ]
+    assert real_reference["closed_form"]["flash"]["I10"]["state"]["n"] == [0.0, 0.4, 0.6]
+    assert all(c["holds"] is True for c in real_reference["generator_claims"])
+
+
+def test_a34_real_flash_through_the_provider(
+    real_reference: dict[str, Any], real_flashes: dict[str, Any]
+) -> None:
+    tol_tm = real_reference["tolerances"]["tm"]["TOL_TM"]
+    per_state = real_reference["tolerances"]["flash"]["per_state"]
+    worst = (0.0, "")
+    for sid, entry in real_reference["closed_form"]["flash"].items():
+        state, result = real_flashes[sid]
+        assert result.status == "ok", (sid, result.message)
+        assert result.provider_id == "wilson-ig-v1"
+        assert result.reference_convention == "WILSON-IG-ref-v1"
+        assert result.phase_signature == entry["phase_signature"], sid
+        for key in ("tm_vapour_trial", "tm_liquid_trial"):
+            got, want = _real_tm(result.message, key), entry["stability"][key]
+            if want is None:
+                assert got is None, (sid, key)
+            else:
+                assert got is not None and abs(got - want) <= tol_tm, (sid, key, got, want)
+        assert result.vapor is not None and result.liquid is not None
+        if entry["phase_signature"] in ("LIQUID", "VAPOR"):
+            # §7.3: single-phase outlets bitwise, the other outlet dormant
+            liquid = entry["phase_signature"] == "LIQUID"
+            named, other = (
+                (result.liquid, result.vapor) if liquid else (result.vapor, result.liquid)
+            )
+            assert named == state and [v.hex() for v in named.n] == [v.hex() for v in state.n]
+            assert all(v == 0.0 for v in other.n), sid
+            assert (other.temperature, other.pressure) == (state.temperature, state.pressure)
+            assert result.vapor_fraction == entry["vapor_fraction"] and result.k_values == {}
+            continue
+        tolerance = per_state[sid]["per_output"]
+        assert result.vapor_fraction is not None
+        ratios = {"beta": abs(result.vapor_fraction - entry["vapor_fraction"]) / tolerance["beta"]}
+        vapor_total, liquid_total = sum(result.vapor.n), sum(result.liquid.n)
+        for i, c in enumerate(IDS):
+            if state.n[i] == 0.0:  # an absent component: exact zeros, K at infinite dilution
+                assert result.vapor.n[i] == 0.0 and result.liquid.n[i] == 0.0, (sid, c)
+            outputs = {
+                "nV": (result.vapor.n[i], entry["vapor_n"][c]),
+                "nL": (result.liquid.n[i], entry["liquid_n"][c]),
+                "y": (result.vapor.n[i] / vapor_total, entry["y"][c]),
+                "x": (result.liquid.n[i] / liquid_total, entry["x"][c]),
+            }
+            for key, (got, want) in outputs.items():
+                if f"{key}_{c}" in tolerance:
+                    ratios[f"{key}_{c}"] = abs(got - want) / tolerance[f"{key}_{c}"]
+            k_tol = tolerance.get(f"k_relative_{c}", tolerance["k_relative"])
+            ratios[f"K_{c}"] = abs(result.k_values[c] / entry["k_values"][c] - 1.0) / k_tol
+            assert abs(result.vapor.n[i] + result.liquid.n[i] - state.n[i]) <= (
+                TOL_BALANCE * state.total_flow
+            ), (sid, c)
+        key = max(ratios, key=ratios.__getitem__)
+        assert ratios[key] <= 1.0, (sid, key, ratios[key])
+        worst = max(worst, (ratios[key], f"{sid}.{key}"))
+    assert worst[0] <= 1.0, worst
