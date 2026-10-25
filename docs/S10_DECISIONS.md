@@ -67,6 +67,22 @@ rule on min(T_dew, IDAES dew); I10 is z_E = 0.4); RC-03 → A2-4. The remainder 
 - **Q-N1 settled for the 1993 paper:** Kurihara, Nakamichi, Kojima, J. Chem. Eng. Data 38 (1993) 446-449 exists as recalled, with Table II (three binaries, isobaric) and Table V (the ternary, VAL-1). Departures from §9.4's recollection: the pressure is printed as 101.3 kPa (ESC-2), and methanol+ethanol has 11 points (x1 = 0.074-0.935), fewer than the substitution rule's 15 (the rule does not apply: the paper is the recalled one). The 1995 paper (VAL-2) is not yet available (WO-S10-6).
 - **Q-N6 not settled:** TM-4513 was not read; molar masses take the CIAAW 2021 default and S10-RC-08 stays unresolved.
 
+## WO-S10-4 (spec §8.1, §15 A2-3; A40-A42)
+
+- DECISION B-35: how the tool reads its inputs → `benchmarks/s10/idaes/inputs.json`, written by `scripts/s10_idaes_comparison.py --write-inputs`: the record values of `records.yaml` verbatim (with its SHA-256), the I-states' `n`, `T`, `P` only, the RB points and the ladder; the IDAES environment has no YAML reader. The tool computes §8.1's mapping itself; the comparison checks it against the generator's `idaes_mapping` (max |Δτ| 0, coefficients ≤ 2.2e-16 relative). §8.1 asks no blindness; the tool still reads no expected value and imports nothing of `openflowsheet` (S03's form). Alternative: install PyYAML into the reference environment. Reversible by: `inputs()` and `main()` of the tool (`6965df12`).
+- DECISION B-36: the phase identity of IDAES at I6, I7 (§8.1 "exact") → LIQUID if |β| ≤ 1e-7, VAPOR if |β − 1| ≤ 1e-7, else TWO_PHASE (A41's β tolerance; the smooth flash has no phase label). Not yet applied: no rung is selected (ESC-5). Alternative: the sign of flow_mol_phase. Reversible by: `phase_identity()` in the comparison script (`6965df12`).
+- DECISION B-37: what the comparison holds when no rung is selected → no difference to our values is computed; states optimal somewhere are `NO_SELECTED_RUNG`, states optimal nowhere `NOT_COMPARABLE` (§8.1). Computing deltas before the ruling on ESC-4/ESC-5 would make any amended ladder non-blind (the S03 lesson). Alternative: compare each state at its first optimal rung now. Reversible by: `a41()` (`6965df12`).
+- DECISION B-38: replacing the three Wagner sites → subclass the package's parameter and state-block data; `_pressure_sat_comp` is rebuilt with spec (3.3) at T_eq, and the bubble and dew P^sat Expressions are `set_value` with (3.3) at T_bubble and T_dew after the package builds them. The package's Wagner parameters exist as mutable placeholders only so that its Expressions construct; the inspection finds no active constraint referencing them (0 references). Alternative: copy the package's 400-line bubble/dew methods. Reversible by: `define_package()` (`6965df12`).
+- DECISION B-39: the readback method (A40) → `calculate_variable_from_constraint` on the package's own constraints (Gij, A, B, γ, P^sat, phase-component and phase enthalpies), both phase compositions = x and T = T_eq = T_bubble = T_dew fixed at the point; the bubble/dew P^sat and γ Expressions read at the same point. Residual of the solved constraints ≤ 2.5e-16. Alternative: a converged flash at the point (then the readback is no longer "before any flash"). Reversible by: `readback()` (`6965df12`).
+- DECISION B-40: an initializer that raises → recorded, and the final solve still runs from where it stopped. Measured: no attempt whose initializer raised ended optimal, so stopping instead changes no outcome. Alternative: end the attempt at the initializer. Reversible by: `attempt()` (`6965df12`).
+- DECISION B-41: the liquid c_p unit → declared in J/kmol/K^(k+1) as the package's BTX example, values 1000 × the J/mol values; the package's `pyunits.convert` gives J/mol. Fixed by readback: h^L agrees to 1e-15. The initializer's linear solver is the attempt's (`idaes.cfg.ipopt.options.linear_solver`, T06's form), its other options IDAES defaults. Alternative: declare J/mol. Reversible by: `define_package()`, `attempt()` (`6965df12`).
+
+### Escalations (WO-S10-4), for the design-lane ruling round
+
+- **ESC-4. The registered constr_viol_tol = 1e-10 sits at the binary64 floor (§11: a registered constant that seems wrong).** constr_viol_tol is on the unscaled constraints; the binding row in every near-converged attempt is `eq_temperature_bubble` (Σ z_i γ_i P_i^sat − P, in Pa; ulp(101 325) = 1.5e-11). I4, I8, I9, I10 (every rung, both solvers) and I2 (1e-6, MA27) stall at an unscaled violation of 0.80–2.87e-10 with a scaled NLP error of 2.5–4.8e-12, ending "Solved To Acceptable Level" or "Search Direction is becoming Too Small". §8.1's floor argument ("10⁻¹⁰ on scaled residuals") does not hold for this option. T06's ruling M6 (a) set 1e-9 for the same reason. **The choice I would make:** constr_viol_tol = 1e-9 with tol = 1e-10 unchanged, all rungs rerun (1e-9 Pa is 1e-14 relative in the bubble equation). Not run: it is outside the registered ladder.
+- **ESC-5. No rung has every I-state optimal, and §8.1 does not say which rung the others use (spec gap).** Under the registered ladder: I1, I5, I7, I12, I14 optimal at all three rungs; I13 at 1e-4 only; I6 at 1e-5 and 1e-6 only; I2, I3, I4, I8, I9, I10, I11 at none. The package's own initializer raises (local infeasibility or restoration failure in its step solves) at I2, I3, I11 at every rung, I6 at 1e-4, I13 at 1e-5 and 1e-6, and I4, I12 at 1e-6 with MA27; I3 and I11 fail far from feasibility at every attempt, so ESC-4 does not rescue them. Even with ESC-4, I6 and I13 share no rung. **The choice I would make:** each state at the first rung at which it ends optimal (A42 holds at every rung: worst predicted 8.47e-9 at 1e-4), states optimal nowhere `NOT_COMPARABLE`. Alternative: the rung with the most optimal states, the rest `NOT_COMPARABLE`.
+- **ESC-6. §8's reading of the package's dew temperature is wrong for IDAES 2.13.0 (a contradicting measurement).** `eq_temperature_dew` divides by `activity_coeff_comp`, the γ of the flash's own liquid (x at T_eq); the γ(z) Expression `activity_coeff_comp_dew` is built and unused (the dew equation is in the inspection record). So B-31's T_dew^γ(z), used by §15 A2-3's mid-band rule, its 0.5 K margin and A42's prediction, is not IDAES's envelope. Measured at the seven optimal states: IDAES's T_dew − T_dew^γ(z) from −0.0046 K (I14) to +0.79 K (I12); with IDAES's own envelope the predicted smoothing is at most 7.74e-9 at 1e-4 (I13, generator 8.47e-9) and every measured |T_eq − T|·|∂q/∂T| ≤ 8.0e-10. No measured claim fails; for a vapour-only state IDAES's dew is exact. Needs: the §8 text and B-31 amended, and a ruling on whether A2-3's rule and A42's prediction should use IDAES's dew.
+
 ## Run log
 
 - 2026-10-25, WO-S10-1. `tests/test_s10_provider.py`: 88 passed. Per group: A01 2, A02 21 (19 malformed copies covering
@@ -119,6 +135,7 @@ rule on min(T_dew, IDAES dew); I10 is z_E = 0.4); RC-03 → A2-4. The remainder 
   Λ_MW changed in its 10th digit 138× (I9 K_CH3OH), Λ_EW transposed 4.8e11×. Tests: `test_s10_records.py` 21,
   `test_s10_provider.py` 87, `test_s10_flash.py` 102, `test_requirements_ledger.py` 15, all passed, none skipped;
   `s10_reference.py --check` 113 claims, matches. ruff, ruff format, mypy clean on the touched tests.
+- 2026-10-25, WO-S10-4. IDAES 2.13.0, extensions 3.4.2, fingerprint matches `docs/reference-environments.md` §3; Ipopt 3.13.2. Build: DOF 0, 38 active constraints, 0 Wagner references. A40: 68 readback rows (P^sat at three sites, γ and γ_bubble, h^L, h^V at four RB points), worst 2.86e-15 relative (RB-T360-x1 P^sat H2O); τ as the generator's `idaes_mapping` exactly; untransposed τ moves ln γ by 0.150 at the RB points. Ladder (67 attempts, 9 s): optimal per state {I1, I5, I7, I12, I14: all rungs; I13: 1e-4; I6: 1e-5, 1e-6; I2, I3, I4, I8, I9, I10, I11: none}; selected rung none (ESC-4, ESC-5). A42: predicted ≤ 8.47e-9 / 8.47e-11 / 8.47e-13 at the three rungs; measured |T_eq − T|·|∂q/∂T| ≤ 8.0e-10. Reproduction: a second full run is bit-identical apart from wall times and Ipopt log hashes. Tests: `tests/test_s10_idaes.py` 8 passed; `s10_idaes_comparison.py --check` both documents identical; ruff, ruff format clean.
 
 ## Where WO-S10-2b stopped
 
@@ -132,6 +149,15 @@ Complete (2026-10-25): every item of §9.1-§9.5, §9.7 and §15 A2-5. `records.
 matches; I-states as §15 A2-3, with §7.3's flash tolerances), RC-03 per A2-4, tests for A30-A34 all running. Open:
 the S10 `reviewer` pass over the fit and the generator extension (§11), WO-S10-4 (IDAES) and WO-S10-6 (validation);
 RC-05 and RC-08 stay unresolved (Q-F3, Q-N6).
+
+## Where WO-S10-4 stopped
+
+Done (2026-10-25): the harness (`6965df12`) and the records with tests for A40-A42 (`bedd6c86`). A40 holds (2.9e-15
+against 1e-10). A41 is blocked by ESC-4 and ESC-5: no rung is selected, so `comparison.json` holds no difference to our
+values (B-37). Once the design lane rules: change the registered ladder in `LADDER` (comparison script) and the tool's
+selection if needed, run `.venv-idaes/bin/python spikes/references/s10_qualify_idaes.py` (9 s), then
+`python scripts/s10_idaes_comparison.py --write-inputs && --write`, rerun `tests/test_s10_idaes.py`, and hand the records
+to `verdict`. ESC-6 needs a ruling but blocks nothing.
 
 ## Double-entry check of the 1993 fit data (orchestrator, 2026-10-25)
 
