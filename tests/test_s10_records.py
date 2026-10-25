@@ -12,6 +12,7 @@ from __future__ import annotations
 import copy
 import csv
 import hashlib
+import importlib.metadata
 import importlib.util
 import json
 import math
@@ -93,11 +94,14 @@ def test_water_saturation_agrees_with_iapws95_v1(saturation: dict[str, Any]) -> 
 
 
 def _coolprop_800() -> bool:
+    # The installed distribution's version, read without importing CoolProp: S05.A28 forbids a
+    # test that imports the cross-check libraries.
     if importlib.util.find_spec("CoolProp") is None:
         return False
-    from CoolProp import __version__
-
-    return bool(__version__ == "8.0.0")
+    try:
+        return importlib.metadata.version("CoolProp") == "8.0.0"
+    except importlib.metadata.PackageNotFoundError:
+        return False
 
 
 def _saturation_script(mode: str) -> subprocess.CompletedProcess[str]:

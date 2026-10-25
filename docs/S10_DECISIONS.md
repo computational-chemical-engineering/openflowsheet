@@ -423,3 +423,8 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
   is not bit-identical across architectures (S07 spec §20, R-627). It predates WO-S10-7 (WO-S10-3). **OPEN (design
   lane):** whether that check compares within a tolerance off x86-64, or is run on x86-64 only. Not changed here (a
   tolerance is the design lane's).
+- B-85 (orchestrator, after CI run 40187246167): `tests/test_s10_records.py::_coolprop_800` (added in `304b4b4b`)
+  imported `CoolProp.__version__`, which S05.A28 (`test_a28_no_test_imports_the_cross_check_or_its_libraries`) forbids
+  in any test; all three CI jobs failed on that one test. The version is now read from the distribution metadata
+  (`importlib.metadata.version("CoolProp")`) without importing it. Test hygiene only; no assertion changed. Locally:
+  S10 records + S05 envelope + T08 W2 288 passed, 1 skipped (no CoolProp); 269 passed, 1 skipped with CoolProp 8.0.0.
