@@ -1,10 +1,10 @@
-"""S10 real data and records (spec §9.1-§9.5; assertions S10.A30-A33).
+"""S10 real data and records (spec §9.1-§9.5, §9.7 and §15; assertions S10.A30-A34).
 
 The expectations come from the committed inputs (`benchmarks/s10/saturation-points.json`,
 `nasa7-low.json`, the transcription in `benchmarks/s10/vle/`) and from independent values stated
-here, never from the provider. The assertions that need the fitted Λ (A30, A31, A33) skip until
-`benchmarks/s10/records.yaml` exists: it awaits the double-entered transcription and the design
-lane's ruling on ESC-1 (`docs/S10_DECISIONS.md`).
+here, never from the provider. The records (`benchmarks/s10/records.yaml`,
+`fit-report.json`) and the real section (`reference_values_real.yaml`) are committed; their
+absence fails A30, A31, A33 and A34 rather than skipping them.
 """
 
 from __future__ import annotations
@@ -55,8 +55,8 @@ def saturation() -> dict[str, Any]:
 
 
 def _needs_records() -> None:
-    if not RECORDS.exists():
-        pytest.skip("records.yaml awaits transcription B and the ESC-1 ruling (WO-S10-3)")
+    # The records are committed (WO-S10-3, spec §15 A2-5): their absence is a failure, not a skip.
+    assert RECORDS.exists() and FIT_REPORT.exists()
 
 
 # ================================================================================ §9.2
@@ -216,11 +216,18 @@ def test_gauss_newton_recovers_known_parameters(records_script: ModuleType) -> N
     assert fit["phi"] < mpf("1e-50")
 
 
-def test_records_check_refuses_without_the_double_entered_transcription() -> None:
-    if (S10 / "vle" / "kurihara1993_binaries.csv").exists():
-        pytest.skip("the double-entered transcription exists; A31 covers --check")
+def test_records_check_refuses_without_the_double_entered_transcription(tmp_path: Any) -> None:
+    absent = tmp_path / "absent.csv"
     run = subprocess.run(
-        [sys.executable, str(SCRIPTS / "s10_records.py"), "--check"],
+        [
+            sys.executable,
+            str(SCRIPTS / "s10_records.py"),
+            "--check",
+            "--vle",
+            str(absent),
+            "--out-dir",
+            str(tmp_path),
+        ],
         capture_output=True,
         text=True,
         check=False,
@@ -276,7 +283,47 @@ def test_a33_the_lambda_fit_claims_hold() -> None:
         assert fit["gauss_newton_iterations"] <= 200
         assert fit["grid_margin_over_phi_star"] >= -1e-12
         assert len(fit["per_point"]) == fit["points"]
-    assert all(c["holds"] for c in report["claims"])
+    # Spec §15 A2-1/A2-5: every listed claim is present by id and holds, so a dropped claim fails.
+    holds = {c["id"]: c["holds"] for c in report["claims"]}
+    binaries = ("methanol+ethanol", "ethanol+water", "methanol+water")
+    want = [
+        f"LAMBDA{kind}-{b}" for b in binaries for kind in ("-GRID64", "-CONV", "-BOX", "", "-MIN")
+    ]
+    want += [f"LAMBDA-V1-{b}" for b in ("ethanol+water", "methanol+water")]
+    want += ["LAMBDA-CURVE-methanol+ethanol", "WILSON-SINGULAR-CURVE"]
+    assert len(want) == 19
+    missing = [cid for cid in want if cid not in holds]
+    assert not missing, missing
+    assert all(holds[cid] is True for cid in want)
+    assert len(holds) == 25 and all(v is True for v in holds.values())
+
+
+def test_a33_the_stored_lambda_are_amendment_2s() -> None:
+    # Spec §15 A2-1, "Results": the stored Λ (10 significant digits) and the iteration counts.
+    report = json.loads(FIT_REPORT.read_text(encoding="utf-8"))
+    want = {
+        "methanol+ethanol": ((0.6109248362, 1.49887856), 19),
+        "ethanol+water": ((0.1649874985, 0.8615311153), 21),
+        "methanol+water": ((0.3674022637, 1.134238098), 28),
+    }
+    for fit in report["wilson"]:
+        lam, iterations = want[fit["binary"]]
+        assert tuple(fit["lambda_stored"].values()) == lam, fit["binary"]
+        assert fit["gauss_newton_iterations"] == iterations, fit["binary"]
+    stored = {
+        (e["i"], e["j"]): e["value"] for e in yaml.safe_load(RECORDS.read_text())["wilson_lambda"]
+    }
+    assert stored == {
+        ("CH3OH", "C2H5OH"): 0.6109248362,
+        ("C2H5OH", "CH3OH"): 1.49887856,
+        ("C2H5OH", "H2O"): 0.1649874985,
+        ("H2O", "C2H5OH"): 0.8615311153,
+        ("CH3OH", "H2O"): 0.3674022637,
+        ("H2O", "CH3OH"): 1.134238098,
+    }
+    me = report["wilson"][0]
+    assert me["start_theta_zero"]["converged"] is False
+    assert me["second_local_minimum"]["phi"] > me["phi_star"]
 
 
 # ================================================================================ S10.A34

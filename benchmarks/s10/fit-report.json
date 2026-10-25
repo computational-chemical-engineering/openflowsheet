@@ -1,0 +1,872 @@
+{
+ "schema_version": 1,
+ "what": "S10 fit claims and fit quality (spec sections 9.3-9.4 and 15). Fit quality, not validation: the same data were used to fit.",
+ "generator": "docs/derivations/scripts/s10_records.py",
+ "inputs_sha256": {
+  "saturation-points.json": "204d67b9a04e8aed11a868f8de58b520e601165dfc20a37e8687bee62ce85140",
+  "nasa7-low.json": "b6fa77123e7ae7fcffb54890a0b93f98b798d4bb36c9327789a5dcee0bc67f51",
+  "vle": "986641d8a6d6b6d44ac1eb3cfc8f35e39d71d72fe549978d34197a4449eb1cd3"
+ },
+ "records_sha256": "74dc4e54101f6197cc4f9c2dc66e1856b99a7f047b5904a31b6a910b33f5a8f1",
+ "ideal_gas": [
+  {
+   "id": "CH3OH",
+   "dhf_J_mol_50_digits": "-200938.85487320993253"
+  },
+  {
+   "id": "C2H5OH",
+   "dhf_J_mol_50_digits": "-234948.66126639747569"
+  },
+  {
+   "id": "H2O",
+   "dhf_J_mol_50_digits": "-241824.62162536496732"
+  }
+ ],
+ "vapour_pressure": [
+  {
+   "id": "CH3OH",
+   "fit_range_K": [
+    290.0,
+    410.0
+   ],
+   "points": 61,
+   "max_abs_delta_ln_P": 0.000160301,
+   "claim": 0.002
+  },
+  {
+   "id": "C2H5OH",
+   "fit_range_K": [
+    290.0,
+    410.0
+   ],
+   "points": 61,
+   "max_abs_delta_ln_P": 5.63453e-05,
+   "claim": 0.002
+  },
+  {
+   "id": "H2O",
+   "fit_range_K": [
+    290.0,
+    410.0
+   ],
+   "points": 61,
+   "max_abs_delta_ln_P": 9.24859e-05,
+   "claim": 0.002
+  }
+ ],
+ "wilson": [
+  {
+   "binary": "methanol+ethanol",
+   "components": [
+    "CH3OH",
+    "C2H5OH"
+   ],
+   "points": 11,
+   "residuals_in_objective": 22,
+   "theta_star": [
+    "0.49278134501862832952",
+    "-0.4047172020456511422"
+   ],
+   "phi_star": 0.000435348996646022,
+   "gauss_newton_start": [
+    0.485,
+    -0.4
+   ],
+   "gauss_newton_iterations": 19,
+   "grid_step": 0.005,
+   "grid_min_phi": 0.000435878323386603,
+   "grid_min_theta": [
+    0.485,
+    -0.4
+   ],
+   "grid_margin_over_phi_star": 5.29327e-07,
+   "grad_phi_inf_norm": 1.36e-29,
+   "hessian_eigenvalues": [
+    0.00222236,
+    17.3833
+   ],
+   "jtj_eigenvalues": [
+    0.0010691,
+    8.69162
+   ],
+   "start_theta_zero": {
+    "what": "section 9.4's original start, run under the same rules for comparison (spec section 15, A2-1); not the adopted result",
+    "converged": false,
+    "iterations": 200,
+    "theta": [
+     -0.16332392,
+     0.16332392
+    ],
+    "phi": 0.00046126022,
+    "max_abs_theta_minus_theta_star": 0.656
+   },
+   "second_local_minimum": {
+    "what": "the second local minimum of Phi, on theta_12 + theta_21 = 0, where J has rank 1 (spec section 15, A2-1); the theta = 0 start is drawn to it",
+    "theta": [
+     -0.1563770593,
+     0.1563770593
+    ],
+    "phi": 0.0004564308503,
+    "hessian_eigenvalues": [
+     0.000477134,
+     15.909
+    ]
+   },
+   "lambda_stored": {
+    "CH3OH->C2H5OH": 0.6109248362,
+    "C2H5OH->CH3OH": 1.49887856
+   },
+   "aad_bubble_T_K": 0.0251952,
+   "max_bubble_T_K": 0.0565586,
+   "aad_bubble_y1": 0.00129106,
+   "max_bubble_y1": 0.0028809,
+   "per_point": [
+    {
+     "row": 1,
+     "x1": "0.074",
+     "residual_ln_gamma": [
+      0.00539036,
+      0.00180028
+     ],
+     "bubble_T_minus_exp_K": 0.0565586,
+     "bubble_y1_minus_exp": -0.000396839
+    },
+    {
+     "row": 2,
+     "x1": "0.113",
+     "residual_ln_gamma": [
+      0.00230316,
+      0.00182251
+     ],
+     "bubble_T_minus_exp_K": 0.0485014,
+     "bubble_y1_minus_exp": -9.52134e-05
+    },
+    {
+     "row": 3,
+     "x1": "0.195",
+     "residual_ln_gamma": [
+      0.00372449,
+      -0.000706741
+     ],
+     "bubble_T_minus_exp_K": 0.0149063,
+     "bubble_y1_minus_exp": -0.000926365
+    },
+    {
+     "row": 4,
+     "x1": "0.238",
+     "residual_ln_gamma": [
+      0.00751872,
+      -0.00220001
+     ],
+     "bubble_T_minus_exp_K": 0.0301089,
+     "bubble_y1_minus_exp": -0.00222964
+    },
+    {
+     "row": 5,
+     "x1": "0.329",
+     "residual_ln_gamma": [
+      0.0060001,
+      -0.00563651
+     ],
+     "bubble_T_minus_exp_K": -0.00796659,
+     "bubble_y1_minus_exp": -0.0028809
+    },
+    {
+     "row": 6,
+     "x1": "0.424",
+     "residual_ln_gamma": [
+      0.00285795,
+      -0.00487543
+     ],
+     "bubble_T_minus_exp_K": -0.0139044,
+     "bubble_y1_minus_exp": -0.00189266
+    },
+    {
+     "row": 7,
+     "x1": "0.529",
+     "residual_ln_gamma": [
+      0.00291293,
+      -0.00531763
+     ],
+     "bubble_T_minus_exp_K": 0.00336306,
+     "bubble_y1_minus_exp": -0.00184427
+    },
+    {
+     "row": 8,
+     "x1": "0.581",
+     "residual_ln_gamma": [
+      0.000936729,
+      -0.00622209
+     ],
+     "bubble_T_minus_exp_K": -0.0294205,
+     "bubble_y1_minus_exp": -0.00145601
+    },
+    {
+     "row": 9,
+     "x1": "0.682",
+     "residual_ln_gamma": [
+      0.00206775,
+      -0.00687498
+     ],
+     "bubble_T_minus_exp_K": 0.00513196,
+     "bubble_y1_minus_exp": -0.00148032
+    },
+    {
+     "row": 10,
+     "x1": "0.717",
+     "residual_ln_gamma": [
+      -0.000296336,
+      -0.00559797
+     ],
+     "bubble_T_minus_exp_K": -0.0322396,
+     "bubble_y1_minus_exp": -0.000771956
+    },
+    {
+     "row": 11,
+     "x1": "0.935",
+     "residual_ln_gamma": [
+      -0.00113599,
+      -0.00763961
+     ],
+     "bubble_T_minus_exp_K": -0.0350457,
+     "bubble_y1_minus_exp": -0.000227438
+    }
+   ]
+  },
+  {
+   "binary": "ethanol+water",
+   "components": [
+    "C2H5OH",
+    "H2O"
+   ],
+   "points": 18,
+   "residuals_in_objective": 36,
+   "theta_star": [
+    "1.8018855744064057063",
+    "0.14904410607527511523"
+   ],
+   "phi_star": 0.0122793645202259,
+   "gauss_newton_start": [
+    1.8,
+    0.15
+   ],
+   "gauss_newton_iterations": 21,
+   "grid_step": 0.005,
+   "grid_min_phi": 0.0122811225313061,
+   "grid_min_theta": [
+    1.8,
+    0.15
+   ],
+   "grid_margin_over_phi_star": 1.75801e-06,
+   "grad_phi_inf_norm": 6.26e-29,
+   "hessian_eigenvalues": [
+    0.372617,
+    14.3876
+   ],
+   "jtj_eigenvalues": [
+    0.178471,
+    7.17648
+   ],
+   "start_theta_zero": {
+    "what": "section 9.4's original start, run under the same rules for comparison (spec section 15, A2-1); not the adopted result",
+    "converged": true,
+    "iterations": 24,
+    "theta": [
+     1.8018856,
+     0.14904411
+    ],
+    "phi": 0.012279365,
+    "max_abs_theta_minus_theta_star": 1.05e-27
+   },
+   "second_local_minimum": null,
+   "lambda_stored": {
+    "C2H5OH->H2O": 0.1649874985,
+    "H2O->C2H5OH": 0.8615311153
+   },
+   "aad_bubble_T_K": 0.0490118,
+   "max_bubble_T_K": 0.349832,
+   "aad_bubble_y1": 0.00543745,
+   "max_bubble_y1": 0.0164971,
+   "per_point": [
+    {
+     "row": 1,
+     "x1": "0.056",
+     "residual_ln_gamma": [
+      0.00410558,
+      -0.00726739
+     ],
+     "bubble_T_minus_exp_K": -0.0827356,
+     "bubble_y1_minus_exp": -0.00260788
+    },
+    {
+     "row": 2,
+     "x1": "0.091",
+     "residual_ln_gamma": [
+      0.0455515,
+      -0.0119759
+     ],
+     "bubble_T_minus_exp_K": 0.349832,
+     "bubble_y1_minus_exp": -0.0143024
+    },
+    {
+     "row": 3,
+     "x1": "0.189",
+     "residual_ln_gamma": [
+      0.0351101,
+      -0.0302532
+     ],
+     "bubble_T_minus_exp_K": 0.114282,
+     "bubble_y1_minus_exp": -0.016318
+    },
+    {
+     "row": 4,
+     "x1": "0.286",
+     "residual_ln_gamma": [
+      0.0226073,
+      -0.02638
+     ],
+     "bubble_T_minus_exp_K": 0.0468732,
+     "bubble_y1_minus_exp": -0.0119797
+    },
+    {
+     "row": 5,
+     "x1": "0.323",
+     "residual_ln_gamma": [
+      0.0265956,
+      -0.0343005
+     ],
+     "bubble_T_minus_exp_K": 0.045557,
+     "bubble_y1_minus_exp": -0.014716
+    },
+    {
+     "row": 6,
+     "x1": "0.331",
+     "residual_ln_gamma": [
+      0.0279792,
+      -0.0405711
+     ],
+     "bubble_T_minus_exp_K": 0.00859142,
+     "bubble_y1_minus_exp": -0.0164971
+    },
+    {
+     "row": 7,
+     "x1": "0.419",
+     "residual_ln_gamma": [
+      0.00499288,
+      -0.0104855
+     ],
+     "bubble_T_minus_exp_K": -0.0204831,
+     "bubble_y1_minus_exp": -0.00362005
+    },
+    {
+     "row": 8,
+     "x1": "0.512",
+     "residual_ln_gamma": [
+      0.00567117,
+      -0.0135508
+     ],
+     "bubble_T_minus_exp_K": -0.0199463,
+     "bubble_y1_minus_exp": -0.0042829
+    },
+    {
+     "row": 9,
+     "x1": "0.620",
+     "residual_ln_gamma": [
+      -0.000536539,
+      -0.0020391
+     ],
+     "bubble_T_minus_exp_K": -0.024407,
+     "bubble_y1_minus_exp": -0.000300928
+    },
+    {
+     "row": 10,
+     "x1": "0.704",
+     "residual_ln_gamma": [
+      0.00205222,
+      -0.0093229
+     ],
+     "bubble_T_minus_exp_K": -0.017629,
+     "bubble_y1_minus_exp": -0.00208213
+    },
+    {
+     "row": 11,
+     "x1": "0.715",
+     "residual_ln_gamma": [
+      -5.94286e-05,
+      -0.00360435
+     ],
+     "bubble_T_minus_exp_K": -0.0225599,
+     "bubble_y1_minus_exp": -0.000633829
+    },
+    {
+     "row": 12,
+     "x1": "0.798",
+     "residual_ln_gamma": [
+      0.00164894,
+      -0.00583768
+     ],
+     "bubble_T_minus_exp_K": 0.00709699,
+     "bubble_y1_minus_exp": -0.00111878
+    },
+    {
+     "row": 13,
+     "x1": "0.843",
+     "residual_ln_gamma": [
+      -0.000105752,
+      -0.00691679
+     ],
+     "bubble_T_minus_exp_K": -0.02828,
+     "bubble_y1_minus_exp": -0.000860449
+    },
+    {
+     "row": 14,
+     "x1": "0.847",
+     "residual_ln_gamma": [
+      -0.000420951,
+      -0.00635213
+     ],
+     "bubble_T_minus_exp_K": -0.0324504,
+     "bubble_y1_minus_exp": -0.000735156
+    },
+    {
+     "row": 15,
+     "x1": "0.849",
+     "residual_ln_gamma": [
+      0.000394767,
+      -0.00903212
+     ],
+     "bubble_T_minus_exp_K": -0.0243727,
+     "bubble_y1_minus_exp": -0.00116149
+    },
+    {
+     "row": 16,
+     "x1": "0.884",
+     "residual_ln_gamma": [
+      0.00189983,
+      -0.0213748
+     ],
+     "bubble_T_minus_exp_K": -0.0196789,
+     "bubble_y1_minus_exp": -0.00236909
+    },
+    {
+     "row": 17,
+     "x1": "0.908",
+     "residual_ln_gamma": [
+      0.00241198,
+      -0.0227219
+     ],
+     "bubble_T_minus_exp_K": 0.00120308,
+     "bubble_y1_minus_exp": -0.00214201
+    },
+    {
+     "row": 18,
+     "x1": "0.922",
+     "residual_ln_gamma": [
+      0.00297697,
+      -0.0258083
+     ],
+     "bubble_T_minus_exp_K": 0.0162332,
+     "bubble_y1_minus_exp": -0.00214616
+    }
+   ]
+  },
+  {
+   "binary": "methanol+water",
+   "components": [
+    "CH3OH",
+    "H2O"
+   ],
+   "points": 20,
+   "residuals_in_objective": 38,
+   "theta_star": [
+    "1.0012979447622155724",
+    "-0.12596114646758455016"
+   ],
+   "phi_star": 0.00943191329052371,
+   "gauss_newton_start": [
+    1.0,
+    -0.125
+   ],
+   "gauss_newton_iterations": 28,
+   "grid_step": 0.005,
+   "grid_min_phi": 0.009432746921281,
+   "grid_min_theta": [
+    1.0,
+    -0.125
+   ],
+   "grid_margin_over_phi_star": 8.33631e-07,
+   "grad_phi_inf_norm": 1.14e-30,
+   "hessian_eigenvalues": [
+    0.197276,
+    18.5564
+   ],
+   "jtj_eigenvalues": [
+    0.0896775,
+    9.2651
+   ],
+   "start_theta_zero": {
+    "what": "section 9.4's original start, run under the same rules for comparison (spec section 15, A2-1); not the adopted result",
+    "converged": true,
+    "iterations": 32,
+    "theta": [
+     1.0012979,
+     -0.12596115
+    ],
+    "phi": 0.0094319133,
+    "max_abs_theta_minus_theta_star": 1.02e-28
+   },
+   "second_local_minimum": null,
+   "lambda_stored": {
+    "CH3OH->H2O": 0.3674022637,
+    "H2O->CH3OH": 1.134238098
+   },
+   "aad_bubble_T_K": 0.141365,
+   "max_bubble_T_K": 0.242876,
+   "aad_bubble_y1": 0.00409843,
+   "max_bubble_y1": 0.0112097,
+   "per_point": [
+    {
+     "row": 1,
+     "x1": "0.019",
+     "residual_ln_gamma": [
+      null,
+      null
+     ],
+     "bubble_T_minus_exp_K": 0.105398,
+     "bubble_y1_minus_exp": -0.00361474
+    },
+    {
+     "row": 2,
+     "x1": "0.077",
+     "residual_ln_gamma": [
+      -0.00288101,
+      -0.00354865
+     ],
+     "bubble_T_minus_exp_K": -0.0906895,
+     "bubble_y1_minus_exp": -5.92083e-05
+    },
+    {
+     "row": 3,
+     "x1": "0.133",
+     "residual_ln_gamma": [
+      0.00961991,
+      -0.00589798
+     ],
+     "bubble_T_minus_exp_K": 0.0463174,
+     "bubble_y1_minus_exp": -0.00393238
+    },
+    {
+     "row": 4,
+     "x1": "0.140",
+     "residual_ln_gamma": [
+      0.0252927,
+      -0.00761659
+     ],
+     "bubble_T_minus_exp_K": 0.242876,
+     "bubble_y1_minus_exp": -0.00851348
+    },
+    {
+     "row": 5,
+     "x1": "0.205",
+     "residual_ln_gamma": [
+      0.0256765,
+      -0.01525
+     ],
+     "bubble_T_minus_exp_K": 0.237616,
+     "bubble_y1_minus_exp": -0.0101864
+    },
+    {
+     "row": 6,
+     "x1": "0.260",
+     "residual_ln_gamma": [
+      0.0241846,
+      -0.0236305
+     ],
+     "bubble_T_minus_exp_K": 0.187719,
+     "bubble_y1_minus_exp": -0.0112097
+    },
+    {
+     "row": 7,
+     "x1": "0.310",
+     "residual_ln_gamma": [
+      0.018961,
+      -0.0198522
+     ],
+     "bubble_T_minus_exp_K": 0.172163,
+     "bubble_y1_minus_exp": -0.00865092
+    },
+    {
+     "row": 8,
+     "x1": "0.320",
+     "residual_ln_gamma": [
+      0.018293,
+      -0.0210132
+     ],
+     "bubble_T_minus_exp_K": 0.1574,
+     "bubble_y1_minus_exp": -0.00864041
+    },
+    {
+     "row": 9,
+     "x1": "0.358",
+     "residual_ln_gamma": [
+      0.014473,
+      -0.017024
+     ],
+     "bubble_T_minus_exp_K": 0.14074,
+     "bubble_y1_minus_exp": -0.00663521
+    },
+    {
+     "row": 10,
+     "x1": "0.420",
+     "residual_ln_gamma": [
+      0.00628019,
+      -0.00972223
+     ],
+     "bubble_T_minus_exp_K": 0.0575638,
+     "bubble_y1_minus_exp": -0.00310014
+    },
+    {
+     "row": 11,
+     "x1": "0.462",
+     "residual_ln_gamma": [
+      0.00607318,
+      -0.00755845
+     ],
+     "bubble_T_minus_exp_K": 0.0757794,
+     "bubble_y1_minus_exp": -0.00250753
+    },
+    {
+     "row": 12,
+     "x1": "0.501",
+     "residual_ln_gamma": [
+      -1.05123e-05,
+      -0.0102163
+     ],
+     "bubble_T_minus_exp_K": -0.057289,
+     "bubble_y1_minus_exp": -0.00166593
+    },
+    {
+     "row": 13,
+     "x1": "0.586",
+     "residual_ln_gamma": [
+      -0.00310263,
+      -0.00460033
+     ],
+     "bubble_T_minus_exp_K": -0.0873753,
+     "bubble_y1_minus_exp": -0.000149582
+    },
+    {
+     "row": 14,
+     "x1": "0.638",
+     "residual_ln_gamma": [
+      -0.00900833,
+      0.000212573
+     ],
+     "bubble_T_minus_exp_K": -0.197193,
+     "bubble_y1_minus_exp": 0.00131781
+    },
+    {
+     "row": 15,
+     "x1": "0.651",
+     "residual_ln_gamma": [
+      -0.0110057,
+      0.0124939
+     ],
+     "bubble_T_minus_exp_K": -0.195749,
+     "bubble_y1_minus_exp": 0.00306694
+    },
+    {
+     "row": 16,
+     "x1": "0.679",
+     "residual_ln_gamma": [
+      -0.012255,
+      0.0150688
+     ],
+     "bubble_T_minus_exp_K": -0.221812,
+     "bubble_y1_minus_exp": 0.00331423
+    },
+    {
+     "row": 17,
+     "x1": "0.717",
+     "residual_ln_gamma": [
+      -0.00926936,
+      0.00591633
+     ],
+     "bubble_T_minus_exp_K": -0.193128,
+     "bubble_y1_minus_exp": 0.00167719
+    },
+    {
+     "row": 18,
+     "x1": "0.803",
+     "residual_ln_gamma": [
+      -0.00291577,
+      -0.03311
+     ],
+     "bubble_T_minus_exp_K": -0.136119,
+     "bubble_y1_minus_exp": -0.00214516
+    },
+    {
+     "row": 19,
+     "x1": "0.879",
+     "residual_ln_gamma": [
+      -0.0046958,
+      -0.0247188
+     ],
+     "bubble_T_minus_exp_K": -0.144864,
+     "bubble_y1_minus_exp": -0.000886597
+    },
+    {
+     "row": 20,
+     "x1": "0.951",
+     "residual_ln_gamma": [
+      -0.00240402,
+      -0.0394762
+     ],
+     "bubble_T_minus_exp_K": -0.0795134,
+     "bubble_y1_minus_exp": -0.00069501
+    }
+   ]
+  }
+ ],
+ "ethanol_water_azeotrope": {
+  "model_x1": 0.881446,
+  "model_T_K": 351.32022,
+  "data_bracket_rows": [
+   16,
+   17
+  ],
+  "data_x1_linear_interpolation_of_y1_minus_x1": 0.9,
+  "data_T_K_bracket": [
+   351.34,
+   351.33
+  ],
+  "what": "fit quality, not validation: the model's ethanol-water azeotrope at the data's pressure against the sign change of y1 - x1 in the fit data (spec section 9.4)"
+ },
+ "claims": [
+  {
+   "id": "SAT-XCHECK",
+   "holds": true,
+   "statement": "the committed water saturation points agree with iapws95-v1 to <= 1e-8 relative (worst 3.542e-11; spec 9.2)"
+  },
+  {
+   "id": "PSAT-CH3OH",
+   "holds": true,
+   "statement": "CH3OH: max |delta ln P| = 0.00016 <= 2e-3 over the 61 grid points of 290.0-410.0 K, with the stored (12-digit) coefficients (S10.A32; fit quality, not validation)"
+  },
+  {
+   "id": "PSAT-C2H5OH",
+   "holds": true,
+   "statement": "C2H5OH: max |delta ln P| = 5.63e-5 <= 2e-3 over the 61 grid points of 290.0-410.0 K, with the stored (12-digit) coefficients (S10.A32; fit quality, not validation)"
+  },
+  {
+   "id": "PSAT-H2O",
+   "holds": true,
+   "statement": "H2O: max |delta ln P| = 9.25e-5 <= 2e-3 over the 61 grid points of 290.0-410.0 K, with the stored (12-digit) coefficients (S10.A32; fit quality, not validation)"
+  },
+  {
+   "id": "VLE-P",
+   "holds": true,
+   "statement": "the transcription holds Table II's three binaries and nothing else (spec 9.4)"
+  },
+  {
+   "id": "WILSON-SINGULAR-CURVE",
+   "holds": true,
+   "statement": "on theta_12 + theta_21 = 0, d ln gamma_i/d theta_21 = Lambda_21 d ln gamma_i/d theta_12 (worst 1.34e-51 <= 1e-45 at theta_21 = 0.3, -0.7; x1 = 0.2, 0.7); off it, at theta = (0.5, -0.3), the columns differ by 0.0777 >= 1e-3 (A2-1)"
+  },
+  {
+   "id": "LAMBDA-GRID64-methanol+ethanol",
+   "holds": true,
+   "statement": "methanol+ethanol: the binary64 grid objective at its best point agrees with the 50-digit one to 4.1e-19 <= 1e-14 (B-25, A2-1)"
+  },
+  {
+   "id": "LAMBDA-CONV-methanol+ethanol",
+   "holds": true,
+   "statement": "methanol+ethanol: Gauss-Newton from the grid's best point (0.485, -0.4) converged in 19 iterations (last step 3.33e-32 < 1e-30; cap 200) (A2-1)"
+  },
+  {
+   "id": "LAMBDA-BOX-methanol+ethanol",
+   "holds": true,
+   "statement": "methanol+ethanol: theta* = (0.49278135, -0.4047172) lies inside the open box (-3, 6)^2 the grid covers (A2-1)"
+  },
+  {
+   "id": "LAMBDA-methanol+ethanol",
+   "holds": true,
+   "statement": "methanol+ethanol: Phi* = 0.000435348996646; the grid scan of [-3, 6]^2 (step 0.005) finds no Phi below Phi* - 1e-12 (its minimum 0.000435878323387 at theta = (0.485, -0.4)) (S10.A33, A2-1)"
+  },
+  {
+   "id": "LAMBDA-MIN-methanol+ethanol",
+   "holds": true,
+   "statement": "methanol+ethanol: theta* is a strict local minimum: |grad Phi|_inf = 1.36e-29 <= 1e-20 and the Hessian's eigenvalues (0.00222236, 17.3833) are positive (central difference of the analytic gradient, h = 1e-15, 50 digits) (A2-1)"
+  },
+  {
+   "id": "LAMBDA-CURVE-methanol+ethanol",
+   "holds": true,
+   "statement": "methanol+ethanol: Phi has a second local minimum on the singular curve, theta = (-a, a) with a = 0.156377059: |grad Phi|_inf = 2.31e-51 <= 1e-20, Hessian eigenvalues (0.0004771, 15.91) > 0, Phi = 0.0004564308503, above the grid's best point by 2.06e-5 > 1e-12, so the grid claim refuses it (A2-1)"
+  },
+  {
+   "id": "LAMBDA-GRID64-ethanol+water",
+   "holds": true,
+   "statement": "ethanol+water: the binary64 grid objective at its best point agrees with the 50-digit one to 2.3e-17 <= 1e-14 (B-25, A2-1)"
+  },
+  {
+   "id": "LAMBDA-CONV-ethanol+water",
+   "holds": true,
+   "statement": "ethanol+water: Gauss-Newton from the grid's best point (1.8, 0.15) converged in 21 iterations (last step 3.07e-39 < 1e-30; cap 200) (A2-1)"
+  },
+  {
+   "id": "LAMBDA-BOX-ethanol+water",
+   "holds": true,
+   "statement": "ethanol+water: theta* = (1.8018856, 0.14904411) lies inside the open box (-3, 6)^2 the grid covers (A2-1)"
+  },
+  {
+   "id": "LAMBDA-ethanol+water",
+   "holds": true,
+   "statement": "ethanol+water: Phi* = 0.0122793645202; the grid scan of [-3, 6]^2 (step 0.005) finds no Phi below Phi* - 1e-12 (its minimum 0.0122811225313 at theta = (1.8, 0.15)) (S10.A33, A2-1)"
+  },
+  {
+   "id": "LAMBDA-MIN-ethanol+water",
+   "holds": true,
+   "statement": "ethanol+water: theta* is a strict local minimum: |grad Phi|_inf = 6.26e-29 <= 1e-20 and the Hessian's eigenvalues (0.372617, 14.3876) are positive (central difference of the analytic gradient, h = 1e-15, 50 digits) (A2-1)"
+  },
+  {
+   "id": "LAMBDA-V1-ethanol+water",
+   "holds": true,
+   "statement": "ethanol+water: section 9.4's original start theta = 0 also converges (24 iterations) to theta* within 1.05e-27 <= 1e-24, with the same stored Lambda: Amendment 2 leaves this binary's result unchanged (A2-1)"
+  },
+  {
+   "id": "LAMBDA-GRID64-methanol+water",
+   "holds": true,
+   "statement": "methanol+water: the binary64 grid objective at its best point agrees with the 50-digit one to 9.43e-18 <= 1e-14 (B-25, A2-1)"
+  },
+  {
+   "id": "LAMBDA-CONV-methanol+water",
+   "holds": true,
+   "statement": "methanol+water: Gauss-Newton from the grid's best point (1, -0.125) converged in 28 iterations (last step 3.27e-32 < 1e-30; cap 200) (A2-1)"
+  },
+  {
+   "id": "LAMBDA-BOX-methanol+water",
+   "holds": true,
+   "statement": "methanol+water: theta* = (1.0012979, -0.12596115) lies inside the open box (-3, 6)^2 the grid covers (A2-1)"
+  },
+  {
+   "id": "LAMBDA-methanol+water",
+   "holds": true,
+   "statement": "methanol+water: Phi* = 0.00943191329052; the grid scan of [-3, 6]^2 (step 0.005) finds no Phi below Phi* - 1e-12 (its minimum 0.00943274692128 at theta = (1, -0.125)) (S10.A33, A2-1)"
+  },
+  {
+   "id": "LAMBDA-MIN-methanol+water",
+   "holds": true,
+   "statement": "methanol+water: theta* is a strict local minimum: |grad Phi|_inf = 1.14e-30 <= 1e-20 and the Hessian's eigenvalues (0.197276, 18.5564) are positive (central difference of the analytic gradient, h = 1e-15, 50 digits) (A2-1)"
+  },
+  {
+   "id": "LAMBDA-V1-methanol+water",
+   "holds": true,
+   "statement": "methanol+water: section 9.4's original start theta = 0 also converges (32 iterations) to theta* within 1.02e-28 <= 1e-24, with the same stored Lambda: Amendment 2 leaves this binary's result unchanged (A2-1)"
+  },
+  {
+   "id": "REC-ROUNDTRIP",
+   "holds": true,
+   "statement": "records.yaml parses back to exactly the computed binary64 values (every value a float)"
+  }
+ ]
+}
