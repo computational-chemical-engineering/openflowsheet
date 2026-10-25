@@ -785,6 +785,123 @@ def round_to(x: mpf, decimals: int) -> float:
     return round(float(x), decimals)
 
 
+def flash_record(
+    fl: Flash,
+    f64: Float64Model,
+    ids: Sequence[str],
+    sid: str,
+    nst: Sequence[float],
+    t: float,
+    p: float,
+    res: dict[str, Any],
+    entry: dict[str, Any],
+) -> dict[str, Any]:
+    """Section 7.3 for one non-dormant flash state: fills `entry` (stability, outlets), states
+    the SS-, BETA- and BAL- claims of a two-phase state, and returns the binary64 floors of the
+    trial distances and of ln K, the SS counts and the per-output tolerances (None unless
+    two-phase). Shared by the synthetic F-states and the real I-states (spec 9.7)."""
+    n = len(ids)
+    nt = sum(mpf(v) for v in nst)
+    z = res["z"]
+    entry["stability"] = {
+        "label": "STABLE_WITHIN_TESTED_SCOPE",
+        "tm_vapour_trial": nstr(res["tm_v"]),
+        "tm_liquid_trial": None if res["tm_l"] is None else nstr(res["tm_l"]),
+    }
+    # binary64 floor of tm_V at the state, and of tm_L at the rounded stationary point
+    zf = [float(v) for v in z]
+    lkf = f64.lnk(t, p, zf)
+    tmv_f = 1.0 - sum(zf[i] * math.exp(lkf[i]) for i in range(n) if zf[i] > 0)
+    fl_tm = abs(tmv_f - float(res["tm_v"]))
+    ss_trial = 0
+    if res["tm_l"] is not None:
+        wf = [float(v) for v in res["lt"]["W"]]
+        tot = sum(wf)
+        wn = [v / tot for v in wf]
+        lkw = f64.lnk(t, p, wn)
+        tml_f = 1.0 + sum(
+            wf[i] * (math.log(wf[i]) + lkw[i] - math.log(zf[i]) - 1.0)
+            for i in range(n)
+            if zf[i] > 0
+        )
+        fl_tm = max(fl_tm, abs(tml_f - float(res["tm_l"])))
+        ss_trial = res["lt"]["ss_count"] or 0
+    out: dict[str, Any] = {
+        "tm_floor": fl_tm,
+        "lnk_floor": 0.0,
+        "ss_trial": ss_trial,
+        "ss_two": 0,
+        "tolerance": None,
+    }
+    if res["phase"] in ("LIQUID", "VAPOR"):
+        entry["vapor_fraction"] = 0.0 if res["phase"] == "LIQUID" else 1.0
+        entry["outlets"] = (
+            "the feed state bitwise in the named phase; the other outlet dormant (zeros, same "
+            "T and P)"
+        )
+        decide = res["tm_v"] if res["phase"] == "LIQUID" else res["tm_l"]
+        entry["deciding_tm"] = nstr(decide)
+        return out
+    act = res["act"]
+    sens = fl.sensitivities(mpf(t), mpf(p), z, nt, res)
+    rho, a_inf = sens["rho"], sens["A"]
+    claim(
+        f"SS-{sid}",
+        rho < mpf("0.9"),
+        f"{sid}: the two-phase SS map converges, spectral radius of dPhi/dlnK = "
+        f"{float(rho):.4f} < 0.9 "
+        f"(error amplification ||(I - dPhi/dlnK)^-1||_inf = {float(a_inf):.4f})",
+    )
+    out["ss_two"] = res["ss_count"] or 0
+    # binary64 floor of ln K at the rounded solution
+    xf = [float(v) for v in res["x"]]
+    lkx = f64.lnk(t, p, xf)
+    fl_lnk = max(abs(lkx[i] - float(mp.log(res["k"][i]))) for i in range(n))
+    out["lnk_floor"] = fl_lnk
+    labels = [
+        "beta",
+        *(f"x_{ids[i]}" for i in act),
+        *(f"y_{ids[i]}" for i in act),
+        *(f"nV_{ids[i]}" for i in act),
+        *(f"nL_{ids[i]}" for i in act),
+    ]
+    base = float(a_inf) * (float(DELTA_K) + fl_lnk)
+    vals_q = fl.rr_outputs(z, [mp.log(res["k"][i]) for i in act], act, nt)
+    tq = {}
+    for q, lab in enumerate(labels):
+        s_scale = float(nt) if lab.startswith("n") else 1.0
+        tq[lab] = g3(
+            10 * (float(sens["S"][q]) * base + 64 * EPS64 * max(abs(float(vals_q[q])), s_scale))
+        )
+    tq["k_relative"] = g3(10 * (base + 64 * EPS64))
+    for k_, srow in sens["S_kzero"].items():
+        tq[f"k_relative_{ids[k_]}"] = g3(10 * (float(srow) * base + 64 * EPS64))
+    out["tolerance"] = {
+        "rho": g3(float(rho)),
+        "A": g3(float(a_inf)),
+        "lnK_floor": g3(fl_lnk),
+        "per_output": tq,
+    }
+    beta = res["beta"]
+    entry["vapor_fraction"] = nstr(beta)
+    entry["x"] = {c: nstr(res["x"][i]) for i, c in enumerate(ids)}
+    entry["y"] = {c: nstr(res["y"][i]) for i, c in enumerate(ids)}
+    entry["vapor_n"] = {c: nstr(beta * nt * res["y"][i]) for i, c in enumerate(ids)}
+    entry["liquid_n"] = {c: nstr((1 - beta) * nt * res["x"][i]) for i, c in enumerate(ids)}
+    entry["k_values"] = {c: nstr(res["k"][i]) for i, c in enumerate(ids)}
+    claim(f"BETA-{sid}", 0 < beta < 1, f"{sid}: 0 < beta < 1 (beta = {float(beta):.6e})")
+    claim(
+        f"BAL-{sid}",
+        max(
+            abs(beta * nt * res["y"][i] + (1 - beta) * nt * res["x"][i] - mpf(nst[i]))
+            for i in range(n)
+        )
+        < mpf("1e-40"),
+        f"{sid}: the 50-digit outlets close the component balance",
+    )
+    return out
+
+
 # ============================================================================================
 # 8. Build
 # ============================================================================================
@@ -1384,106 +1501,14 @@ def build() -> dict[str, Any]:
             entry["vapor_fraction"] = None
             flash_out[sid] = entry
             continue
-        nt = sum(mpf(v) for v in nst)
-        z = res["z"]
-        entry["stability"] = {
-            "label": "STABLE_WITHIN_TESTED_SCOPE",
-            "tm_vapour_trial": nstr(res["tm_v"]),
-            "tm_liquid_trial": None if res["tm_l"] is None else nstr(res["tm_l"]),
-        }
-        # binary64 floor of tm_V at the state, and of tm_L at the rounded stationary point
-        zf = [float(v) for v in z]
-        lkf = f64.lnk(t, p, zf)
-        tmv_f = 1.0 - sum(zf[i] * math.exp(lkf[i]) for i in range(n) if zf[i] > 0)
-        fl_tm = abs(tmv_f - float(res["tm_v"]))
-        if res["tm_l"] is not None:
-            wf = [float(v) for v in res["lt"]["W"]]
-            tot = sum(wf)
-            wn = [v / tot for v in wf]
-            lkw = f64.lnk(t, p, wn)
-            tml_f = 1.0 + sum(
-                wf[i] * (math.log(wf[i]) + lkw[i] - math.log(zf[i]) - 1.0)
-                for i in range(n)
-                if zf[i] > 0
-            )
-            fl_tm = max(fl_tm, abs(tml_f - float(res["tm_l"])))
-            ss_trial_max = max(ss_trial_max, res["lt"]["ss_count"] or 0)
-        worst_tm_floor = max(worst_tm_floor, fl_tm)
-        measured_flash[sid] = {"tm_floor": g3(fl_tm)}
-        if res["phase"] in ("LIQUID", "VAPOR"):
-            entry["vapor_fraction"] = 0.0 if res["phase"] == "LIQUID" else 1.0
-            entry["outlets"] = (
-                "the feed state bitwise in the named phase; the other outlet dormant (zeros, same "
-                "T and P)"
-            )
-            decide = res["tm_v"] if res["phase"] == "LIQUID" else res["tm_l"]
-            entry["deciding_tm"] = nstr(decide)
-        else:
-            act = res["act"]
-            sens = fl.sensitivities(mpf(t), mpf(p), z, nt, res)
-            rho, a_inf = sens["rho"], sens["A"]
-            claim(
-                f"SS-{sid}",
-                rho < mpf("0.9"),
-                f"{sid}: the two-phase SS map converges, spectral radius of dPhi/dlnK = "
-                f"{float(rho):.4f} < 0.9 "
-                f"(error amplification ||(I - dPhi/dlnK)^-1||_inf = {float(a_inf):.4f})",
-            )
-            ss_two_max = max(ss_two_max, res["ss_count"] or 0)
-            # binary64 floor of ln K at the rounded solution
-            xf = [float(v) for v in res["x"]]
-            lkx = f64.lnk(t, p, xf)
-            fl_lnk = max(abs(lkx[i] - float(mp.log(res["k"][i]))) for i in range(n))
-            worst_lnk_floor = max(worst_lnk_floor, fl_lnk)
-            labels = [
-                "beta",
-                *(f"x_{ids[i]}" for i in act),
-                *(f"y_{ids[i]}" for i in act),
-                *(f"nV_{ids[i]}" for i in act),
-                *(f"nL_{ids[i]}" for i in act),
-            ]
-            base = float(a_inf) * (float(DELTA_K) + fl_lnk)
-            vals_q = fl.rr_outputs(z, [mp.log(res["k"][i]) for i in act], act, nt)
-            tq = {}
-            for q, lab in enumerate(labels):
-                s_scale = float(nt) if lab.startswith("n") else 1.0
-                tq[lab] = g3(
-                    10
-                    * (
-                        float(sens["S"][q]) * base
-                        + 64 * EPS64 * max(abs(float(vals_q[q])), s_scale)
-                    )
-                )
-            tq["k_relative"] = g3(10 * (base + 64 * EPS64))
-            for k_, srow in sens["S_kzero"].items():
-                tq[f"k_relative_{ids[k_]}"] = g3(10 * (float(srow) * base + 64 * EPS64))
-            tol_flash[sid] = {
-                "rho": g3(float(rho)),
-                "A": g3(float(a_inf)),
-                "lnK_floor": g3(fl_lnk),
-                "per_output": tq,
-            }
-            beta = res["beta"]
-            entry["vapor_fraction"] = nstr(beta)
-            entry["x"] = {c: nstr(res["x"][i]) for i, c in enumerate(ids)}
-            entry["y"] = {c: nstr(res["y"][i]) for i, c in enumerate(ids)}
-            entry["vapor_n"] = {c: nstr(beta * nt * res["y"][i]) for i, c in enumerate(ids)}
-            entry["liquid_n"] = {c: nstr((1 - beta) * nt * res["x"][i]) for i, c in enumerate(ids)}
-            entry["k_values"] = {c: nstr(res["k"][i]) for i, c in enumerate(ids)}
-            claim(
-                f"BETA-{sid}",
-                0 < beta < 1,
-                f"{sid}: 0 < beta < 1 (beta = {float(beta):.6e})",
-            )
-            claim(
-                f"BAL-{sid}",
-                max(
-                    abs(beta * nt * res["y"][i] + (1 - beta) * nt * res["x"][i] - mpf(nst[i]))
-                    for i in range(n)
-                )
-                < mpf("1e-40"),
-                f"{sid}: the 50-digit outlets close the component balance",
-            )
+        fr = flash_record(fl, f64, ids, sid, nst, t, p, res, entry)
+        worst_tm_floor = max(worst_tm_floor, fr["tm_floor"])
+        worst_lnk_floor = max(worst_lnk_floor, fr["lnk_floor"])
+        ss_trial_max = max(ss_trial_max, fr["ss_trial"])
+        ss_two_max = max(ss_two_max, fr["ss_two"])
+        measured_flash[sid] = {"tm_floor": g3(fr["tm_floor"])}
+        if fr["tolerance"] is not None:
+            tol_flash[sid] = fr["tolerance"]
         flash_out[sid] = entry
 
     claim(
