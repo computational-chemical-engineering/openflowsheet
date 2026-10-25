@@ -137,6 +137,9 @@ LADDER = {
 TOL_ABS_BETA_X_Y = 1e-7
 TOL_REL_K = 1e-7
 TOL_ABS_H = 0.05  # J/mol
+#: §16 A3-6 (S10.A45, amended): 0.1 x the comparison tolerance tau = 1e-7. At a two-phase state
+#: whose own residual g = max(equilibrium, balance) (B-54) exceeds it, DWSIM cannot discriminate.
+DWSIM_FLOOR_GATE = 0.1 * TOL_ABS_BETA_X_Y
 
 
 def sha256(path: Path) -> str:
@@ -515,13 +518,34 @@ def a45(
         if entry["phase"] == "TWO_PHASE":
             rows = state_rows(qty, entry["closed_form"])
             worst = max(rows, key=lambda r: r["ratio"])
+            sc = self_consistency(qty, entry["state"], model)
+            g = max(sc["max_abs_lnK_minus_ln_gamma_psat_over_p"], sc["max_abs_component_balance"])
+            if g > DWSIM_FLOOR_GATE:
+                # A3-6: every A41 quantity is NOT_COMPARABLE; the differences stay as
+                # unclassified diagnostics (no `within`, no `all_within`).
+                states[sid] = {
+                    "status": "NOT_COMPARABLE",
+                    "reason": f"reference_accuracy: dwsim_flash_floor({g:.6g})",
+                    "g": g,
+                    "gate": DWSIM_FLOOR_GATE,
+                    "tolerance": tol,
+                    "temperature": entry["state"]["T"],
+                    "diagnostic_rows": [
+                        {k: v for k, v in r.items() if k != "within"} for r in rows
+                    ],
+                    "diagnostic_max_ratio": worst["ratio"],
+                    "diagnostic_argmax": worst["quantity"],
+                    "dwsim_self_consistency": sc,
+                }
+                continue
             rec.update(
                 {
                     "rows": rows,
                     "max_ratio": worst["ratio"],
                     "argmax": worst["quantity"],
                     "all_within": all(r["within"] for r in rows),
-                    "dwsim_self_consistency": self_consistency(qty, entry["state"], model),
+                    "dwsim_self_consistency": sc,
+                    "g": g,
                 }
             )
         else:
@@ -546,11 +570,15 @@ def a45(
             "K_relative": TOL_REL_K,
             "h_absolute_J_per_mol": TOL_ABS_H,
             "I6_I7": "the phase identity, exact",
+            "dwsim_flash_floor_gate_g": DWSIM_FLOOR_GATE,
         },
         "expected": "reference_values_real.yaml closed_form.i_states (two-phase) and phase "
         "(I6, I7)",
         "states": states,
-        "verdict": "the verdict agent's, per state; nothing here classifies",
+        "classification": "spec section 16 A3-6: a two-phase state with g > the gate is "
+        "NOT_COMPARABLE for every A41 quantity (h included), differences kept as diagnostics; "
+        "I6 and I7 are compared on the phase identity; B-50's settings are ratified",
+        "verdict": "the verdict agent's, per state",
     }
 
 
