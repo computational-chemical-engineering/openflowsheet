@@ -428,3 +428,18 @@ B-62's real-section hash `fa7c43f7…` (`ae9aab8c`), DWSIM's `28676a25…`, so t
   in any test; all three CI jobs failed on that one test. The version is now read from the distribution metadata
   (`importlib.metadata.version("CoolProp")`) without importing it. Test hygiene only; no assertion changed. Locally:
   S10 records + S05 envelope + T08 W2 288 passed, 1 skipped (no CoolProp); 269 passed, 1 skipped with CoolProp 8.0.0.
+
+## WO-S10-7a (the manifest with D19, the ledger, the harvest; spec §18 A5-3)
+
+- **MEASURED (manifest):** `evidence/S10/f974cc8782761f23cef5c66ba976fee7fa46ec98/manifest.json`, generated from a clean
+  tree at `f974cc87`: `status: tested`, 53 of 56 checks pass (A54-A58 added; tests "244 passed, 2 skipped (VAL-2)");
+  `S10.validation` `not_applicable`, `S10.gate`, `S10.ci` `unsupported`; `requirements: ["D08", "D19"]`. A first
+  manifest at `1fbd7c53` was dropped unpushed (`S10.ruff` failed on a docstring line of the generator, E501).
+- B-86. DECISION (harvest classes of the new manifest, build-lane draft for design-lane review): the 33 limitations and 3
+  checks whose text equals the `c4f3751e` manifest's keep B-84's class and `to`. The 8 new limitations are P: the seven
+  §18 A5-7 items (limitations[27]-[33]: rights verdict, Lambda vetting, stored fit, aarch64 floor, water's constants,
+  D19 not met, M01/L01) and the reworded B-83 item (limitations[36]), all scope statements, rights process or measurement
+  records under B-84's P description. Alternative: [28] (the Lambda are not vetted by T08.A32) -> E to U02. Reversible by:
+  editing those entries' class and `to`, then `t08_support_matrix.py --emit`.
+- **MEASURED (HARVEST_SIZE):** `matrix.harvest_items()` = (52, 688, 85), was (51, 647, 82). Pinned in
+  `tests/test_m07a_harvest.py`. `--emit` regenerated `docs/support-matrix.md`; `--check`: 0 problems.
