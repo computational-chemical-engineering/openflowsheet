@@ -30,8 +30,10 @@ S01's rule):
 merge): their checks are `unsupported`. `status` is computed, never written: `tested` iff every
 assertion A01–A18 and every required check passes; otherwise `implemented`. Both review fields
 stay `pending`; `reviewed` is the design lane's `reviewer`'s. The limitations are §11's items
-verbatim, then what this run found. `requirements` is `[X31]`, the "invalid specs/phases" clause
-only (§13.10; the verdict stays the design lane's).
+verbatim, then what this run found. S08 evidences release gate X31's "invalid specs/phases"
+clause (§13.10); the frozen manifest schema admits only D/A requirement ids in `requirements`,
+so that stays empty, the ledger cites this manifest under X31's `evidence`, and a limitation
+says so (docs/S08_DECISIONS.md W5-7).
 
 Usage:
     PYTHONPATH=src .venv/bin/python scripts/s08_evidence_manifest.py [--commit SHA] [--out PATH]
@@ -84,8 +86,12 @@ SCRIPTS = ("scripts/s08_identity.py", "scripts/s08_evidence_manifest.py")
 NOTE_ASSERTIONS = tuple(f"A{index:02d}" for index in range(1, 17))
 AMENDMENT_ASSERTIONS = ("A17", "A18")
 ASSERTIONS = NOTE_ASSERTIONS + AMENDMENT_ASSERTIONS
-#: The requirement S08 evidences: X31's "invalid specs/phases" clause (§13.10, R-736).
-REQUIREMENTS = ["X31"]
+#: The manifest's `requirements`. S08 evidences gate X31's "invalid specs/phases" clause (§13.10,
+#: R-736), but `schemas/evidence-manifest.schema.json` (frozen) admits only `^[DA][0-9]{2}$`
+#: there; the ledger cites the manifest under X31 instead (W5-7).
+REQUIREMENTS: list[str] = []
+#: The gate S08 evidences, named in the limitations.
+GATE = "X31"
 #: The non-assertion checks `status` also requires.
 REQUIRED_CHECKS = (
     "S08.G1",
@@ -317,10 +323,13 @@ def status(entries: Sequence[Mapping[str, Any]]) -> str:
 
 def found_limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
     items = [
-        'requirements is [X31] for its "invalid specs/phases" clause only (S08-design §13.10, '
-        "R-736): S08 changes the expected outcome of S02's phase case P1 and adds P2, P3, F1, D1 "
-        "and item 6. It does not touch X31's reference clause, and X31's verdict stays null "
-        "(the design lane's).",
+        f"S08 evidences release gate {GATE}'s 'invalid specs/phases' clause only (S08-design "
+        "§13.10, R-736): it changes the expected outcome of S02's phase case P1 and adds P2, P3, "
+        f"F1, D1 and item 6. It does not touch {GATE}'s reference clause, and {GATE}'s verdict "
+        "stays null (the design lane's). requirements is empty because the frozen manifest "
+        "schema admits only D/A requirement ids there (§13.10's requirements: [X31] does not "
+        f"validate); docs/requirements.yaml cites this manifest under {GATE}'s evidence instead "
+        "(docs/S08_DECISIONS.md W5-7).",
         "scripts/gate.sh and CI on x86-64 and aarch64 (§9 G4) were not run by this generator "
         "(they run once before merge into main); S08.gate and S08.ci are unsupported here. "
         "Item 6's margin across architectures (§10 Q5) is therefore not yet shown on aarch64.",
