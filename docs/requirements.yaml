@@ -432,7 +432,7 @@ requirements:
   - id: D19
     title: External references
     blueprint_ref: "§1 D19"
-    packages: [T06, S03, R01]
+    packages: [T06, S03, S10, R01]
     minimum_evidence: "Matched-model inputs, independence disclosure and verdicts"
     # S03 (column reference comparisons against DWSIM and IDAES): its manifest `evidence/S03/930aad1b...`
     # is `tested` and lists D19. The `verdict` agent's document (docs/reviews/S03-verdicts.md, verdict 5)
@@ -443,9 +443,19 @@ requirements:
     # refluxed absorber). Frank has queued S09, a third reference tool, for that gap (Q-A2-4). Not claimed:
     # empirical validation (SYN-001 is synthetic), `reviewed` (human review pending), and T06's or R01's
     # parts of D19; the status is not moved by this citation.
-    tests: []
+    #
+    # S10 (property method `wilson-ig-v1` against IDAES and DWSIM): its manifest `evidence/S10/NEWMANIFEST...`
+    # is `tested` and lists D19 (S10 spec §18 A5-3, R-724). §8's comparisons are the matched-model evidence for the
+    # property method: the inputs `benchmarks/s10/{idaes,dwsim}/inputs.json` are re-checked by their comparisons, the
+    # independence disclosure is S10 spec §8 and §16, and the verdicts are `docs/reviews/S10-reference-verdicts.md`.
+    # Not claimed: that D19 is met; empirical validation (S10 reports it apart, spec §9.6); `reviewed`; T06's or R01's
+    # parts of D19; the status is not moved by this citation.
+    tests:
+      - tests/test_s10_idaes.py
+      - tests/test_s10_dwsim.py
     evidence:
       - evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+      - evidence/S10/NEWMANIFEST/manifest.json
     status: planned
 
   - id: D20

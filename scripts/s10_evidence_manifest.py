@@ -8,7 +8,7 @@ script, schema, derivation or S10 benchmark file differs from it; S01's rule):
 1. **The S10 tests** (`tests/test_s10_*.py`, one `pytest --junitxml` run). A test cites the
    assertions its function name carries (`test_a33_…` cites A33). `S10.Axx` passes only if at
    least one node cites it and every node citing it passed. The verification assertions are
-   A01–A08, A10–A28, A30–A34 and A40–A45 (A09 is reserved). `S10.tests` records the count; every
+   A01–A08, A10–A28, A30–A34, A40–A45 and A54–A58 (A09 is reserved). `S10.tests` records the count; every
    skip must be one of VAL-2's (A4-4: "N passed, 2 skipped (VAL-2)").
 2. **The generators' `--check`**: `s10_reference.py` (113 claims, A25), `s10_reference.py --real`
    (160 claims), `s10_records.py` (25 claims, A31).
@@ -92,12 +92,13 @@ SCRIPTS = (
     "scripts/s10_evidence_manifest.py",
 )
 TOOLS = ("idaes", "dwsim")
-#: §7.5's verification ids (A09 is reserved; A50–A53 are validation, §17 A4-4).
+#: §7.5's verification ids (A09 is reserved; A50–A53 are validation, §17 A4-4; A54–A58, §18).
 VERIFICATION = (
     *(f"A{index:02d}" for index in range(1, 9)),
     *(f"A{index:02d}" for index in range(10, 29)),
     *(f"A{index:02d}" for index in range(30, 35)),
     *(f"A{index:02d}" for index in range(40, 46)),
+    *(f"A{index:02d}" for index in range(54, 59)),
 )
 VALIDATION_IDS = ("A50", "A51", "A52", "A53")
 #: A tool check's expected `--check` line, when it carries a claim count.
@@ -206,6 +207,7 @@ def limitations_of_the_spec(document: str) -> list[str]:
         ("### A2-6.", "§15 A2-6 (as written at Amendment 2)"),
         ("### A3-9.", "§16 A3-9 (as written at Amendment 3)"),
         ("### A4-5.", "§17 A4-5"),
+        ("### A5-7.", "§18 A5-7"),
     ):
         found = bullets(section(document, heading))
         if not found:
@@ -371,9 +373,8 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], record: Mapping[str,
         "for the CH3OH latent heat (+5.72 % against 5 %). `tested` attests numerical "
         "verification only.",
         "Every IDAES and DWSIM state not compared, with its reason: " + "; ".join(lost),
-        "requirements lists D08 (`wilson-ig-v1`, a further real provider on the property "
-        "contract). §8's tool comparisons are numerical verification of the same equations "
-        "(D19-shaped); D19's ledger row is not edited by this work order.",
+        "requirements lists D08 and D19; §8's comparisons are D19's matched-model evidence for "
+        "the property method (S10 spec §18 A5-3)",
         "Rights (docs/s10-rights-check.md): RC-05 and RC-06 (the 1993 paper's Tables II and V) "
         "and RC-08 (atomic weights) are unresolved; no S10 file is in a PACKAGED path (A28) and "
         "`wilson-ig-v1` is library-only (A27). Shipping is Frank's decision (Q-F3).",
@@ -505,7 +506,7 @@ def build(commit: str) -> dict[str, Any]:
     manifest: dict[str, Any] = {
         "work_package": "S10",
         "commit": commit,
-        "requirements": ["D08"],
+        "requirements": ["D08", "D19"],
         "status": status(entries),
         "inputs": {
             "case_id": "S10 acceptance: docs/derivations/S10-spec.md §7.5 (A01–A45, amended by "
@@ -540,7 +541,7 @@ def build(commit: str) -> dict[str, Any]:
                     (BENCH / "dwsim" / "qualification.json", "the DWSIM tool record (§8.2)"),
                     (BENCH / "dwsim" / "comparison.json", "the DWSIM comparison (§8.2)"),
                     (REPORT, "the empirical validation numbers (§9.6)"),
-                    (SPEC, "the S10 specification the checks are read from (§0, §7.5, §14-§17)"),
+                    (SPEC, "the S10 specification the checks are read from (§0, §7.5, §14-§18)"),
                 )
             ),
         ],
