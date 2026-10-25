@@ -1,4 +1,4 @@
-"""S10 WO-S10-4: the IDAES 2.13 qualification of `wilson-ig-v1` (spec §8.1, §15 A2-3).
+"""S10 WO-S10-4 and 4b: the IDAES 2.13 qualification of `wilson-ig-v1` (spec §8.1, §15 A2-3).
 
 Authority: `docs/derivations/S10-spec.md` §8.1. This script builds IDAES's ideal-gas + Wilson
 package (`idaes/models/properties/activity_coeff_models/activity_coeff_prop_pack.py`,
@@ -24,19 +24,24 @@ Then, in this order:
    `B`, `activity_coeff_comp`, `pressure_sat_comp`, `enth_mol_phase_comp` and `enth_mol_phase`,
    with both phase compositions and every temperature variable fixed at the point. The bubble and
    dew P^sat Expressions and the bubble/dew activity Expressions are read at the same point.
-2. **The ladder** (pre-registered, §8.1): eps_1 = eps_2 in (1e-4, 1e-5, 1e-6) K; for each rung
+2. **The ladders** (spec §16 A3-2, A3-8): eps_1 = eps_2 in (1e-4, 1e-5, 1e-6) K; for each rung
    and I-state a fresh model, the package's `initialize()` from the registered state, then Ipopt
-   (the bundled 3.13.2) with tol = constr_viol_tol = 1e-10 and max_iter = 3000, linear solver
-   MA27, then MUMPS if MA27 did not end optimal. Every attempt is recorded. The first rung at
-   which every I-state ends "Optimal Solution Found" is the selected rung.
+   (the bundled 3.13.2) with tol = 1e-10, max_iter = 3000 and the ladder's constr_viol_tol,
+   linear solver MA27, then MUMPS if MA27 did not end optimal. Every attempt is recorded. Run R
+   (`registered_8_1`, constr_viol_tol = 1e-10) is rerun only to reproduce the WO-S10-4 record
+   exactly (`--reproduce-against`); run A3 (`amendment_3`, constr_viol_tol = 1e-9) decides.
+3. **Selection and S10.A43**, from these records alone: per state, the first converged attempt
+   of run A3 in the registered order; rung dependence among run A3's converged attempts, and
+   setting dependence between runs R and A3, on every S10.A41 quantity, at ratio <= 0.1.
 
 Inputs: `benchmarks/s10/idaes/inputs.json` only (written by `scripts/s10_idaes_comparison.py
---write-inputs`: record values, I-state definitions n, T, P, the RB points, the ladder). No
-expected value is read, and nothing of `openflowsheet` is imported. The comparison is
-`scripts/s10_idaes_comparison.py`'s. Output: `benchmarks/s10/idaes/qualification.json`; Ipopt
+--write-inputs`: record values, I-state definitions n, T, P, the RB points, both ladders, A43's
+tolerances). No expected value is read, and nothing of `openflowsheet` is imported. The comparison
+is `scripts/s10_idaes_comparison.py`'s. Output: `benchmarks/s10/idaes/qualification.json`; Ipopt
 logs go to `--log-dir` (not committed; their SHA-256 is recorded).
 
-    .venv-idaes/bin/python spikes/references/s10_qualify_idaes.py [--out FILE] [--log-dir DIR]
+    PYTHONPATH=spikes/references .venv-idaes/bin/python spikes/references/s10_qualify_idaes.py \
+        --reproduce-against QUALIFICATION_AT_e63f98c2 [--out FILE] [--log-dir DIR]
 
 Not part of `scripts/check.sh`: the gate never runs a tool.
 """
@@ -308,7 +313,7 @@ def inspect(m: Any, sb: Any) -> dict[str, Any]:
     """Structural facts of the built model, before any solve (S03 precedent)."""
     import pyomo.environ as pyo
     from idaes.core.util.model_statistics import degrees_of_freedom
-    from pyomo.core.expr.visitor import identify_mutable_parameters
+    from pyomo.core.expr.visitor import expression_to_string, identify_mutable_parameters
 
     wagner = {"pressure_critical", "temperature_critical", "pressure_sat_coeff"}
     refs = []
@@ -331,6 +336,21 @@ def inspect(m: Any, sb: Any) -> dict[str, Any]:
         "active_constraint_names": sorted(active),
         "wagner_parameter_references_in_active_constraints": refs,
         "psat_sites_CH3OH_and_dew_equation": psat_sites,
+        # spec §16 A3-4 (S10.A44): the gamma each envelope equation references, as built. Pyomo's
+        # plain str() inlines a named Expression's body (activity_coeff_comp_bubble shows as the
+        # Wilson formula in mole_frac_comp); its verbose rendering names it (B-42).
+        "envelope_equations": {
+            "rendering": "pyomo expression_to_string(expr, verbose=True): every named Expression "
+            "appears by its name with its body in braces (B-42)",
+            **{
+                name: expression_to_string(sb.component(name).expr, verbose=True)
+                for name in ("eq_temperature_bubble", "eq_temperature_dew")
+            },
+            "plain_str": {
+                name: str(sb.component(name).expr)
+                for name in ("eq_temperature_bubble", "eq_temperature_dew")
+            },
+        },
     }
 
 
@@ -409,17 +429,27 @@ def readback(package: Any, mp: dict[str, Any], point: dict[str, Any]) -> dict[st
 
 
 def quantities(sb: Any) -> dict[str, Any]:
+    """The loaded iterate's quantities; a variable Ipopt never gave a value is recorded as null
+    (spec §16 A3-8: the WO-S10-4 harness raised on it), and so is anything derived from it."""
     import pyomo.environ as pyo
 
-    v = pyo.value
+    def v(obj: Any) -> Any:
+        if getattr(obj, "is_variable_type", lambda: False)() and obj.value is None:
+            return None
+        return pyo.value(obj)
+
     x = {c: v(sb.mole_frac_phase_comp["Liq", c]) for c in IDS}
     y = {c: v(sb.mole_frac_phase_comp["Vap", c]) for c in IDS}
+    flow_vap, flow = v(sb.flow_mol_phase["Vap"]), v(sb.flow_mol)
     return {
-        "beta": v(sb.flow_mol_phase["Vap"]) / v(sb.flow_mol),
+        "beta": None if flow_vap is None or flow is None else flow_vap / flow,
         "flow_mol_phase": {p: v(sb.flow_mol_phase[p]) for p in ("Liq", "Vap")},
         "x": x,
         "y": y,
-        "K": {c: (y[c] / x[c] if x[c] != 0 else None) for c in IDS},
+        "K": {
+            c: (y[c] / x[c] if x[c] is not None and y[c] is not None and x[c] != 0 else None)
+            for c in IDS
+        },
         "h_L": v(sb.enth_mol_phase["Liq"]),
         "h_V": v(sb.enth_mol_phase["Vap"]),
         "temperature": v(sb.temperature),
@@ -508,7 +538,7 @@ def attempt(
             rec["last_iterate"] = "loaded although not converged"
         rec["quantities"] = quantities(sb)
         rec["constraint_residuals"] = t06i.constraint_residuals(m)
-        rec["raw_variables"] = t06i.all_variables(m.fs.state)
+        rec["raw_variables"] = t06i.all_variables(sb)  # the state block m.fs.state[0]
     except Exception as exc:  # every failure is recorded, none is hidden
         rec["error"] = f"{type(exc).__name__}: {exc}"
         rec["traceback"] = traceback.format_exc(limit=6)
@@ -520,6 +550,9 @@ def attempt(
 def run_ladder(
     package: Any, mp: dict[str, Any], states: dict[str, Any], ladder: dict[str, Any], log_dir: Path
 ) -> dict[str, Any]:
+    """Every attempt of one ladder, in the registered order: for each rung, each I-state, MA27,
+    then MUMPS only if MA27 did not end optimal (spec §16 A3-2, item 1)."""
+    log_dir.mkdir(parents=True, exist_ok=True)
     attempts = []
     optimal: dict[str, list[float]] = {sid: [] for sid in states}
     for eps in ladder["eps_K"]:
@@ -537,12 +570,168 @@ def run_ladder(
                     break  # MUMPS only if MA27 did not end optimal (spec §8.1)
                 if "error" in rec and "not available" in rec.get("error", "").lower():
                     break
-    selected = next((e for e in ladder["eps_K"] if all(e in optimal[s] for s in states)), None)
+    return {"registered": ladder, "attempts": attempts, "optimal_rungs_per_state": optimal}
+
+
+# ============================================================================================
+# 5. Reproduction, selection and S10.A43, from the tool's own records (spec §16 A3-2, A3-4, A3-8)
+# ============================================================================================
+
+#: spec §16 A3-8 item 3: the solve fields run R must reproduce exactly.
+REPRODUCED_FIELDS = (
+    "initializer",
+    "stage_reached",
+    "solver_status",
+    "termination_condition",
+    "converged",
+)
+REPRODUCED_IPOPT_FIELDS = (
+    "iterations",
+    "exit",
+    "final_constraint_violation_unscaled",
+    "final_overall_nlp_error_scaled",
+)
+
+
+def _key(a: dict[str, Any]) -> tuple[str, float, str]:
+    return (a["state"], a["eps_K"], a["linear_solver"])
+
+
+def reproduction(source: Path, label: str, run_r: list[dict[str, Any]]) -> dict[str, Any]:
+    """Run R against the WO-S10-4 record, field by field, exactly (no tolerance)."""
+    old = json.loads(source.read_text(encoding="utf-8"))["ladder"]["attempts"]
+    differences: list[str] = []
+    if [_key(a) for a in old] != [_key(a) for a in run_r]:
+        differences.append(
+            f"attempt sequence: source {[_key(a) for a in old]} != run R {[_key(a) for a in run_r]}"
+        )
+    with_values = 0
+    for a, b in zip(old, run_r, strict=False):
+        k = "{}@{:g}/{}".format(*_key(a))
+        for f in REPRODUCED_FIELDS:
+            if a.get(f) != b.get(f):
+                differences.append(f"{k} {f}: {a.get(f)!r} != {b.get(f)!r}")
+        for f in REPRODUCED_IPOPT_FIELDS:
+            if a.get("ipopt", {}).get(f) != b.get("ipopt", {}).get(f):
+                differences.append(
+                    f"{k} ipopt.{f}: {a.get('ipopt', {}).get(f)!r} != {b.get('ipopt', {}).get(f)!r}"
+                )
+        if "quantities" in a:
+            with_values += 1
+            for f in ("quantities", "constraint_residuals"):
+                if a.get(f) != b.get(f):
+                    differences.append(f"{k} {f} differs")
     return {
-        "attempts": attempts,
-        "optimal_rungs_per_state": optimal,
-        "selected_rung_eps_K": selected,
-        "not_comparable": [s for s in states if not optimal[s]],
+        "source": label,
+        "source_sha256": file_sha256(source),
+        "fields": [*REPRODUCED_FIELDS, *(f"ipopt.{f}" for f in REPRODUCED_IPOPT_FIELDS)],
+        "fields_where_recorded": ["quantities", "constraint_residuals"],
+        "attempts_compared": min(len(old), len(run_r)),
+        "attempts_source": len(old),
+        "attempts_run_r": len(run_r),
+        "attempts_with_quantities_compared": with_values,
+        "identical": not differences,
+        "differences": differences,
+    }
+
+
+def phase_identity(beta: float, tol: float) -> str:
+    """B-36 (ratified by spec §16 A3-5)."""
+    if abs(beta) <= tol:
+        return "LIQUID"
+    if abs(beta - 1.0) <= tol:
+        return "VAPOR"
+    return "TWO_PHASE"
+
+
+def dependence(a: dict[str, Any], ref: dict[str, Any], spec: dict[str, Any]) -> dict[str, Any]:
+    """Attempt `a` against attempt `ref` on every S10.A41 quantity (spec §16 A3-4 (a)): beta, x_i,
+    y_i absolute; K_i relative to ref's K_i (not for a component absent from the feed, which A41
+    does not compare); h^L, h^V absolute; the phase identity alone at the states A41 compares by
+    it (I6, I7)."""
+    tol = spec["tolerances"]
+    qa, qr = a["quantities"], ref["quantities"]
+    if a["state"] in spec["compared_by_phase_identity"]:
+        pa = phase_identity(qa["beta"], tol["beta_x_y_absolute"])
+        pr = phase_identity(qr["beta"], tol["beta_x_y_absolute"])
+        return {"phase": pa, "phase_reference": pr, "phase_equal": pa == pr, "max_ratio": None}
+    ratios = {"beta": abs(qa["beta"] - qr["beta"]) / tol["beta_x_y_absolute"]}
+    for c in IDS:
+        for name in ("x", "y"):
+            ratios[f"{name}_{c}"] = abs(qa[name][c] - qr[name][c]) / tol["beta_x_y_absolute"]
+        if a["z"][c] != 0:
+            ratios[f"K_{c}"] = abs(qa["K"][c] - qr["K"][c]) / abs(qr["K"][c]) / tol["K_relative"]
+    for name in ("h_L", "h_V"):
+        ratios[name] = abs(qa[name] - qr[name]) / tol["h_absolute_J_per_mol"]
+    arg = max(ratios, key=lambda k: ratios[k])
+    return {"ratios": ratios, "max_ratio": ratios[arg], "argmax": arg}
+
+
+def select_and_check(
+    run_a3: list[dict[str, Any]], run_r: list[dict[str, Any]], spec: dict[str, Any]
+) -> dict[str, Any]:
+    """Spec §16 A3-2 item 4-6 and A3-4: per state, the first converged attempt of run A3 in the
+    registered order; then rung dependence (A3) and setting dependence (R against A3)."""
+    limit = spec["ratio_max"]
+    states = list(dict.fromkeys(a["state"] for a in run_a3))
+    selection: dict[str, Any] = {}
+    rung: dict[str, Any] = {}
+    setting: dict[str, Any] = {}
+    for sid in states:
+        conv = [(i, a) for i, a in enumerate(run_a3) if a["state"] == sid and a["converged"]]
+        if not conv:
+            selection[sid] = {"status": "NOT_COMPARABLE", "reason": "no_optimal_attempt"}
+            continue
+        i_sel, sel = conv[0]
+        entry: dict[str, Any] = {
+            "status": "selected",
+            "attempt_index": i_sel,
+            "eps_K": sel["eps_K"],
+            "linear_solver": sel["linear_solver"],
+        }
+        reasons = []
+        others = [
+            {"eps_K": a["eps_K"], "linear_solver": a["linear_solver"], **dependence(a, sel, spec)}
+            for _, a in conv[1:]
+        ]
+        rung[sid] = {"selected": f"{sel['eps_K']:g}/{sel['linear_solver']}", "others": others}
+        for o in others:
+            if o["max_ratio"] is None and not o["phase_equal"]:
+                reasons.append("rung_dependence(phase identity differs)")
+            elif o["max_ratio"] is not None and o["max_ratio"] > limit:
+                reasons.append(f"rung_dependence({o['max_ratio']:.3g})")
+        r_by_key = {_key(a): a for a in run_r if a["converged"]}
+        pairs = []
+        for a in run_a3:
+            if a["state"] == sid and a["converged"] and _key(a) in r_by_key:
+                d = dependence(r_by_key[_key(a)], a, spec)
+                pairs.append({"eps_K": a["eps_K"], "linear_solver": a["linear_solver"], **d})
+                if d["max_ratio"] is None and not d["phase_equal"]:
+                    reasons.append("setting_dependence(phase identity differs)")
+                elif d["max_ratio"] is not None and d["max_ratio"] > limit:
+                    reasons.append(f"setting_dependence({d['max_ratio']:.3g})")
+        setting[sid] = pairs
+        if reasons:
+            entry.update(
+                status="NOT_COMPARABLE",
+                reason="reference_accuracy: " + "; ".join(reasons),
+            )
+        selection[sid] = entry
+    return {
+        "selection": {
+            "rule": "per state, the first converged attempt of run amendment_3 in the order (eps "
+            "1e-4 ma27, mumps; 1e-5 ma27, mumps; 1e-6 ma27, mumps); none: NOT_COMPARABLE("
+            "no_optimal_attempt); a failed A43 check: NOT_COMPARABLE(reference_accuracy: ...) "
+            "(spec 16 A3-2, A3-4)",
+            "states": selection,
+        },
+        "a43": {
+            "assertion": "S10.A43",
+            "spec": spec,
+            "rung_dependence": rung,
+            "setting_dependence": setting,
+            "computed_from": "tool records only, before any difference to our values exists",
+        },
     }
 
 
@@ -550,6 +739,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--log-dir", type=Path, default=DEFAULT_LOGS)
+    parser.add_argument(
+        "--reproduce-against",
+        type=Path,
+        required=True,
+        help="the WO-S10-4 record (qualification.json at e63f98c2) that run R must reproduce",
+    )
+    parser.add_argument(
+        "--reproduce-label",
+        default="benchmarks/s10/idaes/qualification.json at e63f98c2 (WO-S10-4)",
+    )
     args = parser.parse_args()
     args.log_dir.mkdir(parents=True, exist_ok=True)
     inputs = json.loads(INPUTS.read_text(encoding="utf-8"))
@@ -570,11 +769,21 @@ def main() -> int:
         sb.mole_frac_comp[c].fix(1.0 / 3.0)
     structure = inspect(sb.model(), sb)
     readbacks = [readback(package, mp, p) for p in inputs["readback_points"]]
-    ladder = run_ladder(package, mp, inputs["i_states"]["states"], inputs["ladder"], args.log_dir)
+    states = inputs["i_states"]["states"]
+    runs = {
+        name: run_ladder(package, mp, states, inputs["ladders"][name], args.log_dir / name)
+        for name in ("registered_8_1", "amendment_3")  # run R, then run A3 (spec §16 A3-8)
+    }
+    repro = reproduction(
+        args.reproduce_against, args.reproduce_label, runs["registered_8_1"]["attempts"]
+    )
+    checked = select_and_check(
+        runs["amendment_3"]["attempts"], runs["registered_8_1"]["attempts"], inputs["a43"]
+    )
     doc = {
         "tool": "IDAES",
-        "authority": "docs/derivations/S10-spec.md section 8.1 (as amended by section 15 A2-3); "
-        "S10.A40-A42",
+        "authority": "docs/derivations/S10-spec.md section 8.1 (as amended by section 15 A2-3 "
+        "and section 16); S10.A40-A44",
         "script": "spikes/references/s10_qualify_idaes.py",
         "inputs": {"path": "benchmarks/s10/idaes/inputs.json", "sha256": file_sha256(INPUTS)},
         "versions": {
@@ -597,19 +806,25 @@ def main() -> int:
         "application_notes": APPLICATION_NOTES,
         "inspection": structure,
         "readbacks": readbacks,
-        "ladder": {"registered": inputs["ladder"], **ladder},
+        "ladders": runs,
+        "reproduction": repro,
+        **checked,
         "wall_time_import_s": t_import,
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(fx.finite(doc), indent=1) + "\n", encoding="utf-8")
-    per = ladder["optimal_rungs_per_state"]
-    n_opt = sum(1 for s in per.values() if s)
+    sel = checked["selection"]["states"]
     print(
         f"idaes S10: dof={structure['degrees_of_freedom']} wagner_refs="
         f"{len(structure['wagner_parameter_references_in_active_constraints'])} "
-        f"readbacks={len(readbacks)} optimal_somewhere={n_opt}/{len(per)} "
-        f"selected_rung={ladder['selected_rung_eps_K']} "
-        f"not_comparable={ladder['not_comparable']}"
+        f"readbacks={len(readbacks)} reproduction_identical={repro['identical']} "
+        f"({repro['attempts_compared']} attempts) selected="
+        + " ".join(
+            f"{k}:{v['eps_K']:g}/{v['linear_solver']}"
+            if v["status"] == "selected"
+            else f"{k}:NC({v['reason']})"
+            for k, v in sel.items()
+        )
     )
     return 0
 

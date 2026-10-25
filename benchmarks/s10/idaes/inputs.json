@@ -1,9 +1,21 @@
 {
- "authority": "docs/derivations/S10-spec.md section 8.1 as amended by section 15 A2-3",
+ "a43": {
+  "compared_by_phase_identity": [
+   "I6",
+   "I7"
+  ],
+  "ratio_max": 0.1,
+  "tolerances": {
+   "K_relative": 1e-07,
+   "beta_x_y_absolute": 1e-07,
+   "h_absolute_J_per_mol": 0.05
+  }
+ },
+ "authority": "docs/derivations/S10-spec.md section 8.1 as amended by section 15 A2-3 and section 16",
  "i_states": {
   "fields": "closed_form.i_states.<id>.state (n, T, P) only",
   "path": "benchmarks/s10/reference_values_real.yaml",
-  "sha256": "fa7c43f753baf0fae7695146f664a1b022de522a76dcb15246da81c6c8e00723",
+  "sha256": "52e46110ccd3243a03553a53123e8519fc4b9b5831b264a729104b2f49c6b04b",
   "states": {
    "I1": {
     "P": 101325.0,
@@ -133,23 +145,45 @@
    }
   }
  },
- "ladder": {
-  "eps_K": [
-   0.0001,
-   1e-05,
-   1e-06
-  ],
-  "initializer": "the package's own state-block initialize() from the registered state, no per-state tuning",
-  "ipopt_options": {
-   "constr_viol_tol": 1e-10,
-   "max_iter": 3000,
-   "tol": 1e-10
+ "ladders": {
+  "amendment_3": {
+   "converged": "Pyomo optimal termination and Ipopt 'EXIT: Optimal Solution Found.'",
+   "dependence_ratio_max": 0.1,
+   "eps_K": [
+    0.0001,
+    1e-05,
+    1e-06
+   ],
+   "ipopt_options": {
+    "constr_viol_tol": 1e-09,
+    "max_iter": 3000,
+    "tol": 1e-10
+   },
+   "linear_solvers": [
+    "ma27",
+    "mumps"
+   ],
+   "mumps": "only when the ma27 attempt at the same state and rung did not end optimal",
+   "selection": "per state: the first optimal attempt in the order (eps 1e-4 ma27, mumps; 1e-5 ma27, mumps; 1e-6 ma27, mumps); none: NOT_COMPARABLE(no_optimal_attempt)",
+   "use": "decides (spec 16 A3-2, A3-4)"
   },
-  "linear_solvers": [
-   "ma27",
-   "mumps"
-  ],
-  "selection": "the first rung at which every I-state ends optimal is used for all of them; a state optimal at no rung is NOT_COMPARABLE"
+  "registered_8_1": {
+   "eps_K": [
+    0.0001,
+    1e-05,
+    1e-06
+   ],
+   "ipopt_options": {
+    "constr_viol_tol": 1e-10,
+    "max_iter": 3000,
+    "tol": 1e-10
+   },
+   "linear_solvers": [
+    "ma27",
+    "mumps"
+   ],
+   "use": "reproduction of the WO-S10-4 record only (spec 16 A3-4); decides nothing"
+  }
  },
  "readback_points": [
   {

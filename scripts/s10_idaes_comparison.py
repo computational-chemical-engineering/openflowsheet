@@ -52,15 +52,24 @@ RB_X = ((0.2, 0.3, 0.5), (0.6, 0.2, 0.2))
 RB_P = 101325.0
 READBACK_RELATIVE = 1e-10  # S10.A40
 IDS = ("CH3OH", "C2H5OH", "H2O")
-#: §8.1, the ladder (pre-registered; S03's lesson).
-LADDER = {
+#: The two ladders (spec §16 A3-2, A3-8): `reference_values_real.yaml` `idaes_ladders`, asserted
+#: equal by a test. Run R (§8.1's ladder) is rerun for reproduction only; run A3 decides.
+LADDER_R = {
     "eps_K": [1e-4, 1e-5, 1e-6],
     "ipopt_options": {"tol": 1e-10, "constr_viol_tol": 1e-10, "max_iter": 3000},
     "linear_solvers": ["ma27", "mumps"],
-    "initializer": "the package's own state-block initialize() from the registered state, no "
-    "per-state tuning",
-    "selection": "the first rung at which every I-state ends optimal is used for all of them; a "
-    "state optimal at no rung is NOT_COMPARABLE",
+    "use": "reproduction of the WO-S10-4 record only (spec 16 A3-4); decides nothing",
+}
+LADDER = {
+    "eps_K": [1e-4, 1e-5, 1e-6],
+    "ipopt_options": {"tol": 1e-10, "constr_viol_tol": 1e-9, "max_iter": 3000},
+    "linear_solvers": ["ma27", "mumps"],
+    "mumps": "only when the ma27 attempt at the same state and rung did not end optimal",
+    "converged": "Pyomo optimal termination and Ipopt 'EXIT: Optimal Solution Found.'",
+    "selection": "per state: the first optimal attempt in the order (eps 1e-4 ma27, mumps; 1e-5 "
+    "ma27, mumps; 1e-6 ma27, mumps); none: NOT_COMPARABLE(no_optimal_attempt)",
+    "dependence_ratio_max": 0.1,
+    "use": "decides (spec 16 A3-2, A3-4)",
 }
 #: S10.A41.
 TOL_ABS_BETA_X_Y = 1e-7
@@ -112,7 +121,8 @@ def inputs() -> dict[str, Any]:
         for sid, entry in real["closed_form"]["i_states"].items()
     }
     return {
-        "authority": "docs/derivations/S10-spec.md section 8.1 as amended by section 15 A2-3",
+        "authority": "docs/derivations/S10-spec.md section 8.1 as amended by section 15 A2-3 and "
+        "section 16",
         "written_by": "scripts/s10_idaes_comparison.py --write-inputs",
         "records": {
             "path": "benchmarks/s10/records.yaml",
@@ -139,7 +149,21 @@ def inputs() -> dict[str, Any]:
             for t in RB_T
             for k, x in enumerate(RB_X)
         ],
-        "ladder": LADDER,
+        "ladders": {"registered_8_1": LADDER_R, "amendment_3": LADDER},
+        # spec §16 A3-4: what S10.A43 compares, on tool records only (tolerances, not values).
+        "a43": {
+            "tolerances": {
+                "beta_x_y_absolute": TOL_ABS_BETA_X_Y,
+                "K_relative": TOL_REL_K,
+                "h_absolute_J_per_mol": TOL_ABS_H,
+            },
+            "compared_by_phase_identity": sorted(
+                sid
+                for sid, entry in real["closed_form"]["i_states"].items()
+                if entry["phase"] != "TWO_PHASE"
+            ),
+            "ratio_max": LADDER["dependence_ratio_max"],
+        },
     }
 
 
