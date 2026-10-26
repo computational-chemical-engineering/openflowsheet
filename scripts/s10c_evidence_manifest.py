@@ -25,6 +25,14 @@ tracked source, test, script, schema or derivation file differs from it; S01's r
 5. **`ruff check`, `ruff format --check`** on S10-C's files and **`mypy`** (the project's own
    configuration).
 
+**R-782** (K03's release at every step, `docs/derivations/S10C-absent-component.md`; R-785, R-786)
+adds: `S10C.R782`, every node of R-782's own tests and moved witnesses (G-R1, G-R5, G-R8); G2
+admitting by name the one frozen path and the two existing tests R-782 and R-786 change;
+`S10C.G-R3`, the dispatch's aarch64 column solves read from its artifacts, which A40–A42 cite;
+and `S10C.G-R7`, R-784's ensemble verdict, with the records it judged identified by SHA-256. The
+CI artifacts are filed unedited under `evidence/S10c/<commit>/artifacts/ci/` (ignored) before
+the run; without them those two checks are `unsupported`.
+
 `scripts/gate.sh` and CI on both architectures (G10) are not run here (they run once before merge):
 their checks are `unsupported`. G9's wall times were measured in WO-4 and are recorded in the build
 log, not here. `status` is computed, never written: `tested` iff every assertion and every required
@@ -43,6 +51,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import subprocess
 import sys
@@ -131,6 +140,9 @@ REQUIRED_CHECKS = (
     "S10C.ruff",
     "S10C.format",
     "S10C.mypy",
+    "S10C.R782",
+    "S10C.G-R3",
+    "S10C.G-R7",
 )
 #: The S10-C tests whose names cite no assertion, and what their docstrings say they evidence.
 CITATIONS: dict[str, tuple[str, ...]] = {
@@ -188,6 +200,49 @@ FROZEN = (
 )
 #: §6 G2: the existing test files S10-C may edit (the S03 A04 amendment; WO-5's T08 counts).
 TEST_EDITS = ("tests/test_s03_s11_refusal.py", "tests/test_m07a_harvest.py")
+#: R-782 (note §4.1 and §4.7 items 3–4, WO-R2) and R-786 (§8.4, WO-R6) amend K03 §5.3 inside
+#: S10-C: the one frozen path they change and the existing tests they edit. G2 admits exactly
+#: these, by name, and records their diff.
+R782_FROZEN = ("src/openflowsheet/numerics/newton.py",)
+R782_TEST_EDITS = ("tests/test_t06_w20_counters.py", "tests/test_t07_interrupt.py")
+#: R-782's own tests and its moved witnesses (G-R1, G-R5, G-R8), run with the S10-C tests.
+R782_TESTS = (
+    "test_k03_r782_release.py",
+    "test_k03_released.py",
+    "test_t06_w20_counters.py",
+    "test_t07_interrupt.py",
+)
+#: Spec §12 (Amendment 2, R-785) rewords A41's tolerance cell; the rewording is quoted.
+AMENDED_TOLERANCE = {
+    "A41": "absent flows == 0.0 exactly (R-785; IEEE equality, the sign of zero not asserted); "
+    "the tolerance check also applies",
+}
+AMENDMENT = ROOT / "docs" / "derivations" / "S10C-absent-component.md"
+R782_REVIEW = ROOT / "docs" / "reviews" / "S10C-r782-review.md"
+#: Note §8 (R-784): the CI dispatch R-782 is judged by. WO-R5 changes a test only and WO-R6 is
+#: inert (G-R8), so its evidence holds for this commit (note §8.5: no new dispatch).
+DISPATCH = {"run": 40295256025, "commit": "4a4677c4", "branch": "wp/S10C-diag2"}
+#: The push CI at 1bc65b86: every test passed on ci-x86-64 and on ci-aarch64 except T07's THM-09
+#: length pin on ci-aarch64 (136 records against 94), since keyed by machine class (§4.7 item 4).
+PUSH_CI = {"run": 40295317759, "commit": "1bc65b86"}
+#: Note §8's table: the four ensemble records G-R7 was judged on.
+ENSEMBLE_SHA256 = {
+    "ensemble-ubuntu-latest/run2r-ci-x86-64.json": (
+        "01e012583bb93365a32347e161085c3bc4476dcdd6ad5181b9c2f3b237b290e0"
+    ),
+    "ensemble-ubuntu-24.04-arm/run2r-ci-aarch64.json": (
+        "654c0804006ee6fd35df7b2ca36cef644dffea40fb56a6836b32197eee3019db"
+    ),
+    "ensemble-ubuntu-latest/holdout1-ci-x86-64.json": (
+        "79c1e9c73591d1857c6c670374ae3b114f69628658858cb1181aa8255490d7c8"
+    ),
+    "ensemble-ubuntu-24.04-arm/holdout1-ci-aarch64.json": (
+        "79c12f0aa4f45d7217e743513f35bd75f275b42f3c32b0a9fa69ce6f6ef0ae83"
+    ),
+}
+#: The dispatch's s10c-diag job on ci-aarch64 (G-R3): case → artifact stem.
+DIAG = "s10c-diag-ubuntu-24.04-arm"
+DIAG_CASES = {"C-MW": "cmw", "C-EW": "cew"}
 #: The assertion an S10-C test cites: its name's leading `aNN_` groups (`test_a40_a45_…`).
 CITED = re.compile(r"^test_((?:a\d{2}_)+)")
 G1_LINE = re.compile(r"^S10C-IDENTITY PASS n=(\d+) changed=\[\]$")
@@ -259,6 +314,8 @@ def assertion_checks(
         assertion, expected, tolerance = rows[identifier]
         if identifier in AMENDED:
             assertion = f"{assertion} [amended by §11 E3: {AMENDED[identifier]}]"
+        if identifier in AMENDED_TOLERANCE:
+            tolerance = f"{tolerance} [amended by §12: {AMENDED_TOLERANCE[identifier]}]"
         entries.append(
             check(f"S10C.{identifier}", assertion, result, value, text(expected), text(tolerance))
         )
@@ -311,17 +368,20 @@ def structure_check() -> dict[str, Any]:
             ["git", *arguments], cwd=ROOT, capture_output=True, text=True, check=True
         ).stdout.strip()
 
-    frozen = git("diff", "--stat", f"{base}..HEAD", "--", *FROZEN)
+    admitted = [f":(exclude){path}" for path in R782_FROZEN]
+    frozen = git("diff", "--stat", f"{base}..HEAD", "--", *FROZEN, *admitted)
     tests = git("diff", "--name-status", f"{base}..HEAD", "--", "tests")
     edited = sorted(
         line.split("\t")[-1] for line in tests.splitlines() if line and not line.startswith("A")
     )
-    unexpected = [path for path in edited if path not in TEST_EDITS]
+    unexpected = [path for path in edited if path not in (*TEST_EDITS, *R782_TEST_EDITS)]
     return check(
         "S10C.G2",
         "§6 G2: git diff --stat $(git merge-base main HEAD)..HEAD is empty over thermo, compile, "
         "numerics, verify, application, models/c1 and schemas; in tests/ only new files, the S03 "
-        "A04 amendment and WO-5's T08 registration counts",
+        "A04 amendment and WO-5's T08 registration counts. R-782 and R-786 (K03 §5.3 amended "
+        "inside S10-C) add, by name, numerics/newton.py and their moved witnesses in "
+        "test_t06_w20_counters.py and test_t07_interrupt.py",
         "pass" if not frozen and not unexpected else "fail",
         {
             "merge_base": base,
@@ -329,8 +389,136 @@ def structure_check() -> dict[str, Any]:
             "diff_stat": frozen,
             "edited_tests": edited,
             "unexpected_test_edits": unexpected,
+            "admitted_by_r782_r786": {
+                "paths": [*R782_FROZEN, *R782_TEST_EDITS],
+                "diff_stat": git(
+                    "diff", "--stat", f"{base}..HEAD", "--", *R782_FROZEN, *R782_TEST_EDITS
+                ),
+            },
         },
-        "empty; edited tests within " + ", ".join(TEST_EDITS),
+        "empty outside the admitted paths; edited tests within "
+        + ", ".join((*TEST_EDITS, *R782_TEST_EDITS)),
+    )
+
+
+# -- R-782's CI evidence (note §8) ---------------------------------------------------------------
+
+
+def ci_directory(commit: str) -> Path:
+    return ROOT / "evidence" / PACKAGE / commit / "artifacts" / "ci"
+
+
+def aarch64_column_check(commit: str) -> dict[str, Any]:
+    """G-R3 (note §6, §8.1): the dispatch's s10c-diag job on ci-aarch64, from its artifacts.
+    C-MW and C-EW end CONVERGED with A41's worst ratio ≤ 1 and every absent flow == 0.0 (the
+    names A41 asserts, from its own helpers)."""
+    description = (
+        "G-R3 (note §6, §8.1): on ci-aarch64 (dispatch run 40295256025 at 4a4677c4, s10c-diag "
+        "job), C-MW and C-EW are CONVERGED, A41's worst |Δ|/tolerance ≤ 1, and every absent flow "
+        "is exactly 0.0"
+    )
+    expected = "CONVERGED; worst ≤ 1; every absent flow A41 names == 0.0, per case"
+    directory = ci_directory(commit) / DIAG
+    paths = [
+        directory / f"{stem}{suffix}"
+        for stem in DIAG_CASES.values()
+        for suffix in (".json", "-states.json")
+    ]
+    if not all(path.is_file() for path in paths):
+        return check(
+            "S10C.G-R3",
+            description,
+            "unsupported",
+            {"missing": [shown(path) for path in paths if not path.is_file()]},
+            expected,
+        )
+    for path in (ROOT / "src", ROOT / "tests"):
+        if str(path) not in sys.path:
+            sys.path.insert(0, str(path))
+    from test_s10c_columns import UNIT, absent, column_spec
+
+    from openflowsheet.models.syn001.cascade import liquid_id, vapor_id
+
+    cases: dict[str, Any] = {}
+    for case, stem in DIAG_CASES.items():
+        summary = json.loads((directory / f"{stem}.json").read_text(encoding="utf-8"))
+        final = json.loads((directory / f"{stem}-states.json").read_text(encoding="utf-8"))
+        spec = column_spec(case)
+        gone = spec.components[absent(spec)]
+        names = [
+            name
+            for j in spec.equilibrium_stages()
+            for name in (liquid_id(UNIT, j, gone), vapor_id(UNIT, j, gone))
+        ]
+        values = [final["final"][name] for name in names]
+        cases[case] = {
+            "machine": summary["machine"],
+            "outcome": summary["outcome"],
+            "newton": [
+                {key: attempt[key] for key in ("attempt", "outcome", "iterations")}
+                for attempt in summary["newton"]
+            ],
+            "worst": summary["worst"],
+            "absent_flows": len(names),
+            "absent_flows_nonzero": [n for n, v in zip(names, values, strict=True) if v != 0.0],
+            "absent_flows_negative_zero": sum(1 for v in values if math.copysign(1.0, v) < 0),
+            "final_sha256": summary["final_sha256"],
+        }
+    passed = all(
+        entry["machine"] == "aarch64"
+        and entry["outcome"] == "CONVERGED"
+        and entry["worst"][0] <= 1.0
+        and entry["absent_flows"] > 0
+        and not entry["absent_flows_nonzero"]
+        for entry in cases.values()
+    )
+    return check(
+        "S10C.G-R3",
+        description,
+        "pass" if passed else "fail",
+        {"judged_by": "the dispatch's artifacts", "dispatch": DISPATCH, "cases": cases},
+        expected,
+    )
+
+
+def ensemble_check(commit: str) -> dict[str, Any]:
+    """G-R7 (note §8.2, R-784): the design lane's verdict on the dispatch's ensemble records,
+    with those records identified here by SHA-256 against note §8's table."""
+    found = {
+        name: sha256_file(ci_directory(commit) / name)
+        if (ci_directory(commit) / name).is_file()
+        else None
+        for name in ENSEMBLE_SHA256
+    }
+    if None in found.values():
+        result = "unsupported"
+    else:
+        result = "pass" if found == ENSEMBLE_SHA256 else "fail"
+    return check(
+        "S10C.G-R7",
+        "G-R7 under note §8.2's amended criterion (R-784): on every machine class, against the "
+        "committed same-class record, no SUCCESS start becomes non-SUCCESS and every class change "
+        "is failure → SUCCESS or a failure → failure (b) admits; the local half equals §4.6",
+        result,
+        {
+            "judged_by": "R-784 (design lane, note §8.2; docs/derivations/scripts/"
+            "s10c_r782_gr7.py): met on ci-x86-64 and ci-aarch64, nominal and holdout; this check "
+            "verifies only that the records judged are the artifacts filed here",
+            "dispatch": DISPATCH,
+            "S": {
+                "nominal ci-x86-64": "434 → 437",
+                "nominal ci-aarch64": "434 → 437",
+                "holdout ci-x86-64": "436 → 439",
+                "holdout ci-aarch64": "436 → 439",
+            },
+            "success_to_failure": 0,
+            "failure_to_failure": "THM-09/03 on ci-aarch64, F-BUDGET → F-FALSE-SUCCESS-CAUGHT, "
+            "admitted by (b) (R-784)",
+            "class_disagreements_across_classes": "5 → 0 of 880",
+            "local_half": "docs/S10C_DECISIONS.md, R-782 run log: equal to note §4.6's table",
+            "sha256": found,
+        },
+        "SHA-256 equal to note §8's table; the verdict R-784's",
     )
 
 
@@ -424,6 +612,16 @@ def found_limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
         "fixture, not a registered case.",
         "The T08 support envelope's harvest of this manifest follows its generation, in a later "
         "commit.",
+        "R-782 (docs/derivations/S10C-absent-component.md): WO-R5 (R-785) changes a test only and "
+        "WO-R6 (R-786) is inert to every solve (G-R8: identical results to R-064's _released on "
+        "4000 seeded instances and every call in the suite; the detector's events identical), so "
+        "the CI dispatch at 4a4677c4 (1bc65b86 plus the gated diag job) holds for this commit; no "
+        "new dispatch was made (note §8.5). S10C.G-R3 reads that dispatch's artifacts; "
+        "S10C.G-R7's verdict is R-784's, and this generator verifies only the records' SHA-256.",
+        "R-782 review: the design lane's focused review (docs/reviews/S10C-r782-review.md, R-783) "
+        "found the change sound with no must-fix; its F1 and F2 were ruled (R-786, R-785) and "
+        "carried by WO-R6 and WO-R5. The review fields stay pending; this manifest claims no "
+        "review.",
     ]
     for entry in entries:
         if entry["result"] == "pass" or entry["id"] in ("S10C.gate", "S10C.ci"):
@@ -456,8 +654,17 @@ def build(commit: str) -> dict[str, Any]:
         )
         for path in (ROOT / "tests").glob(pattern)
     )
+    tests = sorted({*tests, *(f"tests/{name}" for name in R782_TESTS)})
     s10c_tests = [path for path in tests if Path(path).name.startswith("test_s10c_")]
-    lint = [*SOURCES, *s10c_tests, *SCRIPTS, shown(GENERATOR)]
+    lint = [
+        *SOURCES,
+        *R782_FROZEN,
+        *s10c_tests,
+        "tests/test_k03_r782_release.py",
+        "tests/test_k03_released.py",
+        *SCRIPTS,
+        shown(GENERATOR),
+    ]
 
     runs = {
         "tests": run(
@@ -520,9 +727,34 @@ def build(commit: str) -> dict[str, Any]:
             found,
             FLOWSHEET_IDENTITY,
         ),
+        suite_check(
+            "S10C.R782",
+            "R-782's tests and moved witnesses pass: G-R1 (test_k03_r782_release), G-R8 "
+            "(test_k03_released), G-R5 (A93's capped and uncapped witnesses; T07's record-k legs "
+            "with the per-class THM-09 pin and the capped every-record leg)",
+            found,
+            R782_TESTS,
+        ),
         g1,
         structure_check(),
     ]
+    aarch64 = aarch64_column_check(commit)
+    for entry in entries:
+        if entry["id"] in ("S10C.A40", "S10C.A41", "S10C.A42"):
+            entry["value"] = {
+                **entry["value"],
+                "ci_aarch64": {
+                    "check": "S10C.G-R3",
+                    "result": aarch64["result"],
+                    "dispatch": DISPATCH,
+                    "C-MW": aarch64["value"].get("cases", {}).get("C-MW"),
+                    "push_ci": {
+                        **PUSH_CI,
+                        "tests/test_s10c_columns.py": "passed on ci-aarch64 and ci-x86-64",
+                    },
+                },
+            }
+    entries += [aarch64, ensemble_check(commit)]
     tool_text = {
         "S10C.ruff": "ruff check is clean on S10-C's files",
         "S10C.format": "ruff format --check is clean on S10-C's files",
@@ -596,6 +828,26 @@ def build(commit: str) -> dict[str, Any]:
                 "sha256": sha256_file(REVIEW),
                 "description": "the design lane's review of WO-1 to WO-4",
             },
+            {
+                "path": shown(AMENDMENT),
+                "sha256": sha256_file(AMENDMENT),
+                "description": "R-782's note (K03's release at every step) with §8, the CI ruling",
+            },
+            {
+                "path": shown(R782_REVIEW),
+                "sha256": sha256_file(R782_REVIEW),
+                "description": "the design lane's review of R-782 (R-783)",
+            },
+            *(
+                {
+                    "path": shown(path),
+                    "sha256": sha256_file(path),
+                    "description": "CI artifact of dispatch run 40295256025 at 4a4677c4, unedited "
+                    "(ignored; kept by hash)",
+                }
+                for path in sorted(ci_directory(commit).rglob("*"))
+                if path.is_file()
+            ),
             {
                 "path": shown(DECISIONS),
                 "sha256": sha256_file(DECISIONS),
