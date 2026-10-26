@@ -130,3 +130,19 @@ harness's sections), `s09_cases.json` (SHA-256 `760ab27f…a813c`, as §18 regis
 - DECISION: tool-free tests gain A08's new item (rerun: `outer is None`, `x` equal to the final evaluation's and
   `returned_x`, tolerance and applied tolerances 1e-9) and, in A07, the `fsolve` block's shape and B2's counter per
   rung. The 10x-ytol rerun-loop check is gone with the loop.
+- MEASURED (recorded run, harness `fd38124d`, clean at head; records committed in `95643b4c` before any classifier
+  work, A16): `spikes/references/s09_qualify.sh benchmarks/s09/references <scratch>/repeat_run2 <scratch>/qualify.log`
+  → `19/19 available; repeat identical True; fingerprint matches True` (A17: every record of run 2 equals run 1 byte
+  for byte without `wall_time*`). No record carries a `harness_error`. No development run was made in this attempt;
+  the harness's changed paths were checked tool-free only.
+- MEASURED: levels and selected rungs: L1/R1 for RC1, RC2, RC1-RR, RC1-BR, RC1-z, RC2-RR, RC2-B, RC2-z, PC-P, PC-LB;
+  L1/R2 for RC3, RC3-Q, RC3-z; L2(c)/R2 for RC4, RC4-D, RC4-z; L2(c)/R1 for RC5, RC6, RC7. Outer evaluations 7 to 9.
+  R3 fails rule 2 on all 19 (B4 alone on 9; B1+B2+B3[+B4+B5] on 10, B2 there from the raised pass). R1 fails on the
+  RC3 and RC4 families (B3; at L2(c) the first evaluation, B3+B5).
+- MEASURED: margin (§18.4(c)): largest row ratio over the 19 selected records 0.0117 (RC6, path spread); every other
+  ≤ 2.3e-3. No thin margin (none above 0.1).
+- MEASURED: tool-free tests `tests/test_s09_qualification.py` and `tests/test_s09_environment.py`: 13 passed (A03 at
+  head and at the qualification commit, A04 file part, A06, A07, A08 with §18.4(b)'s item, pair coverage). `ruff check
+  .` and `ruff format --check .` clean.
+- STOPPED HERE (WO-S09-2 done): next is WO-S09-3 (classifier, comparison), which recomputes B2 per rung and the margin
+  rows from the raw fields (§18.6).
