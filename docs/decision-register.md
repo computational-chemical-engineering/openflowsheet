@@ -14731,3 +14731,163 @@ code with the column.
 - *Add a vapour term now.* It changes the provider's identity and S10's registered results, for no consumer need.
 
 **Watch for.** VAL-3's latent-heat miss (methanol +5.72 %) mattering for a column energy balance claim.
+
+---
+
+## R-770 — S10-C WO-S: C-MW and C-EW are amended to S02's specification set (reflux ratio, bottoms rate = F − D; N = 20 in S02's count)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | `docs/derivations/S10C-spec.md` §4; `benchmarks/s10c/reference_values.yaml` `columns.<case>.definition` |
+| Evidence | S02 §1 items 1–2 (a total condenser is not an equilibrium stage), §2.1 (one specification per end), §3 (`(distillate_rate, bottoms_rate)` redundant); generator claims `COL-*` |
+| Affected packages | S10-C (WO-4); S10 spec §10 (read as amended, finding F-3) |
+
+**Decision.**
+- Condenser `reflux_ratio` (1.5; 3.0); reboiler `bottoms_rate` = F − D, registered as the double nearest the decimal
+  literal (0.6; 0.82), not computed by the test.
+- N = 20 counting the total condenser (stage 1) and the partial reboiler (stage 20); 19 equilibrium stages; side feed on
+  stage 10, `LIQUID`, at the 50-digit bubble temperature rounded to the nearest double (348.6155803604359 K;
+  356.2370399662496 K); P = 101 325 Pa on every stage; intermediate duties 0.0.
+
+**Rejected alternatives, and why.**
+- *Distillate rate at the condenser and bottoms rate at the reboiler.* Structurally redundant (S02 §3).
+- *Twenty equilibrium stages plus the condenser (N = 21).* Contradicts the design's measured roots and moves the feed
+  relative to the reboiler; S10's wording is read in S02's convention.
+- *A rounded decimal feed temperature.* Arbitrarily subcooled or superheated by millikelvin; the rounded bubble point
+  keeps `|tm_V| < 1e-13`, which the provider's flash classifies LIQUID.
+
+**Watch for.** Any later column case on `wilson-ig-v1`: register it the same way, with its 50-digit root.
+
+---
+
+## R-771 — S10-C WO-S: G7's column tolerances are 10× the first-order image of the kind tolerances, plus rows at the reference root ≤ 1e-4 τ_kind
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | S10C-spec §5.5, assertions S10C.A41, S10C.A42; YAML `columns.<case>.root…tolerance`, `conditioning` |
+| Evidence | Generator: image `Σ_r \|J⁻¹_kr\| τ_r` up to 3.4e-3 K and 9.8e-5 mol/s (C-MW, stages 15–19), 1.4e-4 K and 8.9e-6 mol/s (C-EW); rows-at-root floor ≤ 1.2e-6 τ_kind; M2 rows 0.62 and 0.26 (mol/s)² |
+| Affected packages | S10-C (WO-4, review) |
+
+**Decision.** Per-variable state tolerances = 10× the acceptance image (T, flows, T_c, D, B, x_D, x_B, duties). The
+function is checked sharply by evaluating every implementation row at the reference root (≤ 1e-4 τ_kind).
+
+**Rejected alternatives, and why.**
+- *The design note's 1e-7 K and 1e-9 mol/s.* Three to five orders below what a solver stopping at the kind tolerances can
+  guarantee; a correct implementation could fail (finding F-2).
+- *S02's state tolerance (1e-4 K, 1e-6 relative + 3.1e-7 mol/s).* Also below the image on C-MW's stripping stages.
+- *Running the column under `newton_refined`.* Changes the registered policy of every column solve for a test's sake.
+
+**Watch for.** WO-4's deviations (A43): above a tolerance is a failure, never a reason to loosen; far below may justify a
+later tightening.
+
+---
+
+## R-772 — S10-C WO-S: G6's finite-difference stencils keep every point inside the domain (dilute and absent flows)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | S10C-spec §5.4, assertion S10C.A30 |
+| Evidence | Generator: FD floor 3.8e-8 over 44 block states (dilute states dominate), tolerance 1e-6; claim `FD-DOMAIN` at 440 stencil points; M1 signal ≥ 0.499 |
+| Affected packages | S10-C (WO-3) |
+
+**Decision.** T, P: central, `h = 1e-6 |u|`. Flow `u > 0`: central, `h = min(1e-6 max(u, 1), u/2)`. Flow `u = 0`: one-sided
+second order, `h = 1e-6`. Relative error against `max(|J|, s)` with S10 §7.2's scales (H's × n_tot).
+
+**Rejected alternatives, and why.**
+- *The design's `h = 1e-6·max(|u|, 1)` for every input.* At a flow below 1e-6 the stencil reaches a negative flow, which
+  the provider refuses; at an absent flow a central difference is impossible (finding F-1).
+- *A first-order forward difference at an absent flow.* Truncation ≈ 1e-6, no margin under the tolerance.
+
+**Watch for.** A block state with a flow between 0 and 2e-6 mol/s: the `u/2` branch applies; its roundoff grows as 1/u.
+
+---
+
+## R-773 — S10-C WO-S: G3–G5's registered states and tolerances; positions on a narrowed-domain copy; E-2 targets from the 50-digit TP split
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | S10C-spec §5.1–§5.3, assertions S10C.A01–A22 |
+| Evidence | Generator floors: band point T 5.7e-13 K, x 4.2e-14; PH T 5.1e-13 K; E-2 T 5.7e-14 K, β 1.4e-15, x/y 2.0e-14; scan positions all `inside` (3 402 points) |
+| Affected packages | S10-C (WO-1, WO-2) |
+
+**Decision.** The design's tolerances stand (each ≥ 10× its floor). Two record copies are built by the tests from the
+verification file: Λ ≡ 1 (`ideal`) and T ∈ [342, 365] K (`narrowed`). E-2's targets are the double nearest the
+50-digit TP split's enthalpy at each state's T; the expectation is the PH answer at that double. Provider TP-flash calls
+are registered per target (0, or 1 where T_min lies inside the band).
+
+**Rejected alternatives, and why.**
+- *Positions from the committed domains.* None of the registered or 3 402 scanned states has an out-of-domain band point.
+- *E-2 targets from the provider's flash.* It is `not_converged` there, and it would be a self-generated expectation.
+
+**Watch for.** A new record set or domain: positions are exact for binaries only (T5).
+
+---
+
+## R-774 — S10-C WO-S: Q-N5 ruled — no vapour non-ideality term; VAL-3's latent-heat miss is a carried limitation of every Wilson duty
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S (R-769 was the architect's input) |
+| Normative text | S10C-spec §7.3 |
+| Evidence | S10 VAL-3 (methanol Δh +5.72 % at T_b, outside its 5 % band; liquid c_p low by up to 19.7 %); S10 (3.5) |
+| Affected packages | S10-C (WO-5 manifest limitation) |
+
+**Decision.** S10-C verifies the model's energy balances; its expectations are the model's closed forms. The manifest
+records that C-MW and C-EW duties and energy-balance flows are numerical verification, not validated against the real
+mixtures.
+
+**Rejected alternatives, and why.**
+- *A virial or cubic vapour term now.* A new provider identity and equilibrium form, re-opening S10's evidence, for a
+  validation question no S10-C claim makes.
+
+**Watch for.** A column energy-balance claim against data: it needs a new provider version first.
+
+---
+
+## R-775 — S10-C WO-S: Q4 ruled — a non-converging C-MW or C-EW is a typed result, never a reason to amend the case
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | S10C-spec §7.1 |
+| Evidence | Both roots regular (σ_min 1.25e-3, 1.51e-2 > 1e-4), L, V > 0.1 mol/s, min \|K − 1\| ≥ 0.0089 |
+| Affected packages | S10-C (WO-4) |
+
+**Decision.** Run as amended, with recovery and no tuning. A failure stays recorded (A40 failed). A different case would
+be registered beside the failed one, with its own root.
+
+**Rejected alternatives, and why.**
+- *Pre-registering a fallback (C-EW at a larger reflux ratio).* Complexity paid by every implementation for a failure
+  nothing predicts; and a fallback chosen in advance still reads as a case chosen to pass.
+
+**Watch for.** WO-4's trace if Stage A fails at the feed pinch (C-MW stages 10–14).
+
+---
+
+## R-776 — S10-C WO-S: Q5 ruled — the constant-β point's convergence is measured (3 402 points, ≤ 63 iterations); cap 1000 and typed failure stand
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | S10C-spec §7.2, §3.1; YAML `scan` |
+| Evidence | Binary64 transcription of design §4.3 on both record sets, 3 binaries × 15 + 36 ternary compositions, 3 pressures, 7 β: all converge, worst 63 iterations, contraction ≤ 0.635 |
+| Affected packages | S10-C |
+
+**Decision.** No acceleration in S10-C; `BETA_SS_MAX = 1000` and `BandError("not_converged")` beyond it. The registered
+band points assert ≤ 100 iterations, so a slower contraction shows.
+
+**Rejected alternatives, and why.**
+- *Anderson or Newton acceleration.* A second algorithm with its own failure modes, for no measured need.
+
+**Watch for.** A record set with stronger non-ideality (larger \|G\|): re-run the scan before claiming convergence.
