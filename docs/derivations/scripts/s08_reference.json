@@ -1,0 +1,1190 @@
+{
+ "generator": "docs/derivations/scripts/s08_reference.py",
+ "spec": "docs/derivations/S08-design.md",
+ "precision_digits": 50,
+ "conventions": {
+  "units": "mol/s, K, Pa, W",
+  "signature": "regimes over the equilibrium stages, top to bottom",
+  "root": "s02_reference.py's record(): per stage T, Q, l, v, L, V; top and bottom products",
+  "pinned_zero": "exact zeros; the implementation's pins are +0.0 with the sign bit checked",
+  "admissibility": "margin_K = T_bub(l) - T (LIQUID) or T - T_dew(v) (VAPOR); margin_sum = 1 - sum K x (LIQUID) or 1 - sum y/K (VAPOR)",
+  "candidate_reading": "a bottom inlet declared LIQUID and a top inlet declared VAPOR are not sources (§5.2's table; no registered list depends on it); (V3)'s 'flowing inlet' is any present port of that phase (§5.2's table forces it: P1, P2)"
+ },
+ "inputs_changed": {
+  "cases": [],
+  "note": "S08-design §10 Q2: §6.2's inputs are used as registered; every claim held"
+ },
+ "does_not_establish": [
+  "the implementation's path to a root: Stage A or B, iteration counts, attempt records",
+  "that the implementation's block endpoint (§5.3) converges to these roots",
+  "uniqueness beyond local uniqueness at a regular root (sigma_min >= 1e-4)",
+  "the near-trivial split (F4) itself; only F1's stage-4 subcooling at the root is claimed",
+  "anything for other cases, other property methods, or SYN-001's K beyond its definition"
+ ],
+ "candidate_lists": {
+  "P1": {
+   "liquid_sources": [
+    1
+   ],
+   "vapour_sources": [
+    5
+   ],
+   "fixed_stages": [],
+   "candidates": [
+    [
+     0,
+     5
+    ]
+   ],
+   "signatures": [
+    [
+     "LIQUID",
+     "LIQUID",
+     "LIQUID",
+     "LIQUID",
+     "LIQUID"
+    ]
+   ]
+  },
+  "P2": {
+   "liquid_sources": [
+    1
+   ],
+   "vapour_sources": [
+    5
+   ],
+   "fixed_stages": [],
+   "candidates": [
+    [
+     5,
+     0
+    ]
+   ],
+   "signatures": [
+    [
+     "VAPOR",
+     "VAPOR",
+     "VAPOR",
+     "VAPOR",
+     "VAPOR"
+    ]
+   ]
+  },
+  "P3": {
+   "liquid_sources": [
+    1,
+    4
+   ],
+   "vapour_sources": [
+    3,
+    5
+   ],
+   "fixed_stages": [
+    1
+   ],
+   "candidates": [
+    [
+     0,
+     2
+    ]
+   ],
+   "signatures": [
+    [
+     "TWO_PHASE",
+     "TWO_PHASE",
+     "TWO_PHASE",
+     "LIQUID",
+     "LIQUID"
+    ]
+   ]
+  },
+  "F1": {
+   "liquid_sources": [
+    1
+   ],
+   "vapour_sources": [
+    3
+   ],
+   "fixed_stages": [
+    1
+   ],
+   "candidates": [
+    [
+     0,
+     2
+    ]
+   ],
+   "signatures": [
+    [
+     "TWO_PHASE",
+     "TWO_PHASE",
+     "TWO_PHASE",
+     "LIQUID",
+     "LIQUID"
+    ]
+   ]
+  },
+  "D1": {
+   "liquid_sources": [
+    3
+   ],
+   "vapour_sources": [
+    5
+   ],
+   "fixed_stages": [],
+   "candidates": [
+    [
+     2,
+     0
+    ]
+   ],
+   "signatures": [
+    [
+     "VAPOR",
+     "VAPOR",
+     "TWO_PHASE",
+     "TWO_PHASE",
+     "TWO_PHASE"
+    ]
+   ]
+  },
+  "M3": {
+   "liquid_sources": [
+    1
+   ],
+   "vapour_sources": [
+    5
+   ],
+   "fixed_stages": [],
+   "candidates": [
+    [
+     0,
+     5
+    ]
+   ],
+   "signatures": [
+    [
+     "LIQUID",
+     "LIQUID",
+     "LIQUID",
+     "LIQUID",
+     "LIQUID"
+    ]
+   ]
+  },
+  "V-M1 duty+duty": {
+   "liquid_sources": [
+    1,
+    4
+   ],
+   "vapour_sources": [
+    7
+   ],
+   "fixed_stages": [],
+   "candidates": [
+    [
+     3,
+     0
+    ]
+   ],
+   "signatures": [
+    [
+     "VAPOR",
+     "VAPOR",
+     "VAPOR",
+     "TWO_PHASE",
+     "TWO_PHASE",
+     "TWO_PHASE",
+     "TWO_PHASE"
+    ]
+   ]
+  },
+  "M1": {
+   "liquid_sources": [
+    1,
+    4
+   ],
+   "vapour_sources": [
+    7
+   ],
+   "fixed_stages": [
+    1,
+    7
+   ],
+   "candidates": [],
+   "signatures": []
+  },
+  "M2": {
+   "liquid_sources": [
+    2,
+    4
+   ],
+   "vapour_sources": [
+    7
+   ],
+   "fixed_stages": [
+    2,
+    7
+   ],
+   "candidates": [],
+   "signatures": []
+  },
+  "M4": {
+   "liquid_sources": [
+    1
+   ],
+   "vapour_sources": [
+    5
+   ],
+   "fixed_stages": [
+    1
+   ],
+   "candidates": [],
+   "signatures": []
+  },
+  "J5": {
+   "liquid_sources": [
+    1
+   ],
+   "vapour_sources": [
+    5
+   ],
+   "fixed_stages": [
+    5
+   ],
+   "candidates": [],
+   "signatures": []
+  },
+  "U1": {
+   "liquid_sources": [
+    2,
+    4
+   ],
+   "vapour_sources": [
+    7
+   ],
+   "fixed_stages": [
+    2,
+    7
+   ],
+   "candidates": [],
+   "signatures": []
+  },
+  "U2": {
+   "liquid_sources": [
+    2,
+    4
+   ],
+   "vapour_sources": [
+    7
+   ],
+   "fixed_stages": [
+    2,
+    7
+   ],
+   "candidates": [],
+   "signatures": []
+  }
+ },
+ "cases": {
+  "P2": {
+   "role": "P1's mirror: all vapour, reached through Stage B",
+   "inputs": {
+    "stage_count": 5,
+    "pressures": [
+     "100000.0",
+     "101000.0",
+     "102000.0",
+     "103000.0",
+     "104000.0"
+    ],
+    "duties": [
+     null,
+     "0",
+     "0",
+     "0",
+     "0"
+    ],
+    "condenser": "partial",
+    "reboiler": "none",
+    "condenser_spec": {
+     "kind": "duty",
+     "value": "-3000"
+    },
+    "reboiler_spec": null,
+    "top": null,
+    "bottom": {
+     "n": [
+      "0.3",
+      "0.4",
+      "0.3"
+     ],
+     "T": "420.0",
+     "P": "104000.0",
+     "phase": "VAPOR"
+    },
+    "sides": []
+   },
+   "candidate": [
+    5,
+    0
+   ],
+   "signature": [
+    "VAPOR",
+    "VAPOR",
+    "VAPOR",
+    "VAPOR",
+    "VAPOR"
+   ],
+   "core": [],
+   "v_block": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "l_block": [],
+   "root": {
+    "stages": [
+     {
+      "stage": 1,
+      "T": "390.0",
+      "Q": "-3000.0",
+      "l": [
+       "0",
+       "0",
+       "0"
+      ],
+      "v": [
+       "0.3",
+       "0.4",
+       "0.3"
+      ],
+      "L": "0",
+      "V": "1.0"
+     },
+     {
+      "stage": 2,
+      "T": "420.0",
+      "Q": "0",
+      "l": [
+       "0",
+       "0",
+       "0"
+      ],
+      "v": [
+       "0.3",
+       "0.4",
+       "0.3"
+      ],
+      "L": "0",
+      "V": "1.0"
+     },
+     {
+      "stage": 3,
+      "T": "420.0",
+      "Q": "0",
+      "l": [
+       "0",
+       "0",
+       "0"
+      ],
+      "v": [
+       "0.3",
+       "0.4",
+       "0.3"
+      ],
+      "L": "0",
+      "V": "1.0"
+     },
+     {
+      "stage": 4,
+      "T": "420.0",
+      "Q": "0",
+      "l": [
+       "0",
+       "0",
+       "0"
+      ],
+      "v": [
+       "0.3",
+       "0.4",
+       "0.3"
+      ],
+      "L": "0",
+      "V": "1.0"
+     },
+     {
+      "stage": 5,
+      "T": "420.0",
+      "Q": "0",
+      "l": [
+       "0",
+       "0",
+       "0"
+      ],
+      "v": [
+       "0.3",
+       "0.4",
+       "0.3"
+      ],
+      "L": "0",
+      "V": "1.0"
+     }
+    ],
+    "top_product": [
+     "0.3",
+     "0.4",
+     "0.3"
+    ],
+    "bottom_product": [
+     "0",
+     "0",
+     "0"
+    ]
+   },
+   "pinned_zero": [
+    "l_1",
+    "l_2",
+    "l_3",
+    "l_4",
+    "l_5"
+   ],
+   "sigma_min": "0.0351515",
+   "core_min_flow": null,
+   "core_saturation_error_max_K": null,
+   "admissibility": {
+    "1": {
+     "phase": "VAPOR",
+     "T_dew": "373.1278103007139460550816",
+     "margin_K": "16.87219",
+     "margin_sum": "0.36649907"
+    },
+    "2": {
+     "phase": "VAPOR",
+     "T_dew": "373.4781090800948287187127",
+     "margin_K": "46.521891",
+     "margin_sum": "0.6875859"
+    },
+    "3": {
+     "phase": "VAPOR",
+     "T_dew": "373.8256283421547634088019",
+     "margin_K": "46.174372",
+     "margin_sum": "0.68450173"
+    },
+    "4": {
+     "phase": "VAPOR",
+     "T_dew": "374.170417667355036929128",
+     "margin_K": "45.829582",
+     "margin_sum": "0.68141773"
+    },
+    "5": {
+     "phase": "VAPOR",
+     "T_dew": "374.5125252768489350114107",
+     "margin_K": "45.487475",
+     "margin_sum": "0.67833391"
+    }
+   },
+   "prototype_deviation_T_K": "0.0",
+   "closed_form": {
+    "T": "T_1 = 420 + Q_c*/(F C_P) = 390 K; T_j = 420 K for j >= 2",
+    "v": "v_j = bottom inlet for every j",
+    "bottoms": "+0.0",
+    "T_dew_stage_1": "373.1278103007139460550816"
+   }
+  },
+  "P3": {
+   "role": "partly one-phase: the weak reboiler is quenched by the cold feed; Stage B with a core",
+   "inputs": {
+    "stage_count": 5,
+    "pressures": [
+     "100000.0",
+     "101000.0",
+     "102000.0",
+     "103000.0",
+     "104000.0"
+    ],
+    "duties": [
+     null,
+     "0",
+     "0",
+     "0",
+     null
+    ],
+    "condenser": "partial",
+    "reboiler": "partial",
+    "condenser_spec": {
+     "kind": "distillate_rate",
+     "value": "0.5"
+    },
+    "reboiler_spec": {
+     "kind": "duty",
+     "value": "1000"
+    },
+    "top": null,
+    "bottom": null,
+    "sides": [
+     {
+      "port": "feed",
+      "stage": 3,
+      "n": [
+       "0.3",
+       "0.4",
+       "0.3"
+      ],
+      "T": "385.0",
+      "P": "102000.0",
+      "phase": "VAPOR"
+     },
+     {
+      "port": "cold",
+      "stage": 4,
+      "n": [
+       "0.15",
+       "0.2",
+       "0.15"
+      ],
+      "T": "300.0",
+      "P": "103000.0",
+      "phase": "LIQUID"
+     }
+    ]
+   },
+   "candidate": [
+    0,
+    2
+   ],
+   "signature": [
+    "TWO_PHASE",
+    "TWO_PHASE",
+    "TWO_PHASE",
+    "LIQUID",
+    "LIQUID"
+   ],
+   "core": [
+    1,
+    2,
+    3
+   ],
+   "v_block": [],
+   "l_block": [
+    4,
+    5
+   ],
+   "root": {
+    "stages": [
+     {
+      "stage": 1,
+      "T": "350.9490863677397612620507",
+      "Q": "-18613.8004211961728187277",
+      "l": [
+       "0.129870095487002708534833",
+       "0.3313653538626120664080403",
+       "0.1195379086018991462796721"
+      ],
+      "v": [
+       "0.256059569813957150604716",
+       "0.2202989601310982955040841",
+       "0.02364147005494455389119984"
+      ],
+      "L": "0.5807733579515139212225455",
+      "V": "0.5"
+     },
+     {
+      "stage": 2,
+      "T": "362.4432688245579073745636",
+      "Q": "0",
+      "l": [
+       "0.06592714275885239810700285",
+       "0.2647020919920329095921956",
+       "0.2187254747309142513410349"
+      ],
+      "v": [
+       "0.3859296653009598591395491",
+       "0.5516643139937103619121244",
+       "0.143179378656843700170872"
+      ],
+      "L": "0.5493547094817995590402333",
+      "V": "1.080773357951513921222545"
+     },
+     {
+      "stage": 3,
+      "T": "370.0147151842380420347468",
+      "Q": "0",
+      "l": [
+       "0.04394043018604284939528398",
+       "0.1797010398689017044959159",
+       "0.2763585299450554461088002"
+      ],
+      "v": [
+       "0.3219867125728095487117189",
+       "0.4850010521231312050962797",
+       "0.2423669447858588052322348"
+      ],
+      "L": "0.5",
+      "V": "1.049354709481799559040233"
+     },
+     {
+      "stage": 4,
+      "T": "335.0068575921190210173734",
+      "Q": "0",
+      "l": [
+       "0.193940430186042849395284",
+       "0.3797010398689017044959159",
+       "0.4263585299450554461088002"
+      ],
+      "v": [
+       "0",
+       "0",
+       "0"
+      ],
+      "L": "1.0",
+      "V": "0"
+     },
+     {
+      "stage": 5,
+      "T": "345.0058575921190210173734",
+      "Q": "1000.0",
+      "l": [
+       "0.193940430186042849395284",
+       "0.3797010398689017044959159",
+       "0.4263585299450554461088002"
+      ],
+      "v": [
+       "0",
+       "0",
+       "0"
+      ],
+      "L": "1.0",
+      "V": "0"
+     }
+    ],
+    "top_product": [
+     "0.256059569813957150604716",
+     "0.2202989601310982955040841",
+     "0.02364147005494455389119984"
+    ],
+    "bottom_product": [
+     "0.193940430186042849395284",
+     "0.3797010398689017044959159",
+     "0.4263585299450554461088002"
+    ]
+   },
+   "pinned_zero": [
+    "v_4",
+    "v_5"
+   ],
+   "sigma_min": "0.0921127",
+   "core_min_flow": "0.5",
+   "core_saturation_error_max_K": "3.19e-49",
+   "admissibility": {
+    "4": {
+     "phase": "LIQUID",
+     "T_bub": "358.7863922435894790861415",
+     "margin_K": "23.779535",
+     "margin_sum": "0.48484871"
+    },
+    "5": {
+     "phase": "LIQUID",
+     "T_bub": "359.1545589199469804717173",
+     "margin_K": "14.148701",
+     "margin_sum": "0.31866036"
+    }
+   },
+   "prototype_deviation_T_K": "4.24e-5"
+  },
+  "F1": {
+   "role": "flooded bottom: a dead section below a vapour feed; Stage A is rejected by item 6",
+   "inputs": {
+    "stage_count": 5,
+    "pressures": [
+     "100000.0",
+     "101000.0",
+     "102000.0",
+     "103000.0",
+     "104000.0"
+    ],
+    "duties": [
+     null,
+     "0",
+     "0",
+     "0",
+     "0"
+    ],
+    "condenser": "partial",
+    "reboiler": "none",
+    "condenser_spec": {
+     "kind": "distillate_rate",
+     "value": "0.5"
+    },
+    "reboiler_spec": null,
+    "top": null,
+    "bottom": {
+     "n": [
+      "0.03",
+      "0.04",
+      "0.03"
+     ],
+     "T": "330.0",
+     "P": "104000.0",
+     "phase": "LIQUID"
+    },
+    "sides": [
+     {
+      "port": "feed",
+      "stage": 3,
+      "n": [
+       "0.3",
+       "0.4",
+       "0.3"
+      ],
+      "T": "385.0",
+      "P": "102000.0",
+      "phase": "VAPOR"
+     }
+    ]
+   },
+   "candidate": [
+    0,
+    2
+   ],
+   "signature": [
+    "TWO_PHASE",
+    "TWO_PHASE",
+    "TWO_PHASE",
+    "LIQUID",
+    "LIQUID"
+   ],
+   "core": [
+    1,
+    2,
+    3
+   ],
+   "v_block": [],
+   "l_block": [
+    4,
+    5
+   ],
+   "root": {
+    "stages": [
+     {
+      "stage": 1,
+      "T": "350.9490863677397612620507",
+      "Q": "-18613.8004211961728187277",
+      "l": [
+       "0.129870095487002708534833",
+       "0.3313653538626120664080403",
+       "0.1195379086018991462796721"
+      ],
+      "v": [
+       "0.256059569813957150604716",
+       "0.2202989601310982955040841",
+       "0.02364147005494455389119984"
+      ],
+      "L": "0.5807733579515139212225455",
+      "V": "0.5"
+     },
+     {
+      "stage": 2,
+      "T": "362.4432688245579073745636",
+      "Q": "0",
+      "l": [
+       "0.06592714275885239810700285",
+       "0.2647020919920329095921956",
+       "0.2187254747309142513410349"
+      ],
+      "v": [
+       "0.3859296653009598591395491",
+       "0.5516643139937103619121244",
+       "0.143179378656843700170872"
+      ],
+      "L": "0.5493547094817995590402333",
+      "V": "1.080773357951513921222545"
+     },
+     {
+      "stage": 3,
+      "T": "370.0147151842380420347468",
+      "Q": "0",
+      "l": [
+       "0.04394043018604284939528398",
+       "0.1797010398689017044959159",
+       "0.2763585299450554461088002"
+      ],
+      "v": [
+       "0.3219867125728095487117189",
+       "0.4850010521231312050962797",
+       "0.2423669447858588052322348"
+      ],
+      "L": "0.5",
+      "V": "1.049354709481799559040233"
+     },
+     {
+      "stage": 4,
+      "T": "370.0137151842380420347468",
+      "Q": "0",
+      "l": [
+       "0.04394043018604284939528398",
+       "0.1797010398689017044959159",
+       "0.2763585299450554461088002"
+      ],
+      "v": [
+       "0",
+       "0",
+       "0"
+      ],
+      "L": "0.5",
+      "V": "0"
+     },
+     {
+      "stage": 5,
+      "T": "363.343929320198368362289",
+      "Q": "0",
+      "l": [
+       "0.07394043018604284939528398",
+       "0.2197010398689017044959159",
+       "0.3063585299450554461088002"
+      ],
+      "v": [
+       "0",
+       "0",
+       "0"
+      ],
+      "L": "0.6",
+      "V": "0"
+     }
+    ],
+    "top_product": [
+     "0.256059569813957150604716",
+     "0.2202989601310982955040841",
+     "0.02364147005494455389119984"
+    ],
+    "bottom_product": [
+     "0.07394043018604284939528398",
+     "0.2197010398689017044959159",
+     "0.3063585299450554461088002"
+    ]
+   },
+   "pinned_zero": [
+    "v_4",
+    "v_5"
+   ],
+   "sigma_min": "0.0549355",
+   "core_min_flow": "0.5",
+   "core_saturation_error_max_K": "3.19e-49",
+   "admissibility": {
+    "4": {
+     "phase": "LIQUID",
+     "T_bub": "370.3887563190435774831036",
+     "margin_K": "0.37504113",
+     "margin_sum": "0.0097023167"
+    },
+    "5": {
+     "phase": "LIQUID",
+     "T_bub": "366.5511674090172393843934",
+     "margin_K": "3.2072381",
+     "margin_sum": "0.080470831"
+    }
+   },
+   "prototype_deviation_T_K": "3.12e-5",
+   "stage_4_subcooling_K": "0.3750411348055354483567674"
+  },
+  "D1": {
+   "role": "dry top: a dead section above a liquid feed; reached through Stage A",
+   "inputs": {
+    "stage_count": 5,
+    "pressures": [
+     "100000.0",
+     "101000.0",
+     "102000.0",
+     "103000.0",
+     "104000.0"
+    ],
+    "duties": [
+     "0",
+     "0",
+     "0",
+     "0",
+     null
+    ],
+    "condenser": "none",
+    "reboiler": "partial",
+    "condenser_spec": null,
+    "reboiler_spec": {
+     "kind": "duty",
+     "value": "30000"
+    },
+    "top": {
+     "n": [
+      "0.03",
+      "0.04",
+      "0.03"
+     ],
+     "T": "400.0",
+     "P": "100000.0",
+     "phase": "VAPOR"
+    },
+    "bottom": null,
+    "sides": [
+     {
+      "port": "feed",
+      "stage": 3,
+      "n": [
+       "0.3",
+       "0.4",
+       "0.3"
+      ],
+      "T": "340.0",
+      "P": "102000.0",
+      "phase": "LIQUID"
+     }
+    ]
+   },
+   "candidate": [
+    2,
+    0
+   ],
+   "signature": [
+    "VAPOR",
+    "VAPOR",
+    "TWO_PHASE",
+    "TWO_PHASE",
+    "TWO_PHASE"
+   ],
+   "core": [
+    3,
+    4,
+    5
+   ],
+   "v_block": [
+    1,
+    2
+   ],
+   "l_block": [],
+   "root": {
+    "stages": [
+     {
+      "stage": 1,
+      "T": "372.9261701128613663472646",
+      "Q": "0",
+      "l": [
+       "0",
+       "0",
+       "0"
+      ],
+      "v": [
+       "0.3296236080915355474814327",
+       "0.4320909425280130758874006",
+       "0.2446829299435039379961078"
+      ],
+      "L": "0",
+      "V": "1.006397480563052561364941"
+     },
+     {
+      "stage": 2,
+      "T": "369.9391991130831656255176",
+      "Q": "0",
+      "l": [
+       "0",
+       "0",
+       "0"
+      ],
+      "v": [
+       "0.2996236080915355474814327",
+       "0.3920909425280130758874006",
+       "0.2146829299435039379961078"
+      ],
+      "L": "0",
+      "V": "0.9063974805630525613649411"
+     },
+     {
+      "stage": 3,
+      "T": "369.9391991130831656255176",
+      "Q": "0",
+      "l": [
+       "0.09239171778118970377991992",
+       "0.3283745264484413985735136",
+       "0.5534977011801773273011124"
+      ],
+      "v": [
+       "0.2996236080915355474814327",
+       "0.3920909425280130758874006",
+       "0.2146829299435039379961078"
+      ],
+      "L": "0.9742639454098084296545459",
+      "V": "0.9063974805630525613649411"
+     },
+     {
+      "stage": 4,
+      "T": "386.5229444859980701379353",
+      "Q": "0",
+      "l": [
+       "0.02043009447234326859288619",
+       "0.1802300626851846618414629",
+       "0.7559711900171914098926517"
+      ],
+      "v": [
+       "0.09201532587272525126135265",
+       "0.3204654689764544744609142",
+       "0.4681806311236812652972202"
+      ],
+      "L": "0.9566313471747193403270008",
+      "V": "0.880661425972860991019487"
+     },
+     {
+      "stage": 5,
+      "T": "395.4750097910745515228743",
+      "Q": "30000.0",
+      "l": [
+       "0.0003763919084644525185672688",
+       "0.007909057471986924112599442",
+       "0.08531707005649606200389221"
+      ],
+      "v": [
+       "0.02005370256387881607431892",
+       "0.1723210052131977377288635",
+       "0.6706541199606953478887595"
+      ],
+      "L": "0.09360251943694743863505893",
+      "V": "0.8630288277377719016919419"
+     }
+    ],
+    "top_product": [
+     "0.3296236080915355474814327",
+     "0.4320909425280130758874006",
+     "0.2446829299435039379961078"
+    ],
+    "bottom_product": [
+     "0.0003763919084644525185672688",
+     "0.007909057471986924112599442",
+     "0.08531707005649606200389221"
+    ]
+   },
+   "pinned_zero": [
+    "l_1",
+    "l_2"
+   ],
+   "sigma_min": "0.0713121",
+   "core_min_flow": "0.0936025",
+   "core_saturation_error_max_K": "1.67e-42",
+   "admissibility": {
+    "1": {
+     "phase": "VAPOR",
+     "T_dew": "369.6534163308675655324258",
+     "margin_K": "3.2727538",
+     "margin_sum": "0.088376437"
+    },
+    "2": {
+     "phase": "VAPOR",
+     "T_dew": "369.5943127854820902990507",
+     "margin_K": "0.34488633",
+     "margin_sum": "0.0097717284"
+    }
+   },
+   "prototype_deviation_T_K": "4.45e-5"
+  }
+ },
+ "core_decoupling": {
+  "cases": [
+   "P3",
+   "F1"
+  ],
+  "stages": [
+   1,
+   2,
+   3
+  ],
+  "max_abs_difference": "0.0"
+ },
+ "p1_crosscheck": {
+  "source": "s02_reference.json phase_case.P1",
+  "max_abs_T_deviation_K": "0.0"
+ },
+ "claims": [
+  "V-M1 duty+duty is a registered S02 specification set",
+  "P1: the §5.2 candidate list is [(0, 5)] (§5.2's table)",
+  "P2: the §5.2 candidate list is [(5, 0)] (§5.2's table)",
+  "P3: the §5.2 candidate list is [(0, 2)] (§5.2's table)",
+  "F1: the §5.2 candidate list is [(0, 2)] (§5.2's table)",
+  "D1: the §5.2 candidate list is [(2, 0)] (§5.2's table)",
+  "M3: the §5.2 candidate list is [(0, 5)] (§5.2's table)",
+  "V-M1 duty+duty: the §5.2 candidate list is [(3, 0)] (§5.2's table)",
+  "M1: the §5.2 candidate list is [] (§5.2's table)",
+  "M2: the §5.2 candidate list is [] (§5.2's table)",
+  "M4: the §5.2 candidate list is [] (§5.2's table)",
+  "J5: the §5.2 candidate list is [] (§5.2's table)",
+  "U1: the §5.2 candidate list is [] (§5.2's table)",
+  "U2: the §5.2 candidate list is [] (§5.2's table)",
+  "U1: fixed stages {2, 7} (S08-design §5.2 table)",
+  "U2: fixed stages {2, 7} (S08-design §5.2 table)",
+  "no list depends on whether a top VAPOR or bottom LIQUID inlet is a source",
+  "§5.2's table fixes (V3)'s reading: P1's (0, 5) and P2's (5, 0) need the top and bottom ports to count as (V3)'s flowing inlet",
+  "P2: the first candidate's signature is §6.2's",
+  "P2: the signature conforms to the block rule V^a 2P^b L^c",
+  "P2: the core root completed by the block passes is a root of the full column's rows below 1e-40",
+  "P2: the implementation's division-free rows vanish below 1e-38",
+  "P2: every stage temperature lies in SYN-001's domain [280, 440] K",
+  "P2: regular, scaled sigma_min >= 1e-4 (S02's scaling)",
+  "P2: every pinned flow on a block stage is exactly zero",
+  "P2: block stage 1 (VAPOR) admissible by >= 0.1 K",
+  "P2: block stage 2 (VAPOR) admissible by >= 0.1 K",
+  "P2: block stage 3 (VAPOR) admissible by >= 0.1 K",
+  "P2: block stage 4 (VAPOR) admissible by >= 0.1 K",
+  "P2: block stage 5 (VAPOR) admissible by >= 0.1 K",
+  "P2: overall component and energy closure",
+  "P2: T agrees with §6.2's float sanity values within 1e-4 K",
+  "[P3 core] P3 core: initializer flows positive",
+  "P3: the first candidate's signature is §6.2's",
+  "P3: the signature conforms to the block rule V^a 2P^b L^c",
+  "P3: the core root completed by the block passes is a root of the full column's rows below 1e-40",
+  "P3: the implementation's division-free rows vanish below 1e-38",
+  "P3: every stage temperature lies in SYN-001's domain [280, 440] K",
+  "P3: regular, scaled sigma_min >= 1e-4 (S02's scaling)",
+  "P3: every pinned flow on a block stage is exactly zero",
+  "P3: every core stage has L, V > 1e-3 mol/s and every component flow positive",
+  "P3: every core stage lies at its bubble and dew temperature (error < 1e-30 K)",
+  "P3: block stage 4 (LIQUID) admissible by >= 0.1 K",
+  "P3: block stage 5 (LIQUID) admissible by >= 0.1 K",
+  "P3: overall component and energy closure",
+  "P3: T agrees with §6.2's float sanity values within 1e-4 K",
+  "P3: V agrees with §6.2's float sanity values within 1e-5",
+  "[F1 core] F1 core: initializer flows positive",
+  "F1: the first candidate's signature is §6.2's",
+  "F1: the signature conforms to the block rule V^a 2P^b L^c",
+  "F1: the core root completed by the block passes is a root of the full column's rows below 1e-40",
+  "F1: the implementation's division-free rows vanish below 1e-38",
+  "F1: every stage temperature lies in SYN-001's domain [280, 440] K",
+  "F1: regular, scaled sigma_min >= 1e-4 (S02's scaling)",
+  "F1: every pinned flow on a block stage is exactly zero",
+  "F1: every core stage has L, V > 1e-3 mol/s and every component flow positive",
+  "F1: every core stage lies at its bubble and dew temperature (error < 1e-30 K)",
+  "F1: block stage 4 (LIQUID) admissible by >= 0.1 K",
+  "F1: block stage 5 (LIQUID) admissible by >= 0.1 K",
+  "F1: overall component and energy closure",
+  "F1: T agrees with §6.2's float sanity values within 1e-4 K",
+  "[D1 core] D1 core: initializer flows positive",
+  "D1: the first candidate's signature is §6.2's",
+  "D1: the signature conforms to the block rule V^a 2P^b L^c",
+  "D1: the core root completed by the block passes is a root of the full column's rows below 1e-40",
+  "D1: the implementation's division-free rows vanish below 1e-38",
+  "D1: every stage temperature lies in SYN-001's domain [280, 440] K",
+  "D1: regular, scaled sigma_min >= 1e-4 (S02's scaling)",
+  "D1: every pinned flow on a block stage is exactly zero",
+  "D1: every core stage has L, V > 1e-3 mol/s and every component flow positive",
+  "D1: every core stage lies at its bubble and dew temperature (error < 1e-30 K)",
+  "D1: block stage 1 (VAPOR) admissible by >= 0.1 K",
+  "D1: block stage 2 (VAPOR) admissible by >= 0.1 K",
+  "D1: overall component and energy closure",
+  "D1: T agrees with §6.2's float sanity values within 1e-4 K",
+  "P2: the closed form v_j = bottom inlet, T_j = 420 K (j >= 2), T_1 = 390 K, bottoms 0",
+  "P2: stage 1's dew temperature is 373.128 K at 1 bar, a 16.9 K margin (§6.2)",
+  "F1: stage 4 passes stage 3's liquid adiabatically 1 kPa down: T_4 = T_3 - 1e-3 K exactly",
+  "F1: T_bub(l_4, P_4) exceeds the root's T_4 by >= 0.3 K (item 6 rests on this)",
+  "F1: stage 4's subcooling is 0.375 K, by pressure alone (§6.2)",
+  "D1: stage 2 passes stage 3's vapour adiabatically 1 kPa up: T_2 = T_3 exactly",
+  "P3, F1: their core columns (stages 1-3, inlets, condenser, specification) are identical",
+  "P3, F1: stages 1-3 (T, l, v, Q_1) are equal below 1e-40",
+  "P1: the L-block pass reproduces s02_reference.json's closed form (T within 1e-20 K)"
+ ],
+ "claim_count": 84
+}

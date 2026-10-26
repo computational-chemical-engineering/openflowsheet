@@ -1,0 +1,131 @@
+# S08 design-time measurements (architect, 2026-10-25), code = main 390e0af5 (wp/S08 60dbeae8).
+# Run from the repo root: source .venv/bin/activate; export PYTHONPATH=$PWD/src:$PWD
+# Probes and a float prototype, NOT production code, NOT generators, NOT tests.
+
+## contract_closure_probe.py P1 (S08_MODE=log | close | close + S08_SWEEP=1)
+### mode log
+OUTCOME HOMOTOPY_STALLED homotopy_stalled(BOUND_BLOCKED) ('TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE')
+recovered_from PHASE_UPDATE_REQUIRED BOUND_BLOCKED ['TW', 'TW', 'TW', 'TW', 'TW'] 1 phase_disappeared(S02.stage.2, vapor, S02.stage.2.v.C)
+recovered_from ACTIVE_SET_CYCLING LINE_SEARCH_FAILED ['TW', 'LI', 'TW', 'TW', 'TW'] 0 
+result HOMOTOPY_STALLED HOMOTOPY_STALLED ['TW', 'TW', 'TW', 'TW', 'TW'] 37 
+### mode close
+OUTCOME HOMOTOPY_STALLED homotopy_stalled(BOUND_BLOCKED) ('TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE')
+recovered_from PHASE_UPDATE_REQUIRED BOUND_BLOCKED ['TW', 'TW', 'TW', 'TW', 'TW'] 1 phase_disappeared(S02.stage.2, vapor, S02.stage.2.v.C); block_closure
+recovered_from ACTIVE_SET_CYCLING LINE_SEARCH_FAILED ['TW', 'LI', 'LI', 'LI', 'LI'] 0 
+result HOMOTOPY_STALLED HOMOTOPY_STALLED ['TW', 'TW', 'TW', 'TW', 'TW'] 37 
+LOG {'closure_of': ['TW', 'LI', 'TW', 'TW', 'TW'], 'to': ['TW', 'LI', 'LI', 'LI', 'LI']}
+LOG {'closure_of': ['TW', 'TW', 'TW', 'LI', 'TW'], 'to': ['TW', 'TW', 'TW', 'TW', 'TW']}
+### mode sweep
+OUTCOME HOMOTOPY_STALLED homotopy_stalled(BOUND_BLOCKED) ('TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE')
+recovered_from PHASE_UPDATE_REQUIRED BOUND_BLOCKED ['TW', 'TW', 'TW', 'TW', 'TW'] 1 phase_disappeared(S02.stage.2, vapor, S02.stage.2.v.C); block_closure
+recovered_from ACTIVE_SET_CYCLING LINE_SEARCH_FAILED ['TW', 'LI', 'LI', 'LI', 'LI'] 0 
+result HOMOTOPY_STALLED HOMOTOPY_STALLED ['TW', 'TW', 'TW', 'TW', 'TW'] 37 
+LOG {'closure_of': ['TW', 'LI', 'TW', 'TW', 'TW'], 'to': ['TW', 'LI', 'LI', 'LI', 'LI']}
+LOG {'sweep': 2, 'reg': 'LIQUID', 'T': 355.91976921888556}
+LOG {'sweep': 3, 'reg': 'LIQUID', 'T': 355.9187692188856}
+LOG {'sweep': 4, 'reg': 'LIQUID', 'T': 355.9177692188856}
+LOG {'sweep': 5, 'reg': 'LIQUID', 'T': 388.92043234163646}
+LOG {'closure_of': ['TW', 'LI', 'LI', 'LI', 'TW'], 'to': ['TW', 'TW', 'TW', 'TW', 'TW']}
+
+## block_endpoint_prototype.py <case> [candidate]  (TODAY = solve_column unchanged; BLOCK = prototype endpoint + solve_target)
+F1 BLOCK 2P,2P,2P,L,L ('CONVERGED', '', ('TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'LIQUID', 'LIQUID'))
+    ('CONVERGED', 'CONVERGED', 'TTTLL', 4)
+    T: [350.9491, 362.4433, 370.0147, 370.0137, 363.3439]
+    V: [0.5, 1.0807733582218981, 1.0493547094707056, 0.0, 0.0]
+    L: [0.5807733582218981, 0.5493547094707055, 0.5, 0.5, 0.6000000000000001]
+F1 BLOCK 2P,2P,2P,2P,L ('CONVERGED', '', ('TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'LIQUID'))
+    ('CONVERGED', 'CONVERGED', 'TTTTL', 7)
+    T: [350.9487, 362.4429, 370.0145, 370.0061, 363.3376]
+    V: [0.5, 1.080787976908526, 1.0493681443549177, 1.2391792157718e-05, 0.0]
+    L: [0.580787976908526, 0.5493681443549177, 0.5000123917921576, 0.49999999999999983, 0.6]
+D1 BLOCK V,V,2P,2P,2P ('CONVERGED', '', ('VAPOR', 'VAPOR', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE'))
+    ('CONVERGED', 'CONVERGED', 'VVTTT', 5)
+    T: [372.9262, 369.9392, 369.9392, 386.5229, 395.475]
+    V: [1.0063974805630154, 0.9063974805630153, 0.9063974805630153, 0.8806614259727706, 0.8630288277377296]
+    L: [0.0, 0.0, 0.9742639454097556, 0.9566313471747142, 0.09360251943698467]
+P1 BLOCK L,L,L,L,L ('CONVERGED', '', ('LIQUID', 'LIQUID', 'LIQUID', 'LIQUID', 'LIQUID'))
+    ('CONVERGED', 'CONVERGED', 'LLLLL', 0)
+    T: [300.0, 299.999, 299.998, 299.997, 329.996]
+    V: [0.0, 0.0, 0.0, 0.0, 0.0]
+    L: [1.0, 1.0, 1.0, 1.0, 1.0]
+F1 TODAY CONVERGED  ('TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'LIQUID')
+    PHASE_UPDATE_REQUIRED BOUND_BLOCKED TTTTT 2 phase_disappeared(S02.stage.5, vapor, S02.stage.5.v.B)
+    CONVERGED CONVERGED TTTTL 6 
+D1 TODAY CONVERGED  ('VAPOR', 'VAPOR', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE')
+    PHASE_UPDATE_REQUIRED BOUND_BLOCKED TTTTT 2 phase_disappeared(S02.stage.1, liquid, S02.stage.1.l.A)
+    PHASE_UPDATE_REQUIRED BOUND_BLOCKED VTTTT 1 phase_disappeared(S02.stage.2, liquid, S02.stage.2.l.B)
+    CONVERGED CONVERGED VVTTT 2 
+P2 TODAY HOMOTOPY_STALLED homotopy_stalled(BOUND_BLOCKED) ('TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE')
+    PHASE_UPDATE_REQUIRED BOUND_BLOCKED TTTTT 1 phase_disappeared(S02.stage.3, liquid, S02.stage.3.l.A)
+    ACTIVE_SET_CYCLING LINE_SEARCH_FAILED TTVTT 0 
+    HOMOTOPY_STALLED HOMOTOPY_STALLED TTTTT 31 
+P2 BLOCK V,V,V,V,V ('CONVERGED', '', ('VAPOR', 'VAPOR', 'VAPOR', 'VAPOR', 'VAPOR'))
+    ('CONVERGED', 'CONVERGED', 'VVVVV', 0)
+    T: [390.0, 420.0, 420.0, 420.0, 420.0]
+    V: [1.0, 1.0, 1.0, 1.0, 1.0]
+    L: [0.0, 0.0, 0.0, 0.0, 0.0]
+P3 TODAY HOMOTOPY_STALLED homotopy_stalled(BOUND_BLOCKED) ('TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE')
+    PHASE_UPDATE_REQUIRED BOUND_BLOCKED TTTTT 1 phase_disappeared(S02.stage.5, vapor, S02.stage.5.v.C)
+    ACTIVE_SET_CYCLING LINE_SEARCH_FAILED TTTTL 0 
+    HOMOTOPY_STALLED HOMOTOPY_STALLED TTTTT 31 
+P3 BLOCK 2P,2P,2P,L,L ('CONVERGED', '', ('TWO_PHASE', 'TWO_PHASE', 'TWO_PHASE', 'LIQUID', 'LIQUID'))
+    ('CONVERGED', 'CONVERGED', 'TTTLL', 4)
+    T: [350.9491, 362.4433, 370.0147, 335.0069, 345.0059]
+    V: [0.5, 1.0807733579515137, 1.0493547094817994, 0.0, 0.0]
+    L: [0.5807733579515137, 0.5493547094817995, 0.5000000000000001, 1.0, 1.0]
+
+## f1_near_trivial_check.py (stage 3 and 4 of F1: today's all-2P root vs the TTTLL block root)
+today 3 T 370.0146068162029 Tbub 370.0146069581195 sumKx 0.9999999963072297 V 1.0493607788674204 eqrows [6.798951679432008e-10, 1.5557917731889859e-09, -2.9814110902304236e-10]
+today 4 T 370.0102865597601 Tbub 370.3889760827588 sumKx 0.9902036725577896 V 5.598162826954576e-06 eqrows [8.819444232890164e-09, 1.1712006901039518e-08, 6.889266929898937e-09]
+block 3 T 370.01471518182836 Tbub 370.01471518262036 sumKx 0.9999999999793906 V 1.0493547094707054 eqrows [2.5326712949080843e-11, -1.679437144908036e-11, 2.2810087152436154e-12]
+block 4 T 370.01371518182833 Tbub 370.38875631743014 sumKx 0.99029768324802 V 0.0 eqrows [0.0, 0.0, 0.0]
+
+## registered_scan.py (47 registered column configurations)
+S02.M1                       topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=4.31e-11 minLV=0.352
+S02.M2                       topo=TTTTTT out=CONVERGED            sig=TTTTTT   2Pmargin=1.82e-12 minLV=0.55
+S02.M3                       topo=TTTTT out=CONVERGED            sig=TTTTT    2Pmargin=2.14e-07 minLV=0.2
+S02.M4                       topo=TTTTT out=CONVERGED            sig=TTTTT    2Pmargin=1.26e-10 minLV=0.5
+S02.P1                       topo=TTTTT out=HOMOTOPY_STALLED     sig=TTTTT    2Pmargin=0.00e+00 minLV=inf
+S02.V-M1.duty+duty           topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=4.55e-13 minLV=0.352
+S02.V-M1.reflux_ratio+bottoms_rate topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=1.61e-11 minLV=0.352
+S02.V-M1.distillate_rate+boilup_ratio topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=4.38e-12 minLV=0.352
+S02.V-M1.reflux_ratio+duty   topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=9.04e-12 minLV=0.352
+S02.V-M1.distillate_rate+bottoms_rate topo=TTTTTTT out=INVALID_SPECIFICATION sig=         2Pmargin=0.00e+00 minLV=inf
+S02.V-M2.duty+duty           topo=TTTTTT out=CONVERGED            sig=TTTTTT   2Pmargin=1.98e-08 minLV=0.726
+S02.V-M2.distillate_rate+boilup_ratio topo=TTTTTT out=CONVERGED            sig=TTTTTT   2Pmargin=3.98e-13 minLV=0.55
+S02.V-M2.distillate_rate+bottoms_rate topo=TTTTTT out=INVALID_SPECIFICATION sig=         2Pmargin=0.00e+00 minLV=inf
+S06.J1                       topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=1.31e-12 minLV=0.336
+S06.J2                       topo=TTTTTT out=CONVERGED            sig=TTTTTT   2Pmargin=3.02e-10 minLV=0.7
+S06.J3                       topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=5.12e-13 minLV=0.385
+S06.J4                       topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=4.48e-07 minLV=0.348
+S06.J5                       topo=TTTTT out=CONVERGED            sig=TTTTT    2Pmargin=1.34e-11 minLV=0.245
+S06.J6                       topo=TTTTTT out=CONVERGED            sig=TTTTTT   2Pmargin=2.22e-11 minLV=0.424
+S06.J7                       topo=TTTTT out=CONVERGED            sig=TTTTT    2Pmargin=2.86e-10 minLV=0.387
+S06.J8                       topo=TTTTTT out=CONVERGED            sig=TTTTTT   2Pmargin=2.42e-06 minLV=0.536
+S06.V.V-M1-purity+boilup_ratio topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=8.01e-12 minLV=0.352
+S06.V.V-M1-reflux_ratio+temperature topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=8.55e-07 minLV=0.352
+S06.V.V-M1-purity+purity     topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=8.29e-07 minLV=0.352
+S06.V.V-M1-recovery+recovery topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=3.52e-07 minLV=0.352
+S06.U.U1                     topo=TTTTTT out=HOMOTOPY_STALLED     sig=TTTTTT   2Pmargin=0.00e+00 minLV=inf
+S06.U.U2                     topo=TTTTTT out=HOMOTOPY_STALLED     sig=TTTTTT   2Pmargin=0.00e+00 minLV=inf
+S03.RC1                      topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=5.45e-11 minLV=0.353
+S03.RC2                      topo=TTTTTT out=CONVERGED            sig=TTTTTT   2Pmargin=2.16e-12 minLV=0.55
+S03.RC3                      topo=TTTTT out=CONVERGED            sig=TTTTT    2Pmargin=2.31e-07 minLV=0.199
+S03.RC4                      topo=TTTTT out=CONVERGED            sig=TTTTT    2Pmargin=1.30e-10 minLV=0.5
+S03.RC5                      topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=1.19e-12 minLV=0.337
+S03.RC6                      topo=TTTTTT out=CONVERGED            sig=TTTTTT   2Pmargin=2.40e-06 minLV=0.534
+S03.RC7                      topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=2.02e-10 minLV=0.437
+S03.RC1-RR                   topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=6.36e-11 minLV=0.35
+S03.RC1-BR                   topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=5.66e-11 minLV=0.357
+S03.RC1-z                    topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=1.19e-11 minLV=0.35
+S03.RC2-RR                   topo=TTTTTT out=CONVERGED            sig=TTTTTT   2Pmargin=2.50e-12 minLV=0.55
+S03.RC2-B                    topo=TTTTTT out=CONVERGED            sig=TTTTTT   2Pmargin=1.65e-12 minLV=0.561
+S03.RC2-z                    topo=TTTTTT out=CONVERGED            sig=TTTTTT   2Pmargin=6.25e-13 minLV=0.55
+S03.RC3-Q                    topo=TTTTT out=CONVERGED            sig=TTTTT    2Pmargin=2.12e-07 minLV=0.183
+S03.RC3-z                    topo=TTTTT out=CONVERGED            sig=TTTTT    2Pmargin=9.15e-08 minLV=0.209
+S03.RC4-D                    topo=TTTTT out=CONVERGED            sig=TTTTT    2Pmargin=3.05e-10 minLV=0.49
+S03.RC4-z                    topo=TTTTT out=CONVERGED            sig=TTTTT    2Pmargin=1.61e-11 minLV=0.5
+S03.PC-P                     topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=1.08e-12 minLV=0.342
+S03.PC-L                     topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=5.45e-11 minLV=0.353
+S03.PC-LI                    topo=TTTTTTT out=CONVERGED            sig=TTTTTTT  2Pmargin=5.45e-11 minLV=0.353
+SUMMARY cases 47 worst_2P_equiv_T_error 2.4221981220762245e-06 non-all-2P topological: []
