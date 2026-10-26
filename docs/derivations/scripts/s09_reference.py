@@ -68,6 +68,14 @@ R_GAS = "8.31446261815324"
 TOOL_T_REF = "298.15"  # thermosteam's default Chemical.T_ref (S09 §4.2)
 
 READBACK_T = ("310", "347", "385", "430")
+# Amendment 1 (S09 §18.4). S03 §17.4's claim: a specification error at rule 2d's threshold moves
+# every registered quantity by <= 0.05 tolerance. S03 rule 2d's rerun and path budgets: 0.1
+# tolerance. §6.6's thin-margin level: 0.1 of a check's threshold. The rerun's ytol factor before
+# the amendment: 10.
+S03_RESPONSE_AT_THRESHOLD = "0.05"
+RULE2D_BUDGET = "0.1"
+THIN_LEVEL = "0.1"
+ORIGINAL_YTOL_FACTOR = "10"
 RUNGS = (
     ("inside out", "fixed-point"),
     ("phenomena", "fixed-point"),
@@ -200,6 +208,13 @@ def build() -> dict[str, Any]:
     )
     for cid in COMPARED:
         claim(cases["cases"][cid]["role"] == "comparison", f"C2 {cid} has role comparison in S03")
+    # C2b (Amendment 1, S09 §18.2): the count. S03 registers 20 cases; BioSTEAM drops PC-L and PC-LI
+    # and adds PC-LB, so it runs 19 pairs (the original §3, §10 and §12 said 20).
+    bio_pairs = list(COMPARED) + ["PC-P", "PC-LB"]
+    claim(
+        len(s03_ids) == 20 and len(set(bio_pairs)) == len(bio_pairs) == len(s03_ids) - 2 + 1 == 19,
+        "C2b BioSTEAM runs 19 pairs: S03's 20 cases less PC-L and PC-LI, plus PC-LB",
+    )
 
     # C3: PC-LB is RC1's inputs with BioSTEAM's Hvap = L_i + P_r v_i, the value of S03's PC-LI
     # input.
@@ -428,6 +443,52 @@ def build() -> dict[str, Any]:
         "C11 S03's comparison schema is unchanged",
     )
 
+    # ---- Amendment 1 (S09 §18) ------------------------------------------------------------------
+    # C12 (§18.3): B2's counter is well defined per rung. Exactly one rung runs scipy's fsolve
+    # (simultaneous correction with 'hybr'), which never advances the tool's `iter` and is capped by
+    # maxfev = maxiter (biosteam/units/stage.py:3044-3047); B2 reads fsolve's nfev on that rung and
+    # `iter` on the other three.
+    fsolve_rungs = [k for k, (alg, meth) in enumerate(RUNGS) if meth == "hybr"]
+    claim(
+        fsolve_rungs == [2] and RUNGS[2][0] == "simultaneous correction",
+        "C12 exactly one rung (R3, simultaneous correction / hybr) runs fsolve; B2 reads its nfev",
+    )
+    claim(
+        all(meth == "fixed-point" for k, (_, meth) in enumerate(RUNGS) if k != 2),
+        "C12 R1, R2 and R4 run flexsolve's fixed point, which advances `iter`; B2 reads `iter`",
+    )
+    # C13 (§18.4): what each margin row can be by construction. S03 §17.4 claims that a
+    # specification error at rule 2d's threshold theta_k moves every registered quantity by
+    # <= 0.05 tolerance (linear in the error); rule 2d's rerun and path budgets are 0.1
+    # tolerance; the thin-margin level is 0.1 of a check's threshold.
+    resp = Decimal(S03_RESPONSE_AT_THRESHOLD)
+    budget = Decimal(RULE2D_BUDGET)
+    for kind, (thr, _basis) in sorted(s03_thr.items()):
+        claim(
+            Decimal(ytol[kind][0]) / Decimal(thr) == Decimal(THIN_LEVEL),
+            f"C13 {kind}: at L2(c) the record's |g| <= ytol makes the rule 2d specification ratio "
+            f"<= {THIN_LEVEL} by construction (never above the thin level)",
+        )
+    # The original rerun stopped its loop at ytol x 10 = theta and the record at theta / 10, with
+    # errors of either sign: worst case resp * (1 + 1/10) of movement from the stopping errors
+    # alone.
+    original_rerun = resp * (Decimal(ORIGINAL_YTOL_FACTOR) / 10 + Decimal(1) / 10) / budget
+    claim(
+        original_rerun == Decimal("0.55") and original_rerun > Decimal(THIN_LEVEL),
+        "C13 the original L2(c) rerun (ytol x 10 = theta) could spend up to 0.055 of its "
+        "0.1-tolerance budget on the two loops' stopping errors: ratio 0.55 > 0.1 by construction",
+    )
+    path_designed = 2 * (resp / 10) / budget
+    claim(
+        path_designed == Decimal(THIN_LEVEL),
+        "C13 at L2(c) two rungs' stopping errors (each |g| <= theta/10) contribute at most "
+        "2 x 0.005 = 0.01 tolerance to the path spread: ratio 0.1, not above the thin level",
+    )
+    claim(
+        Decimal(1) / 10 * resp == Decimal("0.005"),
+        "C13 the record's own stopping error at L2(c) costs <= 0.005 tolerance (C4, unchanged)",
+    )
+
     document: dict[str, Any] = {
         "generator": "docs/derivations/scripts/s09_reference.py",
         "spec": "docs/derivations/S09-spec.md",
@@ -438,7 +499,14 @@ def build() -> dict[str, Any]:
         ),
         "s03_pins": PINS,
         "tool": "BioSTEAM",
-        "pairs": list(COMPARED) + ["PC-P", "PC-LB"],
+        "amendments": {
+            "1": (
+                "S09 §18 (2026-10-26): PCF class name spelled as the tool spells it; 19 pairs; B2 "
+                "reads fsolve's nfev on R3; the L2(c) accuracy rerun is one evaluation at the "
+                "record's x; the thin margin is a disclosure over a closed list of rows"
+            )
+        },
+        "pairs": bio_pairs,
         "not_applicable": {
             "PC-L": "DWSIM's mapping input (S03 §3.3)",
             "PC-LI": "IDAES's mapping input (S03 §18.3)",
@@ -520,7 +588,7 @@ def build() -> dict[str, Any]:
                     "thermo_classes": {
                         "Gamma": "IdealActivityCoefficients",
                         "Phi": "IdealFugacityCoefficients",
-                        "PCF": "MockPoyntingCorrectionFactors",
+                        "PCF": "MockPoyintingCorrectionFactors",
                         "mixture": "IdealMixture",
                         "include_excess_energies": False,
                     },
@@ -612,14 +680,44 @@ def build() -> dict[str, Any]:
                 "floor_rerun": {
                     "tolerance": "1e-9",
                     "relative_tolerance": "1e-9",
-                    "ytol_factor": "10",
+                    "L2(c)": (
+                        "one fresh evaluation (P1-P4) at the selected run's final x, the same "
+                        "binary64 value; no outer loop and no ytol (S09 §18.4)"
+                    ),
+                },
+                "margin": {
+                    "thin_level": THIN_LEVEL,
+                    "rows": [
+                        "B3 stage component balance / 3.1e-8 mol/s",
+                        "B4 equilibrium / 1e-8",
+                        "B5 overall component / 3.1e-8 mol/s",
+                        "B5 overall energy / 1e-3 W",
+                        "rule 2c adiabatic duty / 1e-3 W",
+                        "rule 2c total-condenser vapour / 3.1e-8 mol/s (total condenser only)",
+                        "rule 2d specification residual / its kind's threshold",
+                        "rule 2d accuracy-rerun movement / 0.1 tolerance",
+                        "rule 2d path spread / 0.1 tolerance (two or more passing rungs)",
+                    ],
+                    "not_rows": (
+                        "the outer loop's |g|/ytol (set by its own stopping test), exact and "
+                        "structural checks, and rule 2c's 1e-4 definition check (rule 2d's row "
+                        "covers it)"
+                    ),
+                    "effect": (
+                        "a disclosure listed in comparison.json; it moves no classification "
+                        "(S09 §2.3 step 4; §18.4)"
+                    ),
                 },
                 "rule2": {
                     "stage_component_mol_per_s": "3.1e-8",
                     "equilibrium": "1e-8",
                     "overall_component_mol_per_s": "3.1e-8",
                     "overall_energy_W": "1e-3",
-                    "iteration_cap": "no pass's iteration counter reaches maxiter",
+                    "iteration_cap": (
+                        "no pass's counter reaches maxiter: the tool's iter on R1, R2 and R4; on "
+                        "R3 fsolve's infodict nfev of that pass (fsolve's maxfev is the tool's "
+                        "maxiter), and a pass in which fsolve did not run fails (S09 §18.3)"
+                    ),
                     "exception": "no pass raised",
                 },
                 "rule2c_added": {

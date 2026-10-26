@@ -6,10 +6,10 @@ Design lane (`specifier`), 2026-10-26. Package S09 (`docs/CLOUD_WORK.md:54`; Fra
 §0–§19, verdicts `docs/reviews/S03-verdicts.md`, review `docs/reviews/S03-review.md`).
 
 Generator `docs/derivations/scripts/s09_reference.py` (stdlib and mpmath at 50 digits; imports nothing from `src/`).
-`--emit` writes `docs/derivations/scripts/s09_cases.json`; `--check` re-derives **167 claims**, refuses on a failed one
-and byte-compares the file (SHA-256 `d4514b4e…5bab7`) in under a second. It pins three S03 files by SHA-256 (§0).
+`--emit` writes `docs/derivations/scripts/s09_cases.json`; `--check` re-derives **167 claims** (181 after Amendment 1, §18), refuses on a
+failed one and byte-compares the file (SHA-256 `d4514b4e…5bab7`; `760ab27f…a813c` after Amendment 1) in under a second. It pins three S03 files by SHA-256 (§0).
 
-Register **R-740 to R-747**. R-728…R-732 are held by S08 on `wp/S08` (unmerged); R-733…R-739 are left unused so
+Register **R-740 to R-747**; Amendment 1 (§18): **R-748 to R-750**. R-728…R-732 are held by S08 on `wp/S08` (unmerged); R-733…R-739 are left unused so
 that the two packages cannot collide.
 
 ## 0. Authority and scope
@@ -52,7 +52,7 @@ the reviewer or Frank disagrees.
 **Lane.** Design leads, build follows. Build-lane chunks run as subagents in worktrees, and the design lane reviews them
 before the merge (CLAUDE.md).
 
-**What it establishes:** §1–§13. **What it does not establish:** §14. Read §14 before citing anything here.
+**What it establishes:** §1–§13, as amended by §18. **What it does not establish:** §14 and §18.7. Read §14 before citing anything here.
 
 ## 1. The brief's questions, decided
 
@@ -183,7 +183,7 @@ inexpressible (Q-X6), and L2(c) is the admissible one.
 
 ## 3. Registered pairs
 
-BioSTEAM runs **20 pairs**: S03's seventeen compared cases (RC1–RC7 and the ten perturbed cases), PC-P, and PC-LB (§7).
+BioSTEAM runs **19 pairs** *(erratum §18.2)*: S03's seventeen compared cases (RC1–RC7 and the ten perturbed cases), PC-P, and PC-LB (§7).
 `s09_cases.json → pairs`.
 - (PC-L, BioSTEAM) and (PC-LI, BioSTEAM) are `not_applicable`: they are DWSIM's and IDAES's mapping inputs. No record is
   written. They are registered absences outside every count.
@@ -250,7 +250,7 @@ Run in each case's process, before any solve, on the thermo object that case use
 | `h^L_i(T) − c_p (T − 300)` | 185 J/mol for every i | 1e-9 J/mol | 185.000000000002 |
 | liquid stream `H(T, 1.5 P_r) − H(T, P_r)` | 0 | exact | 0.0 |
 | active methods of `Psat` and `Hvap` | exactly `{'USER_METHOD'}` | exact | as expected |
-| `thermo.Gamma`, `Phi`, `PCF`, `mixture`, `include_excess_energies` | `IdealActivityCoefficients`, `IdealFugacityCoefficients`, `MockPoyntingCorrectionFactors`, `IdealMixture`, `False` | exact | as expected |
+| `thermo.Gamma`, `Phi`, `PCF`, `mixture`, `include_excess_energies` | `IdealActivityCoefficients`, `IdealFugacityCoefficients`, `MockPoyintingCorrectionFactors` (the tool's spelling, *sic*; *erratum §18.1*), `IdealMixture`, `False` | exact | as expected |
 
 *Above the floor, below an error worth catching.* 1e-14 relative on Psat is about 45 ulps (a different `exp` would
 pass). An error in L_i, T_b or the datum constants is at least a part in 10⁵ (L is entered to five digits), so 1e-12
@@ -373,6 +373,7 @@ project (the spike's (1.0, 1.5) are not registered, §9.1). By C5 they can chang
 The selected rung is repeated from a fresh build with `tolerance = relative_tolerance = 1e-9`. At L2(c) its ytol is also
 ×10, which equals rule 2d's threshold. Everything else is unchanged. It must pass rules 2 and 2c, and it may move no
 registered quantity by more than 0.1 tolerance. Measured on the probes: ≤ 4.9e-4 tolerance.
+*Replaced by Amendment 1, §18.4(b): at L2(c) the rerun is one evaluation at the run's final x, with no outer loop.*
 
 ### 5.6 Units, duties and specification values
 
@@ -416,7 +417,7 @@ state of an overwritten specification. Each check below catches a measured case.
 | Id | Check, computed from the tool's own record | Threshold | Catches (measured) |
 | --- | --- | --- | --- |
 | B1 | neither pass raised | — | R3's negative-temperature extrapolation |
-| B2 | neither pass's iteration counter `iter` reached `maxiter` | — | a stopped iteration |
+| B2 | neither pass's iteration counter `iter` reached `maxiter`. *Replaced by Amendment 1, §18.3: on R3 the counter is fsolve's `nfev`, and fsolve must have run* | — | a stopped iteration |
 | B3 | per stage and component: \|Σ in − Σ out\| | 3.1e-8 mol/s | R1 on S1 (0.315 mol/s) and A1 (0.22) |
 | B4 | per two-phase stage and component: \|y_c − K_c x_c\|, with K_c = `chemicals[c].Psat(T)/P` at the stage's T and P from the tool's objects (a total condenser stage, with no vapour: \|Σ_c K_c x_c − 1\|) | 1e-8 | R3 on D1 (0.25), whose balances and duties pass |
 | B5 | S03 rule 2: overall component closure, and overall energy closure in the tool's datum | 3.1e-8 mol/s; 1e-3 W | — |
@@ -475,10 +476,13 @@ S03 §7.1's order applies: 0, 1, 2, 2c, 2d, 3, 4. Rule 2b is IDAES only.
 | path spread (2d) | 0.1 tolerance | 8.6e-5 | 9.6e-4 | 1160× / 100× |
 | outer termination (C4) | ytol | 6.7e-12 (rate), 4.7e-16 (temperature) | — | ≥ 150× |
 
+*Rows "rerun movement" and "outer termination": replaced by Amendment 1, §18.4(c)–(d).*
+
 - *Below the smallest error worth catching.* Every threshold is a tenth of S03's allowance or less, except B4, which is
   bounded by claim C6.
 - *Where it would be thin, it says so.* The qualification reports per selected record its largest ratio of residual
-  to threshold. A ratio above 0.1 is listed in `comparison.json` as "thin margin", reported and not classified.
+  to threshold. A ratio above 0.1 is listed in `comparison.json` as "thin margin", reported and not classified. *Replaced by
+  Amendment 1, §18.4(a), (c), (d): the rows are a closed list, and the flag is a disclosure that moves no classification.*
 
 ## 7. Positive controls for BioSTEAM
 
@@ -639,7 +643,7 @@ spikes/references/s09_biosteam_syn001.py            §4.2's definition and §4.3
 spikes/references/s09_qualify_biosteam.py           tool script (BioSTEAM env): levels, rungs, outer loop, records
 spikes/references/s09_qualify.sh                    runs every case (one process each), twice, and compares (A17)
 benchmarks/s09/references/qualification/biosteam.json    levels, attempts, inspections, rungs, repeat_run
-benchmarks/s09/references/results/biosteam-<case>.json   one record per pair (20)
+benchmarks/s09/references/results/biosteam-<case>.json   one record per pair (19; erratum §18.2)
 benchmarks/s09/references/comparison.json            BioSTEAM classifications, controls, three-tool X31, responses
 benchmarks/s09/references/SHA256SUMS
 scripts/s09_reference_comparison.py                  classifier (may import S03's classifier; never changes it)
@@ -670,15 +674,15 @@ committed records, S03's `ours-*.json` and `s03_reference.json`, and the three-t
 
 | Id | Assertion | Expected | Tolerance and why |
 | --- | --- | --- | --- |
-| A01 | `s09_reference.py --check` passes | 167 claims; `cases9` byte-identical; S03 pins hold | exact |
+| A01 | `s09_reference.py --check` passes. *Amended, §18.5 (181 claims)* | 167 claims; `cases9` byte-identical; S03 pins hold | exact |
 | A02 | S03 is untouched: `cases3`, `ref`, `cmp3`, S03's `SHA256SUMS` and every file under `benchmarks/s03/references/` are byte-identical to `main` at `390e0af5`; `s03_reference.py --check` and S03's tests (`tests/test_s03_references.py`, `tests/test_s03_ours.py`) pass unchanged | equal; pass | exact |
 | A03 | Blindness (§9.2 point 4): scanned set, forbidden strings and exemption, input files, no path under `s09_spike/`, `benchmarks/s03/references/results/` or `benchmarks/s09/`; checked at HEAD and at the qualification commit (`git show`; without history the test refuses explicitly, R-555's pattern) | pass | exact |
 | A04 | Environment: every record's fingerprint equals `docs/reference-environments.md` §9's; two consecutive builds give identical fingerprints (recorded there); the lock pins every distribution by hash | equal | exact |
 | A05 | Property readback (§4.3) in every record within its thresholds; and by mutation: a record whose readback `Psat` is moved by 1e-12 relative → rule 2c `property_mapping`, by 1e-15 → not fired; `h^V − h^L` moved by 1e-9 relative → rule 2c | as stated | thresholds §4.3; mutations at ≥ 100× and ≤ 0.1× of them |
 | A06 | Ladder conformance: settings carry `tool_settings.BioSTEAM`; at every attempted level all four rungs are recorded (run, or the structural reason none was made); the selected rung is the first passing one in §5.3's order; a not-available record shows every rung at every expressible level; Q-X10 matches | set and order equality | exact |
 | A07 | Solve path: every run shows passes 1 and 2, the attribute-setter route and the exact read-back after pass 2 | present | exact |
-| A08 | L2(c) conformance: L2(c) attempted only after an L1 inspection recorded the specification inexpressible; the adjusted specification is the end's (`Reflux` stage 0 / `Boilup` stage N−1); evaluations start at x = 1, 2 and expand per §5.4; the solver call's arguments are §5.4's; every evaluation passed the inner checks; the final evaluation is at the returned x with \|g\| ≤ ytol(kind) | as stated | exact; ytol per claim C7 |
-| A09 | Rule 2 fires (synthetic copies of a committed available record, or of a synthetic record if none is available): one stage's component flow +6.2e-8 mol/s → B3, +1.55e-8 → not; one stage's y_c +2e-8 → B4, +5e-9 → not; a pass with `iter == maxiter` → B2; an exception on pass 1 → B1; unaltered → rule 4 | the labels | mutations at 2× and 0.5× of each threshold |
+| A08 | *Amended, §18.5.* L2(c) conformance: L2(c) attempted only after an L1 inspection recorded the specification inexpressible; the adjusted specification is the end's (`Reflux` stage 0 / `Boilup` stage N−1); evaluations start at x = 1, 2 and expand per §5.4; the solver call's arguments are §5.4's; every evaluation passed the inner checks; the final evaluation is at the returned x with \|g\| ≤ ytol(kind) | as stated | exact; ytol per claim C7 |
+| A09 | *Amended, §18.5.* Rule 2 fires (synthetic copies of a committed available record, or of a synthetic record if none is available): one stage's component flow +6.2e-8 mol/s → B3, +1.55e-8 → not; one stage's y_c +2e-8 → B4, +5e-9 → not; a pass with `iter == maxiter` → B2; an exception on pass 1 → B1; unaltered → rule 4 | the labels | mutations at 2× and 0.5× of each threshold |
 | A10 | Rule 2c fires: stored B ≠ 1/RR by one ulp → `specification_readback`; total-condenser vapour 6.2e-8 → fired, 1.55e-8 → not; and S03 A12's four on BioSTEAM's RC1 record (`L[1]` × (1 + 2e-4) → 2c; × (1 + 2e-8) → 2d; a pressure + 0.01 Pa → 2c; a rerun quantity moved 0.2 tolerance → 2d); and S03 §17.9's per-kind synthetic records at 2× / 0.5× of rules 2c and 2d | the labels | as S03 A12 |
 | A11 | Rule 2d path dependence fires: a copy with a second passing rung equal to the selected one except one quantity moved 0.2 tolerance → `path_dependence`; 0.05 → not | the labels | 2× and 0.5× of 0.1 |
 | A12 | Controls: no control `AGREE`; §17.3(b) for BioSTEAM by mutation (both controls replaced by `NOT_COMPARABLE` copies → every BioSTEAM pair `NOT_COMPARABLE(control_not_comparable: …)`; one replaced while the other is `DISAGREE` → no pair changes; synthetic controls if none is `DISAGREE`); (PC-L, BioSTEAM) and (PC-LI, BioSTEAM) `not_applicable` with no record; PC-LB's tool-model distance computed against `ref.controls.PC-LI.tool_model`; PC-P's reported `not_applicable(tool_model_differs)` | as stated | exact |
@@ -687,7 +691,7 @@ committed records, S03's `ours-*.json` and `s03_reference.json`, and the three-t
 | A15 | Three-tool X31: `cmp9` holds, for RC1–RC4 and per inverse kind, the three classes (IDAES and DWSIM from `cmp3`), the row, the outcome and the clause; they equal `cases9 → x31_three_tool.pre_registered` at BioSTEAM's committed classes; with BioSTEAM omitted they equal `cmp3`'s rows and clause | equal | exact |
 | A16 | The qualification commit is an ancestor of `cmp9`'s commit (`git merge-base --is-ancestor`; without history the test refuses explicitly) | pass | exact |
 | A17 | Repeat run: `qualification/biosteam.json → repeat_run` shows the second full run reproducing every record byte for byte, wall-clock fields excepted | equal | exact (one machine; the tool is deterministic, §5.7) |
-| A18 | `cmp9` holds each pair's level, rung and outer-evaluation count, each record's largest residual-to-threshold ratio and the "thin margin" list (§6.6), the perturbation response table with a BioSTEAM column (S03 §7.4), and every `NOT_COMPARABLE` and `DISAGREE` with its reason | present, complete | exact |
+| A18 | *Amended, §18.5.* `cmp9` holds each pair's level, rung and outer-evaluation count, each record's largest residual-to-threshold ratio and the "thin margin" list (§6.6), the perturbation response table with a BioSTEAM column (S03 §7.4), and every `NOT_COMPARABLE` and `DISAGREE` with its reason | present, complete | exact |
 | A19 | `docs/reviews/S09-verdicts.md` exists, is the `verdict` agent's, and records §8's items and §9.1's disclosure | present | — |
 | A20 | S01's, S02's, S03's and S06's suites pass unchanged on `wp/S09`; `s02_reference.py`, `s03_reference.py` and `s06_reference.py --check` pass | as registered | as registered |
 
@@ -719,7 +723,7 @@ Each is about 150k context. At most two agents run at a time. Only WO-S09-2 need
 - `s09_qualify_biosteam.py`: §2.3's order, §2.4's inspection, §5's path, ladder and loop, §6's rule values computed
   from the tool's own record, and §10's record fields.
 - `s09_qualify.sh`: one process per case, the whole run twice, and the comparison (A17).
-- Run all 20 pairs. Write `qualification/biosteam.json` and the 20 records. Commit them before WO-S09-3 (A16).
+- Run all 19 pairs *(erratum §18.2)*. Write `qualification/biosteam.json` and the 19 records. *Before the recorded run, apply §18.6.* Commit them before WO-S09-3 (A16).
 - Tests that need no tool: A03 (self-scan), A06–A08 (on the committed records).
 - *Expected outcomes:* §2.5's realizations, to be confirmed or refuted. No convergence outcome is registered (Q-S09-1).
 - A measurement that contradicts this document (a floor above §6.6's thresholds, a hook that behaves otherwise, a
@@ -752,7 +756,7 @@ against §5 and §6, the read-back, and the L2(c) loop.
 ## 13. Evidence manifest check list
 
 - `status: tested` requires a passing test for each of A01–A18 and A20, each citing its id, and A19's document.
-- `s09_reference.py --check` (167 claims) and `s03_reference.py --check` pass at the manifest commit.
+- `s09_reference.py --check` (181 claims after Amendment 1) and `s03_reference.py --check` pass at the manifest commit.
 - `ruff check` and `ruff format --check` are clean. `scripts/gate.sh` passes before the merge, and CI is green on both
   architectures.
 - The manifest lists:
@@ -808,7 +812,7 @@ against §5 and §6, the read-back, and the L2(c) loop.
    `DISAGREE`s. If PC-LB is not `DISAGREE` and PC-P is, the design lane adds a BioSTEAM-specific PC-P tool model (no
    Poynting factor and no liquid `v (P − P_r)`) to the generator by amendment before the verdict, so that the reported
    distance can show the `DISAGREE` comes from the expected effect.
-5. **Q-S09-5** *Needs a fact* (WO-S09-2 settles it). Do the registered cases' residuals sit as far below the thresholds
+5. **Q-S09-5** *Needs a fact* (WO-S09-2 settles it). *Default reworded by Amendment 1, §18.4(d).* Do the registered cases' residuals sit as far below the thresholds
    as the probes' (§6.6)? **Default: yes.** A selected record above 0.1 of a threshold is reported as "thin margin". A
    floor above a threshold stops WO-S09-2 before the recorded run (rule 6). The threshold is not relaxed.
 
@@ -826,7 +830,7 @@ against §5 and §6, the read-back, and the L2(c) loop.
 
 ## 17. Decisions
 
-Register R-740 to R-747.
+Register R-740 to R-747; Amendment 1 adds R-748 to R-750 (§18.9).
 - R-740: BioSTEAM 2.54.0 is the third column reference. S09 extends S03 without re-judging it. No ADR.
 - R-741: BioSTEAM's levels: L1, and L2(c) under C1–C6. L2(a) is inapplicable, L2(b) and L3 are not admissible.
 - R-742: BioSTEAM's SYN-001 definition: pure-component user methods, the tool's default datum, no `T_ref` subclass, and
@@ -839,3 +843,299 @@ Register R-740 to R-747.
   S09's.
 - R-747: Blindness: the spike's settings are not registered as such, a fresh agent qualifies, A03 gains three forbidden
   strings, and the exposure is disclosed.
+
+## 18. Amendment 1 (2026-10-26, design lane `specifier`): rulings after WO-S09-2 stopped
+
+Brief `docs/briefs/S09-amendment-1.md`. WO-S09-2 stopped under rule 6 at `c2589694`, before any recorded run
+(`docs/S09_BUILD_DECISIONS.md`, WO-S09-2 section). No qualification record exists, and no comparison with any value of this
+project has been made. The specifier opened none of `benchmarks/s03/references/results/`, `comparison.json`,
+`s03_reference.json` or any column result. The generator reads S03's two pinned JSON files by path, as it did before, and
+prints nothing of them.
+
+Register **R-748 to R-750**. `s09_reference.py --check` now re-derives **181 claims** (167 + 14). `s09_cases.json` has
+SHA-256 `760ab27f88a4f16320dd66da2218b815d60bff2e8752ec3b5601fa42d29a813c`. Its changes, and no others:
+- `tool_settings.BioSTEAM.readback.thermo_classes.PCF`: the tool's spelling (§18.1);
+- `tool_settings.BioSTEAM.rule2.iteration_cap`: B2's counter per rung (§18.3);
+- `tool_settings.BioSTEAM.floor_rerun`: `ytol_factor` removed, `"L2(c)"` added (§18.4);
+- `tool_settings.BioSTEAM.margin`: new, the closed list of margin rows (§18.4);
+- `amendments`: new, a one-line index of this section.
+
+`pairs` already held 19 entries and is unchanged. Levels, ladder, mapping, every threshold and tolerance, the controls, the
+three-tool table, the blindness lists and every other value are unchanged. R-740…R-747 stand.
+
+**How the earlier sections are marked.** Pure slips (§18.1, §18.2) are corrected in place, each with an *(erratum §18.n)*
+marker. Rulings (§18.3, §18.4) leave the earlier text in place, marked *Replaced by Amendment 1, §18.n*. The text given here
+governs.
+
+### 18.1 Item 1: the PCF class name (erratum, rule 6 stop)
+
+**The defect.** §4.3 row 7 registered `MockPoyntingCorrectionFactors`. thermosteam 0.54.2 defines the class as
+`MockPoyintingCorrectionFactors`, with the tool's own misspelling (`thermosteam/equilibrium/poyinting_correction_factors.py:51`),
+and `IdealThermo.PCF` is that class (`thermosteam/_thermo.py:335`). `thermosteam.equilibrium` has no class with the
+registered spelling. The specifier wrote the English spelling in place of the tool's. The spike's `check_pure.log` shows the
+tool's spelling. Because the check is exact, rule 2c `property_mapping(thermo_classes)` fired on every case. The check worked
+as designed: it is what caught the slip.
+
+**Erratum.** §4.3 row 7's third expected value, and `s09_cases.json → …thermo_classes.PCF`, read
+`MockPoyintingCorrectionFactors`, the tool's spelling (*sic*). The check stays exact, and the harness needs no change: it
+reads the expected string from `s09_cases.json`.
+
+**Not a loosening.** The row registers the tool's unit (mock) Poynting class, whose `__call__` returns 1.0. That is the
+property §4.1 relies on ("K is `Psat/P`"). The probe evaluates it at an arbitrary state: Gamma (1, 1, 1), Phi 1.0, PCF 1.0.
+
+**Every other identifier compared exactly per run was checked against the tool the same way**
+(`s09_design/class_probe.py`/`.log`, design-time, no column):
+- `Gamma = IdealActivityCoefficients`, `Phi = IdealFugacityCoefficients`, `mixture = IdealMixture` and
+  `include_excess_energies = False`: equal. Each class name, PCF's included, exists in `thermosteam.equilibrium`, and the
+  mixture is `thermosteam.IdealMixture`;
+- the active and the only methods of `Psat` and `Hvap` are `USER_METHOD` for A, B and C;
+- Q-X10: `default_algorithms` and `default_methods` give §5.3's four rungs in order;
+- `flexsolve.IQ_interpolation`'s positional parameters are the thirteen §5.4 reads.
+
+The probe prints `every registered identifier equals the tool's: True`. Its log reproduced byte for byte.
+
+*Executable.* The generator runs no tool, and CI has no BioSTEAM, so it cannot hold the tool's spelling. The executable check
+is the per-run readback (rule 2c, A05), which fails loudly on any mismatch.
+
+### 18.2 Item 2: 19 pairs (erratum)
+
+19 is right. S03 registers 20 cases: 17 compared cases, PC-P, PC-L and PC-LI. BioSTEAM drops PC-L and PC-LI, which are
+`not_applicable` (§3), and adds PC-LB, so it runs 17 + 1 + 1 = 19 pairs. `s09_cases.json → pairs` has always held these 19.
+The "20" of §3, §10 and §12 is S03's case count, carried over in error.
+
+**Erratum.**
+- §3: "BioSTEAM runs **19 pairs**".
+- §10: "one record per pair (19)".
+- §12 WO-S09-2: "Run all 19 pairs. Write `qualification/biosteam.json` and the 19 records."
+
+Claim C2b checks that S03 has 20 cases, that the 19 pairs are distinct, and that 20 − 2 + 1 = 19.
+
+### 18.3 Item 3: B2 on R3, restated on fsolve's evaluation count
+
+**The fact (tool source, biosteam 2.54.0, `biosteam/units/stage.py`).**
+- `_run` sets `self.iter = 0` (`:2687`). With R3's single rung and `max_attempts = 1`, it calls
+  `_simultaneous_correction(x, 'hybr')` once per pass (`:2693`).
+- That call runs `scipy.optimize.fsolve(f, x, fprime=jac, full_output=True, maxfev=self.maxiter, xtol=self.tolerance)`
+  (`:3044–3047`).
+- `iter` is advanced only by `_iter` (`:2798`), which the fixed-point rungs call, and by convergence-analysis mode
+  (`:3022`), which is off. So on R3 `iter` stays 0, and B2 as written can never fire.
+- fsolve's iteration cap is `maxfev`, which is the tool's `maxiter` (500), and its count is `infodict['nfev']`. At the cap,
+  fsolve takes its `ier = 2` exit ("number of calls to function has reached maxfev") and returns its last iterate without
+  raising.
+
+**Ruling (R-749).** B2 is restated, not recorded as inapplicable. Its registered meaning is that the rung's iteration did not
+stop at its cap on either pass, and on every rung that cap is the tool's `maxiter`. The counter is per rung:
+
+| Rung | B2 passes on a pass if and only if |
+| --- | --- |
+| R1, R2, R4 (fixed point) | the tool's `iter` after the pass is < `maxiter` (unchanged) |
+| R3 (fsolve) | fsolve ran in that pass, and its `nfev` is < `maxiter` |
+
+- **"fsolve ran in that pass."** The tool assigns a new list to `_simultaneous_correction_info` at each fsolve call (`:3044`)
+  and never reads it. fsolve ran in a pass if and only if, after the pass, the attribute exists and is not the same object
+  (`is not`) as before the pass. Before pass 1, on a fresh build, it is absent.
+- **The record carries, per pass:** `fsolve = {"ran": bool, "nfev": int | null, "ier": int | null, "mesg": str | null}`.
+  The last three are null when it did not run. `ier` and `mesg` are recorded and used by no rule.
+- §5.4's inner evaluations on R3 must pass rule 2, so B2's R3 form applies to them too. §5.4's "both passes' iteration
+  counts" means both passes' B2 counters.
+
+**Why not record it as inapplicable.** A capped fsolve exit whose state happens to pass B3–B5 would then count as converged
+on R3, while the same stop on R1, R2 or R4 fails B2. The restatement gives B2 its registered meaning on every rung. It
+tightens R3 only, it changes no other rung, and it can cost availability only (S03 §7.1).
+
+**Why not require `ier = 1`, fsolve's own convergence report.** §6.1 still applies: the tool's report is not used, and
+convergence is the harness's (B3–B5 and rule 2c). B2 is a cap check, the same on all four rungs. A state from an `ier` of 3,
+4 or 5 stands or falls on the residual checks, like any other state.
+
+**Edge case.** An fsolve that converges on exactly its 500th evaluation (`ier = 1`, `nfev = 500`) fails B2. So does a fixed
+point that converges on its 500th iterate (`iter = 500`). Both are conservative, and both cost availability only.
+
+**Scope.** R1's inside-out algorithm runs an fsolve on its surrogate model inside each outer iteration (`:2934–2937`,
+`maxfev = 10 maxiter`, `_inside_info`). That inner solve is part of one outer iteration, just as each fixed-point rung's
+flashes are. B2 is about the rung's iteration, which on R1 is the outer fixed point that `iter` counts. The state is judged
+by B3–B5.
+
+**Executable.** Claim C12 checks that exactly one rung (R3, `simultaneous correction`/`hybr`) runs fsolve, and that the other
+three run the fixed point. A09 gains B2's R3 mutations (§18.5).
+
+*This ruling follows from the tool's source and B2's registered meaning. It does not depend on any development-run value.*
+
+### 18.4 Item 4: the L2(c) accuracy rerun and the thin-margin report
+
+**(a) What "reported and not classified" means (§6.6).** The thin-margin flag is a disclosure. It is not a classification,
+and it moves none. A pair is classified by rules 0–4 alone.
+
+The reason is §2.3 step 4, which makes availability an "if and only if" on rules 2–2d, path dependence included. Reading the
+flag as "the pair is left unclassified" would add a second, unregistered exclusion at 0.1 of every threshold. That would
+tighten every registered threshold tenfold by the back door and contradict §2.3. The reading in the brief, that RC7 "would be
+reported but not classified", is therefore not the document's.
+
+**(b) The L2(c) rerun's registered ytol is a defect (R-750).**
+
+*Notation.*
+- θ_k is rule 2d's threshold for kind k (S03 §17.4).
+- R_k is the largest movement of a registered quantity, in tolerances, caused by a specification error of θ_k. S03 §17.4
+  claims R_k ≤ 0.05, linear in the error.
+- The rerun and path budgets are b = 0.1 tolerance (rule 2d).
+- The thin-margin level is 0.1 of a row's threshold.
+
+*What the rerun is for.* S03 §5.1 row 15 and §6 ("its floor is measured per record by rule 2d") use it to measure a record's
+solve floor: how far the registered quantities depend on the solver's own convergence tolerance, at fixed model inputs. A
+movement ≤ b at a setting ten times looser bounds the record's solve error.
+
+*An L2(c) record carries two errors.*
+1. The inner solve's, at tolerance 1e-10. This is a floor, and it must be measured.
+2. The outer loop's stopping error, |g| ≤ ytol = θ_k/10. This is not a floor:
+   - the registered stopping test sets it;
+   - it is checked exactly on every record (C4, A08);
+   - S03 §17.4 bounds its effect at R_k/10 ≤ 0.005 tolerance (claim C13).
+
+*The original rerun* repeated the whole loop at ytol = θ_k. Its movement is Δ_inner + Δ_stop, with
+|Δ_stop| ≤ R_k (1 + 1/10) ≤ 0.055 tolerance: two stopping errors, of either sign. Three consequences follow, none of which
+depends on a measured value:
+1. **The rerun row's margin ratio can reach 0.55 by construction** (claim C13). §6.6's flag means "a floor sits within ten
+   times of its threshold", yet here it would fire on a designed, bounded quantity.
+2. **The check is not monotone in the error it probes.**
+   - Δ_stop can cancel Δ_inner, so an inner sensitivity up to b + 0.055 = 0.155 tolerance could pass.
+   - Δ_stop can add to Δ_inner, so a record whose inner floor is well inside b could fail on the rerun's own looser
+     stopping test. That error is the rerun's, not the record's.
+3. **Nothing is gained.** C4 and S03 §17.4 already bound the record's stopping error.
+
+*Why the design probes did not show it.*
+- `floor_probe.py` ran both outer-loop probes at ytol 1e-11 for the registered run and 1e-10 for the rerun. It did not run
+  them at §5.4's θ_k/10 and §5.5's θ_k (rate: 1e-9 and 1e-8; temperature: 1e-10 and 1e-9). Its rerun loops took the
+  registered loops' path and stopped at the same |g|.
+- `s09_design/rerun_probe.py`/`.log` (design-time, the same non-registered columns A1 and D1T, every passing rung,
+  reproduced byte for byte) runs the registered values:
+  - On D1T at ytol = θ the original-form rerun stops one evaluation earlier, at |g|/θ = 0.133. It moves `Q_bottom` by
+    3.5e-3 to 4.3e-3 tolerance. That is about 40 times the amended form's movement on R2 and R4 (1.0e-4 and 8.0e-5), and
+    about 10⁶ times on R1 (1.4e-9).
+  - On A1 both forms stop at the same |g| (6.7e-4 θ), and they differ by a factor of about 2.4.
+  - The amended form moves no probe quantity by more than **1.1e-4 tolerance**: about 900 times inside b, and a margin
+    ratio of 1.1e-3.
+
+  These are facts about two non-registered columns, not expectations.
+
+**Ruling.** §5.5 is replaced by:
+
+> The selected rung's accuracy rerun is a fresh build at `tolerance = relative_tolerance = 1e-9`, with everything else
+> unchanged. **At L1** it is the full path P1–P4 with the registered native specifications. **At L2(c)** it is one
+> evaluation, the full path P1–P4, with the adjusted native specification at the run's final x (the same binary64 value)
+> and no outer loop. It must pass rules 2 and 2c, which at L2(c) include the read-back of x, exact. It may move no
+> registered quantity by more than 0.1 tolerance. Measured on the probes: ≤ 4.9e-4 tolerance (`floor_probe.log`, all five
+> probes) and ≤ 1.1e-4 (`rerun_probe.log`, the L2(c) form on A1 and D1T).
+
+This is L1's rerun with x held as the native specification, so the rerun row measures the same floor at both levels.
+`floor_rerun.ytol_factor` is removed, and `floor_rerun["L2(c)"]` states the form. Build decision "the accuracy rerun is run for
+every rung that passes rules 2, 2c and 2d's specification residual" stands; at L2(c) each such rerun is at that rung's own
+final x.
+
+**Not a loosening.**
+- No threshold, tolerance or budget changes: b = 0.1, the inner 1e-9, ytol = θ_k/10 for the record and for every
+  evaluation, and C4 all stand.
+- The rerun's movement no longer contains Δ_stop, so the inner floor it bounds is ≤ b rather than ≤ b + 0.055. The check is
+  stricter on what it is for.
+- In one direction it admits what the original might have excluded: a record that failed only because the rerun's own
+  looser loop stopped elsewhere. Such a record was excluded for an error it does not have. Its own stopping error is
+  ≤ 0.005 tolerance (C4).
+
+*Independence.* This changes no registered tolerance value. It removes one registered setting (`ytol_factor`). The change
+follows from the decomposition above and S03 §17.4's claim, and the same ruling follows for any values the development runs
+could have produced. **It does not depend on any scratch value**, and none was used to make it.
+
+**(c) The margin rows, closed (`s09_cases.json → tool_settings.BioSTEAM.margin`).** §6.6's "largest ratio of residual to
+threshold" is taken over these rows of the selected record, and no others:
+
+| Row | Ratio |
+| --- | --- |
+| B3 | largest stage component balance / 3.1e-8 mol/s |
+| B4 | largest equilibrium residual / 1e-8 |
+| B5 | overall component closure / 3.1e-8 mol/s, and overall energy closure / 1e-3 W (two rows) |
+| rule 2c | largest adiabatic-stage duty / 1e-3 W; total-condenser vapour / 3.1e-8 mol/s (total-condenser cases only) |
+| rule 2d | specification residual / θ_k; accuracy-rerun movement / 0.1 tolerance; path spread / 0.1 tolerance (when two or more rungs pass at the level) |
+
+**Not rows.**
+- **The outer loop's |g|/ytol.** Its numerator is set by its own stopping test: the loop stops at the first |g| ≤ ytol. Its
+  ratio says where the last iterate fell, not how near a floor sits to a threshold. C4's accuracy enters as rule 2d's
+  specification row, whose ratio at L2(c) is ≤ ytol/θ_k = 0.1 by construction (claim C13, per kind). |g| ≤ ytol stays an
+  exact pass/fail on every final evaluation (§5.4, A08). Both values stay recorded and reported with the outer evaluations
+  (A18).
+- **Exact and structural checks** (B1, B2, the read-backs, stage map, inlet stages), which have no ratio.
+- **The pressures,** which are inputs read back.
+- **Rule 2c's 1e-4 definition check,** which rule 2d's specification row bounds at least 10⁴ times more tightly.
+
+*The path spread at L2(c)* contains two rungs' stopping errors, each ≤ R_k/10. Their designed part is ≤ 0.01 tolerance, a
+ratio of 0.1 (claim C13): never above the thin level on its own. It is disclosed with the row and moves no classification.
+
+**(d) Replacement texts.**
+- **§6.6's last bullet:** "*Where it would be thin, it says so.* For each selected record the qualification reports the ratio of
+  each margin row of §18.4(c) and the largest. A record whose largest ratio exceeds 0.1 is listed in `comparison.json` as
+  'thin margin', with the row. The list is a disclosure, and the pair keeps its classification by rules 0–4."
+- **§6.6's table,** row "outer termination (C4)": it is a recorded floor fact, not a margin row.
+- **§6.6's table,** row "rerun movement (2d)": "4.9e-4 (all five probes, `floor_probe.log`); 1.1e-4 (the L2(c) form on A1
+  and D1T, `rerun_probe.log`)".
+- **§15 Q-S09-5's default:** "**Default: yes.** A selected record whose largest margin-row ratio (§18.4(c)) exceeds 0.1 is
+  reported as 'thin margin', and it stays classified by rules 0–4. A floor above a threshold stops WO-S09-2 before the
+  recorded run (rule 6). No threshold is relaxed."
+
+### 18.5 Assertions amended
+
+| Id | Amended assertion | Expected | Tolerance and why |
+| --- | --- | --- | --- |
+| A01 | `s09_reference.py --check` passes | **181 claims** (was 167); `cases9` byte-identical (SHA-256 `760ab27f…a813c`); S03 pins hold | exact |
+| A06 | As before, on the amended `tool_settings.BioSTEAM` | as before | exact |
+| A08 | As before, and: every L2(c) accuracy rerun is exactly one evaluation, at the binary64 x of its rung's final evaluation, at 1e-9, with no further outer evaluation | as stated | exact |
+| A09 | As before, and B2 by mutation on both counters: a pass with `iter = maxiter` → B2, and `maxiter − 1` → not fired, on a fixed-point rung. On a synthetic copy of a passing run relabelled R3, with `fsolve = {ran: true, nfev: 499, ier: 1}` on both passes: unaltered → B2 not fired; pass 2's `nfev = 500` → B2; pass 2's `ran = false` → B2. On a fixed-point rung, an `fsolve` block with `nfev = 500` → not fired (B2 reads `iter` there) | the labels | exact (counts: the cap and one below it) |
+| A18 | As before, and: the margin rows are exactly §18.4(c)'s; every selected record carries each row's ratio, the largest and its row; by mutation, A09's 0.5× copy for B3 (one stage's component flow +1.55e-8 mol/s, B3 ratio ≈ 0.5, which passes B3) is classified by rule 4, not `NOT_COMPARABLE`, and appears in the thin-margin list with row B3 | present; rule 4 | exact |
+
+The generator's new claims are C2b (§18.2), C12 (§18.3) and C13 (§18.4: per kind, the specification row's ratio is at most
+0.1 at L2(c); the original rerun's designed share is 0.55 > 0.1; the path spread's designed share is 0.1; the record's own
+stopping error is 0.005).
+
+### 18.6 Work-order deltas
+
+**WO-S09-2 (continues).** The blindness rules of §9.2 and the brief are unchanged. Before the recorded run, the harness:
+1. Reads the amended `s09_cases.json`. Item 1 needs no code change.
+2. Implements §18.3: per pass, `fsolve.ran` by object identity, then `nfev`, `ier` and `mesg`. B2 reads `nfev` on R3 and
+   `iter` elsewhere. The record field `fsolve_not_used` becomes `fsolve`.
+3. Implements §18.4(b): at L2(c) the rerun is one evaluation at the rung's final x. The harness's `ytol_factor` read goes
+   away; `s09_cases.json` no longer carries it, so an unamended harness fails loudly.
+4. Implements §18.4(c): the margin rows, with `outer_termination` removed and total-condenser vapour added.
+5. Writes 19 records.
+
+The development runs dev0–dev3 stay disclosed and are not reused. The recorded run is made from the amended harness, with
+the command already logged (`s09_qualify.sh …`). The tool-free tests gain A08's new item.
+
+**WO-S09-3.**
+- The classifier recomputes B2 per rung from the raw fields (§18.3) and recomputes the margin rows (§18.4(c)).
+- The thin-margin list moves no classification.
+- A09's and A18's new mutations go into `tests/test_s09_references.py`.
+
+### 18.7 What Amendment 1 does not establish
+
+- **That thermosteam's class names are stable across versions.** The spelling is 0.54.2's. The per-run readback checks it
+  on every run.
+- **Whether R3 converges on any registered case.** Q-S09-1 stands, and no convergence outcome is registered.
+- **The design probes (`class_probe`, `rerun_probe`) are not evidence** for any assertion. They are facts about the tool and
+  about two non-registered columns.
+- **Any margin outcome.** None is predicted. Q-S09-5 stands with its amended wording.
+- **The development runs dev0–dev3 are not evidence.** They set no value here. They are why the four questions were asked,
+  and the rulings were made from the tool's source and from first principles.
+- **S03 §17.4's response claim** is used here, not re-derived. Its bound of 0.05 is S03's claim on the twin at the
+  registered states.
+
+### 18.8 Open questions
+
+None new. Q-S09-1 to Q-S09-4 stand. Q-S09-5 is reworded (§18.4(d)). Not decided here, because it is outside this brief:
+WO-S09-1's open build item, whether the fingerprint should hash numpoly's compiled extension. It stays with the package's
+single ruling round. *Recommended default:* no. The pip-freeze fingerprint plus the hash-locked sdist pins the source, and
+the compiled bytes depend on the host compiler, as for any sdist build.
+
+### 18.9 Decisions
+
+- **R-748** (errata): the PCF class name is registered in the tool's spelling, `MockPoyintingCorrectionFactors`. BioSTEAM
+  runs 19 pairs, not 20.
+- **R-749:** B2 on R3 reads fsolve's `nfev` of each pass against `maxiter`, and fsolve must have run in that pass. It is not
+  recorded as inapplicable.
+- **R-750:** the L2(c) accuracy rerun is one evaluation at the run's final x, with no outer loop. The thin-margin flag is a
+  disclosure that moves no classification. The margin rows are a closed list that excludes the outer loop's |g|/ytol.

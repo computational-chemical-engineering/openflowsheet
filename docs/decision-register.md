@@ -14477,3 +14477,81 @@ design lane.
   the S03 cases.
 
 **Watch for.** A WO-S09-2 brief that quotes a tool, ours or twin value, or a harness that imports from `s09_spike/`.
+
+## R-748 — S09 Amendment 1 (errata): the PCF class name in the tool's spelling; BioSTEAM runs 19 pairs, not 20
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S09 Amendment 1 |
+| Normative text | `docs/derivations/S09-spec.md` §18.1, §18.2; claim C2b in `s09_reference.py` |
+| Evidence | `thermosteam/equilibrium/poyinting_correction_factors.py:51` (0.54.2); `docs/derivations/scripts/s09_design/class_probe.log` |
+| Affected packages | S09 (WO-S09-2's recorded run, A01, A05) |
+
+**Decision.**
+- §4.3 row 7 registers `PCF = MockPoyintingCorrectionFactors`, thermosteam's own spelling. No class of the earlier
+  English spelling exists, so the exact check fired on every case (WO-S09-2's rule 6 stop).
+- The check stays exact. The other registered identifiers (Gamma, Phi, mixture, excess energies, `USER_METHOD`, the
+  Q-X10 ladder and the solver signature) were checked against the tool, and all are equal.
+- BioSTEAM runs 19 pairs: S03's 20 cases, less PC-L and PC-LI, plus PC-LB. `pairs` always held 19. The "20" of §3,
+  §10 and §12 was S03's case count.
+
+**Rejected alternatives, and why.**
+- *Compare the class objects, not their names:* this needs a harness change for no gain. The name is a check on the
+  tool's identity, and the probe shows the class returns 1.0.
+- *Match the names case- or spelling-insensitively:* that loosens an exact check.
+
+**Watch for.** A thermosteam upgrade that renames the class. The per-run readback fails, and the fix is an amendment.
+
+## R-749 — S09 Amendment 1: B2 on R3 reads fsolve's evaluation count; fsolve must have run in each pass
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S09 Amendment 1 |
+| Normative text | `docs/derivations/S09-spec.md` §18.3; claim C12 |
+| Evidence | `biosteam/units/stage.py:2687`, `:2693`, `:2798`, `:3044–3047` (2.54.0) |
+| Affected packages | S09 (harness, classifier, A09) |
+
+**Decision.**
+- R3 runs `fsolve(…, maxfev=maxiter)` once per pass, and the tool's `iter` stays 0. So B2 reads, per pass, fsolve's
+  `infodict['nfev'] < maxiter` on R3, and `iter < maxiter` on R1, R2 and R4.
+- A pass in which fsolve did not run fails B2. The harness detects this by object identity of
+  `_simultaneous_correction_info` before and after the pass.
+- `ier` and `mesg` are recorded and used by no rule.
+
+**Rejected alternatives, and why.**
+- *Record B2 as inapplicable on R3:* a capped fsolve exit that passes B3–B5 would count as converged on R3 only.
+- *Require `ier = 1`:* that is the tool's convergence report, which §6.1 does not use. B2 is a cap check on every rung.
+
+**Watch for.** A harness that reads a stale `_simultaneous_correction_info` from pass 1 as pass 2's.
+
+## R-750 — S09 Amendment 1: the L2(c) accuracy rerun is one evaluation at the run's final x; the thin margin is a disclosure over a closed list of rows
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S09 Amendment 1 |
+| Normative text | `docs/derivations/S09-spec.md` §18.4; claim C13 |
+| Evidence | Derivation §18.4(b) from S03 §17.4's response claim; `docs/derivations/scripts/s09_design/rerun_probe.log` (non-registered columns, not evidence) |
+| Affected packages | S09 (harness, classifier, A08, A18, Q-S09-5) |
+
+**Decision.**
+- At L2(c) the accuracy rerun is one fresh evaluation at tolerance 1e-9, at the run's final x, with no outer loop.
+  `floor_rerun.ytol_factor` is removed.
+- The rerun then measures only the inner solve's floor, as at L1. The record's own stopping error stays bounded by C4,
+  at ≤ 0.005 tolerance.
+- §6.6's thin-margin flag is a disclosure. A pair is classified by rules 0–4 alone (§2.3 step 4 is an "if and only if").
+- The margin rows are a closed list: B3, B4, B5 ×2, adiabatic duty, total-condenser vapour, the rule 2d specification
+  residual, the rerun movement and the path spread. The outer loop's |g|/ytol is not a row, because its own stopping test
+  sets its numerator.
+- No threshold, tolerance or budget changes. No development-run value was used.
+
+**Rejected alternatives, and why.**
+- *Keep the loop in the rerun at ytol × 10:* its stopping errors alone can reach 0.55 of the 0.1-tolerance budget. They
+  can cancel an inner sensitivity of up to 0.155 tolerance, or fail a record for the rerun's own error.
+- *Keep the loop in the rerun at the registered ytol:* the two stopping errors still contribute up to 0.01 tolerance, and
+  it gains nothing over C4.
+- *Treat a thin margin as an exclusion:* that is a second, unregistered threshold at a tenth of every registered one.
+
+**Watch for.** A thin-margin list read as a verdict, or a threshold tightened or relaxed after the recorded run.

@@ -8,6 +8,9 @@
   "benchmarks/s03/references/comparison.json": "5c7d139c0547f17bfa318f33b106cdb5749b9eaacbccb07cf1dedd570593585d"
  },
  "tool": "BioSTEAM",
+ "amendments": {
+  "1": "S09 §18 (2026-10-26): PCF class name spelled as the tool spells it; 19 pairs; B2 reads fsolve's nfev on R3; the L2(c) accuracy rerun is one evaluation at the record's x; the thin margin is a disclosure over a closed list of rows"
+ },
  "pairs": [
   "RC1",
   "RC2",
@@ -118,7 +121,7 @@
     "thermo_classes": {
      "Gamma": "IdealActivityCoefficients",
      "Phi": "IdealFugacityCoefficients",
-     "PCF": "MockPoyntingCorrectionFactors",
+     "PCF": "MockPoyintingCorrectionFactors",
      "mixture": "IdealMixture",
      "include_excess_energies": false
     }
@@ -234,14 +237,30 @@
    "floor_rerun": {
     "tolerance": "1e-9",
     "relative_tolerance": "1e-9",
-    "ytol_factor": "10"
+    "L2(c)": "one fresh evaluation (P1-P4) at the selected run's final x, the same binary64 value; no outer loop and no ytol (S09 §18.4)"
+   },
+   "margin": {
+    "thin_level": "0.1",
+    "rows": [
+     "B3 stage component balance / 3.1e-8 mol/s",
+     "B4 equilibrium / 1e-8",
+     "B5 overall component / 3.1e-8 mol/s",
+     "B5 overall energy / 1e-3 W",
+     "rule 2c adiabatic duty / 1e-3 W",
+     "rule 2c total-condenser vapour / 3.1e-8 mol/s (total condenser only)",
+     "rule 2d specification residual / its kind's threshold",
+     "rule 2d accuracy-rerun movement / 0.1 tolerance",
+     "rule 2d path spread / 0.1 tolerance (two or more passing rungs)"
+    ],
+    "not_rows": "the outer loop's |g|/ytol (set by its own stopping test), exact and structural checks, and rule 2c's 1e-4 definition check (rule 2d's row covers it)",
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 §2.3 step 4; §18.4)"
    },
    "rule2": {
     "stage_component_mol_per_s": "3.1e-8",
     "equilibrium": "1e-8",
     "overall_component_mol_per_s": "3.1e-8",
     "overall_energy_W": "1e-3",
-    "iteration_cap": "no pass's iteration counter reaches maxiter",
+    "iteration_cap": "no pass's counter reaches maxiter: the tool's iter on R1, R2 and R4; on R3 fsolve's infodict nfev of that pass (fsolve's maxfev is the tool's maxiter), and a pass in which fsolve did not run fails (S09 §18.3)",
     "exception": "no pass raised"
    },
    "rule2c_added": {
@@ -557,7 +576,7 @@
    "docs/derivations/scripts/s09_cases.json"
   ]
  },
- "claim_count": 167,
+ "claim_count": 181,
  "claims": [
   "C1 docs/derivations/scripts/s03_cases.json has the pinned SHA-256 c901d6c90f4b",
   "C1 docs/derivations/scripts/s03_reference.json has the pinned SHA-256 95ef9bd25512",
@@ -598,6 +617,7 @@
   "C2 RC3-z has role comparison in S03",
   "C2 RC4-D has role comparison in S03",
   "C2 RC4-z has role comparison in S03",
+  "C2b BioSTEAM runs 19 pairs: S03's 20 cases less PC-L and PC-LI, plus PC-LB",
   "C3 PC-LI's stage_count equals RC1's, so PC-LI's tool-model root is on RC1's inputs",
   "C3 PC-LI's condenser equals RC1's, so PC-LI's tool-model root is on RC1's inputs",
   "C3 PC-LI's reboiler equals RC1's, so PC-LI's tool-model root is on RC1's inputs",
@@ -725,6 +745,19 @@
   "C10 RC7 with BioSTEAM ours matches a row",
   "C10 every counted BioSTEAM pair AGREE gives 'met where available, 3 of 4'; 'two references' is unreachable",
   "C10 BioSTEAM absent on RC4 leaves the clause not met",
-  "C11 S03's comparison schema is unchanged"
+  "C11 S03's comparison schema is unchanged",
+  "C12 exactly one rung (R3, simultaneous correction / hybr) runs fsolve; B2 reads its nfev",
+  "C12 R1, R2 and R4 run flexsolve's fixed point, which advances `iter`; B2 reads `iter`",
+  "C13 boilup_ratio: at L2(c) the record's |g| <= ytol makes the rule 2d specification ratio <= 0.1 by construction (never above the thin level)",
+  "C13 bottoms_rate: at L2(c) the record's |g| <= ytol makes the rule 2d specification ratio <= 0.1 by construction (never above the thin level)",
+  "C13 distillate_rate: at L2(c) the record's |g| <= ytol makes the rule 2d specification ratio <= 0.1 by construction (never above the thin level)",
+  "C13 duty: at L2(c) the record's |g| <= ytol makes the rule 2d specification ratio <= 0.1 by construction (never above the thin level)",
+  "C13 purity: at L2(c) the record's |g| <= ytol makes the rule 2d specification ratio <= 0.1 by construction (never above the thin level)",
+  "C13 recovery: at L2(c) the record's |g| <= ytol makes the rule 2d specification ratio <= 0.1 by construction (never above the thin level)",
+  "C13 reflux_ratio: at L2(c) the record's |g| <= ytol makes the rule 2d specification ratio <= 0.1 by construction (never above the thin level)",
+  "C13 temperature: at L2(c) the record's |g| <= ytol makes the rule 2d specification ratio <= 0.1 by construction (never above the thin level)",
+  "C13 the original L2(c) rerun (ytol x 10 = theta) could spend up to 0.055 of its 0.1-tolerance budget on the two loops' stopping errors: ratio 0.55 > 0.1 by construction",
+  "C13 at L2(c) two rungs' stopping errors (each |g| <= theta/10) contribute at most 2 x 0.005 = 0.01 tolerance to the path spread: ratio 0.1, not above the thin level",
+  "C13 the record's own stopping error at L2(c) costs <= 0.005 tolerance (C4, unchanged)"
  ]
 }

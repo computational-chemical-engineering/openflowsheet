@@ -13,3 +13,12 @@ The committed `.log` and `.json` files were reproduced byte for byte after the s
   at the accuracy rerun's, the rerun movement, the spread across passing rungs, and the outer loop (§5, §6).
 - `respec_probe.py` / `.log`: the initializer overwrite of a single specification, and why the re-specification uses
   the stage's attribute setter and not `specify_variables` (§5.2).
+
+Amendment 1 (S09 §18, 2026-10-26), same rules (no S03 case, not evidence); both logs reproduced byte for byte:
+
+- `class_probe.py` / `.log`: every identifier string a per-run check compares exactly (§4.3's thermo classes and methods,
+  Q-X10's ladder, §5.4's solver signature) against the tool's objects; no column (§18.1). Run after the erratum: all
+  equal. Before it, the PCF entry differed, and no class of the registered spelling existed.
+- `rerun_probe.py` / `.log`: on A1 and D1T (imported from `floor_probe.py`), the registered loop at ytol = threshold / 10,
+  then the accuracy rerun in the amended form (one evaluation at the final x, tolerance 1e-9) and in the original form
+  (the loop again at ytol = threshold); movements in S03 §6 tolerances (§18.4).
