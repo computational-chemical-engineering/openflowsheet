@@ -209,3 +209,19 @@ Build-lane facts for the design lane (§7 Q4: typed outcome recorded, no tuning)
   (d) keep the typed outcome as an aarch64/BLAS-kernel limitation (Q4 default) — then A40/A41/A42 are
   platform-dependent, which R-627's classes do not cover. A roundoff threshold on outward directions is R-064's rejected
   alternative and is not proposed.
+
+## R-782 (absent-component release)
+
+Build lane, work orders WO-R1/WO-R2 of `docs/derivations/S10C-absent-component.md` §5. Local x86-64 workstation (Haswell
+OpenBLAS kernel), `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1`; the suite as one pytest process per test file, 44 in
+parallel (the note's §4.6 set-up).
+
+- RUN (WO-R1, detector `scripts/s10c_release_detector.py` on `b3151d65` + the plugin): plain suite 13217 passed, 12
+  failed, 3137 skipped; under `-p s10c_release_detector` the same counts and the **same failed set** (the 12 are
+  `test_t01_structural.py`, which fails when its file runs alone: test order, as §4.6 found). `DETECTOR acting_tests=12
+  acting_iterations=180 released_calls=384`. **D equals §4.6's 12 tests**: `test_s10c_columns.py` A35 (C-MW, 11
+  iterations), A40–A45 [C-MW] and [C-EW], A44 [C-MW] and [C-EW] (1 each, `|Z*| = 60`, max `d` 6.22e-15 and 3.84e-22);
+  `test_t05b_contract.py` B08/B10 [SC-3] (1, `|Z*| = 8`); `test_t06_f4_edge3.py` G3 [SC-3] (2, `|Z*| = 8`);
+  `test_t06_w20_counters.py` A93 [THM-08-3] (1, 6), [THM-08-12] (2, 5 and 6), [THM-09-4] (1, 10);
+  `test_t07_interrupt.py` `test_interrupt_at_every_record` (151, 10) and `test_interrupt_at_record_k[THM-09-4]` (7, 10).
+  Every acting entry is roundoff (largest 6.22e-15).
