@@ -1,5 +1,5 @@
 """S08b (a) — signature items by declaration (design note `docs/derivations/S08b-design.md` §5.1,
-§7 A1–A4 and A7; R-790).
+§7 A1–A4 and A7; R-790), and the items `_proposal` hands `choose` (S08b review F2).
 
 A signature entry is a dormancy-form item iff its key is one of the attempt's declared items;
 every other entry is a signature unit, whatever its spelling — S01 cascade and column stage ids
@@ -10,12 +10,27 @@ S08 A06's.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
 
-from openflowsheet.orchestrator.phase_contract import WallObserver, _changes, adjacent
-from openflowsheet.orchestrator.region import DormancyForm, LiftedSplit, _units_and_items_disjoint
-from openflowsheet.orchestrator.trace import SolvePolicy
+from openflowsheet.numerics.newton import NewtonResult
+from openflowsheet.orchestrator.phase_contract import (
+    Candidate,
+    Conversion,
+    WallObserver,
+    _changes,
+    _proposal,
+    adjacent,
+)
+from openflowsheet.orchestrator.region import (
+    DormancyForm,
+    LiftedSplit,
+    _LiftedOps,
+    _units_and_items_disjoint,
+)
+from openflowsheet.orchestrator.trace import Counters, SolvePolicy
 
 STAGE_1_2P = ("S.stage.1", "TWO_PHASE")
 LIQUID = (STAGE_1_2P, ("S.stage.2", "LIQUID"))
@@ -82,6 +97,48 @@ def test_a4_choose_prefers_the_adjacent_candidate_on_dotted_ids() -> None:
     assert alone.choose(LIQUID, items=frozenset()) is alone.candidates[0]
 
 
+class _PumpOps:
+    """A lifted `PathOps` with one declared dormancy item; only `at_candidate` may be asked."""
+
+    lifted = True
+    declared_phases = {"U-PUMP.outlet": "LIQUID"}
+
+    def at_candidate(self, candidate: Candidate, cause: str) -> Conversion:
+        return Conversion(
+            candidate.signature, "candidate", "phase_rejected_trial", cause, trial=candidate
+        )
+
+    def __getattr__(self, name: str) -> Any:
+        raise AssertionError(f"_proposal asked {name}")
+
+
+@pytest.mark.parametrize(
+    ("outcome", "row"), [("PHASE_UPDATE_REQUIRED", "patience"), ("LINE_SEARCH_FAILED", "stall")]
+)
+def test_f2_proposal_hands_choose_the_declared_items(outcome: str, row: str) -> None:
+    """Review F2: both of `_proposal`'s `choose` calls pass the declared items. The first wall
+    candidate moves a stage `LIQUID -> VAPOR` (not adjacent); the second adds the pump's entry,
+    adjacent only if that entry is an item. Items dropped at either call return the first."""
+    frozen = (("C.stage.1", "LIQUID"),)
+    pumped = (("C.stage.1", "LIQUID"), ("U-PUMP.outlet", "ZERO_FLOW"))
+    wall = WallObserver(POLICY)
+    x = np.zeros(2)
+    wall.rejected(3, 0.5, x, "phase_update_required", (("C.stage.1", "VAPOR"),))
+    wall.rejected(3, 0.25, x, "phase_update_required", pumped)
+    result = NewtonResult(
+        outcome=outcome,  # type: ignore[arg-type]
+        x=x,
+        residual=(0.0,),
+        residual_inf=0.0,
+        merit=0.0,
+        iterations=4,
+        counters=Counters(),
+    )
+    conversion = _proposal(result, frozen, wall, _PumpOps())  # type: ignore[arg-type]
+    assert conversion is not None and conversion.trial is wall.candidates[1]
+    assert conversion.cause == f"phase_wall({row}, U-PUMP.outlet:LIQUID->ZERO_FLOW)"
+
+
 def _split(unit: str) -> LiftedSplit:
     return LiftedSplit(unit, "S", (), "T", "P", (), (), "V", "L", (), "v", "l")
 
@@ -101,3 +158,19 @@ def test_a7_lifted_units_and_dormancy_items_are_disjoint() -> None:
     assert _units_and_items_disjoint([], [_form("U-PUMP.outlet")]) is None
     with pytest.raises(ValueError, match=r"^defect: \['U-PUMP.outlet'\]"):
         _units_and_items_disjoint([*stages, _split("U-PUMP.outlet")], [_form("U-PUMP.outlet")])
+    # `_LiftedOps` runs the check on construction; nothing before it reads the other arguments.
+    unused: Any = None
+    with pytest.raises(ValueError, match=r"^defect: \['U-PUMP.outlet'\]"):
+        _LiftedOps(
+            splits=[*stages, _split("U-PUMP.outlet")],
+            regimes={},
+            end_state={},
+            free=(),
+            provider=unused,
+            context=unused,
+            policy=POLICY,
+            region=unused,
+            spec=unused,
+            identity=("", ""),
+            dormancy=[_form("U-PUMP.outlet")],
+        )
