@@ -250,3 +250,10 @@ Build-lane agent, after the package review (`docs/reviews/S09-review.md`) and Am
 - MEASURED: `HARVEST_SIZE` (54, 747, 90) -> (56, 794, 95) (two manifests, 47 limitations, 5 non-pass checks added). The
   envelope diff is 335 lines appended, 0 deleted; the old file a byte prefix of the new (HG(b), R-617). `--check`: 0 problems.
   Tests: `test_s09_*`, `test_s03_references`, ledger, `test_t08_*`, `test_m07a*`: 1139 passed, 2 skipped; ruff clean.
+- DECISION (orchestrator, after the pre-merge gate at `df7aff86`: 21 failed): T06's A48 parser
+  (`tests/test_t06_w8_references.py` `documented_fingerprint`) matched every `[.venv-<tool>] <label>: <sha256>` line in
+  `docs/reference-environments.md`, so WO-S09-1's §9 BioSTEAM lines raised `KeyError: ('biosteam', 'pip freeze sha256')`
+  in 21 T06 tests. The regex is now scoped to T06's own tools, `(idaes|dwsim)`; nothing T06 asserts changes.
+  Alternative: rename S09's §9 lines so the T06 regex skips them (would change S09's A04 reading). Reversible by:
+  reverting the one-line pattern. MEASURED: T06 W8 + S09 environment 141 passed; every test file that reads
+  `reference-environments` 482 passed.
