@@ -2028,3 +2028,37 @@ and at C5 (`18e56bc`):
 Identity at `3449221` (`scripts/k05_structural_identity.py`, `scripts/t02_identity.py`): K05 whole
 `3ed2911b…`, minus-t07 `9a7b4e6d…`, t07 `11bcb148…`, keys t02–t06 and T02 floats `9a8a5baf…` — the digest
 file is byte-equal to rf5's final one. `./scripts/check.sh`: ruff, format, mypy exit 0; 6315 passed, 642.8 s.
+
+## 2026-10-26 — W4b.5: THM-09 start 4's uncapped record length per CI job (R-796, C1; branch `wp/R796`, base `82760ce0`)
+
+Since R-796 (C1), `test_t07_interrupt.py::test_interrupt_at_record_k[THM-09-4]` prints one line in the pytest terminal
+summary of every run, passing or failing:
+`T07 THM-09/4 uncapped: machine_class=… cpu_model=… openblas_numpy=… openblas_scipy=… records=… outcome=…`.
+The OpenBLAS cores are read with `ctypes` from `numpy.libs/libscipy_openblas64_*.so`
+(`scipy_openblas_get_corename64_`) and `scipy.libs/libscipy_openblas*.so` (`scipy_openblas_get_corename`); `unknown` on
+any failure. At each branch merge the CI lines of the `check (ubuntu-latest)`, `check (ubuntu-24.04-arm)` and
+`default-install` jobs are copied into the table below (CI logs expire). Pins: ref-x86-64 94, ci-aarch64 136; ci-x86-64
+and unregistered classes are reported, not pinned. A (class, `cpu_model`, OpenBLAS core) key is pinned only after ≥ 2 CI
+jobs with that key report the same length and none reports another; one contradiction removes the key; a set of lengths
+is never pinned; each addition is a build decision citing the run ids (R-796).
+
+Rows before C1 carry no `cpu_model` or core: no job logged them. Their length is either the failing assert's left side
+(*assert*) or the pin a passing job satisfied (*pin*), not a printed line.
+
+| Run | Job | Commit | Class | `cpu_model` | numpy core | SciPy core | Records | Source |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| local | `pytest -q tests/test_t07_interrupt.py -k "record_k and THM"` | C1 on `82760ce0` | ref-x86-64 | AMD Ryzen Threadripper PRO 5965WX 24-Cores | Haswell | Haswell | 94 (`CONVERGED`) | C1 line |
+| local | the same, `GITHUB_ACTIONS=true` (class lookup only; same host) | C1 on `82760ce0` | ci-x86-64 | AMD Ryzen Threadripper PRO 5965WX 24-Cores | Haswell | Haswell | 94 (`CONVERGED`) | C1 line |
+| 40295317759 | `check (ubuntu-latest)` | `1bc65b86` | ci-x86-64 | not logged | not logged | not logged | 94 | pin (single literal 94) |
+| 40295317759 | `default-install` | `1bc65b86` | ci-x86-64 | not logged | not logged | not logged | 94 | pin (single literal 94) |
+| 40295317759 | `check (ubuntu-24.04-arm)` | `1bc65b86` | ci-aarch64 | not logged | not logged | not logged | 136 | assert (`assert 136 == 94`) |
+| 40315691647 | `check (ubuntu-latest)` | `94f70c2d` | ci-x86-64 | not logged | not logged | not logged | 94 | pin (`ci-x86-64: 94`) |
+| 40315691647 | `default-install` | `94f70c2d` | ci-x86-64 | not logged | not logged | not logged | 94 | pin (`ci-x86-64: 94`) |
+| 40315691647 | `check (ubuntu-24.04-arm)` | `94f70c2d` | ci-aarch64 | not logged | not logged | not logged | 136 | pin (`ci-aarch64: 136`) |
+| 40359016227 | `check (ubuntu-latest)` | `d34f8b57` | ci-x86-64 | not logged | not logged | not logged | 136 | assert (`assert 136 == 94`, image ubuntu-24.04 20261012.334.1) |
+| 40359016227 | `default-install` | `d34f8b57` | ci-x86-64 | not logged | not logged | not logged | 94 | pin (`ci-x86-64: 94`; same image; 12979 passed) |
+| 40359016227 | `check (ubuntu-24.04-arm)` | `d34f8b57` | ci-aarch64 | not logged | not logged | not logged | 136 | pin (`ci-aarch64: 136`) |
+
+The two ci-x86-64 jobs of 40359016227 disagree (136 and 94) at one commit on one image: ci-x86-64 is not a determinism
+unit for this trajectory (R-796). That the CPU model or the OpenBLAS core is what varies is a hypothesis (R-796: 94 with
+`Haswell`; 136 with an AVX-512 core on EPYC 9V74 and with NeoverseN2 on aarch64); C1's lines test it.

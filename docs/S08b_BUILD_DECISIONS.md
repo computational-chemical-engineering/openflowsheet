@@ -186,3 +186,15 @@ filled before the patches in `_forced_edge_3`, and the `_proposal`-level `items`
 - Runs: `tests/test_s01_*`, `tests/test_s08*`, `tests/test_t05b_*` 713 passed; ruff check/format clean on the three
   files; `S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL`; `S10C-IDENTITY PASS n=858 changed=[]`. Full gate
   not run (before the merge).
+
+## Ruling round on T07-1 (R-795, R-796; build lane, 2026-10-26)
+
+- Ruling `docs/reviews/S10C-S08b-build-decision-rulings.md` (verdict, all accepted), implemented on `wp/R796`: register
+  R-795/R-796 `22177f28`; WO-D1 (S10-C design §6 G2 amendment) `37c2403f`; C1 `6ca7c47a` (supersedes `1d4ca814`'s
+  message; every run prints the THM-09/4 line; `docs/t07-measurements.md` § W4b.5 seeded).
+- MEASURED (C1, local): `T07 THM-09/4 uncapped: machine_class=ref-x86-64 cpu_model=AMD Ryzen Threadripper PRO 5965WX
+  24-Cores openblas_numpy=Haswell openblas_scipy=Haswell records=94 outcome=CONVERGED`; under `GITHUB_ACTIONS=true`
+  `machine_class=ci-x86-64`, pass; a pin forced to 95 fails and still prints the line; `test_t07_interrupt.py` 16 passed.
+- Limitation that travels with R-796 (to the S08b and S10-C manifests and the release report; not regenerated here):
+  "THM-09/4's uncapped record length is regression-pinned on ref-x86-64 and ci-aarch64 only. On ci-x86-64 and on
+  unregistered classes it is reported, not pinned. G5's interruption assertions run on every class."
