@@ -1,0 +1,912 @@
+{
+  "work_package": "S09",
+  "commit": "6ce5b624bc9e1c27c6d256e67faa175a56991075",
+  "requirements": [
+    "D19"
+  ],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "S09 acceptance: docs/derivations/S09-spec.md §11 (A01–A20, amended by §18.5) against docs/derivations/scripts/s09_cases.json, S03's pinned files and the committed BioSTEAM records, check list §13",
+    "case_hash": "760ab27f88a4f16320dd66da2218b815d60bff2e8752ec3b5601fa42d29a813c",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/artifacts/s09-tests.junit.xml tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_cascade_wo4.py tests/test_s01_evidence_manifest.py tests/test_s01_review_adversarial.py tests/test_s02_column_wo1.py tests/test_s02_column_wo2.py tests/test_s02_column_wo2b.py tests/test_s02_column_wo3.py tests/test_s02_evidence_manifest.py tests/test_s03_ours.py tests/test_s03_references.py tests/test_s03_s11_refusal.py tests/test_s06_column_wo1.py tests/test_s06_column_wo2.py tests/test_s06_evidence_manifest.py tests/test_s09_environment.py tests/test_s09_qualification.py tests/test_s09_references.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "f71f7c397504565e94347598529155a4d274dfe5f3fec4cc0fb4f73780b44fba"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s09_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "a85ad92ccfe3b6e5739a30f7a8be5ed8a0b578c49cf4de9e570d22ff31837091"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s03_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "f5129bf508b79fcce45415728cb1974f0c78199a74c06f1526334720427e787c"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s09_reference_comparison.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "6653039e7ece9324453dd2452f4a92657d2ecdfee6c6f81775d25de1d575fb1a"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check scripts/s09_reference_comparison.py scripts/s09_evidence_manifest.py spikes/references/s09_qualify_biosteam.py spikes/references/s09_biosteam_syn001.py tests/test_s09_environment.py tests/test_s09_qualification.py tests/test_s09_references.py docs/derivations/scripts/s09_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check scripts/s09_reference_comparison.py scripts/s09_evidence_manifest.py spikes/references/s09_qualify_biosteam.py spikes/references/s09_biosteam_syn001.py tests/test_s09_environment.py tests/test_s09_qualification.py tests/test_s09_references.py docs/derivations/scripts/s09_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "8e93d18ae56550d4eef2feac77e6630617c7e169246e56e39c75d58b46167985"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S09.A01",
+      "description": "`s09_reference.py --check` passes. *Amended, §18.5 (181 claims)* [amended: 18.5: `s09_reference.py --check` passes (expected: **181 claims** (was 167); `cases9` byte-identical (SHA-256 `760ab27f…a813c`); S03 pins hold)]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a01_the_generator_checks_and_the_cases_file_is_amendment_1s"
+        ],
+        "not_passed": []
+      },
+      "expected": "167 claims; `cases9` byte-identical; S03 pins hold",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S09.A02",
+      "description": "S03 is untouched: `cases3`, `ref`, `cmp3`, S03's `SHA256SUMS` and every file under `benchmarks/s03/references/` are byte-identical to `main` at `390e0af5`; `s03_reference.py --check` and S03's tests (`tests/test_s03_references.py`, `tests/test_s03_ours.py`) pass unchanged",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a02_s03_is_untouched_since_its_merge"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal; pass",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S09.A03",
+      "description": "Blindness (§9.2 point 4): scanned set, forbidden strings and exemption, input files, no path under `s09_spike/`, `benchmarks/s03/references/results/` or `benchmarks/s09/`; checked at HEAD and at the qualification commit (`git show`; without history the test refuses explicitly, R-555's pattern)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_s09_qualification.py::test_a03_inputs_registered",
+          "tests/test_s09_qualification.py::test_a03_blindness_at_head",
+          "tests/test_s09_qualification.py::test_a03_blindness_at_qualification_commit"
+        ],
+        "not_passed": []
+      },
+      "expected": "pass",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S09.A04",
+      "description": "Environment: every record's fingerprint equals `docs/reference-environments.md` §9's; two consecutive builds give identical fingerprints (recorded there); the lock pins every distribution by hash",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 19,
+        "outcomes": {
+          "passed": 19
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC1]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC2]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC3]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC4]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC5]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC6]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC7]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC1-RR]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC1-BR]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC1-z]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC2-RR]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC2-B]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC2-z]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC3-Q]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC3-z]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC4-D]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[RC4-z]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[PC-P]",
+          "tests/test_s09_references.py::test_a04_every_record_carries_section_9s_fingerprint[PC-LB]"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S09.A05",
+      "description": "Property readback (§4.3) in every record within its thresholds; and by mutation: a record whose readback `Psat` is moved by 1e-12 relative → rule 2c `property_mapping`, by 1e-15 → not fired; `h^V − h^L` moved by 1e-9 relative → rule 2c",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 22,
+        "outcomes": {
+          "passed": 22
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC1]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC2]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC3]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC4]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC5]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC6]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC7]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC1-RR]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC1-BR]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC1-z]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC2-RR]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC2-B]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC2-z]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC3-Q]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC3-z]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC4-D]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[RC4-z]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[PC-P]",
+          "tests/test_s09_references.py::test_a05_every_record_passes_the_property_readback[PC-LB]",
+          "tests/test_s09_references.py::test_a05_the_readback_fires_at_its_thresholds[Psat-1e-12-True]",
+          "tests/test_s09_references.py::test_a05_the_readback_fires_at_its_thresholds[Psat-1e-15-False]",
+          "tests/test_s09_references.py::test_a05_the_readback_fires_at_its_thresholds[latent-1e-09-True]"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "thresholds §4.3; mutations at ≥ 100× and ≤ 0.1× of them"
+    },
+    {
+      "id": "S09.A06",
+      "description": "Ladder conformance: settings carry `tool_settings.BioSTEAM`; at every attempted level all four rungs are recorded (run, or the structural reason none was made); the selected rung is the first passing one in §5.3's order; a not-available record shows every rung at every expressible level; Q-X10 matches [amended: 18.5: As before, on the amended `tool_settings.BioSTEAM` (expected: as before)]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s09_qualification.py::test_a06_ladder_conformance"
+        ],
+        "not_passed": []
+      },
+      "expected": "set and order equality",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S09.A07",
+      "description": "Solve path: every run shows passes 1 and 2, the attribute-setter route and the exact read-back after pass 2",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s09_qualification.py::test_a07_solve_path"
+        ],
+        "not_passed": []
+      },
+      "expected": "present",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S09.A08",
+      "description": "*Amended, §18.5.* L2(c) conformance: L2(c) attempted only after an L1 inspection recorded the specification inexpressible; the adjusted specification is the end's (`Reflux` stage 0 / `Boilup` stage N−1); evaluations start at x = 1, 2 and expand per §5.4; the solver call's arguments are §5.4's; every evaluation passed the inner checks; the final evaluation is at the returned x with \\|g\\| ≤ ytol(kind) [amended: 18.5: As before, and: every L2(c) accuracy rerun is exactly one evaluation, at the binary64 x of its rung's final evaluation, at 1e-9, with no further outer evaluation (expected: as stated)]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s09_qualification.py::test_a08_l2c_conformance"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact; ytol per claim C7"
+    },
+    {
+      "id": "S09.A09",
+      "description": "*Amended, §18.5.* Rule 2 fires (synthetic copies of a committed available record, or of a synthetic record if none is available): one stage's component flow +6.2e-8 mol/s → B3, +1.55e-8 → not; one stage's y_c +2e-8 → B4, +5e-9 → not; a pass with `iter == maxiter` → B2; an exception on pass 1 → B1; unaltered → rule 4 [amended: 18.5: As before, and B2 by mutation on both counters: a pass with `iter = maxiter` → B2, and `maxiter − 1` → not fired, on a fixed-point rung. On a synthetic copy of a passing run relabelled R3, with `fsolve = {ran: true, nfev: 499, ier: 1}` on both passes: unaltered → B2 not fired; pass 2's `nfev = 500` → B2; pass 2's `ran = false` → B2. On a fixed-point rung, an `fsolve` block with `nfev = 500` → not fired (B2 reads `iter` there) (expected: the labels)]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 8,
+        "outcomes": {
+          "passed": 8
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a09_b3_fires_at_twice_its_threshold[6.2e-08-True]",
+          "tests/test_s09_references.py::test_a09_b3_fires_at_twice_its_threshold[1.55e-08-False]",
+          "tests/test_s09_references.py::test_a09_b4_fires_at_twice_its_threshold[2e-08-True]",
+          "tests/test_s09_references.py::test_a09_b4_fires_at_twice_its_threshold[5e-09-False]",
+          "tests/test_s09_references.py::test_a09_b2_on_a_fixed_point_rung_reads_iter[500-True]",
+          "tests/test_s09_references.py::test_a09_b2_on_a_fixed_point_rung_reads_iter[499-False]",
+          "tests/test_s09_references.py::test_a09_b2_on_r3_reads_fsolves_evaluation_count",
+          "tests/test_s09_references.py::test_a09_b1_fires_on_an_exception_and_the_unaltered_record_reaches_rule_4"
+        ],
+        "not_passed": []
+      },
+      "expected": "the labels",
+      "tolerance": "mutations at 2× and 0.5× of each threshold"
+    },
+    {
+      "id": "S09.A10",
+      "description": "Rule 2c fires: stored B ≠ 1/RR by one ulp → `specification_readback`; total-condenser vapour 6.2e-8 → fired, 1.55e-8 → not; and S03 A12's four on BioSTEAM's RC1 record (`L[1]` × (1 + 2e-4) → 2c; × (1 + 2e-8) → 2d; a pressure + 0.01 Pa → 2c; a rerun quantity moved 0.2 tolerance → 2d); and S03 §17.9's per-kind synthetic records at 2× / 0.5× of rules 2c and 2d",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 13,
+        "outcomes": {
+          "passed": 13
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a10_a_stored_specification_one_ulp_off_is_a_readback_failure",
+          "tests/test_s09_references.py::test_a10_total_condenser_vapour_fires_at_twice_its_threshold[6.2e-08-True]",
+          "tests/test_s09_references.py::test_a10_total_condenser_vapour_fires_at_twice_its_threshold[1.55e-08-False]",
+          "tests/test_s09_references.py::test_a10_s03_a12s_four_on_biosteams_rc1_record",
+          "tests/test_s09_references.py::test_a10_each_specification_kind_meets_its_thresholds[RR partial]",
+          "tests/test_s09_references.py::test_a10_each_specification_kind_meets_its_thresholds[RR total]",
+          "tests/test_s09_references.py::test_a10_each_specification_kind_meets_its_thresholds[BR]",
+          "tests/test_s09_references.py::test_a10_each_specification_kind_meets_its_thresholds[D partial]",
+          "tests/test_s09_references.py::test_a10_each_specification_kind_meets_its_thresholds[B]",
+          "tests/test_s09_references.py::test_a10_each_specification_kind_meets_its_thresholds[duty]",
+          "tests/test_s09_references.py::test_a10_each_specification_kind_meets_its_thresholds[purity]",
+          "tests/test_s09_references.py::test_a10_each_specification_kind_meets_its_thresholds[recovery]",
+          "tests/test_s09_references.py::test_a10_each_specification_kind_meets_its_thresholds[temperature]"
+        ],
+        "not_passed": []
+      },
+      "expected": "the labels",
+      "tolerance": "as S03 A12"
+    },
+    {
+      "id": "S09.A11",
+      "description": "Rule 2d path dependence fires: a copy with a second passing rung equal to the selected one except one quantity moved 0.2 tolerance → `path_dependence`; 0.05 → not",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a11_path_dependence_fires_at_two_tenths_not_at_five_hundredths[0.2-True]",
+          "tests/test_s09_references.py::test_a11_path_dependence_fires_at_two_tenths_not_at_five_hundredths[0.05-False]"
+        ],
+        "not_passed": []
+      },
+      "expected": "the labels",
+      "tolerance": "2× and 0.5× of 0.1"
+    },
+    {
+      "id": "S09.A12",
+      "description": "Controls: no control `AGREE`; §17.3(b) for BioSTEAM by mutation (both controls replaced by `NOT_COMPARABLE` copies → every BioSTEAM pair `NOT_COMPARABLE(control_not_comparable: …)`; one replaced while the other is `DISAGREE` → no pair changes; synthetic controls if none is `DISAGREE`); (PC-L, BioSTEAM) and (PC-LI, BioSTEAM) `not_applicable` with no record; PC-LB's tool-model distance computed against `ref.controls.PC-LI.tool_model`; PC-P's reported `not_applicable(tool_model_differs)`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 5,
+        "outcomes": {
+          "passed": 5
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a12_no_control_agrees_and_biosteams_pairs_count",
+          "tests/test_s09_references.py::test_a12_without_a_disagreeing_control_every_pair_is_lost",
+          "tests/test_s09_references.py::test_a12_one_disagreeing_control_is_enough[PC-P]",
+          "tests/test_s09_references.py::test_a12_one_disagreeing_control_is_enough[PC-LB]",
+          "tests/test_s09_references.py::test_a12_control_tool_model_distances"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S09.A13",
+      "description": "`cmp9` recomputed from the committed records, S03's `ours-*.json`, `cases3`, `cases9` and `ref` is byte-identical, and so is `SHA256SUMS`; recomputed with a live solve of our side, every BioSTEAM pair's classification, category, rule, label, `within_tolerance` and `quantities_outside`, the controls block and every X31 class, row and outcome equal `cmp9`'s",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a13_the_comparison_recomputes_identically_from_the_committed_files",
+          "tests/test_s09_references.py::test_a13_the_comparison_recomputes_from_a_live_solve_of_our_side"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "exact (S03 §19.1's rule: floats that depend on our values are not compared against the live solve)"
+    },
+    {
+      "id": "S09.A14",
+      "description": "Tolerances: S03 §6's formula unrounded, no per-case or per-tool factor (synthetic pairs at 0.999 and 1.001 tolerance for each kind)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 25,
+        "outcomes": {
+          "passed": 25
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a14_the_tolerance_is_s03s_formula_unrounded[0.999-AGREE-T]",
+          "tests/test_s09_references.py::test_a14_the_tolerance_is_s03s_formula_unrounded[0.999-AGREE-flow]",
+          "tests/test_s09_references.py::test_a14_the_tolerance_is_s03s_formula_unrounded[0.999-AGREE-duty]",
+          "tests/test_s09_references.py::test_a14_the_tolerance_is_s03s_formula_unrounded[1.001-DISAGREE-T]",
+          "tests/test_s09_references.py::test_a14_the_tolerance_is_s03s_formula_unrounded[1.001-DISAGREE-flow]",
+          "tests/test_s09_references.py::test_a14_the_tolerance_is_s03s_formula_unrounded[1.001-DISAGREE-duty]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC1]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC2]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC3]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC4]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC5]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC6]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC7]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC1-RR]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC1-BR]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC1-z]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC2-RR]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC2-B]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC2-z]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC3-Q]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC3-z]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC4-D]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[RC4-z]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[PC-P]",
+          "tests/test_s09_references.py::test_a14_no_per_case_or_per_tool_factor[PC-LB]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`AGREE` / `DISAGREE`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S09.A15",
+      "description": "Three-tool X31: `cmp9` holds, for RC1–RC4 and per inverse kind, the three classes (IDAES and DWSIM from `cmp3`), the row, the outcome and the clause; they equal `cases9 → x31_three_tool.pre_registered` at BioSTEAM's committed classes; with BioSTEAM omitted they equal `cmp3`'s rows and clause",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a15_the_three_tool_table_equals_the_pre_registered_outcomes",
+          "tests/test_s09_references.py::test_a15_without_biosteam_the_table_is_s03s"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S09.A16",
+      "description": "The qualification commit is an ancestor of `cmp9`'s commit (`git merge-base --is-ancestor`; without history the test refuses explicitly)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a16_the_qualification_commit_precedes_the_comparison"
+        ],
+        "not_passed": []
+      },
+      "expected": "pass",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S09.A17",
+      "description": "Repeat run: `qualification/biosteam.json → repeat_run` shows the second full run reproducing every record byte for byte, wall-clock fields excepted",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 19,
+        "outcomes": {
+          "passed": 19
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC1]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC2]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC3]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC4]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC5]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC6]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC7]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC1-RR]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC1-BR]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC1-z]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC2-RR]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC2-B]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC2-z]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC3-Q]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC3-z]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC4-D]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[RC4-z]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[PC-P]",
+          "tests/test_s09_references.py::test_a17_the_repeat_run_reproduced_every_record[PC-LB]"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "exact (one machine; the tool is deterministic, §5.7)"
+    },
+    {
+      "id": "S09.A18",
+      "description": "*Amended, §18.5.* `cmp9` holds each pair's level, rung and outer-evaluation count, each record's largest residual-to-threshold ratio and the \"thin margin\" list (§6.6), the perturbation response table with a BioSTEAM column (S03 §7.4), and every `NOT_COMPARABLE` and `DISAGREE` with its reason [amended: 18.5: As before, and: the margin rows are exactly §18.4(c)'s; every selected record carries each row's ratio, the largest and its row; by mutation, A09's 0.5× copy for B3 (one stage's component flow +1.55e-8 mol/s, B3 ratio ≈ 0.5, which passes B3) is classified by rule 4, not `NOT_COMPARABLE`, and appears in the thin-margin list with row B3 (expected: present; rule 4)]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s09_references.py::test_a18_the_document_is_complete",
+          "tests/test_s09_references.py::test_a18_a_thin_margin_is_a_disclosure_that_moves_no_classification"
+        ],
+        "not_passed": []
+      },
+      "expected": "present, complete",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S09.A19",
+      "description": "`docs/reviews/S09-verdicts.md` exists, is the `verdict` agent's, and records §8's items and §9.1's disclosure",
+      "result": "fail",
+      "value": {
+        "judged_by": "the verdict agent's document (WO-S09-4)",
+        "path": "docs/reviews/S09-verdicts.md",
+        "present": false,
+        "sha256": null
+      },
+      "expected": "present",
+      "tolerance": "—"
+    },
+    {
+      "id": "S09.A20",
+      "description": "S01's, S02's, S03's and S06's suites pass unchanged on `wp/S09`; `s02_reference.py`, `s03_reference.py` and `s06_reference.py --check` pass",
+      "result": "pass",
+      "value": {
+        "judged_by": "the S01, S02, S03 and S06 suites and S09's generator checks",
+        "nodes": 817,
+        "outcomes": {
+          "passed": 817
+        },
+        "not_passed": []
+      },
+      "expected": "as registered",
+      "tolerance": "as registered"
+    },
+    {
+      "id": "S09.generator",
+      "description": "§13: s09_reference.py --check re-derives every claim (181 after Amendment 1) and byte-compares s09_cases.json",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s09_reference.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S09.s03_generator",
+      "description": "§13: s03_reference.py --check passes at the manifest commit",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s03_reference.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S09.comparison",
+      "description": "§10, A13: comparison.json and SHA256SUMS recompute identically from the committed records",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s09_reference_comparison.py --check",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S09.ruff",
+      "description": "§13: ruff check is clean on S09's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check scripts/s09_reference_comparison.py scripts/s09_evidence_manifest.py spikes/references/s09_qualify_biosteam.py spikes/references/s09_biosteam_syn001.py tests/test_s09_environment.py tests/test_s09_qualification.py tests/test_s09_references.py docs/derivations/scripts/s09_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S09.format",
+      "description": "§13: ruff format --check is clean on S09's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check scripts/s09_reference_comparison.py scripts/s09_evidence_manifest.py spikes/references/s09_qualify_biosteam.py spikes/references/s09_biosteam_syn001.py tests/test_s09_environment.py tests/test_s09_qualification.py tests/test_s09_references.py docs/derivations/scripts/s09_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S09.comparison_record",
+      "description": "§13's list: BioSTEAM's fingerprint, the qualification and comparison commits (ancestry), every record's and comparison.json's SHA-256, each pair's level, rung and classification, each control's classification, the three-tool table and the clause",
+      "result": "pass",
+      "value": {
+        "environment_fingerprint": {
+          "pip_freeze_sha256": "0edea300bbf188030642265ca811425c270d5508bf119fa86431572c06c69a95",
+          "expected_docs_reference_environments_s9": "0edea300bbf188030642265ca811425c270d5508bf119fa86431572c06c69a95",
+          "versions": {
+            "biosteam": "2.54.0",
+            "thermosteam": "0.54.2",
+            "thermo": "0.6.1",
+            "chemicals": "1.5.2",
+            "flexsolve": "0.5.10",
+            "numba": "0.68.0",
+            "numpy": "2.5.4",
+            "scipy": "1.18.1",
+            "python": "3.13.5"
+          },
+          "matches": true
+        },
+        "qualification_commit": "95643b4c30131e2aef82a672111d2aa56db3aae2",
+        "comparison_commit": "94a9d0c06b59a252a513acf502b5694bec6fd1ee",
+        "qualification_commit_is_an_ancestor": true,
+        "record_sha256": {
+          "qualification/biosteam.json": "cb8b9289be369158bf5cae81488b844a7b59bb9705fff53b3e42802832190f72",
+          "results/biosteam-PC-LB.json": "2f49745a15973bb143632d127a2352af1b16ef51514dd1ff7ad930be47ffb146",
+          "results/biosteam-PC-P.json": "7a5c4673ddf9c2dd6e56a95648f12a32720b55d52f5f2531acc2d68beea3e3ea",
+          "results/biosteam-RC1-BR.json": "19586b1fd0e538867eb0f0d7ccf39fffb68db34a80848414dd1edb5e32c4c686",
+          "results/biosteam-RC1-RR.json": "22392c5dcde2e499d9de224bc0f8995bb222fa8db897b52ba2f13e07b7a64082",
+          "results/biosteam-RC1-z.json": "10748272f51c72e4cf56c61637be2d975a4d745f58a9602a4fa58e7dd3c1994b",
+          "results/biosteam-RC1.json": "2d1dc16b9e5f709911292d44c6627c2e82ddb6d8153e28cf4d811887e2c5db59",
+          "results/biosteam-RC2-B.json": "0f8e5ee537100bdc23d1ed2a7d613365a1214afbb53d29fcee3daca93b284984",
+          "results/biosteam-RC2-RR.json": "ed5f085069fddc7afa61cec7bb614be0c33a1d5f8d298ab5b0a222983e74f3f4",
+          "results/biosteam-RC2-z.json": "e361afe6a3b1627774dd649d06fcb103373f157f3f7bdaa9375bccf2a1146a47",
+          "results/biosteam-RC2.json": "3f82c523ada318e817e763b4dc3395d8adec05cd9dddabc727067e10c8b2ee71",
+          "results/biosteam-RC3-Q.json": "0941e6d556e9c2da386d387f7e5acabb4d446cdd2834f41ca47fa3a58349369f",
+          "results/biosteam-RC3-z.json": "24d4d0ae6eddf5653b24bd7c2158af690cf6fdc3b096b4d19b6c26046666fbda",
+          "results/biosteam-RC3.json": "f4734a0bd2558596d17219a71b5c9afc58b43c2bf9d9503de6865ce9a8d2168a",
+          "results/biosteam-RC4-D.json": "da53835a4311bb4fa0e253621fb924a560f60642d82d4e185cac675424d23f35",
+          "results/biosteam-RC4-z.json": "9a542df5dc31a85418e9d116976f11e75dccff1f0d2f51c6c94974c59b660ad6",
+          "results/biosteam-RC4.json": "0cfcf79b58c3fb714535f6a23b1a967f2e84307e579a672d605bff21f190fb7c",
+          "results/biosteam-RC5.json": "6bdf64fa1db86d63e329e4c31cb9b5574b7264f3455835521af68161b8a75d3b",
+          "results/biosteam-RC6.json": "0243d606029aab9f0bee95e06c93dd5e9e8608963f5e368f6f50079a0fd6404c",
+          "results/biosteam-RC7.json": "8cf2b89426a31f1c2b16ca5f6c42ea50e37bd038aebb5f3590410bee63477a93",
+          "comparison.json": "3feb65e5de6482fe508bb9c6035260f7b3a68a825e2ab2642edc1db2da186423"
+        },
+        "pairs": {
+          "PC-LB": {
+            "level": "L1",
+            "rung": "R1",
+            "outer_evaluations": 0,
+            "label": "DISAGREE"
+          },
+          "PC-P": {
+            "level": "L1",
+            "rung": "R1",
+            "outer_evaluations": 0,
+            "label": "DISAGREE"
+          },
+          "RC1": {
+            "level": "L1",
+            "rung": "R1",
+            "outer_evaluations": 0,
+            "label": "AGREE"
+          },
+          "RC1-BR": {
+            "level": "L1",
+            "rung": "R1",
+            "outer_evaluations": 0,
+            "label": "AGREE"
+          },
+          "RC1-RR": {
+            "level": "L1",
+            "rung": "R1",
+            "outer_evaluations": 0,
+            "label": "AGREE"
+          },
+          "RC1-z": {
+            "level": "L1",
+            "rung": "R1",
+            "outer_evaluations": 0,
+            "label": "AGREE"
+          },
+          "RC2": {
+            "level": "L1",
+            "rung": "R1",
+            "outer_evaluations": 0,
+            "label": "AGREE"
+          },
+          "RC2-B": {
+            "level": "L1",
+            "rung": "R1",
+            "outer_evaluations": 0,
+            "label": "AGREE"
+          },
+          "RC2-RR": {
+            "level": "L1",
+            "rung": "R1",
+            "outer_evaluations": 0,
+            "label": "AGREE"
+          },
+          "RC2-z": {
+            "level": "L1",
+            "rung": "R1",
+            "outer_evaluations": 0,
+            "label": "AGREE"
+          },
+          "RC3": {
+            "level": "L1",
+            "rung": "R2",
+            "outer_evaluations": 0,
+            "label": "AGREE"
+          },
+          "RC3-Q": {
+            "level": "L1",
+            "rung": "R2",
+            "outer_evaluations": 0,
+            "label": "AGREE"
+          },
+          "RC3-z": {
+            "level": "L1",
+            "rung": "R2",
+            "outer_evaluations": 0,
+            "label": "AGREE"
+          },
+          "RC4": {
+            "level": "L2(c)",
+            "rung": "R2",
+            "outer_evaluations": 7,
+            "label": "AGREE"
+          },
+          "RC4-D": {
+            "level": "L2(c)",
+            "rung": "R2",
+            "outer_evaluations": 7,
+            "label": "AGREE"
+          },
+          "RC4-z": {
+            "level": "L2(c)",
+            "rung": "R2",
+            "outer_evaluations": 7,
+            "label": "AGREE"
+          },
+          "RC5": {
+            "level": "L2(c)",
+            "rung": "R1",
+            "outer_evaluations": 9,
+            "label": "AGREE"
+          },
+          "RC6": {
+            "level": "L2(c)",
+            "rung": "R1",
+            "outer_evaluations": 7,
+            "label": "AGREE"
+          },
+          "RC7": {
+            "level": "L2(c)",
+            "rung": "R1",
+            "outer_evaluations": 9,
+            "label": "AGREE"
+          }
+        },
+        "not_applicable": {
+          "PC-L": "DWSIM's mapping input (S03 §3.3)",
+          "PC-LI": "IDAES's mapping input (S03 §18.3)"
+        },
+        "controls": {
+          "BioSTEAM": {
+            "agree": [],
+            "controls": {
+              "PC-LB": "DISAGREE",
+              "PC-P": "DISAGREE"
+            },
+            "disagree": [
+              "PC-P",
+              "PC-LB"
+            ],
+            "pairs_count": true
+          }
+        },
+        "control_tool_model_distance": {
+          "PC-LB/BioSTEAM": {
+            "argmax": "L[2]",
+            "max_ratio": 3.5516973548440593e-07,
+            "registered_discrimination": "243.292",
+            "tool_model": "s03_reference.json controls.PC-LI.tool_model (S09 §7, claim C4)"
+          },
+          "PC-P/BioSTEAM": {
+            "max_ratio": null,
+            "reason": "not_applicable(tool_model_differs)",
+            "statement": "not_applicable: BioSTEAM's model at 1.5e5 Pa also lacks v (P - P_r) in h^L, which S03's PC-P tool model keeps (S09 §7)"
+          }
+        },
+        "comparison_stopped": false,
+        "thin_margin": [],
+        "x31_three_tool": {
+          "clause": "met where available",
+          "count_row_5": 3,
+          "cases": {
+            "RC1": {
+              "row": 5,
+              "outcome": "three references (BioSTEAM, DWSIM, IDAES)",
+              "classes": {
+                "BioSTEAM": "comparable",
+                "DWSIM": "comparable",
+                "IDAES": "comparable"
+              }
+            },
+            "RC2": {
+              "row": 5,
+              "outcome": "three references (BioSTEAM, DWSIM, IDAES)",
+              "classes": {
+                "BioSTEAM": "comparable",
+                "DWSIM": "comparable",
+                "IDAES": "comparable"
+              }
+            },
+            "RC3": {
+              "row": 5,
+              "outcome": "two references (BioSTEAM, IDAES)",
+              "classes": {
+                "BioSTEAM": "comparable",
+                "DWSIM": "absent",
+                "IDAES": "comparable"
+              }
+            },
+            "RC4": {
+              "row": 6,
+              "outcome": "one reference (BioSTEAM), absent: DWSIM, IDAES",
+              "classes": {
+                "BioSTEAM": "comparable",
+                "DWSIM": "absent",
+                "IDAES": "absent"
+              }
+            }
+          },
+          "inverse_kinds": {
+            "purity": {
+              "case": "RC5",
+              "row": 5,
+              "outcome": "three references (BioSTEAM, DWSIM, IDAES)",
+              "classes": {
+                "BioSTEAM": "comparable",
+                "DWSIM": "comparable",
+                "IDAES": "comparable"
+              }
+            },
+            "recovery": {
+              "case": "RC6",
+              "row": 5,
+              "outcome": "three references (BioSTEAM, DWSIM, IDAES)",
+              "classes": {
+                "BioSTEAM": "comparable",
+                "DWSIM": "comparable",
+                "IDAES": "comparable"
+              }
+            },
+            "temperature": {
+              "case": "RC7",
+              "row": 5,
+              "outcome": "two references (BioSTEAM, IDAES)",
+              "classes": {
+                "BioSTEAM": "comparable",
+                "DWSIM": "absent",
+                "IDAES": "comparable"
+              }
+            }
+          },
+          "reduction_to_s03_equal": true
+        }
+      }
+    },
+    {
+      "id": "S09.gate",
+      "description": "§13: scripts/gate.sh passes before the merge",
+      "result": "unsupported",
+      "value": "not run by this generator; it runs once before merge"
+    },
+    {
+      "id": "S09.ci",
+      "description": "§13: CI is green on both architectures",
+      "result": "unsupported",
+      "value": "not measured by this generator; checked before merge"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/artifacts/s09-tests.junit.xml",
+      "sha256": "4aec67e64731387f9f7e703b95527bb9bc64ca22224ca4b3ae50a63e3b343fc6",
+      "description": "JUnit report of the S09, S01, S02, S03 and S06 test run (ignored; kept by hash)"
+    },
+    {
+      "path": "benchmarks/s09/references/comparison.json",
+      "sha256": "3feb65e5de6482fe508bb9c6035260f7b3a68a825e2ab2642edc1db2da186423",
+      "description": "the classification of every (case, BioSTEAM) pair, the controls, the margin rows and the three-tool X31 table (cmp9, WO-S09-3)"
+    },
+    {
+      "path": "benchmarks/s09/references/SHA256SUMS",
+      "sha256": "83a68526b2c622824f9219f9fa16369362248b3e261162b0c3043cef55221572",
+      "description": "SHA-256 of the qualification record, every tool record and comparison.json"
+    },
+    {
+      "path": "benchmarks/s09/references/qualification/biosteam.json",
+      "sha256": "cb8b9289be369158bf5cae81488b844a7b59bb9705fff53b3e42802832190f72",
+      "description": "BioSTEAM's qualification record (levels, attempts, rungs, the repeat run; WO-S09-2)"
+    },
+    {
+      "path": "docs/derivations/scripts/s09_cases.json",
+      "sha256": "760ab27f88a4f16320dd66da2218b815d60bff2e8752ec3b5601fa42d29a813c",
+      "description": "the registered settings, thresholds, readback values, controls and pre-registered X31 outcomes (cases9)"
+    },
+    {
+      "path": "docs/derivations/S09-spec.md",
+      "sha256": "e9c25fe7bb9c4130778bf911dab131b59054b2562fe3b6fe5d8e3c343cdf330a",
+      "description": "the S09 specification the checks are read from (§11, §13, §14, §18)"
+    }
+  ],
+  "limitations": [
+    "**Not empirical validation.** SYN-001 is synthetic. An `AGREE` verifies that an independently written implementation of the same equations gives the same root at a registered state (S03 §14).",
+    "**Only at `P_r`, only the registered states.** BioSTEAM's model away from `P_r` lacks both the Poynting factor and the liquid `v (P − P_r)` term. PC-P can show their combined effect, not either one. **Our Poynting terms stay without an independent check.**",
+    "**An L2(c) `AGREE`** verifies our column against BioSTEAM's MESH equations at the state where the harness's outer loop meets the specification. The specification equation in that loop is S02's or S06's, written by the harness, not a BioSTEAM feature.",
+    "**A `NOT_COMPARABLE`** is neither a failure nor a pass of our column. A BioSTEAM absence is a fact about this tool, these settings and this harness, not about the case.",
+    "**The ladder and the loop are not claims about BioSTEAM's solvers.** The probes' rung outcomes are facts about five non-registered columns.",
+    "**Path independence** is checked among four rungs at one level. It is no uniqueness claim.",
+    "**The design probes (`s09_design/`) and the spike (`s09_spike/`) are not evidence** for any assertion. The thresholds they support are re-checked on every registered record (rule 2, §6.6's margin report).",
+    "**The three-tool clause is S09's.** S03's verdict and its two-tool clause stand as S03's record. Whether a release accepts \"met where available\" is outside S09.",
+    "**Independence is partial.** BioSTEAM shares numpy and scipy (other versions) as its numerical substrate. CoolProp, `thermo` and `chemicals` are in its closure and unused by the definition. Blindness is procedural (§9).",
+    "**One platform.** The qualification runs on x86-64. aarch64 is a statement of installability.",
+    "**No sensitivity capability, no phase-transition robustness, supported nonideal scope none** (S03 §9, §10.1, §14).",
+    "18.7: **That thermosteam's class names are stable across versions.** The spelling is 0.54.2's. The per-run readback checks it on every run.",
+    "18.7: **Whether R3 converges on any registered case.** Q-S09-1 stands, and no convergence outcome is registered.",
+    "18.7: **The design probes (`class_probe`, `rerun_probe`) are not evidence** for any assertion. They are facts about the tool and about two non-registered columns.",
+    "18.7: **Any margin outcome.** None is predicted. Q-S09-5 stands with its amended wording.",
+    "18.7: **The development runs dev0–dev3 are not evidence.** They set no value here. They are why the four questions were asked, and the rulings were made from the tool's source and from first principles.",
+    "18.7: **S03 §17.4's response claim** is used here, not re-derived. Its bound of 0.05 is S03's claim on the twin at the registered states.",
+    "requirements lists D19 only: X31 (the reference clause) is a requirement id outside the manifest schema's D/A pattern. The ledger rows X31 and D19 in docs/requirements.yaml cite S09's verdict once it exists (§8.5, WO-S09-4); they are not edited by WO-S09-3.",
+    "Three-tool X31 reference clause as §8.1's table classifies it mechanically: met where available; 3 of 4 counted cases at row 5. Per case: RC1 row 5 (three references (BioSTEAM, DWSIM, IDAES)); RC2 row 5 (three references (BioSTEAM, DWSIM, IDAES)); RC3 row 5 (two references (BioSTEAM, IDAES)); RC4 row 6 (one reference (BioSTEAM), absent: DWSIM, IDAES). The recorded verdict is the verdict agent's (A19, WO-S09-4).",
+    "The controls (positive controls, expected DISAGREE) and every other NOT_COMPARABLE or DISAGREE pair, with its label: PC-LB: DISAGREE || PC-P: DISAGREE",
+    "Thin margin (a disclosure, §18.4(a)): no selected record has a margin-row ratio above 0.1",
+    "scripts/gate.sh and CI on both architectures were not run by this generator (they run once before merge into main); S09.gate and S09.ci are unsupported here.",
+    "Review: the package's single reviewer pass (WO-S09-1 to WO-S09-3) and the human numerical and process-model review are pending; this manifest claims neither `reviewed` nor `released`.",
+    "S09.A19 is fail: see its value"
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

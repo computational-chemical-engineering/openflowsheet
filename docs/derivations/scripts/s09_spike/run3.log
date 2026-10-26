@@ -1,0 +1,12 @@
+/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/s09-spike/venv/lib/python3.13/site-packages/thermosteam/_stream.py:407: RuntimeWarning: <Stream: vapor> has been replaced in registry
+  self._register(ID)
+/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/s09-spike/venv/lib/python3.13/site-packages/thermosteam/_stream.py:407: RuntimeWarning: <Stream: liquid> has been replaced in registry
+  self._register(ID)
+/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/s09-spike/venv/lib/python3.13/site-packages/thermosteam/_stream.py:407: RuntimeWarning: <Stream: RC4_in0> has been replaced in registry
+  self._register(ID)
+/tmp/claude-1003/-home-frankp-Codes-OpenFlowsheet/4eb41cce-83fd-4812-8ebc-a76f78cb2117/scratchpad/s09-spike/run_columns.py:38: RuntimeWarning: <MultiStageEquilibrium: RC4_col> has been replaced in registry
+  col = bst.MultiStageEquilibrium(f"{name}_col", ins=feeds, outs=["vapor", "liquid"], N_stages=N,
+RC1 err None iter 37 wall 0.08s T1 332.4839729756527 TN 372.1615759419255 bal {'component_abs_kmolh': 3.069855480930528e-11, 'energy_abs_W': 4.042198674546348e-12, 'adiabatic_stage_max_abs_W': 5.213061942615443e-07}
+RC3 err None iter 24 wall 0.02s T1 362.19836934439866 TN 396.7201158795314 bal {'component_abs_kmolh': 2.220446049250313e-16, 'energy_abs_W': 4.042198674546348e-12, 'adiabatic_stage_max_abs_W': 2.0966884524871904e-07}
+RC4 err None iter 27 wall 0.02s T1 344.5246873759242 TN 374.23802076605875 bal {'component_abs_kmolh': 3.853806163078843e-12, 'energy_abs_W': 5.659078144364887e-11, 'adiabatic_stage_max_abs_W': 501630.2056565615}
+RC7 err None iter 42 wall 0.05s T1 329.3620952719895 TN 367.9999999996994 bal {'component_abs_kmolh': 3.931521774802604e-12, 'energy_abs_W': 0.0, 'adiabatic_stage_max_abs_W': 2.2006538023965226e-07}

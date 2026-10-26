@@ -1,0 +1,9 @@
+A1 inside out registered loop failed: RuntimeError: inner rule 2 failed at x=1.0: {'stage_component_mol_s': 0.223212426072807, '
+A1 | phenomena | x*=0.7953089528256967 | n_eval=8 | |g|/theta=6.670e-04 | amended: rule2 pass | move 8.062e-05 tol (V[1]) | |g|/theta 1.289e-02 | original: move 1.914e-04 tol (L[1]) | |g|/theta 6.667e-04 | n_eval=8
+A1 simultaneous correction registered loop failed: RuntimeError: RuntimeError: Failed to extrapolate vapor pressure method 'USER_METHOD' at T
+A1 | sequential modular | x*=0.7953089528804544 | n_eval=8 | |g|/theta=6.670e-04 | amended: rule2 pass | move 1.094e-04 tol (V[1]) | |g|/theta 1.726e-02 | original: move 2.599e-04 tol (L[1]) | |g|/theta 6.672e-04 | n_eval=8
+D1T | inside out | x*=2.0915510027053354 | n_eval=9 | |g|/theta=4.646e-07 | amended: rule2 pass | move 1.375e-09 tol (V[5]) | |g|/theta 9.291e-07 | original: move 3.854e-03 tol (Q_bottom) | |g|/theta 1.326e-01 | n_eval=8
+D1T | phenomena | x*=2.0915510028423276 | n_eval=9 | |g|/theta=3.097e-07 | amended: rule2 pass | move 1.042e-04 tol (Q_bottom) | |g|/theta 1.311e-02 | original: move 4.339e-03 tol (Q_bottom) | |g|/theta 1.326e-01 | n_eval=8
+D1T simultaneous correction registered loop failed: RuntimeError: inner rule 2 failed at x=1.0: {'stage_component_mol_s': 6.829598615038574e-1
+D1T | sequential modular | x*=2.0915510025274693 | n_eval=9 | |g|/theta=1.549e-07 | amended: rule2 pass | move 7.964e-05 tol (T[1]) | |g|/theta 1.345e-02 | original: move 3.471e-03 tol (Q_bottom) | |g|/theta 1.326e-01 | n_eval=8
+finite: True

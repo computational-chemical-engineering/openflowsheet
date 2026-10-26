@@ -6545,3 +6545,338 @@ harvest:
   class: P
   to: []
   note: 'CI on both architectures is checked before merge, not by the generator; unsupported here'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[0]
+  sha256: fe9e6f3c190d522cf10879ff1e22f28e3ff579263665dd0d28af4b91dee46e51
+  class: E
+  to:
+  - L18
+  note: 'S09: an AGREE verifies an independently written implementation of the same synthetic equations at a registered state; not empirical validation'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[1]
+  sha256: fb427c499c2f01288098312986962c6941076c64fb2f4f1733dabb26b4ea9674
+  class: E
+  to:
+  - L18
+  note: 'S09 compares only at P_r: our Poynting terms have no independent reference (S03 limitations[1]''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[2]
+  sha256: cfb34aa1e46e581c061169ede0acf9314d84b9e16ce22cd256154f7417476640
+  class: E
+  to:
+  - U04
+  - L19
+  note: 'S09''s column comparison (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); an L2(c) AGREE verifies our column against BioSTEAM''s MESH equations at the loop''s state only, with no completeness or uniqueness assessed (L19)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[3]
+  sha256: e2bb88884fe490c81c60ce5bb6e9c386e6fb73bec141391ac84e1800c0bdebd5
+  class: P
+  to: []
+  note: 'S09: how to read NOT_COMPARABLE (neither failure nor pass); a reading rule for the record'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[4]
+  sha256: c924407e4b3664a38d749686323d68bf20c4152151092df4d7e45a7544d81bb9
+  class: P
+  to: []
+  note: 'S09: the ladder and the loop are not claims about BioSTEAM''s solvers; a fact about this tool and these settings'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[5]
+  sha256: 1ba797531cc475df183b83e8a9029afe88f21d98ad6fa3a1d963ea3c235800a0
+  class: P
+  to: []
+  note: 'S09: path independence is checked among four rungs at one level; not a uniqueness claim (S03 limitations[20]''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[6]
+  sha256: db282d7deab2f978d33f379427f4ee8f3c710b0a8b6023c726e55b8e02e91dc6
+  class: P
+  to: []
+  note: 'S09: the design probes and the spike are not evidence for any assertion; provenance'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[7]
+  sha256: 574b2c079aba51adc99ca8c7e10460abf367ca30e45783edb6e751695021dce6
+  class: P
+  to: []
+  note: 'S09: the three-tool clause is S09''s; S03''s two-tool clause stands; whether a release accepts "met where available" is outside S09 (S03 limitations[26]''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[8]
+  sha256: cd3876adf7646e53d9df249774f082dcefc433b50f36f75715b757019c7f2546
+  class: P
+  to: []
+  note: 'S09: independence is partial (shared numpy and scipy substrate) and blindness is procedural; provenance (S03 limitations[10]''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[9]
+  sha256: ab1fa2939b74a7340080137208c600395f69f7e46d7a5dd43992c3ae962b0ca4
+  class: E
+  to:
+  - L15
+  note: 'S09''s qualification runs on x86-64 only; aarch64 is a statement of installability; the supported platforms are L15'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[10]
+  sha256: f88f0b7b71967b6c5d813c613274a801d5a0656fa27ce04fd20441116d539a7d
+  class: E
+  to:
+  - U04
+  - U05
+  - L20
+  - U02
+  note: 'S09: no sensitivity capability (U05), no phase-transition robustness (L20), supported nonideal scope none (U02); the column is library-only (U04); S03 limitations[3], [5], [6]''s classes'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[11]
+  sha256: 99b52c0c588462b834691a050d1dc22968906f7e9db688c8480d803f200319d5
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[12]
+  sha256: 32bda6e77f0171d2ad79b7f2d8bdfbc6faf36e00a736063c85e8e546de50274f
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[13]
+  sha256: a1f8919d297f43d8d39f5a01530cfe04d63c840c25d6af71c03c47a642db5c6a
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[14]
+  sha256: 8b28fcf6c8ed90f5ae24ac31e0d42f2c9867daa049218d7446247e3dd97cee8e
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[15]
+  sha256: 9e37117a4fe0a2870262cd763cae599965cd16a995904a74f4a285fa573dba01
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[16]
+  sha256: a415b26a11c2cc7d3e6f61ce9fea740297b0168fe6c3e37aa281a8b5503a9c71
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[17]
+  sha256: 0e91e06149164116262fe0df46137ae331362d2d51c1db81dfa52caa51d3b110
+  class: P
+  to: []
+  note: 'S09 manifest lists D19 only (X31 is outside the schema''s D/A pattern); the ledger rows cite S09''s verdict (S03 limitations[25]''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[18]
+  sha256: ee249efa4f3aecb12c3dc5f65947a836cbca15deb461b0c18f5961210a6d367a
+  class: P
+  to: []
+  note: 'S09''s X31 three-tool clause as §8.1''s table classifies it (met where available, 3 of 4); a measurement record (S03 limitations[26]''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[19]
+  sha256: f6973176a7aa649bc1159048968162e06c8bbad7acb6d07015e11951c12f4465
+  class: P
+  to: []
+  note: 'S09 measurement record: the controls and every NOT_COMPARABLE or DISAGREE pair with its label (S03 limitations[27]''s class)'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[20]
+  sha256: 1a057a35bda62a32032ddaa655b47464e0c160355a2f52e39a5d8ab7e2d4227f
+  class: P
+  to: []
+  note: 'S09 measurement record: no selected record has a margin-row ratio above 0.1'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[21]
+  sha256: 2b9e97194e59967a96e1e33a546606ddc6342686c95306156575ce3c9e0dc6da
+  class: P
+  to: []
+  note: 'scripts/gate.sh and CI run once before merge, not by the generator; process note'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[22]
+  sha256: b51f2f7d25702f0aeb65f7134bc3c78cd1de4f47839e7d1d1c1c63f8e8717228
+  class: P
+  to: []
+  note: 'S09 reviewer pass and the human numerical and process-model review pending; neither reviewed nor released claimed'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: limitations[23]
+  sha256: 53005a69d1554e14e5f232973d9be0262d8fa1f1a65b7e7d7dcc8e588dd16693
+  class: P
+  to: []
+  note: 'superseded record: the manifest''s A19 was failed before the verdict existed; replaced by the manifest at 4d4df087'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: checks[18]
+  check_id: S09.A19
+  sha256: 5a7992d0873d4b8102af4658eaaccc231a291099f696c4f07e84d99890b69052
+  class: P
+  to: []
+  note: 'A19 (the verdict document) did not exist at this superseded manifest; it passes at 4d4df087'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: checks[26]
+  check_id: S09.gate
+  sha256: 2d86232e626b1beadf0b59e122116216106692bff36705d48552c53f7c726b06
+  class: P
+  to: []
+  note: 'scripts/gate.sh runs once before merge, not by the generator; unsupported here'
+- manifest: evidence/S09/6ce5b624bc9e1c27c6d256e67faa175a56991075/manifest.json
+  item: checks[27]
+  check_id: S09.ci
+  sha256: e491958f560bf7496440d627854a4b3f2278fd93c5439becd9d7abeadda16314
+  class: P
+  to: []
+  note: 'CI on both architectures is checked before merge, not by the generator; unsupported here'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[0]
+  sha256: fe9e6f3c190d522cf10879ff1e22f28e3ff579263665dd0d28af4b91dee46e51
+  class: E
+  to:
+  - L18
+  note: 'S09: an AGREE verifies an independently written implementation of the same synthetic equations at a registered state; not empirical validation'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[1]
+  sha256: fb427c499c2f01288098312986962c6941076c64fb2f4f1733dabb26b4ea9674
+  class: E
+  to:
+  - L18
+  note: 'S09 compares only at P_r: our Poynting terms have no independent reference (S03 limitations[1]''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[2]
+  sha256: cfb34aa1e46e581c061169ede0acf9314d84b9e16ce22cd256154f7417476640
+  class: E
+  to:
+  - U04
+  - L19
+  note: 'S09''s column comparison (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); an L2(c) AGREE verifies our column against BioSTEAM''s MESH equations at the loop''s state only, with no completeness or uniqueness assessed (L19)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[3]
+  sha256: e2bb88884fe490c81c60ce5bb6e9c386e6fb73bec141391ac84e1800c0bdebd5
+  class: P
+  to: []
+  note: 'S09: how to read NOT_COMPARABLE (neither failure nor pass); a reading rule for the record'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[4]
+  sha256: c924407e4b3664a38d749686323d68bf20c4152151092df4d7e45a7544d81bb9
+  class: P
+  to: []
+  note: 'S09: the ladder and the loop are not claims about BioSTEAM''s solvers; a fact about this tool and these settings'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[5]
+  sha256: 1ba797531cc475df183b83e8a9029afe88f21d98ad6fa3a1d963ea3c235800a0
+  class: P
+  to: []
+  note: 'S09: path independence is checked among four rungs at one level; not a uniqueness claim (S03 limitations[20]''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[6]
+  sha256: db282d7deab2f978d33f379427f4ee8f3c710b0a8b6023c726e55b8e02e91dc6
+  class: P
+  to: []
+  note: 'S09: the design probes and the spike are not evidence for any assertion; provenance'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[7]
+  sha256: 574b2c079aba51adc99ca8c7e10460abf367ca30e45783edb6e751695021dce6
+  class: P
+  to: []
+  note: 'S09: the three-tool clause is S09''s; S03''s two-tool clause stands; whether a release accepts "met where available" is outside S09 (S03 limitations[26]''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[8]
+  sha256: cd3876adf7646e53d9df249774f082dcefc433b50f36f75715b757019c7f2546
+  class: P
+  to: []
+  note: 'S09: independence is partial (shared numpy and scipy substrate) and blindness is procedural; provenance (S03 limitations[10]''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[9]
+  sha256: ab1fa2939b74a7340080137208c600395f69f7e46d7a5dd43992c3ae962b0ca4
+  class: E
+  to:
+  - L15
+  note: 'S09''s qualification runs on x86-64 only; aarch64 is a statement of installability; the supported platforms are L15'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[10]
+  sha256: f88f0b7b71967b6c5d813c613274a801d5a0656fa27ce04fd20441116d539a7d
+  class: E
+  to:
+  - U04
+  - U05
+  - L20
+  - U02
+  note: 'S09: no sensitivity capability (U05), no phase-transition robustness (L20), supported nonideal scope none (U02); the column is library-only (U04); S03 limitations[3], [5], [6]''s classes'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[11]
+  sha256: 99b52c0c588462b834691a050d1dc22968906f7e9db688c8480d803f200319d5
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[12]
+  sha256: 32bda6e77f0171d2ad79b7f2d8bdfbc6faf36e00a736063c85e8e546de50274f
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[13]
+  sha256: a1f8919d297f43d8d39f5a01530cfe04d63c840c25d6af71c03c47a642db5c6a
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[14]
+  sha256: 8b28fcf6c8ed90f5ae24ac31e0d42f2c9867daa049218d7446247e3dd97cee8e
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[15]
+  sha256: 9e37117a4fe0a2870262cd763cae599965cd16a995904a74f4a285fa573dba01
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[16]
+  sha256: a415b26a11c2cc7d3e6f61ce9fea740297b0168fe6c3e37aa281a8b5503a9c71
+  class: P
+  to: []
+  note: 'S09 §18.7: a statement of what Amendment 1 does not establish (S03 §18.9''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[17]
+  sha256: 0e91e06149164116262fe0df46137ae331362d2d51c1db81dfa52caa51d3b110
+  class: P
+  to: []
+  note: 'S09 manifest lists D19 only (X31 is outside the schema''s D/A pattern); the ledger rows cite S09''s verdict (S03 limitations[25]''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[18]
+  sha256: ee249efa4f3aecb12c3dc5f65947a836cbca15deb461b0c18f5961210a6d367a
+  class: P
+  to: []
+  note: 'S09''s X31 three-tool clause as §8.1''s table classifies it (met where available, 3 of 4); a measurement record (S03 limitations[26]''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[19]
+  sha256: f6973176a7aa649bc1159048968162e06c8bbad7acb6d07015e11951c12f4465
+  class: P
+  to: []
+  note: 'S09 measurement record: the controls and every NOT_COMPARABLE or DISAGREE pair with its label (S03 limitations[27]''s class)'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[20]
+  sha256: 1a057a35bda62a32032ddaa655b47464e0c160355a2f52e39a5d8ab7e2d4227f
+  class: P
+  to: []
+  note: 'S09 measurement record: no selected record has a margin-row ratio above 0.1'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[21]
+  sha256: 2b9e97194e59967a96e1e33a546606ddc6342686c95306156575ce3c9e0dc6da
+  class: P
+  to: []
+  note: 'scripts/gate.sh and CI run once before merge, not by the generator; process note'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: limitations[22]
+  sha256: b51f2f7d25702f0aeb65f7134bc3c78cd1de4f47839e7d1d1c1c63f8e8717228
+  class: P
+  to: []
+  note: 'S09 reviewer pass and the human numerical and process-model review pending; neither reviewed nor released claimed'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: checks[26]
+  check_id: S09.gate
+  sha256: 2d86232e626b1beadf0b59e122116216106692bff36705d48552c53f7c726b06
+  class: P
+  to: []
+  note: 'scripts/gate.sh runs once before merge, not by the generator; unsupported here'
+- manifest: evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
+  item: checks[27]
+  check_id: S09.ci
+  sha256: e491958f560bf7496440d627854a4b3f2278fd93c5439becd9d7abeadda16314
+  class: P
+  to: []
+  note: 'CI on both architectures is checked before merge, not by the generator; unsupported here'

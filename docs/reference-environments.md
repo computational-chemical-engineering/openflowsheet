@@ -316,3 +316,36 @@ second from a cold download cache, gave the same conda fingerprint (`51a33c8d…
 `pip freeze` fingerprint (`621262d4…565907a5`) and the same `libpynumero_ASL.so`; the inventory
 written from the first is reproduced by `--check` on the second. About 25 s per build with a warm
 package cache.
+
+## 9. The S09 third column reference: BioSTEAM 2.54.0
+
+**Package:** S09 WO-S09-1 (specification `docs/derivations/S09-spec.md` §2.1, §12). **Recorded:** 2026-10-26, branch `wp/S09`.
+
+| Tool | Status | Route |
+| --- | --- | --- |
+| BioSTEAM 2.54.0 | **builds, imports** (no column has been run; WO-S09-2 qualifies it) | CPython 3.13.5, hash-locked closure of 63 distributions, thermosteam 0.54.2, thermo 0.6.1, chemicals 1.5.2, flexsolve 0.5.10, numba 0.68.0, numpy 2.5.4, scipy 1.18.1, CoolProp 8.0.0 |
+
+**Host:** the x86-64 workstation of §2 (Linux 6.12.111, Debian 13, glibc 2.41, Python 3.13.5; `uv` 0.12.12 for the lock only, `gcc` for one extension). Qualification runs on this host only, as for IDAES and DWSIM; CI on both architectures re-classifies committed records without BioSTEAM installed.
+
+**Reproduction:**
+
+```bash
+scripts/build-reference-envs.sh biosteam [log-file]    # -> .venv-biosteam/ (git-ignored, about 874 MB)
+```
+
+The lock `spikes/references/biosteam-requirements.lock` pins every distribution by hash; it was compiled from `biosteam-requirements.in` with `uv pip compile --generate-hashes --python-version 3.13 --python-platform x86_64-manylinux_2_28`.
+
+**Build route.** Five distributions are source distributions (biosteam, thermosteam, flexsolve, colorpalette, numpoly). Four are pure Python; **numpoly 1.3.9 is not: its sdist compiles Cython/C extensions** (PyPI has no wheel for it), so the build needs a C compiler on the host. pip does not hash-check the build requirements of an isolated build, so the route is the spec's fallback: `setuptools`, `wheel` and `cython` are pinned in the lock beside the closure, the script hash-installs those and numpy first, then installs the whole lock with `--require-hashes --no-deps --no-build-isolation --no-cache-dir`. `pip check` passes. The fingerprint is the pip-freeze hash, which covers versions but not the bytes of the compiled numpoly extension.
+
+**Fingerprint, two consecutive builds (2026-10-26), identical:**
+
+```
+[.venv-biosteam] pip freeze sha256: 0edea300bbf188030642265ca811425c270d5508bf119fa86431572c06c69a95
+[.venv-biosteam] python: Python 3.13.5
+```
+
+Build time 38 s and 36 s (warm download via PyPI, `--no-cache-dir`). Every record of S09 carries this fingerprint.
+
+**Licence (S09 §2.1).** Both `LICENSE.txt` files (biosteam, thermosteam) state the University of Illinois/NCSA Open Source License, an OSI-approved permissive licence. The wheel METADATA says "MIT", which is inconsistent: MIT applied only to versions 0.1-0.9, and the `LICENSE.txt` text governs. Nothing of BioSTEAM is redistributed: the environment is git-ignored.
+
+**aarch64.** The same `.in` resolves for `--python-platform aarch64-manylinux_2_28` to the same 63 distributions at the same versions (compiled 2026-10-26; the hashes differ for the binary wheels). This is a statement of installability, not a run: no aarch64 environment was built.
