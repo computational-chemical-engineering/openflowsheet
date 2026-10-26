@@ -15636,3 +15636,61 @@ on a near-trivial flash split: either reopens Q1.
   exact where it matters (structure) and complete over the suite.
 
 **Watch for.** Keys present in one tree only, beyond new or renamed tests.
+
+---
+
+## R-795 — S10-C G2 amended: R-782/R-786's three files admitted by name; the literal G2 was not met
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`verdict`), ruling round on S10-C/S08b build decisions |
+| Normative text | `docs/derivations/S10C-design.md` §6 G2 (amended 2026-10-26) |
+| Evidence | `evidence/S10c/2aedd250…/manifest.json` `S10C.G2` (`admitted_by_r782_r786`: 3 files, +148 −65; frozen diff otherwise empty); `git log 53228775..2aedd250` on the three paths = `e88f72a9` (WO-R2, R-783), `f23985bf` (WO-R6, R-786, G-R8), `fbba9643` (R-796) |
+| Affected packages | S10-C |
+
+**Decision.**
+- G2 admits `numerics/newton.py`, `tests/test_t06_w20_counters.py` and `tests/test_t07_interrupt.py` as changed by those
+  three commits. Every other frozen path stays untouched. The S10-C manifest stands at `tested`.
+- G2 as written (empty over `numerics/`) was not met. Its text predated R-782 and did not provide for a design-lane
+  amendment of K03 inside the package. That is a defect in the criterion, not a failure of the work.
+
+**Rejected alternatives, and why.**
+- *G2 failing, manifest `implemented`:* it could pass only by reverting R-782, a registered ruling.
+- *Admitting `numerics/` wholesale:* any edit outside R-782 would ride in unseen.
+
+**Watch for.** A by-name admission in any package's gate without a register entry naming the authorising decision and the
+commits it covers. A regenerated S10-C manifest without the commit list re-checked.
+
+---
+
+## R-796 — T07 THM-09/4's uncapped length: pinned only on a class shown deterministic; reported on every run
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`verdict`), ruling round on S10-C/S08b build decisions |
+| Normative text | `tests/test_t07_interrupt.py` (`THM09_RECORDS`, C1's report line); T06 spec §7.5 (A5); ADR 0007 D3.2 |
+| Evidence | CI 40359016227 at `d34f8b57`, image ubuntu-24.04 20261012.334.1: `check (ubuntu-latest)` 136, `default-install` (also ci-x86-64) passed with the 94 pin. CI 40295317759 and 40315691647: 94 on ci-x86-64. Local ref-x86-64: 94. ci-aarch64: 136 |
+| Affected packages | T07 (G5 record-k leg); S10-C (R-782 §4.7 item 4); S08b (T07-1) |
+
+**Decision.**
+- Pins: ref-x86-64 94 and ci-aarch64 136. ci-x86-64 and unregistered classes are not pinned. Every class asserts
+  `len > max(K)` and runs every record-k interrupt check against its own uninterrupted run.
+- Every run prints class, CPU model, numpy's and SciPy's OpenBLAS core, length and outcome (C1). The CI lines are copied
+  into `docs/t07-measurements.md` at each merge.
+- Re-pin rule: a key (class, `cpu_model`, OpenBLAS core) is pinned only after ≥ 2 CI jobs with that key agree and none
+  disagrees. One contradiction removes it. A set of lengths is never pinned. The T06 registry is unchanged.
+
+**Rejected alternatives, and why.**
+- *Keeping `ci-x86-64: 94`:* two ci-x86-64 runners gave 94 and 136 at one commit, so the pin pins nothing.
+- *Failing on an unregistered class:* contradicts §7.5 and ADR 0007 D3.2.
+- *`cpu_model`-split CI classes in the registry:* changes T06's benchmark identity for a T07 fixture. The CPU model only
+  stands in for the cause.
+- *Skipping the leg off the pinned classes:* removes G5 assertions that are fully valid there.
+
+**Watch for.**
+- A live-trajectory pin keyed on bare ci-x86-64 elsewhere. Pins over committed records, such as A98's `S_first`, are
+  unaffected.
+- A second length on ci-aarch64, which registers no `cpu_model`.
+- A failure message that names the CPU only on a pinned class.
