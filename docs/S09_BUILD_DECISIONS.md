@@ -146,3 +146,69 @@ harness's sections), `s09_cases.json` (SHA-256 `760ab27f…a813c`, as §18 regis
   .` and `ruff format --check .` clean.
 - STOPPED HERE (WO-S09-2 done): next is WO-S09-3 (classifier, comparison), which recomputes B2 per rung and the margin
   rows from the raw fields (§18.6).
+
+## WO-S09-3 (classifier, gate test, evidence)
+
+Build-lane agent, after the qualification commit `95643b4c` (A16). Files opened: the spec (§2–§18), this file,
+`s09_cases.json`, S03's classifier and its gate test and manifest generator, the BioSTEAM records and the harness's
+record-writing code (to read the field layout), S03's `comparison.json`, `s03_reference.json`. Commits: classifier and
+`comparison.json` `94a9d0c0`; gate test `11a83b08`; manifest generator `6ce5b624`.
+
+- DECISION: A03 and A06–A08 stay in `tests/test_s09_qualification.py` (WO-S09-2's tool-free tests); they are not
+  duplicated in `tests/test_s09_references.py`, and the manifest judges them from those nodes. A04's record half
+  (every record's fingerprint, rule 1) and A17 (repeat run, re-hashed from the committed records) are added to
+  `test_s09_references.py`, as §13 requires a test for each of A01–A18. Alternative: copies in both files.
+  Reversible by: moving the tests.
+- DECISION: B4's `K_c` is recomputed from SYN-001's closed form at T06's pinned constants (50-digit decimal) at the
+  stage's recorded T and P; the harness's per-stage `K` (inside its check block) is not read. §4.3's readback ties the
+  tool's `Psat` to the closed form within 1e-14 relative. Measured: largest B4 difference to the harness's value
+  1.2e-15 (threshold 1e-8). Alternative: read the recorded `K`. Reversible by: `psat_ratio`.
+- DECISION: B5's energy closure sums every stage's computed duty (§5.6: "the duty of every stage"), as the harness
+  does and as §6.6's floor (1.4e-11 W) implies. Alternative: the condenser and reboiler duties only (S03's DWSIM form),
+  which would repeat rule 2c's intermediate-duty check. No verdict depends on it (intermediate duties ≤ 2.6e-8 W).
+  Reversible by: one sum in `rule2`.
+- DECISION: rule 2c's order is S03's (stage count, map, inlet stages, pressures, intermediate = adiabatic duty), then
+  the total-condenser vapour (where S03 has its zero-liquid-distillate check), the specification read-back, the
+  property readback, then S03's 1e-4 specification check. Only the label of a record failing several checks depends
+  on it. Reversible by: reordering `rule2c`.
+- DECISION: the read-back's expected stored values are recomputed in binary64 from the registered value with §5.6's
+  expressions (`1/RR`; total condenser `B = 0` and side draw `1/(1+RR)`; `B/F` with F the exact decimal sum of the
+  registered inlet flows; `3.6 Q`), at L2(c) `1/x` or `x` with x the outer loop's `returned_x`, and the run's `x` must
+  equal it. The harness's `expected_stored` is not read. All 19 selected runs and their reruns pass exactly.
+- DECISION: a total condenser's reflux is the binary64 subtraction of stage 0's liquid and the side draw's flow. A
+  decimal subtraction of their shortest reprs gave a value one ulp away on RC2 (0.6749999999999566 against the tool's
+  0.6749999999999567); it was replaced before the comparison was committed.
+- DECISION: rule 2d also requires the rerun's applied tolerances to equal `floor_rerun`'s (1e-9, 1e-9), label
+  `rerun_settings(...)`; rerun failures are labelled `rerun_not_run`, `rerun_rule2(...)`, `rerun_rule2c(...)`,
+  `rerun_movement(...)`. Alternative: leave the settings to A08. Reversible by: `rerun_check`.
+- DECISION: the margin rows "rerun movement" and "path spread" are computed in the twin's tolerance, as the
+  classifier's rule 2d is (§6.4); the harness's are in the tool's. Measured: relative differences ≤ 2.1e-4 (rerun)
+  and ≤ 5e-5 (path). Reversible by: `margin`.
+- DECISION: A10's "+0.01 Pa" mutation (S03 A12's) is applied to a product's pressure: a stage pressure enters B4's `K`,
+  so rule 2 (B4) fires before rule 2c. A10's rerun mutation and A11's path mutation move one component (C) from the
+  bottom to the top product, so that rules 2 and 2c and every specification stay unchanged. A10's per-kind test (S03
+  §17.9) shifts the registered value against BioSTEAM's view of a record carrying the kind: 9 of the 10 kinds (no
+  BioSTEAM record carries a total condenser's distillate rate).
+- DECISION: a record that is not available classifies by rule 0 with the record's own reason (S03's pattern). None
+  occurs. Each row carries `selection` (the recorded rung and the one recomputed from the raw fields); A18's test
+  requires them equal (they are for all 19).
+- DECISION: §8.1's row 5 and row 6 outcomes use `pre_registered`'s wording (tools sorted: "three references
+  (BioSTEAM, DWSIM, IDAES)", "one reference (BioSTEAM), absent: DWSIM, IDAES"); the absent tools' reasons are quoted
+  in `absent_reasons`. IDAES's and DWSIM's classes are read from S03's `x31` block, never recomputed.
+- DECISION: rule 1 reads the fingerprint from `docs/reference-environments.md` §9 (exactly one distinct value
+  required) and the versions from `s09_cases.json → environment`.
+- MEASURED (`comparison.json` at `94a9d0c0`): 17 compared pairs `AGREE` (largest worst ratio 0.0202 tolerance,
+  RC6 `bottom[A]`; RC3 family 0.0017–0.0035; all others ≤ 1.1e-5). Controls: PC-LB `DISAGREE` (243.3 tolerances,
+  `Q_reboiler`; tool-model distance to PC-LI's 3.6e-7 tolerance), PC-P `DISAGREE` (175.9, `T[1]`); no control
+  `AGREE`, BioSTEAM's pairs count. (PC-L, PC-LI) `not_applicable`. Three-tool X31: RC1, RC2 row 5 (three
+  references), RC3 row 5 (BioSTEAM, IDAES), RC4 row 6 (BioSTEAM); clause **met where available, 3 of 4** (row 5 in
+  3), equal to the pre-registered outcome; inverse kinds RC5, RC6 row 5 (three), RC7 row 5 (two). Reduction to S03's
+  two tools reproduces S03's rows and "not met". Thin margin: none (largest 0.0117, RC6 path spread).
+- MEASURED: the classifier's recomputation against the harness's summaries (not used, compared once in the
+  scratchpad): selection, quantities (exact), path-dependence rung sets and one-phase sets identical for all 19;
+  B3 ≤ 9e-17 mol/s, B5 component ≤ 6e-17 mol/s, B5 energy ≤ 4.4e-12 W, final |g| ≤ 1e-16 apart.
+- MEASURED: `tests/test_s09_references.py` 125 passed (314 s, most of it the live solve of our side and the three
+  generators); `tests/test_s03_references.py`, `test_s03_ours.py`, `test_s09_qualification.py`,
+  `test_s09_environment.py` 308 passed; `s09_reference_comparison.py --check` and `s03_reference_comparison.py
+  --check` recompute identically; S03's files unchanged since `390e0af5` (A02); `ruff check .`, `ruff format --check .`
+  clean.
