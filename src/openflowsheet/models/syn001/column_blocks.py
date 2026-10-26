@@ -32,10 +32,14 @@ from openflowsheet.models.syn001.column import (
 )
 from openflowsheet.models.syn001.column_solve import (
     MAX_SWEEPS,
+    SWEEP_COMPOSITION_TOLERANCE,
     SWEEP_TOLERANCE,
     _admissibility,
+    liquid_compositions,
+    relaxed_compositions,
     stage_ratios,
 )
+from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
 from openflowsheet.models.syn001.tp_state import enthalpy_flow
 from openflowsheet.orchestrator.region import Regime
@@ -220,16 +224,23 @@ def _core_flows(
     temperatures: Mapping[int, float],
     rho: Mapping[int, float],
     phi: float | None,
+    compositions: Mapping[int, tuple[float, ...]] | None = None,
 ) -> tuple[dict[int, list[float]], dict[int, list[float]]]:
     """§5.3 steps 3a–3b over the liquid-carrying stages `carry` (the core, then the L-block):
-    `K_ij` at `(T_j, P_j*)` on the core, per component the tridiagonal with `S_ij = K_ij ρ_j` on
+    `K_ij` at `(T_j, P_j*)` on the core (a composition-dependent form: at the relaxed liquid
+    `compositions[j]`, S10-C §4.9), per component the tridiagonal with `S_ij = K_ij ρ_j` on
     the core and `0` on the L-block (total condenser: first diagonal `−(1 + S_i2) + φ S_i2`);
     `l_ij` its solution, `v_ij = S_ij l_ij` on the core and exactly `+0.0` on the L-block."""
     components, count = spec.components, spec.stage_count
     inlets = spec.inlets()
     k_stage = {
         j: _k_values(
-            provider, DECLARATION_CONTEXT, components, temperatures[j], spec.pressures[j - 1]
+            provider,
+            DECLARATION_CONTEXT,
+            components,
+            temperatures[j],
+            spec.pressures[j - 1],
+            liquid=None if compositions is None else compositions[j],
         )
         for j in core
     }
@@ -433,9 +444,15 @@ def _build(
         carry = stages[a:]
         # Step 2: the start; step 3: the sweeps over the core.
         temperatures = {j: initial.profile[j - 1] + profile_shift for j in core}
-        delta = float("inf")
+        # S10-C §4.9: a composition-dependent K is relaxed as in §18.2's sweeps.
+        compositions = (
+            liquid_compositions(initial.liquid, core) if composition_dependent(provider) else None
+        )
+        delta, change = float("inf"), 0.0
         for sweep in range(1, max_sweeps + 1):
-            flows, _ = _core_flows(spec, provider, carry, core, temperatures, rho, phi)
+            flows, _ = _core_flows(
+                spec, provider, carry, core, temperatures, rho, phi, compositions
+            )
             updated = {
                 j: _bubble(
                     provider,
@@ -447,16 +464,21 @@ def _build(
             }
             delta = max(abs(updated[j] - temperatures[j]) for j in core)
             temperatures = updated
-            if delta <= SWEEP_TOLERANCE:
+            if compositions is not None:
+                compositions, change = relaxed_compositions(compositions, flows, core)
+            if delta <= SWEEP_TOLERANCE and change <= SWEEP_COMPOSITION_TOLERANCE:
                 sweeps = sweep
                 break
         else:
+            detail = "" if compositions is None else f", max |dx| = {change!r}"
             raise _RefusalError(
                 "sweeps_exhausted",
-                f"{unit}: core max |dT| = {delta!r} K after {max_sweeps} sweeps",
+                f"{unit}: core max |dT| = {delta!r} K{detail} after {max_sweeps} sweeps",
             )
-        # Step 4: the final flows at the stopped T.
-        flows, rising = _core_flows(spec, provider, carry, core, temperatures, rho, phi)
+        # Step 4: the final flows at the stopped T (and the relaxed composition, S10-C §4.9).
+        flows, rising = _core_flows(
+            spec, provider, carry, core, temperatures, rho, phi, compositions
+        )
         for j in carry:
             liquid[j] = flows[j]
             vapor[j] = rising[j]

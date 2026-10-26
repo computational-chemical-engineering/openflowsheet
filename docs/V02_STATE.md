@@ -92,27 +92,29 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-26, workstation; no cloud sessions).** `main` = `8d94ea28` (S09 merged at wp/S09 `6d1c2d66`; tree
-identical). Last full gate: PASS at `6d1c2d66`: 12507 passed, 3137 skipped. CI 40262198930 green (x86-64, aarch64,
-default-install, identity). v0.3 packages tested: S01–S05, S07, S08, S09, S10; S10-C in progress; R01–R03 open.
-**S09** (BioSTEAM 2.54.0, `.venv-biosteam` in worktree `s09`; manifest `evidence/S09/4d4df087…` tested; verdict
-`docs/reviews/S09-verdicts.md`, review `docs/reviews/S09-review.md`): blind qualification 19/19 available; 17 AGREE (worst
-RC6 0.0202 tol; BioSTEAM–twin ≤ 1.01e-5 tol), PC-LB/PC-P DISAGREE; X31 "met where available, 3 of 4" (RC4 one reference).
-**S08** done (ADR 0048 Proposed). HARVEST_SIZE (56, 794, 95). IDAES/DWSIM environments in worktree `.claude/worktrees/s03`.
+**Position (2026-10-26, workstation; no cloud sessions).** `main` = `8654aabc` (S10-C merged at wp/S10C `94f70c2d`; tree
+identical). Last full gate: PASS at `94f70c2d`: 13249 passed, 3137 skipped. CI 40315691647 green (x86-64, aarch64,
+default-install, identity). v0.3 packages tested: S01–S05, S07, S08, S09, S10, S10-C; R01–R03 open.
+**S10-C** (ADR 0049 Proposed; manifest `evidence/S10c/2aedd250…` tested, 49/51, gate/CI unsupported): γ–φ PH flash and
+column on Wilson; C-MW 9 / C-EW 4 iterations on both architectures. R-782 (K03 absent-component release on every step,
+review `docs/reviews/S10C-r782-review.md`), R-785 (A41 absent flows `== 0.0`), R-786 (iterative `_released`, G-R8 pass).
+T07 THM-09/4 pin per machine class (x86-64 94, aarch64 136). HARVEST_SIZE (58, 824, 99). Build log `docs/S10C_DECISIONS.md`.
 
 **Next actions (in order):**
-1. **S10-C** (wp/S10C, worktree `s10c`; ADR 0049 Proposed; design `docs/derivations/S10C-design.md`, spec `S10C-spec.md`,
-   R-760…R-776): WO-S, WO-1, WO-2 (PH kernel, E-2 13/13 on the band route), WO-3 (γ–φ column blocks, validate) done, G1
-   `S10C-IDENTITY PASS n=858 changed=[]`. Running WO-4 (C-MW/C-EW solves). Then WO-5, reviewer, gate, CI, merge. Also at
-   the next S10 change: the two stale S10 limitation sentences (Frank "Do it later").
-2. S08b (phase-contract follow-ups, `docs/CLOUD_WORK.md`). Ternary column claims need a methanol+ethanol refit (S10 S-4).
-3. Design-lane leftovers: S07 B-42, F-20.2, Q-A1-2; ADR 0046/0047/0048 acceptance; S03 B6-1..B6-4; S10 B-86, B-87,
-   B-90, B-91, verdict F1/F2; S08 W5-7 (X31 in `evidence` not `requirements`, schema takes D/A ids), W5-9 classes.
-4. Binding package (S05/S07/S10 into flowsheets); S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
+1. **S08b** (wp/S08b, worktree `s08b`; design `docs/derivations/S08b-design.md` `971bc32f`, R-790…R-794, docs only so
+   far): WO-0 (merge main with S10-C, re-measure) … WO-4, then the reviewer pass, gate, CI, merge.
+2. Design-lane ruling round for S10-C build decisions: G2 admits `numerics/newton.py` and the two R-782 test edits by name;
+   T07 on an unregistered machine class checks only > 89 records. Ternary column claims need a methanol+ethanol refit (S10 S-4).
+3. Design-lane leftovers: S07 B-42, F-20.2, Q-A1-2; ADR 0046–0049 acceptance; S03 B6-1..B6-4; S10 B-86, B-87, B-90, B-91,
+   verdict F1/F2; S08 W5-7 (X31 in `evidence` not `requirements`, schema takes D/A ids), W5-9 classes; S10-C W5-1/W5-2;
+   the two stale S10 limitation sentences (Frank "Do it later", at the next S10 change).
+4. Binding package (S05/S07/S10 into flowsheets; needs Frank's go); S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
 5. Workstation backlog: M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
 6. For Frank (defaults set, `docs/FRANK_QUESTIONS.md`): S10-C Q1–Q4 (Wilson in flowsheets: no; IDAES column comparison:
-   deferred; cascade/other units: no; purity/recovery/temperature specs: refused); S08 Q1/Q3/Q4/Q6; Q-S09-2; Q-A6.2/Q-A6.3; S10 Q-F3 (ship after
-   rights check; RC-05/06/08 unresolved).
+   deferred; cascade/other units: no; purity/recovery/temperature specs: refused); S10-C F2 (theorem premises at admission,
+   deferred to the binding package, R-781); S08b Q1 (v3 feed-band rule: not now); S08 Q1/Q3/Q4/Q6; Q-S09-2; Q-A6.2/Q-A6.3;
+   S10 Q-F3 (ship after rights check; RC-05/06/08 unresolved). Remote scratch branches `wp/S08`, `wp/S09`, `wp/S10C`,
+   `wp/S10C-diag`, `wp/S10C-diag2` may be deleted by Frank.
 
 
 **History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258

@@ -27,8 +27,13 @@ from test_t05b_contract import solve
 from benchmarks.t06 import ensemble
 from openflowsheet.orchestrator.budget import PropertyMeter
 
-#: A93: run 1's three `F-BUDGET` starts; recorded 6 943, 6 902 and 9 250 before W20.
+#: A93: run 1's three `F-BUDGET` starts; recorded 6 943, 6 902 and 9 250 before W20. Since R-782
+#: (K03's release at every step) they converge uncapped, in 245, 279 and 424 property calls.
 BUDGET_STARTS = [("THM-08", 3), ("THM-08", 12), ("THM-09", 4)]
+#: A93's cap witness since R-782 (S10-C absent-component note §4.7 item 3): a *test-local*
+#: `max_property_calls`, 2.45x below the smallest converged cost. The registry's
+#: `T06-revision-v2` budget stays 10 000; this is not a budget edit (R-087).
+WITNESS_CAP = 100
 
 
 def _start(case: str, index: int) -> tuple[Any, dict[str, Any]]:
@@ -41,16 +46,30 @@ def _start(case: str, index: int) -> tuple[Any, dict[str, Any]]:
 
 @pytest.mark.parametrize(("case", "index"), BUDGET_STARTS, ids=lambda v: str(v))
 def test_a93_run_1s_budget_starts_record_the_cap(case: str, index: int) -> None:
-    """Each of run 1's three `F-BUDGET` starts, re-run, records `property_calls` and
-    `requested_evaluations` of exactly `max_property_calls` (10 000)."""
+    """Each of run 1's three `F-BUDGET` starts, re-run under the test-local cap (100; R-782,
+    in place of the registry's 10 000, which these starts no longer reach), records
+    `property_calls` and `requested_evaluations` of exactly `max_property_calls`."""
+    entry, start = _start(case, index)
+    assert entry.policy.max_property_calls == 10_000  # the registry's budget, unchanged
+    capped = replace(entry, policy=replace(entry.policy, max_property_calls=WITNESS_CAP))
+    record = ensemble.run_start(capped, start)
+    assert record["crash"] is None, record["crash"]
+    assert record["outcome"] == "BUDGET_EXHAUSTED", record["outcome"]
+    cap = capped.policy.max_property_calls
+    assert cap == 100
+    assert record["counters"]["property_calls"] == cap
+    assert record["counters"]["requested_evaluations"] == cap
+
+
+@pytest.mark.parametrize(("case", "index"), BUDGET_STARTS, ids=lambda v: str(v))
+def test_a93_run_1s_budget_starts_succeed_uncapped_since_r782(case: str, index: int) -> None:
+    """R-782's effect on A93's former witnesses: under the registry's policy, uncapped by the
+    test, each is classified `SUCCESS` (it was `F-BUDGET` while the absent component's roundoff
+    lift capped every later step; S10-C absent-component note §4.6)."""
     entry, start = _start(case, index)
     record = ensemble.run_start(entry, start)
     assert record["crash"] is None, record["crash"]
-    assert record["outcome"] == "BUDGET_EXHAUSTED", record["outcome"]
-    cap = entry.policy.max_property_calls
-    assert cap == 10_000
-    assert record["counters"]["property_calls"] == cap
-    assert record["counters"]["requested_evaluations"] == cap
+    assert ensemble.classify(record) == "SUCCESS", (record["outcome"], record["counters"])
 
 
 def _charged(monkeypatch: pytest.MonkeyPatch) -> list[int]:

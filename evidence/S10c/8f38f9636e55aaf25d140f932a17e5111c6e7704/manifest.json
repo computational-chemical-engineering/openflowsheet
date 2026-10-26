@@ -1,0 +1,1536 @@
+{
+  "work_package": "S10c",
+  "commit": "8f38f9636e55aaf25d140f932a17e5111c6e7704",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S10-C acceptance: docs/derivations/S10C-spec.md §6 and §11 (S10C.A01–A61) against benchmarks/s10c/reference_values.yaml, gates S10C-design §6",
+    "case_hash": "c169aebfcc89f14d9c06c61d5968d77f356f41ab95d1e6cba56631882fe30daf",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/artifacts/s10c-tests.junit.xml tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_cascade_wo4.py tests/test_s01_evidence_manifest.py tests/test_s01_review_adversarial.py tests/test_s02_column_wo1.py tests/test_s02_column_wo2.py tests/test_s02_column_wo2b.py tests/test_s02_column_wo3.py tests/test_s02_evidence_manifest.py tests/test_s03_ours.py tests/test_s03_references.py tests/test_s03_s11_refusal.py tests/test_s06_column_wo1.py tests/test_s06_column_wo2.py tests/test_s06_evidence_manifest.py tests/test_s08_blocks.py tests/test_s08_identity.py tests/test_s08_item6.py tests/test_s08_reentry.py tests/test_s08_roots.py tests/test_s10_dwsim.py tests/test_s10_flash.py tests/test_s10_idaes.py tests/test_s10_provider.py tests/test_s10_records.py tests/test_s10_validation.py tests/test_s10c_band_point.py tests/test_s10c_band_references.py tests/test_s10c_blocks.py tests/test_s10c_columns.py tests/test_s10c_forms.py tests/test_s10c_ph_kernel.py tests/test_s10c_refusals.py tests/test_s10c_region.py tests/test_t02_identity.py tests/test_t05_c3x_initializer.py tests/test_t05_certificates.py tests/test_t05_coupled.py tests/test_t05_dormant_outlet.py tests/test_t05_exchanger.py tests/test_t05_factorize_guard.py tests/test_t05_identity.py tests/test_t05_limits.py tests/test_t05_manifests.py tests/test_t05_non_finite_inputs.py tests/test_t05_ph_flash.py tests/test_t05_ph_kernel.py tests/test_t05_pump.py tests/test_t05_reactor.py tests/test_t05_separator.py tests/test_t05_single_component_eo.py tests/test_t05_table_independence.py tests/test_t05_valve.py tests/test_t05_w11_cases.py tests/test_t05_w12_discovery.py tests/test_t05_w12_injections.py tests/test_t05_w12_table.py tests/test_t05_w1a_splits.py tests/test_t05_w1b_revision.py tests/test_t05_w1c_executor.py tests/test_t05_w1d_verifier.py tests/test_t05b_band.py tests/test_t05b_band_screen.py tests/test_t05b_branch_found.py tests/test_t05b_candidate_answers.py tests/test_t05b_contract.py tests/test_t05b_dormancy.py tests/test_t05b_empty_signature.py tests/test_t05b_identity.py tests/test_t05b_kernel.py tests/test_t05b_kernel_inert.py tests/test_t05b_leaving_flash.py tests/test_t05b_literal.py tests/test_t05b_near_pure_restarts.py tests/test_t05b_openings.py tests/test_t05b_r007.py tests/test_t05b_release_opening.py tests/test_t05b_review_s3.py tests/test_t05b_seeding.py tests/test_t05b_verifier.py tests/test_t05b_zero_flow.py tests/test_t06_identity.py tests/test_t06_w14_identity.py tests/test_t07_identity.py tests/test_t08_w1_d2_replay_identity.py tests/test_t08_w1_identity_substitution.py tests/test_t08_w2_edge_identity.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "e4e12ba12093f3aa72a5d1968f4b9741ff0373b99705d8763478d77467bc5581"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s10c_identity.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "faec9e6a8e2c227128f4d8ee5bffbc0da9d1d8ddc22c10c3b7f5258e6d5c8a54"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s10c_reference.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "9f9ddee7c0c75e82d94d84129283de9e8dfb79e86629e0b115e0e85f594b2f7e"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_blocks.py src/openflowsheet/models/syn001/column_solve.py src/openflowsheet/models/syn001/equilibrium_form.py src/openflowsheet/models/syn001/gamma_phi.py src/openflowsheet/models/syn001/gamma_phi_blocks.py src/openflowsheet/models/syn001/ph_kernel.py src/openflowsheet/models/syn001/saturation_band.py src/openflowsheet/models/syn001/tp_state.py src/openflowsheet/orchestrator/region.py tests/test_s10c_band_point.py tests/test_s10c_band_references.py tests/test_s10c_blocks.py tests/test_s10c_columns.py tests/test_s10c_forms.py tests/test_s10c_ph_kernel.py tests/test_s10c_refusals.py tests/test_s10c_region.py scripts/s10c_identity.py scripts/s10c_band_point_probe.py scripts/s10c_evidence_manifest.py docs/derivations/scripts/s10c_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_blocks.py src/openflowsheet/models/syn001/column_solve.py src/openflowsheet/models/syn001/equilibrium_form.py src/openflowsheet/models/syn001/gamma_phi.py src/openflowsheet/models/syn001/gamma_phi_blocks.py src/openflowsheet/models/syn001/ph_kernel.py src/openflowsheet/models/syn001/saturation_band.py src/openflowsheet/models/syn001/tp_state.py src/openflowsheet/orchestrator/region.py tests/test_s10c_band_point.py tests/test_s10c_band_references.py tests/test_s10c_blocks.py tests/test_s10c_columns.py tests/test_s10c_forms.py tests/test_s10c_ph_kernel.py tests/test_s10c_refusals.py tests/test_s10c_region.py scripts/s10c_identity.py scripts/s10c_band_point_probe.py scripts/s10c_evidence_manifest.py docs/derivations/scripts/s10c_reference.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "37c44e3c541f952bfef4bd8a6bef640b548ef20e76674da09517c0dfcb0e512e"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/mypy",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "fc7a6f2d81793ead1da3f58bae5ac2a69becd5882de72ae84251b20185317a15"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S10C.A01",
+      "description": "At every registered point of `ref.band_points`: `position`; for `inside`, `T`, the returned liquid `x` (`BandTemperature.liquid`) and `k_values` (all C components)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 103,
+        "outcomes": {
+          "passed": 103
+        },
+        "selectors": [
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R01-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R01-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R02-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R02-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R02-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R02-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R03-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R03-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R03-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R03-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R04-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R04-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R04-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R04-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R04-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R05-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R05-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R05-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R05-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R05-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R06-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R06-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R06-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R06-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R06-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R07-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R07-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R07-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R07-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R07-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R08-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R08-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R08-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R08-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R08-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R09-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R09-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R09-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R09-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R09-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R10-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R10-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R10-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R10-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R10-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R11-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R11-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R11-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R11-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R11-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R12-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R12-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R12-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R12-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R12-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R13-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R13-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R13-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R13-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R13-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R14-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R14-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-R14-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V01-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V01-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V02-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V02-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V02-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V02-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V03-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V03-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V03-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V03-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V04-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V04-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V04-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V04-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-V04-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-I01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-I01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-I01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N02-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N02-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N03-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N03-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N04-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N04-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a01_the_registered_band_points[BP-N04-beta1.0]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref`",
+      "tolerance": "position exact; T 1e-9 K; x 1e-10; K 1e-9 relative"
+    },
+    {
+      "id": "S10C.A02",
+      "description": "The iteration count m that `gamma_phi.band_point` returns (design §4.3; not `evaluations`) [amended by §11 E3: the number m of temperature solves gamma_phi.band_point makes (_Point.temperature calls: 1 at β = 0); BandTemperature carries no m; a test counts the solves with a spy, and no production field is added]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 103,
+        "outcomes": {
+          "passed": 103
+        },
+        "selectors": [
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R01-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R01-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R02-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R02-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R02-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R02-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R03-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R03-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R03-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R03-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R04-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R04-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R04-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R04-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R04-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R05-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R05-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R05-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R05-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R05-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R06-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R06-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R06-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R06-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R06-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R07-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R07-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R07-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R07-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R07-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R08-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R08-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R08-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R08-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R08-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R09-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R09-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R09-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R09-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R09-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R10-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R10-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R10-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R10-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R10-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R11-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R11-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R11-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R11-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R11-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R12-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R12-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R12-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R12-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R12-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R13-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R13-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R13-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R13-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R13-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R14-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R14-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-R14-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V01-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V01-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V02-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V02-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V02-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V02-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V03-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V03-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V03-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V03-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V04-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V04-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V04-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V04-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-V04-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-I01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-I01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-I01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N02-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N02-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N03-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N03-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N04-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N04-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a02_the_number_of_temperature_solves[BP-N04-beta1.0]"
+        ],
+        "not_passed": []
+      },
+      "expected": "1 where `iterations_expected` is 1; ≤ 100 elsewhere",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A03",
+      "description": "Positions on the `narrowed` copy: `below`/`above` carry no temperature (`BandTemperature` contract); the strings equal `ref`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 12,
+        "outcomes": {
+          "passed": 12
+        },
+        "selectors": [
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N02-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N02-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N03-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N03-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N04-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N04-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a03_positions_off_the_narrowed_domain_carry_no_temperature[BP-N04-beta1.0]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.band_points.BP-N0*`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A04",
+      "description": "Ideal limit (`ideal` copy): β = 0 and 1 equal the test's own bisection of `Σ z_i P_i^sat(T) = P` and `Σ z_i/P_i^sat(T) = 1/P`, and `ref.band_points.BP-I01.closed_forms`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10c_band_references.py::test_a04_the_ideal_limit_against_bisection_and_the_closed_forms[0.0]",
+          "tests/test_s10c_band_references.py::test_a04_the_ideal_limit_against_bisection_and_the_closed_forms[1.0]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref`",
+      "tolerance": "1e-9 K"
+    },
+    {
+      "id": "S10C.A05",
+      "description": "At every inside β = 1 point: `provider.stability(StreamState(n, T_d, P), \"VAPOR\").tm[\"LIQUID\"]` vanishes; at the two `ref.theorems.T2` states it equals `tm_star` (non-vanishing, opposite signs)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 22,
+        "outcomes": {
+          "passed": 22
+        },
+        "selectors": [
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R04-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R05-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R06-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R07-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R08-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R09-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R10-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R11-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R12-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R13-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-R14-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-V01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-V02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-V03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-V04-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-I01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point[BP-N02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_at_the_t2_states_is_tm_star[real-(0,0.5,0.5)]",
+          "tests/test_s10c_band_references.py::test_a05_the_liquid_trial_at_the_t2_states_is_tm_star[verification-(0.6,0.8,0.6)]"
+        ],
+        "not_passed": []
+      },
+      "expected": "0; `ref`",
+      "tolerance": "\\|tm\\| ≤ 1e-12; TOL_TM 1e-12"
+    },
+    {
+      "id": "S10C.A06",
+      "description": "The returned point's own rows: `max_i \\|x_i (1 + β(K_i − 1)) − z_i\\|` and `\\|Σ_i z_i (K_i − 1)/(1 + β(K_i − 1))\\|` over F, with the returned `k_values` and `liquid`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 103,
+        "outcomes": {
+          "passed": 103
+        },
+        "selectors": [
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R01-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R01-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R02-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R02-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R02-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R02-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R03-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R03-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R03-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R03-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R04-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R04-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R04-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R04-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R04-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R05-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R05-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R05-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R05-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R05-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R06-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R06-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R06-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R06-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R06-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R07-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R07-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R07-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R07-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R07-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R08-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R08-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R08-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R08-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R08-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R09-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R09-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R09-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R09-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R09-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R10-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R10-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R10-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R10-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R10-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R11-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R11-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R11-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R11-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R11-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R12-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R12-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R12-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R12-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R12-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R13-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R13-beta0.1]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R13-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R13-beta0.9]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R13-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R14-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R14-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-R14-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V01-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V01-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V02-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V02-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V02-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V02-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V03-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V03-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V03-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V03-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V04-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V04-beta0.25]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V04-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V04-beta0.75]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-V04-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-I01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-I01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-I01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N01-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N01-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N01-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N02-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N02-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N02-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N03-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N03-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N03-beta1.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N04-beta0.0]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N04-beta0.5]",
+          "tests/test_s10c_band_references.py::test_a06_the_returned_points_own_rows[BP-N04-beta1.0]"
+        ],
+        "not_passed": []
+      },
+      "expected": "0",
+      "tolerance": "1e-12"
+    },
+    {
+      "id": "S10C.A07",
+      "description": "`band_temperature` on a SYN-001 provider is bit-identical to `ffcb387f` (`liquid == ()`); covered by G1",
+      "result": "pass",
+      "value": {
+        "judged_by": "gate G1 (spec §6: covered by G1)",
+        "G1": "S10C-IDENTITY PASS n=858 changed=[]"
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A10",
+      "description": "Every non-refused `ref.ph_targets` entry: `status == \"ok\"`, `route`, the split's `phase_signature`, `temperature`, `vapor_fraction`, `liquid.n`, `vapor.n`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 14,
+        "outcomes": {
+          "passed": 14
+        },
+        "selectors": [
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-1L]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-1S]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-1V]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-2B]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-2P]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-2T]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-ID]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-L]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-N1]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-N3]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-NP]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-NPL]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-V]",
+          "tests/test_s10c_ph_kernel.py::test_g4_band_route_compositions_match_the_reference"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.ph_targets.*.expected`",
+      "tolerance": "T 1e-9 K; β 1e-10 (exact 0.0 / 1.0 single-phase); flows 1e-10 n_tot"
+    },
+    {
+      "id": "S10C.A11",
+      "description": "Single-phase answers: the named phase's flows are `n` bitwise, the other stream is dormant (all `+0.0`) at `(T*, P)`, `k_values == {}`, `iterations == 0`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_s10c_ph_kernel.py::test_g4_single_phase_answer_is_exact[PH-1L]",
+          "tests/test_s10c_ph_kernel.py::test_g4_single_phase_answer_is_exact[PH-1V]",
+          "tests/test_s10c_ph_kernel.py::test_g4_single_phase_answer_is_exact[PH-L]",
+          "tests/test_s10c_ph_kernel.py::test_g4_single_phase_answer_is_exact[PH-N3]",
+          "tests/test_s10c_ph_kernel.py::test_g4_single_phase_answer_is_exact[PH-NPL]",
+          "tests/test_s10c_ph_kernel.py::test_g4_single_phase_answer_is_exact[PH-V]"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A12",
+      "description": "PH-OB, PH-OA, PH-1OB, PH-N2: `status == \"out_of_domain\"` with the registered code; no temperature, no split",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s10c_ph_kernel.py::test_g4_target_outside_the_domain_is_refused_typed[PH-1OB]",
+          "tests/test_s10c_ph_kernel.py::test_g4_target_outside_the_domain_is_refused_typed[PH-N2]",
+          "tests/test_s10c_ph_kernel.py::test_g4_target_outside_the_domain_is_refused_typed[PH-OA]",
+          "tests/test_s10c_ph_kernel.py::test_g4_target_outside_the_domain_is_refused_typed[PH-OB]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref`",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A13",
+      "description": "The test recomputes the closure rows at every `ok` answer (material; `v_i L − K_i l_i V` with K from `lnphi` at the answer's liquid composition, 0.0 when the liquid is dormant; energy against H*)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 13,
+        "outcomes": {
+          "passed": 13
+        },
+        "selectors": [
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-1L]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-1S]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-1V]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-2B]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-2P]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-2T]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-ID]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-L]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-N1]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-N3]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-NP]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-NPL]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-V]"
+        ],
+        "not_passed": []
+      },
+      "expected": "0",
+      "tolerance": "`FLOW_TOLERANCE`, `EQUILIBRIUM_TOLERANCE`, `ENERGY_TOLERANCE`"
+    },
+    {
+      "id": "S10C.A14",
+      "description": "A counting spy on `provider.flash`: calls per target",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 17,
+        "outcomes": {
+          "passed": 17
+        },
+        "selectors": [
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-1L]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-1S]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-1V]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-2B]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-2P]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-2T]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-ID]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-L]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-N1]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-N3]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-NP]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-NPL]",
+          "tests/test_s10c_ph_kernel.py::test_g4_ph_target_is_the_registered_answer[PH-V]",
+          "tests/test_s10c_ph_kernel.py::test_g4_target_outside_the_domain_is_refused_typed[PH-1OB]",
+          "tests/test_s10c_ph_kernel.py::test_g4_target_outside_the_domain_is_refused_typed[PH-N2]",
+          "tests/test_s10c_ph_kernel.py::test_g4_target_outside_the_domain_is_refused_typed[PH-OA]",
+          "tests/test_s10c_ph_kernel.py::test_g4_target_outside_the_domain_is_refused_typed[PH-OB]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref.ph_targets.*.expected.provider_tp_flash_calls` (0 or 1)",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A15",
+      "description": "Recorded, not gated: `evaluations` per target (the transcription's are `evaluations_measured`)",
+      "result": "pass",
+      "value": {
+        "judged_by": "recorded, not gated: every registered target returned a PHState",
+        "measured_at": "8f38f9636e55aaf25d140f932a17e5111c6e7704",
+        "targets": {
+          "PH-1L": {
+            "status": "ok",
+            "evaluations": 48,
+            "evaluations_measured": 48
+          },
+          "PH-1OB": {
+            "status": "out_of_domain",
+            "evaluations": 2,
+            "evaluations_measured": null
+          },
+          "PH-1S": {
+            "status": "ok",
+            "evaluations": 0,
+            "evaluations_measured": 0
+          },
+          "PH-1V": {
+            "status": "ok",
+            "evaluations": 43,
+            "evaluations_measured": 43
+          },
+          "PH-2B": {
+            "status": "ok",
+            "evaluations": 56,
+            "evaluations_measured": 56
+          },
+          "PH-2P": {
+            "status": "ok",
+            "evaluations": 52,
+            "evaluations_measured": 52
+          },
+          "PH-2T": {
+            "status": "ok",
+            "evaluations": 55,
+            "evaluations_measured": 54
+          },
+          "PH-ID": {
+            "status": "ok",
+            "evaluations": 52,
+            "evaluations_measured": 52
+          },
+          "PH-L": {
+            "status": "ok",
+            "evaluations": 45,
+            "evaluations_measured": 45
+          },
+          "PH-N1": {
+            "status": "ok",
+            "evaluations": 50,
+            "evaluations_measured": 50
+          },
+          "PH-N2": {
+            "status": "out_of_domain",
+            "evaluations": 2,
+            "evaluations_measured": null
+          },
+          "PH-N3": {
+            "status": "ok",
+            "evaluations": 50,
+            "evaluations_measured": 50
+          },
+          "PH-NP": {
+            "status": "ok",
+            "evaluations": 53,
+            "evaluations_measured": 53
+          },
+          "PH-NPL": {
+            "status": "ok",
+            "evaluations": 47,
+            "evaluations_measured": 51
+          },
+          "PH-OA": {
+            "status": "out_of_domain",
+            "evaluations": 2,
+            "evaluations_measured": null
+          },
+          "PH-OB": {
+            "status": "out_of_domain",
+            "evaluations": 2,
+            "evaluations_measured": null
+          },
+          "PH-V": {
+            "status": "ok",
+            "evaluations": 47,
+            "evaluations_measured": 47
+          }
+        }
+      },
+      "expected": "—",
+      "tolerance": "—"
+    },
+    {
+      "id": "S10C.A20",
+      "description": "Each of the 13 `ref.e2_states`: `ok`, route `band`, TWO_PHASE, `T`, `vapor_fraction`, liquid and vapour compositions",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 14,
+        "outcomes": {
+          "passed": 14
+        },
+        "selectors": [
+          "tests/test_s10c_ph_kernel.py::test_e2_states_are_the_registered_thirteen",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-01]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-02]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-03]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-04]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-05]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-06]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-07]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-08]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-09]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-10]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-11]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-12]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-13]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref`",
+      "tolerance": "T 1e-10 K; β 1e-9; x, y 1e-9"
+    },
+    {
+      "id": "S10C.A21",
+      "description": "A13's closure rows at each E-2 answer, and zero provider TP-flash calls",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 13,
+        "outcomes": {
+          "passed": 13
+        },
+        "selectors": [
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-01]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-02]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-03]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-04]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-05]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-06]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-07]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-08]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-09]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-10]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-11]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-12]",
+          "tests/test_s10c_ph_kernel.py::test_g5_e2_state_is_solved_on_the_band_route[E2-13]"
+        ],
+        "not_passed": []
+      },
+      "expected": "0",
+      "tolerance": "as A13; exact"
+    },
+    {
+      "id": "S10C.A22",
+      "description": "M3 (today's TP-flash bracket route for this form): at least one of the 13 is not `ok` or not accepted; if all pass, record it and add the S10 review's 20-state set (design M3)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10c_ph_kernel.py::test_m3_the_tp_flash_bracket_route_fails_g5"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "recorded"
+    },
+    {
+      "id": "S10C.A30",
+      "description": "FD (§5.4 stencils) against the block Jacobian at every `ref.blocks.fd_states` state, both blocks, both phases for H",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 44,
+        "outcomes": {
+          "passed": 44
+        },
+        "selectors": [
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-condenser]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-10]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-11]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-12]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-13]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-14]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-15]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-16]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-17]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-18]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-19]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-2]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-20]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-3]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-4]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-5]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-6]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-7]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-8]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-EW-stage-9]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-condenser]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-10]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-11]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-12]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-13]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-14]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-15]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-16]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-17]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-18]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-19]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-2]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-20]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-3]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-4]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-5]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-6]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-7]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-8]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[C-MW-stage-9]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[G6-AZ]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[G6-D1]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[G6-D2]",
+          "tests/test_s10c_blocks.py::test_a30_finite_differences_agree_with_the_block_jacobians[G6-T]"
+        ],
+        "not_passed": []
+      },
+      "expected": "agree",
+      "tolerance": "1e-6 relative (§5.4)"
+    },
+    {
+      "id": "S10C.A31",
+      "description": "`GammaPhiLnKBlock.jacobian` entries are bitwise the provider's `evaluate_phase` derivatives at the same `(n, T, P)`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 44,
+        "outcomes": {
+          "passed": 44
+        },
+        "selectors": [
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-condenser]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-10]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-11]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-12]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-13]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-14]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-15]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-16]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-17]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-18]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-19]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-2]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-20]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-3]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-4]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-5]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-6]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-7]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-8]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-EW-stage-9]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-condenser]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-10]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-11]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-12]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-13]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-14]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-15]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-16]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-17]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-18]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-19]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-2]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-20]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-3]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-4]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-5]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-6]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-7]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-8]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[C-MW-stage-9]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[G6-AZ]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[G6-D1]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[G6-D2]",
+          "tests/test_s10c_blocks.py::test_a31_the_jacobian_is_the_providers_derivatives_bitwise[G6-T]"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A32",
+      "description": "Block values and Jacobians at `ref.blocks.closed_form_states`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 12,
+        "outcomes": {
+          "passed": 12
+        },
+        "selectors": [
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[C-EW-condenser]",
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[C-EW-stage-10]",
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[C-EW-stage-2]",
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[C-EW-stage-20]",
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[C-MW-condenser]",
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[C-MW-stage-10]",
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[C-MW-stage-2]",
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[C-MW-stage-20]",
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[G6-AZ]",
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[G6-D1]",
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[G6-D2]",
+          "tests/test_s10c_blocks.py::test_a32_values_and_jacobians_match_the_closed_forms[G6-T]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref`",
+      "tolerance": "1e-12 max(\\|ref\\|, s) (§5.4); ∂H/∂P exactly 0.0"
+    },
+    {
+      "id": "S10C.A33",
+      "description": "Dormant K-block: values and T, P columns equal the provider's at the probe `(1, …, 1)` bitwise and `ref.blocks.dormant` within A32's rule; every n column exactly 0.0; a counting spy sees no request with a dormant state",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10c_blocks.py::test_a33_a_dormant_k_block_reads_the_probe_and_stores_zero_n_columns[signed]",
+          "tests/test_s10c_blocks.py::test_a33_a_dormant_k_block_reads_the_probe_and_stores_zero_n_columns[zeros]"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact; A32"
+    },
+    {
+      "id": "S10C.A34",
+      "description": "Dormant H block: `H`, `∂H/∂T`, `∂H/∂P` exactly 0.0; `∂H/∂n_j` = the provider's `h` at `e_j` in the block's phase, and `ref.blocks.dormant` within A32's rule; no request at the dormant state",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s10c_blocks.py::test_a34_a_dormant_h_block_is_zero_with_pure_component_flow_derivatives[signed-LIQUID]",
+          "tests/test_s10c_blocks.py::test_a34_a_dormant_h_block_is_zero_with_pure_component_flow_derivatives[signed-VAPOR]",
+          "tests/test_s10c_blocks.py::test_a34_a_dormant_h_block_is_zero_with_pure_component_flow_derivatives[zeros-LIQUID]",
+          "tests/test_s10c_blocks.py::test_a34_a_dormant_h_block_is_zero_with_pure_component_flow_derivatives[zeros-VAPOR]"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact; A32"
+    },
+    {
+      "id": "S10C.A35",
+      "description": "M1 (n columns 0.0): A30 fails at every C-MW stage with relative error ≥ 1e-2; record C-MW's Newton iterations and observed order under M1",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10c_columns.py::test_a35_m1_record_on_c_mw"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "recorded"
+    },
+    {
+      "id": "S10C.A36",
+      "description": "At a VAPOR-regime stage (`l = 0`), the equilibrium rows' values and Jacobian entries are bitwise unchanged when the probe is monkeypatched to `(2, 1, 1)` (the convention moves nothing, design §4.7)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10c_blocks.py::test_a36_the_probe_moves_nothing_the_vapor_regime_solves_for"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A40",
+      "description": "`solve_column` on C-MW and on C-EW (§4): `CONVERGED`, signature TWO_PHASE on stages 2…20, S02 §8 and S08 §5.5 acceptance (item 6 included)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10c_columns.py::test_a40_a45_the_column_converges_and_is_accepted[C-MW]",
+          "tests/test_s10c_columns.py::test_a40_a45_the_column_converges_and_is_accepted[C-EW]"
+        ],
+        "not_passed": []
+      },
+      "expected": "as stated",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A41",
+      "description": "The returned state against `ref.columns.‹case›.root`: every stage's T, liquid and vapour flows; T_c, D, B, x_D, x_B, Q_c, Q_r, reflux and distillate flows; the absent component's flows",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10c_columns.py::test_a41_the_state_is_the_registered_root[C-MW]",
+          "tests/test_s10c_columns.py::test_a41_the_state_is_the_registered_root[C-EW]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`ref`",
+      "tolerance": "per variable, `ref…tolerance`; absent flows ≤ that stage's flow tolerance"
+    },
+    {
+      "id": "S10C.A42",
+      "description": "Every declared row of the implementation at the reference root (state built from `ref`)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10c_columns.py::test_a42_every_declared_row_vanishes_at_the_reference_root[C-MW]",
+          "tests/test_s10c_columns.py::test_a42_every_declared_row_vanishes_at_the_reference_root[C-EW]"
+        ],
+        "not_passed": []
+      },
+      "expected": "0",
+      "tolerance": "≤ 1e-4 τ_kind"
+    },
+    {
+      "id": "S10C.A43",
+      "description": "Recorded: Newton iterations, the largest `\\|Δ\\|/tolerance` per variable class, absent flows exactly 0.0 or not, the observed order",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10c_columns.py::test_a41_the_state_is_the_registered_root[C-MW]",
+          "tests/test_s10c_columns.py::test_a41_the_state_is_the_registered_root[C-EW]"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "recorded"
+    },
+    {
+      "id": "S10C.A44",
+      "description": "M2: A42 fails on both cases, and A41 fails or the solve does not converge [amended by §11 E3: A41 fails, or solve_column does not return an accepted CONVERGED answer (a typed failure, or AcceptanceDefectError from S02 §8 / S08 §5.5 item 6)]",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10c_columns.py::test_a44_m2_is_detected[C-MW]",
+          "tests/test_s10c_columns.py::test_a44_m2_is_detected[C-EW]"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A45",
+      "description": "Each case's feed is admitted (no `inadmissible_inlet`; S02 R5)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_s10c_columns.py::test_a40_a45_the_column_converges_and_is_accepted[C-MW]",
+          "tests/test_s10c_columns.py::test_a40_a45_the_column_converges_and_is_accepted[C-EW]",
+          "tests/test_s10c_refusals.py::test_the_admitted_column_passes_validation"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A50",
+      "description": "`validate` and `solve_column` with each constructible non-admitted provider (`pr-c1-v1`, `pr-lib-v1`, `iapws95-v1`, `coolprop-heos-v1`)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_s10c_refusals.py::test_a50_a_non_admitted_provider_is_refused_by_identity[coolprop_heos]",
+          "tests/test_s10c_refusals.py::test_a50_a_non_admitted_provider_is_refused_by_identity[iapws95]",
+          "tests/test_s10c_refusals.py::test_a50_a_non_admitted_provider_is_refused_by_identity[pr_c1]",
+          "tests/test_s10c_refusals.py::test_a50_a_non_admitted_provider_is_refused_by_identity[pr_lib]"
+        ],
+        "not_passed": []
+      },
+      "expected": "`CAPABILITY_UNAVAILABLE`, `unsupported(column_property_method:‹id›)`, message naming both admitted identities and conventions; zero provider calls",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A51",
+      "description": "Spies `(\"s03-spy\", \"SYN-001-ref-v1\")`, `(\"syn001\", \"spy-ref\")`, `(\"wilson-ig-v1\", \"spy-ref\")`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_s10c_refusals.py::test_a51_an_identity_spy_is_refused_without_evaluation[s03-spy/SYN-001-ref-v1]",
+          "tests/test_s10c_refusals.py::test_a51_an_identity_spy_is_refused_without_evaluation[syn001/spy-ref]",
+          "tests/test_s10c_refusals.py::test_a51_an_identity_spy_is_refused_without_evaluation[wilson-ig-v1/spy-ref]"
+        ],
+        "not_passed": []
+      },
+      "expected": "as A50; zero calls",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A52",
+      "description": "`(\"wilson-ig-v1\", \"WILSON-IG-ref-v1\")` declaring no `lnphi_‹c›`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10c_refusals.py::test_a52_the_identity_without_lnphi_is_refused_without_evaluation"
+        ],
+        "not_passed": []
+      },
+      "expected": "as A50, message `… declares wilson-ig-v1's identity but not its capabilities: missing [...]`; zero calls",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A53",
+      "description": "A spy with the identity and capabilities whose vapour `lnphi` is non-zero",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10c_refusals.py::test_a53_a_non_zero_vapour_lnphi_is_refused_after_exactly_one_probe"
+        ],
+        "not_passed": []
+      },
+      "expected": "as A50, message `vapour ln phi is not identically zero`; exactly one `evaluate_phase` (VAPOR, `n = (1, …, 1)`, mid-domain T and P)",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A54",
+      "description": "C-MW with a `purity`, `recovery` or `temperature` end specification",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 7,
+        "outcomes": {
+          "passed": 7
+        },
+        "selectors": [
+          "tests/test_s10c_refusals.py::test_a54_inverse_kinds_are_refused_before_i1[purity-condenser]",
+          "tests/test_s10c_refusals.py::test_a54_inverse_kinds_are_refused_before_i1[purity-reboiler]",
+          "tests/test_s10c_refusals.py::test_a54_inverse_kinds_are_refused_before_i1[recovery-condenser]",
+          "tests/test_s10c_refusals.py::test_a54_inverse_kinds_are_refused_before_i1[recovery-reboiler]",
+          "tests/test_s10c_refusals.py::test_a54_inverse_kinds_are_refused_before_i1[temperature-condenser]",
+          "tests/test_s10c_refusals.py::test_a54_inverse_kinds_are_refused_before_i1[temperature-reboiler]",
+          "tests/test_s10c_refusals.py::test_a54_an_s_refusal_precedes_the_kind_refusal"
+        ],
+        "not_passed": []
+      },
+      "expected": "`CAPABILITY_UNAVAILABLE`, `unsupported(column_specification:‹kind›:wilson-ig-v1)`; `stage_band` and `saturation_temperature` not called",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A55",
+      "description": "`cascade.validate` with `wilson-ig-v1`",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s10c_refusals.py::test_a55_the_cascade_keeps_s11_for_wilson"
+        ],
+        "not_passed": []
+      },
+      "expected": "today's S11 failure, cause and message unchanged",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A56",
+      "description": "S03 A04 (`tests/test_s03_s11_refusal.py:129`) asserts the new scope text; its cause assertion and `:136` unchanged",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[coolprop_heos]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[iapws95]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[pr_c1]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[pr_lib]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[spy_provider_id]",
+          "tests/test_s03_s11_refusal.py::test_a04_s11_refuses_every_other_provider_before_any_evaluation[spy_reference_convention]"
+        ],
+        "not_passed": []
+      },
+      "expected": "—",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A60",
+      "description": "`python docs/derivations/scripts/s10c_reference.py --check`",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s10c_reference.py --check",
+        "exit_code": 0,
+        "line": "118 claims hold; reference_values.yaml matches"
+      },
+      "expected": "exit 0, \"matches\"",
+      "tolerance": "exact"
+    },
+    {
+      "id": "S10C.A61",
+      "description": "`ref.records.real.sha256` and `ref.records.verification.sha256` equal the files' SHA-256",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s10c_band_references.py::test_a61_the_record_files_are_the_registered_ones[real]",
+          "tests/test_s10c_band_references.py::test_a61_the_record_files_are_the_registered_ones[verification]"
+        ],
+        "not_passed": []
+      },
+      "expected": "equal",
+      "tolerance": "exact: a moved record invalidates every expectation"
+    },
+    {
+      "id": "S10C.suite",
+      "description": "every node of tests/test_s10c_*.py passed, including those that cite no assertion (WO-1's band point, forms, region; M4; the Stage-B fixture)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 716,
+        "outcomes": {
+          "passed": 716
+        },
+        "not_passed": [],
+        "per_file_prefix": {
+          "test_s10c": 716
+        }
+      },
+      "expected": "every node passed"
+    },
+    {
+      "id": "S10C.suites",
+      "description": "the S01, S02, S06, S03, S08, T05/T05b and S10 suites pass",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2243,
+        "outcomes": {
+          "passed": 2243
+        },
+        "not_passed": [],
+        "per_file_prefix": {
+          "test_s01": 138,
+          "test_s02": 187,
+          "test_s06": 179,
+          "test_s03": 310,
+          "test_s08": 106,
+          "test_t05": 1075,
+          "test_s10": 248
+        }
+      },
+      "expected": "every node passed"
+    },
+    {
+      "id": "S10C.G1-flowsheets",
+      "description": "review F6: the identity tests of the flowsheet paths G1 does not see (K02–T04 units through tp_state.enthalpy_flow, single_phase_admissible and region._admissible; pr-c1-v1 flowsheets) pass",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 57,
+        "outcomes": {
+          "passed": 57
+        },
+        "not_passed": [],
+        "per_file_prefix": {
+          "test_t02_identity": 9,
+          "test_t06_identity": 6,
+          "test_t06_w14_identity": 12,
+          "test_t07_identity": 15,
+          "test_t08_w1_d2_replay_identity": 4,
+          "test_t08_w1_identity_substitution": 5,
+          "test_t08_w2_edge_identity": 6
+        }
+      },
+      "expected": "every node passed"
+    },
+    {
+      "id": "S10C.G1",
+      "description": "§6 G1: scripts/s10c_identity.py, SYN-001's column and cascade digests (S08's 52 configurations) and every ph_state call of the T05/T05b tests, on the merge base ffcb387f and on this commit; every digest equal",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s10c_identity.py",
+        "exit_code": 0,
+        "line": "S10C-IDENTITY PASS n=858 changed=[]"
+      },
+      "expected": "S10C-IDENTITY PASS n=‹N› changed=[]"
+    },
+    {
+      "id": "S10C.G2",
+      "description": "§6 G2: git diff --stat $(git merge-base main HEAD)..HEAD is empty over thermo, compile, numerics, verify, application, models/c1 and schemas; in tests/ only new files, the S03 A04 amendment and WO-5's T08 registration counts",
+      "result": "pass",
+      "value": {
+        "merge_base": "53228775cd809dbc04bc87579408acc3ccca88ce",
+        "paths": [
+          "src/openflowsheet/thermo",
+          "src/openflowsheet/compile",
+          "src/openflowsheet/numerics",
+          "src/openflowsheet/verify",
+          "src/openflowsheet/application",
+          "src/openflowsheet/models/c1",
+          "schemas"
+        ],
+        "diff_stat": "",
+        "edited_tests": [
+          "tests/test_s03_s11_refusal.py"
+        ],
+        "unexpected_test_edits": []
+      },
+      "expected": "empty; edited tests within tests/test_s03_s11_refusal.py, tests/test_m07a_harvest.py"
+    },
+    {
+      "id": "S10C.ruff",
+      "description": "ruff check is clean on S10-C's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_blocks.py src/openflowsheet/models/syn001/column_solve.py src/openflowsheet/models/syn001/equilibrium_form.py src/openflowsheet/models/syn001/gamma_phi.py src/openflowsheet/models/syn001/gamma_phi_blocks.py src/openflowsheet/models/syn001/ph_kernel.py src/openflowsheet/models/syn001/saturation_band.py src/openflowsheet/models/syn001/tp_state.py src/openflowsheet/orchestrator/region.py tests/test_s10c_band_point.py tests/test_s10c_band_references.py tests/test_s10c_blocks.py tests/test_s10c_columns.py tests/test_s10c_forms.py tests/test_s10c_ph_kernel.py tests/test_s10c_refusals.py tests/test_s10c_region.py scripts/s10c_identity.py scripts/s10c_band_point_probe.py scripts/s10c_evidence_manifest.py docs/derivations/scripts/s10c_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S10C.format",
+      "description": "ruff format --check is clean on S10-C's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check src/openflowsheet/models/syn001/cascade.py src/openflowsheet/models/syn001/column.py src/openflowsheet/models/syn001/column_blocks.py src/openflowsheet/models/syn001/column_solve.py src/openflowsheet/models/syn001/equilibrium_form.py src/openflowsheet/models/syn001/gamma_phi.py src/openflowsheet/models/syn001/gamma_phi_blocks.py src/openflowsheet/models/syn001/ph_kernel.py src/openflowsheet/models/syn001/saturation_band.py src/openflowsheet/models/syn001/tp_state.py src/openflowsheet/orchestrator/region.py tests/test_s10c_band_point.py tests/test_s10c_band_references.py tests/test_s10c_blocks.py tests/test_s10c_columns.py tests/test_s10c_forms.py tests/test_s10c_ph_kernel.py tests/test_s10c_refusals.py tests/test_s10c_region.py scripts/s10c_identity.py scripts/s10c_band_point_probe.py scripts/s10c_evidence_manifest.py docs/derivations/scripts/s10c_reference.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S10C.mypy",
+      "description": "mypy (the project's configuration) is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/mypy",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S10C.gate",
+      "description": "§6 G10: scripts/gate.sh passes before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; it runs once before merge (CLAUDE.md)"
+    },
+    {
+      "id": "S10C.ci",
+      "description": "§6 G10: CI is green on x86-64 and aarch64 before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; it runs once before merge (CLAUDE.md)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/artifacts/s10c-tests.junit.xml",
+      "sha256": "d5c06c8590ada42d490c03b9f669e6337269549b3e424fd50ab42d6ede231e03",
+      "description": "JUnit report of the S10-C, lower-suite and flowsheet-identity test run (ignored; kept by hash)"
+    },
+    {
+      "path": "benchmarks/s10c/reference_values.yaml",
+      "sha256": "c169aebfcc89f14d9c06c61d5968d77f356f41ab95d1e6cba56631882fe30daf",
+      "description": "WO-S's 50-digit expectations, registered states and tolerances"
+    },
+    {
+      "path": "docs/derivations/S10C-spec.md",
+      "sha256": "0dd5a94a9e423530d47b5caa1049cee66798f4d43e8858819de3334f1d0db2d2",
+      "description": "the S10-C specification the checks are read from (§0, §6, §11)"
+    },
+    {
+      "path": "docs/derivations/S10C-design.md",
+      "sha256": "267b64ab6fcf4b670f1d37bb59a8e9d55104d25277085d8459d9cbc7866f7618",
+      "description": "the S10-C design note (§6's gates)"
+    },
+    {
+      "path": "docs/adr/0049-s10c-composition-dependent-k.md",
+      "sha256": "d80de89496ea3450b573d6947d12a86bdb9a0192e7e9fd517d85c602d1de0a5c",
+      "description": "ADR 0049, the decision S10-C implements"
+    },
+    {
+      "path": "docs/reviews/S10C-review.md",
+      "sha256": "e2a3862947d8c5dbc121d1d06d6b2c14af6557dc76293db4c869041fed457f38",
+      "description": "the design lane's review of WO-1 to WO-4"
+    },
+    {
+      "path": "docs/S10C_DECISIONS.md",
+      "sha256": "86f7ef96bd2dd67c10418a70fc422d1ee276e2f7723a2c170550481af84c383a",
+      "description": "S10-C's build decisions with the measured facts"
+    }
+  ],
+  "limitations": [
+    "**Nothing about a real mixture.** Every expectation is a closed form of `wilson-ig-v1` evaluated at 50 digits. A column or flash that matches it computes the model; whether the model describes methanol, ethanol and water is S10's validation question (S10 §9.6), and VAL-3's latent-heat miss (methanol +5.72 %) is carried, not cured (§7.3).",
+    "**The verification and test-built record sets are fixtures.** `S10-VER-ref-v1`, its Λ ≡ 1 copy and its narrowed-domain copy (§5.1) are invented; no number from them is evidence about a substance.",
+    "**No column claim beyond C-MW and C-EW at their registered roots.** Local regularity (σ_min, §5.5) is shown; uniqueness of the MESH root, convergence from other openings, ternary columns, other specification kinds, Stage B on a registered solve and flowsheet use are not.",
+    "**T5 is proved for binaries only.** For three or more flowing components the band route converges or ends typed; an accepted answer is correct (T4), but the uniqueness of `T(β)` is not claimed.",
+    "**The convergence of the constant-β point is measured, not proved** (§7.2). Outside the scan, the cap and the typed failure are the only guarantee.",
+    "**The G7 tolerances are an acceptance image, not an accuracy claim.** They bound what a correct solver may return after stopping inside the kind tolerances; they do not say how accurate a column result is for any other purpose.",
+    "**Self-generated outputs are not used.** No expectation here comes from the implementation. The `measured` class of the YAML is a binary64 transcription in the generator, used only to measure floors and iteration counts.",
+    "`wilson-ig-v1` has library-level support for the column (solve_column), the PH kernel (ph_state) and the orchestrator's single-phase admissibility (S10-C); flowsheet selection is not offered: it stays library-only, not in SELECTABLE_BASES (U02; the T08 envelope's LIBRARY_ONLY_PROVIDERS keeps it). This restates the earlier S10 manifests' harvested 'no column, PH-flash or flowsheet claim' for the column and the PH kernel; those harvest entries are not rewritten (HG(b), R-617; docs/S10C_DECISIONS.md W5-3).",
+    "T1–T5 are certified for the committed record sets only (records.real.sha256, records.verification.sha256) and the test-built copies of spec §5.1, on their declared T domains; a record file admitted under WILSON-IG-ref-v1 or S10-VER-ref-v1 has P1–P3 unchecked, and an admission-time check is deferred to the package that makes the provider selectable in flowsheets (spec §11 E4, R-781).",
+    "requirements is empty: neither the design note nor the specification assigns S10-C a D/A requirement id. S10-C has no package entry in docs/requirements.yaml because the frozen ledger schema admits only ^[PKTMSR][0-9]{2}$ package ids; the ledger records it in a comment under S10 (docs/S10C_DECISIONS.md W5-2).",
+    "scripts/gate.sh and CI on x86-64 and aarch64 (§6 G10) were not run by this generator (they run once before merge into main); S10C.gate and S10C.ci are unsupported here. G9's wall times were measured in WO-4 (docs/S10C_DECISIONS.md, WO-4 run log; review R-780), not here.",
+    "Review: the design lane's one reviewer pass on WO-1 to WO-4 (docs/reviews/S10C-review.md) set one must-fix (F1: G3 against its registered references, A60, A61) before reviewed; WO-6 carries it (tests/test_s10c_band_references.py). Whether it is closed is the reviewer's to judge: the review fields stay pending and the human numerical and process-model review is pending; this manifest claims neither.",
+    "The agreement with the YAML is numerical verification of wilson-ig-v1's equations against the specification's 50-digit generator (s10c_reference.py, which imports nothing from src/), not empirical validation; W4-7's Stage-B specification is a build-lane fixture, not a registered case.",
+    "The T08 support envelope's harvest of this manifest follows its generation, in a later commit."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

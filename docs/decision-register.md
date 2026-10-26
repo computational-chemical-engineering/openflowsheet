@@ -1781,6 +1781,8 @@ release note calling V14 passed.
 **Watch for.** The release widened to components that reached their bound during the attempt (breaks the disappearance mechanism); the "exactly `F == 0`" and "exactly as many rows as columns" conditions relaxed to tolerances; the release extended to every step, not only where `α_max = 0`, without its own inertness proof.
 
 > **Amended 2026-09-25 (T05b Q-S13; re-review S-W1, N-W7):** "the attempt's opening" is the attempt's — a caller that runs one attempt through several Newton calls (T04's homotopy corrector) passes it (`opening=`); the release is the Newton core's only, and T04's PTC core (pseudo-steps and polish) keeps K03 §5.3's first paragraph (K03 §5.3 and T04 §7.5 notes; T05b B35). *Rejected:* the call's start as the opening (a phase vanished at an earlier λ-level would be released); the release in PTC by reference (its proof does not transfer to `J + D/Δt` as it stands). *Watch for:* a new multi-call caller of `solve_newton` that does not pass `opening=`.
+>
+> **Amended 2026-10-26 (S10-C, R-782):** the release now applies at every iteration where it changes the step (`α_max > 0` with a nonzero direction entry on `Z*`), not only at `α_max = 0`. The exactness conditions, the opening condition and the PTC scope are unchanged. This is the extension this entry's "Watch for" names, made with its own inertness proof (`docs/derivations/S10C-absent-component.md` §4.4) and the measured list of everything it moves (§4.6).
 
 ---
 
@@ -14857,7 +14859,659 @@ design lane.
 
 ---
 
-<!-- R-753…R-759 and R-782…R-789 are deliberately unused: S10-C holds R-760…R-781 on wp/S10C; S08b starts at R-790. -->
+**Numbering note (S10-C, 2026-10-26).** S10-C's entries start at **R-760**. R-737…R-739 and R-753…R-759 are left for the
+next package on `main`; R-740…R-752 are held by S09 on `wp/S09`. ADR 0049 is S10-C's.
+
+---
+
+## R-760 — S10-C: the column admits equilibrium forms by an identity allow-list; S11 stays for every other provider and for the cascade
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | `docs/adr/0049-s10c-composition-dependent-k.md` D1; `docs/derivations/S10C-design.md` §4.1, §4.8 |
+| Evidence | `pr-c1-v1` and `pr-lib-v1` declare composition derivatives yet are φ–φ (`thermo/`); S03 §9's identity reasoning |
+| Affected packages | S10-C; S03 (A04's message assertion) |
+
+**Decision.**
+- `(syn001, SYN-001-ref-v1)` → `syn001-lnK-TP`; `(wilson-ig-v1, WILSON-IG-ref-v1 | S10-VER-ref-v1)` → `gamma-phi-ig-v1`.
+- For the second, the declared capabilities are checked and the vapour `ln φ` must be exactly 0 at one probe.
+- Everything else: S11's cause `unsupported(column_property_method:<id>)`, message naming the new scope.
+- `cascade.validate` is not edited. Procedural kernels treat a non-admitted provider exactly as before.
+
+**Rejected alternatives, and why.**
+- *Admit by capability (declares `∂/∂n`).* Admits φ–φ providers whose K also depends on the vapour.
+- *An adapter offering `lnK` and `h_<c>`.* Makes unmigrated call sites silently wrong; without it they fail loudly.
+
+**Watch for.** A new provider id or convention: it needs a new entry and its own form, never a widened match.
+
+---
+
+## R-761 — S10-C: for `gamma-phi-ig-v1`, K is evaluated at a liquid composition and enthalpy flows are `n_tot h`
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D2; design note §4.2, §4.7 |
+| Evidence | S10 spec (3.10): `ln φ^V ≡ 0`, so `K_i = γ_i(x) P_i^sat/P`; the provider offers `h` and `lnphi_<c>` only |
+| Affected packages | S10-C |
+
+**Decision.** `ln K_i = ln φ_i^L(T, P, x)`; a vapour-side quantity uses the incipient liquid. `Ḣ = n_tot h`, with
+`∂Ḣ/∂n_j = h + n_tot ∂h/∂n_j` (the C1 blocks' formula).
+
+**Rejected alternatives, and why.**
+- *A φ–φ K-block with vapour inputs.* Needs incipient-vapour variables; no admitted provider needs it.
+- *Per-component enthalpy from pure probes.* Exact only because h^E = 0.
+
+**Watch for.** A provider version with a non-ideal vapour: it is a new form, not this one.
+
+---
+
+## R-762 — S10-C: the constant-β point by composition successive substitution with an exact T solve per step
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D3; design note §4.3 |
+| Evidence | `docs/derivations/scripts/s10c_design/measured.txt` §2–§3: converges at 11 feeds × 5 β (≤ 61 iterations, rate ≤ 0.614) and at the 13 E-2 states (≤ 29, rate ≤ 0.47) |
+| Affected packages | S10-C |
+
+**Decision.** `DELTA_BETA = 1e-13` on the ln K step, cap 1000, a bracketed safeguarded Newton T solve to adjacent
+doubles (budget 200); cold start `x = z` at every call; `β = 0` in one step.
+
+**Rejected alternatives, and why.**
+- *Nested T bisection with an inner x loop.* Same fixed point, about ten times the evaluations.
+- *Newton on (T, x).* Needs globalisation and a fallback.
+- *Warm starts across β.* `T(β)` would depend on call history.
+
+**Watch for.** A ternary or strongly non-ideal state that reaches the cap.
+
+---
+
+## R-763 — S10-C: the PH kernel is band-first for a composition-dependent form
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D4; design note §4.5–§4.6 |
+| Evidence | S10 spec §14: `∂β/∂T ≈ 1e8 K⁻¹` in the sliver, 7 of 20 TP flashes at the cap; one TP flash 1.9 ms (`measured.txt`) |
+| Affected packages | S10-C |
+
+**Decision.** `T_b`, `T_d` first; then exactly one of a liquid bracket, a vapour bracket or the β-bisection band route;
+acceptance on the closure's rows with K at the answer's liquid. The region decision is a theorem (`Ḣ_TP` strictly
+increasing for the γ–φ-IG class), so there is no fallback between routes. SYN-001's order is unchanged.
+
+**Rejected alternatives, and why.**
+- *Today's order on the TP flash.* Fails inside an E-2 sliver before the band route runs; not cheaper.
+- *Today's order with more fallbacks.* Three heuristics in place of one theorem.
+
+**Watch for.** `ph_ill_conditioned` on large flows: the equilibrium tolerance is absolute.
+
+---
+
+## R-764 — S10-C: E-2 is remedied in the PH flash; `wilson-ig-v1`'s TP flash is unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D5; design note §4.11 |
+| Evidence | S10 spec §14 E-2; `measured.txt` §3 (the constant-β point has no floor at the E-2 states) |
+| Affected packages | S10-C; S10 (no change) |
+
+**Decision.** The remedy is the constant-β point (β a parameter, never solved from K). The TP flash's `not_converged`
+with UNKNOWN near an azeotrope stays the correct TP answer.
+
+**Rejected alternatives, and why.**
+- *A conditioning-tied stop in the TP flash.* Its floor estimate has an unregistered safety factor; it would return `ok`
+  with ≈ 1e-6 relative β error; it changes the provider's identity and re-opens S10's evidence.
+
+**Watch for.** A consumer that needs TP flashes inside slivers: the decision would then need revisiting.
+
+---
+
+## R-765 — S10-C: the column's K-block reads the stage liquid, carries `∂ ln K/∂l`, and evaluates a dormant liquid at the probe
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D6; design note §4.7 |
+| Evidence | `column_solve.system_residuals` evaluates every declared row (`row_values`) at every state, including stages whose regime pins `l = 0` |
+| Affected packages | S10-C |
+
+**Decision.** Inputs `(l_1…l_C, T_j, P_j)`; the condenser's `(v_2, T_c, P_c)`; Jacobian entries bitwise the provider's
+projected derivatives. A dormant liquid: the probe `(1,…,1)`'s values and T, P entries, `0.0` in the `n` columns. Every
+row reading it multiplies it by a flow of the same input, so the convention moves nothing. Single-output mixture
+enthalpy blocks.
+
+**Rejected alternatives, and why.**
+- *K at the mixed feed.* The wrong function.
+- *A regularised liquid.* Changes the function and quantises the exact path.
+- *Refusing at a dormant liquid.* Aborts valid VAPOR-regime evaluations.
+
+**Watch for.** A new row that reads K without multiplying it by a flow of the K-block's own input.
+
+---
+
+## R-766 — S10-C: the bubble-point and S08 core sweeps evaluate K at a composition relaxed by ω = 1/2
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D6; design note §4.9 |
+| Evidence | `measured.txt` §4: ω = 1, C-EW does not converge in 2000 sweeps (`\|ΔT\| = 15 K`, `\|Δx\| = 0.40`); ω = 0.5, C-MW 45 and C-EW 62 sweeps |
+| Affected packages | S10-C |
+
+**Decision.** `x̄ ← ω x + (1 − ω) x̄`, `ω = 0.5`; stop on `|ΔT| ≤ 1e-9 K` and `|x − x̄| ≤ 1e-10`; cap 500. The profile's
+Thomas pass uses K at the feed composition. SYN-001's sweeps are unchanged.
+
+**Rejected alternatives, and why.**
+- *Undamped lagged K.* Measured to oscillate on C-EW.
+- *A Raoult-to-Wilson homotopy.* A block parameter and a new continuation path in the compiled problem.
+
+**Watch for.** `initialization_failed(…, sweeps_exhausted)` on a Wilson column.
+
+---
+
+## R-767 — S10-C scope: library level; direct column specifications only; no unit other than the column
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C, on Frank's Q-F2 default (R-709) |
+| Normative text | ADR 0049 D7; design note §4.8, §7 |
+| Evidence | `stage_band` is SYN-001's closed form; ethanol–water boils below both pure components (`measured.txt` §5: 351.326 K) |
+| Affected packages | S10-C |
+
+**Decision.** `LIBRARY_ONLY_PROVIDERS["wilson-ig-v1"]` stays. The new form admits `reflux_ratio`, `boilup_ratio`,
+`distillate_rate`, `bottoms_rate` and `duty`; `purity`, `recovery` and `temperature` end
+`unsupported(column_specification:<kind>:wilson-ig-v1)`. The cascade and the other units are not admitted.
+
+**Rejected alternatives, and why.**
+- *Offer every kind.* The inverse machinery is unexercised for this form, and the temperature band is wrong for it.
+
+**Watch for.** Frank's flowsheet-admission decision (Q-F2), which reclassifies U02.
+
+---
+
+## R-768 — S10-C references: a 50-digit generator is the expectation; an IDAES column comparison is deferred
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C; the IDAES choice is Frank's (default deferred) |
+| Normative text | design note §3 D9, §5 WO-S, §6 G7 |
+| Evidence | S08 WO-G's practice (R-732); IDAES's qualification ladder for S10 (spec §16) |
+| Affected packages | S10-C |
+
+**Decision.** `s10c_reference.py` registers the C-MW/C-EW roots, band points and PH targets at 50 digits, sharing no
+code with the column.
+
+**Rejected alternatives, and why.**
+- *IDAES `TrayColumn` as the primary reference.* A separate qualification with its own ladder; it buys an R01
+  comparison, which is a priority call.
+
+**Watch for.** Frank asking for R01 cross-implementation comparisons of columns.
+
+---
+
+## R-769 — S10-C: the design needs no vapour non-ideality term (input to Q-N5)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C; the scientific ruling on Q-N5 stays the `specifier`'s |
+| Normative text | design note §7 Q8 |
+| Evidence | The PH kernel and the column consume the provider's `h` and `lnphi` only |
+| Affected packages | S10-C |
+
+**Decision.** The ideal-gas vapour stays for S10-C. A non-ideal vapour would be a new provider version and a new form
+(a K-block with vapour inputs), not a change to this design.
+
+**Rejected alternatives, and why.**
+- *Add a vapour term now.* It changes the provider's identity and S10's registered results, for no consumer need.
+
+**Watch for.** VAL-3's latent-heat miss (methanol +5.72 %) mattering for a column energy balance claim.
+
+---
+
+## R-770 — S10-C WO-S: C-MW and C-EW are amended to S02's specification set (reflux ratio, bottoms rate = F − D; N = 20 in S02's count)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | `docs/derivations/S10C-spec.md` §4; `benchmarks/s10c/reference_values.yaml` `columns.<case>.definition` |
+| Evidence | S02 §1 items 1–2 (a total condenser is not an equilibrium stage), §2.1 (one specification per end), §3 (`(distillate_rate, bottoms_rate)` redundant); generator claims `COL-*` |
+| Affected packages | S10-C (WO-4); S10 spec §10 (read as amended, finding F-3) |
+
+**Decision.**
+- Condenser `reflux_ratio` (1.5; 3.0); reboiler `bottoms_rate` = F − D, registered as the double nearest the decimal
+  literal (0.6; 0.82), not computed by the test.
+- N = 20 counting the total condenser (stage 1) and the partial reboiler (stage 20); 19 equilibrium stages; side feed on
+  stage 10, `LIQUID`, at the 50-digit bubble temperature rounded to the nearest double (348.6155803604359 K;
+  356.2370399662496 K); P = 101 325 Pa on every stage; intermediate duties 0.0.
+
+**Rejected alternatives, and why.**
+- *Distillate rate at the condenser and bottoms rate at the reboiler.* Structurally redundant (S02 §3).
+- *Twenty equilibrium stages plus the condenser (N = 21).* Contradicts the design's measured roots and moves the feed
+  relative to the reboiler; S10's wording is read in S02's convention.
+- *A rounded decimal feed temperature.* Arbitrarily subcooled or superheated by millikelvin; the rounded bubble point
+  keeps `|tm_V| < 1e-13`, which the provider's flash classifies LIQUID.
+
+**Watch for.** Any later column case on `wilson-ig-v1`: register it the same way, with its 50-digit root.
+
+---
+
+## R-771 — S10-C WO-S: G7's column tolerances are 10× the first-order image of the kind tolerances, plus rows at the reference root ≤ 1e-4 τ_kind
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | S10C-spec §5.5, assertions S10C.A41, S10C.A42; YAML `columns.<case>.root…tolerance`, `conditioning` |
+| Evidence | Generator: image `Σ_r \|J⁻¹_kr\| τ_r` up to 3.4e-3 K and 9.8e-5 mol/s (C-MW, stages 15–19), 1.4e-4 K and 8.9e-6 mol/s (C-EW); rows-at-root floor ≤ 1.2e-6 τ_kind; M2 rows 0.62 and 0.26 (mol/s)² |
+| Affected packages | S10-C (WO-4, review) |
+
+**Decision.** Per-variable state tolerances = 10× the acceptance image (T, flows, T_c, D, B, x_D, x_B, duties). The
+function is checked sharply by evaluating every implementation row at the reference root (≤ 1e-4 τ_kind).
+
+**Rejected alternatives, and why.**
+- *The design note's 1e-7 K and 1e-9 mol/s.* Three to five orders below what a solver stopping at the kind tolerances can
+  guarantee; a correct implementation could fail (finding F-2).
+- *S02's state tolerance (1e-4 K, 1e-6 relative + 3.1e-7 mol/s).* Also below the image on C-MW's stripping stages.
+- *Running the column under `newton_refined`.* Changes the registered policy of every column solve for a test's sake.
+
+**Watch for.** WO-4's deviations (A43): above a tolerance is a failure, never a reason to loosen; far below may justify a
+later tightening.
+
+---
+
+## R-772 — S10-C WO-S: G6's finite-difference stencils keep every point inside the domain (dilute and absent flows)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | S10C-spec §5.4, assertion S10C.A30 |
+| Evidence | Generator: FD floor 3.8e-8 over 44 block states (dilute states dominate), tolerance 1e-6; claim `FD-DOMAIN` at 440 stencil points; M1 signal ≥ 0.499 |
+| Affected packages | S10-C (WO-3) |
+
+**Decision.** T, P: central, `h = 1e-6 |u|`. Flow `u > 0`: central, `h = min(1e-6 max(u, 1), u/2)`. Flow `u = 0`: one-sided
+second order, `h = 1e-6`. Relative error against `max(|J|, s)` with S10 §7.2's scales (H's × n_tot).
+
+**Rejected alternatives, and why.**
+- *The design's `h = 1e-6·max(|u|, 1)` for every input.* At a flow below 1e-6 the stencil reaches a negative flow, which
+  the provider refuses; at an absent flow a central difference is impossible (finding F-1).
+- *A first-order forward difference at an absent flow.* Truncation ≈ 1e-6, no margin under the tolerance.
+
+**Watch for.** A block state with a flow between 0 and 2e-6 mol/s: the `u/2` branch applies; its roundoff grows as 1/u.
+
+---
+
+## R-773 — S10-C WO-S: G3–G5's registered states and tolerances; positions on a narrowed-domain copy; E-2 targets from the 50-digit TP split
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | S10C-spec §5.1–§5.3, assertions S10C.A01–A22 |
+| Evidence | Generator floors: band point T 5.7e-13 K, x 4.2e-14; PH T 5.1e-13 K; E-2 T 5.7e-14 K, β 1.4e-15, x/y 2.0e-14; scan positions all `inside` (3 402 points) |
+| Affected packages | S10-C (WO-1, WO-2) |
+
+**Decision.** The design's tolerances stand (each ≥ 10× its floor). Two record copies are built by the tests from the
+verification file: Λ ≡ 1 (`ideal`) and T ∈ [342, 365] K (`narrowed`). E-2's targets are the double nearest the
+50-digit TP split's enthalpy at each state's T; the expectation is the PH answer at that double. Provider TP-flash calls
+are registered per target (0, or 1 where T_min lies inside the band).
+
+**Rejected alternatives, and why.**
+- *Positions from the committed domains.* None of the registered or 3 402 scanned states has an out-of-domain band point.
+- *E-2 targets from the provider's flash.* It is `not_converged` there, and it would be a self-generated expectation.
+
+**Watch for.** A new record set or domain: positions are exact for binaries only (T5).
+
+---
+
+## R-774 — S10-C WO-S: Q-N5 ruled — no vapour non-ideality term; VAL-3's latent-heat miss is a carried limitation of every Wilson duty
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S (R-769 was the architect's input) |
+| Normative text | S10C-spec §7.3 |
+| Evidence | S10 VAL-3 (methanol Δh +5.72 % at T_b, outside its 5 % band; liquid c_p low by up to 19.7 %); S10 (3.5) |
+| Affected packages | S10-C (WO-5 manifest limitation) |
+
+**Decision.** S10-C verifies the model's energy balances; its expectations are the model's closed forms. The manifest
+records that C-MW and C-EW duties and energy-balance flows are numerical verification, not validated against the real
+mixtures.
+
+**Rejected alternatives, and why.**
+- *A virial or cubic vapour term now.* A new provider identity and equilibrium form, re-opening S10's evidence, for a
+  validation question no S10-C claim makes.
+
+**Watch for.** A column energy-balance claim against data: it needs a new provider version first.
+
+---
+
+## R-775 — S10-C WO-S: Q4 ruled — a non-converging C-MW or C-EW is a typed result, never a reason to amend the case
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | S10C-spec §7.1 |
+| Evidence | Both roots regular (σ_min 1.25e-3, 1.51e-2 > 1e-4), L, V > 0.1 mol/s, min \|K − 1\| ≥ 0.0089 |
+| Affected packages | S10-C (WO-4) |
+
+**Decision.** Run as amended, with recovery and no tuning. A failure stays recorded (A40 failed). A different case would
+be registered beside the failed one, with its own root.
+
+**Rejected alternatives, and why.**
+- *Pre-registering a fallback (C-EW at a larger reflux ratio).* Complexity paid by every implementation for a failure
+  nothing predicts; and a fallback chosen in advance still reads as a case chosen to pass.
+
+**Watch for.** WO-4's trace if Stage A fails at the feed pinch (C-MW stages 10–14).
+
+---
+
+## R-776 — S10-C WO-S: Q5 ruled — the constant-β point's convergence is measured (3 402 points, ≤ 63 iterations); cap 1000 and typed failure stand
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`specifier`), S10-C WO-S |
+| Normative text | S10C-spec §7.2, §3.1; YAML `scan` |
+| Evidence | Binary64 transcription of design §4.3 on both record sets, 3 binaries × 15 + 36 ternary compositions, 3 pressures, 7 β: all converge, worst 63 iterations, contraction ≤ 0.635 |
+| Affected packages | S10-C |
+
+**Decision.** No acceleration in S10-C; `BETA_SS_MAX = 1000` and `BandError("not_converged")` beyond it. The registered
+band points assert ≤ 100 iterations, so a slower contraction shows.
+
+**Rejected alternatives, and why.**
+- *Anderson or Newton acceleration.* A second algorithm with its own failure modes, for no measured need.
+
+**Watch for.** A record set with stronger non-ideality (larger \|G\|): re-run the scan before claiming convergence.
+
+## R-777 — S10-C review: W1-3 ratified; the constant-β point's temperature solve takes the build's step order (design §4.3 erratum)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S10-C review |
+| Normative text | S10C-spec §11 E1 (replaces design §4.3's `Tsolve` loop) |
+| Evidence | `docs/S10C_DECISIONS.md` W1-3 run log: literal order max 1205 / median 99 evaluations (M-a), W1-3 max 234 / median 28, same roots against the design's prototype; `gamma_phi.py:300–315` |
+| Affected packages | S10-C |
+
+**Decision.** Newton steps from the known bracket end with the smaller `|g|`. Then come, in order: `t' == b` → the
+adjacent double towards the root; a step at or past an unknown end → evaluate that end; outside the open bracket, or
+the bracket not halved over two evaluations → the midpoint. The root, the stop rule and the budget are the note's.
+
+**Rejected alternatives, and why.**
+- *The note's literal order.* Its `t' == t` and unknown-end rules can never fire (the midpoint replacement comes first),
+  so every final step bisects: correct, but up to 5× the evaluations.
+
+**Watch for.** A change to the step order must keep the ≤ 3 evaluations per halving bound (the forced midpoint) that
+keeps the worst case inside the 200 budget.
+
+## R-778 — S10-C review: the dormant K-block convention moves the direct flow entries, not the rows (F-W3-1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S10-C review |
+| Normative text | S10C-spec §11 E2 (replaces design §4.7's "Why the dormant convention moves nothing" and ADR 0049 D6's clause) |
+| Evidence | `tests/test_s10c_blocks.py::test_a36_…`: rows and all kept entries bitwise unchanged under the probe `(2, 1, 1)`; moved entries exactly `−exp(lnK_i^probe)·V` |
+| Affected packages | S10-C |
+
+**Decision.** The convention stands, with the statement corrected: the rows' values and chain-rule entries are
+probe-independent at a dormant input. The direct entries `−K_i V` (equilibrium) and `K_i` (total condenser's bubble row)
+hold the probe's K. The rows are Lipschitz but not differentiable at `L = 0`. In a TWO_PHASE solve an exactly dormant
+iterate's Newton direction depends on the probe, and no converged value does.
+
+**Rejected alternatives, and why.**
+- *Zeroing the direct entries at a dormant input.* That is just another non-derivative, and it would change the
+  Jacobian's structure at the pinned columns for no gain.
+
+**Watch for.** A row that reads a K output without multiplying it by a flow of the same block's input: the convention's
+value-independence would then fail.
+
+## R-779 — S10-C review: spec text errata — G6's H-block states, A02's iteration count, A44's detection (F-W3-2)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S10-C review |
+| Normative text | S10C-spec §11 E3 |
+| Evidence | YAML `blocks.fd_states` (both H phases at the listed `n`); `BandTemperature` has no iteration field; M2 run log (Newton converges, item 6 refuses with `AcceptanceDefectError`) |
+| Affected packages | S10-C |
+
+**Decision.** §5.4 places both H-blocks at the listed `n`, as the YAML does. A02's m is the number of temperature solves,
+counted by a spy, and no production field is added. A44 and design M2 read "not an accepted `CONVERGED` answer"
+(typed failure or `AcceptanceDefectError`).
+
+**Rejected alternatives, and why.**
+- *Regenerating the YAML with VAPOR states at `v_j`.* The block is one function of `(n, T, P)`; this adds no coverage.
+- *An `iterations` field on `BandTemperature`.* That is a second change to a SYN-001 dataclass, made only for a test.
+
+**Watch for.** A future A02 failure that is only a spy wiring error: the count must be 1 at β = 0.
+
+## R-780 — S10-C review: F-W4-1 and F-W4-2 accepted — absent flows within tolerance; one `describe()` per dispatch kept
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S10-C review |
+| Normative text | `docs/reviews/S10C-review.md` §3 rulings 4–5 |
+| Evidence | Absent flows max 1.26e-18 (C-MW), 2.18e-22 (C-EW) mol/s against tolerances ≥ 1.3e-5; SYN-001 S02/S08 suites +6.6 % median, +8.6 % mean against G9's +10 %; 1751 dispatch `describe()` calls ≈ 9 % of S02 M1–M4 solve time |
+| Affected packages | S10-C |
+
+**Decision.** A41 checks the absent component's flows against the stage flow tolerance (OQ-2); exact zeros are not
+required. Newton's bound landing and structural-zero release keep them ≥ 0. Form resolution stays one `describe()` per
+dispatching call. Merge is not conditional on memoisation.
+
+**Rejected alternatives, and why.**
+- *Memoising the form before merge.* G9 is met. A cache keyed on provider objects is a new mechanism and needs its own
+  inertness proof (G1), and the design (§7 Q6) made it a separate decision.
+
+**Watch for.** Any later dispatch point on a SYN-001 hot path: re-measure G9, and memoise (proved inert by G1) before
+the margin is spent.
+
+## R-781 — S10-C review: T1–T5 hold for record files satisfying P1–P3; admission by convention does not check them (scope erratum; check deferred)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S10-C review; the deferral is a default open to Frank |
+| Normative text | S10C-spec §11 E4 (appended to §2.1; ADR 0049 C4) |
+| Evidence | `equilibrium_form.ADMITTED` keys on `(provider_id, reference_convention)`; `wilson_ig.load_records` accepts any file under those conventions without P1–P3 checks; probe: the real records' parameters give `c_p^0L ≤ 0` for water above 750 K, methanol above 875 K |
+| Affected packages | S10-C; the package that makes `wilson-ig-v1` selectable in flowsheets (design §7 Q1) |
+
+**Decision.** S10-C's correctness claims for the band-first PH route and the column cover the two committed record sets
+(by SHA-256) and the test-built copies, on their declared T domains. Other files admitted under the same conventions are
+admitted on identity with P1–P3 unchecked. **Default:** the admission-time P1–P3 check is deferred to the
+flowsheet-selection package, because S10-C is library-level only.
+
+**Rejected alternatives, and why.**
+- *Pinning admission to the committed records' SHA-256.* It would refuse the test-built copies the spec registers, and
+  any legitimate refit.
+- *A grid check in `admission` now.* A grid is not a proof (the generator uses closed-form minima), and the choice of
+  grid or closed form is a design decision of its own.
+
+**Watch for.** Any user-facing path that lets a user supply Wilson records: the check becomes a must-fix there.
+
+## R-782 — K03's Newton releases structural zeros at every step, not only at `α_max = 0` (amends R-064; closes S10-C §7 Q4 for C-MW)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C escalation under design §7 Q4; Frank's standing directive (fewest limitations, robustness first) |
+| Normative text | `docs/derivations/K03-solver-spec.md` §5.3 (amended 2026-10-26); `docs/derivations/S10C-absent-component.md` §4.1 (rule), §4.4 (inertness), §4.7 (moved records); T06 spec A93 (amendment note) |
+| Evidence | *measured* (scratch, `f1a0a058`, local x86-64; note §4.6). C-MW: 4/4 OpenBLAS kernels and 320/320 ulp-perturbed solves `CONVERGED` in 9 iterations (pre-change: 2/4, and 105 + 55 rescued of 320), worst A41 ratio 1.2949e-7; absent flows exactly `+0.0`. Suite: 12 tests have an acting iteration, 4 of them fail as §4.7 predicts, nothing outside them moves. `S10C-IDENTITY PASS n=858 changed=[]`; S08's registered pass line. T06 ensemble: 26 of 880 starts move, 5 `F-BUDGET` → `SUCCESS` (every x86-64 `F-BUDGET` on record), 0 regressions. PTC-R1: 0 of 882 runs move. aarch64: pending, WO-R3 |
+| Affected packages | K03 (Newton core); S10-C (C-MW, C-EW); T05b/T06 (SC-3 bits); T06 (A93 witnesses; ensemble records, not re-scored); T07 (record-k witness) |
+
+**Decision.** At every Newton iteration with `α_max > 0`, if some component of R-064's `Z₀` has a nonzero direction
+entry, `Z*` is computed exactly as R-064 computes it. If `Z*` meets the direction's support, `d_{Z*} := 0` exactly,
+together with the step record's entries. `α_max` and the landing set are provably unchanged. At `α_max = 0`, R-064
+applies verbatim. No tolerance and no record are added. The rulings on the moved records (note §4.7) are part of this
+decision:
+- T06 A93's three witnesses run under a test-local `max_property_calls = 100`, and uncapped they must classify
+  `SUCCESS`.
+- T07's THM-09 start 4 length pin is re-measured, and a capped run of that start keeps the budget refusal covered.
+- T06's recorded runs are neither re-scored nor edited. A later A98 that reports the listed starts as class
+  discrepancies is reporting this decision.
+
+**Rejected alternatives, and why.**
+- A structural-zero form for absent components: it changes rows and records, needs an ADR, and leaves non-column
+  solves exposed.
+- C-MW/C-EW on a two-component record set: it hides the defect.
+- A platform-dependent limitation: against the directive; x86-64 passes by roundoff sign.
+- Eliminating `Z*` from the linear solve: it moves every `α_max = 0` release and ADR 0004's record.
+- Holding `Z*` from the attempt's opening: not provable at later iterates.
+- A roundoff threshold: a tolerance on the exact path.
+- Raising the registry budget for A93's witnesses: the budget is not what changed (R-087).
+
+**Watch for.**
+- The `α_max = 0` branch restructured: it must stay bit-identical.
+- The release widened past R-064's `Z₀`, or its exactness relaxed.
+- The rule copied into T04's PTC core without its own proof (`J + D/Δt`; note §7 Q1).
+- A test-local cap mistaken for a registry change.
+- A later A98 discrepancy at a start outside note §4.6's table attributed to R-782 without a detector run.
+
+## R-783 — R-782 review: sound; §4.5 cost erratum; `_released`'s matching and A41's exact zeros left for decision
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), focused R-782 review |
+| Normative text | `docs/reviews/S10C-r782-review.md`; `docs/derivations/S10C-absent-component.md` §4.5 erratum of 2026-10-26 |
+| Evidence | Code diff `b3151d65..1bc65b86` read against note §4.1–§4.7. Scratch probes (not committed): `_released` on column-shaped closed blocks takes 0.4 ms at `\|Z₀\| = 60`, 213 ms at 4 000 and 1.5 s at 10 000, and raises `RecursionError` for one absent component over 1 000 stages. T07 THM-09 start 4: 94 records, 4 attempts, `CONVERGED` uncapped; 24 records, 1 attempt, `BUDGET_EXHAUSTED` at the test-local cap of 100 |
+| Affected packages | K03 (Newton core); S10-C |
+
+**Decision.** The R-782 implementation is accepted as sound. Its exactness conditions are R-064's, unchanged in code;
+the acting predicate is §4.4's; the inertness proof holds for the code as written. The moved witnesses test their
+registered clauses, with no budget, tolerance, case or recorded run edited. Note §4.5's two cost statements are
+corrected by a dated erratum. Two items are left for a decision, with the reviewer's recommended defaults:
+- **F1, `_released`'s recursion and complexity.** Default: replace the recursive matching and the fixed-point loop
+  with an iterative maximum matching and a worklist, in one separate, inert K03 commit after the S10-C merge and
+  before any case with a long absent chain is registered. It is inert because `Z*` is unique. Not merge-blocking.
+- **F2, A41's absent flows.** Default: assert them exactly `+0.0` for C-MW and C-EW, which supersedes R-780's "not
+  required" for those two cases. This is the direct witness of note §4.3.
+
+**Rejected alternatives, and why.**
+- *Blocking R-782 on F1:* no registered case reaches `|Z₀| > 60`. The exposure pre-dates R-782, since R-064 reaches it
+  at the first blocked step.
+- *A test-local cap tuned to refuse after THM-09's recovery (F5):* it would be fragile across platforms. A93's cap
+  clause does not depend on where the refusal falls.
+
+**Watch for (added to R-782's).**
+- `_released` on a system with a long absent chain (a discretized reactor, a long column) before F1 is done.
+- A self-coupled absent set: one whose only source rows are products with other members of `Z*`. It is now held
+  deterministically at the trivial root, and any seed must come from the initializer, never from roundoff.
+- A solve in a spawned worker. The WO-R1 detector does not see it.
+
+## R-784 — R-782 after CI: THM-09/03 on aarch64 (`F-BUDGET` → `F-FALSE-SUCCESS-CAUGHT`) accepted; G-R7's criterion amended; G-R7 met on both classes
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), on G-R7's stop (brief `docs/briefs/S10C-r782-ci-ruling.md`) |
+| Normative text | `docs/derivations/S10C-absent-component.md` §8.1–§8.2 (amends §4.6, §4.7 item 5, §6 G-R7) |
+| Evidence | Dispatch run 40295256025 (`4a4677c4`), artifacts by SHA-256 in note §8. On every x86-64 record since run 1, and under 12 local OpenBLAS kernels on the pre-change and R-782 trees, THM-09/03 is `F-FALSE-SUCCESS-CAUGHT`: 311 calls, worst 507999.99999999837 on `S4.T`, 0 acting iterations. Under R-782, aarch64 reproduces that trajectory exactly (events, iterations, counters, worst). Run 2 on aarch64 was the lift's pattern (`BOUND_BLOCKED`, then budget). G-R7, both classes: nominal 434 → 437, holdout 436 → 439, 0 `SUCCESS` → failure. Class disagreements between ci-x86-64 and ci-aarch64: 5 → 0 of 880. Script `docs/derivations/scripts/s10c_r782_gr7.py` |
+| Affected packages | S10-C (G-R7); T06 (ensemble records, not re-scored or edited) |
+
+**Decision.**
+- THM-09/03 on ci-aarch64 is a declared consequence of R-782, not a regression. The new class is the start's exact-Newton
+  outcome, which x86-64 reaches without the rule acting.
+- The trivial `V → 0` root is caught by the certificate. The start fails in 311 calls instead of 10 000, and one of the
+  per-start platform dependences that T06's verdict registered is gone.
+- The rule does not change.
+- G-R7's CI criterion becomes:
+  - (a) no `SUCCESS` start is lost;
+  - (b) every class change is failure → `SUCCESS`, or failure → failure onto the class that the same start has on every
+    other class in the dispatch, and on a class where R-782 left it unchanged;
+  - (c) anything else stops.
+- The holdout half, which the CI job never reached, is completed from the artifacts. G-R7 is met on both classes,
+  nominal and holdout.
+
+**Rejected alternatives, and why.**
+- *Seeding or otherwise changing the rule so that THM-09/03 leaves the trivial root:* that is a roundoff or ad hoc seed
+  on the exact path. R-783's "Watch for" (self-coupled absent set) excludes it.
+- *Re-scoring or editing T06 run records:* forbidden by R-087.
+- *Keeping "every class change is failure → `SUCCESS`" and blocking:* it treats a failure → failure change as a possible
+  regression even when the change removes a platform dependence.
+- *A CI detector dispatch before deciding:* the ruling holds whatever the cause. It stays optional (note §8.6 Q-B).
+
+**Watch for.**
+- A failure → failure change onto a class that no machine class shows: it stops under (b).
+- ci-x86-64's runner CPU changed (EPYC 7763 → 9V74). A98's bit counts on that class no longer isolate a solver change.
+- Holdout THM-09/31's platform dependence: the trivial root against the physical one, decided away from any on-bound
+  component. It is not R-782's.
+
+## R-785 — A41 asserts C-MW's and C-EW's absent-component flows exactly zero (supersedes R-780's "not required" for these two cases)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), on review F2 (`docs/reviews/S10C-r782-review.md`, R-783) |
+| Normative text | `docs/derivations/S10C-absent-component.md` §8.3; `docs/derivations/S10C-spec.md` §12 (Amendment 2) |
+| Evidence | G-R2: absent flows exactly `+0.0` in 320/320 perturbed solves and 4/4 kernels (local x86-64). CI s10c-diag final states, ci-x86-64 and ci-aarch64: 60/60 absent flows exactly `+0.0` in C-MW and in C-EW, none `−0.0`. Note §4.3: the invariance holds by IEEE products with exact zeros |
+| Affected packages | S10-C (A41) |
+
+**Decision.**
+- In both C-MW and C-EW, A41 asserts that every equilibrium stage's liquid and vapour flow of the absent component
+  is `== 0.0` (IEEE equality, sign-agnostic).
+- The tolerance check also stays.
+- R-780's "exact zeros are not required" is superseded for these two cases. Every other part of R-780 stands.
+
+**Rejected alternatives, and why.**
+- *Record only (R-780 as it was):* a partial regression of R-782 would pass on x86-64 (review F2).
+- *Assert the sign (`+0.0`):* the rule's own predicate ignores the sign of zero, and a sign carries no physical meaning.
+
+**Watch for.** An A41 failure means that a solve path R-782 does not cover has reached the case: PTC, Anderson, or an
+edge-3 initializer seeding the absent component. It goes to the design lane, never back to the tolerance check without a
+new entry.
+
+## R-786 — `_released` uses an iterative maximum matching and a worklist, landed before the S10-C merge (review F1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), on review F1 (`docs/reviews/S10C-r782-review.md`, R-783) |
+| Normative text | `docs/derivations/S10C-absent-component.md` §8.4 (design), §8.5 (WO-R6, gate G-R8) |
+| Evidence | Review F1 probe: 0.4 ms at `\|Z₀\|` = 60, 1.5 s at 10 000, and `RecursionError` for one absent component over 1 000 stages. Inertness: `Z*` is matching-independent (Gallai–Edmonds / Dulmage–Mendelsohn), so the returned tuple is unchanged; G-R8 is the proof once WO-R6 runs |
+| Affected packages | K03 (Newton core); S10-C |
+
+**Decision.**
+- `_released` keeps its name, signature and result. The algorithm becomes:
+  - the closed-row filter, vectorized;
+  - `scipy.sparse.csgraph.maximum_bipartite_matching` on a 0/1 incidence;
+  - a breadth-first worklist for the columns reachable from unmatched columns;
+  - the count recheck, unchanged.
+- It lands on `wp/S10C` before WO-R4 as its own commit, sharing F2's gate and CI. There is no reviewer pass: bit
+  identity is the proof.
+- If it fails G-R8, or is late, it is reverted and moves to `wp/K03-released`. That branch must land before any case
+  with `|Z₀| > 60` is registered.
+
+**Rejected alternatives, and why.**
+- *After the merge (the reviewer's default):* it would need its own branch, gate and CI, and meanwhile `main` would
+  carry a per-iteration recursive call.
+- *Raising the recursion limit:* it moves the failure, keeps the superlinear cost, and risks an interpreter stack
+  overflow.
+- *Building `B` from `J`'s values:* stored duplicates could cancel, which today's per-entry loop never lets happen.
+
+**Watch for.** Any G-R8 difference between the old and new results. That would mean the closed-row filter changed, since
+the matching cannot change the result. Fix the filter; never accept a moved tuple.
+
+---
+
+<!-- R-753…R-759 and R-787…R-789 are unused: S10-C holds R-760…R-786 (merged); S08b starts at R-790. -->
 
 ## R-790 — S08b (a): a signature entry is a dormancy item iff its key is one of the attempt's declared items; the literal is unchanged
 

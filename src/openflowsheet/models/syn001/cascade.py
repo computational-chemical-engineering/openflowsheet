@@ -72,7 +72,9 @@ from openflowsheet.models.syn001 import (
     TEMPERATURE,
 )
 from openflowsheet.models.syn001.blocks import EnthalpyFlowBlock, LnKBlock
-from openflowsheet.models.syn001.saturation_band import band_temperature
+from openflowsheet.models.syn001.equilibrium_form import composition_dependent
+from openflowsheet.models.syn001.gamma_phi import _ln_k
+from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
 from openflowsheet.models.syn001.tp_state import (
     enthalpy_block_id,
     enthalpy_flow,
@@ -426,8 +428,26 @@ def _k_values(
     components: tuple[str, ...],
     temperature: float,
     pressure: float,
+    *,
+    liquid: Sequence[float] | None = None,
 ) -> tuple[float, ...]:
-    """`K_i(T, P)` from the provider's `lnK`, as the rows' `LnKBlock` asks for it."""
+    """`K_i(T, P)` from the provider's `lnK`, as the rows' `LnKBlock` asks for it.
+
+    For a composition-dependent form (S10-C design note §4.9) `K_i(T, P, liquid)` from
+    `gamma_phi`'s `ln φ_i^L` at the liquid `liquid` (a composition or flows), which is then
+    required (`ValueError` if `None`); SYN-001 ignores `liquid` and makes today's call.
+    """
+    if composition_dependent(provider):
+        if liquid is None:
+            raise ValueError("a composition-dependent K needs the liquid it is evaluated at")
+        try:
+            values, _, _ = _ln_k(provider, components, temperature, pressure, liquid, context, ())
+        except BandError as error:
+            raise RuntimeError(
+                f"lnK at T = {temperature!r} K, P = {pressure!r} Pa: {error.status}: "
+                f"{error.message}"
+            ) from error
+        return tuple(math.exp(value) for value in values)
     result = provider.evaluate_phase(
         PropertyRequest(
             state=StreamState(
