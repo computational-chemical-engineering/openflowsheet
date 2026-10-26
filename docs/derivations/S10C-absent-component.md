@@ -172,6 +172,18 @@ NUM-03 ensemble, the SC-3 tests and the identity scripts' own runs (§4.6). The 
 - **No record, no new field.** `SolveEvent`, `LinearRecord` and `SolvePolicy` are unchanged. `step_inf` is computed from
   the zeroed `ŝ`, as it already is for releases at `α_max = 0`.
 
+*Erratum 2026-10-26 (design lane, `reviewer`; `docs/reviews/S10C-r782-review.md` F1, F6; register R-783).* Two cost
+statements above are corrected; the rule and the evidence are unchanged.
+- **"The common path allocates nothing."** It allocates about six `n`-length boolean temporaries per iteration for the
+  mask. That is negligible (G-R6: −1.2 %).
+- **"It costs one CSR conversion of `J` and one pass over the rows."** `_released` also runs a recursive maximum
+  matching (Kuhn) and a fixed-point propagation. Both are superlinear in `|Z₀|`.
+  - Measured on a closed block shaped like a column: 0.4 ms at `|Z₀| = 60`, 213 ms at 4 000 and 1.5 s at 10 000.
+  - A single absent component over 1 000 stages raises `RecursionError`.
+  - This is R-064's code; R-782 runs it at every iteration with `C ≠ ∅` instead of only at `α_max = 0`.
+  - No registered case exceeds `|Z₀| = 60`.
+  - The remedy is an iterative matching with a worklist propagation, inert because `Z*` is unique (review F1).
+
 ### 4.6 Measured before the decision (scratch, on `f1a0a058`, local x86-64; not committed code)
 
 A scratch copy of the tree carried §4.1 plus an observation log. In mode `detect` it returned the pre-change tuple and

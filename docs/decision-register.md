@@ -15383,3 +15383,35 @@ decision:
 - The rule copied into T04's PTC core without its own proof (`J + D/Δt`; note §7 Q1).
 - A test-local cap mistaken for a registry change.
 - A later A98 discrepancy at a start outside note §4.6's table attributed to R-782 without a detector run.
+
+## R-783 — R-782 review: sound; §4.5 cost erratum; `_released`'s matching and A41's exact zeros left for decision
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), focused R-782 review |
+| Normative text | `docs/reviews/S10C-r782-review.md`; `docs/derivations/S10C-absent-component.md` §4.5 erratum of 2026-10-26 |
+| Evidence | Code diff `b3151d65..1bc65b86` read against note §4.1–§4.7. Scratch probes (not committed): `_released` on column-shaped closed blocks takes 0.4 ms at `\|Z₀\| = 60`, 213 ms at 4 000 and 1.5 s at 10 000, and raises `RecursionError` for one absent component over 1 000 stages. T07 THM-09 start 4: 94 records, 4 attempts, `CONVERGED` uncapped; 24 records, 1 attempt, `BUDGET_EXHAUSTED` at the test-local cap of 100 |
+| Affected packages | K03 (Newton core); S10-C |
+
+**Decision.** The R-782 implementation is accepted as sound. Its exactness conditions are R-064's, unchanged in code;
+the acting predicate is §4.4's; the inertness proof holds for the code as written. The moved witnesses test their
+registered clauses, with no budget, tolerance, case or recorded run edited. Note §4.5's two cost statements are
+corrected by a dated erratum. Two items are left for a decision, with the reviewer's recommended defaults:
+- **F1, `_released`'s recursion and complexity.** Default: replace the recursive matching and the fixed-point loop
+  with an iterative maximum matching and a worklist, in one separate, inert K03 commit after the S10-C merge and
+  before any case with a long absent chain is registered. It is inert because `Z*` is unique. Not merge-blocking.
+- **F2, A41's absent flows.** Default: assert them exactly `+0.0` for C-MW and C-EW, which supersedes R-780's "not
+  required" for those two cases. This is the direct witness of note §4.3.
+
+**Rejected alternatives, and why.**
+- *Blocking R-782 on F1:* no registered case reaches `|Z₀| > 60`. The exposure pre-dates R-782, since R-064 reaches it
+  at the first blocked step.
+- *A test-local cap tuned to refuse after THM-09's recovery (F5):* it would be fragile across platforms. A93's cap
+  clause does not depend on where the refusal falls.
+
+**Watch for (added to R-782's).**
+- `_released` on a system with a long absent chain (a discretized reactor, a long column) before F1 is done.
+- A self-coupled absent set: one whose only source rows are products with other members of `Z*`. It is now held
+  deterministically at the trivial root, and any seed must come from the initializer, never from roundoff.
+- A solve in a spawned worker. The WO-R1 detector does not see it.
