@@ -1,0 +1,489 @@
+{
+  "work_package": "S08b",
+  "commit": "acbd12664b80d06fc51cf0b68640d25d6962b4a2",
+  "requirements": [
+    "D09"
+  ],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S08b acceptance: docs/derivations/S08b-design.md §7 (A1–A7, B1–B3) and §9 (G1, G3) against S08's 52 configurations, S01's registered cases C1–C5 and the design scan's measured.txt",
+    "case_hash": "77d5ab86e2efb813863249d9c01297b83b7893fabdf451e0ce38c8a0fe5257d8",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/artifacts/s08b-tests.junit.xml tests/test_k03_attempts.py tests/test_s01_cascade_wo1.py tests/test_s01_cascade_wo2.py tests/test_s01_cascade_wo3.py tests/test_s01_cascade_wo4.py tests/test_s01_evidence_manifest.py tests/test_s01_review_adversarial.py tests/test_s02_column_wo1.py tests/test_s02_column_wo2.py tests/test_s02_column_wo2b.py tests/test_s02_column_wo3.py tests/test_s02_evidence_manifest.py tests/test_s03_ours.py tests/test_s03_references.py tests/test_s03_s11_refusal.py tests/test_s06_column_wo1.py tests/test_s06_column_wo2.py tests/test_s06_evidence_manifest.py tests/test_s08_blocks.py tests/test_s08_identity.py tests/test_s08_item6.py tests/test_s08_reentry.py tests/test_s08_roots.py tests/test_s08b_contract.py tests/test_s08b_identity.py tests/test_s08b_saturation.py tests/test_t03_contract.py tests/test_t04_ptc_region.py tests/test_t05b_dormancy.py tests/test_t05b_zero_flow.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "bfd52ba0d83d28e317c450194ad4478f195161a775146d1b89572f4818cb74b2"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s08b_identity.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "a45b952ebcd279850a65a3f381d49a9a583d1f9367d53c03ce73cc15d2c3e73f"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s08_identity.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "478b121e4cf5397a7587b1f420e8b0ca3adb93086c6d28e7a3c51b30097adaf7"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s10c_identity.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "faec9e6a8e2c227128f4d8ee5bffbc0da9d1d8ddc22c10c3b7f5258e6d5c8a54"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check src/openflowsheet/orchestrator/phase_contract.py src/openflowsheet/orchestrator/region.py src/openflowsheet/models/syn001/cascade_solve.py src/openflowsheet/models/syn001/column_solve.py tests/test_s08b_contract.py tests/test_s08b_identity.py tests/test_s08b_saturation.py scripts/s08b_identity.py scripts/s08b_identity_recorder.py scripts/s08b_evidence_manifest.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check src/openflowsheet/orchestrator/phase_contract.py src/openflowsheet/orchestrator/region.py src/openflowsheet/models/syn001/cascade_solve.py src/openflowsheet/models/syn001/column_solve.py tests/test_s08b_contract.py tests/test_s08b_identity.py tests/test_s08b_saturation.py scripts/s08b_identity.py scripts/s08b_identity_recorder.py scripts/s08b_evidence_manifest.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "5b9f70ad96522f492ef846065642c069b5627379aff2ab3f74acd2e3b9ecfe34"
+    },
+    {
+      "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/mypy",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "fc7a6f2d81793ead1da3f58bae5ac2a69becd5882de72ae84251b20185317a15"
+    },
+    {
+      "cmd": "pytest -p s08b_probe (S08B_MODE=observe) in 17 shards dealt by s08b_identity.shards, on this commit",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "08401ab5705d910a1d93ff73f589ddc8464149afa10a9211306565603589fec2"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s08b_design/scan_report.py evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/artifacts/g3-observe",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "26991717bea63f5862204512b2181bc42c8384817a21bf19ebc20e8d402c385f"
+    },
+    {
+      "cmd": "pytest -p s08b_probe (S08B_MODE=observe) in 16 shards dealt by s08b_identity.shards, on the merge base a13203b8",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "632b383f53b560532c330727da2dc91463e31b58818bccc0e37b354af9f3aff4"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s08b_design/scan_report.py evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/artifacts/g3-base-observe",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "537a46eb6ed105a3710241361be00f42224ca561887153a75fc8cd14f978ce64"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S08b.A1",
+      "description": "`adjacent` on dotted unit ids, `items=frozenset()`: `((S.stage.1, TWO_PHASE), (S.stage.2, LIQUID))` vs `((S.stage.1, TWO_PHASE), (S.stage.2, TWO_PHASE))` is adjacent; a `LIQUID → VAPOR` stage is not; identical signatures are not; different stage lists are not.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s08b_contract.py::test_a1_dotted_unit_ids_are_units",
+          "tests/test_s08b_contract.py::test_a1_items_is_keyword_only_and_required"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S08b.A2",
+      "description": "`_changes` on those signatures with `declared = {}` is `S.stage.2:LIQUID->TWO_PHASE`; two changed stages are listed in signature order, `\", \"`-separated.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08b_contract.py::test_a2_the_change_list_names_the_stages"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S08b.A3",
+      "description": "A mixed signature, `items = {\"U-PUMP.outlet\"}`, `declared = {\"U-PUMP.outlet\": \"LIQUID\"}`: `((C.stage.1, TWO_PHASE), (U-PUMP.outlet, ZERO_FLOW))` vs `((C.stage.1, LIQUID),)` is adjacent, and `_changes` is `C.stage.1:TWO_PHASE->LIQUID, U-PUMP.outlet:ZERO_FLOW->LIQUID`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08b_contract.py::test_a3_a_mixed_signature"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S08b.A4",
+      "description": "`WallObserver.choose` with two candidates on dotted ids, the first moving one stage `LIQUID → VAPOR`, the second adjacent: returns the second. (The old code returned the first; this is the behavioural guard of D4 for columns.)",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08b_contract.py::test_a4_choose_prefers_the_adjacent_candidate_on_dotted_ids"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S08b.A5",
+      "description": "The T05b guards keep their values: `test_items_are_one_step_in_the_lattice` with `items={\"U-PUMP.outlet\"}` added to each call, `test_t05b_zero_flow.py:292-297` with `items=frozenset()` added; every asserted boolean and string unchanged; `test_t05b_dormancy.py:938-948`'s `_changes` strings unchanged.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_t05b_dormancy.py::test_b20d_a_screen_reported_switch_names_the_item",
+          "tests/test_t05b_dormancy.py::test_items_are_one_step_in_the_lattice",
+          "tests/test_t05b_zero_flow.py::test_zero_flow_is_adjacent_to_each_regime"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S08b.A6",
+      "description": "P1's held branch: S02 A12 and S08 A06 additionally assert `stage_a.recovered_from.message` equal to §6.1's string.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_s02_column_wo3.py::test_a12_p1_measured_branch_is_held",
+          "tests/test_s08_reentry.py::test_a06_p1_stage_a_is_the_held_branch"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S08b.A7",
+      "description": "`_units_and_items_disjoint` raises `ValueError` (message starts `defect:`) when a lifted unit id equals a dormancy item key, and returns `None` on every disjoint pair (a column's stage ids with a pump's `U-PUMP.outlet`).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08b_contract.py::test_a7_lifted_units_and_dormancy_items_are_disjoint"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S08b.B1",
+      "description": "(wiring) With `cascade_solve.TWO_PHASE_SATURATION_TOLERANCE` patched to `-1.0`, `solve_cascade(C2)` raises `AcceptanceDefectError` whose failures are exactly six strings, `§8 saturation: TWO_PHASE stage j: bubble|dew error … K` for `j = 1, 2, 3`, and nothing else.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08b_saturation.py::test_b1_a_patched_tolerance_raises_exactly_the_six_saturation_failures"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S08b.B2",
+      "description": "(margin, regression) For C1–C5 as registered, `max_j max(saturation_pairs(…)[j]) ≤ 1e-5 K` (measured ≤ 2.43e-6 K over all S01 closures; the manifest records the C1–C5 value).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests and the value measured here",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_s08b_saturation.py::test_b2_every_registered_cascade_root_passes_with_margin"
+        ],
+        "not_passed": [],
+        "measured_at": "acbd12664b80d06fc51cf0b68640d25d6962b4a2",
+        "per_case_K": {
+          "C1": 1.6091221937131195e-06,
+          "C2": 1.0013366136263357e-08,
+          "C3": 8.429879017057829e-11,
+          "C4": 2.5630697564338334e-09,
+          "C5": 5.752553988713771e-11
+        },
+        "largest_error_K": 1.6091221937131195e-06
+      },
+      "expected": "every citing node passed; largest error ≤ 1e-05 K"
+    },
+    {
+      "id": "S08b.B3",
+      "description": "(columns unchanged) `column_solve._saturation_pairs(spec, …) == cascade_solve.saturation_pairs(spec.unit_id, spec.components, …)` bitwise at F1's Stage-A state (0.379 K at stage 4) and at J8's root; S08's item-6 tests pass untouched.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 10,
+        "outcomes": {
+          "passed": 10
+        },
+        "selectors": [
+          "tests/test_s08_item6.py::test_the_tolerance_is_the_registered_one",
+          "tests/test_s08_item6.py::test_a12_item_6_passes_on_every_registered_converged_root",
+          "tests/test_s08_item6.py::test_a12_f1_stage_a_is_flagged_at_stage_4_only",
+          "tests/test_s08_item6.py::test_a_constructed_near_trivial_split_is_flagged",
+          "tests/test_s08_item6.py::test_a_band_answer_other_than_inside_is_a_failure[below]",
+          "tests/test_s08_item6.py::test_a_band_answer_other_than_inside_is_a_failure[above]",
+          "tests/test_s08_item6.py::test_a_band_answer_other_than_inside_is_a_failure[refused]",
+          "tests/test_s08b_saturation.py::test_the_constants_are_the_registered_ones_and_moved_not_copied",
+          "tests/test_s08b_saturation.py::test_b3_the_column_pairs_are_the_cascade_function_at_f1_stage_a",
+          "tests/test_s08b_saturation.py::test_b3_the_column_pairs_are_the_cascade_function_at_j8"
+        ],
+        "not_passed": []
+      },
+      "expected": "every citing node passed"
+    },
+    {
+      "id": "S08b.suites",
+      "description": "§8 WO-3: the S01, S02, S03, S06 and S08 test modules pass, with S08b's and WO-2's touched contract tests",
+      "result": "pass",
+      "value": {
+        "judged_by": "the S08b tests, WO-3's suites and WO-2's touched contract tests",
+        "nodes": 1200,
+        "outcomes": {
+          "passed": 1200
+        },
+        "not_passed": [],
+        "per_suite": {
+          "test_s08b": 31,
+          "test_s01": 138,
+          "test_s02": 187,
+          "test_s03": 310,
+          "test_s06": 179,
+          "test_s08": 106,
+          "test_t05b_dormancy": 58,
+          "test_t05b_zero_flow": 47,
+          "test_t03_contract": 56,
+          "test_t04_ptc_region": 60,
+          "test_k03_attempts": 28
+        }
+      },
+      "expected": "every node passed"
+    },
+    {
+      "id": "S08b.G1",
+      "description": "§9 G1: scripts/s08b_identity.py, two families on the merge base a13203b8 and on this commit: the 52 configurations' digests equal and their texts equal except §6.1's eleven; the suite's decision log equal except empty stage change lists filled in",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s08b_identity.py",
+        "exit_code": 0,
+        "line": "S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61 b_only=0/20",
+        "branch_only_keys": 20
+      },
+      "expected": "S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61 b_only=0/N, N the decisions of tests that exist on the branch only (informational)"
+    },
+    {
+      "id": "S08b.G1-S08",
+      "description": "S08's identity gate (scripts/s08_identity.py, merge base 390e0af5) still passes",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s08_identity.py",
+        "exit_code": 0,
+        "line": "S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL"
+      },
+      "expected": "S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL"
+    },
+    {
+      "id": "S08b.G1-S10C",
+      "description": "S10-C's identity gate (scripts/s10c_identity.py, merge base ffcb387f) still passes",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s10c_identity.py",
+        "exit_code": 0,
+        "line": "S10C-IDENTITY PASS n=858 changed=[]"
+      },
+      "expected": "S10C-IDENTITY PASS n=858 changed=[]"
+    },
+    {
+      "id": "S08b.G3",
+      "description": "§9 G3: the design scan (s08b_probe observe over the suite, scan_report.py) on this commit: S1's S01 rows unchanged (largest error ≤ 2.5e-6 K), M1 records 0; S1's flash-type rows identical to the merge base's scan, dealt alike (measured.txt predates S10-C; WO4-2, WO4-3), and the near-trivial ones to measured.txt's; the suite counts are recorded (their equality with G2's is G2's)",
+      "result": "pass",
+      "value": {
+        "suite_cmd": "pytest -p s08b_probe (S08B_MODE=observe) in 17 shards dealt by s08b_identity.shards, on this commit",
+        "scan_cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python docs/derivations/scripts/s08b_design/scan_report.py evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/artifacts/g3-observe",
+        "suite_line": "S08B-SUITE mode=observe passed=13280 failed=0 skipped=3137",
+        "base_suite_cmd": "pytest -p s08b_probe (S08B_MODE=observe) in 16 shards dealt by s08b_identity.shards, on the merge base a13203b8",
+        "base_suite_line": "S08B-SUITE mode=observe passed=13249 failed=0 skipped=3137",
+        "findings": {
+          "suite_ran_and_no_test_failed": true,
+          "m1_records_0": true,
+          "s01_rows_of_measured_reproduced": true,
+          "s01_largest_error_within_bound": true,
+          "base_scan_ran_and_no_test_failed": true,
+          "flash_rows_equal_merge_base": true,
+          "near_trivial_flash_rows_equal_measured": true
+        },
+        "m1": [
+          "records 0; tests 0"
+        ],
+        "s01_rows": [
+          "S01 tests/test_s01_cascade_wo2.py: n=47 max_sat_error=1.61e-06 K min_LV=0.0135 min_V_or_L=0.0146",
+          "S01 tests/test_s01_cascade_wo3.py: n=62 max_sat_error=2.43e-06 K min_LV=0.0135 min_V_or_L=0.0146",
+          "S01 tests/test_s01_cascade_wo4.py: n=4 max_sat_error=2.56e-09 K min_LV=0.0341 min_V_or_L=0.0368",
+          "S01 tests/test_s01_review_adversarial.py: n=10 max_sat_error=1e-08 K min_LV=0.0341 min_V_or_L=0.0368",
+          "S01 tests/test_s08b_saturation.py: n=31 max_sat_error=1.61e-06 K min_LV=0.0135 min_V_or_L=0.0146"
+        ],
+        "s01_rows_new": [
+          "S01 tests/test_s08b_saturation.py: n=31 max_sat_error=1.61e-06 K min_LV=0.0135 min_V_or_L=0.0146"
+        ],
+        "s01_largest_error_K": 2.43e-06,
+        "flash_rows": [
+          "flash/Syn001Provider: n=2432 tests=489 max_sat_error=30.69953770685356 K non_numeric=0 min_minority_fraction=4.703e-17 min_LV=2.621e-16 kernel={'TWO_PHASE': 2235, 'LIQUID': 191, 'VAPOR': 6}",
+          "flash/wrapped: n=903 tests=94 max_sat_error=None K non_numeric=903 min_minority_fraction=6.155e-10 min_LV=4.873e-10 kernel={'n/a': 903}",
+          "[0.001, 2): n=2422 tests=489 max_sat_error=1.005085937322292e-05 over_1e-4=0 kernel={'TWO_PHASE': 2231, 'LIQUID': 191}",
+          "[1e-06, 0.001): n=4 tests=1 max_sat_error=0.06660133666252932 over_1e-4=4 kernel={'VAPOR': 4}",
+          "[1e-10, 1e-06): n=2 tests=1 max_sat_error=0.000949415557215616 over_1e-4=2 kernel={'VAPOR': 2}",
+          "[0, 1e-10): n=4 tests=1 max_sat_error=30.69953770685356 over_1e-4=4 kernel={'TWO_PHASE': 4}"
+        ],
+        "flash_rows_merge_base": [
+          "flash/Syn001Provider: n=2432 tests=489 max_sat_error=30.69953770685356 K non_numeric=0 min_minority_fraction=4.703e-17 min_LV=2.621e-16 kernel={'TWO_PHASE': 2235, 'LIQUID': 191, 'VAPOR': 6}",
+          "flash/wrapped: n=903 tests=94 max_sat_error=None K non_numeric=903 min_minority_fraction=6.155e-10 min_LV=4.873e-10 kernel={'n/a': 903}",
+          "[0.001, 2): n=2422 tests=489 max_sat_error=1.005085937322292e-05 over_1e-4=0 kernel={'TWO_PHASE': 2231, 'LIQUID': 191}",
+          "[1e-06, 0.001): n=4 tests=1 max_sat_error=0.06660133666252932 over_1e-4=4 kernel={'VAPOR': 4}",
+          "[1e-10, 1e-06): n=2 tests=1 max_sat_error=0.000949415557215616 over_1e-4=2 kernel={'VAPOR': 2}",
+          "[0, 1e-10): n=4 tests=1 max_sat_error=30.69953770685356 over_1e-4=4 kernel={'TWO_PHASE': 4}"
+        ],
+        "flash_rows_measured": [
+          "flash/Syn001Provider: n=2386 tests=483 max_sat_error=30.69953770685356 K non_numeric=0 min_minority_fraction=4.703e-17 min_LV=2.621e-16 kernel={'TWO_PHASE': 2233, 'LIQUID': 147, 'VAPOR': 6}",
+          "flash/wrapped: n=903 tests=94 max_sat_error=None K non_numeric=903 min_minority_fraction=6.155e-10 min_LV=4.873e-10 kernel={'n/a': 903}",
+          "[0.001, 2): n=2376 tests=483 max_sat_error=1.005085937322292e-05 over_1e-4=0 kernel={'TWO_PHASE': 2229, 'LIQUID': 147}",
+          "[1e-06, 0.001): n=4 tests=1 max_sat_error=0.06660133666252932 over_1e-4=4 kernel={'VAPOR': 4}",
+          "[1e-10, 1e-06): n=2 tests=1 max_sat_error=0.000949415557215616 over_1e-4=2 kernel={'VAPOR': 2}",
+          "[0, 1e-10): n=4 tests=1 max_sat_error=30.69953770685356 over_1e-4=4 kernel={'TWO_PHASE': 4}"
+        ]
+      },
+      "expected": "every finding true"
+    },
+    {
+      "id": "S08b.ruff",
+      "description": "ruff check is clean on S08b's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff check src/openflowsheet/orchestrator/phase_contract.py src/openflowsheet/orchestrator/region.py src/openflowsheet/models/syn001/cascade_solve.py src/openflowsheet/models/syn001/column_solve.py tests/test_s08b_contract.py tests/test_s08b_identity.py tests/test_s08b_saturation.py scripts/s08b_identity.py scripts/s08b_identity_recorder.py scripts/s08b_evidence_manifest.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S08b.format",
+      "description": "ruff format --check is clean on S08b's files",
+      "result": "pass",
+      "value": {
+        "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/ruff format --check src/openflowsheet/orchestrator/phase_contract.py src/openflowsheet/orchestrator/region.py src/openflowsheet/models/syn001/cascade_solve.py src/openflowsheet/models/syn001/column_solve.py tests/test_s08b_contract.py tests/test_s08b_identity.py tests/test_s08b_saturation.py scripts/s08b_identity.py scripts/s08b_identity_recorder.py scripts/s08b_evidence_manifest.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S08b.mypy",
+      "description": "mypy (the project's configuration) is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src /home/frankp/Codes/OpenFlowsheet/.venv/bin/mypy",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S08b.gate",
+      "description": "§9 G2: scripts/gate.sh passes before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; it runs once before merge (CLAUDE.md)"
+    },
+    {
+      "id": "S08b.ci",
+      "description": "§9 G2: CI is green on x86-64 and aarch64 before merge",
+      "result": "unsupported",
+      "value": "not run by this generator; it runs once before merge (CLAUDE.md)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/artifacts/s08b-tests.junit.xml",
+      "sha256": "f21069090d6452e92d383e5542d414387aabd6003d81297a0f6545c72820faac",
+      "description": "JUnit report of the S08b, S01, S02, S03, S06, S08 and contract test run (ignored; kept by hash)"
+    },
+    {
+      "path": "evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/artifacts/g3-scan-report.txt",
+      "sha256": "26991717bea63f5862204512b2181bc42c8384817a21bf19ebc20e8d402c385f",
+      "description": "G3's scan report on this commit (ignored; kept by hash)"
+    },
+    {
+      "path": "evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/artifacts/g3-base-scan-report.txt",
+      "sha256": "537a46eb6ed105a3710241361be00f42224ca561887153a75fc8cd14f978ce64",
+      "description": "G3's scan report on the merge base a13203b8 (ignored; kept by hash)"
+    },
+    {
+      "path": "docs/derivations/scripts/s08b_design/measured.txt",
+      "sha256": "77d5ab86e2efb813863249d9c01297b83b7893fabdf451e0ce38c8a0fe5257d8",
+      "description": "the design scan's measurements G3 is judged against"
+    },
+    {
+      "path": "docs/derivations/S08b-design.md",
+      "sha256": "21b52ad46f884b73d44909a7efa000d804cb91aa0c13e9d81a7042ff4b7af57f",
+      "description": "the S08b design note the checks are read from (§7, §9, §11)"
+    },
+    {
+      "path": "docs/derivations/S01-spec.md",
+      "sha256": "cb49118273d3924e8d6f5ab975cf02547d7445c8bb02cf9ed42ed261175498c5",
+      "description": "the S01 spec with Amendment 2 (§18), the clause WO-3 implements"
+    },
+    {
+      "path": "docs/S08b_BUILD_DECISIONS.md",
+      "sha256": "691de5d25b91ec6e7119dc0e23955f083941c7e6332d559d2ee17e413f2a6bb1",
+      "description": "S08b's build decisions and gate log"
+    }
+  ],
+  "limitations": [
+    "That every lifted flash-type `TWO_PHASE` root is saturated: the contract still accepts near-trivial roots there; the verifier, not the solver, rejects them.",
+    "Anything about CoolProp-backed splits (not scanned), Wilson/γ–φ cascades (S10-C's) or PR-C1 saturation (no band temperature).",
+    "That S01's clause can never reject a correct root (R-735).",
+    "requirements is [D09] (S08b-design §10 Q5's default). Q5 also names release gate X31 ('invalid specs/phases' in column-family cases); the frozen manifest schema admits only D/A requirement ids there, so X31 is not listed (S08's precedent, docs/S08_DECISIONS.md W5-7). Neither verdict is claimed.",
+    "scripts/gate.sh and CI on x86-64 and aarch64 (§9 G2) were not run by this generator (they run once before merge into main); S08b.gate and S08b.ci are unsupported here. G3's suite counts are recorded, not compared with G2's.",
+    "CoolProp 8.0.0 is not installed on the workstation that ran G1 and G3, so its tests skipped there; CoolProp-backed lifted splits were not scanned (§10 Q2).",
+    "Review: the design lane's one reviewer pass (the package touches phase logic, §8 WO-4) follows this manifest; the review fields stay pending and the human numerical and process-model review is pending. This manifest claims neither.",
+    "The T08 support envelope's harvest of this manifest follows its generation, in a later commit."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

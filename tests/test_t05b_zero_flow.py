@@ -289,12 +289,18 @@ def test_zero_flow_is_adjacent_to_each_regime() -> None:
     from openflowsheet.orchestrator.phase_contract import adjacent
 
     for regime in ("LIQUID", "TWO_PHASE", "VAPOR"):
-        assert adjacent((("U", "ZERO_FLOW"),), (("U", regime),))
-        assert adjacent((("U", regime),), (("U", "ZERO_FLOW"),))
-    assert not adjacent((("U", "ZERO_FLOW"),), (("U", "ZERO_FLOW"),))
-    assert not adjacent((("U", "LIQUID"),), (("U", "VAPOR"),))
-    assert adjacent((("U", "ZERO_FLOW"), ("W", "LIQUID")), (("U", "VAPOR"), ("W", "TWO_PHASE")))
-    assert not adjacent((("U", "ZERO_FLOW"), ("W", "LIQUID")), (("U", "VAPOR"), ("W", "VAPOR")))
+        assert adjacent((("U", "ZERO_FLOW"),), (("U", regime),), items=frozenset())
+        assert adjacent((("U", regime),), (("U", "ZERO_FLOW"),), items=frozenset())
+    assert not adjacent((("U", "ZERO_FLOW"),), (("U", "ZERO_FLOW"),), items=frozenset())
+    assert not adjacent((("U", "LIQUID"),), (("U", "VAPOR"),), items=frozenset())
+    assert adjacent(
+        (("U", "ZERO_FLOW"), ("W", "LIQUID")),
+        (("U", "VAPOR"), ("W", "TWO_PHASE")),
+        items=frozenset(),
+    )
+    assert not adjacent(
+        (("U", "ZERO_FLOW"), ("W", "LIQUID")), (("U", "VAPOR"), ("W", "VAPOR")), items=frozenset()
+    )
 
 
 # ------------------------------------------- §7.3–§7.4: the screen and the kernel, entering/leaving

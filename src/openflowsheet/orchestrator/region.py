@@ -1209,6 +1209,16 @@ def _branch_found(split: LiftedSplit, state: Mapping[str, float]) -> Branch:
     return branch  # type: ignore[return-value]
 
 
+def _units_and_items_disjoint(
+    splits: Sequence[LiftedSplit], dormancy: Sequence[DormancyForm]
+) -> None:
+    """S08b §5.1 (R-790): a signature entry is an item iff its key is a dormancy item, so no
+    lifted unit id may also be an item key. No registered region reaches the raise."""
+    clash = {split.unit for split in splits} & {form.item for form in dormancy}
+    if clash:
+        raise ValueError(f"defect: {sorted(clash)} are both lifted units and dormancy items")
+
+
 class _LiftedOps:
     """The lifted EO path's side of the contract (T03 §4.3, §4.6, §4.7), for one attempt.
 
@@ -1271,6 +1281,7 @@ class _LiftedOps:
         self.declared_phases: Mapping[str, str] = {
             form.item: form.declared for form in self._dormancy
         }
+        _units_and_items_disjoint(self._splits, self._dormancy)
 
     def _signature(
         self, regimes: Mapping[str, Regime], state: Mapping[str, float]

@@ -187,3 +187,15 @@ All four answered with the recommended default (Frank, 2026-10-25):
   IDAES column comparison of C-MW/C-EW — deferred, the 50-digit generator is the expectation; Q3 the S01 cascade and the
   other units (PH flash, valve, pump) accept Wilson — no; Q4 purity/recovery/temperature specifications on Wilson columns
   — no, refused typed.
+
+## S08b — phase-contract follow-ups from S08 (2026-10-26)
+
+- **S08 design Q3 and Q4 are resolved** (the defaults above queued S08b): Q3, the contract misreading column stage ids as
+  dormancy items, is fixed by R-790 (items are what the attempt declares; every column restart message now names the stage
+  that changed). Q4, trace-vapour roots: S01 cascades now refuse them with S02 §8 item 6 (R-791); flash units keep their
+  present acceptance, because a certified run's verifier already rejects those false successes (R-792, R-793).
+- **Q-S08b-1** (default applied, Frank may overrule): should a later contract version make the solver itself refuse a
+  near-trivial two-phase answer in flash units (a feed-band admissibility rule, contract v3)? It would turn the six
+  verifier-detected false successes into solver restarts, at the cost of a new contract version, an ADR and re-registered
+  B34 records. **Default: no, not now** — revisit if a study or flowsheet needs `CONVERGED` + `VERIFIED` where it gets
+  `FAILED`, or if an uncertified consumer of `solve_region` appears (`docs/derivations/S08b-design.md` §10 Q1).

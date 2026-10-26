@@ -226,6 +226,12 @@ def test_a06_p1_stage_a_is_the_held_branch() -> None:
     ]
     assert stage_a.recovered_from is not None
     assert stage_a.recovered_from.outcome == "ACTIVE_SET_CYCLING"
+    # S08b A6 (§6.1, R-790): the stall's change list names the stage that moved.
+    assert stage_a.recovered_from.message == (
+        "active_set_cycling(S02.stage.1:TWO_PHASE,S02.stage.2:TWO_PHASE,S02.stage.3:TWO_PHASE,"
+        "S02.stage.4:TWO_PHASE,S02.stage.5:TWO_PHASE; "
+        "phase_wall(stall, S02.stage.2:LIQUID->TWO_PHASE))"
+    )
     assert _source(stage_a.recovered_from) == PRESOLVE_ID
     # Stage A opened from §18.2's `x⁰`, rebuilt here.
     spec = SPECS["P1"]

@@ -283,3 +283,9 @@ def test_a12_p1_measured_branch_is_held() -> None:
     ]
     assert stage_a.recovered_from is not None
     assert stage_a.recovered_from.outcome == "ACTIVE_SET_CYCLING"
+    # S08b A6 (§6.1, R-790): the stall's change list names the stage that moved.
+    assert stage_a.recovered_from.message == (
+        "active_set_cycling(S02.stage.1:TWO_PHASE,S02.stage.2:TWO_PHASE,S02.stage.3:TWO_PHASE,"
+        "S02.stage.4:TWO_PHASE,S02.stage.5:TWO_PHASE; "
+        "phase_wall(stall, S02.stage.2:LIQUID->TWO_PHASE))"
+    )

@@ -14378,6 +14378,9 @@ record why.
 - *Fix them inside S08.* That would break S08's bit-identity premise and widen it into the shared contract.
 
 **Watch for.** Any column cause string with an empty change list, cited as evidence of a phase decision.
+*Answered (2026-10-26, S08b):* (a) is fixed by R-790 (items by declaration; column and cascade stage ids are units, so
+every column change list is filled in); (b) by R-791 and R-792 (S01 cascades get S02 §8 item 6; no `TWO_PHASE` rule in the
+contract). See `docs/derivations/S08b-design.md`.
 
 ---
 
@@ -15508,3 +15511,128 @@ new entry.
 
 **Watch for.** Any G-R8 difference between the old and new results. That would mean the closed-row filter changed, since
 the matching cannot change the result. Fix the filter; never accept a moved tuple.
+
+---
+
+<!-- R-753…R-759 and R-787…R-789 are unused: S10-C holds R-760…R-786 (merged); S08b starts at R-790. -->
+
+## R-790 — S08b (a): a signature entry is a dormancy item iff its key is one of the attempt's declared items; the literal is unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S08b design |
+| Normative text | `docs/derivations/S08b-design.md` §4.1, §5.1, §6.1 |
+| Evidence | `docs/derivations/scripts/s08b_design/measured.txt`: whole suite with the rule substituted, 12 507 passed, 0 failed; 268 disagreeing `_proposal` calls, all on `.stage.` ids; 60 consult the restart selection and all 60 choose the same candidate; on S08's 52 G1 configurations no digest moves and 11 `active_set_cycling(…; phase_wall(stall, ))` messages gain their change list |
+| Affected packages | S08b; T03/T05b (the contract's owners; rule text unchanged); S01, S02, S03, S06, S08 (messages only) |
+
+**Decision.**
+- `_is_item` (`"." in key`) is deleted. An item is a key of `declared_phases`; every other entry is a signature unit (ADR 0005
+  D2, T05b spec §7.8 (i)), whatever its spelling. `adjacent` and `WallObserver.choose` take a required keyword `items`.
+- `T03-phase-contract-v1` and `T05b-phase-contract-v2` keep their names: the rule as written is unchanged; its implementation was
+  wrong for dotted unit ids. No ADR is amended.
+- The 11 moved messages are re-registered (S08b §6.1), P1's held branch with its message.
+
+**Rejected alternatives, and why.**
+- *A v3 literal for the fix:* re-keys every v2 record for no new rule.
+- *Tagged signature entries:* a schema change for information the region already holds.
+- *Stage ids without `.`; a narrower spelling heuristic; items by position:* each moves records or relies on spelling again.
+
+**Watch for.** A structural difference in S08b G1 family B (a restart point that moved): that is D4 now applying to columns
+(S08b F4), and it must be named, not re-baselined.
+
+---
+
+## R-791 — S08b (b): S01 cascades get S02 §8 item 6 unchanged; a failure is a defect
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S08b design |
+| Normative text | `docs/derivations/S08b-design.md` §4.2, §5.2; S01 spec Amendment 2 |
+| Evidence | 123 accepted S01 closures in the suite: largest saturation error 2.43e-6 K (41× under 1e-4 K), smallest `L·V` 0.0135 (mol/s)², smallest `V` or `L` 0.0146 mol/s |
+| Affected packages | S01 (§8), S02 (the shared function moves to `cascade_solve`; behaviour unchanged) |
+
+**Decision.**
+- Every `TWO_PHASE` cascade stage lies within `τ₆ = 1e-4 K` of its liquid's bubble and its vapour's dew temperature, by
+  `cascade_solve.saturation_pairs` (S08's function, moved). A failure raises `AcceptanceDefectError` (`§8 saturation: …`).
+- No registered record moves.
+
+**Rejected alternatives, and why.**
+- *Nothing:* cascades have no certificate, so a near-trivial false `CONVERGED` would be returned silently.
+- *A typed cascade outcome:* needs a frozen `SolveOutcome` (R-735).
+- *A cascade re-entry like S08's Stage B:* new machinery for a failure no registered cascade produces.
+
+**Watch for.** `AcceptanceDefectError` naming `§8 saturation:` on a stage with `L_j V_j < 0.1 (mol/s)²` (R-735's limitation).
+
+---
+
+## R-792 — S08b (b): no `TWO_PHASE` admissibility rule in the contract under v1 or v2; flash units rely on the verifier
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S08b design |
+| Normative text | `docs/derivations/S08b-design.md` §4.2, §10 Q1 |
+| Evidence | 2 386 accepted flash-type `TWO_PHASE` splits: with minority fraction ≥ 1e-3, largest error 1.01e-5 K; below it only B34 (a)'s sweep: three false states (+0.06 K, provider `VAPOR`, verifier `FAILED` + `false_success_detected`), one within 3.3e-5 K of the dew point, and the correct exact-dew root with a bubble error of −30.7 K on 1e-16 mol/s of liquid; 147 correct pure-component splits the provider's TP flash calls `LIQUID` |
+| Affected packages | none changed (T03/T05b contract, flash units, K04 verifier read only) |
+
+**Decision.**
+- `region._admissible` keeps "a `TWO_PHASE` branch is always admissible" under both literals. Revision runs certify every
+  `CONVERGED` solve, and the verifier's independent split detects the flash-type false successes.
+- If a contract rule is ever wanted, it is the feed-band rule (`T_bub(z) − τ₆ ≤ T ≤ T_dew(z) + τ₆`) under a v3 literal (S08b
+  Q1, Frank's call; default not now).
+
+**Rejected alternatives, and why.**
+- *Item 6 for every lifted split:* rejects the correct exact-dew root (−30.7 K on the undetermined minority side).
+- *Kernel-label agreement:* rejects the 147 pure-component splits.
+- *The feed-band rule now:* a rule change under accepted literals that moves B34's and F1's registered records, for an
+  exposure already detected on every certified path.
+
+**Watch for.** An uncertified consumer of `solve_region` results, or a flowsheet that needs `VERIFIED` where it gets `FAILED`
+on a near-trivial flash split: either reopens Q1.
+
+---
+
+## R-793 — S08b: no phase rule reads a provider's label or vapour fraction (the saturated-stream rule)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S08b design |
+| Normative text | `docs/derivations/S08b-design.md` §2, §4.2 item 4 |
+| Evidence | 2 377 provider answers `TWO_PHASE` with minority fraction < 1e-6 in 406 tests across 99 modules (K02's mixer recycle, `β = 1.3e-17`; T02 SYN-001-nominal, `β = 1.6e-19`; T06 A76 re-flashed products); PR-C1 near-dew roots with `L` down to 5.5e-10 mol/s, `L ∝ δ` |
+| Affected packages | S08b; any later phase-acceptance rule |
+
+**Decision.**
+- A near-trivial split is judged by temperatures against band temperatures of well-determined compositions (S02 item 6, S01's
+  clause), never by a `β` threshold or by the provider's label of a saturated stream. `mixer.py`'s enthalpy-based admissibility
+  stands.
+
+**Rejected alternatives, and why.**
+- *A minority-fraction threshold:* an invented epsilon on a phase boundary; it would reject the recycle and the near-dew roots.
+
+**Watch for.** A proposed rule of the form "`TWO_PHASE` with `β < φ` is single-phase".
+
+---
+
+## R-794 — S08b: the identity gate has two families — S08's 52 configurations with their texts, and the whole suite's decision log
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S08b design |
+| Normative text | `docs/derivations/S08b-design.md` §9 G1 |
+| Evidence | S08's G1 fields omit `RegionResult.message`, so S08's own gate cannot see the change S08b makes; the change can reach any column or cascade solve in any test module (F2: 74 tests) |
+| Affected packages | S08b |
+
+**Decision.**
+- Family A: the 52 configurations, S08's digests equal, texts equal except S08b §6.1's eleven pinned strings.
+- Family B: every `phase_contract.decide` call of the whole suite in both trees; structure equal everywhere; a text may differ
+  only by filling an empty `phase_wall` change list with `.stage.` entries.
+
+**Rejected alternatives, and why.**
+- *S08's gate alone:* blind to messages. *A list of all moved messages:* brittle across S10-C's merge; the rule-by-form check is
+  exact where it matters (structure) and complete over the suite.
+
+**Watch for.** Keys present in one tree only, beyond new or renamed tests.

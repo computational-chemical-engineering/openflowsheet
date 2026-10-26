@@ -1,0 +1,157 @@
+# S08b design-time measurements (architect, 2026-10-26), code = main 53228775 (wp/S08b worktree).
+# Run from the repo root: source .venv/bin/activate; export PYTHONPATH=$PWD/src:$PWD
+# Probes, NOT production code, NOT generators, NOT tests. CoolProp 8.0.0 is not installed here (3076 tests skip).
+
+## run_suite.py plain|observe|fix OUT --shards 12 (the whole suite, three runs)
+S08B-SUITE mode=plain passed=12507 failed=0 skipped=3137
+S08B-SUITE mode=observe passed=12507 failed=0 skipped=3137
+S08B-SUITE mode=fix passed=12507 failed=0 skipped=3137
+observe and plain fail the same (empty) set: the probe is inert.
+
+## scan_report.py OUT/observe
+## M1 item/unit classification
+records 268; tests 74
+undotted keys the explicit rule calls items: []
+disagreeing keys outside `.stage.` ids: []
+by outcome: {'BOUND_BLOCKED': 134, 'LINE_SEARCH_FAILED': 65, 'LINEAR_SOLVE_FAILED': 41, 'HOMOTOPY_STALLED': 24, 'STAGNATION': 3, 'BUDGET_EXHAUSTED': 1}
+consulted the restart selection: 60; chose a different candidate: 0
+      26  old='' new='S03.stage.7:VAPOR->TWO_PHASE'
+      16  old='' new='S02.stage.7:VAPOR->TWO_PHASE'
+      10  old='' new='S02.stage.5:LIQUID->TWO_PHASE'
+       7  old='' new='S02.stage.2:LIQUID->TWO_PHASE'
+       1  old='' new='S02.stage.3:VAPOR->TWO_PHASE'
+consulting test files: {'tests/test_c8_duty_only_warning.py': 1, 'tests/test_s02_column_wo2.py': 2, 'tests/test_s02_column_wo2b.py': 5, 'tests/test_s02_column_wo3.py': 1, 'tests/test_s03_ours.py': 6, 'tests/test_s03_references.py': 6, 'tests/test_s03_s11_refusal.py': 4, 'tests/test_s08_blocks.py': 1, 'tests/test_s08_item6.py': 12, 'tests/test_s08_reentry.py': 12, 'tests/test_s08_roots.py': 4, 'tests/test_s09_references.py': 6}
+
+## S1 accepted lifted TWO_PHASE splits
+flash/Syn001Provider: n=2386 tests=483 max_sat_error=30.69953770685356 K non_numeric=0 min_minority_fraction=4.703e-17 min_LV=2.621e-16 kernel={'TWO_PHASE': 2233, 'LIQUID': 147, 'VAPOR': 6}
+  tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=2.361 L=1.11e-16 n=2.361 T=369.300462 bub=-30.69953770685356 dew=0.0 kernel=['ok', 'TWO_PHASE', 0.9999999999999999]
+  tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=2.361 L=1.11e-16 n=2.361 T=369.300462 bub=-30.69953770685356 dew=0.0 kernel=['ok', 'TWO_PHASE', 0.9999999999999999]
+  tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=2.361 L=2.22e-16 n=2.361 T=369.300462 bub=-23.77737323355069 dew=0.0 kernel=['ok', 'TWO_PHASE', 0.9999999999999997]
+  tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=2.361 L=2.22e-16 n=2.361 T=369.300462 bub=-23.77737323355069 dew=0.0 kernel=['ok', 'TWO_PHASE', 0.9999999999999997]
+  tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=0.5274 L=0.0001018 n=0.5275 T=352.064058 bub=0.059013419231462194 dew=0.06660133666252932 kernel=['ok', 'VAPOR', 1.0]
+  tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=0.5274 L=0.0001018 n=0.5275 T=352.064058 bub=0.059013419231462194 dew=0.06660133666252932 kernel=['ok', 'VAPOR', 1.0]
+  tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=0.5274 L=9.811e-05 n=0.5275 T=352.061900 bub=0.056855261998919104 dew=0.06416523883649461 kernel=['ok', 'VAPOR', 1.0]
+  tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=0.5274 L=9.811e-05 n=0.5275 T=352.061900 bub=0.056855261998919104 dew=0.06416523883649461 kernel=['ok', 'VAPOR', 1.0]
+  SMALLEST tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=2.361 L=1.11e-16 bub=-30.69953770685356 dew=0.0 kernel=['ok', 'TWO_PHASE', 0.9999999999999999]
+  SMALLEST tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=2.361 L=1.11e-16 bub=-30.69953770685356 dew=0.0 kernel=['ok', 'TWO_PHASE', 0.9999999999999999]
+  SMALLEST tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=2.361 L=2.22e-16 bub=-23.77737323355069 dew=0.0 kernel=['ok', 'TWO_PHASE', 0.9999999999999997]
+  SMALLEST tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=2.361 L=2.22e-16 bub=-23.77737323355069 dew=0.0 kernel=['ok', 'TWO_PHASE', 0.9999999999999997]
+  SMALLEST tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=0.5275 L=4.994e-08 bub=0.000949415557215616 dew=3.266109740707179e-05 kernel=['ok', 'VAPOR', 1.0]
+  SMALLEST tests/test_t05b_candidate_answers.py::test_b34a_no_solved_run_raises_and_the_refusals_are_the_dormant_duty_starts U-PHF2 V=0.5275 L=4.994e-08 bub=0.0009494155568745555 dew=3.266109740707179e-05 kernel=['ok', 'VAPOR', 1.0]
+  KERNEL-SINGLE tests/test_t06_w19_closure.py::test_a91d_a_pure_component_split_at_saturation_keeps_saturation[U-VLV.S2] U-VLV V=0.0672 L=1.933 bub=0.0 dew=0.0 kernel=['ok', 'LIQUID', 0.0]
+  KERNEL-SINGLE tests/test_t06_w19_closure.py::test_a91d_a_pure_component_split_at_saturation_keeps_saturation[U-VLV.S2] U-PHF V=0.03387 L=1.966 bub=0.0 dew=0.0 kernel=['ok', 'LIQUID', 0.0]
+  KERNEL-SINGLE tests/test_k04f9_t05b.py::test_x03_x01_exact_zeros_and_ids_at_the_zero_flow_roots[SC-1] U-VLV V=0.0672 L=1.933 bub=0.0 dew=0.0 kernel=['ok', 'LIQUID', 0.0]
+  KERNEL-SINGLE tests/test_k04f9_t05b.py::test_x26_b_is_recorded[SC-2] U-PHF V=1 L=1 bub=0.0 dew=0.0 kernel=['ok', 'LIQUID', 0.0]
+  KERNEL-SINGLE tests/test_k04f9_t05b.py::test_x26_b_is_recorded[SC-3] U-VLV V=0.0672 L=1.933 bub=0.0 dew=0.0 kernel=['ok', 'LIQUID', 0.0]
+  KERNEL-SINGLE tests/test_k04f9_t05b.py::test_x26_b_is_recorded[SC-3] U-PHF V=0.03387 L=1.966 bub=0.0 dew=0.0 kernel=['ok', 'LIQUID', 0.0]
+flash/wrapped: n=903 tests=94 max_sat_error=None K non_numeric=903 min_minority_fraction=6.155e-10 min_LV=4.873e-10 kernel={'n/a': 903}
+  tests/test_a09_qualification_field.py::test_am2_1_to_3_s3_a_coupled_run flash V=5.508 L=0.443 n=5.951 T=253.150000 bub=None dew=None kernel=None
+  tests/test_a09_qualification_field.py::test_am2_1_to_3_s3_a_coupled_run flash V=3.18 L=0.4671 n=3.647 T=253.150000 bub=None dew=None kernel=None
+  tests/test_a09_qualification_field.py::test_am2_4a_the_old_ext_note_restored_fails_am2_1_and_2_at_s3 flash V=5.508 L=0.443 n=5.951 T=253.150000 bub=None dew=None kernel=None
+  tests/test_a09_qualification_field.py::test_am2_4a_the_old_ext_note_restored_fails_am2_1_and_2_at_s3 flash V=3.18 L=0.4671 n=3.647 T=253.150000 bub=None dew=None kernel=None
+  tests/test_m02_wo8_region.py::test_g7g_light_gas_liquid_columns_are_bitwise_positive_zero[F1] U V=0.8898 L=0.1102 n=1 T=268.150000 bub=None dew=None kernel=None
+  tests/test_m02_wo8_region.py::test_g7g_light_gas_liquid_columns_are_bitwise_positive_zero[F11] U V=0.8569 L=0.1431 n=1 T=250.000000 bub=None dew=None kernel=None
+  tests/test_m02_wo8_region.py::test_g7g_light_gas_liquid_columns_are_bitwise_positive_zero[loop] U V=51.78 L=0.01449 n=51.79 T=253.150000 bub=None dew=None kernel=None
+  tests/test_m05_c1_reference.py::test_the_accessor_is_m02s_rebinding_at_pinned_w flash V=3.18 L=0.4671 n=3.647 T=253.150000 bub=None dew=None kernel=None
+  SMALLEST tests/test_m02_wo8_g7.py::test_g7c_k18_just_past_the_band_is_recorded[1e-08] U V=0.8898 L=5.476e-10 bub=None dew=None kernel=None
+  SMALLEST tests/test_m02_wo8_g7.py::test_g7c_k18_just_past_the_band_is_recorded[1e-07] U V=0.8898 L=5.476e-09 bub=None dew=None kernel=None
+  SMALLEST tests/test_m02_wo8_g7.py::test_g7c_k18_just_past_the_band_is_recorded[1e-05] U V=0.8898 L=5.476e-07 bub=None dew=None kernel=None
+  SMALLEST tests/test_m02_wo8_g7.py::test_g7c_at_delta_1e_4_two_phase_is_recorded_unverified U V=0.8898 L=5.476e-06 bub=None dew=None kernel=None
+  SMALLEST tests/test_m02_wo8_g7.py::test_g7c_as_amended_by_r282[0.0001-UNVERIFIED] U V=0.8898 L=5.476e-06 bub=None dew=None kernel=None
+  SMALLEST tests/test_m02_wo8_g7.py::test_g7c_the_near_dew_window_edges_as_the_manifest_states_them[0.00053-UNVERIFIED] U V=0.8898 L=2.902e-05 bub=None dew=None kernel=None
+stage/Syn001Provider: n=1161 tests=101 max_sat_error=23.779534591005927 K non_numeric=0 min_minority_fraction=1.944e-11 min_LV=1.944e-11 kernel={'TWO_PHASE': 1153, 'LIQUID': 8}
+  tests/test_s08_roots.py::test_a14b_vapour_on_the_l_block_fails_a08 S02.stage.4 V=1.944e-11 L=1 n=1 T=335.006858 bub=-23.779534591005927 dew=-0.502094927339499 kernel=['ok', 'LIQUID', 0.0]
+  tests/test_s08_roots.py::test_a14b_vapour_on_the_l_block_fails_a08 S02.stage.5 V=1.948e-10 L=1 n=1 T=345.005858 bub=-14.148701333233646 dew=-11.965039259862294 kernel=['ok', 'LIQUID', 0.0]
+  tests/test_s08_item6.py::test_a12_f1_stage_a_is_flagged_at_stage_4_only S02.stage.4 V=5.598e-06 L=0.5 n=0.5 T=370.010287 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  tests/test_s08_reentry.py::test_an_item_6_rejection_with_no_accepted_candidate_raises S02.stage.4 V=5.598e-06 L=0.5 n=0.5 T=370.010287 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  tests/test_s08_reentry.py::test_a09_f1_is_rejected_by_item_6_then_wo_g_s_root_through_stage_b S02.stage.4 V=5.598e-06 L=0.5 n=0.5 T=370.010287 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  tests/test_s08_reentry.py::test_a14d_an_infinite_tolerance_fails_a09 S02.stage.4 V=5.598e-06 L=0.5 n=0.5 T=370.010287 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  tests/test_s08_reentry.py::test_a14e_no_item_6_trigger_fails_a09 S02.stage.4 V=5.598e-06 L=0.5 n=0.5 T=370.010287 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  tests/test_s08_roots.py::test_a11_p3_and_f1_share_their_core S02.stage.4 V=5.598e-06 L=0.5 n=0.5 T=370.010287 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  SMALLEST tests/test_s08_roots.py::test_a14b_vapour_on_the_l_block_fails_a08 S02.stage.4 V=1.944e-11 L=1 bub=-23.779534591005927 dew=-0.502094927339499 kernel=['ok', 'LIQUID', 0.0]
+  SMALLEST tests/test_s08_roots.py::test_a14b_vapour_on_the_l_block_fails_a08 S02.stage.5 V=1.948e-10 L=1 bub=-14.148701333233646 dew=-11.965039259862294 kernel=['ok', 'LIQUID', 0.0]
+  SMALLEST tests/test_s08_item6.py::test_a12_f1_stage_a_is_flagged_at_stage_4_only S02.stage.4 V=5.598e-06 L=0.5 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  SMALLEST tests/test_s08_reentry.py::test_an_item_6_rejection_with_no_accepted_candidate_raises S02.stage.4 V=5.598e-06 L=0.5 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  SMALLEST tests/test_s08_reentry.py::test_a09_f1_is_rejected_by_item_6_then_wo_g_s_root_through_stage_b S02.stage.4 V=5.598e-06 L=0.5 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  SMALLEST tests/test_s08_reentry.py::test_a14d_an_infinite_tolerance_fails_a09 S02.stage.4 V=5.598e-06 L=0.5 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  KERNEL-SINGLE tests/test_s08_item6.py::test_a12_f1_stage_a_is_flagged_at_stage_4_only S02.stage.4 V=5.598e-06 L=0.5 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  KERNEL-SINGLE tests/test_s08_reentry.py::test_an_item_6_rejection_with_no_accepted_candidate_raises S02.stage.4 V=5.598e-06 L=0.5 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  KERNEL-SINGLE tests/test_s08_reentry.py::test_a09_f1_is_rejected_by_item_6_then_wo_g_s_root_through_stage_b S02.stage.4 V=5.598e-06 L=0.5 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  KERNEL-SINGLE tests/test_s08_reentry.py::test_a14d_an_infinite_tolerance_fails_a09 S02.stage.4 V=5.598e-06 L=0.5 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  KERNEL-SINGLE tests/test_s08_reentry.py::test_a14e_no_item_6_trigger_fails_a09 S02.stage.4 V=5.598e-06 L=0.5 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+  KERNEL-SINGLE tests/test_s08_roots.py::test_a11_p3_and_f1_share_their_core S02.stage.4 V=5.598e-06 L=0.5 bub=-0.37868952299868397 dew=-0.3558233184687083 kernel=['ok', 'LIQUID', 0.0]
+
+## S1 stages by unit and test file
+S01 tests/test_s01_cascade_wo2.py: n=47 max_sat_error=1.61e-06 K min_LV=0.0135 min_V_or_L=0.0146
+S01 tests/test_s01_cascade_wo3.py: n=62 max_sat_error=2.43e-06 K min_LV=0.0135 min_V_or_L=0.0146
+S01 tests/test_s01_cascade_wo4.py: n=4 max_sat_error=2.56e-09 K min_LV=0.0341 min_V_or_L=0.0368
+S01 tests/test_s01_review_adversarial.py: n=10 max_sat_error=1e-08 K min_LV=0.0341 min_V_or_L=0.0368
+S02 tests/test_c8_duty_only_warning.py: n=32 max_sat_error=2.14e-07 K min_LV=0.172 min_V_or_L=0.2
+S02 tests/test_s02_column_wo2.py: n=94 max_sat_error=8.16e-08 K min_LV=0.172 min_V_or_L=0.2
+S02 tests/test_s02_column_wo2b.py: n=72 max_sat_error=2.99e-08 K min_LV=0.248 min_V_or_L=0.352
+S02 tests/test_s03_s11_refusal.py: n=28 max_sat_error=4.31e-11 K min_LV=0.248 min_V_or_L=0.352
+S02 tests/test_s08_item6.py: n=74 max_sat_error=0.379 K min_LV=2.8e-06 min_V_or_L=5.6e-06
+S02 tests/test_s08_reentry.py: n=50 max_sat_error=0.379 K min_LV=2.8e-06 min_V_or_L=5.6e-06
+S02 tests/test_s08_roots.py: n=24 max_sat_error=23.8 K min_LV=1.94e-11 min_V_or_L=1.94e-11
+S03 tests/test_s03_ours.py: n=109 max_sat_error=2.4e-06 K min_LV=0.16 min_V_or_L=0.183
+S03 tests/test_s03_references.py: n=109 max_sat_error=2.4e-06 K min_LV=0.16 min_V_or_L=0.183
+S03 tests/test_s08_item6.py: n=123 max_sat_error=2.4e-06 K min_LV=0.16 min_V_or_L=0.183
+S03 tests/test_s09_references.py: n=109 max_sat_error=2.4e-06 K min_LV=0.16 min_V_or_L=0.183
+S06 tests/test_s06_column_wo2.py: n=137 max_sat_error=2.42e-06 K min_LV=0.201 min_V_or_L=0.245
+S06 tests/test_s08_item6.py: n=77 max_sat_error=2.42e-06 K min_LV=0.201 min_V_or_L=0.245
+
+## S1 flash-type SYN-001 splits by minority fraction min(V, L)/n
+[0.001, 2): n=2376 tests=483 max_sat_error=1.005085937322292e-05 over_1e-4=0 kernel={'TWO_PHASE': 2229, 'LIQUID': 147}
+[1e-06, 0.001): n=4 tests=1 max_sat_error=0.06660133666252932 over_1e-4=4 kernel={'VAPOR': 4}
+[1e-10, 1e-06): n=2 tests=1 max_sat_error=0.000949415557215616 over_1e-4=2 kernel={'VAPOR': 2}
+[0, 1e-10): n=4 tests=1 max_sat_error=30.69953770685356 over_1e-4=4 kernel={'TWO_PHASE': 4}
+  2 x tests/test_t05b_candidate_answers.py U-PHF2 V=0.5275 L=4.994e-08 bub=0.000949 dew=3.27e-05 kernel=VAPOR:1.0
+  2 x tests/test_t05b_candidate_answers.py U-PHF2 V=0.5274 L=9.811e-05 bub=0.0569 dew=0.0642 kernel=VAPOR:1.0
+  2 x tests/test_t05b_candidate_answers.py U-PHF2 V=2.361 L=1.11e-16 bub=-30.7 dew=0 kernel=TWO_PHASE:0.9999999999999999
+  2 x tests/test_t05b_candidate_answers.py U-PHF2 V=0.5274 L=0.0001018 bub=0.059 dew=0.0666 kernel=VAPOR:1.0
+  2 x tests/test_t05b_candidate_answers.py U-PHF2 V=2.361 L=2.22e-16 bub=-23.8 dew=0 kernel=TWO_PHASE:0.9999999999999997
+
+## S2 near-trivial TWO_PHASE provider answers (minority fraction < 1e-6)
+records 2377; by file: {'tests/test_adr_0002_a1_integers.py': 19, 'tests/test_k02_flowsheet.py': 14, 'tests/test_k02_mixer.py': 9, 'tests/test_k03_attempts.py': 17, 'tests/test_k03_schemas.py': 16, 'tests/test_k03_tear.py': 11, 'tests/test_k04_checks.py': 4, 'tests/test_k04_regularity.py': 4, 'tests/test_k04f9_family.py': 69, 'tests/test_k04f9_rules.py': 10, 'tests/test_k04f9_t05b.py': 50, 'tests/test_k05_replay.py': 33, 'tests/test_m03_estimation.py': 39, 'tests/test_m03_nlp_formulation.py': 53, 'tests/test_m03_schemas.py': 50, 'tests/test_m03_sensitivity_syn001.py': 31, 'tests/test_m03_sweep.py': 4, 'tests/test_m03_twin.py': 1, 'tests/test_m06_browser_smoke.py': 5, 'tests/test_m06_http_contract.py': 8, 'tests/test_m06_wo3_list_audit.py': 4, 'tests/test_s01_cascade_wo4.py': 2, 'tests/test_s02_column_wo2.py': 3, 'tests/test_s10_flash.py': 2, 'tests/test_t02_recycle.py': 8, 'tests/test_t02_region.py': 2, 'tests/test_t03_contract.py': 14, 'tests/test_t03_roots.py': 3, 'tests/test_t04_basin.py': 1, 'tests/test_t04_certificate.py': 24, 'tests/test_t04_edge3.py': 10, 'tests/test_t04_ptc_region.py': 11, 'tests/test_t04_review.py': 3, 'tests/test_t05_certificates.py': 1, 'tests/test_t05_identity.py': 2, 'tests/test_t05_pump.py': 1, 'tests/test_t05_w12_table.py': 13, 'tests/test_t05_w1d_verifier.py': 5, 'tests/test_t05b_band_screen.py': 49, 'tests/test_t05b_candidate_answers.py': 274, 'tests/test_t05b_contract.py': 6, 'tests/test_t05b_dormancy.py': 8, 'tests/test_t05b_identity.py': 14, 'tests/test_t05b_leaving_flash.py': 98, 'tests/test_t05b_near_pure_restarts.py': 1, 'tests/test_t05b_openings.py': 78, 'tests/test_t05b_review_s3.py': 1, 'tests/test_t05b_zero_flow.py': 4, 'tests/test_t06_f4_edge3.py': 5, 'tests/test_t06_f4_g6.py': 34, 'tests/test_t06_f4_g7.py': 33, 'tests/test_t06_f4_restart.py': 4, 'tests/test_t06_identity.py': 34, 'tests/test_t06_w12_units_v2.py': 10, 'tests/test_t06_w13_f6.py': 465, 'tests/test_t06_w19_closure.py': 4, 'tests/test_t06_w1a_units.py': 9, 'tests/test_t06_w20_counters.py': 14, 'tests/test_t06_w22_a33.py': 2, 'tests/test_t06_w28_records.py': 7, 'tests/test_t06_w2_verifier.py': 5, 'tests/test_t06_w30_holdout.py': 2, 'tests/test_t06_w5_corpus.py': 18, 'tests/test_t06_w6_a32.py': 29, 'tests/test_t06_w6_a85.py': 2, 'tests/test_t06_w6_ensemble.py': 26, 'tests/test_t06_w6_generator.py': 2, 'tests/test_t06_w6_injection.py': 3, 'tests/test_t06_w7_adv06.py': 4, 'tests/test_t07_adr0008_jobs.py': 1, 'tests/test_t07_b3_policies.py': 4, 'tests/test_t07_conformance.py': 4, 'tests/test_t07_g12_no_weakening.py': 60, 'tests/test_t07_identity.py': 96, 'tests/test_t07_injection.py': 1, 'tests/test_t07_interrupt.py': 6, 'tests/test_t07_q26.py': 3, 'tests/test_t07_r6_hints.py': 1, 'tests/test_t07_r6_replays.py': 9, 'tests/test_t07_v17_c2.py': 2, 'tests/test_t07_v17_reference.py': 87, 'tests/test_t07_w3a_revision_runs.py': 89, 'tests/test_t07_w3e_solution_state.py': 59, 'tests/test_t07_w4a_jobs.py': 42, 'tests/test_t07_w4c_process_executor.py': 15, 'tests/test_t07_w4e_error_mapping.py': 6, 'tests/test_t07_w5a_inspection.py': 7, 'tests/test_t07_w5a_operations.py': 5, 'tests/test_t07_w5b_cli.py': 5, 'tests/test_t07_w5e_application_results.py': 1, 'tests/test_t07_w6a_http.py': 3, 'tests/test_t08_adr0025.py': 11, 'tests/test_t08_rename_substitution.py': 2, 'tests/test_t08_w1_d2_replay_identity.py': 4, 'tests/test_t08_w1_identity_substitution.py': 38, 'tests/test_t08_w1_typed_ends.py': 2, 'tests/test_t08_w2_cli_rerun.py': 2, 'tests/test_t08_w2_edge_identity.py': 3, 'tests/test_t08_w4_warm_starts.py': 8}
+  tests/test_t02_recycle.py::test_a05_syn001_under_anderson_from_off_a[SYN-001-nominal] Syn001Provider beta=1.6221838992777426e-19 T=360.0
+  tests/test_t06_w13_f6.py::test_a76_every_product_of_a_two_phase_flash_re_flashes_ok Syn001Provider beta=1.4364868148432632e-18 T=363.65123275534773
+  tests/test_t06_w13_f6.py::test_a76_every_product_of_a_two_phase_flash_re_flashes_ok Syn001Provider beta=1.964010083560687e-18 T=378.94064581461475
+  tests/test_t06_w13_f6.py::test_a76_every_product_of_a_two_phase_flash_re_flashes_ok Syn001Provider beta=2.1011396719194218e-18 T=387.9043859605565
+  tests/test_t06_f4_g7.py::test_g7_every_perturbed_start_is_verified_at_the_root[1] Syn001Provider beta=2.4333982716472717e-18 T=359.8245960454511
+  tests/test_t06_f4_g7.py::test_g7_every_perturbed_start_is_verified_at_the_root[2] Syn001Provider beta=2.4333982716472717e-18 T=359.8245960454511
+
+## column_records.py OUT (the 52 S08 G1 configurations, baseline vs the item rule)
+S08B-RECORDS n=52 moved=[] stage_a_moved=[]
+  S02.M1 /recovered_from/message
+    base: active_set_cycling(S02.stage.1:TWO_PHASE,S02.stage.2:TWO_PHASE,S02.stage.3:TWO_PHASE,S02.stage.4:TWO_PHASE,S02.stage.5:TWO_PHASE,S02.stage.6:TWO_PHASE,S02.stage.7:TWO_PHASE; phase_wall(stall, ))
+    fix:  active_set_cycling(S02.stage.1:TWO_PHASE,S02.stage.2:TWO_PHASE,S02.stage.3:TWO_PHASE,S02.stage.4:TWO_PHASE,S02.stage.5:TWO_PHASE,S02.stage.6:TWO_PHASE,S02.stage.7:TWO_PHASE; phase_wall(stall, S02.stage.7:VAPOR->TWO_PHASE))
+  S02.P1 /reentry/stage_a/recovered_from/message
+    base: active_set_cycling(S02.stage.1:TWO_PHASE,S02.stage.2:TWO_PHASE,S02.stage.3:TWO_PHASE,S02.stage.4:TWO_PHASE,S02.stage.5:TWO_PHASE; phase_wall(stall, ))
+    fix:  active_set_cycling(S02.stage.1:TWO_PHASE,S02.stage.2:TWO_PHASE,S02.stage.3:TWO_PHASE,S02.stage.4:TWO_PHASE,S02.stage.5:TWO_PHASE; phase_wall(stall, S02.stage.2:LIQUID->TWO_PHASE))
+  S02.V-M2.distillate_rate+boilup_ratio /recovered_from/message
+    base: active_set_cycling(S02.stage.2:TWO_PHASE,S02.stage.3:TWO_PHASE,S02.stage.4:TWO_PHASE,S02.stage.5:TWO_PHASE,S02.stage.6:TWO_PHASE,S02.stage.7:TWO_PHASE; phase_wall(stall, ))
+    fix:  active_set_cycling(S02.stage.2:TWO_PHASE,S02.stage.3:TWO_PHASE,S02.stage.4:TWO_PHASE,S02.stage.5:TWO_PHASE,S02.stage.6:TWO_PHASE,S02.stage.7:TWO_PHASE; phase_wall(stall, S02.stage.7:VAPOR->TWO_PHASE))
+  S03.PC-L /recovered_from/message
+    base: active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, ))
+    fix:  active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, S03.stage.7:VAPOR->TWO_PHASE))
+  S03.PC-LI /recovered_from/message
+    base: active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, ))
+    fix:  active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, S03.stage.7:VAPOR->TWO_PHASE))
+  S03.PC-P /recovered_from/message
+    base: active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, ))
+    fix:  active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, S03.stage.7:VAPOR->TWO_PHASE))
+  S03.RC1 /recovered_from/message
+    base: active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, ))
+    fix:  active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, S03.stage.7:VAPOR->TWO_PHASE))
+  S03.RC1-BR /recovered_from/message
+    base: active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, ))
+    fix:  active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, S03.stage.7:VAPOR->TWO_PHASE))
+  S03.RC1-RR /recovered_from/message
+    base: active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, ))
+    fix:  active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, S03.stage.7:VAPOR->TWO_PHASE))
+  S03.RC1-z /recovered_from/message
+    base: active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, ))
+    fix:  active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, S03.stage.7:VAPOR->TWO_PHASE))
+  S03.RC7 /recovered_from/message
+    base: active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, ))
+    fix:  active_set_cycling(S03.stage.1:TWO_PHASE,S03.stage.2:TWO_PHASE,S03.stage.3:TWO_PHASE,S03.stage.4:TWO_PHASE,S03.stage.5:TWO_PHASE,S03.stage.6:TWO_PHASE,S03.stage.7:TWO_PHASE; phase_wall(stall, S03.stage.7:VAPOR->TWO_PHASE))

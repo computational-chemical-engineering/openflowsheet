@@ -109,6 +109,12 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
+**S08b is tested on `wp/S08b` (2026-10-26), not yet merged.** Phase-contract follow-ups from S08
+(`docs/derivations/S08b-design.md`, R-790…R-794): signature items by declaration; S01 cascades get S02 §8 item 6 (S01
+Amendment 2). Manifest `evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json`: `status: tested`, 18 of 20 checks (gate and CI `unsupported`).
+Build log `docs/S08b_BUILD_DECISIONS.md` (decisions WO3-1, WO4-1…WO4-3). **Next:** the full gate (`scripts/gate.sh`), CI on
+both architectures, the one `reviewer` pass (the package touches phase logic), then merge into `main`.
+
 **T07 is merged (2026-09-28).** Evidence under `evidence/T07/` (`status: tested`). Job lifecycle,
 authorization and the Python/CLI/HTTP/MCP bindings over one operations table (ADRs 0019, 0020; design
 `docs/design/T07-jobs-and-bindings.md` with ruling rounds 1–7; register R-091…R-116). **V17 MET** on the

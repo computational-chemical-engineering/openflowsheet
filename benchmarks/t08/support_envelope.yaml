@@ -7116,3 +7116,69 @@ harvest:
   class: P
   to: []
   note: CI on both architectures is checked before merge, not by the generator; unsupported here
+- manifest: evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json
+  item: limitations[0]
+  sha256: 8445cffaca6350aef9651b929b1a2cbbeb5464f73fc47e1722418b1a716cd30e
+  class: E
+  to:
+  - L19
+  note: 'a near-trivial lifted flash-type split may still pass the solver as CONVERGED; on certified paths the verifier rejects it (S08b-design §4.2, R-792); no thermodynamic-consistency claim beyond admissibility there'
+- manifest: evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json
+  item: limitations[1]
+  sha256: f5a831649f1fe11b97ac8bdfe0cb99238f40f9c0399d5a1b6435c837d27d9e4a
+  class: E
+  to:
+  - L19
+  note: 'saturation consistency is not established for CoolProp-backed splits (not scanned), Wilson/gamma-phi cascades or PR-C1 (no band temperature)'
+- manifest: evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json
+  item: limitations[2]
+  sha256: f4180b56a22a7f4c30967a6e9f90bf35c662ece6458f7b013006b1d2b34faeb9
+  class: E
+  to:
+  - U04
+  - L20
+  note: 'S01''s cascade (`syn001.cascade`) is library-only, not in MODEL_BUILDERS (U04); S01''s saturation clause is a measured margin on low-traffic stages (R-735), so a correct, loosely converged root may end in AcceptanceDefectError'
+- manifest: evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json
+  item: limitations[3]
+  sha256: 616e6e2de6d44b93f9152f22c840549c2ee110d3a4bdf661051f540337b22ec4
+  class: P
+  to: []
+  note: 'requirements [D09]: the schema takes D/A ids; X31 (named by S08b-design §10 Q5) is a gate id, not listed'
+- manifest: evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json
+  item: limitations[4]
+  sha256: bd2d7c5452e919d8a0071778dc97282821f728ebf887093b3c1fa7bb5332fa8e
+  class: P
+  to: []
+  note: 'scripts/gate.sh and CI run once before merge, not by the generator; process note'
+- manifest: evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json
+  item: limitations[5]
+  sha256: f5559c0d6a8f6b63c5d8df9c59fd5f1d784e03954b2d03df9c4098468757758f
+  class: P
+  to: []
+  note: 'environment note: CoolProp''s tests skip on the workstation that ran G1 and G3; the unscanned CoolProp splits are limitations[1]''s'
+- manifest: evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json
+  item: limitations[6]
+  sha256: feafaa5e1f28452eebaefb9625374f28a67284e8e34eb3314bfeefa91a69f9a6
+  class: P
+  to: []
+  note: 'S08b''s reviewer pass follows this manifest; human numerical and process-model review pending; neither reviewed nor released claimed'
+- manifest: evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json
+  item: limitations[7]
+  sha256: 5990531611847a1225af307250d08ea06f69ba268b36625adbbb81a0309355b2
+  class: P
+  to: []
+  note: 'process note: this harvest follows the manifest''s generation'
+- manifest: evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json
+  item: checks[18]
+  check_id: S08b.gate
+  sha256: 9e98ce150917ca8b92faec7715e832d7637c1a989818e645302267df1bfa8ae2
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json
+  item: checks[19]
+  check_id: S08b.ci
+  sha256: daa0fb64d3c1848115f83b0e8f066a3599d12ef0fdf3c416a58500259a905841
+  class: P
+  to: []
+  note: CI on both architectures is checked before merge, not by the generator; unsupported here
