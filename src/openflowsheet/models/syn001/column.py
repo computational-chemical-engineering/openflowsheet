@@ -96,7 +96,6 @@ from openflowsheet.models.syn001.cascade import (
     liquid_id,
     liquid_total_id,
     mixed_id,
-    property_method_refusal,
     stage_duty_id,
     stage_prefix,
     stage_pressure_id,
@@ -107,7 +106,11 @@ from openflowsheet.models.syn001.cascade import (
     vapor_total_id,
 )
 from openflowsheet.models.syn001.cascade import EQUATIONS as CASCADE_EQUATIONS
-from openflowsheet.models.syn001.equilibrium_form import equilibrium_form
+from openflowsheet.models.syn001.equilibrium_form import (
+    EquilibriumForm,
+    admission,
+    equilibrium_form,
+)
 from openflowsheet.models.syn001.gamma_phi_blocks import (
     GammaPhiLnKBlock,
     MixtureEnthalpyFlowBlock,
@@ -172,6 +175,17 @@ S06_SPECIFICATION: Final = "docs/derivations/S06-spec.md §2"
 
 #: The ratio specifications (§2.1, "ratio" form); every other kind is `variable − parameter`.
 RATIO_KINDS: Final[tuple[str, ...]] = ("reflux_ratio", "boilup_ratio")
+
+#: S10-C §4.8 (ADR 0049 D7): the end specification kinds a column admits for a
+#: composition-dependent equilibrium form; `purity`, `recovery` and `temperature` are refused,
+#: typed, after S1–S10 and before I1 (their bands and inverse rows are SYN-001's closed forms).
+GAMMA_PHI_KINDS: Final[tuple[str, ...]] = (
+    "reflux_ratio",
+    "boilup_ratio",
+    "distillate_rate",
+    "bottoms_rate",
+    "duty",
+)
 
 
 # -- declarations --------------------------------------------------------------------------------
@@ -627,14 +641,19 @@ def validate(
     not one per stage, a non-finite duty, a `None` duty anywhere but a column-specification stage,
     a flow vector of the wrong length, a duplicated port) is misuse and raises `ValueError`.
 
-    S03 §9 S11 precedes R1: a provider other than SYN-001 is refused by identity
-    (`property_method_refusal`) before anything else is read or evaluated.
+    S03 §9 S11, as S10-C §4.1 amends it for the column, precedes R1: a provider outside the
+    equilibrium forms' allow-list is refused by identity (`equilibrium_form.admission`) before
+    anything else is read or evaluated. For a composition-dependent form the domain bounds of R3
+    are the provider's declared `T` and `P` boxes, and the specification kinds are narrowed after
+    S10 (S10-C §4.8); SYN-001 keeps its constants.
     """
     unit, components = spec.unit_id, spec.components
-    # S11 (S03 §9)
-    refused = property_method_refusal(unit, provider)
+    # S11 (S03 §9; S10-C §4.1)
+    refused = admission(unit, provider, context)
     if refused is not None:
         return refused
+    form = equilibrium_form(provider)
+    t_bounds, p_bounds = _domain(form)
     count = spec.stage_count
     # R1
     if isinstance(count, bool) or not isinstance(count, int) or count < 1:
@@ -668,15 +687,15 @@ def validate(
     for inlet in inlets:
         stream = inlet_stream(unit, inlet.port)
         for column, value, bounds in (
-            (temperature_id(stream), inlet.state.temperature, (T_MIN, T_MAX)),
-            (pressure_id(stream), inlet.state.pressure, (P_MIN, P_MAX)),
+            (temperature_id(stream), inlet.state.temperature, t_bounds),
+            (pressure_id(stream), inlet.state.pressure, p_bounds),
         ):
             if not _in_domain(value, bounds):
                 return _invalid(f"domain:{column}", f"{column} = {value!r} outside {bounds}")
     for stage, value in enumerate(spec.pressures, start=1):
         column = stage_pressure_id(unit, stage)
-        if not _in_domain(value, (P_MIN, P_MAX)):
-            return _invalid(f"domain:{column}", f"{column} = {value!r} outside {(P_MIN, P_MAX)}")
+        if not _in_domain(value, p_bounds):
+            return _invalid(f"domain:{column}", f"{column} = {value!r} outside {p_bounds}")
     # R4
     taken: set[int] = set()
     for side in spec.sides:
@@ -723,7 +742,7 @@ def validate(
                 f"{unit}: inlet {inlet.port} is not an admissible {state.phase} ({detail})",
             )
 
-    refusal = _column_refusal(spec)
+    refusal = _column_refusal(spec, form)
     if refusal is not None:
         return refusal
 
@@ -766,7 +785,15 @@ def _specification(spec: ColumnSpec, end: str) -> EndSpecification:
     return found
 
 
-def _column_refusal(spec: ColumnSpec) -> CascadeFailure | None:
+def _domain(form: EquilibriumForm | None) -> tuple[tuple[float, float], tuple[float, float]]:
+    """The `T` and `P` bounds the column checks: SYN-001's constants, or a composition-dependent
+    form's declared domain (S10-C §4.8; SYN-001's constants do not describe its records)."""
+    if form is not None and form.composition_dependent:
+        return form.domain["T"], form.domain["P"]
+    return (T_MIN, T_MAX), (P_MIN, P_MAX)
+
+
+def _column_refusal(spec: ColumnSpec, form: EquilibriumForm | None = None) -> CascadeFailure | None:
     """§5 S1–S10, in that order, on a specification that passed R1–R6."""
     unit, count = spec.unit_id, spec.stage_count
     # S1
@@ -883,6 +910,19 @@ def _column_refusal(spec: ColumnSpec) -> CascadeFailure | None:
     # S10
     if spec.ends() and feed == 0.0:
         return _invalid("no_feed", f"{unit}: a column with a condenser or reboiler and no feed")
+    # S10-C §4.8: the kinds a composition-dependent form admits, decided before I1, so that
+    # `stage_band` and `saturation_temperature` (SYN-001's closed forms) are never reached for it
+    if form is not None and form.composition_dependent:
+        for end in spec.ends():
+            kind = _specification(spec, end).kind
+            if kind not in GAMMA_PHI_KINDS:
+                return CascadeFailure(
+                    "CAPABILITY_UNAVAILABLE",
+                    f"unsupported(column_specification:{kind}:{form.provider_id})",
+                    f"{unit}: a {kind!r} {end} specification is not offered for "
+                    f"{form.provider_id}; a column on it admits {GAMMA_PHI_KINDS} "
+                    "(S10-C §4.8, ADR 0049 D7)",
+                )
     return _inverse_refusal(spec)
 
 
@@ -1083,8 +1123,11 @@ def energy_precheck(
 ) -> EnergyPrecheck:
     """S01 §5 R7 on a column whose every slot is a duty, W, with
     `H* = H_in + Σ_j Q_j*` over every stage's duty, the ends' included, and the bounds
-    `Σ_i F_i h_i^L(T_min, P_N*)`, `Σ_i F_i h_i^V(T_max)`."""
+    `Σ_i F_i h_i^L(T_min, P_N*)`, `Σ_i F_i h_i^V(T_max)`. For a composition-dependent form
+    `T_min`, `T_max` are the provider's declared domain and the enthalpies are mixture flows
+    `n_tot h` (`_enthalpy_flow` dispatches; S10-C §4.8)."""
     components, inlets = spec.components, spec.inlets()
+    (t_min, t_max), _ = _domain(equilibrium_form(provider))
     totals = [sum(inlet.state.n[i] for inlet in inlets) for i in range(len(components))]
     h_in = sum(
         _enthalpy_flow(
@@ -1104,8 +1147,8 @@ def energy_precheck(
     return EnergyPrecheck(
         inflow=h_in,
         target=h_in + sum(duties),
-        lower=_enthalpy_flow(provider, context, components, totals, T_MIN, p_bottom, "LIQUID"),
-        upper=_enthalpy_flow(provider, context, components, totals, T_MAX, p_bottom, "VAPOR"),
+        lower=_enthalpy_flow(provider, context, components, totals, t_min, p_bottom, "LIQUID"),
+        upper=_enthalpy_flow(provider, context, components, totals, t_max, p_bottom, "VAPOR"),
     )
 
 
@@ -1800,6 +1843,7 @@ __all__ = [
     "CONDENSER_KINDS",
     "END_KINDS",
     "EQUATIONS",
+    "GAMMA_PHI_KINDS",
     "INITIALIZER_ID",
     "INVERSE_EQUATIONS",
     "INVERSE_KINDS",

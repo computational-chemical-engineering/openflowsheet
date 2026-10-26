@@ -126,7 +126,11 @@ def test_a04_s11_refuses_every_other_provider_before_any_evaluation(name: str) -
     refused = validate(M1, provider, CONTEXT)
     assert isinstance(refused, CascadeFailure)
     assert (refused.outcome, refused.cause) == ("CAPABILITY_UNAVAILABLE", expected)
-    assert "SYN-001 only" in refused.message and repr(provider_id) in refused.message
+    # S10-C §4.1 (ADR 0049 D1; S10C.A56): the column's scope names both admitted forms.
+    assert (
+        "a column supports SYN-001 (provider_id 'syn001', reference_convention 'SYN-001-ref-v1') "
+        "and wilson-ig-v1 (reference conventions 'WILSON-IG-ref-v1', 'S10-VER-ref-v1')"
+    ) in refused.message and repr(provider_id) in refused.message
     solved = solve_column(M1, provider)
     assert solved == refused
     assert (provider.evaluations, provider.flashes) == (0, 0)
