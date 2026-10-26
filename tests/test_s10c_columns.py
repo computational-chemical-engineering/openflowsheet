@@ -204,18 +204,22 @@ def worst(found: Mapping[str, list[tuple[float, str]]]) -> tuple[float, str]:
 def test_a41_the_state_is_the_registered_root(case: str, record_property: Any) -> None:
     """A41: every stage's T, liquid and vapour flows (the absent component's included, against
     that stage's flow tolerance); T_c, D, B, x_D, x_B, Q_c, Q_r, reflux and distillate flows;
-    each within its registered tolerance. A43 (recorded): Newton iterations, the largest
-    `|Δ|/tolerance` per class, absent flows exactly 0.0 or not, the observed order."""
+    each within its registered tolerance; the absent flows exactly 0.0 (asserted, R-785: IEEE
+    `== 0.0`, the sign of zero not asserted). A43 (recorded): Newton iterations, the largest
+    `|Δ|/tolerance` per class, absent flows exactly 0.0 (asserted, R-785), the observed order."""
     found, residuals = solved(case)
     measured = deviations(case, found.state)
     assert worst(measured)[0] <= 1.0, worst(measured)
     spec = column_spec(case)
     gone = spec.components[absent(spec)]
-    zeros = [
-        found.state[name]
+    names = [
+        name
         for j in spec.equilibrium_stages()
         for name in (liquid_id(UNIT, j, gone), vapor_id(UNIT, j, gone))
     ]
+    zeros = [found.state[name] for name in names]
+    nonzero = {name: value for name, value in zip(names, zeros, strict=True) if value != 0.0}
+    assert not nonzero, nonzero
     record_property("newton_iterations", len(residuals))
     record_property("observed_order", observed_order(residuals))
     record_property("worst_by_class", {k: max(v) for k, v in measured.items()})

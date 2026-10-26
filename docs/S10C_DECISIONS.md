@@ -251,3 +251,7 @@ parallel (the note's §4.6 set-up).
   `F-BUDGET` → `SUCCESS` THM-09/24, /35; `SUCCESS` → `SUCCESS` NUM-03/26, STA-02/22, /23, /27, /30, /36, /38,
   THM-07/34, THM-08/28, /37, /38 (`SUCCESS` 438, `F-FALSE-SUCCESS-CAUGHT` 2). **Equal to note §4.6's table; no
   regression.** WO-R3 (CI dispatch, aarch64 G-R3, CI half of G-R7) is the orchestrator's.
+- RUN (WO-R5, R-785, local x86-64): A41 asserts the 60 absent flows `== 0.0` per case (IEEE equality, sign not
+  asserted; the message names each nonzero variable). `pytest -k a41` 2/2 pass (C-MW, C-EW). Scratch mutation (not
+  committed) setting one absent flow to `1e-300` before the assertion: 2/2 fail with
+  `AssertionError: {'COL.stage.5.v.C2H5OH': 1e-300}` (C-MW shown).
