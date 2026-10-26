@@ -14509,3 +14509,225 @@ record why.
 - *No requirement for S08.* S08 changes the expected outcome of S02's phase case P1, which is X31 evidence.
 
 **Watch for.** S06 entering the ledger: then it belongs in S08's `depends_on`.
+
+---
+
+**Numbering note (S10-C, 2026-10-26).** S10-C's entries start at **R-760**. R-737…R-739 and R-753…R-759 are left for the
+next package on `main`; R-740…R-752 are held by S09 on `wp/S09`. ADR 0049 is S10-C's.
+
+---
+
+## R-760 — S10-C: the column admits equilibrium forms by an identity allow-list; S11 stays for every other provider and for the cascade
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | `docs/adr/0049-s10c-composition-dependent-k.md` D1; `docs/derivations/S10C-design.md` §4.1, §4.8 |
+| Evidence | `pr-c1-v1` and `pr-lib-v1` declare composition derivatives yet are φ–φ (`thermo/`); S03 §9's identity reasoning |
+| Affected packages | S10-C; S03 (A04's message assertion) |
+
+**Decision.**
+- `(syn001, SYN-001-ref-v1)` → `syn001-lnK-TP`; `(wilson-ig-v1, WILSON-IG-ref-v1 | S10-VER-ref-v1)` → `gamma-phi-ig-v1`.
+- For the second, the declared capabilities are checked and the vapour `ln φ` must be exactly 0 at one probe.
+- Everything else: S11's cause `unsupported(column_property_method:<id>)`, message naming the new scope.
+- `cascade.validate` is not edited. Procedural kernels treat a non-admitted provider exactly as before.
+
+**Rejected alternatives, and why.**
+- *Admit by capability (declares `∂/∂n`).* Admits φ–φ providers whose K also depends on the vapour.
+- *An adapter offering `lnK` and `h_<c>`.* Makes unmigrated call sites silently wrong; without it they fail loudly.
+
+**Watch for.** A new provider id or convention: it needs a new entry and its own form, never a widened match.
+
+---
+
+## R-761 — S10-C: for `gamma-phi-ig-v1`, K is evaluated at a liquid composition and enthalpy flows are `n_tot h`
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D2; design note §4.2, §4.7 |
+| Evidence | S10 spec (3.10): `ln φ^V ≡ 0`, so `K_i = γ_i(x) P_i^sat/P`; the provider offers `h` and `lnphi_<c>` only |
+| Affected packages | S10-C |
+
+**Decision.** `ln K_i = ln φ_i^L(T, P, x)`; a vapour-side quantity uses the incipient liquid. `Ḣ = n_tot h`, with
+`∂Ḣ/∂n_j = h + n_tot ∂h/∂n_j` (the C1 blocks' formula).
+
+**Rejected alternatives, and why.**
+- *A φ–φ K-block with vapour inputs.* Needs incipient-vapour variables; no admitted provider needs it.
+- *Per-component enthalpy from pure probes.* Exact only because h^E = 0.
+
+**Watch for.** A provider version with a non-ideal vapour: it is a new form, not this one.
+
+---
+
+## R-762 — S10-C: the constant-β point by composition successive substitution with an exact T solve per step
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D3; design note §4.3 |
+| Evidence | `docs/derivations/scripts/s10c_design/measured.txt` §2–§3: converges at 11 feeds × 5 β (≤ 61 iterations, rate ≤ 0.614) and at the 13 E-2 states (≤ 29, rate ≤ 0.47) |
+| Affected packages | S10-C |
+
+**Decision.** `DELTA_BETA = 1e-13` on the ln K step, cap 1000, a bracketed safeguarded Newton T solve to adjacent
+doubles (budget 200); cold start `x = z` at every call; `β = 0` in one step.
+
+**Rejected alternatives, and why.**
+- *Nested T bisection with an inner x loop.* Same fixed point, about ten times the evaluations.
+- *Newton on (T, x).* Needs globalisation and a fallback.
+- *Warm starts across β.* `T(β)` would depend on call history.
+
+**Watch for.** A ternary or strongly non-ideal state that reaches the cap.
+
+---
+
+## R-763 — S10-C: the PH kernel is band-first for a composition-dependent form
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D4; design note §4.5–§4.6 |
+| Evidence | S10 spec §14: `∂β/∂T ≈ 1e8 K⁻¹` in the sliver, 7 of 20 TP flashes at the cap; one TP flash 1.9 ms (`measured.txt`) |
+| Affected packages | S10-C |
+
+**Decision.** `T_b`, `T_d` first; then exactly one of a liquid bracket, a vapour bracket or the β-bisection band route;
+acceptance on the closure's rows with K at the answer's liquid. The region decision is a theorem (`Ḣ_TP` strictly
+increasing for the γ–φ-IG class), so there is no fallback between routes. SYN-001's order is unchanged.
+
+**Rejected alternatives, and why.**
+- *Today's order on the TP flash.* Fails inside an E-2 sliver before the band route runs; not cheaper.
+- *Today's order with more fallbacks.* Three heuristics in place of one theorem.
+
+**Watch for.** `ph_ill_conditioned` on large flows: the equilibrium tolerance is absolute.
+
+---
+
+## R-764 — S10-C: E-2 is remedied in the PH flash; `wilson-ig-v1`'s TP flash is unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D5; design note §4.11 |
+| Evidence | S10 spec §14 E-2; `measured.txt` §3 (the constant-β point has no floor at the E-2 states) |
+| Affected packages | S10-C; S10 (no change) |
+
+**Decision.** The remedy is the constant-β point (β a parameter, never solved from K). The TP flash's `not_converged`
+with UNKNOWN near an azeotrope stays the correct TP answer.
+
+**Rejected alternatives, and why.**
+- *A conditioning-tied stop in the TP flash.* Its floor estimate has an unregistered safety factor; it would return `ok`
+  with ≈ 1e-6 relative β error; it changes the provider's identity and re-opens S10's evidence.
+
+**Watch for.** A consumer that needs TP flashes inside slivers: the decision would then need revisiting.
+
+---
+
+## R-765 — S10-C: the column's K-block reads the stage liquid, carries `∂ ln K/∂l`, and evaluates a dormant liquid at the probe
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D6; design note §4.7 |
+| Evidence | `column_solve.system_residuals` evaluates every declared row (`row_values`) at every state, including stages whose regime pins `l = 0` |
+| Affected packages | S10-C |
+
+**Decision.** Inputs `(l_1…l_C, T_j, P_j)`; the condenser's `(v_2, T_c, P_c)`; Jacobian entries bitwise the provider's
+projected derivatives. A dormant liquid: the probe `(1,…,1)`'s values and T, P entries, `0.0` in the `n` columns. Every
+row reading it multiplies it by a flow of the same input, so the convention moves nothing. Single-output mixture
+enthalpy blocks.
+
+**Rejected alternatives, and why.**
+- *K at the mixed feed.* The wrong function.
+- *A regularised liquid.* Changes the function and quantises the exact path.
+- *Refusing at a dormant liquid.* Aborts valid VAPOR-regime evaluations.
+
+**Watch for.** A new row that reads K without multiplying it by a flow of the K-block's own input.
+
+---
+
+## R-766 — S10-C: the bubble-point and S08 core sweeps evaluate K at a composition relaxed by ω = 1/2
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C |
+| Normative text | ADR 0049 D6; design note §4.9 |
+| Evidence | `measured.txt` §4: ω = 1, C-EW does not converge in 2000 sweeps (`\|ΔT\| = 15 K`, `\|Δx\| = 0.40`); ω = 0.5, C-MW 45 and C-EW 62 sweeps |
+| Affected packages | S10-C |
+
+**Decision.** `x̄ ← ω x + (1 − ω) x̄`, `ω = 0.5`; stop on `|ΔT| ≤ 1e-9 K` and `|x − x̄| ≤ 1e-10`; cap 500. The profile's
+Thomas pass uses K at the feed composition. SYN-001's sweeps are unchanged.
+
+**Rejected alternatives, and why.**
+- *Undamped lagged K.* Measured to oscillate on C-EW.
+- *A Raoult-to-Wilson homotopy.* A block parameter and a new continuation path in the compiled problem.
+
+**Watch for.** `initialization_failed(…, sweeps_exhausted)` on a Wilson column.
+
+---
+
+## R-767 — S10-C scope: library level; direct column specifications only; no unit other than the column
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C, on Frank's Q-F2 default (R-709) |
+| Normative text | ADR 0049 D7; design note §4.8, §7 |
+| Evidence | `stage_band` is SYN-001's closed form; ethanol–water boils below both pure components (`measured.txt` §5: 351.326 K) |
+| Affected packages | S10-C |
+
+**Decision.** `LIBRARY_ONLY_PROVIDERS["wilson-ig-v1"]` stays. The new form admits `reflux_ratio`, `boilup_ratio`,
+`distillate_rate`, `bottoms_rate` and `duty`; `purity`, `recovery` and `temperature` end
+`unsupported(column_specification:<kind>:wilson-ig-v1)`. The cascade and the other units are not admitted.
+
+**Rejected alternatives, and why.**
+- *Offer every kind.* The inverse machinery is unexercised for this form, and the temperature band is wrong for it.
+
+**Watch for.** Frank's flowsheet-admission decision (Q-F2), which reclassifies U02.
+
+---
+
+## R-768 — S10-C references: a 50-digit generator is the expectation; an IDAES column comparison is deferred
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C; the IDAES choice is Frank's (default deferred) |
+| Normative text | design note §3 D9, §5 WO-S, §6 G7 |
+| Evidence | S08 WO-G's practice (R-732); IDAES's qualification ladder for S10 (spec §16) |
+| Affected packages | S10-C |
+
+**Decision.** `s10c_reference.py` registers the C-MW/C-EW roots, band points and PH targets at 50 digits, sharing no
+code with the column.
+
+**Rejected alternatives, and why.**
+- *IDAES `TrayColumn` as the primary reference.* A separate qualification with its own ladder; it buys an R01
+  comparison, which is a priority call.
+
+**Watch for.** Frank asking for R01 cross-implementation comparisons of columns.
+
+---
+
+## R-769 — S10-C: the design needs no vapour non-ideality term (input to Q-N5)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C; the scientific ruling on Q-N5 stays the `specifier`'s |
+| Normative text | design note §7 Q8 |
+| Evidence | The PH kernel and the column consume the provider's `h` and `lnphi` only |
+| Affected packages | S10-C |
+
+**Decision.** The ideal-gas vapour stays for S10-C. A non-ideal vapour would be a new provider version and a new form
+(a K-block with vapour inputs), not a change to this design.
+
+**Rejected alternatives, and why.**
+- *Add a vapour term now.* It changes the provider's identity and S10's registered results, for no consumer need.
+
+**Watch for.** VAL-3's latent-heat miss (methanol +5.72 %) mattering for a column energy balance claim.

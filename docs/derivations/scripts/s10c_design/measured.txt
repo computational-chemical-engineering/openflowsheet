@@ -1,0 +1,128 @@
+1. positivity
+  WILSON-IG-ref-v1 T in [300.0, 400.0] K (1001-point grid): min dh_vap 35908.7 J/mol, min cp_L 62.99, min cp_ig 33.60 J/(mol K), min dlnPsat/dT 0.0270 1/K
+  S10-VER-ref-v1 T in [300.0, 420.0] K (1001-point grid): min dh_vap 35174.6 J/mol, min cp_L 61.13, min cp_ig 32.09 J/(mol K), min dlnPsat/dT 0.0240 1/K
+2. constant-beta point, real records, P = 101325 Pa
+  z ['0', '0.2', '0.8'] beta 0.0 T 356.237039966 iterations 1 rate 0.000 last 0.00e+00
+  z ['0', '0.2', '0.8'] beta 0.1 T 356.959850211 iterations 14 rate 0.106 last 2.13e-14
+  z ['0', '0.2', '0.8'] beta 0.5 T 362.612246041 iterations 26 rate 0.299 last 5.15e-14
+  z ['0', '0.2', '0.8'] beta 0.9 T 366.851661553 iterations 20 rate 0.189 last 2.49e-14
+  z ['0', '0.2', '0.8'] beta 1.0 T 367.462480875 iterations 19 rate 0.170 last 1.95e-14
+  z ['0', '0.5', '0.5'] beta 0.0 T 352.924127141 iterations 1 rate 0.000 last 0.00e+00
+  z ['0', '0.5', '0.5'] beta 0.1 T 353.049361452 iterations 10 rate 0.050 last 3.73e-14
+  z ['0', '0.5', '0.5'] beta 0.5 T 353.849208366 iterations 25 rate 0.305 last 4.62e-14
+  z ['0', '0.5', '0.5'] beta 0.9 T 356.116995135 iterations 58 rate 0.604 last 8.88e-14
+  z ['0', '0.5', '0.5'] beta 1.0 T 357.236409405 iterations 61 rate 0.614 last 8.35e-14
+  z ['0', '0.8', '0.2'] beta 0.0 T 351.418893051 iterations 1 rate 0.000 last 0.00e+00
+  z ['0', '0.8', '0.2'] beta 0.1 T 351.423046007 iterations 8 rate 0.023 last 7.11e-15
+  z ['0', '0.8', '0.2'] beta 0.5 T 351.443756826 iterations 14 rate 0.122 last 1.42e-14
+  z ['0', '0.8', '0.2'] beta 0.9 T 351.474855379 iterations 20 rate 0.238 last 2.84e-14
+  z ['0', '0.8', '0.2'] beta 1.0 T 351.485296149 iterations 21 rate 0.271 last 9.95e-14
+  z ['0', '0.88134', '0.11866'] beta 0.0 T 351.326439180 iterations 1 rate 0.000 last 0.00e+00
+  z ['0', '0.88134', '0.11866'] beta 0.1 T 351.326439185 iterations 5 rate 0.015 last 8.53e-14
+  z ['0', '0.88134', '0.11866'] beta 0.5 T 351.326439205 iterations 9 rate 0.074 last 7.11e-15
+  z ['0', '0.88134', '0.11866'] beta 0.9 T 351.326439230 iterations 11 rate 0.133 last 2.66e-14
+  z ['0', '0.88134', '0.11866'] beta 1.0 T 351.326439237 iterations 11 rate 0.147 last 8.88e-14
+  z ['0', '0.88154', '0.11846'] beta 0.0 T 351.326439180 iterations 1 rate 0.000 last 0.00e+00
+  z ['0', '0.88154', '0.11846'] beta 0.1 T 351.326439185 iterations 5 rate 0.015 last 8.53e-14
+  z ['0', '0.88154', '0.11846'] beta 0.5 T 351.326439205 iterations 9 rate 0.074 last 7.11e-15
+  z ['0', '0.88154', '0.11846'] beta 0.9 T 351.326439230 iterations 11 rate 0.132 last 2.84e-14
+  z ['0', '0.88154', '0.11846'] beta 1.0 T 351.326439237 iterations 11 rate 0.147 last 8.53e-14
+  z ['0.4', '0', '0.6'] beta 0.0 T 348.615580360 iterations 1 rate 0.000 last 0.00e+00
+  z ['0.4', '0', '0.6'] beta 0.1 T 349.490624688 iterations 9 rate 0.031 last 2.66e-14
+  z ['0.4', '0', '0.6'] beta 0.5 T 354.524456032 iterations 19 rate 0.193 last 2.49e-14
+  z ['0.4', '0', '0.6'] beta 0.9 T 360.418849056 iterations 21 rate 0.216 last 2.31e-14
+  z ['0.4', '0', '0.6'] beta 1.0 T 361.558135623 iterations 20 rate 0.204 last 3.73e-14
+  z ['0.994', '0', '0.006'] beta 0.0 T 337.724975927 iterations 1 rate 0.000 last 0.00e+00
+  z ['0.994', '0', '0.006'] beta 0.1 T 337.730811798 iterations 4 rate 0.000 last 1.78e-15
+  z ['0.994', '0', '0.006'] beta 0.5 T 337.764149336 iterations 5 rate 0.002 last 8.88e-15
+  z ['0.994', '0', '0.006'] beta 0.9 T 337.832199302 iterations 6 rate 0.006 last 4.62e-14
+  z ['0.994', '0', '0.006'] beta 1.0 T 337.861929232 iterations 7 rate 0.009 last 3.55e-15
+  z ['0.0039', '0', '0.9961'] beta 0.0 T 372.346243439 iterations 1 rate 0.000 last 0.00e+00
+  z ['0.0039', '0', '0.9961'] beta 0.1 T 372.664895167 iterations 6 rate 0.003 last 1.78e-15
+  z ['0.0039', '0', '0.9961'] beta 0.5 T 372.951995306 iterations 6 rate 0.002 last 0.00e+00
+  z ['0.0039', '0', '0.9961'] beta 0.9 T 373.018281905 iterations 5 rate 0.002 last 7.28e-14
+  z ['0.0039', '0', '0.9961'] beta 1.0 T 373.027568859 iterations 5 rate 0.001 last 5.15e-14
+  z ['1', '0', '1e-10'] beta 0.0 T 337.633508215 iterations 1 rate 0.000 last 0.00e+00
+  z ['1', '0', '1e-10'] beta 0.1 T 337.633508215 iterations 2 rate 0.000 last 0.00e+00
+  z ['1', '0', '1e-10'] beta 0.5 T 337.633508216 iterations 2 rate 0.000 last 0.00e+00
+  z ['1', '0', '1e-10'] beta 0.9 T 337.633508217 iterations 2 rate 0.000 last 0.00e+00
+  z ['1', '0', '1e-10'] beta 1.0 T 337.633508217 iterations 2 rate 0.000 last 0.00e+00
+  z ['1e-10', '0', '1'] beta 0.0 T 373.123796739 iterations 1 rate 0.000 last 0.00e+00
+  z ['1e-10', '0', '1'] beta 0.1 T 373.123796748 iterations 2 rate 0.000 last 0.00e+00
+  z ['1e-10', '0', '1'] beta 0.5 T 373.123796755 iterations 2 rate 0.000 last 0.00e+00
+  z ['1e-10', '0', '1'] beta 0.9 T 373.123796757 iterations 2 rate 0.000 last 0.00e+00
+  z ['1e-10', '0', '1'] beta 1.0 T 373.123796757 iterations 2 rate 0.000 last 0.00e+00
+  z ['0.3', '0.2', '0.5'] beta 0.0 T 349.449122441 iterations 1 rate 0.000 last 0.00e+00
+  z ['0.3', '0.2', '0.5'] beta 0.1 T 349.917486877 iterations 9 rate 0.035 last 6.22e-14
+  z ['0.3', '0.2', '0.5'] beta 0.5 T 352.313463328 iterations 21 rate 0.242 last 8.35e-14
+  z ['0.3', '0.2', '0.5'] beta 0.9 T 356.517445952 iterations 35 rate 0.425 last 9.95e-14
+  z ['0.3', '0.2', '0.5'] beta 1.0 T 357.800032063 iterations 36 rate 0.423 last 4.97e-14
+  worst: iterations 61, rate 0.614
+3. constant-beta point at the 13 E-2 states (verification records)
+  T_b 350.039749464255 T_d 350.039749488891 width 2.46e-08 state inside True
+  T_b 350.039749464255 T_d 350.039749488891 width 2.46e-08 state inside True
+  T_b 350.039749464255 T_d 350.039749488891 width 2.46e-08 state inside True
+  T_b 350.039749464255 T_d 350.039749488891 width 2.46e-08 state inside True
+  T_b 350.039749514382 T_d 350.039749668420 width 1.54e-07 state inside True
+  T_b 350.039749514382 T_d 350.039749668420 width 1.54e-07 state inside True
+  T_b 350.039749514382 T_d 350.039749668420 width 1.54e-07 state inside True
+  T_b 350.039749514382 T_d 350.039749668420 width 1.54e-07 state inside True
+  T_b 350.039749693533 T_d 350.039750309147 width 6.16e-07 state inside True
+  T_b 350.039749693533 T_d 350.039750309147 width 6.16e-07 state inside True
+  T_b 350.039749693533 T_d 350.039750309147 width 6.16e-07 state inside True
+  T_b 350.039749693533 T_d 350.039750309147 width 6.16e-07 state inside True
+  T_b 350.039749460076 T_d 350.039749473934 width 1.39e-08 state inside True
+  worst: iterations 29, rate 0.472
+4. bubble-point sweeps with K(T, x_bar), x_bar relaxed by omega
+  z [0.4, 0.0, 0.6] omega 1.0 sweeps 37 last dT 9.44e-12 last dx 4.94e-13
+  z [0.4, 0.0, 0.6] omega 0.7 sweeps 29 last dT 2.16e-12 last dx 4.23e-13
+  z [0.4, 0.0, 0.6] omega 0.5 sweeps 45 last dT 1.42e-12 last dx 8.30e-13
+  z [0.4, 0.0, 0.6] omega 0.3 sweeps 82 last dT 7.96e-13 last dx 9.65e-13
+  z [0.0, 0.2, 0.8] omega 1.0 sweeps -1 last dT 1.54e+01 last dx 4.04e-01
+  z [0.0, 0.2, 0.8] omega 0.7 sweeps 120 last dT 9.04e-12 last dx 8.87e-13
+  z [0.0, 0.2, 0.8] omega 0.5 sweeps 62 last dT 1.93e-12 last dx 9.94e-13
+  z [0.0, 0.2, 0.8] omega 0.3 sweeps 106 last dT 8.53e-13 last dx 8.86e-13
+5. MESH roots of the registered definitions
+  C-MW (methanol-water, z 0.4, D 0.4, RR 1.5)
+  converged True, max|residual| 1.16e-14, T_condenser 337.7231 K, x_D 0.994126
+  stage  2 T 337.8571 x 0.985355 y 0.994126 min|K-1| 0.0089
+  stage  3 T 338.0581 x 0.972263 y 0.988866 min|K-1| 0.0171
+  stage  4 T 338.3590 x 0.952791 y 0.981026 min|K-1| 0.0296
+  stage  5 T 338.8085 x 0.923983 y 0.969390 min|K-1| 0.0491
+  stage  6 T 339.4777 x 0.881731 y 0.952226 min|K-1| 0.08
+  stage  7 T 340.4683 x 0.820657 y 0.927164 min|K-1| 0.13
+  stage  8 T 341.9176 x 0.734614 y 0.891171 min|K-1| 0.213
+  stage  9 T 343.9886 x 0.619197 y 0.840919 min|K-1| 0.358
+  stage 10 T 346.7966 x 0.479130 y 0.774320 min|K-1| 0.567
+  stage 11 T 346.8027 x 0.478851 y 0.774178 min|K-1| 0.567
+  stage 12 T 346.8211 x 0.478000 y 0.773744 min|K-1| 0.567
+  stage 13 T 346.8774 x 0.475413 y 0.772420 min|K-1| 0.566
+  stage 14 T 347.0486 x 0.467594 y 0.768393 min|K-1| 0.565
+  stage 15 T 347.5669 x 0.444437 y 0.756212 min|K-1| 0.561
+  stage 16 T 349.1070 x 0.380307 y 0.720026 min|K-1| 0.548
+  stage 17 T 353.3352 x 0.240717 y 0.618951 min|K-1| 0.498
+  stage 18 T 361.7409 x 0.087158 y 0.394627 min|K-1| 0.337
+  stage 19 T 369.4361 x 0.020475 y 0.142035 min|K-1| 0.124
+  stage 20 T 372.3431 x 0.003916 y 0.031334 min|K-1| 0.0275
+  C-EW (ethanol-water, z 0.2, D 0.18, RR 3)
+  converged True, max|residual| 4.67e-14, T_condenser 351.3805 K, x_D 0.819768
+  stage  2 T 351.4144 x 0.802092 y 0.819768 min|K-1| 0.022
+  stage  3 T 351.4593 x 0.783004 y 0.806514 min|K-1| 0.03
+  stage  4 T 351.5199 x 0.761483 y 0.792204 min|K-1| 0.0403
+  stage  5 T 351.6042 x 0.736024 y 0.776078 min|K-1| 0.0544
+  stage  6 T 351.7279 x 0.704162 y 0.757010 min|K-1| 0.0751
+  stage  7 T 351.9231 x 0.661416 y 0.733159 min|K-1| 0.108
+  stage  8 T 352.2652 x 0.598649 y 0.701188 min|K-1| 0.171
+  stage  9 T 352.9642 x 0.494624 y 0.654304 min|K-1| 0.316
+  stage 10 T 354.7478 x 0.302211 y 0.576797 min|K-1| 0.394
+  stage 11 T 354.7478 x 0.302211 y 0.576797 min|K-1| 0.394
+  stage 12 T 354.7478 x 0.302210 y 0.576797 min|K-1| 0.394
+  stage 13 T 354.7479 x 0.302206 y 0.576795 min|K-1| 0.394
+  stage 14 T 354.7481 x 0.302183 y 0.576786 min|K-1| 0.394
+  stage 15 T 354.7495 x 0.302065 y 0.576737 min|K-1| 0.394
+  stage 16 T 354.7566 x 0.301458 y 0.576486 min|K-1| 0.394
+  stage 17 T 354.7934 x 0.298351 y 0.575198 min|K-1| 0.395
+  stage 18 T 354.9847 x 0.282673 y 0.568604 min|K-1| 0.399
+  stage 19 T 356.0276 x 0.211588 y 0.535307 min|K-1| 0.411
+  stage 20 T 361.4118 x 0.063953 y 0.383416 min|K-1| 0.341
+  ethanol-water azeotrope at 101325 Pa: x_E 0.881440, T 351.3264 K
