@@ -239,8 +239,9 @@ class _Point:
     ) -> tuple[_Evaluation, Position]:
         """`Tsolve(x, start)`: the root of the frozen-x `g(·; x)`, increasing in T (§4.3).
 
-        Safeguarded Newton inside a sign bracket that every evaluation narrows; the midpoint when
-        Newton leaves the open bracket or the bracket has not halved over the last two steps. An
+        Safeguarded Newton inside a sign bracket that every evaluation narrows, stepping from the
+        bracket end with the smaller `|g|` (the lower on a tie); the midpoint when Newton leaves
+        the open bracket or the bracket has not halved over the last two steps. An
         unknown domain end is evaluated before a step past it: `g(T_min) > 0` is `below`,
         `g(T_max) < 0` is `above`, each returned with that end's evaluation. Stops on `g = 0` or
         adjacent doubles (the end with the smaller `|g|`, the lower on a tie). `start` is one of the
@@ -273,9 +274,11 @@ class _Point:
                 else:
                     return (lo, "inside") if abs(lo.g) <= abs(hi.g) else (hi, "inside")
             else:
-                following = self._step(current, low, high, lo is None, hi is None, widths)
-            if following == current.temperature:
-                following = math.nextafter(following, math.inf if current.g < 0.0 else -math.inf)
+                base = min(
+                    (end for end in (lo, hi) if end is not None),
+                    key=lambda end: (abs(end.g), end.temperature),
+                )
+                following = self._step(base, low, high, lo is None, hi is None, widths)
             if spent >= budget:
                 raise BandError(
                     "not_converged",
@@ -287,7 +290,7 @@ class _Point:
 
     @staticmethod
     def _step(
-        current: _Evaluation,
+        base: _Evaluation,
         low: float,
         high: float,
         low_unknown: bool,
@@ -295,10 +298,13 @@ class _Point:
         widths: list[float],
     ) -> float:
         newton = (
-            current.temperature - current.g / current.slope
-            if current.slope > 0.0 and math.isfinite(current.slope)
+            base.temperature - base.g / base.slope
+            if base.slope > 0.0 and math.isfinite(base.slope)
             else math.nan
         )
+        if newton == base.temperature:
+            # Newton has stalled on a bracket end: the adjacent double towards the root.
+            return math.nextafter(newton, math.inf if base.g < 0.0 else -math.inf)
         if low_unknown and newton <= low:
             return low
         if high_unknown and newton >= high:
