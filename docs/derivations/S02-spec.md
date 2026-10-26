@@ -692,3 +692,15 @@ list (appended) and the JSON SHA-256.
 
 **Work orders:** `docs/reviews/S02-review.md`, "Build-lane fix work order", items 1–4. **Does not establish:** anything
 beyond §14 and §18.9. The acceptance conditions in R-550 are not yet met.
+
+## 20. Amendment 4 (2026-10-25, design lane `architect`, S08): pointer, effective when `wp/S08` merges
+
+Normative text: `docs/derivations/S08-design.md`. ADR 0048 (Proposed). Register R-728 to R-731.
+
+- **§7 gains step 7, the block re-entry.** After steps 1–6 end typed, or converge onto a near-trivial split, the column solves
+  from block-conforming openings `V^a 2P^b L^c` built from its sources (S08-design §5.1–§5.7). Steps 1–6 are unchanged.
+- **§8 gains item 6.** Every `TWO_PHASE` stage lies within 1e-4 K of its liquid's bubble and its vapour's dew temperature
+  (S08-design §5.5).
+- **A12, for P1, asserts the `CONVERGED` branch** (L×5, the closed form). The measured typed branch of §18.5 is asserted as
+  `reentry.stage_a` (S08-design §6.1).
+- **§4.3's finding** stands. The contract still does not learn the block rule.

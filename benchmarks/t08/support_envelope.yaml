@@ -6448,3 +6448,100 @@ harvest:
   class: P
   to: []
   note: CI on both architectures is checked before merge, not by the generator; unsupported here
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[0]
+  sha256: cbc97b9bae965f1b80012241980764c1aea729890116a9ed3ffa6da43ed8b095
+  class: E
+  to:
+  - U04
+  - L20
+  note: '`solve_column` and its block re-entry (`syn001.column_solve`, `column_blocks`) are library-only, not in MODEL_BUILDERS (U04); no convergence claim for block roots S08-design §5.2 does not generate'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[1]
+  sha256: c657eea4d089ad17f65ea86dd8c8e47906a12ccd7c534efca23539f028894c4d
+  class: E
+  to:
+  - U04
+  - L20
+  note: '`solve_column` and its block re-entry (`syn001.column_solve`, `column_blocks`) are library-only, not in MODEL_BUILDERS (U04); no claim in a column''s transition regime, where no regular root exists'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[2]
+  sha256: b93dbe35b6107f62b58223e9be2f2c383a0b072550a9e532e2ff59c38d380dca
+  class: E
+  to:
+  - U04
+  - L19
+  note: '`solve_column` and its block re-entry (`syn001.column_solve`, `column_blocks`) are library-only, not in MODEL_BUILDERS (U04); no root-selection or uniqueness claim (Stage A''s root is returned even if a block root exists)'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[3]
+  sha256: d5f90fe1fa1b4d3eed70745edb0a569aa5f4c7bc5a9843fc9b458bf9138d6979
+  class: E
+  to:
+  - L18
+  note: 'synthetic: SYN-001''s composition-independent K only'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[4]
+  sha256: efd64f577b060c24ade4b1edfac52cb92e938c92d39a2637f578fa161e69588f
+  class: P
+  to: []
+  note: 'scope statement: S08 does not change S01''s solve_cascade (G1 holds its digests); its own manifest carries its items'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[5]
+  sha256: 481ca11c273991499382e1547cbd7fa442a67bad69755b4ed7979fd4c11e5ce9
+  class: E
+  to:
+  - L19
+  note: 'a near-trivial split may pass as CONVERGED outside S02 columns (flash units, S01 cascades; F4, review Q4): no thermodynamic-consistency check beyond admissibility there; follow-up is the design lane''s'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[6]
+  sha256: 4a9351d7bfbf36fc5cdaec27740cf133b6a55d191ea6f8ac6d46b8ad9cfe37b1
+  class: E
+  to:
+  - U04
+  - L20
+  note: '`solve_column` and its block re-entry (`syn001.column_solve`, `column_blocks`) are library-only, not in MODEL_BUILDERS (U04); item 6 is a measured margin on low-traffic stages (S08-design §13.4), so a correct root may end in AcceptanceDefectError'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[7]
+  sha256: fc7795868f166127f5599c677a0f580dd0665d9fb40bf677c4b44f5d0c7c00eb
+  class: P
+  to: []
+  note: 'requirements empty: the schema takes D/A ids; S08 evidences gate X31''s ''invalid specs/phases'' clause and the ledger cites it there (W5-7)'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[8]
+  sha256: 2a64d0da9aee12453e2afb8e5451a7e2fa11ff85dc8c33ca360ef443d89d2cce
+  class: P
+  to: []
+  note: 'scripts/gate.sh and CI run once before merge, not by the generator; process note'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[9]
+  sha256: 53ec04b328e7e408f632d168a970f4e1f0d2f65f27402415d854488214627b1f
+  class: P
+  to: []
+  note: 'S08 review work order carried by WO-5; reviewer''s closure and the human numerical and process-model review pending; neither reviewed nor released claimed'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[10]
+  sha256: 00682fdff0e9e75851f77199182363b17bb00a2a05886120152be2eeee0589cd
+  class: E
+  to:
+  - L18
+  note: 'numerical verification against a 50-digit generator that shares SYN-001, not empirical validation'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: limitations[11]
+  sha256: 5990531611847a1225af307250d08ea06f69ba268b36625adbbb81a0309355b2
+  class: P
+  to: []
+  note: 'process note: this harvest follows the manifest''s generation'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: checks[26]
+  check_id: S08.gate
+  sha256: bd3a6916a26159fc712bb96df4213baaa3ebd79440aca3e64e6bf8b1fb1ade16
+  class: P
+  to: []
+  note: 'scripts/gate.sh runs once before merge, not by the generator; unsupported here'
+- manifest: evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+  item: checks[27]
+  check_id: S08.ci
+  sha256: 97fa6f7465254d0caf7ca3a146152394c9eb040e7a7d758e2bf77ea5921b3f6e
+  class: P
+  to: []
+  note: 'CI on both architectures is checked before merge, not by the generator; unsupported here'
