@@ -183,3 +183,7 @@ All four answered with the recommended default (Frank, 2026-10-25):
   S09's verdict confirms BioSTEAM's RC4 (WO-S09-2b qualified RC4 at L2(c)).
 - **Q-S09-1** (which third column reference tool should S09 plan for: BioSTEAM, ChemSep-LITE under Wine, or both?) —
   **Frank: "BioSTEAM first (Rec.)"** (2026-10-25). Survey and feasibility spike: `docs/briefs/S09-third-reference-tool.md`.
+- **S10-C design Q1–Q4** (defaults applied): Q1 `wilson-ig-v1` selectable in flowsheets — no, library-level only; Q2 an
+  IDAES column comparison of C-MW/C-EW — deferred, the 50-digit generator is the expectation; Q3 the S01 cascade and the
+  other units (PH flash, valve, pump) accept Wilson — no; Q4 purity/recovery/temperature specifications on Wilson columns
+  — no, refused typed.
