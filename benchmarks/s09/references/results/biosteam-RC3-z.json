@@ -1,0 +1,5656 @@
+{
+ "tool": "BioSTEAM",
+ "case": "RC3-z",
+ "inputs_case": "RC3-z",
+ "case_definition": {
+  "role": "comparison",
+  "tool_variant": {
+   "IDAES": "registered settings",
+   "DWSIM": "registered settings"
+  },
+  "stage_count": 5,
+  "condenser": "none",
+  "reboiler": "partial",
+  "stage_pressures_Pa": [
+   "100000.0",
+   "100000.0",
+   "100000.0",
+   "100000.0",
+   "100000.0"
+  ],
+  "intermediate_duties_W": "0 on every stage that carries no end specification",
+  "inlets": [
+   {
+    "port": "top",
+    "stage": 1,
+    "phase": "LIQUID",
+    "n_mol_per_s": [
+     "0.28",
+     "0.4",
+     "0.32"
+    ],
+    "T_K": "300.0",
+    "P_Pa": "100000.0"
+   }
+  ],
+  "specifications": {
+   "reboiler": {
+    "kind": "duty",
+    "value": "30000"
+   }
+  },
+  "quantities": [
+   [
+    "T[1]",
+    "T"
+   ],
+   [
+    "T[2]",
+    "T"
+   ],
+   [
+    "T[3]",
+    "T"
+   ],
+   [
+    "T[4]",
+    "T"
+   ],
+   [
+    "T[5]",
+    "T"
+   ],
+   [
+    "L[1]",
+    "flow"
+   ],
+   [
+    "V[1]",
+    "flow"
+   ],
+   [
+    "L[2]",
+    "flow"
+   ],
+   [
+    "V[2]",
+    "flow"
+   ],
+   [
+    "L[3]",
+    "flow"
+   ],
+   [
+    "V[3]",
+    "flow"
+   ],
+   [
+    "L[4]",
+    "flow"
+   ],
+   [
+    "V[4]",
+    "flow"
+   ],
+   [
+    "L[5]",
+    "flow"
+   ],
+   [
+    "V[5]",
+    "flow"
+   ],
+   [
+    "top[A]",
+    "flow"
+   ],
+   [
+    "top[B]",
+    "flow"
+   ],
+   [
+    "top[C]",
+    "flow"
+   ],
+   [
+    "bottom[A]",
+    "flow"
+   ],
+   [
+    "bottom[B]",
+    "flow"
+   ],
+   [
+    "bottom[C]",
+    "flow"
+   ]
+  ]
+ },
+ "property_variant": "SYN-001",
+ "environment_fingerprint": {
+  "pip_freeze_sha256": "0edea300bbf188030642265ca811425c270d5508bf119fa86431572c06c69a95",
+  "expected_docs_reference_environments_s9": "0edea300bbf188030642265ca811425c270d5508bf119fa86431572c06c69a95",
+  "versions": {
+   "biosteam": "2.54.0",
+   "thermosteam": "0.54.2",
+   "thermo": "0.6.1",
+   "chemicals": "1.5.2",
+   "flexsolve": "0.5.10",
+   "numba": "0.68.0",
+   "numpy": "2.5.4",
+   "scipy": "1.18.1",
+   "python": "3.13.5"
+  },
+  "matches": true
+ },
+ "input_files": [
+  "docs/derivations/scripts/s03_cases.json",
+  "docs/derivations/scripts/s09_cases.json"
+ ],
+ "settings": {
+  "registered": {
+   "environment": {
+    "python": "3.13.5",
+    "biosteam": "2.54.0",
+    "thermosteam": "0.54.2",
+    "thermo": "0.6.1",
+    "chemicals": "1.5.2",
+    "flexsolve": "0.5.10",
+    "numba": "0.68.0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "lock": "spikes/references/biosteam-requirements.lock"
+   },
+   "mapping": {
+    "constants": "spikes/references/t06_fixtures.py (T_BOIL, L_VAP, CP, V_LIQ, MW, P_REF, R_GAS)",
+    "chemical": "thermosteam.Chemical.blank(ID, phase_ref='l', MW=1000*MW, Tb=T_BOIL[ID])",
+    "Psat": "Psat.add_method(f=P_REF*exp((L/R_GAS)*(1/T_b - 1/T)), Tmin=200.0, Tmax=600.0)",
+    "Hvap": "Hvap.add_method(f=L (constant), Tmin=200.0, Tmax=600.0); PC-LB: Hvap_J_per_mol_PC-LB",
+    "Cn": "Cn.l.add_method(CP); Cn.g.add_method(CP)",
+    "V": "V.l.add_method(V_LIQ)",
+    "finish": "reset_free_energies(); Chemicals([...]).compile(skip_checks=True)",
+    "thermo": "IdealThermo(chemicals, mixture=IdealMixture.from_chemicals(chemicals), skip_checks=True)",
+    "datum": "the tool's default (Chemical.T_ref = 298.15 K); no subclass; offset 185 J/mol (C4)",
+    "specifications_by_weight": false
+   },
+   "readback": {
+    "temperatures_K": [
+     "310",
+     "347",
+     "385",
+     "430"
+    ],
+    "Psat_Pa": {
+     "A": [
+      "73852.10058501417914360476",
+      "207741.1142075781509144168",
+      "488605.1695545122313511412",
+      "1106402.61309492733112889"
+     ],
+     "B": [
+      "19857.9866060236335135583",
+      "68695.25473799137013146944",
+      "191712.0713429424969886068",
+      "511205.6225258024898361191"
+     ],
+     "C": [
+      "4710.831315518042975090367",
+      "20041.07434490073871245524",
+      "66363.7380628621904079128",
+      "208385.755965860040671266"
+     ]
+    },
+    "Psat_relative": "1e-14",
+    "latent_relative": "1e-12",
+    "cp_J_per_mol": "1e-9",
+    "datum_offset_J_per_mol": "185",
+    "datum_offset_abs_J_per_mol": "1e-9",
+    "liquid_pressure_dependence": "H(T, 1.5 P_r) - H(T, P_r) == 0 exactly for a liquid stream",
+    "methods": "Psat and Hvap: exactly {'USER_METHOD'}",
+    "thermo_classes": {
+     "Gamma": "IdealActivityCoefficients",
+     "Phi": "IdealFugacityCoefficients",
+     "PCF": "MockPoyintingCorrectionFactors",
+     "mixture": "IdealMixture",
+     "include_excess_energies": false
+    }
+   },
+   "common": {
+    "early_termination": false,
+    "tolerance": "1e-10",
+    "relative_tolerance": "1e-10",
+    "maxiter": 500,
+    "max_attempts": 1,
+    "use_cache": true,
+    "phases": [
+     "g",
+     "l"
+    ],
+    "other_attributes": "the tool's defaults, recorded per run"
+   },
+   "rungs": [
+    [
+     "inside out",
+     "fixed-point"
+    ],
+    [
+     "phenomena",
+     "fixed-point"
+    ],
+    [
+     "simultaneous correction",
+     "hybr"
+    ],
+    [
+     "sequential modular",
+     "fixed-point"
+    ]
+   ],
+   "rungs_source": "MultiStageEquilibrium.default_algorithms and default_methods (biosteam/units/stage.py:2185-2200), one algorithm per rung, in that order",
+   "solve_path": [
+    "P1 build: MultiStageEquilibrium(ins=inlets, outs=['vapor', 'liquid'] (+ ['distillate'] for a total condenser), N_stages=N, feed_stages=[s-1], P=[P]*N, phases=('g','l'), stage_specifications={...}, [bottom_side_draws={0: 1/(1+RR)}], maxiter=500, max_attempts=1, use_cache=True); then algorithms=(rung,), methods=(method,), early_termination=False, tolerance=relative_tolerance=1e-10",
+    "P2 simulate()  (pass 1)",
+    "P3 re-store every registered native specification through the stage's attribute setter (Reflux r: stage.B = 1/r, or inf for r = 0, or 0 for r = inf; Boilup b: stage.B = b; Duty q: stage.Q = 3.6 q; Flow f: stage.F = f; Temperature t: stage.T = t); never specify_variables",
+    "P4 simulate()  (pass 2); the record is pass 2"
+   ],
+   "native_specifications": {
+    "reflux_ratio_partial": "stage 0: ('Reflux', RR)",
+    "reflux_ratio_total": "stage 0: ('Reflux', inf) with bottom_side_draws={0: 1/(1+RR)}",
+    "boilup_ratio": "stage N-1: ('Boilup', BR)",
+    "bottoms_rate": "stage N-1: ('Flow', B / sum of the registered inlet flows)",
+    "duty": "the end stage: ('Duty', 3.6 Q) in kJ/h",
+    "temperature_end_stage": "the end stage that carries the slot: ('Temperature', T)",
+    "not_native": [
+     "distillate_rate",
+     "purity",
+     "recovery",
+     "temperature on a stage other than the end stage that carries the slot"
+    ]
+   },
+   "outer_loop": {
+    "level": "L2(c)",
+    "adjusted": {
+     "condenser": [
+      "Reflux",
+      "stage 0"
+     ],
+     "reboiler": [
+      "Boilup",
+      "stage N-1"
+     ]
+    },
+    "residual": "g(x) = (s(x) - s*)/|s*| for a relative kind, s(x) - s* for an absolute kind, with s computed from the tool's record by S03 \u00a75.1 row 9 and \u00a717.4",
+    "starts": [
+     "1",
+     "2"
+    ],
+    "expansion": "if g(1) g(2) > 0: x = 4, 8, 16, 32 when |g(2)| <= |g(1)|, else 0.5, 0.25, 0.125, 0.0625; the first sign change against the previous point gives the bracket",
+    "solver": "flexsolve.IQ_interpolation(g, a, b, g(a), g(b), None, 0.0, ytol, (), 50, False, True, True)",
+    "ytol": {
+     "boilup_ratio": [
+      "1E-9",
+      "relative"
+     ],
+     "bottoms_rate": [
+      "1E-9",
+      "relative"
+     ],
+     "distillate_rate": [
+      "1E-9",
+      "relative"
+     ],
+     "duty": [
+      "1E-9",
+      "relative"
+     ],
+     "purity": [
+      "1E-9",
+      "absolute"
+     ],
+     "recovery": [
+      "1E-10",
+      "absolute"
+     ],
+     "reflux_ratio": [
+      "1E-9",
+      "relative"
+     ],
+     "temperature": [
+      "1E-10",
+      "relative"
+     ]
+    },
+    "evaluation": "every g(x) is a fresh build and the full solve path P1-P4 at the rung's settings, and its state must pass rule 2 (BioSTEAM) and rule 2c's pressure and read-back checks, or the attempt fails",
+    "record": "one final fresh evaluation at the returned x; |g| <= ytol or the attempt fails"
+   },
+   "floor_rerun": {
+    "tolerance": "1e-9",
+    "relative_tolerance": "1e-9",
+    "L2(c)": "one fresh evaluation (P1-P4) at the selected run's final x, the same binary64 value; no outer loop and no ytol (S09 \u00a718.4)"
+   },
+   "margin": {
+    "thin_level": "0.1",
+    "rows": [
+     "B3 stage component balance / 3.1e-8 mol/s",
+     "B4 equilibrium / 1e-8",
+     "B5 overall component / 3.1e-8 mol/s",
+     "B5 overall energy / 1e-3 W",
+     "rule 2c adiabatic duty / 1e-3 W",
+     "rule 2c total-condenser vapour / 3.1e-8 mol/s (total condenser only)",
+     "rule 2d specification residual / its kind's threshold",
+     "rule 2d accuracy-rerun movement / 0.1 tolerance",
+     "rule 2d path spread / 0.1 tolerance (two or more passing rungs)"
+    ],
+    "not_rows": "the outer loop's |g|/ytol (set by its own stopping test), exact and structural checks, and rule 2c's 1e-4 definition check (rule 2d's row covers it)",
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "rule2": {
+    "stage_component_mol_per_s": "3.1e-8",
+    "equilibrium": "1e-8",
+    "overall_component_mol_per_s": "3.1e-8",
+    "overall_energy_W": "1e-3",
+    "iteration_cap": "no pass's counter reaches maxiter: the tool's iter on R1, R2 and R4; on R3 fsolve's infodict nfev of that pass (fsolve's maxfev is the tool's maxiter), and a pass in which fsolve did not run fails (S09 \u00a718.3)",
+    "exception": "no pass raised"
+   },
+   "rule2c_added": {
+    "specification_readback": "exact",
+    "total_condenser_vapour_mol_per_s": "3.1e-8",
+    "property_readback": "readback block"
+   },
+   "units": {
+    "flow": "kmol/h = 3.6 mol/s",
+    "duty": "kJ/h = 3.6 W"
+   }
+  },
+  "quantity_tolerance": {
+   "allowance": {
+    "T": 1e-05,
+    "flow": 3.1e-07,
+    "duty": 0.01
+   },
+   "relative": 1e-06,
+   "source": "S03 \u00a76"
+  }
+ },
+ "property_package": {
+  "thermo_class": "IdealThermo",
+  "chemicals": {
+   "A": {
+    "MW_g_per_mol": 100.0,
+    "Tb_K": 320.0,
+    "phase_ref": "l",
+    "Psat_method": "USER_METHOD",
+    "Hvap_method": "USER_METHOD",
+    "Cn_l_method": "USER_METHOD",
+    "Cn_g_method": "USER_METHOD",
+    "V_l_method": "USER_METHOD"
+   },
+   "B": {
+    "MW_g_per_mol": 100.0,
+    "Tb_K": 360.0,
+    "phase_ref": "l",
+    "Psat_method": "USER_METHOD",
+    "Hvap_method": "USER_METHOD",
+    "Cn_l_method": "USER_METHOD",
+    "Cn_g_method": "USER_METHOD",
+    "V_l_method": "USER_METHOD"
+   },
+   "C": {
+    "MW_g_per_mol": 100.0,
+    "Tb_K": 400.0,
+    "phase_ref": "l",
+    "Psat_method": "USER_METHOD",
+    "Hvap_method": "USER_METHOD",
+    "Cn_l_method": "USER_METHOD",
+    "Cn_g_method": "USER_METHOD",
+    "V_l_method": "USER_METHOD"
+   }
+  },
+  "Chemical_T_ref_K": 298.15,
+  "t06_fixtures_sha256": "c6320cc81ea4bf08c36f7d7b5aca19180c2109fd66e4e23c84476d35286ba61f",
+  "constants": {
+   "T_BOIL_K": {
+    "A": 320.0,
+    "B": 360.0,
+    "C": 400.0
+   },
+   "L_VAP_J_per_mol": {
+    "A": 25000.0,
+    "B": 30000.0,
+    "C": 35000.0
+   },
+   "CP_J_per_mol_K": 100.0,
+   "V_LIQ_m3_per_mol": 0.0001,
+   "MW_kg_per_mol": 0.1,
+   "P_REF_Pa": 100000.0,
+   "R_GAS_J_per_mol_K": 8.31446261815324
+  },
+  "variant": "SYN-001",
+  "readback": {
+   "items": {
+    "Psat": {
+     "values": {
+      "A": [
+       {
+        "T_K": 310.0,
+        "tool": 73852.10058501421,
+        "registered": "73852.10058501417914360476",
+        "rel": 3.940826357840843e-16
+       },
+       {
+        "T_K": 347.0,
+        "tool": 207741.11420757842,
+        "registered": "207741.1142075781509144168",
+        "rel": 1.2608696892271133e-15
+       },
+       {
+        "T_K": 385.0,
+        "tool": 488605.1695545125,
+        "registered": "488605.1695545122313511412",
+        "rel": 4.765210402218092e-16
+       },
+       {
+        "T_K": 430.0,
+        "tool": 1106402.6130949282,
+        "registered": "1106402.61309492733112889",
+        "rel": 8.417573888498877e-16
+       }
+      ],
+      "B": [
+       {
+        "T_K": 310.0,
+        "tool": 19857.98660602364,
+        "registered": "19857.9866060236335135583",
+        "rel": 3.6639956298370996e-16
+       },
+       {
+        "T_K": 347.0,
+        "tool": 68695.25473799145,
+        "registered": "68695.25473799137013146944",
+        "rel": 1.059164514628332e-15
+       },
+       {
+        "T_K": 385.0,
+        "tool": 191712.0713429426,
+        "registered": "191712.0713429424969886068",
+        "rel": 4.554303271493775e-16
+       },
+       {
+        "T_K": 430.0,
+        "tool": 511205.62252580276,
+        "registered": "511205.6225258024898361191",
+        "rel": 5.693174952367572e-16
+       }
+      ],
+      "C": [
+       {
+        "T_K": 310.0,
+        "tool": 4710.831315518044,
+        "registered": "4710.831315518042975090367",
+        "rel": 1.9306458687598168e-16
+       },
+       {
+        "T_K": 347.0,
+        "tool": 20041.07434490076,
+        "registered": "20041.07434490073871245524",
+        "rel": 1.0891568219796647e-15
+       },
+       {
+        "T_K": 385.0,
+        "tool": 66363.7380628622,
+        "registered": "66363.7380628621904079128",
+        "rel": 2.1927509891897197e-16
+       },
+       {
+        "T_K": 430.0,
+        "tool": 208385.75596586012,
+        "registered": "208385.755965860040671266",
+        "rel": 4.18989728762965e-16
+       }
+      ]
+     },
+     "max": 1.2608696892271133e-15,
+     "threshold": 1e-14,
+     "passes": true
+    },
+    "latent": {
+     "Hvap_J_per_mol": {
+      "A": 25000.0,
+      "B": 30000.0,
+      "C": 35000.0
+     },
+     "values": {
+      "A": [
+       {
+        "T_K": 310.0,
+        "hV_minus_hL_minus_Hvap": 0.0,
+        "rel": 0.0
+       },
+       {
+        "T_K": 347.0,
+        "hV_minus_hL_minus_Hvap": 0.0,
+        "rel": 0.0
+       },
+       {
+        "T_K": 385.0,
+        "hV_minus_hL_minus_Hvap": 0.0,
+        "rel": 0.0
+       },
+       {
+        "T_K": 430.0,
+        "hV_minus_hL_minus_Hvap": 0.0,
+        "rel": 0.0
+       }
+      ],
+      "B": [
+       {
+        "T_K": 310.0,
+        "hV_minus_hL_minus_Hvap": -3.637978807091713e-12,
+        "rel": 1.2126596023639044e-16
+       },
+       {
+        "T_K": 347.0,
+        "hV_minus_hL_minus_Hvap": 0.0,
+        "rel": 0.0
+       },
+       {
+        "T_K": 385.0,
+        "hV_minus_hL_minus_Hvap": 0.0,
+        "rel": 0.0
+       },
+       {
+        "T_K": 430.0,
+        "hV_minus_hL_minus_Hvap": 0.0,
+        "rel": 0.0
+       }
+      ],
+      "C": [
+       {
+        "T_K": 310.0,
+        "hV_minus_hL_minus_Hvap": 0.0,
+        "rel": 0.0
+       },
+       {
+        "T_K": 347.0,
+        "hV_minus_hL_minus_Hvap": 0.0,
+        "rel": 0.0
+       },
+       {
+        "T_K": 385.0,
+        "hV_minus_hL_minus_Hvap": 0.0,
+        "rel": 0.0
+       },
+       {
+        "T_K": 430.0,
+        "hV_minus_hL_minus_Hvap": 0.0,
+        "rel": 0.0
+       }
+      ]
+     },
+     "max": 1.2126596023639044e-16,
+     "threshold": 1e-12,
+     "passes": true
+    },
+    "cp": {
+     "values": {
+      "A": [
+       {
+        "T1_K": 310.0,
+        "T2_K": 347.0,
+        "residual_J_per_mol": -4.547473508864641e-13
+       },
+       {
+        "T1_K": 347.0,
+        "T2_K": 385.0,
+        "residual_J_per_mol": 0.0
+       },
+       {
+        "T1_K": 385.0,
+        "T2_K": 430.0,
+        "residual_J_per_mol": 0.0
+       }
+      ],
+      "B": [
+       {
+        "T1_K": 310.0,
+        "T2_K": 347.0,
+        "residual_J_per_mol": -4.547473508864641e-13
+       },
+       {
+        "T1_K": 347.0,
+        "T2_K": 385.0,
+        "residual_J_per_mol": 0.0
+       },
+       {
+        "T1_K": 385.0,
+        "T2_K": 430.0,
+        "residual_J_per_mol": 0.0
+       }
+      ],
+      "C": [
+       {
+        "T1_K": 310.0,
+        "T2_K": 347.0,
+        "residual_J_per_mol": -4.547473508864641e-13
+       },
+       {
+        "T1_K": 347.0,
+        "T2_K": 385.0,
+        "residual_J_per_mol": 0.0
+       },
+       {
+        "T1_K": 385.0,
+        "T2_K": 430.0,
+        "residual_J_per_mol": 0.0
+       }
+      ]
+     },
+     "max": 4.547473508864641e-13,
+     "threshold": 1e-09,
+     "passes": true
+    },
+    "datum": {
+     "values": {
+      "A": [
+       {
+        "T_K": 310.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000227
+       },
+       {
+        "T_K": 347.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000182
+       },
+       {
+        "T_K": 385.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000182
+       },
+       {
+        "T_K": 430.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000182
+       }
+      ],
+      "B": [
+       {
+        "T_K": 310.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000227
+       },
+       {
+        "T_K": 347.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000182
+       },
+       {
+        "T_K": 385.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000182
+       },
+       {
+        "T_K": 430.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000182
+       }
+      ],
+      "C": [
+       {
+        "T_K": 310.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000227
+       },
+       {
+        "T_K": 347.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000182
+       },
+       {
+        "T_K": 385.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000182
+       },
+       {
+        "T_K": 430.0,
+        "hL_minus_cp_T_minus_T_r": 185.00000000000182
+       }
+      ]
+     },
+     "T_r_K": 300.0,
+     "T_ref_tool_K": 298.15,
+     "expected_offset_J_per_mol": 185.0,
+     "max_abs_deviation": 2.2737367544323206e-12,
+     "threshold": 1e-09,
+     "passes": true
+    },
+    "liquid_pressure_dependence": {
+     "stream": "liquid A = B = C = 1 kmol/h",
+     "T_K": 347.0,
+     "H_at_1.5P_r_minus_H_at_P_r_kJ_per_h": 0.0,
+     "passes": true
+    },
+    "methods": {
+     "values": {
+      "A": {
+       "Psat": {
+        "method": "USER_METHOD",
+        "all_methods": [
+         "USER_METHOD"
+        ]
+       },
+       "Hvap": {
+        "method": "USER_METHOD",
+        "all_methods": [
+         "USER_METHOD"
+        ]
+       }
+      },
+      "B": {
+       "Psat": {
+        "method": "USER_METHOD",
+        "all_methods": [
+         "USER_METHOD"
+        ]
+       },
+       "Hvap": {
+        "method": "USER_METHOD",
+        "all_methods": [
+         "USER_METHOD"
+        ]
+       }
+      },
+      "C": {
+       "Psat": {
+        "method": "USER_METHOD",
+        "all_methods": [
+         "USER_METHOD"
+        ]
+       },
+       "Hvap": {
+        "method": "USER_METHOD",
+        "all_methods": [
+         "USER_METHOD"
+        ]
+       }
+      }
+     },
+     "passes": true
+    },
+    "thermo_classes": {
+     "values": {
+      "Gamma": "IdealActivityCoefficients",
+      "Phi": "IdealFugacityCoefficients",
+      "PCF": "MockPoyintingCorrectionFactors",
+      "mixture": "IdealMixture",
+      "include_excess_energies": false
+     },
+     "expected": {
+      "Gamma": "IdealActivityCoefficients",
+      "Phi": "IdealFugacityCoefficients",
+      "PCF": "MockPoyintingCorrectionFactors",
+      "mixture": "IdealMixture",
+      "include_excess_energies": false
+     },
+     "passes": true
+    }
+   },
+   "failed": [],
+   "passes": true
+  }
+ },
+ "levels": {
+  "L1": {
+   "realization": {
+    "level": "L1",
+    "ends": {
+     "condenser": {
+      "end": "condenser",
+      "stage": 0,
+      "native": null,
+      "expressible": true,
+      "realization": "no condenser: stage 0 carries no specification"
+     },
+     "reboiler": {
+      "end": "reboiler",
+      "stage": 4,
+      "registered": {
+       "kind": "duty",
+       "value": "30000"
+      },
+      "native": [
+       "Duty",
+       108000.0
+      ],
+      "expressible": true,
+      "conversion": "Q -> ('Duty', 3.6 Q) in kJ/h"
+     }
+    },
+    "expressible": true
+   },
+   "attempted": true,
+   "inspection": {
+    "property_package": {
+     "thermo_class": "IdealThermo",
+     "chemicals": {
+      "A": {
+       "MW_g_per_mol": 100.0,
+       "Tb_K": 320.0,
+       "phase_ref": "l",
+       "Psat_method": "USER_METHOD",
+       "Hvap_method": "USER_METHOD",
+       "Cn_l_method": "USER_METHOD",
+       "Cn_g_method": "USER_METHOD",
+       "V_l_method": "USER_METHOD"
+      },
+      "B": {
+       "MW_g_per_mol": 100.0,
+       "Tb_K": 360.0,
+       "phase_ref": "l",
+       "Psat_method": "USER_METHOD",
+       "Hvap_method": "USER_METHOD",
+       "Cn_l_method": "USER_METHOD",
+       "Cn_g_method": "USER_METHOD",
+       "V_l_method": "USER_METHOD"
+      },
+      "C": {
+       "MW_g_per_mol": 100.0,
+       "Tb_K": 400.0,
+       "phase_ref": "l",
+       "Psat_method": "USER_METHOD",
+       "Hvap_method": "USER_METHOD",
+       "Cn_l_method": "USER_METHOD",
+       "Cn_g_method": "USER_METHOD",
+       "V_l_method": "USER_METHOD"
+      }
+     },
+     "Chemical_T_ref_K": 298.15,
+     "t06_fixtures_sha256": "c6320cc81ea4bf08c36f7d7b5aca19180c2109fd66e4e23c84476d35286ba61f",
+     "constants": {
+      "T_BOIL_K": {
+       "A": 320.0,
+       "B": 360.0,
+       "C": 400.0
+      },
+      "L_VAP_J_per_mol": {
+       "A": 25000.0,
+       "B": 30000.0,
+       "C": 35000.0
+      },
+      "CP_J_per_mol_K": 100.0,
+      "V_LIQ_m3_per_mol": 0.0001,
+      "MW_kg_per_mol": 0.1,
+      "P_REF_Pa": 100000.0,
+      "R_GAS_J_per_mol_K": 8.31446261815324
+     },
+     "variant": "SYN-001",
+     "readback": {
+      "items": {
+       "Psat": {
+        "values": {
+         "A": [
+          {
+           "T_K": 310.0,
+           "tool": 73852.10058501421,
+           "registered": "73852.10058501417914360476",
+           "rel": 3.940826357840843e-16
+          },
+          {
+           "T_K": 347.0,
+           "tool": 207741.11420757842,
+           "registered": "207741.1142075781509144168",
+           "rel": 1.2608696892271133e-15
+          },
+          {
+           "T_K": 385.0,
+           "tool": 488605.1695545125,
+           "registered": "488605.1695545122313511412",
+           "rel": 4.765210402218092e-16
+          },
+          {
+           "T_K": 430.0,
+           "tool": 1106402.6130949282,
+           "registered": "1106402.61309492733112889",
+           "rel": 8.417573888498877e-16
+          }
+         ],
+         "B": [
+          {
+           "T_K": 310.0,
+           "tool": 19857.98660602364,
+           "registered": "19857.9866060236335135583",
+           "rel": 3.6639956298370996e-16
+          },
+          {
+           "T_K": 347.0,
+           "tool": 68695.25473799145,
+           "registered": "68695.25473799137013146944",
+           "rel": 1.059164514628332e-15
+          },
+          {
+           "T_K": 385.0,
+           "tool": 191712.0713429426,
+           "registered": "191712.0713429424969886068",
+           "rel": 4.554303271493775e-16
+          },
+          {
+           "T_K": 430.0,
+           "tool": 511205.62252580276,
+           "registered": "511205.6225258024898361191",
+           "rel": 5.693174952367572e-16
+          }
+         ],
+         "C": [
+          {
+           "T_K": 310.0,
+           "tool": 4710.831315518044,
+           "registered": "4710.831315518042975090367",
+           "rel": 1.9306458687598168e-16
+          },
+          {
+           "T_K": 347.0,
+           "tool": 20041.07434490076,
+           "registered": "20041.07434490073871245524",
+           "rel": 1.0891568219796647e-15
+          },
+          {
+           "T_K": 385.0,
+           "tool": 66363.7380628622,
+           "registered": "66363.7380628621904079128",
+           "rel": 2.1927509891897197e-16
+          },
+          {
+           "T_K": 430.0,
+           "tool": 208385.75596586012,
+           "registered": "208385.755965860040671266",
+           "rel": 4.18989728762965e-16
+          }
+         ]
+        },
+        "max": 1.2608696892271133e-15,
+        "threshold": 1e-14,
+        "passes": true
+       },
+       "latent": {
+        "Hvap_J_per_mol": {
+         "A": 25000.0,
+         "B": 30000.0,
+         "C": 35000.0
+        },
+        "values": {
+         "A": [
+          {
+           "T_K": 310.0,
+           "hV_minus_hL_minus_Hvap": 0.0,
+           "rel": 0.0
+          },
+          {
+           "T_K": 347.0,
+           "hV_minus_hL_minus_Hvap": 0.0,
+           "rel": 0.0
+          },
+          {
+           "T_K": 385.0,
+           "hV_minus_hL_minus_Hvap": 0.0,
+           "rel": 0.0
+          },
+          {
+           "T_K": 430.0,
+           "hV_minus_hL_minus_Hvap": 0.0,
+           "rel": 0.0
+          }
+         ],
+         "B": [
+          {
+           "T_K": 310.0,
+           "hV_minus_hL_minus_Hvap": -3.637978807091713e-12,
+           "rel": 1.2126596023639044e-16
+          },
+          {
+           "T_K": 347.0,
+           "hV_minus_hL_minus_Hvap": 0.0,
+           "rel": 0.0
+          },
+          {
+           "T_K": 385.0,
+           "hV_minus_hL_minus_Hvap": 0.0,
+           "rel": 0.0
+          },
+          {
+           "T_K": 430.0,
+           "hV_minus_hL_minus_Hvap": 0.0,
+           "rel": 0.0
+          }
+         ],
+         "C": [
+          {
+           "T_K": 310.0,
+           "hV_minus_hL_minus_Hvap": 0.0,
+           "rel": 0.0
+          },
+          {
+           "T_K": 347.0,
+           "hV_minus_hL_minus_Hvap": 0.0,
+           "rel": 0.0
+          },
+          {
+           "T_K": 385.0,
+           "hV_minus_hL_minus_Hvap": 0.0,
+           "rel": 0.0
+          },
+          {
+           "T_K": 430.0,
+           "hV_minus_hL_minus_Hvap": 0.0,
+           "rel": 0.0
+          }
+         ]
+        },
+        "max": 1.2126596023639044e-16,
+        "threshold": 1e-12,
+        "passes": true
+       },
+       "cp": {
+        "values": {
+         "A": [
+          {
+           "T1_K": 310.0,
+           "T2_K": 347.0,
+           "residual_J_per_mol": -4.547473508864641e-13
+          },
+          {
+           "T1_K": 347.0,
+           "T2_K": 385.0,
+           "residual_J_per_mol": 0.0
+          },
+          {
+           "T1_K": 385.0,
+           "T2_K": 430.0,
+           "residual_J_per_mol": 0.0
+          }
+         ],
+         "B": [
+          {
+           "T1_K": 310.0,
+           "T2_K": 347.0,
+           "residual_J_per_mol": -4.547473508864641e-13
+          },
+          {
+           "T1_K": 347.0,
+           "T2_K": 385.0,
+           "residual_J_per_mol": 0.0
+          },
+          {
+           "T1_K": 385.0,
+           "T2_K": 430.0,
+           "residual_J_per_mol": 0.0
+          }
+         ],
+         "C": [
+          {
+           "T1_K": 310.0,
+           "T2_K": 347.0,
+           "residual_J_per_mol": -4.547473508864641e-13
+          },
+          {
+           "T1_K": 347.0,
+           "T2_K": 385.0,
+           "residual_J_per_mol": 0.0
+          },
+          {
+           "T1_K": 385.0,
+           "T2_K": 430.0,
+           "residual_J_per_mol": 0.0
+          }
+         ]
+        },
+        "max": 4.547473508864641e-13,
+        "threshold": 1e-09,
+        "passes": true
+       },
+       "datum": {
+        "values": {
+         "A": [
+          {
+           "T_K": 310.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000227
+          },
+          {
+           "T_K": 347.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000182
+          },
+          {
+           "T_K": 385.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000182
+          },
+          {
+           "T_K": 430.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000182
+          }
+         ],
+         "B": [
+          {
+           "T_K": 310.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000227
+          },
+          {
+           "T_K": 347.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000182
+          },
+          {
+           "T_K": 385.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000182
+          },
+          {
+           "T_K": 430.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000182
+          }
+         ],
+         "C": [
+          {
+           "T_K": 310.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000227
+          },
+          {
+           "T_K": 347.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000182
+          },
+          {
+           "T_K": 385.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000182
+          },
+          {
+           "T_K": 430.0,
+           "hL_minus_cp_T_minus_T_r": 185.00000000000182
+          }
+         ]
+        },
+        "T_r_K": 300.0,
+        "T_ref_tool_K": 298.15,
+        "expected_offset_J_per_mol": 185.0,
+        "max_abs_deviation": 2.2737367544323206e-12,
+        "threshold": 1e-09,
+        "passes": true
+       },
+       "liquid_pressure_dependence": {
+        "stream": "liquid A = B = C = 1 kmol/h",
+        "T_K": 347.0,
+        "H_at_1.5P_r_minus_H_at_P_r_kJ_per_h": 0.0,
+        "passes": true
+       },
+       "methods": {
+        "values": {
+         "A": {
+          "Psat": {
+           "method": "USER_METHOD",
+           "all_methods": [
+            "USER_METHOD"
+           ]
+          },
+          "Hvap": {
+           "method": "USER_METHOD",
+           "all_methods": [
+            "USER_METHOD"
+           ]
+          }
+         },
+         "B": {
+          "Psat": {
+           "method": "USER_METHOD",
+           "all_methods": [
+            "USER_METHOD"
+           ]
+          },
+          "Hvap": {
+           "method": "USER_METHOD",
+           "all_methods": [
+            "USER_METHOD"
+           ]
+          }
+         },
+         "C": {
+          "Psat": {
+           "method": "USER_METHOD",
+           "all_methods": [
+            "USER_METHOD"
+           ]
+          },
+          "Hvap": {
+           "method": "USER_METHOD",
+           "all_methods": [
+            "USER_METHOD"
+           ]
+          }
+         }
+        },
+        "passes": true
+       },
+       "thermo_classes": {
+        "values": {
+         "Gamma": "IdealActivityCoefficients",
+         "Phi": "IdealFugacityCoefficients",
+         "PCF": "MockPoyintingCorrectionFactors",
+         "mixture": "IdealMixture",
+         "include_excess_energies": false
+        },
+        "expected": {
+         "Gamma": "IdealActivityCoefficients",
+         "Phi": "IdealFugacityCoefficients",
+         "PCF": "MockPoyintingCorrectionFactors",
+         "mixture": "IdealMixture",
+         "include_excess_energies": false
+        },
+        "passes": true
+       }
+      },
+      "failed": [],
+      "passes": true
+     }
+    },
+    "stage_map": {
+     "len_stages": 5,
+     "registered": 5,
+     "map": {
+      "1": 0,
+      "2": 1,
+      "3": 2,
+      "4": 3,
+      "5": 4
+     },
+     "statement": "our stage j -> BioSTEAM stage j - 1 (stage 0 is the top)"
+    },
+    "feed_stages": {
+     "tool": [
+      0
+     ],
+     "registered": [
+      0
+     ],
+     "statement": "each inlet enters whole at stage `stage - 1`"
+    },
+    "condenser_realization": {
+     "type": "none",
+     "stage": 0,
+     "built": {
+      "specified_variable": "Q",
+      "B": null,
+      "Q": 0,
+      "F": null,
+      "T": null,
+      "bottom_split": 0,
+      "top_split": 0
+     },
+     "statement": "stage 0 carries no specification and receives the top inlet",
+     "as_expected": true
+    },
+    "reboiler_realization": {
+     "type": "kettle",
+     "stage": 4,
+     "built": {
+      "specified_variable": "Q",
+      "B": null,
+      "Q": 108000.0,
+      "F": null,
+      "T": null,
+      "bottom_split": 0,
+      "top_split": 0
+     },
+     "statement": "stage N-1 carries the reboiler end's specification",
+     "as_expected": true
+    },
+    "specifications": {
+     "condenser": {
+      "native": null,
+      "realization": "no condenser: stage 0 carries no specification"
+     },
+     "reboiler": {
+      "native": [
+       "Duty",
+       108000.0
+      ],
+      "conversion": "Q -> ('Duty', 3.6 Q) in kJ/h",
+      "stage": 4,
+      "stored": {
+       "specified_variable": "Q",
+       "B": null,
+       "Q": 108000.0,
+       "F": null,
+       "T": null,
+       "bottom_split": 0,
+       "top_split": 0
+      }
+     }
+    },
+    "pressures": [
+     100000.0,
+     100000.0,
+     100000.0,
+     100000.0,
+     100000.0
+    ],
+    "intermediate_stages": [
+     {
+      "stage": 0,
+      "specified_variable": "Q",
+      "Q": 0,
+      "side_draw": false,
+      "reaction": false,
+      "as_expected": true
+     },
+     {
+      "stage": 1,
+      "specified_variable": "Q",
+      "Q": 0,
+      "side_draw": false,
+      "reaction": false,
+      "as_expected": true
+     },
+     {
+      "stage": 2,
+      "specified_variable": "Q",
+      "Q": 0,
+      "side_draw": false,
+      "reaction": false,
+      "as_expected": true
+     },
+     {
+      "stage": 3,
+      "specified_variable": "Q",
+      "Q": 0,
+      "side_draw": false,
+      "reaction": false,
+      "as_expected": true
+     }
+    ],
+    "initialization": {
+     "statement": "BioSTEAM's own initializer (hot_start); no initial point from this project",
+     "use_cache": true
+    },
+    "ladder_source": {
+     "default_algorithms": [
+      "inside out",
+      "phenomena",
+      "simultaneous correction",
+      "sequential modular"
+     ],
+     "default_methods": [
+      "fixed-point",
+      "fixed-point",
+      "hybr",
+      "fixed-point"
+     ],
+     "registered_rungs": [
+      [
+       "inside out",
+       "fixed-point"
+      ],
+      [
+       "phenomena",
+       "fixed-point"
+      ],
+      [
+       "simultaneous correction",
+       "hybr"
+      ],
+      [
+       "sequential modular",
+       "fixed-point"
+      ]
+     ],
+     "matches": true
+    }
+   },
+   "rungs": [
+    {
+     "rung": "R1",
+     "rung_index": 0,
+     "algorithm": "inside out",
+     "method": "fixed-point",
+     "tolerance": 1e-10,
+     "level": "L1",
+     "outer": null,
+     "run": {
+      "x": null,
+      "path": {
+       "applied": {
+        "algorithms": [
+         "inside out"
+        ],
+        "methods": [
+         "fixed-point"
+        ],
+        "early_termination": false,
+        "tolerance": 1e-10,
+        "relative_tolerance": 1e-10,
+        "maxiter": 500,
+        "max_attempts": 1,
+        "use_cache": true,
+        "specifications_by_weight": false,
+        "phases": [
+         "g",
+         "l"
+        ],
+        "optimize_result": false,
+        "damping": 0,
+        "homotopy_continuation": false,
+        "vle_decomposition_before": null,
+        "inside_loop_algorithm": "simultaneous correction",
+        "line_search": false,
+        "minimum_residual_reduction": 0.1,
+        "iteration_memory": 8,
+        "partition_data": {}
+       },
+       "stage_specifications": {
+        "4": [
+         "Duty",
+         108000.0
+        ]
+       },
+       "bottom_side_draws": {},
+       "pass1": {
+        "exception": null,
+        "iter": 1,
+        "maxiter": 500,
+        "attempt": 0,
+        "tool_mean_residual_not_used": "inf",
+        "fsolve": {
+         "ran": false,
+         "nfev": null,
+         "ier": null,
+         "mesg": null
+        },
+        "vle_decomposition_after": "bubble point",
+        "wall_time_s": 0.022577923955395818
+       },
+       "respecification": {
+        "route": "attribute_setter",
+        "set": [
+         {
+          "stage": 4,
+          "specification": "Duty",
+          "attribute": "Q",
+          "stored_after_pass1": 108000.0,
+          "set_to": 108000.0
+         }
+        ]
+       },
+       "pass2": {
+        "exception": null,
+        "iter": 1,
+        "maxiter": 500,
+        "attempt": 0,
+        "tool_mean_residual_not_used": "inf",
+        "fsolve": {
+         "ran": false,
+         "nfev": null,
+         "ier": null,
+         "mesg": null
+        },
+        "vle_decomposition_after": "bubble point",
+        "wall_time_s": 0.0021371840266510844
+       }
+      },
+      "profile": {
+       "stages": [
+        {
+         "index": 0,
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.2210515554315717,
+         "V_mol_per_s": 0.7789484445684284,
+         "x": {
+          "A": 0.09407531065866065,
+          "B": 0.32401987242857977,
+          "C": 0.5819048169127595
+         },
+         "y": {
+          "A": 0.3327620820846564,
+          "B": 0.4215617933364732,
+          "C": 0.24567612457887045
+         },
+         "liquid_T_K": 369.7072401866157,
+         "vapour_T_K": 369.7072401866157,
+         "duty_W": 1396.7839245641921,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.2800000000000001,
+           "B": 0.4,
+           "C": 0.32
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 1,
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.2210515554315717,
+         "V_mol_per_s": 0.7789484445684284,
+         "x": {
+          "A": 0.09407531065866065,
+          "B": 0.32401987242857977,
+          "C": 0.5819048169127595
+         },
+         "y": {
+          "A": 0.3327620820846564,
+          "B": 0.4215617933364732,
+          "C": 0.24567612457887045
+         },
+         "liquid_T_K": 369.7072401866157,
+         "vapour_T_K": 369.7072401866157,
+         "duty_W": 0.0,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          },
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 2,
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.2210515554315717,
+         "V_mol_per_s": 0.7789484445684284,
+         "x": {
+          "A": 0.09407531065866065,
+          "B": 0.32401987242857977,
+          "C": 0.5819048169127595
+         },
+         "y": {
+          "A": 0.3327620820846564,
+          "B": 0.4215617933364732,
+          "C": 0.24567612457887045
+         },
+         "liquid_T_K": 369.7072401866157,
+         "vapour_T_K": 369.7072401866157,
+         "duty_W": 0.0,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          },
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 3,
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.2210515554315717,
+         "V_mol_per_s": 0.7789484445684284,
+         "x": {
+          "A": 0.09407531065866065,
+          "B": 0.32401987242857977,
+          "C": 0.5819048169127595
+         },
+         "y": {
+          "A": 0.3327620820846564,
+          "B": 0.4215617933364732,
+          "C": 0.24567612457887045
+         },
+         "liquid_T_K": 369.7072401866157,
+         "vapour_T_K": 369.7072401866157,
+         "duty_W": 0.0,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          },
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 4,
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.2210515554315717,
+         "V_mol_per_s": 0.7789484445684284,
+         "x": {
+          "A": 0.09407531065866065,
+          "B": 0.32401987242857977,
+          "C": 0.5819048169127595
+         },
+         "y": {
+          "A": 0.3327620820846564,
+          "B": 0.4215617933364732,
+          "C": 0.24567612457887045
+         },
+         "liquid_T_K": 369.7072401866157,
+         "vapour_T_K": 369.7072401866157,
+         "duty_W": 28603.216075435805,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 108000.0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        }
+       ],
+       "inlets": [
+        {
+         "phase": "l",
+         "T_K": 300.0,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 0.2800000000000001,
+          "B": 0.4,
+          "C": 0.32
+         },
+         "F_mol_per_s": 1.0000000000000002,
+         "H_kJ_per_h": 666.0000000000083,
+         "H_W": 185.0000000000023
+        }
+       ],
+       "products": [
+        {
+         "phase": "g",
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 0.2592045062511948,
+          "B": 0.32837490320892304,
+          "C": 0.19136903510831058
+         },
+         "F_mol_per_s": 0.7789484445684284,
+         "H_kJ_per_h": 102971.5778715689,
+         "H_W": 28603.216075435805
+        },
+        {
+         "phase": "l",
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 0.020795493748805252,
+          "B": 0.071625096791077,
+          "C": 0.12863096489168943
+         },
+         "F_mol_per_s": 0.2210515554315717,
+         "H_kJ_per_h": 5694.422128431112,
+         "H_W": 1581.7839245641976
+        }
+       ],
+       "products_order": "outs[0] vapour of stage 0, outs[1] liquid of stage N-1"
+      },
+      "rule2": {
+       "checks": {
+        "B1": {
+         "pass1": null,
+         "pass2": null,
+         "passes": true
+        },
+        "B2": {
+         "rung": "R1",
+         "counter": "iter",
+         "pass1_count": 1,
+         "pass2_count": 1,
+         "maxiter": 500,
+         "passes": true
+        },
+        "B3": {
+         "per_stage_mol_per_s": [
+          {
+           "A": 0.25920450625119484,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.0,
+           "B": 0.0,
+           "C": 0.0
+          },
+          {
+           "A": 0.0,
+           "B": 0.0,
+           "C": 0.0
+          },
+          {
+           "A": 0.0,
+           "B": 0.0,
+           "C": 0.0
+          },
+          {
+           "A": -0.2592045062511948,
+           "B": -0.32837490320892304,
+           "C": -0.19136903510831058
+          }
+         ],
+         "max": 0.32837490320892304,
+         "threshold": 3.1e-08,
+         "passes": false
+        },
+        "B4": {
+         "per_stage": [
+          {
+           "stage": 0,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.5371882352006,
+            "B": 1.3010368474526006,
+            "C": 0.42219297286845237
+           },
+           "per_component": {
+            "A": 3.885780586188048e-16,
+            "B": 5.551115123125783e-17,
+            "C": 2.7755575615628914e-17
+           },
+           "max": 3.885780586188048e-16
+          },
+          {
+           "stage": 1,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.5371882352006,
+            "B": 1.3010368474526006,
+            "C": 0.42219297286845237
+           },
+           "per_component": {
+            "A": 3.885780586188048e-16,
+            "B": 5.551115123125783e-17,
+            "C": 2.7755575615628914e-17
+           },
+           "max": 3.885780586188048e-16
+          },
+          {
+           "stage": 2,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.5371882352006,
+            "B": 1.3010368474526006,
+            "C": 0.42219297286845237
+           },
+           "per_component": {
+            "A": 3.885780586188048e-16,
+            "B": 5.551115123125783e-17,
+            "C": 2.7755575615628914e-17
+           },
+           "max": 3.885780586188048e-16
+          },
+          {
+           "stage": 3,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.5371882352006,
+            "B": 1.3010368474526006,
+            "C": 0.42219297286845237
+           },
+           "per_component": {
+            "A": 3.885780586188048e-16,
+            "B": 5.551115123125783e-17,
+            "C": 2.7755575615628914e-17
+           },
+           "max": 3.885780586188048e-16
+          },
+          {
+           "stage": 4,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.5371882352006,
+            "B": 1.3010368474526006,
+            "C": 0.42219297286845237
+           },
+           "per_component": {
+            "A": 3.885780586188048e-16,
+            "B": 5.551115123125783e-17,
+            "C": 2.7755575615628914e-17
+           },
+           "max": 3.885780586188048e-16
+          }
+         ],
+         "max": 3.885780586188048e-16,
+         "threshold": 1e-08,
+         "one_phase_stages": [],
+         "passes": true
+        },
+        "B5": {
+         "component": {
+          "residual_mol_per_s": {
+           "A": 5.551115123125783e-17,
+           "B": 0.0,
+           "C": 0.0
+          },
+          "max_abs_mol_per_s": 5.551115123125783e-17,
+          "tolerance_mol_per_s": 3.1e-08,
+          "passes": true
+         },
+         "energy_W": -3.637978807091713e-12,
+         "energy_threshold_W": 0.001,
+         "component_threshold_mol_per_s": 3.1e-08,
+         "energy_terms": {
+          "inlets_W": [
+           185.0000000000023
+          ],
+          "products_W": [
+           28603.216075435805,
+           1581.7839245641976
+          ],
+          "duties_W": [
+           1396.7839245641921,
+           0.0,
+           0.0,
+           0.0,
+           28603.216075435805
+          ]
+         },
+         "passes": true
+        }
+       },
+       "failed": [
+        "B3"
+       ],
+       "passes": false
+      },
+      "rule2c": {
+       "checks": {
+        "stage_count": {
+         "value": 5,
+         "registered": 5,
+         "passes": true
+        },
+        "feed_stage": {
+         "value": [
+          0
+         ],
+         "passes": true
+        },
+        "pressure_max_abs_dev_Pa": {
+         "value": 0.0,
+         "threshold": 0.001,
+         "passes": true
+        },
+        "intermediate_duty_max_abs_W": {
+         "value": 1396.7839245641921,
+         "threshold": 0.001,
+         "passes": false
+        },
+        "specification_readback": {
+         "rows": [
+          {
+           "stage": 4,
+           "specification": "Duty",
+           "registered_value": 108000.0,
+           "expected_variable": "Q",
+           "specified_variable": "Q",
+           "attribute": "Q",
+           "expected_stored": 108000.0,
+           "stored": 108000.0,
+           "passes": true
+          }
+         ],
+         "passes": true
+        },
+        "property_readback": {
+         "failed": [],
+         "passes": true
+        },
+        "specification": {
+         "value": {
+          "reboiler": {
+           "kind": "duty",
+           "definition": "computed duty of stage index 4, W, into the stage",
+           "registered": 30000.0,
+           "tool": 28603.216075435805,
+           "relative_difference": -0.046559464152139844,
+           "absolute_difference": -1396.7839245641953,
+           "rule2c_threshold": 0.0001,
+           "rule2c_passes": false,
+           "rule2d_basis": "relative",
+           "rule2d_threshold": 1e-08,
+           "rule2d_measure": 0.046559464152139844,
+           "rule2d_passes": false
+          }
+         },
+         "passes": false
+        }
+       },
+       "failed": [
+        "intermediate_duty_max_abs_W",
+        "specification"
+       ],
+       "passes": false,
+       "specification_values": {
+        "reboiler": {
+         "kind": "duty",
+         "definition": "computed duty of stage index 4, W, into the stage",
+         "registered": 30000.0,
+         "tool": 28603.216075435805,
+         "relative_difference": -0.046559464152139844,
+         "absolute_difference": -1396.7839245641953,
+         "rule2c_threshold": 0.0001,
+         "rule2c_passes": false,
+         "rule2d_basis": "relative",
+         "rule2d_threshold": 1e-08,
+         "rule2d_measure": 0.046559464152139844,
+         "rule2d_passes": false
+        }
+       }
+      },
+      "rule2d_specification": {
+       "passes": false,
+       "max_measure": 0.046559464152139844
+      },
+      "quantities": {
+       "T[1]": 369.7072401866157,
+       "T[2]": 369.7072401866157,
+       "T[3]": 369.7072401866157,
+       "T[4]": 369.7072401866157,
+       "T[5]": 369.7072401866157,
+       "L[1]": 0.2210515554315717,
+       "V[1]": 0.7789484445684284,
+       "L[2]": 0.2210515554315717,
+       "V[2]": 0.7789484445684284,
+       "L[3]": 0.2210515554315717,
+       "V[3]": 0.7789484445684284,
+       "L[4]": 0.2210515554315717,
+       "V[4]": 0.7789484445684284,
+       "L[5]": 0.2210515554315717,
+       "V[5]": 0.7789484445684284,
+       "top[A]": 0.2592045062511948,
+       "top[B]": 0.32837490320892304,
+       "top[C]": 0.19136903510831058,
+       "bottom[A]": 0.020795493748805252,
+       "bottom[B]": 0.071625096791077,
+       "bottom[C]": 0.12863096489168943
+      },
+      "harness_error": null
+     },
+     "passes_through_2d_specification": false,
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "rule 2 ['B3']",
+     "wall_time_s": 0.025797816924750805
+    },
+    {
+     "rung": "R2",
+     "rung_index": 1,
+     "algorithm": "phenomena",
+     "method": "fixed-point",
+     "tolerance": 1e-10,
+     "level": "L1",
+     "outer": null,
+     "run": {
+      "x": null,
+      "path": {
+       "applied": {
+        "algorithms": [
+         "phenomena"
+        ],
+        "methods": [
+         "fixed-point"
+        ],
+        "early_termination": false,
+        "tolerance": 1e-10,
+        "relative_tolerance": 1e-10,
+        "maxiter": 500,
+        "max_attempts": 1,
+        "use_cache": true,
+        "specifications_by_weight": false,
+        "phases": [
+         "g",
+         "l"
+        ],
+        "optimize_result": false,
+        "damping": 0,
+        "homotopy_continuation": false,
+        "vle_decomposition_before": null,
+        "inside_loop_algorithm": "simultaneous correction",
+        "line_search": false,
+        "minimum_residual_reduction": 0.1,
+        "iteration_memory": 8,
+        "partition_data": {}
+       },
+       "stage_specifications": {
+        "4": [
+         "Duty",
+         108000.0
+        ]
+       },
+       "bottom_side_draws": {},
+       "pass1": {
+        "exception": null,
+        "iter": 23,
+        "maxiter": 500,
+        "attempt": 0,
+        "tool_mean_residual_not_used": "1000000.0",
+        "fsolve": {
+         "ran": false,
+         "nfev": null,
+         "ier": null,
+         "mesg": null
+        },
+        "vle_decomposition_after": "bubble point",
+        "wall_time_s": 0.05701344599947333
+       },
+       "respecification": {
+        "route": "attribute_setter",
+        "set": [
+         {
+          "stage": 4,
+          "specification": "Duty",
+          "attribute": "Q",
+          "stored_after_pass1": 108000.0,
+          "set_to": 108000.0
+         }
+        ]
+       },
+       "pass2": {
+        "exception": null,
+        "iter": 1,
+        "maxiter": 500,
+        "attempt": 0,
+        "tool_mean_residual_not_used": "inf",
+        "fsolve": {
+         "ran": false,
+         "nfev": null,
+         "ier": null,
+         "mesg": null
+        },
+        "vle_decomposition_after": "bubble point",
+        "wall_time_s": 0.0015316539211198688
+       }
+      },
+      "profile": {
+       "stages": [
+        {
+         "index": 0,
+         "T_K": 363.6196453632079,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 1.1189756079998576,
+         "V_mol_per_s": 0.791222625296396,
+         "x": {
+          "A": 0.11460961562407432,
+          "B": 0.44613836838555976,
+          "C": 0.4392520159903659
+         },
+         "y": {
+          "A": 0.35379047560999227,
+          "B": 0.4929461310705894,
+          "C": 0.15326339331941846
+         },
+         "liquid_T_K": 363.6196453632079,
+         "vapour_T_K": 363.6196453632079,
+         "duty_W": -2.05303270680209e-08,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.12817239324257704,
+           "B": 0.4892480839716692,
+           "C": 0.29277775608200723
+          },
+          {
+           "A": 0.2800000000000001,
+           "B": 0.4,
+           "C": 0.32
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.2799270289169986,
+           "B": 0.390030131955373,
+           "C": 0.12126546442402439
+          },
+          {
+           "A": 0.12824536432557854,
+           "B": 0.4992179520162962,
+           "C": 0.4915122916579829
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 1,
+         "T_K": 376.54388116866994,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 1.0919732386160335,
+         "V_mol_per_s": 0.9101982332962535,
+         "x": {
+          "A": 0.034345560744768945,
+          "B": 0.34605719403752,
+          "C": 0.6195972452177111
+         },
+         "y": {
+          "A": 0.14081810813717455,
+          "B": 0.5375181648066631,
+          "C": 0.3216637270561623
+         },
+         "liquid_T_K": 376.54388116866994,
+         "vapour_T_K": 376.54388116866994,
+         "duty_W": -7.942111955748663e-08,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.12824536432557854,
+           "B": 0.4992179520162962,
+           "C": 0.4915122916579829
+          },
+          {
+           "A": 0.037431462115547556,
+           "B": 0.3679153268749008,
+           "C": 0.47784907492198103
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.12817239324257704,
+           "B": 0.4892480839716692,
+           "C": 0.29277775608200723
+          },
+          {
+           "A": 0.03750443319854905,
+           "B": 0.37788519491952777,
+           "C": 0.6765836104979566
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 2,
+         "T_K": 386.47599622306217,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 1.0766635270041436,
+         "V_mol_per_s": 0.8831958639124294,
+         "x": {
+          "A": 0.008419146337851277,
+          "B": 0.20965103725485995,
+          "C": 0.7819298164072888
+         },
+         "y": {
+          "A": 0.04238183583620015,
+          "B": 0.41657274666696165,
+          "C": 0.5410454174968381
+         },
+         "liquid_T_K": 386.47599622306217,
+         "vapour_T_K": 386.47599622306217,
+         "duty_W": -7.683411240577698e-08,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.03750443319854905,
+           "B": 0.37788519491952777,
+           "C": 0.6765836104979566
+          },
+          {
+           "A": 0.008991616707473478,
+           "B": 0.21575375716626763,
+           "C": 0.6431407784267985
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.037431462115547556,
+           "B": 0.3679153268749008,
+           "C": 0.47784907492198103
+          },
+          {
+           "A": 0.009064587790474974,
+           "B": 0.22572362521089462,
+           "C": 0.8418753140027739
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 3,
+         "T_K": 393.1035243449196,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 1.0697811773560455,
+         "V_mol_per_s": 0.8678861523005397,
+         "x": {
+          "A": 0.0018050854922149666,
+          "B": 0.10689148653637584,
+          "C": 0.8913034279714093
+         },
+         "y": {
+          "A": 0.010360364298518936,
+          "B": 0.24859684256323336,
+          "C": 0.7410427931382477
+         },
+         "liquid_T_K": 393.1035243449196,
+         "vapour_T_K": 393.1035243449196,
+         "duty_W": -4.7891969896025124e-08,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.009064587790474974,
+           "B": 0.22572362521089462,
+           "C": 0.8418753140027739
+          },
+          {
+           "A": 0.0018580754000885487,
+           "B": 0.10438063227159504,
+           "C": 0.7547650949807578
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.008991616707473478,
+           "B": 0.21575375716626763,
+           "C": 0.6431407784267985
+          },
+          {
+           "A": 0.001931046483090044,
+           "B": 0.11435050031622204,
+           "C": 0.9534996305567335
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 4,
+         "T_K": 396.8926246889471,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.20877737470360402,
+         "V_mol_per_s": 0.8610038026524415,
+         "x": {
+          "A": 0.00034951623999051847,
+          "B": 0.04775358469173667,
+          "C": 0.9518968990682729
+         },
+         "y": {
+          "A": 0.0021580339068938952,
+          "B": 0.12123132551800125,
+          "C": 0.8766106405751048
+         },
+         "liquid_T_K": 396.8926246889471,
+         "vapour_T_K": 396.8926246889471,
+         "duty_W": 30000.00000019198,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 108000.0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.001931046483090044,
+           "B": 0.11435050031622204,
+           "C": 0.9534996305567335
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.0018580754000885487,
+           "B": 0.10438063227159504,
+           "C": 0.7547650949807578
+          },
+          {
+           "A": 7.297108300149526e-05,
+           "B": 0.009969868044626996,
+           "C": 0.19873453557597553
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        }
+       ],
+       "inlets": [
+        {
+         "phase": "l",
+         "T_K": 300.0,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 0.2800000000000001,
+          "B": 0.4,
+          "C": 0.32
+         },
+         "F_mol_per_s": 1.0000000000000002,
+         "H_kJ_per_h": 666.0000000000083,
+         "H_W": 185.0000000000023
+        }
+       ],
+       "products": [
+        {
+         "phase": "g",
+         "T_K": 363.6196453632079,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 0.2799270289169986,
+          "B": 0.390030131955373,
+          "C": 0.12126546442402439
+         },
+         "F_mol_per_s": 0.791222625296396,
+         "H_kJ_per_h": 101244.51865647773,
+         "H_W": 28123.477404577145
+        },
+        {
+         "phase": "l",
+         "T_K": 396.8926246889471,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 7.297108300149526e-05,
+          "B": 0.009969868044626996,
+          "C": 0.19873453557597553
+         },
+         "F_mol_per_s": 0.20877737470360402,
+         "H_kJ_per_h": 7421.481343404596,
+         "H_W": 2061.5225953901654
+        }
+       ],
+       "products_order": "outs[0] vapour of stage 0, outs[1] liquid of stage N-1"
+      },
+      "rule2": {
+       "checks": {
+        "B1": {
+         "pass1": null,
+         "pass2": null,
+         "passes": true
+        },
+        "B2": {
+         "rung": "R2",
+         "counter": "iter",
+         "pass1_count": 23,
+         "pass2_count": 1,
+         "maxiter": 500,
+         "passes": true
+        },
+        "B3": {
+         "per_stage_mol_per_s": [
+          {
+           "A": -2.7755575615628914e-17,
+           "B": 0.0,
+           "C": -2.7755575615628914e-17
+          },
+          {
+           "A": 6.938893903907228e-18,
+           "B": 5.551115123125783e-17,
+           "C": 1.1102230246251565e-16
+          },
+          {
+           "A": -3.469446951953614e-18,
+           "B": -2.7755575615628914e-17,
+           "C": 1.1102230246251565e-16
+          },
+          {
+           "A": 8.673617379884035e-19,
+           "B": -1.3877787807814457e-17,
+           "C": -2.220446049250313e-16
+          },
+          {
+           "A": -2.710505431213761e-20,
+           "B": 6.938893903907228e-18,
+           "C": 1.1102230246251565e-16
+          }
+         ],
+         "max": 2.220446049250313e-16,
+         "threshold": 3.1e-08,
+         "passes": true
+        },
+        "B4": {
+         "per_stage": [
+          {
+           "stage": 0,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.0869179141968126,
+            "B": 1.104917590596975,
+            "C": 0.3489190436007507
+           },
+           "per_component": {
+            "A": 8.26338997228504e-13,
+            "B": 1.151023720780131e-12,
+            "C": 3.5832448119776927e-13
+           },
+           "max": 1.151023720780131e-12
+          },
+          {
+           "stage": 1,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 4.100038115060307,
+            "B": 1.5532639519306322,
+            "C": 0.5191497049700224
+           },
+           "per_component": {
+            "A": 5.028200078527334e-13,
+            "B": 1.919242542669508e-12,
+            "C": 1.1489698081845745e-12
+           },
+           "max": 1.919242542669508e-12
+          },
+          {
+           "stage": 2,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 5.033982560145966,
+            "B": 1.986981567657034,
+            "C": 0.6919360358720891
+           },
+           "per_component": {
+            "A": 1.400476956625596e-13,
+            "B": 1.3767875728376566e-12,
+            "C": 1.7883472480662022e-12
+           },
+           "max": 1.7883472480662022e-12
+          },
+          {
+           "stage": 3,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 5.739542167493431,
+            "B": 2.3256935666073137,
+            "C": 0.8314147235171994
+           },
+           "per_component": {
+            "A": 2.049922731561793e-14,
+            "B": 4.917732887577131e-13,
+            "C": 1.4664935932273693e-12
+           },
+           "max": 1.4664935932273693e-12
+          },
+          {
+           "stage": 4,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 6.174345166193415,
+            "B": 2.5386853426910965,
+            "C": 0.9209092302246079
+           },
+           "per_component": {
+            "A": 2.3397082882237186e-15,
+            "B": 1.3145040611561853e-13,
+            "C": 9.50350909079134e-13
+           },
+           "max": 9.50350909079134e-13
+          }
+         ],
+         "max": 1.919242542669508e-12,
+         "threshold": 1e-08,
+         "one_phase_stages": [],
+         "passes": true
+        },
+        "B5": {
+         "component": {
+          "residual_mol_per_s": {
+           "A": 0.0,
+           "B": 0.0,
+           "C": 5.551115123125783e-17
+          },
+          "max_abs_mol_per_s": 5.551115123125783e-17,
+          "tolerance_mol_per_s": 3.1e-08,
+          "passes": true
+         },
+         "energy_W": -3.637978807091713e-12,
+         "energy_threshold_W": 0.001,
+         "component_threshold_mol_per_s": 3.1e-08,
+         "energy_terms": {
+          "inlets_W": [
+           185.0000000000023
+          ],
+          "products_W": [
+           28123.477404577145,
+           2061.5225953901654
+          ],
+          "duties_W": [
+           -2.05303270680209e-08,
+           -7.942111955748663e-08,
+           -7.683411240577698e-08,
+           -4.7891969896025124e-08,
+           30000.00000019198
+          ]
+         },
+         "passes": true
+        }
+       },
+       "failed": [],
+       "passes": true
+      },
+      "rule2c": {
+       "checks": {
+        "stage_count": {
+         "value": 5,
+         "registered": 5,
+         "passes": true
+        },
+        "feed_stage": {
+         "value": [
+          0
+         ],
+         "passes": true
+        },
+        "pressure_max_abs_dev_Pa": {
+         "value": 0.0,
+         "threshold": 0.001,
+         "passes": true
+        },
+        "intermediate_duty_max_abs_W": {
+         "value": 7.942111955748663e-08,
+         "threshold": 0.001,
+         "passes": true
+        },
+        "specification_readback": {
+         "rows": [
+          {
+           "stage": 4,
+           "specification": "Duty",
+           "registered_value": 108000.0,
+           "expected_variable": "Q",
+           "specified_variable": "Q",
+           "attribute": "Q",
+           "expected_stored": 108000.0,
+           "stored": 108000.0,
+           "passes": true
+          }
+         ],
+         "passes": true
+        },
+        "property_readback": {
+         "failed": [],
+         "passes": true
+        },
+        "specification": {
+         "value": {
+          "reboiler": {
+           "kind": "duty",
+           "definition": "computed duty of stage index 4, W, into the stage",
+           "registered": 30000.0,
+           "tool": 30000.00000019198,
+           "relative_difference": 6.399325987634559e-12,
+           "absolute_difference": 1.9197977962903678e-07,
+           "rule2c_threshold": 0.0001,
+           "rule2c_passes": true,
+           "rule2d_basis": "relative",
+           "rule2d_threshold": 1e-08,
+           "rule2d_measure": 6.399325987634559e-12,
+           "rule2d_passes": true
+          }
+         },
+         "passes": true
+        }
+       },
+       "failed": [],
+       "passes": true,
+       "specification_values": {
+        "reboiler": {
+         "kind": "duty",
+         "definition": "computed duty of stage index 4, W, into the stage",
+         "registered": 30000.0,
+         "tool": 30000.00000019198,
+         "relative_difference": 6.399325987634559e-12,
+         "absolute_difference": 1.9197977962903678e-07,
+         "rule2c_threshold": 0.0001,
+         "rule2c_passes": true,
+         "rule2d_basis": "relative",
+         "rule2d_threshold": 1e-08,
+         "rule2d_measure": 6.399325987634559e-12,
+         "rule2d_passes": true
+        }
+       }
+      },
+      "rule2d_specification": {
+       "passes": true,
+       "max_measure": 6.399325987634559e-12
+      },
+      "quantities": {
+       "T[1]": 363.6196453632079,
+       "T[2]": 376.54388116866994,
+       "T[3]": 386.47599622306217,
+       "T[4]": 393.1035243449196,
+       "T[5]": 396.8926246889471,
+       "L[1]": 1.1189756079998576,
+       "V[1]": 0.791222625296396,
+       "L[2]": 1.0919732386160335,
+       "V[2]": 0.9101982332962535,
+       "L[3]": 1.0766635270041436,
+       "V[3]": 0.8831958639124294,
+       "L[4]": 1.0697811773560455,
+       "V[4]": 0.8678861523005397,
+       "L[5]": 0.20877737470360402,
+       "V[5]": 0.8610038026524415,
+       "top[A]": 0.2799270289169986,
+       "top[B]": 0.390030131955373,
+       "top[C]": 0.12126546442402439,
+       "bottom[A]": 7.297108300149526e-05,
+       "bottom[B]": 0.009969868044626996,
+       "bottom[C]": 0.19873453557597553
+      },
+      "harness_error": null
+     },
+     "passes_through_2d_specification": true,
+     "accuracy_rerun": {
+      "tolerance": 1e-09,
+      "form": "L1: the full path with the registered native specifications",
+      "outer": null,
+      "run": {
+       "x": null,
+       "path": {
+        "applied": {
+         "algorithms": [
+          "phenomena"
+         ],
+         "methods": [
+          "fixed-point"
+         ],
+         "early_termination": false,
+         "tolerance": 1e-09,
+         "relative_tolerance": 1e-09,
+         "maxiter": 500,
+         "max_attempts": 1,
+         "use_cache": true,
+         "specifications_by_weight": false,
+         "phases": [
+          "g",
+          "l"
+         ],
+         "optimize_result": false,
+         "damping": 0,
+         "homotopy_continuation": false,
+         "vle_decomposition_before": null,
+         "inside_loop_algorithm": "simultaneous correction",
+         "line_search": false,
+         "minimum_residual_reduction": 0.1,
+         "iteration_memory": 8,
+         "partition_data": {}
+        },
+        "stage_specifications": {
+         "4": [
+          "Duty",
+          108000.0
+         ]
+        },
+        "bottom_side_draws": {},
+        "pass1": {
+         "exception": null,
+         "iter": 21,
+         "maxiter": 500,
+         "attempt": 0,
+         "tool_mean_residual_not_used": "1000000.0",
+         "fsolve": {
+          "ran": false,
+          "nfev": null,
+          "ier": null,
+          "mesg": null
+         },
+         "vle_decomposition_after": "bubble point",
+         "wall_time_s": 0.024226367007941008
+        },
+        "respecification": {
+         "route": "attribute_setter",
+         "set": [
+          {
+           "stage": 4,
+           "specification": "Duty",
+           "attribute": "Q",
+           "stored_after_pass1": 108000.0,
+           "set_to": 108000.0
+          }
+         ]
+        },
+        "pass2": {
+         "exception": null,
+         "iter": 1,
+         "maxiter": 500,
+         "attempt": 0,
+         "tool_mean_residual_not_used": "inf",
+         "fsolve": {
+          "ran": false,
+          "nfev": null,
+          "ier": null,
+          "mesg": null
+         },
+         "vle_decomposition_after": "bubble point",
+         "wall_time_s": 0.0014209561049938202
+        }
+       },
+       "profile": {
+        "stages": [
+         {
+          "index": 0,
+          "T_K": 363.6196453620498,
+          "P_Pa": 100000.0,
+          "L_mol_per_s": 1.1189756080058595,
+          "V_mol_per_s": 0.7912226252902831,
+          "x": {
+           "A": 0.1146096156255875,
+           "B": 0.4461383683929145,
+           "C": 0.439252015981498
+          },
+          "y": {
+           "A": 0.3537904756127204,
+           "B": 0.49294613107341206,
+           "C": 0.15326339331386749
+          },
+          "liquid_T_K": 363.6196453620498,
+          "vapour_T_K": 363.6196453620498,
+          "duty_W": -2.0317707417739763e-07,
+          "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+          "stored_Q_kJ_per_h": 0,
+          "specified_variable": "Q",
+          "in_mol_per_s": [
+           {
+            "A": 0.1281723932449541,
+            "B": 0.48924808398179664,
+            "C": 0.29277775606939166
+           },
+           {
+            "A": 0.2800000000000001,
+            "B": 0.4,
+            "C": 0.32
+           }
+          ],
+          "out_mol_per_s": [
+           {
+            "A": 0.27992702891699456,
+            "B": 0.3900301319545931,
+            "C": 0.12126546441869544
+           },
+           {
+            "A": 0.12824536432795963,
+            "B": 0.4992179520272036,
+            "C": 0.4915122916506962
+           }
+          ],
+          "liquid_side_draw_mol_per_s": null
+         },
+         {
+          "index": 1,
+          "T_K": 376.5438811668007,
+          "P_Pa": 100000.0,
+          "L_mol_per_s": 1.0919732386404755,
+          "V_mol_per_s": 0.9101982332961425,
+          "x": {
+           "A": 0.034345560745623276,
+           "B": 0.3460571940496171,
+           "C": 0.6195972452047597
+          },
+          "y": {
+           "A": 0.1408181081398033,
+           "B": 0.5375181648178553,
+           "C": 0.3216637270423413
+          },
+          "liquid_T_K": 376.5438811668007,
+          "vapour_T_K": 376.5438811668007,
+          "duty_W": -7.865795244773228e-07,
+          "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+          "stored_Q_kJ_per_h": 0,
+          "specified_variable": "Q",
+          "in_mol_per_s": [
+           {
+            "A": 0.12824536432795963,
+            "B": 0.4992179520272036,
+            "C": 0.4915122916506962
+           },
+           {
+            "A": 0.03743146211731592,
+            "B": 0.36791532689578893,
+            "C": 0.4778490749176537
+           }
+          ],
+          "out_mol_per_s": [
+           {
+            "A": 0.1281723932449541,
+            "B": 0.48924808398179664,
+            "C": 0.29277775606939166
+           },
+           {
+            "A": 0.03750443320032144,
+            "B": 0.3778851949411959,
+            "C": 0.6765836104989583
+           }
+          ],
+          "liquid_side_draw_mol_per_s": null
+         },
+         {
+          "index": 2,
+          "T_K": 386.4759962214131,
+          "P_Pa": 100000.0,
+          "L_mol_per_s": 1.076663527046536,
+          "V_mol_per_s": 0.8831958639307586,
+          "x": {
+           "A": 0.008419146338105933,
+           "B": 0.20965103726459167,
+           "C": 0.7819298163973024
+          },
+          "y": {
+           "A": 0.04238183583732282,
+           "B": 0.41657274668196703,
+           "C": 0.5410454174807101
+          },
+          "liquid_T_K": 386.4759962214131,
+          "vapour_T_K": 386.4759962214131,
+          "duty_W": -7.612753607746628e-07,
+          "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+          "stored_Q_kJ_per_h": 0,
+          "specified_variable": "Q",
+          "in_mol_per_s": [
+           {
+            "A": 0.03750443320032144,
+            "B": 0.3778851949411959,
+            "C": 0.6765836104989583
+           },
+           {
+            "A": 0.008991616708100543,
+            "B": 0.2157537571848531,
+            "C": 0.6431407784438652
+           }
+          ],
+          "out_mol_per_s": [
+           {
+            "A": 0.03743146211731592,
+            "B": 0.36791532689578893,
+            "C": 0.4778490749176537
+           },
+           {
+            "A": 0.00906458779110606,
+            "B": 0.22572362523026,
+            "C": 0.8418753140251698
+           }
+          ],
+          "liquid_side_draw_mol_per_s": null
+         },
+         {
+          "index": 3,
+          "T_K": 393.1035243439335,
+          "P_Pa": 100000.0,
+          "L_mol_per_s": 1.069781177410405,
+          "V_mol_per_s": 0.8678861523368189,
+          "x": {
+           "A": 0.0018050854922682183,
+           "B": 0.1068914865416928,
+           "C": 0.891303427966039
+          },
+          "y": {
+           "A": 0.010360364298808373,
+           "B": 0.24859684257425618,
+           "C": 0.7410427931269354
+          },
+          "liquid_T_K": 393.1035243439335,
+          "vapour_T_K": 393.1035243439335,
+          "duty_W": -4.749987662459413e-07,
+          "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+          "stored_Q_kJ_per_h": 0,
+          "specified_variable": "Q",
+          "in_mol_per_s": [
+           {
+            "A": 0.00906458779110606,
+            "B": 0.22572362523026,
+            "C": 0.8418753140251698
+           },
+           {
+            "A": 0.0018580754002396195,
+            "B": 0.10438063228231366,
+            "C": 0.7547650950181346
+           }
+          ],
+          "out_mol_per_s": [
+           {
+            "A": 0.008991616708100543,
+            "B": 0.2157537571848531,
+            "C": 0.6431407784438652
+           },
+           {
+            "A": 0.0019310464832451347,
+            "B": 0.11435050032772057,
+            "C": 0.9534996305994392
+           }
+          ],
+          "liquid_side_draw_mol_per_s": null
+         },
+         {
+          "index": 4,
+          "T_K": 396.8926246884877,
+          "P_Pa": 100000.0,
+          "L_mol_per_s": 0.20877737470971694,
+          "V_mol_per_s": 0.8610038027006879,
+          "x": {
+           "A": 0.00034951623999953985,
+           "B": 0.0477535846940741,
+           "C": 0.9518968990659264
+          },
+          "y": {
+           "A": 0.0021580339069484284,
+           "B": 0.12123132552365702,
+           "C": 0.8766106405693945
+          },
+          "liquid_T_K": 396.8926246884877,
+          "vapour_T_K": 396.8926246884877,
+          "duty_W": 30000.00000190245,
+          "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+          "stored_Q_kJ_per_h": 108000.0,
+          "specified_variable": "Q",
+          "in_mol_per_s": [
+           {
+            "A": 0.0019310464832451347,
+            "B": 0.11435050032772057,
+            "C": 0.9534996305994392
+           }
+          ],
+          "out_mol_per_s": [
+           {
+            "A": 0.0018580754002396195,
+            "B": 0.10438063228231366,
+            "C": 0.7547650950181346
+           },
+           {
+            "A": 7.297108300551529e-05,
+            "B": 0.009969868045406912,
+            "C": 0.19873453558130452
+           }
+          ],
+          "liquid_side_draw_mol_per_s": null
+         }
+        ],
+        "inlets": [
+         {
+          "phase": "l",
+          "T_K": 300.0,
+          "P_Pa": 100000.0,
+          "mol_per_s": {
+           "A": 0.2800000000000001,
+           "B": 0.4,
+           "C": 0.32
+          },
+          "F_mol_per_s": 1.0000000000000002,
+          "H_kJ_per_h": 666.0000000000083,
+          "H_W": 185.0000000000023
+         }
+        ],
+        "products": [
+         {
+          "phase": "g",
+          "T_K": 363.6196453620498,
+          "P_Pa": 100000.0,
+          "mol_per_s": {
+           "A": 0.27992702891699456,
+           "B": 0.3900301319545931,
+           "C": 0.12126546441869544
+          },
+          "F_mol_per_s": 0.7912226252902831,
+          "H_kJ_per_h": 101244.51865524774,
+          "H_W": 28123.477404235484
+         },
+         {
+          "phase": "l",
+          "T_K": 396.8926246884877,
+          "P_Pa": 100000.0,
+          "mol_per_s": {
+           "A": 7.297108300551529e-05,
+           "B": 0.009969868045406912,
+           "C": 0.19873453558130452
+          },
+          "F_mol_per_s": 0.20877737470971694,
+          "H_kJ_per_h": 7421.481343587364,
+          "H_W": 2061.5225954409343
+         }
+        ],
+        "products_order": "outs[0] vapour of stage 0, outs[1] liquid of stage N-1"
+       },
+       "rule2": {
+        "checks": {
+         "B1": {
+          "pass1": null,
+          "pass2": null,
+          "passes": true
+         },
+         "B2": {
+          "rung": "R2",
+          "counter": "iter",
+          "pass1_count": 21,
+          "pass2_count": 1,
+          "maxiter": 500,
+          "passes": true
+         },
+         "B3": {
+          "per_stage_mol_per_s": [
+           {
+            "A": 0.0,
+            "B": 0.0,
+            "C": 1.3877787807814457e-17
+           },
+           {
+            "A": 6.938893903907228e-18,
+            "B": 0.0,
+            "C": -5.551115123125783e-17
+           },
+           {
+            "A": 0.0,
+            "B": 5.551115123125783e-17,
+            "C": 0.0
+           },
+           {
+            "A": 1.951563910473908e-18,
+            "B": -1.3877787807814457e-17,
+            "C": 0.0
+           },
+           {
+            "A": -5.421010862427522e-20,
+            "B": -5.204170427930421e-18,
+            "C": 8.326672684688674e-17
+           }
+          ],
+          "max": 8.326672684688674e-17,
+          "threshold": 3.1e-08,
+          "passes": true
+         },
+         "B4": {
+          "per_stage": [
+           {
+            "stage": 0,
+            "form": "|y_c - K_c x_c|",
+            "K": {
+             "A": 3.086917914115514,
+             "B": 1.104917590562055,
+             "C": 0.34891904358788556
+            },
+            "per_component": {
+             "A": 8.201050949452338e-12,
+             "B": 1.1426526391744574e-11,
+             "C": 3.5525749009224228e-12
+            },
+            "max": 1.1426526391744574e-11
+           },
+           {
+            "stage": 1,
+            "form": "|y_c - K_c x_c|",
+            "K": {
+             "A": 4.100038114897781,
+             "B": 1.5532639518567464,
+             "C": 0.5191497049412116
+            },
+            "per_component": {
+             "A": 5.210831766078172e-12,
+             "B": 1.989008957536953e-11,
+             "C": 1.1902812069308766e-11
+            },
+            "max": 1.989008957536953e-11
+           },
+           {
+            "stage": 2,
+            "form": "|y_c - K_c x_c|",
+            "K": {
+             "A": 5.033982559978853,
+             "B": 1.9869815675778801,
+             "C": 0.6919360358399307
+            },
+            "per_component": {
+             "A": 1.3877371474180222e-12,
+             "B": 1.3640144569393442e-11,
+             "C": 1.7715828803943623e-11
+            },
+            "max": 1.7715828803943623e-11
+           },
+           {
+            "stage": 3,
+            "form": "|y_c - K_c x_c|",
+            "K": {
+             "A": 5.739542167383299,
+             "B": 2.3256935665537624,
+             "C": 0.8314147234948644
+            },
+            "per_component": {
+             "A": 2.030927509499847e-13,
+             "B": 4.8731851887140465e-12,
+             "C": 1.452626907649801e-11
+            },
+            "max": 1.452626907649801e-11
+           },
+           {
+            "stage": 4,
+            "form": "|y_c - K_c x_c|",
+            "K": {
+             "A": 6.174345166139271,
+             "B": 2.538685342664381,
+             "C": 0.9209092302133017
+            },
+            "per_component": {
+             "A": 2.0096337788322316e-14,
+             "B": 1.1289857937413217e-12,
+             "C": 8.163247855463851e-12
+            },
+            "max": 8.163247855463851e-12
+           }
+          ],
+          "max": 1.989008957536953e-11,
+          "threshold": 1e-08,
+          "one_phase_stages": [],
+          "passes": true
+         },
+         "B5": {
+          "component": {
+           "residual_mol_per_s": {
+            "A": 0.0,
+            "B": 5.551115123125783e-17,
+            "C": 5.551115123125783e-17
+           },
+           "max_abs_mol_per_s": 5.551115123125783e-17,
+           "tolerance_mol_per_s": 3.1e-08,
+           "passes": true
+          },
+          "energy_W": 3.637978807091713e-12,
+          "energy_threshold_W": 0.001,
+          "component_threshold_mol_per_s": 3.1e-08,
+          "energy_terms": {
+           "inlets_W": [
+            185.0000000000023
+           ],
+           "products_W": [
+            28123.477404235484,
+            2061.5225954409343
+           ],
+           "duties_W": [
+            -2.0317707417739763e-07,
+            -7.865795244773228e-07,
+            -7.612753607746628e-07,
+            -4.749987662459413e-07,
+            30000.00000190245
+           ]
+          },
+          "passes": true
+         }
+        },
+        "failed": [],
+        "passes": true
+       },
+       "rule2c": {
+        "checks": {
+         "stage_count": {
+          "value": 5,
+          "registered": 5,
+          "passes": true
+         },
+         "feed_stage": {
+          "value": [
+           0
+          ],
+          "passes": true
+         },
+         "pressure_max_abs_dev_Pa": {
+          "value": 0.0,
+          "threshold": 0.001,
+          "passes": true
+         },
+         "intermediate_duty_max_abs_W": {
+          "value": 7.865795244773228e-07,
+          "threshold": 0.001,
+          "passes": true
+         },
+         "specification_readback": {
+          "rows": [
+           {
+            "stage": 4,
+            "specification": "Duty",
+            "registered_value": 108000.0,
+            "expected_variable": "Q",
+            "specified_variable": "Q",
+            "attribute": "Q",
+            "expected_stored": 108000.0,
+            "stored": 108000.0,
+            "passes": true
+           }
+          ],
+          "passes": true
+         },
+         "property_readback": {
+          "failed": [],
+          "passes": true
+         },
+         "specification": {
+          "value": {
+           "reboiler": {
+            "kind": "duty",
+            "definition": "computed duty of stage index 4, W, into the stage",
+            "registered": 30000.0,
+            "tool": 30000.00000190245,
+            "relative_difference": 6.341494251197824e-11,
+            "absolute_difference": 1.9024482753593475e-06,
+            "rule2c_threshold": 0.0001,
+            "rule2c_passes": true,
+            "rule2d_basis": "relative",
+            "rule2d_threshold": 1e-08,
+            "rule2d_measure": 6.341494251197824e-11,
+            "rule2d_passes": true
+           }
+          },
+          "passes": true
+         }
+        },
+        "failed": [],
+        "passes": true,
+        "specification_values": {
+         "reboiler": {
+          "kind": "duty",
+          "definition": "computed duty of stage index 4, W, into the stage",
+          "registered": 30000.0,
+          "tool": 30000.00000190245,
+          "relative_difference": 6.341494251197824e-11,
+          "absolute_difference": 1.9024482753593475e-06,
+          "rule2c_threshold": 0.0001,
+          "rule2c_passes": true,
+          "rule2d_basis": "relative",
+          "rule2d_threshold": 1e-08,
+          "rule2d_measure": 6.341494251197824e-11,
+          "rule2d_passes": true
+         }
+        }
+       },
+       "rule2d_specification": {
+        "passes": true,
+        "max_measure": 6.341494251197824e-11
+       },
+       "quantities": {
+        "T[1]": 363.6196453620498,
+        "T[2]": 376.5438811668007,
+        "T[3]": 386.4759962214131,
+        "T[4]": 393.1035243439335,
+        "T[5]": 396.8926246884877,
+        "L[1]": 1.1189756080058595,
+        "V[1]": 0.7912226252902831,
+        "L[2]": 1.0919732386404755,
+        "V[2]": 0.9101982332961425,
+        "L[3]": 1.076663527046536,
+        "V[3]": 0.8831958639307586,
+        "L[4]": 1.069781177410405,
+        "V[4]": 0.8678861523368189,
+        "L[5]": 0.20877737470971694,
+        "V[5]": 0.8610038027006879,
+        "top[A]": 0.27992702891699456,
+        "top[B]": 0.3900301319545931,
+        "top[C]": 0.12126546441869544,
+        "bottom[A]": 7.297108300551529e-05,
+        "bottom[B]": 0.009969868045406912,
+        "bottom[C]": 0.19873453558130452
+       },
+       "harness_error": null
+      },
+      "movement": {
+       "ratio_to_tolerance": {
+        "T[1]": 3.09959871442371e-06,
+        "T[2]": 4.835774350294684e-06,
+        "T[3]": 4.15935501841354e-06,
+        "T[4]": 2.4463185530313403e-06,
+        "T[5]": 1.129065712567903e-06,
+        "L[1]": 4.200117648981028e-06,
+        "V[1]": 5.551001072050094e-06,
+        "L[2]": 1.7434001807666988e-05,
+        "V[2]": 9.098710310586101e-08,
+        "L[3]": 3.057144798108651e-05,
+        "V[3]": 1.5361364011643745e-05,
+        "L[4]": 3.939712090411024e-05,
+        "V[4]": 3.0800261802916074e-05,
+        "L[5]": 1.1783312124308147e-05,
+        "V[5]": 4.120089683768759e-05,
+        "top[A]": 6.86917845978536e-09,
+        "top[B]": 1.1141401479685067e-06,
+        "top[C]": 1.2356532246855293e-05,
+        "bottom[A]": 1.2964793113553804e-08,
+        "bottom[B]": 2.4374672123161043e-06,
+        "bottom[C]": 1.0474986223297321e-05
+       },
+       "max_ratio": 4.120089683768759e-05,
+       "max_quantity": "V[5]",
+       "threshold": 0.1,
+       "tolerance_value_used": "the tool's own value (the script reads no other)",
+       "passes": true
+      },
+      "passes": true,
+      "reason": "passes"
+     },
+     "passes": true,
+     "failed_rule": null,
+     "reason": "passes rules 2-2d",
+     "wall_time_s": 0.08681981102563441
+    },
+    {
+     "rung": "R3",
+     "rung_index": 2,
+     "algorithm": "simultaneous correction",
+     "method": "hybr",
+     "tolerance": 1e-10,
+     "level": "L1",
+     "outer": null,
+     "run": {
+      "x": null,
+      "path": {
+       "applied": {
+        "algorithms": [
+         "simultaneous correction"
+        ],
+        "methods": [
+         "hybr"
+        ],
+        "early_termination": false,
+        "tolerance": 1e-10,
+        "relative_tolerance": 1e-10,
+        "maxiter": 500,
+        "max_attempts": 1,
+        "use_cache": true,
+        "specifications_by_weight": false,
+        "phases": [
+         "g",
+         "l"
+        ],
+        "optimize_result": false,
+        "damping": 0,
+        "homotopy_continuation": false,
+        "vle_decomposition_before": null,
+        "inside_loop_algorithm": "simultaneous correction",
+        "line_search": false,
+        "minimum_residual_reduction": 0.1,
+        "iteration_memory": 8,
+        "partition_data": {}
+       },
+       "stage_specifications": {
+        "4": [
+         "Duty",
+         108000.0
+        ]
+       },
+       "bottom_side_draws": {},
+       "pass1": {
+        "exception": "RuntimeError: Failed to extrapolate vapor pressure method 'USER_METHOD' at T=-6.055454452393343e-06 K for component with CASRN 'None'",
+        "traceback": "Traceback (most recent call last):\n  File \"/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s09/.venv-biosteam/lib/python3.13/site-packages/thermo/utils/t_dependent_property.py\", line 3116, in T_dependent_property\n    return self.extrapolate(T, method)\n           ~~~~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s09/.venv-biosteam/lib/python3.13/site-packages/thermo/utils/t_dependent_property.py\", line 4611, in extrapolate\n    raise ValueError(\"Negative temperature\")\nValueError: Negative temperature\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s09/spikes/references/s09_qualify_biosteam.py\", line 367, in simulate_pass\n    col.simulate()\n    ~~~~~~~~~~~~^^\n  File \"/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s09/.venv-biosteam/lib/python3.13/site-packages/biosteam/_unit.py\", line 1467, in simulate\n    self.run()\n    ~~~~~~~~^^\n  File \"/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s09/.venv-biosteam/lib/python3.13/site-packages/thermosteam/network.py\", line 1560, in run\n    self._run_with_specifications()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^\nRuntimeError: Failed to extrapolate vapor pressure method 'USER_METHOD' at T=-6.055454452393343e-06 K for component with CASRN 'None'\n",
+        "iter": 0,
+        "maxiter": 500,
+        "attempt": 0,
+        "tool_mean_residual_not_used": "inf",
+        "fsolve": {
+         "ran": false,
+         "nfev": null,
+         "ier": null,
+         "mesg": null
+        },
+        "vle_decomposition_after": "bubble point",
+        "wall_time_s": 0.8500622429419309
+       },
+       "respecification": {
+        "route": "attribute_setter",
+        "set": [
+         {
+          "stage": 4,
+          "specification": "Duty",
+          "attribute": "Q",
+          "stored_after_pass1": 108000.0,
+          "set_to": 108000.0
+         }
+        ]
+       },
+       "pass2": {
+        "exception": "RuntimeError: Failed to extrapolate vapor pressure method 'USER_METHOD' at T=-6.055454452393343e-06 K for component with CASRN 'None'",
+        "traceback": "Traceback (most recent call last):\n  File \"/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s09/.venv-biosteam/lib/python3.13/site-packages/thermo/utils/t_dependent_property.py\", line 3116, in T_dependent_property\n    return self.extrapolate(T, method)\n           ~~~~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s09/.venv-biosteam/lib/python3.13/site-packages/thermo/utils/t_dependent_property.py\", line 4611, in extrapolate\n    raise ValueError(\"Negative temperature\")\nValueError: Negative temperature\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s09/spikes/references/s09_qualify_biosteam.py\", line 367, in simulate_pass\n    col.simulate()\n    ~~~~~~~~~~~~^^\n  File \"/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s09/.venv-biosteam/lib/python3.13/site-packages/biosteam/_unit.py\", line 1467, in simulate\n    self.run()\n    ~~~~~~~~^^\n  File \"/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/s09/.venv-biosteam/lib/python3.13/site-packages/thermosteam/network.py\", line 1560, in run\n    self._run_with_specifications()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^\nRuntimeError: Failed to extrapolate vapor pressure method 'USER_METHOD' at T=-6.055454452393343e-06 K for component with CASRN 'None'\n",
+        "iter": 0,
+        "maxiter": 500,
+        "attempt": 0,
+        "tool_mean_residual_not_used": "inf",
+        "fsolve": {
+         "ran": false,
+         "nfev": null,
+         "ier": null,
+         "mesg": null
+        },
+        "vle_decomposition_after": "bubble point",
+        "wall_time_s": 0.02015834697522223
+       }
+      },
+      "profile": {
+       "stages": [
+        {
+         "index": 0,
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.2210515554315717,
+         "V_mol_per_s": 0.7789484445684284,
+         "x": {
+          "A": 0.09407531065866065,
+          "B": 0.32401987242857977,
+          "C": 0.5819048169127595
+         },
+         "y": {
+          "A": 0.3327620820846564,
+          "B": 0.4215617933364732,
+          "C": 0.24567612457887045
+         },
+         "liquid_T_K": 369.7072401866157,
+         "vapour_T_K": 369.7072401866157,
+         "duty_W": 1396.7839245641921,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.2800000000000001,
+           "B": 0.4,
+           "C": 0.32
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 1,
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.2210515554315717,
+         "V_mol_per_s": 0.7789484445684284,
+         "x": {
+          "A": 0.09407531065866065,
+          "B": 0.32401987242857977,
+          "C": 0.5819048169127595
+         },
+         "y": {
+          "A": 0.3327620820846564,
+          "B": 0.4215617933364732,
+          "C": 0.24567612457887045
+         },
+         "liquid_T_K": 369.7072401866157,
+         "vapour_T_K": 369.7072401866157,
+         "duty_W": 0.0,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          },
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 2,
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.2210515554315717,
+         "V_mol_per_s": 0.7789484445684284,
+         "x": {
+          "A": 0.09407531065866065,
+          "B": 0.32401987242857977,
+          "C": 0.5819048169127595
+         },
+         "y": {
+          "A": 0.3327620820846564,
+          "B": 0.4215617933364732,
+          "C": 0.24567612457887045
+         },
+         "liquid_T_K": 369.7072401866157,
+         "vapour_T_K": 369.7072401866157,
+         "duty_W": 0.0,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          },
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 3,
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.2210515554315717,
+         "V_mol_per_s": 0.7789484445684284,
+         "x": {
+          "A": 0.09407531065866065,
+          "B": 0.32401987242857977,
+          "C": 0.5819048169127595
+         },
+         "y": {
+          "A": 0.3327620820846564,
+          "B": 0.4215617933364732,
+          "C": 0.24567612457887045
+         },
+         "liquid_T_K": 369.7072401866157,
+         "vapour_T_K": 369.7072401866157,
+         "duty_W": 0.0,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          },
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 4,
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.2210515554315717,
+         "V_mol_per_s": 0.7789484445684284,
+         "x": {
+          "A": 0.09407531065866065,
+          "B": 0.32401987242857977,
+          "C": 0.5819048169127595
+         },
+         "y": {
+          "A": 0.3327620820846564,
+          "B": 0.4215617933364732,
+          "C": 0.24567612457887045
+         },
+         "liquid_T_K": 369.7072401866157,
+         "vapour_T_K": 369.7072401866157,
+         "duty_W": 28603.216075435805,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 108000.0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.2592045062511948,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.020795493748805252,
+           "B": 0.071625096791077,
+           "C": 0.12863096489168943
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        }
+       ],
+       "inlets": [
+        {
+         "phase": "l",
+         "T_K": 300.0,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 0.2800000000000001,
+          "B": 0.4,
+          "C": 0.32
+         },
+         "F_mol_per_s": 1.0000000000000002,
+         "H_kJ_per_h": 666.0000000000083,
+         "H_W": 185.0000000000023
+        }
+       ],
+       "products": [
+        {
+         "phase": "g",
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 0.2592045062511948,
+          "B": 0.32837490320892304,
+          "C": 0.19136903510831058
+         },
+         "F_mol_per_s": 0.7789484445684284,
+         "H_kJ_per_h": 102971.5778715689,
+         "H_W": 28603.216075435805
+        },
+        {
+         "phase": "l",
+         "T_K": 369.7072401866157,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 0.020795493748805252,
+          "B": 0.071625096791077,
+          "C": 0.12863096489168943
+         },
+         "F_mol_per_s": 0.2210515554315717,
+         "H_kJ_per_h": 5694.422128431112,
+         "H_W": 1581.7839245641976
+        }
+       ],
+       "products_order": "outs[0] vapour of stage 0, outs[1] liquid of stage N-1"
+      },
+      "rule2": {
+       "checks": {
+        "B1": {
+         "pass1": "RuntimeError: Failed to extrapolate vapor pressure method 'USER_METHOD' at T=-6.055454452393343e-06 K for component with CASRN 'None'",
+         "pass2": "RuntimeError: Failed to extrapolate vapor pressure method 'USER_METHOD' at T=-6.055454452393343e-06 K for component with CASRN 'None'",
+         "passes": false
+        },
+        "B2": {
+         "rung": "R3",
+         "counter": "fsolve nfev",
+         "pass1_count": null,
+         "pass2_count": null,
+         "maxiter": 500,
+         "passes": false
+        },
+        "B3": {
+         "per_stage_mol_per_s": [
+          {
+           "A": 0.25920450625119484,
+           "B": 0.32837490320892304,
+           "C": 0.19136903510831058
+          },
+          {
+           "A": 0.0,
+           "B": 0.0,
+           "C": 0.0
+          },
+          {
+           "A": 0.0,
+           "B": 0.0,
+           "C": 0.0
+          },
+          {
+           "A": 0.0,
+           "B": 0.0,
+           "C": 0.0
+          },
+          {
+           "A": -0.2592045062511948,
+           "B": -0.32837490320892304,
+           "C": -0.19136903510831058
+          }
+         ],
+         "max": 0.32837490320892304,
+         "threshold": 3.1e-08,
+         "passes": false
+        },
+        "B4": {
+         "per_stage": [
+          {
+           "stage": 0,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.5371882352006,
+            "B": 1.3010368474526006,
+            "C": 0.42219297286845237
+           },
+           "per_component": {
+            "A": 3.885780586188048e-16,
+            "B": 5.551115123125783e-17,
+            "C": 2.7755575615628914e-17
+           },
+           "max": 3.885780586188048e-16
+          },
+          {
+           "stage": 1,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.5371882352006,
+            "B": 1.3010368474526006,
+            "C": 0.42219297286845237
+           },
+           "per_component": {
+            "A": 3.885780586188048e-16,
+            "B": 5.551115123125783e-17,
+            "C": 2.7755575615628914e-17
+           },
+           "max": 3.885780586188048e-16
+          },
+          {
+           "stage": 2,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.5371882352006,
+            "B": 1.3010368474526006,
+            "C": 0.42219297286845237
+           },
+           "per_component": {
+            "A": 3.885780586188048e-16,
+            "B": 5.551115123125783e-17,
+            "C": 2.7755575615628914e-17
+           },
+           "max": 3.885780586188048e-16
+          },
+          {
+           "stage": 3,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.5371882352006,
+            "B": 1.3010368474526006,
+            "C": 0.42219297286845237
+           },
+           "per_component": {
+            "A": 3.885780586188048e-16,
+            "B": 5.551115123125783e-17,
+            "C": 2.7755575615628914e-17
+           },
+           "max": 3.885780586188048e-16
+          },
+          {
+           "stage": 4,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.5371882352006,
+            "B": 1.3010368474526006,
+            "C": 0.42219297286845237
+           },
+           "per_component": {
+            "A": 3.885780586188048e-16,
+            "B": 5.551115123125783e-17,
+            "C": 2.7755575615628914e-17
+           },
+           "max": 3.885780586188048e-16
+          }
+         ],
+         "max": 3.885780586188048e-16,
+         "threshold": 1e-08,
+         "one_phase_stages": [],
+         "passes": true
+        },
+        "B5": {
+         "component": {
+          "residual_mol_per_s": {
+           "A": 5.551115123125783e-17,
+           "B": 0.0,
+           "C": 0.0
+          },
+          "max_abs_mol_per_s": 5.551115123125783e-17,
+          "tolerance_mol_per_s": 3.1e-08,
+          "passes": true
+         },
+         "energy_W": -3.637978807091713e-12,
+         "energy_threshold_W": 0.001,
+         "component_threshold_mol_per_s": 3.1e-08,
+         "energy_terms": {
+          "inlets_W": [
+           185.0000000000023
+          ],
+          "products_W": [
+           28603.216075435805,
+           1581.7839245641976
+          ],
+          "duties_W": [
+           1396.7839245641921,
+           0.0,
+           0.0,
+           0.0,
+           28603.216075435805
+          ]
+         },
+         "passes": true
+        }
+       },
+       "failed": [
+        "B1",
+        "B2",
+        "B3"
+       ],
+       "passes": false
+      },
+      "rule2c": {
+       "checks": {
+        "stage_count": {
+         "value": 5,
+         "registered": 5,
+         "passes": true
+        },
+        "feed_stage": {
+         "value": [
+          0
+         ],
+         "passes": true
+        },
+        "pressure_max_abs_dev_Pa": {
+         "value": 0.0,
+         "threshold": 0.001,
+         "passes": true
+        },
+        "intermediate_duty_max_abs_W": {
+         "value": 1396.7839245641921,
+         "threshold": 0.001,
+         "passes": false
+        },
+        "specification_readback": {
+         "rows": [
+          {
+           "stage": 4,
+           "specification": "Duty",
+           "registered_value": 108000.0,
+           "expected_variable": "Q",
+           "specified_variable": "Q",
+           "attribute": "Q",
+           "expected_stored": 108000.0,
+           "stored": 108000.0,
+           "passes": true
+          }
+         ],
+         "passes": true
+        },
+        "property_readback": {
+         "failed": [],
+         "passes": true
+        },
+        "specification": {
+         "value": {
+          "reboiler": {
+           "kind": "duty",
+           "definition": "computed duty of stage index 4, W, into the stage",
+           "registered": 30000.0,
+           "tool": 28603.216075435805,
+           "relative_difference": -0.046559464152139844,
+           "absolute_difference": -1396.7839245641953,
+           "rule2c_threshold": 0.0001,
+           "rule2c_passes": false,
+           "rule2d_basis": "relative",
+           "rule2d_threshold": 1e-08,
+           "rule2d_measure": 0.046559464152139844,
+           "rule2d_passes": false
+          }
+         },
+         "passes": false
+        }
+       },
+       "failed": [
+        "intermediate_duty_max_abs_W",
+        "specification"
+       ],
+       "passes": false,
+       "specification_values": {
+        "reboiler": {
+         "kind": "duty",
+         "definition": "computed duty of stage index 4, W, into the stage",
+         "registered": 30000.0,
+         "tool": 28603.216075435805,
+         "relative_difference": -0.046559464152139844,
+         "absolute_difference": -1396.7839245641953,
+         "rule2c_threshold": 0.0001,
+         "rule2c_passes": false,
+         "rule2d_basis": "relative",
+         "rule2d_threshold": 1e-08,
+         "rule2d_measure": 0.046559464152139844,
+         "rule2d_passes": false
+        }
+       }
+      },
+      "rule2d_specification": {
+       "passes": false,
+       "max_measure": 0.046559464152139844
+      },
+      "quantities": {
+       "T[1]": 369.7072401866157,
+       "T[2]": 369.7072401866157,
+       "T[3]": 369.7072401866157,
+       "T[4]": 369.7072401866157,
+       "T[5]": 369.7072401866157,
+       "L[1]": 0.2210515554315717,
+       "V[1]": 0.7789484445684284,
+       "L[2]": 0.2210515554315717,
+       "V[2]": 0.7789484445684284,
+       "L[3]": 0.2210515554315717,
+       "V[3]": 0.7789484445684284,
+       "L[4]": 0.2210515554315717,
+       "V[4]": 0.7789484445684284,
+       "L[5]": 0.2210515554315717,
+       "V[5]": 0.7789484445684284,
+       "top[A]": 0.2592045062511948,
+       "top[B]": 0.32837490320892304,
+       "top[C]": 0.19136903510831058,
+       "bottom[A]": 0.020795493748805252,
+       "bottom[B]": 0.071625096791077,
+       "bottom[C]": 0.12863096489168943
+      },
+      "harness_error": null
+     },
+     "passes_through_2d_specification": false,
+     "passes": false,
+     "failed_rule": "2",
+     "reason": "rule 2 ['B1', 'B2', 'B3']",
+     "wall_time_s": 0.8713563089258969
+    },
+    {
+     "rung": "R4",
+     "rung_index": 3,
+     "algorithm": "sequential modular",
+     "method": "fixed-point",
+     "tolerance": 1e-10,
+     "level": "L1",
+     "outer": null,
+     "run": {
+      "x": null,
+      "path": {
+       "applied": {
+        "algorithms": [
+         "sequential modular"
+        ],
+        "methods": [
+         "fixed-point"
+        ],
+        "early_termination": false,
+        "tolerance": 1e-10,
+        "relative_tolerance": 1e-10,
+        "maxiter": 500,
+        "max_attempts": 1,
+        "use_cache": true,
+        "specifications_by_weight": false,
+        "phases": [
+         "g",
+         "l"
+        ],
+        "optimize_result": false,
+        "damping": 0,
+        "homotopy_continuation": false,
+        "vle_decomposition_before": null,
+        "inside_loop_algorithm": "simultaneous correction",
+        "line_search": false,
+        "minimum_residual_reduction": 0.1,
+        "iteration_memory": 8,
+        "partition_data": {}
+       },
+       "stage_specifications": {
+        "4": [
+         "Duty",
+         108000.0
+        ]
+       },
+       "bottom_side_draws": {},
+       "pass1": {
+        "exception": null,
+        "iter": 145,
+        "maxiter": 500,
+        "attempt": 0,
+        "tool_mean_residual_not_used": "1000000.0",
+        "fsolve": {
+         "ran": false,
+         "nfev": null,
+         "ier": null,
+         "mesg": null
+        },
+        "vle_decomposition_after": "bubble point",
+        "wall_time_s": 1.3787744310684502
+       },
+       "respecification": {
+        "route": "attribute_setter",
+        "set": [
+         {
+          "stage": 4,
+          "specification": "Duty",
+          "attribute": "Q",
+          "stored_after_pass1": 108000.0,
+          "set_to": 108000.0
+         }
+        ]
+       },
+       "pass2": {
+        "exception": null,
+        "iter": 1,
+        "maxiter": 500,
+        "attempt": 0,
+        "tool_mean_residual_not_used": "inf",
+        "fsolve": {
+         "ran": false,
+         "nfev": null,
+         "ier": null,
+         "mesg": null
+        },
+        "vle_decomposition_after": "bubble point",
+        "wall_time_s": 0.009739212924614549
+       }
+      },
+      "profile": {
+       "stages": [
+        {
+         "index": 0,
+         "T_K": 363.6196453605645,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 1.1189756080144968,
+         "V_mol_per_s": 0.7912226253055219,
+         "x": {
+          "A": 0.11460961563110689,
+          "B": 0.4461383684561985,
+          "C": 0.43925201591269475
+         },
+         "y": {
+          "A": 0.35379047560896926,
+          "B": 0.49294613111188396,
+          "C": 0.15326339327914681
+         },
+         "liquid_T_K": 363.6196453605645,
+         "vapour_T_K": 363.6196453605645,
+         "duty_W": -4.05634636990726e-08,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.12817239325286417,
+           "B": 0.4892480840770742,
+           "C": 0.29277775598677264
+          },
+          {
+           "A": 0.2800000000000001,
+           "B": 0.4,
+           "C": 0.32
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.27992702891941784,
+           "B": 0.3900301319925448,
+           "C": 0.1212654643935592
+          },
+          {
+           "A": 0.12824536433512562,
+           "B": 0.4992179521018703,
+           "C": 0.49151229157750104
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 1,
+         "T_K": 376.54388116354517,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 1.0919732386271945,
+         "V_mol_per_s": 0.9101982333167109,
+         "x": {
+          "A": 0.034345560750609,
+          "B": 0.3460571941506655,
+          "C": 0.6195972450987255
+         },
+         "y": {
+          "A": 0.14081810814531162,
+          "B": 0.5375181649103864,
+          "C": 0.321663726944302
+         },
+         "liquid_T_K": 376.54388116354517,
+         "vapour_T_K": 376.54388116354517,
+         "duty_W": 0.0,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.12824536433512562,
+           "B": 0.4992179521018703,
+           "C": 0.49151229157750104
+          },
+          {
+           "A": 0.03743146212304814,
+           "B": 0.36791532702214597,
+           "C": 0.4778490747842145
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.12817239325286417,
+           "B": 0.4892480840770742,
+           "C": 0.29277775598677264
+          },
+          {
+           "A": 0.03750443320530957,
+           "B": 0.37788519504694207,
+           "C": 0.6765836103749429
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 2,
+         "T_K": 386.47599621734935,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 1.0766635270061065,
+         "V_mol_per_s": 0.8831958639294085,
+         "x": {
+          "A": 0.008419146340373456,
+          "B": 0.20965103736437518,
+          "C": 0.7819298162952514
+         },
+         "y": {
+          "A": 0.042381835843877926,
+          "B": 0.4165727468256718,
+          "C": 0.5410454173304503
+         },
+         "liquid_T_K": 386.47599621734935,
+         "vapour_T_K": 386.47599621734935,
+         "duty_W": -4.7617100386155975e-08,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.03750443320530957,
+           "B": 0.37788519504694207,
+           "C": 0.6765836103749429
+          },
+          {
+           "A": 0.008991616710355444,
+           "B": 0.21575375729106117,
+           "C": 0.643140778305548
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.03743146212304814,
+           "B": 0.36791532702214597,
+           "C": 0.4778490747842145
+          },
+          {
+           "A": 0.009064587793207039,
+           "B": 0.22572362532921722,
+           "C": 0.8418753138836823
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 3,
+         "T_K": 393.1035243407775,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 1.0697811773507655,
+         "V_mol_per_s": 0.8678861523069648,
+         "x": {
+          "A": 0.0018050854929292403,
+          "B": 0.10689148660796131,
+          "C": 0.8913034278991094
+         },
+         "y": {
+          "A": 0.010360364301762908,
+          "B": 0.24859684270518317,
+          "C": 0.7410427929930539
+         },
+         "liquid_T_K": 393.1035243407775,
+         "vapour_T_K": 393.1035243407775,
+         "duty_W": -4.251584565887848e-08,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.009064587793207039,
+           "B": 0.22572362532921722,
+           "C": 0.8418753138836823
+          },
+          {
+           "A": 0.0018580754008406066,
+           "B": 0.10438063234484589,
+           "C": 0.7547650949053643
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.008991616710355444,
+           "B": 0.21575375729106117,
+           "C": 0.643140778305548
+          },
+          {
+           "A": 0.0019310464838446294,
+           "B": 0.11435050039223843,
+           "C": 0.9534996304746823
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        },
+        {
+         "index": 4,
+         "T_K": 396.8926246867277,
+         "P_Pa": 100000.0,
+         "L_mol_per_s": 0.20877737469990015,
+         "V_mol_per_s": 0.8610038026510507,
+         "x": {
+          "A": 0.0003495162401486663,
+          "B": 0.04775358472789711,
+          "C": 0.9518968990319542
+         },
+         "y": {
+          "A": 0.0021580339077708474,
+          "B": 0.12123132560327318,
+          "C": 0.876610640488956
+         },
+         "liquid_T_K": 396.8926246867277,
+         "vapour_T_K": 396.8926246867277,
+         "duty_W": 29999.99999997505,
+         "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+         "stored_Q_kJ_per_h": 108000.0,
+         "specified_variable": "Q",
+         "in_mol_per_s": [
+          {
+           "A": 0.0019310464838446294,
+           "B": 0.11435050039223843,
+           "C": 0.9534996304746823
+          }
+         ],
+         "out_mol_per_s": [
+          {
+           "A": 0.0018580754008406066,
+           "B": 0.10438063234484589,
+           "C": 0.7547650949053643
+          },
+          {
+           "A": 7.29710830332184e-05,
+           "B": 0.009969868051999606,
+           "C": 0.19873453556486734
+          }
+         ],
+         "liquid_side_draw_mol_per_s": null
+        }
+       ],
+       "inlets": [
+        {
+         "phase": "l",
+         "T_K": 300.0,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 0.2800000000000001,
+          "B": 0.4,
+          "C": 0.32
+         },
+         "F_mol_per_s": 1.0000000000000002,
+         "H_kJ_per_h": 666.0000000000083,
+         "H_W": 185.0000000000023
+        }
+       ],
+       "products": [
+        {
+         "phase": "g",
+         "T_K": 363.6196453605645,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 0.27992702891941784,
+          "B": 0.3900301319925448,
+          "C": 0.1212654643935592
+         },
+         "F_mol_per_s": 0.7912226253055219,
+         "H_kJ_per_h": 101244.51865633354,
+         "H_W": 28123.477404537094
+        },
+        {
+         "phase": "l",
+         "T_K": 396.8926246867277,
+         "P_Pa": 100000.0,
+         "mol_per_s": {
+          "A": 7.29710830332184e-05,
+          "B": 0.009969868051999606,
+          "C": 0.19873453556486734
+         },
+         "F_mol_per_s": 0.20877737469990015,
+         "H_kJ_per_h": 7421.481343106121,
+         "H_W": 2061.522595307256
+        }
+       ],
+       "products_order": "outs[0] vapour of stage 0, outs[1] liquid of stage N-1"
+      },
+      "rule2": {
+       "checks": {
+        "B1": {
+         "pass1": null,
+         "pass2": null,
+         "passes": true
+        },
+        "B2": {
+         "rung": "R4",
+         "counter": "iter",
+         "pass1_count": 145,
+         "pass2_count": 1,
+         "maxiter": 500,
+         "passes": true
+        },
+        "B3": {
+         "per_stage_mol_per_s": [
+          {
+           "A": -1.6792123247455493e-12,
+           "B": -1.7340906488527708e-11,
+           "C": 1.5712403600431912e-11
+          },
+          {
+           "A": 2.0816681711721685e-17,
+           "B": 0.0,
+           "C": 5.551115123125783e-17
+          },
+          {
+           "A": -5.901633348681656e-13,
+           "B": -1.3359952033553668e-11,
+           "C": 1.259409243559162e-11
+          },
+          {
+           "A": -1.5242754974886807e-13,
+           "B": -9.236486575581182e-12,
+           "C": 8.816170016245906e-12
+          },
+          {
+           "A": -2.919568070375994e-14,
+           "B": -4.6070647297113965e-12,
+           "C": 4.4507453278441744e-12
+          }
+         ],
+         "max": 1.7340906488527708e-11,
+         "threshold": 3.1e-08,
+         "passes": true
+        },
+        "B4": {
+         "per_stage": [
+          {
+           "stage": 0,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 3.0869179140112464,
+            "B": 1.1049175905172697,
+            "C": 0.34891904357138587
+           },
+           "per_component": {
+            "A": 6.379341499496149e-13,
+            "B": 4.474198789239381e-14,
+            "C": 8.62088178621434e-14
+           },
+           "max": 6.379341499496149e-13
+          },
+          {
+           "stage": 1,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 4.100038114614714,
+            "B": 1.5532639517280613,
+            "C": 0.5191497048910326
+           },
+           "per_component": {
+            "A": 4.163336342344337e-16,
+            "B": 1.2212453270876722e-15,
+            "C": 1.8318679906315083e-15
+           },
+           "max": 1.8318679906315083e-15
+          },
+          {
+           "stage": 2,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 5.033982559567042,
+            "B": 1.986981567382823,
+            "C": 0.6919360357606842
+           },
+           "per_component": {
+            "A": 4.739264536368637e-15,
+            "B": 2.919886554764162e-14,
+            "C": 3.4083846855992306e-14
+           },
+           "max": 3.4083846855992306e-14
+          },
+          {
+           "stage": 3,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 5.739542167030839,
+            "B": 2.3256935663823803,
+            "C": 0.8314147234233856
+           },
+           "per_component": {
+            "A": 1.1449174941446927e-16,
+            "B": 8.326672684688674e-16,
+            "C": 2.220446049250313e-16
+           },
+           "max": 8.326672684688674e-16
+          },
+          {
+           "stage": 4,
+           "form": "|y_c - K_c x_c|",
+           "K": {
+            "A": 6.174345165931844,
+            "B": 2.538685342562037,
+            "C": 0.9209092301699888
+           },
+           "per_component": {
+            "A": 5.7441031098282025e-15,
+            "B": 2.335631688055173e-13,
+            "C": 2.3947510641164627e-13
+           },
+           "max": 2.3947510641164627e-13
+          }
+         ],
+         "max": 6.379341499496149e-13,
+         "threshold": 1e-08,
+         "one_phase_stages": [],
+         "passes": true
+        },
+        "B5": {
+         "component": {
+          "residual_mol_per_s": {
+           "A": -2.450983860313727e-12,
+           "B": -4.454442370516176e-11,
+           "C": 4.157346689126484e-11
+          },
+          "max_abs_mol_per_s": 4.454442370516176e-11,
+          "tolerance_mol_per_s": 3.1e-08,
+          "passes": true
+         },
+         "energy_W": 7.275957614183426e-12,
+         "energy_threshold_W": 0.001,
+         "component_threshold_mol_per_s": 3.1e-08,
+         "energy_terms": {
+          "inlets_W": [
+           185.0000000000023
+          ],
+          "products_W": [
+           28123.477404537094,
+           2061.522595307256
+          ],
+          "duties_W": [
+           -4.05634636990726e-08,
+           0.0,
+           -4.7617100386155975e-08,
+           -4.251584565887848e-08,
+           29999.99999997505
+          ]
+         },
+         "passes": true
+        }
+       },
+       "failed": [],
+       "passes": true
+      },
+      "rule2c": {
+       "checks": {
+        "stage_count": {
+         "value": 5,
+         "registered": 5,
+         "passes": true
+        },
+        "feed_stage": {
+         "value": [
+          0
+         ],
+         "passes": true
+        },
+        "pressure_max_abs_dev_Pa": {
+         "value": 0.0,
+         "threshold": 0.001,
+         "passes": true
+        },
+        "intermediate_duty_max_abs_W": {
+         "value": 4.7617100386155975e-08,
+         "threshold": 0.001,
+         "passes": true
+        },
+        "specification_readback": {
+         "rows": [
+          {
+           "stage": 4,
+           "specification": "Duty",
+           "registered_value": 108000.0,
+           "expected_variable": "Q",
+           "specified_variable": "Q",
+           "attribute": "Q",
+           "expected_stored": 108000.0,
+           "stored": 108000.0,
+           "passes": true
+          }
+         ],
+         "passes": true
+        },
+        "property_readback": {
+         "failed": [],
+         "passes": true
+        },
+        "specification": {
+         "value": {
+          "reboiler": {
+           "kind": "duty",
+           "definition": "computed duty of stage index 4, W, into the stage",
+           "registered": 30000.0,
+           "tool": 29999.99999997505,
+           "relative_difference": -8.316419553011656e-13,
+           "absolute_difference": -2.4949258659034967e-08,
+           "rule2c_threshold": 0.0001,
+           "rule2c_passes": true,
+           "rule2d_basis": "relative",
+           "rule2d_threshold": 1e-08,
+           "rule2d_measure": 8.316419553011656e-13,
+           "rule2d_passes": true
+          }
+         },
+         "passes": true
+        }
+       },
+       "failed": [],
+       "passes": true,
+       "specification_values": {
+        "reboiler": {
+         "kind": "duty",
+         "definition": "computed duty of stage index 4, W, into the stage",
+         "registered": 30000.0,
+         "tool": 29999.99999997505,
+         "relative_difference": -8.316419553011656e-13,
+         "absolute_difference": -2.4949258659034967e-08,
+         "rule2c_threshold": 0.0001,
+         "rule2c_passes": true,
+         "rule2d_basis": "relative",
+         "rule2d_threshold": 1e-08,
+         "rule2d_measure": 8.316419553011656e-13,
+         "rule2d_passes": true
+        }
+       }
+      },
+      "rule2d_specification": {
+       "passes": true,
+       "max_measure": 8.316419553011656e-13
+      },
+      "quantities": {
+       "T[1]": 363.6196453605645,
+       "T[2]": 376.54388116354517,
+       "T[3]": 386.47599621734935,
+       "T[4]": 393.1035243407775,
+       "T[5]": 396.8926246867277,
+       "L[1]": 1.1189756080144968,
+       "V[1]": 0.7912226253055219,
+       "L[2]": 1.0919732386271945,
+       "V[2]": 0.9101982333167109,
+       "L[3]": 1.0766635270061065,
+       "V[3]": 0.8831958639294085,
+       "L[4]": 1.0697811773507655,
+       "V[4]": 0.8678861523069648,
+       "L[5]": 0.20877737469990015,
+       "V[5]": 0.8610038026510507,
+       "top[A]": 0.27992702891941784,
+       "top[B]": 0.3900301319925448,
+       "top[C]": 0.1212654643935592,
+       "bottom[A]": 7.29710830332184e-05,
+       "bottom[B]": 0.009969868051999606,
+       "bottom[C]": 0.19873453556486734
+      },
+      "harness_error": null
+     },
+     "passes_through_2d_specification": true,
+     "accuracy_rerun": {
+      "tolerance": 1e-09,
+      "form": "L1: the full path with the registered native specifications",
+      "outer": null,
+      "run": {
+       "x": null,
+       "path": {
+        "applied": {
+         "algorithms": [
+          "sequential modular"
+         ],
+         "methods": [
+          "fixed-point"
+         ],
+         "early_termination": false,
+         "tolerance": 1e-09,
+         "relative_tolerance": 1e-09,
+         "maxiter": 500,
+         "max_attempts": 1,
+         "use_cache": true,
+         "specifications_by_weight": false,
+         "phases": [
+          "g",
+          "l"
+         ],
+         "optimize_result": false,
+         "damping": 0,
+         "homotopy_continuation": false,
+         "vle_decomposition_before": null,
+         "inside_loop_algorithm": "simultaneous correction",
+         "line_search": false,
+         "minimum_residual_reduction": 0.1,
+         "iteration_memory": 8,
+         "partition_data": {}
+        },
+        "stage_specifications": {
+         "4": [
+          "Duty",
+          108000.0
+         ]
+        },
+        "bottom_side_draws": {},
+        "pass1": {
+         "exception": null,
+         "iter": 129,
+         "maxiter": 500,
+         "attempt": 0,
+         "tool_mean_residual_not_used": "1000000.0",
+         "fsolve": {
+          "ran": false,
+          "nfev": null,
+          "ier": null,
+          "mesg": null
+         },
+         "vle_decomposition_after": "bubble point",
+         "wall_time_s": 1.239829489029944
+        },
+        "respecification": {
+         "route": "attribute_setter",
+         "set": [
+          {
+           "stage": 4,
+           "specification": "Duty",
+           "attribute": "Q",
+           "stored_after_pass1": 108000.0,
+           "set_to": 108000.0
+          }
+         ]
+        },
+        "pass2": {
+         "exception": null,
+         "iter": 1,
+         "maxiter": 500,
+         "attempt": 0,
+         "tool_mean_residual_not_used": "inf",
+         "fsolve": {
+          "ran": false,
+          "nfev": null,
+          "ier": null,
+          "mesg": null
+         },
+         "vle_decomposition_after": "bubble point",
+         "wall_time_s": 0.00983316998463124
+        }
+       },
+       "profile": {
+        "stages": [
+         {
+          "index": 0,
+          "T_K": 363.6196453323386,
+          "P_Pa": 100000.0,
+          "L_mol_per_s": 1.1189756081689328,
+          "V_mol_per_s": 0.7912226253914291,
+          "x": {
+           "A": 0.11460961570230155,
+           "B": 0.4461383691831723,
+           "C": 0.4392520151145261
+          },
+          "y": {
+           "A": 0.35379047560164645,
+           "B": 0.49294613153543154,
+           "C": 0.15326339286292195
+          },
+          "liquid_T_K": 363.6196453323386,
+          "vapour_T_K": 363.6196453323386,
+          "duty_W": -4.5281517992003097e-07,
+          "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+          "stored_Q_kJ_per_h": 0,
+          "specified_variable": "Q",
+          "in_mol_per_s": [
+           {
+            "A": 0.12817239335775135,
+            "B": 0.48924808516051244,
+            "C": 0.2927777550051376
+           },
+           {
+            "A": 0.2800000000000001,
+            "B": 0.4,
+            "C": 0.32
+           }
+          ],
+          "out_mol_per_s": [
+           {
+            "A": 0.27992702894401705,
+            "B": 0.3900301323700129,
+            "C": 0.12126546407739913
+           },
+           {
+            "A": 0.12824536443249054,
+            "B": 0.4992179529842361,
+            "C": 0.49151229075220615
+           }
+          ],
+          "liquid_side_draw_mol_per_s": null
+         },
+         {
+          "index": 1,
+          "T_K": 376.5438811094808,
+          "P_Pa": 100000.0,
+          "L_mol_per_s": 1.0919732387686831,
+          "V_mol_per_s": 0.9101982335234015,
+          "x": {
+           "A": 0.03434556081029457,
+           "B": 0.3460571953145429,
+           "C": 0.6195972438751626
+          },
+          "y": {
+           "A": 0.14081810822856974,
+           "B": 0.5375181659786573,
+           "C": 0.3216637257927728
+          },
+          "liquid_T_K": 376.5438811094808,
+          "vapour_T_K": 376.5438811094808,
+          "duty_W": 0.0,
+          "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+          "stored_Q_kJ_per_h": 0,
+          "specified_variable": "Q",
+          "in_mol_per_s": [
+           {
+            "A": 0.12824536443249054,
+            "B": 0.4992179529842361,
+            "C": 0.49151229075220615
+           },
+           {
+            "A": 0.03743146220060491,
+            "B": 0.36791532854310444,
+            "C": 0.47784907337944243
+           }
+          ],
+          "out_mol_per_s": [
+           {
+            "A": 0.12817239335775135,
+            "B": 0.48924808516051244,
+            "C": 0.2927777550051376
+           },
+           {
+            "A": 0.03750443327534412,
+            "B": 0.37788519636682816,
+            "C": 0.6765836091265109
+           }
+          ],
+          "liquid_side_draw_mol_per_s": null
+         },
+         {
+          "index": 2,
+          "T_K": 386.4759961574352,
+          "P_Pa": 100000.0,
+          "L_mol_per_s": 1.0766635270744211,
+          "V_mol_per_s": 0.8831958641231519,
+          "x": {
+           "A": 0.008419146366125346,
+           "B": 0.20965103848851804,
+           "C": 0.7819298151453565
+          },
+          "y": {
+           "A": 0.04238183592239457,
+           "B": 0.41657274845639763,
+           "C": 0.5410454156212078
+          },
+          "liquid_T_K": 386.4759961574352,
+          "vapour_T_K": 386.4759961574352,
+          "duty_W": -5.322282150801685e-07,
+          "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+          "stored_Q_kJ_per_h": 0,
+          "specified_variable": "Q",
+          "in_mol_per_s": [
+           {
+            "A": 0.03750443327534412,
+            "B": 0.37788519636682816,
+            "C": 0.6765836091265109
+           },
+           {
+            "A": 0.008991616740180645,
+            "B": 0.2157537585808782,
+            "C": 0.6431407770926771
+           }
+          ],
+          "out_mol_per_s": [
+           {
+            "A": 0.03743146220060491,
+            "B": 0.36791532854310444,
+            "C": 0.47784907337944243
+           },
+           {
+            "A": 0.00906458782150831,
+            "B": 0.22572362655386302,
+            "C": 0.8418753126990497
+           }
+          ],
+          "liquid_side_draw_mol_per_s": null
+         },
+         {
+          "index": 3,
+          "T_K": 393.1035242975527,
+          "P_Pa": 100000.0,
+          "L_mol_per_s": 1.0697811773590769,
+          "V_mol_per_s": 0.867886152413736,
+          "x": {
+           "A": 0.0018050855002128012,
+           "B": 0.10689148734171029,
+           "C": 0.8913034271580769
+          },
+          "y": {
+           "A": 0.010360364334853668,
+           "B": 0.24859684416075895,
+           "C": 0.7410427915043875
+          },
+          "liquid_T_K": 393.1035242975527,
+          "vapour_T_K": 393.1035242975527,
+          "duty_W": -4.750957790141304e-07,
+          "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+          "stored_Q_kJ_per_h": 0,
+          "specified_variable": "Q",
+          "in_mol_per_s": [
+           {
+            "A": 0.00906458782150831,
+            "B": 0.22572362655386302,
+            "C": 0.8418753126990497
+           },
+           {
+            "A": 0.0018580754086205532,
+            "B": 0.10438063310189458,
+            "C": 0.7547650941814876
+           }
+          ],
+          "out_mol_per_s": [
+           {
+            "A": 0.008991616740180645,
+            "B": 0.2157537585808782,
+            "C": 0.6431407770926771
+           },
+           {
+            "A": 0.0019310464916514486,
+            "B": 0.11435050117807768,
+            "C": 0.9534996296893476
+           }
+          ],
+          "liquid_side_draw_mol_per_s": null
+         },
+         {
+          "index": 4,
+          "T_K": 396.89262466364033,
+          "P_Pa": 100000.0,
+          "L_mol_per_s": 0.20877737466915744,
+          "V_mol_per_s": 0.8610038026920028,
+          "x": {
+           "A": 0.0003495162417495399,
+           "B": 0.047753585097225854,
+           "C": 0.9518968986610247
+          },
+          "y": {
+           "A": 0.0021580339167041073,
+           "B": 0.12123132647676992,
+           "C": 0.876610639606526
+          },
+          "liquid_T_K": 396.89262466364033,
+          "vapour_T_K": 396.89262466364033,
+          "duty_W": 29999.999999721476,
+          "duty_definition": "(sum of the stage's outlet H - sum of its inlet H)/3.6, the tool's enthalpy, positive into the stage",
+          "stored_Q_kJ_per_h": 108000.0,
+          "specified_variable": "Q",
+          "in_mol_per_s": [
+           {
+            "A": 0.0019310464916514486,
+            "B": 0.11435050117807768,
+            "C": 0.9534996296893476
+           }
+          ],
+          "out_mol_per_s": [
+           {
+            "A": 0.0018580754086205532,
+            "B": 0.10438063310189458,
+            "C": 0.7547650941814876
+           },
+           {
+            "A": 7.29710833566995e-05,
+            "B": 0.009969868127639015,
+            "C": 0.19873453545816172
+           }
+          ],
+          "liquid_side_draw_mol_per_s": null
+         }
+        ],
+        "inlets": [
+         {
+          "phase": "l",
+          "T_K": 300.0,
+          "P_Pa": 100000.0,
+          "mol_per_s": {
+           "A": 0.2800000000000001,
+           "B": 0.4,
+           "C": 0.32
+          },
+          "F_mol_per_s": 1.0000000000000002,
+          "H_kJ_per_h": 666.0000000000083,
+          "H_W": 185.0000000000023
+         }
+        ],
+        "products": [
+         {
+          "phase": "g",
+          "T_K": 363.6196453323386,
+          "P_Pa": 100000.0,
+          "mol_per_s": {
+           "A": 0.27992702894401705,
+           "B": 0.3900301323700129,
+           "C": 0.12126546407739913
+          },
+          "F_mol_per_s": 0.7912226253914291,
+          "H_kJ_per_h": 101244.51865346276,
+          "H_W": 28123.477403739653
+         },
+         {
+          "phase": "l",
+          "T_K": 396.89262466364033,
+          "P_Pa": 100000.0,
+          "mol_per_s": {
+           "A": 7.29710833566995e-05,
+           "B": 0.009969868127639015,
+           "C": 0.19873453545816172
+          },
+          "F_mol_per_s": 0.20877737466915744,
+          "H_kJ_per_h": 7421.481340278061,
+          "H_W": 2061.5225945216835
+         }
+        ],
+        "products_order": "outs[0] vapour of stage 0, outs[1] liquid of stage N-1"
+       },
+       "rule2": {
+        "checks": {
+         "B1": {
+          "pass1": null,
+          "pass2": null,
+          "passes": true
+         },
+         "B2": {
+          "rung": "R4",
+          "counter": "iter",
+          "pass1_count": 129,
+          "pass2_count": 1,
+          "maxiter": 500,
+          "passes": true
+         },
+         "B3": {
+          "per_stage_mol_per_s": [
+           {
+            "A": -1.8756163289168626e-11,
+            "B": -1.9373652682119769e-10,
+            "C": 1.7553231090872146e-10
+           },
+           {
+            "A": -1.3877787807814457e-17,
+            "B": -5.551115123125783e-17,
+            "C": 5.551115123125783e-17
+           },
+           {
+            "A": -6.588458945078202e-12,
+            "B": -1.4926110347701638e-10,
+            "C": 1.4069595488663822e-10
+           },
+           {
+            "A": -1.7032304386321862e-12,
+            "B": -1.0319828325222602e-10,
+            "C": 9.851253146564432e-11
+           },
+           {
+            "A": -3.2580417584724547e-13,
+            "B": -5.145590724342508e-11,
+            "C": 4.9698301030076664e-11
+           }
+          ],
+          "max": 1.9373652682119769e-10,
+          "threshold": 3.1e-08,
+          "passes": true
+         },
+         "B4": {
+          "per_stage": [
+           {
+            "stage": 0,
+            "form": "|y_c - K_c x_c|",
+            "K": {
+             "A": 3.086917912029795,
+             "B": 1.1049175896661916,
+             "C": 0.3489190432578328
+            },
+            "per_component": {
+             "A": 6.394329510328589e-13,
+             "B": 4.468647674116255e-14,
+             "C": 8.640310689145281e-14
+            },
+            "max": 6.394329510328589e-13
+           },
+           {
+            "stage": 1,
+            "form": "|y_c - K_c x_c|",
+            "K": {
+             "A": 4.100038109913896,
+             "B": 1.5532639495910245,
+             "C": 0.5191497040577234
+            },
+            "per_component": {
+             "A": 3.191891195797325e-15,
+             "B": 2.1094237467877974e-15,
+             "C": 1.0547118733938987e-15
+            },
+            "max": 3.191891195797325e-15
+           },
+           {
+            "stage": 2,
+            "form": "|y_c - K_c x_c|",
+            "K": {
+             "A": 5.03398255349546,
+             "B": 1.9869815645069802,
+             "C": 0.6919360345923042
+            },
+            "per_component": {
+             "A": 5.1209037010835345e-15,
+             "B": 3.108624468950438e-14,
+             "C": 3.630429290524262e-14
+            },
+            "max": 3.630429290524262e-14
+           },
+           {
+            "stage": 3,
+            "form": "|y_c - K_c x_c|",
+            "K": {
+             "A": 5.739542162203569,
+             "B": 2.325693564035137,
+             "C": 0.831414722444414
+            },
+            "per_component": {
+             "A": 2.42861286636753e-17,
+             "B": 0.0,
+             "C": 0.0
+            },
+            "max": 2.42861286636753e-17
+           },
+           {
+            "stage": 4,
+            "form": "|y_c - K_c x_c|",
+            "K": {
+             "A": 6.1743451632108695,
+             "B": 2.538685341219508,
+             "C": 0.9209092296018185
+            },
+            "per_component": {
+             "A": 5.805252112356385e-15,
+             "B": 2.3570034812792073e-13,
+             "C": 2.4136248555350903e-13
+            },
+            "max": 2.4136248555350903e-13
+           }
+          ],
+          "max": 6.394329510328589e-13,
+          "threshold": 1e-08,
+          "one_phase_stages": [],
+          "passes": true
+         },
+         "B5": {
+          "component": {
+           "residual_mol_per_s": {
+            "A": -2.737365889515786e-11,
+            "B": -4.976518641619521e-10,
+            "C": 4.644391538022319e-10
+           },
+           "max_abs_mol_per_s": 4.976518641619521e-10,
+           "tolerance_mol_per_s": 3.1e-08,
+           "passes": true
+          },
+          "energy_W": 3.637978807091713e-12,
+          "energy_threshold_W": 0.001,
+          "component_threshold_mol_per_s": 3.1e-08,
+          "energy_terms": {
+           "inlets_W": [
+            185.0000000000023
+           ],
+           "products_W": [
+            28123.477403739653,
+            2061.5225945216835
+           ],
+           "duties_W": [
+            -4.5281517992003097e-07,
+            0.0,
+            -5.322282150801685e-07,
+            -4.750957790141304e-07,
+            29999.999999721476
+           ]
+          },
+          "passes": true
+         }
+        },
+        "failed": [],
+        "passes": true
+       },
+       "rule2c": {
+        "checks": {
+         "stage_count": {
+          "value": 5,
+          "registered": 5,
+          "passes": true
+         },
+         "feed_stage": {
+          "value": [
+           0
+          ],
+          "passes": true
+         },
+         "pressure_max_abs_dev_Pa": {
+          "value": 0.0,
+          "threshold": 0.001,
+          "passes": true
+         },
+         "intermediate_duty_max_abs_W": {
+          "value": 5.322282150801685e-07,
+          "threshold": 0.001,
+          "passes": true
+         },
+         "specification_readback": {
+          "rows": [
+           {
+            "stage": 4,
+            "specification": "Duty",
+            "registered_value": 108000.0,
+            "expected_variable": "Q",
+            "specified_variable": "Q",
+            "attribute": "Q",
+            "expected_stored": 108000.0,
+            "stored": 108000.0,
+            "passes": true
+           }
+          ],
+          "passes": true
+         },
+         "property_readback": {
+          "failed": [],
+          "passes": true
+         },
+         "specification": {
+          "value": {
+           "reboiler": {
+            "kind": "duty",
+            "definition": "computed duty of stage index 4, W, into the stage",
+            "registered": 30000.0,
+            "tool": 29999.999999721476,
+            "relative_difference": -9.284121915698052e-12,
+            "absolute_difference": -2.7852365747094154e-07,
+            "rule2c_threshold": 0.0001,
+            "rule2c_passes": true,
+            "rule2d_basis": "relative",
+            "rule2d_threshold": 1e-08,
+            "rule2d_measure": 9.284121915698052e-12,
+            "rule2d_passes": true
+           }
+          },
+          "passes": true
+         }
+        },
+        "failed": [],
+        "passes": true,
+        "specification_values": {
+         "reboiler": {
+          "kind": "duty",
+          "definition": "computed duty of stage index 4, W, into the stage",
+          "registered": 30000.0,
+          "tool": 29999.999999721476,
+          "relative_difference": -9.284121915698052e-12,
+          "absolute_difference": -2.7852365747094154e-07,
+          "rule2c_threshold": 0.0001,
+          "rule2c_passes": true,
+          "rule2d_basis": "relative",
+          "rule2d_threshold": 1e-08,
+          "rule2d_measure": 9.284121915698052e-12,
+          "rule2d_passes": true
+         }
+        }
+       },
+       "rule2d_specification": {
+        "passes": true,
+        "max_measure": 9.284121915698052e-12
+       },
+       "quantities": {
+        "T[1]": 363.6196453323386,
+        "T[2]": 376.5438811094808,
+        "T[3]": 386.4759961574352,
+        "T[4]": 393.1035242975527,
+        "T[5]": 396.89262466364033,
+        "L[1]": 1.1189756081689328,
+        "V[1]": 0.7912226253914291,
+        "L[2]": 1.0919732387686831,
+        "V[2]": 0.9101982335234015,
+        "L[3]": 1.0766635270744211,
+        "V[3]": 0.8831958641231519,
+        "L[4]": 1.0697811773590769,
+        "V[4]": 0.867886152413736,
+        "L[5]": 0.20877737466915744,
+        "V[5]": 0.8610038026920028,
+        "top[A]": 0.27992702894401705,
+        "top[B]": 0.3900301323700129,
+        "top[C]": 0.12126546407739913,
+        "bottom[A]": 7.29710833566995e-05,
+        "bottom[B]": 0.009969868127639015,
+        "bottom[C]": 0.19873453545816172
+       },
+       "harness_error": null
+      },
+      "movement": {
+       "ratio_to_tolerance": {
+        "T[1]": 7.554710841071785e-05,
+        "T[2]": 0.00013986599386843924,
+        "T[3]": 0.00015111673282294395,
+        "T[4]": 0.00010722992053712824,
+        "T[5]": 5.674065115342033e-05,
+        "L[1]": 0.00010807463658727559,
+        "V[1]": 7.801072035050023e-05,
+        "L[2]": 0.00010092104094198996,
+        "V[2]": 0.00016939096281065082,
+        "L[3]": 4.926551099814436e-05,
+        "V[3]": 0.0001623734715730303,
+        "L[4]": 6.023673712455603e-06,
+        "V[4]": 9.064650118528659e-05,
+        "L[5]": 5.925993582101309e-05,
+        "V[5]": 3.49718169000146e-05,
+        "top[A]": 4.169873620077809e-05,
+        "top[B]": 0.0005392168701895261,
+        "top[C]": 0.0007330985122832706,
+        "bottom[A]": 1.043241838783873e-06,
+        "bottom[B]": 0.0002363954147518951,
+        "bottom[C]": 0.00020974714532878263
+       },
+       "max_ratio": 0.0007330985122832706,
+       "max_quantity": "top[C]",
+       "threshold": 0.1,
+       "tolerance_value_used": "the tool's own value (the script reads no other)",
+       "passes": true
+      },
+      "passes": true,
+      "reason": "passes"
+     },
+     "passes": true,
+     "failed_rule": null,
+     "reason": "passes rules 2-2d",
+     "wall_time_s": 2.6407739149872214
+    }
+   ],
+   "path_dependence": {
+    "rungs_compared": [
+     "R2",
+     "R4"
+    ],
+    "max_ratio": 7.06413762349758e-05,
+    "pair": [
+     "R2",
+     "R4"
+    ],
+    "quantity": "top[C]",
+    "threshold": 0.1,
+    "tolerance_value_used": "the earlier rung's tool value",
+    "fires": false
+   },
+   "passes": true,
+   "selected_rung": "R2"
+  },
+  "L2(a)": {
+   "applicable": false,
+   "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+  },
+  "L2(c)": {
+   "realization": {
+    "level": "L2(c)",
+    "expressible": false,
+    "reason": "0 specifications without a native option; L2(c) admits one"
+   }
+  },
+  "L2(b)": {
+   "admissible": false,
+   "reason": "S03 restricts L2(b) to an equation-oriented tool"
+  },
+  "L3": {
+   "admissible": false,
+   "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+  }
+ },
+ "available": true,
+ "level": "L1",
+ "selected_rung": "R2",
+ "stage_map": {
+  "len_stages": 5,
+  "registered": 5,
+  "map": {
+   "1": 0,
+   "2": 1,
+   "3": 2,
+   "4": 3,
+   "5": 4
+  },
+  "statement": "our stage j -> BioSTEAM stage j - 1 (stage 0 is the top)"
+ },
+ "feed_stages": {
+  "tool": [
+   0
+  ],
+  "registered": [
+   0
+  ],
+  "statement": "each inlet enters whole at stage `stage - 1`"
+ },
+ "condenser_realization": {
+  "type": "none",
+  "stage": 0,
+  "built": {
+   "specified_variable": "Q",
+   "B": null,
+   "Q": 0,
+   "F": null,
+   "T": null,
+   "bottom_split": 0,
+   "top_split": 0
+  },
+  "statement": "stage 0 carries no specification and receives the top inlet",
+  "as_expected": true
+ },
+ "reboiler_realization": {
+  "type": "kettle",
+  "stage": 4,
+  "built": {
+   "specified_variable": "Q",
+   "B": null,
+   "Q": 108000.0,
+   "F": null,
+   "T": null,
+   "bottom_split": 0,
+   "top_split": 0
+  },
+  "statement": "stage N-1 carries the reboiler end's specification",
+  "as_expected": true
+ },
+ "specifications": {
+  "condenser": {
+   "native": null,
+   "realization": "no condenser: stage 0 carries no specification"
+  },
+  "reboiler": {
+   "native": [
+    "Duty",
+    108000.0
+   ],
+   "conversion": "Q -> ('Duty', 3.6 Q) in kJ/h",
+   "stage": 4,
+   "stored": {
+    "specified_variable": "Q",
+    "B": null,
+    "Q": 108000.0,
+    "F": null,
+    "T": null,
+    "bottom_split": 0,
+    "top_split": 0
+   }
+  }
+ },
+ "pressures": [
+  100000.0,
+  100000.0,
+  100000.0,
+  100000.0,
+  100000.0
+ ],
+ "intermediate_stages": [
+  {
+   "stage": 0,
+   "specified_variable": "Q",
+   "Q": 0,
+   "side_draw": false,
+   "reaction": false,
+   "as_expected": true
+  },
+  {
+   "stage": 1,
+   "specified_variable": "Q",
+   "Q": 0,
+   "side_draw": false,
+   "reaction": false,
+   "as_expected": true
+  },
+  {
+   "stage": 2,
+   "specified_variable": "Q",
+   "Q": 0,
+   "side_draw": false,
+   "reaction": false,
+   "as_expected": true
+  },
+  {
+   "stage": 3,
+   "specified_variable": "Q",
+   "Q": 0,
+   "side_draw": false,
+   "reaction": false,
+   "as_expected": true
+  }
+ ],
+ "initialization": {
+  "statement": "BioSTEAM's own initializer (hot_start); no initial point from this project",
+  "use_cache": true
+ },
+ "ladder_source": {
+  "default_algorithms": [
+   "inside out",
+   "phenomena",
+   "simultaneous correction",
+   "sequential modular"
+  ],
+  "default_methods": [
+   "fixed-point",
+   "fixed-point",
+   "hybr",
+   "fixed-point"
+  ],
+  "registered_rungs": [
+   [
+    "inside out",
+    "fixed-point"
+   ],
+   [
+    "phenomena",
+    "fixed-point"
+   ],
+   [
+    "simultaneous correction",
+    "hybr"
+   ],
+   [
+    "sequential modular",
+    "fixed-point"
+   ]
+  ],
+  "matches": true
+ },
+ "registered_quantities": {
+  "T[1]": 363.6196453632079,
+  "T[2]": 376.54388116866994,
+  "T[3]": 386.47599622306217,
+  "T[4]": 393.1035243449196,
+  "T[5]": 396.8926246889471,
+  "L[1]": 1.1189756079998576,
+  "V[1]": 0.791222625296396,
+  "L[2]": 1.0919732386160335,
+  "V[2]": 0.9101982332962535,
+  "L[3]": 1.0766635270041436,
+  "V[3]": 0.8831958639124294,
+  "L[4]": 1.0697811773560455,
+  "V[4]": 0.8678861523005397,
+  "L[5]": 0.20877737470360402,
+  "V[5]": 0.8610038026524415,
+  "top[A]": 0.2799270289169986,
+  "top[B]": 0.390030131955373,
+  "top[C]": 0.12126546442402439,
+  "bottom[A]": 7.297108300149526e-05,
+  "bottom[B]": 0.009969868044626996,
+  "bottom[C]": 0.19873453557597553
+ },
+ "accuracy_rerun_quantities": {
+  "T[1]": 363.6196453620498,
+  "T[2]": 376.5438811668007,
+  "T[3]": 386.4759962214131,
+  "T[4]": 393.1035243439335,
+  "T[5]": 396.8926246884877,
+  "L[1]": 1.1189756080058595,
+  "V[1]": 0.7912226252902831,
+  "L[2]": 1.0919732386404755,
+  "V[2]": 0.9101982332961425,
+  "L[3]": 1.076663527046536,
+  "V[3]": 0.8831958639307586,
+  "L[4]": 1.069781177410405,
+  "V[4]": 0.8678861523368189,
+  "L[5]": 0.20877737470971694,
+  "V[5]": 0.8610038027006879,
+  "top[A]": 0.27992702891699456,
+  "top[B]": 0.3900301319545931,
+  "top[C]": 0.12126546441869544,
+  "bottom[A]": 7.297108300551529e-05,
+  "bottom[B]": 0.009969868045406912,
+  "bottom[C]": 0.19873453558130452
+ },
+ "path_dependence": {
+  "rungs_compared": [
+   "R2",
+   "R4"
+  ],
+  "max_ratio": 7.06413762349758e-05,
+  "pair": [
+   "R2",
+   "R4"
+  ],
+  "quantity": "top[C]",
+  "threshold": 0.1,
+  "tolerance_value_used": "the earlier rung's tool value",
+  "fires": false
+ },
+ "outer_evaluations": 0,
+ "margin": {
+  "ratios": {
+   "B3_stage_component": 7.162729191130042e-09,
+   "B4_equilibrium": 0.0001919242542669508,
+   "B5_component": 1.7906822977825105e-09,
+   "B5_energy": 3.637978807091713e-09,
+   "rule2c_adiabatic_duty": 7.942111955748663e-05,
+   "rule2d_specification": 0.0006399325987634559,
+   "rule2d_rerun_movement": 0.00041200896837687587,
+   "rule2d_path_spread": 0.0007064137623497579
+  },
+  "max_ratio": 0.0007064137623497579,
+  "max_row": "rule2d_path_spread",
+  "thin_level": 0.1,
+  "thin": false,
+  "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+ },
+ "wall_time_s": 3.8714696740498766
+}
