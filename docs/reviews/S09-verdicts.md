@@ -494,3 +494,156 @@ They verify no derivative and are no sensitivity capability (§14).
 - **A decision that is yours, later and outside S09:** whether a release accepts "met where available" for X31. This verdict does not
   answer it.
 - **Human numerical and process-modeling sign-off of S09 remains yours.** These verdicts do not stand in for it.
+
+---
+
+## 11. Addendum (2026-10-26): Amendment 2 and the review
+
+**Why this section exists.** §0–§10 were written at `293cb19b` against the specification through Amendment 1 (SHA-256
+`e9c25fe7…330a`). They predate the review `docs/reviews/S09-review.md` and Amendment 2 (spec §19, R-751 and R-752), both
+committed in `cca49af5`. The text above is unchanged. Where it differs from this section, this section governs. The standing
+is the same: agent verdicts, numerical and procedural. This section is not scientific review and does not set `reviewed`.
+
+### 11.1 The hashes against the amended specification: no verdict changes
+
+- **The specification.** Its SHA-256 is now `4ab38942…a533`. `git diff 10adc40b cca49af5 -- docs/derivations/S09-spec.md`
+  changes four existing lines and appends §19:
+  - the register line;
+  - B5's row, which gains a pointer to §19.1 (thresholds unchanged);
+  - A09's row, which gains a pointer to §19.5;
+  - §18.8's open item, now marked closed.
+
+  No registered value, threshold, tolerance, setting, input, level, case or record changes. §19 says so, and the diff
+  agrees.
+- **§0's bytes, re-checked at `cca49af5`.**
+  - `sha256sum -c SHA256SUMS`: 21 of 21 OK.
+  - `comparison.json` `3feb65e5…6423`, `SHA256SUMS` `83a68526…1572`, `qualification/biosteam.json` `cb8b9289…0f72`.
+  - The S03 pins `c901d6c9…3f39`, `95ef9bd2…0c67` and `5c7d139c…585d` equal S09 §0.
+  - `s09_cases.json` `760ab27f…a813c` equals §18's registration and §19's restatement.
+  - Between `293cb19b` and `cca49af5` only five documents change: the review brief, the register, the specification,
+    the review and this file. No evidence byte changes.
+- **The merge of `main` (S08, `d96c17ae`)** landed while I wrote this section, as `193cb27c`. It touches no file in §0's
+  table, so the hashes above hold at `193cb27c` too. It changes `docs/derivations/S03-spec.md` §10.1 and §14 (the phase-transition wording after
+  S08). It does not change §6, §7.1 or §17.3–§17.5, the sections these verdicts compose with. §11.5 records what this means
+  for limitation 10.
+- **Verdicts 1–7 stand as recorded.** Amendment 2 bears on the text in these places only:
+  - **§19.1 (R-751).** B5's energy row is a bookkeeping identity under §5.6. §1.2 lists it under rule 2 (1.5e-11 W). Read
+    it as a bookkeeping check, not as convergence evidence. Each `AGREE`'s energy convergence rests on rows §1.2 already
+    reports. One is rule 2c's adiabatic duty, ≤ 1.06e-7 W against 1e-3 W on every stage without an end specification,
+    including the RC4 family's `none`-reboiler stage. The other is rule 2d's duty residual on the RC3 family. No stated
+    reason for a label changes.
+  - **§19.2(a)** rules that the closed-form K conforms. This closes F-2 (§8).
+  - **§19.2(d)** closes WO-S09-1's numpoly item (status table): the fingerprint does not hash it.
+  - **§19.3 (R-752).** The classifier fix, §11.2.
+
+### 11.2 The classifier fix and A13: a stated condition
+
+**The assumption.** These verdicts assume that §19.3's fix leaves `comparison.json` byte-identical at `3feb65e5…6423`
+(A13). The fix makes the classifier's B3 keep a NaN, as B4 does.
+
+**The check that proves it.** `scripts/s09_reference_comparison.py --check`, run at the fix commit, must exit 0, and §19.5's
+A09 NaN mutation must pass.
+
+**Not run.** When I looked, the head was `193cb27c` (after the merge), and the fix was not committed:
+`scripts/s09_reference_comparison.py:324` still reads `b3 = r.copy_abs() if r.is_nan() or b3.is_nan() else …`. So
+`--check` was not run on the fix, and A13 stands as the condition of these verdicts. If `--check` fails after the fix,
+verdicts 1–5 reopen for every pair whose label or worst ratio changes.
+
+**Why byte identity is expected.** Independently of the fix:
+- the 19 records contain no `NaN` or `Infinity` token;
+- in the 19 selected runs, all 1410 stage flows that B3 reads are present and finite.
+
+So the defect cannot have masked a non-finite value in the committed records.
+
+**A figure that does not match.** The review (F1) says every committed B3 is ≤ 2e-16 mol/s.
+`comparison.json → margin → per_pair` gives a largest B3 ratio of 7.25e-5, for RC4. That is 2.2e-12 mol/s, which is §1.2's
+figure. Either value is finite and more than four orders of magnitude below 3.1e-8 mol/s. Nothing depends on the
+difference.
+
+### 11.3 D19: the review's three blindness disclosures (an addition to §5.2)
+
+The review discloses three exposures (review, "Rulings on the brief's §4 items", item 1: "Disclosures: F5, F6, and
+WO-S09-3's one-ulp reflux reading"). §19.4 registers the first two under D19 with §9.1. None of the three affects a label.
+
+**(a) Twin-derived values in `s09_cases.json`.**
+
+> `s09_cases.json` is a registered input of the blind harness. Its claim strings carry two values derived from the twin: C4
+> "243.292 tolerances (Q_reboiler)" (line 672) and C6 "T_max 397.3721 K" (line 685). Neither can steer the result. (F5)
+
+*Judgement: affects no label.* Neither value enters a setting, a start, a selection or a check:
+- selection is mechanical (§5.3);
+- C5 fixes the L2(c) roots;
+- rule 2 ties every selected state to the registered model, and §0 recomputed rule 2 from the raw profiles.
+
+243.292 is the size of PC-LI's discrimination. PC-LB's `Hvap` values are registered in §7, and knowing how large a
+discrimination is does not move the tool's root. 397.3721 K is one twin temperature, given to 1e-4 K, which is about a
+quarter of a tolerance at that temperature. A record's temperatures are the tool's own, and B4 ties each one to its stage's
+x and y within 1e-8.
+
+**(b) The clean-or-not stamp is taken at assembly.**
+
+> `harness.head` and `scripts_clean_at_head` are taken at assembly (`s09_qualify_biosteam.py:1590`), not in each case
+> process. Run 2's records are not committed. A16 proves the order of the commits, not the order of authorship. (F6)
+
+*Judgement: affects no label. It weakens one provenance sentence.* Read §0's "harness at `fd38124d` (clean at head,
+recorded in `harness`)" as "clean when the records were assembled". The classifier computes labels from each record's raw
+profile, whatever process wrote it. That the records come from `fd38124d` rests on two facts, as §19.4 states: the run is
+deterministic (A17), and the harness diff `c2589694..fd38124d` holds exactly §18.6 items 2–4. This is a limitation of
+provenance, not a classification question (§11.5).
+
+**(c) A one-ulp change in how the classifier reads reflux.**
+
+> That reading changed the classifier after values had been seen, at 1e-16 relative. It cannot change a classification,
+> and the build log discloses it. (review, item 1)
+
+*Judgement: affects no label.* `view()` (`scripts/s09_reference_comparison.py:197`) forms a total condenser's reflux as the
+binary64 difference of stage 0's liquid and the side draw. The reading reaches two places, both only on the total-condenser
+cases (RC2 family, RC6):
+- **The registered `reflux` quantity** (`s03.tool_quantities`), compared under rule 4. One ulp of a flow below 2 mol/s is at
+  most 2.2e-16 mol/s. That is under 1e-9 of the smallest flow tolerance (3.1e-7 mol/s), while a label needs a ratio of 1.
+- **The reflux-ratio specification value** (`s03.specification_values`), judged by rule 2c at 1e-4 relative and rule 2d at
+  1e-8 relative. One ulp is about 1.6e-16 relative. The largest specification residual of any selected record is 6.4e-4 of
+  its threshold.
+
+The exact stored-specification read-back is computed from the registered value, not from this reading. The binary64 form
+reproduces the tool's own value (0.6749999999999567 on RC2) and the recorded quantities bit for bit (§0). This is a post hoc
+change, made at a scale eight or more orders of magnitude below every threshold, and the build log discloses it.
+
+### 11.4 The worst ratios are our side's distance from the twin
+
+The review ("For the verdict"):
+
+> The larger worst ratios (RC6 `bottom[A]` 0.0202, the RC3 family 0.0017–0.0035) are our side's distance to the twin,
+> which S03 already carries.
+
+This is §1.2's finding ("The third corner") and limitation 8. I recomputed it now from the 17 `AGREE` records against
+`s03_reference.json`, in 50-digit decimal:
+- the largest BioSTEAM–twin distance is 1.009e-5 tolerance (RC4, `L[2]`);
+- RC6 is 1.73e-6;
+- the RC3 family is 1.4e-6 to 4.6e-6.
+
+**Correction to §1.2's prose.** "BioSTEAM lies within 1.02e-5 of a tolerance of the twin (RC4 `L[2]`)" quotes RC4's
+ours–BioSTEAM ratio. The BioSTEAM–twin maximum is 1.009e-5. The stated bound still holds. The table's "Tool vs twin" figure
+of 1.0e-5 is the right one, and it agrees with the review's "≤ 1.0e-5 tolerance".
+
+### 11.5 Limitations added to §9 (they travel with it)
+
+11. **Provenance stamp.** The harness head and clean-tree stamp are taken when the records are assembled, not per case. That
+    the records come from `fd38124d` rests on A17 and the harness diff (§19.4). Run 2's records are not committed.
+12. **Twin-derived values.** `s09_cases.json`'s claims carry two values derived from the twin: C4's 243.292 tolerances and
+    C6's 397.3721 K. They are disclosed under D19 with §9.1 (§19.4).
+13. **A post hoc classifier reading.** One classifier reading, WO-S09-3's total-condenser reflux, changed by one ulp after
+    values had been seen. It is disclosed, and it moves no label.
+14. **A13 is a condition.** These verdicts hold for `comparison.json` `3feb65e5…6423`. They require the classifier after
+    §19.3's fix to reproduce it byte for byte (§11.2).
+15. **Limitation 10, after S08.** Since the S08 merge (`193cb27c`), S03's text reads "no phase-transition robustness beyond
+    S08's block re-entry". For S09 nothing changes in substance:
+    - no selected record has a one-phase stage (§1.2), so S09 carries no evidence on one-phase sections;
+    - S08's block re-entry is S08's evidence, not S09's;
+    - S09 reads S03's committed `ours-*.json`, pinned by hash. Whether the column after S08 still reproduces them is S08's
+      identity evidence. This section does not check it.
+
+**What would change this addendum.** Any of these reopens it:
+- `--check` fails after the fix;
+- a later merge touches a file in §0's table, or S03 §6, §7.1 or §17.3–§17.5;
+- a later finding shows that a twin-derived value entered a harness setting.
