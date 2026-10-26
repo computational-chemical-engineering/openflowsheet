@@ -122,6 +122,9 @@ def _forced_edge_3(monkeypatch: pytest.MonkeyPatch) -> tuple[CascadeSolution, Tr
         rebound.append(dict(values))
         return real_rebind(spec, values)
 
+    # Fill the session memo with A06's root before the trigger is forced: `compare_with_a06`
+    # would otherwise fill it under the patch when this runs first in a process (S08b review F1).
+    solved("C2")
     monkeypatch.setattr(solve_module, "eo_recovery_due", lambda outcome, budget, *, attempts: True)
     monkeypatch.setattr(region_module, "rebind", rebind)
     trace = Trace()
