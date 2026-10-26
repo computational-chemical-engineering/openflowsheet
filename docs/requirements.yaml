@@ -463,6 +463,7 @@ requirements:
       - tests/test_s10_dwsim.py
     evidence:
       - evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
+      - evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
       - evidence/S10/f6f27c3f8aca7cb360287e531cd03e2033c32e16/manifest.json
     status: planned
 
@@ -914,11 +915,12 @@ gates:
     # (docs/reviews/S09-verdicts.md, verdict 3 and its §11 addendum) records the three-tool outcome under §8.2's
     # rule: "met where available, 3 of 4" (RC1 and RC2 three references, RC3 two, RC4 one: BioSTEAM). S03's verdict
     # above stands as the two-tool outcome ("not met, 2 of 4"). The status and verdict fields are not moved by this
-    # citation; whether a release accepts "met where available" is outside S09 (spec §8.5). S09's manifest is cited below.
+    # citation; whether a release accepts "met where available" is outside S09 (spec §8.5). S09's manifest `evidence/S09/4d4df087...` (`tested`) is cited below.
     verdict: null
     evidence:
       - evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
       - evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+      - evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
 
   - id: X41
     required_evidence: "v1 counts, robustness, independent reproduction/extension and stable governance/workbench"
@@ -1271,8 +1273,12 @@ packages:
     second: Opus
     depends_on: [S03]
     # S09 evidences X31's and D19's third-reference part (S09 spec §8.5); S03's verdict stands as S03's record.
-    status: implemented
-    evidence: []
+    # WO-S09-5b: the manifest at 4d4df087 is `tested` (26 of 28 checks pass; gate and CI `unsupported`, they run
+    # before merge). The superseded `implemented` manifest at 6ce5b624 (A19 failed: no verdict yet) is kept, not
+    # cited: the verdict document names it.
+    status: tested
+    evidence:
+      - evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json
 
   - id: S10
     phase: "v0.3"
