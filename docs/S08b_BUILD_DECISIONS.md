@@ -44,3 +44,33 @@ Design: `docs/derivations/S08b-design.md` (R-790 to R-794). Branch `wp/S08b`. Ap
   Reversible by: `_verdict_b`. The PASS line also carries `b_only=<base>/<branch>` (§9: keys in one tree, informational).
 - First control attempt FAILed on the gate's own bug (the branch-only extra shard was also launched in the base tree,
   where its file does not exist: pytest exit 4); fixed before the PASS above.
+
+## WO-2 — (a), signature items by declaration (2026-10-26, commit `564bf772`)
+
+- §5.1 as written: `_is_item` deleted; `_split(signature, items)`; `adjacent(…, *, items)` and
+  `WallObserver.choose(…, *, items)` keyword-only and required; `_proposal` passes `frozenset(declared)` to both
+  `choose` calls; `_changes` takes its items from `declared` (the no-declared-phase raise deleted, unreachable);
+  `region._units_and_items_disjoint`, called from `_LiftedOps.__init__`. Tests: `tests/test_s08b_contract.py` (A1–A4,
+  A7, and `items` keyword-only/required), A5 guard edits (`items=` added, every asserted value unchanged), A6 pins in
+  `test_s02_column_wo3.py::test_a12_p1_measured_branch_is_held` and `test_s08_reentry.py::test_a06_…`.
+- DECISION: `AbstractSet` spelled `from collections.abc import Set as AbstractSet` (no prior use in the repo).
+  Alternative: `typing.AbstractSet` (deprecated alias). Reversible by: the import line.
+- Acceptance: `ruff check .` and `ruff format --check .` clean; `mypy` (250 files) clean; touched tests
+  (`test_s08b_contract`, `test_s08b_identity`, `test_t05b_dormancy`, `test_t05b_zero_flow`, `test_s02_column_wo3`,
+  `test_s08_reentry`, plus `test_t03_contract`, `test_t04_ptc_region`, `test_k03_attempts`) 322 passed.
+- G1 on `564bf772` (10 min 9 s):
+
+      S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61 b_only=0/0
+
+  61 of the 64 base decisions with an empty list moved (all `stall`); the other 3 are
+  `test_k03_attempts.py::test_the_attempt_budget_is_a_typed_outcome` on the tear path, unchanged in both trees (as §5.1
+  says of the tear path). A first run on the uncommitted tree FAILed one branch shard on
+  `test_m07_journey.py::test_a21_…` (its carry-identity check reads `git status`: a dirty working tree, not S08b);
+  re-run after the commit, PASS above.
+- Older gates on the same content, at their own registered merge bases (no `MERGE_BASE` change needed: each compares
+  against a fixed pre-package base and pins fields S08b does not move; neither digest includes a region message):
+
+      S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL
+      S10C-IDENTITY PASS n=858 changed=[]
+
+- Not done here: WO-3 (§5.2), WO-4 (full gate, manifest, records, review).
