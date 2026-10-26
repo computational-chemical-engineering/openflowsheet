@@ -146,3 +146,14 @@ Design: `docs/derivations/S08b-design.md` (R-790 to R-794). Branch `wp/S08b`. Ap
 - T08 harvest (`cb25186d`): 8 limitations and 2 checks appended (E → L19, L19, U04+L20; the rest P); `HARVEST_SIZE`
   (58, 824, 99) → (59, 832, 101); `t08_support_matrix.py --check` 0 problems; harvest, envelope and manifest tests 412
   passed. Next (orchestrator): `scripts/gate.sh`, CI on both architectures, the `reviewer` pass, merge.
+
+## T07 pin on ci-x86-64 (orchestrator, 2026-10-26)
+
+- MEASURED: CI 40359016227 at `d34f8b57`: `check (ubuntu-latest)` failed one test, `test_t07_interrupt.py::
+  test_interrupt_at_record_k[THM-09-4]`: `assert 136 == 94` on ci-x86-64 (aarch64 and default-install passed; local gate PASS
+  13286/3137). S10-C's CI 40315691647 had 94 on ci-x86-64. S08b changes no numerics (S08/S10C identity PASS). ci-x86-64
+  runners' CPU varies (EPYC 7763 / 9V74, R-782 note §8 Q-C); the length follows the CPU, not the class.
+- DECISION T07-1: THM-09 start 4's length pin on ci-x86-64 → removed (treated as an unregistered class: the > 89 check and
+  every record-k interrupt still run); ref-x86-64 94 and ci-aarch64 136 stay; the failure message now names the CPU model.
+  Alternative: pin per (class, CPU model) — needs a measured length per runner CPU, which no run has recorded. Reversible by:
+  reverting this commit. For the design-lane ruling round (with S10-C's G2 and unregistered-class decisions).

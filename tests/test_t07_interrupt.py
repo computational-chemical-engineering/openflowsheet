@@ -75,7 +75,9 @@ RUNS = (("STR-01", None), ("NET-03", 18), ("THM-09", 4))
 #: THM-09 start 4's uncapped record length since R-782, per registered machine class (note §4.7
 #: item 4, §8.2). Every k ∈ K interrupts inside the run on each (89 < 94). On an unregistered
 #: class the length is not pinned (T06 §7.5: reported, never gated); the interrupts still run.
-THM09_RECORDS = {"ref-x86-64": 94, "ci-x86-64": 94, "ci-aarch64": 136}
+#: ci-x86-64 is not pinned either: its runners' CPU varies (EPYC 7763 / 9V74, note §8 Q-C) and the
+#: length with it — 94 in CI run 40295317759, 136 in CI run 40359016227 (S08b build decision T07-1).
+THM09_RECORDS = {"ref-x86-64": 94, "ci-aarch64": 136}
 #: The test-local property budget that keeps a budget refusal in the every-record leg since R-782
 #: (THM-09 start 4 converges in 424 calls uncapped). The registry's `T06-revision-v2` is unchanged.
 WITNESS_CAP = 100
@@ -233,7 +235,10 @@ def test_interrupt_at_record_k(case_id: str, start: int | None) -> None:
     if case_id == "THM-09":
         machine = ensemble.machine_class()
         if machine in THM09_RECORDS:
-            assert len(ref.lengths) == THM09_RECORDS[machine], machine
+            assert len(ref.lengths) == THM09_RECORDS[machine], (
+                machine,
+                ensemble.generator._cpu_model(),
+            )
     else:
         assert len(ref.lengths) == {"STR-01": 8, "NET-03": 126}[case_id]
     assert len(ref.lengths) > max(K) or case_id == "STR-01"
