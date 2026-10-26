@@ -211,6 +211,16 @@ def test_a09_b3_fires_at_twice_its_threshold(
         assert got["rule"] == 4 and got["classification"] == "AGREE", got["label"]
 
 
+def test_a09_b3_keeps_a_nan_in_the_first_flow_it_reads(records: dict, ours: dict) -> None:
+    """A09 (§19.5, R-752): RC1's selected run with the first stage flow B3 reads (stage 0, first
+    inlet, A) set to NaN → B3; a later finite residual must not replace the NaN."""
+    assert s03.fx.COMPONENTS[0] == "A"
+    record = copy.deepcopy(records["RC1"])
+    selected_rung(record)["run"]["profile"]["stages"][0]["in_mol_per_s"][0]["A"] = math.nan
+    got = classify("RC1", record, ours)
+    assert got["rule"] == 2 and got["reason"].startswith("B3(nan"), got["label"]
+
+
 @pytest.mark.parametrize(("delta", "fires"), [(2e-8, True), (5e-9, False)])
 def test_a09_b4_fires_at_twice_its_threshold(
     delta: float, fires: bool, records: dict, ours: dict

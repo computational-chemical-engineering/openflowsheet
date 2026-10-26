@@ -321,7 +321,7 @@ def rule2(
             r = sum((_finite(s[c]) for s in st["in_mol_per_s"]), Decimal(0)) - sum(
                 (_finite(s[c]) for s in st["out_mol_per_s"]), Decimal(0)
             )
-            b3 = r.copy_abs() if r.is_nan() or b3.is_nan() else max(b3, abs(r))
+            b3 = Decimal("NaN") if r.is_nan() or b3.is_nan() else max(b3, abs(r))
     detail["B3_max_mol_per_s"] = float(b3)
     if not _passes(b3, th["B3"]):
         failed.append(f"B3({_fmt(b3)} mol/s)")

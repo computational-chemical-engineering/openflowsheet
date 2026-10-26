@@ -212,3 +212,25 @@ record-writing code (to read the field layout), S03's `comparison.json`, `s03_re
   `test_s09_environment.py` 308 passed; `s09_reference_comparison.py --check` and `s03_reference_comparison.py
   --check` recompute identically; S03's files unchanged since `390e0af5` (A02); `ruff check .`, `ruff format --check .`
   clean.
+
+## WO-S09-5a (merge of main; review should-fix F1)
+
+Build-lane agent, after the package review (`docs/reviews/S09-review.md`) and Amendment 2 (spec §19, R-751, R-752).
+
+- Merge of `main` (S08 at `d96c17ae`, state to `ffcb387f`): two append/append conflicts, resolved as a pure union by
+  script (base + main's block + S09's block, every line of both sides kept). `docs/decision-register.md`: 14272 + 239
+  (R-728–R-736) + 345 (R-740–R-752) = 14856 lines; `docs/FRANK_QUESTIONS.md`: 176 + 7 + 2 = 185. MEASURED after the
+  merge: ledger, T08, M07a and S09 tests 970 passed, 12 skipped, 2 failed (T08 A21, M07a A50). Both fail identically
+  at `cca49af5` before the merge (A50: (54, 759, 91) vs (53, 735, 88) there, (55, 771, 93) vs (54, 747, 90) after):
+  S09's manifest is not harvested yet, which a later work order does.
+- F1 fixed as §19.3 states: the classifier's B3 keeps a NaN (`Decimal("NaN") if r.is_nan() or b3.is_nan() else
+  max(b3, abs(r))`, B4's form). §19.5's A09 mutation added
+  (`test_a09_b3_keeps_a_nan_in_the_first_flow_it_reads`: RC1's selected run, stage 0, first inlet, A = NaN → rule 2,
+  reason `B3(nan mol/s)`). MEASURED: the test fails before the fix (label `AGREE`, the review's probe (a)) and passes
+  after; `s09_reference_comparison.py --check` recomputes `comparison.json` identically and `SHA256SUMS` matches
+  (A13: every committed B3 is finite, so no committed byte moves).
+- `s09_evidence_manifest.py`'s `amendments()` reads §18.5 and §19.5; an id amended twice (A09) carries both,
+  §18.5's text first. The manifest's `case_id` names both sections. The manifest is not regenerated here.
+- MEASURED (after the fix): `tests/test_s09_*.py` and `tests/test_s03_references.py` 354 passed (396 s);
+  `s09_reference.py --check` PASS, 181 claims, `s09_cases.json` byte-identical (`760ab27f…a813c`);
+  `s09_reference_comparison.py --check` identical; `ruff check .` and `ruff format --check .` clean (890 files).

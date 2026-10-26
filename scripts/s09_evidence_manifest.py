@@ -74,7 +74,7 @@ SCRIPTS = (
     "spikes/references/s09_qualify_biosteam.py",
     "spikes/references/s09_biosteam_syn001.py",
 )
-#: §11's ids, A01–A20 (amended by §18.5).
+#: §11's ids, A01–A20 (amended by §18.5 and §19.5).
 ASSERTIONS = tuple(f"A{index:02d}" for index in range(1, 21))
 REQUIRED_CHECKS = ("S09.generator", "S09.s03_generator", "S09.comparison", "S09.ruff", "S09.format")
 CLAIMS = 181
@@ -121,12 +121,15 @@ def assertion_table(document: str) -> dict[str, tuple[str, str, str]]:
 
 
 def amendments(document: str) -> dict[str, str]:
-    """§18.5's amended assertions per id (§11's rows stand amended by them)."""
+    """§18.5's and §19.5's amended assertions per id (§11's rows stand amended by them, in order;
+    an id amended twice carries both, §18.5's first)."""
     out: dict[str, str] = {}
-    for line in section(document, "### 18.5").splitlines():
-        cells = [cell.strip() for cell in line.strip().strip("|").split(" | ")]
-        if len(cells) == 4 and re.fullmatch(r"A\d{2}", cells[0]):
-            out[cells[0]] = f"18.5: {cells[1]} (expected: {cells[2]})"
+    for number in ("18.5", "19.5"):
+        for line in section(document, f"### {number}").splitlines():
+            cells = [cell.strip() for cell in line.strip().strip("|").split(" | ")]
+            if len(cells) == 4 and re.fullmatch(r"A\d{2}", cells[0]):
+                text = f"{number}: {cells[1]} (expected: {cells[2]})"
+                out[cells[0]] = f"{out[cells[0]]}; {text}" if cells[0] in out else text
     return out
 
 
@@ -410,8 +413,8 @@ def build(commit: str) -> dict[str, Any]:
         "status": status(entries),
         "inputs": {
             "case_id": "S09 acceptance: docs/derivations/S09-spec.md §11 (A01–A20, amended by "
-            "§18.5) against docs/derivations/scripts/s09_cases.json, S03's pinned files and the "
-            "committed BioSTEAM records, check list §13",
+            "§18.5 and §19.5) against docs/derivations/scripts/s09_cases.json, S03's pinned files "
+            "and the committed BioSTEAM records, check list §13",
             "case_hash": sha256_file(CASES9),
             "environment_lock_hash": sha256_file(LOCK),
         },
