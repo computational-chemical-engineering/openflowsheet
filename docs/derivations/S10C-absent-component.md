@@ -589,3 +589,10 @@ entry. Run lines go to `docs/S10C_DECISIONS.md` under "R-782 (absent-component r
 | Q-B | An aarch64 detector run on `f9122cc7` over THM-09/03 (and STA-02/00, /02, /17) to observe the acting iteration directly | A fact; costs one CI dispatch (Frank's preference: CI minutes) | No dispatch. The ruling holds whatever the cause (§8.1, "not a regression in substance"). If an aarch64 dispatch is made later for another reason, add the detector over these four starts. |
 | Q-C | The ci-x86-64 runner CPU changed (EPYC 7763 → 9V74) | A fact for T06 and R-627, not for S10-C | Record it in the decisions log. No action in S10-C; the next T06 record on that class names the CPU. |
 | Q-D | Holdout THM-09/31: which root wins (the trivial one or the physical one) depends on the platform, away from any on-bound component | A design question for phase logic (T02/T06) | Out of scope. Record it, and list it with T06's platform-dependence items for that owner. |
+
+## 9. Erratum (2026-10-26, build lane)
+
+§8.3 (and the G-R2 row of §6) says "the 60 absent flows". A41 checks 38 absent flows per case: 19 stages, liquid and
+vapour, for C2H5OH. 60 is the size of the released set `Z*` (§2), which also holds absent-component columns that are not
+stream flows. The measured result does not change: on local x86-64 and on the dispatch's ci-x86-64 and ci-aarch64
+final states, 38 of 38 absent flows are exactly `+0.0` in C-MW and in C-EW, none `−0.0` (WO-R5 `5d1c123f`).
