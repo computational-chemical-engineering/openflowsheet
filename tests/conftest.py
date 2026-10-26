@@ -24,6 +24,17 @@ ALPHA_TAG_COMMIT = "423ae9c54d903f9dcf0ea90fe9639222c1acbda4"
 RELEASE_0_2_0_COMMIT = "5c82b4cc40dd4fefd3dbce45352910006e5dee13"
 
 
+#: Lines a test reports on every run, passing or failing; `pytest_terminal_summary` prints them
+#: (R-796, C1: T07 THM-09/4's uncapped record length, so CI's `-q` logs carry it).
+TERMINAL_REPORT: list[str] = []
+
+
+def pytest_terminal_summary(terminalreporter: Any) -> None:
+    """Print `TERMINAL_REPORT`'s lines at the end of the run."""
+    for line in TERMINAL_REPORT:
+        terminalreporter.write_line(line)
+
+
 def _git_ok(*arguments: str) -> bool:
     completed = subprocess.run(["git", *arguments], cwd=REPO_ROOT, capture_output=True)
     return completed.returncode == 0
