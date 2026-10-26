@@ -790,6 +790,22 @@ ADR 0049 C4 gains: "T1–T5 are certified for the committed record sets only; a 
 conventions has P1–P3 unchecked (S10C-spec §11 E4)." An admission-time P1–P3 check is deferred to the package that makes
 the provider selectable in flowsheets (design §7 Q1). That deferral is the default of a decision recorded in R-781.
 
+
+## 12. Amendment 2 (2026-10-26, design lane `architect`): A41 asserts the absent flows exactly zero (R-785)
+
+Source: `docs/derivations/S10C-absent-component.md` §8.3 (R-782's after-CI amendment; review
+`docs/reviews/S10C-r782-review.md` F2). This amendment is normative and replaces the text it names. No registered value,
+tolerance, state or YAML entry changes.
+
+- **S10C.A41 (§6 table), tolerance column.** "absent flows ≤ that stage's flow tolerance" becomes "absent flows `== 0.0`
+  exactly (R-785); the tolerance check also applies". The comparison is IEEE equality, which ignores the sign of zero.
+  It covers every equilibrium stage's liquid and vapour flow of the absent component, in C-MW and in C-EW.
+- **OQ-2 (§7.4).** The default "Assert only ≤ the stage's flow tolerance; record exactness" is superseded. Exactness is
+  asserted.
+- **Why.** Since R-782 the absent set is invariant at its bound on every machine, by IEEE products with exact zeros and
+  the rule's exact assignment (note §4.3). Before R-782, the measured 1.26e-18 and 2.18e-22 mol/s were the roundoff lift
+  that R-782 removes. R-780's "exact zeros are not required" is superseded for these two cases.
+
 ---
 
 ## Appendix A. Sanity values (copied from `reference_values.yaml`; the YAML governs)

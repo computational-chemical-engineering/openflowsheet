@@ -237,6 +237,9 @@ logged the acting iterations; in mode `apply` it applied the rule.
   exhausted 10 000.
 - **PTC-R1 (T08), all 882 runs (441 starts × 2 arms):** no acting iteration, nothing moved.
 
+*Amended 2026-10-26 (§8.1–§8.2, R-784).* The CI dispatch adds the aarch64 and CI x86-64 results, including THM-09/03 on
+ci-aarch64 (`F-BUDGET` → `F-FALSE-SUCCESS-CAUGHT`), which this local table could not show.
+
 ### 4.7 Registered records that move, and the rulings
 
 These rulings are part of R-782. None of them edits a budget constant, a tolerance, a recorded run or a case.
@@ -276,6 +279,8 @@ These rulings are part of R-782. None of them edits a budget constant, a toleran
    ref-x86-64. **These are R-782's declared consequence, not a regression.** Run 2's gate verdict stands, and any new
    run is a further record. R-782 is a correctness remedy to the solver, the route R-087 names ("remedies change the
    solver"). It is not a cost remedy, so R-087's result-inertness clause for cost remedies does not apply.
+   *Amended 2026-10-26 (§8.1, R-784):* THM-09/03 on ci-aarch64, `F-BUDGET` → `F-FALSE-SUCCESS-CAUGHT`, is one of these
+   declared consequences, and item 4's machine-class map applies to every class, not only aarch64 (§8.2).
 
 ## 5. Work orders (build lane, `opus-engineer`; dependency order)
 
@@ -290,6 +295,8 @@ Each WO is one commit on `wp/S10C`, with a message naming S10-C and R-782. Decis
 | **WO-R4** manifest | Regenerate the S10-C evidence manifest at the final head with its generator. A40–A42 now carry the aarch64 run, and G1 is re-run. Run the T08 harvest only if the generator's `--check` requires it. | Manifest `tested`; `reviewed` not set. |
 | **Review** | One focused `reviewer` pass on WO-R1 and WO-R2 against this note: a numerics change in the Newton core. | Verdict recorded. Merge per CLAUDE.md: full gate, CI green on both architectures. |
 
+*Amended 2026-10-26:* WO-R5 (F2) and WO-R6 (F1) come before WO-R4; the order from WO-R4 on is §8.5's.
+
 ## 6. Verification gates
 
 | Gate | Invariant | Measured how | Pass criterion | Configurations |
@@ -300,7 +307,7 @@ Each WO is one commit on `wp/S10C`, with a message naming S10-C and R-782. Decis
 | **G-R4** identity | §4.4: nothing outside D moves | The full suite at WO-R2 step 1. `scripts/s10c_identity.py` and `scripts/s08_identity.py`, with base trees as registered. The T02–T07, T05b and K05 identity keys through their tests. | Every test outside D passes unchanged. The only failures at WO-R2 step 1 are the four that §4.7 items 3–4 name. `S10C-IDENTITY PASS n=858 changed=[]`, and S08's registered pass line. | local x86-64 |
 | **G-R5** moved records | The solves in D still meet their registered criteria | The assertions as registered, and §4.7's amended witnesses | All pass at registered tolerances. A93 capped: exactly 100 and 100 on all three starts; uncapped: `SUCCESS`. T07: every `k` and every record interrupt correctly, uncapped and capped. No tolerance, case, budget constant or recorded run is edited. | local and CI |
 | **G-R6** cost | Negligible overhead | G9's SYN-001 S02/S08 timings (S10-C design G9) before and after WO-R2, on the same machine, 3 repetitions | Median change ≤ +2 % | local |
-| **G-R7** ensemble | No start regresses, on either class | The T06 ensemble, nominal and holdout, before (WO-R1) and after (WO-R2) locally, and the dispatch on both classes against the same-class committed run 2r and holdout1 records | Locally, the moved starts and class transitions equal §4.6's table. On every class, no start that is `SUCCESS` in the committed same-class record becomes non-`SUCCESS`, and every class change is failure → `SUCCESS`. Any other change stops for the design lane. | local, CI x86-64, CI aarch64 |
+| **G-R7** ensemble | No start regresses, on either class | The T06 ensemble, nominal and holdout, before (WO-R1) and after (WO-R2) locally, and the dispatch on both classes against the same-class committed run 2r and holdout1 records | Locally, the moved starts and class transitions equal §4.6's table. On every class, no start that is `SUCCESS` in the committed same-class record becomes non-`SUCCESS`, and every class change is failure → `SUCCESS`. Any other change stops for the design lane. *Amended 2026-10-26: the CI criterion is §8.2's.* | local, CI x86-64, CI aarch64 |
 
 ## 7. Risks and open questions
 
@@ -312,3 +319,273 @@ Each WO is one commit on `wp/S10C`, with a message naming S10-C and R-782. Decis
 | Q4 | Should the one CI dispatch include the T06 ensemble (2 × 440 starts on each class, up to 180 min per runner), or only the `s10c_diag` job? | Frank's preference (CI minutes) | Include it. It is R-087's "re-run on both machine classes" for a solver remedy, and the only aarch64 evidence that no ensemble start regresses. |
 | Q5 | Land this K03 change inside S10-C, as R-064 landed inside T05b, or as a separate K03 package? | Frank's preference (scope) | Inside S10-C on `wp/S10C`, with its own reviewer pass, following R-064's precedent and the directive to fix rather than register a limitation. |
 | Q6 | The T07 length pin on aarch64 | A fact: G-R3 | §4.7 item 4's machine-class map if the values differ. |
+
+## 8. Amendment 1 (2026-10-26, design lane `architect`): after the CI evidence
+
+**Brief:** `docs/briefs/S10C-r782-ci-ruling.md`. **Register:** R-784 (§8.1–§8.2), R-785 (§8.3), R-786 (§8.4).
+**Evidence:**
+- Dispatch run 40295256025 on `wp/S10C-diag2`, commit `4a4677c4`, which is `1bc65b86` plus the gated diag job.
+- Local runs on exported trees of `f9122cc7` (pre-change, with the WO-R1 detector) and `03ef9e2e` (R-782).
+- Scripts: `docs/derivations/scripts/s10c_r782_gr7.py` (class comparisons) and `s10c_r782_one_start.py` (one start
+  under the detector).
+
+This section is normative where it says so. It edits no recorded run, tolerance, budget constant or case.
+
+The CI artifacts used are kept outside the repository. WO-R4 files them under `evidence/S10c/<commit>/artifacts/`.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `ensemble-ubuntu-latest/run2r-ci-x86-64.json` | `01e012583bb93365a32347e161085c3bc4476dcdd6ad5181b9c2f3b237b290e0` |
+| `ensemble-ubuntu-24.04-arm/run2r-ci-aarch64.json` | `654c0804006ee6fd35df7b2ca36cef644dffea40fb56a6836b32197eee3019db` |
+| `ensemble-ubuntu-latest/holdout1-ci-x86-64.json` | `79c1e9c73591d1857c6c670374ae3b114f69628658858cb1181aa8255490d7c8` |
+| `ensemble-ubuntu-24.04-arm/holdout1-ci-aarch64.json` | `79c12f0aa4f45d7217e743513f35bd75f275b42f3c32b0a9fa69ce6f6ef0ae83` |
+
+### 8.1 THM-09/03 on ci-aarch64: what changed, and the ruling
+
+**The records.**
+
+| Record | Class | Attempts closed | Property calls | Worst ratio |
+| --- | --- | --- | --- | --- |
+| ref-x86-64 runs 1, 2, 2r; ci-x86-64 runs 2, 2r (committed, pre-change) | `F-FALSE-SUCCESS-CAUGHT` | `PHASE_UPDATE_REQUIRED`, `CONVERGED` | 311 | 507999.99999999837 on `S4.T` |
+| ci-aarch64 runs 2, 2r (committed, pre-change; bitwise equal) | `F-BUDGET` | `PHASE_UPDATE_REQUIRED`, `BOUND_BLOCKED`, `EVALUATION_ERROR` | 10 000 | none |
+| R-782 dispatch, ci-x86-64 and ci-aarch64 | `F-FALSE-SUCCESS-CAUGHT` | `PHASE_UPDATE_REQUIRED`, `CONVERGED` | 311 | 507999.99999999837 on `S4.T` |
+| Local ref-x86-64, 12 OpenBLAS kernels (default, Prescott, Core2, Penryn, Dunnington, Nehalem, Sandybridge, Haswell, Zen, Barcelona, Bulldozer, Atom), pre-change and R-782 trees | `F-FALSE-SUCCESS-CAUGHT` | `PHASE_UPDATE_REQUIRED`, `CONVERGED` | 311 | 507999.99999999837 on `S4.T` |
+
+On the local runs the detector counted 0 acting iterations and 0 `_released` calls, on both trees and under all 12
+kernels.
+
+**What the solver returned, and why the verifier caught it.**
+- Under R-782 on aarch64 the solve ends `CONVERGED` after 5 iterations in 2 attempts.
+- The certificate's verdict is `FAILED`, with `false_success_detected`.
+- Its `not_passed` list is `energy_balance.U-PHF`, `energy_balance.envelope`, `independent_split.U-PHF.S2.B`,
+  `independent_split.U-PHF.S2.total` and `phase_admissibility.U-PHF.S2.closure`. There is no rank loss
+  (`rcond_1` = 1.41e-3).
+- This is THM-09's trivial `V → 0` root. T06's verdict (`docs/reviews/T06-verdicts.md`) records it on x86-64 as "failing
+  on energy balance and independent split", and `docs/reviews/T06-review.md` gives it as 5.08 K off in `S4.T`.
+- The event sequence (36 events), the iterations and the certificate's check list equal those of every x86-64 record
+  from run 2 on.
+
+**R-782 is what changed its path on aarch64.** The argument is a chain; no detector ran on aarch64 (§8.6 Q-B).
+1. On x86-64 the start never acts. In every record and under every local kernel, no on-bound component has a nonzero
+   direction entry at any iterate (`_released` is never called). The x86-64 outcome is therefore the pre-change code's
+   exact-Newton outcome, the same with or without R-782.
+2. The committed aarch64 trajectory leaves the x86-64 one at attempt 0's second iteration. That iteration takes a step
+   with no line-search halvings, where x86-64 takes seven. The trajectory then runs `PHASE_UPDATE_REQUIRED` →
+   `BOUND_BLOCKED` → `EVALUATION_ERROR` → budget, which is the lift's pattern of §1 and of the three x86-64 `F-BUDGET`
+   starts. T06's verdict §2.4 describes it in those words.
+3. Under R-782 the aarch64 trajectory equals the x86-64 one in its event sequence, iterations and counters, and in its
+   worst ratio to every printed digit. Only the state's bits differ (`full_state_sha256` `e60162a3…` against x86-64's
+   `916137aa…` / `eae0daa4…`).
+4. Over the interval `6018ebcc` → `4a4677c4` on aarch64, 423 of 440 nominal and 429 of 440 holdout final states are
+   bitwise unchanged. Every start that moved is in a family where R-782 acts: STA-02, THM-07, THM-08, THM-09. By §4.4,
+   a start that moves had an acting iteration on the pre-change code on the same machine.
+5. No x86-64 kernel reproduces aarch64's roundoff on this start. The difference comes from aarch64's own arithmetic, not
+   from which BLAS kernel is chosen, so the local detector cannot see it.
+
+**It is not a regression in substance.**
+- Both classes are failures. S is unchanged by this start on both classes: it moves 434 → 437 only through the three
+  `F-BUDGET` → `SUCCESS`.
+- No unverified answer is delivered as verified. The certificate rejects the state, and the start now fails in 311
+  property calls instead of 10 000.
+- The new class is the start's exact-Newton outcome, which x86-64 reaches on every record and kernel without the rule
+  acting. R-782 replaced aarch64's roundoff by the exact zero of §4.2. The old `F-BUDGET` was the roundoff artifact, not
+  a better outcome.
+- It removes a registered platform dependence. T06's verdict names two per-start outcomes that differ between the
+  architectures (`T06-verdicts.md` §2.3(d) and §5 item 4): THM-09/03's class, and the rescue status of STA-02/0, /2 and
+  /17. Under R-782 both agree across architectures (§8.2).
+- The trivial root belongs to THM-09's starts and the phase logic, and the certificate catches it by design. The only
+  thing that kept aarch64 off it was roundoff seeding an on-bound component, which R-783's "Watch for" (self-coupled
+  absent set) excludes: a seed must come from the initializer.
+
+**Ruling (R-784).** Accepted.
+- THM-09/03 on ci-aarch64, `F-BUDGET` → `F-FALSE-SUCCESS-CAUGHT`, is one of R-782's declared consequences (§4.7 item 5).
+- The rule does not change.
+- G-R7's criterion is amended (§8.2). Its clause "every class change is failure → `SUCCESS`" stopped every failure →
+  failure change as a possible regression. What R-782 claims is narrower: no success is lost, and roundoff at an
+  on-bound component no longer decides an outcome.
+
+### 8.2 G-R7: the amended criterion and its result
+
+**Amended CI pass criterion (normative; replaces G-R7's second and third sentences in §6).** On every machine class,
+compared with the committed same-class record:
+- (a) no start that is `SUCCESS` there becomes non-`SUCCESS`;
+- (b) every class change is either failure → `SUCCESS`, or failure → failure where both of the following hold:
+  - the new class equals the start's class in the same dispatch's R-782 run on every other machine class;
+  - the new class equals the start's class in a committed record of a machine class on which R-782 left that start's
+    class and property-call count unchanged;
+- (c) any other change stops for the design lane.
+
+The local half is unchanged: the moved starts and class transitions equal §4.6's table.
+
+*Why (b) is the right line.* A failure → failure change that lands on the class other platforms reach without the rule
+acting is R-782 removing a roundoff decision, which is the remedy's purpose. A change to a class that no platform reaches
+would be a new failure mode, and it still stops.
+
+**Result** (`s10c_r782_gr7.py classes`, against the committed `run2r-ci-*` and `holdout1-ci-*` files). The CI job stops
+at `a98`, so it never ran the holdout half; that half is completed here from the `holdout1-ci-*.json` artifacts.
+
+| Starts | Class | S | failure → `SUCCESS` | `SUCCESS` → failure | failure → failure | Final states moved in bits |
+| --- | --- | --- | --- | --- | --- | --- |
+| nominal | ci-x86-64 | 434 → 437 | THM-08/03, THM-08/12, THM-09/04 (`F-BUDGET`) | 0 | 0 | 187 |
+| nominal | ci-aarch64 | 434 → 437 | THM-08/03, THM-08/12, THM-09/04 (`F-BUDGET`) | 0 | THM-09/03 `F-BUDGET` → `F-FALSE-SUCCESS-CAUGHT`; (b) holds: ci-x86-64 has that class with 311 calls before and after | 17 |
+| holdout | ci-x86-64 | 436 → 439 | THM-09/24, THM-09/35 (`F-BUDGET`); THM-09/31 (`F-FALSE-SUCCESS-CAUGHT`) | 0 | 0 | 190 |
+| holdout | ci-aarch64 | 436 → 439 | THM-09/24, THM-09/34 (`F-BUDGET`); THM-09/37 (`F-FALSE-SUCCESS-CAUGHT`) | 0 | 0 | 11 |
+
+**G-R7 is met on both classes, nominal and holdout, under the amended criterion.**
+
+**Across the two classes, same dispatch** (`s10c_r782_gr7.py cross`):
+
+| | Before R-782 (committed) | After R-782 |
+| --- | --- | --- |
+| Class disagreements (880 starts) | 5: nominal THM-09/03; holdout THM-09/31, /34, /35, /37 | 0 |
+| Rescue-status disagreements | 11 | 1: STA-01/22, which R-782 moves on neither class |
+| S^first, nominal | 370 \| 367 | 379 \| 379 |
+
+These facts are not R-782's, and they are not ruled here (§8.6):
+- **The ci-x86-64 runner CPU changed.** The committed records ran on an AMD EPYC 7763, this dispatch on an AMD EPYC
+  9V74. Most of the 187 and 190 bitwise moves on that class come from the change. A98's bit counts on ci-x86-64 no
+  longer isolate R-782, and its classes moved only as the table shows.
+- **Holdout THM-09/31 stays platform-dependent.**
+  - On ref-x86-64 it is `F-FALSE-SUCCESS-CAUGHT` (241 calls), measured locally on both trees, with no acting iteration.
+  - On ci-aarch64 it is `SUCCESS` (397 calls) before and after R-782, and on ci-x86-64 after (`F-FALSE-SUCCESS-CAUGHT`
+    before). These records do not separate R-782's share of that change from the CPU's.
+  - Here roundoff away from any on-bound component decides between the trivial root and the physical one. That is T06's
+    phase-logic exposure, not the lift.
+- **THM-09/04 cost.** It converges in 2855 property calls on both CI classes, against 424 locally. T07's length pin for
+  it (§4.7 item 4) may therefore differ from 94 on ci-x86-64 as well as on ci-aarch64. The map holds every class's
+  measured value; this is a clarification of item 4, not a design question.
+
+### 8.3 F2: A41 asserts the absent flows exactly zero (R-785)
+
+**Ruling: the reviewer's default, with one precision.** The assertion is IEEE equality `== 0.0`, which ignores the sign
+of zero. It is the predicate that R-064 and R-782 themselves use (`x_i == lo_i`). A signed zero carries no physical
+meaning, so asserting its sign would test arithmetic detail, not the invariant.
+
+**Normative text.**
+- **The test.** `tests/test_s10c_columns.py::test_a41_the_state_is_the_registered_root`, for both registered cases (C-MW
+  and C-EW):
+  - After the tolerance assertion, assert that every entry of `zeros` is `== 0.0`. `zeros` holds the absent component's
+    liquid and vapour flow on each equilibrium stage, 60 per case.
+  - On failure, the message lists each nonzero entry's variable name and value.
+  - Both recorded properties stay.
+  - In the docstring, "absent flows exactly 0.0 or not" becomes "absent flows exactly 0.0 (asserted, R-785)".
+- **The spec.** In S10C-spec A41, the cell "absent flows ≤ that stage's flow tolerance" becomes "absent flows `== 0.0`
+  exactly (R-785); the tolerance check also applies". OQ-2's default is superseded (S10C-spec §12, Amendment 2).
+- **R-780.** For C-MW and C-EW, its "exact zeros are not required" is superseded. Every other part of R-780 stands.
+
+**Why the assertion is safe on every platform.** By §4.3 the invariance follows from IEEE products with exact zeros and
+from the rule's exact assignment. No BLAS result enters it. Measured:
+- G-R2 locally: 320/320 perturbed solves and 4/4 kernels.
+- The dispatch's s10c-diag final states on ci-x86-64 and ci-aarch64: in both C-MW and C-EW, 60 of 60 absent flows are
+  exactly `+0.0`, and none is `−0.0`.
+
+**What a failure means.** Something has reached a solve path where R-782 does not hold the set: T04's PTC, the Anderson
+accelerator, an edge-3 restart whose initializer seeds the absent component, or a partial regression of the rule. It
+goes to the design lane. It is never relaxed back to the tolerance check without a new register entry.
+
+### 8.4 F1: `_released` without recursion, before the merge (R-786)
+
+**Ruling.** The reviewer's remedy is accepted, but its timing changes. It lands on `wp/S10C` before WO-R4, as its own
+commit, WO-R6.
+- *Why before the merge.* F2 already forces a code commit, a full gate and CI on both architectures before the merge, and
+  F1 can share that gate and that CI. After the merge it would need its own branch, gate and CI, and `main` would carry
+  R-782's per-iteration call into a recursive, superlinear function in the meantime.
+- *No reviewer pass.* The change is inert by construction, and G-R8's bit identity is the proof.
+- *Fallback.* If WO-R6 fails G-R8, or is not ready when everything else is, revert its commit and merge without it. It
+  then becomes the first commit of a follow-up branch, `wp/K03-released`, which must land before any case with
+  `|Z₀| > 60` is registered.
+
+**Design (normative).** The name, the signature
+`_released(x, opening, lower, residual, jacobian) -> tuple[int, ...]`, the docstring's contract and the result all stay
+the same. Only the algorithm changes. Let `m × n` be `jacobian`'s shape.
+
+1. `on_bound = isfinite(lower) & (x == lower) & (opening == lower)`. If no entry is set, return `()`.
+2. **Closed rows, vectorized.**
+   - Take `rows = csr_matrix(jacobian)`, as today, with arrays `indptr`, `indices` and `data`.
+   - Set `kept = data != 0.0` and `row_of = repeat(arange(m), diff(indptr))`.
+   - Set `n_kept = bincount(row_of[kept], minlength=m)` and
+     `n_in = bincount(row_of[kept & on_bound[indices]], minlength=m)`.
+   - Then `closed = (asarray(residual, float64) == 0.0) & (n_kept > 0) & (n_in == n_kept)`.
+   - If no row is closed, return `()`.
+
+   This is today's per-row filter, entry by entry: `F_r == 0.0`, at least one nonzero entry, and every nonzero entry in
+   a `Z₀` column.
+3. **Compact incidence `B`.**
+   - `z0 = flatnonzero(on_bound)` (ascending); `local[z0] = arange(len(z0))`; `crow[closed_rows] = arange(k)`.
+   - `B` is the `k × len(z0)` CSR matrix built from the entries with `kept & closed[row_of]`, at
+     `(crow[row_of], local[indices])`, with **data 1.0, never `J`'s values**. Duplicate entries therefore sum to a nonzero
+     value, as today's per-entry loop counts them, and cannot cancel.
+4. **Maximum matching.**
+   - `match = scipy.sparse.csgraph.maximum_bipartite_matching(B, perm_type="column")`. This is an iterative
+     Hopcroft–Karp in compiled code. `match[r]` is row `r`'s column, or −1.
+   - `row_of_col[match[match >= 0]] = flatnonzero(match >= 0)`, and −1 elsewhere.
+5. **`outside`, by a worklist.**
+   - Start with `outside = (row_of_col < 0)` and push those columns onto a `collections.deque`.
+   - Pop a column `u`. For each row `r` in column `u` of `B.tocsc()`, let `c = match[r]`. If `c >= 0` and
+     `not outside[c]`, set `outside[c]` and push `c`.
+   - Each column is pushed at most once.
+6. **Released set and count.**
+   - `released = ~outside`. If it is empty, return `()`.
+   - `count` is the number of rows of `B` with no entry in an `outside` column (one `bincount` over `B`'s entries).
+   - If `count != released.sum()`, return `()`.
+7. Return `tuple(int(i) for i in z0[released])`, ascending, as Python ints.
+
+**Why the result is identical (inertness).**
+- Steps 1–3 select today's closed-row family by today's predicates.
+- Today's Kuhn loop, one augmenting search per row from an empty matching, yields a maximum matching (Berge), and so
+  does step 4.
+- Today's fixed-point loop and step 5 compute the same set: the columns reachable from an unmatched column along
+  alternating paths (a non-matching edge from column to row, then the matching edge from row to column). By the
+  Gallai–Edmonds / Dulmage–Mendelsohn theorem, that set is exactly the set of columns left uncovered by *some* maximum
+  matching. It does not depend on which maximum matching was found.
+- `outside`, `released`, the count and the returned tuple are therefore identical for every input on which today's code
+  returns. The new code also returns where today's raises `RecursionError`.
+- `_bound_aware_step` then returns the identical tuple, so every solve is bitwise unchanged (the argument of §4.4).
+
+**Cost.**
+- Step 2 is `O(nnz J)`, vectorized.
+- Step 4 is `O(nnz B · √|Z₀|)`, in compiled code.
+- Step 5 is `O(nnz B)` in Python.
+- There is no recursion, and the common path (`C = ∅`) does not call the function at all.
+
+### 8.5 Work orders after WO-R3, and G-R8
+
+This replaces §5's order from WO-R4 on. Each WO is one commit on `wp/S10C` whose message names S10-C and the register
+entry. Run lines go to `docs/S10C_DECISIONS.md` under "R-782 (absent-component release)".
+
+| WO | Content | Acceptance |
+| --- | --- | --- |
+| **WO-R5** F2 (test and spec) | §8.3: the A41 assertion and its docstring. The S10C-spec amendment is already committed with this note. | A41 passes locally on both cases. A scratch mutation that sets one absent flow to `1e-300` before the assertion makes it fail (not committed). |
+| **WO-R6** F1 (inert K03) | §8.4 in `numerics/newton.py`, with the docstring citing R-786. New tests in `tests/test_k03_released.py`. | G-R8 |
+| **WO-R4** manifest | As §5, plus three citations. G-R7 cites §8.2 (both halves, both classes, the amended criterion) and the artifact hashes above. G-R3 cites the s10c-diag artifacts. The manifest states that WO-R5 and WO-R6 are inert to every solve, so the dispatch evidence at `4a4677c4` holds for the merge head. | Manifest `tested`; `reviewed` not set |
+| **Merge** | The full gate once, at the head after WO-R6 (after WO-R5 if WO-R6 is dropped). CI green on x86-64, aarch64 and default-install. **No new CI dispatch:** WO-R5 only changes a test, and WO-R6 is inert. | per CLAUDE.md |
+
+**G-R8 (F1 inertness).** Measured locally (x86-64). Every item must pass.
+1. **Brute-force oracle.**
+   - 2 000 seeded instances with `|Z₀|` from 1 to 10. Each has `k ≤ |Z₀|` closed rows that carry a planted injective
+     row → column assignment, plus random extra entries inside `Z₀` with probability 0.1, 0.3 or 0.6. Each also has open
+     rows: a nonzero residual, or an entry outside `Z₀`. Some instances store explicit zeros.
+   - The oracle enumerates every nonempty `Z ⊆ Z₀` and keeps those with `closed(Z) == |Z|`. `Z*` is their union.
+   - The planted matching makes `closed(Z) ≤ |Z|`, so `Z*` is itself tight. Assert that.
+   - Assert that `_released` returns `tuple(sorted(Z*))`, or `()` when no tight set exists.
+2. **Old against new.**
+   - Copy R-064's recursive implementation verbatim into the test module as `_released_r064`.
+   - Run 2 000 seeded instances with `|Z₀|` up to 300. They include instances that violate Hall's condition (more
+     closed rows than columns on some subset), stored zeros, duplicate entries, and residual entries equal to `−0.0`.
+   - The two functions return identical tuples on every instance.
+3. **Long chains.**
+   - One absent component over 1 000 stages: `|Z₀| = 2 000`, a column-shaped closed block, with rows in stage order and
+     reversed. It returns all 2 000 indices, with no `RecursionError`.
+   - A 10 000-column block completes.
+   - The times go to the decisions log and are not asserted. Expected: well under 0.1 s.
+4. **Existing tests.** B33c i–v and G-R1 i–v pass unchanged, and so do the 12 tests of D.
+5. **Identity scripts.** `S10C-IDENTITY PASS n=858 changed=[]`, and S08's registered pass line.
+
+### 8.6 Open questions (each with the default work proceeds on)
+
+| # | Question | Needs | Default |
+| --- | --- | --- | --- |
+| Q-A | F1 before the merge or after it | Frank's preference (scope) | Before the merge, as WO-R6, with §8.4's fallback. It shares F2's gate and CI. |
+| Q-B | An aarch64 detector run on `f9122cc7` over THM-09/03 (and STA-02/00, /02, /17) to observe the acting iteration directly | A fact; costs one CI dispatch (Frank's preference: CI minutes) | No dispatch. The ruling holds whatever the cause (§8.1, "not a regression in substance"). If an aarch64 dispatch is made later for another reason, add the detector over these four starts. |
+| Q-C | The ci-x86-64 runner CPU changed (EPYC 7763 → 9V74) | A fact for T06 and R-627, not for S10-C | Record it in the decisions log. No action in S10-C; the next T06 record on that class names the CPU. |
+| Q-D | Holdout THM-09/31: which root wins (the trivial one or the physical one) depends on the platform, away from any on-bound component | A design question for phase logic (T02/T06) | Out of scope. Record it, and list it with T06's platform-dependence items for that owner. |

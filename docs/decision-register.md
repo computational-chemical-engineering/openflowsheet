@@ -15415,3 +15415,96 @@ corrected by a dated erratum. Two items are left for a decision, with the review
 - A self-coupled absent set: one whose only source rows are products with other members of `Z*`. It is now held
   deterministically at the trivial root, and any seed must come from the initializer, never from roundoff.
 - A solve in a spawned worker. The WO-R1 detector does not see it.
+
+## R-784 — R-782 after CI: THM-09/03 on aarch64 (`F-BUDGET` → `F-FALSE-SUCCESS-CAUGHT`) accepted; G-R7's criterion amended; G-R7 met on both classes
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), on G-R7's stop (brief `docs/briefs/S10C-r782-ci-ruling.md`) |
+| Normative text | `docs/derivations/S10C-absent-component.md` §8.1–§8.2 (amends §4.6, §4.7 item 5, §6 G-R7) |
+| Evidence | Dispatch run 40295256025 (`4a4677c4`), artifacts by SHA-256 in note §8. On every x86-64 record since run 1, and under 12 local OpenBLAS kernels on the pre-change and R-782 trees, THM-09/03 is `F-FALSE-SUCCESS-CAUGHT`: 311 calls, worst 507999.99999999837 on `S4.T`, 0 acting iterations. Under R-782, aarch64 reproduces that trajectory exactly (events, iterations, counters, worst). Run 2 on aarch64 was the lift's pattern (`BOUND_BLOCKED`, then budget). G-R7, both classes: nominal 434 → 437, holdout 436 → 439, 0 `SUCCESS` → failure. Class disagreements between ci-x86-64 and ci-aarch64: 5 → 0 of 880. Script `docs/derivations/scripts/s10c_r782_gr7.py` |
+| Affected packages | S10-C (G-R7); T06 (ensemble records, not re-scored or edited) |
+
+**Decision.**
+- THM-09/03 on ci-aarch64 is a declared consequence of R-782, not a regression. The new class is the start's exact-Newton
+  outcome, which x86-64 reaches without the rule acting.
+- The trivial `V → 0` root is caught by the certificate. The start fails in 311 calls instead of 10 000, and one of the
+  per-start platform dependences that T06's verdict registered is gone.
+- The rule does not change.
+- G-R7's CI criterion becomes:
+  - (a) no `SUCCESS` start is lost;
+  - (b) every class change is failure → `SUCCESS`, or failure → failure onto the class that the same start has on every
+    other class in the dispatch, and on a class where R-782 left it unchanged;
+  - (c) anything else stops.
+- The holdout half, which the CI job never reached, is completed from the artifacts. G-R7 is met on both classes,
+  nominal and holdout.
+
+**Rejected alternatives, and why.**
+- *Seeding or otherwise changing the rule so that THM-09/03 leaves the trivial root:* that is a roundoff or ad hoc seed
+  on the exact path. R-783's "Watch for" (self-coupled absent set) excludes it.
+- *Re-scoring or editing T06 run records:* forbidden by R-087.
+- *Keeping "every class change is failure → `SUCCESS`" and blocking:* it treats a failure → failure change as a possible
+  regression even when the change removes a platform dependence.
+- *A CI detector dispatch before deciding:* the ruling holds whatever the cause. It stays optional (note §8.6 Q-B).
+
+**Watch for.**
+- A failure → failure change onto a class that no machine class shows: it stops under (b).
+- ci-x86-64's runner CPU changed (EPYC 7763 → 9V74). A98's bit counts on that class no longer isolate a solver change.
+- Holdout THM-09/31's platform dependence: the trivial root against the physical one, decided away from any on-bound
+  component. It is not R-782's.
+
+## R-785 — A41 asserts C-MW's and C-EW's absent-component flows exactly zero (supersedes R-780's "not required" for these two cases)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), on review F2 (`docs/reviews/S10C-r782-review.md`, R-783) |
+| Normative text | `docs/derivations/S10C-absent-component.md` §8.3; `docs/derivations/S10C-spec.md` §12 (Amendment 2) |
+| Evidence | G-R2: absent flows exactly `+0.0` in 320/320 perturbed solves and 4/4 kernels (local x86-64). CI s10c-diag final states, ci-x86-64 and ci-aarch64: 60/60 absent flows exactly `+0.0` in C-MW and in C-EW, none `−0.0`. Note §4.3: the invariance holds by IEEE products with exact zeros |
+| Affected packages | S10-C (A41) |
+
+**Decision.**
+- In both C-MW and C-EW, A41 asserts that every equilibrium stage's liquid and vapour flow of the absent component
+  is `== 0.0` (IEEE equality, sign-agnostic).
+- The tolerance check also stays.
+- R-780's "exact zeros are not required" is superseded for these two cases. Every other part of R-780 stands.
+
+**Rejected alternatives, and why.**
+- *Record only (R-780 as it was):* a partial regression of R-782 would pass on x86-64 (review F2).
+- *Assert the sign (`+0.0`):* the rule's own predicate ignores the sign of zero, and a sign carries no physical meaning.
+
+**Watch for.** An A41 failure means that a solve path R-782 does not cover has reached the case: PTC, Anderson, or an
+edge-3 initializer seeding the absent component. It goes to the design lane, never back to the tolerance check without a
+new entry.
+
+## R-786 — `_released` uses an iterative maximum matching and a worklist, landed before the S10-C merge (review F1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), on review F1 (`docs/reviews/S10C-r782-review.md`, R-783) |
+| Normative text | `docs/derivations/S10C-absent-component.md` §8.4 (design), §8.5 (WO-R6, gate G-R8) |
+| Evidence | Review F1 probe: 0.4 ms at `\|Z₀\|` = 60, 1.5 s at 10 000, and `RecursionError` for one absent component over 1 000 stages. Inertness: `Z*` is matching-independent (Gallai–Edmonds / Dulmage–Mendelsohn), so the returned tuple is unchanged; G-R8 is the proof once WO-R6 runs |
+| Affected packages | K03 (Newton core); S10-C |
+
+**Decision.**
+- `_released` keeps its name, signature and result. The algorithm becomes:
+  - the closed-row filter, vectorized;
+  - `scipy.sparse.csgraph.maximum_bipartite_matching` on a 0/1 incidence;
+  - a breadth-first worklist for the columns reachable from unmatched columns;
+  - the count recheck, unchanged.
+- It lands on `wp/S10C` before WO-R4 as its own commit, sharing F2's gate and CI. There is no reviewer pass: bit
+  identity is the proof.
+- If it fails G-R8, or is late, it is reverted and moves to `wp/K03-released`. That branch must land before any case
+  with `|Z₀| > 60` is registered.
+
+**Rejected alternatives, and why.**
+- *After the merge (the reviewer's default):* it would need its own branch, gate and CI, and meanwhile `main` would
+  carry a per-iteration recursive call.
+- *Raising the recursion limit:* it moves the failure, keeps the superlinear cost, and risks an interpreter stack
+  overflow.
+- *Building `B` from `J`'s values:* stored duplicates could cancel, which today's per-entry loop never lets happen.
+
+**Watch for.** Any G-R8 difference between the old and new results. That would mean the closed-row filter changed, since
+the matching cannot change the result. Fix the filter; never accept a moved tuple.
