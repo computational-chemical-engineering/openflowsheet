@@ -274,6 +274,9 @@ No registered S01, column or flash record moves (F5; §5.2 changes no column com
   over all S01 closures; the manifest records the C1–C5 value).
 - **B3** (columns unchanged) `column_solve._saturation_pairs(spec, …) == cascade_solve.saturation_pairs(spec.unit_id,
   spec.components, …)` bitwise at F1's Stage-A state (0.379 K at stage 4) and at J8's root; S08's item-6 tests pass untouched.
+  *Erratum (2026-10-26, design lane `reviewer`, S08b review):* 'S08's item-6 tests pass untouched' holds for every asserted
+  value; one stub target moves — `tests/test_s08_item6.py::test_a_band_answer_other_than_inside_is_a_failure` patches
+  `band_temperature` in `cascade_solve`, where §5.2's moved body resolves it (build decision WO3-1).
 
 ## 8. Work orders (build lane, about 150k context each, in order)
 
@@ -325,6 +328,10 @@ No registered S01, column or flash record moves (F5; §5.2 changes no column com
 - **G3 — the scan, repeated on the branch:** `run_suite.py observe` + `scan_report.py` on the final commit (the probe skips M1
   when `_is_item` no longer exists, so M1 reports `records 0`): S1's S01 rows unchanged (largest error ≤ 2.5e-6 K), S1's
   flash-type rows identical to `measured.txt` (no flash behaviour changed), and the suite counts equal G2's.
+  *Erratum (2026-10-26, reviewer):* `measured.txt` predates S10-C; on any later tree S10-C's tests add 46 kernel-agreeing
+  flash-type splits to the `[0.001, 2)` bucket. 'Flash-type rows identical to `measured.txt`' reads: identical to the same scan
+  of the merge base `B`, both trees dealt as G1 deals them (`s08b_identity.shards`); the three near-trivial buckets also equal
+  `measured.txt`'s (build decisions WO4-2, WO4-3).
 
 ## 10. Risks and open questions (each with a default)
 
@@ -346,6 +353,8 @@ No registered S01, column or flash record moves (F5; §5.2 changes no column com
 - **Q5 — scope (build lane's call within these bounds): ledger linkage of the manifest.** *Default:* `requirements: [D09, X31]`
   (D09: the restart rule; X31: invalid phases in column-family cases), `depends_on: [S08, S01]`, verdicts `null`; logged as a
   build decision.
+  *Erratum (2026-10-26, reviewer):* the frozen manifest schema admits only `^[DA][0-9]{2}$`; the manifest carries
+  `requirements: [D09]` and names X31 in a limitation; `depends_on` is not a manifest field (build decision WO4-1).
 - **Risk — S01's clause raises on a correct, loosely converged, low-traffic stage** (R-735's limitation, now for cascades). Watch
   for an `AcceptanceDefectError` naming `§8 saturation:` on a stage with `L_j V_j < 0.1 (mol/s)²`; the response is a design-lane
   ruling, not a looser `τ₆`.

@@ -157,3 +157,13 @@ Design: `docs/derivations/S08b-design.md` (R-790 to R-794). Branch `wp/S08b`. Ap
   every record-k interrupt still run); ref-x86-64 94 and ci-aarch64 136 stay; the failure message now names the CPU model.
   Alternative: pin per (class, CPU model) — needs a measured length per runner CPU, which no run has recorded. Reversible by:
   reverting this commit. For the design-lane ruling round (with S10-C's G2 and unregistered-class decisions).
+
+## Correction (2026-10-26, from the S08b review F1)
+
+The WO-3 entry's fact "a cascade root's last bits depend on which caches earlier tests warmed" is wrong. The cascade solve is
+deterministic (repeats bit-identical in one process, at base and head). The cause is a pre-existing test-isolation bug: the
+session memo `solved("C2")` (`tests/test_s01_cascade_wo2.py:62-71`) is first filled by
+`test_s01_cascade_wo3.py::test_a17_forced_edge_3_from_the_presolve_root` while `_forced_edge_3` patches `eo_recovery_due` to
+`True`, so in a process where wo3 runs without wo2 first, the memo holds C2's forced edge-3 root (2.0096e-06 K) instead of A06's
+root (7.36e-09 K). B1's spy form stays (a sound wiring test). Follow-up on main: B1's docstring text (review F1), the memo
+filled before the patches in `_forced_edge_3`, and the `_proposal`-level `items` test (review F2).
