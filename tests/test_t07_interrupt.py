@@ -45,7 +45,7 @@ import pytest
 from conftest import REPO_ROOT
 from t06_ensemble_support import STARTS_FILE, ensemble_cases
 
-from benchmarks.t06 import ensemble
+from benchmarks.t06 import ensemble, generator
 from openflowsheet.application.jobs.interrupt import (
     JobInterrupted,
     interrupt_check,
@@ -237,7 +237,7 @@ def test_interrupt_at_record_k(case_id: str, start: int | None) -> None:
         if machine in THM09_RECORDS:
             assert len(ref.lengths) == THM09_RECORDS[machine], (
                 machine,
-                ensemble.generator._cpu_model(),
+                generator._cpu_model(),
             )
     else:
         assert len(ref.lengths) == {"STR-01": 8, "NET-03": 126}[case_id]
