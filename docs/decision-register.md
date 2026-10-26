@@ -14378,6 +14378,9 @@ record why.
 - *Fix them inside S08.* That would break S08's bit-identity premise and widen it into the shared contract.
 
 **Watch for.** Any column cause string with an empty change list, cited as evidence of a phase decision.
+*Answered (2026-10-26, S08b):* (a) is fixed by R-790 (items by declaration; column and cascade stage ids are units, so
+every column change list is filled in); (b) by R-791 and R-792 (S01 cascades get S02 §8 item 6; no `TWO_PHASE` rule in the
+contract). See `docs/derivations/S08b-design.md`.
 
 ---
 

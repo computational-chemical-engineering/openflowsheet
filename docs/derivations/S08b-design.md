@@ -3,6 +3,8 @@
 **Status:** Proposed, 2026-10-26, design lane (`architect`). Branch `wp/S08b`, cut from main `53228775`. Brief
 `docs/briefs/S08b-contract-follow-ups.md`. Register **R-790 to R-794** (main ended at R-752; S10-C holds R-760 to R-781 on
 `wp/S10C`; R-753 to R-759 and R-782 to R-789 are unused by design, so the two blocks cannot collide).
+*Erratum (2026-10-26, build lane, S08b WO-4):* S10-C used R-782 to R-786 (merged at `8654aabc`), so the unused ids are
+R-753 to R-759 and R-787 to R-789; no id collides (`docs/S08b_BUILD_DECISIONS.md` WO-0).
 **Evidence:** `docs/derivations/scripts/s08b_design/` — a pytest probe (`s08b_probe.py`), a sharded suite driver, the 52
 S08-configuration record comparison, the scan report, and their output in `measured.txt`. Measured on main `53228775` code
 (CoolProp 8.0.0 is not installed on the workstation, so its 3 076 tests skipped). Probes only: not production code, generators
