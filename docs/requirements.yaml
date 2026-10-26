@@ -1290,7 +1290,8 @@ packages:
     # S10-C (composition-dependent K for `wilson-ig-v1`: the constant-beta point, the PH kernel, the column; ADR 0049)
     # has no package entry: the frozen ledger schema admits only `^[PKTMSR][0-9]{2}$` ids, as for T05b and M07a. It
     # depends on S10 and S08; its manifests are `evidence/S10c/<commit>/manifest.json` (docs/S10C_DECISIONS.md W5-2).
-    # S10's status is not moved by them.
+    # S10's status is not moved by them. WO-5: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json is
+    # `tested` (46 of 48 checks pass; gate and CI `unsupported`, they run before merge).
     status: tested
     evidence:
       - evidence/S10/f6f27c3f8aca7cb360287e531cd03e2033c32e16/manifest.json
