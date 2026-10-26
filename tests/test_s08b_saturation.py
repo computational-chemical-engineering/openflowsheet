@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import re
+from typing import Any
 
 import pytest
 from test_s01_cascade_wo1 import CASES, REFERENCE, UNIT, _spec
@@ -58,21 +59,30 @@ def test_the_constants_are_the_registered_ones_and_moved_not_copied() -> None:
 def test_b1_a_patched_tolerance_raises_exactly_the_six_saturation_failures(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Kills: the clause left out of `acceptance_failures`, or not reached from `solve_cascade`."""
-    expected = _cascade_pairs("C2")
-    assert set(expected) == {1, 2, 3}
+    """Kills: the clause left out of `acceptance_failures`, or not reached from `solve_cascade`.
+    The expected values are the pairs of the raising solve itself (a spy on `saturation_pairs`):
+    a solve's last bits depend on which caches earlier tests warmed, so a cached root of another
+    test is not this solve's state."""
+    seen: list[dict[int, tuple[float, float]]] = []
+
+    def spy(*args: Any) -> dict[int, tuple[float, float]]:
+        seen.append(saturation_pairs(*args))
+        return seen[-1]
+
     monkeypatch.setattr(cascade_solve_module, "TWO_PHASE_SATURATION_TOLERANCE", -1.0)
+    monkeypatch.setattr(cascade_solve_module, "saturation_pairs", spy)
     with pytest.raises(AcceptanceDefectError) as raised:
         solve_cascade(_spec(REFERENCE["cases"]["C2"]), PROVIDER)
+    assert len(seen) == 1 and set(seen[0]) == {1, 2, 3}
     failures = raised.value.failures
     assert len(failures) == 6, failures
-    assert all(failure.startswith(SATURATION_PREFIX) for failure in failures), failures
+    assert all(_FAILURE.fullmatch(failure) for failure in failures), failures
     assert failures == tuple(
         f"§8 saturation: TWO_PHASE stage {stage}: {side} error {error!r} K"
         for stage in (1, 2, 3)
-        for side, error in zip(("bubble", "dew"), expected[stage], strict=True)
+        for side, error in zip(("bubble", "dew"), seen[0][stage], strict=True)
     )
-    assert all(_FAILURE.fullmatch(failure) for failure in failures), failures
+    assert all(0.0 <= error <= 1e-5 for errors in seen[0].values() for error in errors)
 
 
 def test_b2_every_registered_cascade_root_passes_with_margin() -> None:
