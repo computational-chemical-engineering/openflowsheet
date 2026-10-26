@@ -132,3 +132,18 @@ keeps S11) or from units other than the column.
 - MEASURED (WO-4, G1 at `17c19fe6`): `S10C-IDENTITY PASS n=858 changed=[]`.
 - MEASURED (WO-4, G2 at `c1c92533`): `git diff --stat ffcb387f..HEAD` empty over the frozen paths; under `tests/` only new files plus the S03 A04 amendment (WO-3).
 - MEASURED (WO-4 at `c1c92533`): `pytest -q tests/test_s01_*.py tests/test_s02_*.py tests/test_s06_*.py tests/test_s03_*.py tests/test_s08_*.py tests/test_t05*.py tests/test_s10_*.py tests/test_s10c_*.py`: 2612 passed (394 s); `ruff check .`, `ruff format --check .` (882 files), `mypy` (250 files) clean; `tests/test_s10c_columns.py` also mypy-clean on its own.
+
+## WO-6 (review must-fix F1): G3 against its registered references
+
+`tests/test_s10c_band_references.py`: S10C.A01–A06 over all 103 points of `ref.band_points` (23 states), the two
+`ref.theorems.T2` states, and A61. Expectations and tolerances only from `benchmarks/s10c/reference_values.yaml`.
+A60 is a manifest command (WO-5's generator), not a test: it takes 75 s.
+
+- DECISION W6-1: A05's vanishing `tm` is evaluated at the implementation's returned `T_d` (as `test_s10c_band_point.py` did), not at `ref`'s `T`; A01 already ties the returned `T` to `ref` within 1e-9 K, and the spec's floor (50-digit `tm*` at the transcription's `T_d`) is stated for the computed point. Alternative: evaluate at `ref`'s `T`. Reversible by: the state in `test_a05_the_liquid_trial_vanishes_at_every_inside_dew_point`.
+- DECISION W6-2: A02's spy wraps `gamma_phi._Point.temperature` (class attribute, `pytest.MonkeyPatch.context`) and forwards every call with its arguments unchanged; each point is solved once per module through `saturation_band.band_temperature` and cached for A01–A06. No production field is added (E3). Alternative: call `gamma_phi.band_point` directly. Reversible by: `_solved`.
+
+## WO-6 run log
+
+- MEASURED (WO-6, `pytest tests/test_s10c_band_references.py`): 347 passed (0.9 s). Over the 103 points: worst `|ΔT|` 5.68e-13 K, `|Δx|` 4.19e-14, relative `|ΔK|` 2.22e-13 (the YAML's `measured_floors.band_point` to three digits); temperature solves equal `iterations_measured` at all 103 points, max 61 (BP-R02, β = 1).
+- MEASURED (WO-6, mutations; each a temporary edit of a committed file, run against the named test, restored by `git checkout`; tree clean after): slowed contraction (`x^m` damped by 0.1) → A02 68/103 fail; an extra temperature solve at β = 0 → A02 23/103 fail; absent-component K × 1.001 → A01 77/103 fail (every point with an absent component); MB1 (`DELTA_BETA` = 1e-8) → A01 54/103 fail; MB3 (`k_values` at the feed composition) → A06 62/103 fail; `below`/`above` swapped → A03 8/12 fail; `below`/`above` carrying the clamped T → A03 8/12 fail; the temperature solve accepting `|g| < 1e-4` → A04 2/2 fail; returned T + 1e-9 K → A05 (dew) 20/20 fail; provider `tm` + 2e-12 → A05 (T2) 2/2 fail; a comment appended to `benchmarks/s10/records.yaml` → A61 1/2 fail.
+- MEASURED (WO-6, A60): `python docs/derivations/scripts/s10c_reference.py --check` → "118 claims hold; reference_values.yaml matches", exit 0, 75 s.
