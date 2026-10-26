@@ -433,7 +433,7 @@ requirements:
   - id: D19
     title: External references
     blueprint_ref: "§1 D19"
-    packages: [T06, S03, S10, R01]
+    packages: [T06, S03, S09, S10, R01]
     minimum_evidence: "Matched-model inputs, independence disclosure and verdicts"
     # S03 (column reference comparisons against DWSIM and IDAES): its manifest `evidence/S03/930aad1b...`
     # is `tested` and lists D19. The `verdict` agent's document (docs/reviews/S03-verdicts.md, verdict 5)
@@ -451,6 +451,13 @@ requirements:
     # independence disclosure is S10 spec §8 and §16, and the verdicts are `docs/reviews/S10-reference-verdicts.md`.
     # Not claimed: that D19 is met; empirical validation (S10 reports it apart, spec §9.6); `reviewed`; T06's or R01's
     # parts of D19; the status is not moved by this citation.
+    #
+    # S09 (BioSTEAM as a third reference; S09 spec §8.4, §8.5): the `verdict` agent's document
+    # (docs/reviews/S09-verdicts.md, verdict 5 and its §11.3 disclosures) gives the three-tool D19 statement per
+    # registered state, including RC4, which now has one independent check (BioSTEAM). The independence disclosure
+    # is S09 spec §9 (the spike's exposure, quoted in verdict 5.2). Not claimed: that D19 is met; empirical
+    # validation (SYN-001 is synthetic); `reviewed`; T06's or R01's parts of D19; the status is not moved by this
+    # citation.
     tests:
       - tests/test_s10_idaes.py
       - tests/test_s10_dwsim.py
@@ -890,7 +897,7 @@ gates:
 
   - id: X31
     required_evidence: "Four matched column cases, invalid specs/phases, two independent references where available"
-    owner_packages: [S02, S03, S08]
+    owner_packages: [S02, S03, S08, S09]
     # S08 (S08-design §13.10, R-736) evidences the "invalid specs/phases" clause only: it changes the expected outcome
     # of S02's phase case P1 (CONVERGED at LIQUID x5 through Stage B) and adds P2, P3, F1, D1 and S02 §8 item 6. It
     # does not touch the reference clause below. Its manifest `evidence/S08/6d7d1a6d...` (`tested`) is cited here; its
@@ -902,6 +909,12 @@ gates:
     # B-i, pre-registered as not met). Both tools' positive controls DISAGREE as required. Frank has queued
     # S09, a third reference tool, for the gap (Q-A2-4); a third reference changes this only under a rule
     # S09's own specification registers. The verdict field stays null: it is the design lane's to set.
+    #
+    # S09 (third reference tool, BioSTEAM; S09 spec §8.5): the `verdict` agent's document
+    # (docs/reviews/S09-verdicts.md, verdict 3 and its §11 addendum) records the three-tool outcome under §8.2's
+    # rule: "met where available, 3 of 4" (RC1 and RC2 three references, RC3 two, RC4 one: BioSTEAM). S03's verdict
+    # above stands as the two-tool outcome ("not met, 2 of 4"). The status and verdict fields are not moved by this
+    # citation; whether a release accepts "met where available" is outside S09 (spec §8.5). S09's manifest is cited below.
     verdict: null
     evidence:
       - evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
@@ -1251,6 +1264,15 @@ packages:
     status: tested
     evidence:
       - evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json
+
+  - id: S09
+    phase: "v0.3"
+    lead: Fable
+    second: Opus
+    depends_on: [S03]
+    # S09 evidences X31's and D19's third-reference part (S09 spec §8.5); S03's verdict stands as S03's record.
+    status: implemented
+    evidence: []
 
   - id: S10
     phase: "v0.3"
