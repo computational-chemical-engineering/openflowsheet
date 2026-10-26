@@ -15236,3 +15236,110 @@ band points assert ≤ 100 iterations, so a slower contraction shows.
 - *Anderson or Newton acceleration.* A second algorithm with its own failure modes, for no measured need.
 
 **Watch for.** A record set with stronger non-ideality (larger \|G\|): re-run the scan before claiming convergence.
+
+## R-777 — S10-C review: W1-3 ratified; the constant-β point's temperature solve takes the build's step order (design §4.3 erratum)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S10-C review |
+| Normative text | S10C-spec §11 E1 (replaces design §4.3's `Tsolve` loop) |
+| Evidence | `docs/S10C_DECISIONS.md` W1-3 run log: literal order max 1205 / median 99 evaluations (M-a), W1-3 max 234 / median 28, same roots against the design's prototype; `gamma_phi.py:300–315` |
+| Affected packages | S10-C |
+
+**Decision.** Newton steps from the known bracket end with the smaller `|g|`. Then come, in order: `t' == b` → the
+adjacent double towards the root; a step at or past an unknown end → evaluate that end; outside the open bracket, or
+the bracket not halved over two evaluations → the midpoint. The root, the stop rule and the budget are the note's.
+
+**Rejected alternatives, and why.**
+- *The note's literal order.* Its `t' == t` and unknown-end rules can never fire (the midpoint replacement comes first),
+  so every final step bisects: correct, but up to 5× the evaluations.
+
+**Watch for.** A change to the step order must keep the ≤ 3 evaluations per halving bound (the forced midpoint) that
+keeps the worst case inside the 200 budget.
+
+## R-778 — S10-C review: the dormant K-block convention moves the direct flow entries, not the rows (F-W3-1)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S10-C review |
+| Normative text | S10C-spec §11 E2 (replaces design §4.7's "Why the dormant convention moves nothing" and ADR 0049 D6's clause) |
+| Evidence | `tests/test_s10c_blocks.py::test_a36_…`: rows and all kept entries bitwise unchanged under the probe `(2, 1, 1)`; moved entries exactly `−exp(lnK_i^probe)·V` |
+| Affected packages | S10-C |
+
+**Decision.** The convention stands, with the statement corrected: the rows' values and chain-rule entries are
+probe-independent at a dormant input. The direct entries `−K_i V` (equilibrium) and `K_i` (total condenser's bubble row)
+hold the probe's K. The rows are Lipschitz but not differentiable at `L = 0`. In a TWO_PHASE solve an exactly dormant
+iterate's Newton direction depends on the probe, and no converged value does.
+
+**Rejected alternatives, and why.**
+- *Zeroing the direct entries at a dormant input.* That is just another non-derivative, and it would change the
+  Jacobian's structure at the pinned columns for no gain.
+
+**Watch for.** A row that reads a K output without multiplying it by a flow of the same block's input: the convention's
+value-independence would then fail.
+
+## R-779 — S10-C review: spec text errata — G6's H-block states, A02's iteration count, A44's detection (F-W3-2)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S10-C review |
+| Normative text | S10C-spec §11 E3 |
+| Evidence | YAML `blocks.fd_states` (both H phases at the listed `n`); `BandTemperature` has no iteration field; M2 run log (Newton converges, item 6 refuses with `AcceptanceDefectError`) |
+| Affected packages | S10-C |
+
+**Decision.** §5.4 places both H-blocks at the listed `n`, as the YAML does. A02's m is the number of temperature solves,
+counted by a spy, and no production field is added. A44 and design M2 read "not an accepted `CONVERGED` answer"
+(typed failure or `AcceptanceDefectError`).
+
+**Rejected alternatives, and why.**
+- *Regenerating the YAML with VAPOR states at `v_j`.* The block is one function of `(n, T, P)`; this adds no coverage.
+- *An `iterations` field on `BandTemperature`.* That is a second change to a SYN-001 dataclass, made only for a test.
+
+**Watch for.** A future A02 failure that is only a spy wiring error: the count must be 1 at β = 0.
+
+## R-780 — S10-C review: F-W4-1 and F-W4-2 accepted — absent flows within tolerance; one `describe()` per dispatch kept
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S10-C review |
+| Normative text | `docs/reviews/S10C-review.md` §3 rulings 4–5 |
+| Evidence | Absent flows max 1.26e-18 (C-MW), 2.18e-22 (C-EW) mol/s against tolerances ≥ 1.3e-5; SYN-001 S02/S08 suites +6.6 % median, +8.6 % mean against G9's +10 %; 1751 dispatch `describe()` calls ≈ 9 % of S02 M1–M4 solve time |
+| Affected packages | S10-C |
+
+**Decision.** A41 checks the absent component's flows against the stage flow tolerance (OQ-2); exact zeros are not
+required. Newton's bound landing and structural-zero release keep them ≥ 0. Form resolution stays one `describe()` per
+dispatching call. Merge is not conditional on memoisation.
+
+**Rejected alternatives, and why.**
+- *Memoising the form before merge.* G9 is met. A cache keyed on provider objects is a new mechanism and needs its own
+  inertness proof (G1), and the design (§7 Q6) made it a separate decision.
+
+**Watch for.** Any later dispatch point on a SYN-001 hot path: re-measure G9, and memoise (proved inert by G1) before
+the margin is spent.
+
+## R-781 — S10-C review: T1–T5 hold for record files satisfying P1–P3; admission by convention does not check them (scope erratum; check deferred)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S10-C review; the deferral is a default open to Frank |
+| Normative text | S10C-spec §11 E4 (appended to §2.1; ADR 0049 C4) |
+| Evidence | `equilibrium_form.ADMITTED` keys on `(provider_id, reference_convention)`; `wilson_ig.load_records` accepts any file under those conventions without P1–P3 checks; probe: the real records' parameters give `c_p^0L ≤ 0` for water above 750 K, methanol above 875 K |
+| Affected packages | S10-C; the package that makes `wilson-ig-v1` selectable in flowsheets (design §7 Q1) |
+
+**Decision.** S10-C's correctness claims for the band-first PH route and the column cover the two committed record sets
+(by SHA-256) and the test-built copies, on their declared T domains. Other files admitted under the same conventions are
+admitted on identity with P1–P3 unchecked. **Default:** the admission-time P1–P3 check is deferred to the
+flowsheet-selection package, because S10-C is library-level only.
+
+**Rejected alternatives, and why.**
+- *Pinning admission to the committed records' SHA-256.* It would refuse the test-built copies the spec registers, and
+  any legitimate refit.
+- *A grid check in `admission` now.* A grid is not a proof (the generator uses closed-form minima), and the choice of
+  grid or closed form is a design decision of its own.
+
+**Watch for.** Any user-facing path that lets a user supply Wilson records: the check becomes a must-fix there.
