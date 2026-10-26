@@ -45,6 +45,7 @@ import pytest
 from conftest import REPO_ROOT
 from t06_ensemble_support import STARTS_FILE, ensemble_cases
 
+from benchmarks.t06 import ensemble
 from openflowsheet.application.jobs.interrupt import (
     JobInterrupted,
     interrupt_check,
@@ -68,7 +69,13 @@ K = (1, 2, 3, 5, 8, 13, 21, 34, 55, 89)
 #: Since R-782 (K03's release at every step; S10-C absent-component note §4.7 item 4), measured on
 #: ref-x86-64: THM-09 start 4 94 / 49 / CONVERGED (every k ∈ K still interrupts inside it), and
 #: under the test-local `max_property_calls = 100` (`WITNESS_CAP`) 24 / 14 / BUDGET_EXHAUSTED.
+#: The uncapped length differs by machine class (CI run 40295317759 at 1bc65b86: 94 on ci-x86-64,
+#: 136 on ci-aarch64), so its pin is `THM09_RECORDS`, keyed by `ensemble.machine_class()`.
 RUNS = (("STR-01", None), ("NET-03", 18), ("THM-09", 4))
+#: THM-09 start 4's uncapped record length since R-782, per registered machine class (note §4.7
+#: item 4, §8.2). Every k ∈ K interrupts inside the run on each (89 < 94). On an unregistered
+#: class the length is not pinned (T06 §7.5: reported, never gated); the interrupts still run.
+THM09_RECORDS = {"ref-x86-64": 94, "ci-x86-64": 94, "ci-aarch64": 136}
 #: The test-local property budget that keeps a budget refusal in the every-record leg since R-782
 #: (THM-09 start 4 converges in 424 calls uncapped). The registry's `T06-revision-v2` is unchanged.
 WITNESS_CAP = 100
@@ -223,7 +230,13 @@ def interrupt_at(
 @pytest.mark.parametrize(("case_id", "start"), RUNS, ids=[f"{c}-{s}" for c, s in RUNS])
 def test_interrupt_at_record_k(case_id: str, start: int | None) -> None:
     ref = reference(case_id, start)
-    assert len(ref.lengths) == {"STR-01": 8, "NET-03": 126, "THM-09": 94}[case_id]
+    if case_id == "THM-09":
+        machine = ensemble.machine_class()
+        if machine in THM09_RECORDS:
+            assert len(ref.lengths) == THM09_RECORDS[machine], machine
+    else:
+        assert len(ref.lengths) == {"STR-01": 8, "NET-03": 126}[case_id]
+    assert len(ref.lengths) > max(K) or case_id == "STR-01"
     for k in K:
         interrupt_at(case_id, start, ref, k)
 

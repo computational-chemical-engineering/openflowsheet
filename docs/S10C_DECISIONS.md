@@ -269,3 +269,11 @@ parallel (the note's §4.6 set-up).
   the three uncapped A93 tests), and the same failed set (the 12 `t01_structural` file-alone failures). Suite-wide
   oracle (scratch plugin running `_released_r064` beside every `_released` call): 1518 calls, 329 nonempty, largest
   `|Z₀|` 60, 0 mismatches.
+- DECISION (§4.7 item 4, §8.2; build lane): T07's THM-09 start 4 length pin becomes the machine-class map
+  `THM09_RECORDS = {"ref-x86-64": 94, "ci-x86-64": 94, "ci-aarch64": 136}`, read through `ensemble.machine_class()`
+  (the per-class precedent of `test_t06_w31_runs.py`'s `A98_S_FIRST`). Measured: CI run 40295317759 at `1bc65b86`,
+  ci-x86-64 passes at 94, ci-aarch64 fails only `test_interrupt_at_record_k[THM-09-4]` with `assert 136 == 94`;
+  ref-x86-64 94 locally. The capped leg is unchanged. On an unregistered class the length is not pinned (T06 §7.5:
+  `unregistered(<machine>)` is reported, never gated) and the interrupts still run; on every class the test asserts
+  the run is longer than `max(K) = 89`. Alternative: fail on an unregistered class. Reversible by: reverting this
+  commit. Local run: `test_t07_interrupt.py` 16/16 (ref-x86-64); `GITHUB_ACTIONS=true` (ci-x86-64 lookup) record-k 4/4.
