@@ -22,7 +22,9 @@ Four things here are not the textbook and each is a rule from the blueprint or t
   one, so a bound landing that misses by an ulp changes what the state *means*.
 - **Structural zeros are released before `BOUND_BLOCKED` is declared** (§5.3 as amended, R-064):
   where the exact Newton step on a set of components sitting on their bounds is provably zero,
-  the factorization's roundoff there is discarded rather than read as an outward direction.
+  the factorization's roundoff there is discarded rather than read as an outward direction —
+  and, since R-782, at every step where it is nonzero, so that roundoff pointing inward cannot
+  lift the set off its bound either (S10-C absent-component note §4.1).
 
 One more is optional and off unless the caller supplies it (ADR 0018, `eo_core =
 "newton_refined"`): a `CONVERGED` exit at `k ≥ 1` whose chord correction — one back-solve against
@@ -794,16 +796,33 @@ def _bound_aware_step(
     residual: Sequence[float],
     jacobian: sp.csc_matrix,
 ) -> tuple[npt.NDArray[np.float64], float, tuple[int, ...], tuple[int, ...]]:
-    """§5.3 as amended (T05b ruling Q-S11 (b), R-064): the direction taken, `α_max`, the
+    """§5.3 as amended (T05b ruling Q-S11 (b), R-064; R-782): the direction taken, `α_max`, the
     components landing on a bound there (the blockers when `α_max = 0`), and the released set.
 
     When `α_max = 0`, the released set `Z*` (`_released`) has its direction set to zero exactly —
     the factorization's roundoff there is discarded — and `α_max` is recomputed. If a component
     outside `Z*` still blocks, nothing is released and the blockers are the original direction's,
-    exactly as before the amendment."""
+    exactly as before the amendment.
+
+    When `α_max > 0` (R-782, S10-C absent-component note §4.1): if a component on its bound at
+    the opening and at `x` has a nonzero direction entry, `Z*` is computed, and if it meets the
+    direction's support its entries are set to zero exactly — the exact Newton step there. `α_max`
+    and the landing are unchanged by it (no component of `Z*` can be in their minimum without
+    making `α_max = 0`; note §4.2) and are recomputed on the direction taken. Otherwise the
+    direction is returned as it came, with nothing released; `_released` runs only when the mask
+    is non-empty."""
     alpha_max, landing = _bound_aware_alpha(x, direction, lower)
     if alpha_max > 0.0:
-        return direction, alpha_max, landing, ()
+        moving = np.isfinite(lower) & (x == lower) & (opening == lower) & (direction != 0.0)
+        if not np.any(moving):
+            return direction, alpha_max, landing, ()
+        released = _released(x, opening, lower, residual, jacobian)
+        if not any(direction[index] != 0.0 for index in released):
+            return direction, alpha_max, landing, ()
+        kept = direction.copy()
+        kept[list(released)] = 0.0
+        alpha_kept, landing_kept = _bound_aware_alpha(x, kept, lower)
+        return kept, alpha_kept, landing_kept, released
     released = _released(x, opening, lower, residual, jacobian)
     if not released:
         return direction, alpha_max, landing, ()

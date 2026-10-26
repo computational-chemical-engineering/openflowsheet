@@ -37,7 +37,7 @@ import ast
 import json
 import threading
 from collections.abc import Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 import numpy as np
@@ -65,7 +65,13 @@ K = (1, 2, 3, 5, 8, 13, 21, 34, 55, 89)
 #: (records / plan-trace events / outcome): STR-01 from the initializer 8 / 6 / CONVERGED, so
 #: k ≥ 13 completes; NET-03 start 18 126 / 65 / CONVERGED; THM-09 start 4 154 / 79 /
 #: BUDGET_EXHAUSTED.
+#: Since R-782 (K03's release at every step; S10-C absent-component note §4.7 item 4), measured on
+#: ref-x86-64: THM-09 start 4 94 / 49 / CONVERGED (every k ∈ K still interrupts inside it), and
+#: under the test-local `max_property_calls = 100` (`WITNESS_CAP`) 24 / 14 / BUDGET_EXHAUSTED.
 RUNS = (("STR-01", None), ("NET-03", 18), ("THM-09", 4))
+#: The test-local property budget that keeps a budget refusal in the every-record leg since R-782
+#: (THM-09 start 4 converges in 424 calls uncapped). The registry's `T06-revision-v2` is unchanged.
+WITNESS_CAP = 100
 #: The inertness set: W0.8's five timed revisions, from the initializer.
 INERT = ("STR-01", "STA-02", "THM-09", "NET-03", "NET-10")
 
@@ -84,20 +90,22 @@ def _starts() -> dict[str, list[dict[str, Any]]]:
     return {c["case"]: c["starts"] for c in json.loads(STARTS_FILE.read_text())["cases"]}
 
 
-def prepare(case_id: str, start: int | None) -> Prepared:
-    """A fresh binding and plan of the case's revision (nothing carried between solves)."""
+def prepare(case_id: str, start: int | None, policy: Any = None) -> Prepared:
+    """A fresh binding and plan of the case's revision (nothing carried between solves), under
+    the registry's policy or, when given, `policy` (a test-local override of it)."""
     (case,) = [c for c in ensemble_cases() if c.case == case_id]
     assert case.path == "revision_eo" and case.policy.policy_id == "T06-revision-v2", case_id
+    policy = case.policy if policy is None else policy
     document = case.document()
     binding = bind_revision_flowsheet(document)
     assert isinstance(binding, RevisionBinding), binding
-    plan, _ = plan_revision(binding, case.policy)
+    plan, _ = plan_revision(binding, policy)
     assert isinstance(plan, ExecutionPlan), plan
     vector = None
     if start is not None:
         (record,) = [s for s in _starts()[case_id] if s["start"] == start]
         vector = {name: float(value) for name, value in record["vector"].items()}
-    return Prepared(case_id, document, binding, plan, case.policy, vector)
+    return Prepared(case_id, document, binding, plan, policy, vector)
 
 
 def solve(prepared: Prepared, trace: Trace) -> PlanResult:
@@ -171,8 +179,8 @@ class Reference:
     outcome: str
 
 
-def reference(case_id: str, start: int | None) -> Reference:
-    prepared = prepare(case_id, start)
+def reference(case_id: str, start: int | None, policy: Any = None) -> Reference:
+    prepared = prepare(case_id, start, policy)
     trace = Trace()
     lengths: list[int] = []
     token = INTERRUPT_CHECK.set(lambda: lengths.append(len(trace)))
@@ -184,10 +192,12 @@ def reference(case_id: str, start: int | None) -> Reference:
     return Reference(events(trace), lengths, result.outcome)
 
 
-def interrupt_at(case_id: str, start: int | None, ref: Reference, k: int) -> None:
+def interrupt_at(
+    case_id: str, start: int | None, ref: Reference, k: int, policy: Any = None
+) -> None:
     """Solve with the cancel signal set at the k-th record and check G5's record-k clauses."""
     records = len(ref.lengths)
-    prepared = prepare(case_id, start)
+    prepared = prepare(case_id, start, policy)
     trace = Trace()
     signal = SetAt(k)
     before = rng_state()
@@ -213,19 +223,27 @@ def interrupt_at(case_id: str, start: int | None, ref: Reference, k: int) -> Non
 @pytest.mark.parametrize(("case_id", "start"), RUNS, ids=[f"{c}-{s}" for c, s in RUNS])
 def test_interrupt_at_record_k(case_id: str, start: int | None) -> None:
     ref = reference(case_id, start)
-    assert len(ref.lengths) == {"STR-01": 8, "NET-03": 126, "THM-09": 154}[case_id]
+    assert len(ref.lengths) == {"STR-01": 8, "NET-03": 126, "THM-09": 94}[case_id]
     for k in K:
         interrupt_at(case_id, start, ref, k)
 
 
 def test_interrupt_at_every_record() -> None:
-    """Every record of the longest run (THM-09 start 4: regions, recovery, the budget refusal),
-    and one past the end. A record reached from inside a CasADi callback would fail here: CasADi
-    turns a `BaseException` raised in a Python callback into a `RuntimeError`, which the backend's
-    `except Exception` makes an `error` evaluation (measured, CasADi 3.8.0)."""
+    """Every record of the longest run (THM-09 start 4: regions, recovery), and one past the end;
+    then every record of the same start under the test-local `WITNESS_CAP`, which ends in the
+    budget refusal (the uncapped run converges since R-782), and one past its end. A record
+    reached from inside a CasADi callback would fail here: CasADi turns a `BaseException` raised
+    in a Python callback into a `RuntimeError`, which the backend's `except Exception` makes an
+    `error` evaluation (measured, CasADi 3.8.0)."""
     ref = reference("THM-09", 4)
     for k in range(1, len(ref.lengths) + 2):
         interrupt_at("THM-09", 4, ref, k)
+    (case,) = [c for c in ensemble_cases() if c.case == "THM-09"]
+    capped = replace(case.policy, max_property_calls=WITNESS_CAP)
+    ref = reference("THM-09", 4, capped)
+    assert ref.outcome == "BUDGET_EXHAUSTED", ref.outcome
+    for k in range(1, len(ref.lengths) + 2):
+        interrupt_at("THM-09", 4, ref, k, capped)
 
 
 def test_wall_time_exhausted_at_record_k() -> None:
