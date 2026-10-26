@@ -251,7 +251,7 @@ parallel (the note's §4.6 set-up).
   `F-BUDGET` → `SUCCESS` THM-09/24, /35; `SUCCESS` → `SUCCESS` NUM-03/26, STA-02/22, /23, /27, /30, /36, /38,
   THM-07/34, THM-08/28, /37, /38 (`SUCCESS` 438, `F-FALSE-SUCCESS-CAUGHT` 2). **Equal to note §4.6's table; no
   regression.** WO-R3 (CI dispatch, aarch64 G-R3, CI half of G-R7) is the orchestrator's.
-- RUN (WO-R5, R-785, local x86-64): A41 asserts the 60 absent flows `== 0.0` per case (IEEE equality, sign not
+- RUN (WO-R5, R-785, local x86-64): A41 asserts the 38 absent flows (19 equilibrium stages, liquid and vapour) `== 0.0` per case (IEEE equality, sign not
   asserted; the message names each nonzero variable). `pytest -k a41` 2/2 pass (C-MW, C-EW). Scratch mutation (not
   committed) setting one absent flow to `1e-300` before the assertion: 2/2 fail with
   `AssertionError: {'COL.stage.5.v.C2H5OH': 1e-300}` (C-MW shown).
@@ -277,3 +277,17 @@ parallel (the note's §4.6 set-up).
   `unregistered(<machine>)` is reported, never gated) and the interrupts still run; on every class the test asserts
   the run is longer than `max(K) = 89`. Alternative: fail on an unregistered class. Reversible by: reverting this
   commit. Local run: `test_t07_interrupt.py` 16/16 (ref-x86-64); `GITHUB_ACTIONS=true` (ci-x86-64 lookup) record-k 4/4.
+- DECISION (WO-R4, G2 under R-782; build lane, for the design lane's ruling round): S10-C design §6 G2 freezes
+  `numerics/`, and R-782/R-786 change `numerics/newton.py` inside S10-C (note §4.1, §8.4) and edit
+  `test_t06_w20_counters.py` and `test_t07_interrupt.py` (§4.7 items 3–4). The generator admits exactly these three
+  paths by name and records their diff (`admitted_by_r782_r786`); every other frozen path must still be untouched.
+  Alternative: leave G2 failing, the manifest `implemented`. Reversible by: reverting `2aedd250`'s G2 hunk.
+- MEASURED (WO-R4, note erratum for the design lane): A41's `zeros` holds **38** absent flows per case (19
+  equilibrium stages, liquid and vapour), not 60 as note §8.3 says; 60 is `|Z*|` (the released set, which includes the
+  absent component's other variables). The dispatch's aarch64 final states have 38/38 exactly `+0.0` per case.
+- RUN (WO-R4, manifest at `2aedd250`, clean tree, CI artifacts of dispatch 40295256025 copied unedited to
+  `evidence/S10c/2aedd250…/artifacts/ci/`, ignored): `status tested, 49/51 checks pass` (gate and CI `unsupported`).
+  G1 `S10C-IDENTITY PASS n=858 changed=[]`; `S10C.R782` 39 nodes (5 + 6 + 12 + 16) pass; G2 pass (admitted diff:
+  3 files, +148 −65); `S10C.G-R3` pass: ci-aarch64 C-MW `CONVERGED` in 9 (worst 1.2943e-7, `COL.stage.15.T`), C-EW in 4
+  (2.1290e-8), 38/38 absent flows `+0.0` each, `cmw.json` 6edc96fd…; A40–A42 cite it and the push CI 40295317759;
+  `S10C.G-R7` pass (the four ensemble records' SHA-256 equal note §8's table; verdict R-784's).
