@@ -1,0 +1,14 @@
+default T_ref 298.15 P_ref 101325.0
+A 310.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=0.000e+00 hl-SYN=185.000000000002
+A 347.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=0.000e+00 hl-SYN=185.000000000002
+A 385.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=0.000e+00 hl-SYN=185.000000000002
+A 430.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=0.000e+00 hl-SYN=185.000000000002
+B 310.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=-3.638e-12 hl-SYN=185.000000000002
+B 347.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=0.000e+00 hl-SYN=185.000000000002
+B 385.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=0.000e+00 hl-SYN=185.000000000002
+B 430.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=0.000e+00 hl-SYN=185.000000000002
+C 310.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=0.000e+00 hl-SYN=185.000000000002
+C 347.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=0.000e+00 hl-SYN=185.000000000002
+C 385.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=0.000e+00 hl-SYN=185.000000000002
+C 430.0 hl-cp(T-Tref)=0.000e+00 hg-hl-L=0.000e+00 hl-SYN=185.000000000002
+liquid stream H(1.5 bar)-H(1 bar) kJ/h: 0.0

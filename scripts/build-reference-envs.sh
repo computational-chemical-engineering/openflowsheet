@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the two T06 reference environments (IDAES, DWSIM), outside requirements.lock.
+# Build the reference environments (IDAES, DWSIM, BioSTEAM), outside requirements.lock.
 #
 # Neither tool is a dependency of this project. Each gets its own git-ignored environment, exactly
 # like the P02 backend spikes (scripts/build-backend-envs.sh):
@@ -9,6 +9,7 @@
 #   .venv-dwsim/              pythonnet 3.1.0 (hash-locked) to drive DWSIM from CPython
 #     dotnet/                 the .NET 8.0.31 runtime (Microsoft tarball, SHA-512 checked)
 #     dwsim/                  DWSIM 9.0.5 unpacked from its Linux .deb (SHA-256 checked); not installed
+#   .venv-biosteam/           biosteam 2.54.0 and its closure (S09, hash-locked)
 #   .reference-downloads/     download cache for the two large artifacts, re-verified on every run
 #
 # pip is the one bundled with the host Python's venv (no pip upgrade is downloaded). Nothing is
@@ -18,7 +19,7 @@
 # content hashes) that must be identical between two runs. What this produces, the licences, and
 # what failed are recorded in docs/reference-environments.md.
 #
-# Usage: scripts/build-reference-envs.sh [idaes|dwsim|all] [log-file]
+# Usage: scripts/build-reference-envs.sh [idaes|dwsim|biosteam|all] [log-file]
 set -uo pipefail
 
 cd "$(dirname "$0")/.."
@@ -37,6 +38,8 @@ IDAES_EXT_RELEASE="3.4.2"
 IDAES_EXT_DISTRO="ubuntu2204"
 IDAES_EXT_SHA256_LIB="341470b4b0b9d67758cfde6f3246ed3a3d08000e2306908186435262d5751184"
 IDAES_EXT_SHA256_SOLVERS="f370fa258cc457cd84fd9fe4298bde55dfc03374b607e68aa4d38f24ad9730e5"
+
+BIOSTEAM_LOCK="spikes/references/biosteam-requirements.lock"
 
 DWSIM_LOCK="spikes/references/dwsim-requirements.lock"
 DWSIM_DEB="dwsim_9.0.5-amd64.deb"
@@ -93,6 +96,7 @@ tree_hash() {
 
 STATUS_IDAES="not built"
 STATUS_DWSIM="not built"
+STATUS_BIOSTEAM="not built"
 
 # ---- IDAES -----------------------------------------------------------------------------------
 build_idaes() {
@@ -149,6 +153,31 @@ build_dwsim() {
     say "DWSIM build took $((SECONDS - t0)) s"
 }
 
+# ---- BioSTEAM --------------------------------------------------------------------------------
+build_biosteam() {
+    local t0=$SECONDS
+    note "BioSTEAM: .venv-biosteam"
+    rm -rf .venv-biosteam
+    run "venv" "$PYTHON" -m venv .venv-biosteam || return 1
+    # Five of the closure's distributions are sdists (biosteam, thermosteam, flexsolve, colorpalette,
+    # numpoly); pip does not hash-check the build requirements of an isolated build. So the build
+    # tools (setuptools, wheel, cython, and numpy for numpoly's extension) are hash-installed
+    # first, from their entries in the same lock, and everything is then built with
+    # --no-build-isolation. --no-cache-dir: nothing comes from a local pip cache.
+    local tools
+    tools="$(mktemp "$CACHE/biosteam-build-tools.XXXXXX")"
+    awk '/^[A-Za-z]/ {keep = ($1 ~ /^(setuptools|wheel|cython|numpy)==/)} keep' "$BIOSTEAM_LOCK" \
+        | grep -v '^    # via' >"$tools"
+    run "pip install build tools (hash-locked)" .venv-biosteam/bin/pip install --no-cache-dir \
+        --require-hashes --no-deps -r "$tools" || { rm -f "$tools"; return 1; }
+    rm -f "$tools"
+    run "pip install (hash-locked, no build isolation)" .venv-biosteam/bin/pip install \
+        --no-cache-dir --no-build-isolation --require-hashes --no-deps -r "$BIOSTEAM_LOCK" \
+        || return 1
+    run "pip check" .venv-biosteam/bin/pip check || return 1
+    say "BioSTEAM build took $((SECONDS - t0)) s"
+}
+
 # ---- fingerprint -----------------------------------------------------------------------------
 fingerprint() {
     note "fingerprint (must be identical between runs)"
@@ -169,6 +198,14 @@ fingerprint() {
             echo "[.venv-dwsim] DWSIM.Automation.dll sha256: $(sha256sum \
                 .venv-dwsim/dwsim/DWSIM.Automation.dll | cut -d' ' -f1)"
         fi
+        if [ -d .venv-biosteam ]; then
+            echo "[.venv-biosteam] pip freeze sha256: $(.venv-biosteam/bin/pip freeze \
+                | LC_ALL=C sort | sha256sum | cut -d' ' -f1)"
+            echo "[.venv-biosteam] python: $(.venv-biosteam/bin/python --version 2>&1)"
+            .venv-biosteam/bin/pip freeze | LC_ALL=C sort | grep -iE \
+                '^(biosteam|thermosteam|thermo|chemicals|flexsolve|numba|numpy|scipy|coolprop)==' \
+                | sed 's/^/[.venv-biosteam] /'
+        fi
     } | tee -a "$LOG"
 }
 
@@ -182,10 +219,14 @@ fi
 if [ "$WHICH" = "all" ] || [ "$WHICH" = "dwsim" ]; then
     if build_dwsim; then STATUS_DWSIM="built"; else STATUS_DWSIM="BLOCKED (see $LOG)"; fi
 fi
+if [ "$WHICH" = "all" ] || [ "$WHICH" = "biosteam" ]; then
+    if build_biosteam; then STATUS_BIOSTEAM="built"; else STATUS_BIOSTEAM="BLOCKED (see $LOG)"; fi
+fi
 fingerprint
 note "summary"
 say "IDAES: $STATUS_IDAES"
 say "DWSIM: $STATUS_DWSIM"
+say "BioSTEAM: $STATUS_BIOSTEAM"
 say "total $((SECONDS - T_ALL)) s; full log in $LOG"
-case "$STATUS_IDAES$STATUS_DWSIM" in *BLOCKED*) exit 1 ;; esac
+case "$STATUS_IDAES$STATUS_DWSIM$STATUS_BIOSTEAM" in *BLOCKED*) exit 1 ;; esac
 exit 0

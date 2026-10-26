@@ -1,0 +1,2334 @@
+{
+ "tool": "BioSTEAM",
+ "environment_fingerprint": {
+  "pip_freeze_sha256": "0edea300bbf188030642265ca811425c270d5508bf119fa86431572c06c69a95",
+  "expected_docs_reference_environments_s9": "0edea300bbf188030642265ca811425c270d5508bf119fa86431572c06c69a95",
+  "versions": {
+   "biosteam": "2.54.0",
+   "thermosteam": "0.54.2",
+   "thermo": "0.6.1",
+   "chemicals": "1.5.2",
+   "flexsolve": "0.5.10",
+   "numba": "0.68.0",
+   "numpy": "2.5.4",
+   "scipy": "1.18.1",
+   "python": "3.13.5"
+  },
+  "matches": true
+ },
+ "input_files": [
+  "docs/derivations/scripts/s03_cases.json",
+  "docs/derivations/scripts/s09_cases.json"
+ ],
+ "settings": {
+  "registered": {
+   "environment": {
+    "python": "3.13.5",
+    "biosteam": "2.54.0",
+    "thermosteam": "0.54.2",
+    "thermo": "0.6.1",
+    "chemicals": "1.5.2",
+    "flexsolve": "0.5.10",
+    "numba": "0.68.0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "lock": "spikes/references/biosteam-requirements.lock"
+   },
+   "mapping": {
+    "constants": "spikes/references/t06_fixtures.py (T_BOIL, L_VAP, CP, V_LIQ, MW, P_REF, R_GAS)",
+    "chemical": "thermosteam.Chemical.blank(ID, phase_ref='l', MW=1000*MW, Tb=T_BOIL[ID])",
+    "Psat": "Psat.add_method(f=P_REF*exp((L/R_GAS)*(1/T_b - 1/T)), Tmin=200.0, Tmax=600.0)",
+    "Hvap": "Hvap.add_method(f=L (constant), Tmin=200.0, Tmax=600.0); PC-LB: Hvap_J_per_mol_PC-LB",
+    "Cn": "Cn.l.add_method(CP); Cn.g.add_method(CP)",
+    "V": "V.l.add_method(V_LIQ)",
+    "finish": "reset_free_energies(); Chemicals([...]).compile(skip_checks=True)",
+    "thermo": "IdealThermo(chemicals, mixture=IdealMixture.from_chemicals(chemicals), skip_checks=True)",
+    "datum": "the tool's default (Chemical.T_ref = 298.15 K); no subclass; offset 185 J/mol (C4)",
+    "specifications_by_weight": false
+   },
+   "readback": {
+    "temperatures_K": [
+     "310",
+     "347",
+     "385",
+     "430"
+    ],
+    "Psat_Pa": {
+     "A": [
+      "73852.10058501417914360476",
+      "207741.1142075781509144168",
+      "488605.1695545122313511412",
+      "1106402.61309492733112889"
+     ],
+     "B": [
+      "19857.9866060236335135583",
+      "68695.25473799137013146944",
+      "191712.0713429424969886068",
+      "511205.6225258024898361191"
+     ],
+     "C": [
+      "4710.831315518042975090367",
+      "20041.07434490073871245524",
+      "66363.7380628621904079128",
+      "208385.755965860040671266"
+     ]
+    },
+    "Psat_relative": "1e-14",
+    "latent_relative": "1e-12",
+    "cp_J_per_mol": "1e-9",
+    "datum_offset_J_per_mol": "185",
+    "datum_offset_abs_J_per_mol": "1e-9",
+    "liquid_pressure_dependence": "H(T, 1.5 P_r) - H(T, P_r) == 0 exactly for a liquid stream",
+    "methods": "Psat and Hvap: exactly {'USER_METHOD'}",
+    "thermo_classes": {
+     "Gamma": "IdealActivityCoefficients",
+     "Phi": "IdealFugacityCoefficients",
+     "PCF": "MockPoyintingCorrectionFactors",
+     "mixture": "IdealMixture",
+     "include_excess_energies": false
+    }
+   },
+   "common": {
+    "early_termination": false,
+    "tolerance": "1e-10",
+    "relative_tolerance": "1e-10",
+    "maxiter": 500,
+    "max_attempts": 1,
+    "use_cache": true,
+    "phases": [
+     "g",
+     "l"
+    ],
+    "other_attributes": "the tool's defaults, recorded per run"
+   },
+   "rungs": [
+    [
+     "inside out",
+     "fixed-point"
+    ],
+    [
+     "phenomena",
+     "fixed-point"
+    ],
+    [
+     "simultaneous correction",
+     "hybr"
+    ],
+    [
+     "sequential modular",
+     "fixed-point"
+    ]
+   ],
+   "rungs_source": "MultiStageEquilibrium.default_algorithms and default_methods (biosteam/units/stage.py:2185-2200), one algorithm per rung, in that order",
+   "solve_path": [
+    "P1 build: MultiStageEquilibrium(ins=inlets, outs=['vapor', 'liquid'] (+ ['distillate'] for a total condenser), N_stages=N, feed_stages=[s-1], P=[P]*N, phases=('g','l'), stage_specifications={...}, [bottom_side_draws={0: 1/(1+RR)}], maxiter=500, max_attempts=1, use_cache=True); then algorithms=(rung,), methods=(method,), early_termination=False, tolerance=relative_tolerance=1e-10",
+    "P2 simulate()  (pass 1)",
+    "P3 re-store every registered native specification through the stage's attribute setter (Reflux r: stage.B = 1/r, or inf for r = 0, or 0 for r = inf; Boilup b: stage.B = b; Duty q: stage.Q = 3.6 q; Flow f: stage.F = f; Temperature t: stage.T = t); never specify_variables",
+    "P4 simulate()  (pass 2); the record is pass 2"
+   ],
+   "native_specifications": {
+    "reflux_ratio_partial": "stage 0: ('Reflux', RR)",
+    "reflux_ratio_total": "stage 0: ('Reflux', inf) with bottom_side_draws={0: 1/(1+RR)}",
+    "boilup_ratio": "stage N-1: ('Boilup', BR)",
+    "bottoms_rate": "stage N-1: ('Flow', B / sum of the registered inlet flows)",
+    "duty": "the end stage: ('Duty', 3.6 Q) in kJ/h",
+    "temperature_end_stage": "the end stage that carries the slot: ('Temperature', T)",
+    "not_native": [
+     "distillate_rate",
+     "purity",
+     "recovery",
+     "temperature on a stage other than the end stage that carries the slot"
+    ]
+   },
+   "outer_loop": {
+    "level": "L2(c)",
+    "adjusted": {
+     "condenser": [
+      "Reflux",
+      "stage 0"
+     ],
+     "reboiler": [
+      "Boilup",
+      "stage N-1"
+     ]
+    },
+    "residual": "g(x) = (s(x) - s*)/|s*| for a relative kind, s(x) - s* for an absolute kind, with s computed from the tool's record by S03 \u00a75.1 row 9 and \u00a717.4",
+    "starts": [
+     "1",
+     "2"
+    ],
+    "expansion": "if g(1) g(2) > 0: x = 4, 8, 16, 32 when |g(2)| <= |g(1)|, else 0.5, 0.25, 0.125, 0.0625; the first sign change against the previous point gives the bracket",
+    "solver": "flexsolve.IQ_interpolation(g, a, b, g(a), g(b), None, 0.0, ytol, (), 50, False, True, True)",
+    "ytol": {
+     "boilup_ratio": [
+      "1E-9",
+      "relative"
+     ],
+     "bottoms_rate": [
+      "1E-9",
+      "relative"
+     ],
+     "distillate_rate": [
+      "1E-9",
+      "relative"
+     ],
+     "duty": [
+      "1E-9",
+      "relative"
+     ],
+     "purity": [
+      "1E-9",
+      "absolute"
+     ],
+     "recovery": [
+      "1E-10",
+      "absolute"
+     ],
+     "reflux_ratio": [
+      "1E-9",
+      "relative"
+     ],
+     "temperature": [
+      "1E-10",
+      "relative"
+     ]
+    },
+    "evaluation": "every g(x) is a fresh build and the full solve path P1-P4 at the rung's settings, and its state must pass rule 2 (BioSTEAM) and rule 2c's pressure and read-back checks, or the attempt fails",
+    "record": "one final fresh evaluation at the returned x; |g| <= ytol or the attempt fails"
+   },
+   "floor_rerun": {
+    "tolerance": "1e-9",
+    "relative_tolerance": "1e-9",
+    "L2(c)": "one fresh evaluation (P1-P4) at the selected run's final x, the same binary64 value; no outer loop and no ytol (S09 \u00a718.4)"
+   },
+   "margin": {
+    "thin_level": "0.1",
+    "rows": [
+     "B3 stage component balance / 3.1e-8 mol/s",
+     "B4 equilibrium / 1e-8",
+     "B5 overall component / 3.1e-8 mol/s",
+     "B5 overall energy / 1e-3 W",
+     "rule 2c adiabatic duty / 1e-3 W",
+     "rule 2c total-condenser vapour / 3.1e-8 mol/s (total condenser only)",
+     "rule 2d specification residual / its kind's threshold",
+     "rule 2d accuracy-rerun movement / 0.1 tolerance",
+     "rule 2d path spread / 0.1 tolerance (two or more passing rungs)"
+    ],
+    "not_rows": "the outer loop's |g|/ytol (set by its own stopping test), exact and structural checks, and rule 2c's 1e-4 definition check (rule 2d's row covers it)",
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "rule2": {
+    "stage_component_mol_per_s": "3.1e-8",
+    "equilibrium": "1e-8",
+    "overall_component_mol_per_s": "3.1e-8",
+    "overall_energy_W": "1e-3",
+    "iteration_cap": "no pass's counter reaches maxiter: the tool's iter on R1, R2 and R4; on R3 fsolve's infodict nfev of that pass (fsolve's maxfev is the tool's maxiter), and a pass in which fsolve did not run fails (S09 \u00a718.3)",
+    "exception": "no pass raised"
+   },
+   "rule2c_added": {
+    "specification_readback": "exact",
+    "total_condenser_vapour_mol_per_s": "3.1e-8",
+    "property_readback": "readback block"
+   },
+   "units": {
+    "flow": "kmol/h = 3.6 mol/s",
+    "duty": "kJ/h = 3.6 W"
+   }
+  },
+  "quantity_tolerance": {
+   "allowance": {
+    "T": 1e-05,
+    "flow": 3.1e-07,
+    "duty": 0.01
+   },
+   "relative": 1e-06,
+   "source": "S03 \u00a76"
+  }
+ },
+ "harness": {
+  "head": "fd38124d394a1fa5e1653ae204278892b241c7ca",
+  "scripts": [
+   "spikes/references/s09_qualify_biosteam.py",
+   "spikes/references/s09_biosteam_syn001.py",
+   "spikes/references/s09_qualify.sh"
+  ],
+  "scripts_clean_at_head": true
+ },
+ "pairs": [
+  "RC1",
+  "RC2",
+  "RC3",
+  "RC4",
+  "RC5",
+  "RC6",
+  "RC7",
+  "RC1-RR",
+  "RC1-BR",
+  "RC1-z",
+  "RC2-RR",
+  "RC2-B",
+  "RC2-z",
+  "RC3-Q",
+  "RC3-z",
+  "RC4-D",
+  "RC4-z",
+  "PC-P",
+  "PC-LB"
+ ],
+ "not_applicable": {
+  "PC-L": "DWSIM's mapping input (S03 \u00a73.3)",
+  "PC-LI": "IDAES's mapping input (S03 \u00a718.3)"
+ },
+ "cases": {
+  "RC1": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 0.00010525278275124907,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B4']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 7.162729191130042e-09,
+     "B4_equilibrium": 0.00019549917240624382,
+     "B5_component": 3.581364595565021e-09,
+     "B5_energy": 1.0913936421275139e-08,
+     "rule2c_adiabatic_duty": 4.2847305950191285e-06,
+     "rule2d_specification": 4.440892098500626e-08,
+     "rule2d_rerun_movement": 1.2302658356321145e-05,
+     "rule2d_path_spread": 0.0010525278275124908
+    },
+    "max_ratio": 0.0010525278275124908,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "2d1dc16b9e5f709911292d44c6627c2e82ddb6d8153e28cf4d811887e2c5db59"
+  },
+  "RC2": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 9.187102993501843e-05,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B1', 'B2', 'B3', 'B4', 'B5']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 1.0744093786695063e-08,
+     "B4_equilibrium": 0.0002167044321765843,
+     "B5_component": 7.162729191130042e-09,
+     "B5_energy": 7.275957614183426e-09,
+     "rule2c_adiabatic_duty": 2.552244243108564e-05,
+     "rule2c_total_condenser_vapour": 0.0,
+     "rule2d_specification": 5.268512898675742e-06,
+     "rule2d_rerun_movement": 2.535567505190992e-05,
+     "rule2d_path_spread": 0.0009187102993501843
+    },
+    "max_ratio": 0.0009187102993501843,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "3f82c523ada318e817e763b4dc3395d8adec05cd9dddabc727067e10c8b2ee71"
+  },
+  "RC3": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R2",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 7.592431144476505e-05,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[C]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R2",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B3']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B1', 'B2', 'B3']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 1.7906822977825105e-09,
+     "B4_equilibrium": 0.00016083800957744643,
+     "B5_component": 3.581364595565021e-09,
+     "B5_energy": 3.637978807091713e-09,
+     "rule2c_adiabatic_duty": 6.942072003665898e-05,
+     "rule2d_specification": 0.0005720479142231246,
+     "rule2d_rerun_movement": 0.00033549216618067887,
+     "rule2d_path_spread": 0.0007592431144476505
+    },
+    "max_ratio": 0.0007592431144476505,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "f4734a0bd2558596d17219a71b5c9afc58b43c2bf9d9503de6865ce9a8d2168a"
+  },
+  "RC4": {
+   "available": true,
+   "level": "L2(c)",
+   "selected_rung": "R2",
+   "levels": {
+    "L1": {
+     "attempted": false,
+     "reason": "structurally inexpressible: condenser: no native option with S03 \u00a75.1 row 9's definition: distillate_rate (BioSTEAM's stage specifications are Reflux, Boilup, Duty, Flow and Temperature; Flow is a bottoms flow over the bulk feed)",
+     "expressible": false
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 7.21783910975667e-05,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "bottom[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R2",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "outer loop: InnerFailedError: inner_failed(1.0, ['B3', 'B5'])",
+       "outer_evaluations": 1
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 7
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "outer loop: InnerFailedError: inner_failed(1.0, ['B1', 'B2', 'B3', 'B4', 'B5'])",
+       "outer_evaluations": 1
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 7
+      }
+     ]
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 7,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 7.253248181282948e-05,
+     "B4_equilibrium": 0.0006472267166657275,
+     "B5_component": 7.253337715397837e-05,
+     "B5_energy": 0.0,
+     "rule2c_adiabatic_duty": 0.0001059056052731143,
+     "rule2d_specification": 0.00044133585674899223,
+     "rule2d_rerun_movement": 0.00037613199843758373,
+     "rule2d_path_spread": 0.0007217839109756669
+    },
+    "max_ratio": 0.0007217839109756669,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "0cfcf79b58c3fb714535f6a23b1a967f2e84307e579a672d605bff21f190fb7c"
+  },
+  "RC5": {
+   "available": true,
+   "level": "L2(c)",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": false,
+     "reason": "structurally inexpressible: condenser: no native option with S03 \u00a75.1 row 9's definition: purity (no composition specification among the stage specifications)",
+     "expressible": false
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 0.00015427539701154172,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "L[1]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 9
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 9
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "outer loop: InnerFailedError: inner_failed(1.0, ['B4'])",
+       "outer_evaluations": 1
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 9
+      }
+     ]
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 9,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 1.0744093786695063e-08,
+     "B4_equilibrium": 0.00023557822359521197,
+     "B5_component": 8.953411488912553e-09,
+     "B5_energy": 1.2732925824820995e-08,
+     "rule2c_adiabatic_duty": 2.7486950986915163e-06,
+     "rule2d_specification": 6.106226635438361e-07,
+     "rule2d_rerun_movement": 7.252030180798135e-06,
+     "rule2d_path_spread": 0.001542753970115417
+    },
+    "max_ratio": 0.001542753970115417,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "6bdf64fa1db86d63e329e4c31cb9b5574b7264f3455835521af68161b8a75d3b"
+  },
+  "RC6": {
+   "available": true,
+   "level": "L2(c)",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": false,
+     "reason": "structurally inexpressible: reboiler: no native option with S03 \u00a75.1 row 9's definition: recovery (no recovery specification among the stage specifications)",
+     "expressible": false
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 0.0011719883182262554,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 7
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 7
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "outer loop: InnerFailedError: inner_failed(1.0, ['B1', 'B2', 'B3', 'B4', 'B5'])",
+       "outer_evaluations": 1
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 7
+      }
+     ]
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 7,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 5.3720468933475316e-09,
+     "B4_equilibrium": 2.539080057317733e-05,
+     "B5_component": 1.4325458382260084e-08,
+     "B5_energy": 7.275957614183426e-09,
+     "rule2c_adiabatic_duty": 2.780224248352978e-05,
+     "rule2c_total_condenser_vapour": 0.0,
+     "rule2d_specification": 3.3306690738754696e-06,
+     "rule2d_rerun_movement": 7.403953761145319e-06,
+     "rule2d_path_spread": 0.011719883182262553
+    },
+    "max_ratio": 0.011719883182262553,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "0243d606029aab9f0bee95e06c93dd5e9e8608963f5e368f6f50079a0fd6404c"
+  },
+  "RC7": {
+   "available": true,
+   "level": "L2(c)",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": false,
+     "reason": "structurally inexpressible: reboiler: no native option with S03 \u00a75.1 row 9's definition: temperature on our stage 6, not the end stage 7 (a Temperature specification replaces that stage's energy balance, so the stage would carry the duty and the end would be adiabatic)",
+     "expressible": false
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 5.967981745655568e-05,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[A]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 9
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 9
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "outer loop: InnerFailedError: inner_failed(1.0, ['B4'])",
+       "outer_evaluations": 1
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 9
+      }
+     ]
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 9,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 1.0744093786695063e-08,
+     "B4_equilibrium": 0.00016820989046095747,
+     "B5_component": 1.2534776084477574e-08,
+     "B5_energy": 0.0,
+     "rule2c_adiabatic_duty": 1.4471071254875924e-06,
+     "rule2d_specification": 5.2518376121398705e-06,
+     "rule2d_rerun_movement": 1.1005304662791855e-05,
+     "rule2d_path_spread": 0.0005967981745655568
+    },
+    "max_ratio": 0.0005967981745655568,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "8cf2b89426a31f1c2b16ca5f6c42ea50e37bd038aebb5f3590410bee63477a93"
+  },
+  "RC1-RR": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 0.00010525803060180976,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B4']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 5.3720468933475316e-09,
+     "B4_equilibrium": 0.00020254908861261356,
+     "B5_component": 1.7906822977825105e-09,
+     "B5_energy": 1.4551915228366852e-08,
+     "rule2c_adiabatic_duty": 4.357490171160963e-06,
+     "rule2d_specification": 2.1769078914218753e-08,
+     "rule2d_rerun_movement": 1.57283455473961e-05,
+     "rule2d_path_spread": 0.0010525803060180976
+    },
+    "max_ratio": 0.0010525803060180976,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "22392c5dcde2e499d9de224bc0f8995bb222fa8db897b52ba2f13e07b7a64082"
+  },
+  "RC1-BR": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 0.00012216843297581837,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B4']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 1.0744093786695063e-08,
+     "B4_equilibrium": 0.0001830757767606883,
+     "B5_component": 8.953411488912553e-09,
+     "B5_energy": 9.094947017729282e-09,
+     "rule2c_adiabatic_duty": 4.3251525817645924e-06,
+     "rule2d_specification": 2.9025438552291674e-08,
+     "rule2d_rerun_movement": 1.2184571669659296e-05,
+     "rule2d_path_spread": 0.0012216843297581837
+    },
+    "max_ratio": 0.0012216843297581837,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "19586b1fd0e538867eb0f0d7ccf39fffb68db34a80848414dd1edb5e32c4c686"
+  },
+  "RC1-z": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 0.00011164210519178868,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B4']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 7.162729191130042e-09,
+     "B4_equilibrium": 0.00010148548668098556,
+     "B5_component": 5.3720468933475316e-09,
+     "B5_energy": 7.275957614183426e-09,
+     "rule2c_adiabatic_duty": 1.2975457745293777e-06,
+     "rule2d_specification": 2.9605947323337507e-08,
+     "rule2d_rerun_movement": 5.716061508401803e-06,
+     "rule2d_path_spread": 0.0011164210519178867
+    },
+    "max_ratio": 0.0011164210519178867,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "10748272f51c72e4cf56c61637be2d975a4d745f58a9602a4fa58e7dd3c1994b"
+  },
+  "RC2-RR": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 0.00010987868303282542,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B1', 'B2', 'B3', 'B4', 'B5']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 1.0744093786695063e-08,
+     "B4_equilibrium": 0.00021948554085327032,
+     "B5_component": 3.581364595565021e-09,
+     "B5_energy": 8.185452315956354e-09,
+     "rule2c_adiabatic_duty": 2.6314713371296723e-05,
+     "rule2c_total_condenser_vapour": 0.0,
+     "rule2d_specification": 5.429999884075765e-06,
+     "rule2d_rerun_movement": 2.452818334157273e-05,
+     "rule2d_path_spread": 0.001098786830328254
+    },
+    "max_ratio": 0.001098786830328254,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "ed5f085069fddc7afa61cec7bb614be0c33a1d5f8d298ab5b0a222983e74f3f4"
+  },
+  "RC2-B": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 9.773797605368646e-05,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B1', 'B2', 'B3', 'B4', 'B5']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 4.476705744456277e-09,
+     "B4_equilibrium": 0.00017424950371491832,
+     "B5_component": 3.581364595565021e-09,
+     "B5_energy": 2.7284841053187847e-09,
+     "rule2c_adiabatic_duty": 2.3743875014285244e-05,
+     "rule2c_total_condenser_vapour": 0.0,
+     "rule2d_specification": 5.0068881502703135e-06,
+     "rule2d_rerun_movement": 2.7556381853721516e-05,
+     "rule2d_path_spread": 0.0009773797605368646
+    },
+    "max_ratio": 0.0009773797605368646,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "0f8e5ee537100bdc23d1ed2a7d613365a1214afbb53d29fcee3daca93b284984"
+  },
+  "RC2-z": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 9.067315992039846e-05,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B1', 'B2', 'B3', 'B4', 'B5']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 7.162729191130042e-09,
+     "B4_equilibrium": 1.9040324872321435e-05,
+     "B5_component": 7.162729191130042e-09,
+     "B5_energy": 3.637978807091713e-09,
+     "rule2c_adiabatic_duty": 2.642789493418402e-05,
+     "rule2c_total_condenser_vapour": 0.0,
+     "rule2d_specification": 5.268512898675742e-06,
+     "rule2d_rerun_movement": 1.2920180728238246e-05,
+     "rule2d_path_spread": 0.0009067315992039845
+    },
+    "max_ratio": 0.0009067315992039845,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "e361afe6a3b1627774dd649d06fcb103373f157f3f7bdaa9375bccf2a1146a47"
+  },
+  "RC3-Q": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R2",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 8.146327906958213e-05,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[C]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R2",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B3']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B1', 'B2', 'B3']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 3.581364595565021e-09,
+     "B4_equilibrium": 5.065947661364589e-05,
+     "B5_component": 3.581364595565021e-09,
+     "B5_energy": 3.637978807091713e-09,
+     "rule2c_adiabatic_duty": 2.561137080192566e-05,
+     "rule2d_specification": 0.00019753273816937517,
+     "rule2d_rerun_movement": 0.0002387282239331063,
+     "rule2d_path_spread": 0.0008146327906958212
+    },
+    "max_ratio": 0.0008146327906958212,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "0941e6d556e9c2da386d387f7e5acabb4d446cdd2834f41ca47fa3a58349369f"
+  },
+  "RC3-z": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R2",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 7.06413762349758e-05,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[C]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R2",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B3']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B1', 'B2', 'B3']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 7.162729191130042e-09,
+     "B4_equilibrium": 0.0001919242542669508,
+     "B5_component": 1.7906822977825105e-09,
+     "B5_energy": 3.637978807091713e-09,
+     "rule2c_adiabatic_duty": 7.942111955748663e-05,
+     "rule2d_specification": 0.0006399325987634559,
+     "rule2d_rerun_movement": 0.00041200896837687587,
+     "rule2d_path_spread": 0.0007064137623497579
+    },
+    "max_ratio": 0.0007064137623497579,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "24d4d0ae6eddf5653b24bd7c2158af690cf6fdc3b096b4d19b6c26046666fbda"
+  },
+  "RC4-D": {
+   "available": true,
+   "level": "L2(c)",
+   "selected_rung": "R2",
+   "levels": {
+    "L1": {
+     "attempted": false,
+     "reason": "structurally inexpressible: condenser: no native option with S03 \u00a75.1 row 9's definition: distillate_rate (BioSTEAM's stage specifications are Reflux, Boilup, Duty, Flow and Temperature; Flow is a bottoms flow over the bulk feed)",
+     "expressible": false
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 8.232054013117668e-05,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "bottom[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R2",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "outer loop: InnerFailedError: inner_failed(1.0, ['B3', 'B5'])",
+       "outer_evaluations": 1
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 7
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "outer loop: InnerFailedError: inner_failed(1.0, ['B1', 'B2', 'B3', 'B4', 'B5'])",
+       "outer_evaluations": 1
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 7
+      }
+     ]
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 7,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 2.9180958724663794e-05,
+     "B4_equilibrium": 0.00026022517474189044,
+     "B5_component": 2.9182749406961576e-05,
+     "B5_energy": 0.0,
+     "rule2c_adiabatic_duty": 4.3453635751373237e-05,
+     "rule2d_specification": 4.038164138587579e-05,
+     "rule2d_rerun_movement": 0.0022828442999910685,
+     "rule2d_path_spread": 0.0008232054013117667
+    },
+    "max_ratio": 0.0022828442999910685,
+    "max_row": "rule2d_rerun_movement",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "da53835a4311bb4fa0e253621fb924a560f60642d82d4e185cac675424d23f35"
+  },
+  "RC4-z": {
+   "available": true,
+   "level": "L2(c)",
+   "selected_rung": "R2",
+   "levels": {
+    "L1": {
+     "attempted": false,
+     "reason": "structurally inexpressible: condenser: no native option with S03 \u00a75.1 row 9's definition: distillate_rate (BioSTEAM's stage specifications are Reflux, Boilup, Duty, Flow and Temperature; Flow is a bottoms flow over the bulk feed)",
+     "expressible": false
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 8.272204566065833e-05,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "bottom[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R2",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "outer loop: InnerFailedError: inner_failed(1.0, ['B3', 'B5'])",
+       "outer_evaluations": 1
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 7
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "outer loop: InnerFailedError: inner_failed(1.0, ['B4'])",
+       "outer_evaluations": 1
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": 7
+      }
+     ]
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 7,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 1.631222039164978e-05,
+     "B4_equilibrium": 0.0003085920408096854,
+     "B5_component": 1.6316697097394238e-05,
+     "B5_energy": 3.637978807091713e-09,
+     "rule2c_adiabatic_duty": 4.774645074374146e-05,
+     "rule2d_specification": 5.468958619303521e-05,
+     "rule2d_rerun_movement": 0.0006395577876965364,
+     "rule2d_path_spread": 0.0008272204566065833
+    },
+    "max_ratio": 0.0008272204566065833,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "9a542df5dc31a85418e9d116976f11e75dccff1f0d2f51c6c94974c59b660ad6"
+  },
+  "PC-P": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 0.00011723224105685241,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B4']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 5.3720468933475316e-09,
+     "B4_equilibrium": 3.7347902548390266e-05,
+     "B5_component": 8.953411488912553e-09,
+     "B5_energy": 0.0,
+     "rule2c_adiabatic_duty": 2.942720635069741e-06,
+     "rule2d_specification": 2.220446049250313e-08,
+     "rule2d_rerun_movement": 2.6801891565279645e-05,
+     "rule2d_path_spread": 0.001172322410568524
+    },
+    "max_ratio": 0.001172322410568524,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "7a5c4673ddf9c2dd6e56a95648f12a32720b55d52f5f2531acc2d68beea3e3ea"
+  },
+  "PC-LB": {
+   "available": true,
+   "level": "L1",
+   "selected_rung": "R1",
+   "levels": {
+    "L1": {
+     "attempted": true,
+     "path_dependence": {
+      "rungs_compared": [
+       "R1",
+       "R2",
+       "R4"
+      ],
+      "max_ratio": 0.00010544907965685271,
+      "pair": [
+       "R2",
+       "R4"
+      ],
+      "quantity": "top[B]",
+      "threshold": 0.1,
+      "tolerance_value_used": "the earlier rung's tool value",
+      "fires": false
+     },
+     "passes": true,
+     "selected_rung": "R1",
+     "expressible": true,
+     "rungs": [
+      {
+       "rung": "R1",
+       "algorithm": "inside out",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R2",
+       "algorithm": "phenomena",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R3",
+       "algorithm": "simultaneous correction",
+       "method": "hybr",
+       "passes": false,
+       "failed_rule": "2",
+       "reason": "rule 2 ['B4']",
+       "outer_evaluations": null
+      },
+      {
+       "rung": "R4",
+       "algorithm": "sequential modular",
+       "method": "fixed-point",
+       "passes": true,
+       "failed_rule": null,
+       "reason": "passes rules 2-2d",
+       "outer_evaluations": null
+      }
+     ]
+    },
+    "L2(a)": {
+     "applicable": false,
+     "reason": "S09 \u00a72.2: no BioSTEAM realization adds anything L1 lacks; never attempted"
+    },
+    "L2(c)": {
+     "expressible": false
+    },
+    "L2(b)": {
+     "admissible": false,
+     "reason": "S03 restricts L2(b) to an equation-oriented tool"
+    },
+    "L3": {
+     "admissible": false,
+     "reason": "S03 \u00a72.2's reason for DWSIM applies (a cascade of StageEquilibrium units would be the harness's column)"
+    }
+   },
+   "not_available_reason": null,
+   "outer_evaluations": 0,
+   "margin": {
+    "ratios": {
+     "B3_stage_component": 1.0744093786695063e-08,
+     "B4_equilibrium": 0.00019557688801796758,
+     "B5_component": 8.953411488912553e-09,
+     "B5_energy": 3.637978807091713e-09,
+     "rule2c_adiabatic_duty": 4.252393005622758e-06,
+     "rule2d_specification": 1.1102230246251565e-08,
+     "rule2d_rerun_movement": 1.22829843816723e-05,
+     "rule2d_path_spread": 0.001054490796568527
+    },
+    "max_ratio": 0.001054490796568527,
+    "max_row": "rule2d_path_spread",
+    "thin_level": 0.1,
+    "thin": false,
+    "effect": "a disclosure listed in comparison.json; it moves no classification (S09 \u00a72.3 step 4; \u00a718.4)"
+   },
+   "record_sha256": "2f49745a15973bb143632d127a2352af1b16ef51514dd1ff7ad930be47ffb146"
+  }
+ },
+ "repeat_run": {
+  "statement": "the whole qualification run twice, one process per case; each record compared byte for byte after removing the wall_time* fields",
+  "per_case": {
+   "RC1": {
+    "identical": true,
+    "sha256_run1": "4cf55d71b045fecc117a2eea13841961d99143b90da4ecf07bfe510ef0ee320b",
+    "sha256_run2": "4cf55d71b045fecc117a2eea13841961d99143b90da4ecf07bfe510ef0ee320b"
+   },
+   "RC2": {
+    "identical": true,
+    "sha256_run1": "e88c6666600637789db07e8da2e57da925abe88207d7e3a589b16ce76696b2a9",
+    "sha256_run2": "e88c6666600637789db07e8da2e57da925abe88207d7e3a589b16ce76696b2a9"
+   },
+   "RC3": {
+    "identical": true,
+    "sha256_run1": "9dda589fdc454f78af373583650bda3de8f79ba9dbed25e8d4ed7da68665c0d0",
+    "sha256_run2": "9dda589fdc454f78af373583650bda3de8f79ba9dbed25e8d4ed7da68665c0d0"
+   },
+   "RC4": {
+    "identical": true,
+    "sha256_run1": "a8c16e4fa0219691c568be6b39a3326c310689f6063aebf158d03894a686e18d",
+    "sha256_run2": "a8c16e4fa0219691c568be6b39a3326c310689f6063aebf158d03894a686e18d"
+   },
+   "RC5": {
+    "identical": true,
+    "sha256_run1": "41e2af78c7bad8814263ae17a7b95ff0ef8e306877ef304dc8692608d4c0e31b",
+    "sha256_run2": "41e2af78c7bad8814263ae17a7b95ff0ef8e306877ef304dc8692608d4c0e31b"
+   },
+   "RC6": {
+    "identical": true,
+    "sha256_run1": "97c7c6695e018a821898cd31c736c1fcdfdfabbda369488cb4fbe01b065402d8",
+    "sha256_run2": "97c7c6695e018a821898cd31c736c1fcdfdfabbda369488cb4fbe01b065402d8"
+   },
+   "RC7": {
+    "identical": true,
+    "sha256_run1": "aba21b8f1178ff891e4b6f5278700e8d84c7a40a629378b53c549d8d504b36d8",
+    "sha256_run2": "aba21b8f1178ff891e4b6f5278700e8d84c7a40a629378b53c549d8d504b36d8"
+   },
+   "RC1-RR": {
+    "identical": true,
+    "sha256_run1": "5bbab5e4c008b075e09a7efdeafa83a9b2e0050bd68c26f30794ff871a2d4a9c",
+    "sha256_run2": "5bbab5e4c008b075e09a7efdeafa83a9b2e0050bd68c26f30794ff871a2d4a9c"
+   },
+   "RC1-BR": {
+    "identical": true,
+    "sha256_run1": "fd30142d46b29898e7d5950d792460faf77956c23c957a87c119705800eaa7cf",
+    "sha256_run2": "fd30142d46b29898e7d5950d792460faf77956c23c957a87c119705800eaa7cf"
+   },
+   "RC1-z": {
+    "identical": true,
+    "sha256_run1": "21c5d7bae2258900f06e005a10f691245b0f3ee8daeb757ee2de565a64d5e2d9",
+    "sha256_run2": "21c5d7bae2258900f06e005a10f691245b0f3ee8daeb757ee2de565a64d5e2d9"
+   },
+   "RC2-RR": {
+    "identical": true,
+    "sha256_run1": "27c57770f3885095f0b38b81a2b1ab1c435b1f538bc65acabc64a565ef749cfa",
+    "sha256_run2": "27c57770f3885095f0b38b81a2b1ab1c435b1f538bc65acabc64a565ef749cfa"
+   },
+   "RC2-B": {
+    "identical": true,
+    "sha256_run1": "48ba6c442a70e2f8a25e92c5171e0567cf34e31e5f3f40b09cf8e295fcc92217",
+    "sha256_run2": "48ba6c442a70e2f8a25e92c5171e0567cf34e31e5f3f40b09cf8e295fcc92217"
+   },
+   "RC2-z": {
+    "identical": true,
+    "sha256_run1": "1e8ad25a6510ca4e5779aa319075ae613be3ce58ead3c7d804d332e198a2ca8b",
+    "sha256_run2": "1e8ad25a6510ca4e5779aa319075ae613be3ce58ead3c7d804d332e198a2ca8b"
+   },
+   "RC3-Q": {
+    "identical": true,
+    "sha256_run1": "45ae982579c1bee8eac7c59dd755c09ba7f2cd8d56c7d03844fe21a5344a9810",
+    "sha256_run2": "45ae982579c1bee8eac7c59dd755c09ba7f2cd8d56c7d03844fe21a5344a9810"
+   },
+   "RC3-z": {
+    "identical": true,
+    "sha256_run1": "119bb08ad3ec757fea8f8fbb51dd18f1c5d0198f3e2e0688d344b0645c811787",
+    "sha256_run2": "119bb08ad3ec757fea8f8fbb51dd18f1c5d0198f3e2e0688d344b0645c811787"
+   },
+   "RC4-D": {
+    "identical": true,
+    "sha256_run1": "4cff89733a48254bd02ee5c1bd56344c9fbfc14d99aa7006518439fd9457efc2",
+    "sha256_run2": "4cff89733a48254bd02ee5c1bd56344c9fbfc14d99aa7006518439fd9457efc2"
+   },
+   "RC4-z": {
+    "identical": true,
+    "sha256_run1": "98dd468bed3717665de5df03a22100947d8a1832affc389d8d2b8b396bb4733e",
+    "sha256_run2": "98dd468bed3717665de5df03a22100947d8a1832affc389d8d2b8b396bb4733e"
+   },
+   "PC-P": {
+    "identical": true,
+    "sha256_run1": "74e5ce1130a0a07adf4d47f359f4b30f09aaf91bb88c6bf4065beb3da915ebe7",
+    "sha256_run2": "74e5ce1130a0a07adf4d47f359f4b30f09aaf91bb88c6bf4065beb3da915ebe7"
+   },
+   "PC-LB": {
+    "identical": true,
+    "sha256_run1": "3ae04aee975cd87e5bbd9103bd698a8e09752f5585841d6341f88331a377cf6f",
+    "sha256_run2": "3ae04aee975cd87e5bbd9103bd698a8e09752f5585841d6341f88331a377cf6f"
+   }
+  },
+  "all_identical": true
+ }
+}

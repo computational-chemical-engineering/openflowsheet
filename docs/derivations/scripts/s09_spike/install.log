@@ -1,0 +1,242 @@
+Collecting biosteam
+  Downloading biosteam-2.54.0.tar.gz (517 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting IPython>=7.9.0 (from biosteam)
+  Using cached ipython-9.17.1-py3-none-any.whl.metadata (4.6 kB)
+Collecting thermosteam>=0.54.1 (from biosteam)
+  Downloading thermosteam-0.54.2.tar.gz (1.9 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.9/1.9 MB 11.9 MB/s  0:00:00
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting hensmith>=0.1.2 (from biosteam)
+  Downloading hensmith-0.1.2-py3-none-any.whl.metadata (2.8 kB)
+Collecting graphviz>=0.17 (from biosteam)
+  Downloading graphviz-0.21-py3-none-any.whl.metadata (12 kB)
+Collecting chaospy>=4.3.21 (from biosteam)
+  Downloading chaospy-4.3.21-py3-none-any.whl.metadata (5.4 kB)
+Collecting pyyaml (from biosteam)
+  Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting numpy>=1.20 (from chaospy>=4.3.21->biosteam)
+  Using cached numpy-2.5.4-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+Collecting numpoly>=1.2.12 (from chaospy>=4.3.21->biosteam)
+  Downloading numpoly-1.3.9.tar.gz (400 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting scipy (from chaospy>=4.3.21->biosteam)
+  Using cached scipy-1.18.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (62 kB)
+Collecting setuptools>=40.9.0 (from chaospy>=4.3.21->biosteam)
+  Using cached setuptools-84.2.1-py3-none-any.whl.metadata (6.6 kB)
+Collecting ipython-pygments-lexers>=1.0.0 (from IPython>=7.9.0->biosteam)
+  Using cached ipython_pygments_lexers-1.1.1-py3-none-any.whl.metadata (1.1 kB)
+Collecting jedi>=0.18.2 (from IPython>=7.9.0->biosteam)
+  Using cached jedi-0.20.1-py2.py3-none-any.whl.metadata (23 kB)
+Collecting matplotlib-inline>=0.1.6 (from IPython>=7.9.0->biosteam)
+  Using cached matplotlib_inline-0.2.2-py3-none-any.whl.metadata (2.4 kB)
+Collecting pexpect>4.6 (from IPython>=7.9.0->biosteam)
+  Using cached pexpect-4.9.0-py2.py3-none-any.whl.metadata (2.5 kB)
+Collecting prompt_toolkit<3.1.0,>=3.0.41 (from IPython>=7.9.0->biosteam)
+  Using cached prompt_toolkit-3.0.53-py3-none-any.whl.metadata (6.4 kB)
+Collecting psutil>=7 (from IPython>=7.9.0->biosteam)
+  Using cached psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl.metadata (22 kB)
+Collecting pygments>=2.14.0 (from IPython>=7.9.0->biosteam)
+  Using cached pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting stack_data>=0.6.0 (from IPython>=7.9.0->biosteam)
+  Using cached stack_data-0.6.3-py3-none-any.whl.metadata (18 kB)
+Collecting traitlets>=5.13.0 (from IPython>=7.9.0->biosteam)
+  Using cached traitlets-5.16.1-py3-none-any.whl.metadata (10 kB)
+Collecting wcwidth>=0.1.4 (from prompt_toolkit<3.1.0,>=3.0.41->IPython>=7.9.0->biosteam)
+  Downloading wcwidth-0.9.4-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (23 kB)
+Collecting parso<0.9.0,>=0.8.7 (from jedi>=0.18.2->IPython>=7.9.0->biosteam)
+  Using cached parso-0.8.7-py2.py3-none-any.whl.metadata (8.2 kB)
+Collecting importlib-metadata (from numpoly>=1.2.12->chaospy>=4.3.21->biosteam)
+  Downloading importlib_metadata-10.1.0-py3-none-any.whl.metadata (4.5 kB)
+Collecting ptyprocess>=0.5 (from pexpect>4.6->IPython>=7.9.0->biosteam)
+  Using cached ptyprocess-0.7.0-py2.py3-none-any.whl.metadata (1.3 kB)
+Collecting executing>=1.2.0 (from stack_data>=0.6.0->IPython>=7.9.0->biosteam)
+  Using cached executing-2.3.0-py3-none-any.whl.metadata (9.1 kB)
+Collecting asttokens>=2.1.0 (from stack_data>=0.6.0->IPython>=7.9.0->biosteam)
+  Using cached asttokens-3.0.2-py3-none-any.whl.metadata (5.7 kB)
+Collecting pure-eval (from stack_data>=0.6.0->IPython>=7.9.0->biosteam)
+  Using cached pure_eval-0.2.4-py3-none-any.whl.metadata (6.4 kB)
+Collecting pint>=0.25.2 (from thermosteam>=0.54.1->biosteam)
+  Downloading pint-0.26.2-py3-none-any.whl.metadata (10 kB)
+Collecting thermo>=0.6.0 (from thermosteam>=0.54.1->biosteam)
+  Using cached thermo-0.6.1-py3-none-any.whl.metadata (15 kB)
+Collecting colorpalette>=0.3.3 (from thermosteam>=0.54.1->biosteam)
+  Downloading colorpalette-0.3.3.tar.gz (6.5 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting pandas>=2.2.2 (from thermosteam>=0.54.1->biosteam)
+  Downloading pandas-3.1.0-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (18 kB)
+Collecting matplotlib>=3.10.1 (from thermosteam>=0.54.1->biosteam)
+  Using cached matplotlib-3.11.2-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (80 kB)
+Collecting xlrd>=1.2.0 (from thermosteam>=0.54.1->biosteam)
+  Downloading xlrd-2.0.2-py2.py3-none-any.whl.metadata (3.5 kB)
+Collecting openpyxl>=3.0.0 (from thermosteam>=0.54.1->biosteam)
+  Using cached openpyxl-3.1.5-py2.py3-none-any.whl.metadata (2.5 kB)
+Collecting flexsolve>=0.5.9 (from thermosteam>=0.54.1->biosteam)
+  Downloading flexsolve-0.5.10.tar.gz (157 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting numba>=0.62.1 (from thermosteam>=0.54.1->biosteam)
+  Using cached numba-0.68.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (2.8 kB)
+Collecting coolprop (from thermosteam>=0.54.1->biosteam)
+  Using cached coolprop-8.0.0-cp312-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (4.0 kB)
+Collecting imageio (from thermosteam>=0.54.1->biosteam)
+  Using cached imageio-2.38.1-py3-none-any.whl.metadata (9.7 kB)
+Collecting pydot (from thermosteam>=0.54.1->biosteam)
+  Using cached pydot-4.0.1-py3-none-any.whl.metadata (11 kB)
+Collecting pyglet (from thermosteam>=0.54.1->biosteam)
+  Downloading pyglet-2.1.19-py3-none-any.whl.metadata (8.0 kB)
+Collecting ansicolors (from colorpalette>=0.3.3->thermosteam>=0.54.1->biosteam)
+  Downloading ansicolors-1.1.8-py2.py3-none-any.whl.metadata (9.0 kB)
+Collecting colorama (from colorpalette>=0.3.3->thermosteam>=0.54.1->biosteam)
+  Using cached colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)
+Collecting llvmlite>=0.31 (from flexsolve>=0.5.9->thermosteam>=0.54.1->biosteam)
+  Using cached llvmlite-0.50.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (5.1 kB)
+Collecting contourpy>=1.0.1 (from matplotlib>=3.10.1->thermosteam>=0.54.1->biosteam)
+  Using cached contourpy-1.4.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (3.8 kB)
+Collecting cycler>=0.10 (from matplotlib>=3.10.1->thermosteam>=0.54.1->biosteam)
+  Using cached cycler-0.12.1-py3-none-any.whl.metadata (3.8 kB)
+Collecting fonttools>=4.28.2 (from matplotlib>=3.10.1->thermosteam>=0.54.1->biosteam)
+  Using cached fonttools-4.67.0-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (137 kB)
+Collecting kiwisolver>=1.3.1 (from matplotlib>=3.10.1->thermosteam>=0.54.1->biosteam)
+  Using cached kiwisolver-1.5.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (5.2 kB)
+Collecting packaging>=20.0 (from matplotlib>=3.10.1->thermosteam>=0.54.1->biosteam)
+  Using cached packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+Collecting pillow>=9 (from matplotlib>=3.10.1->thermosteam>=0.54.1->biosteam)
+  Using cached pillow-13.0.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.1 kB)
+Collecting pyparsing>=3 (from matplotlib>=3.10.1->thermosteam>=0.54.1->biosteam)
+  Using cached pyparsing-3.3.3-py3-none-any.whl.metadata (5.9 kB)
+Collecting python-dateutil>=2.7 (from matplotlib>=3.10.1->thermosteam>=0.54.1->biosteam)
+  Using cached python_dateutil-3.0.0-py2.py3-none-any.whl.metadata (8.2 kB)
+Collecting et-xmlfile (from openpyxl>=3.0.0->thermosteam>=0.54.1->biosteam)
+  Using cached et_xmlfile-2.0.0-py3-none-any.whl.metadata (2.7 kB)
+Collecting flexcache>=0.3 (from pint>=0.25.2->thermosteam>=0.54.1->biosteam)
+  Using cached flexcache-0.3-py3-none-any.whl.metadata (7.0 kB)
+Collecting flexparser>=0.4 (from pint>=0.25.2->thermosteam>=0.54.1->biosteam)
+  Using cached flexparser-0.4-py3-none-any.whl.metadata (18 kB)
+Collecting platformdirs>=2.1.0 (from pint>=0.25.2->thermosteam>=0.54.1->biosteam)
+  Using cached platformdirs-4.13.5-py3-none-any.whl.metadata (5.5 kB)
+Collecting typing-extensions>=4.0.0 (from pint>=0.25.2->thermosteam>=0.54.1->biosteam)
+  Using cached typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting six>=1.6 (from python-dateutil>=2.7->matplotlib>=3.10.1->thermosteam>=0.54.1->biosteam)
+  Using cached six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting tzdata (from python-dateutil>=2.7->matplotlib>=3.10.1->thermosteam>=0.54.1->biosteam)
+  Using cached tzdata-2026.5-py2.py3-none-any.whl.metadata (1.4 kB)
+Collecting fluids>=1.3.1 (from thermo>=0.6.0->thermosteam>=0.54.1->biosteam)
+  Using cached fluids-1.3.1-py3-none-any.whl.metadata (8.9 kB)
+Collecting chemicals>=1.4.0 (from thermo>=0.6.0->thermosteam>=0.54.1->biosteam)
+  Using cached chemicals-1.5.2-py3-none-any.whl.metadata (15 kB)
+Collecting zipp>=3.20 (from importlib-metadata->numpoly>=1.2.12->chaospy>=4.3.21->biosteam)
+  Downloading zipp-4.1.2-py3-none-any.whl.metadata (3.6 kB)
+Downloading chaospy-4.3.21-py3-none-any.whl (254 kB)
+Downloading graphviz-0.21-py3-none-any.whl (47 kB)
+Downloading hensmith-0.1.2-py3-none-any.whl (24 kB)
+Using cached ipython-9.17.1-py3-none-any.whl (639 kB)
+Using cached prompt_toolkit-3.0.53-py3-none-any.whl (392 kB)
+Using cached ipython_pygments_lexers-1.1.1-py3-none-any.whl (8.1 kB)
+Using cached jedi-0.20.1-py2.py3-none-any.whl (4.9 MB)
+Using cached parso-0.8.7-py2.py3-none-any.whl (107 kB)
+Using cached matplotlib_inline-0.2.2-py3-none-any.whl (9.5 kB)
+Using cached numpy-2.5.4-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.7 MB)
+Using cached pexpect-4.9.0-py2.py3-none-any.whl (63 kB)
+Using cached psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (155 kB)
+Using cached ptyprocess-0.7.0-py2.py3-none-any.whl (13 kB)
+Using cached pygments-2.21.0-py3-none-any.whl (1.3 MB)
+Using cached setuptools-84.2.1-py3-none-any.whl (876 kB)
+Using cached stack_data-0.6.3-py3-none-any.whl (24 kB)
+Using cached asttokens-3.0.2-py3-none-any.whl (28 kB)
+Using cached executing-2.3.0-py3-none-any.whl (29 kB)
+Using cached llvmlite-0.50.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (59.7 MB)
+Using cached matplotlib-3.11.2-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (9.9 MB)
+Using cached contourpy-1.4.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (384 kB)
+Using cached cycler-0.12.1-py3-none-any.whl (8.3 kB)
+Using cached fonttools-4.67.0-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.4 MB)
+Using cached kiwisolver-1.5.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.5 MB)
+Using cached numba-0.68.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (3.8 MB)
+Using cached openpyxl-3.1.5-py2.py3-none-any.whl (250 kB)
+Using cached packaging-26.3-py3-none-any.whl (129 kB)
+Downloading pandas-3.1.0-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (12.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.0/12.0 MB 90.3 MB/s  0:00:00
+Using cached pillow-13.0.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (7.1 MB)
+Downloading pint-0.26.2-py3-none-any.whl (351 kB)
+Using cached flexcache-0.3-py3-none-any.whl (13 kB)
+Using cached flexparser-0.4-py3-none-any.whl (27 kB)
+Using cached platformdirs-4.13.5-py3-none-any.whl (32 kB)
+Using cached pyparsing-3.3.3-py3-none-any.whl (126 kB)
+Using cached python_dateutil-3.0.0-py2.py3-none-any.whl (94 kB)
+Using cached scipy-1.18.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (35.3 MB)
+Using cached six-1.17.0-py2.py3-none-any.whl (11 kB)
+Using cached thermo-0.6.1-py3-none-any.whl (6.4 MB)
+Using cached chemicals-1.5.2-py3-none-any.whl (22.3 MB)
+Using cached fluids-1.3.1-py3-none-any.whl (608 kB)
+Using cached traitlets-5.16.1-py3-none-any.whl (86 kB)
+Using cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Downloading wcwidth-0.9.4-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (785 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 785.9/785.9 kB 80.4 MB/s  0:00:00
+Downloading xlrd-2.0.2-py2.py3-none-any.whl (96 kB)
+Downloading ansicolors-1.1.8-py2.py3-none-any.whl (13 kB)
+Using cached colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+Using cached coolprop-8.0.0-cp312-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (10.8 MB)
+Using cached et_xmlfile-2.0.0-py3-none-any.whl (18 kB)
+Using cached imageio-2.38.1-py3-none-any.whl (328 kB)
+Downloading importlib_metadata-10.1.0-py3-none-any.whl (32 kB)
+Downloading zipp-4.1.2-py3-none-any.whl (10 kB)
+Using cached pure_eval-0.2.4-py3-none-any.whl (11 kB)
+Using cached pydot-4.0.1-py3-none-any.whl (37 kB)
+Downloading pyglet-2.1.19-py3-none-any.whl (1.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.0/1.0 MB 87.9 MB/s  0:00:00
+Using cached pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (801 kB)
+Using cached tzdata-2026.5-py2.py3-none-any.whl (347 kB)
+Building wheels for collected packages: biosteam, numpoly, thermosteam, colorpalette, flexsolve
+  Building wheel for biosteam (pyproject.toml): started
+  Building wheel for biosteam (pyproject.toml): finished with status 'done'
+  Created wheel for biosteam: filename=biosteam-2.54.0-py3-none-any.whl size=553284 sha256=dbba8205fc2b26a0dd67c00ce74b963e147728705677f079e5b629934b206689
+  Stored in directory: /home/frankp/.cache/pip/wheels/77/74/bd/57abd91222188af6980b026a1413a25fc8efcd1f394f459fb6
+  Building wheel for numpoly (pyproject.toml): started
+  Building wheel for numpoly (pyproject.toml): finished with status 'done'
+  Created wheel for numpoly: filename=numpoly-1.3.9-cp313-cp313-linux_x86_64.whl size=1194490 sha256=dd341ea71b5773a41429bc9d804dcba8893ba20c0f8e7a6404e2f44fb6637b53
+  Stored in directory: /home/frankp/.cache/pip/wheels/d5/44/88/261d29e4d0db0e4b6ad0b27664c08e1cc443ccd596250400e4
+  Building wheel for thermosteam (pyproject.toml): started
+  Building wheel for thermosteam (pyproject.toml): finished with status 'done'
+  Created wheel for thermosteam: filename=thermosteam-0.54.2-py3-none-any.whl size=2033243 sha256=4e5090a7f35ccb79d3ec229b01c040bc2629e56716e320b558bc7337a416659c
+  Stored in directory: /home/frankp/.cache/pip/wheels/b3/0b/0d/efd4c272357c6ecdf8b0149b0f8a955b9ad5391753eea1eae9
+  Building wheel for colorpalette (pyproject.toml): started
+  Building wheel for colorpalette (pyproject.toml): finished with status 'done'
+  Created wheel for colorpalette: filename=colorpalette-0.3.3-py3-none-any.whl size=8029 sha256=8e9cb6dc07f6d7010b4fdd0065dce050d208db9dd855ae0115f79227da097442
+  Stored in directory: /home/frankp/.cache/pip/wheels/b5/55/b7/b37981808445afff071562646d945bb1d62fe1071249be400b
+  Building wheel for flexsolve (pyproject.toml): started
+  Building wheel for flexsolve (pyproject.toml): finished with status 'done'
+  Created wheel for flexsolve: filename=flexsolve-0.5.10-py3-none-any.whl size=17721 sha256=a10a04d15ee369defb9e6d3a86e224af456ff70ba30988e215bfb73c3a5b2cf8
+  Stored in directory: /home/frankp/.cache/pip/wheels/10/04/ae/fdf68ad0b3b28f48b4b96519348b83adfe7d0282fa7ffec611
+Successfully built biosteam numpoly thermosteam colorpalette flexsolve
+Installing collected packages: pure-eval, ptyprocess, ansicolors, zipp, xlrd, wcwidth, tzdata, typing-extensions, traitlets, six, setuptools, pyyaml, pyparsing, pygments, pyglet, psutil, platformdirs, pillow, pexpect, parso, packaging, numpy, llvmlite, kiwisolver, graphviz, fonttools, executing, et-xmlfile, cycler, colorama, asttokens, stack_data, scipy, python-dateutil, pydot, prompt_toolkit, openpyxl, numba, matplotlib-inline, jedi, ipython-pygments-lexers, importlib-metadata, imageio, flexparser, flexcache, coolprop, contourpy, colorpalette, pint, pandas, numpoly, matplotlib, IPython, fluids, flexsolve, chemicals, chaospy, thermo, thermosteam, hensmith, biosteam
+
+Successfully installed IPython-9.17.1 ansicolors-1.1.8 asttokens-3.0.2 biosteam-2.54.0 chaospy-4.3.21 chemicals-1.5.2 colorama-0.4.6 colorpalette-0.3.3 contourpy-1.4.0 coolprop-8.0.0 cycler-0.12.1 et-xmlfile-2.0.0 executing-2.3.0 flexcache-0.3 flexparser-0.4 flexsolve-0.5.10 fluids-1.3.1 fonttools-4.67.0 graphviz-0.21 hensmith-0.1.2 imageio-2.38.1 importlib-metadata-10.1.0 ipython-pygments-lexers-1.1.1 jedi-0.20.1 kiwisolver-1.5.1 llvmlite-0.50.0 matplotlib-3.11.2 matplotlib-inline-0.2.2 numba-0.68.0 numpoly-1.3.9 numpy-2.5.4 openpyxl-3.1.5 packaging-26.3 pandas-3.1.0 parso-0.8.7 pexpect-4.9.0 pillow-13.0.0 pint-0.26.2 platformdirs-4.13.5 prompt_toolkit-3.0.53 psutil-7.2.2 ptyprocess-0.7.0 pure-eval-0.2.4 pydot-4.0.1 pyglet-2.1.19 pygments-2.21.0 pyparsing-3.3.3 python-dateutil-3.0.0 pyyaml-6.0.3 scipy-1.18.1 setuptools-84.2.1 six-1.17.0 stack_data-0.6.3 thermo-0.6.1 thermosteam-0.54.2 traitlets-5.16.1 typing-extensions-4.16.0 tzdata-2026.5 wcwidth-0.9.4 xlrd-2.0.2 zipp-4.1.2
+
+real	0m33.429s
+user	0m37.731s
+sys	0m2.882s
+EXIT 0

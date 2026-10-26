@@ -181,3 +181,5 @@ All four answered with the recommended default (Frank, 2026-10-25):
   raise; S08-design §11 limitation).
 - **Q-S09-2** (if BioSTEAM cannot model RC4, queue a ChemSep-LITE package?) — default: queue but do not start. Moot if
   S09's verdict confirms BioSTEAM's RC4 (WO-S09-2b qualified RC4 at L2(c)).
+- **Q-S09-1** (which third column reference tool should S09 plan for: BioSTEAM, ChemSep-LITE under Wine, or both?) —
+  **Frank: "BioSTEAM first (Rec.)"** (2026-10-25). Survey and feasibility spike: `docs/briefs/S09-third-reference-tool.md`.

@@ -1,0 +1,15 @@
+Gamma: tool 'IdealActivityCoefficients'; registered 'IdealActivityCoefficients'; equal True; thermosteam.equilibrium has the registered spelling: True
+Phi: tool 'IdealFugacityCoefficients'; registered 'IdealFugacityCoefficients'; equal True; thermosteam.equilibrium has the registered spelling: True
+PCF: tool 'MockPoyintingCorrectionFactors'; registered 'MockPoyintingCorrectionFactors'; equal True; thermosteam.equilibrium has the registered spelling: True
+mixture: tool 'IdealMixture'; registered 'IdealMixture'; equal True
+include_excess_energies: tool False; equal True
+A Psat: method 'USER_METHOD', all ['USER_METHOD']
+A Hvap: method 'USER_METHOD', all ['USER_METHOD']
+B Psat: method 'USER_METHOD', all ['USER_METHOD']
+B Hvap: method 'USER_METHOD', all ['USER_METHOD']
+C Psat: method 'USER_METHOD', all ['USER_METHOD']
+C Hvap: method 'USER_METHOD', all ['USER_METHOD']
+Q-X10 ladder: tool [['inside out', 'fixed-point'], ['phenomena', 'fixed-point'], ['simultaneous correction', 'hybr'], ['sequential modular', 'fixed-point']]; equal to the registered rungs True
+IQ_interpolation positional parameters: ['f', 'x0', 'x1', 'y0', 'y1', 'x', 'xtol', 'ytol', 'args', 'maxiter', 'checkroot', 'checkiter', 'checkbounds']; as §5.4 reads them True
+at T = 351 K, P = 1e5 Pa, x = (0.2, 0.3, 0.5): Gamma [1. 1. 1.] Phi 1.0 PCF 1.0
+every registered identifier equals the tool's: True

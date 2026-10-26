@@ -232,7 +232,9 @@ _DOC_KEYS = {
 def documented_fingerprint() -> dict[str, dict[str, str]]:
     text = (REPO_ROOT / "docs" / "reference-environments.md").read_text(encoding="utf-8")
     out: dict[str, dict[str, str]] = {"idaes": {}, "dwsim": {}}
-    for tool, label, digest in re.findall(r"^\[\.venv-(\w+)\] (.+): ([0-9a-f]{64})$", text, re.M):
+    # T06's two tools only: the same document also lists S09's `.venv-biosteam` (§9).
+    pattern = r"^\[\.venv-(idaes|dwsim)\] (.+): ([0-9a-f]{64})$"
+    for tool, label, digest in re.findall(pattern, text, re.M):
         key = _DOC_KEYS[tool, label]
         assert out[tool].setdefault(key, digest) == digest, (tool, label)
     return out
