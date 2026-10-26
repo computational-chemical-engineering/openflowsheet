@@ -225,3 +225,29 @@ parallel (the note's §4.6 set-up).
   `test_t06_w20_counters.py` A93 [THM-08-3] (1, 6), [THM-08-12] (2, 5 and 6), [THM-09-4] (1, 10);
   `test_t07_interrupt.py` `test_interrupt_at_every_record` (151, 10) and `test_interrupt_at_record_k[THM-09-4]` (7, 10).
   Every acting entry is roundoff (largest 6.22e-15).
+- RUN (WO-R1, T06 ensemble at `f9122cc7`, detached clean tree, outputs outside the repository): nominal `r782-pre`
+  440 starts, `SUCCESS` 434, `F-BUDGET` 3, `F-FALSE-SUCCESS-CAUGHT` 3; `holdout1` 440, `SUCCESS` 436, `F-BUDGET` 2,
+  `F-FALSE-SUCCESS-CAUGHT` 2. No generation or process errors.
+- RUN (WO-R2 step 1, G-R1/G-R4): `tests/test_k03_r782_release.py` 5/5 and B33c i–v pass; (i) and (v) fail on
+  `f9122cc7` (the tests see the change). Full suite on the step-1 tree: the failed set is WO-R1's plus exactly
+  `test_a93_run_1s_budget_starts_record_the_cap` ×3 and `test_interrupt_at_record_k[THM-09-4]` (§4.7 items 3–4), and
+  `test_m07_journey` A21, which refuses an uncommitted `newton.py` (carry identity; passes once committed, below).
+  `S10C-IDENTITY PASS n=858 changed=[]`; `S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL` (registered line).
+- RUN (WO-R2 step 2, G-R5, measured on this workstation): A93 uncapped `SUCCESS` in 245 / 279 / 424 property calls
+  (THM-08/3, THM-08/12, THM-09/4); capped at the test-local 100: `BUDGET_EXHAUSTED`, `property_calls` =
+  `requested_evaluations` = 100 on all three. T07 THM-09 start 4: 94 records / 49 plan events / `CONVERGED` uncapped;
+  24 / 14 / `BUDGET_EXHAUSTED` at the test-local cap. `test_t07_interrupt.py` 16/16, `test_t06_w20_counters.py` all pass.
+- RUN (at `e88f72a9`): full suite 13225 passed, 12 failed (WO-R1's `t01_structural` file-alone set, unchanged), 3137
+  skipped. ruff check, ruff format, mypy (250 files) clean.
+- RUN (G-R2, local x86-64): 320-solve perturbation campaign 320/320 `CONVERGED`, first Newton solve 9 iterations in all
+  320, worst A41 ratio 1.2949e-7. `OPENBLAS_CORETYPE` default/Prescott/Sandybridge/Nehalem: 4/4 `CONVERGED` in 9,
+  worst 1.2941e-7 / 1.2941e-7 / 1.2938e-7 / 1.2946e-7 (`COL.stage.15.T`). Absent flows at the answer: C-MW 60/60
+  C2H5OH columns and C-EW 60/60 CH3OH columns exactly `+0.0` (C-EW `CONVERGED` in 4, worst 2.1396e-8, unchanged).
+- RUN (G-R6, `pytest tests/test_s02_*.py tests/test_s08_*.py`, alternating `f9122cc7` / `e88f72a9`, 3 each): before
+  35.0, 34.8, 35.0 s; after 34.5, 34.5, 34.7 s; median change −1.2 % (≤ +2 %).
+- RUN (G-R7 local half, T06 ensemble at `e88f72a9` against WO-R1's, by record, wall times excluded): nominal 13 of 440
+  moved — `F-BUDGET` → `SUCCESS` THM-08/03, /12, THM-09/04; `SUCCESS` → `SUCCESS` STA-02/01, /03, /14, THM-07/13,
+  THM-08/14, /17, THM-09/11, /14, /15, /16 (`SUCCESS` 437, `F-FALSE-SUCCESS-CAUGHT` 3); holdout 13 of 440 moved —
+  `F-BUDGET` → `SUCCESS` THM-09/24, /35; `SUCCESS` → `SUCCESS` NUM-03/26, STA-02/22, /23, /27, /30, /36, /38,
+  THM-07/34, THM-08/28, /37, /38 (`SUCCESS` 438, `F-FALSE-SUCCESS-CAUGHT` 2). **Equal to note §4.6's table; no
+  regression.** WO-R3 (CI dispatch, aarch64 G-R3, CI half of G-R7) is the orchestrator's.
