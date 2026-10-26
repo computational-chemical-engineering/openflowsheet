@@ -143,3 +143,6 @@ Design: `docs/derivations/S08b-design.md` (R-790 to R-794). Branch `wp/S08b`. Ap
   angle-bracket placeholder, which `test_evidence_manifests.py` refuses; fixed in `acbd1266` and re-run.
 - Not done here: the full gate (G2), CI on both architectures, the `reviewer` pass; the T08 harvest follows in its own
   commit.
+- T08 harvest (`cb25186d`): 8 limitations and 2 checks appended (E → L19, L19, U04+L20; the rest P); `HARVEST_SIZE`
+  (58, 824, 99) → (59, 832, 101); `t08_support_matrix.py --check` 0 problems; harvest, envelope and manifest tests 412
+  passed. Next (orchestrator): `scripts/gate.sh`, CI on both architectures, the `reviewer` pass, merge.
