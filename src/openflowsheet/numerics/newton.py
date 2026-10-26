@@ -36,6 +36,7 @@ calls are metered like any iteration's, so under a property budget the solve can
 
 from __future__ import annotations
 
+from collections import deque
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal, Protocol
@@ -43,6 +44,7 @@ from typing import Any, Literal, Protocol
 import numpy as np
 import numpy.typing as npt
 import scipy.sparse as sp
+from scipy.sparse.csgraph import maximum_bipartite_matching
 
 from openflowsheet.canonical import normalize_zero, state_sha256
 from openflowsheet.numerics.linear import (
@@ -850,51 +852,63 @@ def _released(
     a maximum matching of the closed rows into `Z₀`: a column is outside `Z*` exactly when an
     unmatched column is reachable from it through its matched row's support (the Dulmage–Mendelsohn
     over-determined part). The count is re-checked on the answer; a set that fails it (a singular
-    `J`, which the factorization has just excluded) releases nothing."""
+    `J`, which the factorization has just excluded) releases nothing.
+
+    The matching is SciPy's iterative Hopcroft–Karp and the reachable set a worklist (R-786,
+    replacing R-064's recursive augmenting search): no recursion at any `|Z₀|`, and the identical
+    result, since the reachable set is the columns some maximum matching leaves uncovered
+    (Gallai–Edmonds), whichever maximum matching is found."""
     on_bound = np.isfinite(lower) & (x == lower) & (opening == lower)
-    columns = frozenset(int(index) for index in np.flatnonzero(on_bound))
-    if not columns:
+    if not on_bound.any():
         return ()
     rows = sp.csr_matrix(jacobian)
-    supports: list[tuple[int, ...]] = []
-    for row, value in enumerate(residual):
-        if value != 0.0:
-            continue
-        start, end = rows.indptr[row], rows.indptr[row + 1]
-        support = tuple(
-            int(column)
-            for column, entry in zip(rows.indices[start:end], rows.data[start:end], strict=True)
-            if entry != 0.0
-        )
-        if support and columns.issuperset(support):
-            supports.append(tuple(sorted(support)))
-    matched: dict[int, int] = {}  # column -> row (an index into `supports`)
-
-    def augment(row: int, seen: set[int]) -> bool:
-        for column in supports[row]:
-            if column in seen:
-                continue
-            seen.add(column)
-            if column not in matched or augment(matched[column], seen):
-                matched[column] = row
-                return True
-        return False
-
-    for row in range(len(supports)):
-        augment(row, set())
-    outside = set(columns) - set(matched)
-    grew = True
-    while grew:
-        grew = False
-        for column, row in matched.items():
-            if column not in outside and not outside.isdisjoint(supports[row]):
-                outside.add(column)
-                grew = True
-    released = columns - outside
-    closed = sum(1 for support in supports if released.issuperset(support))
-    if not released or closed != len(released):
+    m = rows.shape[0]
+    kept = rows.data != 0.0
+    row_of = np.repeat(np.arange(m), np.diff(rows.indptr))
+    n_kept = np.bincount(row_of[kept], minlength=m)
+    n_in = np.bincount(row_of[kept & on_bound[rows.indices]], minlength=m)
+    closed = (np.asarray(residual, dtype=np.float64) == 0.0) & (n_kept > 0) & (n_in == n_kept)
+    if not closed.any():
         return ()
-    return tuple(sorted(released))
+    z0 = np.flatnonzero(on_bound)
+    local = np.full(on_bound.shape[0], -1, dtype=np.int64)
+    local[z0] = np.arange(z0.size)
+    crow = np.full(m, -1, dtype=np.int64)
+    closed_rows = np.flatnonzero(closed)
+    crow[closed_rows] = np.arange(closed_rows.size)
+    entries = kept & closed[row_of]
+    incidence = sp.csr_matrix(
+        (
+            np.ones(int(entries.sum())),
+            (crow[row_of[entries]], local[rows.indices[entries]]),
+        ),
+        shape=(closed_rows.size, z0.size),
+    )
+    incidence.sum_duplicates()  # data 1.0: duplicates add, never cancel
+    match = maximum_bipartite_matching(incidence, perm_type="column")  # row -> column, or -1
+    row_of_col = np.full(z0.size, -1, dtype=np.int64)
+    row_of_col[match[match >= 0]] = np.flatnonzero(match >= 0)
+    outside = row_of_col < 0
+    by_column = incidence.tocsc()
+    worklist = deque(int(column) for column in np.flatnonzero(outside))
+    while worklist:
+        column = worklist.popleft()
+        for row in by_column.indices[by_column.indptr[column] : by_column.indptr[column + 1]]:
+            other = int(match[row])
+            if other >= 0 and not outside[other]:
+                outside[other] = True
+                worklist.append(other)
+    released = ~outside
+    if not released.any():
+        return ()
+    entry_rows = np.repeat(np.arange(incidence.shape[0]), np.diff(incidence.indptr))
+    touches_outside = np.bincount(
+        entry_rows[outside[incidence.indices]], minlength=incidence.shape[0]
+    )
+    count = int(np.count_nonzero(touches_outside == 0))
+    if count != int(released.sum()):
+        return ()
+    return tuple(int(index) for index in z0[released])
 
 
 def _trial_point(
