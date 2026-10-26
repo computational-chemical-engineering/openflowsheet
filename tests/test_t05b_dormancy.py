@@ -955,17 +955,18 @@ def test_items_are_one_step_in_the_lattice() -> None:
     from openflowsheet.orchestrator.phase_contract import adjacent
 
     item = ("U-PUMP.outlet", "ZERO_FLOW")
+    items = {"U-PUMP.outlet"}  # S08b §5.1: the attempt's declared items
     phf = ("U-PHF", "TWO_PHASE")
-    assert adjacent((phf,), (phf, item))
-    assert adjacent((phf, item), (phf,))
-    assert adjacent((("U-PHF", "LIQUID"), item), (phf,))
-    assert not adjacent((("U-PHF", "LIQUID"), item), (("U-PHF", "VAPOR"),))
-    assert not adjacent((phf, item), (phf, item))
+    assert adjacent((phf,), (phf, item), items=items)
+    assert adjacent((phf, item), (phf,), items=items)
+    assert adjacent((("U-PHF", "LIQUID"), item), (phf,), items=items)
+    assert not adjacent((("U-PHF", "LIQUID"), item), (("U-PHF", "VAPOR"),), items=items)
+    assert not adjacent((phf, item), (phf, item), items=items)
     # A lifted unit is never absent: an entry in one signature only that is not `ZERO_FLOW`.
-    assert not adjacent((phf,), (phf, ("U-VLV", "LIQUID")))
+    assert not adjacent((phf,), (phf, ("U-VLV", "LIQUID")), items=items)
     # The entries both carry must come in the same order.
     other = ("U-VLV", "LIQUID")
-    assert not adjacent((phf, other), (other, phf, item))
+    assert not adjacent((phf, other), (other, phf, item), items=items)
 
 
 # ------------------------------------------------------- B30 (a): inert on registered cases

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any, Final, Literal, Protocol
@@ -86,32 +87,30 @@ OPENING_CHECKS: Final[tuple[str, ...]] = (
 )
 
 
-def _is_item(unit: str) -> bool:
-    """T05b spec §7.8 (i): a dormancy-form item's key is `<U>.<port>`; a unit id never contains
-    `.` (the revision reader's R1, since K02's ids use it as a separator)."""
-    return "." in unit
+def _split(
+    signature: AttemptSignature, items: AbstractSet[str]
+) -> tuple[AttemptSignature, frozenset[str]]:
+    """A signature's unit entries, in signature order, and the keys of its items (always
+    `ZERO_FLOW`): an entry is an item iff its key is one of `items` (S08b §5.1, R-790)."""
+    units = tuple(entry for entry in signature if entry[0] not in items)
+    return units, frozenset(unit for unit, _ in signature if unit in items)
 
 
-def _split(signature: AttemptSignature) -> tuple[AttemptSignature, frozenset[str]]:
-    """A signature's unit entries, and the keys of its items (always `ZERO_FLOW`)."""
-    units = tuple(entry for entry in signature if not _is_item(entry[0]))
-    return units, frozenset(unit for unit, _ in signature if _is_item(unit))
-
-
-def adjacent(frozen: AttemptSignature, other: AttemptSignature) -> bool:
+def adjacent(frozen: AttemptSignature, other: AttemptSignature, *, items: AbstractSet[str]) -> bool:
     """T03 §4.4: every unit equal or one step apart on the lattice, at least one different; the
     lattice with T05b spec §7.3's `ZERO_FLOW` adjacent to every regime.
 
-    T05b spec §7.8 (i): a dormancy-form item `(<U>.<port>, ZERO_FLOW)` is in a signature only
-    while its form runs, and its absence (the declared form) and its presence are one step apart.
-    The unit entries are judged by T03 §4.4's rule exactly as before; without items (every v1
-    signature, every tear signature) nothing else is read."""
-    units, items = _split(frozen)
-    other_units, other_items = _split(other)
+    T05b spec §7.8 (i): an item is a key of `items` — the attempt's dormancy-form items, empty on
+    the tear path and under v1 — and is in a signature only while its form runs; its absence (the
+    declared form) and its presence are one step apart. Every other entry is a signature unit
+    (ADR 0005 D2), whatever its spelling, judged by T03 §4.4's rule; without items nothing else is
+    read. `items` is required so that a forgotten argument cannot turn items into units."""
+    units, held = _split(frozen, items)
+    other_units, other_held = _split(other, items)
     if [unit for unit, _ in units] != [unit for unit, _ in other_units]:
         return False
     steps = [_step(a, b) for (_, a), (_, b) in zip(units, other_units, strict=True)]
-    steps += [1] * len(items ^ other_items)
+    steps += [1] * len(held ^ other_held)
     return all(step <= 1 for step in steps) and any(step == 1 for step in steps)
 
 
@@ -128,19 +127,17 @@ def _changes(
     """`unit:<from>-><to>` for each unit entry that differs, in signature order (T03 §4.10,
     unchanged); then, T05b spec §7.8 (i), each dormancy-form item in one signature only, in
     `declared`'s order (declaration order), its absent side named by its outlet's declared phase:
-    `U-PUMP.outlet:LIQUID->ZERO_FLOW`."""
-    units, items = _split(frozen)
-    other_units, other_items = _split(other)
+    `U-PUMP.outlet:LIQUID->ZERO_FLOW`. The items are `declared`'s keys (S08b §5.1)."""
+    items = frozenset(declared)
+    units, held = _split(frozen, items)
+    other_units, other_held = _split(other, items)
     changes = [
         f"{unit}:{a}->{b}" for (unit, a), (_, b) in zip(units, other_units, strict=True) if a != b
     ]
-    toggled = items ^ other_items
-    order = [*(item for item in declared if item in toggled), *sorted(toggled - set(declared))]
-    for item in order:
-        absent = declared.get(item)
-        if absent is None:
-            raise ValueError(f"defect: {item} is an item with no declared phase")
-        a, b = (_ZERO_FLOW, absent) if item in items else (absent, _ZERO_FLOW)
+    toggled = held ^ other_held
+    for item in (item for item in declared if item in toggled):
+        absent = declared[item]
+        a, b = (_ZERO_FLOW, absent) if item in held else (absent, _ZERO_FLOW)
         changes.append(f"{item}:{a}->{b}")
     return ", ".join(changes)
 
@@ -239,12 +236,13 @@ class WallObserver:
             return False
         return closing_iteration - self.iterations_with_wall[-1] < self._policy.stagnation_window
 
-    def choose(self, frozen: AttemptSignature) -> Candidate | None:
-        """T03 §4.5: the first candidate whose signature is adjacent, else the first."""
+    def choose(self, frozen: AttemptSignature, *, items: AbstractSet[str]) -> Candidate | None:
+        """T03 §4.5: the first candidate whose signature is adjacent, else the first; `items` the
+        attempt's dormancy-form items (`adjacent`)."""
         if not self.candidates:
             return None
         for candidate in self.candidates:
-            if adjacent(frozen, candidate.signature):
+            if adjacent(frozen, candidate.signature, items=items):
                 return candidate
         return self.candidates[0]
 
@@ -433,8 +431,10 @@ def _proposal(
     # an item's absence in a cause string. Only the lifted path under v2 has items; an ops without
     # the attribute (the tear path, every v1 attempt) has none.
     declared: Mapping[str, str] = getattr(ops, "declared_phases", MappingProxyType({}))
+    # S08b §5.1 (R-790): the items are the declared ones; every other entry is a unit.
+    items = frozenset(declared)
     if result.outcome == "PHASE_UPDATE_REQUIRED":
-        candidate = wall.choose(frozen)
+        candidate = wall.choose(frozen, items=items)
         if candidate is not None:
             return ops.at_candidate(
                 candidate,
@@ -447,7 +447,7 @@ def _proposal(
     if result.outcome in _STALL_OUTCOMES and wall.stalled_at_the_wall(
         result.outcome, result.iterations
     ):
-        candidate = wall.choose(frozen)
+        candidate = wall.choose(frozen, items=items)
         if candidate is not None:
             return ops.at_candidate(
                 candidate, f"phase_wall(stall, {_changes(frozen, candidate.signature, declared)})"
