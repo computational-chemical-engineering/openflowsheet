@@ -1781,6 +1781,8 @@ release note calling V14 passed.
 **Watch for.** The release widened to components that reached their bound during the attempt (breaks the disappearance mechanism); the "exactly `F == 0`" and "exactly as many rows as columns" conditions relaxed to tolerances; the release extended to every step, not only where `α_max = 0`, without its own inertness proof.
 
 > **Amended 2026-09-25 (T05b Q-S13; re-review S-W1, N-W7):** "the attempt's opening" is the attempt's — a caller that runs one attempt through several Newton calls (T04's homotopy corrector) passes it (`opening=`); the release is the Newton core's only, and T04's PTC core (pseudo-steps and polish) keeps K03 §5.3's first paragraph (K03 §5.3 and T04 §7.5 notes; T05b B35). *Rejected:* the call's start as the opening (a phase vanished at an earlier λ-level would be released); the release in PTC by reference (its proof does not transfer to `J + D/Δt` as it stands). *Watch for:* a new multi-call caller of `solve_newton` that does not pass `opening=`.
+>
+> **Amended 2026-10-26 (S10-C, R-782):** the release now applies at every iteration where it changes the step (`α_max > 0` with a nonzero direction entry on `Z*`), not only at `α_max = 0`. The exactness conditions, the opening condition and the PTC scope are unchanged. This is the extension this entry's "Watch for" names, made with its own inertness proof (`docs/derivations/S10C-absent-component.md` §4.4) and the measured list of everything it moves (§4.6).
 
 ---
 
@@ -15343,3 +15345,41 @@ flowsheet-selection package, because S10-C is library-level only.
   grid or closed form is a design decision of its own.
 
 **Watch for.** Any user-facing path that lets a user supply Wilson records: the check becomes a must-fix there.
+
+## R-782 — K03's Newton releases structural zeros at every step, not only at `α_max = 0` (amends R-064; closes S10-C §7 Q4 for C-MW)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S10-C escalation under design §7 Q4; Frank's standing directive (fewest limitations, robustness first) |
+| Normative text | `docs/derivations/K03-solver-spec.md` §5.3 (amended 2026-10-26); `docs/derivations/S10C-absent-component.md` §4.1 (rule), §4.4 (inertness), §4.7 (moved records); T06 spec A93 (amendment note) |
+| Evidence | *measured* (scratch, `f1a0a058`, local x86-64; note §4.6). C-MW: 4/4 OpenBLAS kernels and 320/320 ulp-perturbed solves `CONVERGED` in 9 iterations (pre-change: 2/4, and 105 + 55 rescued of 320), worst A41 ratio 1.2949e-7; absent flows exactly `+0.0`. Suite: 12 tests have an acting iteration, 4 of them fail as §4.7 predicts, nothing outside them moves. `S10C-IDENTITY PASS n=858 changed=[]`; S08's registered pass line. T06 ensemble: 26 of 880 starts move, 5 `F-BUDGET` → `SUCCESS` (every x86-64 `F-BUDGET` on record), 0 regressions. PTC-R1: 0 of 882 runs move. aarch64: pending, WO-R3 |
+| Affected packages | K03 (Newton core); S10-C (C-MW, C-EW); T05b/T06 (SC-3 bits); T06 (A93 witnesses; ensemble records, not re-scored); T07 (record-k witness) |
+
+**Decision.** At every Newton iteration with `α_max > 0`, if some component of R-064's `Z₀` has a nonzero direction
+entry, `Z*` is computed exactly as R-064 computes it. If `Z*` meets the direction's support, `d_{Z*} := 0` exactly,
+together with the step record's entries. `α_max` and the landing set are provably unchanged. At `α_max = 0`, R-064
+applies verbatim. No tolerance and no record are added. The rulings on the moved records (note §4.7) are part of this
+decision:
+- T06 A93's three witnesses run under a test-local `max_property_calls = 100`, and uncapped they must classify
+  `SUCCESS`.
+- T07's THM-09 start 4 length pin is re-measured, and a capped run of that start keeps the budget refusal covered.
+- T06's recorded runs are neither re-scored nor edited. A later A98 that reports the listed starts as class
+  discrepancies is reporting this decision.
+
+**Rejected alternatives, and why.**
+- A structural-zero form for absent components: it changes rows and records, needs an ADR, and leaves non-column
+  solves exposed.
+- C-MW/C-EW on a two-component record set: it hides the defect.
+- A platform-dependent limitation: against the directive; x86-64 passes by roundoff sign.
+- Eliminating `Z*` from the linear solve: it moves every `α_max = 0` release and ADR 0004's record.
+- Holding `Z*` from the attempt's opening: not provable at later iterates.
+- A roundoff threshold: a tolerance on the exact path.
+- Raising the registry budget for A93's witnesses: the budget is not what changed (R-087).
+
+**Watch for.**
+- The `α_max = 0` branch restructured: it must stay bit-identical.
+- The release widened past R-064's `Z₀`, or its exactness relaxed.
+- The rule copied into T04's PTC core without its own proof (`J + D/Δt`; note §7 Q1).
+- A test-local cap mistaken for a registry change.
+- A later A98 discrepancy at a start outside note §4.6's table attributed to R-782 without a detector run.
