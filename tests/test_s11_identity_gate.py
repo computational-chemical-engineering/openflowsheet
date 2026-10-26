@@ -205,19 +205,21 @@ def test_g1_the_hint_is_part_of_the_outcome_though_not_of_unbound_equality() -> 
 def test_g1_a_binding_is_compared_by_its_spec_ids_kinds_and_parameter_bits() -> None:
     binding = bind_revision_flowsheet(CORPUS["SYN-001-nominal"]())
     assert isinstance(binding, RevisionBinding)
-    fields = recorder.outcome(binding)
-    assert fields[0] == "bound" and fields[1] == binding.revision_sha256
+    fields = recorder.outcome(binding, binding.revision_sha256)
+    assert fields[:2] == ("bound", True)
+    assert recorder.outcome(binding, "0" * 64)[1] is False
     assert fields[3] == binding.spec.variable_ids and fields[4] == binding.spec.equation_ids
     name = binding.spec.parameter_ids[0]
     value = float(binding.spec.parameters[name])
     nudged = dict(binding.spec.parameters)
     nudged[name] = value + abs(value) * sys.float_info.epsilon + sys.float_info.min
     moved = replace(binding, spec=replace(binding.spec, parameters=nudged))
-    assert recorder.outcome(moved) != fields
+    assert recorder.outcome(moved, binding.revision_sha256) != fields
     kinds = dict(binding.spec.row_kinds)
     row = next(iter(kinds))
     kinds[row] = "dimensionless" if kinds[row] != "dimensionless" else "pressure"
-    assert recorder.outcome(replace(binding, spec=replace(binding.spec, row_kinds=kinds))) != fields
+    kinded = replace(binding, spec=replace(binding.spec, row_kinds=kinds))
+    assert recorder.outcome(kinded, binding.revision_sha256) != fields
 
 
 def test_g1_the_document_digest_falls_back_for_a_document_with_no_canonical_form() -> None:
@@ -225,3 +227,15 @@ def test_g1_the_document_digest_falls_back_for_a_document_with_no_canonical_form
     canonical = recorder.document_digest(document)
     document["broken"] = float("nan")
     assert recorder.document_digest(document) not in (canonical, recorder.document_digest({}))
+
+
+def test_g1_the_document_digest_marks_the_revision_identifiers_only() -> None:
+    """`VOLATILE`: a clock-named revision (`test_t07_r6_replays`) digests as any other name; every
+    other field still moves the digest."""
+    document = CORPUS["SYN-001-nominal"]()
+    digest = recorder.document_digest(document)
+    for name in recorder.VOLATILE:
+        renamed = {**document, name: "clock-123"}
+        assert recorder.document_digest(renamed) == digest
+    assert recorder.document_digest({**document, "extra": 1}) != digest
+    assert recorder.document_digest({**document, "streams": []}) != digest
