@@ -50,8 +50,9 @@ is Frank's call.
 | L3 | M04's off-Haswell question; J25 `env.verify` vs R-259 | machine-specific measurement |
 | L4 | **v0.3 S03**: two independent column references, perturbation studies | external reference environments (likely) |
 | L5 | Any release candidate (RC steps 12, 14, 17), the journey at a cut, W27/V17 campaigns | reactor/nlp environments, the archive, the login token (R-473) |
-| S08 | **One-phase column sections** (Frank, 2026-10-24, Q-S03-4 "Yes, plan a package"; provisional id from S03 spec §17.7): teach the phase logic to converge columns whose right answer has an all-liquid or all-vapour section, instead of the typed failure S03 registers as a limitation. Design lane first | after S03 merges |
+| S08 | **One-phase column sections** — **DONE**, merged into main `d96c17ae` (2026-10-26; ADR 0048 Proposed; manifest `evidence/S08/6d7d1a6d…` tested) | — |
 | S09 | **Third column reference tool** (Frank, 2026-10-24, Q-A2-4 "Plan a 3rd tool"): a reference tool beyond IDAES and DWSIM (candidates COCO/ChemSep; licences to check) for S03's column cases with fewer than two references — RC4 refluxed absorber (none), RC3 stripper and RC7 interior-stage temperature (IDAES only). Design lane first | after S03 merges |
+| S08b | **Phase-contract follow-ups from S08** (Frank's defaults, S08 design Q3/Q4): (a) column stage ids misread as dormancy items, so every column restart takes the largest-step candidate with an empty change list (`phase_wall(stall, )`); (b) trace-vapour (near-trivial split) roots may be accepted as TWO_PHASE in flash units and S01 cascades, as S08's item 6 now refuses for columns — a correctness exposure (S08 review). Design lane first | after S08 merges |
 
 ## How to run a cloud session cheaply
 

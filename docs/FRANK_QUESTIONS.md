@@ -174,3 +174,10 @@ All four answered with the recommended default (Frank, 2026-10-25):
   drops out of the IDAES comparison.
 - **Q-F6** (try DWSIM's Inside-Out flash on new states in a later package?) — **Frank: "No"** (2026-10-25). DWSIM stays
   a check on model expression, enthalpies' readbacks and phase labels; IDAES is the numerical reference.
+- **S08 design Q1/Q3/Q4 and review Q6** (defaults applied, Frank may overrule): Q1 S08 covers only block roots the
+  column's sources generate (yes); Q3 the contract misreads column stage ids as dormancy items (follow-up package, S08b);
+  Q4 trace-vapour roots in flash units and S01 cascades (follow-up, S08b; the reviewer calls it a real correctness
+  exposure); Q6 item 6 stays strict at low flow L·V < ~0.1 (mol/s)², a loosely converged correct root raises (keep the
+  raise; S08-design §11 limitation).
+- **Q-S09-2** (if BioSTEAM cannot model RC4, queue a ChemSep-LITE package?) — default: queue but do not start. Moot if
+  S09's verdict confirms BioSTEAM's RC4 (WO-S09-2b qualified RC4 at L2(c)).

@@ -92,27 +92,28 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-25, workstation; no cloud sessions).** `main` = `329757c2` (S10 complete, merged at wp/S10
-`6bc159e9`; tree identical). Last full gate: PASS at `6bc159e9`: 12244 passed, 3137 skipped. CI 40200526990 green (x86-64,
-aarch64, default-install, identity). v0.3 packages tested: S01–S05, S07, S10; R01–R03 open. **S10** (`wilson-ig-v1`,
-library-only, ADR 0047 Proposed; manifest `evidence/S10/f6f27c3f…` tested 53/56, 248 passed 0 skipped; D08 and D19 cited,
-D19 stays planned): IDAES 13 AGREE + I3 NOT_COMPARABLE; VAL-1 within band; VAL-2 within band for both binaries
-(methanol+water AAD_P 1.09 %, AAD_y 0.0048; ethanol+water 0.29 %, 0.0041; 40/159 points below the records' 30 kPa bound;
-verdict `docs/reviews/S10-validation-verdict-val2.md`); VAL-3 methanol Δh +5.72 % vs 5 % (missed, stated). HARVEST_SIZE
-(53, 735, 88). IDAES/DWSIM environments live in worktree `.claude/worktrees/s03`.
+**Position (2026-10-26, workstation; no cloud sessions).** `main` = `d96c17ae` (S08 merged at wp/S08 `f5565a34`; tree
+identical). Last full gate: PASS at `f5565a34`: 12356 passed, 3137 skipped. CI 40248543872 green (x86-64, aarch64,
+default-install, identity). v0.3 packages tested: S01–S05, S07, S08, S10; S09 in progress; R01–R03 open. **S08**
+(ADR 0048 Proposed; manifest `evidence/S08/6d7d1a6d…` tested 26/28; review `docs/reviews/S08-review.md`): Stage B block
+openings `V^a 2P^b L^c` after a typed or item-6-rejected Stage A; S02 §8 item 6 (two-phase stages within 1e-4 K of
+bubble/dew) found a false CONVERGED (F1); G1 `S08-IDENTITY PASS n=52 changed=[S02.P1]`. HARVEST_SIZE (54, 747, 90).
+**S10** done (VAL-2 within band). IDAES/DWSIM environments in worktree `.claude/worktrees/s03`.
 
 **Next actions (in order):**
-1. Queued: S08 one-phase column sections; S09 third column reference tool (RC4); S10-C (PH flash, column; architect;
-   includes review S-4: fit methanol+ethanol from non-Table-V data, and E-2's azeotrope stop rule).
-2. Design-lane leftovers: S07 B-42 harvest classes, F-20.2, Q-A1-2; ADR 0046/0047 acceptance; S03 B6-1..B6-4; S10 B-86,
-   B-87, B-90, B-91 (harvest classes), verdict F1 (A51.10 storage floor 5e-10 not 5e-11), F2 (A6-1 water-rich premise);
-   **S10 stale limitations, at the next S10 change (Frank 2026-10-25: "Do it later")**: A6-13's first item ("Any VAL-2
-   result. Nothing has been computed") and the generator's RC-06 sentence (1993 only; now also the 1995 paper).
-3. Binding package (S05/S07/S10 into flowsheets); S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
-4. Workstation backlog: M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
-5. For Frank (defaults set): Q-A6.3 extend the S10 records' P domain below 30 kPa (no); Q-A6.2 register the 1995
-   isothermal ternary (no); one water molar mass across conventions (not compared); M01/L01 adopt (ii′) after the CAS
-   clean-up (unchanged); Q-F3 ship S10 data after the rights check (RC-05/06/08 unresolved).
+1. **S09** (BioSTEAM third column reference; wp/S09, worktree `s09`, `.venv-biosteam`): spec + Amendment 1 (R-740…R-750);
+   blind qualification `95643b4c` (19 pairs, all available); WO-S09-3 classifier: 17 AGREE (worst RC6 0.0202 tol),
+   PC-LB/PC-P DISAGREE, X31 "met where available, 3 of 4"; manifest `evidence/S09/6ce5b624…` implemented (A19 waits).
+   Running: verdict (WO-S09-4) + reviewer. Then fixes, ledger X31/D19 (§8.5), harvest, gate, CI, merge.
+2. S10-C (PH flash, column; architect; review S-4 methanol+ethanol from non-Table-V data; E-2 azeotrope stop rule;
+   the two stale S10 limitation sentences, Frank "Do it later"). S08b (phase-contract follow-ups, `docs/CLOUD_WORK.md`).
+3. Design-lane leftovers: S07 B-42, F-20.2, Q-A1-2; ADR 0046/0047/0048 acceptance; S03 B6-1..B6-4; S10 B-86, B-87,
+   B-90, B-91, verdict F1/F2; S08 W5-7 (X31 in `evidence` not `requirements`, schema takes D/A ids), W5-9 classes.
+4. Binding package (S05/S07/S10 into flowsheets); S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
+5. Workstation backlog: M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
+6. For Frank (defaults set, `docs/FRANK_QUESTIONS.md`): S08 Q1/Q3/Q4/Q6; Q-S09-2; Q-A6.2/Q-A6.3; S10 Q-F3 (ship after
+   rights check; RC-05/06/08 unresolved).
+
 
 **History — W27 campaign running (2026-10-18):** C_W = `wp/M07` `83f825d` (WO-17b `d0307d8` + merge; gate 9923/35; CI 39136157258
 green). Records `benchmarks/m06/openidaes450/runs/w27-m07-83f825d/` in worktree `m07` (uncommitted until (d) ends).
