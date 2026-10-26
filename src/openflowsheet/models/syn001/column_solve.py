@@ -105,6 +105,7 @@ from openflowsheet.models.syn001.column import (
     specified_quantity,
     validate,
 )
+from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.orchestrator.execution import Region
@@ -137,6 +138,11 @@ PRESOLVE_ID: Final = "s02-bubble-point-v1"
 #: §18.2 step 3d: the sweeps stop at `max_j |ΔT_j| ≤ 1e-9 K`, after at most 500 sweeps.
 SWEEP_TOLERANCE: Final = 1e-9
 MAX_SWEEPS: Final = 500
+#: S10-C design note §4.9, composition-dependent K only: the sweeps evaluate K at the liquid
+#: composition relaxed by `ω` (`x̄_j^m = ω x_j^m + (1 − ω) x̄_j^{m−1}`; undamped, C-EW
+#: oscillates), and stop only once `max_{j,i} |x_ij^m − x̄_ij^{m−1}| ≤ 1e-10` as well.
+SWEEP_RELAXATION: Final = 0.5
+SWEEP_COMPOSITION_TOLERANCE: Final = 1e-10
 
 #: Spec §7.4: the target's policy is S01's registered `s01-default-v1`, reused (spec §0).
 S02_TARGET_POLICY: Final[SolvePolicy] = S01_DEFAULT_V1
@@ -833,16 +839,23 @@ def sweep_flows(
     temperatures: Mapping[int, float],
     rho: Mapping[int, float],
     phi: float | None,
+    compositions: Mapping[int, Sequence[float]] | None = None,
 ) -> tuple[dict[int, list[float]], dict[int, list[float]]]:
-    """§18.2 steps 3a–3b: `K_ij` at `(T_j, P_j*)`, then per component §6 step 4's tridiagonal
-    with `S_ij = K_ij ρ_j` (total condenser: first diagonal `−(1 + S_i2) + φ S_i2`); `l_ij` its
+    """§18.2 steps 3a–3b: `K_ij` at `(T_j, P_j*)` (a composition-dependent form: at the relaxed
+    liquid `compositions[j]`, S10-C §4.9), then per component §6 step 4's tridiagonal with
+    `S_ij = K_ij ρ_j` (total condenser: first diagonal `−(1 + S_i2) + φ S_i2`); `l_ij` its
     solution, `v_ij = S_ij l_ij`."""
     components, count = spec.components, spec.stage_count
     stages = spec.equilibrium_stages()
     inlets = spec.inlets()
     k_stage = {
         j: _k_values(
-            provider, DECLARATION_CONTEXT, components, temperatures[j], spec.pressures[j - 1]
+            provider,
+            DECLARATION_CONTEXT,
+            components,
+            temperatures[j],
+            spec.pressures[j - 1],
+            liquid=None if compositions is None else compositions[j],
         )
         for j in stages
     }
@@ -863,6 +876,36 @@ def sweep_flows(
             liquid[j][i] = solved[k]
             vapor[j][i] = strip[j] * solved[k]
     return liquid, vapor
+
+
+def liquid_compositions(
+    liquid: Mapping[int, Sequence[float]], stages: Sequence[int]
+) -> dict[int, tuple[float, ...]]:
+    """`x_j = l_j/L_j` on `stages` (S10-C §4.9's `x̄_j⁰` from §6's Thomas solution)."""
+    compositions: dict[int, tuple[float, ...]] = {}
+    for j in stages:
+        total = sum(liquid[j])
+        compositions[j] = tuple(a / total for a in liquid[j])
+    return compositions
+
+
+def relaxed_compositions(
+    previous: Mapping[int, Sequence[float]],
+    liquid: Mapping[int, Sequence[float]],
+    stages: Sequence[int],
+) -> tuple[dict[int, tuple[float, ...]], float]:
+    """S10-C §4.9: `x_j^m = l_j^m/L_j^m`, `x̄_j^m = ω x_j^m + (1 − ω) x̄_j^{m−1}` with
+    `ω = SWEEP_RELAXATION`, and the stop measure `max_{j,i} |x_ij^m − x̄_ij^{m−1}|`."""
+    omega = SWEEP_RELAXATION
+    current = liquid_compositions(liquid, stages)
+    change = 0.0
+    relaxed: dict[int, tuple[float, ...]] = {}
+    for j in stages:
+        change = max(change, max(abs(a - b) for a, b in zip(current[j], previous[j], strict=True)))
+        relaxed[j] = tuple(
+            omega * a + (1.0 - omega) * b for a, b in zip(current[j], previous[j], strict=True)
+        )
+    return relaxed, change
 
 
 def _bubble_temperature(
@@ -891,14 +934,21 @@ def bubble_point_endpoint(
 ) -> BubblePointEndpoint | CascadeFailure:
     """Spec §18.2 `s02-bubble-point-v1`: sweeps from §6's profile (`+ profile_shift`, K) at the
     stage ratios of step 1 (`ratio_scale` on those no specification holds; A14's hooks) until
-    `max_j |ΔT_j| ≤ 1e-9 K`, final flows at the stopped `T`, and `x⁰` by §6 steps 5–6."""
+    `max_j |ΔT_j| ≤ 1e-9 K`, final flows at the stopped `T`, and `x⁰` by §6 steps 5–6.
+
+    A composition-dependent form (S10-C §4.9) evaluates K at the relaxed liquid composition
+    `x̄` (from §6's Thomas solution) and also needs `max |x^m − x̄^{m−1}| ≤ 1e-10` to stop; the
+    final flows use the relaxed `x̄` at the stop. SYN-001 applies neither."""
     unit = spec.unit_id
     stages = spec.equilibrium_stages()
     rho, phi = stage_ratios(spec, initial, ratio_scale=ratio_scale)
     temperatures = {j: initial.profile[j - 1] + float(profile_shift) for j in stages}
-    sweeps, delta = 0, math.inf
+    compositions = (
+        liquid_compositions(initial.liquid, stages) if composition_dependent(provider) else None
+    )
+    sweeps, delta, change = 0, math.inf, 0.0
     for sweep in range(1, max_sweeps + 1):
-        liquid, _ = sweep_flows(spec, provider, temperatures, rho, phi)
+        liquid, _ = sweep_flows(spec, provider, temperatures, rho, phi, compositions)
         updated: dict[int, float] = {}
         for j in stages:
             found = _bubble_temperature(
@@ -909,16 +959,19 @@ def bubble_point_endpoint(
             updated[j] = found
         delta = max(abs(updated[j] - temperatures[j]) for j in stages)
         temperatures = updated
-        if delta <= SWEEP_TOLERANCE:
+        if compositions is not None:
+            compositions, change = relaxed_compositions(compositions, liquid, stages)
+        if delta <= SWEEP_TOLERANCE and change <= SWEEP_COMPOSITION_TOLERANCE:
             sweeps = sweep
             break
     else:
+        detail = "" if compositions is None else f", max |dx| = {change!r}"
         return CascadeFailure(
             "INITIALIZATION_FAILED",
             f"initialization_failed({PRESOLVE_ID}, sweeps_exhausted)",
-            f"{unit}: max |dT| = {delta!r} K after {max_sweeps} sweeps",
+            f"{unit}: max |dT| = {delta!r} K{detail} after {max_sweeps} sweeps",
         )
-    liquid, vapor = sweep_flows(spec, provider, temperatures, rho, phi)
+    liquid, vapor = sweep_flows(spec, provider, temperatures, rho, phi, compositions)
     profile = [temperatures.get(j, 0.0) for j in range(1, spec.stage_count + 1)]
     if phi is not None:
         found = _bubble_temperature(provider, vapor[2], spec.pressures[0], f"{unit} condenser")
@@ -1572,6 +1625,8 @@ __all__ = [
     "REENTRY_BUDGETS",
     "REENTRY_OUTCOMES",
     "S02_TARGET_POLICY",
+    "SWEEP_COMPOSITION_TOLERANCE",
+    "SWEEP_RELAXATION",
     "SWEEP_TOLERANCE",
     "BlockReentry",
     "BubblePointEndpoint",

@@ -1728,8 +1728,9 @@ def profile_initial(
     )
 
     stages = spec.equilibrium_stages()
+    # K at the total feed composition on every stage (S10-C §4.9; SYN-001 ignores `liquid`).
     k_stage = {
-        j: _k_values(provider, context, components, profile[j - 1], spec.pressures[j - 1])
+        j: _k_values(provider, context, components, profile[j - 1], spec.pressures[j - 1], liquid=z)
         for j in stages
     }
     liquid = {j: [0.0] * width for j in stages}
