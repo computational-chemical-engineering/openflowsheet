@@ -15636,3 +15636,288 @@ on a near-trivial flash split: either reopens Q1.
   exact where it matters (structure) and complete over the suite.
 
 **Watch for.** Keys present in one tree only, beyond new or renamed tests.
+
+---
+
+**Numbering note (S11, 2026-10-26).** S11's entries start at **R-800**. R-795 and R-796 are held by `wp/R796`;
+R-797…R-799 are left for `main`'s next package. ADR 0050 is S11's.
+
+---
+
+## R-800 — S11: a revision selects its basis by a registered `record_source`; no schema change
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design D1; Frank's "I want the binding package" (2026-10-26) |
+| Normative text | `docs/adr/0050-s11-binding-package.md` D1; `docs/derivations/S11-design.md` §4.1 |
+| Evidence | `schemas/process-revision.schema.json:33-41` (`record_source` required, "Path to the file holding the referenced ComponentRecords"); every basis needs molar masses; CoolProp's table and IAPWS-95 both carry `H2O`, so the method must be explicit |
+| Affected packages | S11 |
+
+**Decision.**
+- Five registered record sources select the five bases: m01 → `pr-c1-v1`, s05 → `iapws95-v1`, s10 →
+  `wilson-ig-v1`, s07 → `coolprop-heos-v1` (one fluid, the single declared component). Anything else selects
+  `syn001`, as ADR 0034 D8 says.
+- `benchmarks/s05/components.yaml` (by hand) and `benchmarks/s07/components.yaml` (generated, `--check`) are new
+  ComponentRecord files.
+- A CoolProp revision with other than one admitted component is `components_unsupported`, with a hint.
+
+**Rejected alternatives, and why.**
+- *An optional `component_set.property_basis` member.* It changes a frozen schema, and two sources of truth would
+  have to agree with the still-required `record_source`.
+- *URI-like `record_source` values.* They break the field's meaning.
+- *Selection by file content.* The revision's hash would not cover the bytes read.
+
+**Watch for.** A fixture whose `record_source` equals a newly registered path: it would change basis. Gate G1's
+family C sees every bind of the suite.
+
+## R-801 — S11: `ComponentBasis` gains `record_source`; `SELECTABLE_BASES` lists every concrete basis (127)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design D2 |
+| Normative text | ADR 0050 D2; design note §4.2 |
+| Evidence | W27-R63 and T08.A20 read `SELECTABLE_BASES` as "every basis selection can return"; CoolProp is one fluid per provider instance (`coolprop_heos.py:398`) |
+| Affected packages | S11; W27 (v3); T08 |
+
+**Decision.**
+- The order is SYN-001, C1, IAPWS-95, Wilson, then the 123 CoolProp fluids in `FLUIDS` order.
+- `_SelectableBases.__iter__` builds the tuple once.
+- Wilson's molar masses are pinned constants, asserted equal to the records, so listing never reads the
+  repository-only file.
+
+**Rejected alternatives, and why.**
+- *Basis families* (one CoolProp entry, one fluid per revision). The entry would differ from what a revision binds.
+- *A union route per provider.* W27 would count multi-fluid CoolProp cases as served.
+
+## R-802 — S11: admission stays an identity table; the routing models are basis-generic; no thermal unit is reused on a new basis
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design D3 |
+| Normative text | ADR 0050 D3; design note §4.4–§4.5 |
+| Evidence | `models/syn001/pump.py:1-15` (isentropic = isothermal holds only because SYN-001's liquid entropy is P-independent; Wilson's h^L is P-independent, so W = 0); `models/c1/units.py:50-80` (B16's NH3/τ_dew rule); `equilibrium_form.py` (S10-C D1: identity, not capability); feed, sink and splitter evaluate no property |
+| Affected packages | S11 |
+
+**Decision.**
+- `MODEL_BASES`: the 13 `syn001.*` models on `syn001` and the 9 `c1.*` on `pr-c1-v1`, as before.
+- `syn001.feed_source`, `syn001.product_sink` and `syn001.stream_splitter` also bind on `iapws95-v1`,
+  `coolprop-heos-v1` and `wilson-ig-v1`, with manifest provider, convention and domain taken from the bound provider.
+  SYN-001's bytes do not change.
+- `syn001.column` binds on `syn001` and `wilson-ig-v1`.
+- Refused pairs are `model_unsupported(<id>)`, with a reason.
+
+**Rejected alternatives, and why.**
+- *Capability-based admission.* Flags cannot see a model's physical assumptions.
+- *Per-basis namesake families.* They grow N×M.
+- *Syn001 thermal units on Wilson now.* Their EO faces read `lnK` and `h_<c>` (the S10-C tripwire); that is S11c's
+  design pass.
+
+## R-803 — S11: bind-time basis preconditions; P1–P3 decided in closed form for every Wilson basis (closes R-781's deferral)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design D4 |
+| Normative text | ADR 0050 D4; design note §4.3 |
+| Evidence | R-781; S10C-spec §2.1 (the premises; minima at an end or at a real root of a cubic); `coolprop_heos.py:443-455` (the guard runs at the first evaluation); `wilson_ig.load_records` refuses `records_missing` outside a checkout |
+| Affected packages | S11; S10-C (ADR 0049 C4) |
+
+**Decision.**
+- `basis_unavailable(coolprop-heos-v1)` when CoolProp is not importable.
+- `basis_unavailable(wilson-ig-v1)` when the records are missing.
+- `basis_premises_unmet(wilson-ig-v1)` when P1, P2 or P3 fail. The check is in `thermo/wilson_premises.py` (new; no
+  existing `thermo/` file is edited): the endpoints and the real roots of each premise's critical-point cubic,
+  thresholds 1e-9 1/K and 1e-6 J/(mol K).
+- The verifier runs the same check.
+
+**Rejected alternatives, and why.**
+- *Pinning the records' SHA-256.* R-781 rejected it.
+- *A grid check.* It is not a proof.
+- *A check inside `wilson_ig.py`.* Its bytes are its `implementation_sha256`.
+
+## R-804 — S11: the verifier constructs providers by basis from its own table and adds a declared-phase mixture-h form
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design D5 |
+| Normative text | ADR 0050 D5; design note §4.6 |
+| Evidence | `verify/table.py:1641-1644` ("every other basis runs SYN-001's lines"); `verify/saturation.py` and `table.py:1368` read `lnK` and `h_<c>`; `verify/certificate.py:615-628` (`fresh_provider(provider_id)` cannot construct a CoolProp fluid or a Wilson record set) |
+| Affected packages | S11 |
+
+**Decision.**
+- `fresh_provider(basis)`, with a `describe()` identity check.
+- A form dispatch at the top of `revision_checks`: SYN-001's and `pr-c1-v1`'s lines are textually unchanged.
+- For the new bases, stream `Ḣ = n_tot·h` in the producer-declared phase, with an undeclared stream unlifted
+  (blocked).
+- Per-stream admissibility: γ–φ by `single_phase_admissible`, with A09's shared-implementation note; pure fluid by
+  `Psat` and `T_c`.
+
+**Rejected alternative.** *SYN-001's lines for every basis.* They request `lnK` and `h_<c>` from providers that
+refuse them.
+
+## R-805 — S11: `syn001.column` in a flowsheet is embedded with link rows, owned internal columns, and a standalone `evaluate`
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design D6 |
+| Normative text | ADR 0050 D6; design note §4.7 |
+| Evidence | The cascade already models inlets as stream-shaped columns with pin rows (`cascade.py:682-760`, `column.py` declared rows); `label_column` reads inlet ids (`cascade.py:381-385`); the flowsheet region solver takes per-split forms (`executor.py:396-448`); the column requires `T05b-phase-contract-v2` (`cascade_solve.py:105-111`) |
+| Affected packages | S11; R-535 (closed) |
+
+**Decision.**
+- `declared_rows(..., links=)`: the inlet pin rows become link rows with the same ids, and product link rows are
+  added (`v_stream − v_internal`).
+- `UnitEvaluation.owned` (new, defaulted) seeds the EO start from `solve_column`'s answer.
+- The stage splits are passed through `lifted_splits(..., staged=)` and the executor.
+- Under a v1 policy: `CAPABILITY_UNAVAILABLE phase_contract_unsupported(syn001.column)`.
+- Ports `feed` (many), `top`, `bottom`, `distillate`, `bottoms`. The configuration is inferred from what is wired
+  and from the declared phases.
+
+**Rejected alternatives, and why.**
+- *An implicit black-box block.* It is not a function of `x`, because its value depends on the warm start
+  (ADR 0008 D1).
+- *Renaming internal columns to stream ids.* Too many readers of inlet ids in the attempt machinery.
+
+## R-806 — S11: S06 §15 Q7 ruled: in a flowsheet, purity uses `F_ref = 1 mol/s` and recovery gains a definition row; `ν*` and `π*` are constants of the document
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design D7 |
+| Normative text | ADR 0050 D7; design note §4.7.4 |
+| Evidence | S06 §2 (the slot forms, "Why ν*"); `orchestrator/homotopy.py:74-99` (edge 3 needs `v − p` with one column); `region.KIND_TOLERANCE` has no dimensionless row kind |
+| Affected packages | S11; S06 (Q7 closed) |
+
+**Decision.**
+- Purity: S06's rows and ids, with `purity_reference* = 1.0` mol/s and `π* = x*`.
+- Recovery: slot `w − ν*` (`ν* = r*`) plus definition `F_ref·n_c − w·Σ_k n_{k,c}` (molar_flow_squared) and a column
+  `<U>.stage.<j>.recovery_flow`.
+- Temperature is unchanged.
+- The roots equal the standalone roots for any `F_ref > 0`. The standalone path (`links=None`) is unchanged.
+
+**Rejected alternatives, and why.**
+- *`F` and `F_c` frozen from the traversal.* Wrong root under recycle, and a constant that depends on the solve
+  path.
+- *Dimensionless slots.* A new row kind.
+- *Linear `n_c − x*·P`.* Not `v − p`.
+
+**Watch for.** The purity tolerance now acts on `x`, not on `F·x` (L-COL-6; reviewer's call).
+
+## R-807 — S11: the cascade is bound through the column; `syn001.cascade` stays library-only
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design D8 |
+| Normative text | design note §4.4, §4.9 |
+| Evidence | S02 §1.2–1.3 (condenser `none` and reboiler `none` keep S01's stage and its `top`/`bottom` inlet) |
+| Affected packages | S11; S01 |
+
+**Decision.** `syn001.cascade` is refused `model_unsupported(syn001.cascade)`, with the hint to bind `syn001.column`
+with `top` and `bottom` connected. U04 is rewritten.
+
+**Rejected alternative.** *A second wrapper over `solve_cascade`.* It duplicates the column's flowsheet face for no
+capability.
+
+## R-808 — S11: W27 registration version 3 (provider rows, route key, generic records line, column function null)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design D9; resolves S05 F-3 |
+| Normative text | ADR 0050 D9; design note §4.10; `docs/derivations/W27-registration-v3.md` (WO-A4) |
+| Evidence | W27v2-R07(b) and (d) refuse an unknown provider and duplicate provider ids; W27v2-A21 pins `registration_v2_sha256`; `snapshot.py:184-189` refuses a provider without a line; v1 `methods` has `iapws95` and `activity_coefficient`, and no Helmholtz method |
+| Affected packages | S11; W27 |
+
+**Decision.**
+- Rows `iapws95-v1 → iapws95`, `wilson-ig-v1 → activity_coefficient`, `coolprop-heos-v1 → pure_helmholtz` (new;
+  matches no case).
+- Route key `(provider_id, record_source, components)`.
+- A generic line from `basis.record_source`.
+- `syn001.column` registered with function `null` (`column_function_unregistered`).
+- Snapshot S4 is the S11 build.
+- Versions 1 and 2 are byte-identical, and the release gate selects v3.
+
+**Rejected alternatives, and why.**
+- *Editing v2.* It moves a registered SHA-256.
+- *Not registering.* The S11 build's snapshot would be refused at the next release.
+
+## R-809 — S11: `pr-lib-v1` stays library-only (R-615 stands)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design D10 |
+| Normative text | design note §4.4, §7 Q4 |
+| Evidence | R-615 (WO-L01-3b waits for Frank's ship decision and the clean-up, F-4); the provider is vapour-only with no flash (`pr_lib.py:701-703`) |
+| Affected packages | S11; S04 |
+
+**Decision.** No `SELECTABLE_BASES` entry; `LIBRARY_ONLY_PROVIDERS == {"pr-lib-v1": "S04"}`.
+**Rejected alternative.** *Routing-only exposure now.* It pre-empts R-615's 3b and Frank's ship decision.
+
+## R-810 — S11: supersessions of the library-only defaults within S11's scope (Frank, 2026-10-26)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | Frank Peters ("I want the binding package"), recorded by the design lane (`architect`) |
+| Normative text | ADR 0050 header; design note §4.13 |
+| Evidence | Recon digest §6 items 4–12 |
+| Affected packages | S05, S07, S10, S10-C, S11 |
+
+**Superseded, each only as far as S11 reaches:**
+- S05 Q-8 (Frank 2026-10-23, "library only for now") and S05 A25;
+- ADR 0045's and ADR 0046 D9's library-only clauses, and S07 §3.4;
+- S10 Q-F2 / `FRANK_QUESTIONS.md:169`, R-709's flowsheet clause, S10 A27, and ADR 0047 D10–D11's library-only
+  clause;
+- S10-C design §7 Q1 ("Wilson not in flowsheets") and Q3 ("no cascade or other units": the column and the routing
+  models are now admitted; the other units remain refused, S11c).
+
+**Not superseded:** Q-F3 / R-706 (shipping Wilson's records); R-615 (`pr-lib-v1`).
+
+**Tests amended on purpose:** design note §8.3, also carried as `AMENDED_TESTS` in `scripts/s11_identity.py`.
+
+## R-811 — S11: Wilson's repository-only records are selectable in a source checkout and refused `basis_unavailable` in a wheel (default open to Frank)
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design D11; a default open to Frank (§7 Q1) |
+| Normative text | ADR 0050 D4, C3; design note §4.3 |
+| Evidence | `benchmarks/s10/records.yaml` header (not package data until Q-F3); R-615's rejected alternative ("expose in source checkouts only") for `pr-lib-v1` |
+| Affected packages | S11 |
+
+**Decision.**
+- The Wilson basis is listed everywhere.
+- Binding it outside a checkout is the explicit `basis_unavailable(wilson-ig-v1)`, whose hint names R-706 and Q-F3.
+
+**Rejected alternative.** *Wait for Q-F3.* Frank asked for the binding; the wheel's answer is explicit, not a silent
+gap, and that distinguishes it from R-615's case.
+
+**Reversible by:** removing one registry row.
+
+## R-812 — S11: the identity gate has three families — columns and cascades, PH-kernel calls, and every bind of the whole suite
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`architect`), S11 design §6.2 G1 |
+| Normative text | design note §6.2 G1; `scripts/s11_identity.py` (WO-0) |
+| Evidence | S11 touches the binder's selection and admission, the routing manifests, `UnitEvaluation`, `_start_from_pass`, the verifier dispatch and `column.py` (behind `links`); revisions are mostly built in tests, not committed as files |
+| Affected packages | S11 |
+
+**Decision.**
+- Base `8c34ecb0`.
+- Family A: S08's 52 configurations and S01 C1–C5.
+- Family B: every `ph_state` call in the T05/T05b tests.
+- Family C: every `bind_revision_flowsheet` call of the suite. Each digest covers the document's SHA-256, the outcome
+  kind, code and hint, and the `ProblemSpec` ids, kinds and parameters (`float.hex`).
+- Equal on shared keys, except for `AMENDED_TESTS`; no base-only keys.
+- The S08 and S10-C pass lines must also reproduce.
+
+**Rejected alternative.** *Committed revision files only.* They miss the revisions the tests build in code.
