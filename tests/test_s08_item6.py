@@ -26,6 +26,7 @@ from conftest import REPO_ROOT
 from test_s02_column_wo1 import FEED, PROVIDER, REFERENCE, SPECS, _variant
 from test_s06_column_wo1 import J_CASES, U_SETS, V_SETS
 
+import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
 import openflowsheet.models.syn001.column_solve as column_solve_module
 from openflowsheet.models.syn001.cascade import (
     InletState,
@@ -216,7 +217,8 @@ def test_a_band_answer_other_than_inside_is_a_failure(
             raise BandError("not_converged", "stubbed")
         return BandTemperature(outside, evaluations=1)  # type: ignore[arg-type]
 
-    monkeypatch.setattr(column_solve_module, "band_temperature", band)
+    # S08b §5.2: the pairs' body moved to `cascade_solve`, where it looks `band_temperature` up.
+    monkeypatch.setattr(cascade_solve_module, "band_temperature", band)
     errors = saturation_errors(spec, PROVIDER, answer.state, regimes)
     two_phase = [j for j, regime in regimes.items() if regime == "TWO_PHASE"]
     assert two_phase and errors == {j: math.inf for j in two_phase}

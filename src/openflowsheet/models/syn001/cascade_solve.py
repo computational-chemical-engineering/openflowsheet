@@ -23,6 +23,7 @@ is TP-type there (build decision, `docs/S01_DECISIONS.md`).
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from typing import Final, Literal
@@ -73,6 +74,7 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
+from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.orchestrator.execution import Region
 from openflowsheet.orchestrator.homotopy import Continuation
@@ -367,6 +369,14 @@ def run_region(
 
 # -- spec §8: acceptance -------------------------------------------------------------------------
 
+#: S08 §5.5 (S02 §8 item 6; S01 §8 by Amendment 2, S08b §5.2): a `TWO_PHASE` stage of an accepted
+#: state lies within this many K of the bubble temperature of its liquid and the dew temperature
+#: of its vapour (S02's state tolerance in `T`; 41x the largest registered error, 2.42e-6 K).
+TWO_PHASE_SATURATION_TOLERANCE: Final = 1e-4
+
+#: The prefix of every saturation failure string of `acceptance_failures` (S08b §5.2).
+SATURATION_PREFIX: Final = "§8 saturation: "
+
 
 class AcceptanceDefectError(RuntimeError):
     """Spec §8: a `CONVERGED` answer that fails acceptance is a defect, never a success."""
@@ -447,6 +457,39 @@ def admissibility(
     return admissible, (f"equivalent temperature error {error!r} K" if status == "ok" else message)
 
 
+def saturation_pairs(
+    unit: str,
+    components: Sequence[str],
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    regimes: Mapping[int, Regime],
+) -> dict[int, tuple[float, float]]:
+    """S08 §5.5: `(|T_j − T_bub(l_j, P_j)|, |T_j − T_dew(v_j, P_j)|)` for every `TWO_PHASE` stage
+    `j`, through `band_temperature` at `β = 0` and `β = 1`. A band position other than `inside`, a
+    band refusal (`BandError`) or a phase with no positive flow is `inf` (a failure). Shared by
+    S01 §8 (Amendment 2) and S02 §8 item 6 (S08b §5.2)."""
+    pairs: dict[int, tuple[float, float]] = {}
+    for stage, regime in regimes.items():
+        if regime != "TWO_PHASE":
+            continue
+        temperature = float(state[stage_temperature_id(unit, stage)])
+        pressure = float(state[stage_pressure_id(unit, stage)])
+        errors: list[float] = []
+        for outlet, beta in ((liquid_id, 0.0), (vapor_id, 1.0)):
+            flows = tuple(float(state[outlet(unit, stage, c)]) for c in components)
+            error = math.inf
+            if any(value > 0.0 for value in flows):
+                try:
+                    band = band_temperature(provider, flows, pressure, beta, DECLARATION_CONTEXT)
+                except BandError:
+                    band = None
+                if band is not None and band.position == "inside" and band.temperature is not None:
+                    error = abs(temperature - band.temperature)
+            errors.append(error)
+        pairs[stage] = (errors[0], errors[1])
+    return pairs
+
+
 def acceptance_failures(
     spec: CascadeSpec,
     provider: PropertyProvider,
@@ -455,8 +498,10 @@ def acceptance_failures(
     regimes: Sequence[Regime],
 ) -> tuple[str, ...]:
     """Spec §8: every declared row of the final signature within `KIND_TOLERANCE`, every pinned
-    column `+0.0`, `V_j, L_j > 0` on a `TWO_PHASE` stage, admissibility on a single-phase one.
-    Empty when the answer is accepted."""
+    column `+0.0`, `V_j, L_j > 0` on a `TWO_PHASE` stage, admissibility on a single-phase one, and
+    (Amendment 2, S08b §5.2) every `TWO_PHASE` stage within `TWO_PHASE_SATURATION_TOLERANCE` of
+    its liquid's bubble and its vapour's dew temperature (`SATURATION_PREFIX`). Empty when the
+    answer is accepted."""
     failures: list[str] = []
     residuals, pinned = system_residuals(spec, declared, state, regimes)
     for row, value in residuals.items():
@@ -477,6 +522,16 @@ def acceptance_failures(
             admissible, detail = admissibility(spec, provider, state, stage, phase)
             if not admissible:
                 failures.append(f"{regime} stage {stage} inadmissible: {detail}")
+    # S08b §5.2 (S01 §8 as amended by Amendment 2): S02 §8 item 6's saturation consistency.
+    pairs = saturation_pairs(
+        unit, spec.components, provider, state, dict(enumerate(regimes, start=1))
+    )
+    for stage, errors in pairs.items():
+        for side, error in zip(("bubble", "dew"), errors, strict=True):
+            if not error <= TWO_PHASE_SATURATION_TOLERANCE:
+                failures.append(
+                    f"{SATURATION_PREFIX}TWO_PHASE stage {stage}: {side} error {error!r} K"
+                )
     return tuple(failures)
 
 
@@ -640,8 +695,8 @@ def solve_cascade(
 
     `opening` replaces `x_K` as the pre-solve's start, and `tbar` replaces the initializer's `T̄`
     as the pre-solve's isothermal level (spec §10 A18's perturbed openings; spec §17.8, R-517).
-    Both default to the initializer's. A `CONVERGED` answer that fails §8 raises
-    `AcceptanceDefectError`.
+    Both default to the initializer's. A `CONVERGED` answer that fails §8 (with Amendment 2's
+    saturation clause, S08b §5.2) raises `AcceptanceDefectError`.
     """
     refused = validate(spec, provider, DECLARATION_CONTEXT)
     if refused is not None:
@@ -736,6 +791,8 @@ __all__ = [
     "PRESOLVE_ID",
     "PRESOLVE_POLICY",
     "S01_DEFAULT_V1",
+    "SATURATION_PREFIX",
+    "TWO_PHASE_SATURATION_TOLERANCE",
     "AcceptanceDefectError",
     "CascadeSolution",
     "Closure",
@@ -753,6 +810,7 @@ __all__ = [
     "recover",
     "regimes_of",
     "run_region",
+    "saturation_pairs",
     "solve_cascade",
     "split_temperatures",
     "system_residuals",

@@ -74,9 +74,11 @@ from openflowsheet.models.syn001.cascade import (
 from openflowsheet.models.syn001.cascade_solve import (
     DECLARATION_CONTEXT,
     S01_DEFAULT_V1,
+    TWO_PHASE_SATURATION_TOLERANCE,
     AcceptanceDefectError,
     CompiledCascade,
     run_region,
+    saturation_pairs,
 )
 from openflowsheet.models.syn001.cascade_solve import FD_COLUMN_SCALE as CASCADE_FD_SCALE
 from openflowsheet.models.syn001.column import (
@@ -106,7 +108,7 @@ from openflowsheet.models.syn001.column import (
     validate,
 )
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
-from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
+from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.orchestrator.execution import Region
 from openflowsheet.orchestrator.homotopy import Continuation, HomotopyRecord
@@ -181,11 +183,6 @@ CONTINUED_KIND: Final[Mapping[str, str]] = {
 
 #: S06 §8 item 4: the binary64 slack on a recovery's and a purity's bound, `2⁻⁵²`.
 QUOTIENT_SLACK: Final = 2.0**-52
-
-#: S08 §5.5 (S02 §8 item 6): a `TWO_PHASE` stage of an accepted state lies within this many K of
-#: the bubble temperature of its liquid and the dew temperature of its vapour (S02's state
-#: tolerance in `T`; 41x the largest registered error, 2.42e-6 K).
-TWO_PHASE_SATURATION_TOLERANCE: Final = 1e-4
 
 #: The prefix of every item-6 failure string of `acceptance_failures`.
 ITEM_6_PREFIX: Final = "§8.6: "
@@ -524,30 +521,8 @@ def _saturation_pairs(
     state: Mapping[str, float],
     regimes: Mapping[int, Regime],
 ) -> dict[int, tuple[float, float]]:
-    """S08 §5.5: `(|T_j − T_bub(l_j, P_j)|, |T_j − T_dew(v_j, P_j)|)` for every `TWO_PHASE` stage
-    `j`, through `band_temperature` at `β = 0` and `β = 1`. A band position other than `inside`, a
-    band refusal (`BandError`) or a phase with no positive flow is `inf` (a failure)."""
-    unit, components = spec.unit_id, spec.components
-    pairs: dict[int, tuple[float, float]] = {}
-    for stage, regime in regimes.items():
-        if regime != "TWO_PHASE":
-            continue
-        temperature = float(state[stage_temperature_id(unit, stage)])
-        pressure = float(state[stage_pressure_id(unit, stage)])
-        errors: list[float] = []
-        for outlet, beta in ((liquid_id, 0.0), (vapor_id, 1.0)):
-            flows = tuple(float(state[outlet(unit, stage, c)]) for c in components)
-            error = math.inf
-            if any(value > 0.0 for value in flows):
-                try:
-                    band = band_temperature(provider, flows, pressure, beta, DECLARATION_CONTEXT)
-                except BandError:
-                    band = None
-                if band is not None and band.position == "inside" and band.temperature is not None:
-                    error = abs(temperature - band.temperature)
-            errors.append(error)
-        pairs[stage] = (errors[0], errors[1])
-    return pairs
+    """S08 §5.5's pairs for a column: `cascade_solve.saturation_pairs` on its stages (S08b §5.2)."""
+    return saturation_pairs(spec.unit_id, spec.components, provider, state, regimes)
 
 
 def saturation_errors(

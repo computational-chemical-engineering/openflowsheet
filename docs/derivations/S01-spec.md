@@ -4,7 +4,8 @@ Design lane (`specifier`), 2026-10-21. Package S01 (plan v1.2 §4.5, `docs/imple
 `docs/briefs/S01-specification.md`. Reference generator `docs/derivations/scripts/s01_reference.py` (mpmath, 50 digits;
 `--check` re-derives 153 claims and byte-compares `s01_reference.json`). Decisions are logged in `docs/S01_DECISIONS.md` and
 registered as R-505 to R-509. **Amended 2026-10-22 by §17** (Amendment 1, the review's rulings; R-510 to R-518): §1, §4.5,
-§4.6, §5 R5/R7, §7.1, §7.3, §8, §10 (state tolerance, A05, A10, A18).
+§4.6, §5 R5/R7, §7.1, §7.3, §8, §10 (state tolerance, A05, A10, A18). **Amended 2026-10-26 by §18** (Amendment 2,
+S08b; R-791): §8.
 
 ## 0. Authority and scope
 
@@ -358,3 +359,13 @@ derivation that shows the registered value was wrong. None of them was chosen to
     signature. A converged pre-solve that is not all `TWO_PHASE` ends
     `initialization_failed(s01-isothermal-presolve-v1, not_two_phase)`. DECISION 2 is untouched: `x⁰` is still an
     exact root of `H(·, 0)`.
+
+## 18. Amendment 2 (2026-10-26, design lane `architect`, S08b): pointer
+
+*Amendment 2 (2026-10-26, design lane `architect`, S08b): pointer.* Normative text `docs/derivations/S08b-design.md` §5.2;
+register R-791. §8 gains a fifth clause: every `TWO_PHASE` stage lies within `1e-4 K` of its liquid's bubble temperature and
+its vapour's dew temperature (S02 §8 item 6's rule and function, `cascade_solve.saturation_pairs`); an answer that fails it is
+a defect, as §8. For a column, S02 §8 item 6 is this clause and is reported once, under S02's prefix. *Limitation:* on a
+two-phase stage with `L_j V_j` below about 0.1 (mol/s)² the clause is tighter than the row tolerances imply (R-735); every
+registered S01 root passes with a 41× margin (smallest `L_j V_j` 0.0135 (mol/s)², largest error 2.43e-6 K), and a correct but
+loosely converged root there would raise.
