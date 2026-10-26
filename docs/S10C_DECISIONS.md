@@ -161,3 +161,51 @@ A60 is a manifest command (WO-5's generator), not a test: it takes 75 s.
 - MEASURED (WO-5, A15, recorded not gated): `ph_state` evaluations equal the transcription's `evaluations_measured` at 11 of 17 targets; PH-2T 55 against 54, PH-NPL 47 against 51; the four refusals (PH-OB, PH-OA, PH-1OB, PH-N2) take 2 and register no count.
 - DECISION W5-5 (harvest classes of the `8f38f963` manifest, build-lane draft for design-lane review; S10's B-84/B-86/B-91 for `wilson-ig-v1` items, S08's W5-9 and S09's for the kinds of item): limitations[0] (nothing about a real mixture), [1] (fixture record sets), [7] (the restatement: library-level support, flowsheet selection not offered; W5-3), [12] (numerical verification, not validation; W4-7 a fixture) → E to U02; [2] (no column claim beyond C-MW/C-EW: uniqueness, openings, ternaries, kinds, flowsheet use) → E to U02, U04, L19, L20; [3] (T5 binaries only) and [8] (E4: P1–P3 for the committed sets only) → E to U02, L19; [4] (constant-β convergence measured, not proved) → E to U02, L20; [5] (G7 tolerances an acceptance image), [6] (no self-generated expectation), [9] (requirements empty, ledger comment; W5-2), [10] (gate, CI, G9), [11] (review), [13] (harvest follows) and checks `S10C.gate`, `S10C.ci` → P. Every E note names `wilson-ig-v1` and "library-only". Alternatives: [12] → E to L18 (S08's way for SYN-001); [2] without L20. Reversible by: editing those entries before merge, then `t08_support_matrix.py --emit`.
 - MEASURED (WO-5, harvest; `pytest -q tests/test_m07a_harvest.py tests/test_t08_*.py tests/test_requirements_ledger.py`: 579 passed, 2 skipped): 16 entries (14 limitations, 2 non-pass checks), 112 lines appended, 0 deleted; the old envelope a byte prefix of the new (HG(b), R-617). `HARVEST_SIZE` (56, 794, 95) → (57, 808, 97), pinned in `tests/test_m07a_harvest.py`. `--emit` regenerated `docs/support-matrix.md` (S10c: E 8, P 8); `--check`: 0 problems.
+
+## S10-C diag: C-MW's aarch64 `HOMOTOPY_STALLED` (CI run 40275276182)
+
+Build-lane facts for the design lane (§7 Q4: typed outcome recorded, no tuning). Script `scripts/s10c_cmw_diagnose.py`
+(observation-only spies; answer bitwise unchanged under them). aarch64 record: dispatch run 40285056440 on scratch branch
+`wp/S10C-diag` (job `s10c-diag`, `ubuntu-latest` and `ubuntu-24.04-arm`, artifacts `s10c-diag-*`).
+
+- MEASURED (sweeps): bitwise identical on local x86-64 (Haswell OpenBLAS kernel), CI x86-64 (AVX-512) and CI aarch64 —
+  38 sweeps, last `max|ΔT|` 1.101e-10 K, last `max|Δx|` 6.24e-11, `x_K` 220287be…, `x⁰` df415fd9… (0 of 282 columns
+  differ). The sweeps' stop rule, the band point and the profile are not where the machines part.
+- MEASURED (first divergence): inside Stage A's first Newton solve, from its first linear solve (residual after step 1
+  76.08204046654282 local, …648461 on both CI runners). It turns material on the **absent component** (C2H5OH; 60 free
+  columns, exactly `+0.0` at `x⁰`, exact Newton step zero). While all 60 sit at zero, any step whose roundoff direction
+  points out has `α_max = 0` and R-064 releases them (`d := 0`); a step whose 60 roundoff entries are all `≥ 0` is taken
+  as is and lifts them to ~1e-15 mol/s. From then on they are no longer exactly on the bound, R-064 cannot release them,
+  and each step's `α_max` is capped by roundoff-sized absent flows landing on zero.
+  - local x86-64: lift at iteration 5; one cap, α_max 0.828 (stage 20 `l.C2H5OH`) at iteration 7; `CONVERGED` in 9.
+  - CI x86-64: lift at iteration 5; caps 0.294 (stage 2 `l`), 0.972 (18 `l`), 0.99994 (19 `v`); `CONVERGED` in 10
+    (final state differs from local: `6f8b7a0e…` vs `b69d2a2a…`; worst A41 ratio 8.1e-7 vs 5.7e-5).
+  - CI aarch64: lift at iteration 2; cap 0.186 (stage 1 `r.C2H5OH`) at 3; at 4 `α_max = 0`, `BOUND_BLOCKED` on
+    `COL.stage.1.r.C2H5OH` (value 0.0, not a watched variable: no phase update). Edge 3's homotopy stalls at
+    λ = 2045/2048 (`resolution`, 23 trials, 11 rejected, inferred `phase_boundary_on_path(COL.stage.17)`); Stage B runs
+    with 0 candidates (`candidates(C-MW) == ()`, W4-7); answer `homotopy_stalled(BOUND_BLOCKED)`, worst 739.7 on B.
+  - BLAS threads: no effect, bitwise, on all three (`OPENBLAS_NUM_THREADS` 1, 2, 8, 48, unset locally; 1 and unset on
+    CI). OpenBLAS kernel does: locally `OPENBLAS_CORETYPE=Prescott` and `=Sandybridge` end `HOMOTOPY_STALLED` (Sandybridge:
+    α_max 0.057 at iteration 3 on stage 7 `v.C2H5OH`, then `phase_disappeared(COL.stage.20, vapor, COL.stage.20.v.C2H5OH)`);
+    `Nehalem` `CONVERGED` in 8 (other hash); `Haswell` = default.
+- MEASURED (how close x86-64 is; 320 local solves, 40 seeds × 8 perturbations of 1–4 ulps: `x⁰` every column ±1 and ±1…4
+  ulp; profile ±1…2 ulp; 10 % of sweep bubble temperatures, sweep K values, Newton step entries, or `math.exp`/`log`
+  results in the Wilson/γ–φ/cascade modules (1 % and 10 %) ±1 ulp): **160 end `HOMOTOPY_STALLED`** (156
+  `homotopy_stalled(BOUND_BLOCKED)`, 4 `(STAGNATION)`), 55 fail the first solve and are recovered by edge 3, only **105
+  converge directly**. 215 first solves end `BOUND_BLOCKED` at iterations 2–10, every blocker a C2H5OH flow (199 read
+  as `phase_disappeared`). By kind (fails/40): x⁰ 25 and 19, sweep T 27, sweep K 25, libm 23 and 24, Newton step 16,
+  profile 1 (most profile perturbations sweep to the same bitwise `x⁰`). The sweep count is 38 in all 320. x86-64 passes
+  by the sign pattern of roundoff, not by margin.
+- MEASURED (causal check, scratch harness only, not a remedy): the same 320 solves with the absent component's Newton
+  direction set to exactly 0 every step: **320/320 `CONVERGED` in 9 iterations**, worst A41 ratio 1.3e-7.
+- FINDING F-D-1 (C-EW passes on aarch64 for the same reason it would anywhere): it converges in 4 iterations, the first 3
+  released (60 absent CH3OH columns, `d := 0`) and the 4th final; no step is taken after a lift. F-W4-1's absent flows of
+  1.26e-18 mol/s at C-MW's answer are this lift.
+- ESCALATION (design lane; touches R-064, not decided here): candidate remedies — (a) apply R-064's release on every step,
+  not only at `α_max = 0` (R-064 "Watch for" names this; needs its inertness proof, affects every region solve and the
+  identity gate); (b) a component absent from every inlet of a column as a structural zero (flows pinned `+0.0`, rows
+  dropped; R-064 rejected pinning absent components as a form in general — a column- or case-scoped form needs an ADR);
+  (c) register C-MW/C-EW on a two-component record set (removes the absent component; a new registered case per §7.1);
+  (d) keep the typed outcome as an aarch64/BLAS-kernel limitation (Q4 default) — then A40/A41/A42 are
+  platform-dependent, which R-627's classes do not cover. A roundoff threshold on outward directions is R-064's rejected
+  alternative and is not proposed.
