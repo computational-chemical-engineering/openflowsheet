@@ -49,9 +49,16 @@ on:
         description: "M07a WO-5: the 0.2.0a1 release-candidate job, steps 1-10 (V02 alpha release spec §8.2), with the alpha's step 8; includes rc_distribution"
         type: boolean
         default: false
+      # S10-C diag (scratch branch wp/S10C-diag only): C-MW's attempt record on both
+      # architectures; the dispatch runs this job alone.
+      s10c_diag:
+        description: "S10-C diag: scripts/s10c_cmw_diagnose.py (C-MW, C-EW) on ubuntu-latest and ubuntu-24.04-arm"
+        type: boolean
+        default: false
 
 jobs:
   check:
+    if: ${{ !inputs.s10c_diag }}
     # Plan §4.2 K05: the two structural-hash platforms are one Linux x86-64 and one of
     # {Linux aarch64, macOS arm64}. Linux aarch64 chosen (Frank, 2026-09-22); it is the
     # registered option, so no ADR is needed, and it varies the instruction set rather than
@@ -179,6 +186,7 @@ jobs:
           if-no-files-found: error
 
   default-install:
+    if: ${{ !inputs.s10c_diag }}
     # T07 §11.1: the default install is unchanged. The base and `dev` requirements at the lock's
     # versions (the lock as constraints, so the `server` extra is not installed), then the whole
     # suite: `openflowsheet` imports and every test that does not need the extra passes, and
@@ -499,6 +507,64 @@ jobs:
         with:
           name: a30-inventory-ubuntu-24.04-arm
           path: ${{ runner.temp }}/a30/
+          if-no-files-found: error
+
+  s10c-diag:
+    # S10-C diag (scratch branch): `scripts/s10c_cmw_diagnose.py` on C-MW and C-EW, single-threaded
+    # BLAS and the runner's default, with the states dumped for an ulp-level comparison. Records
+    # only; nothing here judges.
+    if: github.event_name == 'workflow_dispatch' && inputs.s10c_diag
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Install locked dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+
+      - name: Install project
+        run: python -m pip install -e .
+
+      - name: S10-C diag records
+        run: |
+          OUT="$RUNNER_TEMP/s10c-diag"
+          mkdir -p "$OUT"
+          set +e
+          { uname -a; ldd --version | head -1; nproc; } > "$OUT/platform.txt" 2>&1
+          python -c "import numpy; numpy.show_runtime()" > "$OUT/numpy-runtime.txt" 2>&1
+          python -c "import scipy; scipy.show_config()" > "$OUT/scipy-config.txt" 2>&1
+          python scripts/s10c_cmw_diagnose.py C-MW --dump "$OUT/cmw-states.json" > "$OUT/cmw.json"
+          echo "cmw exit $?"
+          python scripts/s10c_cmw_diagnose.py C-EW --dump "$OUT/cew-states.json" > "$OUT/cew.json"
+          echo "cew exit $?"
+          env -u OPENBLAS_NUM_THREADS -u OMP_NUM_THREADS -u MKL_NUM_THREADS \
+            python scripts/s10c_cmw_diagnose.py C-MW > "$OUT/cmw-default-threads.json"
+          echo "cmw default threads exit $?"
+          cat "$OUT/platform.txt" "$OUT/numpy-runtime.txt"
+          cat "$OUT/cmw.json"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: s10c-diag-${{ matrix.runner }}
+          path: ${{ runner.temp }}/s10c-diag/
           if-no-files-found: error
 
   a89-repeats:
