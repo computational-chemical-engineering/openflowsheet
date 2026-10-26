@@ -225,6 +225,13 @@ def test_a07_solve_path() -> None:
                     path = run["path"]
                     assert "pass1" in path and "pass2" in path
                     assert "iter" in path["pass1"] and "iter" in path["pass2"]
+                    # §18.3: per pass, whether fsolve ran (object identity) and its counts.
+                    for p in ("pass1", "pass2"):
+                        fs = path[p]["fsolve"]
+                        assert set(fs) == {"ran", "nfev", "ier", "mesg"}
+                        assert (fs["nfev"] is None) == (not fs["ran"]), (cid, e["rung"], p)
+                    b2 = run["rule2"]["checks"]["B2"]
+                    assert b2["counter"] == ("fsolve nfev" if e["rung"] == "R3" else "iter")
                     resp = path["respecification"]
                     assert resp["route"] == "attribute_setter"
                     specs = path["stage_specifications"]
@@ -269,16 +276,25 @@ def test_a08_l2c_conformance() -> None:
             assert adj == {"name": "Boilup", "stage": n - 1}
         assert real["registered"] == case["specifications"][real["outer_end"]]
         kind = real["registered"]["kind"]
+        tol2 = float(SETTINGS["floor_rerun"]["tolerance"])
         for e in lev["rungs"]:
-            for loop, factor in (
-                (e["outer"], 1.0),
-                ((e.get("accuracy_rerun") or {}).get("outer"), 10.0),
-            ):
-                if loop is None:
-                    continue
-                ytol = float(ol["ytol"][kind][0]) * factor
-                assert loop["ytol"] == ytol and loop["basis"] == ol["ytol"][kind][1]
-                _check_loop(cid, loop, ytol)
+            loop = e["outer"]
+            ytol = float(ol["ytol"][kind][0])
+            assert loop["ytol"] == ytol and loop["basis"] == ol["ytol"][kind][1]
+            _check_loop(cid, loop, ytol)
+            # §18.4(b): the accuracy rerun is one evaluation at the binary64 x of the rung's final
+            # evaluation, at 1e-9, with no further outer evaluation.
+            rerun = e.get("accuracy_rerun")
+            if rerun is None:
+                continue
+            assert rerun["outer"] is None, (cid, e["rung"])
+            assert rerun["form"].startswith("L2(c): ")
+            x = e["run"]["x"]
+            # JSON round-trips binary64 exactly, so == compares the bits (x > 0).
+            assert x == loop["returned_x"] and rerun["run"]["x"] == x, (cid, e["rung"])
+            assert rerun["tolerance"] == tol2
+            app = rerun["run"]["path"]["applied"]
+            assert app["tolerance"] == tol2 and app["relative_tolerance"] == tol2
 
 
 def _check_loop(cid: str, loop: dict[str, Any], ytol: float) -> None:

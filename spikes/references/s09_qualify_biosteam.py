@@ -355,9 +355,14 @@ def applied_settings(col: Any) -> dict[str, Any]:
     }
 
 
+_ABSENT = object()
+
+
 def simulate_pass(col: Any) -> dict[str, Any]:
     t0 = time.perf_counter()
     rec: dict[str, Any] = {"exception": None}
+    # §18.3: fsolve ran in this pass iff the tool assigned a new info list in it (stage.py:3044).
+    info_before = getattr(col, "_simultaneous_correction_info", _ABSENT)
     try:
         col.simulate()
     except Exception as exc:  # B1: recorded, never hidden
@@ -368,13 +373,15 @@ def simulate_pass(col: Any) -> dict[str, Any]:
     rec["attempt"] = getattr(col, "attempt", None)
     # The tool's internal residual is not used by any rule (§6.1); it is recorded as raw output.
     rec["tool_mean_residual_not_used"] = repr(getattr(col, "_mean_residual", None))
-    info = getattr(col, "_simultaneous_correction_info", None)
-    if info is not None and len(info) == 3:
-        rec["fsolve_not_used"] = {
-            "nfev": int(info[0].get("nfev", -1)),
-            "ier": int(info[1]),
-            "mesg": str(info[2]),
-        }
+    info = getattr(col, "_simultaneous_correction_info", _ABSENT)
+    ran = info is not _ABSENT and info is not info_before
+    # nfev is B2's counter on R3 (§18.3); ier and mesg are recorded and used by no rule (§6.1).
+    rec["fsolve"] = {
+        "ran": ran,
+        "nfev": int(info[0]["nfev"]) if ran else None,
+        "ier": int(info[1]) if ran else None,
+        "mesg": str(info[2]) if ran else None,
+    }
     rec["vle_decomposition_after"] = col.vle_decomposition
     rec["wall_time_s"] = time.perf_counter() - t0
     return rec
@@ -594,9 +601,19 @@ def spec_values(case: dict[str, Any], prof: dict[str, Any]) -> dict[str, dict[st
 # ---- rule values (§6.2, §6.3, §6.4) ----------------------------------------------------------
 
 
+def b2_count(rung_name: str, pass_rec: dict[str, Any]) -> int | None:
+    """§18.3: B2's counter of one pass. R3 (fsolve): its nfev, or None when fsolve did not run
+    in that pass; the fixed-point rungs: the tool's iter."""
+    if rung_name == "R3":
+        fs = pass_rec["fsolve"]
+        return fs["nfev"] if fs["ran"] else None
+    return pass_rec["iter"]
+
+
 def rule2(
     case: dict[str, Any],
     cases9: dict[str, Any],
+    rung: tuple[str, str],
     col: Any,
     path: dict[str, Any],
     prof: dict[str, Any],
@@ -609,13 +626,16 @@ def rule2(
     t_energy = float(r2["overall_energy_W"])
     b1 = {"pass1": path["pass1"]["exception"], "pass2": path["pass2"]["exception"]}
     b1["passes"] = b1["pass1"] is None and b1["pass2"] is None
+    rung_name = RUNG_NAMES[rungs(cases9).index(rung)]
     b2 = {
-        "pass1_iter": path["pass1"]["iter"],
-        "pass2_iter": path["pass2"]["iter"],
+        "rung": rung_name,
+        "counter": "fsolve nfev" if rung_name == "R3" else "iter",
+        "pass1_count": b2_count(rung_name, path["pass1"]),
+        "pass2_count": b2_count(rung_name, path["pass2"]),
         "maxiter": col.maxiter,
     }
     b2["passes"] = all(
-        it is not None and it < col.maxiter for it in (b2["pass1_iter"], b2["pass2_iter"])
+        n is not None and n < col.maxiter for n in (b2["pass1_count"], b2["pass2_count"])
     )
     b3_rows = []
     for st in prof["stages"]:
@@ -816,7 +836,7 @@ def evaluate(
         run["path"] = path
         prof = read_profile(col)
         run["profile"] = prof
-        run["rule2"] = rule2(case, cases9, col, path, prof)
+        run["rule2"] = rule2(case, cases9, rung, col, path, prof)
         run["rule2c"] = rule2c(case, cases9, col, prof, specs, draws, prop_rb)
         specv = run["rule2c"]["specification_values"]
         run["rule2d_specification"] = {
@@ -857,13 +877,12 @@ def outer_loop(
     tol: float,
     real: dict[str, Any],
     prop_rb: dict[str, Any],
-    ytol_factor: float,
 ) -> dict[str, Any]:
     """Starts 1 and 2, factor-2 expansion, flexsolve.IQ_interpolation, one final evaluation."""
     ol = settings9(cases9)["outer_loop"]
     kind = real["registered"]["kind"]
     ytol_str, basis = ol["ytol"][kind]
-    ytol = float(ytol_str) * ytol_factor
+    ytol = float(ytol_str)
     s_star = float(real["registered"]["value"])
     end = real["outer_end"]
     evals: list[dict[str, Any]] = []
@@ -882,8 +901,10 @@ def outer_loop(
         if run.get("harness_error"):
             ev.update(g=None, failed=f"inner_failed({x!r}, record: {run['harness_error']})")
         else:
-            ev["pass1_iter"] = run["path"]["pass1"]["iter"]
-            ev["pass2_iter"] = run["path"]["pass2"]["iter"]
+            b2 = run["rule2"]["checks"]["B2"]
+            ev["B2_counter"] = b2["counter"]
+            ev["pass1_count"] = b2["pass1_count"]
+            ev["pass2_count"] = b2["pass2_count"]
             ev["exceptions"] = [
                 run["path"]["pass1"]["exception"],
                 run["path"]["pass2"]["exception"],
@@ -1014,13 +1035,12 @@ def one_solve(
     tol: float,
     real: dict[str, Any],
     prop_rb: dict[str, Any],
-    ytol_factor: float,
 ) -> dict[str, Any]:
-    """The run of a rung at a tolerance: L1's single solve, or L2(c)'s loop and final evaluation."""
+    """The rung's run: L1's single solve, or L2(c)'s loop and final evaluation."""
     if real["level"] == "L1":
         run = evaluate(case, cases9, rung, tol, real, None, prop_rb)
         return {"run": run, "outer": None}
-    loop = outer_loop(case, cases9, rung, tol, real, prop_rb, ytol_factor)
+    loop = outer_loop(case, cases9, rung, tol, real, prop_rb)
     run = loop.pop("final", None)
     return {"run": run, "outer": loop}
 
@@ -1044,7 +1064,7 @@ def attempt(
         "level": real["level"],
     }
     t0 = time.perf_counter()
-    res = one_solve(case, cases9, rung, tol, real, prop_rb, 1.0)
+    res = one_solve(case, cases9, rung, tol, real, prop_rb)
     entry["outer"] = res["outer"]
     run = res["run"]
     entry["run"] = run
@@ -1065,17 +1085,16 @@ def attempt(
         tol2 = float(fr["tolerance"])
         if float(fr["relative_tolerance"]) != tol2:
             raise ValueError("floor_rerun: tolerance and relative_tolerance differ")
-        res2 = one_solve(case, cases9, rung, tol2, real, prop_rb, float(fr["ytol_factor"]))
-        run2 = res2["run"]
-        rerun: dict[str, Any] = {
-            "tolerance": tol2,
-            "ytol_factor": float(fr["ytol_factor"]),
-            "outer": res2["outer"],
-            "run": run2,
-        }
-        if res2["outer"] is not None and not res2["outer"]["passes"]:
-            rerun.update(passes=False, reason=f"outer loop: {res2['outer']['failure']}")
-        elif run2 is None or run2.get("harness_error"):
+        rerun: dict[str, Any] = {"tolerance": tol2}
+        if real["level"] == "L1":
+            rerun["form"] = "L1: the full path with the registered native specifications"
+            run2 = evaluate(case, cases9, rung, tol2, real, None, prop_rb)
+        else:
+            # §18.4(b): one evaluation at the rung's final x (the same binary64 value), no loop.
+            rerun["form"] = f"L2(c): {fr['L2(c)']}"
+            run2 = evaluate(case, cases9, rung, tol2, real, run["x"], prop_rb)
+        rerun.update(outer=None, run=run2)
+        if run2.get("harness_error"):
             rerun.update(passes=False, reason="record not readable")
         elif not run2["rule2"]["passes"] or not run2["rule2c"]["passes"]:
             rerun.update(
@@ -1431,33 +1450,58 @@ def run_case(cid: str, cases3: dict[str, Any], cases9: dict[str, Any]) -> dict[s
     return rec
 
 
+# §18.4(c), in the order of s09_cases.json tool_settings.BioSTEAM.margin.rows; the closed list.
+MARGIN_ROWS = (
+    "B3_stage_component",
+    "B4_equilibrium",
+    "B5_component",
+    "B5_energy",
+    "rule2c_adiabatic_duty",
+    "rule2c_total_condenser_vapour",
+    "rule2d_specification",
+    "rule2d_rerun_movement",
+    "rule2d_path_spread",
+)
+
+
 def margin(e: dict[str, Any], pdep: dict[str, Any], cases9: dict[str, Any]) -> dict[str, Any]:
-    """§6.6: the selected record's ratios of residual to threshold; above 0.1 is a thin margin."""
+    """§6.6 with §18.4(c): the selected record's ratio on each margin row of the closed list, and
+    the largest. Above the thin level (0.1) the record is a thin margin: a disclosure that moves
+    no classification. The outer loop's |g|/ytol is not a row."""
     run = e["run"]
     c2 = run["rule2"]["checks"]
     c2c = run["rule2c"]["checks"]
-    r2 = settings9(cases9)["rule2"]
+    s9 = settings9(cases9)
+    r2 = s9["rule2"]
+    specv = run["rule2c"]["specification_values"].values()
     ratios = {
         "B3_stage_component": c2["B3"]["max"] / float(r2["stage_component_mol_per_s"]),
         "B4_equilibrium": c2["B4"]["max"] / float(r2["equilibrium"]),
         "B5_component": c2["B5"]["component"]["max_abs_mol_per_s"]
         / float(r2["overall_component_mol_per_s"]),
         "B5_energy": abs(c2["B5"]["energy_W"]) / float(r2["overall_energy_W"]),
-        "adiabatic_duty": c2c["intermediate_duty_max_abs_W"]["value"] / RULE2C_INTERMEDIATE_DUTY_W,
-        "specification_2d": run["rule2d_specification"]["max_measure"]
-        / max(s["rule2d_threshold"] for s in run["rule2c"]["specification_values"].values()),
-        "rerun_movement": e["accuracy_rerun"]["movement"]["max_ratio"] / RULE2D_FRACTION,
+        "rule2c_adiabatic_duty": c2c["intermediate_duty_max_abs_W"]["value"]
+        / RULE2C_INTERMEDIATE_DUTY_W,
     }
-    if pdep["max_ratio"] is not None:
-        ratios["path_spread"] = pdep["max_ratio"] / RULE2D_FRACTION
-    if e["outer"]:
-        ratios["outer_termination"] = abs(e["outer"]["final_g"]) / e["outer"]["ytol"]
+    if "total_condenser_vapour_mol_per_s" in c2c:
+        tc = c2c["total_condenser_vapour_mol_per_s"]
+        ratios["rule2c_total_condenser_vapour"] = abs(tc["value"]) / tc["threshold"]
+    # Each specification against its own kind's threshold θ_k.
+    ratios["rule2d_specification"] = max(s["rule2d_measure"] / s["rule2d_threshold"] for s in specv)
+    ratios["rule2d_rerun_movement"] = e["accuracy_rerun"]["movement"]["max_ratio"] / RULE2D_FRACTION
+    if pdep["max_ratio"] is not None:  # two or more rungs pass at the level
+        ratios["rule2d_path_spread"] = pdep["max_ratio"] / RULE2D_FRACTION
+    if len(MARGIN_ROWS) != len(s9["margin"]["rows"]) or not set(ratios) <= set(MARGIN_ROWS):
+        raise ValueError("margin rows differ from s09_cases.json tool_settings.BioSTEAM.margin")
     worst = max(ratios, key=lambda k: ratios[k])
+    thin_level = float(s9["margin"]["thin_level"])
     return {
         "ratios": ratios,
         "max_ratio": ratios[worst],
-        "max_check": worst,
-        "thin": ratios[worst] > 0.1,
+        "max_row": worst,
+        "thin_level": thin_level,
+        "thin": ratios[worst] > thin_level,
+        "effect": s9["margin"]["effect"],
     }
 
 

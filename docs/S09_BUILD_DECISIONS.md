@@ -107,3 +107,26 @@ Fresh build-lane agent, brief `docs/briefs/S09-wo2-qualification.md`. Files open
   PCF ruling. After an erratum to `s09_reference.py` and `s09_cases.json`, the recorded run is
   `spikes/references/s09_qualify.sh benchmarks/s09/references <dir outside the repo> <log>` (about 10 min), then commit
   `benchmarks/s09/references/{qualification/biosteam.json,results/biosteam-*.json}` as the qualification commit.
+
+## WO-S09-2b (second attempt, after Amendment 1)
+
+Fresh build-lane agent, brief `docs/briefs/S09-wo2-qualification.md`. Files opened: the brief, the spec (§18 and the
+harness's sections), `s09_cases.json` (SHA-256 `760ab27f…a813c`, as §18 registers), this file, the harness and its tests,
+`biosteam/units/stage.py:3040-3050`. Nothing on the brief's forbidden list was opened.
+
+- DECISION (§18.6 item 2): per pass the harness records `fsolve = {ran, nfev, ier, mesg}`; `ran` is
+  `info_after is not ABSENT and info_after is not info_before` on `_simultaneous_correction_info`. B2's counter is
+  `b2_count(rung, pass)`: fsolve's `nfev` on R3 (None, hence a B2 failure, when it did not run), `iter` elsewhere; the
+  rung name is the rung's index in `s09_cases.json → rungs`. The outer-loop evaluations record both passes' B2 counters
+  (`pass1_count`, `pass2_count`, `B2_counter`) in place of `pass1_iter`/`pass2_iter`. Checked tool-free on a stand-in
+  column: ran/nfev for (fsolve, fsolve), (fsolve, none), (none, none). Reversible by: reverting the harness commit.
+- DECISION (§18.6 item 3): the rerun calls `evaluate(…, tol=1e-9, x=run["x"])` directly at L2(c) (one evaluation, no
+  loop, `outer = None`) and at L1 (`x = None`); `one_solve`/`outer_loop` lose their `ytol_factor` argument. The record
+  carries `form`, which at L2(c) quotes `floor_rerun["L2(c)"]`, so an unamended `s09_cases.json` fails loudly.
+- DECISION (§18.6 item 4): the margin rows are the nine of `margin.rows`, in that order (`MARGIN_ROWS`); total-condenser
+  vapour only on total-condenser cases, path spread only when two or more rungs pass. The specification row is now the
+  largest per-specification `measure / θ_k` (before: largest measure over largest threshold, which mixes kinds when the
+  two ends differ). `max_check` becomes `max_row`; the record carries `thin_level` and `effect` from `s09_cases.json`.
+- DECISION: tool-free tests gain A08's new item (rerun: `outer is None`, `x` equal to the final evaluation's and
+  `returned_x`, tolerance and applied tolerances 1e-9) and, in A07, the `fsolve` block's shape and B2's counter per
+  rung. The 10x-ytol rerun-loop check is gone with the loop.
