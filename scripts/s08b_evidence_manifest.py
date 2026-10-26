@@ -18,14 +18,19 @@ source, test, script, schema or derivation file differs from it; S01's rule):
    line; `b_only` counts the decisions of tests that exist on the branch only (informational, §9).
    With it, the older gates on the same content: `scripts/s08_identity.py` (S08's line) and
    `scripts/s10c_identity.py` (S10-C's line), each at its own registered merge base.
-3. **G3**, the design scan on this commit: `run_suite.py observe` and `scan_report.py`
-   (`docs/derivations/scripts/s08b_design/`), judged against `measured.txt`: no test fails, M1
+3. **G3**, the design scan on this commit: `s08b_probe` in `observe` mode over the whole suite and
+   `scan_report.py` (`docs/derivations/scripts/s08b_design/`), judged against `measured.txt`: no
+   test fails, M1
    reports `records 0`, every S01 row of `measured.txt` is reproduced and every S01 row's largest
    error is ≤ 2.5e-6 K. The flash-type rows are judged against the same scan of the merge base
    `a13203b8` (in a detached worktree with the design scripts copied in), and the near-trivial
    buckets (minority fraction < 1e-3) also against `measured.txt`'s: `measured.txt` was taken on
    main `53228775`, before S10-C merged, and S10-C's tests add 46 kernel-agreeing flash splits
-   to the `[0.001, 2)` bucket (build decision WO4-2). The suite counts are recorded; their
+   to the `[0.001, 2)` bucket (build decision WO4-2). Both trees' shards are dealt as G1 deals
+   them (`s08b_identity.shards`: the base tree's sorted files round-robin into 16 shards, the
+   branch's own files in one extra shard; for the base tree this is `run_suite.py`'s dealing),
+   because the probe sees only the solves a shard does not find cached, and which solves are
+   cached depends on the shard's earlier files (WO4-3). The suite counts are recorded; their
    equality with G2's is G2's to show.
 4. **`ruff check`, `ruff format --check`** on S08b's files and **`mypy`** (the project's own
    configuration).
@@ -48,8 +53,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -65,6 +70,7 @@ from s01_evidence_manifest import (  # noqa: E402  (S01's generic helpers, uncha
     ROOT,
     SCHEMA,
     Node,
+    Run,
     check,
     command,
     nodes,
@@ -76,6 +82,7 @@ from s01_evidence_manifest import (  # noqa: E402  (S01's generic helpers, uncha
 )
 from s02_evidence_manifest import _verdict, bullets, section  # noqa: E402
 from s08_identity import PASS_LINE as S08_PASS_LINE  # noqa: E402
+from s08b_identity import shards  # noqa: E402
 
 PACKAGE = "S08b"
 NOTE = ROOT / "docs" / "derivations" / "S08b-design.md"
@@ -348,9 +355,58 @@ def _near_trivial(rows: Sequence[str]) -> list[str]:
     return [line for line in rows if line.startswith("[") and not line.startswith("[0.001, 2)")]
 
 
-def base_scan(artifacts: Path) -> tuple[Any, Any]:
-    """G3's scan on the merge base: a detached worktree with this commit's design scripts."""
-    out = artifacts / "g3-base-observe"
+def probe_scan(tree: Path, dealt: Sequence[Sequence[str]], out: Path) -> tuple[Run, Run]:
+    """The suite under `s08b_probe` (observe) in `tree`, one pytest process per shard of
+    `dealt` (`run_suite.py`'s launch and count, with G1's dealing), then `scan_report.py`."""
+    out.mkdir(parents=True, exist_ok=True)
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = os.pathsep.join([str(tree / "src"), str(tree), str(DESIGN_SCRIPTS)])
+    environment["S08B_MODE"] = "observe"
+    environment["S08B_OUT"] = str(out)
+    python = sys.executable
+    running = []
+    for index, shard in enumerate(dealt):
+        junit = out / f"shard-{index}.xml"
+        argv = [python, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "s08b_probe"]
+        log = (out / f"shard-{index}.log").open("wb")
+        running.append(
+            subprocess.Popen(
+                [*argv, f"--junitxml={junit}", *shard],
+                cwd=tree,
+                env=environment,
+                stdout=log,
+                stderr=log,
+            )
+        )
+    for process in running:
+        process.wait()
+    counts = {"passed": 0, "failed": 0, "skipped": 0}
+    missing = 0
+    for index in range(len(dealt)):
+        junit = out / f"shard-{index}.xml"
+        if not junit.exists():
+            missing += 1
+            continue
+        for node in nodes(junit):
+            key = "passed" if node.outcome == "passed" else "skipped"
+            counts["failed" if node.outcome in ("failed", "error") else key] += 1
+    line = (
+        f"S08B-SUITE mode=observe passed={counts['passed']} failed={counts['failed']} "
+        f"skipped={counts['skipped']}"
+    )
+    where = "this commit" if tree == ROOT else f"the merge base {MERGE_BASE}"
+    suite = Run(
+        f"pytest -p s08b_probe (S08B_MODE=observe) in {len(dealt)} shards dealt by "
+        f"s08b_identity.shards, on {where}",
+        1 if missing else 0,
+        line,
+    )
+    scan = run([python, str(DESIGN_SCRIPTS / "scan_report.py"), str(out)])
+    return suite, scan
+
+
+def g3_scans(artifacts: Path) -> tuple[Run, Run, Run, Run]:
+    """G3's scans on this commit and on the merge base (a detached worktree), dealt alike."""
     with tempfile.TemporaryDirectory(prefix="s08b-g3-base-") as temporary:
         tree = Path(temporary) / "base"
         subprocess.run(
@@ -359,18 +415,13 @@ def base_scan(artifacts: Path) -> tuple[Any, Any]:
             check=True,
         )
         try:
-            scripts = tree / DESIGN_SCRIPTS.relative_to(ROOT)
-            shutil.copytree(DESIGN_SCRIPTS, scripts, ignore=shutil.ignore_patterns("__pycache__"))
-            python = sys.executable
-            suite = run(
-                [python, str(scripts / "run_suite.py"), "observe", str(out), "--shards", "16"]
-            )
-            scan = run([python, str(scripts / "scan_report.py"), str(out)])
+            branch = probe_scan(ROOT, shards(tree, ROOT, 16), artifacts / "g3-observe")
+            base = probe_scan(tree, shards(tree, tree, 16), artifacts / "g3-base-observe")
         finally:
             subprocess.run(
                 ["git", "worktree", "remove", "--force", str(tree)], cwd=ROOT, check=True
             )
-    return suite, scan
+    return (*branch, *base)
 
 
 def scan_check(suite: Any, scan: Any, base_suite: Any, base: Any) -> dict[str, Any]:
@@ -409,11 +460,11 @@ def scan_check(suite: Any, scan: Any, base_suite: Any, base: Any) -> dict[str, A
     }
     return check(
         "S08b.G3",
-        "§9 G3: the design scan (run_suite.py observe, scan_report.py) on this commit: S1's S01 "
-        "rows unchanged (largest error ≤ 2.5e-6 K), M1 records 0; S1's flash-type rows identical "
-        "to the merge base's scan (measured.txt predates S10-C) and the near-trivial ones to "
-        "measured.txt's (WO4-2); the suite counts are recorded (their equality with G2's is "
-        "G2's)",
+        "§9 G3: the design scan (s08b_probe observe over the suite, scan_report.py) on this "
+        "commit: S1's S01 rows unchanged (largest error ≤ 2.5e-6 K), M1 records 0; S1's "
+        "flash-type rows identical to the merge base's scan, dealt alike (measured.txt predates "
+        "S10-C; WO4-2, WO4-3), and the near-trivial ones to measured.txt's; the suite counts "
+        "are recorded (their equality with G2's is G2's)",
         "pass" if scan.exit_code == 0 and all(findings.values()) else "fail",
         {
             "suite_cmd": suite.cmd,
@@ -496,7 +547,6 @@ def build(commit: str) -> dict[str, Any]:
     artifacts = ROOT / "evidence" / PACKAGE / commit / "artifacts"
     artifacts.mkdir(parents=True, exist_ok=True)
     junit = artifacts / "s08b-tests.junit.xml"
-    scan_out = artifacts / "g3-observe"
     python = sys.executable
     tools = Path(python).parent
     tests = sorted(
@@ -527,27 +577,18 @@ def build(commit: str) -> dict[str, Any]:
         "S08b.G1": run([python, str(ROOT / "scripts" / "s08b_identity.py")], pythonpath=True),
         "S08b.G1-S08": run([python, str(ROOT / "scripts" / "s08_identity.py")], pythonpath=True),
         "S08b.G1-S10C": run([python, str(ROOT / "scripts" / "s10c_identity.py")], pythonpath=True),
-        "S08b.G3-suite": run(
-            [
-                python,
-                str(DESIGN_SCRIPTS / "run_suite.py"),
-                "observe",
-                str(scan_out),
-                "--shards",
-                "16",
-            ],
-            pythonpath=True,
-        ),
         "S08b.ruff": run([str(tools / "ruff"), "check", *lint]),
         "S08b.format": run([str(tools / "ruff"), "format", "--check", *lint]),
         "S08b.mypy": run([str(tools / "mypy")], pythonpath=True),
     }
-    runs["S08b.G3-scan"] = run(
-        [python, str(DESIGN_SCRIPTS / "scan_report.py"), str(scan_out)], pythonpath=True
-    )
     if not junit.is_file():
         raise SystemExit(f"pytest wrote no report (exit {runs['tests'].exit_code})")
-    runs["S08b.G3-base-suite"], runs["S08b.G3-base-scan"] = base_scan(artifacts)
+    (
+        runs["S08b.G3-suite"],
+        runs["S08b.G3-scan"],
+        runs["S08b.G3-base-suite"],
+        runs["S08b.G3-base-scan"],
+    ) = g3_scans(artifacts)
     scan_report = artifacts / "g3-scan-report.txt"
     scan_report.write_text(runs["S08b.G3-scan"].stdout, encoding="utf-8")
     base_report = artifacts / "g3-base-scan-report.txt"
