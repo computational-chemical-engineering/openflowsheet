@@ -280,8 +280,8 @@ def identity_checks(runs: Mapping[str, Any]) -> list[dict[str, Any]]:
                 "line": line,
                 "branch_only_keys": None if match is None else int(match["branch_only"]),
             },
-            "S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61 b_only=0/<branch-only "
-            "decisions>",
+            "S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61 b_only=0/N, N the "
+            "decisions of tests that exist on the branch only (informational)",
         )
     ]
     for name, expected, description in (
