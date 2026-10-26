@@ -167,3 +167,22 @@ session memo `solved("C2")` (`tests/test_s01_cascade_wo2.py:62-71`) is first fil
 `True`, so in a process where wo3 runs without wo2 first, the memo holds C2's forced edge-3 root (2.0096e-06 K) instead of A06's
 root (7.36e-09 K). B1's spy form stays (a sound wiring test). Follow-up on main: B1's docstring text (review F1), the memo
 filled before the patches in `_forced_edge_3`, and the `_proposal`-level `items` test (review F2).
+
+## Review follow-ups F1 and F2 (2026-10-26, branch `wp/S08b-f`, commits `be7d7437`, `3007459e`, `025e29d3`)
+
+- **F1 docstring** (`be7d7437`): B1's sentence replaced by the review's text.
+- **F1 memo** (`3007459e`): `_forced_edge_3` calls `solved("C2")` before its two `monkeypatch.setattr` lines. Measured with
+  a scratch probe (memo against a fresh `solve_cascade(C2)`, bit for bit, state entries): `test_s01_cascade_wo3.py` alone,
+  before 36 of 52 differ, after 0 of 52; wo2 then wo3, 0 of 52 before and after. B2's worst (`-s` print) in the shard
+  wo3 + `test_s08b_saturation.py`: before 2.4293316300827428e-06 K (C2's edge-3 root dominating), after
+  1.6091221937131195e-06 K; with wo2 first, 1.6091221937131195e-06 K before and after. That worst is C1's, the manifest's
+  value; C2's own largest error is 1.0013366136263357e-08 K in both orders after the fix (the 7.36e-09 K above is C2's
+  stage-1 bubble error, not B2's worst). All wo3 tests, A18's included, pass alone and after wo2.
+- **F2** (`025e29d3`): `test_f2_proposal_hands_choose_the_declared_items`, parametrized over the two rows that call
+  `choose` (patience, stall), through a stub lifted ops with `declared_phases = {"U-PUMP.outlet": "LIQUID"}`. Bites
+  (scratch mutants, not committed): `_proposal`'s `items = frozenset()` fails both rows; `items=frozenset()` at the
+  patience call alone fails only the patience row, at the stall call alone only the stall row. A7 adds that
+  `_LiftedOps.__init__` raises on a clash (fails when the call is removed).
+- Runs: `tests/test_s01_*`, `tests/test_s08*`, `tests/test_t05b_*` 713 passed; ruff check/format clean on the three
+  files; `S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL`; `S10C-IDENTITY PASS n=858 changed=[]`. Full gate
+  not run (before the merge).

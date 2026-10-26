@@ -61,8 +61,9 @@ def test_b1_a_patched_tolerance_raises_exactly_the_six_saturation_failures(
 ) -> None:
     """Kills: the clause left out of `acceptance_failures`, or not reached from `solve_cascade`.
     The expected values are the pairs of the raising solve itself (a spy on `saturation_pairs`):
-    a solve's last bits depend on which caches earlier tests warmed, so a cached root of another
-    test is not this solve's state."""
+    the session memo `solved("C2")` is not always A06's root —
+    `test_s01_cascade_wo3.py::test_a17_…` fills it under a forced edge-3 recovery when it runs
+    first in a process (S08b review F1)."""
     seen: list[dict[int, tuple[float, float]]] = []
 
     def spy(*args: Any) -> dict[int, tuple[float, float]]:
