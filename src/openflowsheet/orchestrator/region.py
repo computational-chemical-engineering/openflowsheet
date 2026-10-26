@@ -78,7 +78,13 @@ from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext, PhaseSignature
 from openflowsheet.models import temperature_id
 from openflowsheet.models.c1.phase import classify
-from openflowsheet.models.syn001 import ENERGY_TOLERANCE, FLOW_TOLERANCE, TEMPERATURE_TOLERANCE
+from openflowsheet.models.syn001 import (
+    ENERGY_TOLERANCE,
+    FLOW_TOLERANCE,
+    TEMPERATURE_TOLERANCE,
+    gamma_phi,
+)
+from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.ph_kernel import ph_state
 from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
 from openflowsheet.models.syn001.tp_state import enthalpy_flow, tp_state
@@ -717,6 +723,8 @@ def _admissible(
         return all(state[name] == 0.0 for name in split.feed), feed
     if _pr_c1(provider):
         return _pr_admissible(provider, context, split, regime, state)
+    if composition_dependent(provider):
+        return _gamma_phi_admissible(provider, context, split, regime, state, epsilon)
     from openflowsheet.verify.checks import k_values
 
     constants = k_values(provider, state[split.temperature], state[split.pressure], context)
@@ -730,6 +738,44 @@ def _admissible(
         value = sum(x * k for x, k in zip(fractions, constants, strict=True))
     else:
         value = sum(y / k for y, k in zip(fractions, constants, strict=True))
+    return value <= 1.0 + epsilon, value
+
+
+def _gamma_phi_admissible(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    split: LiftedSplit,
+    regime: Branch,
+    state: Mapping[str, float],
+    epsilon: float,
+) -> tuple[bool, float]:
+    """K03 §8.2 for a composition-dependent K (S10-C design note §4.10): LIQUID's value is
+    `Σ x_i K_i(T, P, x)` with `x` the liquid side's composition (`gamma_phi.ln_k`), VAPOR's is
+    `ΣW` of the incipient liquid against the vapour side (`gamma_phi.incipient_liquid`); admissible
+    iff `value ≤ 1 + ε`. An empty side is admissible with value `0.0`, as in the SYN-001 rule. A
+    `BandError` is a `VerifierError`, which the screen converts to `invalid_trial_state`."""
+    from openflowsheet.verify.checks import VerifierError
+
+    side = split.liquid if regime == "LIQUID" else split.vapor
+    amounts = [state[name] for name in side]
+    total = sum(amounts)
+    if total == 0.0:
+        return True, 0.0
+    fractions = tuple(amount / total for amount in amounts)
+    temperature, pressure = state[split.temperature], state[split.pressure]
+    try:
+        if regime == "LIQUID":
+            ln_k, _, _ = gamma_phi.ln_k(provider, temperature, pressure, fractions, context)
+            value = sum(x * math.exp(lnk) for x, lnk in zip(fractions, ln_k, strict=True))
+        else:
+            value, _ = gamma_phi.incipient_liquid(
+                provider, temperature, pressure, fractions, context
+            )
+    except BandError as error:
+        raise VerifierError(
+            f"the kernel refused {split.unit}'s regime ({split.stream}): {error.status}: "
+            f"{error.message}"
+        ) from error
     return value <= 1.0 + epsilon, value
 
 

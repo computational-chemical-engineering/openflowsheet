@@ -22,7 +22,9 @@ Four things here are not the textbook and each is a rule from the blueprint or t
   one, so a bound landing that misses by an ulp changes what the state *means*.
 - **Structural zeros are released before `BOUND_BLOCKED` is declared** (§5.3 as amended, R-064):
   where the exact Newton step on a set of components sitting on their bounds is provably zero,
-  the factorization's roundoff there is discarded rather than read as an outward direction.
+  the factorization's roundoff there is discarded rather than read as an outward direction —
+  and, since R-782, at every step where it is nonzero, so that roundoff pointing inward cannot
+  lift the set off its bound either (S10-C absent-component note §4.1).
 
 One more is optional and off unless the caller supplies it (ADR 0018, `eo_core =
 "newton_refined"`): a `CONVERGED` exit at `k ≥ 1` whose chord correction — one back-solve against
@@ -34,6 +36,7 @@ calls are metered like any iteration's, so under a property budget the solve can
 
 from __future__ import annotations
 
+from collections import deque
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal, Protocol
@@ -41,6 +44,7 @@ from typing import Any, Literal, Protocol
 import numpy as np
 import numpy.typing as npt
 import scipy.sparse as sp
+from scipy.sparse.csgraph import maximum_bipartite_matching
 
 from openflowsheet.canonical import normalize_zero, state_sha256
 from openflowsheet.numerics.linear import (
@@ -794,16 +798,33 @@ def _bound_aware_step(
     residual: Sequence[float],
     jacobian: sp.csc_matrix,
 ) -> tuple[npt.NDArray[np.float64], float, tuple[int, ...], tuple[int, ...]]:
-    """§5.3 as amended (T05b ruling Q-S11 (b), R-064): the direction taken, `α_max`, the
+    """§5.3 as amended (T05b ruling Q-S11 (b), R-064; R-782): the direction taken, `α_max`, the
     components landing on a bound there (the blockers when `α_max = 0`), and the released set.
 
     When `α_max = 0`, the released set `Z*` (`_released`) has its direction set to zero exactly —
     the factorization's roundoff there is discarded — and `α_max` is recomputed. If a component
     outside `Z*` still blocks, nothing is released and the blockers are the original direction's,
-    exactly as before the amendment."""
+    exactly as before the amendment.
+
+    When `α_max > 0` (R-782, S10-C absent-component note §4.1): if a component on its bound at
+    the opening and at `x` has a nonzero direction entry, `Z*` is computed, and if it meets the
+    direction's support its entries are set to zero exactly — the exact Newton step there. `α_max`
+    and the landing are unchanged by it (no component of `Z*` can be in their minimum without
+    making `α_max = 0`; note §4.2) and are recomputed on the direction taken. Otherwise the
+    direction is returned as it came, with nothing released; `_released` runs only when the mask
+    is non-empty."""
     alpha_max, landing = _bound_aware_alpha(x, direction, lower)
     if alpha_max > 0.0:
-        return direction, alpha_max, landing, ()
+        moving = np.isfinite(lower) & (x == lower) & (opening == lower) & (direction != 0.0)
+        if not np.any(moving):
+            return direction, alpha_max, landing, ()
+        released = _released(x, opening, lower, residual, jacobian)
+        if not any(direction[index] != 0.0 for index in released):
+            return direction, alpha_max, landing, ()
+        kept = direction.copy()
+        kept[list(released)] = 0.0
+        alpha_kept, landing_kept = _bound_aware_alpha(x, kept, lower)
+        return kept, alpha_kept, landing_kept, released
     released = _released(x, opening, lower, residual, jacobian)
     if not released:
         return direction, alpha_max, landing, ()
@@ -831,51 +852,63 @@ def _released(
     a maximum matching of the closed rows into `Z₀`: a column is outside `Z*` exactly when an
     unmatched column is reachable from it through its matched row's support (the Dulmage–Mendelsohn
     over-determined part). The count is re-checked on the answer; a set that fails it (a singular
-    `J`, which the factorization has just excluded) releases nothing."""
+    `J`, which the factorization has just excluded) releases nothing.
+
+    The matching is SciPy's iterative Hopcroft–Karp and the reachable set a worklist (R-786,
+    replacing R-064's recursive augmenting search): no recursion at any `|Z₀|`, and the identical
+    result, since the reachable set is the columns some maximum matching leaves uncovered
+    (Gallai–Edmonds), whichever maximum matching is found."""
     on_bound = np.isfinite(lower) & (x == lower) & (opening == lower)
-    columns = frozenset(int(index) for index in np.flatnonzero(on_bound))
-    if not columns:
+    if not on_bound.any():
         return ()
     rows = sp.csr_matrix(jacobian)
-    supports: list[tuple[int, ...]] = []
-    for row, value in enumerate(residual):
-        if value != 0.0:
-            continue
-        start, end = rows.indptr[row], rows.indptr[row + 1]
-        support = tuple(
-            int(column)
-            for column, entry in zip(rows.indices[start:end], rows.data[start:end], strict=True)
-            if entry != 0.0
-        )
-        if support and columns.issuperset(support):
-            supports.append(tuple(sorted(support)))
-    matched: dict[int, int] = {}  # column -> row (an index into `supports`)
-
-    def augment(row: int, seen: set[int]) -> bool:
-        for column in supports[row]:
-            if column in seen:
-                continue
-            seen.add(column)
-            if column not in matched or augment(matched[column], seen):
-                matched[column] = row
-                return True
-        return False
-
-    for row in range(len(supports)):
-        augment(row, set())
-    outside = set(columns) - set(matched)
-    grew = True
-    while grew:
-        grew = False
-        for column, row in matched.items():
-            if column not in outside and not outside.isdisjoint(supports[row]):
-                outside.add(column)
-                grew = True
-    released = columns - outside
-    closed = sum(1 for support in supports if released.issuperset(support))
-    if not released or closed != len(released):
+    m = rows.shape[0]
+    kept = rows.data != 0.0
+    row_of = np.repeat(np.arange(m), np.diff(rows.indptr))
+    n_kept = np.bincount(row_of[kept], minlength=m)
+    n_in = np.bincount(row_of[kept & on_bound[rows.indices]], minlength=m)
+    closed = (np.asarray(residual, dtype=np.float64) == 0.0) & (n_kept > 0) & (n_in == n_kept)
+    if not closed.any():
         return ()
-    return tuple(sorted(released))
+    z0 = np.flatnonzero(on_bound)
+    local = np.full(on_bound.shape[0], -1, dtype=np.int64)
+    local[z0] = np.arange(z0.size)
+    crow = np.full(m, -1, dtype=np.int64)
+    closed_rows = np.flatnonzero(closed)
+    crow[closed_rows] = np.arange(closed_rows.size)
+    entries = kept & closed[row_of]
+    incidence = sp.csr_matrix(
+        (
+            np.ones(int(entries.sum())),
+            (crow[row_of[entries]], local[rows.indices[entries]]),
+        ),
+        shape=(closed_rows.size, z0.size),
+    )
+    incidence.sum_duplicates()  # data 1.0: duplicates add, never cancel
+    match = maximum_bipartite_matching(incidence, perm_type="column")  # row -> column, or -1
+    row_of_col = np.full(z0.size, -1, dtype=np.int64)
+    row_of_col[match[match >= 0]] = np.flatnonzero(match >= 0)
+    outside = row_of_col < 0
+    by_column = incidence.tocsc()
+    worklist = deque(int(column) for column in np.flatnonzero(outside))
+    while worklist:
+        column = worklist.popleft()
+        for row in by_column.indices[by_column.indptr[column] : by_column.indptr[column + 1]]:
+            other = int(match[row])
+            if other >= 0 and not outside[other]:
+                outside[other] = True
+                worklist.append(other)
+    released = ~outside
+    if not released.any():
+        return ()
+    entry_rows = np.repeat(np.arange(incidence.shape[0]), np.diff(incidence.indptr))
+    touches_outside = np.bincount(
+        entry_rows[outside[incidence.indices]], minlength=incidence.shape[0]
+    )
+    count = int(np.count_nonzero(touches_outside == 0))
+    if count != int(released.sum()):
+        return ()
+    return tuple(int(index) for index in z0[released])
 
 
 def _trial_point(

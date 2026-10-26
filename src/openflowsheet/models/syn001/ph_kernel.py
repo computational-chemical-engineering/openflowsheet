@@ -30,6 +30,17 @@ every phase boundary and is declared `unavailable`, spec §4.5); and it never re
 has not verified against the closure's rows (T05b §5.3): material within `3.1e-8 mol/s`,
 equilibrium within `9.3e-8 (mol/s)²`, energy within `1.01e-3 W`.
 
+**A composition-dependent K** (S10-C design note §4.5, ADR 0049 D4). For a provider of form
+`gamma-phi-ig-v1` (`equilibrium_form`) K is a function of the liquid composition, and a TP flash
+inside a sliver-thin band near an azeotrope has an E-2 noise floor (S10 spec §14). The kernel is
+then **band-first**: it computes the bubble and dew points (`gamma_phi.band_point` at β = 0, 1),
+decides the region by enthalpy (S10-C spec §2, T1–T3: `Hdot_TP(T)` is strictly increasing and the
+band ends are unique, so the decision is exact) and solves exactly one of a liquid bracket, a vapour
+bracket or the band route, with no fallback between them. The provider's TP flash is called only at
+a domain end that lies inside the band. Acceptance is on the same rows, with K at the candidate's
+liquid composition. SYN-001 and every provider outside the allow-list take the body above,
+unchanged.
+
 **Typed failures.** Every non-`ok` answer carries a registered code (spec §13.3) as the first
 line of its message and nothing else a caller could mistake for a result (spec §3.5). A provider
 refusal inside the kernel is surfaced with the provider's own status, K02's pattern (spec §3.3);
@@ -45,8 +56,14 @@ from typing import Final, Literal
 
 from openflowsheet.compiled import EvaluationContext, PhaseSignature
 from openflowsheet.models import UnitEvaluation
-from openflowsheet.models.syn001 import ENERGY_TOLERANCE, FLOW_TOLERANCE, REFERENCE_CONVENTION
+from openflowsheet.models.syn001 import (
+    ENERGY_TOLERANCE,
+    FLOW_TOLERANCE,
+    REFERENCE_CONVENTION,
+    gamma_phi,
+)
 from openflowsheet.models.syn001.bisection import Root, bracketed_root
+from openflowsheet.models.syn001.equilibrium_form import form_of
 from openflowsheet.models.syn001.saturation_band import (
     BandError,
     band_split,
@@ -205,9 +222,17 @@ def _closure_rows(
     """T05b §5.3: every material row, every equilibrium row `v_i L − K_i l_i V` and the energy
     row of the PH closure (T05 §4.3's EO rows) at the candidate, with `K_i` from the provider's
     `lnK` at `(T, P)` (one call; the flash's own report is not trusted) and the energy from the
-    candidate's enthalpy — evaluated here, trusting no provider tolerance."""
+    candidate's enthalpy — evaluated here, trusting no provider tolerance.
+
+    For a composition-dependent form (S10-C §4.5 step 4) `K_i` is `gamma_phi.ln_k` at `(T, P)` and
+    the candidate's **liquid** composition; when that liquid is dormant no K is evaluated and every
+    equilibrium row is `v_i·0 − K_i·0·V`, `0.0` exactly (`_liquid_k_rows`)."""
     assert candidate.vapor is not None and candidate.liquid is not None
-    components = provider.describe().components
+    capabilities = provider.describe()
+    form = form_of(capabilities)
+    if form is not None and form.composition_dependent:
+        return _liquid_k_rows(provider, n, candidate, temperature, pressure, target, context)
+    components = capabilities.components
     vapor, liquid = candidate.vapor.n, candidate.liquid.n
     result = provider.evaluate_phase(
         PropertyRequest(
@@ -236,6 +261,39 @@ def _closure_rows(
     assert candidate.enthalpy_flow is not None
     total = candidate.enthalpy_flow
     return _Rows(material, equilibrium, abs(total - target))
+
+
+def _liquid_k_rows(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    candidate: TPState,
+    temperature: float,
+    pressure: float,
+    target: float,
+    context: EvaluationContext,
+) -> _Rows:
+    """`_closure_rows` for a composition-dependent form (S10-C §4.5 step 4): the same three kinds
+    of row, with `K_i(T, P, l)` at the candidate's liquid `l`, and no K at a dormant liquid."""
+    assert candidate.vapor is not None and candidate.liquid is not None
+    vapor, liquid = candidate.vapor.n, candidate.liquid.n
+    material = equilibrium = 0.0
+    for index in range(len(n)):
+        material = max(material, abs(vapor[index] + liquid[index] - n[index]))
+    if not candidate.liquid.is_dormant:
+        try:
+            ln_k, _, _ = gamma_phi.ln_k(provider, temperature, pressure, liquid, context)
+        except BandError as error:
+            raise _InnerFailureError(
+                _surfaced(error.status, "closure rows", error.message, 0)
+            ) from error
+        total_vapor, total_liquid = sum(vapor), sum(liquid)
+        for index, value in enumerate(ln_k):
+            equilibrium = max(
+                equilibrium,
+                abs(vapor[index] * total_liquid - math.exp(value) * liquid[index] * total_vapor),
+            )
+    assert candidate.enthalpy_flow is not None
+    return _Rows(material, equilibrium, abs(candidate.enthalpy_flow - target))
 
 
 def _ill_conditioned(attempts: Sequence[tuple[str, float, _Rows]], evaluations: int) -> PHState:
@@ -281,6 +339,10 @@ def ph_state(
             "pressure_outside_domain(outlet)",
             f"P = {pressure!r} Pa outside [{p_min}, {p_max}] Pa",
         )
+
+    form = form_of(capabilities)
+    if form is not None and form.composition_dependent:
+        return _band_first(provider, n, pressure, target, context, max_evaluations)
 
     lower_end, upper_end = t_min, t_max
 
@@ -612,6 +674,303 @@ def _saturation_split(
         route="saturation",
         residual=residual,
     )
+
+
+# --------------------------------------- a composition-dependent K (S10-C design note §4.5)
+
+
+def _band_first(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    pressure: float,
+    target: float,
+    context: EvaluationContext,
+    budget: int,
+) -> PHState:
+    """§4.5 for a composition-dependent form, after step 1 (`ph_state`'s preamble and P check).
+
+    One flowing component: the saturation route with K from `gamma_phi.ln_k` at the pure liquid,
+    and outside the jump a single-phase route beside `T_sat`. Two or more: the band ends, the
+    domain-end enthalpies, the region by enthalpy, exactly one route, acceptance (§4.5 steps 1–5).
+    """
+    domain = provider.describe().domain["T"]
+    flowing = [index for index, value in enumerate(n) if value > 0.0]
+    try:
+        if len(flowing) == 1:
+            return _one_component(
+                provider, n, pressure, target, flowing[0], domain, context, budget
+            )
+        return _region_route(provider, n, pressure, target, domain, context, budget)
+    except _InnerFailureError as failure:
+        return failure.state
+
+
+def _one_component(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    pressure: float,
+    target: float,
+    flowing: int,
+    domain: tuple[float, float],
+    context: EvaluationContext,
+    budget: int,
+) -> PHState:
+    """§4.5 "One flowing component": `T_sat` from `ln K_k(T, P, n) = 0` (exact: γ = 1 at a pure
+    liquid), the lever rule inside the jump (`_saturation_split`, unchanged), and a target below
+    `Hdot^L(T_sat)` or above `Hdot^V(T_sat)` to the liquid route on `[T_min, T_sat]` or the vapour
+    route on `[T_sat, T_max]`, not to a TP-flash bracket. With no sign change of `ln K_k` on the
+    domain the stream is single-phase on all of it: liquid if `ln K_k(T_max) < 0`, vapour if
+    `ln K_k(T_min) > 0`."""
+    t_min, _ = domain
+    saturation = _pure_saturation(provider, n, pressure, flowing, domain, context, budget)
+    if isinstance(saturation, PHState):
+        return saturation
+    if isinstance(saturation, str):
+        phase: Phase = "LIQUID" if saturation == "above" else "VAPOR"
+        return _single_phase_route(provider, n, pressure, target, phase, domain, context, budget)
+    outcome = _saturation_split(provider, n, pressure, target, saturation, flowing, context)
+    if isinstance(outcome, PHState):
+        return outcome
+    phase = "LIQUID" if outcome == (t_min, saturation) else "VAPOR"
+    return _single_phase_route(provider, n, pressure, target, phase, outcome, context, budget)
+
+
+def _pure_saturation(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    pressure: float,
+    flowing: int,
+    domain: tuple[float, float],
+    context: EvaluationContext,
+    budget: int,
+) -> float | PHState | Literal["below", "above"]:
+    """`T_sat` with `ln K_k(T_sat, P, n) = 0` by `_saturation_temperature`'s bisection and budget,
+    K from `gamma_phi.ln_k` at the pure liquid; `below` when `ln K_k(T_min) > 0` (`T_sat` below
+    the domain), `above` when `ln K_k(T_max) < 0` (`T_sat` above it)."""
+    t_min, t_max = domain
+    component = provider.describe().components[flowing]
+
+    def g(temperature: float) -> tuple[float, None]:
+        try:
+            values, _, _ = gamma_phi.ln_k(provider, temperature, pressure, n, context)
+        except BandError as error:
+            raise _InnerFailureError(
+                _surfaced(error.status, "saturation temperature", error.message, 0)
+            ) from error
+        return values[flowing], None
+
+    g_lo, _ = g(t_min)
+    g_hi, _ = g(t_max)
+    if g_lo > 0.0:
+        return "below"
+    if g_hi < 0.0:
+        return "above"
+    root = bracketed_root(g, (t_min, g_lo, None), (t_max, g_hi, None), evaluations=2, budget=budget)
+    if not root.converged:
+        return _failed(
+            "not_converged",
+            "ph_not_converged",
+            f"the T_sat bisection on ln K_{component} did not close in {budget} evaluations",
+        )
+    return root.point
+
+
+def _region_route(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    pressure: float,
+    target: float,
+    domain: tuple[float, float],
+    context: EvaluationContext,
+    budget: int,
+) -> PHState:
+    """§4.5 with two or more flowing components. The region is decided by enthalpy, exactly
+    (S10-C spec §2: T1, T2 make `T_b`, `T_d` unique, T3 makes `Hdot_TP(T)` strictly increasing),
+    so one route is solved and there is no fallback between routes."""
+    t_min, t_max = domain
+    try:
+        bubble = gamma_phi.band_point(provider, n, pressure, 0.0, context)
+        dew = gamma_phi.band_point(provider, n, pressure, 1.0, context)
+    except BandError as error:
+        return _surfaced(error.status, "band end", error.message, 0)
+
+    # Step 1: the TP enthalpy at each domain end, from the band ends' positions; the provider's TP
+    # flash only at an end inside the band.
+    if bubble.position != "below":
+        h_lo = _phase_enthalpy(provider, n, t_min, pressure, "LIQUID", context)
+    elif dew.position == "below":
+        h_lo = _phase_enthalpy(provider, n, t_min, pressure, "VAPOR", context)
+    else:
+        h_lo = _tp_enthalpy(provider, n, t_min, pressure, context)
+    if dew.position != "above":
+        h_hi = _phase_enthalpy(provider, n, t_max, pressure, "VAPOR", context)
+    elif bubble.position == "above":
+        h_hi = _phase_enthalpy(provider, n, t_max, pressure, "LIQUID", context)
+    else:
+        h_hi = _tp_enthalpy(provider, n, t_max, pressure, context)
+
+    # Step 2: today's codes and message forms.
+    f_lo, f_hi = h_lo - target, h_hi - target
+    if f_lo > 0.0:
+        return _failed(
+            "out_of_domain",
+            "ph_outside_domain(below)",
+            f"Hdot_TP({t_min!r} K) exceeds the target by {f_lo!r} W",
+            2,
+        )
+    if f_hi < 0.0:
+        return _failed(
+            "out_of_domain",
+            "ph_outside_domain(above)",
+            f"the target exceeds Hdot_TP({t_max!r} K) by {-f_hi!r} W",
+            2,
+        )
+
+    # Step 3: the region.
+    if bubble.temperature is not None:
+        h_b = _phase_enthalpy(provider, n, bubble.temperature, pressure, "LIQUID", context)
+    else:
+        h_b = h_hi if bubble.position == "above" else -math.inf
+    if dew.temperature is not None:
+        h_d = _phase_enthalpy(provider, n, dew.temperature, pressure, "VAPOR", context)
+    else:
+        h_d = h_lo if dew.position == "below" else math.inf
+    if target <= h_b:
+        upper = t_max if bubble.temperature is None else bubble.temperature
+        return _single_phase_route(
+            provider, n, pressure, target, "LIQUID", (t_min, upper), context, budget
+        )
+    if target >= h_d:
+        lower = t_min if dew.temperature is None else dew.temperature
+        return _single_phase_route(
+            provider, n, pressure, target, "VAPOR", (lower, t_max), context, budget
+        )
+    band = _band_route(provider, n, pressure, target, context)
+    if isinstance(band, PHState):
+        return band
+    if band is None:
+        # Not reached: steps 2–3 put the target strictly between F(0) and F(1), and the route's
+        # chosen end is the one with the smaller |F|, finite whenever either end's is.
+        return _failed(
+            "not_converged",
+            "ph_ill_conditioned",
+            "the band route ended with no candidate inside the domain",
+        )
+    answer, rows = band
+    if rows.accepted:
+        return answer
+    assert answer.temperature is not None
+    return _ill_conditioned([("band", answer.temperature, rows)], answer.evaluations)
+
+
+def _single_phase_route(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    pressure: float,
+    target: float,
+    phase: Phase,
+    interval: tuple[float, float],
+    context: EvaluationContext,
+    budget: int,
+) -> PHState:
+    """§4.5's liquid or vapour route: today's bisection (`bracketed_root`, its two ends counted,
+    `budget`) of `Hdot^phase(n, T) − H*` on `interval`. A target outside the interval's
+    enthalpies is `ph_outside_domain` with today's message forms (§4.5 item 6). The candidate is the
+    feed bitwise in `phase` and a dormant other phase at `(T*, P)`, accepted on the closure's rows.
+    """
+    lower, upper = interval
+
+    def f(temperature: float) -> tuple[float, float]:
+        total = _phase_enthalpy(provider, n, temperature, pressure, phase, context)
+        return total - target, total
+
+    f_lo, h_lo = f(lower)
+    f_hi, h_hi = f(upper)
+    if f_lo > 0.0:
+        return _failed(
+            "out_of_domain",
+            "ph_outside_domain(below)",
+            f"Hdot_TP({lower!r} K) exceeds the target by {f_lo!r} W",
+            2,
+        )
+    if f_hi < 0.0:
+        return _failed(
+            "out_of_domain",
+            "ph_outside_domain(above)",
+            f"the target exceeds Hdot_TP({upper!r} K) by {-f_hi!r} W",
+            2,
+        )
+    root = bracketed_root(f, (lower, f_lo, h_lo), (upper, f_hi, h_hi), evaluations=2, budget=budget)
+    if not root.converged:
+        return _failed(
+            "not_converged",
+            "ph_not_converged",
+            f"the bracket did not close in {budget} evaluations",
+            root.evaluations,
+        )
+    capabilities = provider.describe()
+    stream = StreamState(n=n, temperature=root.point, pressure=pressure)
+    dormant = StreamState(n=(0.0,) * len(n), temperature=root.point, pressure=pressure)
+    vapor, liquid = (stream, dormant) if phase == "VAPOR" else (dormant, stream)
+    split = TPState(
+        status="ok",
+        phase_signature=phase,
+        vapor=vapor,
+        liquid=liquid,
+        vapor_fraction=1.0 if phase == "VAPOR" else 0.0,
+        enthalpy_flow=root.payload,
+        provider_id=capabilities.provider_id,
+        reference_convention=capabilities.reference_convention,
+    )
+    rows = _closure_rows(provider, n, split, root.point, pressure, target, context)
+    if not rows.accepted:
+        return _ill_conditioned([("bracket", root.point, rows)], root.evaluations)
+    return PHState(
+        status="ok",
+        temperature=root.point,
+        split=split,
+        route="bracket",
+        evaluations=root.evaluations,
+        residual=root.value,
+    )
+
+
+def _phase_enthalpy(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    temperature: float,
+    pressure: float,
+    phase: Phase,
+    context: EvaluationContext,
+) -> float:
+    """`Hdot^phase(n, T) = n_tot h^phase` (`gamma_phi.enthalpy_flow`); a refusal is surfaced."""
+    state = StreamState(n=n, temperature=temperature, pressure=pressure)
+    status, value, message = gamma_phi.enthalpy_flow(provider, state, phase, context)
+    if status != "ok":
+        raise _InnerFailureError(
+            _surfaced(status, f"{phase.lower()} enthalpy at T = {temperature!r} K", message, 0)
+        )
+    return value
+
+
+def _tp_enthalpy(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    temperature: float,
+    pressure: float,
+    context: EvaluationContext,
+) -> float:
+    """`Hdot_TP` from the provider's TP flash at a domain end inside the band (§4.5 step 1); a
+    non-`ok` status is surfaced as the temperature route surfaces it."""
+    state = tp_state(
+        provider, StreamState(n=n, temperature=temperature, pressure=pressure), context
+    )
+    if state.status != "ok":
+        raise _InnerFailureError(
+            _surfaced(state.status, f"TP flash at T = {temperature!r} K", state.message, 0)
+        )
+    assert state.enthalpy_flow is not None
+    return state.enthalpy_flow
 
 
 # ------------------------------------------------------------ evaluator steps the units share

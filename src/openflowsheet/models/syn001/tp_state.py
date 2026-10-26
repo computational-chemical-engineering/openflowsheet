@@ -37,8 +37,9 @@ from openflowsheet.models import (
     temperature_id,
 )
 from openflowsheet.models.rows import balance_row, definition_row, equilibrium_row
-from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
+from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE, gamma_phi
 from openflowsheet.models.syn001.blocks import EnthalpyFlowBlock, LnKBlock
+from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.saturation_band import (
     BandError,
     degeneracy_distance,
@@ -96,7 +97,11 @@ def enthalpy_flow(
     """`Sum_i n_i h_i^phase(T, P)` for one single-phase stream, W.
 
     A dormant stream contributes exactly `0.0` and the provider is not called (ADR 0001 D3.1).
+    A composition-dependent form has no `h_<c>`: its flow is the mixture `n_tot h`
+    (`gamma_phi.enthalpy_flow`, S10-C §4.12).
     """
+    if composition_dependent(provider):
+        return gamma_phi.enthalpy_flow(provider, state, phase, context)
     if state.is_dormant:
         return "ok", 0.0, ""
     result = provider.evaluate_phase(
@@ -149,6 +154,10 @@ def single_phase_admissible(
     (`saturation_band.outside_the_degeneracy_window`, T05b W6): they refuse a stream that
     certainly is not degenerate for 2 `lnK` calls instead of the bisections' ~100, and decide
     nothing otherwise, so every verdict is the band test's.
+
+    For a composition-dependent form (S10-C §4.12) the single-phase enthalpy and its slope are the
+    mixture's, `n_tot h` and `n_tot ∂h/∂T` (`gamma_phi.enthalpy_and_slope`); the rest is as above,
+    through the dispatching band functions.
     """
     if state.is_dormant:
         # ADR 0001 D3.1: no property is evaluated and the enthalpy flow is exactly zero, so the
@@ -156,18 +165,25 @@ def single_phase_admissible(
         # trivial root discussed below -- that one has a flowing stream with a vanished phase.
         return True, 0.0, 0.0, "ok", ""
 
-    single = provider.evaluate_phase(
-        PropertyRequest(state=state, phase=phase, properties=("h",), derivatives=("T",)),
-        context,
-    )
-    if single.status != "ok":
-        return False, 0.0, 0.0, single.status, single.message
+    if composition_dependent(provider):
+        status, enthalpy, slope, message = gamma_phi.enthalpy_and_slope(
+            provider, state, phase, context
+        )
+        if status != "ok":
+            return False, 0.0, 0.0, status, message
+    else:
+        single = provider.evaluate_phase(
+            PropertyRequest(state=state, phase=phase, properties=("h",), derivatives=("T",)),
+            context,
+        )
+        if single.status != "ok":
+            return False, 0.0, 0.0, single.status, single.message
 
-    enthalpy = 0.0
-    slope = 0.0
-    for component, flow in zip(components, state.n, strict=True):
-        enthalpy += flow * single.values[f"h_{component}"]
-        slope += flow * single.derivatives[f"h_{component}"]["T"]
+        enthalpy = 0.0
+        slope = 0.0
+        for component, flow in zip(components, state.n, strict=True):
+            enthalpy += flow * single.values[f"h_{component}"]
+            slope += flow * single.derivatives[f"h_{component}"]["T"]
 
     true_state = tp_state(provider, state, context)
     if true_state.status != "ok":
