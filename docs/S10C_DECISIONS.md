@@ -255,3 +255,17 @@ parallel (the note's §4.6 set-up).
   asserted; the message names each nonzero variable). `pytest -k a41` 2/2 pass (C-MW, C-EW). Scratch mutation (not
   committed) setting one absent flow to `1e-300` before the assertion: 2/2 fail with
   `AssertionError: {'COL.stage.5.v.C2H5OH': 1e-300}` (C-MW shown).
+- RUN (WO-R6, R-786, G-R8 at `f23985bf`, local x86-64 ref-x86-64): (1) enumeration oracle, 2000 seeded instances,
+  `|Z₀|` 1–10, planted matching: pass (942 with a nonempty `Z*`, up to `|Z*| = 10`); (2) R-064's recursive
+  implementation, copied verbatim into `tests/test_k03_released.py` as `_released_r064`, against the new one on 2000
+  seeded instances (`|Z₀|` ≤ 300, 976 unplanted with Hall violations, stored zeros, duplicate and cancelling entries,
+  `−0.0` and NaN residuals): identical tuples on all 2000 (737 nonempty); (3) chains: 2000 columns in stage order and
+  reversed and 10 000 columns release every column, best of 5 0.88 / 0.91 / 3.03 ms; R-064 raises `RecursionError` on
+  the 2000-column chain (asserted). Mutation (scratch): disabling the worklist fails (1) and (2). (4) B33c i–v, G-R1
+  i–v and the G-R8 file: 26/26. (5) `S10C-IDENTITY PASS n=858 changed=[]`; `S08-IDENTITY PASS n=52 changed=[S02.P1]
+  p1_stage_a=EQUAL`. Detector over the whole suite (one pytest per file, 44 in parallel) at `c856715a` and at
+  `f23985bf`: both `DETECTOR acting_tests=17 acting_iterations=153 released_calls=182`, the 153 event lines identical
+  (sorted, pid dropped), the same 17 tests (D's 12 — A93 ×3 under the capped witness — plus WO-R2's G-R1 (i), (v) and
+  the three uncapped A93 tests), and the same failed set (the 12 `t01_structural` file-alone failures). Suite-wide
+  oracle (scratch plugin running `_released_r064` beside every `_released` call): 1518 calls, 329 nonempty, largest
+  `|Z₀|` 60, 0 mismatches.
