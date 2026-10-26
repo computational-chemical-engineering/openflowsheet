@@ -2062,3 +2062,17 @@ Rows before C1 carry no `cpu_model` or core: no job logged them. Their length is
 The two ci-x86-64 jobs of 40359016227 disagree (136 and 94) at one commit on one image: ci-x86-64 is not a determinism
 unit for this trajectory (R-796). That the CPU model or the OpenBLAS core is what varies is a hypothesis (R-796: 94 with
 `Haswell`; 136 with an AVX-512 core on EPYC 9V74 and with NeoverseN2 on aarch64); C1's lines test it.
+
+### 2026-10-26 — W4b.5 rows from wp/R796's CI (C1 lines, copied at the merge `3a2c17ae`)
+
+| Run | Job | Commit | Class | `cpu_model` | numpy core | SciPy core | Records | Source |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 40390903173 | `check (ubuntu-latest)` | `66e47157` | ci-x86-64 | AMD EPYC 7763 64-Core Processor | Haswell | Haswell | 94 (`CONVERGED`) | C1 line |
+| 40390903173 | `default-install` | `66e47157` | ci-x86-64 | AMD EPYC 9V45 96-Core Processor | SkylakeX | SkylakeX | 136 (`CONVERGED`) | C1 line |
+| 40390903173 | `check (ubuntu-24.04-arm)` | `66e47157` | ci-aarch64 | aarch64 | neoversen2 | neoversen2 | 136 (`CONVERGED`) | C1 line |
+| 40403579501 | `check (ubuntu-latest)` | `3a2c17ae` | ci-x86-64 | Intel(R) Xeon(R) 6973P-C | SkylakeX | SkylakeX | 136 (`CONVERGED`) | C1 line |
+| 40403579501 | `default-install` | `3a2c17ae` | ci-x86-64 | Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz | SkylakeX | SkylakeX | 136 (`CONVERGED`) | C1 line |
+| 40403579501 | `check (ubuntu-24.04-arm)` | `3a2c17ae` | ci-aarch64 | aarch64 | neoversen2 | neoversen2 | 136 (`CONVERGED`) | C1 line |
+
+All six lines and both local lines agree with the core hypothesis: `Haswell` → 94; `SkylakeX` (four different x86-64 CPUs)
+and `neoversen2` → 136. No (class, `cpu_model`, core) key yet has ≥ 2 CI jobs, so R-796 pins nothing new.
