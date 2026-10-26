@@ -6880,3 +6880,115 @@ harvest:
   class: P
   to: []
   note: 'CI on both architectures is checked before merge, not by the generator; unsupported here'
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[0]
+  sha256: 7332807de15298072f736516d55c413915b3f646c3ac52b54638543007dba72e
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; R-569, R-709); S10-C adds library-level column and PH-kernel support; nothing about a real mixture: expectations are the model''s closed forms (S10C spec §0 item 1)'
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[1]
+  sha256: 56e9da97d6ebf164bc687161e905047a63005b0b45e699ea5f70b6df7921335b
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; R-569, R-709); S10-C adds library-level column and PH-kernel support; the verification and test-built record sets are fixtures, no evidence about a substance (S10C spec §0 item 2)'
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[2]
+  sha256: 2713f7bba11b5c1e67e33a900d790ec5301070feed101d0ebdf7909c3ea7f517
+  class: E
+  to:
+  - U02
+  - U04
+  - L19
+  - L20
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; R-569, R-709); S10-C adds library-level column and PH-kernel support; `solve_column` is not in MODEL_BUILDERS (U04); no column claim beyond C-MW and C-EW at their registered roots: no uniqueness, other openings, ternary columns, other specification kinds or flowsheet use (S10C spec §0 item 3)'
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[3]
+  sha256: 3e1f7f72524588ded7684a93e3157dc02081c046c2e30e81f959903a4721ff82
+  class: E
+  to:
+  - U02
+  - L19
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; R-569, R-709); S10-C adds library-level column and PH-kernel support; T5 (uniqueness of T(beta)) is proved for binaries only (S10C spec §0 item 4)'
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[4]
+  sha256: ee3a27f289dff15498c35565e60cd6ba3f6c168d6b7ebaa113ec9d098c9c0aff
+  class: E
+  to:
+  - U02
+  - L20
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; R-569, R-709); S10-C adds library-level column and PH-kernel support; the constant-beta point''s convergence is measured, not proved; outside the scan only the cap and the typed failure hold (S10C spec §0 item 5)'
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[5]
+  sha256: 9c6ee5d42d9784d468a4f480334abc6bdae9ec0565582b84f64b93cc54319a11
+  class: P
+  to: []
+  note: 'S10C reading: the G7 tolerances are an acceptance image, not an accuracy claim (spec §0 item 6)'
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[6]
+  sha256: e311c1628f9a4e3dbfea340b4d582b53970792fbd7c08c1ed98b846da472b5c9
+  class: P
+  to: []
+  note: 'S10C method statement: no expectation comes from the implementation (spec §0 item 7)'
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[7]
+  sha256: f295dbf98a20ab229afe540ae169b763e24c07810604cb7906f85342fccb92b4
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1`: library-level support (S10-C); flowsheet selection not offered. It stays library-only (not in SELECTABLE_BASES, U02; LIBRARY_ONLY_PROVIDERS); restates the S10 manifests'' harvested ''no column, PH-flash or flowsheet claim'' for the column and the PH kernel without rewriting them (HG(b), R-617; W5-3)'
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[8]
+  sha256: 323b0138f9305945ba02b047aa0337b6d88514b9548ee5ad0d26b854674dd71f
+  class: E
+  to:
+  - U02
+  - L19
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; R-569, R-709); S10-C adds library-level column and PH-kernel support; T1-T5 hold for the committed record sets and spec §5.1''s copies only; another record file under the same conventions has P1-P3 unchecked (S10C spec §11 E4, R-781)'
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[9]
+  sha256: 3e2c1c6b06f6dd281694122bb4fc28f06c462a89efb2525dbadcf0b94656c06f
+  class: P
+  to: []
+  note: requirements empty; no ledger package entry (frozen package_id pattern), recorded in a comment under S10 (W5-2)
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[10]
+  sha256: 6bf4d666446aeca0f83bff16803560238c124f53673ada066d6660fbe504e659
+  class: P
+  to: []
+  note: scripts/gate.sh and CI run once before merge, not by the generator; G9 measured in WO-4
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[11]
+  sha256: 977bf066628f63dc2dd3c5e06b6be7462e9b37c32c4bd0f1f94905755019eb18
+  class: P
+  to: []
+  note: S10-C reviewer pass on WO-1 to WO-4 done, F1 carried by WO-6; human numerical and process-model review pending; neither reviewed nor released claimed
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[12]
+  sha256: 630c8e08846f929597d2085374b83fdd5df89e6c307506854e0c7bf1fbc27c1b
+  class: E
+  to:
+  - U02
+  note: '`wilson-ig-v1` is library-only (not in SELECTABLE_BASES, U02; R-569, R-709); S10-C adds library-level column and PH-kernel support; agreement with the 50-digit generator is numerical verification of the same equations, not validation; W4-7''s Stage-B specification is a build-lane fixture'
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: limitations[13]
+  sha256: 5990531611847a1225af307250d08ea06f69ba268b36625adbbb81a0309355b2
+  class: P
+  to: []
+  note: the harvest follows the manifest's generation
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: checks[46]
+  check_id: S10C.gate
+  sha256: 85ea66fdd016b43cd5c3315686c3a6ba823780386a98b3ad75e0508547ef7e43
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S10c/8f38f9636e55aaf25d140f932a17e5111c6e7704/manifest.json
+  item: checks[47]
+  check_id: S10C.ci
+  sha256: 7f8c5f141c4b4e01ffa65ba284f6fe8f5a468fd22cdf7961e2d800025fbf7b29
+  class: P
+  to: []
+  note: CI on both architectures is checked before merge, not by the generator; unsupported here
