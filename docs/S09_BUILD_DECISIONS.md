@@ -234,3 +234,19 @@ Build-lane agent, after the package review (`docs/reviews/S09-review.md`) and Am
 - MEASURED (after the fix): `tests/test_s09_*.py` and `tests/test_s03_references.py` 354 passed (396 s);
   `s09_reference.py --check` PASS, 181 claims, `s09_cases.json` byte-identical (`760ab27f…a813c`);
   `s09_reference_comparison.py --check` identical; `ruff check .` and `ruff format --check .` clean (890 files).
+
+## WO-S09-5b (ledger, manifest, harvest)
+
+- DECISION (harvest classes of both S09 manifests, build-lane draft for design-lane review, W5-9's and B-84/B-86/B-91's way;
+  S03's classes for the same kinds of item): the superseded `6ce5b624` manifest stays (the verdict document and the state
+  file name it), so the harvest classifies it too (as S03's `959131dc` and S10's earlier manifests are). Both share
+  limitations[0]-[22] by text. [0], [1] -> E to L18; [2] -> E to U04, L19; [9] (x86-64 only, aarch64 installability) -> E to
+  L15; [10] (no sensitivity, no phase-transition robustness, nonideal none) -> E to U04, U05, L20, U02; [3]-[8] (readings of
+  NOT_COMPARABLE, ladder, path independence, probes, the clause, partial independence), [11]-[16] (§18.7), [17]-[22]
+  (records, thin margin, gate and CI, review) and the old manifest's [23], checks A19, gate, ci -> P. Alternatives: [9] -> P;
+  [8] -> E to L18. Reversible by: editing those entries before merge, then `t08_support_matrix.py --emit`.
+- MEASURED: manifest `evidence/S09/4d4df0875557cb53bcb0c267ad3a82de38c7d694/manifest.json` (generated at ledger commit
+  `4d4df087`, clean tree): `tested`, 26 of 28 checks pass (gate and CI unsupported). Ledger: S09 `tested`; X31 and D19 cite it.
+- MEASURED: `HARVEST_SIZE` (54, 747, 90) -> (56, 794, 95) (two manifests, 47 limitations, 5 non-pass checks added). The
+  envelope diff is 335 lines appended, 0 deleted; the old file a byte prefix of the new (HG(b), R-617). `--check`: 0 problems.
+  Tests: `test_s09_*`, `test_s03_references`, ledger, `test_t08_*`, `test_m07a*`: 1139 passed, 2 skipped; ruff clean.
