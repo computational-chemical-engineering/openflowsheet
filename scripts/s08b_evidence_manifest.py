@@ -21,8 +21,12 @@ source, test, script, schema or derivation file differs from it; S01's rule):
 3. **G3**, the design scan on this commit: `run_suite.py observe` and `scan_report.py`
    (`docs/derivations/scripts/s08b_design/`), judged against `measured.txt`: no test fails, M1
    reports `records 0`, every S01 row of `measured.txt` is reproduced and every S01 row's largest
-   error is ≤ 2.5e-6 K, and the flash-type rows equal `measured.txt`'s. The suite counts are
-   recorded; their equality with G2's is G2's to show.
+   error is ≤ 2.5e-6 K. The flash-type rows are judged against the same scan of the merge base
+   `a13203b8` (in a detached worktree with the design scripts copied in), and the near-trivial
+   buckets (minority fraction < 1e-3) also against `measured.txt`'s: `measured.txt` was taken on
+   main `53228775`, before S10-C merged, and S10-C's tests add 46 kernel-agreeing flash splits
+   to the `[0.001, 2)` bucket (build decision WO4-2). The suite counts are recorded; their
+   equality with G2's is G2's to show.
 4. **`ruff check`, `ruff format --check`** on S08b's files and **`mypy`** (the project's own
    configuration).
 
@@ -45,8 +49,10 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -124,6 +130,8 @@ G1_LINE = re.compile(
     r"S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61 b_only=0/(?P<branch_only>\d+)"
 )
 S10C_PASS_LINE = "S10C-IDENTITY PASS n=858 changed=[]"
+#: G1's merge base, where G3's flash-type rows are re-measured.
+MERGE_BASE = "a13203b8"
 #: §7 B2's bound, and G3's bound on the S01 rows (K).
 B2_BOUND, G3_S01_BOUND = 1e-5, 2.5e-6
 SUITE_LINE = re.compile(
@@ -335,8 +343,39 @@ def _flash_rows(report: str) -> list[str]:
     return accepted + buckets
 
 
-def scan_check(suite: Any, scan: Any) -> dict[str, Any]:
-    """§9 G3, judged against `measured.txt` (main 53228775's scan)."""
+def _near_trivial(rows: Sequence[str]) -> list[str]:
+    """The flash-type buckets below a minority fraction of 1e-3, with their example lines."""
+    return [line for line in rows if line.startswith("[") and not line.startswith("[0.001, 2)")]
+
+
+def base_scan(artifacts: Path) -> tuple[Any, Any]:
+    """G3's scan on the merge base: a detached worktree with this commit's design scripts."""
+    out = artifacts / "g3-base-observe"
+    with tempfile.TemporaryDirectory(prefix="s08b-g3-base-") as temporary:
+        tree = Path(temporary) / "base"
+        subprocess.run(
+            ["git", "worktree", "add", "--detach", "--quiet", str(tree), MERGE_BASE],
+            cwd=ROOT,
+            check=True,
+        )
+        try:
+            scripts = tree / DESIGN_SCRIPTS.relative_to(ROOT)
+            shutil.copytree(DESIGN_SCRIPTS, scripts, ignore=shutil.ignore_patterns("__pycache__"))
+            python = sys.executable
+            suite = run(
+                [python, str(scripts / "run_suite.py"), "observe", str(out), "--shards", "16"]
+            )
+            scan = run([python, str(scripts / "scan_report.py"), str(out)])
+        finally:
+            subprocess.run(
+                ["git", "worktree", "remove", "--force", str(tree)], cwd=ROOT, check=True
+            )
+    return suite, scan
+
+
+def scan_check(suite: Any, scan: Any, base_suite: Any, base: Any) -> dict[str, Any]:
+    """§9 G3, judged against `measured.txt` (main 53228775's scan) and, for the flash-type rows,
+    against the merge base's scan (WO4-2)."""
     measured = MEASURED.read_text(encoding="utf-8")
     report = scan.stdout
     counts = SUITE_LINE.search(suite.stdout)
@@ -348,6 +387,8 @@ def scan_check(suite: Any, scan: Any) -> dict[str, Any]:
         if (match := re.search(r"max_sat_error=(\S+) K", line))
     ]
     flash_then, flash_now = _flash_rows(measured), _flash_rows(report)
+    flash_base = _flash_rows(base.stdout)
+    base_counts = SUITE_LINE.search(base_suite.stdout)
     findings = {
         "suite_ran_and_no_test_failed": bool(
             suite.exit_code == 0 and counts and int(counts["failed"]) == 0
@@ -356,25 +397,37 @@ def scan_check(suite: Any, scan: Any) -> dict[str, Any]:
         "s01_rows_of_measured_reproduced": bool(s01_then)
         and all(line in s01_now for line in s01_then),
         "s01_largest_error_within_bound": bool(worst) and max(worst) <= G3_S01_BOUND,
-        "flash_rows_equal_measured": bool(flash_then) and flash_now == flash_then,
+        "base_scan_ran_and_no_test_failed": bool(
+            base_suite.exit_code == 0
+            and base.exit_code == 0
+            and base_counts
+            and int(base_counts["failed"]) == 0
+        ),
+        "flash_rows_equal_merge_base": bool(flash_base) and flash_now == flash_base,
+        "near_trivial_flash_rows_equal_measured": bool(_near_trivial(flash_then))
+        and _near_trivial(flash_now) == _near_trivial(flash_then),
     }
     return check(
         "S08b.G3",
         "§9 G3: the design scan (run_suite.py observe, scan_report.py) on this commit: S1's S01 "
-        "rows unchanged (largest error ≤ 2.5e-6 K), S1's flash-type rows identical to "
-        "measured.txt, M1 records 0; the suite counts are recorded (their equality with G2's is "
+        "rows unchanged (largest error ≤ 2.5e-6 K), M1 records 0; S1's flash-type rows identical "
+        "to the merge base's scan (measured.txt predates S10-C) and the near-trivial ones to "
+        "measured.txt's (WO4-2); the suite counts are recorded (their equality with G2's is "
         "G2's)",
         "pass" if scan.exit_code == 0 and all(findings.values()) else "fail",
         {
             "suite_cmd": suite.cmd,
             "scan_cmd": scan.cmd,
             "suite_line": counts.group(0) if counts else _last_line(suite),
+            "base_suite_cmd": base_suite.cmd,
+            "base_suite_line": base_counts.group(0) if base_counts else _last_line(base_suite),
             "findings": findings,
             "m1": m1[:1],
             "s01_rows": s01_now,
             "s01_rows_new": [line for line in s01_now if line not in s01_then],
             "s01_largest_error_K": max(worst) if worst else None,
             "flash_rows": flash_now,
+            "flash_rows_merge_base": flash_base,
             "flash_rows_measured": flash_then,
         },
         "every finding true",
@@ -494,13 +547,23 @@ def build(commit: str) -> dict[str, Any]:
     )
     if not junit.is_file():
         raise SystemExit(f"pytest wrote no report (exit {runs['tests'].exit_code})")
+    runs["S08b.G3-base-suite"], runs["S08b.G3-base-scan"] = base_scan(artifacts)
     scan_report = artifacts / "g3-scan-report.txt"
     scan_report.write_text(runs["S08b.G3-scan"].stdout, encoding="utf-8")
+    base_report = artifacts / "g3-base-scan-report.txt"
+    base_report.write_text(runs["S08b.G3-base-scan"].stdout, encoding="utf-8")
 
     found = nodes(junit)
     entries = assertion_checks(rows, found, measured_b2(commit))
     entries += [suites_check(found), *identity_checks(runs)]
-    entries.append(scan_check(runs["S08b.G3-suite"], runs["S08b.G3-scan"]))
+    entries.append(
+        scan_check(
+            runs["S08b.G3-suite"],
+            runs["S08b.G3-scan"],
+            runs["S08b.G3-base-suite"],
+            runs["S08b.G3-base-scan"],
+        )
+    )
     tool_text = {
         "S08b.ruff": "ruff check is clean on S08b's files",
         "S08b.format": "ruff format --check is clean on S08b's files",
@@ -554,6 +617,12 @@ def build(commit: str) -> dict[str, Any]:
                 "path": shown(scan_report),
                 "sha256": sha256_file(scan_report),
                 "description": "G3's scan report on this commit (ignored; kept by hash)",
+            },
+            {
+                "path": shown(base_report),
+                "sha256": sha256_file(base_report),
+                "description": "G3's scan report on the merge base a13203b8 (ignored; kept by "
+                "hash)",
             },
             {
                 "path": shown(MEASURED),
