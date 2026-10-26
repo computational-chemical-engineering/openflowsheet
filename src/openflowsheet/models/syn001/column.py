@@ -107,6 +107,11 @@ from openflowsheet.models.syn001.cascade import (
     vapor_total_id,
 )
 from openflowsheet.models.syn001.cascade import EQUATIONS as CASCADE_EQUATIONS
+from openflowsheet.models.syn001.equilibrium_form import equilibrium_form
+from openflowsheet.models.syn001.gamma_phi_blocks import (
+    GammaPhiLnKBlock,
+    MixtureEnthalpyFlowBlock,
+)
 from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import (
     enthalpy_block_id,
@@ -1116,8 +1121,16 @@ def declared_rows(
     Stage order, the total condenser's block first when there is one, then each present inlet.
     An equilibrium stage's columns and rows are S01's, in S01's order, with its slot row in the
     place of `Q_j − Q_j*`. Call after `validate`.
+
+    The property blocks dispatch on the provider's equilibrium form (S10-C §4.7): SYN-001 (and any
+    provider outside the allow-list) gets `LnKBlock` over `(T_j, P_j)` and per-component
+    `EnthalpyFlowBlock`s; a composition-dependent form gets a `GammaPhiLnKBlock` over the stage's
+    liquid flows (the total condenser's over `v_2`, the condensate's composition) and single-output
+    `MixtureEnthalpyFlowBlock`s. Rows, ids and order are the same for both.
     """
     unit, components = _token(spec.unit_id), spec.components
+    form = equilibrium_form(provider)
+    composition_dependent = form is not None and form.composition_dependent
     count = spec.stage_count
     inlets = spec.inlets()
     for inlet in inlets:
@@ -1130,7 +1143,7 @@ def declared_rows(
     variable_kinds: dict[str, QuantityKind] = {}
     equations: list[EquationSpec] = []
     row_kinds: dict[str, QuantityKind] = {}
-    blocks: list[LnKBlock | EnthalpyFlowBlock] = []
+    blocks: list[LnKBlock | EnthalpyFlowBlock | GammaPhiLnKBlock | MixtureEnthalpyFlowBlock] = []
     block_inputs: dict[str, tuple[str, ...]] = {}
     parameter_ids: list[str] = []
     parameters: dict[str, float] = {}
@@ -1165,14 +1178,27 @@ def declared_rows(
     def enthalpy_block(
         token: str, phase: Phase, flows: tuple[str, ...], t: str, p: str
     ) -> tuple[str, ...]:
-        block = EnthalpyFlowBlock(
-            provider, components, phase, context, block_id=enthalpy_block_id(token, phase)
-        )
+        block_id = enthalpy_block_id(token, phase)
+        block: EnthalpyFlowBlock | MixtureEnthalpyFlowBlock
+        if composition_dependent:
+            block = MixtureEnthalpyFlowBlock(
+                provider, components, phase, context, block_id=block_id
+            )
+        else:
+            block = EnthalpyFlowBlock(provider, components, phase, context, block_id=block_id)
         blocks.append(block)
         block_inputs[block.block_id] = (*flows, t, p)
         return tuple(f"{block.block_id}.{out}" for out in block.output_ids)
 
-    def lnk_block(token: str, t: str, p: str) -> str:
+    def lnk_block(token: str, t: str, p: str, liquid: tuple[str, ...]) -> str:
+        """`liquid`: the flows K is evaluated at (read by a composition-dependent form only)."""
+        if composition_dependent:
+            gamma_phi = GammaPhiLnKBlock(
+                provider, components, context, block_id=lnk_block_id(token)
+            )
+            blocks.append(gamma_phi)
+            block_inputs[gamma_phi.block_id] = (*liquid, t, p)
+            return gamma_phi.block_id
         lnk = LnKBlock(provider, components, context, block_id=lnk_block_id(token))
         blocks.append(lnk)
         block_inputs[lnk.block_id] = (t, p)
@@ -1187,7 +1213,9 @@ def declared_rows(
     distillate_keys: tuple[str, ...] = ()
     if total:
         t_c, p_c = stage_temperature_id(unit, 1), stage_pressure_id(unit, 1)
-        lnk_keys[1] = lnk_block(f"{unit}_s1", t_c, p_c)
+        lnk_keys[1] = lnk_block(
+            f"{unit}_s1", t_c, p_c, tuple(vapor_id(unit, 2, c) for c in components)
+        )
         reflux_keys = enthalpy_block(
             f"{unit}_s1_r", "LIQUID", tuple(reflux_id(unit, c) for c in components), t_c, p_c
         )
@@ -1197,7 +1225,9 @@ def declared_rows(
     for stage in stages:
         token = f"{unit}_s{stage}"
         t, p = stage_temperature_id(unit, stage), stage_pressure_id(unit, stage)
-        lnk_keys[stage] = lnk_block(token, t, p)
+        lnk_keys[stage] = lnk_block(
+            token, t, p, tuple(liquid_id(unit, stage, c) for c in components)
+        )
         vapor_keys[stage] = enthalpy_block(
             token, "VAPOR", tuple(vapor_id(unit, stage, c) for c in components), t, p
         )
