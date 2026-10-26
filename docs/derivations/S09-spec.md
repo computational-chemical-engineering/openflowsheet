@@ -9,7 +9,7 @@ Generator `docs/derivations/scripts/s09_reference.py` (stdlib and mpmath at 50 d
 `--emit` writes `docs/derivations/scripts/s09_cases.json`; `--check` re-derives **167 claims** (181 after Amendment 1, §18), refuses on a
 failed one and byte-compares the file (SHA-256 `d4514b4e…5bab7`; `760ab27f…a813c` after Amendment 1) in under a second. It pins three S03 files by SHA-256 (§0).
 
-Register **R-740 to R-747**; Amendment 1 (§18): **R-748 to R-750**. R-728…R-732 are held by S08 on `wp/S08` (unmerged); R-733…R-739 are left unused so
+Register **R-740 to R-747**; Amendment 1 (§18): **R-748 to R-750**; Amendment 2 (§19): **R-751, R-752**. R-728…R-732 are held by S08 on `wp/S08` (unmerged); R-733…R-739 are left unused so
 that the two packages cannot collide.
 
 ## 0. Authority and scope
@@ -420,7 +420,7 @@ state of an overwritten specification. Each check below catches a measured case.
 | B2 | neither pass's iteration counter `iter` reached `maxiter`. *Replaced by Amendment 1, §18.3: on R3 the counter is fsolve's `nfev`, and fsolve must have run* | — | a stopped iteration |
 | B3 | per stage and component: \|Σ in − Σ out\| | 3.1e-8 mol/s | R1 on S1 (0.315 mol/s) and A1 (0.22) |
 | B4 | per two-phase stage and component: \|y_c − K_c x_c\|, with K_c = `chemicals[c].Psat(T)/P` at the stage's T and P from the tool's objects (a total condenser stage, with no vapour: \|Σ_c K_c x_c − 1\|) | 1e-8 | R3 on D1 (0.25), whose balances and duties pass |
-| B5 | S03 rule 2: overall component closure, and overall energy closure in the tool's datum | 3.1e-8 mol/s; 1e-3 W | — |
+| B5 | S03 rule 2: overall component closure, and overall energy closure in the tool's datum. *The energy closure is a bookkeeping identity under §5.6, see Amendment 2, §19.1* | 3.1e-8 mol/s; 1e-3 W | — |
 
 - The adiabatic-stage duty check (S03 rule 2c, 1e-3 W) is the energy-balance convergence check for those stages. It stays
   in rule 2c, as S03 has it. It catches R1 on S1 (1160 W).
@@ -682,7 +682,7 @@ committed records, S03's `ours-*.json` and `s03_reference.json`, and the three-t
 | A06 | Ladder conformance: settings carry `tool_settings.BioSTEAM`; at every attempted level all four rungs are recorded (run, or the structural reason none was made); the selected rung is the first passing one in §5.3's order; a not-available record shows every rung at every expressible level; Q-X10 matches | set and order equality | exact |
 | A07 | Solve path: every run shows passes 1 and 2, the attribute-setter route and the exact read-back after pass 2 | present | exact |
 | A08 | *Amended, §18.5.* L2(c) conformance: L2(c) attempted only after an L1 inspection recorded the specification inexpressible; the adjusted specification is the end's (`Reflux` stage 0 / `Boilup` stage N−1); evaluations start at x = 1, 2 and expand per §5.4; the solver call's arguments are §5.4's; every evaluation passed the inner checks; the final evaluation is at the returned x with \|g\| ≤ ytol(kind) | as stated | exact; ytol per claim C7 |
-| A09 | *Amended, §18.5.* Rule 2 fires (synthetic copies of a committed available record, or of a synthetic record if none is available): one stage's component flow +6.2e-8 mol/s → B3, +1.55e-8 → not; one stage's y_c +2e-8 → B4, +5e-9 → not; a pass with `iter == maxiter` → B2; an exception on pass 1 → B1; unaltered → rule 4 | the labels | mutations at 2× and 0.5× of each threshold |
+| A09 | *Amended, §18.5 and §19.5.* Rule 2 fires (synthetic copies of a committed available record, or of a synthetic record if none is available): one stage's component flow +6.2e-8 mol/s → B3, +1.55e-8 → not; one stage's y_c +2e-8 → B4, +5e-9 → not; a pass with `iter == maxiter` → B2; an exception on pass 1 → B1; unaltered → rule 4 | the labels | mutations at 2× and 0.5× of each threshold |
 | A10 | Rule 2c fires: stored B ≠ 1/RR by one ulp → `specification_readback`; total-condenser vapour 6.2e-8 → fired, 1.55e-8 → not; and S03 A12's four on BioSTEAM's RC1 record (`L[1]` × (1 + 2e-4) → 2c; × (1 + 2e-8) → 2d; a pressure + 0.01 Pa → 2c; a rerun quantity moved 0.2 tolerance → 2d); and S03 §17.9's per-kind synthetic records at 2× / 0.5× of rules 2c and 2d | the labels | as S03 A12 |
 | A11 | Rule 2d path dependence fires: a copy with a second passing rung equal to the selected one except one quantity moved 0.2 tolerance → `path_dependence`; 0.05 → not | the labels | 2× and 0.5× of 0.1 |
 | A12 | Controls: no control `AGREE`; §17.3(b) for BioSTEAM by mutation (both controls replaced by `NOT_COMPARABLE` copies → every BioSTEAM pair `NOT_COMPARABLE(control_not_comparable: …)`; one replaced while the other is `DISAGREE` → no pair changes; synthetic controls if none is `DISAGREE`); (PC-L, BioSTEAM) and (PC-LI, BioSTEAM) `not_applicable` with no record; PC-LB's tool-model distance computed against `ref.controls.PC-LI.tool_model`; PC-P's reported `not_applicable(tool_model_differs)` | as stated | exact |
@@ -1128,7 +1128,7 @@ the command already logged (`s09_qualify.sh …`). The tool-free tests gain A08'
 
 None new. Q-S09-1 to Q-S09-4 stand. Q-S09-5 is reworded (§18.4(d)). Not decided here, because it is outside this brief:
 WO-S09-1's open build item, whether the fingerprint should hash numpoly's compiled extension. It stays with the package's
-single ruling round. *Recommended default:* no. The pip-freeze fingerprint plus the hash-locked sdist pins the source, and
+single ruling round. *Closed by Amendment 2, §19.2(d): no.* *Recommended default:* no. The pip-freeze fingerprint plus the hash-locked sdist pins the source, and
 the compiled bytes depend on the host compiler, as for any sdist build.
 
 ### 18.9 Decisions
@@ -1139,3 +1139,95 @@ the compiled bytes depend on the host compiler, as for any sdist build.
   recorded as inapplicable.
 - **R-750:** the L2(c) accuracy rerun is one evaluation at the run's final x, with no outer loop. The thin-margin flag is a
   disclosure that moves no classification. The margin rows are a closed list that excludes the outer loop's |g|/ytol.
+
+## 19. Amendment 2 (2026-10-26, design lane `reviewer`): rulings of the package review
+
+Review `docs/reviews/S09-review.md`. Register **R-751, R-752**.
+
+**What does not change:**
+- no registered value, threshold, tolerance, setting, input, level or record;
+- `s09_cases.json` (SHA-256 `760ab27f…a813c`) and `s09_reference.py --check` (181 claims);
+- the harness, which is frozen with the records.
+
+**What changes:**
+- one classifier fix (§19.3), under which `comparison.json` must recompute byte for byte (A13);
+- one A09 mutation (§19.5).
+
+**How the earlier text is marked:** §6.2's B5 row and §18.8 carry a marker pointing here, and the text given here
+governs.
+
+### 19.1 B5's energy closure is a bookkeeping identity (clarifies §6.2, §6.6, §18.4(c))
+
+**Why it is an identity.**
+- By §5.6, every stage's duty is computed from that stage's own streams.
+- Every internal stream is one stage's outlet and another stage's inlet.
+- So Σ stage duties − (Σ product H − Σ inlet H) is zero up to rounding, whatever the state.
+- B5's energy row therefore checks stream bookkeeping, not convergence. §6.6's floor (1.4e-11 W) is that rounding.
+
+**What carries energy convergence:**
+- every stage that carries neither end's specification, including the stage at an end registered as "none": rule 2c's
+  adiabatic-stage duty, ≤ 1e-3 W per stage;
+- a duty-specified stage: rule 2d's specification residual on its computed duty (S03 §17.4, 1e-8 relative);
+- an end stage with a `Reflux`, `Boilup` or `Flow` specification: none is needed, because that specification replaces the
+  stage's energy equation.
+
+**Ruling.** B5's energy row stays, and stays a margin row, read as a bookkeeping check. Its ratio is not a floor fact.
+WO-S09-3's sum over every stage's duty stands. Summing only the end duties would leave Σ intermediate duties, which
+rule 2c already bounds stage by stage.
+
+### 19.2 Conforming build choices; the open fingerprint item closed
+
+(a) **B4 in the classifier.** The classifier computes K_c from SYN-001's closed form, at T06's pinned constants, at the
+record's T and P. That conforms to §6.2's `chemicals[c].Psat(T)/P`:
+- §4.3's readback ties the tool's Psat to the closed form within 1e-14 relative;
+- the readback requires `USER_METHOD` to be the only method.
+
+Measured: the two computations differ by at most 1.2e-15 (threshold 1e-8). One consequence: a Psat mapping error now
+fires B4 (rule 2) before `property_mapping` (rule 2c). Only the label changes; the result is `NOT_COMPARABLE` either way.
+
+(b) **Two margin rows in the twin's tolerance.** The classifier computes "rerun movement" and "path spread" in the twin's
+tolerance (§6.4). The harness's values, in the tool's tolerance, are recorded and not read.
+
+(c) **Rule 2c's order.** The order in `docs/S09_BUILD_DECISIONS.md` (WO-S09-3) is accepted. It changes labels only.
+
+(d) **§18.8's open item is closed: the fingerprint does not hash numpoly's compiled extension.**
+- In `.venv-biosteam`, numpoly is imported only by chaospy. biosteam, thermosteam and flexsolve import neither, so
+  numpoly is not on the column path.
+- The numpoly sdist is pinned by hash in the lock.
+- The compiled bytes depend on the host compiler.
+
+### 19.3 Non-finite values fail rule 2 in the classifier
+
+**Rule.** Each of §6.2's checks fails if any value it reads is missing or non-finite, wherever that value falls in the
+order of evaluation. This is S03's convention, and the classifier's own docstring states it.
+
+**The defect.** The classifier's B3 (`scripts/s09_reference_comparison.py:324`) let a later finite residual replace a
+NaN. B3 must keep a NaN, as B4 does.
+
+**The harness.** Its float `max()` has the same order dependence. It is not changed: the harness is frozen with the
+records, every committed rule value is finite, and the classifier is authoritative.
+
+### 19.4 Exposure, added to §9.1
+
+- `s09_cases.json` is a registered input of the blind harness, and two of its claim strings carry values derived from
+  the twin: C4's 243.292 tolerances (PC-LB, `Q_reboiler`) and C6's T_max of 397.3721 K.
+- Neither can steer an outcome. Selection is mechanical, C5 fixes the loop's answer, and neither value says where the
+  tool converges.
+- A16 proves the order of the commits. That the records depend on `fd38124d` rests on two facts: the run is
+  deterministic (A17), and the harness diff `c2589694..fd38124d` holds exactly §18.6 items 2–4.
+- Both points are disclosed under D19, with §9.1.
+
+### 19.5 Assertions amended
+
+| Id | Amended assertion | Expected | Tolerance and why |
+| --- | --- | --- | --- |
+| A09 | As amended in §18.5, and: a copy of RC1's selected run with the first stage flow B3 reads (stage 0, first inlet, A) set to NaN → B3 | the label | exact |
+
+### 19.6 Decisions
+
+- **R-751:** B5's energy closure is a bookkeeping identity under §5.6, not a convergence check. Energy convergence is
+  carried by rule 2c's adiabatic duty and by a duty specification's residual. The classifier's closed-form K in B4, its
+  margin rows in the twin's tolerance and its rule 2c order conform. The fingerprint does not hash numpoly's compiled
+  extension.
+- **R-752:** a missing or non-finite value fails the rule 2 check that reads it, whatever its position in the order of
+  evaluation. A09 gains the NaN mutation. The twin-derived values in `s09_cases.json`'s claims are disclosed under D19.

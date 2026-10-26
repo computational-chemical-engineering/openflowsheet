@@ -14555,3 +14555,63 @@ design lane.
 - *Treat a thin margin as an exclusion:* that is a second, unregistered threshold at a tenth of every registered one.
 
 **Watch for.** A thin-margin list read as a verdict, or a threshold tightened or relaxed after the recorded run.
+
+## R-751 — S09 Amendment 2: B5's energy closure is a bookkeeping identity; WO-S09-3's classifier choices conform; no numpoly hash in the fingerprint
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S09 Amendment 2 |
+| Normative text | `docs/derivations/S09-spec.md` §19.1, §19.2 |
+| Evidence | `docs/reviews/S09-review.md` F2, F7, rulings 4–5; records and `comparison.json` at `293cb19b` |
+| Affected packages | S09 (classifier, margin rows, environment fingerprint) |
+
+**Decision.**
+- Under §5.6 every stage's duty is computed from its own streams, so B5's energy closure is zero up to rounding in any
+  state. It checks stream bookkeeping, not convergence. It stays as a check and as a margin row, and its ratio is not a
+  floor fact.
+- Energy convergence is carried by rule 2c's adiabatic duty, on every stage that carries neither end's specification,
+  and by rule 2d's residual on a duty-specified stage's computed duty.
+- These classifier choices conform:
+  - B4's K_c from SYN-001's closed form, tied to the tool's Psat by §4.3's readback. The two differ by ≤ 1.2e-15. A Psat
+    mapping error is then labelled B4 rather than `property_mapping`, and the classification is the same;
+  - the rerun and path margin rows in the twin's tolerance;
+  - WO-S09-3's rule 2c order;
+  - B5 summed over every stage's duty.
+- The fingerprint does not hash numpoly's compiled extension. Only chaospy imports numpoly, so it is off the column
+  path. The sdist is pinned by hash.
+
+**Rejected alternatives, and why.**
+- *Sum only the end duties in B5:* it gives Σ intermediate duties, which rule 2c already bounds stage by stage.
+- *Drop B5's energy row:* it is a cheap bookkeeping check, and dropping it would change the registered rows for no gain.
+- *Hash numpoly's `.so`:* the bytes depend on the host compiler, and the code is not on the path that is compared.
+
+**Watch for.** A later package citing B5's energy floor as evidence of convergence.
+
+## R-752 — S09 Amendment 2: a non-finite value fails the rule 2 check that reads it; the twin-derived claims in `s09_cases.json` are disclosed
+
+| | |
+| --- | --- |
+| Date | 2026-10-26 |
+| Decided by | design lane (`reviewer`), S09 Amendment 2 |
+| Normative text | `docs/derivations/S09-spec.md` §19.3–§19.5 |
+| Evidence | `docs/reviews/S09-review.md` F1 (scratch probe: a NaN in RC1's first-read stage flow passes the classifier's B3) and F5, F6 |
+| Affected packages | S09 (classifier B3, A09, D19 disclosure) |
+
+**Decision.**
+- Each of §6.2's checks fails if any value it reads is missing or non-finite, wherever that value falls in the order of
+  evaluation. The classifier's B3 must keep a NaN, as its B4 does. A09 gains the NaN mutation. `comparison.json` must
+  recompute byte for byte.
+- The frozen harness has the same order dependence in its float `max()`. It is recorded and not changed, because every
+  committed rule value is finite and the classifier is authoritative.
+- C4's 243.292 tolerances and C6's 397.3721 K, both derived from the twin, sit in a registered input of the blind
+  harness. Neither can steer an outcome. They are disclosed under D19, together with the assembly-time provenance stamp
+  (A16 proves the order of the commits; A17 and the harness diff tie the records to `fd38124d`).
+
+**Rejected alternatives, and why.**
+- *Re-run the qualification with a corrected harness:* no committed value is non-finite, so it would buy nothing and
+  would open the blind run again.
+- *Remove the claims from `s09_cases.json`:* that changes a pinned input after the recorded run, for an exposure that
+  cannot steer anything.
+
+**Watch for.** A rule check written as a running maximum that does not keep a NaN.
