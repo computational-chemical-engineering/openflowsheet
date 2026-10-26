@@ -34,6 +34,7 @@ from typing import Final, Literal
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
 from openflowsheet.models.syn001.bisection import bracketed_root
+from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.thermo import PropertyProvider, PropertyRequest, PropertyStatus, StreamState
 
 __all__ = [
@@ -74,6 +75,8 @@ class BandTemperature:
 
     `inside`: `temperature` is the bisection's answer and `k_values` the provider's `K_i` there
     (one per declared component, in the provider's order); `below` / `above`: no temperature.
+    For a composition-dependent form (`gamma_phi.band_point`, S10-C §4.3) an `inside` point also
+    carries its liquid composition `liquid`; SYN-001's K needs none, and leaves it empty.
     """
 
     position: Position
@@ -81,6 +84,8 @@ class BandTemperature:
     k_values: tuple[float, ...] = ()
     #: Evaluations of `g` spent, the two domain ends included.
     evaluations: int = 0
+    #: The liquid composition `x` at `T(β)`, composition-dependent forms only (S10-C §4.3).
+    liquid: tuple[float, ...] = ()
 
 
 def rachford_rice(flows: Sequence[float], k_values: Sequence[float], beta: float) -> float:
@@ -128,7 +133,14 @@ def band_temperature(
     `g(T_min) > 0` → `below`; `g(T_max) < 0` → `above`; else T05 §4.4 step 4's rule: stop at
     `g = 0` exactly or adjacent doubles, return the end with the smaller `|g|`, the lower on a
     tie. Exhausting `budget` raises `BandError("not_converged", …)`.
+
+    A composition-dependent form is answered by `gamma_phi.band_point` (S10-C §4.3, §4.12).
     """
+    if composition_dependent(provider):
+        # Imported here: `gamma_phi` imports this module.
+        from openflowsheet.models.syn001 import gamma_phi  # noqa: PLC0415
+
+        return gamma_phi.band_point(provider, flows, pressure, beta, context, budget=budget)
     n = tuple(float(value) for value in flows)
     if not any(value > 0.0 for value in n):
         raise ValueError("the saturation band is for a flowing stream; a dormant one has none")
@@ -213,7 +225,13 @@ def outside_the_degeneracy_window(
     least `g' (τ − 1e-13 K) ≈ 1.5e-8` from zero — `g' ≥ min_i Δh_i/(R T_max²) = 0.0155 K⁻¹` near
     either band end, where `Σ z_i K_i` or `Σ z_i / K_i` is 1 — seven decades above its rounding,
     so the sign test cannot land on the far side.
+
+    For a composition-dependent form (S10-C §4.12) only the `β = 0` test is made, with K at the
+    stream's own composition (its bubble function in closed form); the `β = 1` side would need the
+    constant-β point, so it returns "not decided" (`False`).
     """
+    if composition_dependent(provider):
+        return _bubble_window(provider, flows, temperature, pressure, context)
     n = tuple(float(value) for value in flows)
     components = provider.describe().components
     try:
@@ -228,6 +246,26 @@ def outside_the_degeneracy_window(
     except BandError:
         return False
     return rachford_rice(n, above, 1.0) < 0.0
+
+
+def _bubble_window(
+    provider: PropertyProvider,
+    flows: Sequence[float],
+    temperature: float,
+    pressure: float,
+    context: EvaluationContext,
+) -> bool:
+    """`outside_the_degeneracy_window`'s `β = 0` test for a composition-dependent form: `g(T − 2τ;
+    0) > 0` with `K = K(T − 2τ, P, z)`; a provider refusal decides nothing."""
+    # Imported here: `gamma_phi` imports this module.
+    from openflowsheet.models.syn001 import gamma_phi  # noqa: PLC0415
+
+    n = tuple(float(value) for value in flows)
+    try:
+        ln_k, _, _ = gamma_phi.ln_k(provider, temperature - PRESCREEN_MARGIN, pressure, n, context)
+    except BandError:
+        return False
+    return rachford_rice(n, tuple(math.exp(value) for value in ln_k), 0.0) > 0.0
 
 
 def is_temperature_degenerate(distance: float) -> bool:
