@@ -291,3 +291,14 @@ parallel (the note's §4.6 set-up).
   3 files, +148 −65); `S10C.G-R3` pass: ci-aarch64 C-MW `CONVERGED` in 9 (worst 1.2943e-7, `COL.stage.15.T`), C-EW in 4
   (2.1290e-8), 38/38 absent flows `+0.0` each, `cmw.json` 6edc96fd…; A40–A42 cite it and the push CI 40295317759;
   `S10C.G-R7` pass (the four ensemble records' SHA-256 equal note §8's table; verdict R-784's).
+- DECISION (WO-R4 harvest, by W5-5's precedent): `t08_support_matrix.py --check` reported the `2aedd250` manifest's 18
+  items unmapped, so the harvest ran. Each item whose text key equals one of the `8f38f963` manifest's takes that
+  entry's class, targets and note (limitations [0]–[13], checks `S10C.gate`, `S10C.ci`); the two new limitations, [14]
+  (R-782 provenance: WO-R5/WO-R6 inert, dispatch evidence holds) and [15] (the R-782 review), → P. Alternative: [14] →
+  E. Reversible by: editing those entries before merge, then `--emit`.
+- MEASURED (WO-R4 harvest): 18 entries (16 limitations, 2 non-pass checks), 124 lines appended, 0 deleted; the old
+  envelope a byte prefix of the new (HG(b), R-617). `HARVEST_SIZE` (57, 808, 97) → (58, 824, 99) in
+  `tests/test_m07a_harvest.py`; `--emit` regenerated `docs/support-matrix.md`; `--check` 0 problems. Acceptance list
+  (`test_k03*`, `t06*`, `t07*`, `s01_`, `s02_`, `s06_`, `s03_`, `s08_`, `t05*`, `s10_`, `s10c_`, ledger, `t08_*`,
+  `m07a*`; 224 files, one process each): 7050 passed, 31 skipped, 0 failed; ruff, ruff format (912 files), mypy (250)
+  clean.
