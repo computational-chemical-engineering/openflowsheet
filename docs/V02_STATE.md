@@ -92,19 +92,21 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-26, workstation; no cloud sessions).** `main` = `764860d1` (S08b merged `e65b0690` at wp/S08b `1d4ca814`;
-tree identical; then its review docs). Last full gate: PASS at `1d4ca814`: 13286 passed, 3137 skipped. CI 40373688071 green
-(x86-64, aarch64, default-install, identity). v0.3 packages tested: S01–S05, S07, S08, S08b, S09, S10, S10-C; R01–R03 open.
+**Position (2026-10-26, workstation; no cloud sessions).** `main` = `77f54168` (wp/R796 merged at `3a2c17ae`, tree identical:
+R-795, R-796, T07 report line). Last full gate: PASS at `3a2c17ae`: 13288 passed, 3137 skipped. CI 40403579501 green.
+v0.3 packages tested: S01–S05, S07, S08, S08b, S09, S10, S10-C; R01–R03 open. **Way of working (Frank, 2026-10-26):** batch
+several items per branch, two engineers in parallel, one gate + one CI per batch.
 **S08b** (manifest `evidence/S08b/acbd1266…` tested 18/20, gate/CI unsupported; review `docs/reviews/S08b-review.md` sound,
 no must-fix): `S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61`; B2 1.6e-6 K. HARVEST_SIZE (59, 832, 101).
 **S10-C** (ADR 0049 Proposed; `evidence/S10c/2aedd250…` tested): γ–φ PH flash and column; R-782/R-785/R-786.
 
 **Next actions (in order):**
-1. **S08b review follow-up** (wp/S08b-f, worktree `s08b-f`): F1 (B1 docstring; `solved("C2")` memo filled before the
-   patches in `test_s01_cascade_wo3._forced_edge_3`) and F2 (a `_proposal`-level `items` test). Running. Then gate, CI, merge.
-2. Design-lane ruling round on build decisions: S10-C G2 admits `numerics/newton.py` and the two R-782 test edits by name;
-   T07 on an unregistered machine class checks only > 89 records; T07-1 (S08b log) unpins ci-x86-64 (runner CPU varies,
-   EPYC 7763 / 9V74: 94 vs 136). Ternary column claims need a methanol+ethanol refit (S10 S-4).
+1. **S11 — the binding package** (Frank, 2026-10-26: "I want the binding package"; supersedes the library-only defaults S05
+   Q-8, S10 Q-F2/R-709, S10-C Q1/Q3). wp/S11, worktree `s11`; brief `docs/briefs/S11-binding-design.md`, recon
+   `docs/briefs/S11-binding-recon.md`. Architect design + ADR 0050 running (register from R-800). Then tracks A and B in
+   parallel, one review, one gate, one CI. Fold in: the two stale S10 limitation sentences; R-796's limitation into the
+   S08b/S10-C manifests at their next regeneration.
+2. Ternary column claims need a methanol+ethanol refit (S10 S-4).
 3. Design-lane leftovers: S07 B-42, F-20.2, Q-A1-2; ADR 0046–0049 acceptance; S03 B6-1..B6-4; S10 B-86, B-87, B-90, B-91,
    verdict F1/F2; S08 W5-7 (X31 in `evidence` not `requirements`, schema takes D/A ids), W5-9 classes; S10-C W5-1/W5-2;
    the two stale S10 limitation sentences (Frank "Do it later", at the next S10 change).

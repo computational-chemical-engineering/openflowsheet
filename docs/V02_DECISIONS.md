@@ -1235,3 +1235,13 @@ Grep, don't read whole. Newest at the bottom.
 - CI 40359016227 at `d34f8b57` failed T07 THM-09/4 on ci-x86-64 (136 vs pinned 94; runner CPU varies). DECISION T07-1
   (`f4b5d8dd`, `1d4ca814`): ci-x86-64 unpinned; failure names the CPU. For the ruling round.
 - Gate PASS `d34f8b57` 13286/3137 and `1d4ca814` 13286/3137. CI 40373688071 green. Merged `e65b0690` (tree identical), pushed.
+
+## 2026-10-26 — S08b-f and R796 merged; S11 started; batching
+
+- wp/S08b-f merged `8c34ecb0` (review F1/F2; gate PASS `de8ec0e8` 13288/3137; CI 40388688886).
+- Ruling round (verdict) on S10-C G2, T07 unregistered class, T07-1: all accepted; R-795, R-796; C1 report line. wp/R796
+  merged (tree identical to `3a2c17ae`; gate PASS 13288/3137; CI 40403579501). T07 lines: Haswell → 94, SkylakeX (EPYC 9V45,
+  Xeon 6973P-C, Xeon 8370C) and neoversen2 → 136; no new pin (`docs/t07-measurements.md` W4b.5, `77f54168`).
+- Frank: "I am getting slightly impatient… implement many more features in one pass and then test them together" → batch per
+  branch, two engineers in parallel, one gate + one CI per batch (memory `batch-then-test`).
+- Frank: "I want the binding package" → S11 (wp/S11); architect brief `docs/briefs/S11-binding-design.md`.
