@@ -1221,3 +1221,17 @@ Grep, don't read whole. Newest at the bottom.
 - Erratum `94f70c2d`: R-782 note §9 — A41 checks 38 absent flows per case; 60 is |Z*|.
 - Gate PASS `94f70c2d`: 13249 passed, 3137 skipped. CI 40315691647 green (both architectures, default-install, identity).
 - Merged into main `8654aabc` (`--no-ff`, tree identical to `94f70c2d`), pushed.
+
+## 2026-10-26 — S08b merged
+
+- wp/S08b: WO-0 merge `0387b2e7` (B = `a13203b8`; `S08B-RECORDS n=52 moved=[] stage_a_moved=[]`, §6.1's eleven, byte-identical
+  to `measured.txt`); WO-1 G1 gate `8c455729` (control `--no-change`: `a_texts=0 b_moved=0`); WO-2 `564bf772` (§5.1); WO-3
+  `a6fa18a7`/`6ea95a4a` (§5.2, B1–B3; B2 1.609e-06 K); manifest `evidence/S08b/acbd1266…` tested 18/20; harvest `cb25186d`
+  (HARVEST_SIZE (59, 832, 101)). G1 at acbd1266: `S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61 b_only=0/20`.
+  G3: branch 13280 / base 13249 passed; S01 rows largest error 2.43e-06 K.
+- Review (`docs/reviews/S08b-review.md`): sound, no must-fix; all build decisions accepted; F1 (cache fact misdiagnosed — a
+  test memo filled under a forced edge-3 patch) and F2 (no test pins `items` at `_proposal`) to follow-up wp/S08b-f; errata
+  B3/G3/Q5 applied on main `764860d1`.
+- CI 40359016227 at `d34f8b57` failed T07 THM-09/4 on ci-x86-64 (136 vs pinned 94; runner CPU varies). DECISION T07-1
+  (`f4b5d8dd`, `1d4ca814`): ci-x86-64 unpinned; failure names the CPU. For the ruling round.
+- Gate PASS `d34f8b57` 13286/3137 and `1d4ca814` 13286/3137. CI 40373688071 green. Merged `e65b0690` (tree identical), pushed.

@@ -92,19 +92,19 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-26, workstation; no cloud sessions).** `main` = `8654aabc` (S10-C merged at wp/S10C `94f70c2d`; tree
-identical). Last full gate: PASS at `94f70c2d`: 13249 passed, 3137 skipped. CI 40315691647 green (x86-64, aarch64,
-default-install, identity). v0.3 packages tested: S01–S05, S07, S08, S09, S10, S10-C; R01–R03 open.
-**S10-C** (ADR 0049 Proposed; manifest `evidence/S10c/2aedd250…` tested, 49/51, gate/CI unsupported): γ–φ PH flash and
-column on Wilson; C-MW 9 / C-EW 4 iterations on both architectures. R-782 (K03 absent-component release on every step,
-review `docs/reviews/S10C-r782-review.md`), R-785 (A41 absent flows `== 0.0`), R-786 (iterative `_released`, G-R8 pass).
-T07 THM-09/4 pin per machine class (x86-64 94, aarch64 136). HARVEST_SIZE (58, 824, 99). Build log `docs/S10C_DECISIONS.md`.
+**Position (2026-10-26, workstation; no cloud sessions).** `main` = `764860d1` (S08b merged `e65b0690` at wp/S08b `1d4ca814`;
+tree identical; then its review docs). Last full gate: PASS at `1d4ca814`: 13286 passed, 3137 skipped. CI 40373688071 green
+(x86-64, aarch64, default-install, identity). v0.3 packages tested: S01–S05, S07, S08, S08b, S09, S10, S10-C; R01–R03 open.
+**S08b** (manifest `evidence/S08b/acbd1266…` tested 18/20, gate/CI unsupported; review `docs/reviews/S08b-review.md` sound,
+no must-fix): `S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61`; B2 1.6e-6 K. HARVEST_SIZE (59, 832, 101).
+**S10-C** (ADR 0049 Proposed; `evidence/S10c/2aedd250…` tested): γ–φ PH flash and column; R-782/R-785/R-786.
 
 **Next actions (in order):**
-1. **S08b** (wp/S08b, worktree `s08b`; design `docs/derivations/S08b-design.md` `971bc32f`, R-790…R-794, docs only so
-   far): WO-0 (merge main with S10-C, re-measure) … WO-4, then the reviewer pass, gate, CI, merge.
-2. Design-lane ruling round for S10-C build decisions: G2 admits `numerics/newton.py` and the two R-782 test edits by name;
-   T07 on an unregistered machine class checks only > 89 records. Ternary column claims need a methanol+ethanol refit (S10 S-4).
+1. **S08b review follow-up** (wp/S08b-f, worktree `s08b-f`): F1 (B1 docstring; `solved("C2")` memo filled before the
+   patches in `test_s01_cascade_wo3._forced_edge_3`) and F2 (a `_proposal`-level `items` test). Running. Then gate, CI, merge.
+2. Design-lane ruling round on build decisions: S10-C G2 admits `numerics/newton.py` and the two R-782 test edits by name;
+   T07 on an unregistered machine class checks only > 89 records; T07-1 (S08b log) unpins ci-x86-64 (runner CPU varies,
+   EPYC 7763 / 9V74: 94 vs 136). Ternary column claims need a methanol+ethanol refit (S10 S-4).
 3. Design-lane leftovers: S07 B-42, F-20.2, Q-A1-2; ADR 0046–0049 acceptance; S03 B6-1..B6-4; S10 B-86, B-87, B-90, B-91,
    verdict F1/F2; S08 W5-7 (X31 in `evidence` not `requirements`, schema takes D/A ids), W5-9 classes; S10-C W5-1/W5-2;
    the two stale S10 limitation sentences (Frank "Do it later", at the next S10 change).
