@@ -1263,6 +1263,9 @@ packages:
     # S08 evidences X31's "invalid specs/phases" clause (S08-design §13.10, R-736; the review's ruling 3).
     # WO-5: the manifest at 6d7d1a6d is `tested` (26 of 28 checks pass; gate and CI `unsupported`, they run before
     # merge); it supersedes WO-4's at 38457cb8.
+    # S08b (phase-contract follow-ups from S08; S08b-design R-790..R-794) has no package entry (the frozen ledger schema
+    # admits only `^[PKTMSR][0-9]{2}$` ids, as for S10-C). Its manifest is evidence/S08b/<commit>/manifest.json
+    # (requirements [D09]); WO-4: evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json is `tested` (18 of 20; gate and CI `unsupported`).
     status: tested
     evidence:
       - evidence/S08/6d7d1a6dbc3de166fe5dfd44715cf83031a9c843/manifest.json

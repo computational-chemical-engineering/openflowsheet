@@ -74,3 +74,72 @@ Design: `docs/derivations/S08b-design.md` (R-790 to R-794). Branch `wp/S08b`. Ap
       S10C-IDENTITY PASS n=858 changed=[]
 
 - Not done here: WO-3 (§5.2), WO-4 (full gate, manifest, records, review).
+
+## WO-3 — (b), S01 cascades get S02 §8 item 6 (2026-10-26, commits `a6fa18a7`, `6ea95a4a`)
+
+- §5.2 as written: `TWO_PHASE_SATURATION_TOLERANCE` and the body of `column_solve._saturation_pairs` moved to
+  `cascade_solve` (`saturation_pairs(unit, components, provider, state, regimes)`); `column_solve` imports both and keeps
+  `_saturation_pairs(spec, …)` as a one-line delegation; `cascade_solve.acceptance_failures` gains the clause under
+  `SATURATION_PREFIX = "§8 saturation: "` (both exported); `solve_cascade` unchanged. S01 spec §18 (Amendment 2, verbatim)
+  and its header line. Tests: `tests/test_s08b_saturation.py` (B1, B2, B3, and the constants moved, not copied).
+- DECISION WO3-1: `test_s08_item6.py::test_a_band_answer_other_than_inside_is_a_failure` stubbed
+  `column_solve_module.band_temperature`; the moved body looks `band_temperature` up in `cascade_solve`, so the stub no
+  longer reached it (3 parametrized failures: finite errors where `inf` was asserted) → the stub is retargeted to
+  `cascade_solve_module` (two lines; every asserted value unchanged). Alternative: route the lookup through
+  `column_solve` (a signature §5.2 does not give). Reversible by: reverting that hunk of `a6fa18a7`. §7 B3 says S08's
+  item-6 tests "pass untouched"; this one-line touch is for the design lane to accept.
+- B1, first form, failed in one shard (`test_s01_cascade_wo3` before it): the cached `solved("C2")` root and a fresh
+  `solve_cascade(C2)` differ in their last bits (stage-1 bubble error 2.0096e-06 vs 7.3633e-09 K; both accepted). A
+  solve depends on which caches earlier tests warmed (why G1 deals both trees alike). B1 now spies on
+  `cascade_solve.saturation_pairs` and compares the six strings with the raising solve's own values (`6ea95a4a`).
+- **B2 measured:** largest saturation error over C1–C5 = **1.6091221937131195e-06 K** (fresh process; ≤ 1e-5 K; per
+  case in the manifest). Order-dependent at the 1e-6 K level: in the shard above, C2's cached root gives 2.0096e-06 K.
+- Acceptance on `f6011de2` (WO-3 + the records commit; before the B1 fix): 25 S01/S02/S03/S06/S08/S08b modules, 950
+  passed, 1 failed (B1's first form; after the fix its shard passes, 150, and the module, 5);
+
+      S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61 b_only=0/20     (10 min 47 s)
+      S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL
+      S10C-IDENTITY PASS n=858 changed=[]
+
+  `b_only=0/20`: the decisions of the branch-only `test_s08b_saturation.py` (informational, §9). WO-2's line had 0/0.
+
+## WO-4 — evidence and records, without the full gate and the review (2026-10-26)
+
+- `scripts/s08b_evidence_manifest.py` after S08's generator. DECISION WO4-1 (§10 Q5): `requirements: [D09]`; X31 is a gate
+  id the frozen schema's `^[DA][0-9]{2}$` does not admit (S08's precedent, W5-7), named in a limitation; `depends_on` is
+  not a manifest field. Alternative: empty `requirements`. Reversible by: `REQUIREMENTS`.
+- DECISION WO4-2 (G3's flash comparison): `measured.txt` was taken on main `53228775`, before S10-C. The scan on the merge
+  base `a13203b8` (13249 passed, 0 failed) reproduces every S01 row of `measured.txt` but not its flash-type rows: S10-C's
+  tests add 46 kernel-agreeing splits to the `[0.001, 2)` bucket (n 2386 → 2432, tests 483 → 489, LIQUID 147 → 191,
+  TWO_PHASE 2233 → 2235); the near-trivial buckets are unchanged. So "identical to measured.txt" cannot hold on any tree
+  after S10-C → the flash-type rows are judged against the same scan of the merge base, the near-trivial buckets also
+  against `measured.txt`. Alternative: a design-lane re-registration of `measured.txt` on `a13203b8`. Reversible by:
+  `scan_check` (`7d095488`).
+- DECISION WO4-3 (G3's dealing): the run at `7d095488` failed G3 on that finding alone — 3 splits fewer on the branch,
+  `test_t05b_openings.py::test_b31a_no_case_raises[CH-UP|CH-DZ12|CH-3]`, which record their splits when run alone on the
+  branch: `run_suite.py` deals each tree's own file list, the three new `test_s08b_*` files shift later files to other
+  shards, and the probe sees only uncached solves. → the generator runs the probe over `s08b_identity.shards` (G1's
+  dealing; for the base tree exactly `run_suite.py`'s). Alternative: `--files-from` in the design's `run_suite.py`.
+  Reversible by: `g3_scans` (`6207d4c2`).
+- Records: R-731's "Watch for" answered; the design note's header erratum (R-782…R-786 were S10-C's); `docs/progress.md`,
+  `docs/CLOUD_WORK.md`, `docs/FRANK_QUESTIONS.md`.
+- **Manifest** `evidence/S08b/acbd12664b80d06fc51cf0b68640d25d6962b4a2/manifest.json` (30 min 35 s): `status: tested`,
+  18 of 20 checks pass; `S08b.gate` and `S08b.ci` `unsupported` (they run before merge). A1–A7, B1–B3 by citation (1200
+  nodes passed: S08b 31, S01 138, S02 187, S03 310, S06 179, S08 106, and WO-2's contract tests); B2 per case C1
+  1.609e-06, C2 1.001e-08, C3 8.43e-11, C4 2.56e-09, C5 5.75e-11 K. Gate lines at `acbd1266`:
+
+      S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61 b_only=0/20
+      S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL
+      S10C-IDENTITY PASS n=858 changed=[]
+
+- **G3 at `acbd1266`** (the final code commit), against `measured.txt`: branch `passed=13280 failed=0 skipped=3137` (the
+  base's 13249 + S08b's 31), base `a13203b8` `passed=13249 failed=0 skipped=3137`; M1 `records 0; tests 0` (`_is_item`
+  is gone); every S01 row of `measured.txt` reproduced byte for byte, one new row
+  (`S01 tests/test_s08b_saturation.py: n=31 max_sat_error=1.61e-06 K min_LV=0.0135`), largest S01 error 2.43e-06 K
+  (≤ 2.5e-6); flash-type rows equal the merge base's (n=2432, tests=489, `[0.001, 2)` n=2422) and the three near-trivial
+  buckets equal `measured.txt`'s (4, 2, 4 splits; max 0.0666, 0.000949, 30.70 K). The suite counts' equality with G2's
+  is G2's (not run here).
+- The first `tested` run at `6207d4c2` (same numbers) was not committed: its G1 check's `expected` carried an
+  angle-bracket placeholder, which `test_evidence_manifests.py` refuses; fixed in `acbd1266` and re-run.
+- Not done here: the full gate (G2), CI on both architectures, the `reviewer` pass; the T08 harvest follows in its own
+  commit.
