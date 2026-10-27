@@ -194,3 +194,11 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
 - DECISION (D6): `MODEL_BASES` (the five) and `table.revision_checks`' v2 dispatch are monkeypatched in
   `tests/s11_gp_support.py` (`admit_wilson`, `dispatch_gamma_phi`) until I1b, as D2's and D3's tests do. Reversible
   by: dropping the two helpers at I1b.
+- DECISION (D6, R-840): `ph_kernel.failure_labels(provider_id, convention)` gives `{}` on SYN-001's provider and the
+  bound id and convention otherwise; `typed_failure`, `closure_failure`, `_state_failure` and `port_enthalpy` take
+  them as keywords (defaults: `""` and `REFERENCE_CONVENTION`, so a SYN-001 failure is the same `UnitEvaluation` as
+  before), and the valve and PH flash pass `failure_labels(self.property_provider, self.reference_convention)`.
+  Measured on `wilson-ig-v2`: pressure_rise(valve), inadmissible_phase(inlet, LIQUID), pressure_outside_domain(outlet),
+  ph_outside_domain(above), duty_into_dormant_stream each carry (`wilson-ig-v2`, `WILSON-IG-ref-v1`); on SYN-001
+  (`""`, `SYN-001-ref-v1`). Alternative: SYN-001 failures gain `provider_id="syn001"` (a moved field on every SYN-001
+  failure). Reversible by: the commit. K02/T05/T05b/S10-C/gp tests: 2157 passed.

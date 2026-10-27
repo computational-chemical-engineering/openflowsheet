@@ -30,10 +30,14 @@ from s11_gp_support import (
 from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.models import flow_id, pressure_id, temperature_id
+from openflowsheet.models import UnitEvaluation, flow_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import WILSON_BASIS, parse_revision
+from openflowsheet.models.syn001 import REFERENCE_CONVENTION
+from openflowsheet.models.syn001.ph_flash import PHFlash
+from openflowsheet.models.syn001.valve import Valve
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.thermo import FlashRequest, StreamState
+from openflowsheet.thermo import FlashRequest, PropertyProvider, StreamState
+from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify.certificate import BoundDeclaration, fresh_provider, verify_revision
 from openflowsheet.verify.checks import (
     DERIVATIVE_TOLERANCE,
@@ -44,6 +48,7 @@ from openflowsheet.verify.checks import (
 
 TAU_E = KIND_TOLERANCE["heat_rate"]
 TAU_FLOW = KIND_TOLERANCE["molar_flow"]
+P_ATM = 101_325.0
 CONTEXT = EvaluationContext(model_version="t", constants_sha256="0" * 64, phase_signature=None)
 
 
@@ -170,3 +175,69 @@ def test_a69_gp_c1_heater_to_tp_flash(gamma_phi: list[int]) -> None:
         assert abs(state[flow_id("S4", c)] - flash.liquid.n[k]) <= TAU_FLOW, c
     assert witness["Z"] == 6
     assert witness["one_sided_worst"] <= DERIVATIVE_TOLERANCE / 10, witness
+
+
+# -- S11 rulings item 11 (R-840): the `ph_kernel` failure labels -----------------------------------
+
+
+def _labelled(provider: PropertyProvider) -> dict[str, UnitEvaluation]:
+    """One typed failure of each `ph_kernel` path the valve and the PH flash return:
+    `typed_failure` (a pressure rise; an outlet pressure out of the domain; a duty into a
+    dormant stream), `port_enthalpy`'s (a vapour declared liquid) and `closure_failure` (a duty
+    past the records' T range)."""
+    described = provider.describe()
+    faces: dict[str, Any] = {}
+    if described.provider_id != "syn001":
+        faces = {
+            "property_provider": described.provider_id,
+            "reference_convention": described.reference_convention,
+            "domain": {"T": described.domain["T"], "P": described.domain["P"]},
+            "components": described.components,
+        }
+    n = (0.4, 0.0, 0.6)
+    zero = (0.0, 0.0, 0.0)
+
+    def stream(flows: tuple[float, ...], t: float, p: float) -> dict[str, tuple[StreamState]]:
+        return {"inlet": (StreamState(n=flows, temperature=t, pressure=p),)}
+
+    def valve(p: float) -> Valve:
+        return Valve(unit_id="V", provider=provider, outlet_pressure=p, context=CONTEXT, **faces)
+
+    def ph_flash(duty: float, drop: float = 0.0) -> PHFlash:
+        return PHFlash(
+            unit_id="P",
+            provider=provider,
+            duty=duty,
+            pressure_drop=drop,
+            context=CONTEXT,
+            **faces,
+        )
+
+    return {
+        "pressure_rise(valve)": valve(180e3).evaluate(stream(n, 330.0, P_ATM), CONTEXT),
+        "inadmissible_phase(inlet, LIQUID)": valve(50e3).evaluate(stream(n, 390.0, P_ATM), CONTEXT),
+        "pressure_outside_domain(outlet)": ph_flash(0.0, 10e3).evaluate(
+            stream(n, 330.0, 35e3), CONTEXT
+        ),
+        "ph_outside_domain(above)": ph_flash(5e5).evaluate(stream(n, 330.0, P_ATM), CONTEXT),
+        "duty_into_dormant_stream": ph_flash(1.0).evaluate(stream(zero, 330.0, P_ATM), CONTEXT),
+    }
+
+
+def test_r840_a_wilson_valve_and_ph_flash_failure_name_wilson() -> None:
+    """Each typed failure of the valve and the PH flash on `wilson-ig-v2` carries the bound
+    provider's id and `WILSON-IG-ref-v1` (ADR 0001 D5.2), not SYN-001's label."""
+    for code, failure in _labelled(fresh_provider(WILSON_BASIS)).items():
+        assert failure.status != "ok" and failure.message.split("\n", 1)[0] == code
+        assert (failure.provider_id, failure.reference_convention) == (
+            "wilson-ig-v2",
+            "WILSON-IG-ref-v1",
+        ), code
+
+
+def test_r840_syn001s_failure_label_is_the_same_constant() -> None:
+    """The same failures on SYN-001 keep the label they always had: SYN-001's convention and no
+    provider id."""
+    for code, failure in _labelled(Syn001Provider()).items():
+        assert failure.status != "ok" and failure.message.split("\n", 1)[0] == code
+        assert (failure.provider_id, failure.reference_convention) == ("", REFERENCE_CONVENTION)
