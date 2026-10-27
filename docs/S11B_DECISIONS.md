@@ -6,6 +6,7 @@ isolated and revertible. Measurements go in the run log below.
 
 ## Decisions
 
+DECISION: Q8 (does the application accept `s01-default-v1` for a revision solve?) → fact: no; `application/policies.APPLICATION_POLICIES` holds T06-revision-v2, T04-W12, T08-ptc-v1, T08-warm-v1 only. The note's default (register `s11-column-v1` = `S01_DEFAULT_V1`, isolated commit) is B3's and not done (B3 stopped at Q9). Alternative: n/a. Reversible by: n/a.
 DECISION: Q7 (does the binder require every multiplicity-1 port wired?) → fact: it requires every *declared* material port wired, of any multiplicity (`bind_revision_flowsheet`, `port_unwired`), so `many` does not make `top`/`bottom` optional; `ColumnUnit.ports()` declares only the ports its instance wires (the model's `PORTS` lists all five). Alternative: an optional-port notion in the binder (track A / I1 file, frozen-adjacent). Reversible by: making `ports()` return `PORTS`.
 DECISION (escalated): where the column's end specifications are read → instance parameters `condenser.<kind>[.<attr>]`, `reboiler.<kind>[.<attr>]` (a `role: fixed` specification with target `parameters.<end>.<kind>…` lands there too), one function `column_unit.end_entries`. The note's revision *pins* need a `condenser.*`/`reboiler.*` target path in `revision_flowsheet._PATH_KINDS` and the routing in `_read` (track A's file), and `PinColumn` has no non-stream quantity (`revision_binding.py`); the column's parameters are also absent from `_PARAMETER_KINDS`, so only SI-unit-of-the-declared-kind is checked. Alternative: the paths as the note says (design lane + A/I1). Reversible by: rewriting `end_entries` to read `view.pins`.
 DECISION: a column instance id must be a token (S01's `_token`: its property blocks are named after it) → refused at parse as `id_unsupported(<U>)` with a hint, not left to surface as `value_outside_model_domain`. Alternative: map ids to tokens (changes every row id). Reversible by: deleting the check.
@@ -30,3 +31,49 @@ Inlet-dependent (left to `validate` at evaluate): R2 (inlet flows), R3's inlet `
 `F_c`), I6 (product split), R7 (energy precheck).
 
 ## Run log
+
+- 2026-10-27 B1 `1fb0b8f9`: S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 FAIL
+  (C branch shard 4: `test_k02_unit_models::test_no_unit_module_defines_a_row_builder_of_its_own`; fixed in `884b4973`).
+- 2026-10-27 B1 fix-up `884b4973`: S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[];
+  S11 PASS n=54497 changed=[] (698 s for the three).
+- 2026-10-27 B2 `ffc68146`: see the next line (gate run on a detached worktree of the commit).
+
+## Q9 spike (WO-B3's first step): STOPPED — the region decomposition does not place the stage pseudo-units
+
+A29 on M1 alone (`feed_source → column → 2 product_sinks`, builder registered by monkeypatch, `S01_DEFAULT_V1`;
+script `tests/s11_column_support.column_revision` + `plan_revision` + `execute_plan`). Trace:
+
+1. `bind_revision_flowsheet` binds M1 square (`test_the_column_binds_square`); `plan_revision` then raises
+   `ValueError: lifted_split_unregistered(syn001.column)` at `orchestrator/splits.check_agreement` (splits.py:470):
+   the column's 7 × 3 `CAS-equilibrium` rows are `molar_flow_squared` and no descriptor names them. This is the
+   staged-split plumbing §4.7.5 assigns to B3 (expected).
+2. The plumbing would not suffice, and this is the Q9 answer. Every region map keys a split by `split.unit`, and
+   the standalone solve's region has `units = signature_units = (S02.stage.1 … S02.stage.N)` (column_solve.py:416-
+   423). A flowsheet region is built by `execution.build_region` (execution.py:404-437) from flowsheet instances:
+   rows by `declaration.rows[row].unit` (the authoring instance, `UCOL`), columns by `graph.column_owner`, and
+   `signature_units = _lifted_units(...)` = `(UCOL,)`. The region solve keeps only
+   `active_splits = [split for split in splits if split.unit in set(region.units)]` (region.py:1876), so every stage
+   split `UCOL.stage.j` would be dropped silently: the column's equilibrium rows would be solved with no phase
+   policy, and the attempt signature would carry `UCOL` instead of its stages.
+3. `check_agreement` also keys the `molar_flow_squared` rows by authoring instance (splits.py:463-466) and compares
+   them to one descriptor's equilibrium rows (b); a column's squared rows are N stages' rows plus the purity and
+   recovery definitions (`molar_flow_squared`, not equilibrium rows).
+
+Placing the stages needs a rule for region membership of pseudo-units (`region.units`/`signature_units` gaining
+`stage_unit(U, j)` for a column instance, or the filter at region.py:1876 resolving a pseudo-unit to its instance by
+the `stage_unit` prefix) and for (a)/(b) of `check_agreement`. That is region structure, which the brief and the
+note's Q9 reserve to the design lane; nothing was changed.
+
+## Handoff (where track B stopped)
+
+- Done: B1 (`1fb0b8f9`, `884b4973`), B2 (`ffc68146`). Tests: `tests/test_s11_column_face.py` (65),
+  `tests/test_s11_column_unit.py` (35), support `tests/s11_column_support.py`.
+- Stopped: B3 at its first step, the Q9 spike (above). Not started: staged splits in `orchestrator/splits.py` and
+  `executor.py`, the v1-policy check (A28), the `s11-column-v1` registration (Q8), the S11 flowsheet cases, A24,
+  A29, Q11 (a Wilson column with a `none` end), Q14 timings. B4 is not track B's yet (waits for A3).
+- Open for the design lane: Q9 (region membership of stage pseudo-units; the rule at region.py:1876 and
+  check_agreement (a)/(b)); the end-specification routing (instance parameters now; the note's pins need
+  track-A/I1 files); `_PARAMETER_KINDS` entries for the column's parameters; the `rows.py` ownership exception.
+- Next action once Q9 is ruled: implement the ruling + `lifted_splits(..., staged=)`, merge the staged maps in
+  `executor._splits/_closure_types/_zero_flow_forms/_split_temperatures` and in `plan_revision`, then rerun the spike
+  (`column_revision(SPECS["M1"])`, `plan_revision`, `execute_plan` under `S01_DEFAULT_V1`).
