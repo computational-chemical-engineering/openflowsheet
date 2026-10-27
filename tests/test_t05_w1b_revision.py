@@ -95,6 +95,8 @@ def test_builders_hold_the_thirteen_models_of_the_table() -> None:
         "syn001.component_separator",
         "syn001.heat_exchanger",
         "syn001.kinetic_cstr",
+        # S11 (ADR 0050, R-810; design note §8.3, I1): the column, registered on purpose.
+        "syn001.column",
     }
 
 

@@ -18,7 +18,8 @@ from test_s06_column_wo1 import J_CASES
 from test_s11_column_face import view_of
 from test_t05_w11_cases import case_document
 
-from openflowsheet.application import column_binding
+from openflowsheet.application import column_binding, revision_binding
+from openflowsheet.application.binding import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
 from openflowsheet.models.syn001.column_solve import stage_unit
@@ -167,7 +168,8 @@ def test_a_recovery_definition_row_must_be_claimed(
 def test_a_staged_key_equal_to_an_instance_id_is_refused(registered: pytest.MonkeyPatch) -> None:
     """S11.A89 (3): a staged key that names another instance. The revision reader refuses a
     dotted instance id (`id_unsupported`), so no document can name one of the column's
-    `stage_unit` keys; the check is exercised with a staged unit whose key is `U-BOT`."""
+    `stage_unit` keys; the checks are exercised with a staged unit whose key is `U-BOT`: the
+    binder's guard (§10.2 step 9, R-838's A91), then the planner's (a'') behind it."""
 
     def keyed_u_bot(given: StagedSplits) -> StagedSplits:
         old = stage_unit("UCOL", 3)
@@ -184,6 +186,15 @@ def test_a_staged_key_equal_to_an_instance_id_is_refused(registered: pytest.Monk
         )
 
     _staged_by(registered, keyed_u_bot)
+    # The binder's own guard (§10.2 step 9, registered at I1): the key names an instance.
+    refused = bind_revision_flowsheet(column_revision(M1))
+    assert isinstance(refused, Unbound), refused
+    assert (refused.kind, refused.detail) == ("unsupported", "id_unsupported(U-BOT)")
+    assert refused.hint == (
+        "Instance id `U-BOT` is a lifted-split key of instance `UCOL`; rename the instance."
+    )
+    # And the planner's check (a'') behind it, with the binder's guard bypassed.
+    registered.setattr(revision_binding, "split_owners", lambda staged: {})
     binding = _bind(column_revision(M1))
     with pytest.raises(ValueError, match=r"lifted_split_key_collision\(U-BOT\)"):
         plan_revision(binding, S01_DEFAULT_V1)

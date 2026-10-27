@@ -1,8 +1,9 @@
 """The revision builder of `syn001.column` (S11 design note §4.7.1, §4.7.2; WO-B2).
 
-`_COLUMN` is the model's signature and `build_column` its builder, in the `Builder` shape of
-`revision_binding`. They are registered in `MODEL_BUILDERS`/`MODEL_SIGNATURES` by I1, not here;
-until then a test registers the builder in a monkeypatched table, as `test_m02_wo8_region` does.
+`build_column` is the model's builder, in the `Builder` shape of `revision_binding`, which
+registers it in `MODEL_BUILDERS` (I1) through a wrapper that imports this module at the call, and
+defines the model's signature `_COLUMN` beside the others: this module imports `Configuration`
+from `revision_binding`.
 
 The builder parses the instance (`column_unit.column_structure`), applies the structural items of
 S02 §5 and S06 §5 at bind (`column_unit.structural_refusal`), and returns the unit with its
@@ -14,30 +15,18 @@ unconsumed and refused by the binder.
 
 from __future__ import annotations
 
-from typing import Final
-
-from openflowsheet.application.revision_binding import Configuration, ModelSignature
+from openflowsheet.application.revision_binding import Configuration
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import UnitModel
 from openflowsheet.models.revision_flowsheet import InstanceView
-from openflowsheet.models.syn001.column import CONDENSER, MODEL_ID, REBOILER, EndSpecification
+from openflowsheet.models.syn001.column import CONDENSER, REBOILER, EndSpecification
 from openflowsheet.models.syn001.column_unit import (
-    PORTS,
-    STAGE_COUNT,
     ColumnUnit,
     column_staged_splits,
     column_structure,
     structural_refusal,
 )
 from openflowsheet.thermo import PropertyProvider
-
-#: The column's signature (§4.7.1). Its end specifications are not `PinColumn`s (a pin is a
-#: stream quantity or a duty), so the signature names its one fixed parameter and no choice; the
-#: rest is `column_unit`'s to read and refuse. Its optional parameters — `stage_pressure.<j>`,
-#: `stage_duty.<j>`, `feed_stage.<stream>` and the twelve end parameters `END_PARAMETERS`
-#: (§10.5) — have no `ModelSignature` field to be listed in (build decision,
-#: `docs/S11B_DECISIONS.md`).
-_COLUMN: Final = ModelSignature(model_id=MODEL_ID, ports=PORTS, required=(STAGE_COUNT,))
 
 
 def _label(end: str, given: EndSpecification | None) -> str | None:

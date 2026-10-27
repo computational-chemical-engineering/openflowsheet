@@ -19,10 +19,12 @@ from typing import Any
 import pytest
 
 from openflowsheet.application import revision_binding
-from openflowsheet.application.column_binding import _COLUMN, build_column
+from openflowsheet.application.column_binding import build_column
+from openflowsheet.application.revision_binding import _COLUMN
 from openflowsheet.models.revision_flowsheet import WILSON_RECORDS
 from openflowsheet.models.syn001.cascade import BOTTOM, TOP
 from openflowsheet.models.syn001.column import CONDENSER, MODEL_ID, REBOILER, ColumnSpec
+from openflowsheet.models.syn001.column_unit import END_PARAMETERS
 from openflowsheet.units import dimension_of
 from openflowsheet.verify import column, table
 from openflowsheet.verify.table import ModelChecks
@@ -210,6 +212,14 @@ WILSON_CASES: tuple[str, ...] = ("C-MW", "C-EW")
 #: (no condenser, C-MW's reboiler and `bottoms_rate`), which `solve_column` accepts.
 WILSON_STRIPPER = "C-MW-stripper"
 FLOWSHEETS = Path(__file__).resolve().parents[1] / "benchmarks" / "s11" / "flowsheets"
+#: The column's sample in the T07/T08 sample tables (design note §8.3, I1): a committed case on
+#: SYN-001's basis and one on Wilson's.
+COLUMN_SAMPLES: tuple[str, ...] = ("M1", "C-MW")
+#: The column's optional instance parameters, by the name up to the first `.` (§4.7.1, §10.5):
+#: `ModelSignature` has no optional field to list them in (S11B_DECISIONS B3b).
+COLUMN_OPTIONAL: frozenset[str] = frozenset(
+    {"stage_pressure", "stage_duty", "feed_stage", *END_PARAMETERS}
+)
 
 
 def column_case_spec(name: str) -> ColumnSpec:

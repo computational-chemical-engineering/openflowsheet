@@ -57,6 +57,7 @@ from openflowsheet.models.revision_flowsheet import (
     PHASE_CAPABILITIES,
     SYN001_BASIS,
     TARGET_PATH_KINDS,
+    WILSON_BASIS,
     ComponentBasis,
     InputMapping,
     InstanceView,
@@ -71,6 +72,7 @@ from openflowsheet.models.revision_flowsheet import (
 )
 from openflowsheet.models.syn001 import PROVIDER_ID as SYN001_PROVIDER_ID
 from openflowsheet.models.syn001 import (
+    column_unit,
     component_separator,
     conversion_reactor,
     feed,
@@ -85,6 +87,7 @@ from openflowsheet.models.syn001 import (
     splitter,
     valve,
 )
+from openflowsheet.models.syn001.column import MODEL_ID as COLUMN_MODEL_ID
 from openflowsheet.models.syn001.component_separator import ComponentSeparator
 from openflowsheet.models.syn001.conversion_reactor import ConversionReactor
 from openflowsheet.models.syn001.feed import FeedSource
@@ -98,6 +101,7 @@ from openflowsheet.models.syn001.pump import LiquidPump
 from openflowsheet.models.syn001.sink import ProductSink
 from openflowsheet.models.syn001.splitter import StreamSplitter
 from openflowsheet.models.syn001.valve import Valve
+from openflowsheet.orchestrator.splits import split_owners, staged_units
 from openflowsheet.studies.surrogate import reactor as c1_surrogate
 from openflowsheet.studies.surrogate.manifest import check_manifest
 from openflowsheet.thermo import Phase, PropertyProvider
@@ -1080,6 +1084,30 @@ def _kinetic_cstr(
     return unit, {"inlet_phase": inlet_phase, "key_component": key_component, "phase": phase}
 
 
+#: S11 design §4.7.1 (registered at I1): `syn001.column`'s signature. Its end specifications are not
+#: `PinColumn`s (a pin is a stream quantity or a duty), so the signature names its one fixed
+#: parameter and no choice; the rest is `column_unit`'s to read and refuse. Its optional parameters
+#: — `stage_pressure.<j>`, `stage_duty.<j>`, `feed_stage.<stream>` and the twelve end parameters
+#: (§10.5) — have no `ModelSignature` field to be listed in (`docs/S11B_DECISIONS.md`, B3b).
+#: Defined here beside the others, because `column_binding` imports this module.
+_COLUMN: Final = ModelSignature(
+    model_id=COLUMN_MODEL_ID, ports=column_unit.PORTS, required=(column_unit.STAGE_COUNT,)
+)
+
+
+def _syn001_column(
+    view: InstanceView,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    components: tuple[str, ...],
+) -> tuple[UnitModel, Configuration]:
+    """`column_binding.build_column` (§4.7.1–§4.7.2), imported at the call: that module imports
+    `ModelSignature` and `Configuration` from this one."""
+    from openflowsheet.application.column_binding import build_column  # noqa: PLC0415
+
+    return build_column(view, provider, context, components)
+
+
 _COMPONENT_SEPARATOR: Final = ModelSignature(
     model_id=component_separator.MODEL_ID,
     ports=component_separator.PORTS,
@@ -1476,9 +1504,10 @@ _C1_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
 )
 
 #: Model id -> signature: what each builder reads (§1.3's table), for `list_models` (T07 §4.2):
-#: SYN-001's thirteen and, since M02's join (R-280), the eight C1 models; M04's surrogate (R-301).
+#: SYN-001's thirteen, S11's column (§4.7) and, since M02's join (R-280), the eight C1 models;
+#: M04's surrogate (R-301).
 MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
-    signature.model_id: signature for signature in (*_SYN001_SIGNATURES, *_C1_SIGNATURES)
+    signature.model_id: signature for signature in (*_SYN001_SIGNATURES, _COLUMN, *_C1_SIGNATURES)
 }
 
 _IAPWS95: Final = "iapws95-v1"
@@ -1500,6 +1529,10 @@ MODEL_BASES: Final[Mapping[str, frozenset[str]]] = {
     # S11 design §4.4 (ADR 0050 D3): the three routing models hold no provider and bind on every
     # basis except C1's, which has their namesakes.
     **dict.fromkeys(ROUTING_MODELS, frozenset({SYN001_PROVIDER_ID, *S11_BASES})),
+    # S11 design §4.7, §9 (I1): the column binds on SYN-001's basis and on the provider id the
+    # Wilson registry row holds (`WILSON_BASIS`); C1's is vapour-only and a pure fluid has no
+    # stage composition (`_UNADMITTED`).
+    _COLUMN.model_id: frozenset({SYN001_PROVIDER_ID, WILSON_BASIS.provider_id}),
 }
 
 #: Model id -> what an instance of it takes as a target path, for `parse_revision`'s
@@ -1509,9 +1542,9 @@ _INSTANCE_TARGETS: Final[Mapping[str, str]] = {
 }
 
 #: Model id -> builder: the six K02 models, the six T05 ones (§1.3's table), T08's kinetic CSTR
-#: (build-first §A1), M02's six C1 units and two C1 reactor ids (R-280), and M04's surrogate of
-#: the C1 reactor (R-301): its registered builder refuses; the binder hands a resolved manifest to
-#: `_c1_reactor_surrogate_of` instead.
+#: (build-first §A1), S11's column (§4.7), M02's six C1 units and two C1 reactor ids (R-280), and
+#: M04's surrogate of the C1 reactor (R-301): its registered builder refuses; the binder hands a
+#: resolved manifest to `_c1_reactor_surrogate_of` instead.
 MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _FEED_SOURCE.model_id: _feed_source,
     _ADIABATIC_MIXER.model_id: _adiabatic_mixer,
@@ -1526,6 +1559,7 @@ MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _COMPONENT_SEPARATOR.model_id: _component_separator,
     _HEAT_EXCHANGER.model_id: _heat_exchanger,
     _KINETIC_CSTR.model_id: _kinetic_cstr,
+    _COLUMN.model_id: _syn001_column,
     _C1_FEED_SOURCE.model_id: _c1_feed_source,
     _C1_ADIABATIC_MIXER.model_id: _c1_adiabatic_mixer,
     _C1_TP_HEATER.model_id: _c1_tp_heater,
@@ -1855,6 +1889,20 @@ def bind_revision_flowsheet(
                 f"builder for {instance.model_id} built {unit.model_id} {unit.unit_id!r}"
             )
         built.append((instance, unit, configuration, reader))
+
+    # S11 design §10.2 step 9 (R-822): no instance id is a lifted-split key a staged unit supplies.
+    # The reader's id rule refuses the dotted spelling first (R-838); this is the binder's guard,
+    # a set intersection of the supplied keys with the ids, not parsing.
+    ids = {instance.unit_id for instance in view.instances}
+    owners = split_owners(staged_units([unit for _, unit, _, _ in built]))
+    for key, owner in owners.items():
+        if key in ids:
+            return Unbound(
+                "unsupported",
+                f"id_unsupported({key})",
+                hint=f"Instance id `{key}` is a lifted-split key of instance `{owner}`; "
+                "rename the instance.",
+            )
 
     for instance, unit, _, _ in built:
         declared = {port.name: port for port in unit.ports()}

@@ -37,6 +37,8 @@ import t05b_support as t05b  # noqa: E402
 import t08_cstr_support as t08  # noqa: E402
 from conftest import REPO_ROOT, load_yaml  # noqa: E402
 from m02_c1_corpus import C1_CORPUS, surrogates  # noqa: E402
+from s11_column_support import COLUMN_OPTIONAL, COLUMN_SAMPLES, committed_case  # noqa: E402
+from s11_column_support import MODEL_ID as COLUMN_MODEL  # noqa: E402
 
 from openflowsheet.application.revision_binding import (  # noqa: E402
     MODEL_BUILDERS,
@@ -74,6 +76,8 @@ BUILT: dict[str, Callable[[], Document]] = {
     "T08:dormant": t08.dormant_revision,
     # M02's join (R-280 (a)): the registered C1 corpus, so every C1 builder has a bound instance.
     **{f"M02:{name}": build for name, build in C1_CORPUS.items()},
+    # S11 (ADR 0050, R-810; design note §8.3, I1): the column's sample, on SYN-001 and Wilson.
+    **{f"S11:{name}": (lambda name=name: committed_case(name)) for name in COLUMN_SAMPLES},
 }
 
 
@@ -338,6 +342,14 @@ EXPECTED: dict[str, str] = {
     "M02:C1-SURROGATE-M04-v1": (
         "binds 291932ea44010ce04fd47b8ddb916da1aa962428d4705b06da6de9f3ef7469b0"
     ),
+    # S11 (R-810; design note §8.3, I1): the column's sample, generated at its registration. The
+    # rows above are unchanged by it.
+    "S11:M1": (
+        "binds fdbba42e1b518b2af7d887f81ce208c167ce46fd688cd9c137162e718895276f"
+    ),
+    "S11:C-MW": (
+        "binds 0d8c524d78dc7eba519454a31bddf362524e20971ef46bc8411a463c0a35a49b"
+    ),
 }
 
 
@@ -379,6 +391,12 @@ def test_the_signature_ports_are_the_constructed_units_ports(model_id: str) -> N
     units = _units_by_model()[model_id]
     assert units
     for unit in units:
+        if model_id == COLUMN_MODEL:
+            # S11 (R-810; design note §4.7.1): the signature lists every port a column may have;
+            # an instance has those its structure uses (no `top` without a top inlet), in order.
+            signature = MODEL_SIGNATURES[model_id].ports
+            assert tuple(p for p in signature if p in unit.ports()) == unit.ports(), unit.unit_id
+            continue
         assert unit.ports() == MODEL_SIGNATURES[model_id].ports, unit.unit_id
 
 
@@ -421,7 +439,12 @@ def test_the_signature_describes_every_bound_instance_exactly() -> None:
             signature = MODEL_SIGNATURES[instance.model_id]
             required = _templates(signature, instance, view.components)
             assert required <= set(instance.parameters), instance.unit_id
-            assert set(instance.parameters) - required <= set(signature.zero), instance.unit_id
+            optional = set(instance.parameters) - required
+            if instance.model_id == COLUMN_MODEL:
+                # S11 (R-810; S11B_DECISIONS B3b, accepted R-838): `ModelSignature` has no optional
+                # field, so the column's optional parameters are `column_unit`'s grammar's.
+                optional = {name for name in optional if name.split(".")[0] not in COLUMN_OPTIONAL}
+            assert optional <= set(signature.zero), instance.unit_id
             expected: set[str] = set()
             for pin in signature.pins:
                 expected |= _pin_columns(instance, pin.quantity, pin.port, view.components)

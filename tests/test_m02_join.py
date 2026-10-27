@@ -80,6 +80,9 @@ REGISTERED: dict[str, frozenset[str]] = {
     "c1.reactor_standin": C1,
     # W27 Amendment 3 (R-301): M04's surrogate of the C1 reactor, on the C1 basis only.
     "c1.reactor_surrogate": C1,
+    # S11 (ADR 0050, R-810; design note §5's I1 row, §9): the column on SYN-001's basis and the
+    # Wilson registry row's provider id.
+    "syn001.column": frozenset({"syn001", "wilson-ig-v1"}),
 }
 
 

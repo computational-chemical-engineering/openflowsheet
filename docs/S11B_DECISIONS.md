@@ -133,3 +133,12 @@ note's Q9 reserve to the design lane; nothing was changed.
   specification, `declared_ports=column.DECLARED_PORTS`, admissibility); `column_registered` also patches it today.
 - Next action: I1 (not track B's). Track B's WOs are complete except the escalated items.
 
+
+## WO-I1 (column registration)
+
+DECISION (I1): where `_COLUMN` lives → defined in `revision_binding` beside the other signatures (from `column_unit.PORTS`/`STAGE_COUNT`); `MODEL_BUILDERS` holds `_syn001_column`, which imports `column_binding.build_column` at the call (cycle). Alternative: a mid-module import of `column_binding` (breaks when `column_binding` is imported first), or moving `ModelSignature`/`Configuration`. Reversible by: moving the four lines back.
+DECISION (I1): `MODEL_BASES["syn001.column"]` reads `WILSON_BASIS.provider_id` (the Wilson registry row, §9), so D5's switch to v2 carries it. Alternative: the literal `wilson-ig-v1`. Reversible by: the literal.
+DECISION (I1): `test_t07_w5c_signatures` on the column: its unit's ports are the signature's in order with the absent ends left out, and its optional parameters are `column_unit`'s grammar (`COLUMN_OPTIONAL`), since `ModelSignature` has no optional field (B3b, R-838). Alternative: `ColumnUnit.ports()` always all PORTS (would make an unwired `top` `port_unwired`). Reversible by: the two branches in the test.
+DECISION (I1): the column's sample for the T07/T08 tables is the committed M1 and C-MW cases (`COLUMN_SAMPLES`); `EXPECTED` gains `S11:M1`, `S11:C-MW`, every other row unchanged. Alternative: a new corpus file. Reversible by: `COLUMN_SAMPLES`.
+DECISION (I1): A89(3) now asserts the binder's §10.2 step 9 guard (`id_unsupported(U-BOT)` with the design's hint), then the planner's (a'') with the guard bypassed (`split_owners` patched). Alternative: drop the planner half. Reversible by: the test.
+DECISION (I1, item 9 (b)): `column_unit.end_parameter(end, kind)` spells the missing-end hint (`condenser_purity.<component>`, `condenser_temperature.<stage>`); the `specification_unsupported` hint still lists bare kinds (not dotted; not required by the ruling). Reversible by: one line.

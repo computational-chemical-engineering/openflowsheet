@@ -294,14 +294,21 @@ PURE_FLUID = (
 GAMMA_PHI = "its EO face reads lnK and h_<c>; γ–φ faces are S11c"
 C1_PHYSICS = "the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)"
 #: SHA-256 over every refused (model, basis) pair between SYN-001 and C1, each as
-#: `model|provider|detail|hint`, measured at the base `8c34ecb0` (22 pairs).
+#: `model|provider|detail|hint`, measured at the base `8c34ecb0` (22 pairs; the column, which the
+#: base did not register, is not among them).
 BASE_SYN001_C1_HINTS = "71983ce5c6c5108800dbfbe6417b1a5ec39109fe4ed6f2ba853a4b9f67b3f284"
+COLUMN = "syn001.column"
+COLUMN_VAPOUR = "pr-c1-v1 is vapour-only (S02 §0)"
+COLUMN_PURE = "a pure fluid has no stage composition"
 
 
 def test_a13_the_admission_matrix() -> None:
     for model, providers in MODEL_BASES.items():
         if model in ROUTING:
             assert providers == frozenset({"syn001", *NEW}), model
+        elif model == COLUMN:
+            # §5's I1 row, §9: SYN-001's basis and the Wilson registry row's provider id.
+            assert providers == frozenset({"syn001", WILSON_BASIS.provider_id}), model
         elif model.startswith("syn001."):
             assert providers == frozenset({"syn001"}), model
         else:
@@ -315,15 +322,22 @@ def test_a13_the_syn001_c1_hints_are_the_bases() -> None:
     count = 0
     for model in sorted(MODEL_BASES):
         for basis in (SYN001_BASIS, c1):
-            if basis.provider_id in MODEL_BASES[model]:
+            if basis.provider_id in MODEL_BASES[model] or model == COLUMN:
                 continue
             refused = _basis_refusal(model, basis)
             digest.update(f"{model}|{basis.provider_id}|{refused.detail}|{refused.hint}\n".encode())
             count += 1
     assert (count, digest.hexdigest()) == (22, BASE_SYN001_C1_HINTS)
+    # The column on C1's basis, a pair the base did not have: §4.4's reason.
+    assert _basis_refusal(COLUMN, c1).hint == (
+        f"{COLUMN} binds on the syn001 basis only, not on this revision's pr-c1-v1; "
+        f"{COLUMN_VAPOUR}"
+    )
 
 
 def _expected_reason(model: str, provider: str) -> str | None:
+    if model == COLUMN:
+        return COLUMN_PURE if provider in ("iapws95-v1", "coolprop-heos-v1") else None
     if model in ROUTING or model in ("c1.feed_source", "c1.product_sink", "c1.stream_splitter"):
         return None
     if provider in ("iapws95-v1", "coolprop-heos-v1"):
@@ -336,7 +350,8 @@ def test_a13_every_refused_pair_on_a_new_basis_names_its_reason(provider: str) -
     basis = next(b for b in selectable_bases() if b.provider_id == provider)
     namesakes = dict(revision_binding._SAME_FUNCTION)
     refused_models = sorted(m for m, on in MODEL_BASES.items() if provider not in on)
-    assert len(refused_models) == len(MODEL_BASES) - 3
+    admitted = {*ROUTING, COLUMN} if provider == WILSON_BASIS.provider_id else set(ROUTING)
+    assert set(MODEL_BASES) - set(refused_models) == admitted
     for model in refused_models:
         refused = _basis_refusal(model, basis)
         own = ", ".join(sorted(MODEL_BASES[model]))

@@ -59,12 +59,16 @@ V02_ADDITIONS: dict[str, dict[str, str]] = {
         "c1.reactor_standin": "R-231",
         # M04's surrogate (W27 Amendment 3; R-295), added at the alpha's merge into main.
         "c1.reactor_surrogate": "R-301",
+        # S11's column (ADR 0050, R-810; design note §8.3, I1): registered on purpose.
+        "syn001.column": "R-805",
     },
     "solve_policies": {},
 }
 #: M02's join (R-280 (b); R-234's method): the eight C1 models `list_models` serves since M02,
 #: stripped before B50's clause is judged, so the clause stands as T08 registered it.
-M02_MODELS = tuple(sorted(set(V02_ADDITIONS["models"]) - set(M04_MODELS)))
+#: S11's addition (R-805), stripped like M02's and M04's.
+S11_MODELS = ("syn001.column",)
+M02_MODELS = tuple(sorted(set(V02_ADDITIONS["models"]) - set(M04_MODELS) - set(S11_MODELS)))
 NEW_POLICIES = ("T08-ptc-v1", "T08-warm-v1")
 #: `get_project`'s members that the server determines, whatever the project's state.
 SERVER_MEMBERS = ("default_policy_id", "server", "solve_policies")
@@ -119,12 +123,13 @@ def _taken_out(entries: list[dict[str, Any]], key: str, names: tuple[str, ...]) 
 
 
 def test_b50_list_models_differs_by_the_kinetic_cstr_only(served: dict[str, Any]) -> None:
-    """With M04's surrogate (R-295, R-301) and M02's eight C1 models stripped (each exactly once;
-    R-280 (b), the decomposition onto the pre-M02 surface), `list_models` differs from
-    `c7bbc98`'s by the kinetic CSTR only."""
+    """With M04's surrogate (R-295, R-301), M02's eight C1 models and S11's column (R-805, R-810)
+    stripped (each exactly once; R-280 (b), the decomposition onto the pre-M02 surface),
+    `list_models` differs from `c7bbc98`'s by the kinetic CSTR only."""
     today = copy.deepcopy(served["list_models"])
     today["models"] = _taken_out(today["models"], "model_id", M04_MODELS)
     today["models"] = _taken_out(today["models"], "model_id", M02_MODELS)
+    today["models"] = _taken_out(today["models"], "model_id", S11_MODELS)
     today["models"] = _taken_out(today["models"], "model_id", NEW_MODELS)
     assert today == FIXTURE["list_models"]
 

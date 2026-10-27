@@ -59,6 +59,7 @@ from openflowsheet.verify import (
     pr_c1,
     unsupported,
 )
+from openflowsheet.verify import column as column_rows
 from openflowsheet.verify.checks import (
     COMPONENTS,
     KIND_REFERENCE,
@@ -1053,6 +1054,14 @@ MODEL_CHECKS: Final[Mapping[str, ModelChecks]] = {
             ("cold_outlet", False),
         ),
     ),
+    # S11 design §4.8 (WO-B4, registered at I1): the column's rows, from `verify/column.py`.
+    "syn001.column": ModelChecks(
+        material=column_rows.material,
+        energy=column_rows.energy,
+        specification=column_rows.specification,
+        declared_ports=column_rows.DECLARED_PORTS,
+        admissibility=column_rows.admissibility,
+    ),
     # M02 design note §14.2 B15 item 6: the C1 units, each rule an existing SYN-001 function.
     "c1.feed_source": ModelChecks(specification=_feed_specification),
     "c1.product_sink": ModelChecks(),
@@ -1182,9 +1191,7 @@ def _envelope_energy(
         if instance.model_id in EXTERNAL_DUTY_MODELS:
             duty += state[duty_id(instance.unit_id)]
         elif instance.model_id in STAGED_DUTY_MODELS:
-            from openflowsheet.verify import column  # noqa: PLC0415
-
-            duty += column.duty(instance, state, view.components)
+            duty += column_rows.duty(instance, state, view.components)
     work = 0.0
     for instance in view.instances:
         if instance.model_id in WORK_MODELS:

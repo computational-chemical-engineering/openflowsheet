@@ -264,6 +264,24 @@ _PARAMETER_KINDS: Mapping[str, str] = {
     "coolant_flow": "molar_flow",
     "coolant_cp": "molar_heat_capacity",
     "T_coolant": "temperature",
+    # S11 design §10.6 (R-825): `syn001.column`'s parameters, and the twelve end specifications of
+    # §10.5 (R-824), whose name up to the first `.` fixes the kind.
+    "stage_count": "dimensionless",
+    "stage_pressure": "pressure",
+    "feed_stage": "dimensionless",
+    "stage_duty": "heat_rate",
+    "condenser_reflux_ratio": "dimensionless",
+    "condenser_distillate_rate": "molar_flow",
+    "condenser_duty": "heat_rate",
+    "condenser_purity": "dimensionless",
+    "condenser_recovery": "dimensionless",
+    "condenser_temperature": "temperature",
+    "reboiler_boilup_ratio": "dimensionless",
+    "reboiler_bottoms_rate": "molar_flow",
+    "reboiler_duty": "heat_rate",
+    "reboiler_purity": "dimensionless",
+    "reboiler_recovery": "dimensionless",
+    "reboiler_temperature": "temperature",
 }
 #: R5: the kind of the value a specification of each target path pins.
 _PATH_KINDS: Mapping[str, str] = {
