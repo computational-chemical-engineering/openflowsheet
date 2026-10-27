@@ -56,6 +56,24 @@ in the run log below.
   binder has 127? → the bases whose providers W27 v1/v2 have provider lines for (`syn001`, `pr-c1-v1`), then
   `pr-lib-v1`, so W27v2-A23's output is unchanged; with all 127 the v2 snapshot refuses `iapws95-v1` (W27-R63) and the
   re-take cannot run. Alternative: carry all 127 and move the re-take to W27 v3. Reversible by: reverting this commit.
+- DECISION: W27's tests that snapshot the installed binder (`test_m06_w27_coverage.py`:
+  `test_snapshot_of_this_build_is_todays_registry`, `test_each_route_binds_a_revision_with_its_component_set`,
+  `test_coverage_document_and_g14`, `test_committed_coverage_json_is_g14_and_this_builds_classification`;
+  `test_l01_retake.py::test_a27_2_…`) fail at A1, because v1/v2 have no provider line for S11's bases (D9's own
+  statement) and §8.3 does not list them → they read the build through `v2_binder()` (the installed tables with
+  `SELECTABLE_BASES` restricted to the bases `snapshot.PROVIDER_LINES` covers), and a new test pins D9's refusal of
+  the unrestricted build. Their routes and bind calls are the base's, so no family-C key moves and `AMENDED_TESTS`
+  is unchanged. **Escalated** (§4.10 says "all existing W27 tests pass unchanged"; that cannot hold once A1 lands).
+  Alternative: list them in `AMENDED_TESTS` and re-point them at v3 in A4. Reversible by: reverting this commit.
+- OPEN (escalated, not decided): `tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_
+  vetted_real_record_with_rights` (T08.A32, R-158/R-529/R-722) refuses the two new record files: their records are
+  `synthetic: false` but the files are not in `VETTED_RECORD_FILES` (no crosscheck JSON, no InChI/InChIKey, no
+  retrieval equality), and (v') fails against `l01`/`m01`/`s10` (name `Water` ≠ `water`, null composition, no shared
+  parameter, since §4.1 gives them `parameters {}`). The design note does not mention T08.A32. Amending it is a
+  test-specification change (design lane); the test is left failing. Default I would propose: a registered class of
+  "provider-identity record files" (S11 §4.1: no parameters; the provider's data is pinned by its own hashes),
+  exempt from (iv) and (v'), with (ii) reduced to `cas` (InChI/InChIKey could be added to the CoolProp file from
+  CoolProp 8.0.0 in a scratch venv). Needs: the `specifier`'s ruling on T08.A32.
 
 ## Run log
 
