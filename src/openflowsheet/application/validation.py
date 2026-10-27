@@ -275,14 +275,22 @@ def validate(
     connections = list(document.get("connections") or [])
     specifications = list(document.get("specifications") or [])
 
-    from openflowsheet.models.revision_flowsheet import component_basis
+    from openflowsheet.models.revision_flowsheet import RevisionError, component_basis
 
+    # S11 design §4.1: a registered record source whose components it cannot serve (a CoolProp
+    # revision with other than one admitted fluid) is COMP-02's FAIL, with the code and hint; no
+    # new check id, so every other report is byte-identical. DIM-01 then has no molar masses.
+    basis_error: RevisionError | None = None
+    try:
+        molecular_weights = component_basis(document).molecular_weights
+    except RevisionError as error:
+        basis_error, molecular_weights = error, {}
     checks.append(
         _dimensions(
             list((document.get("component_set") or {}).get("components") or []),
             instances,
             specifications,
-            component_basis(document).molecular_weights,
+            molecular_weights,
         )
     )
     checks.append(
@@ -294,7 +302,7 @@ def validate(
         )
     )
     checks += _connectivity(instances, connections)
-    checks += _components(document, instances)
+    checks += _components(document, instances, basis_error)
 
     # Task-specific structure. A draft is not a failure: D16 makes an incomplete revision
     # persistable and committable, and only a *run* requires a revision validated for its task.
@@ -1034,10 +1042,28 @@ def _component_references(
     )
 
 
-def _components(document: Mapping[str, Any], instances: Sequence[Mapping[str, Any]]) -> list[Check]:
+def _components(
+    document: Mapping[str, Any],
+    instances: Sequence[Mapping[str, Any]],
+    basis_error: Exception | None = None,
+) -> list[Check]:
     component_set = document.get("component_set") or {}
     components = list(component_set.get("components") or [])
     specifications = list(document.get("specifications") or [])
+    record_check = Check(
+        id="COMP-02",
+        stage="component_reference_compatibility",
+        result="PASS" if component_set.get("record_source") else "FAIL",
+        message=str(component_set.get("record_source") or "no record source declared"),
+    )
+    if basis_error is not None:
+        code = getattr(basis_error, "code", str(basis_error))
+        hint = getattr(basis_error, "hint", None)
+        record_check = replace(
+            record_check,
+            result="FAIL",
+            message=f"{record_check.message}: {code}" + (f" ({hint})" if hint else ""),
+        )
     return [
         Check(
             id="COMP-01",
@@ -1045,11 +1071,6 @@ def _components(document: Mapping[str, Any], instances: Sequence[Mapping[str, An
             result="PASS" if components else "FAIL",
             message=f"{len(components)} components: {components}" if components else "none",
         ),
-        Check(
-            id="COMP-02",
-            stage="component_reference_compatibility",
-            result="PASS" if component_set.get("record_source") else "FAIL",
-            message=str(component_set.get("record_source") or "no record source declared"),
-        ),
+        record_check,
         _component_references(components, instances, specifications),
     ]

@@ -74,6 +74,7 @@ def library_basis() -> Any:
         pr_lib.PROVIDER_ID,
         tuple(r.id for r in records.components),
         MappingProxyType({r.id: r.molar_mass for r in records.components}),
+        record_source=pr_lib.RECORDS_PATH,
     )
 
 

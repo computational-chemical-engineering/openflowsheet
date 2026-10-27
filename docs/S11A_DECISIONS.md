@@ -29,6 +29,30 @@ in the run log below.
   deterministic (a file outside WO-0). Reversible by: reverting the commit that adds `VOLATILE` to
   `scripts/s11_identity_recorder.py`.
 
+## Track A: A1 registry and selection (§4.1–§4.3)
+
+- DECISION: `elemental_verification` of the generated CoolProp records (null formula) → `NOT_APPLICABLE`, because
+  `component-record.schema.json`'s `if/then` refuses `PENDING` with `elemental_composition: null` (the fallback §4.1
+  names). Alternative: `PENDING` with a schema change. Reversible by: one line in `s11_coolprop_records.py`, re-emit.
+- DECISION: does generating `benchmarks/s07/components.yaml` need CoolProp? → no: every value §4.1 names (`id`, `name`,
+  `cas`, `M`, `bibtex_eos`) is in the committed `_coolprop_heos_fluids.FLUIDS`, so the generator and its `--check`
+  import nothing from CoolProp and run in `.venv`; no scratch venv was used. Alternative: re-read CoolProp 8.0.0 in a
+  scratch venv. Reversible by: n/a (no numerics read).
+- DECISION: what does DIM-01 use when `component_basis` raises (a CoolProp revision with ≠ 1 admitted fluid)? → an
+  empty molar-mass table (a mass-basis value is then DIM-01's unconvertible FAIL beside COMP-02's FAIL); no existing
+  revision raises, so every existing report is unchanged (measured: the 56 T07+C1 corpus reports hash to `e6c92d90…`
+  at `8c34ecb0` and on the branch). Alternative: the admitted rows' `M` for the declared ids. Reversible by: the
+  `except RevisionError` branch in `validation.validate`.
+- DECISION: hint texts §4.1/§4.3 leave open → excluded fluid: `'<id>' is excluded from coolprop-heos-v1: <name>:
+  <reason>` (the provider constructor's wording); Wilson records absent: `<code>: the records <path> are
+  repository-only until Frank's Q-F3 (R-706)`; premises: `<P>: <component> min <value .4g> at T = <T .4g> K`.
+  Alternative: other wording. Reversible by: the strings in `revision_flowsheet._coolprop_selected` and
+  `revision_binding._wilson_refusal` / `wilson_premises.Minimum.hint`.
+- DECISION: S11.A09 at revision level (a bound CoolProp/Wilson revision gives `basis_unavailable`) → tested at A2, where
+  the routing models first bind on those bases; A1 tests `provider_for` directly (the binder refuses
+  `model_unsupported` before it constructs a provider). Alternative: a monkeypatched `MODEL_BASES` in A1. Reversible
+  by: n/a (test placement).
+
 ## Run log
 
 - WO-0 gate, unmodified tree (`acffd034`), 16 shards per tree, 614 s:

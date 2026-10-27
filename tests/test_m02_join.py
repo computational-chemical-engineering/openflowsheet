@@ -91,15 +91,17 @@ def test_the_registry_holds_the_twenty_one_models_each_on_its_own_basis() -> Non
 
 
 def test_the_selectable_bases_are_what_component_basis_returns() -> None:
+    # S11 (ADR 0050 D2, R-801; amended on purpose, R-810): SYN-001 and C1 lead the 127 bases,
+    # which `tests/test_s11_bases.py` (S11.A01-A03) checks entry by entry.
     c1_basis = component_basis(C1_CORPUS["C1-LOOP-M02-v1"]())
-    assert tuple(SELECTABLE_BASES) == (SYN001_BASIS, c1_basis)
-    assert len(SELECTABLE_BASES) == 2 and SELECTABLE_BASES[1] == c1_basis
-    for basis in SELECTABLE_BASES:
+    assert tuple(SELECTABLE_BASES)[:2] == (SYN001_BASIS, c1_basis)
+    assert len(SELECTABLE_BASES) == 127 and SELECTABLE_BASES[1] == c1_basis
+    for basis in tuple(SELECTABLE_BASES)[:2]:
         described = basis_provider(basis).describe()
         assert described.provider_id == basis.provider_id
         assert tuple(described.components) == basis.components
     named = {provider for providers in MODEL_BASES.values() for provider in providers}
-    assert named == {basis.provider_id for basis in SELECTABLE_BASES}
+    assert named <= {basis.provider_id for basis in SELECTABLE_BASES}
 
 
 def test_g2_i_every_t07_corpus_revision_is_on_syn001s_basis() -> None:
