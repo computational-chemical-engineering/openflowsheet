@@ -40,6 +40,7 @@ from openflowsheet.models.rows import balance_row, definition_row, equilibrium_r
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE, gamma_phi
 from openflowsheet.models.syn001.blocks import EnthalpyFlowBlock, LnKBlock
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
+from openflowsheet.models.syn001.gamma_phi_blocks import GammaPhiLnKBlock, MixtureEnthalpyFlowBlock
 from openflowsheet.models.syn001.saturation_band import (
     BandError,
     degeneracy_distance,
@@ -366,6 +367,33 @@ def lnk_block_id(stream: str) -> str:
     return f"lnK_{_token(stream)}"
 
 
+def equilibrium_block(
+    provider: PropertyProvider,
+    components: tuple[str, ...],
+    context: EvaluationContext,
+    *,
+    block_id: str,
+    temperature: str,
+    pressure: str,
+    liquid: tuple[str, ...],
+) -> tuple[PropertyBlock, tuple[str, ...]]:
+    """The K-block an equilibrium row reads, and the variable ids that feed it, in order.
+
+    A composition-dependent form (`ln K_i = ln φ_i^L(T, P, x)`): `GammaPhiLnKBlock` fed by the
+    liquid flows `liquid`, then `temperature` and `pressure`. Otherwise `LnKBlock` fed by
+    `(temperature, pressure)`, SYN-001's. Both name their outputs `lnK_<c>` (S11 units design
+    §4.5), so the rows reading them do not depend on the form.
+    """
+    if composition_dependent(provider):
+        if len(liquid) != len(components):
+            raise SpecificationError(
+                f"{block_id}: {len(liquid)} liquid flow ids for {len(components)} components"
+            )
+        block = GammaPhiLnKBlock(provider, components, context, block_id=block_id)
+        return block, (*liquid, temperature, pressure)
+    return LnKBlock(provider, components, context, block_id=block_id), (temperature, pressure)
+
+
 def single_phase_enthalpy(
     provider: PropertyProvider,
     components: tuple[str, ...],
@@ -375,11 +403,19 @@ def single_phase_enthalpy(
 ) -> tuple[PropertyBlock, tuple[str, ...], tuple[str, ...]]:
     """An enthalpy block for a stream in one declared phase, and the keys a row sums.
 
-    Returns `(block, feeding_variable_ids, output_keys)`.
+    Returns `(block, feeding_variable_ids, output_keys)`. A composition-dependent form has no
+    `h_<c>`: its block is the mixture block, `Ḣ = n_tot h`, with the same feeding ids and the one
+    key `<block>.H` (S11 units design §4.5).
     """
-    block = EnthalpyFlowBlock(
-        provider, components, phase, context, block_id=enthalpy_block_id(stream, phase)
-    )
+    block: PropertyBlock
+    if composition_dependent(provider):
+        block = MixtureEnthalpyFlowBlock(
+            provider, components, phase, context, block_id=enthalpy_block_id(stream, phase)
+        )
+    else:
+        block = EnthalpyFlowBlock(
+            provider, components, phase, context, block_id=enthalpy_block_id(stream, phase)
+        )
     feeding = (
         *(flow_id(stream, name) for name in components),
         temperature_id(stream),
@@ -409,18 +445,44 @@ def lift_two_phase_stream(
     `equilibrium_equation_id`) and five lifting rows the unit authors itself — three phase splits
     and two total definitions. ADR 0008 D4.4 requires a self-authored row to be declared
     `algebraic` explicitly, which is what they are: they define variables, they conserve nothing.
+
+    A composition-dependent form (S11 units design §4.5) takes its K-block from
+    `equilibrium_block` (`GammaPhiLnKBlock`, fed by the stream's own lifted liquid flows, with
+    `LnKBlock`'s output ids, so the equilibrium rows read the same keys) and mixture enthalpy
+    blocks; the rows, their ids, kinds and order are the same.
     """
     vapor_ids = tuple(vapor_flow_id(stream, name) for name in components)
     liquid_ids = tuple(liquid_flow_id(stream, name) for name in components)
     total_vapor, total_liquid = vapor_total_id(stream), liquid_total_id(stream)
 
-    lnk = LnKBlock(provider, components, context, block_id=lnk_block_id(stream))
-    vapor_block = EnthalpyFlowBlock(
-        provider, components, "VAPOR", context, block_id=enthalpy_block_id(stream, "VAPOR")
-    )
-    liquid_block = EnthalpyFlowBlock(
-        provider, components, "LIQUID", context, block_id=enthalpy_block_id(stream, "LIQUID")
-    )
+    lnk: PropertyBlock
+    vapor_block: PropertyBlock
+    liquid_block: PropertyBlock
+    if composition_dependent(provider):
+        lnk, lnk_inputs = equilibrium_block(
+            provider,
+            components,
+            context,
+            block_id=lnk_block_id(stream),
+            temperature=temperature_id(stream),
+            pressure=pressure_id(stream),
+            liquid=liquid_ids,
+        )
+        vapor_block = MixtureEnthalpyFlowBlock(
+            provider, components, "VAPOR", context, block_id=enthalpy_block_id(stream, "VAPOR")
+        )
+        liquid_block = MixtureEnthalpyFlowBlock(
+            provider, components, "LIQUID", context, block_id=enthalpy_block_id(stream, "LIQUID")
+        )
+    else:
+        lnk = LnKBlock(provider, components, context, block_id=lnk_block_id(stream))
+        lnk_inputs = (temperature_id(stream), pressure_id(stream))
+        vapor_block = EnthalpyFlowBlock(
+            provider, components, "VAPOR", context, block_id=enthalpy_block_id(stream, "VAPOR")
+        )
+        liquid_block = EnthalpyFlowBlock(
+            provider, components, "LIQUID", context, block_id=enthalpy_block_id(stream, "LIQUID")
+        )
 
     equations: list[EquationSpec] = []
     for index, component in enumerate(components):
@@ -484,7 +546,7 @@ def lift_two_phase_stream(
         row_kinds={name: kind for name, kind in kinds.items() if name not in set(lifted_variables)},
         blocks=(lnk, vapor_block, liquid_block),
         block_inputs={
-            lnk.block_id: (temperature_id(stream), pressure_id(stream)),
+            lnk.block_id: lnk_inputs,
             vapor_block.block_id: (*vapor_ids, temperature_id(stream), pressure_id(stream)),
             liquid_block.block_id: (*liquid_ids, temperature_id(stream), pressure_id(stream)),
         },
@@ -513,7 +575,8 @@ def stream_enthalpy_terms(
 
     The same construction as `TPFlash._inlet_enthalpy` (K02), written here once for T05's units;
     K02's flash keeps its own copy so that its module, whose hash its manifest carries, does not
-    change.
+    change. A composition-dependent form reads the lifted stream through mixture blocks on the
+    same split variables (S11 units design §4.5).
     """
     if phase is not None:
         block, feeding, keys = single_phase_enthalpy(provider, components, context, stream, phase)
@@ -526,14 +589,24 @@ def stream_enthalpy_terms(
         ("VAPOR", vapor_flow_id),
         ("LIQUID", liquid_flow_id),
     )
+    gamma_phi_form = composition_dependent(provider)
     for lifted_phase, name in lifted:
-        block = EnthalpyFlowBlock(
-            provider,
-            components,
-            lifted_phase,
-            context,
-            block_id=enthalpy_block_id(stream, lifted_phase),
-        )
+        if gamma_phi_form:
+            block = MixtureEnthalpyFlowBlock(
+                provider,
+                components,
+                lifted_phase,
+                context,
+                block_id=enthalpy_block_id(stream, lifted_phase),
+            )
+        else:
+            block = EnthalpyFlowBlock(
+                provider,
+                components,
+                lifted_phase,
+                context,
+                block_id=enthalpy_block_id(stream, lifted_phase),
+            )
         blocks.append(block)
         inputs[block.block_id] = (
             *(name(stream, component) for component in components),
