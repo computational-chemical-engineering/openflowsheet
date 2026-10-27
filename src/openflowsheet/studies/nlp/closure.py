@@ -42,7 +42,10 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Final, Literal
 
+import numpy as np
+
 from openflowsheet.compile.casadi_backend import TwinEvaluationError, compile_problem
+from openflowsheet.compile.reference import state_vector
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.studies.nlp.formulation import (
@@ -50,11 +53,16 @@ from openflowsheet.studies.nlp.formulation import (
     HESSIAN_APPROXIMATION,
     HESSIAN_POLICY,
     IPOPT_OPTIONS,
+    AssessmentClosure,
+    AssessmentOutputUnknownError,
     NlpFormulation,
+    assessment_closure,
+    assessment_twin,
 )
 from openflowsheet.studies.nlp.verification import (
     CHECKS,
     TAU_FEAS,
+    CandidateVerification,
     CheckOutcome,
     declared_regimes,
 )
@@ -559,8 +567,11 @@ class StartEvidence:
 
     @property
     def verified(self) -> bool:
-        """V1-V5 all `pass` (V6 records values and decides nothing)."""
-        return all(self.checks.get(check) == "pass" for check in CHECKS[:5])
+        """V1-V5 all `pass` (V6 records values and decides nothing), and V7 where recorded (E01
+        §4.10.3: a changed assessment regime leaves the start unverified, as V2 does)."""
+        return all(self.checks.get(check) == "pass" for check in CHECKS[:5]) and (
+            self.checks.get("V7", "pass") == "pass"
+        )
 
 
 @dataclass(frozen=True)
@@ -748,9 +759,80 @@ def report_limits() -> dict[str, Any]:
 
 
 def formulation_record(
-    formulation: NlpFormulation, regimes: Mapping[str, str] | None
+    formulation: NlpFormulation,
+    regimes: Mapping[str, str] | None,
+    assessment: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return {**formulation.as_document(), "kind": FORMULATION_KIND, "declared_regimes": regimes}
+    """The report's `formulation`; `assessment` (E01 §4.11, `assessment_record`) only when the
+    formulation has a binding, so an M03 report is unchanged."""
+    record = {**formulation.as_document(), "kind": FORMULATION_KIND, "declared_regimes": regimes}
+    if assessment is not None:
+        record["assessment"] = dict(assessment)
+    return record
+
+
+def start_closure(
+    formulation: NlpFormulation, flowsheet: Syn001Flowsheet, readiness: Readiness
+) -> AssessmentClosure | None:
+    """The binding's gray-box closure (E01 §4.10.2) at the first start readiness certified;
+    `None` without a binding, without such a start, or where it cannot be formed there."""
+    binding = formulation.assessment
+    if binding is None:
+        return None
+    for start in readiness.starts:
+        if start.state is None:
+            continue
+        decisions = formulation.decision_values(start.start)
+        spec = with_pinned(flowsheet, decisions).spec()
+        try:
+            twin = assessment_twin(binding, spec.variable_ids, formulation.decision_ids)
+            x = np.array(state_vector(spec, start.state), dtype=np.float64)
+            return assessment_closure(binding, twin, x, decisions)
+        except (TwinEvaluationError, AssessmentOutputUnknownError, ValueError):
+            return None
+    return None
+
+
+def assessment_record(
+    formulation: NlpFormulation,
+    closure: AssessmentClosure | None,
+    candidate: CandidateVerification | None = None,
+) -> dict[str, Any] | None:
+    """`formulation.assessment` (E01 §4.11): the assessment's and regime's identity, each bound
+    output's scale, each admissibility row of the closure with its nominal, and
+    `regime_bounds_active` — the rows with scaled slack ≤ τ_feas at the candidate, each with its
+    multiplier from V5's least squares. Without a closure (no certified start) the outputs carry
+    the binding's scales and there are no rows; without a candidate nothing is active."""
+    binding = formulation.assessment
+    if binding is None:
+        return None
+    program = binding.program
+    spec = program.context.spec
+    if closure is not None:
+        outputs = [{"id": name, "scale": closure.scales[name]} for name in closure.outputs]
+        admissibility = [
+            {"id": name, "nominal": closure.nominals[name]} for name in closure.admissibility
+        ]
+    else:
+        known = [name for name in program.output_ids if name in set(binding.outputs)]
+        outputs = [{"id": name, "scale": float(binding.output_scales[name])} for name in known]
+        admissibility = []
+    active: list[dict[str, Any]] = []
+    if candidate is not None and candidate.kkt is not None:
+        for name in closure.admissibility if closure is not None else ():
+            slack = candidate.slacks.get(name, {}).get("lower")
+            multiplier = candidate.kkt.multipliers.get(name)
+            if slack is not None and slack <= TAU_FEAS and multiplier is not None:
+                active.append({"id": name, "slack": slack, "multiplier": multiplier})
+    return {
+        "assessment_id": spec.assessment_id,
+        "assessment_sha256": spec.assessment_sha256,
+        "regime_sha256": program.regime.sha256,
+        "regime_entries": dict(program.regime.entries),
+        "outputs": outputs,
+        "admissibility": admissibility,
+        "regime_bounds_active": active,
+    }
 
 
 def model_record(flowsheet: Syn001Flowsheet) -> dict[str, Any]:
@@ -767,7 +849,11 @@ def unsupported_report(
 ) -> OptimizationReport:
     """`UNSUPPORTED`: refused before any solve, with every reason; no candidate, no claim."""
     return OptimizationReport(
-        formulation=formulation_record(formulation, readiness.declared_regimes),
+        formulation=formulation_record(
+            formulation,
+            readiness.declared_regimes,
+            assessment_record(formulation, start_closure(formulation, flowsheet, readiness)),
+        ),
         model=model_record(flowsheet),
         solver=solver_record(readiness.solver),
         hessian_policy=dict(HESSIAN_POLICY),

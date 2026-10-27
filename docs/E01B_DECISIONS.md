@@ -221,6 +221,40 @@ packages; URL and retrieval date for data). The design-lane ruling round is fold
 - DECISION: the assessment twin's property-block calls since the start's `FullSpaceNlp` was built are added to the
   start's `property_calls` (0 without an assessment). Reversible by: `_evaluations`.
 
+- Done (3, part 3, §4.10.3): `verify_candidate(…, closure=None)`: V6 values from `program.evaluate(x_sim, d)`
+  (V6 detail `assessment_values`), V3 with the closure's rows as `adm ≥ 0`, V5 by the chain rule
+  (`linearize(x_sim, d, closure, symbolic=decisions)` + M03's adjoint + `∂G/∂d·s_d`), V7 `select(x_sim, d,
+  release=dormancy)` vs the held regime → `ASSESSMENT_REGIME_CHANGED(<entry>)`; `CHECKS` gains V7 (`M03_CHECKS` =
+  the first six); `passed`/`StartEvidence.verified` need V7 where recorded; `formulation.assessment` via
+  `assessment_record`/`start_closure` in both report paths; schema check lists accept V7 (3c). Commits f7a688a4
+  (select), d99a5c8e (closure lift, inert), 9c7e78f8 (schema), then the part-3 commit.
+- FACT (V5 vs central differences of re-solved states at M03 start 0, h = 1e-4·s_d; test contributor): `tac`/split
+  fraction 0.8238545408546 vs 0.8238545830201 (rel 5.1e-8), `tac`/T_spec −2.236533001663 vs −2.236533115904
+  (5.1e-8), adm.TOY.size.max 6.3e-8 and 9.2e-8; the pin-reading variant (`∂G/∂d ≠ 0`) 5.0e-8/5.1e-8, and its
+  direct term equals `1e3·s_d₀/scale` within 1e-9. Test tolerance 1e-6 relative, set before the run.
+- FACT (nlp env): objective `tac/|tac(x₀)|` on SYN-001 with M03's decisions and constraints: `KKT_POINT_VERIFIED`
+  from all three starts, V1–V7 pass on each, report schema-valid; candidate `tac` 36260.03 vs scale 39297.33.
+  G9 after part 3: the M03 NLP fixture dump is `cmp`-equal to the base.
+- DECISION: `select` gains `decisions` and `release` (A's `program.py`, additive; default call unchanged). At a
+  candidate, rows and the rule may read a moved pin (`Symbols.pin`), and a dormancy entry has no row, so the held
+  regime would always be returned for it. Alternative: rebuild a program at the candidate (needs the private
+  contributors) or test dormancy outside the program. Reversible by: revert f7a688a4 and `_regime_held`.
+- DECISION: the closure's rows enter V3/V5 as constraints named by their row id (`adm.<entry>.<row>`, lower 0)
+  after the formulation's, so they appear in `constraint_values`, `slacks`, the active set and the KKT gradients.
+  Alternative: a separate record. Reversible by: `_assessment`.
+- DECISION: an expression without an `assessment:` term gets M03's functional exactly (no direct term added); one
+  with no state coefficient left contributes a zero host row; none at all → V5 `not_evaluated(state_independent)`.
+  Reversible by: `_functional`, `_kkt`.
+- DECISION: an assessment not evaluable at `x_sim` (evaluation error or refusal) → V3/V5/V6 `not_evaluated` with
+  the reason, V7 still evaluated (`select` then releases the whole regime → fail). Reversible by: `verify_candidate`.
+- DECISION: V7 is absent without an assessment (M03 documents byte-identical); `test_m03_nlp_status`'s
+  unknown-check example changes from V7 to V8 (V7 is now a check). Reversible by: `M03_CHECKS`, that line.
+- DECISION: `formulation.assessment.outputs` lists the bound outputs only (the rows' scale 1 is implicit; they are
+  under `admissibility` with their nominal); without a certified start, the binding's scales and no rows;
+  `regime_bounds_active` = closure rows with slack ≤ τ_feas and a V5 multiplier, at the candidate only. The record's
+  closure is recomputed at the first certified start (`start_closure`). Alternative: list the rows under `outputs`
+  too. Reversible by: `assessment_record`.
+
 ## Handoff (2026-10-27, after the ESC-B1/B3 rulings and WO-B3 part 1) — resume from here
 
 - **Done (wp/E01 after 53ce3f55):** a7c4aa8b ESC-B1 (float64 Brightway path; A24 passes at 1e-12, rel ≤ 6.2e-17);

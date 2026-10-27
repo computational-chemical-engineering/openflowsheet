@@ -83,11 +83,13 @@ from openflowsheet.studies.nlp.closure import (
     ReadinessReason,
     StartEvidence,
     StartReadiness,
+    assessment_record,
     classify_starts,
     formulation_record,
     model_record,
     report_limits,
     solver_record,
+    start_closure,
     unsupported_report,
 )
 from openflowsheet.studies.nlp.formulation import (
@@ -497,6 +499,7 @@ def solve_start(
             run.final_decisions,
             regimes=readiness.regimes,
             optimizer_state=optimizer_state,
+            closure=nlp.closure,
         )
     except Exception as error:  # noqa: BLE001 - recorded; the start then has no V outcomes
         run.note(f"verification raised {type(error).__name__}: {_first_line(error)}")
@@ -680,7 +683,13 @@ def optimize(
     verified = [runs[index] for index in verdict.verified_starts]
     candidate = _candidate(verified)
     return OptimizationReport(
-        formulation=formulation_record(formulation, readiness.declared_regimes),
+        formulation=formulation_record(
+            formulation,
+            readiness.declared_regimes,
+            assessment_record(
+                formulation, start_closure(formulation, flowsheet, readiness), candidate
+            ),
+        ),
         model=model_record(flowsheet),
         solver=solver_record(solver, solver_environment()),
         hessian_policy=dict(HESSIAN_POLICY),

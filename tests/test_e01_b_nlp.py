@@ -1,4 +1,4 @@
-"""E01 WO-B3 part 2 (§4.10.2): assessment outputs in M03's NLP, on SYN-001 (P2's host).
+"""E01 WO-B3 parts 2-3 (§4.10.2, §4.10.3): assessment outputs in M03's NLP, on SYN-001 (P2's host).
 
 A test contributor publishes `size.TOY.area = S3.T·S3.n.A` with a held `units:N` size entry,
 `size.FAR.area = 2·S1.n.A` with its own size entry, `capex.purchased.TOY`, `opex.utility.steam`
@@ -7,19 +7,28 @@ checked against the program's own linearization (the same twin), its admissibili
 against the structural patterns above, and readiness's assessment codes. The Pyomo half (A35 and
 the model with outputs) runs only in the audited `nlp` environment (`scripts/m03_nlp_check.sh`);
 A33, A34 and A36 run on the registered P2 in I1.
+
+Verification (§4.10.3) runs `verify_candidate` at registered start decisions: V6's values against
+the program's float path, V5's gradients against central differences of re-solved states (the
+direct `∂G/∂d` term on a variant that reads a pin), V3's admissibility rows, and V7 on a size
+entry outside the closure and on a held dormancy entry whose flow is not zero.
 """
 
 from __future__ import annotations
 
+import dataclasses
+import json
 import math
 from collections.abc import Mapping
 from functools import cache
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pytest
 from m03_support import flowsheet, nlp_formulation
 
+from openflowsheet.application.types import schema_errors
 from openflowsheet.assessment.program import (
     AssessmentProgram,
     BuildContext,
@@ -29,13 +38,25 @@ from openflowsheet.assessment.program import (
     Symbols,
     Theta,
 )
-from openflowsheet.assessment.regimes import AdmissibilityRow, RegimeEntry, select_size, size_units
+from openflowsheet.assessment.regimes import (
+    AdmissibilityRow,
+    Regime,
+    RegimeEntry,
+    select_dormancy,
+    select_size,
+    size_units,
+)
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
 from openflowsheet.studies.nlp.closure import (
     Readiness,
     SolverAvailability,
+    StartEvidence,
+    assessment_record,
+    classify_starts,
     optimization_readiness,
+    start_closure,
+    unsupported_report,
 )
 from openflowsheet.studies.nlp.formulation import (
     AssessmentBinding,
@@ -45,9 +66,16 @@ from openflowsheet.studies.nlp.formulation import (
     NlpFormulation,
     QuadraticExpression,
 )
+from openflowsheet.studies.nlp.verification import (
+    CHECKS,
+    CandidateVerification,
+    CheckOutcome,
+    verify_candidate,
+)
 from openflowsheet.studies.syn001 import solve_certified, with_pinned
 
 X1, X2, FAR, Q = "S3.T", "S3.n.A", "S1.n.A", "U-HEAT.Q"
+FIXTURES = Path(__file__).parent / "fixtures" / "schemas" / "optimization_report" / "valid"
 PRICE, MATERIAL = "asm:item.TOY.price", "asm:item.TOY.material"
 DOCUMENT: dict[str, Any] = {
     "schema_version": "assessment-v1",
@@ -446,3 +474,273 @@ def test_the_model_maps_assessment_names_to_outputs_and_adds_the_admissibility_r
     scaling = pynumero.get_constraints_scaling()
     assert scaling[output_rows].tolist() == nlp.output_scaling().tolist()
     assert math.isclose(pynumero.evaluate_objective(), g0[0] / b.output_scales["tac"])
+
+
+# -- verification at x_sim (§4.10.3) -------------------------------------------------------------
+
+#: The variant's pinned-input term (a decision the program reads directly, so `∂G/∂d ≠ 0`).
+PIN_WEIGHT = 1.0e3
+
+
+class PinnedSteam(Steam):
+    """`Steam` plus `opex.utility.pinned = tac + PIN_WEIGHT·d₀`, `d₀` the first M03 decision
+    read as a pin."""
+
+    def plan(self, ctx: BuildContext, state: Mapping[str, float]) -> ContributionPlan:
+        plan = super().plan(ctx, state)
+        pin = nlp_formulation().decision_ids[0]
+        extra = OutputDef(
+            "opex.utility.pinned",
+            "currency/yr",
+            lambda s, a: s.out("tac") + PIN_WEIGHT * s.pin(pin),
+        )
+        return dataclasses.replace(plan, outputs=(*plan.outputs, extra))
+
+
+class DormantSteam(Steam):
+    """`Steam` plus a dormancy entry on the stream whose flow is `FAR` (§4.3.1: no rows)."""
+
+    def plan(self, ctx: BuildContext, state: Mapping[str, float]) -> ContributionPlan:
+        plan = super().plan(ctx, state)
+        entry_id = "FAR.feed.dormant"
+        choice = ctx.regime.choice(entry_id) or select_dormancy(state[FAR])
+        entry = RegimeEntry(entry_id, "dormant", choice, "§4.3.2 rule 3")
+        return dataclasses.replace(plan, regime_entries=(*plan.regime_entries, entry))
+
+
+def built(contributor: Any, regime: Regime | None = None) -> AssessmentProgram:
+    sheet, state = base()
+    made = AssessmentProgram.build(
+        view_of(sheet),
+        sheet.spec(),
+        load_assessment(DOCUMENT),
+        state,
+        regime,
+        contributors=[contributor],
+    )
+    assert isinstance(made, AssessmentProgram), made
+    return made
+
+
+def default_bounds() -> dict[str, tuple[float, float]]:
+    return {item: (value / 4.0, value * 4.0) for item, value in sizes(base()[1]).items()}
+
+
+def bound(p: AssessmentProgram, output: str) -> NlpFormulation:
+    b = binding((output,), p)
+    objective = QuadraticExpression(
+        linear={f"assessment:{output}": 1.0 / b.output_scales[output]}, text=f"{output}/scale"
+    )
+    return formulation(objective, b)
+
+
+def verify(f: NlpFormulation, start: int = 0) -> CandidateVerification:
+    record = m03_readiness().starts[start]
+    assert record.state is not None and record.regimes is not None
+    return verify_candidate(
+        flowsheet({}), f, record.start, regimes=record.regimes, optimizer_state=record.state
+    )
+
+
+def resolved(p: AssessmentProgram, decisions: Mapping[str, float]) -> Mapping[str, float]:
+    solve = solve_certified(with_pinned(flowsheet({}), decisions))
+    assert solve.verified and solve.final_state is not None
+    values = p.evaluate(solve.final_state, decisions)
+    assert isinstance(values, Mapping)
+    return values
+
+
+def test_v6_and_v3_take_the_assessment_values_from_the_float_path_at_x_sim() -> None:
+    p = program()
+    f = bound(p, "tac")
+    result = verify(f)
+    assert [check.check for check in result.checks] == list(CHECKS)
+    # A start is neither feasible for M03's own constraints nor stationary: V3 and V5 decide
+    # nothing here; the admissibility rows are inside their range.
+    for check in ("V1", "V2", "V4", "V6", "V7"):
+        assert result.outcome(check) == "pass", check
+    v3 = next(check for check in result.checks if check.check == "V3")
+    assert not [name for name in v3.detail["violated"] if name.startswith("adm.")]
+    assert result.simulation_state is not None
+    values = p.evaluate(result.simulation_state, f.decision_values(verify_start(0)))
+    assert isinstance(values, Mapping)
+    rows = ("adm.TOY.size.max", "adm.TOY.size.min")
+    assert result.assessment_values == {name: values[name] for name in ("tac", *rows)}
+    scale = f.assessment.output_scales["tac"]  # type: ignore[union-attr]
+    assert result.objective == math.fsum([0.0, values["tac"] / scale])
+    for name in rows:
+        # V3: each closure row is `adm ≥ 0`, its value the program's, its slack the value.
+        assert result.constraint_values[name] == values[name]
+        assert result.slacks[name] == {"lower": values[name]}
+    v6 = next(check for check in result.checks if check.check == "V6")
+    assert v6.detail["assessment_values"] == result.assessment_values
+    v7 = next(check for check in result.checks if check.check == "V7")
+    assert v7.detail["selected"] == v7.detail["held"] == dict(p.regime.entries)
+
+
+def verify_start(index: int) -> tuple[float, ...]:
+    return tuple(m03_readiness().starts[index].start)
+
+
+@pytest.mark.parametrize(
+    ("contributor", "output"), [("plain", "tac"), ("pinned", "opex.utility.pinned")]
+)
+def test_v5_assessment_gradients_match_central_differences_of_resolved_states(
+    contributor: str, output: str
+) -> None:
+    p = program() if contributor == "plain" else built(PinnedSteam(default_bounds()))
+    f = bound(p, output)
+    result = verify(f)
+    assert result.kkt is not None and result.sensitivity is not None
+    assert result.sensitivity.status == "QUALIFIED"
+    scale = f.assessment.output_scales[output]  # type: ignore[union-attr]
+    row = "adm.TOY.size.max"
+    measured = {output: result.kkt.objective_gradient, row: result.kkt.constraint_gradients[row]}
+    assert result.simulation_state is not None
+    base_decisions = f.decision_values(verify_start(0))
+    for j, decision in enumerate(f.decisions):
+        step = 1e-4 * decision.scale
+        plus = resolved(
+            p,
+            {**base_decisions, decision.parameter_id: base_decisions[decision.parameter_id] + step},
+        )
+        minus = resolved(
+            p,
+            {**base_decisions, decision.parameter_id: base_decisions[decision.parameter_id] - step},
+        )
+        for name, divisor in ((output, scale), (row, 1.0)):
+            expected = (plus[name] - minus[name]) / (2.0 * step) * decision.scale / divisor
+            got = measured[name][j]
+            assert abs(got - expected) <= 1e-6 * max(abs(expected), 1e-12), (name, j, got, expected)
+
+
+def test_v5_the_direct_term_is_the_pins_coefficient() -> None:
+    # `opex.utility.pinned − tac = PIN_WEIGHT·d₀`: the scaled gradients differ by exactly that,
+    # on d₀ only.
+    p = built(PinnedSteam(default_bounds()))
+    scale = binding(("opex.utility.pinned",), p).output_scales["opex.utility.pinned"]
+    f = formulation(
+        QuadraticExpression(
+            linear={"assessment:opex.utility.pinned": 1.0 / scale, "assessment:tac": -1.0 / scale}
+        ),
+        binding(("opex.utility.pinned", "tac"), p),
+    )
+    result = verify(f)
+    assert result.kkt is not None
+    expected = [0.0] * len(f.decisions)
+    expected[0] = PIN_WEIGHT * f.decisions[0].scale / scale
+    got = result.kkt.objective_gradient
+    for j, value in enumerate(expected):
+        assert abs(got[j] - value) <= 1e-9 * max(abs(value), 1.0), (j, got[j], value)
+
+
+def sized_to_change() -> tuple[AssessmentProgram, int]:
+    """A program holding `TOY.size = units:1` at the base whose `S_max` a start exceeds."""
+    starts = [record.state for record in m03_readiness().starts]
+    at_starts = [sizes(state)["TOY"] for state in starts if state is not None]
+    at_base = sizes(base()[1])["TOY"]
+    largest = max(at_starts)
+    far = sizes(base()[1])["FAR"]
+    high = 0.5 * (at_base + largest)
+    p = program({"TOY": (at_base / 4.0, high), "FAR": (far / 4.0, far * 2.0)})
+    assert p.regime.choice("TOY.size") == "units:1"
+    return p, at_starts.index(largest)
+
+
+def test_v7_catches_a_regime_change_outside_the_closure_and_v3_inside_it() -> None:
+    p, start = sized_to_change()
+    # `opex.utility.steam`'s closure holds no row: V3 passes, V7 alone refuses.
+    outside = verify(bound(p, "opex.utility.steam"), start)
+    v7 = next(check for check in outside.checks if check.check == "V7")
+    v3 = next(check for check in outside.checks if check.check == "V3")
+    assert not [name for name in v3.detail["violated"] if name.startswith("adm.")]
+    assert v7.outcome == "fail"
+    assert v7.detail["regime_changed"] == ["TOY.size"]
+    assert v7.detail["codes"] == ["ASSESSMENT_REGIME_CHANGED(TOY.size)"]
+    assert v7.detail["selected"]["TOY.size"] == "units:2"
+    assert not outside.passed
+    # `tac`'s closure holds the TOY rows: V3 sees the violated row too.
+    inside = verify(bound(p, "tac"), start)
+    v3 = next(check for check in inside.checks if check.check == "V3")
+    assert v3.outcome == "fail"
+    assert [name for name in v3.detail["violated"] if name.startswith("adm.")] == [
+        "adm.TOY.size.max"
+    ]
+    assert inside.outcome("V7") == "fail"
+
+
+def test_v7_compares_a_dormancy_entry_exactly_and_refuses_like_v2() -> None:
+    entry = "FAR.feed.dormant"
+    active = built(DormantSteam(default_bounds()))
+    assert active.regime.choice(entry) == "active"
+    assert verify(bound(active, "tac")).outcome("V7") == "pass"
+    dormant = built(DormantSteam(default_bounds()), Regime({entry: "dormant"}))
+    assert dormant.regime.choice(entry) == "dormant"
+    result = verify(bound(dormant, "tac"))
+    v7 = next(check for check in result.checks if check.check == "V7")
+    assert v7.outcome == "fail"
+    assert v7.detail["codes"] == [f"ASSESSMENT_REGIME_CHANGED({entry})"]
+    assert v7.detail["dormancy_released"] == [entry]
+    assert not result.passed
+    # Status precedence as V2: V1-V5 passed and V7 failed is a refuted claim, not a verification.
+    checks: dict[str, CheckOutcome] = dict.fromkeys(CHECKS[:6], "pass")
+    verdict = classify_starts([StartEvidence(0, {**checks, "V7": "fail"})])
+    assert verdict.status == "NOT_VERIFIED"
+    assert classify_starts([StartEvidence(0, {**checks, "V7": "pass"})]).status == (
+        "KKT_POINT_VERIFIED"
+    )
+
+
+def test_the_report_records_v7_and_the_formulation_assessment_valid_against_the_schema() -> None:
+    p = program()
+    f = bound(p, "tac")
+    result = verify(f)
+    readiness = ready(f)
+    closure = start_closure(f, flowsheet({}), readiness)
+    assert closure is not None
+    assert closure.output_ids == full_space(f).output_ids
+    record = assessment_record(f, closure, result)
+    assert record is not None
+    assert record["outputs"] == [{"id": "tac", "scale": f.assessment.output_scales["tac"]}]  # type: ignore[union-attr]
+    assert record["admissibility"] == [
+        {"id": name, "nominal": closure.nominals[name]} for name in closure.admissibility
+    ]
+    assert record["regime_sha256"] == p.regime.sha256
+    assert record["regime_bounds_active"] == []  # the start is inside its size range
+    report = json.loads((FIXTURES / "nlp_1_solved.json").read_text(encoding="utf-8"))
+    report["candidate"] = result.as_document()
+    report["formulation"]["assessment"] = record
+    assert schema_errors("optimization-report.schema.json", report) == []
+    absent = optimization_readiness(
+        f, flowsheet({}), solver_probe=lambda: SolverAvailability(False, "test: no extra")
+    )
+    unsupported = unsupported_report(f, flowsheet({}), absent).as_document()
+    assert unsupported["formulation"]["assessment"] == record
+    assert schema_errors("optimization-report.schema.json", unsupported) == []
+    # Without a binding the formulation record has no `assessment` key (G9).
+    plain = unsupported_report(nlp_formulation(), flowsheet({}), m03_readiness()).as_document()
+    assert "assessment" not in plain["formulation"]
+
+
+@pytest.mark.nlp
+def test_a_tac_objective_solves_to_a_verified_point_with_v7_from_every_m03_start() -> None:
+    from openflowsheet.studies.nlp.closure import optimize
+
+    p = program()
+    f = bound(p, "tac")
+    report = optimize(f, flowsheet({})).as_document()
+    assert schema_errors("optimization-report.schema.json", report) == []
+    assert report["status"] == "KKT_POINT_VERIFIED"
+    for start in report["starts"]:
+        assert [check["check"] for check in start["checks"]] == list(CHECKS)
+        assert start["checks"][-1]["outcome"] == "pass"
+    candidate = report["candidate"]
+    assert [check["outcome"] for check in candidate["checks"]] == ["pass"] * len(CHECKS)
+    v6 = next(check for check in candidate["checks"] if check["check"] == "V6")
+    at_candidate = v6["assessment_values"]["tac"]
+    for record in m03_readiness().starts:
+        assert record.state is not None
+        values = p.evaluate(record.state, f.decision_values(record.start))
+        assert isinstance(values, Mapping)
+        assert at_candidate <= values["tac"]
+    assert report["formulation"]["assessment"]["outputs"][0]["id"] == "tac"
