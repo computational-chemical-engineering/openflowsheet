@@ -12,6 +12,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from openflowsheet.models import UnitEvaluation
 from openflowsheet.models.thermal.kernel import Failure
@@ -74,12 +75,10 @@ def carried_fraction(state: StreamState, stream: str) -> float | Failure:
     )
 
 
-if "owned" in UnitEvaluation.__dataclass_fields__:
-    ThermalEvaluation = UnitEvaluation
-else:  # pragma: no cover - removed when WO-B2's `UnitEvaluation.owned` reaches this branch
+if TYPE_CHECKING or "owned" not in UnitEvaluation.__dataclass_fields__:
 
     @dataclass(frozen=True)
-    class ThermalEvaluation(UnitEvaluation):  # type: ignore[no-redef]
+    class ThermalEvaluation(UnitEvaluation):
         """`UnitEvaluation` with WO-B2's `owned` (S11 design §4.7.5), until B2 merges.
 
         Track C is built on `wp/S11` before track B's B2 lands; `models/__init__.py` is track B's
@@ -96,3 +95,6 @@ else:  # pragma: no cover - removed when WO-B2's `UnitEvaluation.owned` reaches 
                     f"status {self.status!r} carries owned values; a failed evaluation reports "
                     "what went wrong and nothing a caller could mistake for an answer"
                 )
+
+else:  # pragma: no cover - once WO-B2's `UnitEvaluation.owned` reaches this branch
+    ThermalEvaluation = UnitEvaluation
