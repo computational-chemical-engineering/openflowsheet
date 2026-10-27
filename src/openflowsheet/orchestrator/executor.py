@@ -50,6 +50,7 @@ from openflowsheet.orchestrator.mass import (
     syn001_residence_time,
 )
 from openflowsheet.orchestrator.merge import merge_due, merged_provenance, unsupported_note
+from openflowsheet.orchestrator.phase_contract import CONTRACT_V2
 from openflowsheet.orchestrator.recovery import (
     eo_recovery_due,
     recovered_provenance,
@@ -67,6 +68,7 @@ from openflowsheet.orchestrator.region import (
     syn001_lifted_splits,
 )
 from openflowsheet.orchestrator.splits import (
+    STAGED_MODELS,
     RegionSplits,
     dormancy_forms,
     region_splits,
@@ -684,6 +686,25 @@ def _solve_revision_region(
                 region.units,
                 "UNSUPPORTED_RANK_STRUCTURE",
                 message="specification_region_unsupported(revision_flowsheet)",
+            ),
+            spent,
+            None,
+        )
+    # S11 §4.7.5 (A28): a staged unit's stage splits are PH-type and its standalone solve runs
+    # under phase contract v2; under v1 the region is refused before the traversal.
+    staged = [
+        unit.model_id
+        for unit in flowsheet.units()
+        if unit.model_id in STAGED_MODELS and unit.unit_id in region.units
+    ]
+    if staged and policy.phase_contract != CONTRACT_V2:
+        return (
+            StepResult(
+                index,
+                "solve_eo",
+                region.units,
+                "CAPABILITY_UNAVAILABLE",
+                message=f"phase_contract_unsupported({staged[0]})",
             ),
             spent,
             None,
