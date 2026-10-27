@@ -1,9 +1,12 @@
-"""E01 WO-A2: sizing — the volumetric-flow blocks and the unit families (E01 design §4.4).
+"""E01 WO-A2/A2b: sizing — the volumetric-flow blocks and the unit families (E01 design §4.4, §9.3,
+§9.4).
 
 §6.1 A9 (Underwood), A10 (the exchanger hand case), A13 (the blocks against the provider, bitwise),
 and the families on a solved SYN-001 state (P2's host): items, regime entries, refusals, the twin
 against the reference path and a central-difference gradient. A11 and A12 need WO-B4's hand
-cases and run in I1. Expectations are written from the note's formulas, never from the program.
+cases and run in I1. A46 (model-identity and declared volumes) and A47 (the kinetic CSTR, a drum
+with a dormant liquid) are WO-A2b's. Expectations are written from the note's formulas, never from
+the program.
 """
 
 from __future__ import annotations
@@ -29,7 +32,7 @@ from openflowsheet.assessment.program import (
     ContributionPlan,
     Refusal,
 )
-from openflowsheet.assessment.sizing import FAMILIES, family_of, plan_sizing
+from openflowsheet.assessment.sizing import FAMILIES, SizedItem, family_of, plan_sizing
 from openflowsheet.assessment.sizing.families import actual_trays, underwood
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import UnitRef, view_of
@@ -61,6 +64,30 @@ class Sizing:
     def plan(self, ctx: BuildContext, state: Mapping[str, float]) -> ContributionPlan:
         plan, _ = plan_sizing(ctx, state)
         return plan.contribution()
+
+
+class Capture(Sizing):
+    """`Sizing`, keeping the last plan's items for the tests to read their records."""
+
+    def __init__(self) -> None:
+        self.items: dict[str, SizedItem] = {}
+
+    def plan(self, ctx: BuildContext, state: Mapping[str, float]) -> ContributionPlan:
+        plan, _ = plan_sizing(ctx, state)
+        self.items = {item.item_id: item for item in plan.items}
+        return plan.contribution()
+
+    def item(self, item_id: str) -> SizedItem:
+        return self.items[item_id]
+
+
+#: SYN-001's own constants (`docs/derivations/SYN-001.md` §3; `thermo/syn001.py`), restated here so
+#: the hand values do not read the module under test: R (CODATA exact) and v_i = 1.0e-4 m³/mol.
+SYN_R = 8.31446261815324
+
+
+def _syn_v(component: str) -> float:
+    return 1.0e-4
 
 
 # -- A9 ------------------------------------------------------------------------------------------
@@ -304,9 +331,10 @@ def test_syn001_items_entries_and_refusals() -> None:
     program = syn_program()
     assert "size.U-HEAT.area" in program.output_ids
     assert "size.U-FLASH.duty.area" in program.output_ids
-    # The SYN-001 provider offers no molar volume (§4.4.3): the drum is refused, not approximated.
-    codes = {(r.code, r.target) for r in program.refusals}
-    assert ("SIZING_INPUT_UNAVAILABLE", "U-FLASH.drum.v") in codes
+    # The SYN-001 provider offers no molar volume, but its potential defines both (§9.4, A46):
+    # the drum is sized from the model identity, not refused.
+    assert not [r for r in program.refusals if r.target.startswith("U-FLASH.drum")]
+    assert "size.U-FLASH.drum.diameter" in program.output_ids
     heating = state["U-HEAT.Q"] > 0.0
     assert program.regime.entries["U-HEAT.service"] == ("heating" if heating else "cooling")
     values = program.evaluate(state)
@@ -536,11 +564,13 @@ from openflowsheet.orchestrator.executor import execute_plan  # noqa: E402
 from openflowsheet.orchestrator.revision import plan_revision  # noqa: E402
 
 
-def test_column_m1_shell_refused_on_a_basis_without_volume_condenser_and_reboiler_sized(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    with column_registered(monkeypatch):
-        binding = bind_revision_flowsheet(column_committed("M1"))
+def _column_program(
+    monkeypatch: pytest.MonkeyPatch, case: str, document: Mapping[str, Any]
+) -> tuple[Any, AssessmentProgram, dict[str, float], UnitRef, Capture]:
+    """S11's committed column case, solved, and the sizing program over it."""
+    capture = Capture()
+    with column_registered(monkeypatch, frozenset({"syn001", "wilson-ig-v2"})):
+        binding = bind_revision_flowsheet(column_committed(case))
         assert isinstance(binding, RevisionBinding), binding
         plan, _ = plan_revision(binding, T06_REVISION_V2)
         assert isinstance(plan, ExecutionPlan), plan
@@ -552,13 +582,23 @@ def test_column_m1_shell_refused_on_a_basis_without_volume_condenser_and_reboile
         view = view_of(binding.flowsheet)
         (column,) = [u for u in view.units() if u.model_id == "syn001.column"]
         program = AssessmentProgram.build(
-            view, binding.spec, load_assessment(SYN_DOC), state, contributors=[Sizing()]
+            view, binding.spec, load_assessment(document), state, contributors=[capture]
         )
-    assert isinstance(program, AssessmentProgram)
+    assert isinstance(program, AssessmentProgram), program
+    return view, program, state, column, capture
+
+
+def test_column_m1_shell_sized_from_the_identity_condenser_and_reboiler_sized(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    view, program, state, column, capture = _column_program(monkeypatch, "M1", SYN_DOC)
     u = column.unit_id
     structure = column.structure.structure
-    codes = {(r.code, r.target) for r in program.refusals}
-    assert ("SIZING_INPUT_UNAVAILABLE", f"{u}.shell.v") in codes
+    assert not [r for r in program.refusals if r.target.startswith(f"{u}.shell")]
+    shell = capture.item(f"{u}.shell")
+    sources = {r.name: r.v_source for r in shell.inputs if r.v_source is not None}
+    assert sources and set(sources.values()) == {"model_identity"}
+    _assert_shell_by_hand(view, program, state, column, vapour_r=SYN_R, liquid_v=_syn_v)
     assert ("COLUMN_AUXILIARIES_NOT_COSTED", u) in {(x.code, x.target) for x in program.limitations}
     values = program.evaluate(state)
     assert isinstance(values, Mapping)
@@ -639,6 +679,21 @@ def test_column_m1_shell_formula_on_a_volume_test_provider(monkeypatch: pytest.M
         )
     assert isinstance(program, AssessmentProgram)
     (column,) = [u for u in view.units() if u.model_id == "syn001.column"]
+    _assert_shell_by_hand(
+        view, program, state, column, vapour_r=_VolumeProvider.R, liquid_v=lambda c: 1e-4
+    )
+
+
+def _assert_shell_by_hand(
+    view: Any,
+    program: AssessmentProgram,
+    state: Mapping[str, float],
+    column: UnitRef,
+    *,
+    vapour_r: float,
+    liquid_v: Any,
+) -> None:
+    """§4.4.6 by hand on the solved stages: vapour `V̇ = N·R·T/P`, liquid `V̇ = Σ n_c·v_c`."""
     u, structure = column.unit_id, column.structure.structure
     n = structure.stage_count
     first = 2 if structure.condenser != "none" else 1
@@ -651,10 +706,10 @@ def test_column_m1_shell_formula_on_a_volume_test_provider(monkeypatch: pytest.M
         nl = [state[f"{u}.stage.{j}.l.{c}"] for c in view.components]
         if sum(nv) == 0.0:
             continue
-        vdot = sum(nv) * _VolumeProvider.R * t / p
+        vdot = sum(nv) * vapour_r * t / p
         rho_v = sum(masses[c] * x for c, x in zip(view.components, nv, strict=True)) / vdot
-        rho_l = sum(masses[c] * x for c, x in zip(view.components, nl, strict=True)) / (
-            sum(nl) * 1e-4
+        rho_l = sum(masses[c] * x for c, x in zip(view.components, nl, strict=True)) / sum(
+            x * liquid_v(c) for c, x in zip(view.components, nl, strict=True)
         )
         u_f = 0.09 * math.sqrt((rho_l - rho_v) / rho_v)
         d2[j] = 4.0 * vdot / (math.pi * 0.80 * 0.85 * u_f)
@@ -668,3 +723,320 @@ def test_column_m1_shell_formula_on_a_volume_test_provider(monkeypatch: pytest.M
     assert values[f"size.{u}.shell.height"] == pytest.approx(height, rel=1e-15)
     assert values[f"size.{u}.trays.diameter"] == values[f"size.{u}.shell.diameter"]
     assert all(values[name] >= -TAU_FEAS for name in program.admissibility_ids)
+
+
+# -- A46: model-identity and declared volumes (amendment §9.4, WO-A2b) ---------------------------
+
+from openflowsheet.assessment.blocks import identity_volume  # noqa: E402
+from openflowsheet.models.revision_flowsheet import WILSON_RECORDS  # noqa: E402
+from openflowsheet.thermo import syn001 as syn001_thermo  # noqa: E402
+from openflowsheet.thermo import wilson_ig, wilson_ig_v2  # noqa: E402
+from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: E402
+from openflowsheet.thermo.wilson_ig import WilsonIdealGasProvider  # noqa: E402
+from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2  # noqa: E402
+
+GUARD_STATES = ((300.0, 60_000.0), (350.0, 101_325.0), (420.0, 190_000.0))
+WILSON_STATES = ((330.0, 50_000.0), (350.0, 101_325.0), (380.0, 200_000.0))
+
+
+def test_a46_guard_syn001_lnk_pressure_derivative_is_the_identity() -> None:
+    """`R·T·∂lnK_i/∂P = v_i − RT/P` (SYN-001's potential), rel 1e-12 of RT/P, ≥ 3 states."""
+    provider = Syn001Provider()
+    for phase in ("LIQUID", "VAPOR"):
+        for t, p in GUARD_STATES:
+            result = provider.evaluate_phase(
+                PropertyRequest(
+                    state=StreamState(n=(1.0, 1.0, 1.0), temperature=t, pressure=p),
+                    phase=phase,
+                    properties=("lnK",),
+                    derivatives=("P",),
+                ),
+                CONTEXT,
+            )
+            assert result.status == "ok", result.message
+            rt_p = SYN_R * t / p
+            for c in ("A", "B", "C"):
+                lhs = SYN_R * t * result.derivatives[f"lnK_{c}"]["P"]
+                assert abs(lhs - (_syn_v(c) - rt_p)) <= 1e-12 * rt_p, (phase, t, p, c)
+
+
+def test_a46_guard_wilson_vapour_is_ideal_gas() -> None:
+    """Wilson v1 and v2: vapour `lnphi_<c>` and its T, P derivatives are 0.0 exactly; v2's
+    `P·∂s^V/∂P = −R` (rel 1e-15); the providers' `R` are one CODATA value."""
+    assert wilson_ig.R == syn001_thermo.R == 8.31446261815324
+    v1, v2 = WilsonIdealGasProvider(WILSON_RECORDS), WilsonIdealGasProviderV2(WILSON_RECORDS)
+    components = v1.describe().components
+    for provider in (v1, v2):
+        names = tuple(f"lnphi_{c}" for c in components)
+        for t, p in WILSON_STATES:
+            result = provider.evaluate_phase(
+                PropertyRequest(
+                    state=StreamState(n=(0.3, 0.3, 0.4), temperature=t, pressure=p),
+                    phase="VAPOR",
+                    properties=names,
+                    derivatives=("T", "P"),
+                ),
+                CONTEXT,
+            )
+            assert result.status == "ok", result.message
+            for name in names:
+                assert result.values[name] == 0.0
+                assert result.derivatives[name]["T"] == 0.0
+                assert result.derivatives[name]["P"] == 0.0
+    for t, p in WILSON_STATES:
+        result = v2.evaluate_phase(
+            PropertyRequest(
+                state=StreamState(n=(0.3, 0.3, 0.4), temperature=t, pressure=p),
+                phase="VAPOR",
+                properties=("s",),
+                derivatives=("P",),
+            ),
+            CONTEXT,
+        )
+        assert result.status == "ok", result.message
+        assert abs(p * result.derivatives["s"]["P"] + SYN_R) <= 1e-15 * SYN_R
+
+
+def test_a46_only_the_tabled_providers_get_an_identity() -> None:
+    syn = Syn001Provider()
+    assert identity_volume(syn, "VAPOR", ("A", "B", "C")).kind == "ideal_gas"  # type: ignore[union-attr]
+    assert identity_volume(syn, "LIQUID", ("A", "B", "C")).kind == "amagat"  # type: ignore[union-attr]
+    assert identity_volume(syn, "LIQUID", ("A", "B", "X")) is None
+    for provider in (
+        WilsonIdealGasProvider(WILSON_RECORDS),
+        WilsonIdealGasProviderV2(WILSON_RECORDS),
+    ):
+        components = provider.describe().components
+        assert identity_volume(provider, "VAPOR", components).kind == "ideal_gas"  # type: ignore[union-attr]
+        assert identity_volume(provider, "LIQUID", components) is None
+    assert wilson_ig_v2.PROVIDER_ID == "wilson-ig-v2" and wilson_ig.PROVIDER_ID == "wilson-ig-v1"
+    assert identity_volume(Iapws95Provider(), "VAPOR", ("H2O",)) is None
+
+
+def _p2_flash() -> UnitRef:
+    sheet, _, _ = solved()
+    (flash,) = [u for u in view_of(sheet).units() if u.unit_id == "U-FLASH"]
+    return flash
+
+
+def _p2_drum_by_hand(
+    state: Mapping[str, float], *, rho_l_declared: float | None = None
+) -> dict[str, float]:
+    """§4.4.4 by hand with SYN-001's identity volumes and the built-in defaults."""
+    sheet, _, _ = solved()
+    view = view_of(sheet)
+    masses, components = view.molar_masses(), view.components
+    flash = _p2_flash()
+    vap, liq = flash.ports["vapor"][0], flash.ports["liquid"][0]
+    nv = [state[f"{vap}.n.{c}"] for c in components]
+    nl = [state[f"{liq}.n.{c}"] for c in components]
+    vdot_v = sum(nv) * SYN_R * state[f"{vap}.T"] / state[f"{vap}.P"]
+    vdot_l = sum(x * _syn_v(c) for c, x in zip(components, nl, strict=True))
+    rho_v = sum(masses[c] * x for c, x in zip(components, nv, strict=True)) / vdot_v
+    if rho_l_declared is None:
+        rho_l = sum(masses[c] * x for c, x in zip(components, nl, strict=True)) / vdot_l
+    else:
+        rho_l = rho_l_declared
+    volume = 300.0 * vdot_l / 0.5
+    d2_l = (4.0 * volume / (math.pi * 3.0)) ** (2.0 / 3.0)
+    d2_v = 4.0 * vdot_v / (math.pi * 0.07 * math.sqrt((rho_l - rho_v) / rho_v))
+    d = math.sqrt(max(d2_l, d2_v))
+    return {"volume": volume, "diameter": d, "height": 3.0 * d, "d2_l": d2_l, "d2_v": d2_v}
+
+
+def test_a46_p2_drum_is_sized_from_the_identity_volumes() -> None:
+    sheet, host, state = solved()
+    capture = Capture()
+    program = AssessmentProgram.build(
+        view_of(sheet), host, load_assessment(SYN_DOC), state, contributors=[capture]
+    )
+    assert isinstance(program, AssessmentProgram)
+    drum = capture.item("U-FLASH.drum")
+    sources = {r.name: r.v_source for r in drum.inputs if r.v_source is not None}
+    flash = _p2_flash()
+    assert sources == {
+        f"vdot.{flash.ports['liquid'][0]}": "model_identity",
+        f"vdot.{flash.ports['vapor'][0]}": "model_identity",
+    }
+    values = program.evaluate(state)
+    assert isinstance(values, Mapping)
+    hand = _p2_drum_by_hand(state)
+    for q in ("volume", "diameter", "height"):
+        assert values[f"size.U-FLASH.drum.{q}"] == pytest.approx(hand[q], rel=1e-12), q
+    controlling = "V" if hand["d2_v"] > hand["d2_l"] else "L"
+    assert program.regime.entries["U-FLASH.drum.controlling"] == controlling
+    # The identity rows' twin against the reference path, and A5's central differences on the
+    # diameter and the controlling member's argmax rows (which read the other member's volume).
+    rows = [n for n in program.admissibility_ids if "U-FLASH.drum.controlling" in n]
+    assert rows
+    for name in ("size.U-FLASH.drum.diameter", *rows):
+        _central_differences(program, state, name)
+
+
+def _central_differences(program: AssessmentProgram, state: Mapping[str, float], name: str) -> None:
+    """A5: every nonzero column of `∂name/∂x` against a central difference, and the twin's value
+    against the reference path (≤ 1e-13)."""
+    values = program.evaluate(state)
+    assert isinstance(values, Mapping)
+    lin = program.linearize(state, {}, (name,))
+    assert not isinstance(lin, Refusal)
+    y = values[name]
+    assert abs(lin.values[name] - y) <= 1e-13 * max(1.0, abs(y)), name
+    checked = 0
+    for j, column in enumerate(lin.d_dx.col_ids):
+        start, stop = lin.d_dx.indptr[j], lin.d_dx.indptr[j + 1]
+        if start == stop:
+            continue
+        derivative = float(lin.d_dx.data[start])
+        h = 1e-6 * max(abs(state[column]), 1.0)
+        up = program.evaluate({**state, column: state[column] + h})
+        down = program.evaluate({**state, column: state[column] - h})
+        assert isinstance(up, Mapping) and isinstance(down, Mapping)
+        fd = (up[name] - down[name]) / (2.0 * h)
+        assert abs(derivative - fd) <= 1e-6 * max(abs(derivative), abs(y)) + 1e-12, (name, column)
+        checked += 1
+    assert checked >= 3, name
+
+
+def test_a46_an_item_declaration_behind_an_identity_is_reported_unused() -> None:
+    sheet, host, state = solved()
+    document = {**SYN_DOC, "items": {"U-FLASH.drum": {"liquid_molar_volume": 5.0e-5}}}
+    capture = Capture()
+    program = AssessmentProgram.build(
+        view_of(sheet), host, load_assessment(document), state, contributors=[capture]
+    )
+    assert isinstance(program, AssessmentProgram)
+    (record,) = [r for r in capture.item("U-FLASH.drum").inputs if r.name == "liquid_molar_volume"]
+    assert record.used is False and record.value == 5.0e-5
+    values = program.evaluate(state)
+    assert isinstance(values, Mapping)
+    hand = _p2_drum_by_hand(state)
+    assert values["size.U-FLASH.drum.diameter"] == pytest.approx(hand["diameter"], rel=1e-12)
+
+
+WILSON_VOLUMES = {
+    "CH3OH": {"value": 1.0e-4, "source": "E01 test input; not a property claim"},
+    "C2H5OH": {"value": 1.0e-4, "source": "E01 test input; not a property claim"},
+    "H2O": {"value": 1.0e-4, "source": "E01 test input; not a property claim"},
+}
+
+
+def test_a46_wilson_column_shell_needs_declared_liquid_volumes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """C-MW (`wilson-ig-v2`, S11's Wilson column): the vapour has its identity, the liquid none, so
+    the shell is refused at `v_L` without declarations and sized from them with (§9.4)."""
+    _, program, _, column, _ = _column_program(monkeypatch, "C-MW", SYN_DOC)
+    u = column.unit_id
+    codes = {(r.code, r.target) for r in program.refusals}
+    assert ("SIZING_INPUT_UNAVAILABLE", f"{u}.shell.v_L") in codes
+    document = {**SYN_DOC, "liquid_molar_volumes": WILSON_VOLUMES}
+    view, program, state, column, capture = _column_program(monkeypatch, "C-MW", document)
+    assert not [r for r in program.refusals if r.target.startswith(f"{u}.shell")]
+    shell = capture.item(f"{u}.shell")
+    sources = {r.v_source for r in shell.inputs if r.v_source is not None}
+    assert sources == {"model_identity", "declared_components"}
+    assert sorted(t for t in program.theta if t.startswith("asm:liquid_molar_volume.")) == sorted(
+        f"asm:liquid_molar_volume.{c}" for c in WILSON_VOLUMES
+    )
+    _assert_shell_by_hand(view, program, state, column, vapour_r=SYN_R, liquid_v=lambda c: 1.0e-4)
+    twin = program.linearize(state, {}, program.output_ids)
+    assert not isinstance(twin, Refusal)
+    values = program.evaluate(state)
+    assert isinstance(values, Mapping)
+    for name in program.output_ids:
+        assert abs(twin.values[name] - values[name]) <= 1e-13 * max(1.0, abs(values[name])), name
+    # The item's own declaration comes before the document's (§9.4 step 3 before step 4).
+    document = {**document, "items": {f"{u}.shell": {"liquid_molar_volume": 2.0e-4}}}
+    view, program, state, column, capture = _column_program(monkeypatch, "C-MW", document)
+    shell = capture.item(f"{u}.shell")
+    assert {r.v_source for r in shell.inputs if r.v_source} == {"model_identity", "declared_item"}
+    assert not [t for t in program.theta if t.startswith("asm:liquid_molar_volume.")]
+    _assert_shell_by_hand(view, program, state, column, vapour_r=SYN_R, liquid_v=lambda c: 2.0e-4)
+
+
+# -- A47: the kinetic CSTR's volume and a drum with a dormant liquid (amendment §9.3) ------------
+
+from t08_cstr_support import OUTLET, UNIT, cstr_revision, root_state  # noqa: E402
+
+
+def _cstr(
+    document: Mapping[str, Any],
+) -> tuple[AssessmentProgram, dict[str, float], Capture, Any]:
+    bound = bind_revision_flowsheet(cstr_revision("e01-a47"))
+    assert isinstance(bound, RevisionBinding), bound
+    state = root_state("HIGH")
+    capture = Capture()
+    program = AssessmentProgram.build(
+        view_of(bound.flowsheet),
+        bound.spec,
+        load_assessment(document),
+        state,
+        contributors=[capture],
+    )
+    assert isinstance(program, AssessmentProgram), program
+    return program, state, capture, view_of(bound.flowsheet)
+
+
+def test_a47_kinetic_cstr_volume_is_tau_times_the_outlet_flow() -> None:
+    tau = 12.5
+    document = {**SYN_DOC, "items": {f"{UNIT}.vessel": {"residence_time_s": tau}}}
+    program, state, capture, view = _cstr(document)
+    vdot = sum(state[f"{OUTLET}.n.{c}"] for c in ("A", "B", "C")) * SYN_R
+    vdot = vdot * state[f"{OUTLET}.T"] / state[f"{OUTLET}.P"]
+    values = program.evaluate(state)
+    assert isinstance(values, Mapping)
+    assert values[f"size.{UNIT}.vessel.volume"] == pytest.approx(tau * vdot, rel=1e-14)
+    vessel = capture.item(f"{UNIT}.vessel")
+    (k,) = [r for r in vessel.inputs if r.name == "implied_rate_constant"]
+    (unit,) = [u for u in view.units() if u.unit_id == UNIT]
+    damkohler = unit.parameters[f"{UNIT}.damkohler"]
+    assert k.value == damkohler / tau and k.unit == "1/s"
+    assert {r.v_source for r in vessel.inputs if r.v_source} == {"model_identity"}
+
+
+def test_a47_kinetic_cstr_without_tau_is_refused_and_keeps_its_duty_item() -> None:
+    program, _, capture, _ = _cstr(SYN_DOC)
+    codes = {(r.code, r.target) for r in program.refusals}
+    assert ("SIZING_INPUT_MISSING", f"{UNIT}.vessel.residence_time_s") in codes
+    assert f"{UNIT}.vessel" not in capture.items
+    assert f"{UNIT}.duty" in capture.items
+
+
+def test_a47_drum_with_a_dormant_liquid_reads_the_declared_density() -> None:
+    sheet, host, state = solved()
+    flash = _p2_flash()
+    liquid = flash.ports["liquid"][0]
+    dormant = {**state, **{f"{liquid}.n.{c}": 0.0 for c in ("A", "B", "C")}}
+    refused = AssessmentProgram.build(
+        view_of(sheet), host, load_assessment(SYN_DOC), dormant, contributors=[Sizing()]
+    )
+    assert isinstance(refused, AssessmentProgram)
+    codes = {(r.code, r.target) for r in refused.refusals}
+    assert ("SIZING_INPUT_UNAVAILABLE", "U-FLASH.drum.rho_L") in codes
+    rho = 750.0
+    document = {**SYN_DOC, "items": {"U-FLASH.drum": {"dormant_liquid_density": rho}}}
+    capture = Capture()
+    program = AssessmentProgram.build(
+        view_of(sheet), host, load_assessment(document), dormant, contributors=[capture]
+    )
+    assert isinstance(program, AssessmentProgram)
+    assert not [r for r in program.refusals if r.target.startswith("U-FLASH.drum")]
+    values = program.evaluate(dormant)
+    assert isinstance(values, Mapping)
+    hand = _p2_drum_by_hand(dormant, rho_l_declared=rho)
+    assert hand["d2_l"] == 0.0
+    assert values["size.U-FLASH.drum.diameter"] == pytest.approx(hand["diameter"], rel=1e-12)
+    (record,) = [
+        r for r in capture.item("U-FLASH.drum").inputs if r.name == "dormant_liquid_density"
+    ]
+    assert record.used is True
+    # With an active liquid the declaration is reported unused.
+    active = Capture()
+    AssessmentProgram.build(
+        view_of(sheet), host, load_assessment(document), state, contributors=[active]
+    )
+    (record,) = [
+        r for r in active.item("U-FLASH.drum").inputs if r.name == "dormant_liquid_density"
+    ]
+    assert record.used is False

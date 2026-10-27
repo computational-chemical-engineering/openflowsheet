@@ -231,6 +231,27 @@
         "$ref": "#/$defs/item"
       }
     },
+    "liquid_molar_volumes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "value",
+          "source"
+        ]
+      }
+    },
     "utilities": {
       "type": "array",
       "items": {
@@ -664,6 +685,10 @@
           "type": "boolean"
         },
         "liquid_molar_volume": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "dormant_liquid_density": {
           "type": "number",
           "exclusiveMinimum": 0
         },

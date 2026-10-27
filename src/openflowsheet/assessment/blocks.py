@@ -16,20 +16,42 @@ A provider that does not answer `v` for the phase is a refusal at planning time
 (`SIZING_INPUT_UNAVAILABLE(<item>.v)` / `(<item>.v_sat)`, §4.4.3), checked by `volume_available`;
 a refusal at an evaluation state is `DomainError`, which the program surfaces as
 `TwinEvaluationError` (§4.2.3). A dormant stream has no block (its `V̇` is the constant 0.0).
+
+**Model-identity volumes** (amendment §9.4, R-867). Where a provider offers no `v` but its
+published potential defines a phase's volume, the volume is that identity, written as algebraic
+rows on host variables (no block; the derivatives come from the algebra):
+
+| provider id | VAPOR | LIQUID |
+| --- | --- | --- |
+| `syn001` | `V̇ = N·R·T/P` | `V̇ = Σ_c n_c·v_c` (`V_MOLAR`) |
+| `wilson-ig-v1`, `wilson-ig-v2` | `V̇ = N·R·T/P` | none |
+
+SYN-001's `g^L = a(T) + v_i (P − P_r)` and `g^V = … + RT ln(P/P_r)` with ideal mixing give both
+(`docs/derivations/SYN-001.md`); Wilson's `ln φ^V ≡ 0` gives the vapour's, and its liquid `g` does
+not depend on `P`, so the model has no liquid volume. A provider id absent from the table never
+gets an identity. `R` and `V_MOLAR` are the providers' own constants, imported read-only.
 """
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Final
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import Final, Literal
 
-from openflowsheet.compile.spec import DomainError
+from openflowsheet.compile.spec import DomainError, Expr
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.thermal.kernel import DOMAIN_CODES, Failure, phase_properties, saturation
 from openflowsheet.thermo import Phase, PropertyProvider, PropertyRequest, StreamState
+from openflowsheet.thermo import syn001 as _syn001
+from openflowsheet.thermo import wilson_ig as _wilson_ig
+from openflowsheet.thermo import wilson_ig_v2 as _wilson_ig_v2
 
 __all__ = [
+    "IDENTITY_VOLUMES",
     "VOLUME_OUTPUT",
+    "IdentityVolume",
+    "identity_volume",
     "SaturatedVolumetricFlowBlock",
     "VolumetricFlowBlock",
     "saturated_volume_available",
@@ -236,3 +258,74 @@ def saturated_volume_available(
     except (DomainError, ValueError, KeyError) as error:
         return str(error)
     return None
+
+
+# -- model-identity volumes (§9.4) ----------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class IdentityVolume:
+    """A phase volume the provider's own potential defines (§9.4).
+
+    `kind` is `ideal_gas` (`V̇ = N·R·T/P`, with the provider's `R`) or `amagat`
+    (`V̇ = Σ_c n_c·v_c`, with the provider's per-component `v_c`, m³/mol)."""
+
+    provider_id: str
+    phase: Phase
+    kind: Literal["ideal_gas", "amagat"]
+    gas_constant: float = 0.0
+    molar_volumes: Mapping[str, float] = field(default_factory=dict)
+
+    def vdot(
+        self,
+        flows: Sequence[Expr],
+        temperature: Expr,
+        pressure: Expr,
+        components: Sequence[str],
+    ) -> Expr:
+        """`V̇` (m³/s) on the stream's `(n_1…n_C, T, P)`, left folds in component order."""
+        if self.kind == "ideal_gas":
+            total: Expr = flows[0]
+            for flow in flows[1:]:
+                total = total + flow
+            return total * self.gas_constant * temperature / pressure
+        volume: Expr = flows[0] * self.molar_volumes[components[0]]
+        for flow, component in zip(flows[1:], components[1:], strict=True):
+            volume = volume + flow * self.molar_volumes[component]
+        return volume
+
+
+_SYN001_VOLUMES: Final = MappingProxyType(
+    dict(zip(_syn001.COMPONENTS, _syn001.V_MOLAR, strict=True))
+)
+
+#: §9.4's table, keyed by the providers' own `PROVIDER_ID` (Wilson v1's is `wilson-ig-v1`).
+IDENTITY_VOLUMES: Final[Mapping[tuple[str, Phase], IdentityVolume]] = MappingProxyType(
+    {
+        (_syn001.PROVIDER_ID, "VAPOR"): IdentityVolume(
+            _syn001.PROVIDER_ID, "VAPOR", "ideal_gas", gas_constant=_syn001.R
+        ),
+        (_syn001.PROVIDER_ID, "LIQUID"): IdentityVolume(
+            _syn001.PROVIDER_ID, "LIQUID", "amagat", molar_volumes=_SYN001_VOLUMES
+        ),
+        (_wilson_ig.PROVIDER_ID, "VAPOR"): IdentityVolume(
+            _wilson_ig.PROVIDER_ID, "VAPOR", "ideal_gas", gas_constant=_wilson_ig.R
+        ),
+        (_wilson_ig_v2.PROVIDER_ID, "VAPOR"): IdentityVolume(
+            _wilson_ig_v2.PROVIDER_ID, "VAPOR", "ideal_gas", gas_constant=_wilson_ig.R
+        ),
+    }
+)
+
+
+def identity_volume(
+    provider: PropertyProvider, phase: Phase, components: Sequence[str]
+) -> IdentityVolume | None:
+    """The phase's model-identity volume (§9.4), or `None` when the table has none — including
+    an `amagat` identity that does not cover every component of the stream."""
+    identity = IDENTITY_VOLUMES.get((provider.describe().provider_id, phase))
+    if identity is None:
+        return None
+    if identity.kind == "amagat" and not set(components) <= set(identity.molar_volumes):
+        return None
+    return identity

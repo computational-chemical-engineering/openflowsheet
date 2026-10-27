@@ -18,13 +18,14 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Final, Literal, Protocol
 
 from openflowsheet.assessment.blocks import (
     VOLUME_OUTPUT,
     SaturatedVolumetricFlowBlock,
     VolumetricFlowBlock,
+    identity_volume,
     saturated_volume_available,
     volume_available,
     volumetric_block_id,
@@ -51,6 +52,7 @@ from openflowsheet.thermo import Phase
 __all__ = [
     "FAMILIES",
     "GRAVITY",
+    "LIQUID_VOLUME_THETA",
     "Family",
     "ItemFamily",
     "SizedItem",
@@ -87,13 +89,19 @@ ItemFamily = Literal[
 @dataclass(frozen=True)
 class SizingInput:
     """One recorded input of an item (§4.5.5): its name, value, unit, whether it was defaulted,
-    and the θ that carries it (`None` for a host quantity or a structural constant)."""
+    and the θ that carries it (`None` for a host quantity or a structural constant). A stream's
+    volumetric flow is recorded as `vdot.<stream>` (value: its phase) with its `v_source`."""
 
     name: str
     value: float | str
     unit: str
     defaulted: bool
     theta_id: str | None = None
+    #: `False` for a declaration the item carries but no formula read (§9.3, §9.4).
+    used: bool = True
+    #: Where a volumetric quantity's `v` came from (§9.4): `provider`, `model_identity`,
+    #: `declared_item` or `declared_components`; `None` for every other input.
+    v_source: str | None = None
 
 
 @dataclass(frozen=True)
@@ -165,11 +173,12 @@ class SizingPlan:
 
 @dataclass(frozen=True)
 class StreamFlow:
-    """A stream's volumetric flow as a builder reads it (§4.4.3).
+    """A stream's volumetric flow as a builder reads it (§4.4.3, §9.4).
 
-    `block_id` is `None` for a dormant stream (V̇ ≡ 0.0) or a declared liquid molar volume
-    (`declared_v`, m³/mol θ: `V̇ = N·v_decl`). `mass` builds `ṁ = Σ M_c n_c` (kg/s), `moles` builds
-    `N` (mol/s).
+    `V̇` is the constant 0.0 for a dormant stream, the block output `block_id` for a provider's
+    own `v`, else `rows(s, a)` — a model identity or a declared liquid volume, algebraic rows on
+    host variables and θ. `v_source` says which (§9.4). `mass` builds `ṁ = Σ M_c n_c` (kg/s),
+    `moles` builds `N` (mol/s).
     """
 
     stream: str
@@ -177,19 +186,33 @@ class StreamFlow:
     block_id: str | None
     mass: FunctionalBuilder
     moles: FunctionalBuilder
-    declared_v: str | None = None
+    rows: FunctionalBuilder | None = None
+    v_source: str | None = None
+    phase: Phase | None = None
 
     def vdot(self, s: Symbols, a: Algebra) -> Expr:
         if self.dormant:
             return 0.0
-        if self.declared_v is not None:
-            return self.moles(s, a) * s.theta(self.declared_v)
+        if self.rows is not None:
+            return self.rows(s, a)
         assert self.block_id is not None
         return s.block(self.block_id, VOLUME_OUTPUT)
 
     def density(self, s: Symbols, a: Algebra) -> Expr:
         """`ρ = M̄/v = ṁ/V̇` (kg/m³); undefined (the caller refuses) for a dormant stream."""
         return self.mass(s, a) / self.vdot(s, a)
+
+    def record(self) -> SizingInput | None:
+        """`vdot.<stream>` with its `v_source` (§9.4); `None` for a dormant stream."""
+        if self.dormant or self.v_source is None:
+            return None
+        return SizingInput(
+            f"vdot.{self.stream}", str(self.phase), "m3/s", False, v_source=self.v_source
+        )
+
+
+#: The θ prefix of the document's per-component liquid molar volumes (§9.4).
+LIQUID_VOLUME_THETA: Final = "asm:liquid_molar_volume."
 
 
 class SizingContext:
@@ -206,7 +229,9 @@ class SizingContext:
         self.variables = frozenset(ctx.host_spec.variable_ids)
         self.parameters: Mapping[str, float] = ctx.host_spec.parameters
         self._blocks: list[tuple[PropertyBlock, tuple[str, ...]]] = []
-        self._flows: dict[tuple[str, str], StreamFlow | Refusal] = {}
+        self._flows: dict[tuple[str, str], StreamFlow | tuple[bool, str]] = {}
+        self._document_theta: dict[str, Theta] = {}
+        self._item_volume_used: set[str] = set()
 
     # -- document inputs -------------------------------------------------------------------------
 
@@ -305,25 +330,36 @@ class SizingContext:
         phase: Phase,
         *,
         target: str = "v",
-        declared_v: str | None = None,
         state_ids: tuple[Sequence[str], str, str] | None = None,
     ) -> tuple[StreamFlow | Refusal, RegimeEntry]:
         """The stream's `StreamFlow` for one item, and its dormant entry. A saturated stream (S11
         thermal, `<S>.sat.V` a host column) uses the saturated block whatever `phase` says.
-        `state_ids` overrides the stream's `(flows, T, P)` ids (a column stage, §4.4.6)."""
+        `state_ids` overrides the stream's `(flows, T, P)` ids (a column stage, §4.4.6).
+
+        `v` comes from, in order (§9.4): the provider's own `v`; the model identity
+        (`blocks.IDENTITY_VOLUMES`); for LIQUID only, the item's `liquid_molar_volume`, then the
+        document's `liquid_molar_volumes` (Amagat); else `SIZING_INPUT_UNAVAILABLE(<item>.<target>)`
+        (`<item>.v_sat` for a saturated stream)."""
         entry = self.dormant_entry(item_id, stream, None if state_ids is None else state_ids[0])
         moles = self.moles_builder(stream) if state_ids is None else _sum_builder(state_ids[0])
         mass = self.mass_builder(stream) if state_ids is None else self._mass_of(state_ids[0])
         if entry.choice == "dormant":
-            return StreamFlow(stream, True, None, mass, moles), entry
-        if declared_v is not None:
-            return StreamFlow(stream, False, None, mass, moles, declared_v), entry
+            return StreamFlow(stream, True, None, mass, moles, phase=phase), entry
         key = (stream, phase)
         if key not in self._flows:
-            self._flows[key] = self._new_flow(
-                item_id, stream, phase, target, mass, moles, state_ids
-            )
-        return self._flows[key], entry
+            self._flows[key] = self._new_flow(stream, phase, mass, moles, state_ids)
+        found = self._flows[key]
+        if isinstance(found, StreamFlow):
+            return found, entry
+        saturated, reason = found
+        if saturated:
+            return Refusal("SIZING_INPUT_UNAVAILABLE", f"{item_id}.v_sat", reason), entry
+        if phase == "LIQUID":
+            declared = self._declared_flow(item_id, stream, mass, moles, state_ids)
+            if isinstance(declared, StreamFlow):
+                return declared, entry
+            reason = f"{reason}; {declared}"
+        return Refusal("SIZING_INPUT_UNAVAILABLE", f"{item_id}.{target}", reason), entry
 
     def _mass_of(self, ids: Sequence[str]) -> FunctionalBuilder:
         masses = self.ctx.view.molar_masses()
@@ -337,16 +373,25 @@ class SizingContext:
 
         return build
 
+    def _state_ids(
+        self, stream: str, state_ids: tuple[Sequence[str], str, str] | None
+    ) -> tuple[tuple[str, ...], str, str]:
+        if state_ids is None:
+            flows = tuple(flow_id(stream, c) for c in self.ctx.view.components)
+            return flows, temperature_id(stream), pressure_id(stream)
+        return tuple(state_ids[0]), state_ids[1], state_ids[2]
+
     def _new_flow(
         self,
-        item_id: str,
         stream: str,
         phase: Phase,
-        target: str,
         mass: FunctionalBuilder,
         moles: FunctionalBuilder,
         state_ids: tuple[Sequence[str], str, str] | None,
-    ) -> StreamFlow | Refusal:
+    ) -> StreamFlow | tuple[bool, str]:
+        """Steps 1–2 of §9.4 (item-independent, so shared by every item reading the stream):
+        the provider's own `v` (a block), else the model identity (rows); else `(saturated,
+        reason)`."""
         view = self.ctx.view
         block_id = volumetric_block_id(len(self._blocks) + 1)
         if state_ids is None and vapor_id(stream) in self.variables:
@@ -354,16 +399,14 @@ class SizingContext:
                 view.provider, view.context, self.x(pressure_id(stream))
             )
             if reason is not None:
-                return Refusal("SIZING_INPUT_UNAVAILABLE", f"{item_id}.v_sat", reason)
+                return True, reason
             sat_block = SaturatedVolumetricFlowBlock(view.provider, view.context, block_id=block_id)
             inputs = (vapor_id(stream), liquid_id(stream), pressure_id(stream))
             self._blocks.append((sat_block, inputs))
-            return StreamFlow(stream, False, block_id, mass, moles)
-        if state_ids is None:
-            flows = tuple(flow_id(stream, c) for c in view.components)
-            t_id, p_id = temperature_id(stream), pressure_id(stream)
-        else:
-            flows, t_id, p_id = tuple(state_ids[0]), state_ids[1], state_ids[2]
+            return StreamFlow(
+                stream, False, block_id, mass, moles, v_source="provider", phase=phase
+            )
+        flows, t_id, p_id = self._state_ids(stream, state_ids)
         reason = volume_available(
             view.provider,
             view.context,
@@ -372,11 +415,103 @@ class SizingContext:
             self.x(t_id),
             self.x(p_id),
         )
-        if reason is not None:
-            return Refusal("SIZING_INPUT_UNAVAILABLE", f"{item_id}.{target}", reason)
-        block = VolumetricFlowBlock(view.provider, view.context, phase, block_id=block_id)
-        self._blocks.append((block, (*flows, t_id, p_id)))
-        return StreamFlow(stream, False, block_id, mass, moles)
+        if reason is None:
+            block = VolumetricFlowBlock(view.provider, view.context, phase, block_id=block_id)
+            self._blocks.append((block, (*flows, t_id, p_id)))
+            return StreamFlow(
+                stream, False, block_id, mass, moles, v_source="provider", phase=phase
+            )
+        components = view.components
+        identity = identity_volume(view.provider, phase, components)
+        if identity is None:
+            return False, reason
+
+        def rows(s: Symbols, a: Algebra) -> Expr:
+            return identity.vdot([s.x(n) for n in flows], s.x(t_id), s.x(p_id), components)
+
+        return StreamFlow(
+            stream, False, None, mass, moles, rows, v_source="model_identity", phase=phase
+        )
+
+    def _declared_flow(
+        self,
+        item_id: str,
+        stream: str,
+        mass: FunctionalBuilder,
+        moles: FunctionalBuilder,
+        state_ids: tuple[Sequence[str], str, str] | None,
+    ) -> StreamFlow | str:
+        """Steps 3–4 of §9.4 for a liquid: the item's `liquid_molar_volume` (`V̇ = N·v_decl`), else
+        the document's `liquid_molar_volumes` (`V̇ = Σ_c n_c·v_c`); else why neither applies."""
+        if "liquid_molar_volume" in self.item(item_id):
+            theta_id = _item_volume_theta(item_id)
+            self._item_volume_used.add(item_id)
+
+            def item_rows(s: Symbols, a: Algebra) -> Expr:
+                return moles(s, a) * s.theta(theta_id)
+
+            return StreamFlow(
+                stream, False, None, mass, moles, item_rows, "declared_item", "LIQUID"
+            )
+        declared = self.document_volumes
+        components = self.ctx.view.components
+        missing = [c for c in components if c not in declared]
+        if not declared:
+            return "no liquid_molar_volume on the item and no document liquid_molar_volumes"
+        if missing:
+            return f"the document's liquid_molar_volumes lacks {missing}"
+        for component in components:
+            theta_id = f"{LIQUID_VOLUME_THETA}{component}"
+            if theta_id not in self._document_theta:
+                value = declared[component]
+                self._document_theta[theta_id] = Theta(
+                    theta_id,
+                    float(value["value"]),
+                    "m3/mol",
+                    f"liquid_molar_volumes.{component}: {value['source']}",
+                )
+        flows, _, _ = self._state_ids(stream, state_ids)
+        terms = tuple(zip(flows, (f"{LIQUID_VOLUME_THETA}{c}" for c in components), strict=True))
+
+        def document_rows(s: Symbols, a: Algebra) -> Expr:
+            total: Expr = s.x(terms[0][0]) * s.theta(terms[0][1])
+            for flow, theta_id in terms[1:]:
+                total = total + s.x(flow) * s.theta(theta_id)
+            return total
+
+        return StreamFlow(
+            stream, False, None, mass, moles, document_rows, "declared_components", "LIQUID"
+        )
+
+    @property
+    def document_volumes(self) -> Mapping[str, Mapping[str, Any]]:
+        """The document's `liquid_molar_volumes` (§9.4), `{component: {value, source}}`."""
+        return self.ctx.spec.document.get("liquid_molar_volumes", {})
+
+    @property
+    def document_theta(self) -> tuple[Theta, ...]:
+        """The document θ the pass used (`asm:liquid_molar_volume.<c>`), each once."""
+        return tuple(self._document_theta.values())
+
+    def volume_inputs(
+        self, item_id: str, flows: Sequence[StreamFlow]
+    ) -> tuple[tuple[Theta, ...], tuple[SizingInput, ...]]:
+        """The item's volume records (§9.4): its `liquid_molar_volume` θ when it declares one
+        (`used` whether a flow read it) and `vdot.<stream>` with `v_source` per flow read."""
+        theta: list[Theta] = []
+        records: list[SizingInput] = []
+        if "liquid_molar_volume" in self.item(item_id):
+            declared, record = self.input(item_id, "liquid_molar_volume", "m3/mol")
+            assert declared.theta_id == _item_volume_theta(item_id)
+            theta.append(declared)
+            records.append(replace(record, used=item_id in self._item_volume_used))
+        seen: set[str] = set()
+        for flow in flows:
+            flow_record = flow.record()
+            if flow_record is not None and flow_record.name not in seen:
+                seen.add(flow_record.name)
+                records.append(flow_record)
+        return tuple(theta), tuple(records)
 
     @property
     def blocks(self) -> tuple[tuple[PropertyBlock, tuple[str, ...]], ...]:
@@ -386,7 +521,13 @@ class SizingContext:
 
     def values(self, outputs: Sequence[OutputDef], theta: Sequence[Theta] = ()) -> dict[str, float]:
         """`ctx.evaluate` with every block registered so far (§4.3.2's float pass)."""
-        return self.ctx.evaluate(self.state, outputs, theta, self.blocks)
+        return self.ctx.evaluate(
+            self.state, outputs, (*theta, *self._document_theta.values()), self.blocks
+        )
+
+
+def _item_volume_theta(item_id: str) -> str:
+    return f"asm:item.{item_id}.liquid_molar_volume"
 
 
 def _sum_builder(ids: Sequence[str]) -> FunctionalBuilder:
@@ -493,7 +634,7 @@ def plan_sizing(
     return SizingPlan(
         items=plan.items,
         outputs=plan.outputs,
-        theta=plan.theta,
+        theta=(*plan.theta, *sctx.document_theta),
         blocks=sctx.blocks,
         regime_entries=plan.regime_entries,
         refusals=plan.refusals,

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from fractions import Fraction
 from typing import Any
 
@@ -421,24 +421,13 @@ class _ProcessExchanger:
 # -- §4.4.4 drum ---------------------------------------------------------------------------------
 
 
-def _declared_v(sctx: SizingContext, item_id: str) -> tuple[Theta, SizingInput] | None:
-    if "liquid_molar_volume" not in sctx.item(item_id):
-        return None
-    return sctx.input(item_id, "liquid_molar_volume", "m3/mol")
-
-
 def drum(sctx: SizingContext, unit: UnitRef, item_id: str) -> SizingPlan:
-    """A vertical (default) or horizontal flash drum (§4.4.4)."""
+    """A vertical (default) or horizontal flash drum (§4.4.4). A dormant liquid product reads
+    ρ_L from the item's `dormant_liquid_density` (§9.3), else the V member is refused."""
     doc = sctx.item(item_id)
     inlet = unit.ports["inlet"][0]
     vapour_stream, liquid_stream = unit.ports["vapor"][0], unit.ports["liquid"][0]
-    declared = _declared_v(sctx, item_id)
-    liquid, liquid_entry = sctx.flow(
-        item_id,
-        liquid_stream,
-        "LIQUID",
-        declared_v=None if declared is None else declared[0].theta_id,
-    )
+    liquid, liquid_entry = sctx.flow(item_id, liquid_stream, "LIQUID")
     vapour, vapour_entry = sctx.flow(item_id, vapour_stream, "VAPOR")
     if isinstance(liquid, Refusal):
         return SizingPlan(refusals=(liquid,), regime_entries=(liquid_entry, vapour_entry))
@@ -455,9 +444,13 @@ def drum(sctx: SizingContext, unit: UnitRef, item_id: str) -> SizingPlan:
         sctx.input(item_id, "K_SB", "m/s", default_key="drum_K_SB"),
     ]
     tau, fill, ld, k_sb = (theta.theta_id for theta, _ in inputs)
-    if declared is not None:
-        inputs.append(declared)
     refusals: list[Refusal] = []
+    rho_dormant: str | None = None
+    if "dormant_liquid_density" in doc:
+        declared = sctx.input(item_id, "dormant_liquid_density", "kg/m3")
+        rho_dormant = declared[0].theta_id
+        used = liquid.dormant and not vapour.dormant
+        inputs.append((declared[0], replace(declared[1], used=used)))
 
     def volume(s: Symbols, a: Algebra) -> Expr:
         return s.theta(tau) * liquid.vdot(s, a) / s.theta(fill)
@@ -468,14 +461,19 @@ def drum(sctx: SizingContext, unit: UnitRef, item_id: str) -> SizingPlan:
         )
 
     def d2_vapour(s: Symbols, a: Algebra) -> Expr:
-        rho_l, rho_v = liquid.density(s, a), vapour.density(s, a)
+        rho_v = vapour.density(s, a)
+        if liquid.dormant:
+            assert rho_dormant is not None
+            rho_l = s.theta(rho_dormant)
+        else:
+            rho_l = liquid.density(s, a)
         u_v = s.theta(k_sb) * a.sqrt((rho_l - rho_v) / rho_v)
         return 4.0 * vapour.vdot(s, a) / (math.pi * u_v)
 
     members: list[tuple[str, FunctionalBuilder]] = [("L", d2_liquid)]
     if not vapour.dormant:
-        if liquid.dormant:
-            # §4.4.4: ρ_L is undefined for a dormant liquid product (see E01A_DECISIONS, ESC-A4).
+        if liquid.dormant and rho_dormant is None:
+            # §4.4.4, §9.3 (ii): ρ_L is undefined for a dormant liquid product unless declared.
             refusals.append(
                 Refusal("SIZING_INPUT_UNAVAILABLE", f"{item_id}.rho_L", "dormant liquid")
             )
@@ -483,7 +481,8 @@ def drum(sctx: SizingContext, unit: UnitRef, item_id: str) -> SizingPlan:
             members.append(("V", d2_vapour))
     outputs = [OutputDef(size_output(item_id, "volume"), "m3", volume)]
     entries = [liquid_entry, vapour_entry]
-    theta = [theta for theta, _ in inputs]
+    volume_theta, volume_records = sctx.volume_inputs(item_id, (liquid, vapour))
+    theta = [theta for theta, _ in inputs] + list(volume_theta)
     if len(members) == 1:
         controlling = "L"
     else:
@@ -519,6 +518,7 @@ def drum(sctx: SizingContext, unit: UnitRef, item_id: str) -> SizingPlan:
         size={q: size_output(item_id, q) for q in ("volume", "diameter", "height")},
         inputs=(
             *(record for _, record in inputs),
+            *volume_records,
             SizingInput(
                 "orientation",
                 orientation,
@@ -582,15 +582,19 @@ class _Machine:
         size = {"power": size_output(item_id, "power")}
         refusals: list[Refusal] = []
         entries: list[RegimeEntry] = []
+        theta: list[Theta] = []
+        volume_records: tuple[SizingInput, ...] = ()
         if self.kind == "pump":
             flow, entry = sctx.flow(item_id, inlet, "LIQUID")
             entries.append(entry)
             if isinstance(flow, Refusal):
                 refusals.append(flow)
+                volume_theta, volume_records = sctx.volume_inputs(item_id, ())
             else:
                 outputs += _pump_extras(item_id, flow, pressure_id(inlet), pressure_id(outlet))
                 size |= {q: size_output(item_id, q) for q in ("vol_flow", "head")}
-        theta: list[Theta] = []
+                volume_theta, volume_records = sctx.volume_inputs(item_id, (flow,))
+            theta.extend(volume_theta)
         limitations: list[Limitation] = []
         items: list[SizedItem] = []
         if self.kind == "turbine":
@@ -621,7 +625,13 @@ class _Machine:
             family: ItemFamily = "machine.pump" if self.kind == "pump" else "machine.compressor"
             items.append(
                 SizedItem(
-                    item_id, unit.unit_id, family, size, (), pressure_id(outlet), _options(doc)
+                    item_id,
+                    unit.unit_id,
+                    family,
+                    size,
+                    volume_records,
+                    pressure_id(outlet),
+                    _options(doc),
                 )
             )
             drive_id = sub_item(unit.unit_id, "drive")
@@ -767,9 +777,7 @@ class _Column:
             ),
         ]
         c_sb, f_flood, phi, s_tray, h_top, h_bottom, e_o = (t.theta_id for t, _ in inputs)
-        declared = _declared_v(sctx, shell)
-        if declared is not None:
-            inputs.append(declared)
+        flows: list[StreamFlow] = []
         n_tr = last - first + 1
         n_act = actual_trays(n_tr, inputs[6][0].value)  # E_o, structural
         components = sctx.ctx.view.components
@@ -793,12 +801,7 @@ class _Column:
             if vapour.dormant:
                 continue
             liquid, l_entry = sctx.flow(
-                shell,
-                f"stage.{j}.L",
-                "LIQUID",
-                target="v_L",
-                declared_v=None if declared is None else declared[0].theta_id,
-                state_ids=liq_ids,
+                shell, f"stage.{j}.L", "LIQUID", target="v_L", state_ids=liq_ids
             )
             entries.append(l_entry)
             if isinstance(liquid, Refusal):
@@ -808,12 +811,14 @@ class _Column:
                     refusals=(Refusal("SIZING_INPUT_UNAVAILABLE", f"{shell}.rho_L", f"stage {j}"),),
                     regime_entries=tuple(entries),
                 )
+            flows += (vapour, liquid)
             members.append((str(j), _stage_d2(vapour, liquid, c_sb, f_flood, phi)))
         if not members:
             return _refused(
                 "SIZING_INPUT_UNAVAILABLE", f"{shell}.V", "every tray's vapour is dormant"
             )
-        theta = [t for t, _ in inputs]
+        volume_theta, volume_records = sctx.volume_inputs(shell, flows)
+        theta = [t for t, _ in inputs] + list(volume_theta)
         probe = [OutputDef(f"size.{shell}.s{name}.diameter", "m", b) for name, b in members]
         floats = sctx.values(probe, theta)
         values = {name: floats[f"size.{shell}.s{name}.diameter"] for name, _ in members}
@@ -855,7 +860,7 @@ class _Column:
                 u,
                 "column.shell",
                 {q: size_output(shell, q) for q in ("diameter", "height")},
-                tuple(r for _, r in inputs),
+                (*(r for _, r in inputs), *volume_records),
                 design,
                 {**_options(doc), "orientation": "vertical"},
             ),
@@ -894,10 +899,16 @@ def _stage_d2(
 
 
 class _Reactor:
+    """`<U>.vessel` with `V = τ_R·V̇_out` (§4.4.0, §4.4.7) and the duty item.
+
+    `kinetic` (`syn001.kinetic_cstr`, §9.3 (i)): the outlet's phase is the unit's declared one,
+    and the report carries the informational `implied_rate_constant = Da/τ_R` (s⁻¹). Otherwise
+    (the conversion reactor) the phase is the provider's TP-flash label at the planning state."""
+
     name = "reactor.vessel"
 
-    def __init__(self, *, residence_time: bool) -> None:
-        self.residence_time = residence_time
+    def __init__(self, *, kinetic: bool) -> None:
+        self.kinetic = kinetic
 
     def plan(self, sctx: SizingContext, unit: UnitRef) -> SizingPlan:
         u = unit.unit_id
@@ -905,17 +916,10 @@ class _Reactor:
         inlet, outlet = unit.ports["inlet"][0], unit.ports["outlet"][0]
         doc = sctx.item(vessel)
         plan = _empty()
-        if not self.residence_time:
-            # E01A_DECISIONS ESC-A4: `syn001.kinetic_cstr` carries no volume parameter (Damköhler).
-            plan = _refused(
-                "SIZING_INPUT_MISSING",
-                f"{vessel}.volume",
-                "the model states no volume (Damköhler form)",
-            )
-        elif "residence_time_s" not in doc:
+        if "residence_time_s" not in doc:
             plan = _refused("SIZING_INPUT_MISSING", f"{vessel}.residence_time_s", "required")
         else:
-            phase = _signature(sctx, outlet)
+            phase = unit.structure.phase if self.kinetic else _signature(sctx, outlet)
             if phase not in ("LIQUID", "VAPOR"):
                 plan = _refused(
                     "SIZING_INPUT_UNAVAILABLE",
@@ -949,6 +953,13 @@ class _Reactor:
             return SizingPlan(refusals=(flow,), regime_entries=(entry,))
         tau, tau_input = sctx.input(vessel, "tau_R", "s", item_key="residence_time_s")
         ld, ld_input = sctx.input(vessel, "LD", "1", default_key="reactor_LD")
+        volume_theta, volume_records = sctx.volume_inputs(vessel, (flow,))
+        informational: tuple[SizingInput, ...] = ()
+        if self.kinetic:
+            damkohler = unit.parameters[unit.structure.damkohler_parameter]
+            informational = (
+                SizingInput("implied_rate_constant", damkohler / tau.value, "1/s", False),
+            )
 
         def volume(s: Symbols, a: Algebra) -> Expr:
             return s.theta(tau.theta_id) * flow.vdot(s, a)
@@ -966,7 +977,7 @@ class _Reactor:
             unit.unit_id,
             "reactor.vessel",
             {q: size_output(vessel, q) for q in ("volume", "diameter", "height")},
-            (tau_input, ld_input),
+            (tau_input, ld_input, *volume_records, *informational),
             design,
             {**_options(sctx.item(vessel)), "orientation": "vertical"},
         )
@@ -977,7 +988,7 @@ class _Reactor:
                 OutputDef(size_output(vessel, "diameter"), "m", diameter),
                 OutputDef(size_output(vessel, "height"), "m", height),
             ),
-            theta=(tau, ld),
+            theta=(tau, ld, *volume_theta),
             regime_entries=(entry,),
         )
 
@@ -1012,8 +1023,8 @@ _TABLE: tuple[tuple[tuple[str, ...], Any], ...] = (
     (("thermal.compressor",), _Machine("compressor")),
     (("thermal.turbine",), _Machine("turbine")),
     (("syn001.column",), _Column()),
-    (("syn001.kinetic_cstr",), _Reactor(residence_time=False)),
-    (("syn001.conversion_reactor",), _Reactor(residence_time=True)),
+    (("syn001.kinetic_cstr",), _Reactor(kinetic=True)),
+    (("syn001.conversion_reactor",), _Reactor(kinetic=False)),
     (
         (
             "thermal.valve",

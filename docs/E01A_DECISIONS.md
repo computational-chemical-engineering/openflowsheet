@@ -245,6 +245,30 @@ I1's.
   regime where the source states none. Not blocked: `cost/index.py`, the three series files, the
   log-polynomial/power-law/constant forms, the loader's checks.
 
+## WO-A2b (volumes, kinetic CSTR, dormant liquid; §9.3, §9.4)
+
+- Done as ruled: identity table + rows in `assessment/blocks.py` (`IDENTITY_VOLUMES`, `identity_volume`,
+  `IdentityVolume.vdot`); precedence provider → identity → item `liquid_molar_volume` → document
+  `liquid_molar_volumes` → refusal in `SizingContext.flow`; schema: top-level `liquid_molar_volumes`, item
+  `dormant_liquid_density` (`residence_time_s` existed); kinetic CSTR sized `τ_R·V̇_out` with
+  `implied_rate_constant`. Tests `tests/test_e01_a_sizing.py` 24 passed (A46 guards ×3, P2 drum by hand rel 1e-12
+  with FD on diameter + argmax rows, unused item declaration, C-MW shell refused at `v_L` / sized from document /
+  item precedence, twin = reference ≤ 1e-13; A47 CSTR rel 1e-14, refusal + duty item, dormant-liquid drum).
+- FACT: Wilson v1's provider id is `wilson-ig-v1` (§9.4's table says `wilson-ig`); the table keys on the modules'
+  own `PROVIDER_ID`. C-MW binds only with `column_registered(…, {"syn001", "wilson-ig-v2"})`.
+- DECISION: a provider that offers `v` but cannot answer it at the state (or for the phase) falls through to steps
+  2–4, and the final refusal carries the provider's reason. Alternative: refuse at once. Reversible by:
+  `SizingContext.flow` (return the refusal when `"v" in described.properties`).
+- DECISION: `v_source` is recorded as a `SizingInput` `vdot.<stream>` (value: phase, unit m3/s); `SizingInput` gains
+  `used` (default True) and `v_source`. Alternative: a `SizedItem.v_sources` map. Reversible by: `StreamFlow.record`.
+- DECISION: a declared item θ (`liquid_molar_volume`, `dormant_liquid_density`) is always in the program, reported
+  `used: false` when no formula reads it; document θ `asm:liquid_molar_volume.<c>` enter once, only when a flow uses
+  them, after every family's θ. Alternative: emit unused θ too. Reversible by: `SizingContext._declared_flow`.
+- DECISION: the kinetic CSTR's τ θ is `asm:item.<U>.vessel.tau_R` (item key `residence_time_s`), as the conversion
+  reactor's; its phase is the unit's declared outlet phase (`unit.structure.phase`). Reversible by: `_Reactor`.
+- Amended own tests (ruling, not tuning): `test_syn001_items_entries_and_refusals` (the P2 drum is now sized) and the
+  M1 column test (shell sized from SYN-001's identity, was refused at `shell.v`).
+
 ## Handoff (2026-10-27, third context cap) — resume from here
 
 - **Done (wp/E01):** A1, A2, ESC-A1 (earlier); WO-A3a `6478f5ec` (link `$defs`, E01 `exact_sha256`); drive family
