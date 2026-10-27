@@ -469,5 +469,12 @@ order:
 4. Gates on the final tree (scratch worktree, `scratchpad/i1b/identity.sh <commit> <tag>`), `t08_support_matrix.py
    --check`, `w27_registration_v3 --check`, all `tests/test_s11_*`. Expected `AMENDED_TESTS` additions so far: only
    R-841's three `test_m02_join` tests.
+Gates at `83185423` (measured): `S11-IDENTITY FAIL n=54490 changed=[]` (failing runs, not changed keys: the T05
+family exited 1 and C shards failed; base-only keys = `test_m06_w27_coverage` 4, item 7); `S08-IDENTITY PASS n=52
+changed=[S02.P1] p1_stage_a=EQUAL`; `S10C-IDENTITY FAIL n=858 changed=[]` (the same T05 run). The T05 failures were
+fixed in the next commit: `verify.table` imported `composition_dependent` from the models (cbc38ca2; T05
+table-independence, 3 tests), now `forms.pure_fluid_provider` (same predicate, same values); L-TH-7 spelled the v2
+contract id in `benchmarks/` (`test_b06_no_registered_policy_names_v2`), now "T05b's v2 phase contract". T05 modules +
+thermal/GP verifier tests: 1450 passed. Gates not re-run after that fix.
 Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. Everything else touched passes
 (S11 battery, the 24 registry-dependent base files, envelope readers, T07/T08 corpora).

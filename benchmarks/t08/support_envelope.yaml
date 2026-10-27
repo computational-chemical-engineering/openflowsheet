@@ -1137,7 +1137,7 @@ limitations:
       - doc:docs/derivations/S11-units-design.md §4.10
   - id: L-TH-7
     text: >-
-      Dormant single-phase thermal outlets need `T05b-phase-contract-v2`.
+      Dormant single-phase thermal outlets need T05b's v2 phase contract.
     evidence:
       - tests/test_s11_thermal_solve.py::test_a62_a_dormant_heater_with_zero_duty_converges_on_the_label_row
       - doc:docs/derivations/S11-units-design.md §4.10

@@ -42,6 +42,7 @@ __all__ = [
     "declared_phases",
     "enthalpy_flow",
     "form_of",
+    "pure_fluid_provider",
     "stream_admissibility",
 ]
 
@@ -68,6 +69,14 @@ PURE_FLUID_MARGIN: Final = 1e-9
 def form_of(provider_id: str) -> Form:
     """The verifier's form for a revision on `provider_id`'s basis."""
     return _FORMS.get(provider_id, DECLARED_MIXTURE)
+
+
+def pure_fluid_provider(provider: PropertyProvider) -> bool:
+    """Whether a declared-mixture revision's provider is composition-independent (a pure fluid,
+    not a γ–φ provider such as `wilson-ig-v1`): units design §4.8's test for lifting a
+    `thermal.*` saturated outlet. Here so that `verify.table` reads no model function (T05's
+    table-independence rule)."""
+    return not composition_dependent(provider)
 
 
 def declared_phases(view: RevisionView) -> dict[str, Phase | None]:

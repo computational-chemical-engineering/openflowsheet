@@ -35,7 +35,6 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import duty_id, flow_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import InstanceView, RevisionView
 from openflowsheet.models.syn001.conversion_reactor import extent_id
-from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.flash import total_flow_id
 from openflowsheet.models.syn001.pump import work_id
 from openflowsheet.models.syn001.tp_state import (
@@ -1753,7 +1752,7 @@ def revision_checks(
             if instance.directions.get(port) == "outlet" and instance.phases.get(port) is None
             for stream in streams
         )
-        if mixture and not composition_dependent(provider)
+        if mixture and forms.pure_fluid_provider(provider)
         else frozenset()
     )
     if mixture:
