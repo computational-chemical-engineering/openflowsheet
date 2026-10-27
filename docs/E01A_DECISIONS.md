@@ -285,33 +285,40 @@ I1's.
 - DECISION: a price in another basis is escalated with §4.6's formula as written, including `LF`. Alternative: LF
   only on capital. Reversible by: `operating.price_on_basis` (pass `location_factor=1.0`).
 
-## Handoff (2026-10-27, third context cap) — resume from here
+## Handoff (2026-10-27, fourth context cap) — resume from here
 
-- **Done (wp/E01):** A1, A2, ESC-A1 (earlier); WO-A3a `6478f5ec` (link `$defs`, E01 `exact_sha256`); drive family
-  rename `add26ead`; WO-A3 `05c4c671` (forms, sets, quotes, index, set file, 3 series files; 28 tests). Policy
-  `--check` exit 0, v2 `6b449911…d707c` unchanged. Protected paths untouched.
-- **Next, in order (§9.5):** **WO-A2b** (§9.3/§9.4 — not A3's): model-identity volumes in `assessment/blocks.py`
-  (syn001 RT/P and Σx_c·V_MOLAR; wilson-ig/-v2 vapour RT/P; algebraic rows, derivatives by hand; `R`, `V_MOLAR` imported
-  read-only), volume precedence provider → identity → item `liquid_molar_volume` → document `liquid_molar_volumes`
-  (new top-level schema field, θ `asm:liquid_molar_volume.<c>`) → refusal `SIZING_INPUT_UNAVAILABLE(<item>.v)`;
-  `v_source` on item inputs; `syn001.kinetic_cstr` V = τ_R·V̇_out with required θ `residence_time_s` and informational
-  `implied_rate_constant` = Da/τ_R; drum θ `dormant_liquid_density`. Tests A46, A47 (+A4/A5 on the new rows) in
-  `tests/test_e01_a_sizing.py`. Then **WO-A4** (§5.2 + §9.2.6/§9.2.7): the cost contributor wiring `SizingPlan` items
-  to `sets.entry_for`/`resolve`/`forms.select`/`rows`/`cost`, escalation by `index.escalate`, capital chain, OPEX,
-  annualisation, uncertainty; drive capital 0.0 with `included_in` when the machine entry `includes_drive`; η_drive =
-  `forms.motor_efficiency` at the per-unit shaft power; drive N = machine N (`select(..., units=N)`).
-- **A4 inputs from A3 (API):** `load_set(id)`; `entry_for(set, family, orientation)`; `resolve(set, entry_id, options)
-  -> ResolvedEntry | NoCorrelation`; `FORMS[e.form]` with `.inputs` (SI names: area, design_pressure, diameter, length,
-  thickness [θ `continuous["shell_thickness_in"]`·0.0254], vol_flow, head, power, n_act), `select(form, e, x_floats,
-  allow_extrapolation, units) -> Selection | OutOfRange`, `rows(form, e, sel) -> RangeRow(row_id, quantity, sense,
-  bound)` on `form.quantities(e, x, alg, n)`, `form.cost(e, x, sel, alg)` = C_P at the set basis (CE 500).
-  Piece-entry ids: `<item>.<form.target(range)>.piece`; size entry `<item>.size`. `index.escalate(SourceBasis,
-  TargetBasis, series, rates)`; SSLW source basis `SourceBasis("USD", index=("CEPCI", 500.0), year_equivalent=2006,
-  set_id=...)`. `quotes.quote_from`, `Quote.cost_expr`, `size_mismatch`.
-- **Open for A4/design lane:** item options field in the schema (see WO-A3 "OPEN"); generic-v1 factor terms and
-  bare-module forms not implemented (no shipped set uses them); ESC-A2…A5 ruled in §9 (A2b carries A4/A5's rulings).
-- **For B1/I1 (unchanged):** `_data/assessment/**` needs `pyproject.toml` package-data globs and `resources.PACKAGED`
-  (neither is track A's); M05's ADDENDA pin amendment → `AMENDED_TESTS`. A48 (primary ranges `verified: true`) is a
-  release-candidate item for a person with Seider 3rd ed.
-- **Scratch (not in repo):** IDAES wheel `idaes_dl/`, sources `idaes_src/`, set tool `a3tools/sslw_set.py`, series tool
-  `a3tools/series.py`, raw retrievals `series_dl/` (all under the session scratchpad).
+- **Done (wp/E01):** A1, A2, A3a, A3 (earlier); **A2b** `79ef7539` (identity/declared volumes, kinetic CSTR, dormant
+  liquid; A46, A47); **A4 (1)–(3)** `48373937` capital chain + CRF, `c992ea96` price basis + AACE/propagation helpers,
+  `d273ab9c` item `options` + `shell_thickness` schema. Policy `--check` exit 0 (v2 `6b449911…d707c`). Protected paths
+  untouched. Track A tests: sizing 24, core/cost/links 52, capital 7 — all pass.
+- **Next: the cost contributor** (rest of WO-A4, §5.2 + §9.2.6/§9.2.7), a new `assessment/cost/contributor.py`
+  registered as `cost` (`program.register_contributor`), replacing the tests' `Sizing` stand-in:
+  1. `plan_sizing(ctx, state)` → per `SizedItem`: quote (`quotes.quote_from`) or `exclude`, else correlation
+     (§4.5.3: item `correlation` or `correlation_set` + `sets.entry_for(set, item.family, orientation)`), options =
+     `item.options` ∪ {`material`, `tray_type`} (conflict → `NO_CORRELATION`), `sets.resolve`; inputs per
+     `FORMS[e.form].inputs` from `item.size` outputs, `design_pressure`, θ `t_shell` (default 0.03175 m, reported),
+     `N_act`; `forms.select(form, e, x_floats, allow_extrapolation, units)` → regime entries (`<item>.size`,
+     `<item>.<target>.piece`) + `forms.rows`; `capex.purchased.<item>` = `form.cost(...)` × E (θ product).
+  2. Escalation per entry basis (§9.2.6: CE 394 → CE 500 factor inside the form; SSLW basis
+     `SourceBasis("USD", index=("CEPCI", 500.0), year_equivalent=2006, set_id)`), `index.escalate` with
+     `basis.escalation_series` (+ user series), limitation `INDEX_BASIS_MAPPED`.
+  3. Drives (§9.2.7): machine entry `includes_drive` → `<U>.drive` capital 0.0, provenance `included_in`;
+     η_drive = `forms.motor_efficiency` at W/N (replaces the 0.95 θ for SSLW sets); drive N = machine N.
+  4. Bare module: entry/item `F_BM` → `capex.bare_module.<item>`, else `BARE_MODULE_FACTOR_MISSING`; refuse the chain
+     only if `chain.bases` contains `sum_bare_module`. Sums as left folds in item order (§4.2.4).
+  5. Chain (`capital.chain` preset via `load_chain`, else `chain_from(steps, capital_total, fci)`; `ChainError` →
+     `ASSESSMENT_OUTPUT_UNKNOWN`), `capex.<step>`, `capex.total`, `capex.fci`.
+  6. OPEX (§4.7.2): utilities from `SizedItem.utility`/`duty`; electricity from `electricity`/`power` with the
+     `kind: electricity` utility (export price default = import, `ELECTRICITY_NETTED`); materials by role; fixed lines;
+     `FIXED_OPEX_UNDECLARED`; prices via `operating.price_on_basis` (θ `asm:utility.<u>.price` etc.).
+  7. `annual.capital_charge = CRF·capex.total` (θ i, n structural; `DISCOUNT_RATE_OUT_OF_DOMAIN`), `tac`, `revenue.*`,
+     `profit`, `product.annual`/`lcox` (§4.7.4), `derived.*` (§4.7.5; acyclic; `METRIC_UNDEFINED`) — `derived` may be a
+     separate contributor (`cost, lca, derived` order).
+  8. Uncertainty (§4.9) with `cost/uncertainty.py`: class over costed items, θ ranges symbolic in a twin, worst case
+     + RSS; status/partial rule. Then A22 (tac from report fields, rel 1e-15), A23 end-to-end, A44 drives.
+- **Open for the design lane (batched):** none blocking. Logged choices: provider-v fall-through, `v_source` record
+  shape, θ emission of declarations, chain error code mapping, LF on prices, the options schema.
+- **For B1/I1 (unchanged):** `_data/assessment/**` package-data globs and `resources.PACKAGED` (now also
+  `cost/chains.json`); M05 ADDENDA pin → `AMENDED_TESTS`; A48 is an RC item. P3 = C-MW needs
+  `column_registered(…, {"syn001", "wilson-ig-v2"})` and the §9.4 test volumes (as `WILSON_VOLUMES` in the sizing test).
+- **Scratch (not in repo):** IDAES wheel/sources, `a3tools/`, `series_dl/` under the session scratchpad.
