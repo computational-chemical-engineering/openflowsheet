@@ -312,3 +312,5 @@ W27 `test_m06_w27_coverage` 4 and `test_l01_retake` 6 errors (`unregistered mode
 3. The four test amendments outside §8.3 (A14(i), rename w5c, W5e fixtures + m02_join, T08 B27): confirm, or name
    them in §8.3 / `AMENDED_TESTS` (the identity run judged their keys equal, so none needed it).
 4. a20's `scanned_providers` now fails only on `wilson-ig-v2` (as c3): D5 registers it.
+
+Identity at `079be287` (final, clean scratch worktree): `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 7, 15] exited non-zero)` — the remaining failures are exactly the envelope a20 + six c3 (`wilson-ig-v2`, D5), `test_m06_w27_coverage` 4 and `test_l01_retake` 6 errors (I1b). S08 and S10C lines as above, unchanged.
