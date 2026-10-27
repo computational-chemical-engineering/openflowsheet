@@ -15694,3 +15694,276 @@ commits it covers. A regenerated S10-C manifest without the commit list re-check
   unaffected.
 - A second length on ci-aarch64, which registers no `cpu_model`.
 - A failure message that names the CPU only on a pinned class.
+
+---
+
+## R-850 — E01: cost, size and impact are post-solve functionals of a verified state, never rows of a CompiledProblem
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 design pass |
+| Normative text | `docs/derivations/E01-design.md` §3 D1, §4.10; ADR 0052 D1 |
+| Evidence | Every sizing relation is explicit in a solved state (§4.4). PyNumero gray-box outputs carry `y = G(z)` with an exact Jacobian (`studies/nlp/greybox.py:121-171` returns `output_names() == []` today) |
+| Affected packages | E01; M03 (additive); PrISMa (consumer) |
+
+**Decision.**
+- `y = G(x, d; θ, ρ)` is evaluated on the verified state.
+- In the NLP, `y` enters as gray-box outputs; in reduced space, through M03's sensitivities.
+- The simulation, certificate and replay identity never see it.
+
+**Rejected:**
+- *Rows in F.* Identity and certificate churn; cost domain errors would fail simulations; re-costing would need a
+  re-solve.
+- *Appending to the twin's equality set.* It diverges from the rows V2 and V5 compare.
+
+**Watch for.** Any proposal to "make cost a model variable". It reopens this entry.
+
+## R-851 — E01: functionals compile as a ProblemSpec through the unchanged ParametricTwin; the float path is the reference
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 |
+| Normative text | E01 design §4.2; ADR 0052 D2 |
+| Evidence | `compile/casadi_backend.py:680-867` (`ParametricTwin`: residual, `jacobian_x`, `jacobian_p` from one graph); `compile/reference.py` (`row_values`) |
+| Affected packages | E01 |
+
+**Decision.**
+- Outputs and admissibility rows are `EquationSpec`s (`accumulation = "algebraic"`) of a functional spec. Its
+  variables are the host's.
+- No file under `compile/` changes. The functional spec is never solved or certified.
+
+**Rejected:**
+- *A new `FunctionalSpec` and compile entry point.* It edits the compiler for nothing.
+- *A separate symbolic or AD layer.* A second derivative path.
+
+**Watch for.** A builder that branches on a symbol. The regime is passed as data.
+
+## R-852 — E01: non-smooth choices are held regimes with admissibility inequalities; no max/min/abs/ceil, no smoothing
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 |
+| Normative text | E01 design §4.3; ADR 0052 D3 |
+| Evidence | Inside its admissible set each regime is the exact cost of a realisable design (§4.3.3) |
+| Affected packages | E01 |
+
+**Decision.**
+- Kinds: `service`, `utility`, `size` (`units:N` or `floor`), `piece`, `argmax`, `dormant`.
+- The selection rule of §4.3.2 picks them; a study holds them; V7 checks dormancy at the candidate.
+- Binding rows are reported with their multipliers.
+
+**Rejected:**
+- *Softplus or p-norm smoothing.* It biases the value.
+- *The epigraph reformulation.* It needs proof of monotonicity per study.
+- *Refusing every out-of-range size.*
+
+**Watch for.** A smoothed `max` slipping into a sizing model.
+
+## R-853 — E01: ΔT_lm by Underwood's cube-root mean, not the exact log mean
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 |
+| Normative text | E01 design §3 D4, §4.4.1; assertions A9, A10 |
+| Evidence | Deviation from the exact LMTD: +0.0035 % (ratio 2), +0.38 % (10), +2.56 % (50), +4.41 % (100). Chen: −2.70 % at 10. Paterson: +0.84 % at 10 |
+| Affected packages | E01 |
+
+**Decision.** `ΔT_lm = ((ΔT₁^{1/3} + ΔT₂^{1/3})/2)³`. It is smooth and glass-box for ΔT > 0, and exact at ΔT₁ = ΔT₂.
+The report gives each exchanger's ratio and deviation.
+
+**Rejected:**
+- *The exact LMTD as an opaque block.* It adds a black box, which would become a TR `ExternalFunction`.
+- *A two-piece exact or series form as a regime.* It constrains the process for a numerical reason.
+
+**Watch for.** "Fixing" it to the textbook exact form. That reopens this entry, which needs a case where the deviation
+matters against a class-4 range.
+
+## R-854 — E01: correlation forms are code, coefficients are data; SSLW via IDAES (BSD) and power-law ship, Turton does not
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 |
+| Normative text | E01 design §4.5; ADR 0052 D5 |
+| Evidence | IDAES SSLW docs: correlations from Seider et al. 3rd ed. ch. 22, CE-index-500 basis. IDAES is BSD-style licensed. Turton/CAPCOST rights are not established |
+| Affected packages | E01 |
+
+**Decision.**
+- `sslw-idaes-v1` is transcribed with a `source_line` per number and the IDAES notice verbatim.
+- `power-law-v1` and `constant-v1` carry user data and quotes. A quote overrides one item.
+- The set loader refuses `S_max < 2·S_min`.
+
+**Rejected:**
+- *Shipping Turton.*
+- *IDAES as a dependency.* A second flowsheet model.
+- *Coefficients in Python.*
+
+**Watch for.** A coefficient without a `source_line`.
+
+## R-855 — E01: public cost indices and exchange rates ship; CEPCI never ships; escalate → convert → locate
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 |
+| Normative text | E01 design §4.6; ADR 0052 D6 |
+| Evidence | BLS and FRB data are US public domain; Eurostat's reuse policy is CC BY 4.0. CEPCI is owned by *Chemical Engineering* magazine |
+| Affected packages | E01 |
+
+**Decision.**
+- Shipped: `bls-ppi-wpu11-annual-v1`, `eurostat-ppi-c28-ea-annual-v1`, `frb-g5a-annual-v1`.
+- `E = [I_s(Y_t)/I_s(Y_b)] · X(Y_t) · LF`.
+- A CEPCI-500 basis without user CEPCI data is mapped to 2006, with limitation `INDEX_BASIS_MAPPED`.
+
+**Rejected:**
+- *Shipping CEPCI.*
+- *Convert-then-escalate.* It assigns the source region's price movement to the target region.
+
+**Watch for.** CEPCI values committed in any data file.
+
+## R-856 — E01: U and ΔT_min have no built-in default; other sizing defaults are registered and always reported
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 |
+| Normative text | E01 design §4.4, §4.9 (`defaulted_inputs`), assertion A41 |
+| Evidence | U spans about 10–5000 W m⁻² K⁻¹ across services. A default would be silently wrong by orders of magnitude |
+| Affected packages | E01 |
+
+**Decision.**
+- `U` (per item or per service in the document) and each utility's `ΔT_min` are required: `SIZING_INPUT_MISSING`
+  otherwise.
+- The defaults in `assessment/defaults.py` (τ, φ_fill, LD, K_SB, C_SB, f_flood, φ_active, s_tray, E_o, H_top,
+  H_bottom, η_drive, η_gen, h_op, n, i) are listed in every report that uses them.
+
+**Rejected:** *A typical-U table.*
+
+**Watch for.** A default used but not reported.
+
+## R-857 — E01: LCA is a frozen linear map h = Q·a(x) + C·b(x); Brightway builds Q offline as the optional extra `lca`
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 |
+| Normative text | E01 design §4.8; ADR 0052 D7 |
+| Evidence | The background `A⁻¹` is constant, so the unit scores `q = cᵀ B A⁻¹ e_k` are constants. Brightway 2.5 packages (`bw2data`, `bw2calc`) are BSD-3-Clause (to be confirmed at pinned versions, WO-B1) |
+| Affected packages | E01; PrISMa |
+
+**Decision.**
+- Unit-score and direct-factor tables are hash-pinned.
+- The adapter uses only `bw2data` and `bw2calc`, with no `pypardiso`. It never downloads databases.
+- `foreground_check` is the independent check.
+- The core imports no Brightway.
+
+**Rejected:**
+- *Brightway in the loop.*
+- *openLCA over IPC.*
+- *Own matrix LCA over imported databases.*
+
+**Watch for.** A Brightway import reachable from a solve, an optimization or a replay path.
+
+## R-858 — E01: shipped LCA data and the rights policy
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 |
+| Normative text | E01 design §4.8.5–§4.8.6; ADR 0052 D8; assertion A28 |
+| Evidence | JRC130796 (EF 3.1 factors report, 2023) is CC BY 4.0, by Decision 2011/833/EU. The terms of the workbook (`EF-LCIAMethod_CF(EF-v3.1).xlsx`) were not confirmable. Federal LCA Commons submissions are CC0 per the 2018 draft guidelines (not USLCI-specific). ecoinvent is licensed per user |
+| Affected packages | E01; PrISMa |
+
+**Decision.**
+- Ship `gwp100-ipcc-ar6-v1` and `test-background-v1`.
+- Ship `uslci-…-gwp100-v1` only if CC0/US-PD is recorded.
+- No EF 3.1 factors and nothing ecoinvent-derived ship.
+- `redistribution: forbidden` tables enter reports, bundles and fixtures by id and sha256 only.
+
+**Rejected:** *Shipping EF 3.1 or ecoinvent-derived scores.*
+
+**Watch for.** Scores from a forbidden table in any committed file.
+
+## R-859 — E01: studies name `assessment:<output_id>`; two new schemas, two additive optional properties
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 |
+| Normative text | E01 design §4.1, §4.10–§4.11; ADR 0052 D9 |
+| Evidence | `schemas/study.schema.json` `output_functional.coefficients` takes any string key. `optimization-report.schema.json` `formulation` is `additionalProperties: false`, hence the optional property |
+| Affected packages | E01; M03 |
+
+**Decision.**
+- `assessment.schema.json` and `assessment-report.schema.json` are added to the registry.
+- `study.assessment` and `optimization-report.formulation.assessment` are optional.
+- V7 is recorded in the existing per-start check list.
+
+**Rejected:**
+- *A new study kind.*
+- *An expression language in the study.* Ratios are `derived` outputs.
+
+**Watch for.** A host variable id beginning `assessment:`.
+
+## R-860 — E01: scope cuts with typed refusals (TR objectives, revision-flowsheet NLP host, bindings, regime enumeration)
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01; Frank's preference pending (design §7 Q1–Q4) |
+| Normative text | E01 design §1, §4.10.4, §7 |
+| Evidence | The TR formulation is registered and generated (`c1-trf-study-v1`). `FullSpaceNlp` takes `Syn001Flowsheet` (`studies/nlp/formulation.py:266-276`) |
+| Affected packages | E01; follow-ups M03-G, TR, bindings |
+
+**Decision.**
+- `UNSUPPORTED(ASSESSMENT_OUTPUT_IN_TRF)`; `UNSUPPORTED(ASSESSMENT_PARAMETER_DECISION)`.
+- The NLP host over revision flowsheets and the CLI/HTTP/MCP bindings are separate follow-ups.
+- The revision *sensitivity* host is in E01.
+
+**Rejected:** *Folding M03-G into E01.* It doubles the package and reopens M03's verified closure.
+
+**Watch for.** Frank's answer to Q1–Q4. If he contradicts these defaults, the follow-ups are re-scoped.
+
+## R-861 — E01: verification independence by cross-authoring
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 |
+| Normative text | E01 design §5.1, WO-A5, WO-B4; assertions A14, A15, A24, A25 |
+| Evidence | CLAUDE.md: self-generated outputs are regression fixtures, not validation |
+| Affected packages | E01 |
+
+**Decision.**
+- Track B writes the cost expectations, including an independent transcription of SSLW from the IDAES source; track A
+  writes the LCA expectations.
+- The scripts import nothing from `openflowsheet` and use mpmath at 30 digits.
+- The IDAES evaluation and Brightway's `foreground_check` are the independent implementations.
+
+**Rejected:**
+- *Expectations generated by the code under test.*
+- *A second design-lane specifier pass.* The budget allows one design pass per package.
+
+**Watch for.** An expectation file whose script imports `openflowsheet`.
+
+## R-862 — E01: no partial totals; a total that depends on an unsupported item is null unless that item is excluded with a reason
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 |
+| Normative text | E01 design §4.9; assertion A40 |
+| Evidence | A total silently missing an item would understate cost without saying so |
+| Affected packages | E01 |
+
+**Decision.**
+- Report status values: `COMPLETE`, `PARTIAL`, `REFUSED`.
+- A study naming a null output is refused `ASSESSMENT_OUTPUT_UNAVAILABLE`.
+
+**Rejected:** *Totals over the costed subset with a warning.*
+
+**Watch for.** A total computed while an item is refused and not excluded.
