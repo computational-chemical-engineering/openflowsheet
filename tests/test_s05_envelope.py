@@ -209,18 +209,21 @@ def test_a22_a_broken_stability_sign_is_caught(monkeypatch: pytest.MonkeyPatch) 
     assert any("cp = " in problem for problem in grid_problems(500.0))
 
 
-# -- A25: library-only (R-568, R-569; spec §8 F-2) -------------------------------------------------
+# -- A25: library-only (R-568, R-569; spec §8 F-2), superseded by S11 (R-810) ----------------------
 
 
 def test_a25_library_only_registration() -> None:
+    """S11 (ADR 0050, R-810) reverses A25 on purpose: `iapws95-v1` is selectable, on the T08
+    providers axis, and no longer registered library-only."""
     from test_t08_w2_support_envelope import LIBRARY_ONLY_PROVIDERS
 
     selectable = {basis.provider_id for basis in revision_binding.SELECTABLE_BASES}
     assert w.PROVIDER_ID == "iapws95-v1"
-    assert w.PROVIDER_ID not in selectable
-    assert LIBRARY_ONLY_PROVIDERS[w.PROVIDER_ID] == "S05"
+    assert w.PROVIDER_ID in selectable
+    assert w.PROVIDER_ID not in LIBRARY_ONLY_PROVIDERS
     matrix = _script("t08_support_matrix")
     assert w.PROVIDER_ID in matrix.code_facts()["scanned_providers"]
+    assert w.PROVIDER_ID in matrix.code_facts()["providers"]
 
 
 def test_a25_the_u02_note_names_the_provider() -> None:

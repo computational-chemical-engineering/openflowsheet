@@ -150,6 +150,24 @@ in the run log below.
   as W27v3-A08 (the refusal as the transcribed rules give it). Default proposed: the spelling rule skips a record with
   no CAS RN. Needs: a `specifier` amendment of `W27-registration-v3.md` (and of A08), before the release's W27 run.
 
+## Track A: A5 envelope (providers) (§4.11)
+
+- DECISION: what the three new limitation rows and caveats say about models → "the routing models only" (true on
+  this branch); §4.11's "routing and column" for Wilson and the thermal units on IAPWS-95/CoolProp are added by I1/I1b
+  with the column and thermal members. Alternative: §4.11's text now (false until I1). Reversible by: the L-S11-1…3
+  texts and caveats in `support_envelope.yaml`.
+- DECISION: `LIBRARY_ONLY_PROVIDERS`'s docstring says the commit that makes a provider selectable "reclassifies its
+  package's U02 items" → not done: §4.11 says no earlier harvest entry is edited; the S05/S07/S10 U02 notes stay as
+  their manifests wrote them (C3's check only reads registered providers). Alternative: edit the harvest notes.
+  Reversible by: n/a (nothing changed).
+- DECISION: `test_t08_w2_support_envelope.py::test_an_unbound_provider_is_rendered_apart_from_the_axes_with_its_
+  limitation` (not in §8.3) unpacked the one "Shipped, bound on another basis" line; with four such providers it
+  selects `pr-c1-v1`'s line, its assertions unchanged. Alternative: render all providers on one line (changes the
+  matrix's existing line). Reversible by: that hunk.
+- DECISION: the amended S05 A25, S07 A30, S10 A27 tests keep their names and now assert the reverse (selectable, on
+  the providers axis, not library-only), with a docstring citing R-810; S11.A34 is a new test beside
+  `LIBRARY_ONLY_PROVIDERS`. Alternative: rename them. Reversible by: the A5 commit.
+
 ## Run log
 
 - WO-0 gate, unmodified tree (`acffd034`), 16 shards per tree, 614 s:
