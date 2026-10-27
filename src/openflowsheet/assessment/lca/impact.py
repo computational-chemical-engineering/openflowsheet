@@ -53,6 +53,8 @@ class ImpactPlan:
     limitations: list[Limitation] = field(default_factory=list)
     unavailable: list[tuple[str, str]] = field(default_factory=list)
     defaulted: list[dict[str, Any]] = field(default_factory=list)
+    #: θ whose value is a score of a table whose rights forbid redistribution (§4.8.6), with why.
+    restricted: dict[str, str] = field(default_factory=dict)
 
 
 def categories_of(document: Mapping[str, Any], tables: Mapping[str, LcaTable]) -> list[str]:
@@ -222,6 +224,10 @@ class _Planner:
                 self._theta(
                     theta_id, value, f"{unit}/{e.unit[:-2]}", f"{e.table_id} {m} {e.column}"
                 )
+                if table.rights.forbidden:
+                    out.restricted[theta_id] = (
+                        f"a score of table {e.table_id}, whose rights forbid redistribution"
+                    )
                 terms.append((theta_id, e.output_id))
             factor = allocation if not isinstance(allocation, Refusal) else None
             out.outputs.append(OutputDef(ids[0], f"{unit}/s", _rate(terms, factor)))

@@ -25,11 +25,17 @@ from openflowsheet.assessment.program import (
 __all__ = ["LcaContributor", "lca_section"]
 
 
-def lca_section(tables: Mapping[str, LcaTable], defaulted: list[dict[str, Any]]) -> dict[str, Any]:
-    """The section: `tables` (id, sha256, rights; never a score) and `defaulted_inputs`."""
+def lca_section(
+    tables: Mapping[str, LcaTable],
+    defaulted: list[dict[str, Any]],
+    restricted: Mapping[str, str] | None = None,
+) -> dict[str, Any]:
+    """The section: `tables` (id, sha256, rights; never a score), `defaulted_inputs`, and
+    `restricted_theta` (θ id → reason) — the θ whose values the report withholds (§4.8.6)."""
     return {
         "tables": [reference(table) for table in tables.values()],
         "defaulted_inputs": list(defaulted),
+        "restricted_theta": dict(restricted or {}),
     }
 
 
@@ -51,7 +57,7 @@ class LcaContributor:
         inventory = plan_inventory(ctx, state, tables, refused)
         impacts = plan_impacts(ctx, state, inventory, tables, categories_of(document, tables))
         outputs = [OutputDef(e.output_id, e.unit, e.build) for e in inventory.exchanges]
-        section = lca_section(tables, impacts.defaulted)
+        section = lca_section(tables, impacts.defaulted, impacts.restricted)
         listed_refusals = {r.target for r in inventory.refusals}
         refusals = [
             *inventory.refusals,

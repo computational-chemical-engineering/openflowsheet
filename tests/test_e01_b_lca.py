@@ -337,10 +337,9 @@ def test_an_unknown_activity_or_a_wrong_hash_withholds_the_impacts(registered: N
     assert RATE in program.unavailable
 
 
-def test_a28_a_forbidden_table_leaves_only_its_id_and_hash(
-    registered: None,  # noqa: F811
-    tmp_path: Path,
-) -> None:
+def _licensed(tmp_path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    """A user-licensed copy of test-background-v1 (redistribution forbidden, other scores) and
+    P4's document reading it."""
     licensed = copy.deepcopy(dict(tables.load_shipped("test-background-v1").document))
     licensed.pop("brightway")
     licensed["table_id"] = "licensed-background"
@@ -363,6 +362,14 @@ def test_a28_a_forbidden_table_leaves_only_its_id_and_hash(
         **document.get("data", {}),
         "tables": [{"id": "licensed-background", "sha256": licensed["sha256"], "path": str(path)}],
     }
+    return licensed, document
+
+
+def test_a28_a_forbidden_table_leaves_only_its_id_and_hash(
+    registered: None,  # noqa: F811
+    tmp_path: Path,
+) -> None:
+    licensed, document = _licensed(tmp_path)
     program, state, digest = _program(document)
     report = program.report(state, state_sha256=digest)
     assert report["status"] == "COMPLETE"
@@ -384,3 +391,32 @@ def test_a28_a_forbidden_table_leaves_only_its_id_and_hash(
             "rights": "user-licensed; redistribution forbidden; a database licensed per user",
         }
     )
+
+
+def test_a28_a_ranged_score_of_a_forbidden_table_is_withheld(
+    registered: None,  # noqa: F811
+    tmp_path: Path,
+) -> None:
+    """ESC-B3: a declared range on a forbidden table's score lists the θ with the reason in place
+    of its value; the θ still propagates, and no score reaches the report."""
+    licensed, document = _licensed(tmp_path)
+    theta = "asm:lca.q.licensed-background.climate_change_test.tb.electricity"
+    document["uncertainty"] = {theta: {"relative_range": [-0.1, 0.1]}}
+    program, state, digest = _program(document)
+    report = program.report(state, state_sha256=digest)
+    assert schema_errors(SCHEMA_REFERENCE, report) == []
+    assert report["status"] == "COMPLETE"
+    entries = [p for p in report["uncertainty"]["parameters"] if p["theta"] == theta]
+    assert entries == [
+        {
+            "theta": theta,
+            "withheld": "a score of table licensed-background, whose rights forbid redistribution",
+            "relative_range": [-0.1, 0.1],
+        }
+    ]
+    low, high = report["uncertainty"]["linear_interval"][RATE]
+    assert low < high
+    text = json.dumps(report, ensure_ascii=False)
+    for score in licensed["scores"][0]:
+        assert repr(score) not in text
+        assert repr(score)[:12] not in text

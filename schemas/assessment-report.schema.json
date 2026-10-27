@@ -221,6 +221,10 @@
               "value": {
                 "type": "number"
               },
+              "withheld": {
+                "type": "string",
+                "minLength": 1
+              },
               "relative_range": {
                 "type": "array",
                 "items": {
@@ -232,8 +236,20 @@
             },
             "required": [
               "theta",
-              "value",
               "relative_range"
+            ],
+            "description": "A theta with a declared range. `value` is its value, or `withheld` states why the value is not disclosed (a score of an LCA table whose rights forbid redistribution, E01 design §4.8.6); the theta still enters the propagation.",
+            "oneOf": [
+              {
+                "required": [
+                  "value"
+                ]
+              },
+              {
+                "required": [
+                  "withheld"
+                ]
+              }
             ]
           }
         },

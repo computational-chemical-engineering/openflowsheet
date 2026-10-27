@@ -73,13 +73,16 @@ def propagate(
     x: Mapping[str, float],
     values: Mapping[str, float],
     outputs: Sequence[str],
+    withheld: Mapping[str, str] | None = None,
 ) -> tuple[dict[str, list[float]], dict[str, float], list[dict[str, Any]], list[Refusal]]:
     """§4.9's first-order propagation of `outputs` at `x`.
 
     Every θ with a declared relative range `[lo, hi]` is symbolic in one twin; `g_k = ∂y/∂θ_k·θ_k`.
     Returns the linear worst-case intervals, the RSS standard deviations, the parameters used
     (θ order) and the refusals: a declared range on a structural θ (`ASSESSMENT_PARAMETER_
-    STRUCTURAL`) or on a θ the program does not have (`ASSESSMENT_VARIABLE_UNKNOWN`)."""
+    STRUCTURAL`) or on a θ the program does not have (`ASSESSMENT_VARIABLE_UNKNOWN`). A θ in
+    `withheld` (id → reason) still propagates, but its parameter entry carries the reason in place
+    of its value: a score of a table whose rights forbid redistribution (§4.8.6)."""
     declared = dict(program.context.spec.document.get("uncertainty", {}))
     refusals = [
         Refusal("ASSESSMENT_VARIABLE_UNKNOWN", name, "a declared range names no θ of the program")
@@ -101,7 +104,13 @@ def propagate(
             )
             continue
         ranged.append((theta_id, theta.value, span))
-    parameters = [{"theta": t, "value": v, "relative_range": list(span)} for t, v, span in ranged]
+    hidden = dict(withheld or {})
+    parameters: list[dict[str, Any]] = [
+        {"theta": t, "withheld": hidden[t], "relative_range": list(span)}
+        if t in hidden
+        else {"theta": t, "value": v, "relative_range": list(span)}
+        for t, v, span in ranged
+    ]
     if not ranged or not outputs:
         return {}, {}, parameters, refusals
     lin = program.linearize(x, {}, list(outputs), [t for t, _, _ in ranged])
@@ -224,7 +233,8 @@ def report_body(
         status_unc["aace_range"] = {"low": list(low), "high": list(high)}
     if uncertainty and values is not None:
         targets = [n for n in reported if value(n) is not None]
-        intervals, sigmas, parameters, more = propagate(program, x, values, targets)
+        restricted = sections.get("lca", {}).get("restricted_theta", {})
+        intervals, sigmas, parameters, more = propagate(program, x, values, targets, restricted)
         status_unc |= {"linear_interval": intervals, "rss_sigma": sigmas, "parameters": parameters}
         refusals.extend(more)
     built = [n for n in reported if value(n) is not None]

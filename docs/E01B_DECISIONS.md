@@ -156,6 +156,18 @@ packages; URL and retrieval date for data). The design-lane ruling round is fold
   pins `['coolprop', 'nlp']`. By design (S07 Ruling M): the next release specification adds an `MR12_AUDITS`
   entry and the tripwire's list; M07's test is not edited here.
 
+- DECISION (ESC-B3, orchestrator ruling): the report withholds the value of a ranged θ that is a score of a table
+  whose rights forbid redistribution → the impact planner records such θ (`ImpactPlan.restricted`, id → reason),
+  the lca section carries them as `restricted_theta`, and `report.propagate` lists them as
+  `{theta, withheld: "a score of table <id>, whose rights forbid redistribution", relative_range}`; the θ still
+  propagates. `assessment-report.schema.json` `uncertainty.parameters[]`: `value` or `withheld` (oneOf), policy
+  `--check` exit 0 (v2 sha256 6b449911…d707c unchanged). Alternative: leave to the reviewer. Reversible by: that
+  commit (report.py, impact.py, section.py, the schema).
+- OPEN (design lane, ESC-B3 residue): the interval and σ of an impact still carry `a_k·q_k·span` for a ranged
+  restricted θ, and `a_k` is reported in `lca.inventory`, so one ranged θ lets a reader back out `q_k`; so does an
+  impact with a single exchange from a forbidden table (`h = a_k q_k`). The ruling covers θ values only; nothing
+  else was changed.
+
 ## Handoff (2026-10-27, end of WO-B1 and WO-B2) — resume from here
 
 - **Done (wp/E01, after 1301ca12):** WO-B1 (ff7f4343 extra, lock, env script, D04 records + A42 checker; 932455b3
