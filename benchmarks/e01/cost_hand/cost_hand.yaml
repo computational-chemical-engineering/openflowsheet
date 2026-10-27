@@ -1,0 +1,3789 @@
+id: e01-cost-hand-v1
+script: benchmarks/e01/cost_hand/cost_hand.py
+script_sha256: 9d3f8514937baef2297783717102856094a27e126e2fe15cdf7fea08c9144881
+mpmath_dps: 30
+transcribed_from:
+  package: idaes-pse
+  version: 2.13.0
+  wheel_sha256: 2b67301afe6dc0c2f0e7342253ebcbab6e91607c0204d9bd663a2735f1ec85f9
+  file: idaes/models/costing/SSLW.py
+  file_sha256: 362b0a22e78ad578c4ce6408224aa6193fc6330cb7041fc1d4aaee0e060b1184
+  aux:
+    file: idaes/core/base/costing_base.py
+    sha256: cdd71f362a2b59e5c1ed4261e8811f7fc749d0999aba0d01d32ad1999b0bfc38
+units:
+  kappa_A_ft2_per_m2:
+    value: 10.763910416709722
+    mp30: '10.7639104167097223083335055559'
+  kappa_Q_gpm_per_m3s:
+    value: 15850.323141488905
+    mp30: '15850.3231414889049227939952965'
+  kappa_W_hp_per_W:
+    value: 0.0013410220895950279
+    mp30: '0.00134102208959502793432378557267'
+  psi_Pa:
+    value: 6894.757293168362
+    mp30: '6894.75729316836133672267344535'
+  ce394_to_ce500:
+    value: 1.2690355329949239
+    mp30: '1.26903553299492385786802030457'
+basis: C_P in USD at CEPCI 500 (pump and motor converted from CE 394 by 500/394.0)
+forms:
+  exchanger.shell_tube:
+    form: sslw-exchanger-v1
+    cases:
+    - label: area S_min
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 13.935456
+        P_Pa: 3000000.0
+      regime:
+        size: units:1
+        pressure: '1'
+      quantities:
+        area_ft2:
+          value: 150.0
+          mp30: '150.00000000000000309232764528'
+        area_ft2_per_unit:
+          value: 150.0
+          mp30: '150.00000000000000309232764528'
+        z:
+          value: 165.0
+          mp30: '165.000000000000003401560409808'
+        C_B:
+          value: 10375.452718203294
+          mp30: '10375.4527182032940138310686733'
+        F_M:
+          value: 3.72878918023556
+          mp30: '3.72878918023556007562598532455'
+        p_psig:
+          value: 420.4172644151142
+          mp30: '420.417264415114196737219611696'
+        F_P:
+          value: 1.0860227225518295
+          mp30: '1.08602272255182952320753255816'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 47057.82171419233
+        mp30: '47057.8217141923329717550291771'
+      C_P:
+        value: 47057.82171419233
+        mp30: '47057.8217141923329717550291771'
+    - label: area floor_bound_inside
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 13.935469935456
+        P_Pa: 3000000.0
+      regime:
+        size: units:1
+        pressure: '1'
+      quantities:
+        area_ft2:
+          value: 150.00015
+          mp30: '150.000150000000001089587399722'
+        area_ft2_per_unit:
+          value: 150.00015
+          mp30: '150.000150000000001089587399722'
+        z:
+          value: 165.000165
+          mp30: '165.000165000000001198546139694'
+        C_B:
+          value: 10375.453560110942
+          mp30: '10375.4535601109427035362150791'
+        F_M:
+          value: 3.728789252250769
+          mp30: '3.72878925225076920408739787331'
+        p_psig:
+          value: 420.4172644151142
+          mp30: '420.417264415114196737219611696'
+        F_P:
+          value: 1.0860227225518295
+          mp30: '1.08602272255182952320753255816'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 47057.826441502606
+        mp30: '47057.8264415026092573134649343'
+      C_P:
+        value: 47057.826441502606
+        mp30: '47057.8264415026092573134649343'
+    - label: area geometric_mean
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 124.64250765382924
+        P_Pa: 3000000.0
+      regime:
+        size: units:1
+        pressure: '1'
+      quantities:
+        area_ft2:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        area_ft2_per_unit:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        z:
+          value: 1475.8048651498611
+          mp30: '1475.80486514986125032964264886'
+        C_B:
+          value: 19830.14707955802
+          mp30: '19830.1470795580225699169550081'
+        F_M:
+          value: 3.899318513168064
+          mp30: '3.89931851316806405055969953916'
+        p_psig:
+          value: 420.4172644151142
+          mp30: '420.417264415114196737219611696'
+        F_P:
+          value: 1.0860227225518295
+          mp30: '1.08602272255182952320753255816'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 94052.76804444531
+        mp30: '94052.7680444453196432791476843'
+      C_P:
+        value: 94052.76804444531
+        mp30: '94052.7680444453196432791476843'
+    - label: area S_max
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 1114.8364799999888
+        P_Pa: 3000000.0
+      regime:
+        size: units:1
+        pressure: '1'
+      quantities:
+        area_ft2:
+          value: 11999.99999999988
+          mp30: '11999.9999999998794055362031664'
+        area_ft2_per_unit:
+          value: 11999.99999999988
+          mp30: '11999.9999999998794055362031664'
+        z:
+          value: 13199.999999999867
+          mp30: '13199.9999999998673460898234831'
+        C_B:
+          value: 97019.27057082347
+          mp30: '97019.2705708234710225714209819'
+        F_M:
+          value: 4.098114330574817
+          mp30: '4.0981143305748169798119935098'
+        p_psig:
+          value: 420.4172644151142
+          mp30: '420.417264415114196737219611696'
+        F_P:
+          value: 1.0860227225518295
+          mp30: '1.08602272255182952320753255816'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 483614.1619559302
+        mp30: '483614.161955930182889123194104'
+      C_P:
+        value: 483614.1619559302
+        mp30: '483614.161955930182889123194104'
+    - label: area below_floor
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 6.967728
+        P_Pa: 3000000.0
+      regime:
+        size: floor
+        pressure: '1'
+      quantities:
+        area_ft2:
+          value: 75.0
+          mp30: '75.0000000000000015461638226398'
+        area_ft2_per_unit:
+          value: 150.0
+          mp30: '150.0'
+        z:
+          value: 165.0
+          mp30: '165.0'
+        C_B:
+          value: 10375.452718203294
+          mp30: '10375.4527182032939964747196606'
+        F_M:
+          value: 3.72878918023556
+          mp30: '3.72878918023556007414135382039'
+        p_psig:
+          value: 420.4172644151142
+          mp30: '420.417264415114196737219611696'
+        F_P:
+          value: 1.0860227225518295
+          mp30: '1.08602272255182952320753255816'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 47057.82171419233
+        mp30: '47057.8217141923328742991324247'
+      C_P:
+        value: 47057.82171419233
+        mp30: '47057.8217141923328742991324247'
+    - label: area above_S_max
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 2787.0912
+        P_Pa: 3000000.0
+      regime:
+        size: units:3
+        pressure: '1'
+      quantities:
+        area_ft2:
+          value: 30000.0
+          mp30: '29999.9999999999983240000225663'
+        area_ft2_per_unit:
+          value: 10000.0
+          mp30: '9999.99999999999944133334085542'
+        z:
+          value: 11000.0
+          mp30: '10999.999999999999385466674941'
+        C_B:
+          value: 82017.9040688987
+          mp30: '82017.90406889869989391633493'
+        F_M:
+          value: 4.080384264602885
+          mp30: '4.08038426460288483244448983182'
+        p_psig:
+          value: 420.4172644151142
+          mp30: '420.417264415114196737219611696'
+        F_P:
+          value: 1.0860227225518295
+          mp30: '1.08602272255182952320753255816'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 407067.7208827231
+        mp30: '407067.720882723109968598519971'
+      C_P:
+        value: 1221203.1626481693
+        mp30: '1221203.16264816932990579555991'
+    - label: pressure floor bound (100 psig)
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 124.64250765382924
+        P_Pa: 790800.7293168361
+      regime:
+        size: units:1
+        pressure: floor
+      quantities:
+        area_ft2:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        area_ft2_per_unit:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        z:
+          value: 1475.8048651498611
+          mp30: '1475.80486514986125032964264886'
+        C_B:
+          value: 19830.14707955802
+          mp30: '19830.1470795580225699169550081'
+        F_M:
+          value: 3.899318513168064
+          mp30: '3.89931851316806405055969953916'
+        p_psig:
+          value: 100.0
+          mp30: '99.9999999999999960721836105555'
+        F_P:
+          value: 1.0
+          mp30: '1.0'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 86602.94678130616
+        mp30: '86602.9467813061620386462336648'
+      C_P:
+        value: 86602.94678130616
+        mp30: '86602.9467813061620386462336648'
+    - label: pressure floor bound inside
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 124.64250765382924
+        P_Pa: 790801.4187925655
+      regime:
+        size: units:1
+        pressure: '1'
+      quantities:
+        area_ft2:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        area_ft2_per_unit:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        z:
+          value: 1475.8048651498611
+          mp30: '1475.80486514986125032964264886'
+        C_B:
+          value: 19830.14707955802
+          mp30: '19830.1470795580225699169550081'
+        F_M:
+          value: 3.899318513168064
+          mp30: '3.89931851316806405055969953916'
+        p_psig:
+          value: 100.0001
+          mp30: '100.000100000000002773362534785'
+        F_P:
+          value: 1.0000000214000018
+          mp30: '1.00000002140000170059349967674'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 86602.94863460938
+        mp30: '86602.9486346093704350064504316'
+      C_P:
+        value: 86602.94863460938
+        mp30: '86602.9486346093704350064504316'
+    - label: pressure below floor (full vacuum)
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 124.64250765382924
+        P_Pa: 0.0
+      regime:
+        size: units:1
+        pressure: floor
+      quantities:
+        area_ft2:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        area_ft2_per_unit:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        z:
+          value: 1475.8048651498611
+          mp30: '1475.80486514986125032964264886'
+        C_B:
+          value: 19830.14707955802
+          mp30: '19830.1470795580225699169550081'
+        F_M:
+          value: 3.899318513168064
+          mp30: '3.89931851316806405055969953916'
+        p_psig:
+          value: -14.695948775513449
+          mp30: '-14.6959487755134487255034721572'
+        F_P:
+          value: 1.0
+          mp30: '1.0'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 86602.94678130616
+        mp30: '86602.9467813061620386462336648'
+      C_P:
+        value: 86602.94678130616
+        mp30: '86602.9467813061620386462336648'
+    - label: pressure max (2000 psig)
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 124.64250765382924
+        P_Pa: 13890839.586336585
+      regime:
+        size: units:1
+        pressure: '1'
+      quantities:
+        area_ft2:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        area_ft2_per_unit:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        z:
+          value: 1475.8048651498611
+          mp30: '1475.80486514986125032964264886'
+        C_B:
+          value: 19830.14707955802
+          mp30: '19830.1470795580225699169550081'
+        F_M:
+          value: 3.899318513168064
+          mp30: '3.89931851316806405055969953916'
+        p_psig:
+          value: 1999.99999999998
+          mp30: '1999.99999999997999759807261392'
+        F_P:
+          value: 2.020299999999983
+          mp30: '2.02029999999998279793434244804'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 174963.93338227135
+        mp30: '174963.933382271349417100316366'
+      C_P:
+        value: 174963.93338227135
+        mp30: '174963.933382271349417100316366'
+    - label: pressure above max (refused)
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 124.64250765382924
+        P_Pa: 13890839.600126237
+      regime:
+        size: units:1
+        pressure: refused
+      refused: true
+    - label: CarbonSteelCarbonSteel (F_M = 1)
+      options:
+        hx_type: Utube
+        material: CarbonSteelCarbonSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 124.64250765382924
+        P_Pa: 3000000.0
+      regime:
+        size: units:1
+        pressure: '1'
+      quantities:
+        area_ft2:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        area_ft2_per_unit:
+          value: 1341.640786499874
+          mp30: '1341.64078649987386393603877169'
+        z:
+          value: 1475.8048651498611
+          mp30: '1475.80486514986125032964264886'
+        C_B:
+          value: 19830.14707955802
+          mp30: '19830.1470795580225699169550081'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        p_psig:
+          value: 420.4172644151142
+          mp30: '420.417264415114196737219611696'
+        F_P:
+          value: 1.0860227225518295
+          mp30: '1.08602272255182952320753255816'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 24120.309158338194
+        mp30: '24120.3091583381926167303619403'
+      C_P:
+        value: 24120.309158338194
+        mp30: '24120.3091583381926167303619403'
+  vessel.vertical:
+    form: sslw-vessel-v1
+    cases:
+    - label: weight_limit 1 W S_min
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: false
+        orientation: vertical
+      inputs:
+        D_m: 0.3746168637594289
+        L_m: 1.1238505912782866
+        t_shell_m: 0.03175
+      regime:
+        size: floor
+      quantities:
+        W_lb:
+          value: 999.9999999999999
+          mp30: '999.999999999999912743688387071'
+        C_v:
+          value: 11734.30782289951
+          mp30: '11734.30782289950902563908436'
+        C_PL:
+          value: 0.0
+          mp30: '0.0'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 1.2290579519666303
+          mp30: '1.22905795196663016824186984541'
+        L_ft:
+          value: 3.68717385589989
+          mp30: '3.68717385589989032260240995862'
+      C_P1:
+        value: 11734.30782289951
+        mp30: '11734.30782289950902563908436'
+      C_P:
+        value: 11734.30782289951
+        mp30: '11734.30782289950902563908436'
+    - label: weight_limit 1 W floor_bound_inside
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: false
+        orientation: vertical
+      inputs:
+        D_m: 0.37461705868262213
+        L_m: 1.1238511760478664
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+      quantities:
+        W_lb:
+          value: 1000.001
+          mp30: '1000.0010000000000191902279608'
+        C_v:
+          value: 11734.313688788174
+          mp30: '11734.3136887881745556532846727'
+        C_PL:
+          value: 0.0
+          mp30: '0.0'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 1.2290585914784191
+          mp30: '1.22905859147841905598033753953'
+        L_ft:
+          value: 3.6871757744352576
+          mp30: '3.68717577443525735006421219621'
+      C_P1:
+        value: 11734.313688788174
+        mp30: '11734.3136887881745556532846727'
+      C_P:
+        value: 11734.313688788174
+        mp30: '11734.3136887881745556532846727'
+    - label: weight_limit 1 W geometric_mean
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: false
+        orientation: vertical
+      inputs:
+        D_m: 2.1330022778760425
+        L_m: 6.399006833628127
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+      quantities:
+        W_lb:
+          value: 30331.501776206205
+          mp30: '30331.5017762062059935009636095'
+        C_v:
+          value: 84409.74341200391
+          mp30: '84409.7434120039040602205535167'
+        C_PL:
+          value: 0.0
+          mp30: '0.0'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 6.998038969409588
+          mp30: '6.99803896940958813280366988516'
+        L_ft:
+          value: 20.994116908228765
+          mp30: '20.9941169082287643984110096555'
+      C_P1:
+        value: 84409.74341200391
+        mp30: '84409.7434120039040602205535167'
+      C_P:
+        value: 84409.74341200391
+        mp30: '84409.7434120039040602205535167'
+    - label: weight_limit 1 W S_max
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: false
+        orientation: vertical
+      inputs:
+        D_m: 11.818548587566527
+        L_m: 35.45564576269958
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+      quantities:
+        W_lb:
+          value: 919999.9999999908
+          mp30: '919999.999999990860445033465079'
+        C_v:
+          value: 1036628.7347571662
+          mp30: '1036628.73475716627152818210988'
+        C_PL:
+          value: 0.0
+          mp30: '0.0'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 38.77476570723926
+          mp30: '38.7747657072392612192073811027'
+        L_ft:
+          value: 116.32429712171779
+          mp30: '116.324297121717789485564529792'
+      C_P1:
+        value: 1036628.7347571662
+        mp30: '1036628.73475716627152818210988'
+      C_P:
+        value: 1036628.7347571662
+        mp30: '1036628.73475716627152818210988'
+    - label: weight_limit 1 W below_floor
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: false
+        orientation: vertical
+      inputs:
+        D_m: 0.2604725269360234
+        L_m: 0.7814175808080702
+        t_shell_m: 0.03175
+      regime:
+        size: floor
+      quantities:
+        W_lb:
+          value: 500.0
+          mp30: '499.999999999999986711843802927'
+        C_v:
+          value: 11734.30782289951
+          mp30: '11734.30782289950902563908436'
+        C_PL:
+          value: 0.0
+          mp30: '0.0'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 0.854568657926586
+          mp30: '0.854568657926585982451310787849'
+        L_ft:
+          value: 2.563705973779758
+          mp30: '2.56370597377975794735393236355'
+      C_P1:
+        value: 11734.30782289951
+        mp30: '11734.30782289950902563908436'
+      C_P:
+        value: 11734.30782289951
+        mp30: '11734.30782289950902563908436'
+    - label: weight_limit 2 W S_min
+      options:
+        material: CarbonSteel
+        weight_limit: '2'
+        platforms_ladders: false
+        orientation: vertical
+      inputs:
+        D_m: 0.7838911606880551
+        L_m: 2.3516734820641654
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+      quantities:
+        W_lb:
+          value: 4200.0
+          mp30: '4200.00000000000015740636083435'
+        C_v:
+          value: 32773.1796074862
+          mp30: '32773.1796074862025897114170946'
+        C_PL:
+          value: 0.0
+          mp30: '0.0'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 2.571821393333514
+          mp30: '2.5718213933335140703231133397'
+        L_ft:
+          value: 7.715464180000542
+          mp30: '7.71546418000054257521573917435'
+      C_P1:
+        value: 32773.1796074862
+        mp30: '32773.1796074862025897114170946'
+      C_P:
+        value: 32773.1796074862
+        mp30: '32773.1796074862025897114170946'
+    - label: weight_limit 2 W floor_bound_inside
+      options:
+        material: CarbonSteel
+        weight_limit: '2'
+        platforms_ladders: false
+        orientation: vertical
+      inputs:
+        D_m: 0.7838915604134797
+        L_m: 2.351674681240439
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+      quantities:
+        W_lb:
+          value: 4200.0042
+          mp30: '4200.0042000000001694166625244'
+        C_v:
+          value: 32773.198151205404
+          mp30: '32773.1981512054016204008178078'
+        C_PL:
+          value: 0.0
+          mp30: '0.0'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 2.571822704768634
+          mp30: '2.57182270476863431000678428495'
+        L_ft:
+          value: 7.715468114305903
+          mp30: '7.71546811430590293002035285485'
+      C_P1:
+        value: 32773.198151205404
+        mp30: '32773.1981512054016204008178078'
+      C_P:
+        value: 32773.198151205404
+        mp30: '32773.1981512054016204008178078'
+    - label: weight_limit 2 W geometric_mean
+      options:
+        material: CarbonSteel
+        weight_limit: '2'
+        platforms_ladders: false
+        orientation: vertical
+      inputs:
+        D_m: 3.1251448059156735
+        L_m: 9.37543441774702
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+      quantities:
+        W_lb:
+          value: 64807.4069840786
+          mp30: '64807.4069840786059453642022466'
+        C_v:
+          value: 183070.72042705765
+          mp30: '183070.720427057635194865983272'
+        C_PL:
+          value: 0.0
+          mp30: '0.0'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 10.253099756941186
+          mp30: '10.2530997569411858647623051224'
+        L_ft:
+          value: 30.759299270823554
+          mp30: '30.7592992708235546803157221253'
+      C_P1:
+        value: 183070.72042705765
+        mp30: '183070.720427057635194865983272'
+      C_P:
+        value: 183070.72042705765
+        mp30: '183070.720427057635194865983272'
+    - label: weight_limit 2 W S_max
+      options:
+        material: CarbonSteel
+        weight_limit: '2'
+        platforms_ladders: false
+        orientation: vertical
+      inputs:
+        D_m: 12.322363612254824
+        L_m: 36.96709083676447
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+      quantities:
+        W_lb:
+          value: 999999.99999999
+          mp30: '999999.999999989932094470002537'
+        C_v:
+          value: 1442469.3623592732
+          mp30: '1442469.3623592733487004623202'
+        C_PL:
+          value: 0.0
+          mp30: '0.0'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 40.42770213994365
+          mp30: '40.4277021399436479849099385014'
+        L_ft:
+          value: 121.28310641983094
+          mp30: '121.28310641983093812678742902'
+      C_P1:
+        value: 1442469.3623592732
+        mp30: '1442469.3623592733487004623202'
+      C_P:
+        value: 1442469.3623592732
+        mp30: '1442469.3623592733487004623202'
+    - label: weight_limit 2 W below_floor
+      options:
+        material: CarbonSteel
+        weight_limit: '2'
+        platforms_ladders: false
+        orientation: vertical
+      inputs:
+        D_m: 0.5497564734023876
+        L_m: 1.649269420207163
+        t_shell_m: 0.03175
+      regime:
+        size: floor
+      quantities:
+        W_lb:
+          value: 2100.0
+          mp30: '2099.99999999999991693669390437'
+        C_v:
+          value: 32773.1796074862
+          mp30: '32773.1796074862018947352574246'
+        C_PL:
+          value: 0.0
+          mp30: '0.0'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 1.8036629704802745
+          mp30: '1.80366297048027443073311919606'
+        L_ft:
+          value: 5.410988911440823
+          mp30: '5.41098891144082329219935758818'
+      C_P1:
+        value: 32773.1796074862
+        mp30: '32773.1796074862018947352574246'
+      C_P:
+        value: 32773.1796074862
+        mp30: '32773.1796074862018947352574246'
+    - label: platforms L and D at their floor bounds
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 0.9144
+        L_m: 3.6576
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+        platforms.L: floor
+        platforms.D: floor
+      quantities:
+        W_lb:
+          value: 7178.740275382507
+          mp30: '7178.74027538250725508854458184'
+        C_v:
+          value: 34367.53906878492
+          mp30: '34367.5390687849218117175312084'
+        C_PL:
+          value: 4722.325453111617
+          mp30: '4722.32545311161735395505692985'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 3.0
+          mp30: '2.99999999999999996911190535164'
+        L_ft:
+          value: 12.0
+          mp30: '11.9999999999999998764476214065'
+      C_P1:
+        value: 39089.86452189654
+        mp30: '39089.8645218965391656725881382'
+      C_P:
+        value: 39089.86452189654
+        mp30: '39089.8645218965391656725881382'
+    - label: platforms floor bounds inside
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 0.9144009144
+        L_m: 3.6576036576
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+        platforms.L: '1'
+        platforms.D: '1'
+      quantities:
+        W_lb:
+          value: 7178.754391972672
+          mp30: '7178.75439197267198250658029208'
+        C_v:
+          value: 34367.57897217839
+          mp30: '34367.5789721783869771090433727'
+        C_PL:
+          value: 4722.332283673571
+          mp30: '4722.33228367357078531866299012'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 3.000003
+          mp30: '3.00000300000000013842707790766'
+        L_ft:
+          value: 12.000012
+          mp30: '12.0000120000000005537083116307'
+      C_P1:
+        value: 39089.911255851956
+        mp30: '39089.9112558519577624277063629'
+      C_P:
+        value: 39089.911255851956
+        mp30: '39089.9112558519577624277063629'
+    - label: platforms L and D floored
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 0.6096
+        L_m: 2.4384
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+        platforms.L: floor
+        platforms.D: floor
+      quantities:
+        W_lb:
+          value: 3244.083972320507
+          mp30: '3244.0839723205070196793058614'
+        C_v:
+          value: 21815.452781564014
+          mp30: '21815.4527815640143244504012648'
+        C_PL:
+          value: 4722.325453111617
+          mp30: '4722.32545311161735395505692985'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 2.0
+          mp30: '2.00000000000000010082340328617'
+        L_ft:
+          value: 8.0
+          mp30: '8.00000000000000040329361314468'
+      C_P1:
+        value: 26537.778234675632
+        mp30: '26537.7782346756316784054581946'
+      C_P:
+        value: 26537.778234675632
+        mp30: '26537.7782346756316784054581946'
+    - label: platforms piece 1
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 3.048
+        L_m: 9.144
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+        platforms.L: '1'
+        platforms.D: '1'
+      quantities:
+        W_lb:
+          value: 61663.023525027784
+          mp30: '61663.0235250277847823363902527'
+        C_v:
+          value: 136065.437600709
+          mp30: '136065.437600709009816114181559'
+        C_PL:
+          value: 21986.5430357291
+          mp30: '21986.5430357291000893082124654'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 10.0
+          mp30: '10.0000000000000001398706172756'
+        L_ft:
+          value: 30.0
+          mp30: '30.0000000000000004196118518268'
+      C_P1:
+        value: 158051.98063643812
+        mp30: '158051.980636438109905422394024'
+      C_P:
+        value: 158051.98063643812
+        mp30: '158051.980636438109905422394024'
+    - label: platforms piece 1 at its L end
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 3.048
+        L_m: 12.191999999987807
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+        platforms.L: '1'
+        platforms.D: '1'
+      quantities:
+        W_lb:
+          value: 77890.13497891756
+          mp30: '77890.1349789175516798783753573'
+        C_v:
+          value: 160037.28387371398
+          mp30: '160037.283873713983383077108753'
+        C_PL:
+          value: 26944.408044176907
+          mp30: '26944.4080441769082855391020447'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 10.0
+          mp30: '10.0000000000000001398706172756'
+        L_ft:
+          value: 39.999999999959996
+          mp30: '39.9999999999599975629416445644'
+      C_P1:
+        value: 186981.6919178909
+        mp30: '186981.691917890891668616210797'
+      C_P:
+        value: 186981.6919178909
+        mp30: '186981.691917890891668616210797'
+    - label: platforms piece 2 at its L start
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 3.048
+        L_m: 12.192000000012191
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+        platforms.L: '2'
+        platforms.D: '1'
+      quantities:
+        W_lb:
+          value: 77890.13497904738
+          mp30: '77890.134979047368839483334748'
+        C_v:
+          value: 160037.28387390068
+          mp30: '160037.283873900687192152337093'
+        C_PL:
+          value: 25621.75569720125
+          mp30: '25621.7556972012512824934190401'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 10.0
+          mp30: '10.0000000000000001398706172756'
+        L_ft:
+          value: 40.00000000004
+          mp30: '40.0000000000399977280809071567'
+      C_P1:
+        value: 185659.03957110195
+        mp30: '185659.039571101938474645756133'
+      C_P:
+        value: 185659.03957110195
+        mp30: '185659.039571101938474645756133'
+    - label: platforms piece 1 at D max
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 6.400799999993599
+        L_m: 9.144
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+        platforms.L: '1'
+        platforms.D: '1'
+      quantities:
+        W_lb:
+          value: 158618.8434335306
+          mp30: '158618.843433530593223553390836'
+        C_v:
+          value: 266360.5148683246
+          mp30: '266360.514868324617465597427329'
+        C_PL:
+          value: 38060.13641887894
+          mp30: '38060.1364188789383479881863248'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 20.999999999979
+          mp30: '20.9999999999789998861328406931'
+        L_ft:
+          value: 30.0
+          mp30: '30.0000000000000004196118518268'
+      C_P1:
+        value: 304420.65128720354
+        mp30: '304420.651287203555813585613653'
+      C_P:
+        value: 304420.65128720354
+        mp30: '304420.651287203555813585613653'
+    - label: platforms piece 2 at D and L max
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 7.315199999992685
+        L_m: 51.81599999994818
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+        platforms.L: '2'
+        platforms.D: '1'
+      quantities:
+        W_lb:
+          value: 732409.5044441212
+          mp30: '732409.50444412118321338560179'
+        C_v:
+          value: 862159.1494550108
+          mp30: '862159.149455010745288266572993'
+        C_PL:
+          value: 142254.58922270723
+          mp30: '142254.589222707220169063943557'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 23.999999999976
+          mp30: '23.9999999999760002861477026838'
+        L_ft:
+          value: 169.99999999982998
+          mp30: '169.999999999829995470444375883'
+      C_P1:
+        value: 1004413.738677718
+        mp30: '1004413.73867771796545733051655'
+      C_P:
+        value: 1004413.738677718
+        mp30: '1004413.73867771796545733051655'
+    - label: platforms L above max (refused)
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 3.048
+        L_m: 51.816000051816
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+        platforms.L: refused
+      refused: true
+    - label: design note A44 hand case (D 1 m, L 3 m)
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 1.0
+        L_m: 3.0
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+        platforms.L: floor
+        platforms.D: '1'
+      quantities:
+        W_lb:
+          value: 6777.489706801991
+          mp30: '6777.48970680199048061842615389'
+        C_v:
+          value: 33222.51243168939
+          mp30: '33222.5124316893948023014016636'
+        C_PL:
+          value: 5045.446066094271
+          mp30: '5045.44606609427150348556722519'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 3.2808398950131235
+          mp30: '3.28083989501312335958005249344'
+        L_ft:
+          value: 9.84251968503937
+          mp30: '9.84251968503937007874015748031'
+      C_P1:
+        value: 38267.958497783664
+        mp30: '38267.9584977836663057869688888'
+      C_P:
+        value: 38267.958497783664
+        mp30: '38267.9584977836663057869688888'
+  vessel.horizontal:
+    form: sslw-vessel-v1
+    cases:
+    - label: weight_limit 1 W S_min
+      options:
+        material: CarbonSteel
+        platforms_ladders: true
+        orientation: horizontal
+      inputs:
+        D_m: 0.3746168637594289
+        L_m: 1.1238505912782866
+        t_shell_m: 0.03175
+      regime:
+        size: floor
+      quantities:
+        W_lb:
+          value: 999.9999999999999
+          mp30: '999.999999999999912743688387071'
+        C_v:
+          value: 12249.91437485174
+          mp30: '12249.9143748517392898941993799'
+        C_PL:
+          value: 2090.7022754030845
+          mp30: '2090.70227540308449024851194351'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 1.2290579519666303
+          mp30: '1.22905795196663016824186984541'
+        L_ft:
+          value: 3.68717385589989
+          mp30: '3.68717385589989032260240995862'
+      C_P1:
+        value: 14340.616650254824
+        mp30: '14340.6166502548237801427113234'
+      C_P:
+        value: 14340.616650254824
+        mp30: '14340.6166502548237801427113234'
+    - label: weight_limit 1 W floor_bound_inside
+      options:
+        material: CarbonSteel
+        platforms_ladders: true
+        orientation: horizontal
+      inputs:
+        D_m: 0.37461705868262213
+        L_m: 1.1238511760478664
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+      quantities:
+        W_lb:
+          value: 1000.001
+          mp30: '1000.0010000000000191902279608'
+        C_v:
+          value: 12249.918853738931
+          mp30: '12249.9188537389305717488628419'
+        C_PL:
+          value: 2090.702496170997
+          mp30: '2090.70249617099723694681009318'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 1.2290585914784191
+          mp30: '1.22905859147841905598033753953'
+        L_ft:
+          value: 3.6871757744352576
+          mp30: '3.68717577443525735006421219621'
+      C_P1:
+        value: 14340.621349909929
+        mp30: '14340.6213499099278086956729351'
+      C_P:
+        value: 14340.621349909929
+        mp30: '14340.6213499099278086956729351'
+    - label: weight_limit 1 W geometric_mean
+      options:
+        material: CarbonSteel
+        platforms_ladders: true
+        orientation: horizontal
+      inputs:
+        D_m: 2.1330022778760425
+        L_m: 6.399006833628127
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+      quantities:
+        W_lb:
+          value: 30331.501776206205
+          mp30: '30331.5017762062059935009636095'
+        C_v:
+          value: 70639.92053371364
+          mp30: '70639.9205337136444206694494894'
+        C_PL:
+          value: 2975.732435088071
+          mp30: '2975.73243508807072152058955791'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 6.998038969409588
+          mp30: '6.99803896940958813280366988516'
+        L_ft:
+          value: 20.994116908228765
+          mp30: '20.9941169082287643984110096555'
+      C_P1:
+        value: 73615.65296880172
+        mp30: '73615.6529688017151421900390473'
+      C_P:
+        value: 73615.65296880172
+        mp30: '73615.6529688017151421900390473'
+    - label: weight_limit 1 W S_max
+      options:
+        material: CarbonSteel
+        platforms_ladders: true
+        orientation: horizontal
+      inputs:
+        D_m: 11.818548587566527
+        L_m: 35.45564576269958
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+      quantities:
+        W_lb:
+          value: 919999.9999999908
+          mp30: '919999.999999990860445033465079'
+        C_v:
+          value: 1117283.9135341914
+          mp30: '1117283.91353419139959010108609'
+        C_PL:
+          value: 4212.05999043703
+          mp30: '4212.05999043702989224198234369'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 38.77476570723926
+          mp30: '38.7747657072392612192073811027'
+        L_ft:
+          value: 116.32429712171779
+          mp30: '116.324297121717789485564529792'
+      C_P1:
+        value: 1121495.9735246284
+        mp30: '1121495.97352462842948234306843'
+      C_P:
+        value: 1121495.9735246284
+        mp30: '1121495.97352462842948234306843'
+    - label: weight_limit 1 W below_floor
+      options:
+        material: CarbonSteel
+        platforms_ladders: true
+        orientation: horizontal
+      inputs:
+        D_m: 0.2604725269360234
+        L_m: 0.7814175808080702
+        t_shell_m: 0.03175
+      regime:
+        size: floor
+      quantities:
+        W_lb:
+          value: 500.0
+          mp30: '499.999999999999986711843802927'
+        C_v:
+          value: 12249.91437485174
+          mp30: '12249.9143748517392898941993799'
+        C_PL:
+          value: 1942.0620651806466
+          mp30: '1942.06206518064664561451529856'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 0.854568657926586
+          mp30: '0.854568657926585982451310787849'
+        L_ft:
+          value: 2.563705973779758
+          mp30: '2.56370597377975794735393236355'
+      C_P1:
+        value: 14191.976440032386
+        mp30: '14191.9764400323859355087146784'
+      C_P:
+        value: 14191.976440032386
+        mp30: '14191.9764400323859355087146784'
+  column.trays:
+    form: sslw-trays-v1
+    cases:
+    - label: D_ft S_min
+      options:
+        tray_type: Sieve
+        tray_material: CarbonSteel
+      inputs:
+        D_m: 0.6096
+        N_act: 8
+      regime:
+        size: units:1
+      quantities:
+        D_ft:
+          value: 2.0
+          mp30: '2.00000000000000010082340328617'
+        F_TM:
+          value: 1.0
+          mp30: '1.0'
+        C_t:
+          value: 662.6641467948056
+          mp30: '662.664146794805526651699323065'
+        F_NT:
+          value: 1.6264545485996538
+          mp30: '1.62645454859965372382686899304'
+        F_TT:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 8622.344925986561
+        mp30: '8622.34492598656075896201330261'
+      C_P:
+        value: 8622.344925986561
+        mp30: '8622.34492598656075896201330261'
+    - label: D_ft floor_bound_inside
+      options:
+        tray_type: Sieve
+        tray_material: CarbonSteel
+      inputs:
+        D_m: 0.6096006096
+        N_act: 8
+      regime:
+        size: units:1
+      quantities:
+        D_ft:
+          value: 2.000002
+          mp30: '2.00000199999999984945378583495'
+        F_TM:
+          value: 1.0
+          mp30: '1.0'
+        C_t:
+          value: 662.6643772694358
+          mp30: '662.664377269435832453788564547'
+        F_NT:
+          value: 1.6264545485996538
+          mp30: '1.62645454859965372382686899304'
+        F_TT:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 8622.347924838647
+        mp30: '8622.34792483864714052528646426'
+      C_P:
+        value: 8622.347924838647
+        mp30: '8622.34792483864714052528646426'
+    - label: D_ft geometric_mean
+      options:
+        tray_type: Sieve
+        tray_material: CarbonSteel
+      inputs:
+        D_m: 1.7242091752452775
+        N_act: 8
+      regime:
+        size: units:1
+      quantities:
+        D_ft:
+          value: 5.656854249492381
+          mp30: '5.65685424949238026019606770105'
+        F_TM:
+          value: 1.0
+          mp30: '1.0'
+        C_t:
+          value: 1251.6215754039902
+          mp30: '1251.62157540399022765914934422'
+        F_NT:
+          value: 1.6264545485996538
+          mp30: '1.62645454859965372382686899304'
+        F_TT:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 16285.644835530275
+        mp30: '16285.6448355302750530946710841'
+      C_P:
+        value: 16285.644835530275
+        mp30: '16285.6448355302750530946710841'
+    - label: D_ft S_max
+      options:
+        tray_type: Sieve
+        tray_material: CarbonSteel
+      inputs:
+        D_m: 4.876799999999951
+        N_act: 8
+      regime:
+        size: units:1
+      quantities:
+        D_ft:
+          value: 15.99999999999984
+          mp30: '15.9999999999998405381715979859'
+        F_TM:
+          value: 1.0
+          mp30: '1.0'
+        C_t:
+          value: 7561.8284312578235
+          mp30: '7561.82843125782316687544851962'
+        F_NT:
+          value: 1.6264545485996538
+          mp30: '1.62645454859965372382686899304'
+        F_TT:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 98391.76198199576
+        mp30: '98391.7619819957634247038471171'
+      C_P:
+        value: 98391.76198199576
+        mp30: '98391.7619819957634247038471171'
+    - label: D_ft below_floor
+      options:
+        tray_type: Sieve
+        tray_material: CarbonSteel
+      inputs:
+        D_m: 0.3048
+        N_act: 8
+      regime:
+        size: floor
+      quantities:
+        D_ft:
+          value: 1.0
+          mp30: '1.00000000000000005041170164308'
+        F_TM:
+          value: 1.0
+          mp30: '1.0'
+        C_t:
+          value: 662.6641467948056
+          mp30: '662.664146794805515033083042806'
+        F_NT:
+          value: 1.6264545485996538
+          mp30: '1.62645454859965372382686899304'
+        F_TT:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 8622.344925986561
+        mp30: '8622.34492598656060778480292292'
+      C_P:
+        value: 8622.344925986561
+        mp30: '8622.34492598656060778480292292'
+  pump:
+    form: sslw-pump-v1
+    cases:
+    - label: Centrifugal S_min
+      options:
+        pump_type: Centrifugal
+        material: StainlessSteel
+        pump_type_factor: '1.4'
+      inputs:
+        vol_flow_m3s: 0.002523607856
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: floor
+      quantities:
+        size:
+          value: 400.0
+          mp30: '399.999999999999972548668926766'
+        Q_gpm_per_unit:
+          value: 40.0
+          mp30: '39.9999999999999969751256581254'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 2904.2352747965647
+          mp30: '2904.23527479656470116365641085'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 2.0
+          mp30: '2.0'
+      C_P1:
+        value: 14742.31103957647
+        mp30: '14742.311039576470564282519852'
+      C_P:
+        value: 14742.31103957647
+        mp30: '14742.311039576470564282519852'
+    - label: Centrifugal floor_bound_inside
+      options:
+        pump_type: Centrifugal
+        material: StainlessSteel
+        pump_type_factor: '1.4'
+      inputs:
+        vol_flow_m3s: 0.002523610379607856
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: units:1
+      quantities:
+        size:
+          value: 400.0004
+          mp30: '400.000399999999989434028128229'
+        Q_gpm_per_unit:
+          value: 40.00004
+          mp30: '40.0000399999999986636612985305'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 2904.2353329221096
+          mp30: '2904.23533292210979314589811628'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 2.0
+          mp30: '2.0'
+      C_P1:
+        value: 14742.31133463
+        mp30: '14742.3113346299989499791782552'
+      C_P:
+        value: 14742.31133463
+        mp30: '14742.3113346299989499791782552'
+    - label: Centrifugal geometric_mean
+      options:
+        pump_type: Centrifugal
+        material: StainlessSteel
+        pump_type_factor: '1.4'
+      inputs:
+        vol_flow_m3s: 0.039901743730271104
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: units:1
+      quantities:
+        size:
+          value: 6324.555320336759
+          mp30: '6324.55532033675904315996096813'
+        Q_gpm_per_unit:
+          value: 632.4555320336759
+          mp30: '632.455532033675899892898813567'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 4558.465989760077
+          mp30: '4558.46598976007642909155872134'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 2.0
+          mp30: '2.0'
+      C_P1:
+        value: 23139.42126781765
+        mp30: '23139.4212678176468481805011235'
+      C_P:
+        value: 23139.42126781765
+        mp30: '23139.4212678176468481805011235'
+    - label: Centrifugal S_max
+      options:
+        pump_type: Centrifugal
+        material: StainlessSteel
+        pump_type_factor: '1.4'
+      inputs:
+        vol_flow_m3s: 0.6309019639999937
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: units:1
+      quantities:
+        size:
+          value: 99999.999999999
+          mp30: '99999.9999999989947600340655969'
+        Q_gpm_per_unit:
+          value: 9999.9999999999
+          mp30: '9999.99999999989940606809792188'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 15782.909572842413
+          mp30: '15782.9095728424122906552126514'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 2.0
+          mp30: '2.0'
+      C_P1:
+        value: 80116.29224793102
+        mp30: '80116.2922479310268561178307177'
+      C_P:
+        value: 80116.29224793102
+        mp30: '80116.2922479310268561178307177'
+    - label: Centrifugal below_floor
+      options:
+        pump_type: Centrifugal
+        material: StainlessSteel
+        pump_type_factor: '1.4'
+      inputs:
+        vol_flow_m3s: 0.001261803928
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: floor
+      quantities:
+        size:
+          value: 200.0
+          mp30: '199.999999999999986274334463383'
+        Q_gpm_per_unit:
+          value: 20.0
+          mp30: '19.9999999999999984875628290627'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 2904.2352747965647
+          mp30: '2904.23527479656470116365641085'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 2.0
+          mp30: '2.0'
+      C_P1:
+        value: 14742.31103957647
+        mp30: '14742.311039576470564282519852'
+      C_P:
+        value: 14742.31103957647
+        mp30: '14742.311039576470564282519852'
+    - label: Centrifugal above_S_max
+      options:
+        pump_type: Centrifugal
+        material: StainlessSteel
+        pump_type_factor: '1.4'
+      inputs:
+        vol_flow_m3s: 1.57725491
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: units:3
+      quantities:
+        size:
+          value: 83333.33333333333
+          mp30: '83333.3333333333315095624442522'
+        Q_gpm_per_unit:
+          value: 8333.333333333334
+          mp30: '8333.33333333333309267682056038'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 14189.615386243668
+          mp30: '14189.6153862436682065134440358'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 2.0
+          mp30: '2.0'
+      C_P1:
+        value: 72028.50449869882
+        mp30: '72028.5044986988233833169748008'
+      C_P:
+        value: 216085.51349609648
+        mp30: '216085.513496096470149950924402'
+    - label: ExternalGear S_min
+      options:
+        pump_type: ExternalGear
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.000630901964
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: floor
+      quantities:
+        size:
+          value: 10.0
+          mp30: '9.99999999999999924378141453135'
+        Q_gpm_per_unit:
+          value: 10.0
+          mp30: '9.99999999999999924378141453135'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 4056.1058192263445
+          mp30: '4056.10581922634429979511852277'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 10294.684820371433
+        mp30: '10294.6848203714322329825343218'
+      C_P:
+        value: 10294.684820371433
+        mp30: '10294.6848203714322329825343218'
+    - label: ExternalGear floor_bound_inside
+      options:
+        pump_type: ExternalGear
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.000630902594901964
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: units:1
+      quantities:
+        size:
+          value: 10.00001
+          mp30: '10.0000099999999996659153246326'
+        Q_gpm_per_unit:
+          value: 10.00001
+          mp30: '10.0000099999999996659153246326'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 4056.107168329204
+          mp30: '4056.10716832920366373843675314'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 10294.688244490364
+        mp30: '10294.6882444903646287777582567'
+      C_P:
+        value: 10294.688244490364
+        mp30: '10294.6882444903646287777582567'
+    - label: ExternalGear geometric_mean
+      options:
+        pump_type: ExternalGear
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.005985261559540665
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: units:1
+      quantities:
+        size:
+          value: 94.86832980505137
+          mp30: '94.8683298050513767351565254272'
+        Q_gpm_per_unit:
+          value: 94.86832980505137
+          mp30: '94.8683298050513767351565254272'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 9933.089018011799
+          mp30: '9933.08901801179866166154554988'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 25210.885832517255
+        mp30: '25210.8858325172554864506232231'
+      C_P:
+        value: 25210.885832517255
+        mp30: '25210.8858325172554864506232231'
+    - label: ExternalGear S_max
+      options:
+        pump_type: ExternalGear
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.056781176759999434
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: units:1
+      quantities:
+        size:
+          value: 899.999999999991
+          mp30: '899.999999999991030133748885262'
+        Q_gpm_per_unit:
+          value: 899.999999999991
+          mp30: '899.999999999991030133748885262'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 32659.384426538887
+          mp30: '32659.384426538886204828757726'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 82891.83864603778
+        mp30: '82891.8386460377822457582683401'
+      C_P:
+        value: 82891.83864603778
+        mp30: '82891.8386460377822457582683401'
+    - label: ExternalGear below_floor
+      options:
+        pump_type: ExternalGear
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.000315450982
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: floor
+      quantities:
+        size:
+          value: 5.0
+          mp30: '4.99999999999999962189070726567'
+        Q_gpm_per_unit:
+          value: 5.0
+          mp30: '4.99999999999999962189070726567'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 4056.1058192263445
+          mp30: '4056.10581922634429979511852277'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 10294.684820371433
+        mp30: '10294.6848203714322329825343218'
+      C_P:
+        value: 10294.684820371433
+        mp30: '10294.6848203714322329825343218'
+    - label: ExternalGear above_S_max
+      options:
+        pump_type: ExternalGear
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.1419529419
+        head_m: 30.48
+        power_W: 1000.0
+      regime:
+        size: units:3
+      quantities:
+        size:
+          value: 750.0
+          mp30: '749.999999999999949011924351384'
+        Q_gpm_per_unit:
+          value: 750.0
+          mp30: '749.999999999999949011924351384'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 29332.892734883364
+          mp30: '29332.8927348833655311489591412'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 74448.96633219128
+        mp30: '74448.9663321912830739821298'
+      C_P:
+        value: 223346.89899657384
+        mp30: '223346.8989965738492219463894'
+    - label: Reciprocating S_min
+      options:
+        pump_type: Reciprocating
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.000630901964
+        head_m: 30.48
+        power_W: 745.6998715822702
+      regime:
+        size: units:1
+      quantities:
+        size:
+          value: 1.0
+          mp30: '1.0000000000000000374510277608'
+        Q_gpm_per_unit:
+          value: 10.0
+          mp30: '9.99999999999999924378141453135'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 2465.8700853581254
+          mp30: '2465.87008535812548860438156356'
+        F_M:
+          value: 2.2
+          mp30: '2.2'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 6884.408867751112
+        mp30: '6884.40886775111177021527847694'
+      C_P:
+        value: 6884.408867751112
+        mp30: '6884.40886775111177021527847694'
+    - label: Reciprocating floor_bound_inside
+      options:
+        pump_type: Reciprocating
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.000630901964
+        head_m: 30.48
+        power_W: 745.7006172821418
+      regime:
+        size: units:1
+      quantities:
+        size:
+          value: 1.000001
+          mp30: '1.00000100000000002430793757209'
+        Q_gpm_per_unit:
+          value: 10.0
+          mp30: '9.99999999999999924378141453135'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 2465.870750797749
+          mp30: '2465.87075079774943970193527118'
+        F_M:
+          value: 2.2
+          mp30: '2.2'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 6884.410725577473
+        mp30: '6884.41072557747305500540304137'
+      C_P:
+        value: 6884.410725577473
+        mp30: '6884.41072557747305500540304137'
+    - label: Reciprocating geometric_mean
+      options:
+        pump_type: Reciprocating
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.000630901964
+        head_m: 30.48
+        power_W: 10545.78871851522
+      regime:
+        size: units:1
+      quantities:
+        size:
+          value: 14.142135623730951
+          mp30: '14.142135623730951433222946858'
+        Q_gpm_per_unit:
+          value: 10.0
+          mp30: '9.99999999999999924378141453135'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 8076.177885558172
+          mp30: '8076.17788555817211615955818168'
+        F_M:
+          value: 2.2
+          mp30: '2.2'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 22547.70475663449
+        mp30: '22547.7047566344906796332842636'
+      C_P:
+        value: 22547.70475663449
+        mp30: '22547.7047566344906796332842636'
+    - label: Reciprocating S_max
+      options:
+        pump_type: Reciprocating
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.000630901964
+        head_m: 30.48
+        power_W: 149139.97431645254
+      regime:
+        size: units:1
+      quantities:
+        size:
+          value: 199.99999999999798
+          mp30: '199.999999999997986526037166251'
+        Q_gpm_per_unit:
+          value: 10.0
+          mp30: '9.99999999999999924378141453135'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 67913.63463301395
+          mp30: '67913.6346330139432368470798839'
+        F_M:
+          value: 2.2
+          mp30: '2.2'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 189606.59415308462
+        mp30: '189606.594153084613097796415919'
+      C_P:
+        value: 189606.59415308462
+        mp30: '189606.594153084613097796415919'
+    - label: Reciprocating below_floor
+      options:
+        pump_type: Reciprocating
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.000630901964
+        head_m: 30.48
+        power_W: 372.8499357911351
+      regime:
+        size: floor
+      quantities:
+        size:
+          value: 0.5
+          mp30: '0.500000000000000018725513880402'
+        Q_gpm_per_unit:
+          value: 10.0
+          mp30: '9.99999999999999924378141453135'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 2465.8700853581254
+          mp30: '2465.87008535812546368298083948'
+        F_M:
+          value: 2.2
+          mp30: '2.2'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 6884.408867751112
+        mp30: '6884.40886775111170063776376503'
+      C_P:
+        value: 6884.408867751112
+        mp30: '6884.40886775111170063776376503'
+    - label: Reciprocating above_S_max
+      options:
+        pump_type: Reciprocating
+        material: StainlessSteel
+      inputs:
+        vol_flow_m3s: 0.000630901964
+        head_m: 30.48
+        power_W: 372849.9357911351
+      regime:
+        size: units:3
+      quantities:
+        size:
+          value: 166.66666666666669
+          mp30: '166.666666666666673518330869524'
+        Q_gpm_per_unit:
+          value: 3.333333333333333
+          mp30: '3.33333333333333308126047151045'
+        H_ft:
+          value: 100.0
+          mp30: '100.000000000000001398706172756'
+        C_B_CE394:
+          value: 56910.351214824426
+          mp30: '56910.3512148244290885123634787'
+        F_M:
+          value: 2.2
+          mp30: '2.2'
+        F_T:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 158886.76735103267
+        mp30: '158886.767351032670044070050321'
+      C_P:
+        value: 476660.302053098
+        mp30: '476660.302053098010132210150963'
+  motor.electric:
+    form: sslw-motor-v1
+    cases:
+    - label: W_m S_min
+      options:
+        motor_type: Open
+      inputs:
+        shaft_power_W: 590.9537787171283
+        N: 1
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 0.7924820711893211
+          mp30: '0.792482071189321179200515916095'
+        eta_m:
+          value: 0.7924820711893211
+          mp30: '0.79248207118932113765981560949'
+        W_m_hp:
+          value: 1.0
+          mp30: '1.00000000000000005241847332175'
+        C_B_CE394:
+          value: 338.96606529661284
+          mp30: '338.9660652966128351096647269'
+        F_MT:
+          value: 1.0
+          mp30: '1.0'
+        electricity_W:
+          value: 745.6998715822702
+          mp30: '745.69987158227025908844882457'
+      C_P1:
+        value: 430.15998134087926
+        mp30: '430.159981340879232372670973223'
+      C_P:
+        value: 430.15998134087926
+        mp30: '430.159981340879232372670973223'
+    - label: W_m floor_bound_inside
+      options:
+        motor_type: Open
+      inputs:
+        shaft_power_W: 590.9543951425915
+        N: 1
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 0.7924828978294838
+          mp30: '0.792482897829483833131768905481'
+        eta_m:
+          value: 0.7924821053473785
+          mp30: '0.79248210534737847509316601976'
+        W_m_hp:
+          value: 1.000001
+          mp30: '1.00000100000000001345156908986'
+        C_B_CE394:
+          value: 338.96610984014217
+          mp30: '338.966109840142180613075104483'
+        F_MT:
+          value: 1.0
+          mp30: '1.0'
+        electricity_W:
+          value: 745.7006172821418
+          mp30: '745.700617282141812301053342886'
+      C_P1:
+        value: 430.16003786820073
+        mp30: '430.16003786820073681862322904'
+      C_P:
+        value: 430.16003786820073
+        mp30: '430.16003786820073681862322904'
+    - label: W_m geometric_mean
+      options:
+        motor_type: Open
+      inputs:
+        shaft_power_W: 17409.89464384707
+        N: 1
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 23.347053294921082
+          mp30: '23.3470532949210827979744441798'
+        eta_m:
+          value: 0.882435669493319
+          mp30: '0.882435669493318930184609572873'
+        W_m_hp:
+          value: 26.457513110645905
+          mp30: '26.4575131106459056052564486976'
+        C_B_CE394:
+          value: 1676.720485305242
+          mp30: '1676.72048530524189024928143785'
+        F_MT:
+          value: 1.0
+          mp30: '1.0'
+        electricity_W:
+          value: 19729.364128994883
+          mp30: '19729.3641289948825161065865146'
+      C_P1:
+        value: 2127.817874752845
+        mp30: '2127.8178747528450383874129922'
+      C_P:
+        value: 2127.817874752845
+        mp30: '2127.8178747528450383874129922'
+    - label: W_m S_max
+      options:
+        motor_type: Open
+      inputs:
+        shaft_power_W: 485596.5538262081
+        N: 1
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 651.1957053121661
+          mp30: '651.19570531216605691519620202'
+        eta_m:
+          value: 0.9302795790173893
+          mp30: '0.930279579017389385431752262143'
+        W_m_hp:
+          value: 699.999999999993
+          mp30: '699.999999999992999000324976781'
+        C_B_CE394:
+          value: 35366.65806973149
+          mp30: '35366.658069731489560894839957'
+        F_MT:
+          value: 1.0
+          mp30: '1.0'
+        electricity_W:
+          value: 521989.9101075839
+          mp30: '521989.91010758393335544138767'
+      C_P1:
+        value: 44881.54577377093
+        mp30: '44881.5457737709258386990354784'
+      C_P:
+        value: 44881.54577377093
+        mp30: '44881.5457737709258386990354784'
+    - label: W_m below_floor
+      options:
+        motor_type: Open
+      inputs:
+        shaft_power_W: 286.2709170953527
+        N: 1
+      regime:
+        size: floor
+      quantities:
+        W_hp_per_unit:
+          value: 0.38389562343349487
+          mp30: '0.383895623433494845224765926585'
+        eta_m:
+          value: 0.7677912468669897
+          mp30: '0.767791246866989758728174575882'
+        W_m_hp:
+          value: 0.49999999999999994
+          mp30: '0.499999999999999955535672618484'
+        C_B_CE394:
+          value: 338.96606529661284
+          mp30: '338.966065296612832774760854357'
+        F_MT:
+          value: 1.0
+          mp30: '1.0'
+        electricity_W:
+          value: 372.84993579113507
+          mp30: '372.849935791135076842956781612'
+      C_P1:
+        value: 430.15998134087926
+        mp30: '430.159981340879229409594992839'
+      C_P:
+        value: 430.15998134087926
+        mp30: '430.159981340879229409594992839'
+    - label: W_hp 10 hp (design note eta_m)
+      options:
+        motor_type: Open
+      inputs:
+        shaft_power_W: 7456.998715822702
+        N: 1
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 10.0
+          mp30: '10.0000000000000000695971562463'
+        eta_m:
+          value: 0.8638030099054393
+          mp30: '0.863803009905439373104634394689'
+        W_m_hp:
+          value: 11.576713539230086
+          mp30: '11.5767135392300859883028421734'
+        C_B_CE394:
+          value: 862.4177938684544
+          mp30: '862.417793868454380980005408277'
+        F_MT:
+          value: 1.0
+          mp30: '1.0'
+        electricity_W:
+          value: 8632.753799548604
+          mp30: '8632.75379954860410016081771663'
+      C_P1:
+        value: 1094.4388247061604
+        mp30: '1094.43882470616038195432158411'
+      C_P:
+        value: 1094.4388247061604
+        mp30: '1094.43882470616038195432158411'
+  compressor:
+    form: sslw-compressor-v1
+    cases:
+    - label: Centrifugal W_hp S_min
+      options:
+        compressor_type: Centrifugal
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 149139.97431645406
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 200.00000000000003
+          mp30: '200.000000000000016027772950291'
+        C_B:
+          value: 135761.35670130342
+          mp30: '135761.356701303414759629403875'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 339403.39175325853
+        mp30: '339403.391753258536899073509687'
+      C_P:
+        value: 339403.39175325853
+        mp30: '339403.391753258536899073509687'
+    - label: Centrifugal W_hp floor_bound_inside
+      options:
+        compressor_type: Centrifugal
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 149140.12345642835
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 200.00019999999998
+          mp30: '200.000199999999987786452718158'
+        C_B:
+          value: 135761.4653103779
+          mp30: '135761.465310377899561844032784'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 339403.66327594477
+        mp30: '339403.663275944748904610081961'
+      C_P:
+        value: 339403.66327594477
+        mp30: '339403.663275944748904610081961'
+    - label: Centrifugal W_hp geometric_mean
+      options:
+        compressor_type: Centrifugal
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 1826584.186635504
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 2449.489742783178
+          mp30: '2449.48974278317808592817004944'
+        C_B:
+          value: 1007424.8816600301
+          mp30: '1007424.88166003006903510969838'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 2518562.204150075
+        mp30: '2518562.20415007517258777424595'
+      C_P:
+        value: 2518562.204150075
+        mp30: '2518562.20415007517258777424595'
+    - label: Centrifugal W_hp S_max
+      options:
+        compressor_type: Centrifugal
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 22370996.14746788
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 29999.999999999698
+          mp30: '29999.9999999996980569633340063'
+        C_B:
+          value: 7475653.726860359
+          mp30: '7475653.72686035932132764898455'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 18689134.3171509
+        mp30: '18689134.3171508983033191224614'
+      C_P:
+        value: 18689134.3171509
+        mp30: '18689134.3171508983033191224614'
+    - label: Centrifugal W_hp below_floor
+      options:
+        compressor_type: Centrifugal
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 74569.98715822703
+      regime:
+        size: floor
+      quantities:
+        W_hp_per_unit:
+          value: 100.00000000000001
+          mp30: '100.000000000000008013886475145'
+        C_B:
+          value: 135761.35670130342
+          mp30: '135761.356701303406055820601347'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 339403.39175325853
+        mp30: '339403.391753258515139551503368'
+      C_P:
+        value: 339403.39175325853
+        mp30: '339403.391753258515139551503368'
+    - label: Centrifugal W_hp above_S_max
+      options:
+        compressor_type: Centrifugal
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 55927490.36867027
+      regime:
+        size: units:3
+      quantities:
+        W_hp_per_unit:
+          value: 25000.0
+          mp30: '25000.0000000000014960961848403'
+        C_B:
+          value: 6461066.035246189
+          mp30: '6461066.03524618915163797019749'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 16152665.088115472
+        mp30: '16152665.0881154728790949254937'
+      C_P:
+        value: 48457995.26434642
+        mp30: '48457995.2643464186372847764812'
+    - label: Reciprocating W_hp S_min
+      options:
+        compressor_type: Reciprocating
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 74569.98715822703
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 100.00000000000001
+          mp30: '100.000000000000008013886475145'
+        C_B:
+          value: 114718.45048249474
+          mp30: '114718.450482494732105156445769'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 286796.12620623683
+        mp30: '286796.126206236830262891114422'
+      C_P:
+        value: 286796.12620623683
+        mp30: '286796.126206236830262891114422'
+    - label: Reciprocating W_hp floor_bound_inside
+      options:
+        compressor_type: Reciprocating
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 74570.06172821418
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 100.00009999999999
+          mp30: '100.000099999999993893226359079'
+        C_B:
+          value: 114718.54225724592
+          mp30: '114718.542257245927669367769386'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 286796.35564311483
+        mp30: '286796.355643114819173419423466'
+      C_P:
+        value: 286796.35564311483
+        mp30: '286796.355643114819173419423466'
+    - label: Reciprocating W_hp geometric_mean
+      options:
+        compressor_type: Reciprocating
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 1054578.8718515218
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 1414.2135623730949
+          mp30: '1414.21356237309491890623736352'
+        C_B:
+          value: 955092.1389737393
+          mp30: '955092.138973739373925803408528'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 2387730.3474343484
+        mp30: '2387730.34743434843481450852132'
+      C_P:
+        value: 2387730.3474343484
+        mp30: '2387730.34743434843481450852132'
+    - label: Reciprocating W_hp S_max
+      options:
+        compressor_type: Reciprocating
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 14913997.431645256
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 19999.9999999998
+          mp30: '19999.9999999998003698744161347'
+        C_B:
+          value: 7951650.23666896
+          mp30: '7951650.2366689599069292085257'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 19879125.5916724
+        mp30: '19879125.5916723997673230213143'
+      C_P:
+        value: 19879125.5916724
+        mp30: '19879125.5916723997673230213143'
+    - label: Reciprocating W_hp below_floor
+      options:
+        compressor_type: Reciprocating
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 37284.993579113514
+      regime:
+        size: floor
+      quantities:
+        W_hp_per_unit:
+          value: 50.00000000000001
+          mp30: '50.0000000000000040069432375727'
+        C_B:
+          value: 114718.45048249472
+          mp30: '114718.450482494724750431335598'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 286796.12620623683
+        mp30: '286796.126206236811876078338996'
+      C_P:
+        value: 286796.12620623683
+        mp30: '286796.126206236811876078338996'
+    - label: Reciprocating W_hp above_S_max
+      options:
+        compressor_type: Reciprocating
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 37284993.57911351
+      regime:
+        size: units:3
+      quantities:
+        W_hp_per_unit:
+          value: 16666.666666666668
+          mp30: '16666.6666666666676640641232269'
+        C_B:
+          value: 6872460.81017669
+          mp30: '6872460.81017668972736232310408'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 17181152.025441725
+        mp30: '17181152.0254417243184058077602'
+      C_P:
+        value: 51543456.07632517
+        mp30: '51543456.0763251729552174232806'
+    - label: Screw W_hp S_min
+      options:
+        compressor_type: Screw
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 7456.998715822702
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 10.0
+          mp30: '10.0000000000000000695971562463'
+        C_B:
+          value: 17882.223232419077
+          mp30: '17882.2232324190770985454032742'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 44705.55808104769
+        mp30: '44705.5580810476927463635081855'
+      C_P:
+        value: 44705.55808104769
+        mp30: '44705.5580810476927463635081855'
+    - label: Screw W_hp floor_bound_inside
+      options:
+        compressor_type: Screw
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 7457.006172821418
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 10.00001
+          mp30: '10.0000099999999996332531329974'
+        C_B:
+          value: 17882.236184511577
+          mp30: '17882.2361845115783290878529573'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 44705.590461278945
+        mp30: '44705.5904612789458227196323934'
+      C_P:
+        value: 44705.590461278945
+        mp30: '44705.5904612789458227196323934'
+    - label: Screw W_hp geometric_mean
+      options:
+        compressor_type: Screw
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 64579.50323890396
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 86.60254037844386
+          mp30: '86.6025403784438662514513560446'
+        C_B:
+          value: 85403.35828405616
+          mp30: '85403.3582840561509203442243439'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 213508.39571014038
+        mp30: '213508.39571014037730086056086'
+      C_P:
+        value: 213508.39571014038
+        mp30: '213508.39571014037730086056086'
+    - label: Screw W_hp S_max
+      options:
+        compressor_type: Screw
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 559274.9036866971
+      regime:
+        size: units:1
+      quantities:
+        W_hp_per_unit:
+          value: 749.9999999999926
+          mp30: '749.999999999992576316497859945'
+        C_B:
+          value: 407876.2193826011
+          mp30: '407876.219382601114710069681361'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 1019690.5484565027
+        mp30: '1019690.5484565027867751742034'
+      C_P:
+        value: 1019690.5484565027
+        mp30: '1019690.5484565027867751742034'
+    - label: Screw W_hp below_floor
+      options:
+        compressor_type: Screw
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 3728.499357911351
+      regime:
+        size: floor
+      quantities:
+        W_hp_per_unit:
+          value: 5.0
+          mp30: '5.00000000000000003479857812313'
+        C_B:
+          value: 17882.223232419077
+          mp30: '17882.2232324190770084025102917'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 44705.55808104769
+        mp30: '44705.5580810476925210062757292'
+      C_P:
+        value: 44705.55808104769
+        mp30: '44705.5580810476925210062757292'
+    - label: Screw W_hp above_S_max
+      options:
+        compressor_type: Screw
+        drive_type: ElectricMotor
+        material: StainlessSteel
+      inputs:
+        power_W: 1398187.2592167566
+      regime:
+        size: units:3
+      quantities:
+        W_hp_per_unit:
+          value: 625.0
+          mp30: '624.999999999999954140794947817'
+        C_B:
+          value: 357418.8133866157
+          mp30: '357418.813386615739863677754246'
+        F_D:
+          value: 1.0
+          mp30: '1.0'
+        F_M:
+          value: 2.5
+          mp30: '2.5'
+      C_P1:
+        value: 893547.0334665393
+        mp30: '893547.033466539349659194385614'
+      C_P:
+        value: 2680641.100399618
+        mp30: '2680641.10039961804897758315684'
+  turbine:
+    form: sslw-turbine-v1
+    cases:
+    - label: W_hp 10 hp
+      options: {}
+      inputs:
+        power_W: -7456.998715822702
+      regime: {}
+      quantities:
+        W_hp:
+          value: 10.0
+          mp30: '10.0000000000000000695971562463'
+      C_P1:
+        value: 3421.9674138836745
+        mp30: '3421.96741388367425344542982374'
+      C_P:
+        value: 3421.9674138836745
+        mp30: '3421.96741388367425344542982374'
+    - label: W_hp 100 hp
+      options: {}
+      inputs:
+        power_W: -74569.98715822703
+      regime: {}
+      quantities:
+        W_hp:
+          value: 100.00000000000001
+          mp30: '100.000000000000008013886475145'
+      C_P1:
+        value: 22094.077323927777
+        mp30: '22094.0773239277777280492451521'
+      C_P:
+        value: 22094.077323927777
+        mp30: '22094.0773239277777280492451521'
+    - label: W_hp 1000 hp
+      options: {}
+      inputs:
+        power_W: -745699.8715822703
+      regime: {}
+      quantities:
+        W_hp:
+          value: 1000.0
+          mp30: '1000.00000000000004110998521714'
+      C_P1:
+        value: 142651.34460812653
+        mp30: '142651.344608126537772315818674'
+      C_P:
+        value: 142651.34460812653
+        mp30: '142651.344608126537772315818674'
+p_sizes:
+  p1_th_c1:
+    state_sha256: a23b2407ff55ea7c4056d39f87be504592e4759ea13fdc04f4273eb304ef5c3d
+    items:
+    - item: P
+      entry: pump
+      options:
+        pump_type: Centrifugal
+        material: StainlessSteel
+        pump_type_factor: '1.4'
+      inputs:
+        vol_flow_m3s: 1.8194061658708818e-05
+        head_m: 307.9210987223914
+        power_W: 72.48740658841477
+      regime:
+        size: floor
+      quantities:
+        size:
+          value: 9.166003639338879
+          mp30: '9.1660036393388792604078554963'
+        Q_gpm_per_unit:
+          value: 0.2883817565467084
+          mp30: '0.288381756546708387898934855971'
+        H_ft:
+          value: 1010.2398252046961
+          mp30: '1010.23982520469612066233038702'
+        C_B_CE394:
+          value: 2904.2352747965647
+          mp30: '2904.23527479656470116365641085'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 2.0
+          mp30: '2.0'
+      C_P1:
+        value: 14742.31103957647
+        mp30: '14742.311039576470564282519852'
+      C_P:
+        value: 14742.31103957647
+        mp30: '14742.311039576470564282519852'
+      purchased_at_basis:
+        value: 20353.916987848683
+        mp30: '20353.9169878486811966163949215'
+    - item: P.drive
+      entry: motor.electric
+      options:
+        motor_type: Open
+      inputs:
+        shaft_power_W: 72.48740658841477
+        N: 1
+      regime:
+        size: floor
+      quantities:
+        W_hp_per_unit:
+          value: 0.09720721345252037
+          mp30: '0.0972072134525203713938217437296'
+        eta_m:
+          value: 0.7157556391514867
+          mp30: '0.715755639151486657517763589963'
+        W_m_hp:
+          value: 0.13581061487375426
+          mp30: '0.135810614873754246861287311941'
+        C_B_CE394:
+          value: 338.96606529661284
+          mp30: '338.966065296612832774760854357'
+        F_MT:
+          value: 1.0
+          mp30: '1.0'
+        electricity_W:
+          value: 101.2739580708677
+          mp30: '101.273958070867699771040260954'
+      C_P1:
+        value: 430.15998134087926
+        mp30: '430.159981340879229409594992839'
+      C_P:
+        value: 430.15998134087926
+        mp30: '430.159981340879229409594992839'
+      purchased_at_basis:
+        value: 593.898780740847
+        mp30: '593.898780740846930887761229106'
+    - item: B
+      entry: exchanger.shell_tube
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 0.33254401500796366
+        P_Pa: 3000000.0
+      regime:
+        size: floor
+        pressure: '1'
+      quantities:
+        area_ft2:
+          value: 3.579473987158694
+          mp30: '3.57947398715869422434618861682'
+        area_ft2_per_unit:
+          value: 150.0
+          mp30: '150.0'
+        z:
+          value: 165.0
+          mp30: '165.0'
+        C_B:
+          value: 10375.452718203294
+          mp30: '10375.4527182032939964747196606'
+        F_M:
+          value: 3.72878918023556
+          mp30: '3.72878918023556007414135382039'
+        p_psig:
+          value: 420.4172644151142
+          mp30: '420.417264415114196737219611696'
+        F_P:
+          value: 1.0860227225518295
+          mp30: '1.08602272255182952320753255816'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 47057.82171419233
+        mp30: '47057.8217141923328742991324247'
+      C_P:
+        value: 47057.82171419233
+        mp30: '47057.8217141923328742991324247'
+      purchased_at_basis:
+        value: 64970.2067897199
+        mp30: '64970.2067897199017812891998329'
+    - item: T
+      entry: turbine
+      options: {}
+      inputs:
+        power_W: -15905.094362301697
+      regime: {}
+      quantities:
+        W_hp:
+          value: 21.32908287693992
+          mp30: '21.3290828769399205413147579526'
+      C_P1:
+        value: 6320.3821346153
+        mp30: '6320.38213461529983865357743783'
+      C_P:
+        value: 6320.3821346153
+        mp30: '6320.38213461529983865357743783'
+      purchased_at_basis:
+        value: 8726.21212197253
+        mp30: '8726.21212197253092722141258056'
+    - item: C
+      entry: exchanger.shell_tube
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 3.809791412245464
+        P_Pa: 10000.0
+      regime:
+        size: floor
+        pressure: floor
+      quantities:
+        area_ft2:
+          value: 41.0082534677602
+          mp30: '41.0082534677601953309906125014'
+        area_ft2_per_unit:
+          value: 150.0
+          mp30: '150.0'
+        z:
+          value: 165.0
+          mp30: '165.0'
+        C_B:
+          value: 10375.452718203294
+          mp30: '10375.4527182032939964747196606'
+        F_M:
+          value: 3.72878918023556
+          mp30: '3.72878918023556007414135382039'
+        p_psig:
+          value: -13.245571398211357
+          mp30: '-13.2455713982113565739610618776'
+        F_P:
+          value: 1.0
+          mp30: '1.0'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 43330.42093596392
+        mp30: '43330.4209359639229986796483878'
+      C_P:
+        value: 43330.42093596392
+        mp30: '43330.4209359639229986796483878'
+      purchased_at_basis:
+        value: 59823.98474781383
+        mp30: '59823.9847478138314692907441087'
+  p1_th_r1:
+    state_sha256: 9cdbdcc20bac4c61bbb29d42328268e558997cf6630a5b62e0107415fafb105d
+    items:
+    - item: H
+      entry: exchanger.shell_tube
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 0.23013894935410378
+        P_Pa: 500000.0
+      regime:
+        size: floor
+        pressure: floor
+      quantities:
+        area_ft2:
+          value: 2.477195034243269
+          mp30: '2.47719503424326893281087871661'
+        area_ft2_per_unit:
+          value: 150.0
+          mp30: '150.0'
+        z:
+          value: 165.0
+          mp30: '165.0'
+        C_B:
+          value: 10375.452718203294
+          mp30: '10375.4527182032939964747196606'
+        F_M:
+          value: 3.72878918023556
+          mp30: '3.72878918023556007414135382039'
+        p_psig:
+          value: 57.82292008959116
+          mp30: '57.8229200895911588516170418184'
+        F_P:
+          value: 1.0
+          mp30: '1.0'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 43330.42093596392
+        mp30: '43330.4209359639229986796483878'
+      C_P:
+        value: 43330.42093596392
+        mp30: '43330.4209359639229986796483878'
+      purchased_at_basis:
+        value: 59823.98474781383
+        mp30: '59823.9847478138314692907441087'
+    - item: D.drum
+      entry: vessel.vertical
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 0.17464743031492239
+        L_m: 0.5239422909447672
+        t_shell_m: 0.03175
+      regime:
+        size: floor
+        platforms.L: floor
+        platforms.D: floor
+      quantities:
+        W_lb:
+          value: 236.7886464994672
+          mp30: '236.788646499467212030299358311'
+        C_v:
+          value: 11734.30782289951
+          mp30: '11734.30782289950902563908436'
+        C_PL:
+          value: 4722.325453111617
+          mp30: '4722.32545311161735395505692985'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 0.5729902569387217
+          mp30: '0.57299025693872173923451828935'
+        L_ft:
+          value: 1.7189707708161652
+          mp30: '1.71897077081616530876515465686'
+      C_P1:
+        value: 16456.633276011125
+        mp30: '16456.6332760111263795941412899'
+      C_P:
+        value: 16456.633276011125
+        mp30: '16456.6332760111263795941412899'
+      purchased_at_basis:
+        value: 22720.78961705462
+        mp30: '22720.7896170546190867204788857'
+    - item: P
+      entry: pump
+      options:
+        pump_type: Centrifugal
+        material: StainlessSteel
+        pump_type_factor: '1.4'
+      inputs:
+        vol_flow_m3s: 2.0919268093386196e-05
+        head_m: 32.442760203582424
+        power_W: 8.367131010182973
+      regime:
+        size: floor
+      quantities:
+        size:
+          value: 3.420865690183671
+          mp30: '3.42086569018367111076509598775'
+        Q_gpm_per_unit:
+          value: 0.3315771591636097
+          mp30: '0.331577159163609707200616461624'
+        H_ft:
+          value: 106.43950198025729
+          mp30: '106.439501980257295368034487316'
+        C_B_CE394:
+          value: 2904.2352747965647
+          mp30: '2904.23527479656470116365641085'
+        F_M:
+          value: 2.0
+          mp30: '2.0'
+        F_T:
+          value: 2.0
+          mp30: '2.0'
+      C_P1:
+        value: 14742.31103957647
+        mp30: '14742.311039576470564282519852'
+      C_P:
+        value: 14742.31103957647
+        mp30: '14742.311039576470564282519852'
+      purchased_at_basis:
+        value: 20353.916987848683
+        mp30: '20353.9169878486811966163949215'
+    - item: P.drive
+      entry: motor.electric
+      options:
+        motor_type: Open
+      inputs:
+        shaft_power_W: 8.367131010182973
+        N: 1
+      regime:
+        size: floor
+      quantities:
+        W_hp_per_unit:
+          value: 0.011220507511190927
+          mp30: '0.0112205075111909277110178718304'
+        eta_m:
+          value: 0.620077031975841
+          mp30: '0.62007703197584101133069537321'
+        W_m_hp:
+          value: 0.018095344501694255
+          mp30: '0.0180953445016942555192101795628'
+        C_B_CE394:
+          value: 338.96606529661284
+          mp30: '338.966065296612832774760854357'
+        F_MT:
+          value: 1.0
+          mp30: '1.0'
+        electricity_W:
+          value: 13.493696071150346
+          mp30: '13.4936960711503458460933734557'
+      C_P1:
+        value: 430.15998134087926
+        mp30: '430.159981340879229409594992839'
+      C_P:
+        value: 430.15998134087926
+        mp30: '430.159981340879229409594992839'
+      purchased_at_basis:
+        value: 593.898780740847
+        mp30: '593.898780740846930887761229106'
+  p3_m1:
+    state_sha256: e496390f7e41cff7c2e3e315f7a1d8867c0c00d80aa7811f724b0dc446e2894e
+    items:
+    - item: S02.shell
+      entry: vessel.vertical
+      options:
+        material: CarbonSteel
+        weight_limit: '1'
+        platforms_ladders: true
+        orientation: vertical
+      inputs:
+        D_m: 0.19200006751115933
+        L_m: 8.5344
+        t_shell_m: 0.03175
+      regime:
+        size: units:1
+        platforms.L: '1'
+        platforms.D: floor
+      quantities:
+        W_lb:
+          value: 3360.4217152235983
+          mp30: '3360.42171522359815665465587225'
+        C_v:
+          value: 22246.058797042067
+          mp30: '22246.0587970420675870336831954'
+        C_PL:
+          value: 8595.21264134388
+          mp30: '8595.21264134387939043292075696'
+        F_M:
+          value: 1.0
+          mp30: '1.0'
+        D_ft:
+          value: 0.6299214813358246
+          mp30: '0.629921481335824585191730642777'
+        L_ft:
+          value: 28.0
+          mp30: '27.999999999999999226049251075'
+      C_P1:
+        value: 30841.271438385946
+        mp30: '30841.2714383859469774666039524'
+      C_P:
+        value: 30841.271438385946
+        mp30: '30841.2714383859469774666039524'
+      purchased_at_basis:
+        value: 42580.88687529485
+        mp30: '42580.8868752948463219293688181'
+    - item: S02.trays
+      entry: column.trays
+      options:
+        tray_type: Sieve
+        tray_material: CarbonSteel
+      inputs:
+        D_m: 0.19200006751115933
+        N_act: 8
+      regime:
+        size: floor
+      quantities:
+        D_ft:
+          value: 0.6299214813358246
+          mp30: '0.629921481335824585191730642777'
+        F_TM:
+          value: 1.0
+          mp30: '1.0'
+        C_t:
+          value: 662.6641467948056
+          mp30: '662.664146794805515033083042806'
+        F_NT:
+          value: 1.6264545485996538
+          mp30: '1.62645454859965372382686899304'
+        F_TT:
+          value: 1.0
+          mp30: '1.0'
+      C_P1:
+        value: 8622.344925986561
+        mp30: '8622.34492598656060778480292292'
+      C_P:
+        value: 8622.344925986561
+        mp30: '8622.34492598656060778480292292'
+      purchased_at_basis:
+        value: 11904.408501014139
+        mp30: '11904.4085010141397147530684787'
+    - item: S02.condenser
+      entry: exchanger.shell_tube
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 1.0382592694262653
+        P_Pa: 106000.0
+      regime:
+        size: floor
+        pressure: floor
+      quantities:
+        area_ft2:
+          value: 11.175729765422803
+          mp30: '11.1757297654228036132773633022'
+        area_ft2_per_unit:
+          value: 150.0
+          mp30: '150.0'
+        z:
+          value: 165.0
+          mp30: '165.0'
+        C_B:
+          value: 10375.452718203294
+          mp30: '10375.4527182032939964747196606'
+        F_M:
+          value: 3.72878918023556
+          mp30: '3.72878918023556007414135382039'
+        p_psig:
+          value: 0.6780514238887281
+          mp30: '0.678051423888728080846076805672'
+        F_P:
+          value: 1.0
+          mp30: '1.0'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 43330.42093596392
+        mp30: '43330.4209359639229986796483878'
+      C_P:
+        value: 43330.42093596392
+        mp30: '43330.4209359639229986796483878'
+      purchased_at_basis:
+        value: 59823.98474781383
+        mp30: '59823.9847478138314692907441087'
+    - item: S02.reboiler
+      entry: exchanger.shell_tube
+      options:
+        hx_type: Utube
+        material: StainlessSteelStainlessSteel
+        tube_length: TwelveFoot
+      inputs:
+        area_m2: 0.2598826710142376
+        P_Pa: 106000.0
+      regime:
+        size: floor
+        pressure: floor
+      quantities:
+        area_ft2:
+          value: 2.7973537896524983
+          mp30: '2.79735378965249813807385627644'
+        area_ft2_per_unit:
+          value: 150.0
+          mp30: '150.0'
+        z:
+          value: 165.0
+          mp30: '165.0'
+        C_B:
+          value: 10375.452718203294
+          mp30: '10375.4527182032939964747196606'
+        F_M:
+          value: 3.72878918023556
+          mp30: '3.72878918023556007414135382039'
+        p_psig:
+          value: 0.6780514238887281
+          mp30: '0.678051423888728080846076805672'
+        F_P:
+          value: 1.0
+          mp30: '1.0'
+        F_L:
+          value: 1.12
+          mp30: '1.12'
+      C_P1:
+        value: 43330.42093596392
+        mp30: '43330.4209359639229986796483878'
+      C_P:
+        value: 43330.42093596392
+        mp30: '43330.4209359639229986796483878'
+      purchased_at_basis:
+        value: 59823.98474781383
+        mp30: '59823.9847478138314692907441087'
+design_note:
+  A10:
+    dT1:
+      value: 33.15
+      mp30: '33.15'
+    dT2:
+      value: 133.15
+      mp30: '133.15'
+    dT_lm:
+      value: 71.95947205233732
+      mp30: '71.9594720523373132476127041087'
+    area_m2:
+      value: 27.793422366208677
+      mp30: '27.7934223662086757306464317364'
+    lmtd_exact:
+      value: 71.92001136510889
+      mp30: '71.9200113651088949559476909021'
+    underwood_over_lmtd_minus_1:
+      value: 0.000548674652289643
+      mp30: '0.000548674652289642943425062004086'
+  A21_crf_0.08_20:
+    value: 0.10185220882315062
+    mp30: '0.101852208823150616761070789147'
+  A20_ebtf_ratio:
+    value: 1.744314
+    mp30: '1.744314'
+  A44:
+    F_NT:
+      '10':
+        value: 1.4997082643359
+        mp30: '1.49970826433590004118238274502'
+      '19':
+        value: 1.0409949546984258
+        mp30: '1.04099495469842582293810748682'
+      '20':
+        value: 1.0
+        mp30: '1.0'
+      '21':
+        value: 1.0
+        mp30: '1.0'
+    vessel_hand_case:
+      W_lb:
+        value: 6777.489706801991
+        mp30: '6777.48970680199048061842615389'
+      C_v:
+        value: 33222.51243168939
+        mp30: '33222.5124316893948023014016636'
+      C_PL:
+        value: 5045.446066094271
+        mp30: '5045.44606609427150348556722519'
+      C_P1:
+        value: 38267.958497783664
+        mp30: '38267.9584977836663057869688888'
+    eta_m_1hp:
+      value: 0.8
+      mp30: '0.8'
+    eta_m_10hp:
+      value: 0.8638030099054393
+      mp30: '0.863803009905439372940951694577'
+    ce_ratio:
+      value: 1.2690355329949239
+      mp30: '1.26903553299492385786802030457'
+    F_P_at_100_psig:
+      value: 1.0
+      mp30: '1.0'
+sizing:
+  A11:
+    host: S11 TH-R1, flash D (item D.drum)
+    state_sha256: 9cdbdcc20bac4c61bbb29d42328268e558997cf6630a5b62e0107415fafb105d
+    V_m3:
+      value: 0.012551560856031718
+      mp30: '0.0125515608560317176'
+    D2_L:
+      value: 0.03050172491560566
+      mp30: '0.0305017249156056620326592999004'
+    u_V:
+      value: 2.0217064344253153
+      mp30: '2.02170643442531544293629255814'
+    D2_V:
+      value: 0.004547366333969929
+      mp30: '0.004547366333969928518833655786'
+    controlling: L
+    D_m:
+      value: 0.17464743031492236
+      mp30: '0.174647430314922360819976585272'
+    L_m:
+      value: 0.5239422909447671
+      mp30: '0.523942290944767082459929755817'
+  A12:
+    host: S11 M1, column S02 (P3)
+    state_sha256: e496390f7e41cff7c2e3e315f7a1d8867c0c00d80aa7811f724b0dc446e2894e
+    R:
+      value: 8.31446261815324
+      mp30: '8.31446261815324'
+    stages:
+      '2':
+        vdot_V_m3s:
+          value: 0.02963379337667135
+          mp30: '0.0296337933766713503629528445547'
+        rho_V:
+          value: 3.562572144292086
+          mp30: '3.56257214429208606552861639004'
+        rho_L:
+          value: 1000.0
+          mp30: '1000.0'
+        u_f:
+          value: 1.505170477724383
+          mp30: '1.50517047772438298437719427157'
+        D2_m2:
+          value: 0.03686402592428974
+          mp30: '0.0368640259242897352934127242348'
+      '3':
+        vdot_V_m3s:
+          value: 0.02903784874421359
+          mp30: '0.029037848744213591080045938072'
+        rho_V:
+          value: 3.525454315454277
+          mp30: '3.52545431545427692531235356334'
+        rho_L:
+          value: 1000.0
+          mp30: '1000.0'
+        u_f:
+          value: 1.5131015233727274
+          mp30: '1.51310152337272731285279776101'
+        D2_m2:
+          value: 0.03593333912464499
+          mp30: '0.0359333391246449906754652880889'
+      '4':
+        vdot_V_m3s:
+          value: 0.02851716731817451
+          mp30: '0.0285171673181745121328655258136'
+        rho_V:
+          value: 3.492258100989853
+          mp30: '3.49225810098985286566180079008'
+        rho_L:
+          value: 1000.0
+          mp30: '1000.0'
+        u_f:
+          value: 1.5203013503862435
+          mp30: '1.52030135038624356749592862982'
+        D2_m2:
+          value: 0.03512189243048693
+          mp30: '0.0351218924304869331714867845529'
+      '5':
+        vdot_V_m3s:
+          value: 0.029130721168249257
+          mp30: '0.0291307211682492559631114212207'
+        rho_V:
+          value: 3.467517788235715
+          mp30: '3.46751778823571493786532822775'
+        rho_L:
+          value: 1000.0
+          mp30: '1000.0'
+        u_f:
+          value: 1.5257342314928979
+          mp30: '1.52573423149289794466180462234'
+        D2_m2:
+          value: 0.035749794689472716
+          mp30: '0.0357497946894727188986234278642'
+      '6':
+        vdot_V_m3s:
+          value: 0.028897196140334185
+          mp30: '0.0288971961403341843627868296248'
+        rho_V:
+          value: 3.4451950111770953
+          mp30: '3.4451950111770951802977732801'
+        rho_L:
+          value: 1000.0
+          mp30: '1000.0'
+        u_f:
+          value: 1.5306863111674116
+          mp30: '1.53068631116741162617300037675'
+        D2_m2:
+          value: 0.0353484775283778
+          mp30: '0.0353484775283778013383533001579'
+    j_star: 2
+    N_tr: 5
+    N_act: 8
+    D_m:
+      value: 0.1920000675111593
+      mp30: '0.192000067511159316502032463843'
+    H_m:
+      value: 8.5344
+      mp30: '8.5344'
+chain:
+  escalation:
+    series: bls-ppi-wpu11-annual-v1 (FRED annual average, 3 decimals)
+    base:
+    - 2006
+    - 126.167
+    target:
+    - 2023
+    - 174.192
+    bls_monthly_means:
+      '2006':
+        value: 126.16666666666667
+        mp30: '126.166666666666666666666666667'
+      '2023':
+        value: 174.19216666666668
+        mp30: '174.192166666666666666666666667'
+    factor:
+      value: 1.3806462862713704
+      mp30: '1.38064628627137048515063368393'
+    same_basis_factor:
+      value: 1.0
+      mp30: '1.0'
+  p1_th_c1:
+    F_BM_test_inputs:
+      P: 3.3
+      P.drive: 1.5
+      B: 3.17
+      T: 3.5
+      C: 3.17
+    purchased:
+      P:
+        value: 20353.916987848683
+        mp30: '20353.9169878486811966163949215'
+      P.drive:
+        value: 593.898780740847
+        mp30: '593.898780740846930887761229106'
+      B:
+        value: 64970.2067897199
+        mp30: '64970.2067897199017812891998329'
+      T:
+        value: 8726.21212197253
+        mp30: '8726.21212197253092722141258056'
+      C:
+        value: 59823.98474781383
+        mp30: '59823.9847478138314692907441087'
+    bare_module:
+      P:
+        value: 67167.92605990065
+        mp30: '67167.926059900647948834103241'
+      P.drive:
+        value: 890.8481711112704
+        mp30: '890.848171111270396331641843659'
+      B:
+        value: 205955.5555234121
+        mp30: '205955.55552341208864668676347'
+      T:
+        value: 30541.742426903857
+        mp30: '30541.742426903858245274944032'
+      C:
+        value: 189642.03165056984
+        mp30: '189642.031650569845757651658825'
+    capex.sum_purchased:
+      value: 154468.2194280958
+      mp30: '154468.219428095792305305512673'
+    capex.TDC:
+      value: 494198.1038318977
+      mp30: '494198.103831897710994779111412'
+    capex.EPC:
+      value: 805641.7488667597
+      mp30: '805641.748866759648463688907423'
+    capex.CAPEX:
+      value: 862036.6712874328
+      mp30: '862036.671287432823856147130943'
+    ebtf_capex_over_tdc:
+      value: 1.744314
+      mp30: '1.744314'
+    CRF:
+      value: 0.10185220882315062
+      mp30: '0.101852208823150616761070789147'
+    opex.total_input: '34373.962267160525'
+    annual.capital_charge:
+      value: 87800.33905718125
+      mp30: '87800.3390571812534023344313653'
+    tac:
+      value: 122174.30132434178
+      mp30: '122174.301324341778402334431365'
+  crf_0.08_20:
+    value: 0.10185220882315062
+    mp30: '0.101852208823150616761070789147'
