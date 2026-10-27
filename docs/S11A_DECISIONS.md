@@ -261,3 +261,14 @@ one-sided worst 6.089e-10/6.216e-10/3.274e-10, central 8.243e-8/4.644e-8/2.083e-
    `test_t08_w2_support_envelope` c3 tests (pre-existing at `f331a629`: `wilson-ig-v2` is a provider module neither
    selectable nor library-only until D5 — escalated, not I1's) plus a20/d1 until the envelope lands. Then
    `s08_identity.py`, `s10c_identity.py`. Q32 (a family-C key moved by the sixteen kinds) is answered by that run.
+4. Identity measured at `879ac504` (scratch worktree, clean): `S11-IDENTITY FAIL n=54438 changed=[] (C branch shards
+   [1, 2, 7, 10, 15] exited non-zero; C base-only keys (59): test_t08_w1_typed_ends::test_a14_i…)`. No changed key.
+   Branch failures (kept logs `scratchpad/i1/idkeep`), all from the registration: the envelope a20/d1 (item 1 above);
+   the six c3 (pre-existing, D5); W27 — `test_m06_w27_coverage` (4: `RefusalError: unregistered model ids
+   ['syn001.column']`, `SnapshotUnsupportedError` registry/list_models), `test_l01_retake` (6 errors, its retake
+   fixture fails on the same refusal); `test_t07_w5e_application_results` (served-response fixture, list_models);
+   `test_t08_rename_substitution` (the w5c table's two new S11 rows); `test_t08_w1_typed_ends::test_a14_i` (fails part
+   way over the registry, hence the 59 base-only keys). OPEN (escalate): W27 v1/v2 on today's registry now meets
+   `syn001.column`, which R-805 registers in v3 only with function null; §9 moves S4 to I1b. Default: I1b's W27 work
+   (model_functions rows) closes it; until then these W27 tests fail. The other three are amendable sample tables
+   (add to `AMENDED_TESTS` with their §8.3 reason) — typed_ends needs a look for a real column-specific assumption.
