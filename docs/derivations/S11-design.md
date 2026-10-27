@@ -238,6 +238,9 @@ A data table in `models/revision_flowsheet.py`. It imports no provider class at 
 
 **The two new record files** each validate against `schemas/component-record.schema.json`.
 
+*Erratum 2026-10-27 (R-830):* T08.A32 admits both files as provider-identity record files, under their own clause
+(vi). See `docs/reviews/S11-rulings.md` item 1.
+
 - *`s05/components.yaml`* is written by hand. It holds one record, `H2O`:
   - name `water`; `identifiers {cas: "7732-18-5", formula: "H2O"}`;
   - `molecular_weight` 0.018015268 kg/mol, with provenance "IAPWS R6-95 (2018), M";
@@ -576,6 +579,9 @@ See D8 and §4.4. No code.
 - **W27v3-R08.** Snapshot S4 is the S11 build's routes (127), generated at WO-I1 and registered with its SHA-256.
 - **Effects:** the Wilson records carry no CAS RN (R-706), so its route serves no case; CoolProp's method matches no
   case; IAPWS-95's route serves the property side of IDAES `iapws95` cases.
+- *Erratum 2026-10-27 (R-832):* the Wilson route serves no case because of the new rule **W27v3-R09** (the spelling
+  rule skips a record with no CAS RN); without it the snapshot is refused. W27v3-A08 is restated and A09 is added
+  (`docs/reviews/S11-rulings.md` item 3; carried by I1b).
 
 Data goes in `registration_v3.json`, from `docs/derivations/scripts/w27_registration_v3.py --check`.
 
@@ -665,7 +671,7 @@ into `wp/S11`, and B rebases on it first. Only B4 then touches `verify/table.py`
 | **A1** registry and selection | Opus | `models/revision_flowsheet.py`, `application/revision_binding.py` (`provider_for`, `basis_provider`, `_SelectableBases.__iter__`), `application/validation.py` (COMP-02 path), `thermo/wilson_premises.py` (new), `benchmarks/s05/components.yaml`, `benchmarks/s07/components.yaml`, `docs/derivations/scripts/s11_coolprop_records.py`, `benchmarks/l01/retake.py`, `tests/test_s11_bases.py` (new), `tests/test_m02_join.py` | WO-0 | S11.A01–A10; identity PASS |
 | **A2** routing on every basis | Opus | `models/syn001/feed.py`, `sink.py`, `splitter.py`, `application/revision_binding.py` (three builders, `MODEL_BASES` rows, `_UNADMITTED`, cascade hint), `tests/test_s11_routing.py` (new) | A1 | S11.A11–A15; identity PASS |
 | **A3** verifier forms | Opus | `verify/certificate.py` (`fresh_provider` and its call), `verify/table.py` (form dispatch, top of `revision_checks`), `verify/forms.py` (new), `tests/test_s11_verifier_forms.py` (new) | A2 | S11.A16–A19; identity PASS (SYN and C1 certificates unchanged) |
-| **A4** W27 v3 | Opus | `docs/derivations/W27-registration-v3.md`, `docs/derivations/scripts/w27_registration_v3.py`, `benchmarks/m06/openidaes450/registration_v3.json`, `benchmarks/m06/w27/{coverage,registration,snapshot}.py`, `tests/test_s11_w27_v3.py` (new) | A1 | S11.A30–A33; all existing W27 tests pass unchanged |
+| **A4** W27 v3 | Opus | `docs/derivations/W27-registration-v3.md`, `docs/derivations/scripts/w27_registration_v3.py`, `benchmarks/m06/openidaes450/registration_v3.json`, `benchmarks/m06/w27/{coverage,registration,snapshot}.py`, `tests/test_s11_w27_v3.py` (new) | A1 | S11.A30–A33; all existing W27 tests pass unchanged (*erratum 2026-10-27, R-837: restated as read through `v2_binder()`, `docs/reviews/S11-rulings.md` item 8*) |
 | **A5** envelope (providers) | Sonnet | `benchmarks/t08/support_envelope.yaml` (providers, U02, L-S11-1…3), `docs/support-matrix.md`, `tests/test_t08_w2_support_envelope.py` (providers, `LIBRARY_ONLY_PROVIDERS`), `tests/test_s05_envelope.py`, `tests/test_s07_registration.py`, `tests/test_s10_provider.py` | A2 | `t08_support_matrix.py --check` OK; S11.A34 |
 | **B1** flowsheet face | Opus | `models/syn001/column.py` (`links`), `models/syn001/column_unit.py` (new: `ColumnStructure`, `column_structure`, `structural_spec`), `tests/test_s11_column_face.py` (new) | WO-0 | S11.A20–A23; the S08 and S10-C lines reproduce |
 | **B2** unit and binding | Opus | `column_unit.py` (`ColumnUnit`), `application/column_binding.py` (new: `_COLUMN` signature, builder), `models/__init__.py` (`owned`), `orchestrator/revision.py` (`_start_from_pass`), `tests/test_s11_column_unit.py` (new; registers the builder in a monkeypatched `MODEL_BUILDERS`, as `test_m02_wo8_region` does) | B1 | S11.A25–A27; identity PASS |
@@ -713,8 +719,12 @@ Base for every identity comparison: `8c34ecb0`. Tolerances are the registered on
 - **S11.A12** On each of IAPWS-95 (H2O liquid at 300 K, 1 MPa), CoolProp (CO2 vapour at 300 K, 1 bar) and Wilson
   (liquid at 330 K, 101 325 Pa), `feed → splitter(0.3) → 2 sinks` binds and solves `CONVERGED`. The material balance
   is exact (`==`). The outlet T and P equal the feed's.
+  *Erratum 2026-10-27 (R-835):* restated as "within 2 ulp per component", with a registered non-exact Wilson case
+  (0.4, 0.4, 0.8). See `docs/reviews/S11-rulings.md` item 6.
 - **S11.A13** Every refused pair of §4.4 gives `model_unsupported(<id>)`, with its reason. The syn001↔c1 hints are
   byte-identical to the base.
+  *Erratum 2026-10-27 (R-841):* the hint names every basis the model binds on. Byte-identity holds only for models
+  whose `MODEL_BASES` S11 leaves unchanged. See `docs/reviews/S11-rulings.md` item 12.
 - **S11.A14** `syn001.cascade` is refused, with the hint.
 - **S11.A15** `pr-lib-v1` records select SYN-001 and are refused `components_unsupported` (R-569 unchanged).
 
@@ -723,6 +733,8 @@ Base for every identity comparison: `8c34ecb0`. Tolerances are the registered on
   satisfies |value| ≤ energy tolerance.
 - **S11.A17** The same flowsheets without declared phases: the energy checks are blocked with the unlifted note, and
   none passes silently.
+  *Erratum 2026-10-27 (R-841):* restated. The binder refuses a `vapor_liquid` routing port (asserted), so the unlifted
+  path is exercised on `revision_checks`. See `docs/reviews/S11-rulings.md` item 12.
 - **S11.A18** The recording provider sees no `lnK` and no `h_<c>` requested from a non-SYN-001 provider.
 - **S11.A19** `fresh_provider` with a basis whose components disagree raises `basis_mismatch`.
 
@@ -758,6 +770,8 @@ Base for every identity comparison: `8c34ecb0`. Tolerances are the registered on
 **Column verifier (B4).**
 - **S11.A35** The A29 cases' certificates verify: material ≤ the molar_flow tolerance, energy ≤ the energy tolerance,
   specifications within tolerance, and every stage item passes.
+  *Erratum 2026-10-27 (R-831):* on Wilson, the derivative witness differences absent-component zero columns with a
+  forward five-point stencil, so C-MW, C-EW and the stripper can verify. R-281 is unchanged. See `docs/reviews/S11-rulings.md` item 2.
 - **S11.A36** Mutation: `Q₁ += 10 ×` energy tolerance in `x_final` makes `energy_balance.<U>` FAIL. Swapping one
   stage's `T` with its neighbour's makes the residual and stage checks FAIL.
 - **S11.A37** For C-MW and C-EW, `phase_stability.<U>.stage.<j>` passes at every stage.
@@ -839,6 +853,10 @@ R-800…R-812 (numbering note: R-795 and R-796 are held by `wp/R796`; S11 starts
 - any `test_l01_*` assertion of `len(SELECTABLE_BASES) == 2` (A1; its `pr-lib-v1` clause stands)
 - `tests/test_t08_b50_surface_content.py`, if its `list_models` surface pins the model set (I1 checks; it gains
   `syn001.column` only)
+- *Erratum 2026-10-27:* two additions.
+  - `tests/test_m02_wo8_registries.py::test_the_dormancy_registry_is_syn001s_and_the_c1_mixers_vapour_outlet`, which
+    is restricted to keys outside `thermal.` (C6-2, R-839; no family-C key).
+  - The syn001↔c1 refusal tests whose model gains an S11 basis (I1b, R-841).
 
 ### 8.4 Decisions logs
 
@@ -1239,6 +1257,8 @@ The file order is as follows:
   `signature_units_disagree`.
 - **S11.A91 (I1).** Column `C1` beside an instance `C1.stage.<j>`, for j an equilibrium stage, is refused at bind as
   `id_unsupported(C1.stage.<j>)`.
+  *Erratum 2026-10-27 (R-838):* the revision reader's id rule (`revision_flowsheet.py:83`) refuses the dotted id
+  before binding. §10.2 step 9 remains the binder's guard, exercised by A89(3). See `docs/reviews/S11-rulings.md` item 9.
 - **S11.A92 (B3b).** Each of the twelve names configures its `EndSpecification`. `condenser.reflux_ratio` raises
   `parameter_unsupported(<U>.condenser.reflux_ratio)`. Two `condenser_*` names raise `specification_conflict(<U>.condenser)`.
 - **S11.A93 (I1).** Each of the sixteen names with a wrong declared kind raises `parameter_kind_unsupported(<U>.<name>)`.

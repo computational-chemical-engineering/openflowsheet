@@ -330,6 +330,9 @@ A declared phase follows the label (L-TH-5).
 - Typed codes (each the first line of a refusal message): `phase_regime_mismatch`, `no_saturation`,
   `isentropic_state_two_phase`, `inadmissible_phase(<port>, <PHASE>)`, `carried_split_missing`, `not_converged`,
   `out_of_domain`, `near_critical`.
+  *Erratum 2026-10-27 (R-839):* `isentropic_state_single_phase` is added, for an isentropic state that is
+  single-phase where another form was declared: a saturated form with β_s outside [0, 1], or a root outside the
+  saturation range whose label is not the declared phase. See `docs/reviews/S11-rulings.md` item 10.
 
 ### 4.3 Blocks (`models/thermal/blocks.py`; every block is a `PropertyBlock` with analytic or implicit derivatives)
 
@@ -501,6 +504,9 @@ stream share one block.
 - Ports: `inlet`, `outlet`, `work` (energy, inlet). Pin `outlet.P`; parameter `efficiency` η ∈ (0, 1].
 - Turbine only: a choice `isentropic_phase` ∈ {`vapor`, `vapor_liquid`}, defaulting to the outlet's form, given as
   `syn001.heat_exchanger` takes `specification`.
+  *Erratum 2026-10-27 (R-839):* the choice cannot be stated in a revision, whose parameters are numeric. The form
+  follows the outlet, and a parameter `isentropic_phase` is `parameter_unsupported`. Direct construction can state it.
+  See `docs/reviews/S11-rulings.md` item 10; OQ-1 to Frank.
 - Rows (family F = `TPU` for the pump, `TCO` for the compressor, `TTU` for the turbine):
   - `F-mole:<c>`: n_I,c − n_O,c = 0;
   - `F-P`: P_O − P_spec = 0;
@@ -708,7 +714,9 @@ quality row then gives V·(h^V_s − h^L_s) = Q_spec. So with Q_spec = 0, V = L 
 Q_spec ≠ 0 the bound V, L ≥ 0 fails, which is the physically right refusal. The work row gives W = 0 at dormancy.
 
 Dormancy forms act only under `T05b-phase-contract-v2` (ADR 0012 D12). Under v1, a dormant single-phase thermal
-outlet is typed `RANK_DEFICIENT`, as the SYN-001 pump's is (L-TH-7). Thermal units author no `molar_flow_squared`
+outlet is typed `RANK_DEFICIENT`, as the SYN-001 pump's is (L-TH-7). *Erratum 2026-10-27 (R-839):* restated. A
+solve that must move ends `LINEAR_SOLVE_FAILED` (measured); a converged start certifies `RANK_DEFICIENT`, which is a
+fact checked at I1b (`docs/reviews/S11-rulings.md` item 10). Thermal units author no `molar_flow_squared`
 row, so they are not signature units and the regime machinery never touches them. Their owned columns enter the EO
 start through B2's `UnitEvaluation.owned`.
 
@@ -738,6 +746,9 @@ generated at I1b, after D5. Versions 1 and 2 stay byte-identical.
   - **L-TH-5** The near-critical box and the supercritical label rule of S05 §4.2 and S07.
   - **L-TH-6** No regime discovery for pure fluids.
   - **L-TH-7** Dormant single-phase thermal outlets need `T05b-phase-contract-v2`.
+  - *Erratum 2026-10-27 (R-839):* the envelope's limitation texts change. L-TH-4 and L-TH-5 gain a sentence each, and
+    there is a new **L-TH-8**: in a revision a `thermal.mixer` takes inlets of one declared phase (R4). The texts are
+    in `docs/reviews/S11-rulings.md` item 10.
   - **L-GP-1** On Wilson, only the five K02/T05 units and the two machines; no pump (no liquid volume); exchanger,
     separator and reactors refused.
   - **L-GP-2** Wilson machines are single-phase vapour, within the records' domain (300–400 K, 30–200 kPa).
@@ -863,6 +874,9 @@ pure-fluid row, the bracketed sanity values (from IAPWS-95 steam tables) bound t
   - `declared_admissible` agrees with A3's verifier rule on a 200-point grid.
 - **S11.A46 Jacobians.** Each block's Jacobian against central differences (relative step 1e-6) agrees to ≤ 1e-6
   relative at 20 states per block. The saturated blocks include P within 1e-6 of the range ends.
+  *Erratum 2026-10-27 (R-834):* restated. The comparison is scaled, and identities pin the small entries. The two
+  near-top states are judged at a fixed 1e-5 above the measured Maxwell floor; the adaptive floor is reverted. See
+  `docs/reviews/S11-rulings.md` item 5.
 - **S11.A47 Refusal mapping.** `PhaseFlowBlock(LIQUID)` at 1e-3 relative superheat raises `DomainError`, which the
   compiled problem reports as `invalid_trial_state`. An unknown property raises `RuntimeError`.
 - **S11.A48 Dormant rule.** At n = 0, the values are 0.0 and the T and P entries are 0.0, and the n entry follows
@@ -922,6 +936,8 @@ pure-fluid row, the bracketed sanity values (from IAPWS-95 steam tables) bound t
   - with Q_spec = 1 kW: `SPECIFICATION_CONFLICT` `zero_flow_conflict(<U>:TH-energy)`.
 - **S11.A63 Mismatch.** A valve declared `liquid` whose closure is SATURATED: the traversal refuses with
   `phase_regime_mismatch(<S>)` and the hint "declare vapor_liquid". With the declaration corrected, it converges.
+  *Erratum 2026-10-27 (R-839):* the plan's message carries the first line only. The hint is asserted on the valve's
+  own answer. See `docs/reviews/S11-rulings.md` item 10.
 
 **The verifier (C5).**
 - **S11.A64** Every A59–A61 certificate is VERIFIED with every check computed. The saturated streams carry passing
@@ -941,6 +957,8 @@ pure-fluid row, the bracketed sanity values (from IAPWS-95 steam tables) bound t
 - **S11.A68** On the verification and the real records, each of the five units builds a square contribution with
   `GammaPhiLnKBlock` fed by the liquid flows and mixture enthalpy blocks. A recording provider sees no `lnK` and no
   `h_<c>` request.
+  *Erratum 2026-10-27 (R-836):* "square" is restated as SYN-001's ids and counts (33/32 and 16/15 on both bases),
+  with the blocks swapped and every row vanishing at the evaluated state. See `docs/reviews/S11-rulings.md` item 7.
 - **S11.A69 GP-C1.** A liquid feed with S10 C-MW's composition at 330 K, 101 325 Pa → `tp_heater` (lifted outlet)
   → `tp_flash`.
   - CONVERGED, VERIFIED.
@@ -969,6 +987,8 @@ pure-fluid row, the bracketed sanity values (from IAPWS-95 steam tables) bound t
   - (ii) ∂s^L/∂P = 0.0, and ∂s^V/∂P = −R/P to 1e-15 relative.
   - (iii) For each pure component at T ∈ {310, 350, 390} K and P = P_i^sat(T): s^V − s^L = (h^V − h^L)/T to 1e-12
     relative (equal Gibbs energies at saturation).
+    *Erratum 2026-10-27 (R-836):* restated. The 8 in-domain pairs are judged, the other 10 are refused
+    `out_of_domain`, and all six components are covered. See `docs/reviews/S11-rulings.md` item 7.
   - (iv) The isentropic-enthalpy block's Jacobian against central differences, as A46.
 - **S11.A78** Any n-derivative of s at a zero mole fraction is refused `derivative_singular`; the T and P
   derivatives are answered.
@@ -1018,7 +1038,7 @@ pure-fluid row, the bracketed sanity values (from IAPWS-95 steam tables) bound t
 | Q20 | `syn001.heat_exchanger` and `component_separator` on Wilson | Frank's preference (scope) | **Refused typed in S11**; the same dispatch makes them a small follow-on |
 | Q21 | Wet pure-fluid feeds, and saturated streams through the splitter | Frank's preference (scope) | **Refused typed**; route through a `thermal.*` unit |
 | Q22 | Wilson v2's entropy datum, s_i^ig(298.15 K, P₀) = 0 | `reviewer`'s judgement | **Accept**; immaterial to every S11 use (differences at fixed composition) |
-| Q23 | A turbine with a superheated outlet and a wet isentropic state | fact per case | The `isentropic_phase` choice; default = the outlet's form |
+| Q23 | A turbine with a superheated outlet and a wet isentropic state | fact per case | The `isentropic_phase` choice; default = the outlet's form. *Closed 2026-10-27 (R-839): not expressible in a revision; typed refusal (L-TH-4); the scope question is OQ-1 of `docs/reviews/S11-rulings.md`* |
 | Q24 | D5's bitwise gate (A79) fails | fact (D5) | Revert D5: v2 stays library-only, the Wilson machines stay refused; log |
 | Q25 | CoolProp is not installed in `.venv` (checked 2026-10-27) | fact (C1) | Generate the references in a scratch venv with `CoolProp==8.0.0`; commit the YAML; `--check` skips with a reason when it is absent |
 | Q26 | `thermal.flash` products must be declared `vapor_liquid` | Frank's preference | **Yes** (one consistent rule: saturated means `vapor_liquid`) |
@@ -1058,6 +1078,8 @@ R-813…R-821.
 - `tests/test_t08_b50_surface_content.py`, if it pins the `list_models` set (I1b);
 - the S11 tests of tracks A and B that name the Wilson provider. These are S11's own tests, with no base keys; D5
   edits them.
+- *Erratum 2026-10-27 (R-839):* `tests/test_m02_wo8_registries.py`'s dormancy-registry test, restricted to keys outside
+  `thermal.` (C6-2; no family-C key).
 
 ### 8.4 Decisions logs
 

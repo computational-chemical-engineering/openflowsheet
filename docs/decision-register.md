@@ -16247,3 +16247,274 @@ This is data only.
 
 **Rejected:** *giving revision regions specification rows in S11.* That changes every revision plan and enters the
 promoted-specification path.
+
+## R-830 — S11: T08.A32 admits provider-identity record files (`s05/`, `s07/components.yaml`) under their own predicate
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round; amends T08.A32 (R-158, R-529, R-722) |
+| Normative text | `docs/reviews/S11-rulings.md` item 1 (clause (vi)) |
+| Evidence | `tests/test_t08_w2_inventory.py::test_a32_…` fails at `645c1e22` on both files; the CAS RNs of the 9 ids shared with `m01`/`l01` are equal (measured) |
+| Affected packages | S11 (I1), T08 (test), any later record file that only names a provider's fluid |
+
+**Decision.**
+- `PROVIDER_IDENTITY_RECORD_FILES` registers `s05/components.yaml` (`iapws95-v1`, H2O) and `s07/components.yaml`
+  (`coolprop-heos-v1`, the 123 `FLUIDS` ids).
+- For these files, (i-p), (ii-p), (iv-p) and (v-p) replace (ii), (iv), (v) and (v′):
+  - no parameter;
+  - M, name and CAS RN equal to the provider's shipped constants;
+  - CAS RN equal across files for the 9 shared ids (registered set).
+- A defect test mutates each clause.
+
+**Rejected:**
+- *A plain exemption.* It is a relaxation.
+- *InChI/InChIKey from CoolProp.* Not needed for a record that holds no datum (OQ-7).
+- *Vetting JSONs.* Nothing is retrieved; the values are the provider's own.
+
+**Watch for.**
+- A provider-identity file that gains a parameter. It then needs a vetted file's clauses.
+- Frank removing CAS RNs (OQ-6), which changes (ii-p) and (v-p).
+
+## R-831 — S11: on Wilson, the derivative witness differences absent-component zero columns one-sided (five points); R-281 is not extended
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round; companion of ADR 0013 Amendment 3 item 7 (R-281) |
+| Normative text | `docs/reviews/S11-rulings.md` item 2 |
+| Evidence | Measured at `645c1e22`. \|Z\| = 63/63/34 on C-MW/C-EW/stripper. One-sided worst 6.2e-10, central worst 8.243e-8, smallest scaled entry in Z 7.1e-4. The three-point stencil gives 2.22e-6 on C-MW. The forward points are never refused |
+| Affected packages | S11 (I1; D6's GP certificates) |
+
+**Decision.**
+- On `wilson-ig-v1` and `wilson-ig-v2`, Z is the set of columns `<p>.<c>` that are exactly 0.0 while a sibling
+  `<p>.<c′>` is > 0.
+- Z is differenced by the forward five-point stencil, at the registered step, against `DERIVATIVE_TOLERANCE`.
+  Everything else stays central.
+- No limitation is written, because every column is differenced.
+- A35 then holds on C-MW, C-EW and the stripper.
+
+**Rejected:**
+- *Extending `unstenciled` and `derivative_witness_partial` to Wilson.* That is R-281's own *Watch for*, and it leaves
+  differentiable columns unwitnessed.
+- *The three-point forward stencil.* Its truncation exceeds the tolerance.
+- *A smaller step or a larger tolerance.* Either moves registered constants.
+
+**Watch for.**
+- The rule applied to a dormant phase, where every sibling is 0.
+- The rule extended to `pr-c1-v1`, whose forward points are refused.
+- A one-sided part above `DERIVATIVE_TOLERANCE`/10 on any case.
+- C-MW's central margin of 1.21× (F-1).
+
+## R-832 — S11: W27v3-R09 — the spelling rule skips CAS-less records; W27v3-A08 restated, W27v3-A09 added
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round; amends `docs/derivations/W27-registration-v3.md` (R-808) |
+| Normative text | `docs/reviews/S11-rulings.md` item 3 |
+| Evidence | W27v3 Q-1: five measured Wilson spellings (`CH3OH`, `H2O`, `ethanol`, `methanol`, `water` → None) refuse the S11 build at classification |
+| Affected packages | S11 (I1b), the release's W27 run |
+
+**Decision.**
+- W27v2-R08's pass condition presupposes a CAS RN. A record without one can match no case (W27-R15), so under
+  version 3 it takes no part in the rule.
+- A08 becomes A04's outcome on B, with mutant `cas_less_refused`.
+- A new A09 replays W27v2-A16's refusal under version 3, with mutant `spelling_rule_off`.
+- Versions 1 and 2 are unchanged.
+
+**Rejected:**
+- *CAS RNs on the Wilson records.* R-706 and Frank's CAS direction.
+- *An identity-by-name rule for W27.* It is a new identity semantics, and it is not needed for a route that serves no
+  case.
+
+**Watch for.**
+- A coverage claim that counts the Wilson route.
+- A CAS-carrying record skipped by mistake (A09).
+
+## R-833 — S11: the thermal kernel keeps the raw Newton correction through a bracket bisection (R-600), confirmed
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round, on C3-1 (`36ea9175`) |
+| Normative text | `docs/derivations/S11-units-design.md` §4.2 ("S05's convergence"); R-600 |
+| Evidence | 40 × 40 water grid (11 200 outcomes): 7 `not_converged` → converged (residual ≤ 1e-12·T·dg/dT), 2 moved ≤ 3.1e-15 relative, rest bit-identical; `test_solve_keeps_the_newton_correction_through_a_bisection` |
+| Affected packages | S11 (C3; I2 records the negative control) |
+
+**Decision.** Accepted. The fix is in code that is new in S11, so no pre-S11 output moves.
+
+**Rejected:** *Avoiding such states in the tests.* That hides a defect.
+
+## R-834 — S11: A46 is judged in scaled units (C1-3 accepted); the adaptive floor (C1-4) is reverted for a fixed 1e-5 at the two near-top states
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round, on Q-C1 |
+| Normative text | `docs/reviews/S11-rulings.md` item 5 (A46 restated) |
+| Evidence | Measured at P = p_σ(647.0 K)(1 − 1e-6): the noise of H is 1.29e-11 relative and the elasticity −3.39, so the bound at step 1e-6 is 3.8e-6. Measured 1.30e-6 there, and 3.53e-7 at 1e-4 below the top. A one-sided stencil adds 2.6e-5 |
+| Affected packages | S11 (I1b) |
+
+**Decision.**
+- C1-3's denominator max(|∂F/∂x|, |F/x|), with identities pinning the small entries to 1e-9, is accepted.
+- At P = p_σ(647.0 K)(1 − 1e-6) and (1 − 1e-4), at step 1e-6, the bound is 1e-5. Everywhere else it stays 1e-6.
+
+**Rejected:**
+- *The engineer's tolerance + |D(h) − D(h/2)|, capped at 1e-4.* It grows with the noise it judges.
+- *Dropping the top states.* That loses coverage.
+
+**Watch for.** A failure of the 1e-6 states on aarch64. Escalate it; never widen.
+
+## R-835 — S11: A12's balance is within 2 ulp per component, with a registered non-exact state
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round |
+| Normative text | `docs/reviews/S11-rulings.md` item 6 |
+| Evidence | r = 0.3: 0.12 + 0.27999999999999997 ≠ 0.4, so the discrepancy is −1 ulp at n = 0.4 and at n = 0.8; it is 0 at 0.25 and 0.5 |
+| Affected packages | S11 (I1) |
+
+**Decision.**
+- Products equal the splitter's binary64 rows exactly.
+- |n₂ + n₃ − n| ≤ 2 ulp(n).
+- The Wilson case (0.4, 0.4, 0.8) is registered with its discrepancy exactly −ulp(n).
+
+**Rejected:** *Keeping `==` with flows chosen to be exact.* An accidental zero.
+
+## R-836 — S11: A68 compares the γ–φ face with SYN-001's construction; A77(iii) judges the 8 in-domain pairs
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round, on track D's readings |
+| Normative text | `docs/reviews/S11-rulings.md` item 7 |
+| Evidence | 33/32 (heater → flash) and 16/15 (mixer) on both bases; worst row/kind tolerance 2.9e-8; 10 of 18 (component, T) pairs outside the records' P box |
+| Affected packages | S11 (D1, D4 done; I1b adds one assertion) |
+
+**Decision.**
+- A68 is satisfied when the face has SYN-001's ids and counts, the blocks are swapped, and every row vanishes at the
+  evaluated state.
+- A77(iii) judges the 8 in-domain pairs, and the other 10 are refused `out_of_domain`.
+- The judged pairs cover all six components (asserted).
+
+**Rejected:** *A count-square test.* No K02 unit passes it on any basis.
+
+## R-837 — S11: §4.10's "all existing W27 tests pass unchanged" is restated (`v2_binder()`; version switch probes 4)
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round |
+| Normative text | `docs/reviews/S11-rulings.md` item 8 |
+| Evidence | `7302a507`; `de4b507b`; no family-C key moved |
+| Affected packages | S11 (A1, A4: done) |
+
+**Decision.** Accepted as built.
+
+**Rejected:** *Listing the W27 tests in `AMENDED_TESTS` and re-pointing them at v3.* It loses the v2 reading.
+
+## R-838 — S11: track B's build decisions confirmed; the column's missing-end hint names R-824's parameters
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round |
+| Normative text | `docs/reviews/S11-rulings.md` item 9 (A91 restated) |
+| Evidence | `docs/S11B_DECISIONS.md` (B3b, B3c, B4, A91); `column_unit.py:471` ("Pin exactly one of condenser.<kind>") |
+| Affected packages | S11 (I1) |
+
+**Decision.**
+- Accepted:
+  - no `s11-column-v1`;
+  - S2's kind refusals unreachable from a document;
+  - no optional `ModelSignature` field;
+  - A91 met by the reader;
+  - the linear-form specification checks;
+  - the standalone stage items;
+  - `zero_flow_form_unknown` for a dormant stage;
+  - the column's duties in the envelope.
+- I1 adds two things:
+  - every A29 case under `T06-revision-v2`;
+  - hints that name `<end>_<kind>` parameters, and no dotted spelling.
+
+**Rejected:** *A fifth application policy.* It moves the served `solve_policies` for no capability.
+
+## R-839 — S11: track C's build decisions confirmed, except C3-2; a single-phase isentropic state gets its own code
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round, on Q-C2, O-C4-1, C3-2, C4-2, C6-2, C6-3, O-C6-1, O-C3-1 |
+| Normative text | `docs/reviews/S11-rulings.md` item 10 |
+| Evidence | `docs/S11C_DECISIONS.md`; steam 1 MPa/573.15 K → 0.1 MPa, η 0.5: x_s 0.9613, outlet 2.61 kJ/mol above h^V_sat (measured, `iapws95-v1`) |
+| Affected packages | S11 (I1b) |
+
+**Decision.**
+- The turbine's isentropic form follows the outlet in a revision; the typed refusal and L-TH-4 record it (OQ-1 to
+  Frank).
+- L-TH-8 records R4 for the mixer (OQ-2).
+- `isentropic_state_single_phase` replaces the false `isentropic_state_two_phase` for a single-phase isentropic state.
+- C4-2, C6-2 and C6-3 are accepted, with A63 restated.
+- L-TH-5 records O-C3-1.
+- O-C6-1's v1 regularity is a fact measured at I1b.
+
+**Rejected:**
+- *A numeric flag parameter for `isentropic_phase`.* A public name, and a wart.
+- *Carrying the hint through the plan's message in S11.* It is cross-cutting.
+
+## R-840 — S11: a `wilson-ig-v2` result carries `provider_id` `wilson-ig-v2`; `ph_kernel` failures carry the bound convention
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round (confirms the orchestrator's `fc645bce`; amends D1's report) |
+| Normative text | `docs/reviews/S11-rulings.md` item 11 |
+| Evidence | `fc645bce` (A75/A78 compare with the label swapped back); `docs/S11D_DECISIONS.md` D1 note |
+| Affected packages | S11 (D5, D6) |
+
+**Decision.**
+- Accepted: a v2 result names v2, and the values are bitwise v1's.
+- D6 makes `ph_kernel`'s typed failures carry the bound provider's convention and id.
+- On SYN-001 nothing moves: S10C-IDENTITY and S11-IDENTITY stay `changed=[]`.
+
+**Rejected:** *v1's id on v2's results.* A provider whose answers name another provider.
+
+## R-841 — S11: refusal hints name every basis a model binds on; A13's byte-identity applies only to models whose bases S11 leaves unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round; amends S11.A13 |
+| Normative text | `docs/reviews/S11-rulings.md` item 12 (A13, A17 restated) |
+| Evidence | `revision_binding.py:1584-1588` (`S11_BASES` filter: "binds on the syn001 basis only" is false after A2); WO-0 control |
+| Affected packages | S11 (I1b) |
+
+**Decision.**
+- I1b drops the filter and pluralizes "bases".
+- The moved syn001↔c1 keys enter `AMENDED_TESTS`, and G1's `changed=` must equal them.
+- Also accepted: `NOT_APPLICABLE`, the bound convention in `evaluate()`, A17 on `revision_checks`, and L01's bases.
+
+**Rejected:** *Byte-identical but false hints.*
+
+**Watch for.** A hint that names a basis the model is refused on.
+
+## R-842 — S11: the identity gate masks `revision_id`/`parent_revision`; a test asserts the binder reads neither
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`specifier`), S11 ruling round, on WO-0 decision 4 |
+| Normative text | `docs/reviews/S11-rulings.md` item 13 |
+| Evidence | 25 clock-named keys in three `tests/test_t07_r6_replays.py` tests (`a4425319`); `scripts/s11_identity_recorder.py` `VOLATILE` |
+| Affected packages | S11 (I1) |
+
+**Decision.**
+- Accepted.
+- I1 adds `test_g1_the_binder_reads_no_revision_identifier`: three documents; equal digests with both ids changed, and
+  a different digest with a flow changed.
+
+**Rejected:** *Excluding the three tests.* It loses 25 keys.
+
+**Watch for.** A binder change that starts reading either field. The new test fails.
