@@ -491,3 +491,8 @@ Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. 
   `artifact_hash`) change. Alternative: extend U1's reader (a base test). Reversible by: the one commit.
   Measured: `test_adr_0008_transient_readiness` + `test_s11_thermal_*` + `test_s11_gp_*` + `test_s11_bases`: 679
   passed, 58 skipped; `t08_support_matrix.py --check` 0 problems; `t07_schema_fixtures.py` all "same".
+- DECISION (orchestrator ruling, replaces item 6's register DECISION above): R-816's decision text restored as the
+  ruling round wrote it (register entries are not rewritten); the seven ids in full go in a dated "Amended
+  2026-10-27" line under the entry, which `test_t08_b50_surface_content`'s `_register_entry` span includes (its
+  comment now says so). Alternative: the rewritten entry. Reversible by: the one commit. Measured: b50 7 passed;
+  `test_m07a_surface_chain` + `test_m07_mr12_extras_v02` pass.

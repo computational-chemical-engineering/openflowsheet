@@ -62,7 +62,7 @@ V02_ADDITIONS: dict[str, dict[str, str]] = {
         # S11's column (ADR 0050, R-810; design note §8.3, I1): registered on purpose.
         "syn001.column": "R-805",
         # S11's `thermal.*` family (ADR 0051 D6, R-816; units design §8.3, I1b): registered on
-        # purpose.
+        # purpose; R-816's "Amended 2026-10-27" line spells the ids.
         **{
             f"thermal.{name}": "R-816"
             for name in ("compressor", "flash", "heater", "mixer", "pump", "turbine", "valve")

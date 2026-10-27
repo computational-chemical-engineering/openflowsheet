@@ -16006,14 +16006,18 @@ gap, and that distinguishes it from R-615's case.
 | Affected packages | S11 (track C, I1b), W27 v3, T08 envelope |
 
 **Decision.**
-- Seven models: `thermal.heater` (T, duty or vapour-fraction mode), `thermal.valve`, `thermal.mixer`,
-  `thermal.flash`, `thermal.pump`, `thermal.compressor`, `thermal.turbine`.
+- Seven models: `thermal.heater` (T, duty or vapour-fraction mode), `valve`, `mixer`, `flash`, `pump`,
+  `compressor`, `turbine`.
 - All seven are admitted on both pure-fluid bases; `compressor` and `turbine` also on `wilson-ig-v2`, vapour only.
 - Each model refuses any provider outside its identity allow-list.
 
 **Rejected:**
 - *Generalizing the `syn001.*` units to pure fluids.* Their two-phase form is the lifted split.
 - *`pure.*` and `wilson.*` namesake families.* N×M duplication.
+
+> **Amended 2026-10-27 (S11 WO-I1b; the decision unchanged):** the seven model ids in full are `thermal.heater`,
+> `thermal.valve`, `thermal.mixer`, `thermal.flash`, `thermal.pump`, `thermal.compressor` and `thermal.turbine`;
+> MR-7's register-sourced v0.2 additions (`test_t08_b50_surface_content`) read them from this line.
 
 ## R-817 — S11: isentropic machines without entropy rows — an isentropic-enthalpy block
 
