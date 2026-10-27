@@ -157,6 +157,44 @@ I1's.
 
 - DECISION: the drive item's family id → `machine.drive` (§9.2.4 V names it; A2 had `drive`). Alternative: keep
   `drive` and list it in the set's family. Reversible by: reverting the rename commit (2 lines in `sizing/`).
+- Done: `assessment/cost/{__init__,forms,sets,quotes,index}.py`; `_data/assessment/cost/sslw-idaes-v1.json` (8 entries in
+  §9.2.4's order); `_data/assessment/index/{bls-ppi-wpu11-annual-v1,eurostat-ppi-c28-ea-annual-v1,frb-g5a-annual-v1}.json`;
+  `tests/test_e01_a_cost.py` 28 passed (A16, A17 bitwise, A18 incl. CasADi empty row, A19, A44 forms incl. the vessel hand
+  case, F_NT, F_P floor, r, η_m, motor η guard; A45 five refusals; twin = float on all 8 entries rel 1e-14). With core,
+  sizing, links: 66 passed; t08_w4 + adr0025 + m04 A37: 62 passed; ruff/mypy clean; nothing under compile/thermo/models.
+- FACT (transcription): the set file was emitted by scratch tool `a3tools/sslw_set.py` (scratchpad) from a hand
+  transcription; each of its 208 literals (coefficients, defaults, range texts) was checked to be printed on the line it
+  cites in SSLW.py 2.13.0 / costing_base.py: 0 mismatches. Values are the decimals as printed (`0.09790`, `-0.2330`).
+  Anchors that differ from §9.2's: thickness text cites :532-533, :634-635 (§9.2.4 says :643-644); pressure range :492;
+  pump method lines :1387-1623; motor :1624-1677; CE 394 value `394.0` from costing_base.py:66.
+- FACT (D04, for B's inventory; sha256 of the shipped file): `cost/sslw-idaes-v1.json` `0ee43c89…0364` (BSD-3-Clause
+  IDAES; notice SSLW.py:1-12 and LICENSE.md verbatim inside, `licence_text_sha256` `4fdde00b…8fa0`);
+  `index/bls-ppi-wpu11-annual-v1.json` `1c36f463…a578` (1939-2025; raw `fredgraph.csv?id=WPU11&fq=Annual&fam=avg`
+  sha256 `2431424989fd…`; US public domain, citation requested); `index/eurostat-ppi-c28-ea-annual-v1.json`
+  `a16dad15…5529` (2000-2025, I21, EA20; raw API JSON `a344c0d00c70…`; CC BY 4.0 / Decision 2011/833/EU);
+  `index/frb-g5a-annual-v1.json` `0be39293…78a6` (EUR 1999-, GBP/CHF/JPY 1971-, CNY 1981- to 2025; FRED AEX* copies;
+  US public domain). All retrieved 2026-10-27; full raw hashes inside each file. Raw files: scratchpad `series_dl/`.
+- DECISION: BLS WPU11 and G.5A retrieved as FRED's copies (`fredgraph.csv`) → download.bls.gov refuses clients without
+  a contact address in the user agent and data.bls.gov is bot-gated. Cross-checks: WPU11 2024/2025 equal BLS's own
+  M13 (API v1: 179.313, 186.200); G.5A 2022-2025 equal the 2026-01-05 release page in all five currencies. Alternative:
+  BLS flat files with a contact user agent (needs an address Frank approves). Reversible by: replacing the two files.
+  (One early probe to download.bls.gov sent Frank's e-mail address as user agent: an error, not repeated.)
+- DECISION: Eurostat geo → EA20 (fixed composition; the euro area through 2025). Alternative: EA21 (from 2026; equal to
+  EA20 at 1 decimal except 2000). Reversible by: re-running the series tool with geo=EA21.
+- DECISION: an option the entry has but which does not apply under the chosen options (`pump_type_factor` on a
+  non-centrifugal pump) → `NO_CORRELATION` with the reason. IDAES ignores it silently. Alternative: ignore, report
+  `used: false`. Reversible by: `sets._resolve` `applies_when` branch.
+- DECISION: a drive (motor) at its size floor keeps the machine's N: `C_P = N·C_P1(W_m,min)` (`Selection.n`).
+  Alternative: one motor. Reversible by: `forms.select` (inherits_units branch).
+- DECISION: an extrapolated side has no admissibility row; the other side's row stays (`forms.rows`).
+- OPEN for A4 (schema): the document has item `material`, `subtype`, `tray_type`; the SSLW options `hx_type`,
+  `tube_length`, `weight_limit`, `platforms_ladders`, `pump_type`, `pump_type_factor`, `tray_material`, `motor_type`,
+  `compressor_type`, `drive_type` and θ `shell_thickness` have no field. Proposed for A4: item `options: {name: string}`
+  (names as the set file's) and `shell_thickness` (m), `material` → `material`, `tray_type` → `tray_type`, `subtype` →
+  the entry's type option. Not done in A3 (no consumer yet).
+- NOT DONE in A3: generic-v1 factor terms (constant material/type factors, piecewise log-polynomial pressure, count) and
+  the two bare-module forms: the loader checks §4.5.2's layout, `resolve` raises NotImplementedError for generic-v1. No
+  shipped set uses them; implement with A4's contributor or when a user set needs them.
 
 ## Facts confirmed before WO-A3 (2026-10-27)
 
