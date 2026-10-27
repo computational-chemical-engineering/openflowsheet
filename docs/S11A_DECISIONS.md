@@ -560,3 +560,26 @@ Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. 
   `t08_support_matrix.py --emit`, `--check` 0 problems. Alternative: none that keeps the manifest rule. Reversible
   by: the one envelope line. Measured: `test_s11_bases` + `test_t08_evidence_manifest` + `test_t08_w2_support_envelope`:
   344 passed.
+
+**Handoff (2026-10-28, WO-I1b complete; I2 next).** Commits since `1cff5547`: `d5d1885a` ADR 0008 E1 (thermal module
+`EQUATIONS`; ruling); `ae76b063` R-816 text restored + dated amendment line (ruling); `82a1d87b` v1/v2 reading
+restricts models and `list_models` (`snapshot.restrict_to_v2_models`); `22cbe2a3` S4 registered (W27v3-R08,
+`snapshot_s4.json`, `scripts/s11_w27_s4.py`); `7492f7fc` C3-2 `isentropic_state_single_phase`; `aad5530f` Q-C2 and
+O-C6-1 pinned, §8.3 record line; `4215d5ee` `test_m02_join` `_AFTER_M02` gains the thermal ids; `c4bfc4ec` L-TH-4
+`{U}` (T08 manifest angle-bracket rule).
+Gates (clean scratch worktrees):
+- at `c4bfc4ec`: `S11-IDENTITY PASS n=54494 changed=[]`; `S08-IDENTITY PASS n=52 changed=[S02.P1]
+  p1_stage_a=EQUAL`; `S10C-IDENTITY PASS n=858 changed=[]`.
+- at `aad5530f` (nothing they read changed after, except `test_s11_bases`, re-run: pass): `tests/test_s11_*` 970
+  passed, 64 skipped; `tests/test_t05*` 1075 passed; `t08_support_matrix.py --check` 0 problems (re-run at
+  `c4bfc4ec`: 0); `w27_registration_v3.py --check` identical; `s11_w27_s4.py --check` S4 OK.
+- With the CoolProp path: thermal/GP/bases/ADR 0008 740 passed (A55's n-pentane still `isentropic_state_two_phase`).
+`AMENDED_TESTS` additions in WO-I1b: R-841's three `test_m02_join` refusal tests only (unchanged here).
+OPEN for the design lane (batch with the reviewer pass):
+1. O-C6-1: the SYN-001 pump's dormant case under `T04-W12` certifies VERIFIED/`NO_RANK_LOSS_DETECTED`, so §4.9/L-TH-7's
+   "as the SYN-001 pump's is" does not hold; the verifier's `DORMANT_OUTLETS` has no `thermal.*` entry, so A62 (Q = 0)
+   certifies UNVERIFIED/`RANK_DEFICIENT` under v2 as well. Should the verifier registry gain §4.9's thermal outlets?
+2. The build-lane DECISIONs above for the reviewer: E1 shape (`MACHINE_MODEL_IDS` rename), the v1/v2 model
+   restriction and its three test follow-ons, S4's record/registration form, `_AFTER_M02`, L-TH-4 `{U}`.
+Not done (out of scope): manifests/harvest (I2), the full gate, push. A stale scratch worktree `scratchpad/i1b/wt-E`
+from an earlier engineer is still registered (`git worktree remove --force` it when convenient).
