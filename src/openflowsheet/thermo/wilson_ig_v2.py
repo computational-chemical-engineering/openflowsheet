@@ -1,10 +1,12 @@
 """`wilson-ig-v2`: `wilson-ig-v1` and its molar entropy `s` in closed form (S11 units design §4.6).
 
 **Every v1 answer, bit for bit.** The provider holds a `WilsonIdealGasProvider` on the same record
-file and forwards to it: a request without `s` returns v1's result object unchanged, `flash` and
-`stability` are v1's, and a request with `s` makes one v1 call for the other properties (and the
+file and forwards to it: a request without `s` returns v1's result, `flash` is v1's and `stability`
+is v1's report, and a request with `s` makes one v1 call for the other properties (and the
 `lnphi_<c>` the entropy needs) and returns v1's values and derivatives for them untouched, with `s`
-added. v1's module is not edited (its `implementation_sha256` hashes it).
+added. Every `PropertyResult` and `FlashResult` is labelled `provider_id = "wilson-ig-v2"`
+(orchestrator ruling, S11D_DECISIONS); nothing else in it differs from v1's. v1's module is not
+edited (its `implementation_sha256` hashes it).
 
 **The entropy** follows from the potential v1 already implements (S10's γ–φ-IG,
 `g = Σ x_i [μ_i^ig(T, P₀) + RT ln(x_i φ_i P/P₀)]`, `h^E = 0`, constant Λ, and
@@ -104,7 +106,7 @@ def _sigma_lambda(
 
 
 class WilsonIdealGasProviderV2:
-    """`wilson-ig-v1` with `s` (S11 units design §4.6). Every non-`s` answer is v1's object."""
+    """`wilson-ig-v1` with `s` (S11 units design §4.6). Non-`s` answers: v1's, labelled v2."""
 
     def __init__(self, records_path: str | os.PathLike[str] | None = None) -> None:
         self._v1 = WilsonIdealGasProvider(records_path)
@@ -142,12 +144,12 @@ class WilsonIdealGasProviderV2:
     ) -> PropertyResult:
         """v1's answer; with `s` requested, v1's answer for the rest and `s` added (§4.6)."""
         if "s" not in request.properties:
-            return self._v1.evaluate_phase(request, context)
+            return replace(self._v1.evaluate_phase(request, context), provider_id=PROVIDER_ID)
         others = tuple(name for name in request.properties if name != "s")
         asked = (*others, *(name for name in self._lnphi if name not in others))
         inner = self._v1.evaluate_phase(replace(request, properties=asked), context)
         if inner.status != "ok":
-            return inner
+            return replace(inner, provider_id=PROVIDER_ID)
 
         state = request.state
         ids = self._records.components
@@ -158,7 +160,7 @@ class WilsonIdealGasProviderV2:
                 status="unsupported",
                 phase_signature=None,
                 values={},
-                provider_id=inner.provider_id,
+                provider_id=PROVIDER_ID,
                 reference_convention=inner.reference_convention,
                 message=f"derivative_singular: ds/dn_{zero[0]} at n_{zero[0]} = 0",
             )
@@ -196,11 +198,11 @@ class WilsonIdealGasProviderV2:
                     entry[wanted] = R * (a[j] - math.log(x[j]) - ln_pressure - s_over_r) / total
             for name in request.properties:
                 derivatives[name] = entry if name == "s" else dict(inner.derivatives[name])
-        return replace(inner, values=values, derivatives=derivatives)
+        return replace(inner, values=values, derivatives=derivatives, provider_id=PROVIDER_ID)
 
     def flash(self, request: FlashRequest, context: EvaluationContext) -> FlashResult:
-        """v1's TP flash, unchanged."""
-        return self._v1.flash(request, context)
+        """v1's TP flash, labelled `wilson-ig-v2`; every value v1's."""
+        return replace(self._v1.flash(request, context), provider_id=PROVIDER_ID)
 
     def stability(
         self, state: StreamState, phase: Phase, context: EvaluationContext
