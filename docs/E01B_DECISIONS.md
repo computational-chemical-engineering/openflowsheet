@@ -314,3 +314,32 @@ packages; URL and retrieval date for data). The design-lane ruling round is fold
 - **Open for the design lane (batched):** the five part-2 DECISION lines above (closure reading and the floor caveat;
   admissibility scale 1; output primal scaling; readiness order; property_calls), plus the earlier ones.
 - **Not B's:** `test_m07_mr12_extras_v02::test_the_git_backed_measure_at_head` (I1); packaging `_data/assessment/**`.
+
+## Handoff (2026-10-28, after WO-B3 part 3) — resume from here
+
+- **Done (wp/E01 after 843657ae):** f7a688a4 `select(x, decisions, *, release)` (A's program.py, additive);
+  d99a5c8e closure lift (`assessment_twin`/`assessment_closure`/`AssessmentClosure`, inert); 9c7e78f8 schema check
+  lists accept V7; 9ee9a087 WO-B3 part 3 (§4.10.3 V3/V5/V6/V7, `formulation.assessment`, tests). WO-B3 is complete
+  in code; A33/A34/A36 on the registered P2 remain I1's.
+- **Gates run:** `test_e01_*`, `test_m03_*`, `test_m05_readiness`, `test_schemas_p01`: 459 passed, 1 skipped (default
+  env); nlp env (`scripts/m03_nlp_check.sh --no-inventory $W/.venv-nlp $W/.reference-downloads/m03-ipopt --
+  tests/test_e01_b_nlp.py tests/test_m03_nlp_greybox.py`, W = the m05 worktree): 21 passed; G9 dump
+  (`$SCRATCH/b3/g9.sh <tag>`, compares with `$SCRATCH/b3/m03_base.json`) IDENTICAL; `e01_d04_inventory.py --check`
+  0; t08 policy `--check` 0; ruff/format clean; mypy clean on src (test-file mypy errors in test_m03_nlp_status are
+  pre-existing; mypy's scope is src+benchmarks). Nothing under compile/, thermo/, models/; no S11 file; not pushed.
+- **WO-B4 not started** (stopped at the context cap). Plan, unchanged from §5.3/§9.5: `benchmarks/e01/cost_hand/
+  cost_hand.py` (pattern: `benchmarks/e01/lca_hand/lca_hand.py` — no `openflowsheet` import, mpmath 30 digits,
+  writes `cost_hand.yaml`, `--print`), transcribing forms I–VII (§9.2.4) from the pinned
+  `$SCRATCH/idaes_src/idaes/models/costing/SSLW.py` (IDAES 2.13.0; line anchors in §9.2.4 and E01A's FACT
+  "transcription" — thickness :532-533/:634-635, pressure :492, pump :1387-1623, motor :1624-1677, CE 394 from
+  costing_base.py:66), never from `_data/assessment/cost/sslw-idaes-v1.json`. Values at S_min, √(S_min·S_max), S_max
+  per entry and range (turbine 10/100/1000 hp), each floor bound and 1e-6 relative inside, defaults per §9.2.4, and
+  P1's sizes from track A's `p1_th_c1.json` report fixture (P3's when I1 names it). Then A10 (exchanger: ΔT_lm
+  71.95947205233731 K, area 27.79342236620868 m²), A11/A12 hand cases with identity volumes (RT/P, Amagat; §9.4),
+  the chain/CRF/escalation cases; `benchmarks/e01/brightway/` P4 `foreground_check` expectation (lca env,
+  `$SCRATCH/venv-lca`) and the IDAES cross-check script (§9.5 A15: effective inputs, `cost_vessel` direct, tray
+  rescale, pump/motor in USD_CE500). A14/A15 compare against these in I1.
+- **Open for the design lane (batched):** the part-3 DECISION lines above (select extension in A's file; rows as
+  named constraints; V5 functional rules; not-evaluable handling; V7 absent without an assessment and the V7→V8
+  test example; `formulation.assessment.outputs` = bound outputs only), plus part 2's and the earlier ones.
+- **Not B's:** `test_m07_mr12_extras_v02::test_the_git_backed_measure_at_head` (I1); packaging `_data/assessment/**`.
