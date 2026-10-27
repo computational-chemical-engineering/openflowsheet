@@ -202,3 +202,23 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
   ph_outside_domain(above), duty_into_dormant_stream each carry (`wilson-ig-v2`, `WILSON-IG-ref-v1`); on SYN-001
   (`""`, `SYN-001-ref-v1`). Alternative: SYN-001 failures gain `provider_id="syn001"` (a moved field on every SYN-001
   failure). Reversible by: the commit. K02/T05/T05b/S10-C/gp tests: 2157 passed.
+- GP-C2 (A70; feed 360 K, 180 kPa → valve to 101 325 Pa → PH flash, Q = 5 kW): CONVERGED (0 steps, 0.48 s), VERIFIED;
+  energy_balance V −6.75e-9 W, D 6.78e-9 W; |Z| = 6, one-sided worst 1.67e-10. First tried at 200 kPa, the records'
+  P_max: the central stencil's forward point on S1.P left the domain (`witness_stencil_invalid_trial_state(S1.P)`),
+  so the registered feed is 180 kPa (D1's valve case), inside the domain — a case choice, no check changed.
+- GP-C3 (A71; C-MW liquid 330 K + ethanol-water (0, 0.2, 0.3) liquid 320 K → mixer (declared liquid) → heater to
+  354 K, β ≈ 0.41): CONVERGED (0 steps), VERIFIED; |Z| = 2 (S1.n.C2H5OH, S2.n.CH3OH), one-sided worst 6.87e-11,
+  on-pattern 2.6e-9.
+- **OQ-5 (escalate, design lane):** GP-C3 with the heater at 345 K (below the mixture's bubble point, ≈ 351 K) lifts a
+  liquid-only outlet, β = 0: `S4.vap.{CH3OH, C2H5OH, H2O}` all exactly 0.0, no positive sibling, so not in Z; the
+  central backward point is a negative flow (`H_S4_vapor` refuses), both witness checks `unsupported`
+  (`witness_stencil_invalid_trial_state(S4.vap.CH3OH)`), UNVERIFIED. Pinned as a fact by
+  `test_oq5_a_liquid_only_lifted_heater_outlet_leaves_the_witness_unsupported`; not widened. Default if the design lane
+  does not rule: leave it UNVERIFIED (typed), as OQ-5's text says.
+- **GP-M1 / GP-M2 (A80, A81) blocked — no WO owns the Wilson machines' evaluate.** `thermal.compressor`/`turbine`
+  on `wilson-ig-v2` are refused at construction (`specification_unsupported(<U>.provider)`, C3-4: "D4/D5 wire it");
+  §4.4's Wilson path (inlet face by `tp_state.single_phase_enthalpy`, the vapour h-inversion, `stability()` on the
+  outlet) is in track C's `machines.py`, outside D5's §4.6 site list and D6's files, and the machines' Wilson row
+  (`thermal_binding.BASES`, then `MODEL_BASES`) is I1b's. A81's pump refusal text (`model_unsupported(thermal.pump)`,
+  the no-volume reason) is I1b's `_UNADMITTED`. Default: a short build-lane WO (C3-4's wiring in `machines.py` + the
+  machines' v2 row) before I1b, then GP-M1/GP-M2 in `tests/test_s11_gp_solve.py` on the `s11_gp_support` pattern.

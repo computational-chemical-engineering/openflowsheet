@@ -130,9 +130,80 @@ def gp_c1() -> Document:
     )
 
 
+def gp_c2() -> Document:
+    """S11.A70 GP-C2: C-MW's feed, liquid at 360 K and 180 kPa → `valve` to 101 325 Pa (lifted
+    outlet) → `ph_flash` with 5 kW duty and no pressure drop → two sinks."""
+    instances = [
+        _instance("F", "syn001.feed_source"),
+        _instance("V", VALVE),
+        _instance("D", PH_FLASH, _zero_drop()),
+        _instance("KV", "syn001.product_sink"),
+        _instance("KL", "syn001.product_sink"),
+    ]
+    connections = [
+        connection("S1", ("F", "outlet"), ("V", "inlet"), "liquid"),
+        connection("S2", ("V", "outlet"), ("D", "inlet"), "vapor_liquid"),
+        connection("S3", ("D", "vapor"), ("KV", "inlet"), "vapor"),
+        connection("S4", ("D", "liquid"), ("KL", "inlet"), "liquid"),
+    ]
+    pins = [
+        *_feed_pins("S1", C_MW_FEED, 360.0, 180_000.0),
+        _p("SPEC-V-P", "S2", P_ATM),
+        specification("SPEC-D-Q", "instance", "D", "duty.Q", 5.0e3, "heat_rate"),
+    ]
+    return revision(
+        instances,
+        connections,
+        pins,
+        components=WILSON_BASIS.components,
+        record_source=WILSON_RECORDS,
+        revision_id="S11-GP-C2",
+    )
+
+
+#: GP-C3's second liquid: ethanol-water (no methanol), mol/s.
+EW_FEED = (0.0, 0.2, 0.3)
+
+
+def gp_c3(heater_temperature: float = 354.0) -> Document:
+    """S11.A71 GP-C3: C-MW's feed (liquid, 330 K) and an ethanol-water liquid (320 K), both at
+    101 325 Pa → `adiabatic_mixer` (declared liquid outlet, judged by `single_phase_admissible`) →
+    `tp_heater` to 354 K (lifted outlet, β ≈ 0.41) → a sink. At 345 K the lifted outlet is
+    liquid only (β = 0, the vapour columns exactly zero): S11 rulings OQ-5's case, kept as a test
+    of its own."""
+    instances = [
+        _instance("FA", "syn001.feed_source"),
+        _instance("FB", "syn001.feed_source"),
+        _instance("M", MIXER),
+        _instance("H", HEATER, _zero_drop()),
+        _instance("K", "syn001.product_sink"),
+    ]
+    connections = [
+        connection("S1", ("FA", "outlet"), ("M", "inlet"), "liquid"),
+        connection("S2", ("FB", "outlet"), ("M", "inlet"), "liquid"),
+        connection("S3", ("M", "outlet"), ("H", "inlet"), "liquid"),
+        connection("S4", ("H", "outlet"), ("K", "inlet"), "vapor_liquid"),
+    ]
+    pins = [
+        *_feed_pins("S1", C_MW_FEED, 330.0, P_ATM),
+        *_feed_pins("S2", EW_FEED, 320.0, P_ATM),
+        _t("SPEC-H-T", "S4", heater_temperature),
+    ]
+    return revision(
+        instances,
+        connections,
+        pins,
+        components=WILSON_BASIS.components,
+        record_source=WILSON_RECORDS,
+        revision_id="S11-GP-C3",
+    )
+
+
 #: Case name -> document builder; the committed file is `GP / f"{name}.json"`.
 CASES: Mapping[str, Callable[[], Document]] = {
     "GP-C1": gp_c1,
+    "GP-C2": gp_c2,
+    "GP-C3": gp_c3,
 }
 
 

@@ -24,6 +24,7 @@ from s11_gp_support import (
     admit_wilson,
     committed_case,
     dispatch_gamma_phi,
+    gp_c3,
     solve,
 )
 
@@ -34,6 +35,8 @@ from openflowsheet.models import UnitEvaluation, flow_id, pressure_id, temperatu
 from openflowsheet.models.revision_flowsheet import WILSON_BASIS, parse_revision
 from openflowsheet.models.syn001 import REFERENCE_CONVENTION
 from openflowsheet.models.syn001.ph_flash import PHFlash
+from openflowsheet.models.syn001.ph_kernel import ph_state
+from openflowsheet.models.syn001.tp_state import tp_state
 from openflowsheet.models.syn001.valve import Valve
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.thermo import FlashRequest, PropertyProvider, StreamState
@@ -48,6 +51,7 @@ from openflowsheet.verify.checks import (
 
 TAU_E = KIND_TOLERANCE["heat_rate"]
 TAU_FLOW = KIND_TOLERANCE["molar_flow"]
+TAU_T = KIND_TOLERANCE["temperature"]
 P_ATM = 101_325.0
 CONTEXT = EvaluationContext(model_version="t", constants_sha256="0" * 64, phase_signature=None)
 
@@ -175,6 +179,87 @@ def test_a69_gp_c1_heater_to_tp_flash(gamma_phi: list[int]) -> None:
         assert abs(state[flow_id("S4", c)] - flash.liquid.n[k]) <= TAU_FLOW, c
     assert witness["Z"] == 6
     assert witness["one_sided_worst"] <= DERIVATIVE_TOLERANCE / 10, witness
+
+
+def test_a69_the_wilson_heater_to_flash_time_gate() -> None:
+    """§4.11: the Wilson heater→flash ≤ 10 s wall (measured 0.15 s solve, 0.22 s certificate)."""
+    start = time.perf_counter()
+    _, _, run = solve(committed_case("GP-C1"))
+    assert run.outcome == "CONVERGED"
+    assert time.perf_counter() - start <= 10.0
+
+
+# -- S11.A70: GP-C2 --------------------------------------------------------------------------------
+
+
+def test_a70_gp_c2_valve_to_ph_flash(gamma_phi: list[int]) -> None:
+    """S11.A70: VERIFIED; the PH flash's T and split equal `ph_state` at the same inputs (the
+    inlet's lifted enthalpy plus the duty, at the drum pressure) within the kind tolerances, and
+    |Ḣ_in − Ḣ_out| ≤ τ_E across the valve. Measured: 0 Newton steps; energy_balance V −6.75e-9 W,
+    D 6.78e-9 W; |Z| = 6, one-sided worst 1.67e-10, on-pattern 1.67e-10."""
+    certificate, state, witness, _ = certified(committed_case("GP-C2"), gamma_phi)
+    assert_verified(certificate)
+    energy = {c.id: c for c in certificate.checks if c.category == "energy_balance"}
+    valve = energy["energy_balance.V"]
+    assert valve.value is not None and abs(valve.value) <= TAU_E
+    provider = fresh_provider(WILSON_BASIS)
+    inlet = tp_state(provider, _stream(state, "S2"), CONTEXT)
+    assert inlet.status == "ok" and inlet.enthalpy_flow is not None
+    closure = ph_state(
+        provider,
+        _stream(state, "S2").n,
+        state[pressure_id("S3")],
+        inlet.enthalpy_flow + 5.0e3,
+        CONTEXT,
+    )
+    assert closure.status == "ok" and closure.temperature is not None, closure.message
+    split = closure.split
+    assert split is not None and split.vapor is not None and split.liquid is not None
+    for stream in ("S3", "S4"):
+        assert abs(state[temperature_id(stream)] - closure.temperature) <= TAU_T
+    for k, c in enumerate(WILSON_BASIS.components):
+        assert abs(state[flow_id("S3", c)] - split.vapor.n[k]) <= TAU_FLOW, c
+        assert abs(state[flow_id("S4", c)] - split.liquid.n[k]) <= TAU_FLOW, c
+    assert witness["Z"] == 6
+    assert witness["one_sided_worst"] <= DERIVATIVE_TOLERANCE / 10, witness
+
+
+# -- S11.A71: GP-C3 --------------------------------------------------------------------------------
+
+
+def test_a71_gp_c3_mixer_of_two_liquids_to_heater(gamma_phi: list[int]) -> None:
+    """S11.A71: VERIFIED, the mixer's declared liquid outlet judged by `single_phase_admissible`
+    (its admissibility row passes). Measured: 0 Newton steps; energy_balance M 0.0, H −3.1e-9 W;
+    |Z| = 2 (S1's ethanol, S2's methanol), one-sided worst 6.87e-11, on-pattern 2.6e-9."""
+    certificate, _, witness, _ = certified(committed_case("GP-C3"), gamma_phi)
+    assert_verified(certificate)
+    admissibility = [
+        c for c in certificate.checks if c.category == "phase_admissibility" and "S3" in c.id
+    ]
+    assert admissibility and all(c.result == "pass" for c in admissibility), admissibility
+    assert witness["Z"] == 2
+    assert witness["one_sided_worst"] <= DERIVATIVE_TOLERANCE / 10, witness
+
+
+def test_oq5_a_liquid_only_lifted_heater_outlet_leaves_the_witness_unsupported(
+    gamma_phi: list[int],
+) -> None:
+    """S11 rulings OQ-5, a fact for the design lane: GP-C3 with the heater at 345 K, below the
+    mixture's bubble point, lifts a liquid-only outlet (β = 0: `S4.vap.<c>` exactly 0.0 for every
+    c, so no column of that phase has a positive sibling and Z leaves them out). The central
+    stencil's backward point is a negative flow, which the vapour enthalpy block refuses, so the
+    witness is `unsupported` and the certificate UNVERIFIED. Recorded, not widened."""
+    document = gp_c3(heater_temperature=345.0)
+    binding, plan, run = solve(document)
+    assert run.outcome == "CONVERGED" and run.state is not None
+    assert all(run.state[f"S4.vap.{c}"] == 0.0 for c in WILSON_BASIS.components)
+    certificate = verify_revision(binding, document, run, solve_plan=plan.steps[-1].solve_plan)
+    witness = {c.id: c for c in certificate.checks if c.category == "derivative_witness"}
+    assert {c.result for c in witness.values()} == {"unsupported"}
+    assert {c.reason for c in witness.values()} == {
+        "witness_stencil_invalid_trial_state(S4.vap.CH3OH)"
+    }
+    assert certificate.verification_status == "UNVERIFIED"
 
 
 # -- S11 rulings item 11 (R-840): the `ph_kernel` failure labels -----------------------------------
