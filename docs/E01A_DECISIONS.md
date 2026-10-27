@@ -178,24 +178,41 @@ I1's.
   `src/openflowsheet` (`tests/test_m07_journey.py:796`), so the R3 carry identity of the release journey moves with
   any E01 source file — an RC-time fact, not a test failure. `AMENDED_TESTS` stays empty so far.
 
-## Handoff (2026-10-27, context cap) — resume from here
+- **ESC-A3 (open, design lane; blocks A3's forms and set file).** The pinned SSLW.py 2.13.0 does not fit §4.5.1's
+  forms (κ an exact unit factor; F_M/F_T constants; pressure a piecewise log-polynomial or "ASME thickness"):
+  (a) HX base `exp(α1 − α2 ln(1.1·S) + α3 ln²(1.1·S))`, S ft²/unit, oversize 1.1 (SSLW.py:391-425) — 1.1 is not a
+  unit factor; material factor `A + (S/100 ft²)^B`, size-dependent (:438-469); pressure factor
+  `0.9803 + 0.0180 p + 0.0017 p²`, p = psig/100, a polynomial (:478-498); no size range in the file (the note's
+  150–12 000 ft² is the book's). (b) Vessels: shell thickness is an input, default 1.25 in (:513), no ASME
+  computation; W = π(D+t)(L+0.8D)·t·ρ_m lb (:661-669); base log-quadratic in W (:673-699); W ranges only in a
+  docstring (:534); platforms/ladders and trays are **additive** (:719-776, :777-868), tray material factor linear
+  in D, count factor `max(1, 2.25/1.0414^N)`. (c) Pump and motor base costs are `USD_CE394` (:1579-1661; IDAES
+  `USD_CE394 = 500/394 USD_CE500`, costing_base.py:66), not CE 500; motor η_m(W) = 0.80 + 0.0319 ln W − 0.00182 ln²W.
+  (d) Compressor (:1080-1178) and turbine (`530·W^0.81`, :1338-1386) fit as written. Proposed grammar (to rule on):
+  per-entry index basis; factor kinds `size_power` (A + (z/z_ref)^B) and `polynomial` in a named variable; additive
+  `adders` (each a product of terms); `oversize` as its own exact factor on S; vessel thickness a θ (default 1.25 in,
+  limitation `SHELL_THICKNESS_DEFAULTED`); size ranges either from the book with their own citation or no `size`
+  regime where the source states none. Not blocked: `cost/index.py`, the three series files, the
+  log-polynomial/power-law/constant forms, the loader's checks.
 
-- **Done:** WO-A1 (commits `66b71db0` schema+registry, `1ea9bb60` core). `tests/test_e01_a_core.py` 19 passed;
-  ruff/format/mypy clean on `src/openflowsheet/assessment`. Protected-path diff vs `f8a68fed`: empty.
-  Schema-touching suite (37 files): 2463 passed, 5 failed = ESC-A1's 4 + m07 A21 (passes once committed).
-- **Not done:** WO-A2 (sizing), WO-A3 (cost data and forms). Pre-A3 facts above are confirmed; IDAES source is
-  re-obtainable with the same `pip download` (hash above). Nothing of A2/A3 is started.
-- **Next (A2):** `assessment/blocks.py` `VolumetricFlowBlock` (§4.4.3; read `thermo.PropertyProvider.evaluate_phase`
-  and the S11 saturation routine, record the names), `assessment/sizing/__init__.py` (`FAMILIES`, `register_family`)
-  and the families §4.4.1–§4.4.7 as `ContributionPlan` pieces using `program.Symbols`/`OutputDef`/`Theta` and
-  `regimes.RegimeEntry`/`AdmissibilityRow` (pattern: the `Toy` in `tests/test_e01_a_core.py`). The size regime
-  belongs to the cost entry (A3/A4), sizing outputs are `size.<item>.<q>`. Tests `tests/test_e01_a_sizing.py`:
-  A9 (Underwood numbers), A10 (hand case in §6.1), A13; A11/A12 need B4's hand cases.
-- **Next (A3):** `cost/forms.py`, `cost/sets.py`, `_data/assessment/cost/sslw-idaes-v1.json` (every number with
-  `source_line` into SSLW.py 2.13.0; notice = SSLW.py:1–12), `cost/index.py`, the three series files (BLS WPU11,
-  Eurostat C28 euro area, FRB G.5A) with licence text; read them with `importlib.resources.files("openflowsheet")
-  .joinpath("_data", "assessment", …)` (not `resources.packaged`, which refuses unlisted paths). A16–A19.
-- **API notes for A2+:** builders never branch on symbols; choices come from `ctx.regime.choice(id)` or the rule on
-  floats via `ctx.evaluate(state, [OutputDef…], theta, blocks)`; admissibility rows are `AdmissibilityRow(row_id,
-  build, nominal)` published as `adm.<entry>.<row_id>`; a refusal is `program.Refusal(code, target, detail)` in the
-  plan, never raised.
+## Handoff (2026-10-27, second context cap) — resume from here
+
+- **Done:** ESC-A1 ruled and applied (`b474ef71`: `benchmarks/e01/numerical_policy_external.yaml` in `ADDENDA`;
+  v2 bytes unchanged; m04 A37, m02 G1, t08_adr0025 A1 ×2 pass; M05's ADDENDA pin amended — I1 adds it to
+  `AMENDED_TESTS`). WO-A2 (`5398079d`): `assessment/blocks.py`, `assessment/sizing/{__init__,families}.py`,
+  `tests/test_e01_a_sizing.py` 15 passed; core + policy tests 317 passed; ruff/mypy clean; protected-path diff vs
+  `f8a68fed` empty.
+- **Open for the design lane:** ESC-A2 (study/optimization-report sha256 names vs v2's partition), ESC-A3 (SSLW forms),
+  ESC-A4 (kinetic CSTR volume; dormant liquid with v_decl), ESC-A5 (no `v` on any registered column basis or SYN-001).
+- **Not done:** WO-A3. Start with what ESC-A3 does not block: `assessment/cost/index.py` (§4.6 escalation
+  `E = I(Y_t)/I(Y_b) · X · LF`, refusals), the series files under `src/openflowsheet/_data/assessment/index/`
+  (BLS WPU11 annual, Eurostat `sts_inppd_a` C28 EA, FRB G.5A; retrieve, record url/retrieved/sha256/licence text;
+  read via `importlib.resources.files("openflowsheet").joinpath("_data","assessment",…)`), `cost/forms.py` for
+  log-polynomial (`exp(ln B·Σ a_i (ln S'/ln B)^i)`, `ln 10 = 2.302585092994046`), power-law, constant, and
+  `cost/sets.py`'s loader checks (max ≥ 2·min, every number a `source_line`, known forms). The SSLW set file waits
+  for the ESC-A3 ruling. IDAES wheel: scratchpad `idaes_dl/` (sha256 above); `SSLW.py` unpacked under scratchpad
+  `idaes_src/` (re-unzip if gone). Tests A16–A19 in `tests/test_e01_a_cost.py`.
+- **API for A3/A4:** `plan_sizing(ctx, state) -> (SizingPlan, SizingContext)`; `SizingPlan.items` are `SizedItem`
+  (`size` {q: output id}, `design_pressure` var id or Pa, `options` incl. material/orientation/`N_act`, `utility` +
+  `duty` builder, `electricity` + `power` builder); `.contribution()` gives the plan fragment; the `size` regime is
+  the cost entry's to add (`regimes.select_size`), reading the size outputs via `s.out(...)`.
