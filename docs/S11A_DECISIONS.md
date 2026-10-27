@@ -412,3 +412,13 @@ commit). Not done, in order:
   `AMENDED_TESTS` entry); `test_s11_thermal_verifier::test_the_envelope_reads_the_thermal_duty_and_work` pins the
   thermal duty and work ids literally. Alternative: leave it failing for the reviewer. Reversible by: the one
   `base_duty` line.
+- Item 5 (envelope, §4.10): `unit_models.members` += the seven (30), statement restated; L-TH-1…8 (L-TH-4/5 with
+  rulings item 10's appended sentences, L-TH-8 new) and L-GP-1…3 appended after L-COL-10, each with collected test
+  evidence; L-S11-1/2 drop "only the routing models", L-S11-3 and the three `other_basis_providers` caveats name what
+  binds now; the A13 evidence node follows its rename (`test_a13_a82_the_admission_matrix`). `t08_support_matrix.py`
+  A20 counts 30 models / 7 thermal; `--emit`, then `--check` 0 problems. `test_t08_w2_support_envelope::test_a20_…`
+  (already in `AMENDED_TESTS`, §8.3) restated to 30/7. A83 in `test_s11_bases`. Providers axis, scanned providers and
+  `LIBRARY_ONLY_PROVIDERS` were already §4.10's (A5).
+- DECISION (item 5): L-S11-3 and the `wilson-ig-v2` caveat now name the five K02/T05 units and the two vapour machines
+  (the old "routing models and the column" became false at I1b; §4.10 says only "L-S11-3 names wilson-ig-v2").
+  Alternative: leave L-S11-3's binding sentence as it was. Reversible by: the two text blocks and `--emit`.

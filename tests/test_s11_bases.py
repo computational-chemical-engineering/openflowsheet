@@ -348,3 +348,29 @@ def test_a10_the_corpus_validation_reports_are_the_bases() -> None:
         digest.update(name.encode())
         digest.update(document_sha256(report).encode())
     assert digest.hexdigest() == BASE_VALIDATION_DIGEST
+
+
+# -- S11.A83: the envelope after I1b (units design §4.10) -----------------------------------------
+
+
+def test_a83_the_envelope_holds_the_thermal_models_and_their_limitations() -> None:
+    envelope = load_yaml(REPO_ROOT / "benchmarks" / "t08" / "support_envelope.yaml")
+    axes = {axis["id"]: axis for axis in envelope["axes"]}
+    members = axes["unit_models"]["members"]
+    assert len(members) == 30
+    assert sorted(members) == sorted(revision_binding.MODEL_BUILDERS)
+    assert axes["property_model"]["providers"] == [
+        "coolprop-heos-v1",
+        "iapws95-v1",
+        "pr-c1-v1",
+        "syn001",
+        "wilson-ig-v2",
+    ]
+    ids = {row["id"] for row in envelope["limitations"]}
+    assert {f"L-TH-{n}" for n in range(1, 9)} | {f"L-GP-{n}" for n in range(1, 4)} <= ids
+    texts = {row["id"]: " ".join(row["text"].split()) for row in envelope["limitations"]}
+    # L-S11-1/2 drop "routing models only" (§4.10); rulings item 10's appended sentences.
+    assert all("Only the routing models" not in texts[f"L-S11-{n}"] for n in (1, 2, 3))
+    assert texts["L-TH-4"].endswith("is refused `isentropic_state_two_phase(<U>)`.")
+    assert "(measured: 4 of 11 200 grid outcomes, at 22.85 MPa)" in texts["L-TH-5"]
+    assert texts["L-TH-8"].startswith("A revision declares one phase per port (R4)")

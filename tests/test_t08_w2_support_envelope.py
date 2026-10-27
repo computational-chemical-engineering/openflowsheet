@@ -64,9 +64,10 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
     # Spec §9's 13 SYN-001 models, literal unchanged; M02's join adds the eight C1 models (R-280),
     # the stand-in synthetic only (R-280 (c)); W27 Amendment 3 adds M04's surrogate (R-301), which
     # has no variant, so it is not synthetic only. S11 binds S02's column (ADR 0050, R-810;
-    # design note §8.3).
+    # design note §8.3) and the seven `thermal.*` models (ADR 0051; units design §4.10, §8.3).
     assert len([model for model in facts["models"] if model.startswith("syn001.")]) == 14
-    assert len(facts["models"]) == 23
+    assert len([model for model in facts["models"] if model.startswith("thermal.")]) == 7
+    assert len(facts["models"]) == 30
     assert facts["synthetic_models"] == ["c1.reactor_standin"]
     # M01 adds `pr-c1-v1` (ADR 0026); S11 makes S05's `iapws95-v1`, S07's `coolprop-heos-v1` and
     # S10's Wilson records selectable (ADR 0050, R-810), on `wilson-ig-v2` since WO-D5 (ADR 0051).

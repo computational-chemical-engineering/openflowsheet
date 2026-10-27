@@ -50,18 +50,19 @@ axes:
         limitation: L-S11-1
         caveat: >-
           its own component (H2O) and domain (273.16–1273.15 K, 10²–10⁸ Pa), the routing models
-          only, and S05's validation
+          and the `thermal.*` models, and S05's validation
       - id: coolprop-heos-v1
         limitation: L-S11-2
         caveat: >-
           one fluid per revision among 123, S07's tiers and per-fluid domains, the routing models
-          only, and the `coolprop` extra installed
+          and the `thermal.*` models, and the `coolprop` extra installed
       - id: wilson-ig-v2
         limitation: L-S11-3
         caveat: >-
           its own three components (CH3OH, C2H5OH, H2O; records in the source repository only)
-          and domain (300–400 K, 30–200 kPa), the routing models only, premises P1–P3 checked at
-          binding, and S10's VAL-1–3 bands
+          and domain (300–400 K, 30–200 kPa), the routing models, the column, five K02/T05 units
+          and two vapour machines (L-GP-1), premises P1–P3 checked at binding, and S10's VAL-1–3
+          bands
     reference_convention: SYN-001-ref-v1
     evidence:
       - check:T05.A23
@@ -102,11 +103,16 @@ axes:
   - id: unit_models
     title: Unit models
     statement: >-
-      The twenty-three models of `MODEL_BUILDERS`, each with its registered limitations (L02,
-      L27–L31, L-CSTR-1..3, L-COL-1..10; the surrogate's Q0–Q7): SYN-001's thirteen, on SYN-001's
-      basis only except the three routing models (`syn001.feed_source`, `syn001.product_sink`,
-      `syn001.stream_splitter`), which since S11 (R-810) bind on every selectable basis (L-S11-1..3);
-      since S11 the column `syn001.column`, on SYN-001's and `wilson-ig-v2`'s bases (L-S11-3); and
+      The thirty models of `MODEL_BUILDERS`, each with its registered limitations (L02,
+      L27–L31, L-CSTR-1..3, L-COL-1..10, L-TH-1..8, L-GP-1..3; the surrogate's Q0–Q7): SYN-001's
+      thirteen, on SYN-001's basis only except the three routing models (`syn001.feed_source`,
+      `syn001.product_sink`, `syn001.stream_splitter`), which since S11 (R-810) bind on every
+      selectable basis (L-S11-1..3), and the five K02/T05 units with γ–φ faces (`syn001.tp_heater`,
+      `tp_flash`, `ph_flash`, `valve`, `adiabatic_mixer`), which since S11 bind on `wilson-ig-v2`'s
+      basis too (L-GP-1); since S11 the column `syn001.column`, on SYN-001's and `wilson-ig-v2`'s
+      bases (L-S11-3); since S11 the seven `thermal.*` models (heater, valve, mixer, flash, pump,
+      compressor, turbine; ADR 0051), on the pure-fluid bases `iapws95-v1` and
+      `coolprop-heos-v1`, the compressor and turbine on `wilson-ig-v2`'s as well (L-TH-1..8); and
       since M02's join (R-280) the eight C1 models and since W27 Amendment 3 (R-301) M04's
       `c1.reactor_surrogate`, on the `pr-c1-v1` basis only (R-288). `c1.reactor_standin` is
       synthetic only: the stand-in for the C1 reactor (ADR 0034 D9), labelled synthetic in its
@@ -136,6 +142,13 @@ axes:
       - syn001.tp_flash
       - syn001.tp_heater
       - syn001.valve
+      - thermal.compressor
+      - thermal.flash
+      - thermal.heater
+      - thermal.mixer
+      - thermal.pump
+      - thermal.turbine
+      - thermal.valve
     #: Listed, and synthetic only (R-280 (c)): checked against the variant registry (T08.A20).
     synthetic_members: [c1.reactor_standin]
     evidence:
@@ -144,6 +157,8 @@ axes:
       - tests/test_m02_join.py::test_the_registry_holds_the_twenty_one_models_each_on_its_own_basis
       - tests/test_m02_wo9_reactor.py::test_g8e_the_stand_in_binds_and_says_synthetic_everywhere
       - tests/test_s11_column_registration.py::test_a39_the_registries_agree_and_the_column_binds_on_syn001_and_wilson
+      - tests/test_s11_routing.py::test_a82_the_registries_hold_thirty_members
+      - tests/test_s11_thermal_binding.py::test_the_three_tables_name_the_seven_models
       - check:T05.A17
       - check:T05.A18
       - check:T05.A19
@@ -947,11 +962,12 @@ limitations:
   - id: L-S11-1
     text: >-
       `iapws95-v1` (IAPWS-95, S05) is selected by `record_source: benchmarks/s05/components.yaml`
-      for the one component H2O, over 273.16–1273.15 K and 10²–10⁸ Pa. Only the routing models
-      (`syn001.feed_source`, `syn001.product_sink`, `syn001.stream_splitter`) bind on it; its
-      evidence is S05's validation against the IAPWS-95 reference equation (S05 spec).
+      for the one component H2O, over 273.16–1273.15 K and 10²–10⁸ Pa. The routing models
+      (`syn001.feed_source`, `syn001.product_sink`, `syn001.stream_splitter`) and the seven
+      `thermal.*` models (L-TH-1..8) bind on it; its evidence is S05's validation against the
+      IAPWS-95 reference equation (S05 spec).
     evidence:
-      - tests/test_s11_routing.py::test_a13_the_admission_matrix
+      - tests/test_s11_routing.py::test_a13_a82_the_admission_matrix
       - tests/test_s11_bases.py::test_a09_the_other_bases_have_their_providers
       - doc:docs/derivations/S05-IAPWS95-spec.md
       - doc:docs/derivations/S11-design.md §4.11
@@ -959,13 +975,13 @@ limitations:
     text: >-
       `coolprop-heos-v1` (CoolProp HEOS, S07) is selected by `record_source:
       benchmarks/s07/components.yaml` for exactly one admitted fluid per revision, among the 123
-      of S07's table; each fluid keeps S07's tier and domain. Only the routing models bind on it,
-      and it needs the `coolprop` extra: without CoolProp installed, binding is refused
+      of S07's table; each fluid keeps S07's tier and domain. The routing models and the seven
+      `thermal.*` models (L-TH-1..8) bind on it, and it needs the `coolprop` extra: without CoolProp installed, binding is refused
       `basis_unavailable(coolprop-heos-v1)`.
     evidence:
       - tests/test_s11_bases.py::test_a09_coolprop_without_its_extra_is_unavailable
       - tests/test_s11_bases.py::test_a06_the_coolprop_records_are_the_generators
-      - tests/test_s11_routing.py::test_a13_the_admission_matrix
+      - tests/test_s11_routing.py::test_a13_a82_the_admission_matrix
       - doc:docs/derivations/S07-spec.md
       - doc:docs/derivations/S11-design.md §4.11
   - id: L-S11-3
@@ -973,15 +989,16 @@ limitations:
       `wilson-ig-v2` (S10's Wilson activity model with an ideal-gas vapour; `wilson-ig-v1`'s answers
       with the molar entropy added, S11 units design §4.6) is selected by
       `record_source: benchmarks/s10/records.yaml` for its three record components (CH3OH,
-      C2H5OH, H2O, in any order), over 300–400 K and 30–200 kPa. The routing models and the
-      column (`syn001.column`, L-COL-1..10) bind on it. Its records are in the source repository
+      C2H5OH, H2O, in any order), over 300–400 K and 30–200 kPa. The routing models, the
+      column (`syn001.column`, L-COL-1..10), the five K02/T05 units with γ–φ faces and the
+      vapour machines `thermal.compressor` and `thermal.turbine` (L-GP-1..3) bind on it. Its records are in the source repository
       only, so in a wheel binding is refused `basis_unavailable(wilson-ig-v2)` (R-706, R-811). Premises P1–P3 are checked at binding.
       The S10 VAL-1–3 bands apply, and the VAL-3 latent-heat miss (methanol, +5.72 % against
       5 %) is carried. Results are compared across architectures by tolerance, not bitwise.
     evidence:
       - tests/test_s11_bases.py::test_a09_wilson_without_its_records_is_unavailable
       - tests/test_s11_bases.py::test_a08_the_binder_refuses_unmet_premises
-      - tests/test_s11_routing.py::test_a13_the_admission_matrix
+      - tests/test_s11_routing.py::test_a13_a82_the_admission_matrix
       - tests/test_s11_column_solve.py::test_the_wilson_column_in_a_flowsheet_reproduces_its_registered_root
       - doc:docs/derivations/S10-spec.md
       - doc:docs/s10-validation-report.md
@@ -1064,6 +1081,98 @@ limitations:
     evidence:
       - tests/test_s11_column_solve.py::test_a_column_under_the_ptc_policy_is_refused_typed
       - doc:docs/S11B_DECISIONS.md
+  - id: L-TH-1
+    text: >-
+      Pure-fluid stream regimes are declared (liquid, vapor, vapor_liquid = saturated); a
+      closure in another regime is refused `phase_regime_mismatch`.
+    evidence:
+      - tests/test_s11_thermal_kernel.py::test_a45_declared_state_table
+      - tests/test_s11_thermal_units.py::test_heater_temperature_mode_outside_the_declared_phase_is_a_mismatch
+      - tests/test_s11_thermal_solve.py::test_a63_a_liquid_valve_outlet_that_flashes_is_a_regime_mismatch
+      - doc:docs/adr/0051-s11-thermal-units-on-the-new-bases.md
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-TH-2
+    text: >-
+      Saturated pure-fluid streams are produced only by `thermal.*` units; there are no wet
+      feeds, and routing models do not carry them.
+    evidence:
+      - tests/test_s11_thermal_units.py::test_a58_the_carried_split_travels_bitwise_into_a_reader
+      - tests/test_s11_thermal_binding.py::test_flash_products_must_be_saturated
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-TH-3
+    text: >-
+      `thermal.flash` needs a two-phase state at drum pressure; its products are declared
+      `vapor_liquid`.
+    evidence:
+      - tests/test_s11_thermal_units.py::test_a57_drum_splits_wet_steam_at_its_saturation_temperature
+      - tests/test_s11_thermal_units.py::test_drum_refuses_a_single_phase_state
+      - tests/test_s11_thermal_binding.py::test_flash_products_must_be_saturated
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-TH-4
+    text: >-
+      Machine phase rules (S11 units design §4.4 table); a compressor with a two-phase
+      isentropic state is refused. In a revision, a turbine's isentropic state takes the outlet's
+      declared form. A vapour outlet whose isentropic state is two-phase is refused
+      `isentropic_state_two_phase(<U>)`.
+    evidence:
+      - tests/test_s11_thermal_machines.py::test_a55_dry_fluid_saturated_vapour_is_refused
+      - tests/test_s11_thermal_machines.py::test_a53_turbine
+      - tests/test_s11_thermal_binding.py::test_the_turbine_takes_no_isentropic_phase_parameter
+      - doc:docs/derivations/S11-units-design.md §4.10
+      - doc:docs/reviews/S11-rulings.md §4 (item 10, R-839)
+  - id: L-TH-5
+    text: >-
+      The near-critical box and the supercritical label rule of S05 §4.2 and S07. A
+      supercritical PH or PS closure whose root lies at the provider's label switch (T = T_c)
+      returns `not_converged` (measured: 4 of 11 200 grid outcomes, at 22.85 MPa).
+    evidence:
+      - tests/test_s11_thermal_kernel.py::test_a43_grid_covers_every_regime_and_supercritical
+      - doc:docs/derivations/S11-units-design.md §4.10
+      - doc:docs/reviews/S11-rulings.md §4 (item 10, R-839)
+  - id: L-TH-6
+    text: >-
+      No regime discovery for pure fluids.
+    evidence:
+      - tests/test_s11_thermal_units.py::test_a52_iv_duty_mode_declared_liquid_landing_saturated_is_a_mismatch
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-TH-7
+    text: >-
+      Dormant single-phase thermal outlets need `T05b-phase-contract-v2`.
+    evidence:
+      - tests/test_s11_thermal_solve.py::test_a62_a_dormant_heater_with_zero_duty_converges_on_the_label_row
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-TH-8
+    text: >-
+      A revision declares one phase per port (R4), so a `thermal.mixer` takes inlets of one
+      declared phase. Mixing a liquid with a vapour is available by direct construction only, as
+      L-COL-1 is for the column's side feeds.
+    evidence:
+      - tests/test_s11_thermal_binding.py::test_mixed_inlet_declarations_are_ambiguous
+      - doc:docs/reviews/S11-rulings.md §4 (item 10, R-839)
+  - id: L-GP-1
+    text: >-
+      On Wilson (`wilson-ig-v2`), only the five K02/T05 units and the two machines; no pump
+      (no liquid volume); exchanger, separator and reactors refused.
+    evidence:
+      - tests/test_s11_routing.py::test_a13_a82_the_admission_matrix
+      - tests/test_s11_gp_solve.py::test_a81_the_binder_refuses_the_pump_on_wilson
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-GP-2
+    text: >-
+      Wilson machines are single-phase vapour, within the records' domain (300–400 K,
+      30–200 kPa).
+    evidence:
+      - tests/test_s11_thermal_machines.py::test_a_wilson_machine_is_vapour_on_both_ports
+      - tests/test_s11_gp_solve.py::test_a80_gp_m1_wilson_compressor
+      - tests/test_s11_gp_solve.py::test_a81_gp_m2_a_wilson_turbine_crossing_the_dew_point_is_refused
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-GP-3
+    text: >-
+      A Wilson TP flash near an azeotrope has an E-2 noise floor (S10 §14); a
+      temperature-degenerate split is judged on its stored split.
+    evidence:
+      - tests/test_s11_gp_verifier.py::test_a72_the_azeotrope_is_temperature_degenerate_and_verifies
+      - doc:docs/derivations/S11-units-design.md §4.10
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
