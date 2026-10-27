@@ -75,6 +75,27 @@ in the run log below.
   exempt from (iv) and (v'), with (ii) reduced to `cas` (InChI/InChIKey could be added to the CoolProp file from
   CoolProp 8.0.0 in a scratch venv). Needs: the `specifier`'s ruling on T08.A32.
 
+## Track A: A2 routing on every basis (§4.4–§4.5)
+
+- DECISION: does a routing unit's `evaluate()` report the bound convention too? → yes, `UnitEvaluation.reference_
+  convention = self.reference_convention` (SYN-001's constant by default, so no SYN-001 output moves); reporting
+  `SYN-001-ref-v1` for an IAPWS-95 stream would contradict ADR 0001 D5.2. Alternative: only `manifest()` reads the
+  fields (§4.5's letter). Reversible by: three lines in feed/sink/splitter `evaluate`.
+- DECISION: R-288's hint for a routing model refused on C1 (`syn001.feed_source binds on the … basis only`) → on
+  SYN-001's and C1's bases `_basis_refusal` lists only those two bases, so the 22 syn001↔c1 hints stay byte-identical
+  (S11.A13; measured digest `71983ce5…` at `8c34ecb0` and on the branch; family C judges them). The text then
+  under-states where the routing models bind. On an S11 basis it lists all bases and appends `_UNADMITTED`.
+  Alternative: list every basis (moves 4 family-C keys, the WO-0 control's). Reversible by: the `S11_BASES` filter.
+- DECISION: the reason for a `c1.*` unit on Wilson (§4.4 lists none) → "the c1.* units carry pr-c1-v1's own physics
+  (ADR 0050 D3)"; the C1 routing models get only their namesake hint. Alternative: no reason. Reversible by:
+  `_UNADMITTED["c1_physics"]`.
+- DECISION: S11.A12's "material balance exact (==)" → holds for flows whose split products are exact in binary64; the
+  Wilson case uses (0.25, 0.25, 0.5). The splitter's own rows (`n_rec = r·n`, `n_purge = (1 − r)·n`, unchanged)
+  leave one ulp at e.g. n = 0.4: 0.12 + 0.27999999999999997 ≠ 0.4 (measured). Alternative: assert within one ulp.
+  Reversible by: the `CASES` row.
+- DECISION: the routing units' `domain` field → a `Mapping` with `hash=False` (frozen dataclasses stay hashable).
+  Alternative: a tuple of pairs. Reversible by: the field declarations.
+
 ## Run log
 
 - WO-0 gate, unmodified tree (`acffd034`), 16 shards per tree, 614 s:

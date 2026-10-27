@@ -53,13 +53,16 @@ SYN001 = frozenset({"syn001"})
 C1 = frozenset({"pr-c1-v1"})
 
 #: R-288: the twenty-two models and the bases each binds on.
+#: S11 design §4.4 (ADR 0050 D3; amended on purpose, R-810): the three routing models bind on
+#: every basis except C1's.
+ROUTING = frozenset({"syn001", "iapws95-v1", "coolprop-heos-v1", "wilson-ig-v1"})
 REGISTERED: dict[str, frozenset[str]] = {
-    "syn001.feed_source": SYN001,
+    "syn001.feed_source": ROUTING,
     "syn001.adiabatic_mixer": SYN001,
     "syn001.tp_heater": SYN001,
     "syn001.tp_flash": SYN001,
-    "syn001.stream_splitter": SYN001,
-    "syn001.product_sink": SYN001,
+    "syn001.stream_splitter": ROUTING,
+    "syn001.product_sink": ROUTING,
     "syn001.ph_flash": SYN001,
     "syn001.valve": SYN001,
     "syn001.liquid_pump": SYN001,

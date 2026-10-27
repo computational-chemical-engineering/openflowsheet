@@ -668,6 +668,20 @@ def instance_contract(
 # -- the six K02 builders (§1.3's table) --------------------------------------------------------
 
 
+def _routing_fields(provider: PropertyProvider) -> dict[str, Any]:
+    """S11 design §4.5: a routing model's manifest fields from the bound provider on a basis
+    other than SYN-001's; nothing on SYN-001's, whose defaults are its constants (so its
+    manifests do not change)."""
+    described = provider.describe()
+    if described.provider_id == SYN001_PROVIDER_ID:
+        return {}
+    return {
+        "property_provider": described.provider_id,
+        "reference_convention": described.reference_convention,
+        "domain": {"T": tuple(described.domain["T"]), "P": tuple(described.domain["P"])},
+    }
+
+
 _FEED_SOURCE: Final = ModelSignature(
     model_id=feed.MODEL_ID,
     ports=feed.PORTS,
@@ -698,6 +712,7 @@ def _feed_source(
         temperature=_pinned(view, signature, "temperature"),
         pressure=_pinned(view, signature, "pressure"),
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {}
 
@@ -810,6 +825,7 @@ def _stream_splitter(
         unit_id=view.unit_id,
         split_fraction=parameters["split_fraction"],
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {}
 
@@ -824,7 +840,8 @@ def _product_sink(
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
     instance_contract(view, _PRODUCT_SINK, components)
-    return ProductSink(unit_id=view.unit_id, components=components), {}
+    unit = ProductSink(unit_id=view.unit_id, components=components, **_routing_fields(provider))
+    return unit, {}
 
 
 # -- the six T05 builders (§1.3's table, W11) ----------------------------------------------------
@@ -1455,6 +1472,14 @@ MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
     signature.model_id: signature for signature in (*_SYN001_SIGNATURES, *_C1_SIGNATURES)
 }
 
+_IAPWS95: Final = "iapws95-v1"
+_COOLPROP: Final = "coolprop-heos-v1"
+_WILSON: Final = "wilson-ig-v1"
+#: The provider ids of the bases S11 makes selectable (ADR 0050 D1).
+S11_BASES: Final = (_IAPWS95, _COOLPROP, _WILSON)
+#: S11 design §4.4: the models that hold no provider and evaluate no property.
+ROUTING_MODELS: Final = (feed.MODEL_ID, sink.MODEL_ID, splitter.MODEL_ID)
+
 #: Model id -> the provider ids of the bases it binds on (register R-288, design note §14.4 D3):
 #: each `syn001.*` model on SYN-001's basis only, each `c1.*` model on the C1 basis only. The one
 #: source of which basis accepts which model: the binder's `model_unsupported(<model id>)` pass
@@ -1463,6 +1488,9 @@ MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
 MODEL_BASES: Final[Mapping[str, frozenset[str]]] = {
     **{s.model_id: frozenset({SYN001_PROVIDER_ID}) for s in _SYN001_SIGNATURES},
     **{s.model_id: frozenset({C1_PROVIDER_ID}) for s in _C1_SIGNATURES},
+    # S11 design §4.4 (ADR 0050 D3): the three routing models hold no provider and bind on every
+    # basis except C1's, which has their namesakes.
+    **dict.fromkeys(ROUTING_MODELS, frozenset({SYN001_PROVIDER_ID, *S11_BASES})),
 }
 
 #: Model id -> what an instance of it takes as a target path, for `parse_revision`'s
@@ -1548,13 +1576,68 @@ SELECTABLE_BASES: Final[Sequence[ComponentBasis]] = _SelectableBases()
 
 def _basis_refusal(model_id: str, basis: ComponentBasis) -> Unbound:
     """R-288: `model_id` does not bind on `basis`. The hint names the bases it binds on and, when
-    there is one, the model of the same function on `basis`."""
-    own = ", ".join(sorted(MODEL_BASES[model_id]))
+    there is one, the model of the same function on `basis`.
+
+    S11 design §4.4: a refusal on SYN-001's or C1's basis keeps its pre-S11 text byte for byte
+    (S11.A13), so it names only those two bases; one on a basis S11 adds names every basis and
+    appends `_UNADMITTED`'s reason."""
+    bases = MODEL_BASES[model_id]
+    if basis.provider_id not in S11_BASES:
+        bases = bases - frozenset(S11_BASES)
+    own = ", ".join(sorted(bases))
     hint = f"{model_id} binds on the {own} basis only, not on this revision's {basis.provider_id}"
     other = _SAME_FUNCTION.get(model_id)
     if other is not None and basis.provider_id in MODEL_BASES[other]:
         hint += f"; on {basis.provider_id} the same function is {other}"
+    reason = _unadmitted(model_id, basis.provider_id)
+    if reason is not None:
+        hint += f"; {reason}"
     return Unbound("unsupported", f"model_unsupported({model_id})", hint=hint)
+
+
+#: S11 design §4.4: why a model is not admitted on a basis S11 adds (or why `syn001.column` is not
+#: admitted on a basis), appended to R-288's hint. No pair between SYN-001 and C1 reads it, so
+#: their hints are unchanged.
+_UNADMITTED: Final[Mapping[str, str]] = {
+    "gamma_phi": "its EO face reads lnK and h_<c>; γ–φ faces are S11c",
+    "pure_fluid": (
+        "pure-fluid units are S11b (two-phase pure-fluid streams are not representable in nTP-v1)"
+    ),
+    "c1_physics": "the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+    "column_vapour": "pr-c1-v1 is vapour-only (S02 §0)",
+    "column_pure": "a pure fluid has no stage composition",
+}
+_COLUMN_MODEL: Final = "syn001.column"
+#: The C1 routing models, refused on S11's bases with their SYN-001 namesake's hint only.
+_C1_ROUTING: Final = frozenset(
+    c1_id for syn001_id, c1_id in _NAMESAKES if syn001_id in ROUTING_MODELS
+)
+
+
+def _unadmitted(model_id: str, provider_id: str) -> str | None:
+    """`_UNADMITTED`'s reason for `model_id` on `provider_id`, or `None` (S11 design §4.4)."""
+    if model_id == _COLUMN_MODEL:
+        if provider_id == C1_PROVIDER_ID:
+            return _UNADMITTED["column_vapour"]
+        if provider_id in (_IAPWS95, _COOLPROP):
+            return _UNADMITTED["column_pure"]
+        return None
+    if model_id in ROUTING_MODELS or model_id in _C1_ROUTING:
+        return None
+    if provider_id in (_IAPWS95, _COOLPROP):
+        return _UNADMITTED["pure_fluid"]
+    if provider_id == _WILSON:
+        return _UNADMITTED["gamma_phi" if model_id.startswith("syn001.") else "c1_physics"]
+    return None
+
+
+#: S11 design §4.4: models outside `MODEL_BASES` refused with a hint (library-only).
+_LIBRARY_ONLY_HINTS: Final[Mapping[str, str]] = {
+    "syn001.cascade": (
+        "bind syn001.column with its top and bottom inlets connected (S02 §1: condenser none, "
+        "reboiler none is S01's cascade)"
+    ),
+}
 
 
 class _PinReader(Mapping[str, float]):
@@ -1717,7 +1800,11 @@ def bind_revision_flowsheet(
     for instance in view.instances:
         # R-288: a model binds on the bases `MODEL_BASES` lists for it, and nowhere else.
         if instance.model_id not in MODEL_BASES:
-            return Unbound("unsupported", f"model_unsupported({instance.model_id})")
+            return Unbound(
+                "unsupported",
+                f"model_unsupported({instance.model_id})",
+                hint=_LIBRARY_ONLY_HINTS.get(instance.model_id),
+            )
         if view.basis.provider_id not in MODEL_BASES[instance.model_id]:
             return _basis_refusal(instance.model_id, view.basis)
     manifests: dict[str, Mapping[str, Any]] = {}
