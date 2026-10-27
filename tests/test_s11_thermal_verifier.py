@@ -8,6 +8,7 @@ set on these states, A65's mutations, A66's independence from `models.thermal.ke
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
@@ -23,6 +24,7 @@ from test_s11_thermal_binding import (
     pascal,
     register,
 )
+from test_s11_thermal_machines import ADDITIVE_STATES, CP, _closed_form, _IdealGas
 
 from openflowsheet.application.revision_binding import (
     _CONTEXT,
@@ -402,3 +404,34 @@ def test_a_dormant_saturated_stream(judged: Any) -> None:
         )
     )
     assert checks["phase_admissibility.stream.S4.fraction"].result == "fail"
+
+
+# -- the additive-vapour (Wilson) isentropic enthalpy flow, the verifier's own (S11.A80) ----------
+
+
+def test_the_additive_isentropic_enthalpy_is_the_ideal_gas_isentrope() -> None:
+    """`vt.additive_isentropic_enthalpy` against the closed-form isentrope of a constant-c_p ideal
+    gas (the fake `test_s11_thermal_machines` uses for the block): T_s within the bisection's
+    floor, a bracket of 4ε·T_s, so Ḣ_s within Σ n_j c_p,j · 4ε·T_s plus rounding, 8ε·|Ḣ_s|
+    (measured: worst |ΔḢ_s| 2.9e-11 W)."""
+    gas = _IdealGas(("A", "B", "C"))
+    for state in ADDITIVE_STATES:
+        *flows, t_in, p_in, p_out = state
+        t_s, expected = _closed_form(state)
+        found = vt.additive_isentropic_enthalpy(gas, CONTEXT, flows, t_in, p_in, p_out)
+        slope = sum(n * CP[name] for n, name in zip(flows, ("A", "B", "C"), strict=True))
+        floor = slope * 4.0 * sys.float_info.epsilon * t_s
+        assert abs(found - expected) <= floor + 8.0 * sys.float_info.epsilon * max(
+            abs(expected), 1.0e3
+        ), (
+            state,
+            found - expected,
+            floor,
+        )
+
+
+def test_an_additive_isentropic_state_outside_the_domain_is_refused() -> None:
+    """A root at an end of the provider's T domain is not inside it: `IsentropicStateError`."""
+    gas = _IdealGas(("A", "B", "C"))
+    with pytest.raises(vt.IsentropicStateError, match="at an end of"):
+        vt.additive_isentropic_enthalpy(gas, CONTEXT, (0.2, 0.5, 0.3), 1900.0, 1.0e5, 1.0e6)

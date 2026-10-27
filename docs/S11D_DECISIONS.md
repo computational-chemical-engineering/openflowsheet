@@ -270,3 +270,8 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
   without complaint, so only the evaluate can say so. Alternative: only the outlet's stability, as §4.4 lists for
   Wilson (then GP-M2 gives `phase_regime_mismatch(<O>)`). Reversible by: reverting commit B (GP-M2 accepts either
   code, as A81 does). Measured: C-MW vapour 375.25 K, 150 → 90 kPa: T_s 337.05 K < dew 358.47 K → refused.
+- Commit C (verifier): `verify.thermal.additive_isentropic_enthalpy` — T_s by bisection on the provider's T domain of
+  Σ_j n_j[s_j(T, P_O) − s_j(T_I, P_I)] (60 halvings or bracket ≤ 4ε·T, as the pure routine; zero-flow components
+  not asked), Ḣ_s = Σ_j n_j h_j(T_s, P_O); a root at a domain end → `IsentropicStateError` (check `unsupported`).
+  `_machine_specification` dispatches on the `ADDITIVE_VAPOUR` identity; the pure path's arithmetic is unchanged
+  (n·h_s − Ḣ_I, same order). Against the closed-form ideal-gas isentrope (20 states): worst |ΔḢ_s| 2.9e-11 W.
