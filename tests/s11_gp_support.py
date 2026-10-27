@@ -249,12 +249,25 @@ def gp_m1() -> Document:
     return _machine_case(COMPRESSOR, 0.8, GP_M1_INLET, GP_M1_OUTLET_P, "S11-GP-M1")
 
 
+#: GP-M2's inlet (S11.A81): C-MW's vapour at 375 K, 150 kPa (2.75 K above its dew point there,
+#: 372.25 K), expanded to 90 kPa (dew point 358.47 K) at eta = 0.85.
+GP_M2_INLET = (375.0, 150_000.0)
+GP_M2_OUTLET_P = 90_000.0
+
+
+def gp_m2() -> Document:
+    """S11.A81 GP-M2: C-MW's vapour near its dew point → `thermal.turbine` to 90 kPa at
+    eta = 0.85 → a sink; the expansion crosses the dew point, so the machine refuses it."""
+    return _machine_case(TURBINE, 0.85, GP_M2_INLET, GP_M2_OUTLET_P, "S11-GP-M2")
+
+
 #: Case name -> document builder; the committed file is `GP / f"{name}.json"`.
 CASES: Mapping[str, Callable[[], Document]] = {
     "GP-C1": gp_c1,
     "GP-C2": gp_c2,
     "GP-C3": gp_c3,
     "GP-M1": gp_m1,
+    "GP-M2": gp_m2,
 }
 
 

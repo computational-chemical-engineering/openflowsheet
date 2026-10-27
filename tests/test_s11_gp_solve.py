@@ -23,6 +23,8 @@ from s11_gp_support import (
     CASES,
     GP_M1_INLET,
     GP_M1_OUTLET_P,
+    GP_M2_INLET,
+    GP_M2_OUTLET_P,
     admit_machines,
     admit_wilson,
     committed_case,
@@ -34,7 +36,13 @@ from s11_gp_support import (
 from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.models import UnitEvaluation, flow_id, pressure_id, temperature_id
+from openflowsheet.models import (
+    SpecificationError,
+    UnitEvaluation,
+    flow_id,
+    pressure_id,
+    temperature_id,
+)
 from openflowsheet.models.revision_flowsheet import WILSON_BASIS, parse_revision
 from openflowsheet.models.syn001 import REFERENCE_CONVENTION
 from openflowsheet.models.syn001.ph_flash import PHFlash
@@ -43,6 +51,7 @@ from openflowsheet.models.syn001.pump import work_id
 from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import tp_state
 from openflowsheet.models.syn001.valve import Valve
+from openflowsheet.models.thermal.machines import ThermalMachine
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.thermo import FlashRequest, PropertyProvider, PropertyRequest, StreamState
 from openflowsheet.thermo.syn001 import Syn001Provider
@@ -391,3 +400,49 @@ def test_a80_gp_m1_wilson_compressor(gamma_phi: list[int], monkeypatch: pytest.M
         assert end.temperature - dew.temperature >= 5.0, (end, dew.temperature)
     assert witness["Z"] == 2  # the ethanol columns of S1 and S2
     assert witness["one_sided_worst"] <= DERIVATIVE_TOLERANCE / 10, witness
+
+
+# -- S11.A81: GP-M2, a Wilson turbine whose expansion crosses the dew point; no pump on Wilson -----
+
+
+def test_a81_gp_m2_a_wilson_turbine_crossing_the_dew_point_is_refused(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """S11.A81: C-MW's vapour 2.75 K above its dew point at 150 kPa (372.25 K), expanded to 90 kPa
+    (dew point 358.47 K): T_s = 336.82 K, a vapour the provider judges UNSTABLE, so the machine
+    refuses at initialization, typed, before any Newton step. A81 admits either code; with
+    S11D WO-I1b B's reading it is `isentropic_state_two_phase(M)` (without it, the outlet's
+    `phase_regime_mismatch(S2)`)."""
+    admit_machines(monkeypatch)
+    document = committed_case("GP-M2")
+    _, _, run = solve(document)
+    assert run.outcome == "INITIALIZATION_FAILED", (run.outcome, run.message)
+    assert run.message is not None
+    assert run.message.split("\n", 1)[0] in {
+        "initializer_failed(M): isentropic_state_two_phase(M)",
+        "initializer_failed(M): phase_regime_mismatch(S2)",
+    }, run.message
+    provider = fresh_provider(WILSON_BASIS)
+    feed = StreamState(n=(0.4, 0.0, 0.6), temperature=GP_M2_INLET[0], pressure=GP_M2_INLET[1])
+    assert band_temperature(provider, feed.n, feed.pressure, 1.0, CONTEXT).temperature < (
+        feed.temperature
+    )
+    dew = band_temperature(provider, feed.n, GP_M2_OUTLET_P, 1.0, CONTEXT).temperature
+    assert 358.4 < dew < 358.5
+
+
+def test_a81_the_pump_is_not_admitted_on_wilson() -> None:
+    """A81's other half at unit level: `thermal.pump` on `wilson-ig-v2` is refused at construction
+    `provider_not_admitted(thermal.pump)`. The binder's `model_unsupported(thermal.pump)` with the
+    no-volume reason is I1b's `_UNADMITTED` text, written at its registration commit."""
+    with pytest.raises(SpecificationError, match=r"^provider_not_admitted\(thermal\.pump\)\n"):
+        ThermalMachine(
+            unit_id="P",
+            machine="pump",
+            provider=fresh_provider(WILSON_BASIS),
+            context=CONTEXT,
+            streams={"inlet": ("S1",), "outlet": ("S2",)},
+            forms={"S1": "LIQUID", "S2": "LIQUID"},
+            outlet_pressure=2.0e5,
+            efficiency=0.75,
+        )

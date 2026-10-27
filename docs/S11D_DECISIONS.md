@@ -292,3 +292,10 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
   the two machines' `verify.thermal.MODEL_CHECKS` rows in `verify.table.MODEL_CHECKS`, and adds them to
   `table.WORK_MODELS` (without which the envelope misses W: measured −878.17 W, `fail`). Alternative: none short of
   I1b's registration. Reversible by: dropping the helper at I1b's registration commit (with `admit_wilson`).
+- Commit E, GP-M2 (S11.A81; `benchmarks/s11/gp/GP-M2.json`): C-MW's vapour at 375 K, 150 kPa (dew 372.25 K, margin
+  2.75 K) → `thermal.turbine` to 90 kPa (dew 358.47 K), η 0.85 → sink. T_s = 336.82 K, judged UNSTABLE as vapour →
+  `INITIALIZATION_FAILED`, `initializer_failed(M): isentropic_state_two_phase(M)` (commit B's reading; without B the
+  same expansion is `phase_regime_mismatch(S2)`, measured at commit A on 375.25 K → 90 kPa). The test accepts either
+  code, as A81 does. The pump half: `ThermalMachine(pump)` on `wilson-ig-v2` is `provider_not_admitted(thermal.pump)`
+  at construction; the binder's `model_unsupported(thermal.pump)` with the no-volume reason is I1b's `_UNADMITTED`
+  (its registration commit), not asserted here.
