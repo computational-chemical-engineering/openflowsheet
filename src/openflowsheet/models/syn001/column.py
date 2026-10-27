@@ -26,14 +26,14 @@ form `variable − parameter` and, per `purity` end, the column `u = F x_c`
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from fractions import Fraction
 from typing import Final
 
 from openflowsheet.canonical import normalize_zero
 from openflowsheet.compile.reference import row_values
-from openflowsheet.compile.spec import EquationSpec, QuantityKind, RowBuilder
+from openflowsheet.compile.spec import Algebra, EquationSpec, Expr, QuantityKind, RowBuilder
 from openflowsheet.compiled import EvaluationContext, RowAccumulation
 from openflowsheet.models import (
     Accumulation,
@@ -43,6 +43,7 @@ from openflowsheet.models import (
     flow_id,
     origin,
     pressure_id,
+    row_id,
     temperature_id,
 )
 from openflowsheet.models.rows import (
@@ -172,6 +173,7 @@ NOT_OFFERED: Final[tuple[str, ...]] = (
 
 #: Where S06's rows are stated.
 S06_SPECIFICATION: Final = "docs/derivations/S06-spec.md §2"
+S11_SPECIFICATION: Final = "docs/derivations/S11-design.md §4.7.3"
 
 #: The ratio specifications (§2.1, "ratio" form); every other kind is `variable − parameter`.
 RATIO_KINDS: Final[tuple[str, ...]] = ("reflux_ratio", "boilup_ratio")
@@ -353,6 +355,43 @@ EQUATIONS: Final[tuple[DeclaredEquation, ...]] = (
     *INVERSE_EQUATIONS,
 )
 
+#: S11 §4.7.3 and §4.7.4: what the column authors only in a flowsheet (`declared_rows(...,
+#: links=...)`): the inlet and product link rows and the recovery definition. Its recovery slot
+#: is `w - nu*` there, under `COL-recovery`'s family, with `nu* = r* F_ref`.
+FLOWSHEET_EQUATIONS: Final[tuple[DeclaredEquation, ...]] = (
+    DeclaredEquation(
+        equation_id="COL-inlet-link",
+        statement="v_stream - v_inlet = 0 for each flow, T and P of a connected inlet stream "
+        "(the pin rows' ids and kinds)",
+        dependencies=("stream.n", "stream.T", "stream.P", "inlet.n", "inlet.T", "inlet.P"),
+        conditional_class="unconditional",
+        accumulation=Accumulation(kind="algebraic"),
+        source=S11_SPECIFICATION,
+    ),
+    DeclaredEquation(
+        equation_id="COL-product-link",
+        statement="v_stream - v_product = 0 for each flow, T and P of the distillate (v_1 or d, "
+        "T_1, P_1) and the bottoms (l_N, T_N, P_N)",
+        dependencies=("stream.n", "stream.T", "stream.P", "product.n", "stage.T", "stage.P"),
+        conditional_class="unconditional",
+        accumulation=Accumulation(kind="algebraic"),
+        source=S11_SPECIFICATION,
+    ),
+    DeclaredEquation(
+        equation_id="COL-recovery-definition",
+        statement="F_ref n_c - w sum_k n_k,c = 0, n_c the end's product flow of c and n_k,c the "
+        "column's inlet flows of c (S06 §15 Q7 ruling)",
+        dependencies=("product.n", "inlet.n", "column.w", "parameters.F_ref"),
+        conditional_class="unconditional",
+        accumulation=Accumulation(kind="algebraic"),
+        source=S11_SPECIFICATION,
+    ),
+)
+
+#: S11 §4.7.4: the fixed reference flow, mol/s, that replaces `F` (purity) and `F_c` (recovery)
+#: in a flowsheet, where the feed is solved; `pi* = x* F_ref` and `nu* = r* F_ref`.
+F_REF: Final = 1.0
+
 #: The declared family of each slot kind (§2.1).
 _SLOT_FAMILY: Final[Mapping[str, str]] = {
     "reflux_ratio": "COL-reflux-ratio",
@@ -494,6 +533,35 @@ def purity_reference_parameter(unit: str, stage: int) -> str:
     """S06 §2: the pinned feed total `F` of the purity definition at `stage`,
     `<U>.stage.<j>.purity_reference*`."""
     return f"{stage_prefix(unit, stage)}.purity_reference*"
+
+
+def recovery_flow_id(unit: str, stage: int) -> str:
+    """S11 §4.7.4: the recovery column `w = F_ref n_c / F_c` of the end at `stage` in a
+    flowsheet, `<U>.stage.<j>.recovery_flow`."""
+    return f"{stage_prefix(unit, stage)}.recovery_flow"
+
+
+def recovery_reference_parameter(unit: str, stage: int) -> str:
+    """S11 §4.7.4: the pinned `F_ref` of the recovery definition at `stage`,
+    `<U>.stage.<j>.recovery_reference*`."""
+    return f"{stage_prefix(unit, stage)}.recovery_reference*"
+
+
+def product_link_row_id(unit: str, product: str, kind: str, *component: str) -> str:
+    """S11 §4.7.3: `<U>:product:<distillate|bottoms>:<n:<c>|T|P>`."""
+    return row_id(unit, "product", product, kind, *component)
+
+
+@dataclass(frozen=True)
+class FlowsheetLinks:
+    """S11 §4.7.3: the flowsheet streams a column instance is wired to. `inlets` maps each port
+    of `ColumnSpec.inlets()` (`top`, `bottom`, the side feeds' ports) to its connected stream;
+    `distillate` and `bottoms` name the two product streams. The stream columns are the
+    flowsheet's (`flow_id`, `temperature_id`, `pressure_id`); the column owns none of them."""
+
+    inlets: Mapping[str, str]
+    distillate: str
+    bottoms: str
 
 
 def product_flow_id(spec: ColumnSpec, end: str, component: str) -> str:
@@ -1156,7 +1224,11 @@ def energy_precheck(
 
 
 def declared_rows(
-    spec: ColumnSpec, provider: PropertyProvider, context: EvaluationContext
+    spec: ColumnSpec,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    *,
+    links: FlowsheetLinks | None = None,
 ) -> Contribution:
     """The §2 columns, rows, blocks and pinned inputs: `14 n_eq + (C + 2) n_in + (2C + 5)[total]`
     of each (§3), plus one column `u` and one definition row per `purity` end (S06 §3).
@@ -1170,6 +1242,13 @@ def declared_rows(
     `EnthalpyFlowBlock`s; a composition-dependent form gets a `GammaPhiLnKBlock` over the stage's
     liquid flows (the total condenser's over `v_2`, the condensate's composition) and single-output
     `MixtureEnthalpyFlowBlock`s. Rows, ids and order are the same for both.
+
+    S11 §4.7.3: with `links` (the column in a flowsheet) each inlet's pin rows become link rows
+    `v_stream − v_inlet` under the same ids and kinds, the inlet columns stay owned, and the
+    product link rows `<U>:product:<p>:…` follow the inlets. An inverse end takes §4.7.4's form:
+    a purity's `F` is `F_REF`, and a recovery's slot is `w − ν*` with `ν* = r* F_REF`, its column
+    `w` and its definition row `F_REF n_c − w Σ_k n_{k,c}`. No pinned value is then formed from an
+    inlet state, so a `structural_spec` may be passed. `links=None` changes nothing.
     """
     unit, components = _token(spec.unit_id), spec.components
     form = equilibrium_form(provider)
@@ -1318,6 +1397,15 @@ def declared_rows(
                 )
             else:
                 build = ratio_row((liquid_total_id(unit, 1),), ratio, vapor_total_id(unit, 1))
+        elif given.kind in INVERSE_KINDS and links is not None:
+            # S11 §4.7.4: `T_s − T*`, `w − ν*` or `u − π*` with `F_REF` for `F` and `F_c`.
+            pinned = (
+                recovery_flow_id(unit, stage)
+                if given.kind == "recovery"
+                else slot_column(spec, end, given.kind)
+            )
+            value = given.value if given.kind == "temperature" else given.value * F_REF
+            build = specification_row(pinned, pin(_parameter(pinned), value))
         elif given.kind in INVERSE_KINDS:
             # S06 §2: `T_s − T*`, `n_c − ν*` or `u − π*`, each `variable − parameter`.
             pinned = slot_column(spec, end, given.kind)
@@ -1343,12 +1431,35 @@ def declared_rows(
                 stage_row_id(unit, stage, "spec", "purity_definition"),
                 scaled_definition_row(
                     product_flow_id(spec, end, given.component),
-                    pin(purity_reference_parameter(unit, stage), purity_reference(spec)),
+                    pin(
+                        purity_reference_parameter(unit, stage),
+                        purity_reference(spec) if links is None else F_REF,
+                    ),
                     scaled,
                     product_total_id(spec, end),
                 ),
                 "algebraic",
                 "COL-purity-definition",
+                "molar_flow_squared",
+            )
+        if given.kind == "recovery" and links is not None:
+            # S11 §4.7.4: the column `w` and its definition `F_REF n_c − w Σ_k n_{k,c}`, after the
+            # slot row; the sum over the inlet columns in `inlets()` order.
+            assert given.component is not None
+            scaled = recovery_flow_id(unit, stage)
+            column(scaled, "molar_flow")
+            row(
+                stage_row_id(unit, stage, "spec", "recovery_definition"),
+                _recovery_definition_row(
+                    product_flow_id(spec, end, given.component),
+                    pin(recovery_reference_parameter(unit, stage), F_REF),
+                    scaled,
+                    tuple(
+                        flow_id(inlet_stream(unit, inlet.port), given.component) for inlet in inlets
+                    ),
+                ),
+                "algebraic",
+                "COL-recovery-definition",
                 "molar_flow_squared",
             )
 
@@ -1527,6 +1638,19 @@ def declared_rows(
         )
         slot(stage)
 
+    if links is not None:
+        _link_rows(spec, links, column, row)
+        return Contribution(
+            variable_ids=tuple(variables),
+            equations=tuple(equations),
+            blocks=tuple(blocks),
+            block_inputs=block_inputs,
+            parameter_ids=tuple(parameter_ids),
+            parameters=parameters,
+            variable_kinds=variable_kinds,
+            row_kinds=row_kinds,
+        )
+
     for inlet in inlets:
         stream = inlet_stream(unit, inlet.port)
         for c in components:
@@ -1571,6 +1695,96 @@ def declared_rows(
         variable_kinds=variable_kinds,
         row_kinds=row_kinds,
     )
+
+
+def _recovery_definition_row(
+    part: str, scale: str, scaled: str, feeds: tuple[str, ...]
+) -> RowBuilder:
+    """S11 §4.7.4: `F_ref part − w (feeds[0] + feeds[1] + …)`, the sum left-associated in the
+    given order; `F_ref` a pinned input and `w` a free variable. The division-free form of
+    `w / F_ref = part / Σ feeds`, bilinear like S06's purity definition and of its kind."""
+    if not feeds:
+        raise ValueError("a recovery definition needs at least one inlet flow")
+
+    def build(
+        variables: Mapping[str, Expr],
+        blocks: Mapping[str, Expr],
+        parameters: Mapping[str, float],
+        algebra: Algebra,
+    ) -> Expr:
+        total = variables[feeds[0]]
+        for name in feeds[1:]:
+            total = total + variables[name]
+        return parameters[scale] * variables[part] - variables[scaled] * total
+
+    return build
+
+
+def _link_rows(
+    spec: ColumnSpec,
+    links: FlowsheetLinks,
+    column: Callable[[str, QuantityKind | None], None],
+    row: Callable[[str, RowBuilder, RowAccumulation, str, QuantityKind], None],
+) -> None:
+    """S11 §4.7.3, items 1 and 2: each inlet's owned columns and its link rows (the pin rows'
+    ids, kinds and order), then the distillate's and the bottoms' product link rows."""
+    unit, components, count = spec.unit_id, spec.components, spec.stage_count
+    inlets = spec.inlets()
+    if set(links.inlets) != {inlet.port for inlet in inlets}:
+        raise ValueError(
+            f"{unit}: links name inlets {sorted(links.inlets)}, the specification "
+            f"{sorted(inlet.port for inlet in inlets)}"
+        )
+    for inlet in inlets:
+        internal, stream = inlet_stream(unit, inlet.port), links.inlets[inlet.port]
+        for c in components:
+            column(flow_id(internal, c), "molar_flow")
+        column(temperature_id(internal), "temperature")
+        column(pressure_id(internal), "pressure")
+        for c in components:
+            row(
+                inlet_row_id(unit, inlet.port, "n", c),
+                definition_row(flow_id(stream, c), (flow_id(internal, c),)),
+                "algebraic",
+                "COL-inlet-link",
+                "molar_flow",
+            )
+        quantities: tuple[tuple[str, Callable[[str], str], QuantityKind], ...] = (
+            ("T", temperature_id, "temperature"),
+            ("P", pressure_id, "pressure"),
+        )
+        for kind, identify, quantity in quantities:
+            row(
+                inlet_row_id(unit, inlet.port, kind),
+                definition_row(identify(stream), (identify(internal),)),
+                "algebraic",
+                "COL-inlet-link",
+                quantity,
+            )
+    for product, end, stage, stream in (
+        ("distillate", CONDENSER, 1, links.distillate),
+        ("bottoms", REBOILER, count, links.bottoms),
+    ):
+        for c in components:
+            row(
+                product_link_row_id(unit, product, "n", c),
+                definition_row(flow_id(stream, c), (product_flow_id(spec, end, c),)),
+                "algebraic",
+                "COL-product-link",
+                "molar_flow",
+            )
+        ends: tuple[tuple[str, str, Callable[[str], str], QuantityKind], ...] = (
+            ("T", stage_temperature_id(unit, stage), temperature_id, "temperature"),
+            ("P", stage_pressure_id(unit, stage), pressure_id, "pressure"),
+        )
+        for kind, internal, identify, quantity in ends:
+            row(
+                product_link_row_id(unit, product, kind),
+                definition_row(identify(stream), (internal,)),
+                "algebraic",
+                "COL-product-link",
+                quantity,
+            )
 
 
 def _inflow(spec: ColumnSpec, stage: int, c: str) -> tuple[str, ...]:
