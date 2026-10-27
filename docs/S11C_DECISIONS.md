@@ -22,6 +22,10 @@ choice; the evidence is in the named test or module. Batched for the package's s
 - DECISION C2-5: dormant labels → heater and drum at (T_I, P_I − ΔP), valve at (T_I, P_spec), an all-dormant mixer at the first inlet's (T, P); saturated dormant outlets carry β = 0.0 and owned V = L = 0.0. Alternative: none stated in §4.4 beyond "the inlet's T and the outlet P". Reversible by: each unit's dormant branch.
 - DECISION C2-6: thermal manifests → `package: S11`, `evaluation_cost_class: moderate`, `thread_safety` from the provider's `describe()` (CoolProp is `not_thread_safe`). Alternative: copy SYN-001's `cheap`/`not_thread_safe`. Reversible by: `common.manifest`.
 
+## WO-C3 (isentropic variants, machines)
+
+- DECISION C3-1: `kernel._solve` reset `previous` to infinity after a bisection forced by the Newton point leaving the bracket, against R-600 (S05's rule, which §4.2/§4.3 name: `previous` is the last raw Newton correction, infinity only after a non-positive slope) → fixed to R-600. Measured on a 40 × 40 (P, h|s) water grid (11 200 kernel outcomes): 7 liquid floor states (residual noise ≈ 6e-13 in s near T_t) went from `not_converged` to converged (root residual ≤ 1e-12 T dg/dT), 2 converged liquid states moved within the floor (≤ 3.1e-15 relative), all others bit-identical; C1/C2 tests unchanged. Found by C3: the pump block's FD stencil at (1 kPa sat. liquid → 3 MPa) hit it. Alternative: avoid such states in the tests (hides a defect). Reversible by: the one-line `previous = step` in `_solve`; `test_solve_keeps_the_newton_correction_through_a_bisection`.
+
 ## Open questions for the design lane
 
 - Q-C1 (C1-4): A46 asks for a central difference within 1e-6 of the saturation range's ends at a 1e-6 relative step and

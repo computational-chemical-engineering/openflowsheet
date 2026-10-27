@@ -580,6 +580,38 @@ def test_a49_isentropic_state_on_the_wrong_side_is_refused() -> None:
         _isentropic("VAPOR").values((1.0, sat.temperature + 1e-3, P_ATM, 1.0e4))
 
 
+#: Liquid states whose residual sits at the provider's floor (about 6e-13 in s near the triple
+#: point): before R-600 was applied in `_solve` these returned `not_converged`, a bisection forced
+#: by a Newton point leaving the bracket having reset `previous` to infinity (S11C_DECISIONS C3-1).
+FLOOR_STATES = [
+    ("s", 7017038.286703837, -5.0 + 200.0 / 39),
+    ("s", 661474.064123016, -5.0 + 400.0 / 39),
+    ("s", 83767.76400682924, -5.0 + 600.0 / 39),
+    ("h", 25719.13809059347, -1000.0 + 180000.0 / 39),
+]
+
+
+@pytest.mark.parametrize(("prop", "pressure", "target"), FLOOR_STATES)
+def test_solve_keeps_the_newton_correction_through_a_bisection(
+    prop: str, pressure: float, target: float
+) -> None:
+    """R-600: `previous` is the last raw Newton correction; only a non-positive slope resets it.
+    The answer's root residual is at the floor: |g(T)| / (T dg/dT) <= 1e-12."""
+    closure = _ok(
+        k.ps_closure(WATER, 1.0, pressure, target, CONTEXT)
+        if prop == "s"
+        else k.ph_closure(WATER, 1.0, pressure, target, CONTEXT)
+    )
+    assert closure.regime == "LIQUID"
+    jets = _ok(k.phase_properties(WATER, CONTEXT, closure.temperature, pressure, "LIQUID", (prop,)))
+    value, slope, _ = jets[prop]
+    assert abs(value - target) <= 1e-12 * closure.temperature * slope
+    if prop == "s":
+        # The PS solve from another start lands elsewhere on the same floor.
+        solved = _ok(k.isentropic_temperature(WATER, CONTEXT, target, pressure, "LIQUID", 400.0))
+        assert abs(solved[0] - closure.temperature) <= 4e-12 * closure.temperature
+
+
 # -- state ----------------------------------------------------------------------------------------
 
 

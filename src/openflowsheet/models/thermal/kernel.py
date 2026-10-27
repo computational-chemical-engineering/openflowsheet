@@ -276,7 +276,8 @@ def _solve(
     """The root of an increasing `g(T) = evaluate(T)[0]` on [low, high], with its evaluations.
 
     Safeguarded Newton: the bracket shrinks on every evaluation, a step that leaves it is replaced
-    by bisection, and only a Newton correction converges (S05's rule, tested before the safeguard).
+    by bisection, and only a Newton correction converges (S05's rule as amended by R-600, tested
+    on the raw correction before the safeguard).
     `start` (if inside) is the first iterate; otherwise the secant point of the two ends. A
     target outside the bracket is `out_of_domain`.
     """
@@ -321,10 +322,13 @@ def _solve(
         step = abs(new - temperature) / temperature
         if _converged(step, previous):
             return min(max(new, floor), ceiling), evaluations
+        # R-600: `previous` is the last raw Newton correction, kept through a bisection forced by
+        # the Newton point leaving the bracket; it is reset to infinity only after a bisection
+        # forced by a non-positive slope (above).
         if low < new < high:
             temperature, previous = new, step
         else:
-            temperature, previous = 0.5 * (low + high), math.inf
+            temperature, previous = 0.5 * (low + high), step
     return Failure(
         "not_converged", "not_converged", f"{what}: no convergence in {MAX_ITERATIONS} evaluations"
     )
