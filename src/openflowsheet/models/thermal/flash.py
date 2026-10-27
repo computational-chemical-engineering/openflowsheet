@@ -47,7 +47,7 @@ from openflowsheet.models.thermal.common import (
 )
 from openflowsheet.models.thermal.kernel import Failure, ph_closure
 from openflowsheet.models.thermal.rows import vanishing_row
-from openflowsheet.models.thermal.state import ThermalEvaluation, liquid_id, vapor_id
+from openflowsheet.models.thermal.state import liquid_id, vapor_id
 from openflowsheet.thermo import PropertyProvider, StreamState
 
 MODEL_ID: Final = "thermal.flash"
@@ -294,7 +294,7 @@ class ThermalFlash:
                 outlet(stream, "SATURATED", (0.0,), feed.temperature, pressure)
                 for stream in (vapour, liquid)
             ]
-            return ThermalEvaluation(
+            return UnitEvaluation(
                 status="ok",
                 outlets={"vapor": products[0].state, "liquid": products[1].state},
                 duty=0.0,
@@ -327,7 +327,7 @@ class ThermalFlash:
         signature: PhaseSignature = (
             "LIQUID" if beta == 0.0 else "VAPOR" if beta == 1.0 else "TWO_PHASE"
         )
-        return ThermalEvaluation(
+        return UnitEvaluation(
             status="ok",
             outlets={"vapor": top.state, "liquid": bottom.state},
             duty=float(self.duty),

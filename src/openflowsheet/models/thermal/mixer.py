@@ -42,7 +42,6 @@ from openflowsheet.models.thermal.common import (
     stream_face,
 )
 from openflowsheet.models.thermal.kernel import Failure, Mismatch, declared_state
-from openflowsheet.models.thermal.state import ThermalEvaluation
 from openflowsheet.thermo import PropertyProvider, StreamState
 
 MODEL_ID: Final = "thermal.mixer"
@@ -234,7 +233,7 @@ class ThermalMixer:
         if not flowing:
             first = connected[0]
             dormant = outlet(out, form, (0.0,), first.temperature, first.pressure)
-            return ThermalEvaluation(
+            return UnitEvaluation(
                 status="ok",
                 outlets={"outlet": dormant.state},
                 phase_signature="ZERO_FLOW",
@@ -269,7 +268,7 @@ class ThermalMixer:
         if isinstance(closed, Mismatch):
             return self._failure(closed.failure(out))
         done = outlet(out, form, (total,), closed.temperature, pressure, closed.beta)
-        return ThermalEvaluation(
+        return UnitEvaluation(
             status="ok",
             outlets={"outlet": done.state},
             phase_signature=done.signature,
