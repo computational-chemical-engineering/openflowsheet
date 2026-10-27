@@ -230,3 +230,34 @@ S11.A30–A34 pass. Identity: `changed=[]`, n=54497; the only failing test is T0
 D5's `wilson-ig-v2` needs its W27 v3 row (`PROVIDER_ADD` in the v3 generator, re-emit, and a `PROVIDER_LINES_V3`
 entry in `snapshot.py`), else the v3 snapshot refuses it (W27-R63). The thermal models need `model_functions` rows in
 v3 as well, or the v3 check refuses them as unregistered model ids.
+
+## WO-I1 (items 1, 2, 6, 13)
+
+DECISION (I1, item 1): T08.A32's rules move into `_a32_problems(records, conventions)` returning clause-tagged problems (same checks as the asserts they replace), so the (vi) defect test can mutate records; the committed records give `([], CAS_COMPARED_IDS)`. Alternative: a separate predicate for (vi) only. Reversible by: inlining.
+DECISION (I1, item 6): A12's fourth case `wilson-ulp` is in `A12_PARAMS` only; A11 and A16 keep `CASE_PARAMS` (three), as the ruling says. Reversible by: the list.
+DECISION (I1, item 2): Z is `checks.one_sided_columns(columns, state, components)` (basis-agnostic), gated on `ONE_SIDED_BASES` in `verify_revision`; the test reads the one-sided worst by differencing Z alone (`unstenciled` = the rest). The central stencil's arithmetic is unchanged (x+h then x-h, (F+ - F-)/(2h)). Reversible by: the commit.
+
+## Handoff (2026-10-27, end of the I1 engineer at the context cap)
+
+**Done** on `wp/S11` (not pushed): item 2 `c63d56a0` (one-sided witness; A35 on C-MW/C-EW/stripper VERIFIED, |Z| 63/63/34,
+one-sided worst 6.089e-10/6.216e-10/3.274e-10, central 8.243e-8/4.644e-8/2.083e-9: the ruling's numbers), item 1
+`64970c88` (T08.A32 (vi)), item 6 `0f3c9c0c` (A12), registration `713f5e3d` (MODEL_*, MODEL_CHECKS, R-825 kinds, the
+§10.2 step 9 key check, A39/A91/A93, §8.3 count/sample tests), item 9 (b) `65e8f642`, item 13 (this commit).
+
+**Not done (next I1 engineer):**
+1. The envelope, which R-561 says belongs in the binding's commit (combine with `713f5e3d` by `git reset --soft`
+   before merge if wanted): `unit_models.members` += `syn001.column` (23) and statement; U04 restated (§4.11:
+   "`syn001.cascade` as a model id"); L-COL-1…8 (§4.11), L-COL-9 (§10.8 text), L-COL-10 (Q29: PTC policy →
+   `PTC_MAPPING_INVALID`); L-S11-3 "routing and column"; `scripts/t08_support_matrix.py`'s A20 counts (14 syn001, 23);
+   `LIBRARY_ONLY` in `tests/test_t08_w2_support_envelope.py` loses `syn001.column` (d1 tests then use the cascade
+   only); `t08_support_matrix.py --emit` then `--check`.
+   OPEN (escalate with the batch): R-561 says the binding package reclassifies S02's 12 U04 harvest items (notes say
+   "library-only"); §4.11 says "No earlier harvest entry is edited". Default: follow R-561 (the specific registered
+   rule): `to` drops U04 for the matching L-COL rows, notes restated; the sha256 fields untouched.
+2. Item 9 (a): every A29 case through the application under `T06-revision-v2` (M1–M4, J1–J8, C-MW, C-EW, stripper,
+   recycle), ≤ 3 Newton iterations, A35 certificates.
+3. Identity: `scripts/s11_identity.py` on a clean tree (run it from a scratch `git worktree` of the commit, never
+   while editing the checkout it tests). Expected now: FAIL only on shard failures of the six
+   `test_t08_w2_support_envelope` c3 tests (pre-existing at `f331a629`: `wilson-ig-v2` is a provider module neither
+   selectable nor library-only until D5 — escalated, not I1's) plus a20/d1 until the envelope lands. Then
+   `s08_identity.py`, `s10c_identity.py`. Q32 (a family-C key moved by the sixteen kinds) is answered by that run.

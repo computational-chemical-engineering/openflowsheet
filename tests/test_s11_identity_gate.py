@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import json
 import subprocess
 import sys
 from dataclasses import replace
@@ -239,3 +240,40 @@ def test_g1_the_document_digest_marks_the_revision_identifiers_only() -> None:
         assert recorder.document_digest(renamed) == digest
     assert recorder.document_digest({**document, "extra": 1}) != digest
     assert recorder.document_digest({**document, "streams": []}) != digest
+
+
+def _bound_record(document: dict[str, Any]) -> tuple[str, tuple[Any, ...]]:
+    """Family C's record of one binding of `document` (the recorder's own fields), and the
+    binding's outcome alone."""
+    raw = recorder._raw_sha256(document)
+    answer = bind_revision_flowsheet(document)
+    assert isinstance(answer, RevisionBinding), answer
+    fields = recorder.outcome(answer, raw)
+    return recorder._hash((recorder.document_digest(document), fields)), fields
+
+
+@pytest.mark.parametrize(
+    "path",
+    ["SYN-001-nominal", "benchmarks/m02/c1-flash-f1.json", "benchmarks/s11/flowsheets/M1.json"],
+)
+def test_g1_the_binder_reads_no_revision_identifier(path: str) -> None:
+    """S11 rulings item 13 (R-842): `VOLATILE` made executable. With `revision_id` and
+    `parent_revision` changed, the SYN-001 nominal, a C1 and a column revision each give an equal
+    family-C binding digest (and the binding still records its own `revision_sha256`); with one
+    stream's flow changed, a different one, so the test is not vacuous."""
+    if path.endswith(".json"):
+        document: dict[str, Any] = json.loads((REPO_ROOT / path).read_bytes())
+    else:
+        document = CORPUS[path]()
+    record, fields = _bound_record(document)
+    assert fields[1] is True
+    renamed = {**document, "revision_id": "clock-123456789", "parent_revision": "clock-1"}
+    assert recorder._raw_sha256(renamed) != recorder._raw_sha256(document)
+    assert _bound_record(renamed) == (record, fields)
+    moved = copy.deepcopy(document)
+    flow = next(
+        s for s in moved["specifications"] if s["target"]["path"] == "state.n" and s["value"] > 0
+    )
+    flow["value"] *= 1.25
+    moved_record, moved_fields = _bound_record(moved)
+    assert moved_record != record and moved_fields != fields
