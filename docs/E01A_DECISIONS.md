@@ -371,23 +371,21 @@ I1's.
   `si_per_unit` admits another reading; B2 matches this or escalates. P4's LCA fragment is in the script
   (`P4_LCA`); I1 may adopt it. Reversible by: the script (and its YAML).
 
-## Handoff (2026-10-27, fifth context cap) — resume from here
+## Handoff (2026-10-27, sixth session) — resume from here
 
-- **Done (wp/E01):** A1–A3, A2b, A4 (1)–(3) earlier; **A4 (4)** the cost contributor (this commit). Track A tests:
-  core/cost/links/capital/sizing 83 + contributor 6 pass. Protected paths untouched. No schema change in (4).
-- **Not done in WO-A4:** (a) `derived` contributor (§4.7.5; put in `assessment/cost/derived.py`, register `derived`;
-  acyclic; plan-time non-positive denominator → `METRIC_UNDEFINED`, output unavailable); (b) the §4.9 propagation
-  pass (`program.linearize(x, outputs, symbolic=[θ with relative_range])` → `uncertainty.worst_case`/`rss`; class
-  from the section's item `accuracy_class`/`extrapolated`) — natural home is `report.py` (A5); (c) tests still owed:
-  A44 drive on a compressor *with* a pump (pump drive costs `motor.electric`), a quote item (A19 through the
-  contributor), held-regime build round trip, `CORRELATION_EXTRAPOLATED` → class none end to end, materials/revenue
-  and `lcox` (needs a functional unit doc), turbine generation + `ELECTRICITY_NETTED` (TH-C1).
-- **Then WO-A5** (untouched): `report.py`, `assessment-report.schema.json` + registry entry (E01 addendum `schemas`;
-  `exact_sha256` stays `[assessment_sha256, regime_sha256]`, `state_sha256` keeps v2's float-digest class; policy
-  `--check`), fixtures from P1/P3, `benchmarks/e01/lca_hand/`, A38–A41, A43 report part. The contributor's
-  `section(values)` already returns `items` (provenance incl. regime, escalation, options, index_basis), `excluded`,
-  `defaulted_inputs`; `program.unavailable` gives the nulls.
-- **Fixture note:** CoolProp is not in `.venv`; the contributor test runs S11's TH-C2 loop on IAPWS-95 water
-  (record source `benchmarks/s05/components.yaml`, S1 at 410 K). All its items sit in `floor`.
-- **Open for the design lane (batched):** the four new DECISION lines above, plus the earlier ones.
+- **Done (wp/E01, after 090195cb):** WO-A4 complete — (5) `derived` contributor + `BuildContext.earlier` + the
+  uncertainty-key fix (9356fce6); typed builders, bit-identical on TH-C2 (565a9b0a); (6) TH-C1 contributor tests and
+  `SizingInput.default_key` (223cfea8). WO-A5 — (1) report schema, registry, addendum, policy `--check` exit 0
+  (664b55ce); (2) `report.py` with the §4.9 pass, `program.report`, fixtures P1 (TH-C1, TH-R1) and P3 (M1), all
+  `COMPLETE` (61f6a35a); (3) `benchmarks/e01/lca_hand/` (7ae2f54c).
+- **Gates run:** track A tests `tests/test_e01_a_*.py` 116 passed; schema/policy tests (links, m02, m04, t08, p01,
+  m05 study record, w4 package data) 435 passed; ruff + mypy clean on `assessment/`; protected paths unchanged.
+- **Not done / for others:** the report's LCA section waits for B2 (the report reads `plans["lca"].section` for
+  `tables`; inventory/impact rows come from the outputs). A38's "existing study/optimization-report fixtures
+  validate against the widened schemas" is B3's. A42 (D04 entries) is B's. I1 names P1/P3 and may regenerate the
+  fixtures (`python tests/test_e01_a_report.py --write`); if P1's state changes, rerun
+  `python benchmarks/e01/lca_hand/lca_hand.py` with the new recorded inputs (its test checks they match).
+- **Open for the design lane (batched):** every DECISION line in WO-A4 and WO-A5 above; the sharpest are the report
+  fields §4.11 does not spell, the status rule, class `none` for an unclassed quote, and the LCA exchange
+  convention for B2.
 - **For B1/I1 (unchanged):** package-data globs, `resources.PACKAGED`, M05 ADDENDA pin, A48 RC item, P3 volumes.
