@@ -671,7 +671,8 @@ def instance_contract(
 def _routing_fields(provider: PropertyProvider) -> dict[str, Any]:
     """S11 design §4.5: a routing model's manifest fields from the bound provider on a basis
     other than SYN-001's; nothing on SYN-001's, whose defaults are its constants (so its
-    manifests do not change)."""
+    manifests do not change). The five γ–φ-faced units (mixer, heater, TP flash, PH flash,
+    valve) take the same fields (S11 units design §4.5, WO-D2)."""
     described = provider.describe()
     if described.provider_id == SYN001_PROVIDER_ID:
         return {}
@@ -730,7 +731,11 @@ def _adiabatic_mixer(
 ) -> tuple[UnitModel, Configuration]:
     instance_contract(view, _ADIABATIC_MIXER, components)
     unit = AdiabaticMixer(
-        unit_id=view.unit_id, provider=provider, context=context, components=components
+        unit_id=view.unit_id,
+        provider=provider,
+        context=context,
+        components=components,
+        **_routing_fields(provider),
     )
     return unit, {}
 
@@ -760,6 +765,7 @@ def _tp_heater(
         inlet_phase=inlet_phase,
         pressure_drop=0.0,
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {"inlet_phase": inlet_phase}
 
@@ -805,6 +811,7 @@ def _tp_flash(
         context=context,
         inlet_phase=inlet_phase,
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {"inlet_phase": inlet_phase}
 
@@ -910,6 +917,7 @@ def _ph_flash(
         pressure_drop=parameters["pressure_drop"],
         inlet_phase=inlet_phase,
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {"inlet_phase": inlet_phase}
 
@@ -937,6 +945,7 @@ def _valve(
         context=context,
         inlet_phase=inlet_phase,
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {"inlet_phase": inlet_phase}
 
