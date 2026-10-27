@@ -36,7 +36,8 @@ Inlet-dependent (left to `validate` at evaluate): R2 (inlet flows), R3's inlet `
   (C branch shard 4: `test_k02_unit_models::test_no_unit_module_defines_a_row_builder_of_its_own`; fixed in `884b4973`).
 - 2026-10-27 B1 fix-up `884b4973`: S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[];
   S11 PASS n=54497 changed=[] (698 s for the three).
-- 2026-10-27 B2 `ffc68146`: see the next line (gate run on a detached worktree of the commit).
+- 2026-10-27 B2 `ffc68146`: S08 PASS, S10C PASS; S11 FAIL (C branch shard 13: `test_t07_global_state::test_g20`, column_unit's `@cache`); fixed in `33a652a9` (hash uncached).
+- 2026-10-27 B2 fix-up `33a652a9` (includes the docs commit `5fdee2d9`): S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 PASS n=54497 changed=[] (949 s for the three).
 
 ## Q9 spike (WO-B3's first step): STOPPED — the region decomposition does not place the stage pseudo-units
 
