@@ -1118,6 +1118,7 @@ limitations:
       - tests/test_s11_thermal_machines.py::test_a55_dry_fluid_saturated_vapour_is_refused
       - tests/test_s11_thermal_machines.py::test_a53_turbine
       - tests/test_s11_thermal_binding.py::test_the_turbine_takes_no_isentropic_phase_parameter
+      - tests/test_s11_thermal_solve.py::test_q_c2_a_revision_turbines_isentropic_state_takes_the_vapour_outlets_form
       - doc:docs/derivations/S11-units-design.md §4.10
       - doc:docs/reviews/S11-rulings.md §4 (item 10, R-839)
   - id: L-TH-5

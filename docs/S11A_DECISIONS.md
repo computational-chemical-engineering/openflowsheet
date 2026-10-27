@@ -530,3 +530,21 @@ Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. 
   `isentropic_state_two_phase(U1)` (CoolProp run). The verifier's mirror (`verify.thermal.isentropic_enthalpy`) names
   no code (`isentropic_state_refused: <message>`): unchanged. Measured: thermal/GP/bases/ADR 0008 with CoolProp: 740
   passed.
+- Item 8, Q-C2 (measured on iapws95-v1, `test_q_c2_…` in `test_s11_thermal_solve`): steam 1 MPa, 573.15 K → 0.1 MPa,
+  eta = 0.5, outlet `vapor`: x_s = 0.9613, the actual outlet 2.61 kJ/mol above h^V_sat; the revision is
+  INITIALIZATION_FAILED `initializer_failed(T): isentropic_state_two_phase(T)` (the ruling's numbers reproduce). The
+  `isentropic_phase` parameter's `parameter_unsupported` is the existing binding test. L-TH-4's evidence gains the
+  test (`t08_support_matrix.py --emit`, `--check` 0 problems).
+- Item 8, O-C6-1 (`test_o_c6_1_…`, two tests): A62's flowsheet under `T04-W12`: Q = 0 → CONVERGED, certificate
+  UNVERIFIED, regularity `RANK_DEFICIENT` (the ruling's condition holds, no stop); Q = 1 kW → `LINEAR_SOLVE_FAILED`
+  ("SuperLU: Factor is exactly singular"). The SYN-001 pump's dormant case (same topology, SYN-001 basis, 0.1 → 0.18
+  MPa, eta 0.75) under `T04-W12`: CONVERGED, VERIFIED, `NO_RANK_LOSS_DETECTED` — so §4.9's "as the SYN-001 pump's is"
+  does not hold at the certificate: the verifier reduces a dormant outlet by its own registry
+  (`verify.zero_flow.DORMANT_OUTLETS`, spec §7.6), under either phase contract, and that registry has the pump but no
+  `thermal.*` entry. Consequence, also measured: A62 at Q = 0 under `T06-revision-v2` converges but certifies
+  UNVERIFIED/`RANK_DEFICIENT` too.
+- OPEN (design lane, from O-C6-1): should `verify.zero_flow.DORMANT_OUTLETS` gain §4.9's single-phase `thermal.*`
+  outlets (so a v2 dormant thermal outlet certifies as the pump's does), and §4.9/L-TH-7's "as the SYN-001 pump's is"
+  be restated? Default: neither here (a verifier/certificate change, design-led); the measured pins stand.
+- Item 8, records: §8.3's R-839 erratum gains a dated line naming
+  `test_the_dormancy_registry_is_syn001s_and_the_c1_mixers_vapour_outlet` (no `AMENDED_TESTS` entry: it passes on both).

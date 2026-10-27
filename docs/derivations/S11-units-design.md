@@ -1080,6 +1080,9 @@ R-813…R-821.
   edits them.
 - *Erratum 2026-10-27 (R-839):* `tests/test_m02_wo8_registries.py`'s dormancy-registry test, restricted to keys outside
   `thermal.` (C6-2; no family-C key).
+  *Recorded 2026-10-27 (I1b, rulings item 10 "Records"):* that test is
+  `test_the_dormancy_registry_is_syn001s_and_the_c1_mixers_vapour_outlet`; it passes at the base and on the branch, so
+  its key needs no `AMENDED_TESTS` entry.
 
 ### 8.4 Decisions logs
 
