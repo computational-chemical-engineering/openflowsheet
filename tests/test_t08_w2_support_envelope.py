@@ -67,10 +67,17 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
     assert len([model for model in facts["models"] if model.startswith("syn001.")]) == 13
     assert len(facts["models"]) == 22
     assert facts["synthetic_models"] == ["c1.reactor_standin"]
-    assert facts["providers"] == ["pr-c1-v1", "syn001"]  # M01 adds `pr-c1-v1` (ADR 0026)
+    # M01 adds `pr-c1-v1` (ADR 0026); S11 makes S05's `iapws95-v1`, S07's `coolprop-heos-v1` and
+    # S10's `wilson-ig-v1` selectable (ADR 0050, R-810).
+    assert facts["providers"] == [
+        "coolprop-heos-v1",
+        "iapws95-v1",
+        "pr-c1-v1",
+        "syn001",
+        "wilson-ig-v1",
+    ]
     # The axis is the selectable providers (spec §5.7 Amendment S04, R-568); the module scan also
-    # finds S04's library-only `pr-lib-v1` (R-569), S05's `iapws95-v1` (spec S05 §8 F-2) and S07's
-    # `coolprop-heos-v1` (S07 spec §3.4, R-621) and S10's `wilson-ig-v1` (S10 spec §10, R-709).
+    # finds S04's library-only `pr-lib-v1` (R-569, R-809).
     assert facts["scanned_providers"] == [
         "coolprop-heos-v1",
         "iapws95-v1",
@@ -151,8 +158,11 @@ def test_an_unbound_provider_is_rendered_apart_from_the_axes_with_its_limitation
     rendered = MATRIX.render(envelope).splitlines()
     (components,) = (line for line in rendered if line.startswith("- **Components:**"))
     assert "pr-c1-v1" not in components and "`syn001`" in components
+    # S11 adds three other-basis providers, each on its own line; this one is `pr-c1-v1`'s.
     (shipped,) = (
-        line for line in rendered if line.startswith("- **Shipped, bound on another basis:**")
+        line
+        for line in rendered
+        if line.startswith("- **Shipped, bound on another basis:** `pr-c1-v1`")
     )
     assert "`pr-c1-v1`" in shipped and "no mixture VLE validation" in shipped
     assert shipped.endswith("(L42)")
@@ -334,11 +344,10 @@ def test_d1_a_u04_item_that_loses_its_model_id_trips_the_wire(envelope: dict[str
 #: The provider modules of `openflowsheet.thermo` that no revision can select, and the package
 #: whose harvest items name each under U02. The commit that makes one selectable removes it here,
 #: adds it to the providers axis and reclassifies its package's U02 items (L01 spec §13.4).
+#: S11 (ADR 0050, R-810) made `iapws95-v1`, `coolprop-heos-v1` and `wilson-ig-v1` selectable;
+#: their packages' U02 harvest items are not edited (S11 §4.11: no earlier harvest entry is).
 LIBRARY_ONLY_PROVIDERS = {
     "pr-lib-v1": "S04",
-    "iapws95-v1": "S05",
-    "coolprop-heos-v1": "S07",
-    "wilson-ig-v1": "S10",
 }
 
 
@@ -384,6 +393,27 @@ def library_only_provider_problems(
 
 def _selectable() -> set[str]:
     return {basis.provider_id for basis in revision_binding.SELECTABLE_BASES}
+
+
+def test_s11_a34_the_providers_axis_is_the_five_and_pr_lib_alone_is_library_only(
+    envelope: dict[str, Any],
+) -> None:
+    """S11.A34 (ADR 0050, R-809, R-810)."""
+    (axis,) = (row for row in envelope["axes"] if row["id"] == "property_model")
+    assert axis["providers"] == [
+        "coolprop-heos-v1",
+        "iapws95-v1",
+        "pr-c1-v1",
+        "syn001",
+        "wilson-ig-v1",
+    ]
+    assert [p["id"] for p in axis["other_basis_providers"]] == [
+        "pr-c1-v1",
+        "iapws95-v1",
+        "coolprop-heos-v1",
+        "wilson-ig-v1",
+    ]
+    assert LIBRARY_ONLY_PROVIDERS == {"pr-lib-v1": "S04"}
 
 
 def test_c3_the_library_only_providers_are_unselectable_with_their_u02_items(

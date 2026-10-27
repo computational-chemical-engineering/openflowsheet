@@ -114,6 +114,60 @@ in the run log below.
   both; the test makes no bind call, so no family-C key). Alternative: keep a provider-id overload. Reversible by:
   reverting the A3 commit's hunk.
 
+## Track A: A4 W27 registration v3 (§4.10)
+
+- DECISION: §4.10's "all existing W27 tests pass unchanged" vs A1 (handoff open point 2) → keep `7302a507`'s
+  `v2_binder()` for the tests that read the installed build under v1/v2; none is re-pointed at v3 (v3's reading of
+  the build is pinned by the new `tests/test_s11_w27_v3.py`, which also checks that v3's routes are `v2_binder`'s
+  routes plus `record_source`). The one W27 test that cannot stay unchanged is
+  `test_c9_w27_v2.py::test_version_switch_refuses_other_versions`, which asserted that `3` is refused: it now loops
+  over `(0, 4, True)` and matches `not 1, 2 or 3` (R01 accepts 3). Alternative: list it in `AMENDED_TESTS`.
+  Reversible by: reverting the A4 commit's hunk in that test.
+- DECISION: how a v3 snapshot carries the key's `record_source` → each route gets `record_source` (the basis'), under
+  schema `w27-registry-snapshot-v3`; v1/v2 snapshots are built exactly as before; the 0.1.1 reading under v3 carries
+  `benchmarks/syn001/components.yaml`. Alternative: derive it from the provider id at classification. Reversible by:
+  `snapshot.SCHEMA_V3` and the two `registration_version == 3` branches.
+- DECISION: R05's "every other basis" → a static `PROVIDER_LINES_V3` naming the registered providers (`syn001`,
+  `iapws95-v1`, `wilson-ig-v1`, `coolprop-heos-v1` generic; `pr-c1-v1`, `pr-lib-v1` v2 lines); any other id is
+  refused (so `wilson-ig-v2` needs D5's row and a line). Alternative: the generic line for any provider. Reversible
+  by: the map.
+- DECISION: a v3 route with no `record_source` → refused, `routes with no record_source [<ids>]` (no key, R06); the
+  duplicate refusal reads `duplicate route keys [<key tuples>]`. Alternative: KeyError. Reversible by:
+  `_check_snapshot_v3`.
+- DECISION: `units_judged_on` under v3 → stays the chosen route's provider id (v2's row form); the tie-break itself is
+  by key (R07), visible in the unit rows' models (W27v3-A05/A06). Alternative: the key. Reversible by: `_units_v3`'s
+  return.
+- DECISION: R04's `why_none` meaning → `model_none_reasons_added.column_function_unregistered` in
+  `registration_v3.json` (text cites S11 §7 Q6). Alternative: none. Reversible by: the generator constant.
+- DECISION: v3 code shares v2's → `_check_snapshot_v2`'s spelling and (e) parts extracted (`_unaliased_v2`,
+  `_models_on_routes`), and `_route_reasons_v2`/`_classify_case_v2`/`_classify_v2`/`_unit_reasons` take the v3
+  variant by parameter. Inert for v1/v2: S11.A30's corpus digest equals the base's (run log). Alternative: copy the v2
+  functions. Reversible by: the A4 commit.
+- OPEN (design lane, batch with the ruling round): **W27v3 Q-1.** The Wilson records carry no CAS RN; v2's spelling
+  rule (kept by v3) refuses them once a case spells them. Measured on this build against `case_facts.json`:
+  `CH3OH->None`, `H2O->None`, `ethanol->None`, `methanol->None`, `water->None` (Wilson only; CoolProp and IAPWS-95
+  give none), so v3 refuses the S11 build at classification, against §4.10's "its route serves no case". Registered
+  as W27v3-A08 (the refusal as the transcribed rules give it). Default proposed: the spelling rule skips a record with
+  no CAS RN. Needs: a `specifier` amendment of `W27-registration-v3.md` (and of A08), before the release's W27 run.
+
+## Track A: A5 envelope (providers) (§4.11)
+
+- DECISION: what the three new limitation rows and caveats say about models → "the routing models only" (true on
+  this branch); §4.11's "routing and column" for Wilson and the thermal units on IAPWS-95/CoolProp are added by I1/I1b
+  with the column and thermal members. Alternative: §4.11's text now (false until I1). Reversible by: the L-S11-1…3
+  texts and caveats in `support_envelope.yaml`.
+- DECISION: `LIBRARY_ONLY_PROVIDERS`'s docstring says the commit that makes a provider selectable "reclassifies its
+  package's U02 items" → not done: §4.11 says no earlier harvest entry is edited; the S05/S07/S10 U02 notes stay as
+  their manifests wrote them (C3's check only reads registered providers). Alternative: edit the harvest notes.
+  Reversible by: n/a (nothing changed).
+- DECISION: `test_t08_w2_support_envelope.py::test_an_unbound_provider_is_rendered_apart_from_the_axes_with_its_
+  limitation` (not in §8.3) unpacked the one "Shipped, bound on another basis" line; with four such providers it
+  selects `pr-c1-v1`'s line, its assertions unchanged. Alternative: render all providers on one line (changes the
+  matrix's existing line). Reversible by: that hunk.
+- DECISION: the amended S05 A25, S07 A30, S10 A27 tests keep their names and now assert the reverse (selectable, on
+  the providers axis, not library-only), with a docstring citing R-810; S11.A34 is a new test beside
+  `LIBRARY_ONLY_PROVIDERS`. Alternative: rename them. Reversible by: the A5 commit.
+
 ## Run log
 
 - WO-0 gate, unmodified tree (`acffd034`), 16 shards per tree, 614 s:
@@ -138,30 +192,41 @@ in the run log below.
   the 4 base-only keys of `test_each_route_binds_a_revision_with_its_component_set` (fixed by `7302a507`).
 - A3 gate (`da6c06df`): `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 5, 14, 15] exited non-zero)`:
   the same eleven known failures as A2, nothing new (every SYN-001 and C1 certificate test passes).
+- A4 (W27 v3): `w27_registration_v3.py --check` identical (8 states, GC-V3-1…6 hold; GC-V3-5: v3 equals v2 on every
+  v2 state v2 accepts and on 225/225 development rows). S11.A30: `_a30_corpus()` (v1 over every case at the committed
+  and `today` snapshots, v2 over the development half at both, every v2 snapshot × case × version × table; 8 824 782
+  bytes) has SHA-256 `e141bab0…c53291` both at `8c34ecb0` (scratch worktree) and on the branch; control: v2's
+  tie-break flipped to the largest provider id gives `63735e24…`. `tests/test_s11_w27_v3.py` 26 passed; W27 battery
+  (c9, m06 coverage/registration/scorer/harness/campaign/provenance, l01 retake, identity-gate unit tests) 217 passed /
+  26 skipped; c2/l01/m02/m04/m07 W27 readers 488 passed / 2 skipped. Identity gate not triggered (no trigger file).
+- A5 (`a449d6d9`): `t08_support_matrix.py --check` 0 problems after `--emit`; the envelope, S05/S07/S10, L01 retake
+  and unsupported tests 402 passed / 11 skipped; m07a/t08 changelog, harvest, gate and inventory readers 337 passed,
+  1 failed (T08.A32, escalated). Identity gate (`a449d6d9`, base tree a scratch checkout of `8c34ecb0`):
 
-## Handoff (2026-10-27, end of the A1–A3 engineer; A4 not started)
+      S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [15] exited non-zero)
 
-**Done** on `wp/S11-a` (not pushed): A1 `fba583ac` (+ decisions `97dded60` L01 re-take bases, `7302a507` W27
-installed-build tests via `v2_binder`), A2 `15b81efe`, A3 `da6c06df`. S11.A01–A19 pass (`tests/test_s11_bases.py`,
-`test_s11_routing.py`, `test_s11_verifier_forms.py`: 351 passed / 6 skipped without CoolProp; the CoolProp cases
-pass with CoolProp 8.0.0 on `PYTHONPATH`, installed by `pip install --target <scratch>/cp CoolProp==8.0.0` with its
-numpy removed — never in `.venv`).
+  Branch shards 14098 passed / 3201 skipped / 1 failed: T08.A32 alone. The `AMENDED_TESTS` failures of A2/A3 (s05
+  a25, s07 a30, s10 a27, t08 support-envelope a20/c3) now pass.
 
-**Identity:** every run `changed=[]`, n=54497, no base-only keys since `7302a507`. The gate still prints FAIL because
-shards exit non-zero on (a) the `AMENDED_TESTS` that A5 amends (s05 a25, s07 a30, s10 a27, t08 support-envelope
-a20/c3) and (b) T08.A32 (`test_t08_w2_inventory::test_a32_…`), escalated, OPEN above.
+## Handoff (2026-10-27, end of the A4–A5 engineer; track A complete)
+
+**Done** on `wp/S11-a` (not pushed): A1 `fba583ac` (+ `97dded60`, `7302a507`), A2 `15b81efe`, A3 `da6c06df`,
+A4 `de4b507b` (W27 v3: `docs/derivations/W27-registration-v3.md`, its generator and `registration_v3.json`, the v3
+paths in `benchmarks/m06/w27/{coverage,registration,snapshot}.py`, `tests/test_s11_w27_v3.py`), A5 `a449d6d9`
+(providers axis, L-S11-1…3, U02, `LIBRARY_ONLY_PROVIDERS = {"pr-lib-v1": "S04"}`, matrix re-emitted).
+S11.A30–A34 pass. Identity: `changed=[]`, n=54497; the only failing test is T08.A32.
 
 **Open for the design lane (batch with the package's ruling round):**
-1. T08.A32 vs the two new record files (OPEN entry above): needs a `specifier` ruling; until then the test fails.
-2. §4.10's "all existing W27 tests pass unchanged" cannot hold after A1 (D9's own effect); `7302a507` reads the
-   installed build under v1/v2 through `v2_binder()` — confirm, or have A4 re-point those tests at v3.
-3. §6.1 A12's "exact ==" balance holds only for flows whose split products are exact in binary64 (A2 entry).
+1. T08.A32 vs the two new record files (OPEN entry, A1 section): `specifier` ruling; the test is left failing.
+2. §4.10's "all existing W27 tests pass unchanged": kept `v2_binder()`; one test amended (version 3 is no longer
+   refused). Confirm (A4 section).
+3. §6.1 A12's "exact ==" balance (A2 entry).
+4. W27v3 Q-1: v2's spelling rule refuses the CAS-less Wilson records once a case spells them (five spellings measured),
+   so v3 refuses the S11 build at classification; registered as W27v3-A08; default proposed: skip records with no
+   CAS RN. Must be settled before the release's W27 run (A4 section).
 
-**Next: WO-A4** (W27 v3, §4.10, S11.A30–A33). Files: `docs/derivations/W27-registration-v3.md` (transcribe §4.10
-R01–R08), `docs/derivations/scripts/w27_registration_v3.py --check` → `benchmarks/m06/openidaes450/registration_v3.json`,
-`benchmarks/m06/w27/{coverage,registration,snapshot}.py`, `tests/test_s11_w27_v3.py`. Facts found: `snapshot.py`'s
-`PROVIDER_LINES` (syn001, pr-c1-v1, pr-lib-v1) is version-independent and `_routes_bases_v1` reads it; v3 needs
-`PROVIDER_LINES_V3` (generic records line from `ROOT / basis.record_source`, `identifiers.{cas,…}`) selected by the
-registration version, the route key `(provider_id, record_source, components)` (R06/R07), and
-`registration.provider_methods(3)`. W27v3-R02's `wilson-ig-v2` row is D5's (units-design §5.4 item 2), not A4's.
-S4 is I1b's. Check v1/v2 outputs stay byte-identical (A30) with the existing W27 tests plus `v2_binder`.
+**For I1/I1b (not track A's):** add `syn001.column` and the thermal members to the envelope and to the L-S11 texts
+("routing models only" today); W27 S4 (I1b) is `snapshot.build_snapshot(registration_version=3)` of the S11 build;
+D5's `wilson-ig-v2` needs its W27 v3 row (`PROVIDER_ADD` in the v3 generator, re-emit, and a `PROVIDER_LINES_V3`
+entry in `snapshot.py`), else the v3 snapshot refuses it (W27-R63). The thermal models need `model_functions` rows in
+v3 as well, or the v3 check refuses them as unregistered model ids.

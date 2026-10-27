@@ -685,15 +685,18 @@ def _script(name: str) -> Any:
 
 
 def test_a27_library_only_registration() -> None:
+    """S11 (ADR 0050, R-810) reverses A27 on purpose: `wilson-ig-v1` is selectable (its records
+    in a source checkout, R-811), on the T08 providers axis, and no longer library-only."""
     from test_t08_w2_support_envelope import LIBRARY_ONLY_PROVIDERS
 
     selectable = {basis.provider_id for basis in revision_binding.SELECTABLE_BASES}
-    assert "wilson-ig-v1" not in selectable
-    assert LIBRARY_ONLY_PROVIDERS["wilson-ig-v1"] == "S10"
+    assert "wilson-ig-v1" in selectable
+    assert "wilson-ig-v1" not in LIBRARY_ONLY_PROVIDERS
     matrix = _script("t08_support_matrix")
     assert "wilson-ig-v1" in matrix.code_facts()["scanned_providers"]
-    # control: the S07 provider is registered the same way, under its own package
-    assert LIBRARY_ONLY_PROVIDERS["coolprop-heos-v1"] == "S07"
+    assert "wilson-ig-v1" in matrix.code_facts()["providers"]
+    # control: the S07 provider is selectable the same way
+    assert "coolprop-heos-v1" in selectable and "coolprop-heos-v1" not in LIBRARY_ONLY_PROVIDERS
 
 
 def test_a27_the_u02_note_names_the_provider() -> None:
