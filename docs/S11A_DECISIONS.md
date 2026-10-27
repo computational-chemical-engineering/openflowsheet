@@ -478,3 +478,16 @@ contract id in `benchmarks/` (`test_b06_no_registered_policy_names_v2`), now "T0
 thermal/GP verifier tests: 1450 passed. Gates not re-run after that fix.
 Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. Everything else touched passes
 (S11 battery, the 24 registry-dependent base files, envelope readers, T07/T08 corpora).
+
+## WO-I1b part 2 (finish): ADR 0008 E1, R-816, item 7 (v2 binder, S4), item 8 (rulings item 10)
+
+- DECISION (orchestrator ruling, closes the OPEN above): ADR 0008 E1 → the four thermal modules gain a module-level
+  `EQUATIONS` mapping U1 reads (configuration → rows): heater `(mode, saturated outlet)` (6), valve and mixer
+  `saturated outlet` (2 each), machines `(machine, saturated outlet)` over the outlet forms each machine has (4);
+  `declared_equations` now returns the mapping's entry (the same rows, in the same order). `machines.MODEL_IDS` becomes
+  the tuple U1 reads; the machine → id dict is `MACHINE_MODEL_IDS` (5 call sites in the binders). U1 attributes the
+  machine module's rows to all three ids (as `c1/reactor.py`'s ids share one tuple); E1 only checks reach, and no
+  machine row is a `holdup_balance`. New S11 modules: no registered result moves; the module bytes (manifest
+  `artifact_hash`) change. Alternative: extend U1's reader (a base test). Reversible by: the one commit.
+  Measured: `test_adr_0008_transient_readiness` + `test_s11_thermal_*` + `test_s11_gp_*` + `test_s11_bases`: 679
+  passed, 58 skipped; `t08_support_matrix.py --check` 0 problems; `t07_schema_fixtures.py` all "same".

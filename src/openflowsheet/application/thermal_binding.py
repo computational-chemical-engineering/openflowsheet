@@ -340,7 +340,10 @@ BUILDERS: Final[Mapping[str, Builder]] = {
     _VALVE.model_id: _valve,
     _MIXER.model_id: _mixer,
     _FLASH.model_id: _flash,
-    **{model_id: _machine_builder(machine) for machine, model_id in machines.MODEL_IDS.items()},
+    **{
+        model_id: _machine_builder(machine)
+        for machine, model_id in machines.MACHINE_MODEL_IDS.items()
+    },
 }
 
 #: Model id -> the provider ids of the bases it binds on (units design §4.7): the binder's

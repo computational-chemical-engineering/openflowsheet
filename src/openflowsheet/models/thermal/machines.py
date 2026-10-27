@@ -88,11 +88,13 @@ SPECIFICATION: Final = "docs/derivations/S11-units-design.md §4.4"
 Machine = Literal["pump", "compressor", "turbine"]
 IsentropicPhase = Literal["vapor", "vapor_liquid"]
 
-MODEL_IDS: Final[dict[str, str]] = {
+MACHINE_MODEL_IDS: Final[dict[str, str]] = {
     "pump": "thermal.pump",
     "compressor": "thermal.compressor",
     "turbine": "thermal.turbine",
 }
+#: The model ids this module serves, as the tuple ADR 0008's readiness checks read (U1, E1).
+MODEL_IDS: Final[tuple[str, ...]] = tuple(MACHINE_MODEL_IDS.values())
 FAMILIES: Final[dict[str, str]] = {"pump": "TPU", "compressor": "TCO", "turbine": "TTU"}
 #: The inlet's phase: its single-phase form, and the side a saturated inlet must sit on.
 _INLET_PHASE: Final[dict[str, Phase]] = {
@@ -204,7 +206,21 @@ def _ports(machine: str) -> tuple[Port, ...]:
 
 
 #: Machine -> its ports, as the unit's `ports()` gives them (read by the binder's signatures).
-PORTS: Final[dict[str, tuple[Port, ...]]] = {machine: _ports(machine) for machine in MODEL_IDS}
+PORTS: Final[dict[str, tuple[Port, ...]]] = {
+    machine: _ports(machine) for machine in MACHINE_MODEL_IDS
+}
+
+#: Every configuration's equations, keyed by (machine, saturated outlet): the module-level
+#: declaration ADR 0008's readiness checks read (U1, E1); `declared_equations` returns one of them.
+EQUATIONS: Final[dict[tuple[str, bool], tuple[DeclaredEquation, ...]]] = {
+    (machine, saturated): (
+        *_equations(machine),
+        *(saturated_declarations(SPECIFICATION) if saturated else ()),
+    )
+    for machine in MACHINE_MODEL_IDS
+    for saturated in (False, True)
+    if not saturated or "SATURATED" in _OUTLET_FORMS[machine]
+}
 
 
 @dataclass(frozen=True)
@@ -224,9 +240,9 @@ class ThermalMachine:
     isentropic_phase: IsentropicPhase | None = None
 
     def __post_init__(self) -> None:
-        if self.machine not in MODEL_IDS:
+        if self.machine not in MACHINE_MODEL_IDS:
             raise SpecificationError(
-                f"{self.unit_id}: machine {self.machine!r} is not one of {tuple(MODEL_IDS)}"
+                f"{self.unit_id}: machine {self.machine!r} is not one of {tuple(MACHINE_MODEL_IDS)}"
             )
         identity = admitted_identity(
             self.provider,
@@ -286,7 +302,7 @@ class ThermalMachine:
 
     @property
     def model_id(self) -> str:
-        return MODEL_IDS[self.machine]
+        return MACHINE_MODEL_IDS[self.machine]
 
     @property
     def family(self) -> str:
@@ -373,10 +389,7 @@ class ThermalMachine:
 
     def declared_equations(self) -> tuple[DeclaredEquation, ...]:
         """This configuration's equations (S11C_DECISIONS C2-2)."""
-        declared = _equations(self.machine)
-        if self.outlet_form == "SATURATED":
-            declared += saturated_declarations(SPECIFICATION)
-        return declared
+        return EQUATIONS[(self.machine, self.outlet_form == "SATURATED")]
 
     def manifest(self) -> Mapping[str, Any]:
         return manifest(

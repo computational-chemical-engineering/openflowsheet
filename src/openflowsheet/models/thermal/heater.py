@@ -124,6 +124,19 @@ _SPECIFICATION_ROWS: Final[dict[str, DeclaredEquation]] = {
     ),
 }
 
+#: Every configuration's equations, keyed by (specification mode, saturated outlet): the
+#: module-level declaration ADR 0008's readiness checks read (U1, E1); `declared_equations` returns
+#: one of them.
+EQUATIONS: Final[dict[tuple[Mode, bool], tuple[DeclaredEquation, ...]]] = {
+    (mode, saturated): (
+        *_BASE,
+        row,
+        *(saturated_declarations(SPECIFICATION) if saturated else ()),
+    )
+    for mode, row in _SPECIFICATION_ROWS.items()
+    for saturated in (False, True)
+}
+
 PORTS: Final[tuple[Port, ...]] = (
     material_port("inlet", "inlet", ("LIQUID", "VAPOR", "SATURATED")),
     material_port("outlet", "outlet", ("LIQUID", "VAPOR", "SATURATED")),
@@ -249,10 +262,7 @@ class ThermalHeater:
 
     def declared_equations(self) -> tuple[DeclaredEquation, ...]:
         """This configuration's equations (S11C_DECISIONS C2-2)."""
-        declared = (*_BASE, _SPECIFICATION_ROWS[self.mode])
-        if self.outlet_form == "SATURATED":
-            declared += saturated_declarations(SPECIFICATION)
-        return declared
+        return EQUATIONS[(self.mode, self.outlet_form == "SATURATED")]
 
     def manifest(self) -> Mapping[str, Any]:
         return manifest(

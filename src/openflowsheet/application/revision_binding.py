@@ -1531,7 +1531,7 @@ _THERMAL_MACHINES: Final[Mapping[str, ModelSignature]] = {
         required=("efficiency",),
         pins=(PinColumn("outlet_pressure", "pressure", "outlet"),),
     )
-    for machine, model_id in thermal_machines.MODEL_IDS.items()
+    for machine, model_id in thermal_machines.MACHINE_MODEL_IDS.items()
 }
 _THERMAL_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
     _THERMAL_HEATER,
@@ -1601,8 +1601,8 @@ _GAMMA_PHI_MODELS: Final = (
 #: machines that bind on Wilson as well (L-GP-2).
 _PURE_FLUID_BASES: Final = frozenset({_IAPWS95, _COOLPROP})
 _WILSON_MACHINES: Final = (
-    thermal_machines.MODEL_IDS["compressor"],
-    thermal_machines.MODEL_IDS["turbine"],
+    thermal_machines.MACHINE_MODEL_IDS["compressor"],
+    thermal_machines.MACHINE_MODEL_IDS["turbine"],
 )
 
 #: Model id -> the provider ids of the bases it binds on (register R-288, design note §14.4 D3):
@@ -1776,7 +1776,7 @@ _LIFTED_NAMESAKE: Final[Mapping[str, str]] = {
     _THERMAL_MIXER.model_id: "adiabatic_mixer",
     _THERMAL_FLASH.model_id: "ph_flash",
 }
-_THERMAL_PUMP: Final = thermal_machines.MODEL_IDS["pump"]
+_THERMAL_PUMP: Final = thermal_machines.MACHINE_MODEL_IDS["pump"]
 _COLUMN_MODEL: Final = "syn001.column"
 #: The C1 routing models, refused on S11's bases with their SYN-001 namesake's hint only.
 _C1_ROUTING: Final = frozenset(
