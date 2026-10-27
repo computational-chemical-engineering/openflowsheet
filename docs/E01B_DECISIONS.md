@@ -250,3 +250,33 @@ packages; URL and retrieval date for data). The design-lane ruling round is fold
 - **Open for the design lane (batched):** ESC-B3 residue (interval/σ and single-exchange impacts still let a reader
   back out a restricted q_k); the wrapper's default output scale; A32's reading; earlier B1/B2 items (new code
   `LCA_TABLE_INVALID`, substitution sign, every DECISION line). ESC-B2 (packaging) is I1's.
+
+## Handoff (2026-10-28, after WO-B3 part 2) — resume from here
+
+- **Done (wp/E01 after 658dc0c0):** acfa1317 schema readiness codes (5 assessment codes, additive); d1165930
+  WO-B3 (2) §4.10.2 (`formulation.py` `AssessmentBinding`/`_bind`/`output_values`/`output_jacobian`;
+  `greybox.py` outputs, `_Names`, `assessment_admissibility`; `closure.py` `_assessment_theta`/`_outputs`/`_regime`).
+- **Gates run:** `tests/test_e01_b_nlp.py` 11 passed (default env), its 2 nlp tests + `test_m03_nlp_greybox.py` 18
+  passed in the audited env; m03 nlp formulation/status/isolation/schemas, e01_b_studies, e01_a_core, m05_readiness
+  109 passed; ruff/format/mypy clean; t08 policy `--check` 0; `e01_d04_inventory.py --check` 0. G9 bit-identity:
+  scratch script `$SCRATCH/b3/m03_dump.py <repo> <out.json>` (NLP fixture documents via
+  `m03_schema_fixtures.nlp_documents()`, wall times blanked, + component list + objective) — base and after `cmp` equal.
+- **nlp env:** no `.venv-nlp` in this worktree; use m05's:
+  `scripts/m03_nlp_check.sh --no-inventory $W/.venv-nlp $W/.reference-downloads/m03-ipopt -- <tests>` with
+  `W=/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05` (~30 s for the greybox file).
+- **Next, WO-B3 part 3 (§4.10.3), not started:** `verification.py` `verify_candidate` (line ~185) evaluates
+  `formulation.objective.value(state)` and `constraint.expression.value(state)` (lines ~231–237) and V5 builds
+  `OutputFunctional(output_id, expression.gradient(state), 1.0)` (`_functional`, ~368): with assessment names these
+  KeyError today. Needed: augment the state with `assessment:<id>` = `program.evaluate(x_sim, d)` (V6); V5 chain rule
+  `∂φ/∂y·(∇ₓG·X + ∂G/∂d)` via `linearize` + the adjoint, as `studies/assessment.py::assessment_sensitivity`; V3 adds
+  the closure's admissibility rows as `≥ 0` constraints; V7 `program.select(x_sim)` vs held regime (dormancy exact) →
+  `ASSESSMENT_REGIME_CHANGED(<entry>)`, `NOT_VERIFIED`; `CHECKS` gains V7 and the schema `$defs/check` enum gains
+  "V7" (§4.11); `formulation_record` adds `formulation.assessment` (assessment_id, sha256s, regime_entries, outputs
+  [{id, scale}] = `FullSpaceNlp.output_scales`, admissibility [{id, nominal}], `regime_bounds_active`) only when bound,
+  so M03 fixtures stay byte-identical (re-run the dump). `solve_start` passes no binding into verification yet. Then a
+  small solve test on the test contributor in `test_e01_b_nlp.py` (objective `tac/|tac(x₀)|`).
+- **Then WO-B4** unchanged from the previous handoff (cost_hand forms I–VII from the pinned SSLW.py, mpmath; A10–A12;
+  brightway `foreground_check` expectation in the lca env; IDAES cross-check script). Independent of track A's code.
+- **Open for the design lane (batched):** the five part-2 DECISION lines above (closure reading and the floor caveat;
+  admissibility scale 1; output primal scaling; readiness order; property_calls), plus the earlier ones.
+- **Not B's:** `test_m07_mr12_extras_v02::test_the_git_backed_measure_at_head` (I1); packaging `_data/assessment/**`.
