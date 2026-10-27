@@ -117,25 +117,28 @@ choice; the evidence is in the named test or module. Batched for the package's s
   liquid and a vapour inlet together (`port_phase_ambiguous(<U>.inlet)`); S11.A56's first case stays a
   direct-construction case. C6's TH-R1 (both inlets liquid) is unaffected.
 
-## Handoff after WO-C5 (2026-10-27; C4 and C5 done, C6 not started)
+## Handoff after WO-C6 (2026-10-27; track C complete: C1–C6)
 
-Branch `wp/S11-c` (worktree `.claude/worktrees/s11-c`), not pushed. C1–C3 as before (C3: 36ea9175, c673ebf8,
-1e602650). C4: 5ca61ba2 (`_PARAMETER_KINDS` entry, C4-1), c7710dc9 (`application/thermal_binding.py`, C4-2..7;
-`machines.PORTS` added), 5f3b80b6 (G20 registration of the C1/C2 `@cache`s, C4-8). C5: 4ab866b7
-(`verify/thermal.py`, C5-1..4).
+Branch `wp/S11-c` (worktree `.claude/worktrees/s11-c`), not pushed, on 080ec1ee (tracks A, B, C1–C5 merged). C6:
+6feb6b60 (C1-1 bridge retired; units build `UnitEvaluation`), f1aa2e27 (Q18 spike + TH-V1, C6-1), 64aea65c
+(`orchestrator/splits.py` §4.9 entries + A62, C6-2), 6589169b (TH-C1/C2/R1, A59–A61, A63, C6-3..5).
 
-Gates (no-CoolProp | CoolProp 8.0.0): `test_s11_thermal_binding.py` 67 passed 3 skipped | 70 passed;
-`test_s11_thermal_verifier.py` 12 | 12; `test_t07_global_state.py` 3 passed. ruff, ruff format, mypy clean.
-`scripts/s11_identity.py`: after c7710dc9 `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 5, 13, 14, 15]
-exited non-zero)` — shard 13 was G20 (C4-8); after 4ab866b7 `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards
-[1, 5, 14, 15] exited non-zero)`, track A's recorded line (the A5-owned amended tests and T08.A32).
+Gates: `test_s11_thermal_*.py` 256 passed 58 skipped (no CoolProp) | 314 passed (CoolProp 8.0.0);
+`test_t05b_*`, `test_m02_wo8_*`, `test_s11_*`, `test_t05_dormant_outlet` 1390 passed 63 skipped; ruff, format, mypy
+clean; `s11_thermal_reference.py --check` OK (CoolProp) / SKIP (none). After 64aea65c (the `splits.py` commit):
+`S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 5, 14, 15] exited non-zero)` (track A's recorded line),
+`S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL`, `S10C-IDENTITY PASS n=858 changed=[]`. 6589169b touches
+no trigger-list path.
 
-For I1b: register `thermal_binding.SIGNATURES/BUILDERS/BASES` in the binder's tables (the tests show how), merge
-`verify.thermal.MODEL_CHECKS` and hook `enthalpy_map`/`saturated_stream_checks` on a pure basis (C5-1).
+Q18 answered yes (the region halves on a block's `invalid_trial_state`); §4.11 timings well inside the gates.
+
+For I1b: register `thermal_binding.SIGNATURES/BUILDERS/BASES` in the binder's tables; merge
+`verify.thermal.MODEL_CHECKS` and hook `enthalpy_map`/`saturated_stream_checks` on a pure basis (C5-1); then the C6
+tests can drop their monkeypatching and judge `verify_revision` certificates (A64 proper; O-C6-1's v1
+`RANK_DEFICIENT`).
 
 Open for the design lane: Q-C1 (A46 at the range top), Q-C2 (turbine `isentropic_phase` not expressible in a
-revision); for the reviewer: O-C3-1, O-C4-1.
+revision). For the reviewer: O-C3-1, O-C4-1, O-C6-1, and C6-2 (the m02 registry test restricted), C6-3 (A63's hint
+asserted on the unit's answer, not the plan message).
 
-**Next: WO-C6** (dormancy entries in `orchestrator/splits.py` after B3 merges, the four flowsheets, S11.A59–A63; the
-first commit is the TH-V1 spike). Rebase on `wp/S11` once B3 is merged there. `tests/test_s11_thermal_verifier.py`'s
-`evaluated_state` (the units' own sequential evaluation) gives C6 a reference start for TH-C1 and TH-V1.
+Next: track C's single `reviewer` pass (C1–C6), then merge `wp/S11-c` into `wp/S11`.
