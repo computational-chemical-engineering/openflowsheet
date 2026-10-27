@@ -96,6 +96,24 @@ in the run log below.
 - DECISION: the routing units' `domain` field → a `Mapping` with `hash=False` (frozen dataclasses stay hashable).
   Alternative: a tuple of pairs. Reversible by: the field declarations.
 
+## Track A: A3 verifier forms (§4.6)
+
+- DECISION: the declared-mixture admissibility check's numbers → γ–φ: value = `single_phase_admissible`'s temperature
+  gap (or degeneracy distance), tolerance its registered `TEMPERATURE_TOLERANCE`, result = its verdict, with A09's
+  shared-implementation note; pure fluid: value 0.0 when §4.6's rule holds, else the relative distance past `Psat`
+  (1.0 for a liquid at or above `T_c`), tolerance 0.0, so the result is exactly the rule. `Psat` refused →
+  `unsupported` with the provider's message. Alternative: other encodings of the same verdicts. Reversible by:
+  `verify/forms.py`.
+- DECISION: S11.A17 (the A12 flowsheets with no declared phase) → unreachable through the binder: the feed source's
+  and splitter's ports take `liquid` or `vapor` only (`port_phase_unsupported` on `vapor_liquid`), so the unlifted
+  path is exercised on `revision_checks` directly, with the splitter's products `vapor_liquid` at the declared
+  flowsheet's solved state; the blocked reason is the existing `temperature_degenerate_unlifted(<S>)` (§4.6: "the
+  existing mechanism"). Alternative: a new reason text. Reversible by: test placement / one string.
+- DECISION: `tests/test_m02_wo8_verifier.py::test_the_verifier_builds_its_fresh_provider_from_the_basis` pins the old
+  `fresh_provider(provider_id)` and the two-id `FRESH_PROVIDERS` → amended to the basis API and five ids (§4.6 changes
+  both; the test makes no bind call, so no family-C key). Alternative: keep a provider-id overload. Reversible by:
+  reverting the A3 commit's hunk.
+
 ## Run log
 
 - WO-0 gate, unmodified tree (`acffd034`), 16 shards per tree, 614 s:
@@ -113,3 +131,8 @@ in the run log below.
   Every shard of both trees exited 0: the tests that state those hints compare `Unbound`s, whose `hint` is
   `compare=False`, so only the gate sees the move.
 - `tests/test_s11_identity_gate.py`: 24 passed (2.4 s); ruff, ruff format, mypy clean on the three files.
+- A2 gate (`15b81efe`, base tree reused): `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 5, 14, 15]
+  exited non-zero)`. changed=[] and no base-only keys; the failing tests are the `AMENDED_TESTS` A5 owns
+  (`test_s05_envelope::test_a25`, `test_s07_registration::test_a30`, `test_s10_provider::test_a27`,
+  `test_t08_w2_support_envelope` a20/c3) and T08.A32 (escalated, above). A1's first run (`97dded60`) had in addition
+  the 4 base-only keys of `test_each_route_binds_a_revision_with_its_component_set` (fixed by `7302a507`).

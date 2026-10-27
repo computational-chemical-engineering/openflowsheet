@@ -55,6 +55,7 @@ from openflowsheet.verify import (
     CheckResult,
     dormant,
     evaluated,
+    forms,
     pr_c1,
     unsupported,
 )
@@ -1638,10 +1639,26 @@ def revision_checks(
         convention=provider.describe().reference_convention
     )
     components = view.components
-    # M02 design note §14.2 B15: a `pr-c1-v1` revision takes `verify.pr_c1`'s forms at the
-    # sites below; every other basis runs SYN-001's lines.
-    pr = view.basis.provider_id == pr_c1.PROVIDER_ID
-    degenerate = Degeneracy() if pr else degeneracy(view, splits, at, provider, context, tolerances)
+    # S11 design §4.6 (ADR 0050 D5): the form is resolved from the basis. M02 design note §14.2
+    # B15: a `pr-c1-v1` revision takes `verify.pr_c1`'s forms at the sites below, SYN-001's runs
+    # SYN-001's lines, and every other basis the declared-phase mixture form (`verify.forms`).
+    form = forms.form_of(view.basis.provider_id)
+    pr = form == forms.PR
+    mixture = form == forms.DECLARED_MIXTURE
+    declared = forms.declared_phases(view) if mixture else {}
+    if mixture:
+        # No bands; a flowing stream without a declared phase is unlifted (its checks blocked).
+        degenerate = Degeneracy(
+            unlifted=frozenset(
+                stream
+                for stream, phase in declared.items()
+                if phase is None and not stream_of(at, stream, components).is_dormant
+            )
+        )
+    else:
+        degenerate = (
+            Degeneracy() if pr else degeneracy(view, splits, at, provider, context, tolerances)
+        )
 
     energy: list[CheckResult] = []
     enthalpy: dict[str, float] = {}
@@ -1660,6 +1677,12 @@ def revision_checks(
             )
         elif pr:
             enthalpy[stream] = pr_c1.enthalpy_flow(provider, carried, context, components)
+        elif mixture:
+            phase = declared[stream]
+            # An unlifted stream's value is never judged: every check reading it is blocked.
+            enthalpy[stream] = (
+                0.0 if phase is None else forms.enthalpy_flow(provider, carried, phase, context)
+            )
         else:
             enthalpy[stream] = enthalpy_flow(provider, carried, context)
 
@@ -1713,6 +1736,9 @@ def revision_checks(
     )
 
     admissibility: list[CheckResult] = []
+    if mixture:
+        admissibility += forms.stream_admissibility(view, declared, at, provider, context, note)
+        return [*material, *energy, *specification, *bounds, *admissibility]
     if pr:
         for split in splits:
             admissibility += pr_c1.split_checks(

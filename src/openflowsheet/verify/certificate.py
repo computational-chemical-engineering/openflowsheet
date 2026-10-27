@@ -77,6 +77,7 @@ from openflowsheet.verify.checks import (
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES, Projection, project
 
 if TYPE_CHECKING:
+    from openflowsheet.models.revision_flowsheet import ComponentBasis
     from openflowsheet.verify.regularity import RegularityEvidence
     from openflowsheet.verify.zero_flow import ZeroFlowSplit
 
@@ -608,21 +609,67 @@ def verify_bound(
     )
 
 
-#: M02 design note §14.2 B15: the provider ids the verifier's own table constructs a fresh
-#: provider for (`fresh_provider`). It never calls the binder's constructor
-#: (`revision_binding.basis_provider`).
-FRESH_PROVIDERS: Final = ("syn001", "pr-c1-v1")
+#: M02 design note §14.2 B15, S11 design §4.6 (ADR 0050 D5): the provider ids the verifier's own
+#: table constructs a fresh provider for (`fresh_provider`). It never calls the binder's
+#: constructor (`revision_binding.basis_provider`).
+FRESH_PROVIDERS: Final = (
+    "syn001",
+    "pr-c1-v1",
+    "iapws95-v1",
+    "wilson-ig-v1",
+    "coolprop-heos-v1",
+)
 
 
-def fresh_provider(provider_id: str) -> PropertyProvider:
-    """A fresh provider of `provider_id`: SYN-001's or `pr-c1-v1`'s; any other id is refused.
-    The classes are read from this module at the call, as `verify_revision` always read
-    `Syn001Provider`."""
+def _wilson_provider() -> PropertyProvider:
+    """S11 design §4.3, as the binder checks it: the real records must load and satisfy P1–P3."""
+    from openflowsheet.thermo import wilson_ig, wilson_premises  # noqa: PLC0415
+
+    try:
+        records = wilson_ig.load_records()
+    except wilson_ig.RecordError as error:
+        cause = (str(error).splitlines() or [""])[0].split(":", 1)[0]
+        raise VerifierError(f"basis_unavailable(wilson-ig-v1): {cause}") from error
+    found = wilson_premises.violations(records)
+    if found:
+        raise VerifierError(f"basis_premises_unmet(wilson-ig-v1): {found[0].hint}")
+    return wilson_ig.WilsonIdealGasProvider()
+
+
+def fresh_provider(basis: ComponentBasis) -> PropertyProvider:
+    """A fresh provider of `basis` from the verifier's own table (S11 design §4.6), which must
+    describe `basis`' provider id and components, else `basis_mismatch(...)`; a provider id
+    outside `FRESH_PROVIDERS` is `provider_unknown(<id>)`. The SYN-001 and C1 classes are read
+    from this module at the call, as `verify_revision` always read `Syn001Provider`."""
+    provider_id = basis.provider_id
+    provider: PropertyProvider
     if provider_id == SYN001_PROVIDER_ID:
-        return Syn001Provider()
-    if provider_id == "pr-c1-v1":
-        return PrC1Provider()
-    raise VerifierError(f"provider_unknown({provider_id})")
+        provider = Syn001Provider()
+    elif provider_id == "pr-c1-v1":
+        provider = PrC1Provider()
+    elif provider_id == "iapws95-v1":
+        from openflowsheet.thermo.iapws95 import Iapws95Provider  # noqa: PLC0415
+
+        provider = Iapws95Provider()
+    elif provider_id == "wilson-ig-v1":
+        provider = _wilson_provider()
+    elif provider_id == "coolprop-heos-v1":
+        from openflowsheet.thermo.coolprop_heos import CoolPropHeosProvider  # noqa: PLC0415
+
+        if len(basis.components) != 1:
+            raise VerifierError(
+                f"basis_mismatch(coolprop-heos-v1: components {list(basis.components)})"
+            )
+        provider = CoolPropHeosProvider(basis.components[0])
+    else:
+        raise VerifierError(f"provider_unknown({provider_id})")
+    described = provider.describe()
+    if (described.provider_id, tuple(described.components)) != (provider_id, basis.components):
+        raise VerifierError(
+            f"basis_mismatch({provider_id} {list(basis.components)}: the fresh provider "
+            f"describes {described.provider_id} {list(described.components)})"
+        )
+    return provider
 
 
 def verify_revision(
@@ -662,8 +709,12 @@ def verify_revision(
     _require_converged(result)
     # M02 design note §14.2 B15: the fresh provider of the revision's basis (the basis
     # `parse_revision` reads into `view.basis`), from the verifier's own table.
-    basis = component_basis(revision).provider_id
-    fresh = fresh_provider(basis)
+    try:
+        revision_basis = component_basis(revision)
+    except RevisionError as error:
+        raise VerifierError(f"revision_unreadable({error.code})") from error
+    basis = revision_basis.provider_id
+    fresh = fresh_provider(revision_basis)
     compiled = compile_problem(binding.spec)
     solved = _guard(
         binding.spec,

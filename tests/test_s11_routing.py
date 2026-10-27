@@ -73,11 +73,15 @@ def routing_revision(
     flows: Sequence[float],
     temperature: float,
     pressure: float,
-    phase: str | None,
+    phase: str,
     split: float = 0.3,
+    *,
+    products_declared: bool = True,
 ) -> dict[str, Any]:
-    """F → SP (`split_fraction` = `split`) → K1 (recycle), K2 (purge); the feed S1 pinned."""
-    declared = "vapor" if phase is None else phase
+    """F → SP (`split_fraction` = `split`) → K1 (recycle), K2 (purge); the feed S1 pinned, every
+    connection declared `phase`, or the splitter's products `vapor_liquid` (S11.A17; the feed
+    source's outlet takes liquid or vapor only)."""
+    declared = phase
     document = revision(
         [
             instance("F", "syn001.feed_source"),
@@ -108,8 +112,8 @@ def routing_revision(
         record_source=record_source,
         revision_id="S11-ROUTING-r1",
     )
-    if phase is None:  # S11.A17: the same flowsheet with no declared phase
-        for entry in document["connections"]:
+    if not products_declared:
+        for entry in document["connections"][1:]:
             entry["phase_capability"] = "vapor_liquid"
     return document
 
@@ -139,7 +143,7 @@ CASE_PARAMS = [
 def case_revision(case: str, *, declared: bool = True) -> dict[str, Any]:
     source, components, flows, temperature, pressure, phase = CASES[case]
     return routing_revision(
-        source, components, flows, temperature, pressure, phase if declared else None
+        source, components, flows, temperature, pressure, phase, products_declared=declared
     )
 
 
