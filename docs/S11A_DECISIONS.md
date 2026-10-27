@@ -136,3 +136,32 @@ in the run log below.
   (`test_s05_envelope::test_a25`, `test_s07_registration::test_a30`, `test_s10_provider::test_a27`,
   `test_t08_w2_support_envelope` a20/c3) and T08.A32 (escalated, above). A1's first run (`97dded60`) had in addition
   the 4 base-only keys of `test_each_route_binds_a_revision_with_its_component_set` (fixed by `7302a507`).
+- A3 gate (`da6c06df`): `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 5, 14, 15] exited non-zero)`:
+  the same eleven known failures as A2, nothing new (every SYN-001 and C1 certificate test passes).
+
+## Handoff (2026-10-27, end of the A1–A3 engineer; A4 not started)
+
+**Done** on `wp/S11-a` (not pushed): A1 `fba583ac` (+ decisions `97dded60` L01 re-take bases, `7302a507` W27
+installed-build tests via `v2_binder`), A2 `15b81efe`, A3 `da6c06df`. S11.A01–A19 pass (`tests/test_s11_bases.py`,
+`test_s11_routing.py`, `test_s11_verifier_forms.py`: 351 passed / 6 skipped without CoolProp; the CoolProp cases
+pass with CoolProp 8.0.0 on `PYTHONPATH`, installed by `pip install --target <scratch>/cp CoolProp==8.0.0` with its
+numpy removed — never in `.venv`).
+
+**Identity:** every run `changed=[]`, n=54497, no base-only keys since `7302a507`. The gate still prints FAIL because
+shards exit non-zero on (a) the `AMENDED_TESTS` that A5 amends (s05 a25, s07 a30, s10 a27, t08 support-envelope
+a20/c3) and (b) T08.A32 (`test_t08_w2_inventory::test_a32_…`), escalated, OPEN above.
+
+**Open for the design lane (batch with the package's ruling round):**
+1. T08.A32 vs the two new record files (OPEN entry above): needs a `specifier` ruling; until then the test fails.
+2. §4.10's "all existing W27 tests pass unchanged" cannot hold after A1 (D9's own effect); `7302a507` reads the
+   installed build under v1/v2 through `v2_binder()` — confirm, or have A4 re-point those tests at v3.
+3. §6.1 A12's "exact ==" balance holds only for flows whose split products are exact in binary64 (A2 entry).
+
+**Next: WO-A4** (W27 v3, §4.10, S11.A30–A33). Files: `docs/derivations/W27-registration-v3.md` (transcribe §4.10
+R01–R08), `docs/derivations/scripts/w27_registration_v3.py --check` → `benchmarks/m06/openidaes450/registration_v3.json`,
+`benchmarks/m06/w27/{coverage,registration,snapshot}.py`, `tests/test_s11_w27_v3.py`. Facts found: `snapshot.py`'s
+`PROVIDER_LINES` (syn001, pr-c1-v1, pr-lib-v1) is version-independent and `_routes_bases_v1` reads it; v3 needs
+`PROVIDER_LINES_V3` (generic records line from `ROOT / basis.record_source`, `identifiers.{cas,…}`) selected by the
+registration version, the route key `(provider_id, record_source, components)` (R06/R07), and
+`registration.provider_methods(3)`. W27v3-R02's `wilson-ig-v2` row is D5's (units-design §5.4 item 2), not A4's.
+S4 is I1b's. Check v1/v2 outputs stay byte-identical (A30) with the existing W27 tests plus `v2_binder`.
