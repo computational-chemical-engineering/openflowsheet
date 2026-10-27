@@ -248,6 +248,14 @@ END_PREFIXES: Final[tuple[str, ...]] = (f"{CONDENSER}_", f"{REBOILER}_")
 _DOTTED: Final[tuple[str, ...]] = (f"{CONDENSER}.", f"{REBOILER}.")
 
 
+def end_parameter(end: str, kind: str) -> str:
+    """The instance parameter that gives `end` a specification of `kind`, as a hint names it
+    (§10.5, R-824; S11 rulings item 9 (b)): `<end>_<kind>`, with `.<component>` for a purity or
+    recovery and `.<stage>` for a temperature."""
+    attribute = {"purity": ".<component>", "recovery": ".<component>", "temperature": ".<stage>"}
+    return f"{end}_{kind}{attribute.get(kind, '')}"
+
+
 def end_entries(view: InstanceView) -> dict[str, float]:
     """The instance's end specifications, `<end>_<kind>[.<attribute>]` → value (SI), read from
     its parameters, so a `role: fixed` specification with target path `parameters.<name>`
@@ -468,7 +476,7 @@ def structural_refusal(structure: ColumnStructure, provider: PropertyProvider) -
             raise RevisionError(
                 "incomplete",
                 f"specification_missing({unit}.{end})",
-                f"Pin exactly one of {', '.join(f'{end}.{k}' for k in offered)}.",
+                f"Pin exactly one of {', '.join(end_parameter(end, k) for k in offered)}.",
             )
         if found.kind not in offered:
             raise RevisionError(

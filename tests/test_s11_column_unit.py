@@ -164,6 +164,34 @@ def test_a26_every_registered_case_builds() -> None:
         build(view_of(spec))
 
 
+def test_the_refusal_hints_name_the_end_parameters() -> None:
+    """S11 rulings item 9 (b) (R-838, F-2): the missing-end hint lists each kind offered at that end
+    on the basis by its R-824 parameter name, and no hint of the refusal table spells an end
+    specification dotted."""
+    for item, (view, _) in STRUCTURAL.items():
+        with pytest.raises((RevisionError, SpecificationError)) as raised:
+            build(view)
+        hint = getattr(raised.value, "hint", None) or ""
+        assert "condenser." not in hint and "reboiler." not in hint, (item, hint)
+    view, _ = STRUCTURAL["S2-missing"]
+    with pytest.raises(RevisionError) as missing:
+        build(view)
+    assert missing.value.code == "specification_missing(S02.condenser)"
+    assert missing.value.hint == (
+        "Pin exactly one of condenser_reflux_ratio, condenser_distillate_rate, condenser_duty, "
+        "condenser_purity.<component>, condenser_recovery.<component>, "
+        "condenser_temperature.<stage>."
+    )
+    spec = column_spec("C-MW")
+    wilson = with_parameters(spec, {"condenser_reflux_ratio": None})
+    with pytest.raises(RevisionError) as on_wilson:
+        build_column(wilson, REAL, DECLARATION_CONTEXT, spec.components)
+    assert on_wilson.value.code == "specification_missing(COL.condenser)"
+    assert on_wilson.value.hint == (
+        "Pin exactly one of condenser_reflux_ratio, condenser_distillate_rate, condenser_duty."
+    )
+
+
 # -- S11.A27 --------------------------------------------------------------------------------------
 
 
