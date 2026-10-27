@@ -216,3 +216,6 @@ All four answered with the recommended default (Frank, 2026-10-25):
   R-824).
 - **Cost estimation and LCA** (Frank, 2026-10-27): "I want cost estimation and LCA available, because these are input in
   process optimization studies" → package E01, design pass right after S11; PrISMa's rework builds on it.
+- **E01 scope answers** (Frank, 2026-10-27): (1) generalising the M03 optimiser to revision flowsheets → **a separate
+  package right after E01**; (2) cost/LCA access → **Python first**, MCP/CLI/HTTP in the next binding pass; (3) discrete
+  design choices (parallel units, utility, material) → **held fixed by the study for now**, compared as separate candidates.
