@@ -61,6 +61,7 @@ from openflowsheet.verify import (
 )
 from openflowsheet.verify.checks import (
     KIND_TOLERANCE,
+    ONE_SIDED_BASES,
     VerifierError,
     admissibility_checks,
     alias_checks,
@@ -69,6 +70,7 @@ from openflowsheet.verify.checks import (
     energy_checks,
     label_checks,
     material_checks,
+    one_sided_columns,
     qualification,
     residual_checks,
     routing_tolerances,
@@ -77,6 +79,7 @@ from openflowsheet.verify.checks import (
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES, Projection, project
 
 if TYPE_CHECKING:
+    from openflowsheet.models.revision_flowsheet import ComponentBasis
     from openflowsheet.verify.regularity import RegularityEvidence
     from openflowsheet.verify.zero_flow import ZeroFlowSplit
 
@@ -608,21 +611,68 @@ def verify_bound(
     )
 
 
-#: M02 design note §14.2 B15: the provider ids the verifier's own table constructs a fresh
-#: provider for (`fresh_provider`). It never calls the binder's constructor
-#: (`revision_binding.basis_provider`).
-FRESH_PROVIDERS: Final = ("syn001", "pr-c1-v1")
+#: M02 design note §14.2 B15, S11 design §4.6 (ADR 0050 D5): the provider ids the verifier's own
+#: table constructs a fresh provider for (`fresh_provider`). It never calls the binder's
+#: constructor (`revision_binding.basis_provider`). Wilson's is `wilson-ig-v2`, the provider its
+#: record source selects (units design §4.6, WO-D5).
+FRESH_PROVIDERS: Final = (
+    "syn001",
+    "pr-c1-v1",
+    "iapws95-v1",
+    "wilson-ig-v2",
+    "coolprop-heos-v1",
+)
 
 
-def fresh_provider(provider_id: str) -> PropertyProvider:
-    """A fresh provider of `provider_id`: SYN-001's or `pr-c1-v1`'s; any other id is refused.
-    The classes are read from this module at the call, as `verify_revision` always read
-    `Syn001Provider`."""
+def _wilson_provider() -> PropertyProvider:
+    """S11 design §4.3, as the binder checks it: the real records must load and satisfy P1–P3."""
+    from openflowsheet.thermo import wilson_ig, wilson_ig_v2, wilson_premises  # noqa: PLC0415
+
+    try:
+        records = wilson_ig.load_records()
+    except wilson_ig.RecordError as error:
+        cause = (str(error).splitlines() or [""])[0].split(":", 1)[0]
+        raise VerifierError(f"basis_unavailable(wilson-ig-v2): {cause}") from error
+    found = wilson_premises.violations(records)
+    if found:
+        raise VerifierError(f"basis_premises_unmet(wilson-ig-v2): {found[0].hint}")
+    return wilson_ig_v2.WilsonIdealGasProviderV2()
+
+
+def fresh_provider(basis: ComponentBasis) -> PropertyProvider:
+    """A fresh provider of `basis` from the verifier's own table (S11 design §4.6), which must
+    describe `basis`' provider id and components, else `basis_mismatch(...)`; a provider id
+    outside `FRESH_PROVIDERS` is `provider_unknown(<id>)`. The SYN-001 and C1 classes are read
+    from this module at the call, as `verify_revision` always read `Syn001Provider`."""
+    provider_id = basis.provider_id
+    provider: PropertyProvider
     if provider_id == SYN001_PROVIDER_ID:
-        return Syn001Provider()
-    if provider_id == "pr-c1-v1":
-        return PrC1Provider()
-    raise VerifierError(f"provider_unknown({provider_id})")
+        provider = Syn001Provider()
+    elif provider_id == "pr-c1-v1":
+        provider = PrC1Provider()
+    elif provider_id == "iapws95-v1":
+        from openflowsheet.thermo.iapws95 import Iapws95Provider  # noqa: PLC0415
+
+        provider = Iapws95Provider()
+    elif provider_id == "wilson-ig-v2":
+        provider = _wilson_provider()
+    elif provider_id == "coolprop-heos-v1":
+        from openflowsheet.thermo.coolprop_heos import CoolPropHeosProvider  # noqa: PLC0415
+
+        if len(basis.components) != 1:
+            raise VerifierError(
+                f"basis_mismatch(coolprop-heos-v1: components {list(basis.components)})"
+            )
+        provider = CoolPropHeosProvider(basis.components[0])
+    else:
+        raise VerifierError(f"provider_unknown({provider_id})")
+    described = provider.describe()
+    if (described.provider_id, tuple(described.components)) != (provider_id, basis.components):
+        raise VerifierError(
+            f"basis_mismatch({provider_id} {list(basis.components)}: the fresh provider "
+            f"describes {described.provider_id} {list(described.components)})"
+        )
+    return provider
 
 
 def verify_revision(
@@ -654,7 +704,7 @@ def verify_revision(
         component_basis,
         parse_revision,
     )
-    from openflowsheet.orchestrator.splits import lifted_splits
+    from openflowsheet.orchestrator.splits import lifted_splits, split_owners
     from openflowsheet.verify.surrogate import surrogate_items
     from openflowsheet.verify.table import revision_checks, revision_phase_branch
     from openflowsheet.verify.zero_flow import dormant_outlets, zero_flow_splits
@@ -662,8 +712,12 @@ def verify_revision(
     _require_converged(result)
     # M02 design note §14.2 B15: the fresh provider of the revision's basis (the basis
     # `parse_revision` reads into `view.basis`), from the verifier's own table.
-    basis = component_basis(revision).provider_id
-    fresh = fresh_provider(basis)
+    try:
+        revision_basis = component_basis(revision)
+    except RevisionError as error:
+        raise VerifierError(f"revision_unreadable({error.code})") from error
+    basis = revision_basis.provider_id
+    fresh = fresh_provider(revision_basis)
     compiled = compile_problem(binding.spec)
     solved = _guard(
         binding.spec,
@@ -703,9 +757,15 @@ def verify_revision(
         raise VerifierError(f"revision_unreadable({error.code})") from error
     if view.basis.provider_id != basis:
         raise VerifierError(f"basis_mismatch({view.basis.provider_id}, {basis})")
+    # S11 design §10.11 (B4): each staged instance's splits, as its builder holds them, from the
+    # revision's own reading of it; `owners` resolves a stage key to its instance.
+    staged = _staged_splits(view)
     splits = lifted_splits(
-        [(i.unit_id, i.model_id, i.wiring) for i in view.instances], view.components
+        [(i.unit_id, i.model_id, i.wiring) for i in view.instances],
+        view.components,
+        staged=staged,
     )
+    owners = split_owners(staged)
 
     rows, digest = residual_checks(
         target.compiled,
@@ -721,7 +781,7 @@ def verify_revision(
     # is judged on its zero-flow form, and so is a dormancy-form outlet whose trigger streams are
     # all dormant (ADR 0012 D12); each label row is checked after the compiled rows.
     zero_flow = (
-        *zero_flow_splits(view, splits, final_state),
+        *zero_flow_splits(view, splits, final_state, owners),
         *dormant_outlets(view, final_state),
     )
     labels = label_checks(zero_flow, final_state, resolved.tolerances)
@@ -750,6 +810,7 @@ def verify_revision(
             context=context,
             tolerances=resolved.tolerances,
             judged_at=judged_at,
+            owners=owners,
         ),
         final_state,
         projection,
@@ -789,9 +850,33 @@ def verify_revision(
         )
         if basis == "pr-c1-v1"
         else frozenset(),
+        # S11 rulings item 2 (R-831): on a Wilson basis, each exactly-zero component column beside
+        # a positive sibling is differenced one-sided (Z); empty on every other basis.
+        one_sided=one_sided_columns(target.spec.variable_ids, final_state, view.components)
+        if basis in ONE_SIDED_BASES
+        else frozenset(),
         appended=surrogate_limitations,
         external=external,
     )
+
+
+def _staged_splits(view: Any) -> dict[str, Any]:
+    """S11 design §10.11 (B4): `column_staged_splits(column_structure(view, components))` for
+    each instance whose model is in `STAGED_MODELS`, by instance id in declaration order — the
+    function the column's builder calls, on the revision's own view of the instance."""
+    from openflowsheet.models.syn001.column import MODEL_ID as COLUMN
+    from openflowsheet.models.syn001.column_unit import column_staged_splits, column_structure
+    from openflowsheet.orchestrator.splits import STAGED_MODELS
+
+    staged: dict[str, Any] = {}
+    for instance in view.instances:
+        if instance.model_id not in STAGED_MODELS:
+            continue
+        if instance.model_id != COLUMN:
+            raise VerifierError(f"staged_model_unread({instance.model_id})")
+        structure = column_structure(instance, view.components)
+        staged[instance.unit_id] = column_staged_splits(structure)
+    return staged
 
 
 def alias_document(row: Any) -> dict[str, Any]:
@@ -1192,6 +1277,7 @@ def _issue(
     projection: Projection,
     provider: PropertyProvider | None = None,
     unstenciled: frozenset[str] = frozenset(),
+    one_sided: frozenset[str] = frozenset(),
     appended: Sequence[Limitation] = (),
     external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
@@ -1211,7 +1297,7 @@ def _issue(
     if external is not None:
         # M02 design note §4.4: the coupling checks are judged with the check set.
         checks += external.checks
-    checks += derivative_witness(target, final_state, unstenciled=unstenciled)
+    checks += derivative_witness(target, final_state, unstenciled=unstenciled, one_sided=one_sided)
 
     matrix, scaled_residual = screened.matrix, screened.scaled_residual
     identity, regularity = screened.identity, screened.regularity

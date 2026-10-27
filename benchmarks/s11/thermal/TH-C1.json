@@ -1,0 +1,342 @@
+{
+  "component_set": {
+    "components": [
+      "H2O"
+    ],
+    "record_source": "benchmarks/s05/components.yaml"
+  },
+  "connections": [
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "F",
+        "port": "outlet"
+      },
+      "id": "S1",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "liquid",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "P",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "P",
+        "port": "outlet"
+      },
+      "id": "S2",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "liquid",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "B",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "B",
+        "port": "outlet"
+      },
+      "id": "S3",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "T",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "T",
+        "port": "outlet"
+      },
+      "id": "S4",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor_liquid",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "C",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "C",
+        "port": "outlet"
+      },
+      "id": "S5",
+      "kind": "material",
+      "notes": "test",
+      "phase_capability": "vapor_liquid",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "K",
+        "port": "inlet"
+      }
+    }
+  ],
+  "description": "M02 test revision on pr-c1-v1",
+  "instances": [
+    {
+      "id": "F",
+      "model": {
+        "artifact_ref": null,
+        "id": "syn001.feed_source",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "other"
+    },
+    {
+      "id": "P",
+      "model": {
+        "artifact_ref": null,
+        "id": "thermal.pump",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {
+        "efficiency": {
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "test",
+          "role": "fixed",
+          "unit": "1",
+          "value": 0.75
+        }
+      },
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "other"
+    },
+    {
+      "id": "B",
+      "model": {
+        "artifact_ref": null,
+        "id": "thermal.heater",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "other"
+    },
+    {
+      "id": "T",
+      "model": {
+        "artifact_ref": null,
+        "id": "thermal.turbine",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {
+        "efficiency": {
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "test",
+          "role": "fixed",
+          "unit": "1",
+          "value": 0.85
+        }
+      },
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "other"
+    },
+    {
+      "id": "C",
+      "model": {
+        "artifact_ref": null,
+        "id": "thermal.heater",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {
+        "outlet_vapor_fraction": {
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "test",
+          "role": "fixed",
+          "unit": "1",
+          "value": 0.0
+        }
+      },
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "other"
+    },
+    {
+      "id": "K",
+      "model": {
+        "artifact_ref": null,
+        "id": "syn001.product_sink",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "other"
+    }
+  ],
+  "parent_revision": null,
+  "provenance": {
+    "actor": "M02 tests (build lane)",
+    "notes": "built in code by tests/m02_c1_support.py",
+    "operation": "create",
+    "source_references": [
+      "docs/design/M02-pymrm-adapter.md \u00a78"
+    ],
+    "timestamp": "2026-10-08T00:00:00Z"
+  },
+  "revision_id": "S11-TH-C1",
+  "schema_version": 1,
+  "specifications": [
+    {
+      "id": "SPEC-S1-n",
+      "kind": "molar_flow",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "component": "H2O",
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 1.0
+    },
+    {
+      "id": "SPEC-S1-T",
+      "kind": "temperature",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 318.15
+    },
+    {
+      "id": "SPEC-S1-P",
+      "kind": "pressure",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S1",
+        "object_type": "connection",
+        "path": "state.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 10000.0
+    },
+    {
+      "id": "SPEC-P-P",
+      "kind": "pressure",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "P",
+        "object_type": "instance",
+        "path": "outlet.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 3000000.0
+    },
+    {
+      "id": "SPEC-B-T",
+      "kind": "temperature",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "B",
+        "object_type": "instance",
+        "path": "outlet.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 673.15
+    },
+    {
+      "id": "SPEC-T-P",
+      "kind": "pressure",
+      "provenance": "M02 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "T",
+        "object_type": "instance",
+        "path": "outlet.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 10000.0
+    }
+  ],
+  "title": "S11-TH-C1"
+}

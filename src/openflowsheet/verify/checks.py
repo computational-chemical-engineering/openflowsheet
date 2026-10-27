@@ -854,8 +854,52 @@ FD_RELATIVE_STEP: Final = 1e-5
 DERIVATIVE_TOLERANCE: Final = 1e-7
 
 
+#: S11 rulings item 2 (R-831): the bases on which an exactly-zero component column beside a
+#: positive sibling is differenced one-sided. The activity coefficients are analytic at x_c = 0
+#: (infinite dilution), so the forward points are admissible and the one-sided derivative exists;
+#: only the backward point (a negative flow) is refused (ADR 0001 D2).
+ONE_SIDED_BASES: Final = frozenset({"wilson-ig-v1", "wilson-ig-v2"})
+
+#: The stencil points, in units of the registered step: central (x + h, x - h; evaluated in that
+#: order, as since K04), and S11 rulings item 2's (R-831) forward five-point one (x + k h,
+#: k = 0..4). Fourth order: on C-MW at the registered step the forward three-point stencil is
+#: truncation-limited (2.22e-6) and the four-point one truncation-dominated (3.11e-9), while the
+#: five-point one is at roundoff (6.1e-10), 160x below `DERIVATIVE_TOLERANCE`.
+_CENTRAL_OFFSETS: Final = (1.0, -1.0)
+_FORWARD_OFFSETS: Final = (0.0, 1.0, 2.0, 3.0, 4.0)
+
+
+def one_sided_columns(
+    columns: Sequence[str], state: Mapping[str, float], components: Sequence[str]
+) -> frozenset[str]:
+    """S11 rulings item 2 (R-831), **Z**: the columns of `columns` named `<p>.<c>`, with `c` a
+    declared component, whose value in `state` is exactly `0.0` while some `<p>.<c'>` (c' != c, a
+    declared component) is `> 0.0`. The caller applies it on `ONE_SIDED_BASES` only; Z is empty on
+    every other basis. A zero column with no positive sibling (a dormant phase) is not in Z and
+    keeps the central stencil."""
+    declared = frozenset(components)
+    present = frozenset(columns)
+    found: set[str] = set()
+    for name in columns:
+        prefix, _, component = name.rpartition(".")
+        if not prefix or component not in declared or state[name] != 0.0:
+            continue
+        if any(
+            sibling != component
+            and (other := f"{prefix}.{sibling}") in present
+            and state[other] > 0.0
+            for sibling in components
+        ):
+            found.add(name)
+    return frozenset(found)
+
+
 def derivative_witness(
-    tear: object, state: Mapping[str, float], *, unstenciled: frozenset[str] = frozenset()
+    tear: object,
+    state: Mapping[str, float],
+    *,
+    unstenciled: frozenset[str] = frozenset(),
+    one_sided: frozenset[str] = frozenset(),
 ) -> list[CheckResult]:
     """§4.8: central differences of the **compiled 49-row function** against its AD Jacobian.
 
@@ -881,6 +925,13 @@ def derivative_witness(
     limitation; the checks' `independence_qualification` stays `None`, because that field
     carries [A09] text only (R-345, spec §18.1). Empty for every other revision, which runs the
     stencil as before and writes no limitation.
+
+    `one_sided` (S11 rulings item 2, R-831; the Wilson companion of ADR 0013 Amendment 3 item 7)
+    names the columns differenced by the forward five-point stencil
+    D_j = (-25 F0 + 48 F1 - 36 F2 + 16 F3 - 3 F4) / (12 h), F_k = F(x + k h e_j), at the same
+    registered step h, and compared in the same scaled form into the same two checks: the set Z of
+    `one_sided_columns` on a Wilson basis, empty on every other. Every column stays differenced, so
+    no limitation is written.
     """
     from openflowsheet.compile.reference import state_vector
 
@@ -904,25 +955,37 @@ def derivative_witness(
         if name in unstenciled:
             continue
         step = FD_RELATIVE_STEP * scaling.column[name]
-        forward, backward = base.copy(), base.copy()
-        forward[column] += step
-        backward[column] -= step
-        high = compiled.residual(forward, context)
-        low = compiled.residual(backward, context)
-        if high.status != "ok" or low.status != "ok" or high.values is None or low.values is None:
-            status = high.status if high.status != "ok" else low.status
-            reason = f"witness_stencil_{status}({name})"
-            return [
-                unsupported(
-                    id=f"derivative_witness.{which}",
-                    category="derivative_witness",
-                    subject="target_jacobian",
-                    reason=reason,
-                )
-                for which in ("on_pattern", "off_pattern")
-            ]
+        # Central (x + h, x - h), or on Z the forward five-point stencil (x + k h, k = 0..4).
+        offsets = _FORWARD_OFFSETS if name in one_sided else _CENTRAL_OFFSETS
+        points = []
+        for shift in offsets:
+            point = base.copy()
+            if shift:
+                point[column] += shift * step
+            value = compiled.residual(point, context)
+            if value.status != "ok" or value.values is None:
+                reason = f"witness_stencil_{value.status}({name})"
+                return [
+                    unsupported(
+                        id=f"derivative_witness.{which}",
+                        category="derivative_witness",
+                        subject="target_jacobian",
+                        reason=reason,
+                    )
+                    for which in ("on_pattern", "off_pattern")
+                ]
+            points.append(value.values)
         for row, row_id in enumerate(jacobian.row_ids):
-            difference = (high.values[row] - low.values[row]) / (2.0 * step)
+            if name in one_sided:
+                difference = (
+                    -25.0 * points[0][row]
+                    + 48.0 * points[1][row]
+                    - 36.0 * points[2][row]
+                    + 16.0 * points[3][row]
+                    - 3.0 * points[4][row]
+                ) / (12.0 * step)
+            else:
+                difference = (points[0][row] - points[1][row]) / (2.0 * step)
             scaled = difference * scaling.column[name] / scaling.row[row_id]
             entry = exact.get((row, column))
             if entry is None:

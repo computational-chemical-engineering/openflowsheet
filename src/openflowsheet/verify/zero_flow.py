@@ -113,6 +113,8 @@ def _reduction(
     split: LiftedSplit, instance: InstanceView, components: Sequence[str]
 ) -> ZeroFlowSplit:
     unit = split.unit
+    if unit != instance.unit_id:
+        raise ValueError(f"zero_flow_form_unknown({instance.model_id})")
     if _products(instance):
         family = PRODUCT_MOLE_ROWS.get(instance.model_id)
         if family is None:
@@ -140,13 +142,21 @@ def _reduction(
 
 
 def zero_flow_splits(
-    view: RevisionView, splits: Sequence[LiftedSplit], state: Mapping[str, float]
+    view: RevisionView,
+    splits: Sequence[LiftedSplit],
+    state: Mapping[str, float],
+    owners: Mapping[str, str] | None = None,
 ) -> tuple[ZeroFlowSplit, ...]:
     """The reduction of every split whose branch at `state` is `ZERO_FLOW` (`V = L = 0`, read
-    from the state's own totals) and whose feed is exactly dormant, in the splits' order."""
+    from the state's own totals) and whose feed is exactly dormant, in the splits' order.
+
+    `owners` (S11 design §10.11) maps a staged split's key to its instance; a registry split is
+    its own instance's. A staged split's reduction is the staged unit's own per-stage form, which
+    this module has no reading of: `zero_flow_form_unknown(<model>)` (escalated, S11 B4)."""
     instances = {instance.unit_id: instance for instance in view.instances}
+    owner = owners or {}
     return tuple(
-        _reduction(split, instances[split.unit], view.components)
+        _reduction(split, instances[owner.get(split.unit, split.unit)], view.components)
         for split in splits
         if state[split.vapor_total] == 0.0
         and state[split.liquid_total] == 0.0

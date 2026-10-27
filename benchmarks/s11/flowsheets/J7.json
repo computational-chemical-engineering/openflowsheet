@@ -1,0 +1,336 @@
+{
+  "component_set": {
+    "components": [
+      "A",
+      "B",
+      "C"
+    ],
+    "record_source": "syn001"
+  },
+  "connections": [
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "U-FEED1",
+        "port": "outlet"
+      },
+      "id": "S-IN1",
+      "kind": "material",
+      "notes": "S11 test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "S06",
+        "port": "bottom"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "S06",
+        "port": "distillate"
+      },
+      "id": "S-DISTILLATE",
+      "kind": "material",
+      "notes": "S11 test",
+      "phase_capability": "vapor",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "U-DIST",
+        "port": "inlet"
+      }
+    },
+    {
+      "component_mapping": "revision_component_set",
+      "from": {
+        "instance": "S06",
+        "port": "bottoms"
+      },
+      "id": "S-BOTTOMS",
+      "kind": "material",
+      "notes": "S11 test",
+      "phase_capability": "liquid",
+      "state_definition": "nTP-v1",
+      "to": {
+        "instance": "U-BOT",
+        "port": "inlet"
+      }
+    }
+  ],
+  "description": "S11 track B test revision",
+  "instances": [
+    {
+      "id": "U-FEED1",
+      "model": {
+        "artifact_ref": null,
+        "id": "syn001.feed_source",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "feed"
+    },
+    {
+      "id": "S06",
+      "model": {
+        "artifact_ref": null,
+        "id": "syn001.column",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {
+        "condenser_recovery.A": {
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "S11 test",
+          "role": "fixed",
+          "unit": "1",
+          "value": 0.9
+        },
+        "stage_count": {
+          "dimension": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "dimensionless",
+          "meaning": "S11 test",
+          "role": "fixed",
+          "unit": "1",
+          "value": 5.0
+        },
+        "stage_pressure.1": {
+          "dimension": [
+            -1,
+            1,
+            -2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "pressure",
+          "meaning": "S11 test",
+          "role": "fixed",
+          "unit": "Pa",
+          "value": 100000.0
+        },
+        "stage_pressure.2": {
+          "dimension": [
+            -1,
+            1,
+            -2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "pressure",
+          "meaning": "S11 test",
+          "role": "fixed",
+          "unit": "Pa",
+          "value": 101000.0
+        },
+        "stage_pressure.3": {
+          "dimension": [
+            -1,
+            1,
+            -2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "pressure",
+          "meaning": "S11 test",
+          "role": "fixed",
+          "unit": "Pa",
+          "value": 102000.0
+        },
+        "stage_pressure.4": {
+          "dimension": [
+            -1,
+            1,
+            -2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "pressure",
+          "meaning": "S11 test",
+          "role": "fixed",
+          "unit": "Pa",
+          "value": 103000.0
+        },
+        "stage_pressure.5": {
+          "dimension": [
+            -1,
+            1,
+            -2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kind": "pressure",
+          "meaning": "S11 test",
+          "role": "fixed",
+          "unit": "Pa",
+          "value": 104000.0
+        }
+      },
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "separator"
+    },
+    {
+      "id": "U-DIST",
+      "model": {
+        "artifact_ref": null,
+        "id": "syn001.product_sink",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "product_sink"
+    },
+    {
+      "id": "U-BOT",
+      "model": {
+        "artifact_ref": null,
+        "id": "syn001.product_sink",
+        "version": "0.0.0-declared"
+      },
+      "parameters": {},
+      "policy": {
+        "fidelity": "test",
+        "validity": "test"
+      },
+      "semantic_role": "product_sink"
+    }
+  ],
+  "parent_revision": null,
+  "provenance": {
+    "actor": "S11 tests (build lane)",
+    "notes": "built in code by tests/s11_column_support.py",
+    "operation": "create",
+    "source_references": [
+      "docs/derivations/S11-design.md \u00a76.1"
+    ],
+    "timestamp": "2026-10-27T00:00:00Z"
+  },
+  "revision_id": "S11-COL-J7",
+  "schema_version": 1,
+  "specifications": [
+    {
+      "id": "SPEC-S-IN1-n-A",
+      "kind": "molar_flow",
+      "provenance": "S11 test",
+      "role": "fixed",
+      "target": {
+        "component": "A",
+        "object_id": "S-IN1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.3
+    },
+    {
+      "id": "SPEC-S-IN1-n-B",
+      "kind": "molar_flow",
+      "provenance": "S11 test",
+      "role": "fixed",
+      "target": {
+        "component": "B",
+        "object_id": "S-IN1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.4
+    },
+    {
+      "id": "SPEC-S-IN1-n-C",
+      "kind": "molar_flow",
+      "provenance": "S11 test",
+      "role": "fixed",
+      "target": {
+        "component": "C",
+        "object_id": "S-IN1",
+        "object_type": "connection",
+        "path": "state.n"
+      },
+      "tolerance": {
+        "absolute": 1e-09,
+        "relative": 1e-08,
+        "scale": 3.0
+      },
+      "unit": "mol/s",
+      "value": 0.3
+    },
+    {
+      "id": "SPEC-S-IN1-T",
+      "kind": "temperature",
+      "provenance": "S11 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S-IN1",
+        "object_type": "connection",
+        "path": "state.T"
+      },
+      "tolerance": {
+        "absolute": 1e-06
+      },
+      "unit": "K",
+      "value": 385.0
+    },
+    {
+      "id": "SPEC-S-IN1-P",
+      "kind": "pressure",
+      "provenance": "S11 test",
+      "role": "fixed",
+      "target": {
+        "object_id": "S-IN1",
+        "object_type": "connection",
+        "path": "state.P"
+      },
+      "tolerance": {
+        "absolute": 0.01
+      },
+      "unit": "Pa",
+      "value": 104000.0
+    }
+  ],
+  "title": "S11 column in a flowsheet"
+}

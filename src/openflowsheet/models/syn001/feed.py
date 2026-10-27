@@ -13,9 +13,10 @@ is `ZERO_FLOW` by arithmetic alone (ADR 0001 D3.1) and needs no thermodynamics.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Final
 
 from openflowsheet.canonical import file_sha256, normalize_zero
@@ -56,6 +57,10 @@ from openflowsheet.models.syn001 import (
 from openflowsheet.thermo import StreamState
 
 MODEL_ID: Final = "syn001.feed_source"
+#: SYN-001's state domain, the default `domain` (S11 design §4.5).
+DOMAIN: Final[Mapping[str, tuple[float, float]]] = MappingProxyType(
+    {"T": (T_MIN, T_MAX), "P": (P_MIN, P_MAX)}
+)
 
 PORTS: Final[tuple[Port, ...]] = (
     Port(
@@ -127,6 +132,11 @@ class FeedSource:
     temperature: float
     pressure: float
     components: tuple[str, ...] = COMPONENTS
+    #: S11 design §4.5 (ADR 0050 D3): the bound provider's identity, convention and domain, which
+    #: `manifest()` reports; SYN-001's constants by default. The unit evaluates no property.
+    property_provider: str = PROVIDER_ID
+    reference_convention: str = REFERENCE_CONVENTION
+    domain: Mapping[str, tuple[float, float]] = field(default=DOMAIN, hash=False)
 
     def __post_init__(self) -> None:
         if len(self.flows) != len(self.components):
@@ -193,16 +203,16 @@ class FeedSource:
                     "Reports no phase signature for a flowing feed, because it holds no property "
                     "provider and would otherwise be asserting the claim above.",
                 ),
-                temperature_k=(T_MIN, T_MAX),
-                pressure_pa=(P_MIN, P_MAX),
+                temperature_k=self.domain["T"],
+                pressure_pa=self.domain["P"],
             ),
             module=__name__,
             artifact_hash=_artifact_hash(),
             execution_class="native_equation",
             thread_safety="thread_safe",
             evaluation_cost_class="cheap",
-            property_provider=PROVIDER_ID,
-            reference_convention=REFERENCE_CONVENTION,
+            property_provider=self.property_provider,
+            reference_convention=self.reference_convention,
         )
 
     # -- parameters --------------------------------------------------------------------------
@@ -295,7 +305,7 @@ class FeedSource:
             outlets={"outlet": state},
             duty=None,
             phase_signature="ZERO_FLOW" if state.is_dormant else None,
-            reference_convention=REFERENCE_CONVENTION,
+            reference_convention=self.reference_convention,
             message=(
                 ""
                 if state.is_dormant

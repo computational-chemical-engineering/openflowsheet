@@ -23,6 +23,9 @@ REGISTRATION_JSON: Final[Path] = RECORDS / "registration.json"
 #: Registration version 2 (`docs/derivations/W27-registration-v2.md`, W27v2-R01): the tables that
 #: replace or extend version 1's when a caller selects version 2. Read as data, like version 1's.
 REGISTRATION_V2_JSON: Final[Path] = RECORDS / "registration_v2.json"
+#: Registration version 3 (`docs/derivations/W27-registration-v3.md`, W27v3-R01): version 2's tables
+#: with S11's provider, method and model rows added. Read as data, like versions 1 and 2.
+REGISTRATION_V3_JSON: Final[Path] = RECORDS / "registration_v3.json"
 CASE_FACTS_JSON: Final[Path] = RECORDS / "case_facts.json"
 ACCESS_JSON: Final[Path] = RECORDS / "access_report.json"
 PROVENANCE_JSON: Final[Path] = RECORDS / "provenance.json"
@@ -54,6 +57,14 @@ def load_v2() -> Mapping[str, Any]:
     return document
 
 
+@functools.cache
+def load_v3() -> Mapping[str, Any]:
+    """`registration_v3.json`, parsed once per process (W27v3-R01). Its generator
+    `docs/derivations/scripts/w27_registration_v3.py` is never imported."""
+    document: Mapping[str, Any] = json.loads(REGISTRATION_V3_JSON.read_bytes())
+    return document
+
+
 def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -82,12 +93,25 @@ def classes() -> tuple[str, ...]:
 
 def provider_methods(version: int = 1) -> dict[str, str]:
     """W27-R19's table (a test may add a test-only provider to a copy, W27-A02); with
-    `version=2`, W27v2-R02's table, which replaces it."""
+    `version=2`, W27v2-R02's table, which replaces it; with `version=3`, W27v3-R02's."""
+    if version == 3:
+        return {str(k): str(v) for k, v in load_v3()["tables"]["provider_methods"].items()}
     if version == 2:
         return {str(k): str(v) for k, v in load_v2()["tables"]["provider_methods"].items()}
     if version != 1:
-        raise ValueError(f"registration version {version!r} is not 1 or 2")
+        raise ValueError(f"registration version {version!r} is not 1, 2 or 3")
     return {str(k): str(v) for k, v in load()["routes"]["provider_methods"].items()}
+
+
+def model_functions(version: int = 1) -> dict[str, Mapping[str, Any]]:
+    """W27-R12's model table (`registration.json#/units/model_functions`); with `version=3`, with
+    W27v3-R04's rows added. Versions 1 and 2 share version 1's table."""
+    table: dict[str, Mapping[str, Any]] = dict(load()["units"]["model_functions"])
+    if version == 3:
+        table.update(load_v3()["tables"]["model_functions_added"])
+    elif version not in (1, 2):
+        raise ValueError(f"registration version {version!r} is not 1, 2 or 3")
+    return table
 
 
 def case_distinct() -> dict[str, frozenset[str]]:

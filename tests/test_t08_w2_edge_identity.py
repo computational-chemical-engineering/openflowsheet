@@ -46,6 +46,7 @@ import pytest
 import yaml
 from conftest import REPO_ROOT
 from m02_c1_corpus import C1_CORPUS, surrogates
+from s11_column_support import COLUMN_SAMPLES, committed_case
 from t07_corpus import CORPUS
 from test_t02_recycle import manufactured, recycle_problem
 from test_t05b_openings import CASES as B31_CASES
@@ -382,9 +383,11 @@ def test_e12_a_ptc_solve_keeps_the_declaration() -> None:
 def _manifests_by_model() -> dict[str, list[Mapping[str, Any]]]:
     """Every unit manifest of the revisions that bind: the T07 corpus, PTC-R1's revision (the
     kinetic CSTR's only registered instance) and M02's C1 corpus (the C1 models' registered
-    instances, R-280 (a)), by model id."""
+    instances, R-280 (a)) and S11's column sample (`COLUMN_SAMPLES`), by model id."""
     documents = [CORPUS[name]() for name in sorted(CORPUS)] + [compare.revision_document()]
     documents += [C1_CORPUS[name]() for name in sorted(C1_CORPUS)]
+    # S11 (ADR 0050, R-810; design note §8.3, I1): the column's sample, on SYN-001 and Wilson.
+    documents += [committed_case(name) for name in COLUMN_SAMPLES]
     found: dict[str, list[Mapping[str, Any]]] = {}
     for document in documents:
         binding = bind_revision_flowsheet(copy.deepcopy(document), surrogates=surrogates)

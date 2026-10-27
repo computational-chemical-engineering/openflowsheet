@@ -1,0 +1,144 @@
+# S11 track C — build decisions (WO-C1…C5)
+
+Normative design: `docs/derivations/S11-units-design.md` (ADR 0051 Proposed; R-813…R-821). One line per open
+choice; the evidence is in the named test or module. Batched for the package's single `reviewer` pass.
+
+## WO-C1 (kernel, state, blocks, references)
+
+- DECISION C1-1: B2's `UnitEvaluation.owned` is not on `wp/S11` (it is on `wp/S11-b`), and `models/__init__.py` is track B's file → `models/thermal/state.py` bridges it as `ThermalEvaluation`, a subclass with B2's exact field and its failed-evaluation rule, selected only while the base lacks the field. Alternative: edit `models/__init__.py` or wait for B2. Reversible by: deleting the `else` branch once B2 merges (the conditional already picks `UnitEvaluation` then). **Closed at C6**: B2 merged, so the bridge is removed and the units build `UnitEvaluation` directly (runtime already took the `else` branch; no behaviour change).
+- DECISION C1-2: S11.A43/A44 at grid points where CoolProp's quality is exactly 0 or 1 → the kernel may land in the adjacent single-phase regime (in-tree and CoolProp IAPWS-95 differ by ~1e-12 relative in h_sat; measured: water β=0 at 1 atm lands LIQUID 4.4e-12 K below T_sat); such a point passes iff the regime is the adjacent one and |T − T_sat| ≤ 1e-5 K. Alternative: compare regimes literally (an ill-posed comparison at a boundary). Reversible by: `_agrees` in `tests/test_s11_thermal_kernel.py`.
+- DECISION C1-3: S11.A46's "≤ 1e-6 relative" is judged in scaled units, relative to max(|∂F/∂x|, |F/x|) → entries whose elasticity is ≥ 1 get the literal relative test; entries far below their output's scale (liquid dh/dP, dilute-vapour dh/dP, the pump's dHs/dP_I) are below the difference quotient's rounding at a 1e-6 step (measured up to 2.9e-2 literal-relative, ≤ 4.4e-7 scaled) and are pinned by identities to 1e-9 (dh/dP = v − T dv/dT; dHs/dP_I = −n T_s (dv/dT)_I). Alternative: a larger FD step (contradicts A46's step). Reversible by: `_fd_worst`.
+- DECISION C1-4: S11.A46 at P = p_σ(647.0 K)(1 − 1e-6) → the central quotient is at the provider's Maxwell floor (≈ 1.5e-12/h relative; one-sided stencils add near-critical truncation, −2.6e-5 at 1e-5), so no admissible step reaches 1e-6; the criterion there adds the measured floor |D(h) − D(h/2)|, itself bounded ≤ 1e-4, and the plain criterion holds at 1e-4 below the top. Alternative: drop the top-end state. Reversible by: `test_a46_saturated_flow_block_at_the_top_of_the_range`. (Escalated as Q-C1 for the design lane.)
+- DECISION C1-5: the closure solve's first iterate (§4.2 fixes the method, not the start) → the secant point of the bracket ends, else the midpoint; the isentropic solve starts from T_I (§4.3). Alternative: midpoint. Reversible by: `kernel._solve`.
+- DECISION C1-6: refusal statuses → `phase_regime_mismatch` and `isentropic_state_two_phase` are `unsupported` (as `inadmissible_phase`); `carried_split_missing` is `error` (a defect, §4.1). Alternative: `out_of_domain`. Reversible by: `kernel.Mismatch.failure`, `state.carried_fraction`.
+- DECISION C1-7: S11.A42's CoolProp pressures must lie in the provider's saturation range (its T_lo bounds it) → CO2 1.5/3/6 MPa, R134a 0.1/0.5/2 MPa, N2 0.2/0.5/2 MPa. Alternative: none (1 MPa CO2 and 0.1 MPa N2 are refused `no_saturation`). Reversible by: `SATURATION_PRESSURES` in the reference script.
+
+## WO-C2 (heater, valve, mixer, flash)
+
+- DECISION C2-1: a saturated outlet's owned columns and every typed refusal name a stream, which `evaluate` (keyed by port) cannot know → each thermal unit is built with its port → stream map and a per-stream declared form, as B2's `ColumnUnit` is built with its streams; `contribute` refuses another wiring. Alternative: owned keyed by port, translated by the traversal. Reversible by: the `streams`/`forms` fields and `common.check_wiring`.
+- DECISION C2-2: `declared_equations()` and the manifest describe the instance's configuration (the mode's one specification row; `sat-T`/`sat-split` only when an outlet is saturated), all `unconditional` within it. Alternative: one model-level list with the alternatives folded into a `TH-spec` family (the `syn001.heat_exchanger` precedent). Reversible by: `declared_equations` in heater/valve/mixer.
+- DECISION C2-3: what the four (and C3's machines) share lives in a new module `models/thermal/common.py` (ports, stream faces, saturated rows, inlet enthalpy, outlets, manifest), inside track C's package. Alternative: duplicate it per unit module. Reversible by: inlining.
+- DECISION C2-4: the mixer authors K − 1 rows beyond its own unknowns (`TM-pressure:<k>` for every inlet, as K02's `MIX-pressure`), which fix upstream pressures in a flowsheet; A50's "square" is asserted as rows = unknowns + K − 1 for it. Alternative: none within §4.4. Reversible by: `_check_face`.
+- DECISION C2-5: dormant labels → heater and drum at (T_I, P_I − ΔP), valve at (T_I, P_spec), an all-dormant mixer at the first inlet's (T, P); saturated dormant outlets carry β = 0.0 and owned V = L = 0.0. Alternative: none stated in §4.4 beyond "the inlet's T and the outlet P". Reversible by: each unit's dormant branch.
+- DECISION C2-6: thermal manifests → `package: S11`, `evaluation_cost_class: moderate`, `thread_safety` from the provider's `describe()` (CoolProp is `not_thread_safe`). Alternative: copy SYN-001's `cheap`/`not_thread_safe`. Reversible by: `common.manifest`.
+
+## WO-C3 (isentropic variants, machines)
+
+- DECISION C3-1: `kernel._solve` reset `previous` to infinity after a bisection forced by the Newton point leaving the bracket, against R-600 (S05's rule, which §4.2/§4.3 name: `previous` is the last raw Newton correction, infinity only after a non-positive slope) → fixed to R-600. Measured on a 40 × 40 (P, h|s) water grid (11 200 kernel outcomes): 7 liquid floor states (residual noise ≈ 6e-13 in s near T_t) went from `not_converged` to converged (root residual ≤ 1e-12 T dg/dT), 2 converged liquid states moved within the floor (≤ 3.1e-15 relative), all others bit-identical; C1/C2 tests unchanged. Found by C3: the pump block's FD stencil at (1 kPa sat. liquid → 3 MPa) hit it. Alternative: avoid such states in the tests (hides a defect). Reversible by: the one-line `previous = step` in `_solve`; `test_solve_keeps_the_newton_correction_through_a_bisection`.
+- DECISION C3-2: a saturated isentropic variant whose beta_s falls outside [0, 1] (the isentropic state is single-phase) → the same code `isentropic_state_two_phase` (a `DomainError` in the block, `isentropic_state_two_phase(<U>)` in the evaluate), since §4.3/§4.4 name one "wrong side" refusal; the detail says the state is single-phase. Alternative: a new code (`isentropic_state_single_phase`). Reversible by: `blocks.isentropic_state`.
+- DECISION C3-3: `additive-vapour` is implemented in `IsentropicEnthalpyBlock` against the `PropertyProvider` Protocol (VAPOR s and h at e_j, T and P derivatives only, as §4.3/§4.6 state v2 answers) and admitted by identity (`ADDITIVE_VAPOUR`); with `wilson-ig-v2` absent (WO-D4), it is verified on a test-local constant-c_p ideal gas that claims the Wilson identity: Hs against the closed-form isentrope (≤ 1e-11), A46 FD worst 1.8e-10 at 20 states, the dormant probe rule. The block's `component` argument takes a tuple for this variant. Alternative: defer the variant to D4. Reversible by: the `additive-vapour` branch of the block. Re-test on v2 at D4/D5.
+- DECISION C3-4: the additive-vapour (Wilson) compressor and turbine (§4.4: inlet face via `tp_state.single_phase_enthalpy`, vapour h-inversion, `stability()` on the outlet) need `wilson-ig-v2` (WO-D4) → `ThermalMachine` admits the identity (`admitted_identity(..., additive_vapour=True)`) and then refuses it at construction, typed `specification_unsupported(<U>.provider)` naming D4/D5; no rows, no evaluate, never a placeholder success. The pump on Wilson stays `provider_not_admitted(thermal.pump)`. Alternative: write the Wilson evaluate now against the Protocol and test it on a fake (the block's math is done, C3-3; the outlet inversion and stability are D1/D5 surface). Reversible by: the `ADDITIVE_VAPOUR` branch of `ThermalMachine.__post_init__`; D4/D5 wire it.
+- DECISION C3-5: machine bound codes (§4.4 "follow the SYN-001 pump's") → `pressure_fall(pump)`, `pressure_fall(compressor)`, `pressure_rise(turbine)`, status `out_of_domain`, as the SYN-001 pump and valve name theirs. Alternative: the unit id in the parentheses. Reversible by: `ThermalMachine._bound_code`.
+- DECISION C3-6: A55's dry fluid → n-Pentane (S07 table, tier B; Q19), saturated vapour 1 → 3 bar: `isentropic_state_two_phase(U1)`; the `pure-sat/sat` state agrees with CoolProp's PS flash (beta_s 4.7e-15 relative, T 1.3e-12 K). Alternative: none needed.
+- DECISION C3-7: §4.4's machine bind refusals are also enforced at construction (`SpecificationError`, `specification_unsupported(<U>.inlet|outlet|isentropic_phase)`, `efficiency_outside_interval`), as C2's heater does, so a directly built unit cannot hold one; `isentropic_phase` on a pump or compressor is refused the same way. A turbine with a vapour outlet may declare `isentropic_phase = vapor_liquid` (`pure-*/sat`; tested at eta = 0.3 and 0.1). Alternative: leave them to C4's binder only. Reversible by: `ThermalMachine.__post_init__`.
+
+## WO-C4 (binding)
+
+- DECISION C4-1: where the one `_PARAMETER_KINDS` entry (`outlet_vapor_fraction` → `dimensionless`, units design §2.4) goes → after `efficiency`, away from the table's end where I1's sixteen column entries go (R-825; no key collides, so the risk is only textual). Alternative: append. Reversible by: moving the line.
+- DECISION C4-2: the thermal builders do not call `instance_contract`, whose converse of R4 refuses a `vapor_liquid` outlet of any model that is not an `outlet`-style lifting model in `SPLIT_RULES` → `thermal_binding` reads parameters and wiring itself with the binder's codes (`parameter_unsupported/missing`, `port_unwired`, `port_direction_unsupported`, `port_multiplicity_unsupported`) and reuses `revision_binding`'s private `_column`, `_pin`, `_pinned`, `_missing_choice_hint`. Alternative: teach `instance_contract` the pure-fluid form (track A's file; I1b). Reversible by: the helpers `_parameters`/`_wired`.
+- DECISION C4-3: the turbine's `isentropic_phase` ("a choice given as `syn001.heat_exchanger` takes `specification`") → not expressible: the exchanger chooses by which pin is set, a revision parameter is a numeric Quantity, and §2.4 admits one new parameter name only. The builder leaves it at its default, the outlet's form; a parameter `isentropic_phase` is `parameter_unsupported`; the §4.4 row "`isentropic_phase = vapor` with outlet `vapor_liquid`" is enforced at construction only (C3-7). Escalated as Q-C2. Alternative: a numeric code parameter (a new interface). Reversible by: `_machine`.
+- DECISION C4-4: the heater's optional parameters `pressure_drop` (default 0) and `outlet_vapor_fraction` have no `ModelSignature` field → read by the builder, unlisted (as track B's `column_binding` leaves the column's optional parameters); the one-of is reported as `specification_missing(<U>.specification)` / `specification_conflict(<U>.specification)` (the choice's options plus the parameter), the missing hint ending "; or give the parameter outlet_vapor_fraction (a vapor_liquid outlet)". Alternative: a signature field (frozen `ModelSignature`, served by `list_models`). Reversible by: `_heater`.
+- DECISION C4-5: the §4.4 refusals come from the units' construction refusals (C2, C3-7), translated `SpecificationError("specification_unsupported(...)\n<hint>")` → `RevisionError("unsupported", code, hint)`, so code and hint have one source; the heater's one-of and a Wilson machine's non-vapour port (L-GP-2) are the builder's own, before construction. Every other construction refusal (`efficiency_outside_interval`) stays the binder's `value_outside_model_domain`, as the SYN-001 pump's. Alternative: re-state each check in the binder. Reversible by: `_construct`.
+- DECISION C4-6: parameters → `thermal.mixer` none (the K02 mixer's zero-only `pressure_drop` is not carried; §4.4 says only "adiabatic"), `thermal.valve` none, `thermal.flash` requires `pressure_drop` (as `syn001.ph_flash`), the machines require `efficiency`. Alternative: the mixer accepts `pressure_drop = 0`. Reversible by: the signatures.
+- DECISION C4-7: configuration → `{"specification": <pin or parameter name>}` for the heater plus each material port's form (`LIQUID|VAPOR|SATURATED`) for all seven, so a form or mode change moves the label (tested). `BASES`: the two pure-fluid bases; compressor and turbine gain `wilson-ig-v2` at D5. Reversible by: `_port_forms`, `BASES`.
+- DECISION C4-8: the C4 identity run showed branch shard 13 failing on `test_t07_global_state::test_g20` (a C1/C2 defect: the two `@cache`s `models/thermal/common.py:_artifact_hash` and `models/thermal/kernel.py:_limits` were never registered with G20) → both entered in `tests/data/t07_global_state_allowlist.json` with their justification and the per-line count 33 → 35, as S05 and S07 registered theirs. Alternative: drop the caches (an `_artifact_hash` per manifest call). Reversible by: that commit.
+
+## WO-C5 (verifier)
+
+- DECISION C5-1: `verify/thermal.py` imports `ModelChecks` and `Unit` from `verify.table`, so I1b merges its `MODEL_CHECKS` into the table's after those definitions (a lazy import in `revision_checks`, or an import at the table's end) and adds the hook: `enthalpy_map` and `saturated_stream_checks` beside `forms.stream_admissibility` on a pure basis, the map's notes as `Unit.notes`. Alternative: move `ModelChecks`/`Unit` to a third module (track A's file). Reversible by: the import.
+- DECISION C5-2: row ids and kinds → heater `specification.<U>.{T|duty|vapor_fraction}` (the latter `V_O − β n_O`, `molar_flow`, the `TH-quality` row) then `.P` (`P_O − (P_I − ΔP)`, ΔP default 0); valve and machines `.P`; mixer `.P.<k>` (`P_k − P_O`, `TM-pressure`); flash `.duty`, `.P.vapor`, `.P.liquid`, `.vapor_fraction.vapor` (the vapour product's L) and `.vapor_fraction.liquid` (the liquid product's V) (`sat-fix`); machines `.isentropic_work` (`heat_rate`); bounds `direction` (valve, machines), `work_sign` (one-sided, `heat_rate`) and `efficiency` (exact, tolerance 0, a parameter). Alternative: SYN-001's `outlet_pressure` id for P. Reversible by: the rules.
+- DECISION C5-3: zero flow → a saturated stream's Ḣ is 0.0 (ADR 0001 D3.1) and its `.saturation` `not_applicable`, as a single-phase stream's admissibility is; `.fraction` reads no property and is judged at every flow, so a dormant split V = −L ≠ 0 (a nonzero duty, §4.9) fails it; `isentropic_work` is `not_applicable` at a dormant inlet. Alternative: judge `.saturation` at zero flow on the label T. Reversible by: `saturated_stream_checks`, `_machine_specification`.
+- DECISION C5-4: the verifier's PS → s* from the inlet's declared phase at (T_I, P_I), or from its carried split at P_I; a single-phase side is bisected over [T_min, T_sat(P_O)] (liquid) or [T_sat(P_O), T_max] (vapour), T_c where the provider has no `Tsat` (supercritical labels, §4.1); a root never leaving an end of that interval, or a saturated β_s outside [0, 1], is `unsupported` (`isentropic_state_refused: …`); the turbine's side is its outlet's declared form (C4-3). `T_sat(P)` is the provider's `Tsat` requested at the domain's T_min. Alternative: fail rather than unsupported. Reversible by: `isentropic_enthalpy`.
+- Measured (`tests/test_s11_thermal_verifier.py`, iapws95, the units' own sequential evaluation of the TH-C1 chain, a valve → drum chain and a mixer → compressor → heater chain): every check passes (31, 21, 20 checks); energy balances ≤ 1.4e-10 W; `isentropic_work` pump 9.5e-11 W, compressor 1.5e-11 W, turbine 0.0 (saturated closed form on the same provider values as the block). A65: V/L shift 10 τ_flow on S4 → `energy_balance.T` −0.01336 W, `.C` +0.01336 W (τ_E 1.01e-3); T_S4 + 2e-6 K → `.saturation` 2.0e-6 (τ_T 1e-6); W_T × (1 + 1e-6) → −0.0159 W. A66: every function of `models.thermal.kernel` patched to raise, the check set is equal.
+
+## WO-C6 (dormancy, flowsheets)
+
+- SPIKE Q18 (answered **yes**, `test_q18_the_region_backtracks_on_a_blocks_invalid_trial_state`): liquid H2O 300 K,
+  1 MPa → duty-mode heater (liquid outlet; the duty of the 452.5 K T-mode root, 11 452.57 W at 450 K for scale) from a
+  start with S2.T = 300 K. Trace: iteration 0 trial α = 1 rejected `invalid_trial` (`PF_S2_liquid: phase_not_stable:
+  LIQUID at 454.785 K, 1e6 Pa; answered ['VAPOR']`), α = 0.5 accepted; iteration 1 the same at 453.829 K, α = 0.5
+  accepted; then three full steps; CONVERGED in 5 iterations, residual 3.1e-10. The region passes the compiled
+  boundary's `invalid_trial_state` through (`region._region_problem.residual`) and `solve_newton` halves on it. TH-V1
+  (valve → drum) converges from the traversal start in 0 iterations (residual 1.8e-12), every C5 check passing.
+- DECISION C6-1: the flowsheet cases are generated by `tests/s11_thermal_support.py` and committed under
+  `benchmarks/s11/thermal/`, kept equal by a test, as B3e's `s11_column_support.py` does; "VERIFIED" before I1b is the C5
+  check set (`test_s11_thermal_verifier.verifier_checks`, now taking a provider) at x_final, every check computed and
+  passing. Alternative: `verify_revision` (refuses `thermal.*` until I1b registers the checks). Reversible by: the
+  tests' `all_pass`.
+- DECISION C6-2: §4.9's registry entries make `test_m02_wo8_registries::test_the_dormancy_registry_is_syn001s_and_the_c1_mixers_vapour_outlet`
+  (it pins the full key set; not in §8.3) fail → it is restricted to the keys outside `thermal.`, as B13 restricted
+  the T05b tests to `syn001.`, and `test_the_dormancy_registry_holds_the_thermal_entries` pins the 27 thermal keys and
+  9 rules literally. No `bind_revision_flowsheet` call, so no identity key. Alternative: list the test in §8.3's
+  `AMENDED_TESTS` (it has no family C key to exclude). Reversible by: that hunk.
+- DECISION C6-3: S11.A63's hint "declare vapor_liquid" → asserted on the valve's own answer (the line the traversal
+  reads: `phase_regime_mismatch(S2)` + `declared liquid, closure SATURATED beta=…; declare vapor_liquid`); the plan's
+  message is `initializer_failed(V): phase_regime_mismatch(S2)`, since `revision.InitialStateFailure` keeps only the
+  first line (orchestrator code outside C6's §4.9 scope). Alternative: carry the hint through `FlowsheetPass` (an
+  orchestrator change). Reversible by: the A63 test.
+- DECISION C6-4: TH-R1's open inputs (A61: "C6 fixes the feed and duty") → feed 1 mol/s at 300 K, 0.5 MPa; heater duty
+  25 kW with its outlet declared `vapor_liquid` (a liquid outlet at 0.5 MPa flashes to at most β ≈ 0.06 at 0.2 MPa, so
+  0.1 < β < 0.9 needs a wet heater outlet; the heater's β is 0.241); pump η 0.75 (as TH-C1; A61 names none); drum Q = 0,
+  ΔP = 0; drum β = 0.2924. The mixer's extra `TM-pressure` row is eliminated by the plan (`SP:SPLIT-P:recycle`), as
+  for K02's mixer. Alternative: a larger feed temperature with a liquid heater outlet (β stays < 0.1). Reversible by:
+  `th_r1` and the reference.
+- DECISION C6-5: the C6 references (TH-C1 cycle, TH-C2 COP, TH-R1's sequential-modular solution, tear by direct
+  substitution to 1e-12 relative, 40 sweeps) are a `flowsheets:` section of C1's `s11_thermal_reference.py` and its
+  YAML (the existing sections byte-identical; `--check` OK on CoolProp 8.0.0). Alternative: a second script. Reversible
+  by: `_flowsheets`.
+- Measured (`test_s11_thermal_solve.py`; in-process wall incl. plan; the first CoolProp solve of a process 7.5 s):
+  | case | outcome | Newton steps | wall | energy closure | checks | vs reference |
+  | TH-V1 | CONVERGED | 0 | 0.05 s | −1.8e-12 W | 21 pass | units' own evaluation, every column ≤ tolerance |
+  | TH-C1 | CONVERGED | 0 | 0.08 s (0.17 s cold; gate 10 s) | −1.4e-10 W | 31 pass | η 0.28916684297, −8.9e-13 rel |
+  | TH-C2 | CONVERGED | 0 | 1.8 s | 0.0 W | 30 pass | COP 2.95878478600, +3.3e-10 rel |
+  | TH-R1 | CONVERGED | 3 | 0.26 s (0.65 s cold; gate 30 s) | 1.8e-11 W | 43 pass | flows ≤ 9e-13 rel, T ≤ 2.3e-9 K |
+  A62: Q = 0 CONVERGED (signature `H.outlet ZERO_FLOW`), Q = 1 kW `zero_flow_conflict(H:TH-energy)`.
+- O-C6-1 (for I1b, not tested here): under v1 (`T04_W12`) the A62 flowsheet is CONVERGED at iteration 0 with Q = 0 (the
+  traversal start is the root) and `LINEAR_SOLVE_FAILED` (SuperLU exactly singular) with Q = 1 kW; §4.9's "typed
+  `RANK_DEFICIENT`" is the certificate's regularity status, judged only once I1b registers the thermal checks.
+
+## Open questions for the design lane
+
+- Q-C1 (C1-4): A46 asks for a central difference within 1e-6 of the saturation range's ends at a 1e-6 relative step and
+  a 1e-6 agreement. At the top end (water, p_σ(647.0 K)) the provider's Maxwell floor makes that unattainable at any
+  admissible step. Default taken: the measured floor is added there (bounded ≤ 1e-4). Needs: confirmation, or a
+  restated A46 clause for the range ends.
+
+- Q-C2 (C4-3): the turbine's `isentropic_phase` cannot be stated in a revision (no string-valued parameter; §2.4 adds
+  one parameter name). Default taken: the outlet's form; a wet isentropic state with a vapour outlet is reachable by
+  direct construction only. Needs: accept the restriction, or name the encoding (a parameter name and its values).
+
+## Open observations for the reviewer (C3, C4)
+
+- O-C3-1 (C1 kernel, not changed): the `h` closure at 22.85 MPa, h* ≈ 47.8 kJ/mol (supercritical, near the
+  pseudo-critical line) returns `not_converged`: the root sits at the provider's LIQUID/VAPOR label switch at T_c
+  (S05 §4.2), where the labelled h is discontinuous. 4 of 11 200 grid outcomes (C3-1's grid); before and after C3-1.
+
+- O-C4-1 (R4, not changed): a revision declares one phase per port, so a revision's `thermal.mixer` cannot take a
+  liquid and a vapour inlet together (`port_phase_ambiguous(<U>.inlet)`); S11.A56's first case stays a
+  direct-construction case. C6's TH-R1 (both inlets liquid) is unaffected.
+
+## Handoff after WO-C6 (2026-10-27; track C complete: C1–C6)
+
+Branch `wp/S11-c` (worktree `.claude/worktrees/s11-c`), not pushed, on 080ec1ee (tracks A, B, C1–C5 merged). C6:
+6feb6b60 (C1-1 bridge retired; units build `UnitEvaluation`), f1aa2e27 (Q18 spike + TH-V1, C6-1), 64aea65c
+(`orchestrator/splits.py` §4.9 entries + A62, C6-2), 6589169b (TH-C1/C2/R1, A59–A61, A63, C6-3..5).
+
+Gates: `test_s11_thermal_*.py` 256 passed 58 skipped (no CoolProp) | 314 passed (CoolProp 8.0.0);
+`test_t05b_*`, `test_m02_wo8_*`, `test_s11_*`, `test_t05_dormant_outlet` 1390 passed 63 skipped; ruff, format, mypy
+clean; `s11_thermal_reference.py --check` OK (CoolProp) / SKIP (none). After 64aea65c (the `splits.py` commit):
+`S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 5, 14, 15] exited non-zero)` (track A's recorded line),
+`S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL`, `S10C-IDENTITY PASS n=858 changed=[]`. 6589169b touches
+no trigger-list path.
+
+Q18 answered yes (the region halves on a block's `invalid_trial_state`); §4.11 timings well inside the gates.
+
+For I1b: register `thermal_binding.SIGNATURES/BUILDERS/BASES` in the binder's tables; merge
+`verify.thermal.MODEL_CHECKS` and hook `enthalpy_map`/`saturated_stream_checks` on a pure basis (C5-1); then the C6
+tests can drop their monkeypatching and judge `verify_revision` certificates (A64 proper; O-C6-1's v1
+`RANK_DEFICIENT`).
+
+Open for the design lane: Q-C1 (A46 at the range top), Q-C2 (turbine `isentropic_phase` not expressible in a
+revision). For the reviewer: O-C3-1, O-C4-1, O-C6-1, and C6-2 (the m02 registry test restricted), C6-3 (A63's hint
+asserted on the unit's answer, not the plan message).
+
+Next: track C's single `reviewer` pass (C1–C6), then merge `wp/S11-c` into `wp/S11`.

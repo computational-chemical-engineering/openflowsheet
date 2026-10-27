@@ -33,6 +33,9 @@ import yaml
 from conftest import REPO_ROOT, load_json, sha256_of
 from test_schemas_p01 import validator_for
 
+from openflowsheet.thermo import iapws95
+from openflowsheet.thermo._coolprop_heos_fluids import FLUIDS
+
 SUMMARIES = REPO_ROOT / "docs" / "t08-a30"
 L01_RECORDS = "benchmarks/l01/components.yaml"
 S10_RECORDS = "benchmarks/s10/records.yaml"
@@ -567,6 +570,58 @@ CONVENTION_DATUM_PARAMETERS = frozenset({"standard_formation_enthalpy"})
 #: The fields of a shared parameter that (v') compares across conventions.
 CROSS_CONVENTION_FIELDS = ("value", "unit", "dimension", "kind")
 
+#: T08.A32 (vi) (S11 rulings item 1, R-830): the provider-identity record files, each with its
+#: provider and registered ids. They are not vetted files: their records hold no property datum
+#: (`parameters: {}`), only identity and a molar mass equal to the provider's own constant, so a
+#: `synthetic: false` record in one is judged by (i-p), (ii-p), (iii), (iv-p) and (v-p) in place of
+#: (ii), (iv), (v) and (v'). Adding a file takes a design-lane amendment that names its provider.
+PROVIDER_IDENTITY_RECORD_FILES: dict[str, tuple[str, tuple[str, ...]]] = {
+    "benchmarks/s05/components.yaml": ("iapws95-v1", ("H2O",)),
+    "benchmarks/s07/components.yaml": ("coolprop-heos-v1", tuple(row["id"] for row in FLUIDS)),
+}
+#: (i-p): each provider's reference convention.
+PROVIDER_CONVENTIONS = {"iapws95-v1": "IAPWS95-ref-v1", "coolprop-heos-v1": "COOLPROP-DEF-ref-v1"}
+#: (v-p): the ids a provider-identity record shares with another real record that carries a CAS RN,
+#: whose CAS RNs are compared (measured at R-830: 9 ids, all equal).
+CAS_COMPARED_IDS = frozenset({"Ar", "C2H6", "C3H8", "CH4", "CO2", "H2", "H2O", "N2", "O2"})
+
+
+def _provider_identity(provider: str) -> dict[str, tuple[str, float, str]]:
+    """(ii-p), (iv-p): the provider's own (CAS RN, molar mass, name) per id: IAPWS-95's constant,
+    or each row of S07's `FLUIDS` (vetted by S05 and S07 A01/C19, never by these files)."""
+    if provider == "iapws95-v1":
+        return {"H2O": ("7732-18-5", iapws95.M, "water")}
+    return {row["id"]: (row["cas"], row["M"], row["name"]) for row in FLUIDS}
+
+
+def _provider_identity_problems(single: str, record: dict[str, Any], convention: str) -> list[str]:
+    """(i-p)'s convention, (ii-p) and (iv-p) for one `synthetic: false` record of a
+    provider-identity file (T08.A32 (vi), R-830); (i-p)'s registered id is checked with (i)."""
+    provider, _ = PROVIDER_IDENTITY_RECORD_FILES[single]
+    where = f"{single}:{record['id']}"
+    problems = []
+    if convention != PROVIDER_CONVENTIONS[provider]:
+        problems.append(f"(i-p) {where}: reference_convention {convention}")
+    expected = _provider_identity(provider).get(record["id"])
+    if expected is None:
+        return problems
+    cas, molar_mass, name = expected
+    found = str((record.get("identifiers") or {}).get("cas", "")).strip()
+    if not found or found != cas:
+        problems.append(f"(ii-p) {where}: CAS RN {found!r} is not the provider's {cas!r}")
+    if record["parameters"] != {}:
+        problems.append(f"(iv-p) {where}: parameters {sorted(record['parameters'])}")
+    if record["molecular_weight"]["value"] != molar_mass:
+        problems.append(f"(iv-p) {where}: molar mass is not the provider's")
+    if record["name"] != name:
+        problems.append(f"(iv-p) {where}: name {record['name']!r} is not {name!r}")
+    if provider == "iapws95-v1" and (
+        (record.get("identifiers") or {}).get("formula") != "H2O"
+        or record["elemental_composition"] != {"H": 2, "O": 1}
+    ):
+        problems.append(f"(iv-p) {where}: formula or elemental composition")
+    return problems
+
 
 def _one_datum_problems(copies: dict[str, tuple[str, dict[str, Any]]]) -> list[str]:
     """(v) and (v') for one id; `copies` maps each vetted file to (its convention, the record).
@@ -605,10 +660,102 @@ def _one_datum_problems(copies: dict[str, tuple[str, dict[str, Any]]]) -> list[s
 
 
 def _vetted_conventions() -> dict[str, str]:
+    """The reference convention of each vetted and each provider-identity file."""
     return {
         path: yaml.safe_load((REPO_ROOT / path).read_text(encoding="utf-8"))["reference_convention"]
-        for path in VETTED_RECORD_FILES
+        for path in (*VETTED_RECORD_FILES, *PROVIDER_IDENTITY_RECORD_FILES)
     }
+
+
+def _a32_problems(
+    records: list[tuple[str, dict[str, Any]]], conventions: dict[str, str]
+) -> tuple[list[str], frozenset[str]]:
+    """T08.A32's rules on `records` (as `_component_records` gives them), each problem tagged by
+    its clause, and the ids (v-p) compared. The rules are the test's docstring's."""
+    validator = validator_for("component_record")
+    vettings = {
+        path: load_json(json_path) for path, (_, json_path, _) in VETTED_RECORD_FILES.items()
+    }
+    problems: list[str] = []
+    real = []
+    by_id: dict[str, dict[str, tuple[str, dict[str, Any]]]] = {}
+    cas_by_id: dict[str, dict[str, str]] = {}
+    provider_held: set[str] = set()
+    for path, record in records:
+        where = f"{path}:{record['id']}"
+        if [error.message for error in validator.iter_errors(record)]:
+            problems.append(f"(schema) {where}")
+            continue
+        rights = record["rights"]
+        if not (rights["source"].strip() and rights["redistribution"].strip()):
+            problems.append(f"(iii) {where}: rights")
+        if record["synthetic"] is True:
+            continue
+        if record["synthetic"] is not False:
+            problems.append(f"(synthetic) {where}")
+            continue
+        # A package-data link (`src/openflowsheet/_data/benchmarks/m01/components.yaml`) is the
+        # same single copy (`openflowsheet.resources`), not a second record.
+        linked = (REPO_ROOT / path).is_symlink()
+        single = (REPO_ROOT / path).resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+        provider_file = single in PROVIDER_IDENTITY_RECORD_FILES
+        if provider_file:
+            clause, ids = "(i-p)", PROVIDER_IDENTITY_RECORD_FILES[single][1]
+        elif single in VETTED_RECORD_FILES:
+            clause, ids = "(i)", VETTED_RECORD_FILES[single][0]
+        else:
+            problems.append(f"(i) {where}: not a vetted or provider-identity file")
+            continue
+        if record["id"] not in ids:
+            problems.append(f"{clause} {where}: not a registered id")
+            continue
+        if not linked:
+            real.append((single, record["id"]))
+            cas = str((record.get("identifiers") or {}).get("cas", "")).strip()
+            if cas:
+                cas_by_id.setdefault(record["id"], {})[single] = cas
+        quantities = [record["molecular_weight"], *record["parameters"].values()]
+        if not all(str(quantity.get("provenance", "")).strip() for quantity in quantities):
+            problems.append(f"(iii) {where}: provenance")
+        if provider_file:  # (vi): (i-p), (ii-p), (iv-p); (v-p) below, never (v) or (v')
+            problems += _provider_identity_problems(single, record, conventions[single])
+            if not linked:
+                provider_held.add(record["id"])
+            continue
+        if not linked:
+            by_id.setdefault(record["id"], {})[single] = (conventions[single], record)
+        identity = IDENTITY_WITHOUT_IDENTIFIERS.get(single)
+        if identity is None:  # (ii)
+            identifiers = record.get("identifiers") or {}
+            keys = ("cas", "inchi", "inchikey")
+            if not all(str(identifiers.get(key, "")).strip() for key in keys):
+                problems.append(f"(ii) {where}")
+        else:  # (ii')
+            pair = (record["name"], record["elemental_composition"])
+            if "identifiers" in record or pair != identity[record["id"]]:
+                problems.append(f"(ii') {where}")
+        _, _, vetted = VETTED_RECORD_FILES[single]
+        if not vetted(vettings[single], record["id"], single):
+            problems.append(f"(iv) {where}")
+    for copies in by_id.values():  # (v), (v'): one datum per substance and convention
+        problems += _one_datum_problems(copies)
+    compared = frozenset(c for c in provider_held if len(cas_by_id.get(c, {})) > 1)
+    for component in sorted(compared):  # (v-p): one CAS RN per id across the real records
+        if len(set(cas_by_id[component].values())) != 1:
+            problems.append(f"(v-p) {component}: CAS RNs differ {cas_by_id[component]}")
+    if len(real) != len(set(real)):
+        problems.append("(i) a real record appears twice")
+    registered = {
+        (path, component) for path, (ids, _, _) in VETTED_RECORD_FILES.items() for component in ids
+    }
+    registered |= {
+        (path, component)
+        for path, (_, ids) in PROVIDER_IDENTITY_RECORD_FILES.items()
+        for component in ids
+    }
+    if set(real) != registered:
+        problems.append(f"(i) the real (file, id) set differs: {sorted(set(real) ^ registered)}")
+    return problems, compared
 
 
 def test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_rights() -> None:
@@ -623,57 +770,26 @@ def test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_ri
     and `rights.redistribution` and a `provenance` on every parameter and on the molecular weight,
     (iv) be covered by its file's retrieval equality, and (v) where its id is in more than one
     vetted file, be the same whole mapping in each file of the same reference convention, and
-    (v') agree with the files of other conventions as `_one_datum_problems` states. The real
-    (file, id) pairs are the registry's, each once. Whether the rights statements are correct, and
-    whether the records ship, is not decided here (L01-Q4, M01 Q-N4, S10 Q-F3).
+    (v') agree with the files of other conventions as `_one_datum_problems` states.
+
+    (vi) (S11 rulings item 1, R-830): in a file of `PROVIDER_IDENTITY_RECORD_FILES` a
+    `synthetic: false` record is judged by (i-p) one of its file's ids under the provider's
+    convention, (ii-p) the provider's CAS RN, (iii), (iv-p) no datum (`parameters == {}`, the
+    provider's molar mass float-equal, its name, and for IAPWS-95 the formula and composition), and
+    (v-p) in place of (v) and (v'): for each id it shares with another real record carrying a CAS
+    RN, the CAS RNs are equal, over exactly `CAS_COMPARED_IDS`.
+
+    The real (file, id) pairs are the two registries', each once. Whether the rights statements are
+    correct, and whether the records ship, is not decided here (L01-Q4, M01 Q-N4, S10 Q-F3).
     """
-    validator = validator_for("component_record")
     records = _component_records()
     assert {(path, record["id"]) for path, record in records} >= {
         ("benchmarks/syn001/components.yaml", component) for component in ("A", "B", "C")
     }
-    vettings = {
-        path: load_json(json_path) for path, (_, json_path, _) in VETTED_RECORD_FILES.items()
-    }
-    conventions = _vetted_conventions()
-    real = []
-    by_id: dict[str, dict[str, tuple[str, dict[str, Any]]]] = {}
-    for path, record in records:
-        where = (path, record["id"])
-        assert [error.message for error in validator.iter_errors(record)] == [], where
-        rights = record["rights"]
-        assert rights["source"].strip() and rights["redistribution"].strip(), where  # (iii)
-        if record["synthetic"] is True:
-            continue
-        assert record["synthetic"] is False, where
-        # A package-data link (`src/openflowsheet/_data/benchmarks/m01/components.yaml`) is the
-        # same single copy (`openflowsheet.resources`), not a second record.
-        linked = (REPO_ROOT / path).is_symlink()
-        single = (REPO_ROOT / path).resolve().relative_to(REPO_ROOT.resolve()).as_posix()
-        assert single in VETTED_RECORD_FILES, where  # (i)
-        ids, _, vetted = VETTED_RECORD_FILES[single]
-        assert record["id"] in ids, where
-        if not linked:
-            real.append((single, record["id"]))
-            by_id.setdefault(record["id"], {})[single] = (conventions[single], record)
-        identity = IDENTITY_WITHOUT_IDENTIFIERS.get(single)
-        if identity is None:  # (ii)
-            identifiers = record["identifiers"]
-            keys = ("cas", "inchi", "inchikey")
-            assert all(identifiers.get(key, "").strip() for key in keys), where
-        else:  # (ii')
-            assert "identifiers" not in record, where
-            pair = (record["name"], record["elemental_composition"])
-            assert pair == identity[record["id"]], where
-        quantities = [record["molecular_weight"], *record["parameters"].values()]
-        assert all(str(quantity.get("provenance", "")).strip() for quantity in quantities), where
-        assert vetted(vettings[single], record["id"], single), where  # (iv)
-    for component, copies in by_id.items():  # (v), (v'): one datum per substance and convention
-        assert _one_datum_problems(copies) == [], component
-    assert len(real) == len(set(real)), "a real record appears twice"
-    assert set(real) == {
-        (path, component) for path, (ids, _, _) in VETTED_RECORD_FILES.items() for component in ids
-    }
+    assert len(PROVIDER_IDENTITY_RECORD_FILES["benchmarks/s07/components.yaml"][1]) == 123
+    problems, compared = _a32_problems(records, _vetted_conventions())
+    assert problems == []
+    assert compared == CAS_COMPARED_IDS
 
 
 def test_a32_one_datum_rule_within_and_across_conventions() -> None:
@@ -713,6 +829,56 @@ def test_a32_one_datum_rule_within_and_across_conventions() -> None:
     ):
         problems = _one_datum_problems({**across, S10_RECORDS: ("WILSON-IG-ref-v1", mutated)})
         assert problems == [expected]
+
+
+def test_a32_provider_identity_predicate_refuses_each_defect() -> None:
+    """T08.A32 (vi) (S11 rulings item 1, R-830): the committed records pass, and each single defect
+    fails the clause that exists to catch it."""
+    records = _component_records()
+    conventions = _vetted_conventions()
+    assert _a32_problems(records, conventions) == ([], CAS_COMPARED_IDS)
+    s05, s07 = "benchmarks/s05/components.yaml", "benchmarks/s07/components.yaml"
+    n2_cas = next(row["cas"] for row in FLUIDS if row["id"] == "N2")
+
+    def at(mutated: list[tuple[str, dict[str, Any]]], path: str, cid: str) -> dict[str, Any]:
+        return next(r for p, r in mutated if p == path and r["id"] == cid)
+
+    def parameter(m: list[tuple[str, dict[str, Any]]]) -> None:
+        h2o = at(m, s05, "H2O")
+        h2o["parameters"]["molar_mass_copy"] = copy.deepcopy(h2o["molecular_weight"])
+
+    def molar_mass(m: list[tuple[str, dict[str, Any]]]) -> None:
+        weight = at(m, s07, "CO2")["molecular_weight"]
+        weight["value"] = math.nextafter(weight["value"], math.inf)
+
+    def cas(m: list[tuple[str, dict[str, Any]]]) -> None:
+        at(m, s07, "CO2")["identifiers"]["cas"] = n2_cas
+
+    def name(m: list[tuple[str, dict[str, Any]]]) -> None:
+        at(m, s07, "Ar")["name"] = "Argon2"
+
+    def unknown_id(m: list[tuple[str, dict[str, Any]]]) -> None:
+        at(m, s07, "CO2")["id"] = "CO2-not-a-fluid"
+
+    def unregistered_file(m: list[tuple[str, dict[str, Any]]]) -> None:
+        m.append(("benchmarks/s05/components-copy.yaml", copy.deepcopy(at(m, s05, "H2O"))))
+
+    for defect, expected, conventions_change in (
+        (parameter, {"(iv-p)"}, {}),
+        (molar_mass, {"(iv-p)"}, {}),
+        (cas, {"(ii-p)", "(v-p)"}, {}),
+        (name, {"(iv-p)"}, {}),
+        (unknown_id, {"(i-p)"}, {}),
+        (unregistered_file, {"(i)"}, {}),
+        (None, {"(i-p)"}, {s05: "PR-C1-ref-v1"}),
+    ):
+        mutated = copy.deepcopy(records)
+        if defect is not None:
+            defect(mutated)
+        problems, _ = _a32_problems(mutated, {**conventions, **conventions_change})
+        clauses = {problem.split(" ", 1)[0] for problem in problems}
+        label = defect.__name__ if defect is not None else "convention"
+        assert expected <= clauses, (label, problems)
 
 
 def test_a32_s10_vetting_predicate_refuses_each_defect() -> None:

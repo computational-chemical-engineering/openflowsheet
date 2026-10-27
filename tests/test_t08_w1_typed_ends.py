@@ -49,6 +49,7 @@ from typing import Any
 import pytest
 import t08_cstr_support as cstr
 from m02_c1_corpus import C1_CORPUS, surrogates
+from s11_column_support import COLUMN_SAMPLES, committed_case
 from t07_corpus import CORPUS
 from t07_jobs_support import commit
 
@@ -80,6 +81,9 @@ def _documents() -> dict[str, dict[str, Any]]:
     documents["T08-ptc-r1"] = cstr.ptc_r1_revision()
     # M02's join (R-280 (a)): the C1 models' instances are registered C1 corpus revisions.
     documents |= {name: build() for name, build in C1_CORPUS.items()}
+    # S11 (ADR 0050, R-810): the column's instances are its committed sample cases, last, so the
+    # earlier documents keep their order.
+    documents |= {f"S11:{name}": committed_case(name) for name in COLUMN_SAMPLES}
     return documents
 
 

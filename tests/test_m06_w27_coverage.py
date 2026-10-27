@@ -530,6 +530,36 @@ JOINED_LIST_MODELS_SHA256 = "90d9da8e08f344814f78fc995c0596e5eaf0cb2f7e7a568d3b2
 A3_LIST_MODELS_SHA256 = "f070fbe0c67695765cdb3862031a18208af959a5b82de6911d1c99fcabea49b4"
 
 
+def v2_binder() -> ModuleType:
+    """The installed binder as W27 v1/v2 read it (S11, ADR 0050 D9; R-808): its tables, with
+    `SELECTABLE_BASES` restricted to the bases these registrations carry provider lines for.
+
+    S11 makes 127 bases selectable; v1/v2 have no line for `iapws95-v1`, `wilson-ig-v1` or
+    `coolprop-heos-v1`, so the installed binder itself is refused under them (W27-R63; the next
+    test) and W27 v3 reads it (WO-A4). The tests that follow, which read this build under v1/v2,
+    read it through this binder; their routes are the ones they read before S11."""
+    from openflowsheet.application import revision_binding  # noqa: PLC0415
+
+    module = ModuleType("w27_v2_revision_binding")
+    module.SELECTABLE_BASES = tuple(  # type: ignore[attr-defined]
+        b for b in revision_binding.SELECTABLE_BASES if b.provider_id in snapshot.PROVIDER_LINES
+    )
+    module.MODEL_BASES = revision_binding.MODEL_BASES  # type: ignore[attr-defined]
+    module.MODEL_BUILDERS = revision_binding.MODEL_BUILDERS  # type: ignore[attr-defined]
+    module.basis_provider = revision_binding.basis_provider  # type: ignore[attr-defined]
+    return module
+
+
+def test_s11_the_v2_snapshot_refuses_this_build() -> None:
+    """ADR 0050 D9: with no provider line for S11's bases, v1/v2 refuse this build's snapshot."""
+    with pytest.raises(
+        snapshot.SnapshotUnsupportedError,
+        match=r"unsupported\(provider 'iapws95-v1': no registered records and phases, W27-R63\)",
+    ):
+        snapshot.build_snapshot()
+    assert [b.provider_id for b in v2_binder().SELECTABLE_BASES] == ["syn001", "pr-c1-v1"]
+
+
 def test_snapshot_of_this_build_is_todays_registry() -> None:
     """§21.8 J3 (M02's join), as §22.2 restates it for a build carrying `c1.reactor_surrogate`:
     this build's binder exposes `SELECTABLE_BASES` and `MODEL_BASES` and is read `bases-v1`. Its
@@ -538,7 +568,7 @@ def test_snapshot_of_this_build_is_todays_registry() -> None:
     branch, since R-288 puts each `syn001.*` model on SYN-001's basis only (F-A2-1)."""
     from openflowsheet.application import revision_binding  # noqa: PLC0415
 
-    live = snapshot.build_snapshot()
+    live = snapshot.build_snapshot(binding=v2_binder())
     assert snapshot.reading_for(revision_binding, live["package_version"]) == "bases-v1"
     assert live["schema"] == "w27-registry-snapshot-v1"
     assert live["package_version"] == "0.3.0.dev0"
@@ -786,7 +816,7 @@ def test_each_route_binds_a_revision_with_its_component_set() -> None:
         bind_revision_flowsheet,
     )
 
-    live = snapshot.build_snapshot()
+    live = snapshot.build_snapshot(binding=v2_binder())
     over = {"syn001": (_revision_over, "H2"), "pr-c1-v1": (_c1_revision_over, "A")}
     assert {route["provider_id"] for route in live["routes"]} == set(over)
     for route in live["routes"]:
@@ -802,7 +832,7 @@ def test_each_route_binds_a_revision_with_its_component_set() -> None:
 
 
 def test_coverage_document_and_g14() -> None:
-    live = snapshot.build_snapshot()
+    live = snapshot.build_snapshot(binding=v2_binder())
     document = coverage.coverage_document(FACTS, live)
     verdict = coverage.g14(document)
     assert verdict["passed"], verdict
@@ -833,7 +863,7 @@ def test_committed_coverage_json_is_g14_and_this_builds_classification() -> None
     assert coverage.g14(document)["passed"]
     again = coverage.coverage_document(FACTS, document["snapshot"])
     assert again["rows"] == document["rows"] and again["summary"] == document["summary"]
-    live = snapshot.build_snapshot()
+    live = snapshot.build_snapshot(binding=v2_binder())
     assert {k: v for k, v in live.items() if k != "git_commit"} == {
         k: v for k, v in document["snapshot"].items() if k != "git_commit"
     }

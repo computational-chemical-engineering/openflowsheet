@@ -1,0 +1,33 @@
+# IAPWS-95 component records for `iapws95-v1`: water (IAPWS95-ref-v1).
+#
+# Written by hand (S11 design §4.1, ADR 0050 D1). A revision selects the IAPWS-95 basis by naming
+# this file as its `component_set.record_source`, with `components: ["H2O"]`. The molar mass is
+# `iapws95.M`, which a test asserts equal (float equality); the provider reads nothing here.
+#
+# Each record validates against schemas/component-record.schema.json.
+
+schema_version: 1
+record_schema: schemas/component-record.schema.json
+reference_convention: IAPWS95-ref-v1
+components:
+  - id: H2O
+    name: water
+    synthetic: false
+    identifiers:
+      cas: "7732-18-5"
+      formula: H2O
+    molecular_weight:
+      value: 0.018015268
+      unit: kg/mol
+      dimension: [0, 1, 0, 0, -1, 0, 0]
+      kind: molar_mass
+      meaning: Molar mass of ordinary water substance
+      role: fixed
+      provenance: "IAPWS R6-95 (2018), M"
+    elemental_composition: {H: 2, O: 1}
+    elemental_verification: VERIFIED
+    parameters: {}
+    rights:
+      source: "IAPWS R6-95(2018), Revised Release on the IAPWS Formulation 1995 for the Thermodynamic Properties of Ordinary Water Substance for General and Scientific Use (2018)"
+      redistribution: "permitted with conditions: Publication in whole or in part is allowed in all countries provided that attribution is given to the International Association for the Properties of Water and Steam"
+      notes: "© 2018 International Association for the Properties of Water and Steam (S05 spec §16.3; R-616)"

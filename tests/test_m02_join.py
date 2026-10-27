@@ -53,13 +53,17 @@ SYN001 = frozenset({"syn001"})
 C1 = frozenset({"pr-c1-v1"})
 
 #: R-288: the twenty-two models and the bases each binds on.
+#: S11 design §4.4 (ADR 0050 D3; amended on purpose, R-810): the three routing models bind on
+#: every basis except C1's. Wilson's is `wilson-ig-v2` since S11 WO-D5 (ADR 0051, units design
+#: §4.6).
+ROUTING = frozenset({"syn001", "iapws95-v1", "coolprop-heos-v1", "wilson-ig-v2"})
 REGISTERED: dict[str, frozenset[str]] = {
-    "syn001.feed_source": SYN001,
+    "syn001.feed_source": ROUTING,
     "syn001.adiabatic_mixer": SYN001,
     "syn001.tp_heater": SYN001,
     "syn001.tp_flash": SYN001,
-    "syn001.stream_splitter": SYN001,
-    "syn001.product_sink": SYN001,
+    "syn001.stream_splitter": ROUTING,
+    "syn001.product_sink": ROUTING,
     "syn001.ph_flash": SYN001,
     "syn001.valve": SYN001,
     "syn001.liquid_pump": SYN001,
@@ -77,6 +81,9 @@ REGISTERED: dict[str, frozenset[str]] = {
     "c1.reactor_standin": C1,
     # W27 Amendment 3 (R-301): M04's surrogate of the C1 reactor, on the C1 basis only.
     "c1.reactor_surrogate": C1,
+    # S11 (ADR 0050, R-810; design note §5's I1 row, §9): the column on SYN-001's basis and the
+    # Wilson registry row's provider id.
+    "syn001.column": frozenset({"syn001", "wilson-ig-v2"}),
 }
 
 
@@ -91,15 +98,17 @@ def test_the_registry_holds_the_twenty_one_models_each_on_its_own_basis() -> Non
 
 
 def test_the_selectable_bases_are_what_component_basis_returns() -> None:
+    # S11 (ADR 0050 D2, R-801; amended on purpose, R-810): SYN-001 and C1 lead the 127 bases,
+    # which `tests/test_s11_bases.py` (S11.A01-A03) checks entry by entry.
     c1_basis = component_basis(C1_CORPUS["C1-LOOP-M02-v1"]())
-    assert tuple(SELECTABLE_BASES) == (SYN001_BASIS, c1_basis)
-    assert len(SELECTABLE_BASES) == 2 and SELECTABLE_BASES[1] == c1_basis
-    for basis in SELECTABLE_BASES:
+    assert tuple(SELECTABLE_BASES)[:2] == (SYN001_BASIS, c1_basis)
+    assert len(SELECTABLE_BASES) == 127 and SELECTABLE_BASES[1] == c1_basis
+    for basis in tuple(SELECTABLE_BASES)[:2]:
         described = basis_provider(basis).describe()
         assert described.provider_id == basis.provider_id
         assert tuple(described.components) == basis.components
     named = {provider for providers in MODEL_BASES.values() for provider in providers}
-    assert named == {basis.provider_id for basis in SELECTABLE_BASES}
+    assert named <= {basis.provider_id for basis in SELECTABLE_BASES}
 
 
 def test_g2_i_every_t07_corpus_revision_is_on_syn001s_basis() -> None:
@@ -223,10 +232,19 @@ def _sha(document: Any) -> str:
     return hashlib.sha256(canonical_json(document)).hexdigest()
 
 
+#: Models registered after M02's join, which the pre-M02 fixtures never had: S11's column
+#: (ADR 0050, R-810).
+_AFTER_M02 = ("syn001.column",)
+
+
 def _without_c1(registry: dict[str, Any]) -> dict[str, Any]:
     return {
         **registry,
-        "models": [m for m in registry["models"] if not m["model_id"].startswith("c1.")],
+        "models": [
+            m
+            for m in registry["models"]
+            if not m["model_id"].startswith("c1.") and m["model_id"] not in _AFTER_M02
+        ],
     }
 
 
@@ -236,6 +254,7 @@ def test_the_list_models_fixtures_decompose_onto_the_pre_m02_ones() -> None:
     invalid = json.loads((view / "invalid" / "pin_missing_specifications.json").read_text("utf-8"))
     c1 = sorted(m["model_id"] for m in valid["models"] if m["model_id"].startswith("c1."))
     assert c1 == sorted(model for model, bases in REGISTERED.items() if bases == C1)
+    assert {m["model_id"] for m in valid["models"]} >= set(_AFTER_M02)
     assert _sha(_without_c1(valid)) == PRE_M02_REGISTERED_MODELS
     # The invalid fixture removes the first pin's `specifications` (its generator's rule); since
     # the join that pin is `c1.feed_source`'s, so stripping the C1 entries leaves the valid

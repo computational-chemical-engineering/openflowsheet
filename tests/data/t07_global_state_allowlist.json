@@ -149,6 +149,20 @@
       "justification": "W0.5: nullary _artifact_hash, the module source's SHA-256, immutable for the process's life."
     },
     {
+      "file": "models/thermal/common.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "S11 WO-C2: _artifact_hash(path), each thermal unit module's source SHA-256 keyed by its path (the W0.5 pattern), immutable for the process's life."
+    },
+    {
+      "file": "models/thermal/kernel.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "S11 WO-C1: _limits, a frozen Limits built from package constants (T_c and the near-critical box of iapws95 or the S07 fluid table) keyed by provider id, component and domain; immutable, no job or request state."
+    },
+    {
       "file": "thermo/pr_c1.py",
       "line": "@cache",
       "patterns": ["cache"],

@@ -52,11 +52,9 @@ from openflowsheet.orchestrator.execution import (
 from openflowsheet.orchestrator.splits import (
     SPLIT_RULES,
     check_agreement,
-    closure_types,
     dormancy_forms,
     lifted_splits,
-    vapour_only_forms,
-    zero_flow_forms,
+    region_splits,
 )
 from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.thermo import StreamState
@@ -181,9 +179,9 @@ def _start_from_pass(
     flowsheet: RevisionFlowsheet, variable_ids: Sequence[str], traversed: FlowsheetPass
 ) -> TraversalStart | InitialStateFailure:
     """§2.2 steps 3–6 on one successful pass: the streams, the units' reported duty, work and
-    extent, each lifted split re-split from its stream, and the band routes — or the unit whose
-    split the kernel refused. `traversal_start` calls it on pass 2 (pass 1 when nothing is torn);
-    `restart_start` on the last pass its sequence kept."""
+    extent (and S11's `owned` columns), each lifted split re-split from its stream, and the band
+    routes — or the unit whose split the kernel refused. `traversal_start` calls it on pass 2
+    (pass 1 when nothing is torn); `restart_start` on the last pass its sequence kept."""
     wanted = set(variable_ids)
     values: dict[str, float] = {}
     for stream in flowsheet.streams:
@@ -211,6 +209,10 @@ def _start_from_pass(
                 if reported_value is None:
                     raise ValueError(f"{unit} reports no value for its column {name}")
                 values[name] = reported_value
+        # S11 §4.7.5: the columns a unit owns beyond these (the embedded column's state).
+        for name, owned_value in evaluation.owned.items():
+            if name in wanted:
+                values[name] = owned_value
 
     split_values = lifted_split_values(
         flowsheet,
@@ -355,8 +357,9 @@ def plan_revision(
     """§2.1 step 2: one `solve_eo` step over every unit that authors a row, or T02's refusal.
 
     Raises `ValueError` when the lifted-split registry and the units' rows disagree (§3.3 (a)–(e);
-    T05b's zero-flow and dormancy forms, (f)–(g)) and when T01 does not report the declaration
-    `STRUCTURALLY_CLOSED` (`build_execution_plan`).
+    T05b's zero-flow and dormancy forms, (f)–(g); S11's staged splits, (a′)–(b′)), when the
+    region's `signature_units` are not the splits' keys (S11 §10.2 step 5), and when T01 does not
+    report the declaration `STRUCTURALLY_CLOSED` (`build_execution_plan`).
     """
     flowsheet, spec, graph = binding.flowsheet, binding.spec, binding.graph
     model_version, constants = declaration_identity(spec)
@@ -377,19 +380,21 @@ def plan_revision(
     )
 
     instances = instances_of(flowsheet)
-    splits = lifted_splits(instances, flowsheet.components)
+    # S11 §10.2: the registry's splits and every staged unit's, merged in one place.
+    rs = region_splits(instances, flowsheet.units(), flowsheet.components)
     check_agreement(
         instances,
-        splits,
+        rs.splits,
         spec,
         binding.row_units,
         declaration,
         # T05b spec §6.1: the `ZERO_FLOW` forms' ids, checked like the descriptors.
-        zero_flow_forms(instances, splits, closure_types(flowsheet.units()), flowsheet.components),
+        rs.zero_flow_forms,
         # T05b spec §7.6: the dormancy forms of the units without a lifted split, likewise.
         dormancy_forms(instances, flowsheet.units(), flowsheet.components),
         # M02 design note §14.2 B13 (h): the vapour-only forms, likewise.
-        vapour_only_forms(instances, splits, flowsheet.components),
+        rs.vapour_only_forms,
+        staged=rs.staged,
     )
 
     authors = set(binding.row_units.values())
@@ -398,7 +403,15 @@ def plan_revision(
         graph,
         report,
         tuple(unit.unit_id for unit in flowsheet.units() if unit.unit_id in authors),
+        staged_units={unit: tuple(s.unit for s in st.splits) for unit, st in rs.staged.items()},
     )
+    # S11 §10.2 step 5: the plan's identity names exactly the splits the region solve keys its
+    # attempt signature by (the region holds every author, and by (a′) every owner authors).
+    keys = tuple(split.unit for split in rs.splits)
+    if whole.signature_units != keys:
+        raise ValueError(
+            f"signature_units_disagree: plan {list(whole.signature_units)}, splits {list(keys)}"
+        )
     plan = plan_or_refusal(
         spec=spec,
         declaration=declaration,

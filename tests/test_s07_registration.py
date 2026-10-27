@@ -150,19 +150,24 @@ def test_a29_a_built_sdist_and_wheel_hold_no_coolprop_file_and_no_fluid_json(
     assert 'extra == "coolprop"' in mentions[0]
 
 
-# -- A30: library-only -----------------------------------------------------------------------------
+# -- A30: library-only, superseded by S11 (R-810) ------------------------------------------------
 
 
 def test_a30_library_only_registration() -> None:
+    """S11 (ADR 0050, R-810) reverses A30 on purpose: `coolprop-heos-v1` is selectable, on the
+    T08 providers axis, and no longer registered library-only."""
     from test_t08_w2_support_envelope import LIBRARY_ONLY_PROVIDERS
 
     selectable = {basis.provider_id for basis in revision_binding.SELECTABLE_BASES}
-    assert PROVIDER_ID not in selectable
-    assert LIBRARY_ONLY_PROVIDERS[PROVIDER_ID] == "S07"
+    assert PROVIDER_ID in selectable
+    assert PROVIDER_ID not in LIBRARY_ONLY_PROVIDERS
     matrix = _script("t08_support_matrix")
     assert PROVIDER_ID in matrix.code_facts()["scanned_providers"]
-    # control: the S05 provider is registered the same way, under its own package
-    assert LIBRARY_ONLY_PROVIDERS["iapws95-v1"] == "S05"
+    assert PROVIDER_ID in matrix.code_facts()["providers"]
+    # control: the S05 provider is selectable the same way, and S04's stays library-only (with
+    # S10's `wilson-ig-v1` since S11 WO-D5 selects `wilson-ig-v2`, ADR 0051)
+    assert "iapws95-v1" in selectable and "iapws95-v1" not in LIBRARY_ONLY_PROVIDERS
+    assert LIBRARY_ONLY_PROVIDERS == {"pr-lib-v1": "S04", "wilson-ig-v1": "S10"}
 
 
 def test_a30_the_u02_note_names_the_provider() -> None:
