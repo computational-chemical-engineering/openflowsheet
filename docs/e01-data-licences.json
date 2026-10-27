@@ -1,0 +1,137 @@
+{
+ "files": [
+  {
+   "derived_from_ecoinvent": false,
+   "licence": "chain `bare-module-total`: this repository's own (Apache-2.0); chain `ebtf-prisma-v1`: factors from the PrISMa SI §6.3.3, recorded by track A as CC BY (docs/briefs/PrISMa-scoping.md:115), attribution in the chain's `source`",
+   "licence_text_excerpt": "CC BY: reuse permitted with attribution; the attribution is the chain's `source` string in the file",
+   "licence_text_sha256": "e3934951d864fb6c79f9400961d527a9e6ec8cfce984fd08a3881c71007bf60e",
+   "path": "openflowsheet/_data/assessment/cost/chains.json",
+   "redistribution": "allowed",
+   "sha256": "d4707a829a9ed6136c7cd06b5e398dd1831ad6b1504af1dfbfe296e56e99fd52",
+   "source": {
+    "author": "E01 track A (WO-A4)",
+    "record": "docs/E01A_DECISIONS.md"
+   }
+  },
+  {
+   "derived_from_ecoinvent": false,
+   "licence": "BSD-3-Clause (IDAES PSE Framework)",
+   "licence_text_excerpt": "License\n=======\n\nInstitute for the Design of Advanced Energy Systems Process Systems Engineering\nFramework (IDAES PSE Framework) Copyright (c) 2018-2026, by the software owners: The\nRegents of the University of California, through Lawrence ",
+   "licence_text_sha256": "4fdde00bd663a045a688899c7e6924bd3b747204518e75540273c97f4bc98fa0",
+   "path": "openflowsheet/_data/assessment/cost/sslw-idaes-v1.json",
+   "redistribution": "allowed",
+   "sha256": "0ee43c89d21b15e73654fef316f684493558f991cbd07d44f5827f5a9c180364",
+   "source": {
+    "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
+    "licence_text_sha256": "4fdde00bd663a045a688899c7e6924bd3b747204518e75540273c97f4bc98fa0",
+    "transcribed_from": {
+     "aux": [
+      {
+       "file": "idaes/core/base/costing_base.py",
+       "sha256": "cdd71f362a2b59e5c1ed4261e8811f7fc749d0999aba0d01d32ad1999b0bfc38"
+      }
+     ],
+     "file": "idaes/models/costing/SSLW.py",
+     "file_sha256": "362b0a22e78ad578c4ce6408224aa6193fc6330cb7041fc1d4aaee0e060b1184",
+     "package": "idaes-pse",
+     "version": "2.13.0",
+     "wheel_sha256": "2b67301afe6dc0c2f0e7342253ebcbab6e91607c0204d9bd663a2735f1ec85f9"
+    }
+   }
+  },
+  {
+   "derived_from_ecoinvent": false,
+   "licence": "US public domain (citation requested)",
+   "licence_text_excerpt": "FRED series label: \"Public Domain: Citation Requested\". FRED legal page (https://fred.stlouisfed.org/legal/): \"Public Domain: Citation requested These series may be under copyright or in the public domain and may be used without permission,",
+   "licence_text_sha256": "3d856cc2c00d7f211d1f6ec8236ee8abde0db5c08d4b0cc8ae5c7a8ec424cb3b",
+   "path": "openflowsheet/_data/assessment/index/bls-ppi-wpu11-annual-v1.json",
+   "redistribution": "allowed",
+   "sha256": "1c36f463a0a61123f7b71d82c848954aae61305a0a550a735cefb3c77c4ba578",
+   "source": {
+    "publisher": "U.S. Bureau of Labor Statistics",
+    "retrieved": "2026-10-27",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=WPU11&fq=Annual&fam=avg"
+   }
+  },
+  {
+   "derived_from_ecoinvent": false,
+   "licence": "Eurostat re-use policy (CC BY 4.0; Commission Decision 2011/833/EU)",
+   "licence_text_excerpt": "Eurostat, Copyright notice and free re-use of data (https://ec.europa.eu/eurostat/web/main/help/copyright-notice): \"The copyright for the editorial content of this website, which is owned by the EU, is licensed under the Creative Commons At",
+   "licence_text_sha256": "d6edbbb632d0500c426056b04a7474f6a4070eed4cc400137355c6a9d804c6cb",
+   "path": "openflowsheet/_data/assessment/index/eurostat-ppi-c28-ea-annual-v1.json",
+   "redistribution": "allowed",
+   "sha256": "a16dad15929cf747c57621b104ee15ce4a885215ae00442396bc81fd977a5529",
+   "source": {
+    "publisher": "Eurostat",
+    "retrieved": "2026-10-27",
+    "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/sts_inppd_a?format=JSON&nace_r2=C28&geo=EA20&unit=I21&lang=EN"
+   }
+  },
+  {
+   "derived_from_ecoinvent": false,
+   "licence": "US public domain (citation requested)",
+   "licence_text_excerpt": "Federal Reserve Board website disclaimer (https://www.federalreserve.gov/disclaimer.htm): \"Unless otherwise indicated, information on Board's website is in the public domain and may be copied and distributed without permission. Please cite ",
+   "licence_text_sha256": "5a5756b19ece28af8080dbc6aca8a4227f6e32ed0bf3cb0a5553ced703cf8617",
+   "path": "openflowsheet/_data/assessment/index/frb-g5a-annual-v1.json",
+   "redistribution": "allowed",
+   "sha256": "0be392930ed58c6c035e274cdcfbdfe058eced3dd8a79c573bf0c71ab5cc78a6",
+   "source": {
+    "publisher": "Board of Governors of the Federal Reserve System",
+    "retrieved": "2026-10-27",
+    "url": "https://www.federalreserve.gov/releases/g5a/current/default.htm"
+   }
+  },
+  {
+   "derived_from_ecoinvent": false,
+   "licence": "five numerical values from IPCC AR6 WG1 (© 2021 IPCC), reproduced as facts with their citation",
+   "licence_text_excerpt": "Values from IPCC AR6 WG1 Chapter 7, Table 7.15. Forster, P., T. Storelvmo, K. Armour, W. Collins, J.-L. Dufresne, D. Frame, D.J. Lunt, T. Mauritsen, M.D. Palmer, M. Watanabe, M. Wild, and H. Zhang, 2021: The Earth's Energy Budget, Climate F",
+   "licence_text_sha256": "d0c45b1d3a5e912604da58d757ac25a707213a0fb72a8d347bb5370ce39e36db",
+   "path": "openflowsheet/_data/assessment/lca/gwp100-ipcc-ar6-v1.json",
+   "redistribution": "allowed",
+   "sha256": "9b307aad8fa5faae7dba951b4097b4eebe030436019cd16a113fc71e11b808de",
+   "source": {
+    "citation": "Forster, P., T. Storelvmo, K. Armour, W. Collins, J.-L. Dufresne, D. Frame, D.J. Lunt, T. Mauritsen, M.D. Palmer, M. Watanabe, M. Wild, and H. Zhang, 2021: The Earth's Energy Budget, Climate Feedbacks, and Climate Sensitivity. In Climate Change 2021: The Physical Science Basis. Contribution of Working Group I to the Sixth Assessment Report of the Intergovernmental Panel on Climate Change. Cambridge University Press, pp. 923-1054, doi:10.1017/9781009157896.009. Table 7.15, p. 1017.",
+    "conventions": {
+     "co2_non_fossil_air": "0.0: biogenic CO2 under the cut-off convention (uptake and release both outside the factor); a stated convention, not a Table 7.15 value"
+    },
+    "document": {
+     "retrieved": "2026-10-27",
+     "sha256": "470d2662fdd212421617a32c684e8106a4221a7235bdfff40a278eff02febfa9",
+     "url": "https://www.ipcc.ch/report/ar6/wg1/downloads/report/IPCC_AR6_WGI_Chapter07.pdf"
+    },
+    "read": {
+     "ch4_fossil_air": "CH4-fossil 29.8 ± 11",
+     "ch4_non_fossil_air": "CH4-non fossil 27.0 ± 11",
+     "co2_fossil_air": "CO2 1.000",
+     "n2o_air": "N2O 273 ± 130"
+    },
+    "table": "Table 7.15, column GWP-100 (central values; the ± ranges are not used)"
+   }
+  },
+  {
+   "derived_from_ecoinvent": false,
+   "licence": "Apache-2.0 (synthetic data authored in this repository)",
+   "licence_text_excerpt": "Synthetic test background; not the inventory of any real process.",
+   "licence_text_sha256": "3faa57f2d1b32c93b8968b7cb880dd9f4705a381d37a1c16729cfe21f513b371",
+   "path": "openflowsheet/_data/assessment/lca/test-background-v1.json",
+   "redistribution": "allowed",
+   "sha256": "a7bfffe64fe824ba255d3b8625a3014d4a7209fdb4ff1dd74caeca7510a58d63",
+   "source": {}
+  }
+ ],
+ "format": "e01-data-licences-v1",
+ "not_shipped": [
+  {
+   "data": "USLCI GWP100 unit-score table (uslci-<release>-gwp100-v1)",
+   "reason": "no CC0 or US public-domain licence recorded for a release: the release repository FLCAC-admin/uslci-content is MIT (LICENSE sha256 a680c9d5b66a37c42f309e2adff0af18aac3f379ac0b2b7d4153bb4801624649, retrieved 2026-10-27); lcacommons.gov did not resolve; and Brightway's import needs bw2io, which the `lca` extra excludes (§7 Q6). The recipe is documented instead."
+  },
+  {
+   "data": "EF 3.1 characterisation factors",
+   "reason": "the workbook's terms could not be confirmed (eplca.jrc.ec.europa.eu redirects to knowledge-for-policy.ec.europa.eu, which states none for the package, 2026-10-27); D8 default: not shipped"
+  },
+  {
+   "data": "anything derived from ecoinvent",
+   "reason": "licensed per user (D8)"
+  }
+ ]
+}
