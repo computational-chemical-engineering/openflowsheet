@@ -142,6 +142,9 @@ EXTERNAL_DUTY_MODELS: Final = (
     # M04 WO-7: the surrogate's duty `<U>.Q`, M02's row (spec §3.2).
     "c1.reactor_surrogate",
 )
+#: S11 design §4.8: a staged unit's duties are its own (`verify.column.duty`: each end's `Q_j` at
+#: the state, then the fixed `Q_j*`), not one `<U>.Q`.
+STAGED_DUTY_MODELS: Final = frozenset({"syn001.column"})
 #: `W`: the shaft work `<U>.W`.
 WORK_MODELS: Final = frozenset({"syn001.liquid_pump"})
 #: `ν_c ξ` on the material envelope; ADR 0011 D2's note on the energy balances. A conversion
@@ -330,6 +333,9 @@ class ModelChecks:
     #: One-sided `bounds_and_domain` rows (`Unit.one_sided`), after the generic bounds.
     bounds: Rule = _nothing
     declared_ports: tuple[tuple[str, bool], ...] = ()
+    #: The model's own `phase_admissibility` rows, judged where the splits' are, after the
+    #: declared ports, on every form (S11 design §4.8: the column's stage items).
+    admissibility: Rule = _nothing
 
 
 # -- the K02 entries ---------------------------------------------------------------------------
@@ -1175,6 +1181,10 @@ def _envelope_energy(
     for instance in view.instances:
         if instance.model_id in EXTERNAL_DUTY_MODELS:
             duty += state[duty_id(instance.unit_id)]
+        elif instance.model_id in STAGED_DUTY_MODELS:
+            from openflowsheet.verify import column  # noqa: PLC0415
+
+            duty += column.duty(instance, state, view.components)
     work = 0.0
     for instance in view.instances:
         if instance.model_id in WORK_MODELS:
@@ -1509,6 +1519,7 @@ def degeneracy(
     provider: PropertyProvider,
     context: EvaluationContext,
     tolerances: Mapping[str, float] | None = None,
+    owners: Mapping[str, str] | None = None,
 ) -> Degeneracy:
     """§9.1–§9.2 at `state`: the degenerate splits and streams, and the enthalpies read instead;
     and ADR 0013 D3's unresolved splits, read the same way.
@@ -1520,16 +1531,21 @@ def degeneracy(
     floor at least a tenth of the routing tolerance ρ_flow of `tolerances`, ADR 0013 A2) is
     substituted alike, with its own note. Every other flowing stream is tested at its own
     `(n, T, P)`; a degenerate one is evaluated in its declared phase, or, declared
-    `vapor_liquid`, is `unlifted`."""
+    `vapor_liquid`, is `unlifted`.
+
+    `owners` (S11 design §10.11) maps a staged split's key to the instance that owns it; a split
+    the registry lifted is its own instance's (`owners.get(key, key)`). A staged split (a column
+    stage) is heater-style: its stream is its key, which no flowsheet stream is."""
     flow_tolerance = routing_tolerances(tolerances)["molar_flow"]
     instances = {instance.unit_id: instance for instance in view.instances}
+    owner = owners or {}
     distances: dict[str, float] = {}
     enthalpy: dict[str, float] = {}
     notes: dict[str, str] = {}
     unresolved: dict[str, float] = {}
     owned: set[str] = set()
     for split in splits:
-        instance = instances[split.unit]
+        instance = instances[owner.get(split.unit, split.unit)]
         products = "vapor" in instance.ports and "liquid" in instance.ports
         if products:
             (vapor_stream,) = instance.ports["vapor"]
@@ -1618,6 +1634,7 @@ def revision_checks(
     context: EvaluationContext,
     tolerances: Mapping[str, float],
     judged_at: Mapping[str, float] | None = None,
+    owners: Mapping[str, str] | None = None,
 ) -> list[CheckResult]:
     """§4.3: the table's check set at `state`, category-major, for a revision-built flowsheet.
 
@@ -1631,7 +1648,11 @@ def revision_checks(
     `judged_at` (ADR 0013 D1; K04-F9 spec §5.1) is where the fresh-flash categories are
     evaluated — the energy balances and the enthalpy map they read, the splits' admissibility and
     independent split, the declared ports, and the degeneracy routing that selects among their
-    forms; material balances, specifications and bounds stay at `state`. `None` is `state`."""
+    forms; material balances, specifications and bounds stay at `state`. `None` is `state`.
+
+    `owners` (S11 design §10.11): a staged split's key → its instance (`degeneracy`); `None`
+    when no instance is staged. A model's own admissibility rows (`ModelChecks.admissibility`)
+    follow the declared ports on every form."""
     at = state if judged_at is None else judged_at
     note = qualification(provider)
     reacting = any(i.model_id in REACTING_MODELS for i in view.instances)
@@ -1657,7 +1678,9 @@ def revision_checks(
         )
     else:
         degenerate = (
-            Degeneracy() if pr else degeneracy(view, splits, at, provider, context, tolerances)
+            Degeneracy()
+            if pr
+            else degeneracy(view, splits, at, provider, context, tolerances, owners)
         )
 
     energy: list[CheckResult] = []
@@ -1709,6 +1732,7 @@ def revision_checks(
 
     material: list[CheckResult] = []
     specification: list[CheckResult] = []
+    own_admissibility: list[CheckResult] = []
     bounds: list[CheckResult] = bounds_checks(
         provider, state, streams=view.streams, components=components
     )
@@ -1728,6 +1752,7 @@ def revision_checks(
         energy += entry.energy(judged, components)
         specification += entry.specification(certified, components)
         bounds += entry.bounds(certified, components)
+        own_admissibility += entry.admissibility(judged, components)
     material += _envelope_material(view, state, tolerances)
     energy.append(
         _envelope_energy(
@@ -1738,6 +1763,7 @@ def revision_checks(
     admissibility: list[CheckResult] = []
     if mixture:
         admissibility += forms.stream_admissibility(view, declared, at, provider, context, note)
+        admissibility += own_admissibility
         return [*material, *energy, *specification, *bounds, *admissibility]
     if pr:
         for split in splits:
@@ -1752,6 +1778,7 @@ def revision_checks(
             note,
             {model: entry.declared_ports for model, entry in MODEL_CHECKS.items()},
         )
+        admissibility += own_admissibility
         return [*material, *energy, *specification, *bounds, *admissibility]
     for split in splits:
         admissibility += _split_checks(
@@ -1768,6 +1795,7 @@ def revision_checks(
     admissibility += _declared_port_checks(
         view, at, enthalpy, provider, context, tolerances, note, degenerate
     )
+    admissibility += own_admissibility
     return [*material, *energy, *specification, *bounds, *admissibility]
 
 

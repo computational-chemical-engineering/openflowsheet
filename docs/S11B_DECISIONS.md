@@ -25,6 +25,15 @@ DECISION (B3d): where A28's check sits → `executor._solve_revision_region`, af
 DECISION (B3e): the committed cases name the column instance after the standalone unit (`S02`/`S06`), so its stage columns carry the standalone ids and A29 compares against the registered roots (`test_s02_column_wo2.ref_state`, `test_s06_column_wo2.expected_root`) directly; each file equals `s11_column_support.column_case(name)` (a test; regenerate with `python tests/s11_column_support.py`). Alternative: `UCOL` and an id map. Reversible by: `unit=` in `column_case`.
 DECISION (B3e, Q29 fact): a column under `T08-ptc-v1` ends `PTC_MAPPING_INVALID` `ptc_mapping_invalid(<U>:stage:1:mole:A, missing)` before any attempt — a typed refusal, so §10.13's default holds: L-COL-10 at I1. Alternative: n/a. Reversible by: n/a.
 DECISION (B3e, Q11 not done): a Wilson column with a `none` end cannot be bound on this branch (the Wilson basis is track A's A1, not merged into wp/S11-b), and no code path refuses `none` for a composition-dependent form (`column.validate` restricts kinds only). Carried to after A merges (with C-MW/C-EW of A29). Alternative: n/a. Reversible by: n/a.
+DECISION (B3f, Q11 fact): `solve_column` accepts a Wilson column with a `none` end (C-MW's feed as the `top` liquid of a 10-stage stripper, C-MW's reboiler and `bottoms_rate` 0.6: CONVERGED, accepted), so Q11's default holds as "admitted": the flowsheet binds it and converges in 0 Newton iterations to the library root, |Δ| = 0 on all 145 columns, under `S01_DEFAULT_V1` and `T06_REVISION_V2`; committed as `benchmarks/s11/flowsheets/C-MW-stripper.json`. Alternative: refuse `none` on a composition-dependent form (no code path does; not needed). Reversible by: n/a.
+DECISION (B3f): the Wilson A29 cases are checked against S10-C's registered root with its own per-variable tolerances (`test_s10c_columns.deviations`, plus the product streams against the same entries), and also against `solve_column`'s root exactly (|Δ| = 0 measured on 277 shared columns for each). Alternative: S02's flow/T/Q tolerances. Reversible by: `_worst_wilson`.
+DECISION (B4, escalated — certificate policy): the Wilson column certificates (C-MW, C-EW, the Q11 stripper) are UNVERIFIED solely because `derivative_witness.{on,off}_pattern` is `unsupported`: the central-difference stencil steps an absent component's exactly-zero internal flow (R-785; e.g. `COL.stage.1.r.C2H5OH`) negative, which the Wilson provider refuses (`witness_stencil_invalid_trial_state`). Every other row passes (407 of 409 on C-MW/C-EW, 232 of 234 on the stripper). Only `pr-c1-v1`'s exactly-zero *stream* flows are exempt (`unstenciled`, R-281). Extending `unstenciled` to a column's exactly-zero stage flows on a γ–φ basis (with the `derivative_witness_partial` limitation) is a certificate-policy change, not made; `test_a35_the_wilson_column_rows_pass` pins the fact. Would need: a design-lane ruling (extend R-281's exemption, or a one-sided stencil at zero flows). A35 is therefore met on the SYN-001 cases and not on the Wilson ones. Alternative: n/a. Reversible by: n/a.
+DECISION (B4): `specification.<U>.<end>` is judged in the table's linear form (reflux `r − R·d`, boil-up `v_N − B·l_N`, purity `n_c − π*·P`, recovery `n_c − ν*·F_c`, molar_flow; rates molar_flow; duty heat_rate; temperature), as the splitter's ratio row is, because the check policy has no dimensionless tolerance kind for §4.8's quotient form; a recovery with `F_c ≤ 0` fails outright (`recovery_feed_not_positive(<c>)`, A38). Alternative: the quotient with S06's `target_bound` as tolerance (registered constants, not the policy's). Reversible by: `verify.column._end_check`.
+DECISION (B4): the column's duties enter `energy_balance.envelope` (`table.STAGED_DUTY_MODELS`, `verify.column.duty`: each end's `Q_j` at the state, then `Q_j*` from `stage_duty.<j>`) — without it the envelope failed by `Q₁ + Q_N` on every column case (M1: −11077 W). Alternative: `Σ_j state[stage_duty_id]`. Reversible by: the `elif` in `_envelope_energy`.
+DECISION (B4): the stage items evaluate the *standalone* declaration (`declared_rows` without links) at the judged state, its pinned inlet columns `<U>.inlet.<name>.*` copied from the inlet streams, with each stage's regime read from the state's totals (never the solve's signature); each failure is attributed to the stage it names (`_stages_of`; an unattributable item raises `acceptance_item_unattributed`). The linked declaration references flowsheet stream columns its own `variable_ids` lack, so `row_values` cannot evaluate it alone. A `ZeroDivisionError` inside S06 §8 item 4 (F_c or P zero) makes the stage rows `unsupported(acceptance_undefined(...))`. Alternative: evaluate the linked declaration with the flowsheet's columns added. Reversible by: `verify.column.admissibility`.
+DECISION (B4): `ModelChecks` gains `admissibility: Rule` (default nothing), its rows appended after the declared ports on all three forms (the Wilson form returns before the split checks). Alternative: the column's stage rows under `bounds`. Reversible by: the field and its three appends.
+DECISION (B4, escalated — Q10 class): a column stage at `V = L = 0` with a dormant feed would need the column's own per-stage zero-flow form in `verify/zero_flow.py`, which may import nothing of the solver's (`test_t05_table_independence`); such a split now raises `zero_flow_form_unknown(syn001.column)` (unreachable at a converged column with a feed; S10 refuses a zero feed). Would need: the design lane's reading of the column's ZERO_FLOW form for the verifier. Alternative: pass the staged `ZeroFlowForm` in (breaks R-016's rule for that module). Reversible by: the check in `_reduction`.
+DECISION (B4): the verifier reads the column's structure with `column_unit.column_structure` (the revision's one reader of a column instance) and its staged splits with `column_staged_splits` (§10.11), in `certificate._staged_splits`; the MODEL_CHECKS entry is I1's, the tests register it in `column_registered` (`column_checks()`). Alternative: n/a. Reversible by: n/a.
 
 ## WO-B1 inventory: structural and inlet-dependent items (§4.7.2)
 
@@ -40,6 +49,17 @@ Inlet-dependent (left to `validate` at evaluate): R2 (inlet flows), R3's inlet `
 (inlet admissibility), S5 (rate ≥ feed), S10 (no feed: zero total flow), I3 (absent component), I4
 (temperature band: §4.7.2 lists it here), I5 (rank of the split rows, whose coefficients are the
 `F_c`), I6 (product split), R7 (energy precheck).
+
+## WO-B4 inventory: verifier consumers of `split.unit` (§4.8; `grep -n "split.unit\|instances\[" verify/`)
+
+- `table.degeneracy` (`table.py:1548`): `instances[split.unit]` → `instances[owner.get(key, key)]`. A stage is
+  heater-style (the column has no `vapor`/`liquid` ports); its `owned`/`enthalpy` entries sit under the stage key, which
+  no flowsheet stream is, and its `distances`/`unresolved` keys are the stage key (read back by `_split_checks`).
+- `zero_flow._reduction`/`zero_flow_splits` (`zero_flow.py:115,159`): owner lookup; a staged split refused
+  (`zero_flow_form_unknown`, escalated above).
+- `table._split_checks`, `pr_c1.split_checks`, `revision_phase_branch`, the `_band` label (`table.py:1236,1560,1792,
+  1816`; `pr_c1.py:292`): ids only (`<key>.<key>`, `<key>:<key>`); no instance read. The column is not admitted on
+  `pr-c1-v1`.
 
 ## Run log
 
@@ -63,6 +83,14 @@ Inlet-dependent (left to `validate` at evaluate): R2 (inlet flows), R3's inlet `
 
 - 2026-10-27 B3e `655f24f8` (end of B3): tests (69 files) 2201 passed; S08 PASS n=52 changed=[S02.P1]
   p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 PASS n=54497 changed=[] (696 s for the three).
+- 2026-10-27 B3f `0e3d6b77`: `test_s11_column_solve.py` 37 passed (tests/benchmarks only: no identity trigger).
+  C-MW/C-EW worst |Δ|/tol 1.3e-7/2.1e-8 against S10-C's root, 0 Newton iterations, |Δ| = 0 against
+  `solve_column` on 277 columns; the stripper |Δ| = 0 on 145 columns.
+- 2026-10-27 B4 `9100ff11`: tests (52 files: every `verify_revision|revision_checks|degeneracy|zero_flow_splits|
+  ModelChecks|MODEL_CHECKS` user and `test_s11_*`) 1588 passed / 6 skipped. S08 PASS n=52 changed=[S02.P1]
+  p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 FAIL n=54497 changed=[] (C branch shards [1, 5, 14, 15]
+  exited non-zero): rerun with `--keep`, exactly A3's eleven known failures (s05 a25, s07 a30, s10 a27, t08
+  support-envelope a20 + six c3, T08.A32), nothing new (788 s for the three).
 
 ## Q9 spike (WO-B3's first step): STOPPED (resolved by §10, R-822; implemented in B3a) — the region decomposition does not place the stage pseudo-units
 
@@ -90,20 +118,18 @@ Placing the stages needs a rule for region membership of pseudo-units (`region.u
 the `stage_unit` prefix) and for (a)/(b) of `check_agreement`. That is region structure, which the brief and the
 note's Q9 reserve to the design lane; nothing was changed.
 
-## Handoff (where track B stands, 2026-10-27, after B3)
+## Handoff (where track B stands, 2026-10-27, after B3f and B4)
 
-- Done: B1 (`1fb0b8f9`, `884b4973`), B2 (`ffc68146`, `33a652a9`), B3a `e41b986b` (staged splits, R-822/R-823),
-  B3b `021f17f6` (end parameters `condenser_<kind>`/`reboiler_<kind>`, R-824), B3c `4afdd498` (decision only:
-  `s11-column-v1` not registered, escalated), B3d `63dc42a5` (A28), B3e `655f24f8` (cases, A29 SYN-001, A24′, Q29).
-- Passing: A87–A90 (`tests/test_s11_staged_splits.py`), A92 (`tests/test_s11_column_face.py`), A28, A29 on M1–M4,
-  J1–J8 and the recycle case, A24′, Q29 record (`tests/test_s11_column_solve.py`); B1/B2's tests renamed.
-- Identity at `655f24f8`: S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[];
-  S11 PASS n=54497 changed=[].
-- Not done (blocked on track A's Wilson basis, A1, not on this branch): A29's C-MW and C-EW, Q11. Add them as
-  `benchmarks/s11/flowsheets/C-MW.json`/`C-EW.json` (`column_case` with the Wilson `record_source`) after A merges.
-- Not track B's here: B4 (waits for A3 in wp/S11; the owner map per §10.11), I1 (A91 is already met by the
-  reader's `_ID`; A93; the sixteen `_PARAMETER_KINDS`; L-COL-9, L-COL-10 for Q29).
-- For the design lane (one batched ruling): B3c (Q8's premise: T06-revision-v2 carries v2; registration moves the
-  served `get_project.solve_policies`); B3b (`ModelSignature` has no optional-parameter field; S2's kind items now
-  unreachable by name); B3a (the manifest's derivative declaration corrected to `residuals`/`ad`).
-- Next action: rebase wp/S11-b on wp/S11 once A3 is merged, then B4 and the Wilson cases.
+- Done: B1, B2, B3a–B3e (see the run log), **B3f** `0e3d6b77` (A29 C-MW/C-EW, Q11 admitted: the stripper case),
+  **B4** `9100ff11` (`verify/column.py`; `certificate._staged_splits` → `lifted_splits(staged=)`, `split_owners` →
+  `degeneracy`/`zero_flow_splits`; `ModelChecks.admissibility`; the column's duties in the envelope).
+- Passing: A29 on all fourteen cases + recycle (`test_s11_column_solve.py`, 39), A35 on M1–M4/J1–J8/recycle
+  (VERIFIED), A36, A37, A38 (`test_s11_column_verifier.py`, 23).
+- Not met: **A35 on C-MW/C-EW** (UNVERIFIED on the derivative witness alone; escalated above, certificate policy).
+- Escalated for the batched ruling (with B3a–c's): the witness at absent-component zero flows (B4); the column's
+  ZERO_FLOW form in `verify/zero_flow.py` (B4, Q10 class, unreachable today); the linear form of the specification
+  rows (B4); the envelope's column duties (B4).
+- For I1: `MODEL_CHECKS["syn001.column"] = s11_column_support.column_checks()`'s `ModelChecks` (material, energy,
+  specification, `declared_ports=column.DECLARED_PORTS`, admissibility); `column_registered` also patches it today.
+- Next action: I1 (not track B's). Track B's WOs are complete except the escalated items.
+
