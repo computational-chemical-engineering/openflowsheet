@@ -284,3 +284,31 @@ DECISION (I1, outside §8.3, the analogue of its `test_t08_b50_surface_content` 
 Item 9 (a) (R-838), `tests/test_s11_column_application.py`: each case committed to a `LocalApplication` and solved by `solve(…, "T06-revision-v2")`, read back from the job outputs (bundle `solution-state.json`, the certificate). Newton iterations = the sum over the certificate's `branch_provenance`. Measured (iterations/attempts/max |Δ|/tol/status): M1 0/1/1.17e-6, M2 0/1/2.82e-8, M3 0/1/3.28e-3, M4 0/1/3.37e-7, J1 0/1/5.71e-8, J2 0/1/2.33e-5, J3 0/1/6.18e-9, J4 0/1/1.02e-2, J5 0/1/2.41e-7, J6 0/1/1.07e-7, J7 0/1/2.01e-6, J8 0/1/5.34e-2, C-MW 0/1/1.29e-7, C-EW 0/1/2.14e-8, stripper 0/1 (library root exactly), M1-recycle 3/1 (closes, recycle > 0; at the budget); all VERIFIED. 16 passed (40 s).
 DECISION (I1, item 9 (a)): the ≤ 3 Newton budget is asserted on the recycle case too (the ruling lists it; A29's own budget is stated "with no recycle"); measured 3, at the bound. Alternative: exempt the recycle as the in-process A29 test does. Reversible by: one line.
 DECISION (I1, outside §8.3, found by the identity run): `scripts/t08_evidence_manifest.py`'s B27 counts T08's thirteen SYN-001 models from the working envelope; S02's column is not T08's (B13's rule, as M02's C1 models were excluded by `f71d55ed`), so `_NOT_T08_SYN001 = {"syn001.column"}` is left out of the count, `== 13` unchanged. `test_t08_evidence_manifest::test_tested_with_v14_b_the_only_fail_and_accepted` passes again (15 passed). Alternative: `== 14`. Reversible by: that commit.
+
+## Handoff (2026-10-27, end of the second I1 engineer; WO-I1 complete)
+
+**Done** on `wp/S11` (not pushed), after the first I1 engineer's six commits:
+- envelope `57db68d6`: `syn001.column` a member (23; 14 `syn001.*`), statement, U04 (cascade + column hint, S11.A14),
+  L-COL-1…10, L-S11-3 "routing and column", A20 counts, `LIBRARY_ONLY = {"syn001.cascade": "S01"}`;
+  `t08_support_matrix.py --check` 0 problems.
+- R-561 `de7e23c1`: S02's 12 U04 harvest items reclassified (own commit; the D1-A03 tripwire checks the tree's
+  state, not commit membership, so no squash into `713f5e3d`). S03/S06/S08/S09/S10c column items untouched (§4.11).
+- tests outside the envelope: `31332368` (T08.A14(i) corpus + column sample), `a0218ce3` (pre-rename w5c digest
+  leaves out `S11:` rows), `5d89a50c` (W5e `list_models` fixtures + `test_m02_join` pre-M02 decomposition),
+  `2587887c` (T08 B27 counts T08's 13). Each with a DECISION line above; none added to `AMENDED_TESTS`.
+- item 9 (a) `fa60e6a8`: `tests/test_s11_column_application.py`, 16 cases through `LocalApplication` under
+  `T06-revision-v2`, all VERIFIED, 0 Newton iterations except the recycle (3, at the budget).
+
+**Identity** at `fa60e6a8` (scratch worktree, clean): `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards
+[1, 7, 11, 15] exited non-zero)` — n back to 54497 (the 59 base-only keys of A14(i) are gone), no changed key.
+Branch failures: envelope a20 (its `scanned_providers` assertion: `wilson-ig-v2`) and the six c3 (D5, not I1's);
+W27 `test_m06_w27_coverage` 4 and `test_l01_retake` 6 errors (`unregistered model ids ['syn001.column']`, I1b's
+`model_functions`); `test_t08_evidence_manifest` B27 (fixed by `2587887c`, after the run).
+`S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL`; `S10C-IDENTITY PASS n=858 changed=[]`.
+
+**Open (batch with the package's ruling round):**
+1. U04's capability keeps the catch-all beside §4.11's cascade text (DECISION above) — confirm.
+2. The ≤ 3 Newton budget asserted on the recycle case through the application (measured 3) — confirm.
+3. The four test amendments outside §8.3 (A14(i), rename w5c, W5e fixtures + m02_join, T08 B27): confirm, or name
+   them in §8.3 / `AMENDED_TESTS` (the identity run judged their keys equal, so none needed it).
+4. a20's `scanned_providers` now fails only on `wilson-ig-v2` (as c3): D5 registers it.
