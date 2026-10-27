@@ -26,9 +26,10 @@ refused a stream the mixer had just admitted. Found by the Fable review of K02.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Final
 
 from openflowsheet.canonical import file_sha256
@@ -86,6 +87,10 @@ from openflowsheet.models.syn001.tp_state import (
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 MODEL_ID: Final = "syn001.tp_heater"
+#: SYN-001's state domain, the default `domain` (S11 units design §4.5).
+DOMAIN: Final[Mapping[str, tuple[float, float]]] = MappingProxyType(
+    {"T": (T_MIN, T_MAX), "P": (P_MIN, P_MAX)}
+)
 
 PORTS: Final[tuple[Port, ...]] = (
     Port(
@@ -207,6 +212,11 @@ class TPHeater:
     #: A heater given both an outlet temperature and a duty is over-specified (ADR 0001 D4.4).
     specified_duty: float | None = None
     components: tuple[str, ...] = COMPONENTS
+    #: S11 units design §4.5: the bound provider's identity, convention and domain, which
+    #: `manifest()`, every `UnitEvaluation` and the range checks read; SYN-001's by default.
+    property_provider: str = PROVIDER_ID
+    reference_convention: str = REFERENCE_CONVENTION
+    domain: Mapping[str, tuple[float, float]] = field(default=DOMAIN, hash=False)
 
     def __post_init__(self) -> None:
         if self.specified_duty is not None:
@@ -215,10 +225,11 @@ class TPHeater:
                 "rejects that at validation as a structural over-specification (STR-03); it is "
                 "not a state at which the heater has an answer"
             )
-        if not T_MIN <= self.outlet_temperature <= T_MAX:
+        t_min, t_max = self.domain["T"]
+        if not t_min <= self.outlet_temperature <= t_max:
             raise SpecificationError(
                 f"{self.unit_id}: outlet temperature {self.outlet_temperature} K is outside the "
-                f"declared domain [{T_MIN}, {T_MAX}] K"
+                f"declared domain [{t_min}, {t_max}] K"
             )
 
     @property
@@ -298,16 +309,16 @@ class TPHeater:
                     "evaluation (blueprint §6.3, fixed phase set with a final admissibility "
                     "check). The rows cannot be written without it.",
                 ),
-                temperature_k=(T_MIN, T_MAX),
-                pressure_pa=(P_MIN, P_MAX),
+                temperature_k=self.domain["T"],
+                pressure_pa=self.domain["P"],
             ),
             module=__name__,
             artifact_hash=_artifact_hash(),
             execution_class="native_equation",
             thread_safety="not_thread_safe",
             evaluation_cost_class="moderate",
-            property_provider=PROVIDER_ID,
-            reference_convention=REFERENCE_CONVENTION,
+            property_provider=self.property_provider,
+            reference_convention=self.reference_convention,
         )
 
     # -- rows --------------------------------------------------------------------------------
@@ -430,7 +441,7 @@ class TPHeater:
                 outlets={"outlet": dormant},
                 duty=0.0,
                 phase_signature="ZERO_FLOW",
-                reference_convention=REFERENCE_CONVENTION,
+                reference_convention=self.reference_convention,
             )
 
         inlet_state = tp_state(self.provider, feed, context)
@@ -452,7 +463,7 @@ class TPHeater:
                 return UnitEvaluation(
                     status=status,
                     message=f"inlet admissibility: {message}",
-                    reference_convention=REFERENCE_CONVENTION,
+                    reference_convention=self.reference_convention,
                 )
             if not admissible:
                 return UnitEvaluation(
@@ -463,7 +474,7 @@ class TPHeater:
                         f"{TEMPERATURE_TOLERANCE:g} K. The rows were written for the declared "
                         "regime, so answering would be answering about a different function"
                     ),
-                    reference_convention=REFERENCE_CONVENTION,
+                    reference_convention=self.reference_convention,
                 )
 
         outlet_state = tp_state(
