@@ -371,6 +371,7 @@ def test_a83_the_envelope_holds_the_thermal_models_and_their_limitations() -> No
     texts = {row["id"]: " ".join(row["text"].split()) for row in envelope["limitations"]}
     # L-S11-1/2 drop "routing models only" (§4.10); rulings item 10's appended sentences.
     assert all("Only the routing models" not in texts[f"L-S11-{n}"] for n in (1, 2, 3))
-    assert texts["L-TH-4"].endswith("is refused `isentropic_state_two_phase(<U>)`.")
+    # `{U}`, not `<U>`: a T08 manifest holds no angle-bracketed span (its description rule).
+    assert texts["L-TH-4"].endswith("is refused `isentropic_state_two_phase({U})`.")
     assert "(measured: 4 of 11 200 grid outcomes, at 22.85 MPa)" in texts["L-TH-5"]
     assert texts["L-TH-8"].startswith("A revision declares one phase per port (R4)")

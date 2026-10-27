@@ -1113,7 +1113,7 @@ limitations:
       Machine phase rules (S11 units design §4.4 table); a compressor with a two-phase
       isentropic state is refused. In a revision, a turbine's isentropic state takes the outlet's
       declared form. A vapour outlet whose isentropic state is two-phase is refused
-      `isentropic_state_two_phase(<U>)`.
+      `isentropic_state_two_phase({U})`.
     evidence:
       - tests/test_s11_thermal_machines.py::test_a55_dry_fluid_saturated_vapour_is_refused
       - tests/test_s11_thermal_machines.py::test_a53_turbine

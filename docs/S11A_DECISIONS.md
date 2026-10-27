@@ -553,3 +553,10 @@ Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. 
   W5e `list_models` fixtures with the thermal entries. DECISION: its `_AFTER_M02` (added at I1 for the column) gains
   the seven `thermal.*` ids, so the pre-M02 SHA-256 operands stand (C6-2 precedent; no `AMENDED_TESTS` entry).
   Alternative: amend it under §8.3. Reversible by: the one tuple. Measured: `test_m02_join` 14 passed.
+- Gate finding 2/2: `test_t08_evidence_manifest::test_the_manifest_validates_and_holds_no_angle_bracketed_text`
+  failed since item 5: every envelope limitation travels into the T08 manifest, and L-TH-4's appended sentence (rulings
+  item 10) spelled `isentropic_state_two_phase(<U>)`. DECISION: L-TH-4 spells it `({U})`, the T08 generator's own
+  placeholder convention (it rewrites `<x>` to `{x}` in check descriptions); `test_s11_bases` follows;
+  `t08_support_matrix.py --emit`, `--check` 0 problems. Alternative: none that keeps the manifest rule. Reversible
+  by: the one envelope line. Measured: `test_s11_bases` + `test_t08_evidence_manifest` + `test_t08_w2_support_envelope`:
+  344 passed.
