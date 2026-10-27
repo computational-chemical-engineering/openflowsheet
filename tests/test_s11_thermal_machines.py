@@ -1037,3 +1037,13 @@ def test_the_dormant_wilson_machine_and_its_manifest() -> None:
         ]
         if text.startswith("L-GP-2")
     ]
+
+
+def test_a_wilson_isentropic_state_past_the_dew_point_is_refused() -> None:
+    """§4.4 step 2 read on Wilson (S11D WO-I1b B): C-MW's vapour 3 K above its dew point at
+    150 kPa expanded to 90 kPa has T_s = 337.05 K, below the dew point there (358.5 K); the
+    provider judges that vapour UNSTABLE, so the machine refuses before its outlet."""
+    turbine = _wilson("turbine", 90_000.0, 0.85)
+    answer = _run(turbine, StreamState((0.4, 0.0, 0.6), 375.25, 150_000.0))
+    _refusal(answer, "isentropic_state_two_phase(U1)")
+    assert (answer.provider_id, answer.reference_convention) == ("wilson-ig-v2", "WILSON-IG-ref-v1")

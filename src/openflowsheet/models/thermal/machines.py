@@ -138,7 +138,9 @@ _STABLE: Final = "STABLE_WITHIN_TESTED_SCOPE"
 _WILSON_LIMITATION: Final = (
     "L-GP-2: an additive-vapour (Wilson) machine is single-phase vapour on both ports, within "
     "the records' domain; its outlet must be judged STABLE_WITHIN_TESTED_SCOPE by the provider's "
-    "stability(), else phase_regime_mismatch(<O>): there is no γ–φ two-phase PS closure."
+    "stability(), else phase_regime_mismatch(<O>): there is no γ–φ two-phase PS closure. An "
+    "isentropic vapour state that stability() judges UNSTABLE is refused "
+    "isentropic_state_two_phase(<U>)."
 )
 
 
@@ -716,9 +718,9 @@ class ThermalMachine:
     ) -> UnitEvaluation:
         """§4.4's Wilson path for a flowing feed inside the bounds: the inlet's vapour enthalpy
         (R-007's admissibility), Ḣ_s from the machine's own `PFs_<U>` block (the function the
-        work row reads), W, then the outlet's vapour h-inversion at P_spec on the provider's T
-        domain and the provider's `stability()` of the outlet. Every failure carries R-840's
-        labels."""
+        work row reads) with the provider's `stability()` of the isentropic state, W, then the
+        outlet's vapour h-inversion at P_spec on the provider's T domain and the provider's
+        `stability()` of the outlet. Every failure carries R-840's labels."""
         described = self.provider.describe()
         labels = failure_labels(described.provider_id, described.reference_convention)
         names = self.components
@@ -738,7 +740,21 @@ class ThermalMachine:
         )
         if isinstance(ideal, Failure):
             return failed(ideal)
-        _, isentropic = ideal
+        isentropic_temperature, isentropic = ideal
+        # §4.4 step 2 on Wilson (S11D WO-I1b B): the isentropic state is a vapour; one the
+        # provider judges UNSTABLE is past it.
+        judged = self.provider.stability(  # type: ignore[attr-defined]
+            StreamState(feed.n, isentropic_temperature, pressure), "VAPOR", context
+        )
+        if judged.label == "UNSTABLE":
+            return failed(
+                Failure(
+                    "unsupported",
+                    f"isentropic_state_two_phase({self.unit_id})",
+                    f"stability() of the isentropic vapour state at ({isentropic_temperature!r} "
+                    f"K, {pressure!r} Pa) is UNSTABLE; {WILSON_PORT_HINT}",
+                )
+            )
 
         rise = isentropic - entering.enthalpy_flow
         efficiency = float(self.efficiency)

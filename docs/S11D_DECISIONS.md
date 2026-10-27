@@ -263,3 +263,10 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
   `test_a_wilson_machine_is_vapour_on_both_ports`; `test_an_all_vapour_wilson_machine_is_refused_until_d5` →
   `…_binds_as_additive_vapour`; `test_the_three_tables_name_the_seven_models` (the Wilson row). S11 thermal/gp/v2
   tests: 336 passed, 58 skipped (CoolProp).
+- DECISION: §4.4 Evaluate step 2 ("on the wrong side, `isentropic_state_two_phase(<U>)`") and L-TH-4 on Wilson →
+  the isentropic state (n, T_s, P_O) judged by `stability(…, VAPOR)`; UNSTABLE → `isentropic_state_two_phase(<U>)`
+  (UNKNOWN passes to the outlet's check). Why: the pure-fluid machines refuse an isentropic state past the declared
+  one (L-TH-4, OQ-1's typed refusal); the additive-vapour block evaluates a fictitious vapour below the dew point
+  without complaint, so only the evaluate can say so. Alternative: only the outlet's stability, as §4.4 lists for
+  Wilson (then GP-M2 gives `phase_regime_mismatch(<O>)`). Reversible by: reverting commit B (GP-M2 accepts either
+  code, as A81 does). Measured: C-MW vapour 375.25 K, 150 → 90 kPa: T_s 337.05 K < dew 358.47 K → refused.
