@@ -114,6 +114,42 @@ in the run log below.
   both; the test makes no bind call, so no family-C key). Alternative: keep a provider-id overload. Reversible by:
   reverting the A3 commit's hunk.
 
+## Track A: A4 W27 registration v3 (§4.10)
+
+- DECISION: §4.10's "all existing W27 tests pass unchanged" vs A1 (handoff open point 2) → keep `7302a507`'s
+  `v2_binder()` for the tests that read the installed build under v1/v2; none is re-pointed at v3 (v3's reading of
+  the build is pinned by the new `tests/test_s11_w27_v3.py`, which also checks that v3's routes are `v2_binder`'s
+  routes plus `record_source`). The one W27 test that cannot stay unchanged is
+  `test_c9_w27_v2.py::test_version_switch_refuses_other_versions`, which asserted that `3` is refused: it now loops
+  over `(0, 4, True)` and matches `not 1, 2 or 3` (R01 accepts 3). Alternative: list it in `AMENDED_TESTS`.
+  Reversible by: reverting the A4 commit's hunk in that test.
+- DECISION: how a v3 snapshot carries the key's `record_source` → each route gets `record_source` (the basis'), under
+  schema `w27-registry-snapshot-v3`; v1/v2 snapshots are built exactly as before; the 0.1.1 reading under v3 carries
+  `benchmarks/syn001/components.yaml`. Alternative: derive it from the provider id at classification. Reversible by:
+  `snapshot.SCHEMA_V3` and the two `registration_version == 3` branches.
+- DECISION: R05's "every other basis" → a static `PROVIDER_LINES_V3` naming the registered providers (`syn001`,
+  `iapws95-v1`, `wilson-ig-v1`, `coolprop-heos-v1` generic; `pr-c1-v1`, `pr-lib-v1` v2 lines); any other id is
+  refused (so `wilson-ig-v2` needs D5's row and a line). Alternative: the generic line for any provider. Reversible
+  by: the map.
+- DECISION: a v3 route with no `record_source` → refused, `routes with no record_source [<ids>]` (no key, R06); the
+  duplicate refusal reads `duplicate route keys [<key tuples>]`. Alternative: KeyError. Reversible by:
+  `_check_snapshot_v3`.
+- DECISION: `units_judged_on` under v3 → stays the chosen route's provider id (v2's row form); the tie-break itself is
+  by key (R07), visible in the unit rows' models (W27v3-A05/A06). Alternative: the key. Reversible by: `_units_v3`'s
+  return.
+- DECISION: R04's `why_none` meaning → `model_none_reasons_added.column_function_unregistered` in
+  `registration_v3.json` (text cites S11 §7 Q6). Alternative: none. Reversible by: the generator constant.
+- DECISION: v3 code shares v2's → `_check_snapshot_v2`'s spelling and (e) parts extracted (`_unaliased_v2`,
+  `_models_on_routes`), and `_route_reasons_v2`/`_classify_case_v2`/`_classify_v2`/`_unit_reasons` take the v3
+  variant by parameter. Inert for v1/v2: S11.A30's corpus digest equals the base's (run log). Alternative: copy the v2
+  functions. Reversible by: the A4 commit.
+- OPEN (design lane, batch with the ruling round): **W27v3 Q-1.** The Wilson records carry no CAS RN; v2's spelling
+  rule (kept by v3) refuses them once a case spells them. Measured on this build against `case_facts.json`:
+  `CH3OH->None`, `H2O->None`, `ethanol->None`, `methanol->None`, `water->None` (Wilson only; CoolProp and IAPWS-95
+  give none), so v3 refuses the S11 build at classification, against §4.10's "its route serves no case". Registered
+  as W27v3-A08 (the refusal as the transcribed rules give it). Default proposed: the spelling rule skips a record with
+  no CAS RN. Needs: a `specifier` amendment of `W27-registration-v3.md` (and of A08), before the release's W27 run.
+
 ## Run log
 
 - WO-0 gate, unmodified tree (`acffd034`), 16 shards per tree, 614 s:
@@ -138,6 +174,13 @@ in the run log below.
   the 4 base-only keys of `test_each_route_binds_a_revision_with_its_component_set` (fixed by `7302a507`).
 - A3 gate (`da6c06df`): `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 5, 14, 15] exited non-zero)`:
   the same eleven known failures as A2, nothing new (every SYN-001 and C1 certificate test passes).
+- A4 (W27 v3): `w27_registration_v3.py --check` identical (8 states, GC-V3-1…6 hold; GC-V3-5: v3 equals v2 on every
+  v2 state v2 accepts and on 225/225 development rows). S11.A30: `_a30_corpus()` (v1 over every case at the committed
+  and `today` snapshots, v2 over the development half at both, every v2 snapshot × case × version × table; 8 824 782
+  bytes) has SHA-256 `e141bab0…c53291` both at `8c34ecb0` (scratch worktree) and on the branch; control: v2's
+  tie-break flipped to the largest provider id gives `63735e24…`. `tests/test_s11_w27_v3.py` 26 passed; W27 battery
+  (c9, m06 coverage/registration/scorer/harness/campaign/provenance, l01 retake, identity-gate unit tests) 217 passed /
+  26 skipped; c2/l01/m02/m04/m07 W27 readers 488 passed / 2 skipped. Identity gate not triggered (no trigger file).
 
 ## Handoff (2026-10-27, end of the A1–A3 engineer; A4 not started)
 

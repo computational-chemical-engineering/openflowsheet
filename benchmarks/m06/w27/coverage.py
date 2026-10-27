@@ -28,9 +28,15 @@ of this module, which read `registration_v2.json` and reuse version 1's helpers 
 rules are version 1's. Version 2 judges several routes of one method (W27v2-R04…R06), restates
 the refusals (W27v2-R07, R08) and writes a `w27-coverage-v2` record (W27v2-R09).
 
+Registration version 3 (`docs/derivations/W27-registration-v3.md`, W27v3-R01) is version 2 with
+S11's rows added to its tables (`registration_v3.json`: W27v3-R02…R04) and a route identified by
+its key `(provider_id, record_source, components)` instead of its provider id: a duplicate key is
+refused (W27v3-R06) and serving routes are ordered by key (W27v3-R07). It writes a
+`w27-coverage-v3` record under version 2's output-path rules.
+
 Run: `python -m benchmarks.m06.w27.coverage [--out PATH]` writes `coverage.json` (W27-R25) for
-the build at hand, or exits 2 naming the refusal. `--registration-version 2` needs an `--out`
-other than the committed `coverage.json` (W27v2-R09, C2 SPLIT-R10).
+the build at hand, or exits 2 naming the refusal. `--registration-version 2` (or `3`) needs an
+`--out` other than the committed `coverage.json` (W27v2-R09, C2 SPLIT-R10).
 """
 
 from __future__ import annotations
@@ -40,7 +46,7 @@ import json
 import re
 import sys
 from collections import Counter
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any, Final
 
@@ -60,6 +66,10 @@ HELDOUT_PATH_REFUSAL: Final[str] = (
     "registration version 2 writes a record over every case, held-out ids included; --out must "
     "have a directory segment named heldout (C2 SPLIT-R10 (b), SPLIT-R11; R-580)"
 )
+#: W27v3-R01: the version 3 coverage record, and version 2's two path refusals in its words.
+SCHEMA_V3: Final[str] = "w27-coverage-v3"
+SPLIT_R10_REFUSAL_V3: Final[str] = SPLIT_R10_REFUSAL.replace("version 2", "version 3", 1)
+HELDOUT_PATH_REFUSAL_V3: Final[str] = HELDOUT_PATH_REFUSAL.replace("version 2", "version 3", 1)
 
 
 class RefusalError(Exception):
@@ -179,8 +189,11 @@ def check_snapshot(
     registration_version: int = 1,
 ) -> None:
     """W27-R24: refuse what the registration cannot judge, naming every item. Version 2:
-    W27v2-R07."""
-    if _version(registration_version) == 2:
+    W27v2-R07; version 3: W27v3-R06."""
+    if _version(registration_version) == 3:
+        _check_snapshot_v3(snapshot, case_facts, provider_methods)
+        return
+    if registration_version == 2:
         _check_snapshot_v2(snapshot, case_facts, provider_methods)
         return
     methods = registration.provider_methods() if provider_methods is None else provider_methods
@@ -270,10 +283,14 @@ def _judging_models(snapshot: Mapping[str, Any], serving: str | None) -> list[st
 
 
 def _unit_reasons(
-    case: Mapping[str, Any], model_ids: Sequence[str]
+    case: Mapping[str, Any],
+    model_ids: Sequence[str],
+    model_functions: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """W27-R12/R13 for every unit group, against the models `model_ids` (W27-R62)."""
-    model_functions: Mapping[str, Mapping[str, Any]] = _table("units", "model_functions")
+    """W27-R12/R13 for every unit group, against the models `model_ids` (W27-R62), with version
+    1's model table unless another is given (version 3: W27v3-R04's)."""
+    if model_functions is None:
+        model_functions = _table("units", "model_functions")
     by_function: dict[str | None, list[tuple[str, set[str]]]] = {}
     for model_id in model_ids:
         entry = model_functions[model_id]
@@ -478,8 +495,8 @@ def classify_case(
 ) -> dict[str, Any]:
     """W27-R08: every applicable reason, then the class by precedence. The snapshot must have
     passed `check_snapshot` (of the same registration version)."""
-    if _version(registration_version) == 2:
-        return _classify_case_v2(case, snapshot, provider_methods)
+    if _version(registration_version) in (2, 3):
+        return _classify_case_v2(case, snapshot, provider_methods, version=registration_version)
     methods = registration.provider_methods() if provider_methods is None else provider_methods
     reasons: list[dict[str, Any]] = []
     if case["files_missing"] or case["parse_errors"]:
@@ -556,9 +573,9 @@ def classify(
     registration_version: int = 1,
 ) -> dict[str, Any]:
     """Every case of `case_facts` against `snapshot`: `{rows, summary}`. Refuses (W27-R24;
-    version 2: W27v2-R07)."""
-    if _version(registration_version) == 2:
-        return _classify_v2(case_facts, snapshot, provider_methods)
+    version 2: W27v2-R07; version 3: W27v3-R06)."""
+    if _version(registration_version) in (2, 3):
+        return _classify_v2(case_facts, snapshot, provider_methods, version=registration_version)
     check_snapshot(snapshot, case_facts, provider_methods)
     rows = [classify_case(case, snapshot, provider_methods) for case in case_facts["cases"]]
     return {"rows": rows, "summary": summarise(rows)}
@@ -568,8 +585,10 @@ def coverage_document(
     case_facts: Mapping[str, Any], snapshot: Mapping[str, Any], *, registration_version: int = 1
 ) -> dict[str, Any]:
     """W27-R25's `coverage.json`, with the input digests. Refuses (W27-R24). Version 2:
-    W27v2-R09's record, which has no default path."""
-    if _version(registration_version) == 2:
+    W27v2-R09's record, which has no default path; version 3 likewise, as `w27-coverage-v3`."""
+    if _version(registration_version) == 3:
+        return _coverage_document_v3(case_facts, snapshot)
+    if registration_version == 2:
         return _coverage_document_v2(case_facts, snapshot)
     classified = classify(case_facts, snapshot)
     return {
@@ -636,9 +655,10 @@ def g14(coverage: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _version(registration_version: int) -> int:
-    """W27v2-R01: the registration version is 1 or 2; nothing else is selected implicitly."""
-    if isinstance(registration_version, bool) or registration_version not in (1, 2):
-        raise ValueError(f"registration version {registration_version!r} is not 1 or 2")
+    """W27v2-R01, W27v3-R01: the registration version is 1, 2 or 3; nothing else is selected
+    implicitly."""
+    if isinstance(registration_version, bool) or registration_version not in (1, 2, 3):
+        raise ValueError(f"registration version {registration_version!r} is not 1, 2 or 3")
     return registration_version
 
 
@@ -650,14 +670,37 @@ def _check_snapshot_v2(
     """W27v2-R07 (a)–(e), with W27v2-R08's spelling rule for (c), in version 1's message forms."""
     methods = registration.provider_methods(2) if provider_methods is None else provider_methods
     model_functions: Mapping[str, Any] = _table("units", "model_functions")
-    aliases: Mapping[str, str] = _table("components", "aliases")
-    distinct = registration.case_distinct()
     unknown_models = sorted(
         m["model_id"] for m in snapshot["models"] if m["model_id"] not in model_functions
     )
     unknown_providers = sorted(
         r["provider_id"] for r in snapshot["routes"] if r["provider_id"] not in methods
     )
+    unaliased = _unaliased_v2(snapshot, case_facts)
+    problems = []
+    if unknown_models:
+        problems.append(f"unregistered model ids {unknown_models}")
+    if unknown_providers:
+        problems.append(f"unregistered provider ids {unknown_providers}")
+    if unaliased:
+        problems.append(f"archive spellings of registry chemicals not aliased {sorted(unaliased)}")
+    # (d): one route per revision stands; W27v2-R05's tie-break key, the provider id, is unique.
+    if snapshot["routes_per_revision"] != 1:
+        problems.append(f"routes_per_revision {snapshot['routes_per_revision']} is not 1")
+    per_provider = Counter(r["provider_id"] for r in snapshot["routes"])
+    duplicate = sorted(p for p, n in per_provider.items() if n > 1)
+    if duplicate:
+        problems.append(f"duplicate provider ids {duplicate}")
+    problems += _models_on_routes(snapshot)
+    if problems:
+        raise RefusalError("; ".join(problems))
+
+
+def _unaliased_v2(snapshot: Mapping[str, Any], case_facts: Mapping[str, Any]) -> set[str]:
+    """W27v2-R08's (c): every `<archive spelling>-><CAS RN>` that collides with a registry
+    record's spelling without an alias to its CAS RN."""
+    aliases: Mapping[str, str] = _table("components", "aliases")
+    distinct = registration.case_distinct()
     unaliased: set[str] = set()
     names = {c for case in case_facts["cases"] for c in declared_components(case)}
     for route in snapshot["routes"]:
@@ -677,29 +720,20 @@ def _check_snapshot_v2(
                     name.casefold() in folded and cas not in distinct.get(name, frozenset())
                 ):
                     unaliased.add(f"{name}->{cas}")
+    return unaliased
+
+
+def _models_on_routes(snapshot: Mapping[str, Any]) -> list[str]:
+    """(e), unchanged from version 1: the routes' model ids are the snapshot's models, and every
+    model is on a route."""
     problems = []
-    if unknown_models:
-        problems.append(f"unregistered model ids {unknown_models}")
-    if unknown_providers:
-        problems.append(f"unregistered provider ids {unknown_providers}")
-    if unaliased:
-        problems.append(f"archive spellings of registry chemicals not aliased {sorted(unaliased)}")
-    # (d): one route per revision stands; W27v2-R05's tie-break key, the provider id, is unique.
-    if snapshot["routes_per_revision"] != 1:
-        problems.append(f"routes_per_revision {snapshot['routes_per_revision']} is not 1")
-    per_provider = Counter(r["provider_id"] for r in snapshot["routes"])
-    duplicate = sorted(p for p, n in per_provider.items() if n > 1)
-    if duplicate:
-        problems.append(f"duplicate provider ids {duplicate}")
-    # (e), unchanged.
     listed = {m["model_id"] for m in snapshot["models"]}
     on_routes = {m for r in snapshot["routes"] for m in r["model_ids"]}
     if on_routes - listed:
         problems.append(f"route model ids not among the models {sorted(on_routes - listed)}")
     if listed - on_routes:
         problems.append(f"models on no route {sorted(listed - on_routes)}")
-    if problems:
-        raise RefusalError("; ".join(problems))
+    return problems
 
 
 def _serving_routes_v2(
@@ -738,10 +772,13 @@ def _route_reasons_v2(
     snapshot: Mapping[str, Any],
     component_rows: Sequence[Mapping[str, Any]],
     methods: Mapping[str, str],
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    serving_routes: Callable[..., tuple[list[Any], str | None]] | None = None,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[Any]]:
     """`_route_reasons` under W27v2-R04/R06: package rows, route reasons, and the provider ids of
     every route serving the case's one method group (empty for no package, several groups, or no
-    serving route)."""
+    serving route). Version 3 passes `_serving_routes_v3`, and gets route keys."""
+    if serving_routes is None:
+        serving_routes = _serving_routes_v2
     package_methods: Mapping[str, str] = _table("routes", "package_methods")
     available_cas = sorted({c["cas"] for c in component_rows if c["available"]})
     rows: list[dict[str, Any]] = []
@@ -755,14 +792,14 @@ def _route_reasons_v2(
     route_aliases = set(case["topology_package_names"]) | set(case["topology_entry_ids"])
     multiple = len(groups) > 1 and snapshot["routes_per_revision"] == 1
     reasons: list[dict[str, Any]] = []
-    serving: list[str] = []
+    serving: list[Any] = []
     for method in sorted(groups):
         members = groups[method]
         phases = sorted({p for package, _ in members for p in package["phases"]})
         if multiple:
             detail: str | None = "multiple_routes_per_revision:" + ",".join(sorted(groups))
         else:
-            routes, detail = _serving_routes_v2(method, phases, available_cas, snapshot, methods)
+            routes, detail = serving_routes(method, phases, available_cas, snapshot, methods)
             if len(groups) == 1:
                 serving = routes
         for _, row in members:
@@ -820,10 +857,15 @@ def _classify_case_v2(
     case: Mapping[str, Any],
     snapshot: Mapping[str, Any],
     provider_methods: Mapping[str, str] | None,
+    *,
+    version: int = 2,
 ) -> dict[str, Any]:
     """`classify_case` under W27v2-R04…R06. Every other step, and the row's form, is version
-    1's; W27v2-R10 (A20) pins that the two agree wherever version 1 classifies."""
-    methods = registration.provider_methods(2) if provider_methods is None else provider_methods
+    1's; W27v2-R10 (A20) pins that the two agree wherever version 1 classifies. `version=3`
+    identifies the serving routes by key (W27v3-R07) and reads version 3's tables."""
+    methods = (
+        registration.provider_methods(version) if provider_methods is None else provider_methods
+    )
     reasons: list[dict[str, Any]] = []
     if case["files_missing"] or case["parse_errors"]:
         reasons.append(
@@ -845,10 +887,16 @@ def _classify_case_v2(
             }
         )
     component_rows, component_reasons = _component_reasons(case, snapshot)
-    package_rows, route_reasons, serving = _route_reasons_v2(
-        case, snapshot, component_rows, methods
-    )
-    judged_on, unit_rows, unit_reasons = _units_v2(case, snapshot, serving)
+    if version == 3:
+        package_rows, route_reasons, serving = _route_reasons_v2(
+            case, snapshot, component_rows, methods, _serving_routes_v3
+        )
+        judged_on, unit_rows, unit_reasons = _units_v3(case, snapshot, serving)
+    else:
+        package_rows, route_reasons, serving = _route_reasons_v2(
+            case, snapshot, component_rows, methods
+        )
+        judged_on, unit_rows, unit_reasons = _units_v2(case, snapshot, serving)
     reasons += unit_reasons + component_reasons + route_reasons
     kinds = {r["kind"] for r in reasons}
     order = registration.classes()
@@ -872,10 +920,19 @@ def _classify_v2(
     case_facts: Mapping[str, Any],
     snapshot: Mapping[str, Any],
     provider_methods: Mapping[str, str] | None,
+    *,
+    version: int = 2,
 ) -> dict[str, Any]:
-    """`classify` under version 2: refuses (W27v2-R07), else `{rows, summary}`."""
-    _check_snapshot_v2(snapshot, case_facts, provider_methods)
-    rows = [_classify_case_v2(case, snapshot, provider_methods) for case in case_facts["cases"]]
+    """`classify` under version 2 (or 3): refuses (W27v2-R07; W27v3-R06), else
+    `{rows, summary}`."""
+    if version == 3:
+        _check_snapshot_v3(snapshot, case_facts, provider_methods)
+    else:
+        _check_snapshot_v2(snapshot, case_facts, provider_methods)
+    rows = [
+        _classify_case_v2(case, snapshot, provider_methods, version=version)
+        for case in case_facts["cases"]
+    ]
     return {"rows": rows, "summary": summarise(rows)}
 
 
@@ -899,6 +956,132 @@ def _coverage_document_v2(
     }
 
 
+# =================================================================================================
+# Registration version 3 (W27-registration-v3.md: W27v3-R01, R04, R06, R07)
+# =================================================================================================
+
+
+def route_key(route: Mapping[str, Any]) -> tuple[str, str, str]:
+    """W27v3-R06/R07: a route's key, `(provider_id, record_source, the component ids joined by
+    ',')`, compared in code-point order."""
+    return (
+        str(route["provider_id"]),
+        str(route["record_source"]),
+        ",".join(str(c["id"]) for c in route["components"]),
+    )
+
+
+def _check_snapshot_v3(
+    snapshot: Mapping[str, Any],
+    case_facts: Mapping[str, Any],
+    provider_methods: Mapping[str, str] | None,
+) -> None:
+    """W27v2-R07 with version 3's tables (W27v3-R02, R04) and W27v3-R06's (d): two routes with one
+    key are refused, in place of two routes with one provider id. A route with no
+    `record_source` has no key and is refused."""
+    methods = registration.provider_methods(3) if provider_methods is None else provider_methods
+    model_functions = registration.model_functions(3)
+    unknown_models = sorted(
+        m["model_id"] for m in snapshot["models"] if m["model_id"] not in model_functions
+    )
+    unknown_providers = sorted(
+        r["provider_id"] for r in snapshot["routes"] if r["provider_id"] not in methods
+    )
+    unaliased = _unaliased_v2(snapshot, case_facts)
+    problems = []
+    if unknown_models:
+        problems.append(f"unregistered model ids {unknown_models}")
+    if unknown_providers:
+        problems.append(f"unregistered provider ids {unknown_providers}")
+    if unaliased:
+        problems.append(f"archive spellings of registry chemicals not aliased {sorted(unaliased)}")
+    if snapshot["routes_per_revision"] != 1:
+        problems.append(f"routes_per_revision {snapshot['routes_per_revision']} is not 1")
+    unkeyed = sorted(
+        {str(r["provider_id"]) for r in snapshot["routes"] if not r.get("record_source")}
+    )
+    if unkeyed:
+        problems.append(f"routes with no record_source {unkeyed}")
+    else:
+        per_key = Counter(route_key(r) for r in snapshot["routes"])
+        duplicate = sorted(k for k, n in per_key.items() if n > 1)
+        if duplicate:
+            problems.append(f"duplicate route keys {duplicate}")
+    problems += _models_on_routes(snapshot)
+    if problems:
+        raise RefusalError("; ".join(problems))
+
+
+def _serving_routes_v3(
+    method: str,
+    phases: Sequence[str],
+    available_cas: Sequence[str],
+    snapshot: Mapping[str, Any],
+    methods: Mapping[str, str],
+) -> tuple[list[tuple[str, str, str]], str | None]:
+    """`_serving_routes_v2` with routes ordered and named by key (W27v3-R07): `(the serving
+    routes' keys, None)`, else `([], every route's mismatch, in key order)`."""
+    routes = sorted(
+        (r for r in snapshot["routes"] if methods[r["provider_id"]] == method), key=route_key
+    )
+    if not routes:
+        return [], f"no_route:{method}"
+    serving: list[tuple[str, str, str]] = []
+    details: list[str] = []
+    for route in routes:
+        provider, detail = _route_detail(
+            method, phases, available_cas, {"routes": [route]}, methods
+        )
+        if provider is not None:
+            serving.append(route_key(route))
+        elif detail is not None:
+            details.append(detail)
+    if serving:
+        return serving, None
+    return [], ";".join(details)
+
+
+def _units_v3(
+    case: Mapping[str, Any], snapshot: Mapping[str, Any], serving: Sequence[tuple[str, str, str]]
+) -> tuple[str | None, list[dict[str, Any]], list[dict[str, Any]]]:
+    """W27v2-R05 with W27v3-R07's tie-break: the units are judged on the serving route with the
+    fewest `UNIT_UNAVAILABLE` reasons, ties to the smallest route key, against version 3's model
+    table. `units_judged_on` is that route's provider id (the row's form is version 2's)."""
+    model_functions = registration.model_functions(3)
+    if not serving:
+        rows, reasons = _unit_reasons(case, _judging_models(snapshot, None), model_functions)
+        return None, rows, reasons
+    by_key = {route_key(r): r for r in snapshot["routes"]}
+    judged = []
+    for key in serving:
+        rows, reasons = _unit_reasons(case, sorted(by_key[key]["model_ids"]), model_functions)
+        count = sum(1 for r in reasons if r["kind"] == "UNIT_UNAVAILABLE")
+        judged.append((count, key, rows, reasons))
+    _, key, rows, reasons = min(judged, key=lambda j: (j[0], j[1]))
+    return key[0], rows, reasons
+
+
+def _coverage_document_v3(
+    case_facts: Mapping[str, Any], snapshot: Mapping[str, Any]
+) -> dict[str, Any]:
+    """W27v3-R01: version 2's record, under schema `w27-coverage-v3`, with the version and the
+    SHA-256 of `registration_v3.json` added."""
+    classified = _classify_v2(case_facts, snapshot, None, version=3)
+    return {
+        "schema": SCHEMA_V3,
+        "registration_version": 3,
+        "snapshot": snapshot,
+        "snapshot_sha256": registration.sha256_bytes(registration.dump(snapshot)),
+        "list_models_sha256": snapshot["list_models_sha256"],
+        "registration_sha256": registration.sha256_file(registration.REGISTRATION_JSON),
+        "registration_v2_sha256": registration.sha256_file(registration.REGISTRATION_V2_JSON),
+        "registration_v3_sha256": registration.sha256_file(registration.REGISTRATION_V3_JSON),
+        "case_facts_sha256": registration.sha256_bytes(facts.dump_facts(case_facts)),
+        "rows": classified["rows"],
+        "summary": classified["summary"],
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     from benchmarks.m06.w27 import snapshot as snapshots  # noqa: PLC0415
 
@@ -906,24 +1089,32 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=None, help="default: coverage.json (v1)")
     parser.add_argument("--snapshot", type=Path, help="classify against this snapshot JSON")
     parser.add_argument(
-        "--registration-version", type=int, choices=(1, 2), default=1, help="W27v2-R01"
+        "--registration-version",
+        type=int,
+        choices=(1, 2, 3),
+        default=1,
+        help="W27v2-R01, W27v3-R01",
     )
     args = parser.parse_args(argv)
     version = args.registration_version
-    if version == 2 and (
+    split_refusal = SPLIT_R10_REFUSAL_V3 if version == 3 else SPLIT_R10_REFUSAL
+    heldout_refusal = HELDOUT_PATH_REFUSAL_V3 if version == 3 else HELDOUT_PATH_REFUSAL
+    if version >= 2 and (
         args.out is None or args.out.resolve() == registration.COVERAGE_JSON.resolve()
     ):
         # W27v2-R09: refused before any snapshot is built or case classified.
-        print(f"REFUSED: {SPLIT_R10_REFUSAL}", file=sys.stderr)
+        print(f"REFUSED: {split_refusal}", file=sys.stderr)
         return 2
-    if version == 2 and args.out is not None and "heldout" not in args.out.resolve().parent.parts:
+    if version >= 2 and args.out is not None and "heldout" not in args.out.resolve().parent.parts:
         # R-580: also before any snapshot is built or case classified.
-        print(f"REFUSED: {HELDOUT_PATH_REFUSAL}", file=sys.stderr)
+        print(f"REFUSED: {heldout_refusal}", file=sys.stderr)
         return 2
     out: Path = registration.COVERAGE_JSON if args.out is None else args.out
     try:
         snap = (
-            json.loads(args.snapshot.read_bytes()) if args.snapshot else snapshots.build_snapshot()
+            json.loads(args.snapshot.read_bytes())
+            if args.snapshot
+            else snapshots.build_snapshot(registration_version=3 if version == 3 else 1)
         )
         document = coverage_document(facts.load_facts(), snap, registration_version=version)
     except (RefusalError, snapshots.SnapshotUnsupportedError) as refusal:
@@ -932,7 +1123,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     verdict = g14(document)
     out.write_bytes(registration.dump(document))
     print(f"wrote {out}: snapshot {document['snapshot_sha256']}")
-    if version == 2:
+    if version >= 2:
         # R-580: no class counts over all 450 or the full 82 (SPLIT-R08).
         print(f"  G14 {'PASS' if verdict['passed'] else 'FAIL'}")
         return 0 if verdict["passed"] else 1
