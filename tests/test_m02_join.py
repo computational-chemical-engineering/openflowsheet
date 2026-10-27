@@ -250,8 +250,14 @@ def _sha(document: Any) -> str:
 
 
 #: Models registered after M02's join, which the pre-M02 fixtures never had: S11's column
-#: (ADR 0050, R-810).
-_AFTER_M02 = ("syn001.column",)
+#: (ADR 0050, R-810) and its `thermal.*` family (ADR 0051 D6, R-816; I1b).
+_AFTER_M02 = (
+    "syn001.column",
+    *(
+        f"thermal.{name}"
+        for name in ("compressor", "flash", "heater", "mixer", "pump", "turbine", "valve")
+    ),
+)
 
 
 def _without_c1(registry: dict[str, Any]) -> dict[str, Any]:

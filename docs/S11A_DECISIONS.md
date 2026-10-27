@@ -548,3 +548,8 @@ Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. 
   be restated? Default: neither here (a verifier/certificate change, design-led); the measured pins stand.
 - Item 8, records: §8.3's R-839 erratum gains a dated line naming
   `test_the_dormancy_registry_is_syn001s_and_the_c1_mixers_vapour_outlet` (no `AMENDED_TESTS` entry: it passes on both).
+- Gate finding (S11 identity at `aad5530f`: C branch shards 11, 12 non-zero) 1/2:
+  `test_m02_join::test_the_list_models_fixtures_decompose_onto_the_pre_m02_ones` failed since item 6 regenerated the
+  W5e `list_models` fixtures with the thermal entries. DECISION: its `_AFTER_M02` (added at I1 for the column) gains
+  the seven `thermal.*` ids, so the pre-M02 SHA-256 operands stand (C6-2 precedent; no `AMENDED_TESTS` entry).
+  Alternative: amend it under §8.3. Reversible by: the one tuple. Measured: `test_m02_join` 14 passed.
