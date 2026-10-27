@@ -634,6 +634,13 @@ class AssessmentProgram:
         """Values (twin) of every row, and `∂(outputs)/∂x` (outputs x host variable ids) and
         `∂(outputs)/∂p` (outputs x `symbolic`), at `(x, d)`. The decisions are symbols of the twin
         whether or not they are requested, so the graph is the one the NLP differentiates."""
+        withheld = [name for name in outputs if name in self.unavailable]
+        if withheld:
+            return Refusal(
+                "ASSESSMENT_OUTPUT_UNAVAILABLE",
+                ",".join(withheld),
+                "; ".join(self.unavailable[name] for name in withheld),
+            )
         unknown = [name for name in outputs if name not in self.units]
         if unknown:
             return Refusal("ASSESSMENT_OUTPUT_UNKNOWN", ",".join(unknown))
@@ -661,6 +668,15 @@ class AssessmentProgram:
     def context(self) -> BuildContext:
         """The context the program was planned in (the view, host, document and held regime)."""
         return self._ctx
+
+    def report(
+        self, x: Mapping[str, float], *, state_sha256: str, uncertainty: bool = True
+    ) -> dict[str, Any]:
+        """The assessment report at `x` (§4.2.1, §4.9, §4.11): a document valid against
+        `assessment-report.schema.json`. Built by `assessment.report.build_report`."""
+        from openflowsheet.assessment.report import build_report  # noqa: PLC0415
+
+        return build_report(self, x, state_sha256=state_sha256, uncertainty=uncertainty)
 
     def select(self, x: Mapping[str, float]) -> Regime:
         """The regime at `x` (§4.3.2): the held choice of every entry whose admissibility rows are

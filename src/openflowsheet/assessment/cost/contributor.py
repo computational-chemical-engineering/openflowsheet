@@ -149,6 +149,57 @@ def _energy_cost(
     return build
 
 
+def _item_document(
+    item: SizedItem,
+    record: ItemCost | None,
+    excluded: Mapping[str, str],
+    values: Mapping[str, float],
+) -> dict[str, Any]:
+    """One item of the report (§4.5.5). `status`: `costed`, `included` (its capital is in
+    another item's, §9.2.7), `excluded` (with a reason) or `refused` (see the refusals)."""
+    if item.item_id in excluded:
+        status = "excluded"
+    elif record is None:
+        status = "refused"
+    else:
+        status = "included" if record.included_in is not None else "costed"
+    inputs: list[dict[str, Any]] = [
+        {
+            "name": i.name,
+            "value": i.value,
+            "unit": i.unit,
+            "defaulted": i.defaulted,
+            "theta": i.theta_id,
+            "used": i.used,
+            "v_source": i.v_source,
+            "default_key": i.default_key,
+        }
+        for i in item.inputs
+    ]
+    r = record or ItemCost(item.item_id, item.family)
+    inputs += [
+        {"theta": None, "used": True, "v_source": None, "default_key": None, **i} for i in r.inputs
+    ]
+    return {
+        "item_id": item.item_id,
+        "family": item.family,
+        "status": status,
+        "size": {q: values.get(output_id) for q, output_id in sorted(item.size.items())},
+        "inputs": inputs,
+        "source": r.source if record is not None else None,
+        "regime": dict(r.regime),
+        "escalation": r.escalation,
+        "accuracy_class": r.accuracy_class,
+        "relative_range": None if r.relative_range is None else list(r.relative_range),
+        "extrapolated": r.extrapolated,
+        "purchased": r.purchased,
+        "bare_module": r.bare_module,
+        "included_in": r.included_in,
+        "purchased_value": values.get(r.purchased) if r.purchased else None,
+        "bare_module_value": values.get(r.bare_module) if r.bare_module else None,
+    }
+
+
 def _covered(target: str, excluded: Mapping[str, str]) -> bool:
     return any(target == x or target.startswith(x + ".") for x in excluded)
 
@@ -197,7 +248,8 @@ class _Planner:
         if rates_id is None:
             rates_id = str(default("exchange_rates").value)
             self._defaulted("exchange_rates", rates_id)
-        self.rates = load_rates(str(rates_id))
+        self.rates_id = str(rates_id)
+        self.rates = load_rates(self.rates_id)
         self.series: dict[str, IndexSeries] = {sid: load_series(sid) for sid in SHIPPED_SERIES}
         for ref in dict(self.doc.get("data", {})).get("series", ()):
             if ref["id"] in self.series or "path" not in ref:
@@ -376,6 +428,16 @@ class _Planner:
             "source_lines": dict(e.sources),
             "options": dict(e.options),
             "options_defaulted": list(e.defaulted),
+            "ranges": {
+                name: {
+                    "role": r.role,
+                    "min": r.min,
+                    "max": r.max,
+                    "below": r.below,
+                    "source": dict(r.source),
+                }
+                for name, r in sorted(e.ranges.items())
+            },
         }
         if e.ratio != 1.0:
             index = entry_doc["index_basis"]
@@ -1010,18 +1072,19 @@ class _Planner:
             r for r in (*self.sizing.refusals, *self.refusals) if not _covered(r.target, excluded)
         ]
 
+        by_id = {r.item_id: r for r in records}
+        sized = tuple(self.sizing.items)
+        basis = self._basis_document()
+
         def section(values: Mapping[str, float]) -> dict[str, Any]:
+            """The report's `basis`, `items` (§4.5.5: every sized item, its status, sizes,
+            inputs with `defaulted` and `v_source`, source with options and range provenance,
+            escalation, class, range and regime choices), `excluded` and `defaulted_inputs`."""
             return {
+                "basis": basis,
                 "items": [
-                    {
-                        **r.__dict__,
-                        "relative_range": None
-                        if r.relative_range is None
-                        else list(r.relative_range),
-                        "purchased_value": values.get(r.purchased) if r.purchased else None,
-                        "bare_module_value": values.get(r.bare_module) if r.bare_module else None,
-                    }
-                    for r in records
+                    _item_document(item, by_id.get(item.item_id), excluded, values)
+                    for item in sized
                 ],
                 "excluded": [{"item": k, "reason": v} for k, v in excluded.items()],
                 "defaulted_inputs": list(defaulted),
@@ -1038,6 +1101,20 @@ class _Planner:
             section=section,
             unavailable=tuple(self.unavailable.items()),
         )
+
+    def _basis_document(self) -> dict[str, Any]:
+        """The resolved basis (§4.6, §4.7.3), defaults applied."""
+        t = self.target
+        return {
+            "currency": t.currency,
+            "year": t.year,
+            "location": self.doc["basis"].get("location"),
+            "location_factor": t.location_factor,
+            "escalation_series": dict(sorted(t.escalation_series.items())),
+            "exchange_rates": self.rates_id,
+            "correlation_set": self.doc.get("correlation_set"),
+            "operation": {key: theta.value for key, theta in self.op.items()},
+        }
 
     def drives_domain(self) -> None:
         """§9.2.4 V: `0 < η_m ≤ 1` at the machine's per-unit power, else

@@ -326,6 +326,40 @@ I1's.
   `drum_orientation` and `service_at_zero_duty` (Q = 0.0, nothing declared or held) are now recorded. Provenance
   only, values unchanged. Alternative: keep input names and map in the A41 test. Reversible by: that commit.
 
+## WO-A5 (report, LCA expectations)
+
+- Done (1): `assessment-report.schema.json` + registry line; E01 addendum `schemas` gains it (`state_sha256` not
+  listed, keeps v2's float-digest class; `regime.sha256`, `lca.tables[].sha256` reuse `sha256`). Policy `--check`
+  exit 0, v2 sha256 6b449911…d707c unchanged; links/m02/m04/t08/p01 schema tests 435 passed.
+- Done (2): `assessment/report.py` (`build_report`, `report_body`, `propagate`), `AssessmentProgram.report` and
+  `.context`; the cost section now emits `basis` and every sized item; fixtures from real evaluations
+  (`tests/fixtures/schemas/assessment_report/valid/{p1_th_c1,p1_th_r1,p3_m1}.json`, all `COMPLETE`, class 4;
+  writer `python tests/test_e01_a_report.py --write`); `tests/test_e01_a_report.py` 16 passed.
+- DECISION (fields §4.11 does not spell): top-level `schema_version` (`assessment-report-v1`), `assessment_id`,
+  `unavailable` (withheld output → reason); `uncertainty.parameters` (θ, value, range used) and
+  `uncertainty.assumptions` (§4.9's labels). Outputs grouped by catalogue entry, keyed by unprefixed id: `capex`,
+  `opex`, `annual` (revenue, capital charge, tac, profit, product.annual, lcox), `derived`; sizes inside each item;
+  admissibility values inside `regime.entries`; `lca.inventory`/`impacts` as rows `{id, value, unit}`, `tables` from
+  the lca section. Item `status` ∈ costed | included | excluded | refused. Alternative: other names. Reversible by:
+  the schema + `report.py` (one commit each).
+- DECISION: status `REFUSED` when the program is not evaluable at x, its held regime is inadmissible at x (all
+  outputs null, `ASSESSMENT_REGIME_INADMISSIBLE`), or no output is built; `PARTIAL` on any refusal or withheld
+  output (incl. uncertainty refusals); else `COMPLETE`. Reversible by: `report_body`.
+- DECISION: estimate class `none` also when a costed item has no class (a quote without `accuracy_class`); included
+  drives and excluded items do not count. Reversible by: `report._estimate_class`.
+- DECISION: document `uncertainty` ranges are resolved in the report for every θ (sizing θ too), overriding an
+  entry's; a range on a structural θ → `ASSESSMENT_PARAMETER_STRUCTURAL(θ)`, on no θ of the program →
+  `ASSESSMENT_VARIABLE_UNKNOWN(θ)` (no §4.12 code fits better). θ order = construction order.
+- DECISION: `AssessmentProgram.linearize` on a withheld output → `ASSESSMENT_OUTPUT_UNAVAILABLE` (A40's study
+  clause, at the program level the study layer calls). Reversible by: program.py (one check).
+- DECISION (paths): report fixtures under `tests/fixtures/schemas/assessment_report/` (the repo's schema-fixture
+  convention; §5.2's ownership list names no fixture path). Regression compare: structure and strings exact,
+  numbers rel 1e-9 (platform last bits of the solved state); correctness is asserted by hand values, not fixtures.
+- FACT for I1: P1 candidates TH-C1 (pump, boiler, turbine, condenser) and TH-R1 (heater, flash, pump); no S11 case
+  has all four of §5.4's P1 units. P3 = M1 (column on syn001; shell/trays sized by the model identity, §9.4). F_BM
+  values in the fixture documents are test inputs (exchanger 3.17, vessel 4.16, trays 1.0, pump 3.3, motor 1.5,
+  turbine 3.5).
+
 ## Handoff (2026-10-27, fifth context cap) — resume from here
 
 - **Done (wp/E01):** A1–A3, A2b, A4 (1)–(3) earlier; **A4 (4)** the cost contributor (this commit). Track A tests:

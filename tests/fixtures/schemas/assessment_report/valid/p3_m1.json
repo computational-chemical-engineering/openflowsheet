@@ -1,0 +1,1308 @@
+{
+ "annual": {
+  "annual.capital_charge": 100969.88212097516,
+  "profit": -148907.63936933767,
+  "revenue.total": 0.0,
+  "tac": 148907.63936933767
+ },
+ "assessment_id": "e01-a5-p3-m1",
+ "assessment_sha256": "96c77d978276a1b84be62a83ec8aff07bb8cf50a9d4e7ef2d66ce42516c89f8d",
+ "basis": {
+  "correlation_set": "sslw-idaes-v1",
+  "currency": "USD",
+  "escalation_series": {
+   "EUR": "eurostat-ppi-c28-ea-annual-v1",
+   "USD": "bls-ppi-wpu11-annual-v1"
+  },
+  "exchange_rates": "frb-g5a-annual-v1",
+  "location": null,
+  "location_factor": 1.0,
+  "operation": {
+   "discount_rate": 0.08,
+   "hours_per_year": 8000.0,
+   "lifetime_years": 20.0
+  },
+  "year": 2023
+ },
+ "capex": {
+  "capex.CAPEX": 991337.186376513,
+  "capex.EPC": 926483.3517537504,
+  "capex.TDC": 568324.9612033801,
+  "capex.bare_module.S02.condenser": 189642.03165056967,
+  "capex.bare_module.S02.reboiler": 189642.03165056967,
+  "capex.bare_module.S02.shell": 177136.48940122666,
+  "capex.bare_module.S02.trays": 11904.40850101413,
+  "capex.fci": 991337.186376513,
+  "capex.purchased.S02.condenser": 59823.984747813774,
+  "capex.purchased.S02.reboiler": 59823.984747813774,
+  "capex.purchased.S02.shell": 42580.88687529487,
+  "capex.purchased.S02.trays": 11904.40850101413,
+  "capex.sum_bare_module": 568324.9612033801,
+  "capex.sum_purchased": 174133.26487193655,
+  "capex.total": 991337.186376513
+ },
+ "defaulted_inputs": [
+  {
+   "key": "escalation_series.USD",
+   "target": "",
+   "value": "bls-ppi-wpu11-annual-v1"
+  },
+  {
+   "key": "escalation_series.EUR",
+   "target": "",
+   "value": "eurostat-ppi-c28-ea-annual-v1"
+  },
+  {
+   "key": "basis.location_factor",
+   "target": "",
+   "value": 1.0
+  },
+  {
+   "key": "exchange_rates",
+   "target": "",
+   "value": "frb-g5a-annual-v1"
+  },
+  {
+   "key": "shell_thickness",
+   "target": "S02.shell",
+   "value": 0.03175
+  },
+  {
+   "key": "option.material",
+   "target": "S02.shell",
+   "value": "CarbonSteel"
+  },
+  {
+   "key": "option.weight_limit",
+   "target": "S02.shell",
+   "value": "1"
+  },
+  {
+   "key": "option.platforms_ladders",
+   "target": "S02.shell",
+   "value": "true"
+  },
+  {
+   "key": "option.tray_type",
+   "target": "S02.trays",
+   "value": "Sieve"
+  },
+  {
+   "key": "option.tray_material",
+   "target": "S02.trays",
+   "value": "CarbonSteel"
+  },
+  {
+   "key": "option.hx_type",
+   "target": "S02.condenser",
+   "value": "Utube"
+  },
+  {
+   "key": "option.material",
+   "target": "S02.condenser",
+   "value": "StainlessSteelStainlessSteel"
+  },
+  {
+   "key": "option.tube_length",
+   "target": "S02.condenser",
+   "value": "TwelveFoot"
+  },
+  {
+   "key": "option.hx_type",
+   "target": "S02.reboiler",
+   "value": "Utube"
+  },
+  {
+   "key": "option.material",
+   "target": "S02.reboiler",
+   "value": "StainlessSteelStainlessSteel"
+  },
+  {
+   "key": "option.tube_length",
+   "target": "S02.reboiler",
+   "value": "TwelveFoot"
+  },
+  {
+   "input": "C_SB",
+   "key": "column_C_SB",
+   "target": "S02.shell",
+   "value": 0.09
+  },
+  {
+   "input": "f_flood",
+   "key": "column_flooding_fraction",
+   "target": "S02.shell",
+   "value": 0.8
+  },
+  {
+   "input": "phi_active",
+   "key": "column_active_area_fraction",
+   "target": "S02.shell",
+   "value": 0.85
+  },
+  {
+   "input": "s_tray",
+   "key": "column_tray_spacing",
+   "target": "S02.shell",
+   "value": 0.6096
+  },
+  {
+   "input": "H_top",
+   "key": "column_H_top",
+   "target": "S02.shell",
+   "value": 1.2192
+  },
+  {
+   "input": "H_bottom",
+   "key": "column_H_bottom",
+   "target": "S02.shell",
+   "value": 3.048
+  },
+  {
+   "input": "E_o",
+   "key": "column_overall_efficiency",
+   "target": "S02.shell",
+   "value": 0.7
+  },
+  {
+   "input": "F_T",
+   "key": "F_T",
+   "target": "S02.condenser",
+   "value": 1.0
+  },
+  {
+   "input": "F_T",
+   "key": "F_T",
+   "target": "S02.reboiler",
+   "value": 1.0
+  },
+  {
+   "input": "T_return",
+   "key": "T_return",
+   "target": "S02.reboiler",
+   "value": 520.0
+  }
+ ],
+ "derived": {},
+ "excluded": [],
+ "items": [
+  {
+   "accuracy_class": 4,
+   "bare_module": "capex.bare_module.S02.shell",
+   "bare_module_value": 177136.48940122666,
+   "escalation": {
+    "base": [
+     "2006",
+     126.167
+    ],
+    "exchange": 1.0,
+    "factor": 1.3806462862713704,
+    "index_ratio": 1.3806462862713704,
+    "location_factor": 1.0,
+    "series": "bls-ppi-wpu11-annual-v1",
+    "target": [
+     2023,
+     174.192
+    ]
+   },
+   "extrapolated": false,
+   "family": "column.shell",
+   "included_in": null,
+   "inputs": [
+    {
+     "default_key": "column_C_SB",
+     "defaulted": true,
+     "name": "C_SB",
+     "theta": "asm:item.S02.shell.C_SB",
+     "unit": "m/s",
+     "used": true,
+     "v_source": null,
+     "value": 0.09
+    },
+    {
+     "default_key": "column_flooding_fraction",
+     "defaulted": true,
+     "name": "f_flood",
+     "theta": "asm:item.S02.shell.f_flood",
+     "unit": "1",
+     "used": true,
+     "v_source": null,
+     "value": 0.8
+    },
+    {
+     "default_key": "column_active_area_fraction",
+     "defaulted": true,
+     "name": "phi_active",
+     "theta": "asm:item.S02.shell.phi_active",
+     "unit": "1",
+     "used": true,
+     "v_source": null,
+     "value": 0.85
+    },
+    {
+     "default_key": "column_tray_spacing",
+     "defaulted": true,
+     "name": "s_tray",
+     "theta": "asm:item.S02.shell.s_tray",
+     "unit": "m",
+     "used": true,
+     "v_source": null,
+     "value": 0.6096
+    },
+    {
+     "default_key": "column_H_top",
+     "defaulted": true,
+     "name": "H_top",
+     "theta": "asm:item.S02.shell.H_top",
+     "unit": "m",
+     "used": true,
+     "v_source": null,
+     "value": 1.2192
+    },
+    {
+     "default_key": "column_H_bottom",
+     "defaulted": true,
+     "name": "H_bottom",
+     "theta": "asm:item.S02.shell.H_bottom",
+     "unit": "m",
+     "used": true,
+     "v_source": null,
+     "value": 3.048
+    },
+    {
+     "default_key": "column_overall_efficiency",
+     "defaulted": true,
+     "name": "E_o",
+     "theta": "asm:item.S02.shell.E_o",
+     "unit": "1",
+     "used": true,
+     "v_source": null,
+     "value": 0.7
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.stage.2.V",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "model_identity",
+     "value": "VAPOR"
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.stage.2.L",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "model_identity",
+     "value": "LIQUID"
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.stage.3.V",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "model_identity",
+     "value": "VAPOR"
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.stage.3.L",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "model_identity",
+     "value": "LIQUID"
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.stage.4.V",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "model_identity",
+     "value": "VAPOR"
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.stage.4.L",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "model_identity",
+     "value": "LIQUID"
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.stage.5.V",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "model_identity",
+     "value": "VAPOR"
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.stage.5.L",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "model_identity",
+     "value": "LIQUID"
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.stage.6.V",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "model_identity",
+     "value": "VAPOR"
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "vdot.stage.6.L",
+     "theta": null,
+     "unit": "m3/s",
+     "used": true,
+     "v_source": "model_identity",
+     "value": "LIQUID"
+    },
+    {
+     "default_key": null,
+     "defaulted": true,
+     "name": "t_shell",
+     "theta": null,
+     "unit": "m",
+     "used": true,
+     "v_source": null,
+     "value": 0.03175
+    }
+   ],
+   "item_id": "S02.shell",
+   "purchased": "capex.purchased.S02.shell",
+   "purchased_value": 42580.88687529487,
+   "regime": {
+    "S02.shell.platforms.D.piece": "floor",
+    "S02.shell.platforms.L.piece": "1",
+    "S02.shell.size": "units:1"
+   },
+   "relative_range": [
+    -0.3,
+    0.5
+   ],
+   "size": {
+    "diameter": 0.19200006751115933,
+    "height": 8.5344
+   },
+   "source": {
+    "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
+    "entry": "vessel.vertical",
+    "form": "sslw-vessel-v1",
+    "options": {
+     "material": "CarbonSteel",
+     "platforms_ladders": "true",
+     "weight_limit": "1"
+    },
+    "options_defaulted": [
+     "material",
+     "weight_limit",
+     "platforms_ladders"
+    ],
+    "ranges": {
+     "platform_diameter_ft": {
+      "below": "floor",
+      "max": 24.0,
+      "min": 3.0,
+      "role": "input",
+      "source": {
+       "kind": "pinned",
+       "source_line": "SSLW.py:537",
+       "text": "1: 3 < D < 21 ft, 12 < L < 40 ft, 2: 3 < D < 24 ft; 27 < L < 170 ft."
+      }
+     },
+     "platform_length_ft": {
+      "below": "floor",
+      "max": 170.0,
+      "min": 12.0,
+      "role": "input",
+      "source": {
+       "kind": "pinned",
+       "note": "piece 2 starts at 40 ft, where piece 1 ends, so the pieces are contiguous (design note §9.2.4 form II, departure 4)",
+       "source_line": "SSLW.py:537",
+       "text": "1: 3 < D < 21 ft, 12 < L < 40 ft, 2: 3 < D < 24 ft; 27 < L < 170 ft."
+      }
+     },
+     "weight_lb": {
+      "below": "refuse",
+      "max": 920000.0,
+      "min": 1000.0,
+      "role": "size",
+      "source": {
+       "kind": "pinned",
+       "source_line": "SSLW.py:534",
+       "text": "1: (default) 1000 to 920,000 lb"
+      }
+     }
+    },
+    "set": "sslw-idaes-v1",
+    "source_lines": {
+     "F_M": "SSLW.py:621",
+     "alpha1": "SSLW.py:676",
+     "alpha2": "SSLW.py:676",
+     "alpha3": "SSLW.py:676",
+     "density_lb_in3": "SSLW.py:621",
+     "diameter_allowance": "SSLW.py:665"
+    }
+   },
+   "status": "costed"
+  },
+  {
+   "accuracy_class": 4,
+   "bare_module": "capex.bare_module.S02.trays",
+   "bare_module_value": 11904.40850101413,
+   "escalation": {
+    "base": [
+     "2006",
+     126.167
+    ],
+    "exchange": 1.0,
+    "factor": 1.3806462862713704,
+    "index_ratio": 1.3806462862713704,
+    "location_factor": 1.0,
+    "series": "bls-ppi-wpu11-annual-v1",
+    "target": [
+     2023,
+     174.192
+    ]
+   },
+   "extrapolated": false,
+   "family": "column.trays",
+   "included_in": null,
+   "inputs": [
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "N_act",
+     "theta": null,
+     "unit": "1",
+     "used": true,
+     "v_source": null,
+     "value": 8
+    }
+   ],
+   "item_id": "S02.trays",
+   "purchased": "capex.purchased.S02.trays",
+   "purchased_value": 11904.40850101413,
+   "regime": {
+    "S02.trays.size": "floor"
+   },
+   "relative_range": [
+    -0.3,
+    0.5
+   ],
+   "size": {
+    "diameter": 0.19200006751115933
+   },
+   "source": {
+    "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
+    "entry": "column.trays",
+    "form": "sslw-trays-v1",
+    "options": {
+     "tray_material": "CarbonSteel",
+     "tray_type": "Sieve"
+    },
+    "options_defaulted": [
+     "tray_type",
+     "tray_material"
+    ],
+    "ranges": {
+     "diameter_ft": {
+      "below": "refuse",
+      "max": 16.0,
+      "min": 2.0,
+      "role": "size",
+      "source": {
+       "kind": "pinned",
+       "source_line": "SSLW.py:825",
+       "text": "Column diameter in ft, eqn. valid for 2 to 16 ft"
+      }
+     }
+    },
+    "set": "sslw-idaes-v1",
+    "source_lines": {
+     "F_TT": "SSLW.py:804",
+     "alpha1": "SSLW.py:817",
+     "alpha2": "SSLW.py:817",
+     "count_a": "SSLW.py:842",
+     "count_b": "SSLW.py:842",
+     "count_floor": "SSLW.py:842",
+     "tray_cost_a": "SSLW.py:856",
+     "tray_cost_b": "SSLW.py:856"
+    }
+   },
+   "status": "costed"
+  },
+  {
+   "accuracy_class": 4,
+   "bare_module": "capex.bare_module.S02.condenser",
+   "bare_module_value": 189642.03165056967,
+   "escalation": {
+    "base": [
+     "2006",
+     126.167
+    ],
+    "exchange": 1.0,
+    "factor": 1.3806462862713704,
+    "index_ratio": 1.3806462862713704,
+    "location_factor": 1.0,
+    "series": "bls-ppi-wpu11-annual-v1",
+    "target": [
+     2023,
+     174.192
+    ]
+   },
+   "extrapolated": false,
+   "family": "exchanger.utility",
+   "included_in": null,
+   "inputs": [
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "U",
+     "theta": "asm:item.S02.condenser.U",
+     "unit": "W/(m2*K)",
+     "used": true,
+     "v_source": null,
+     "value": 500.0
+    },
+    {
+     "default_key": "F_T",
+     "defaulted": true,
+     "name": "F_T",
+     "theta": "asm:item.S02.condenser.F_T",
+     "unit": "1",
+     "used": true,
+     "v_source": null,
+     "value": 1.0
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "T_supply",
+     "theta": "asm:item.S02.condenser.T_supply",
+     "unit": "K",
+     "used": true,
+     "v_source": null,
+     "value": 293.15
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "T_return",
+     "theta": "asm:item.S02.condenser.T_return",
+     "unit": "K",
+     "used": true,
+     "v_source": null,
+     "value": 303.15
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "dT_min",
+     "theta": "asm:item.S02.condenser.dT_min",
+     "unit": "K",
+     "used": true,
+     "v_source": null,
+     "value": 5.0
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "Q",
+     "theta": null,
+     "unit": "W",
+     "used": true,
+     "v_source": null,
+     "value": -20015.512625998916
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "design_pressure",
+     "theta": null,
+     "unit": "Pa",
+     "used": true,
+     "v_source": null,
+     "value": 106000.0
+    }
+   ],
+   "item_id": "S02.condenser",
+   "purchased": "capex.purchased.S02.condenser",
+   "purchased_value": 59823.984747813774,
+   "regime": {
+    "S02.condenser.pressure.piece": "floor",
+    "S02.condenser.size": "floor"
+   },
+   "relative_range": [
+    -0.3,
+    0.5
+   ],
+   "size": {
+    "area": 1.0382592694262653
+   },
+   "source": {
+    "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
+    "entry": "exchanger.shell_tube",
+    "form": "sslw-exchanger-v1",
+    "options": {
+     "hx_type": "Utube",
+     "material": "StainlessSteelStainlessSteel",
+     "tube_length": "TwelveFoot"
+    },
+    "options_defaulted": [
+     "hx_type",
+     "material",
+     "tube_length"
+    ],
+    "ranges": {
+     "area_ft2": {
+      "below": "refuse",
+      "max": 12000.0,
+      "min": 150.0,
+      "role": "size",
+      "source": {
+       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22: shell-and-tube heat exchanger purchase cost, Eq. 22.39-22.43 (size range of the equation, recalled; design note §9.2.5, QA1)",
+       "kind": "primary",
+       "verified": false
+      }
+     },
+     "pressure_psig": {
+      "below": "floor",
+      "max": 2000.0,
+      "min": 100.0,
+      "role": "input",
+      "source": {
+       "kind": "pinned",
+       "source_line": "SSLW.py:492",
+       "text": "Equation valid from 100 pisg to 2000 psig"
+      }
+     }
+    },
+    "set": "sslw-idaes-v1",
+    "source_lines": {
+     "A": "SSLW.py:446",
+     "B": "SSLW.py:446",
+     "F_L": "SSLW.py:384",
+     "alpha1": "SSLW.py:403",
+     "alpha2": "SSLW.py:403",
+     "alpha3": "SSLW.py:403",
+     "material_area_ref_ft2": "SSLW.py:460",
+     "oversize": "SSLW.py:393",
+     "pressure_ref_psig": "SSLW.py:495"
+    }
+   },
+   "status": "costed"
+  },
+  {
+   "accuracy_class": 4,
+   "bare_module": "capex.bare_module.S02.reboiler",
+   "bare_module_value": 189642.03165056967,
+   "escalation": {
+    "base": [
+     "2006",
+     126.167
+    ],
+    "exchange": 1.0,
+    "factor": 1.3806462862713704,
+    "index_ratio": 1.3806462862713704,
+    "location_factor": 1.0,
+    "series": "bls-ppi-wpu11-annual-v1",
+    "target": [
+     2023,
+     174.192
+    ]
+   },
+   "extrapolated": false,
+   "family": "exchanger.utility",
+   "included_in": null,
+   "inputs": [
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "U",
+     "theta": "asm:item.S02.reboiler.U",
+     "unit": "W/(m2*K)",
+     "used": true,
+     "v_source": null,
+     "value": 800.0
+    },
+    {
+     "default_key": "F_T",
+     "defaulted": true,
+     "name": "F_T",
+     "theta": "asm:item.S02.reboiler.F_T",
+     "unit": "1",
+     "used": true,
+     "v_source": null,
+     "value": 1.0
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "T_supply",
+     "theta": "asm:item.S02.reboiler.T_supply",
+     "unit": "K",
+     "used": true,
+     "v_source": null,
+     "value": 520.0
+    },
+    {
+     "default_key": null,
+     "defaulted": true,
+     "name": "T_return",
+     "theta": "asm:item.S02.reboiler.T_return",
+     "unit": "K",
+     "used": true,
+     "v_source": null,
+     "value": 520.0
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "dT_min",
+     "theta": "asm:item.S02.reboiler.dT_min",
+     "unit": "K",
+     "used": true,
+     "v_source": null,
+     "value": 10.0
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "Q",
+     "theta": null,
+     "unit": "W",
+     "used": true,
+     "v_source": null,
+     "value": 31092.740061202687
+    },
+    {
+     "default_key": null,
+     "defaulted": false,
+     "name": "design_pressure",
+     "theta": null,
+     "unit": "Pa",
+     "used": true,
+     "v_source": null,
+     "value": 106000.0
+    }
+   ],
+   "item_id": "S02.reboiler",
+   "purchased": "capex.purchased.S02.reboiler",
+   "purchased_value": 59823.984747813774,
+   "regime": {
+    "S02.reboiler.pressure.piece": "floor",
+    "S02.reboiler.size": "floor"
+   },
+   "relative_range": [
+    -0.3,
+    0.5
+   ],
+   "size": {
+    "area": 0.2598826710142376
+   },
+   "source": {
+    "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
+    "entry": "exchanger.shell_tube",
+    "form": "sslw-exchanger-v1",
+    "options": {
+     "hx_type": "Utube",
+     "material": "StainlessSteelStainlessSteel",
+     "tube_length": "TwelveFoot"
+    },
+    "options_defaulted": [
+     "hx_type",
+     "material",
+     "tube_length"
+    ],
+    "ranges": {
+     "area_ft2": {
+      "below": "refuse",
+      "max": 12000.0,
+      "min": 150.0,
+      "role": "size",
+      "source": {
+       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22: shell-and-tube heat exchanger purchase cost, Eq. 22.39-22.43 (size range of the equation, recalled; design note §9.2.5, QA1)",
+       "kind": "primary",
+       "verified": false
+      }
+     },
+     "pressure_psig": {
+      "below": "floor",
+      "max": 2000.0,
+      "min": 100.0,
+      "role": "input",
+      "source": {
+       "kind": "pinned",
+       "source_line": "SSLW.py:492",
+       "text": "Equation valid from 100 pisg to 2000 psig"
+      }
+     }
+    },
+    "set": "sslw-idaes-v1",
+    "source_lines": {
+     "A": "SSLW.py:446",
+     "B": "SSLW.py:446",
+     "F_L": "SSLW.py:384",
+     "alpha1": "SSLW.py:403",
+     "alpha2": "SSLW.py:403",
+     "alpha3": "SSLW.py:403",
+     "material_area_ref_ft2": "SSLW.py:460",
+     "oversize": "SSLW.py:393",
+     "pressure_ref_psig": "SSLW.py:495"
+    }
+   },
+   "status": "costed"
+  }
+ ],
+ "lca": {
+  "impacts": [],
+  "inventory": [],
+  "tables": []
+ },
+ "limitations": [
+  {
+   "code": "COLUMN_AUXILIARIES_NOT_COSTED",
+   "target": "S02"
+  },
+  {
+   "code": "INDEX_BASIS_MAPPED",
+   "mapping": "CEPCI 500 → 2006",
+   "target": "sslw-idaes-v1"
+  }
+ ],
+ "opex": {
+  "opex.fixed.maintenance": 29740.115591295387,
+  "opex.total": 47937.75724836252,
+  "opex.utility.CW": 288.2233818143844,
+  "opex.utility.HPS": 17909.41827525275
+ },
+ "provenance": {
+  "generated_utc": "2026-10-27T22:02:50+00:00",
+  "openflowsheet_version": "0.3.0.dev0",
+  "program_label": "ASM1-96c77d978276-154fafe0"
+ },
+ "refusals": [],
+ "regime": {
+  "entries": [
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "S02.shell.stage.2.V.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "S02.shell.stage.2.L.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "S02.shell.stage.3.V.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "S02.shell.stage.3.L.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "S02.shell.stage.4.V.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "S02.shell.stage.4.L.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "S02.shell.stage.5.V.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "S02.shell.stage.5.L.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "S02.shell.stage.6.V.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {},
+    "choice": "active",
+    "entry_id": "S02.shell.stage.6.L.dormant",
+    "kind": "dormant",
+    "rule": "§4.3.2 rule 3"
+   },
+   {
+    "admissibility": {
+     "over_3": 0.02524647746169026,
+     "over_4": 0.0472583623226812,
+     "over_5": 0.030225435417862278,
+     "over_6": 0.041111852487965256
+    },
+    "choice": "2",
+    "entry_id": "S02.shell.controlling",
+    "kind": "argmax",
+    "rule": "§4.3.2 rule 6"
+   },
+   {
+    "admissibility": {
+     "duty": 1.0
+    },
+    "choice": "cooling",
+    "entry_id": "S02.condenser.service",
+    "kind": "service",
+    "rule": "§4.3.2 rule 1"
+   },
+   {
+    "admissibility": {
+     "dT1": 0.8678149900740675,
+     "dT2": 0.8727585562385006
+    },
+    "choice": "CW",
+    "entry_id": "S02.condenser.utility",
+    "kind": "utility",
+    "rule": "§4.3.2 rule 2 (cheapest admissible)"
+   },
+   {
+    "admissibility": {
+     "duty": 1.0
+    },
+    "choice": "heating",
+    "entry_id": "S02.reboiler.service",
+    "kind": "service",
+    "rule": "§4.3.2 rule 1"
+   },
+   {
+    "admissibility": {
+     "dT1": 0.9313784437848498,
+     "dT2": 0.9348292963751735
+    },
+    "choice": "HPS",
+    "entry_id": "S02.reboiler.utility",
+    "kind": "utility",
+    "rule": "§4.3.2 rule 2 (cheapest admissible)"
+   },
+   {
+    "admissibility": {
+     "weight_lb_hi": 0.996347367700844,
+     "weight_lb_lo": 2.360421715223598
+    },
+    "choice": "units:1",
+    "entry_id": "S02.shell.size",
+    "kind": "size",
+    "rule": "§4.3.2 rule 4"
+   },
+   {
+    "admissibility": {
+     "platform_length_ft_hi": 0.3000000000000001,
+     "platform_length_ft_lo": 1.333333333333333
+    },
+    "choice": "1",
+    "entry_id": "S02.shell.platforms.L.piece",
+    "kind": "piece",
+    "rule": "§4.3.2 rule 5; §9.2.5"
+   },
+   {
+    "admissibility": {
+     "platform_diameter_ft_floor": 0.7900261728880585
+    },
+    "choice": "floor",
+    "entry_id": "S02.shell.platforms.D.piece",
+    "kind": "piece",
+    "rule": "§4.3.2 rule 5; §9.2.5"
+   },
+   {
+    "admissibility": {
+     "diameter_ft_floor": 0.6850392593320878
+    },
+    "choice": "floor",
+    "entry_id": "S02.trays.size",
+    "kind": "size",
+    "rule": "§4.3.2 rule 4"
+   },
+   {
+    "admissibility": {
+     "area_ft2_floor": 0.9254951348971813
+    },
+    "choice": "floor",
+    "entry_id": "S02.condenser.size",
+    "kind": "size",
+    "rule": "§4.3.2 rule 4"
+   },
+   {
+    "admissibility": {
+     "pressure_psig_floor": 0.9932194857611126
+    },
+    "choice": "floor",
+    "entry_id": "S02.condenser.pressure.piece",
+    "kind": "piece",
+    "rule": "§4.3.2 rule 5; §9.2.5"
+   },
+   {
+    "admissibility": {
+     "area_ft2_floor": 0.9813509747356499
+    },
+    "choice": "floor",
+    "entry_id": "S02.reboiler.size",
+    "kind": "size",
+    "rule": "§4.3.2 rule 4"
+   },
+   {
+    "admissibility": {
+     "pressure_psig_floor": 0.9932194857611126
+    },
+    "choice": "floor",
+    "entry_id": "S02.reboiler.pressure.piece",
+    "kind": "piece",
+    "rule": "§4.3.2 rule 5; §9.2.5"
+   }
+  ],
+  "sha256": "154fafe0418ce3a25b36779a8e3ff9642ff4308984ef9a6b1c1578605a42e49f",
+  "signature": "{\"S02.condenser.pressure.piece\":\"floor\",\"S02.condenser.service\":\"cooling\",\"S02.condenser.size\":\"floor\",\"S02.condenser.utility\":\"CW\",\"S02.reboiler.pressure.piece\":\"floor\",\"S02.reboiler.service\":\"heating\",\"S02.reboiler.size\":\"floor\",\"S02.reboiler.utility\":\"HPS\",\"S02.shell.controlling\":\"2\",\"S02.shell.platforms.D.piece\":\"floor\",\"S02.shell.platforms.L.piece\":\"1\",\"S02.shell.size\":\"units:1\",\"S02.shell.stage.2.L.dormant\":\"active\",\"S02.shell.stage.2.V.dormant\":\"active\",\"S02.shell.stage.3.L.dormant\":\"active\",\"S02.shell.stage.3.V.dormant\":\"active\",\"S02.shell.stage.4.L.dormant\":\"active\",\"S02.shell.stage.4.V.dormant\":\"active\",\"S02.shell.stage.5.L.dormant\":\"active\",\"S02.shell.stage.5.V.dormant\":\"active\",\"S02.shell.stage.6.L.dormant\":\"active\",\"S02.shell.stage.6.V.dormant\":\"active\",\"S02.trays.size\":\"floor\"}"
+ },
+ "schema_version": "assessment-report-v1",
+ "state_sha256": "e496390f7e41cff7c2e3e315f7a1d8867c0c00d80aa7811f724b0dc446e2894e",
+ "statement": "Assessment evidence: an estimate under the stated basis, correlations, data and regimes. It is not numerical verification of the flowsheet and not empirical validation.",
+ "status": "COMPLETE",
+ "unavailable": {},
+ "uncertainty": {
+  "aace_class": 4,
+  "aace_range": {
+   "high": [
+    0.2,
+    0.5
+   ],
+   "low": [
+    -0.15,
+    -0.3
+   ]
+  },
+  "assumptions": {
+   "linear_interval": "linear, first order; inputs fully correlated (conservative)",
+   "rss_sigma": "linear, first order; inputs independent and uniform on their ranges"
+  },
+  "linear_interval": {
+   "annual.capital_charge": [
+    70678.91748468264,
+    151454.82318146274
+   ],
+   "capex.CAPEX": [
+    693936.0304635591,
+    1487005.7795647695
+   ],
+   "capex.EPC": [
+    648538.3462276252,
+    1389725.0276306253
+   ],
+   "capex.TDC": [
+    397827.47284236614,
+    852487.4418050703
+   ],
+   "capex.bare_module.S02.condenser": [
+    132749.42215539876,
+    284463.0474758545
+   ],
+   "capex.bare_module.S02.reboiler": [
+    132749.42215539876,
+    284463.0474758545
+   ],
+   "capex.bare_module.S02.shell": [
+    123995.54258085866,
+    265704.73410184
+   ],
+   "capex.bare_module.S02.trays": [
+    8333.08595070989,
+    17856.612751521196
+   ],
+   "capex.fci": [
+    693936.0304635591,
+    1487005.7795647695
+   ],
+   "capex.purchased.S02.condenser": [
+    41876.78932346964,
+    89735.97712172066
+   ],
+   "capex.purchased.S02.reboiler": [
+    41876.78932346964,
+    89735.97712172066
+   ],
+   "capex.purchased.S02.shell": [
+    29806.62081270641,
+    63871.3303129423
+   ],
+   "capex.purchased.S02.trays": [
+    8333.08595070989,
+    17856.612751521196
+   ],
+   "capex.sum_bare_module": [
+    397827.47284236614,
+    852487.4418050703
+   ],
+   "capex.sum_purchased": [
+    121893.2854103556,
+    261199.89730790482
+   ],
+   "capex.total": [
+    693936.0304635591,
+    1487005.7795647695
+   ],
+   "opex.fixed.maintenance": [
+    20818.08091390677,
+    44610.173386943075
+   ],
+   "opex.total": [
+    39015.7225709739,
+    62807.8150440102
+   ],
+   "opex.utility.CW": [
+    288.2233818143844,
+    288.2233818143844
+   ],
+   "opex.utility.HPS": [
+    17909.41827525275,
+    17909.41827525275
+   ],
+   "profit": [
+    -214262.63822547297,
+    -109694.64005565652
+   ],
+   "revenue.total": [
+    0.0,
+    0.0
+   ],
+   "size.S02.condenser.area": [
+    1.0382592694262653,
+    1.0382592694262653
+   ],
+   "size.S02.reboiler.area": [
+    0.2598826710142376,
+    0.2598826710142376
+   ],
+   "size.S02.shell.diameter": [
+    0.19200006751115933,
+    0.19200006751115933
+   ],
+   "size.S02.shell.height": [
+    8.5344,
+    8.5344
+   ],
+   "size.S02.trays.diameter": [
+    0.19200006751115933,
+    0.19200006751115933
+   ],
+   "tac": [
+    109694.64005565652,
+    214262.63822547297
+   ]
+  },
+  "parameters": [
+   {
+    "relative_range": [
+     -0.3,
+     0.5
+    ],
+    "theta": "asm:item.S02.shell.accuracy",
+    "value": 1.0
+   },
+   {
+    "relative_range": [
+     -0.3,
+     0.5
+    ],
+    "theta": "asm:item.S02.trays.accuracy",
+    "value": 1.0
+   },
+   {
+    "relative_range": [
+     -0.3,
+     0.5
+    ],
+    "theta": "asm:item.S02.condenser.accuracy",
+    "value": 1.0
+   },
+   {
+    "relative_range": [
+     -0.3,
+     0.5
+    ],
+    "theta": "asm:item.S02.reboiler.accuracy",
+    "value": 1.0
+   }
+  ],
+  "rss_sigma": {
+   "annual.capital_charge": 13196.354074653324,
+   "capex.CAPEX": 129563.74954584046,
+   "capex.EPC": 121087.61639798174,
+   "capex.TDC": 74277.76738926617,
+   "capex.bare_module.S02.condenser": 43795.95120924957,
+   "capex.bare_module.S02.reboiler": 43795.95120924957,
+   "capex.bare_module.S02.shell": 40907.9199356414,
+   "capex.bare_module.S02.trays": 2749.205381041511,
+   "capex.fci": 129563.74954584046,
+   "capex.purchased.S02.condenser": 13815.75747925854,
+   "capex.purchased.S02.reboiler": 13815.75747925854,
+   "capex.purchased.S02.shell": 9833.6345999138,
+   "capex.purchased.S02.trays": 2749.205381041511,
+   "capex.sum_bare_module": 74277.76738926617,
+   "capex.sum_purchased": 22045.60747911352,
+   "capex.total": 129563.74954584046,
+   "opex.fixed.maintenance": 3886.912486375213,
+   "opex.total": 3886.912486375213,
+   "opex.utility.CW": 0.0,
+   "opex.utility.HPS": 0.0,
+   "profit": 17083.266561028537,
+   "revenue.total": 0.0,
+   "size.S02.condenser.area": 0.0,
+   "size.S02.reboiler.area": 0.0,
+   "size.S02.shell.diameter": 0.0,
+   "size.S02.shell.height": 0.0,
+   "size.S02.trays.diameter": 0.0,
+   "tac": 17083.266561028537
+  }
+ }
+}

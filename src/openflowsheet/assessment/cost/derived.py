@@ -159,7 +159,8 @@ class DerivedContributor:
             ratios[output_id] = (numerator, denominator)
 
         def section(values: Mapping[str, float]) -> dict[str, Any]:
-            return {"undefined": _undefined(ratios, values)}
+            undefined, withheld_at = _undefined(ratios, values)
+            return {"undefined": undefined, "withheld": withheld_at}
 
         return ContributionPlan(
             outputs=tuple(outputs),
@@ -171,13 +172,22 @@ class DerivedContributor:
 
 def _undefined(
     ratios: Mapping[str, tuple[Affine, Affine | None]], values: Mapping[str, float]
-) -> list[str]:
-    """The derived outputs whose denominator is ≤ 0 at `values` (§4.7.5)."""
-    return [
-        output_id
-        for output_id, (_, denominator) in ratios.items()
-        if denominator is not None and not denominator.value(values) > 0.0
-    ]
+) -> tuple[list[str], list[str]]:
+    """At `values`: the derived outputs whose denominator is ≤ 0 (§4.7.5), and those that
+    reference one of them (directly or through another), in declaration order."""
+    undefined: list[str] = []
+    withheld: list[str] = []
+    bad: set[str] = set()
+    for output_id, (numerator, denominator) in ratios.items():
+        refs = [n for n, _ in numerator.terms]
+        refs += [n for n, _ in denominator.terms] if denominator is not None else []
+        if any(r in bad for r in refs):
+            withheld.append(output_id)
+            bad.add(output_id)
+        elif denominator is not None and not denominator.value(values) > 0.0:
+            undefined.append(output_id)
+            bad.add(output_id)
+    return undefined, withheld
 
 
 register_contributor("derived", DerivedContributor)
