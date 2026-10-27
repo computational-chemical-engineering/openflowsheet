@@ -9,8 +9,10 @@ product sink on each product.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -177,3 +179,66 @@ def column_registered(
     monkeypatch.setitem(revision_binding.MODEL_SIGNATURES, MODEL_ID, _COLUMN)
     monkeypatch.setitem(revision_binding.MODEL_BASES, MODEL_ID, bases)
     yield
+
+
+# -- the registered column flowsheet cases (WO-B3e: `benchmarks/s11/flowsheets/*.json`) ----------
+
+#: §6.1 A29's SYN-001 standalone cases embedded in a flowsheet (S02 M1–M4, S06 J1–J8); the
+#: Wilson cases C-MW and C-EW wait for track A's basis (A1) on this branch.
+COLUMN_CASES: tuple[str, ...] = ("M1", "M2", "M3", "M4", *(f"J{k}" for k in range(1, 9)))
+#: A29's recycle case: M1 with its bottoms split 0.2 back to a side feed on stage 5.
+RECYCLE_CASE = "M1-recycle"
+FLOWSHEETS = Path(__file__).resolve().parents[1] / "benchmarks" / "s11" / "flowsheets"
+
+
+def column_case_spec(name: str) -> ColumnSpec:
+    """The registered standalone `ColumnSpec` of a case (`test_s02_column_wo1`/`_s06_…_wo1`)."""
+    from test_s02_column_wo1 import SPECS
+    from test_s06_column_wo1 import J_CASES
+
+    return {**SPECS, **J_CASES}[name.removesuffix("-recycle")]
+
+
+def column_case(name: str) -> dict[str, Any]:
+    """The revision of a registered column flowsheet case, as committed under `FLOWSHEETS`. The
+    column instance is named after the standalone unit (`S02`/`S06`), so its stage columns carry
+    the standalone ids."""
+    spec = column_case_spec(name)
+    document = column_revision(spec, unit=spec.unit_id)
+    document["revision_id"] = f"S11-COL-{name}"
+    if name != RECYCLE_CASE:
+        return document
+    unit = spec.unit_id
+    document["title"] = "S11 column in a flowsheet: bottoms split 0.2 back to a side feed"
+    for connection in document["connections"]:
+        if connection["id"] == "S-BOTTOMS":
+            connection["to"] = {"instance": "U-SPLIT", "port": "inlet"}
+    for instance in document["instances"]:
+        if instance["id"] == unit:
+            instance["parameters"]["feed_stage.S-REC"] = quantity(5.0, "dimensionless")
+    document["instances"].append(
+        _instance(
+            "U-SPLIT",
+            "syn001.stream_splitter",
+            "splitter",
+            {"split_fraction": quantity(0.2, "dimensionless")},
+        )
+    )
+    document["connections"] += [
+        _connection("S-REC", ("U-SPLIT", "recycle"), (unit, "feed"), "liquid"),
+        _connection("S-PURGE", ("U-SPLIT", "purge"), ("U-BOT", "inlet"), "liquid"),
+    ]
+    return document
+
+
+def committed_case(name: str) -> dict[str, Any]:
+    document: dict[str, Any] = json.loads((FLOWSHEETS / f"{name}.json").read_bytes())
+    return document
+
+
+if __name__ == "__main__":
+    # Regenerates the committed cases: `PYTHONPATH=src:tests python tests/s11_column_support.py`.
+    FLOWSHEETS.mkdir(parents=True, exist_ok=True)
+    for case in (*COLUMN_CASES, RECYCLE_CASE):
+        text = json.dumps(column_case(case), indent=2, sort_keys=True) + "\n"
+        (FLOWSHEETS / f"{case}.json").write_text(text, encoding="utf-8")

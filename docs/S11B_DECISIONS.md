@@ -22,6 +22,9 @@ DECISION (B3b): §10.5 says `_COLUMN`'s signature lists the twelve end names as 
 DECISION (B3b, consequence of R-824): a name now fixes its kind, so S02 §5 S2's "kind not taken at this end" and "kind not offered" items are unreachable from a document; `condenser_boilup_ratio` and `condenser_distillate_ratio` are `parameter_unsupported(<U>.<name>)` (B2's `S2-kind`/`S2-not-offered` cases re-coded; `structural_refusal` keeps the S2 check, now a backstop). Alternative: map a foreign kind to S2's code. Reversible by: a kind lookup in `end_entries`.
 DECISION (B3c, escalated — Q8's premise): `s11-column-v1` is NOT registered. Facts: the application's registered revision policy `T06-revision-v2` already carries `T05b-phase-contract-v2` and `newton_refined`; it differs from `S01_DEFAULT_V1` only in `eo_recovery` (`homotopy_or_sequential_restart` vs `homotopy`), and edge 3's homotopy is unsupported on every revision region anyway (F8, L-COL-9). M1 and J2 solve under `T06_REVISION_V2` converged, products equal to the standalone root (Δ = 0). Registering a fifth `APPLICATION_POLICIES` entry would move the served `get_project.solve_policies` (pinned by `test_t07_w5a_inspection`, `test_t08_b50_surface_content`) and need `REGISTERED_POLICY_IDS`/`benchmarks/registry.yaml` (`test_t07_b3_policies`) — files outside track B, a served-surface change for no capability. The cases run under `T06_REVISION_V2` (the application's policy) and `S01_DEFAULT_V1` (the standalone policy object). Alternative: register as the note's default says (one commit in `application/policies.py` + registry + the two pinned tests). Reversible by: that commit.
 DECISION (B3d): where A28's check sits → `executor._solve_revision_region`, after the specification-row refusal and before the warm start and the traversal: a region holding a unit whose model is in `STAGED_MODELS` under a policy whose `phase_contract` is not v2 ends `CAPABILITY_UNAVAILABLE`, message `phase_contract_unsupported(<model>)`, no attempt, no property call. (Without it, M1 under `T04-W12` "converged" in 0 iterations from the standalone root with v1's semantics.) Alternative: refuse in `plan_revision` (a `PlanRefusal`). Reversible by: moving the block.
+DECISION (B3e): the committed cases name the column instance after the standalone unit (`S02`/`S06`), so its stage columns carry the standalone ids and A29 compares against the registered roots (`test_s02_column_wo2.ref_state`, `test_s06_column_wo2.expected_root`) directly; each file equals `s11_column_support.column_case(name)` (a test; regenerate with `python tests/s11_column_support.py`). Alternative: `UCOL` and an id map. Reversible by: `unit=` in `column_case`.
+DECISION (B3e, Q29 fact): a column under `T08-ptc-v1` ends `PTC_MAPPING_INVALID` `ptc_mapping_invalid(<U>:stage:1:mole:A, missing)` before any attempt — a typed refusal, so §10.13's default holds: L-COL-10 at I1. Alternative: n/a. Reversible by: n/a.
+DECISION (B3e, Q11 not done): a Wilson column with a `none` end cannot be bound on this branch (the Wilson basis is track A's A1, not merged into wp/S11-b), and no code path refuses `none` for a composition-dependent form (`column.validate` restricts kinds only). Carried to after A merges (with C-MW/C-EW of A29). Alternative: n/a. Reversible by: n/a.
 
 ## WO-B1 inventory: structural and inlet-dependent items (§4.7.2)
 
@@ -46,6 +49,17 @@ Inlet-dependent (left to `validate` at evaluate): R2 (inlet flows), R3's inlet `
   S11 PASS n=54497 changed=[] (698 s for the three).
 - 2026-10-27 B2 `ffc68146`: S08 PASS, S10C PASS; S11 FAIL (C branch shard 13: `test_t07_global_state::test_g20`, column_unit's `@cache`); fixed in `33a652a9` (hash uncached).
 - 2026-10-27 B2 fix-up `33a652a9` (includes the docs commit `5fdee2d9`): S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 PASS n=54497 changed=[] (949 s for the three).
+
+- 2026-10-27 B3a `e41b986b`: tests (§10.12 grep set + `test_s11_*`, 68 files) 2153 passed; S08 PASS n=52 changed=[S02.P1]
+  p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 PASS n=54497 changed=[] (703 s for the three).
+- 2026-10-27 B3a acceptance 1 (the spike, M1 under `S01_DEFAULT_V1`): CONVERGED, 0 Newton iterations from the
+  traversal start, products/T₁/T_N/Q₁/Q_N equal to `solve_column`'s root (|Δ| = 0). Same for M2–M4, J1–J8, P1; M1 and
+  J2 also under `T06_REVISION_V2`. `signature_units` = `UCOL.stage.1…7`.
+- 2026-10-27 B3d `63dc42a5`: tests (69 files) 2172 passed; S11 PASS n=54497 changed=[].
+- 2026-10-27 B3e Q14 timings (bind + plan + execute vs `solve_column`, two orders, cold process each; gate 3×s + 2 s):
+  M1 0.46/0.33 s, M2 0.34/0.23, M3 0.18/0.11, M4 0.22/0.14, J1 0.27/0.16, J2 0.25/0.14, J3 0.26/0.14, J4 0.27/0.15,
+  J5 0.19/0.11, J6 0.39/0.27, J7 0.28/0.18, J8 0.35/0.24 (all 0 Newton iterations); M1-recycle 0.93/0.33 s, 3 Newton
+  iterations (T06-revision-v2). Every case within its gate (worst 0.93 s against 2.96 s).
 
 ## Q9 spike (WO-B3's first step): STOPPED — the region decomposition does not place the stage pseudo-units
 
