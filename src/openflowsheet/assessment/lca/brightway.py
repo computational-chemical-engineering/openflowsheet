@@ -2,7 +2,8 @@
 
 Brightway computes the frozen tables the LCA contributor reads; it never runs inside a solve, an
 optimization or a replay. Only `bw2data` and `bw2calc` are used, at the pins of the `lca` extra
-(bw2data 4.7, bw2calc 2.5.0; not bw2io, not pypardiso: bw2calc falls back to SciPy's sparse LU).
+(bw2data 4.7, bw2calc 2.5.0; not bw2io, not pypardiso: bw2calc falls back to SciPy's sparse LU),
+with bw2calc's own pinned dependency `bw_processing` 1.6 for the float64 datapackages.
 They are imported inside each call: without them every call returns
 `UNSUPPORTED(LCA_ENGINE_UNAVAILABLE)` and nothing else in `assessment` imports Brightway.
 
@@ -12,22 +13,26 @@ credentials, USLCI through the Federal LCA Commons import). Brightway keeps its 
 
 - `build_unit_score_table` computes `q_{m,k}`, the LCIA score of one unit of each activity, with
   one LCI factorization per category reused across the activity demands, and records the engine
-  versions and the background databases' metadata hashes. The result is a `unit-score-table-v1`
-  document with its `sha256` set (`tables.table_sha256`).
+  versions and the background databases' metadata hashes. bw2calc solves on float64 matrices that
+  the adapter assembles from the project's stored rows (`_inventory_datapackage`,
+  `_method_datapackage`): bw2data's own processed files hold every amount as float32
+  (bw_processing 1.6), which would put ~1e-8 relative error into every frozen score (ESC-B1).
+  The result is a `unit-score-table-v1` document with its `sha256` set (`tables.table_sha256`).
 - `build_direct_factor_table` takes a method's characterisation factors for declared biosphere
   flows (`direct-factor-table-v1`).
 - `foreground_check` is the independent check of A25: it copies the project to a scratch project,
-  writes one foreground activity with the given exchange amounts, scores it, and deletes the
-  scratch project.
+  writes one foreground activity with the given exchange amounts, scores it with bw2calc (one
+  solve of the whole system, on the same float64 path), and deletes the scratch project.
 """
 
 from __future__ import annotations
 
 import datetime
 import hashlib
+import itertools
 import json
 import uuid
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from typing import Any, Final
 
@@ -97,8 +102,8 @@ def _metadata_sha256(meta: Mapping[str, Any]) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _backgrounds(bd: Any, names: Sequence[str]) -> list[dict[str, Any]]:
-    """The databases `names` and everything they depend on, each with its metadata hash."""
+def _closure(bd: Any, names: Sequence[str]) -> list[str]:
+    """The databases `names` and everything they depend on, sorted."""
     seen: list[str] = []
     queue = list(names)
     while queue:
@@ -107,6 +112,11 @@ def _backgrounds(bd: Any, names: Sequence[str]) -> list[dict[str, Any]]:
             continue
         seen.append(name)
         queue.extend(bd.databases[name].get("depends", ()))
+    return sorted(seen)
+
+
+def _backgrounds(bd: Any, names: Sequence[str]) -> list[dict[str, Any]]:
+    """The databases `names` and everything they depend on, each with its metadata hash."""
     return [
         {
             "database": name,
@@ -114,7 +124,7 @@ def _backgrounds(bd: Any, names: Sequence[str]) -> list[dict[str, Any]]:
             "system_model": str(bd.databases[name].get("system model", "")),
             "metadata_sha256": _metadata_sha256(bd.databases[name]),
         }
-        for name in sorted(seen)
+        for name in _closure(bd, names)
     ]
 
 
@@ -124,6 +134,95 @@ def _producer(bd: Any, bc: Any) -> dict[str, Any]:
         "versions": {"bw2data": str(bd.__version__), "bw2calc": str(bc.__version__)},
         "created": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
     }
+
+
+def _vector(dp: Any, matrix: str, name: str, rows: Iterable[Mapping[str, Any]]) -> None:
+    """Add `rows` (`row`, `col`, `amount`, optional `flip`) to `dp` as one float64 vector."""
+    import numpy as np  # noqa: PLC0415
+    from bw_processing import INDICES_DTYPE  # noqa: PLC0415
+
+    listed = list(rows)
+    if not listed:
+        return
+    dp.add_persistent_vector(
+        matrix=matrix,
+        name=name,
+        indices_array=np.array([(r["row"], r["col"]) for r in listed], dtype=INDICES_DTYPE),
+        data_array=np.array([float(r["amount"]) for r in listed], dtype=np.float64),
+        flip_array=np.array([bool(r.get("flip", False)) for r in listed], dtype=bool),
+    )
+
+
+def _inventory_datapackage(bd: Any, databases: Sequence[str]) -> Any:
+    """The technosphere and biosphere matrices of `databases` as a float64 datapackage.
+
+    The same stored rows, by the same rules, as bw2data 4.7's `SQLiteBackend.process` (one vector
+    per database and matrix; technosphere-negative edges flipped; an implicit unit production for
+    a process node without a production edge; duplicates within a vector summed), keeping the
+    stored float64 amounts where `process` writes float32 (ESC-B1). Uses bw2data's own query
+    functions, so it is tied to the pinned version, like the rest of the adapter."""
+    from bw2data.backends.base import (  # noqa: PLC0415
+        get_biosphere_qs,
+        get_technosphere_negative_qs,
+        get_technosphere_positive_qs,
+    )
+    from bw2data.backends.schema import ActivityDataset, ExchangeDataset, get_id  # noqa: PLC0415
+    from bw2data.configuration import labels  # noqa: PLC0415
+    from bw_processing import create_datapackage  # noqa: PLC0415
+
+    dp = create_datapackage(sum_intra_duplicates=True, sum_inter_duplicates=False)
+    for index, name in enumerate(databases):
+        backend = bd.Database(name)
+        dependents: set[str] = set()
+        _vector(
+            dp,
+            "biosphere_matrix",
+            f"biosphere-{index}",
+            backend.exchange_data_iterator(get_biosphere_qs, dependents),
+        )
+        implicit = (
+            {"row": get_id((name, code)), "col": get_id((name, code)), "amount": 1.0}
+            for (code,) in ActivityDataset.select(ActivityDataset.code)
+            .where(
+                ActivityDataset.database == name,
+                ActivityDataset.type << labels.implicit_production_allowed_node_types,
+                ~(
+                    ActivityDataset.code
+                    << ExchangeDataset.select(ExchangeDataset.output_code).where(
+                        ExchangeDataset.output_database == name,
+                        ExchangeDataset.type << labels.technosphere_positive_edge_types,
+                    )
+                ),
+            )
+            .tuples()
+        )
+        _vector(
+            dp,
+            "technosphere_matrix",
+            f"technosphere-{index}",
+            itertools.chain(
+                backend.exchange_data_iterator(get_technosphere_negative_qs, dependents, flip=True),
+                backend.exchange_data_iterator(get_technosphere_positive_qs, dependents),
+                implicit,
+            ),
+        )
+    return dp
+
+
+def _method_datapackage(bd: Any, method: Sequence[str]) -> Any:
+    """`method`'s characterisation factors at the global location as a float64 datapackage.
+
+    bw2calc's static LCA reads only the global-location column of a method (`custom_filter` on
+    `global_index`); the rows are those of bw2data's `Method.process_row`, the amounts the stored
+    float64 values."""
+    from bw_processing import create_datapackage  # noqa: PLC0415
+
+    bw_method = bd.Method(tuple(method))
+    global_index = bd.geomapping[bd.config.global_location]
+    rows = [bw_method.process_row(row) for row in bw_method.load()]
+    dp = create_datapackage(sum_intra_duplicates=True, sum_inter_duplicates=False)
+    _vector(dp, "characterization_matrix", "cfs", [r for r in rows if r["col"] == global_index])
+    return dp
 
 
 def build_unit_score_table(
@@ -176,8 +275,10 @@ def build_unit_score_table(
         scores: list[list[float]] = []
         units: list[str] = []
         demand = {node.id: 1.0 for node in nodes}
+        databases = _closure(bd, sorted({str(key[0]) for _, key in activities}))
+        inventory = _inventory_datapackage(bd, databases)
         for _, method in categories:
-            lca = bc.LCA(demand, method=tuple(method))
+            lca = bc.LCA(demand, data_objs=[inventory, _method_datapackage(bd, method)])
             lca.lci(factorize=True)
             row = []
             for node in nodes:
@@ -332,7 +433,14 @@ def foreground_check(
         database.write(
             {code: {"name": "foreground", "unit": "unit", "location": "GLO", "exchanges": rows}}
         )
-        lca = bc.LCA({database.get("foreground"): 1.0}, method=tuple(method))
+        foreground = database.get("foreground")
+        lca = bc.LCA(
+            {foreground.id: 1.0},
+            data_objs=[
+                _inventory_datapackage(bd, _closure(bd, [name])),
+                _method_datapackage(bd, method),
+            ],
+        )
         lca.lci()
         lca.lcia()
         score = float(lca.score)

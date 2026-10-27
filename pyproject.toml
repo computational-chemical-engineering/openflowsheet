@@ -160,9 +160,10 @@ module = ["pyomo.*", "cyipopt.*"]
 ignore_missing_imports = true
 
 # E01 WO-B1: bw2data and bw2calc exist only in the audited `lca` environment
-# (scripts/build-lca-env.sh), are imported inside the adapter's calls, and ship no stubs.
+# (scripts/build-lca-env.sh), are imported inside the adapter's calls, and ship no stubs;
+# bw_processing (bw2calc's pinned dependency) builds the adapter's float64 datapackages.
 [[tool.mypy.overrides]]
-module = ["bw2data.*", "bw2calc.*"]
+module = ["bw2data.*", "bw2calc.*", "bw_processing.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

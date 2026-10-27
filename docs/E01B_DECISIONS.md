@@ -133,6 +133,29 @@ packages; URL and retrieval date for data). The design-lane ruling round is fold
 - DECISION: the contributor class lives in `lca/section.py` beside its section (the note names no file for it);
   it registers as `lca`. Reversible by: moving it.
 
+## Orchestrator rulings (2026-10-27) and their implementation
+
+- DECISION (ESC-B1, orchestrator ruling): the unit-score table is built on bw2calc's float64 path → the adapter
+  assembles the technosphere, biosphere and characterisation matrices as float64 datapackages from the project's
+  stored rows by bw2data 4.7's own rules (`SQLiteBackend.process` queries, flips, implicit production;
+  `Method.process_row`, global-location CFs) and hands them to `bc.LCA(data_objs=…)`; `foreground_check` uses the
+  same path (the ruling keeps A25 at 1e-10, which bw2data's float32 processing cannot meet). A24 at 1e-12 and A25 at
+  1e-10 are not restated. Alternative: restate A24/A25 at float32 precision. Reversible by: `brightway.py`
+  `_inventory_datapackage`/`_method_datapackage` and the two `bc.LCA` calls.
+- FACT (A24, lca scratch env, bw2calc 2.5.0): q_E 0.5472782258064516, q_H 0.18911290322580646, q_X
+  0.9018649193548387 — relative errors −6.2e-17, 2.2e-17, −9.5e-18 against §4.8.5's rationals, and bitwise equal to
+  the shipped `test-background-v1` scores. `tests/test_e01_b_brightway.py` 3 passed (A24; the float64 matrices
+  rounded to float32 equal bw2calc's matrices from bw2data's processed files entry for entry, with identical
+  activity/biosphere dicts; `foreground_check` on a mixed exchange/emission set equals the hand superposition
+  within 1e-12 and leaves no scratch project).
+- DECISION: `bw_processing` (bw2calc's pinned dependency, 1.6 in the lca lock, D04-audited) is imported directly
+  for `create_datapackage` and `INDICES_DTYPE`; mypy override extended. Alternative: reach it through bw2data's
+  re-export. Reversible by: `brightway.py`, pyproject.
+- FACT (for I1, from B1's extra, not this commit): `tests/test_m07_mr12_extras_v02.py::test_the_git_backed_measure_at_head`
+  fails at a HEAD that carries the `lca` extra: `new_since_v0_1_1` is `['coolprop', 'lca', 'nlp']`, the tripwire
+  pins `['coolprop', 'nlp']`. By design (S07 Ruling M): the next release specification adds an `MR12_AUDITS`
+  entry and the tripwire's list; M07's test is not edited here.
+
 ## Handoff (2026-10-27, end of WO-B1 and WO-B2) — resume from here
 
 - **Done (wp/E01, after 1301ca12):** WO-B1 (ff7f4343 extra, lock, env script, D04 records + A42 checker; 932455b3

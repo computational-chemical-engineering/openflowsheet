@@ -61,3 +61,74 @@ def test_a24_the_adapter_reproduces_the_hand_unit_scores(background: tables.Unit
         got = table.value("climate_change_test", activity)
         assert got is not None
         assert abs(Fraction(got) - q) <= Fraction(1, 10**12) * q, (activity, got, float(q))
+
+
+def test_the_float64_assembly_is_brightways_own_matrices_unrounded(
+    background: tables.UnitScoreTable,
+) -> None:
+    """ESC-B1: the adapter's float64 matrices, rounded to float32, are exactly the matrices
+    bw2calc builds from bw2data's own processed (float32) files: same rows, columns, signs and
+    implicit productions; only the precision differs."""
+    import bw2calc as bc
+    import bw2data as bd
+    import numpy as np
+
+    method = tuple(background.categories[0].method)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        bd.projects.set_current(PROJECT)
+        node = bd.get_activity(tuple(background.activities[0].key))
+        theirs = bc.LCA({node: 1.0}, method=method)
+        theirs.lci()
+        theirs.lcia()
+        ours = bc.LCA(
+            {node.id: 1.0},
+            data_objs=[
+                brightway._inventory_datapackage(bd, brightway._closure(bd, [node["database"]])),
+                brightway._method_datapackage(bd, method),
+            ],
+        )
+        ours.lci()
+        ours.lcia()
+    for matrix in ("technosphere_matrix", "biosphere_matrix", "characterization_matrix"):
+        mine, reference = getattr(ours, matrix), getattr(theirs, matrix)
+        assert mine.dtype == np.float64, matrix
+        assert mine.shape == reference.shape, matrix
+        assert (mine.astype(np.float32) != reference.astype(np.float32)).nnz == 0, matrix
+    assert ours.dicts.activity == theirs.dicts.activity
+    assert ours.dicts.biosphere == theirs.dicts.biosphere
+
+
+def test_foreground_check_reproduces_the_hand_superposition(
+    background: tables.UnitScoreTable,
+) -> None:
+    """`foreground_check` (A25's engine side) on exchanges whose hand score is
+    `Σ a_k q_k + Σ b_j c_j` with §4.8.5's rationals, rel ≤ 1e-12; the scratch project is gone."""
+    import bw2data as bd
+
+    keys = {a.activity_id: a.key for a in background.activities}
+    exchanges = [
+        (keys["tb.electricity"], 2.5),
+        (keys["tb.heat"], -0.75),
+        (keys["tb.chemical_x"], 0.125),
+    ]
+    emissions = [
+        (("test-biosphere-v1", "co2_fossil_air"), 0.5),
+        (("test-biosphere-v1", "ch4_fossil_air"), 0.01),
+    ]
+    hand = (
+        Fraction("2.5") * HAND_Q["tb.electricity"]
+        - Fraction("0.75") * HAND_Q["tb.heat"]
+        + Fraction("0.125") * HAND_Q["tb.chemical_x"]
+        + Fraction("0.5")
+        + Fraction(0.01) * Fraction("29.8")
+    )
+    before = set(bd.projects)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        score = brightway.foreground_check(
+            PROJECT, exchanges, emissions, background.categories[0].method
+        )
+    assert isinstance(score, float), score
+    assert abs(Fraction(score) - hand) <= Fraction(1, 10**12) * hand, (score, float(hand))
+    assert set(bd.projects) == before
