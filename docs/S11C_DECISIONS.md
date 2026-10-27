@@ -39,35 +39,31 @@ choice; the evidence is in the named test or module. Batched for the package's s
   admissible step. Default taken: the measured floor is added there (bounded ≤ 1e-4). Needs: confirmation, or a
   restated A46 clause for the range ends.
 
-## Handoff after WO-C2 (2026-10-27; context cap reached, C3 not started)
+## Open observations for the reviewer (C3)
 
-Branch `wp/S11-c` (worktree `.claude/worktrees/s11-c`). Commits: 90dd308b (C1 references), 7340f4cb (C1 kernel),
-9ec97a45 (C2 units). Not pushed. No shared file touched; `scripts/s11_identity.py` not triggered.
-Gates: `tests/test_s11_thermal_kernel.py` 66 passed / 52 skipped without CoolProp, 118 passed with it;
-`tests/test_s11_thermal_units.py` 37 passed (no CoolProp needed). `s11_thermal_reference.py --check` OK with CoolProp,
-SKIP without. CoolProp for references/tests: `PYTHONPATH=<scratchpad>/cp:$PWD/src:$PWD` (8.0.0, pip --target).
+- O-C3-1 (C1 kernel, not changed): the `h` closure at 22.85 MPa, h* ≈ 47.8 kJ/mol (supercritical, near the
+  pseudo-critical line) returns `not_converged`: the root sits at the provider's LIQUID/VAPOR label switch at T_c
+  (S05 §4.2), where the labelled h is discontinuous. 4 of 11 200 grid outcomes (C3-1's grid); before and after C3-1.
 
-**Next: WO-C3 (machines)** — files `models/thermal/machines.py`, the variants in `blocks.py`,
-`tests/test_s11_thermal_machines.py`; acceptance S11.A50 (machines), A53–A55.
-- `blocks.IsentropicEnthalpyBlock` implements only `pure-single/single` (`VARIANTS`); add `pure-sat/single`,
-  `pure-single/sat`, `pure-sat/sat` per §4.3 (inputs n, P_I, P_O for sat inlets; β_s and its P derivatives from
-  `kernel.Sat` (`value`, `along`), dHs/dn = the intensive bracket) and `additive-vapour` (Wilson, inputs n_1..n_C).
-  `kernel.isentropic_temperature` is the single-phase inner solve (start T_I; `isentropic_state_two_phase` on the
-  wrong side). FD test helper `_fd_worst` (scaled criterion, C1-3) is in the kernel test; reuse it.
-- `additive-vapour` needs `wilson-ig-v2` (WO-D4, not on this branch): `ADDITIVE_VAPOUR` identities are in
-  `models/thermal/__init__.py`; build it against the Protocol, test with D4 merged (or log as deferred to C3b).
-- `machines.py`: one class configured pump/compressor/turbine (families TPU/TCO/TTU). Copy `heater.py`'s shape and
-  `common.py` helpers; W column `models.syn001.pump.work_id(U)` (kind heat_rate, R-043); pump/compressor work row
-  `models.rows.work_row(W, eta, (PFs_<U>.Hs,), (inlet key,))`; turbine `thermal.rows.expansion_work_row`;
-  `F-energy` = `energy_row((inlet,), (outlet,), source=W)`; F-P = `specification_row`; saturated turbine outlet via
-  `common.saturated_rows`. Return `work=` (duty None) in `ThermalEvaluation`.
-- Evaluate (§4.4): inlet β exact for a saturated inlet (pump β=0, compressor/turbine β=1), else
-  `inadmissible_phase(inlet, LIQUID|VAPOR)`; bounds as the SYN-001 pump (`pressure_fall(pump)` out_of_domain; mirror
-  for the turbine); W = n(h_s − h_I)/η or η n(h_s − h_I); outlet by `kernel.declared_state(..., "h")`.
-- Turbine `isentropic_phase` ∈ {vapor, vapor_liquid}, default the outlet's form; refuse `vapor` with a saturated
-  outlet (`specification_unsupported(<U>.isentropic_phase)`, §4.4 table); pump inlet vapor / compressor inlet liquid /
-  turbine liquid-liquid refusals likewise at construction.
-- References already in `benchmarks/s11/thermal_reference.yaml`: `units.A53_turbine`, `A54_pump`,
-  `A55_compressor` (CO2: needs CoolProp, skip without), `A55_dry_fluid` (n-Pentane sat. vapour 1→3 bar: CoolProp's
-  isentropic state is SATURATED — Q19 answered: n-Pentane is in the S07 table, tier B; log it in C3).
-- Block id `PFs_<U>` obeys the backend token rule: test unit ids without hyphens.
+## Handoff after WO-C3 (2026-10-27; C3 done, C4 not started)
+
+Branch `wp/S11-c` (worktree `.claude/worktrees/s11-c`), not pushed. C3 commits: 36ea9175 (kernel `_solve` R-600
+fix, C3-1), c673ebf8 (isentropic variants, C3-2/C3-3), 1e602650 (machines, C3-4..C3-7). No shared file touched;
+`scripts/s11_identity.py` not triggered (only `models/thermal/*` and S11 thermal tests).
+Gates (no-CoolProp | CoolProp 8.0.0): `test_s11_thermal_kernel.py` 70 passed 52 skipped | 122 passed;
+`test_s11_thermal_units.py` 37 | 37; `test_s11_thermal_machines.py` 58 passed 2 skipped | 60 passed.
+pure-single/single proved bit-identical (values and Jacobians, 20 states + dormant) across the C3 block rewrite.
+A46 FD worst (20 states each): pure-sat/single L 3.4e-7, V 3.0e-10; pure-single/sat 1.2e-9; pure-sat/sat 1.5e-9;
+additive-vapour 1.8e-10 (test-local ideal gas). A53/A54/A55 against CoolProp ≤ 1.4e-12 relative, ≤ 1.4e-10 K.
+
+**Next: WO-C4 (binding)** — `application/thermal_binding.py`, `tests/test_s11_thermal_binding.py`, and one
+`_PARAMETER_KINDS` entry (`outlet_vapor_fraction` → `dimensionless`, units note §2.4) in `models/revision_flowsheet.py`.
+- R-825 (S11-design §10.6) gives I1 sixteen *column* entries in the same table and rejected B3 "because the file is
+  track A's"; it does not cover `outlet_vapor_fraction`, so there is no semantic conflict. Track A is merged, so the
+  remaining risk is textual: add the one entry apart from where I1's sixteen go, and log it (C4-1).
+- Builders construct `ThermalHeater/Valve/Mixer/Flash` (C2) and `ThermalMachine(machine=...)` (C3) with
+  `streams` (port → stream ids) and `forms` (stream id → LIQUID|VAPOR|SATURATED from the declared
+  `phase_capability`); constructors already raise every §4.4 refusal as
+  `SpecificationError("specification_unsupported(<U>.<what>)\n<hint>")` — the binder maps them to
+  `Unbound("unsupported", ...)`; Wilson compressor/turbine raise `specification_unsupported(<U>.provider)` (C3-4).
+- Turbine `isentropic_phase` arrives as a choice like `syn001.heat_exchanger`'s `specification`.
