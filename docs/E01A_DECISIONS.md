@@ -269,6 +269,22 @@ I1's.
 - Amended own tests (ruling, not tuning): `test_syn001_items_entries_and_refusals` (the P2 drum is now sized) and the
   M1 column test (shell sized from SYN-001's identity, was refused at `shell.v`).
 
+## WO-A4 (chain, OPEX, annualisation, derived, uncertainty) — in progress
+
+- Done: (1) `cost/capital.py` + `_data/assessment/cost/chains.json` (presets `bare-module-total`, `ebtf-prisma-v1`;
+  chain checks; CRF; domain) — A20 ratio 1 ulp from 1.744314, A21 CRF(0.08, 20) = 0.10185220882315059 exactly on
+  floats and CasADi; (2) `cost/operating.py` (`PER_SI`, `price_on_basis`, `annual`) and `cost/uncertainty.py`
+  (AACE table, class, worst case, RSS, statement). `tests/test_e01_a_capital.py` 7 passed.
+- DECISION (schema, §9 does not spell the field): item `options: {name: string}` (the set file's option names and
+  string choices) and `shell_thickness` (m, > 0; θ `asm:item.<item>.t_shell`, §9.2.4 II's default 0.03175 m).
+  Alternative: one schema field per SSLW option. Reversible by: reverting that commit (schema + 1 test). For the
+  contributor: `material`/`tray_type` merge into `options`; a different value under both is `NO_CORRELATION`.
+- DECISION: a chain that is malformed (an `of` not a base or earlier step, a reserved or repeated name) raises
+  `ChainError`; the contributor is to map it to `ASSESSMENT_OUTPUT_UNKNOWN(capex.<of>)` (§4.12 has no chain code).
+  Alternative: a new code (needs the design lane). Reversible by: the contributor's mapping.
+- DECISION: a price in another basis is escalated with §4.6's formula as written, including `LF`. Alternative: LF
+  only on capital. Reversible by: `operating.price_on_basis` (pass `location_factor=1.0`).
+
 ## Handoff (2026-10-27, third context cap) — resume from here
 
 - **Done (wp/E01):** A1, A2, ESC-A1 (earlier); WO-A3a `6478f5ec` (link `$defs`, E01 `exact_sha256`); drive family

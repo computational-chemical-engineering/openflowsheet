@@ -639,3 +639,21 @@ def test_no_shipped_set_number_is_lost_on_parsing() -> None:
 
     walk(copy.deepcopy(doc))
     assert seen > 150
+
+
+def test_item_options_and_shell_thickness_are_schema_fields() -> None:
+    """An item names the set's options as strings (the set file's names and choices) and the vessel
+    shell thickness in m (θ `t_shell`, §9.2.4 II); a non-string option fails validation."""
+    from openflowsheet.assessment.spec import AssessmentDocumentError, load_assessment
+
+    base = {
+        "schema_version": "assessment-v1",
+        "assessment_id": "x",
+        "basis": {"currency": "USD", "year": 2024},
+    }
+    item = {"options": {"weight_limit": "2", "platforms_ladders": "false"}, "shell_thickness": 0.02}
+    spec = load_assessment({**base, "items": {"D-1.drum": item}})
+    assert spec.document["items"]["D-1.drum"] == item
+    for bad in ({"options": {"weight_limit": 2}}, {"shell_thickness": 0.0}, {"options": {"x": ""}}):
+        with pytest.raises(AssessmentDocumentError):
+            load_assessment({**base, "items": {"D-1.drum": bad}})
