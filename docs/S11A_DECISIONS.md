@@ -449,3 +449,25 @@ commit). Not done, in order:
   tuple). Default: give heater/valve/mixer a module `EQUATIONS` mapping (configuration → rows, as `flash.py` has a
   tuple) and the machines module `EQUATIONS` by machine plus a tuple of ids; this changes the four modules' bytes
   (their manifests' `artifact_hash`), so it wants the reviewer's eye. Not done here.
+
+**Handoff (2026-10-27, context cap; the next engineer resumes here).** Commits since `cbc38ca2`: `51dcc31d` S11 tests
+restated to §4.7 + A82 + A81 binder half; `0f3db1b4` R-841 (item 12); `8044d5e2` stale "S11b/S11c" reasons
+restated (ruling); `693d9e8c` m02 envelope-sets test non-thermal (ruling); `97e1c456` envelope/support matrix (item
+5, A83; `--check` 0 problems); `5774b8d4` + `2c8dce6c` samples and registry-wide tests (item 6, A86). Not done, in
+order:
+1. ADR 0008 E1 for the thermal modules (OPEN above; default stated there) — touches model-module bytes.
+2. Item 7: `v2_binder()` restricts the models and `list_models` to v1/v2's model table (isolated commit, DECISION
+   extending R-837); then S4 = `snapshot.build_snapshot(registration_version=3)` of the build (127 routes, Wilson on
+   `wilson-ig-v2`), classify the 225 development rows under v3 with no refusal, record the counts
+   (`benchmarks/m06/w27`, S11.A40/A84), S4's SHA-256 into W27v3-R08; `w27_registration_v3 --check`. Must clear
+   `test_m06_w27_coverage` (4), `test_l01_retake` (6 errors) and
+   `test_s11_w27_v3::test_v3_routes_are_the_v2_routes_with_their_record_sources`.
+3. Item 8 (rulings item 10): Q-C2 test; C3-2 code `isentropic_state_single_phase` (kernel, blocks, machines +
+   manifest limitation text, verifier mirror); O-C6-1 (A62 under `T04-W12`: Q = 0 must certify `RANK_DEFICIENT`, else
+   STOP and escalate; Q = 1 kW `LINEAR_SOLVE_FAILED`; record the SYN-001 pump's dormant case); add
+   `test_the_dormancy_registry_is_syn001s_and_the_c1_mixers_vapour_outlet` to §8.3's record (design-doc erratum line).
+4. Gates on the final tree (scratch worktree, `scratchpad/i1b/identity.sh <commit> <tag>`), `t08_support_matrix.py
+   --check`, `w27_registration_v3 --check`, all `tests/test_s11_*`. Expected `AMENDED_TESTS` additions so far: only
+   R-841's three `test_m02_join` tests.
+Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. Everything else touched passes
+(S11 battery, the 24 registry-dependent base files, envelope readers, T07/T08 corpora).
