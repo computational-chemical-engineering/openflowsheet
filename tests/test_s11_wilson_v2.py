@@ -21,6 +21,12 @@ from conftest import REPO_ROOT
 from test_s11_thermal_kernel import FD_TOL, _fd_worst
 
 from openflowsheet.compiled import EvaluationContext
+from openflowsheet.models.syn001.equilibrium_form import (
+    FORM_GAMMA_PHI_IG,
+    admission,
+    composition_dependent,
+    form_of,
+)
 from openflowsheet.models.thermal.blocks import IsentropicEnthalpyBlock, isentropic_block_id
 from openflowsheet.thermo import FlashRequest, Phase, PropertyRequest, StreamState, wilson_ig
 from openflowsheet.thermo.wilson_ig import R, WilsonIdealGasProvider
@@ -393,3 +399,16 @@ def test_a78_v1s_refusals_are_returned_unchanged(pair: tuple[str, Any, Any]) -> 
         )
         assert got.status == "out_of_domain"
         assert _hexed(got) == _hexed(want)
+
+
+# -- the equilibrium form (§4.5, WO-D4) -----------------------------------------------------------
+
+
+def test_v2_has_v1s_equilibrium_form(pair: tuple[str, Any, Any]) -> None:
+    _, v1, v2 = pair
+    old, new = form_of(v1.describe()), form_of(v2.describe())
+    assert old is not None and new is not None
+    assert new.form_id == old.form_id == FORM_GAMMA_PHI_IG
+    assert composition_dependent(v2)
+    assert dataclasses.replace(new, provider_id=old.provider_id) == old
+    assert admission("COL", v2, CONTEXT) is None

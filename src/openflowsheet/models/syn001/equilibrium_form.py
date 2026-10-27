@@ -60,6 +60,9 @@ ADMITTED: Final[Mapping[tuple[str, str], str]] = {
     (PROVIDER_ID, REFERENCE_CONVENTION): FORM_SYN001,
     ("wilson-ig-v1", "WILSON-IG-ref-v1"): FORM_GAMMA_PHI_IG,
     ("wilson-ig-v1", "S10-VER-ref-v1"): FORM_GAMMA_PHI_IG,
+    # S11 units design §4.6: v2 is v1 with `s`; its h, lnphi, flash and stability are v1's.
+    ("wilson-ig-v2", "WILSON-IG-ref-v1"): FORM_GAMMA_PHI_IG,
+    ("wilson-ig-v2", "S10-VER-ref-v1"): FORM_GAMMA_PHI_IG,
 }
 
 #: The column's supported scope, as its refusal names it (design note §4.1 admission step 1).
