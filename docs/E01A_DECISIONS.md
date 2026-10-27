@@ -245,24 +245,33 @@ I1's.
   regime where the source states none. Not blocked: `cost/index.py`, the three series files, the
   log-polynomial/power-law/constant forms, the loader's checks.
 
-## Handoff (2026-10-27, second context cap) — resume from here
+## Handoff (2026-10-27, third context cap) — resume from here
 
-- **Done:** ESC-A1 ruled and applied (`b474ef71`: `benchmarks/e01/numerical_policy_external.yaml` in `ADDENDA`;
-  v2 bytes unchanged; m04 A37, m02 G1, t08_adr0025 A1 ×2 pass; M05's ADDENDA pin amended — I1 adds it to
-  `AMENDED_TESTS`). WO-A2 (`5398079d`): `assessment/blocks.py`, `assessment/sizing/{__init__,families}.py`,
-  `tests/test_e01_a_sizing.py` 15 passed; core + policy tests 317 passed; ruff/mypy clean; protected-path diff vs
-  `f8a68fed` empty.
-- **Open for the design lane:** ESC-A2 (study/optimization-report sha256 names vs v2's partition), ESC-A3 (SSLW forms),
-  ESC-A4 (kinetic CSTR volume; dormant liquid with v_decl), ESC-A5 (no `v` on any registered column basis or SYN-001).
-- **Not done:** WO-A3. Start with what ESC-A3 does not block: `assessment/cost/index.py` (§4.6 escalation
-  `E = I(Y_t)/I(Y_b) · X · LF`, refusals), the series files under `src/openflowsheet/_data/assessment/index/`
-  (BLS WPU11 annual, Eurostat `sts_inppd_a` C28 EA, FRB G.5A; retrieve, record url/retrieved/sha256/licence text;
-  read via `importlib.resources.files("openflowsheet").joinpath("_data","assessment",…)`), `cost/forms.py` for
-  log-polynomial (`exp(ln B·Σ a_i (ln S'/ln B)^i)`, `ln 10 = 2.302585092994046`), power-law, constant, and
-  `cost/sets.py`'s loader checks (max ≥ 2·min, every number a `source_line`, known forms). The SSLW set file waits
-  for the ESC-A3 ruling. IDAES wheel: scratchpad `idaes_dl/` (sha256 above); `SSLW.py` unpacked under scratchpad
-  `idaes_src/` (re-unzip if gone). Tests A16–A19 in `tests/test_e01_a_cost.py`.
-- **API for A3/A4:** `plan_sizing(ctx, state) -> (SizingPlan, SizingContext)`; `SizingPlan.items` are `SizedItem`
-  (`size` {q: output id}, `design_pressure` var id or Pa, `options` incl. material/orientation/`N_act`, `utility` +
-  `duty` builder, `electricity` + `power` builder); `.contribution()` gives the plan fragment; the `size` regime is
-  the cost entry's to add (`regimes.select_size`), reading the size outputs via `s.out(...)`.
+- **Done (wp/E01):** A1, A2, ESC-A1 (earlier); WO-A3a `6478f5ec` (link `$defs`, E01 `exact_sha256`); drive family
+  rename `add26ead`; WO-A3 `05c4c671` (forms, sets, quotes, index, set file, 3 series files; 28 tests). Policy
+  `--check` exit 0, v2 `6b449911…d707c` unchanged. Protected paths untouched.
+- **Next, in order (§9.5):** **WO-A2b** (§9.3/§9.4 — not A3's): model-identity volumes in `assessment/blocks.py`
+  (syn001 RT/P and Σx_c·V_MOLAR; wilson-ig/-v2 vapour RT/P; algebraic rows, derivatives by hand; `R`, `V_MOLAR` imported
+  read-only), volume precedence provider → identity → item `liquid_molar_volume` → document `liquid_molar_volumes`
+  (new top-level schema field, θ `asm:liquid_molar_volume.<c>`) → refusal `SIZING_INPUT_UNAVAILABLE(<item>.v)`;
+  `v_source` on item inputs; `syn001.kinetic_cstr` V = τ_R·V̇_out with required θ `residence_time_s` and informational
+  `implied_rate_constant` = Da/τ_R; drum θ `dormant_liquid_density`. Tests A46, A47 (+A4/A5 on the new rows) in
+  `tests/test_e01_a_sizing.py`. Then **WO-A4** (§5.2 + §9.2.6/§9.2.7): the cost contributor wiring `SizingPlan` items
+  to `sets.entry_for`/`resolve`/`forms.select`/`rows`/`cost`, escalation by `index.escalate`, capital chain, OPEX,
+  annualisation, uncertainty; drive capital 0.0 with `included_in` when the machine entry `includes_drive`; η_drive =
+  `forms.motor_efficiency` at the per-unit shaft power; drive N = machine N (`select(..., units=N)`).
+- **A4 inputs from A3 (API):** `load_set(id)`; `entry_for(set, family, orientation)`; `resolve(set, entry_id, options)
+  -> ResolvedEntry | NoCorrelation`; `FORMS[e.form]` with `.inputs` (SI names: area, design_pressure, diameter, length,
+  thickness [θ `continuous["shell_thickness_in"]`·0.0254], vol_flow, head, power, n_act), `select(form, e, x_floats,
+  allow_extrapolation, units) -> Selection | OutOfRange`, `rows(form, e, sel) -> RangeRow(row_id, quantity, sense,
+  bound)` on `form.quantities(e, x, alg, n)`, `form.cost(e, x, sel, alg)` = C_P at the set basis (CE 500).
+  Piece-entry ids: `<item>.<form.target(range)>.piece`; size entry `<item>.size`. `index.escalate(SourceBasis,
+  TargetBasis, series, rates)`; SSLW source basis `SourceBasis("USD", index=("CEPCI", 500.0), year_equivalent=2006,
+  set_id=...)`. `quotes.quote_from`, `Quote.cost_expr`, `size_mismatch`.
+- **Open for A4/design lane:** item options field in the schema (see WO-A3 "OPEN"); generic-v1 factor terms and
+  bare-module forms not implemented (no shipped set uses them); ESC-A2…A5 ruled in §9 (A2b carries A4/A5's rulings).
+- **For B1/I1 (unchanged):** `_data/assessment/**` needs `pyproject.toml` package-data globs and `resources.PACKAGED`
+  (neither is track A's); M05's ADDENDA pin amendment → `AMENDED_TESTS`. A48 (primary ranges `verified: true`) is a
+  release-candidate item for a person with Seider 3rd ed.
+- **Scratch (not in repo):** IDAES wheel `idaes_dl/`, sources `idaes_src/`, set tool `a3tools/sslw_set.py`, series tool
+  `a3tools/series.py`, raw retrievals `series_dl/` (all under the session scratchpad).
