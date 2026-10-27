@@ -192,6 +192,22 @@ def committed_case(name: str) -> dict[str, Any]:
     return document
 
 
+#: Track D's committed Wilson cases (`s11_gp_support.GP`), for GP-M1's compressor.
+GP = THERMAL.parent / "gp"
+#: The `thermal.*` models' sample in the T07/T08 sample tables (units design §5.4 I1b, S11.A86):
+#: committed cases that bind without the `coolprop` extra and together hold a bound instance of
+#: each of the seven: TH-C1 (heater, pump, turbine) and TH-R1 (flash, heater, mixer, pump, valve)
+#: on IAPWS-95, GP-M1 (compressor) on Wilson.
+THERMAL_SAMPLES: tuple[str, ...] = ("TH-C1", "TH-R1", "GP-M1")
+
+
+def sample_case(name: str) -> dict[str, Any]:
+    """`THERMAL_SAMPLES`' committed document `name` (a TH case, or a GP case on Wilson)."""
+    directory = GP if name.startswith("GP-") else THERMAL
+    document: dict[str, Any] = json.loads((directory / f"{name}.json").read_bytes())
+    return document
+
+
 def solve(
     document: Mapping[str, Any],
     policy: SolvePolicy = T06_REVISION_V2,

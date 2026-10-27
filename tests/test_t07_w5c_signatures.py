@@ -39,6 +39,7 @@ from conftest import REPO_ROOT, load_yaml  # noqa: E402
 from m02_c1_corpus import C1_CORPUS, surrogates  # noqa: E402
 from s11_column_support import COLUMN_OPTIONAL, COLUMN_SAMPLES, committed_case  # noqa: E402
 from s11_column_support import MODEL_ID as COLUMN_MODEL  # noqa: E402
+from s11_thermal_support import THERMAL_SAMPLES, sample_case  # noqa: E402
 
 from openflowsheet.application.revision_binding import (  # noqa: E402
     MODEL_BUILDERS,
@@ -47,6 +48,7 @@ from openflowsheet.application.revision_binding import (  # noqa: E402
     RevisionBinding,
     bind_revision_flowsheet,
 )
+from openflowsheet.application.thermal_binding import OUTLET_VAPOR_FRACTION  # noqa: E402
 from openflowsheet.models import (  # noqa: E402
     UnitModel,
     duty_id,
@@ -78,7 +80,12 @@ BUILT: dict[str, Callable[[], Document]] = {
     **{f"M02:{name}": build for name, build in C1_CORPUS.items()},
     # S11 (ADR 0050, R-810; design note §8.3, I1): the column's sample, on SYN-001 and Wilson.
     **{f"S11:{name}": (lambda name=name: committed_case(name)) for name in COLUMN_SAMPLES},
+    # S11 units design §5.4 (I1b, S11.A86): the `thermal.*` models' sample, last.
+    **{f"S11:{name}": (lambda name=name: sample_case(name)) for name in THERMAL_SAMPLES},
 }
+#: The thermal heater and the optional parameters its signature cannot list (`thermal_binding`).
+THERMAL_HEATER = "thermal.heater"
+THERMAL_HEATER_OPTIONAL = frozenset({"pressure_drop", OUTLET_VAPOR_FRACTION})
 
 
 def _plain(value: Any) -> Any:
@@ -353,6 +360,17 @@ EXPECTED: dict[str, str] = {
     "S11:C-MW": (
         "binds 90452d2807b3ec3f6ec02c01bf70edf54184bc70ad50715b4f8b5c259d2ae58d"
     ),
+    # S11 units design §5.4 (I1b, S11.A86): the `thermal.*` sample, generated at its registration
+    # (a regression pin). The rows above are unchanged by it.
+    "S11:TH-C1": (
+        "binds 761b0be00991dfe89c15091509f9ba18daa859c60745b5d8afeff9d1a86e3e3b"
+    ),
+    "S11:TH-R1": (
+        "binds 12c7f4711875cefd0b8c455b41454febc5ed2cd1dd80d1857866918578fbd335"
+    ),
+    "S11:GP-M1": (
+        "binds dbc60ac7c2721013ea32f75b29902654975f71ef51edc6798ef271af8b2ac776"
+    ),
 }
 
 
@@ -447,11 +465,18 @@ def test_the_signature_describes_every_bound_instance_exactly() -> None:
                 # S11 (R-810; S11B_DECISIONS B3b, accepted R-838): `ModelSignature` has no optional
                 # field, so the column's optional parameters are `column_unit`'s grammar's.
                 optional = {name for name in optional if name.split(".")[0] not in COLUMN_OPTIONAL}
+            quality_mode = False
+            if instance.model_id == THERMAL_HEATER:
+                # S11 units design §4.4 (I1b), as the column's: the heater's optional
+                # `pressure_drop` and `outlet_vapor_fraction` are `thermal_binding`'s grammar, and
+                # the latter is its specification choice's third option (quality mode, no pin).
+                quality_mode = OUTLET_VAPOR_FRACTION in optional
+                optional -= THERMAL_HEATER_OPTIONAL
             assert optional <= set(signature.zero), instance.unit_id
             expected: set[str] = set()
             for pin in signature.pins:
                 expected |= _pin_columns(instance, pin.quantity, pin.port, view.components)
-            for choice in signature.choices:
+            for choice in signature.choices if not quality_mode else ():
                 pinned = [
                     option
                     for option in choice.options

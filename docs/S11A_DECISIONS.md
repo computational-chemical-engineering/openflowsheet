@@ -422,3 +422,11 @@ commit). Not done, in order:
 - DECISION (item 5): L-S11-3 and the `wilson-ig-v2` caveat now name the five K02/T05 units and the two vapour machines
   (the old "routing models and the column" became false at I1b; §4.10 says only "L-S11-3 names wilson-ig-v2").
   Alternative: leave L-S11-3's binding sentence as it was. Reversible by: the two text blocks and `--emit`.
+- Item 6 (samples, S11.A86): `s11_thermal_support.THERMAL_SAMPLES = ("TH-C1", "TH-R1", "GP-M1")` (committed cases that
+  bind without the coolprop extra; together one bound instance of each of the seven), appended last in the T07 W5c,
+  T08 edge-identity and T08 typed-ends corpora (COLUMN_SAMPLES precedent). W5c's EXPECTED gains three generated
+  binding pins (regression pins; the earlier rows unchanged).
+- DECISION (item 6): the W5c "signature describes every bound instance" test exempts the thermal heater's optional
+  `pressure_drop`/`outlet_vapor_fraction` and, in quality mode, its specification choice (as B3b exempts the
+  column's optional parameters: `ModelSignature` cannot list them; `thermal_binding`'s docstring says so).
+  Alternative: samples without a quality-mode heater (would hide the gap). Reversible by: the `quality_mode` block.
