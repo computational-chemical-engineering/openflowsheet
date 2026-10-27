@@ -678,26 +678,42 @@ class AssessmentProgram:
 
         return build_report(self, x, state_sha256=state_sha256, uncertainty=uncertainty)
 
-    def select(self, x: Mapping[str, float]) -> Regime:
+    def select(
+        self,
+        x: Mapping[str, float],
+        decisions: Mapping[str, float] = MappingProxyType({}),
+        *,
+        release: Sequence[str] = (),
+    ) -> Regime:
         """The regime at `x` (§4.3.2): the held choice of every entry whose admissibility rows are
         ≥ −τ_feas at `x`, the rule for the others. A held regime that cannot be evaluated at `x`
-        is released whole."""
+        is released whole.
+
+        `decisions` are host pins at other values than the program's (a study's candidate,
+        §4.10.3 V7): the rows and the rule then read them. `release` gives entries to the rule
+        whatever their rows — V7's dormancy entries, which have none (§4.3.1)."""
         tau = _feasibility_tolerance()
         try:
-            values = self.evaluate(x)
+            values = self.evaluate(x, decisions)
         except TwinEvaluationError:
             released: Iterable[str] = self.regime.entries
         else:
-            assert isinstance(values, Mapping)
+            if not isinstance(values, Mapping):
+                raise ValueError(f"the program refuses evaluation at the decisions: {values}")
             released = [
                 entry.entry_id
                 for entry in self.entries
-                if any(
+                if entry.entry_id in release
+                or any(
                     values[f"adm.{entry.entry_id}.{row.row_id}"] < -tau
                     for row in entry.admissibility
                 )
             ]
         held = self.regime.without(tuple(released))
         ctx = self._ctx
-        program = type(self)._plan(ctx.view, ctx.host_spec, ctx.spec, x, held, self._contributors)
+        host = ctx.host_spec
+        if decisions:
+            pins = {**host.parameters, **{k: float(v) for k, v in decisions.items()}}
+            host = dataclasses.replace(host, parameters=MappingProxyType(pins))
+        program = type(self)._plan(ctx.view, host, ctx.spec, x, held, self._contributors)
         return program.regime
