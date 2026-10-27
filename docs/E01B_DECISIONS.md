@@ -168,6 +168,33 @@ packages; URL and retrieval date for data). The design-lane ruling round is fold
   impact with a single exchange from a forbidden table (`h = a_k q_k`). The ruling covers θ values only; nothing
   else was changed.
 
+## WO-B3 (study integration)
+
+- Done (1): `study.schema.json` gains optional top-level `assessment` and `optimization-report.schema.json`
+  `formulation.assessment`, each a `$ref` to `assessment.schema.json#/$defs/…` (§9.1; the `$defs` came with A3a);
+  policy `--check` exit 0, v2 sha256 6b449911…d707c unchanged; every existing study and optimization-report fixture
+  validates (A38 study part); M02/M03/M04/M05 schema tests, links, T08 w4 package data pass.
+- Done (2): `studies/assessment.py`: `assessment_sensitivity` (§4.10.1 steps 1–5), `revision_sensitivity_host`,
+  `evaluation_context`, `trf_objective_from_assessment` (A37). `sensitivity.py` unchanged.
+- FACT (A30 on TH-C1, P4's document; I1 repeats on the registered P1): wrapper vs central differences of re-solved
+  states (step 1e-4·s_p, s_p = 673.15 K and 3e6 Pa), program evaluated at the re-solved state with the moved pin as
+  a decision: `tac`/B.T_spec 7.132905868079 vs 7.132905937631 (rel 9.8e-9); impact rate/B.T_spec 5.115015250610e-6
+  vs …290801e-6 (7.9e-9); `tac`/P.P_spec 1.706691596446e-3 (5.8e-10); impact rate/P.P_spec −1.418432143905e-10
+  (2.9e-9). A31: forward−adjoint ≤ 6.2e-16 relative; host consistency 2.8e-17 (tolerance 1.4e-11). Base QUALIFIED.
+- DECISION: an assessment output's scale in the wrapper → `max(|y(x*)|, 1)` unless the caller passes `scales`
+  (§4.10.1 says "scale = declared" without naming where; §4.10.2's rule reused). Alternative: a required argument.
+  Reversible by: `assessment_sensitivity`.
+- DECISION: the augmented outputs are named `assessment:<id>` and appended after the request's own; the wrapper's
+  blocks are outputs × the request's parameters in request order. A refused underlying request gives every entry
+  `None`, the state-independent rows too (the state is not qualified). Alternative: report `∂G/∂p` for
+  state-independent rows regardless. Reversible by: `_block`.
+- DECISION (A32 reading): "never calls the wrapper" is tested at the wrapper's entry: with no assessment output
+  nothing is linearized (spied) and the base result's document equals the direct `evaluate_sensitivity`'s; no
+  study-document dispatch exists to route around it (study.py is not in B3's list). Reversible by: the test.
+- DECISION: `revision_sensitivity_host` builds the evaluation context from the compiled metadata (as the executor
+  does; `RevisionFlowsheet.context` is the structural one), and the alias elimination with the certificate's
+  pressure-shifted second state (structural when it cannot be built). TH-C1 eliminates no row. Reversible by: it.
+
 ## Handoff (2026-10-27, end of WO-B1 and WO-B2) — resume from here
 
 - **Done (wp/E01, after 1301ca12):** WO-B1 (ff7f4343 extra, lock, env script, D04 records + A42 checker; 932455b3

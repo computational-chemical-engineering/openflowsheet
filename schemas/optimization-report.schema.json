@@ -240,6 +240,9 @@
               "ZERO_FLOW"
             ]
           }
+        },
+        "assessment": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/assessment.schema.json#/$defs/formulation_assessment"
         }
       }
     },
