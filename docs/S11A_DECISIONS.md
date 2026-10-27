@@ -272,3 +272,9 @@ one-sided worst 6.089e-10/6.216e-10/3.274e-10, central 8.243e-8/4.644e-8/2.083e-
    `syn001.column`, which R-805 registers in v3 only with function null; §9 moves S4 to I1b. Default: I1b's W27 work
    (model_functions rows) closes it; until then these W27 tests fail. The other three are amendable sample tables
    (add to `AMENDED_TESTS` with their §8.3 reason) — typed_ends needs a look for a real column-specific assumption.
+
+## WO-I1 (envelope; item 9 (a); the tests the registration broke)
+
+DECISION (I1, envelope): U04 keeps "a model id not in `MODEL_BUILDERS`" and adds §4.11's "`syn001.cascade` as a model id (bind `syn001.column` with `top`/`bottom`)", with S11.A14 as evidence. Alternative: §4.11's text alone (drops the catch-all the two existing evidence nodes test). Reversible by: the U04 row.
+DECISION (I1, envelope): the `unit_models` statement also corrects "SYN-001's thirteen, on SYN-001's basis only", false since A2 for the three routing models. Alternative: the column only. Reversible by: the statement.
+DECISION (I1, envelope): L-COL-2 carries S02's "no inside-out or rate-based method" (S02 §14) so the reclassified S02 item has an L-row; L-COL-10's text is B3e's measured outcome. Reversible by: the rows.

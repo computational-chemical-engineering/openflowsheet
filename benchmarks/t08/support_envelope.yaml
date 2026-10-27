@@ -102,9 +102,12 @@ axes:
   - id: unit_models
     title: Unit models
     statement: >-
-      The twenty-two models of `MODEL_BUILDERS`, each with its registered limitations (L02,
-      L27–L31, L-CSTR-1..3; the surrogate's Q0–Q7): SYN-001's thirteen, on SYN-001's basis only,
-      and since M02's join (R-280) the eight C1 models and since W27 Amendment 3 (R-301) M04's
+      The twenty-three models of `MODEL_BUILDERS`, each with its registered limitations (L02,
+      L27–L31, L-CSTR-1..3, L-COL-1..10; the surrogate's Q0–Q7): SYN-001's thirteen, on SYN-001's
+      basis only except the three routing models (`syn001.feed_source`, `syn001.product_sink`,
+      `syn001.stream_splitter`), which since S11 (R-810) bind on every selectable basis (L-S11-1..3);
+      since S11 the column `syn001.column`, on SYN-001's and `wilson-ig-v1`'s bases (L-S11-3); and
+      since M02's join (R-280) the eight C1 models and since W27 Amendment 3 (R-301) M04's
       `c1.reactor_surrogate`, on the `pr-c1-v1` basis only (R-288). `c1.reactor_standin` is
       synthetic only: the stand-in for the C1 reactor (ADR 0034 D9), labelled synthetic in its
       manifest and in every result's identity (R-199, R-231). No promotable surrogate of the real
@@ -120,6 +123,7 @@ axes:
       - c1.tp_flash
       - c1.tp_heater
       - syn001.adiabatic_mixer
+      - syn001.column
       - syn001.component_separator
       - syn001.conversion_reactor
       - syn001.feed_source
@@ -139,6 +143,7 @@ axes:
       - tests/test_t08_kinetic_cstr.py::test_b10_the_model_is_the_thirteenth_builder_with_its_signature
       - tests/test_m02_join.py::test_the_registry_holds_the_twenty_one_models_each_on_its_own_basis
       - tests/test_m02_wo9_reactor.py::test_g8e_the_stand_in_binds_and_says_synthetic_everywhere
+      - tests/test_s11_column_registration.py::test_a39_the_registries_agree_and_the_column_binds_on_syn001_and_wilson
       - check:T05.A17
       - check:T05.A18
       - check:T05.A19
@@ -363,11 +368,16 @@ unsupported:
       - check:T06.A62
 
   - id: U04
-    capability: A model id not in `MODEL_BUILDERS`
-    outcome: The revision binder refuses `model_unsupported(<id>)`.
+    capability: >-
+      A model id not in `MODEL_BUILDERS`; among them `syn001.cascade` as a model id (bind
+      `syn001.column` with `top`/`bottom`)
+    outcome: >-
+      The revision binder refuses `model_unsupported(<id>)`; for `syn001.cascade` its hint names
+      the column with its top and bottom inlets connected (S11 §4.4).
     evidence:
       - tests/test_t05_w1b_revision.py::test_refusal[builders]
       - tests/test_t07_w3f_tie_by_kind.py::test_q2_a2_an_unsupported_tie_reports_the_revision_binders_refusal
+      - tests/test_s11_routing.py::test_a14_the_cascade_is_refused_with_the_column_hint
 
   - id: U05
     capability: >-
@@ -962,18 +972,97 @@ limitations:
     text: >-
       `wilson-ig-v1` (S10's Wilson activity model with an ideal-gas vapour) is selected by
       `record_source: benchmarks/s10/records.yaml` for its three record components (CH3OH,
-      C2H5OH, H2O, in any order), over 300–400 K and 30–200 kPa. Only the routing models bind on
-      it. Its records are in the source repository only, so in a wheel binding is refused
-      `basis_unavailable(wilson-ig-v1)` (R-706, R-811). Premises P1–P3 are checked at binding.
+      C2H5OH, H2O, in any order), over 300–400 K and 30–200 kPa. The routing models and the
+      column (`syn001.column`, L-COL-1..10) bind on it. Its records are in the source repository
+      only, so in a wheel binding is refused `basis_unavailable(wilson-ig-v1)` (R-706, R-811). Premises P1–P3 are checked at binding.
       The S10 VAL-1–3 bands apply, and the VAL-3 latent-heat miss (methanol, +5.72 % against
       5 %) is carried. Results are compared across architectures by tolerance, not bitwise.
     evidence:
       - tests/test_s11_bases.py::test_a09_wilson_without_its_records_is_unavailable
       - tests/test_s11_bases.py::test_a08_the_binder_refuses_unmet_premises
       - tests/test_s11_routing.py::test_a13_the_admission_matrix
+      - tests/test_s11_column_solve.py::test_the_wilson_column_in_a_flowsheet_reproduces_its_registered_root
       - doc:docs/derivations/S10-spec.md
       - doc:docs/s10-validation-report.md
       - doc:docs/derivations/S11-design.md §4.11
+  - id: L-COL-1
+    text: >-
+      The column's feeds are single-phase and declared: one side feed per stage, none at a slot
+      stage (S01 DECISION 8, S02 §1.4), and every side feed on its `feed` port shares one declared
+      phase (the revision reader's one phase per port). A two-phase feed needs a flash and two
+      stages.
+    evidence:
+      - tests/test_s11_column_unit.py::test_a26_each_structural_item_is_refused_at_bind
+      - tests/test_s11_column_unit.py::test_evaluate_refuses_an_inlet_out_of_its_declared_phase
+      - doc:docs/derivations/S02-spec.md
+      - doc:docs/derivations/S11-design.md §4.11
+  - id: L-COL-2
+    text: >-
+      The column has no side draws, pump-arounds, stage efficiencies or hydraulics, and is solved
+      by S02's Newton method only: no inside-out or rate-based method (S02 §14).
+    evidence:
+      - doc:docs/derivations/S02-spec.md §14
+      - doc:docs/derivations/S11-design.md §4.11
+  - id: L-COL-3
+    text: >-
+      A total condenser gives saturated liquid (no subcooling); there is no total reboiler.
+    evidence:
+      - tests/test_s11_column_unit.py::test_a26_each_structural_item_is_refused_at_bind
+      - doc:docs/derivations/S02-spec.md §1
+      - doc:docs/derivations/S11-design.md §4.11
+  - id: L-COL-4
+    text: >-
+      On `wilson-ig-v1` the column's end specifications are ratio, rate and duty only: a purity,
+      recovery or temperature end is refused at binding (S10-C D8).
+    evidence:
+      - tests/test_s11_column_unit.py::test_a27_a_wilson_column_refuses_a_purity_end
+      - doc:docs/derivations/S10C-design.md
+      - doc:docs/derivations/S11-design.md §4.11
+  - id: L-COL-5
+    text: >-
+      No uniqueness, multiplicity or feasibility claim for a column beyond S06 §14: a certificate
+      holds at the converged state, and an inverse specification's feasibility is decided only on
+      S06's registered band.
+    evidence:
+      - tests/test_s11_column_verifier.py::test_a35_the_syn001_column_certificates_verify
+      - doc:docs/derivations/S06-spec.md §14
+      - doc:docs/derivations/S11-design.md §4.11
+  - id: L-COL-6
+    text: >-
+      In a flowsheet a purity end's tolerance acts on the mole fraction directly (`|x − x*|` ≤ the
+      molar-flow tolerance ÷ 1 mol/s, the `F_ref` meaning); the standalone column's acts on `F·x`.
+    evidence:
+      - tests/test_s11_column_face.py::test_a20_the_q7_rows_vanish_at_the_standalone_root
+      - doc:docs/derivations/S11-design.md §4.7.4
+  - id: L-COL-7
+    text: >-
+      On `wilson-ig-v1` the column's Stage B (S08's block re-entry) is tested at the opening level
+      only (S10-C).
+    evidence:
+      - doc:docs/derivations/S10C-spec.md
+      - doc:docs/derivations/S11-design.md §4.11
+  - id: L-COL-8
+    text: >-
+      SYN-001 columns are synthetic (L18): their results are verified, never validated.
+    evidence:
+      - tests/test_s11_column_solve.py::test_the_column_in_a_flowsheet_reproduces_its_registered_root
+      - doc:docs/derivations/S11-design.md §4.11
+  - id: L-COL-9
+    text: >-
+      In a flowsheet a column region has no edge-3 continuation (no revision region has one). The
+      unit's own `evaluate` keeps S02's full standalone path, S08 Stage B included, so the
+      traversal start is the standalone answer.
+    evidence:
+      - tests/test_s11_column_solve.py::test_a_revision_region_has_no_edge_3_continuation
+      - tests/test_s11_column_unit.py::test_evaluate_is_the_standalone_solve
+      - doc:docs/derivations/S11-design.md §10.8
+  - id: L-COL-10
+    text: >-
+      A column under a PTC policy (`T08-ptc-v1`) ends `PTC_MAPPING_INVALID` before any attempt:
+      the PTC mapping does not cover the column's stage variables.
+    evidence:
+      - tests/test_s11_column_solve.py::test_a_column_under_the_ptc_policy_is_refused_typed
+      - doc:docs/S11B_DECISIONS.md
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json

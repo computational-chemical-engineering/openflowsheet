@@ -63,9 +63,10 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
     assert len(facts["operations"]) == 21  # spec §9's 20 and ADR 0019 Amendment 3's `list_audit`
     # Spec §9's 13 SYN-001 models, literal unchanged; M02's join adds the eight C1 models (R-280),
     # the stand-in synthetic only (R-280 (c)); W27 Amendment 3 adds M04's surrogate (R-301), which
-    # has no variant, so it is not synthetic only.
-    assert len([model for model in facts["models"] if model.startswith("syn001.")]) == 13
-    assert len(facts["models"]) == 22
+    # has no variant, so it is not synthetic only. S11 binds S02's column (ADR 0050, R-810;
+    # design note §8.3).
+    assert len([model for model in facts["models"] if model.startswith("syn001.")]) == 14
+    assert len(facts["models"]) == 23
     assert facts["synthetic_models"] == ["c1.reactor_standin"]
     # M01 adds `pr-c1-v1` (ADR 0026); S11 makes S05's `iapws95-v1`, S07's `coolprop-heos-v1` and
     # S10's `wilson-ig-v1` selectable (ADR 0050, R-810).
@@ -278,8 +279,9 @@ def test_m04_and_m05_harvest_rows_map_to_l49_not_the_alphas_l43(envelope: dict[s
 # -- D1-A03: the library-only tripwire (D1, R-561) --------------------------------------------
 
 #: The syn001 models that are library-only: package whose harvest items name them under U04.
-#: The package that binds either model writes its L-rows and reclassifies its U04 items.
-LIBRARY_ONLY = {"syn001.cascade": "S01", "syn001.column": "S02"}
+#: The package that binds one writes its L-rows and reclassifies its U04 items. S11 bound S02's
+#: `syn001.column` (ADR 0050, R-810; L-COL-1..10, S02's items reclassified, R-561).
+LIBRARY_ONLY = {"syn001.cascade": "S01"}
 
 
 def library_only_problems(builders: Any, harvest: list[dict[str, Any]]) -> list[str]:
@@ -336,7 +338,7 @@ def test_d1_a_u04_item_that_loses_its_model_id_trips_the_wire(envelope: dict[str
     assert "syn001.cascade" in problems[0]
     # no vacuous pass: a harvest with the package's U04 items removed is also a problem
     stripped = [i for i in envelope["harvest"] if "U04" not in (i.get("to") or [])]
-    assert len(library_only_problems(revision_binding.MODEL_BUILDERS, stripped)) == 2
+    assert len(library_only_problems(revision_binding.MODEL_BUILDERS, stripped)) == 1
 
 
 # -- C3: the library-only providers (T08 release spec §5.7 Amendment S04; R-568, R-569) --------
