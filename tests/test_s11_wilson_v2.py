@@ -75,6 +75,13 @@ def _hexed(value: Any) -> Any:
     return value
 
 
+def _labelled_v1(got: Any, want: Any) -> bool:
+    """`got` is v1's `want` bit for bit, but labelled `wilson-ig-v2` (S11D_DECISIONS)."""
+    assert want.provider_id == "wilson-ig-v1"
+    assert got.provider_id == PROVIDER_ID
+    return bool(_hexed(dataclasses.replace(got, provider_id=want.provider_id)) == _hexed(want))
+
+
 # -- the states of A75 ---------------------------------------------------------------------------
 
 
@@ -175,7 +182,7 @@ def test_a75_every_v1_answer_bit_for_bit(pair: tuple[str, Any, Any]) -> None:
             )
             want = v1.evaluate_phase(request, CONTEXT)
             got = v2.evaluate_phase(request, CONTEXT)
-            assert _hexed(got) == _hexed(want), (state, phase, derivatives)
+            assert _labelled_v1(got, want), (state, phase, derivatives)
             # With `s` asked as well, the other properties are still v1's, bit for bit.
             if want.status == "ok" and not (derivatives and 0.0 in state.n):
                 with_s = v2.evaluate_phase(
@@ -186,7 +193,7 @@ def test_a75_every_v1_answer_bit_for_bit(pair: tuple[str, Any, Any]) -> None:
                 assert _hexed({k: with_s.derivatives.get(k) for k in names if derivatives}) == (
                     _hexed({k: want.derivatives.get(k) for k in names if derivatives})
                 )
-                assert with_s.provider_id == want.provider_id
+                assert with_s.provider_id == PROVIDER_ID
                 assert with_s.reference_convention == want.reference_convention
             compared += 1
         assert _hexed(v2.stability(state, phase, CONTEXT)) == _hexed(
@@ -194,7 +201,7 @@ def test_a75_every_v1_answer_bit_for_bit(pair: tuple[str, Any, Any]) -> None:
         )
     for state in states:
         flash = FlashRequest(state=state, specification="TP")
-        assert _hexed(v2.flash(flash, CONTEXT)) == _hexed(v1.flash(flash, CONTEXT)), state
+        assert _labelled_v1(v2.flash(flash, CONTEXT), v1.flash(flash, CONTEXT)), state
     assert compared >= 4 * len(states)
 
 
@@ -375,12 +382,14 @@ def test_a78_n_derivatives_of_s_at_a_zero_fraction_are_refused(pair: tuple[str, 
             assert refused.status == "unsupported"
             assert refused.values == {}
             assert refused.message == (f"derivative_singular: ds/dn_{missing} at n_{missing} = 0")
+            assert refused.provider_id == PROVIDER_ID
         answered = _ask(v2, entry, ("T", "P"))
         assert answered.status == "ok"
+        assert answered.provider_id == PROVIDER_ID
         assert set(answered.derivatives["s"]) == {"T", "P"}
 
 
-def test_a78_v1s_refusals_are_returned_unchanged(pair: tuple[str, Any, Any]) -> None:
+def test_a78_v1s_refusals_are_returned_labelled_v2(pair: tuple[str, Any, Any]) -> None:
     _, v1, v2 = pair
     (t_lo, _), _ = v1.records.temperature_domain, None
     outside = StreamState(n=(1.0, 1.0, 1.0), temperature=t_lo - 1.0, pressure=101_325.0)
@@ -398,7 +407,7 @@ def test_a78_v1s_refusals_are_returned_unchanged(pair: tuple[str, Any, Any]) -> 
             CONTEXT,
         )
         assert got.status == "out_of_domain"
-        assert _hexed(got) == _hexed(want)
+        assert _labelled_v1(got, want)
 
 
 # -- the equilibrium form (§4.5, WO-D4) -----------------------------------------------------------
