@@ -142,3 +142,24 @@ revision). For the reviewer: O-C3-1, O-C4-1, O-C6-1, and C6-2 (the m02 registry 
 asserted on the unit's answer, not the plan message).
 
 Next: track C's single `reviewer` pass (C1–C6), then merge `wp/S11-c` into `wp/S11`.
+
+## WO-I1b (rulings items 5 and 7)
+
+- Item 5 (R-834): C1-3 accepted; C1-4 reverted. `test_a46_saturated_flow_block_at_the_top_of_the_range` is the
+  restated clause: P = p_σ(647.0 K)(1 − 1e-6) and (1 − 1e-4), central step 1e-6, fixed bound 1e-5 (`FD_TOL_TOP`), the
+  upper stencil point asserted below p_σ(647.0 K); the |D(h) − D(h/2)| term is gone. Q-C1 is closed by R-834.
+  Worst value of each A46 test, x86-64 (scaled error as `_fd_worst`; identities relative):
+
+  | test | worst | bound |
+  |---|---|---|
+  | phase flow block, LIQUID (20 states) | 6.57e-7 | 1e-6 |
+  | phase flow block, VAPOR (20 states) | 2.57e-10 | 1e-6 |
+  | saturated, 18 interior states | 1.33e-8 | 1e-6 |
+  | saturated, p_σ(T_t)(1 + 1e-6), step 5e-7 | 8.31e-9 | 1e-6 |
+  | saturated, p_σ(647.0 K)(1 − 1e-6), step 1e-6 | 1.30e-6 | 1e-5 |
+  | saturated, p_σ(647.0 K)(1 − 1e-4), step 1e-6 | 3.53e-7 | 1e-5 |
+  | isentropic (20 states) | 1.98e-7 | 1e-6 |
+  | identity dh/dP = v − T dv/dT (40 states) | 8.05e-12 | 1e-9 |
+  | identity dHs/dP_I = −n T_s (dv/dT)_I (20 states) | 9.01e-14 | 1e-9 |
+
+  aarch64 values come from CI at I2.
