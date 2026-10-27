@@ -642,7 +642,7 @@ class _Machine:
                 SizedItem(
                     drive_id,
                     unit.unit_id,
-                    "drive",
+                    "machine.drive",
                     {"power": size_output(drive_id, "power")},
                     (record,),
                     None,

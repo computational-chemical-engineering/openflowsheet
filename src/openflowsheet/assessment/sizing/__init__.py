@@ -77,7 +77,7 @@ ItemFamily = Literal[
     "machine.pump",
     "machine.compressor",
     "machine.turbine",
-    "drive",
+    "machine.drive",
     "column.shell",
     "column.trays",
     "reactor.vessel",

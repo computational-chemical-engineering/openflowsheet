@@ -153,6 +153,11 @@ I1's.
   `--check` exit 0, v2 sha256 `6b449911…d707c` unchanged. `tests/test_e01_a_links.py` 4 passed; with core, m04 A37,
   m02 G1, t08_adr0025, m05 study record, t08_w4 package data: 297 passed. The study/optimization-report `$ref`s are B3's.
 
+## WO-A3 (cost data and forms, §9.2)
+
+- DECISION: the drive item's family id → `machine.drive` (§9.2.4 V names it; A2 had `drive`). Alternative: keep
+  `drive` and list it in the set's family. Reversible by: reverting the rename commit (2 lines in `sizing/`).
+
 ## Facts confirmed before WO-A3 (2026-10-27)
 
 - FACT (Q7, pinned release): IDAES-PSE **2.13.0** (PyPI upload 2026-09-16, > 2 weeks old; latest). Wheel
