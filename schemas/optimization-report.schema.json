@@ -620,8 +620,13 @@
                     "START_OUTSIDE_BOUNDS",
                     "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
                     "UNKNOWN_VARIABLE",
+                    "ASSESSMENT_OUTPUT_UNKNOWN",
+                    "ASSESSMENT_OUTPUT_UNAVAILABLE",
+                    "ASSESSMENT_PARAMETER_STRUCTURAL",
+                    "ASSESSMENT_PARAMETER_DECISION",
                     "HESSIAN_UNAVAILABLE",
                     "SIMULATION_NOT_READY",
+                    "ASSESSMENT_REGIME_INADMISSIBLE",
                     "NLP_SOLVER_UNAVAILABLE"
                   ]
                 }
@@ -671,8 +676,13 @@
             "START_OUTSIDE_BOUNDS",
             "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
             "UNKNOWN_VARIABLE",
+            "ASSESSMENT_OUTPUT_UNKNOWN",
+            "ASSESSMENT_OUTPUT_UNAVAILABLE",
+            "ASSESSMENT_PARAMETER_STRUCTURAL",
+            "ASSESSMENT_PARAMETER_DECISION",
             "HESSIAN_UNAVAILABLE",
             "SIMULATION_NOT_READY",
+            "ASSESSMENT_REGIME_INADMISSIBLE",
             "NLP_SOLVER_UNAVAILABLE",
             "KKT_POINT_VERIFIED",
             "NOT_VERIFIED",
