@@ -112,7 +112,10 @@ no must-fix): `S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61`; B2 1.
    as one of the test cases"). Target: Charalambous et al., Nature 632 (2024), doi 10.1038/s41586-024-07683-8; data Zenodo
    10.5281/zenodo.11244258 (cifs, simulated isotherms, heat capacities, all case results); layer software on request only.
    Needs: adsorption-isotherm property model (CO2/N2/H2O), TSA/TVSA cycle unit (PrISMa's "ideal" model first), TEA (nCAC, CCC)
-   and LCA adapters, MEA reference, CO2 compression (S11). Scoping/design pass after S11.
+   and LCA adapters, MEA reference, CO2 compression (S11). Scoping digest `docs/briefs/PrISMa-scoping.md` (2026-10-27):
+   equilibrium shortcut (SI §3.2, Ajenifuja 2020), GCMC isotherms + IAST, compression to 110 bar; TEA partly blocked
+   (Aspen ACCE costs), LCA rebuild blocked (ecoinvent) but comparable; first target UK cement TSA-dry (MgMOF74, 13X, CALF-20).
+   Design pass after S11.
 4. Ternary column claims need a methanol+ethanol refit (S10 S-4).
 5. Design-lane leftovers: S07 B-42, F-20.2, Q-A1-2; ADR 0046–0049 acceptance; S03 B6-1..B6-4; S10 B-86, B-87, B-90, B-91,
    verdict F1/F2; S08 W5-7 (X31 in `evidence` not `requirements`, schema takes D/A ids), W5-9 classes; S10-C W5-1/W5-2;
