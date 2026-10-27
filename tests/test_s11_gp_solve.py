@@ -32,7 +32,9 @@ from s11_gp_support import (
     solve,
 )
 
+from openflowsheet.application.binding import Unbound
 from openflowsheet.application.policies import T06_REVISION_V2
+from openflowsheet.application.revision_binding import bind_revision_flowsheet
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import (
@@ -438,3 +440,17 @@ def test_a81_the_pump_is_not_admitted_on_wilson() -> None:
             outlet_pressure=2.0e5,
             efficiency=0.75,
         )
+
+
+def test_a81_the_binder_refuses_the_pump_on_wilson() -> None:
+    """A81's binder half (units design §4.7): GP-M2 with its machine a `thermal.pump` is refused
+    `model_unsupported(thermal.pump)` with the no-volume reason."""
+    document = committed_case("GP-M2")
+    (machine,) = [entry for entry in document["instances"] if entry["id"] == "M"]
+    machine["model"]["id"] = "thermal.pump"
+    refused = bind_revision_flowsheet(document)
+    assert isinstance(refused, Unbound), refused
+    assert (refused.kind, refused.detail) == ("unsupported", "model_unsupported(thermal.pump)")
+    assert refused.hint is not None and refused.hint.endswith(
+        "; wilson-ig-v2 has no liquid volume, which a pump needs (L-GP-1)"
+    )

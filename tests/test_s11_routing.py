@@ -24,6 +24,8 @@ from openflowsheet.application import revision_binding
 from openflowsheet.application.binding import Unbound
 from openflowsheet.application.revision_binding import (
     MODEL_BASES,
+    MODEL_BUILDERS,
+    MODEL_SIGNATURES,
     RevisionBinding,
     _basis_refusal,
     bind_revision_flowsheet,
@@ -285,35 +287,88 @@ def test_a09_a_wilson_revision_without_its_records_is_unavailable(
     assert refused.hint is not None and refused.hint.startswith("records_missing: ")
 
 
-# -- S11.A13: the admission matrix and its refusals --------------------------------------------
+# -- S11.A13, S11.A82: the admission matrix and its refusals -----------------------------------
 
-#: §4.4's reasons, by the pair's class.
+#: The first pass's §4.4 reasons, by the pair's class.
 PURE_FLUID = (
     "pure-fluid units are S11b (two-phase pure-fluid streams are not representable in nTP-v1)"
 )
 GAMMA_PHI = "its EO face reads lnK and h_<c>; γ–φ faces are S11c"
 C1_PHYSICS = "the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)"
 #: SHA-256 over every refused (model, basis) pair between SYN-001 and C1, each as
-#: `model|provider|detail|hint`, measured at the base `8c34ecb0` (22 pairs; the column, which the
-#: base did not register, is not among them).
+#: `model|provider|detail|hint`, measured at the base `8c34ecb0` (22 pairs; the column and the
+#: `thermal.*` models, which the base did not register, are not among them).
 BASE_SYN001_C1_HINTS = "71983ce5c6c5108800dbfbe6417b1a5ec39109fe4ed6f2ba853a4b9f67b3f284"
 COLUMN = "syn001.column"
 COLUMN_VAPOUR = "pr-c1-v1 is vapour-only (S02 §0)"
 COLUMN_PURE = "a pure fluid has no stage composition"
+#: Units design §4.7: the five γ–φ-faced K02/T05 units, which bind on Wilson too, and the seven
+#: `thermal.*` models, on the pure-fluid bases, the compressor and turbine on Wilson as well.
+FIVE = (
+    "syn001.tp_heater",
+    "syn001.tp_flash",
+    "syn001.ph_flash",
+    "syn001.valve",
+    "syn001.adiabatic_mixer",
+)
+THERMAL = (
+    "thermal.heater",
+    "thermal.valve",
+    "thermal.mixer",
+    "thermal.flash",
+    "thermal.pump",
+    "thermal.compressor",
+    "thermal.turbine",
+)
+THERMAL_ON_WILSON = ("thermal.compressor", "thermal.turbine")
+PURE = ("iapws95-v1", "coolprop-heos-v1")
+WILSON = WILSON_BASIS.provider_id
+#: §4.7's refusal reasons (rewritten at I1b), with their namesakes.
+DECLARED_REGIME = "use thermal.{} (ADR 0051: pure-fluid streams are declared-regime)"
+THERMAL_NAMESAKE = {
+    "syn001.tp_heater": "heater",
+    "syn001.valve": "valve",
+    "syn001.adiabatic_mixer": "mixer",
+    "syn001.ph_flash": "flash",
+    "syn001.tp_flash": "flash",
+    "syn001.liquid_pump": "pump",
+}
+LIFTED = "use syn001.{} (lifted two-phase streams)"
+LIFTED_NAMESAKE = {
+    "thermal.heater": "tp_heater",
+    "thermal.valve": "valve",
+    "thermal.mixer": "adiabatic_mixer",
+    "thermal.flash": "ph_flash",
+}
+NO_VOLUME = "wilson-ig-v2 has no liquid volume, which a pump needs (L-GP-1)"
+NO_ENTROPY = "thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)"
 
 
-def test_a13_the_admission_matrix() -> None:
+def _admission(model: str) -> frozenset[str]:
+    """§4.7's row for `model` (the first pass's §4.4 for the routing models, column and C1)."""
+    if model in ROUTING:
+        return frozenset({"syn001", *NEW})
+    if model == COLUMN or model in FIVE:
+        # §5's I1 row, §9: the column on SYN-001's basis and the Wilson registry row's provider.
+        return frozenset({"syn001", WILSON})
+    if model in THERMAL:
+        return frozenset({*PURE, *((WILSON,) if model in THERMAL_ON_WILSON else ())})
+    if model.startswith("syn001."):
+        return frozenset({"syn001"})
+    assert model.startswith("c1."), model
+    return frozenset({"pr-c1-v1"})
+
+
+def test_a13_a82_the_admission_matrix() -> None:
+    assert {*FIVE, *THERMAL} <= set(MODEL_BASES)
     for model, providers in MODEL_BASES.items():
-        if model in ROUTING:
-            assert providers == frozenset({"syn001", *NEW}), model
-        elif model == COLUMN:
-            # §5's I1 row, §9: SYN-001's basis and the Wilson registry row's provider id.
-            assert providers == frozenset({"syn001", WILSON_BASIS.provider_id}), model
-        elif model.startswith("syn001."):
-            assert providers == frozenset({"syn001"}), model
-        else:
-            assert model.startswith("c1.") and providers == frozenset({"pr-c1-v1"}), model
+        assert providers == _admission(model), model
     assert "syn001.cascade" not in MODEL_BASES
+
+
+def test_a82_the_registries_hold_thirty_members() -> None:
+    assert set(MODEL_BASES) == set(MODEL_BUILDERS) == set(MODEL_SIGNATURES)
+    assert len(MODEL_BASES) == 30
 
 
 def test_a13_the_syn001_c1_hints_are_the_bases() -> None:
@@ -321,8 +376,10 @@ def test_a13_the_syn001_c1_hints_are_the_bases() -> None:
     digest = hashlib.sha256()
     count = 0
     for model in sorted(MODEL_BASES):
+        if model == COLUMN or model in THERMAL:
+            continue
         for basis in (SYN001_BASIS, c1):
-            if basis.provider_id in MODEL_BASES[model] or model == COLUMN:
+            if basis.provider_id in MODEL_BASES[model]:
                 continue
             refused = _basis_refusal(model, basis)
             digest.update(f"{model}|{basis.provider_id}|{refused.detail}|{refused.hint}\n".encode())
@@ -330,18 +387,29 @@ def test_a13_the_syn001_c1_hints_are_the_bases() -> None:
     assert (count, digest.hexdigest()) == (22, BASE_SYN001_C1_HINTS)
     # The column on C1's basis, a pair the base did not have: §4.4's reason.
     assert _basis_refusal(COLUMN, c1).hint == (
-        f"{COLUMN} binds on the syn001 basis only, not on this revision's pr-c1-v1; "
-        f"{COLUMN_VAPOUR}"
+        f"{COLUMN} binds on the syn001 basis only, not on this revision's pr-c1-v1; {COLUMN_VAPOUR}"
     )
+    # A `thermal.*` model on SYN-001's or C1's basis: §4.7's reason.
+    for model in THERMAL:
+        for basis in (SYN001_BASIS, c1):
+            refused = _basis_refusal(model, basis)
+            assert (refused.kind, refused.detail) == ("unsupported", f"model_unsupported({model})")
+            assert refused.hint is not None and refused.hint.endswith(f"; {NO_ENTROPY}"), model
 
 
 def _expected_reason(model: str, provider: str) -> str | None:
     if model == COLUMN:
-        return COLUMN_PURE if provider in ("iapws95-v1", "coolprop-heos-v1") else None
+        return COLUMN_PURE if provider in PURE else None
     if model in ROUTING or model in ("c1.feed_source", "c1.product_sink", "c1.stream_splitter"):
         return None
-    if provider in ("iapws95-v1", "coolprop-heos-v1"):
+    if provider in PURE:
+        if model in THERMAL_NAMESAKE:
+            return DECLARED_REGIME.format(THERMAL_NAMESAKE[model])
         return PURE_FLUID
+    if model == "thermal.pump" or model == "syn001.liquid_pump":
+        return NO_VOLUME
+    if model in LIFTED_NAMESAKE:
+        return LIFTED.format(LIFTED_NAMESAKE[model])
     return GAMMA_PHI if model.startswith("syn001.") else C1_PHYSICS
 
 
@@ -350,13 +418,17 @@ def test_a13_every_refused_pair_on_a_new_basis_names_its_reason(provider: str) -
     basis = next(b for b in selectable_bases() if b.provider_id == provider)
     namesakes = dict(revision_binding._SAME_FUNCTION)
     refused_models = sorted(m for m, on in MODEL_BASES.items() if provider not in on)
-    admitted = {*ROUTING, COLUMN} if provider == WILSON_BASIS.provider_id else set(ROUTING)
+    admitted = {m for m in MODEL_BASES if provider in _admission(m)}
+    if provider == WILSON:
+        assert admitted == {*ROUTING, COLUMN, *FIVE, *THERMAL_ON_WILSON}
+    else:
+        assert admitted == {*ROUTING, *THERMAL}
     assert set(MODEL_BASES) - set(refused_models) == admitted
     for model in refused_models:
         refused = _basis_refusal(model, basis)
         own = ", ".join(sorted(MODEL_BASES[model]))
         hint = f"{model} binds on the {own} basis only, not on this revision's {provider}"
-        if model in namesakes and namesakes[model] in ROUTING:
+        if model in namesakes and namesakes[model] in admitted:
             hint += f"; on {provider} the same function is {namesakes[model]}"
         reason = _expected_reason(model, provider)
         if reason is not None:
@@ -372,7 +444,7 @@ def test_a13_every_refused_pair_on_a_new_basis_names_its_reason(provider: str) -
     ("case", "model"),
     [
         pytest.param("iapws95", "syn001.tp_heater", id="iapws95-heater"),
-        pytest.param("wilson", "syn001.tp_heater", id="wilson-heater"),
+        pytest.param("wilson", "thermal.heater", id="wilson-thermal-heater"),
         pytest.param("wilson", "c1.stream_splitter", id="wilson-c1-splitter"),
         pytest.param("coolprop", "syn001.liquid_pump", id="coolprop-pump", marks=needs_coolprop),
     ],
