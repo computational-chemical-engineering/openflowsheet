@@ -241,3 +241,7 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
   the Wilson-machine WO assignment.
 - Still failing on the branch, not D5/D6's: `test_m06_w27_coverage` (4), `test_l01_retake` (6 errors) — I1b's
   `model_functions`/S4.
+
+## WO-I1b (Wilson machines)
+
+- DECISION: Wilson machine wiring (C3-4) → I1b's first commits. Alternative: a separate WO. Reversible by: reverting them.
