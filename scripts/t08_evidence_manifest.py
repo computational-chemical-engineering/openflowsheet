@@ -800,6 +800,10 @@ def _m_ptc_results(inputs: Inputs) -> Part:
     return ("pass" if all(present.values()) else "fail"), {"committed": present}
 
 
+#: `syn001.*` members of the working envelope that are not T08's (B13's rule): S11's column.
+_NOT_T08_SYN001 = frozenset({"syn001.column"})
+
+
 def _m_b27(inputs: Inputs) -> Part:
     envelope = yaml.safe_load(ENVELOPE.read_text(encoding="utf-8"))
     axes = {row["id"]: row for row in envelope["axes"]}
@@ -809,8 +813,15 @@ def _m_b27(inputs: Inputs) -> Part:
     limitation_ids = {row["id"] for row in envelope["limitations"]}
     facts = {
         # T08's thirteen SYN-001 models. The envelope is v0.2's working one (R-193); since M02's
-        # join it also lists the eight C1 models (R-280 (c)), which are not T08's (B13's rule).
-        "models": len([model for model in models if model.startswith("syn001.")]),
+        # join it also lists the eight C1 models (R-280 (c)), and since S11 S02's column (ADR 0050,
+        # R-810), which are not T08's (B13's rule).
+        "models": len(
+            [
+                model
+                for model in models
+                if model.startswith("syn001.") and model not in _NOT_T08_SYN001
+            ]
+        ),
         "offered_policies": policies,
         "u07_names_kinetic_cstr": "kinetic_cstr" in u07["outcome"],
         "l_cstr_rows": sorted(i for i in limitation_ids if i.startswith("L-CSTR")),
