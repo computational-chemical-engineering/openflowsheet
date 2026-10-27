@@ -430,3 +430,22 @@ commit). Not done, in order:
   `pressure_drop`/`outlet_vapor_fraction` and, in quality mode, its specification choice (as B3b exempts the
   column's optional parameters: `ModelSignature` cannot list them; `thermal_binding`'s docstring says so).
   Alternative: samples without a quality-mode heater (would hide the gap). Reversible by: the `quality_mode` block.
+- Item 6 (§8.3 count tests and registry corpora): `test_m02_join`'s registry table (in `AMENDED_TESTS`) gains the five
+  on Wilson and the seven thermal rows; `test_t08_b50_surface_content`'s `V02_ADDITIONS` registers the seven under
+  R-816 and strips them with the column (`S11_MODELS`); the W5e `list_models` fixtures regenerated
+  (`t07_schema_fixtures.py --write`; I1's `5d89a50c` precedent); `test_t07_r6_hints` proves the 11 thermal triples on
+  `THERMAL_SAMPLES` (`THERMAL_COVERED`).
+- DECISION (item 6): base tests that count or tabulate over every registered model and that §8.3 does not name
+  (`test_t07_r6_hints` count and coverage table, `test_t07_w5e…::test_g_r6_6…`) are restricted to the ids outside
+  `thermal.` and the thermal part is pinned apart (C6-2 precedent; the base's recorded operands stand), the W5e
+  thermal entries in `test_s11_thermal_binding::test_list_models_lists_each_thermal_pin_with_its_encodings`.
+  Alternative: amend them under §8.3 (needs a design-lane erratum). Reversible by: the filters.
+- DECISION (item 6): R-816's register entry spells the seven ids in full (`thermal.valve`, …), which
+  `test_m07a_a51_each_v0_2_addition_is_named_by_its_register_entry` requires of the entry naming an addition; the
+  decision is unchanged. Alternative: cite another entry. Reversible by: the one register line.
+- OPEN (design lane): `test_adr_0008_transient_readiness::test_e1_every_bindable_model_has_declarations_u1_reads`
+  fails since the registration commit: `thermal.heater`, `valve`, `mixer` and the machines declare no module-level
+  `EQUATIONS` U1 can read (they build `_BASE` + per-mode/per-machine rows; `machines.MODEL_IDS` is a dict, U1 reads a
+  tuple). Default: give heater/valve/mixer a module `EQUATIONS` mapping (configuration → rows, as `flash.py` has a
+  tuple) and the machines module `EQUATIONS` by machine plus a tuple of ids; this changes the four modules' bytes
+  (their manifests' `artifact_hash`), so it wants the reviewer's eye. Not done here.

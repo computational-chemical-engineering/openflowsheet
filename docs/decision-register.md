@@ -16006,8 +16006,8 @@ gap, and that distinguishes it from R-615's case.
 | Affected packages | S11 (track C, I1b), W27 v3, T08 envelope |
 
 **Decision.**
-- Seven models: `thermal.heater` (T, duty or vapour-fraction mode), `valve`, `mixer`, `flash`, `pump`,
-  `compressor`, `turbine`.
+- Seven models: `thermal.heater` (T, duty or vapour-fraction mode), `thermal.valve`, `thermal.mixer`,
+  `thermal.flash`, `thermal.pump`, `thermal.compressor`, `thermal.turbine`.
 - All seven are admitted on both pure-fluid bases; `compressor` and `turbine` also on `wilson-ig-v2`, vapour only.
 - Each model refuses any provider outside its identity allow-list.
 

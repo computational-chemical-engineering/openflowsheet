@@ -57,15 +57,18 @@ C1 = frozenset({"pr-c1-v1"})
 #: every basis except C1's. Wilson's is `wilson-ig-v2` since S11 WO-D5 (ADR 0051, units design
 #: §4.6).
 ROUTING = frozenset({"syn001", "iapws95-v1", "coolprop-heos-v1", "wilson-ig-v2"})
+#: S11 units design §4.7 (I1b): the five γ–φ-faced K02/T05 units also bind on Wilson's basis.
+SYN001_WILSON = frozenset({"syn001", "wilson-ig-v2"})
+PURE_FLUID = frozenset({"iapws95-v1", "coolprop-heos-v1"})
 REGISTERED: dict[str, frozenset[str]] = {
     "syn001.feed_source": ROUTING,
-    "syn001.adiabatic_mixer": SYN001,
-    "syn001.tp_heater": SYN001,
-    "syn001.tp_flash": SYN001,
+    "syn001.adiabatic_mixer": SYN001_WILSON,
+    "syn001.tp_heater": SYN001_WILSON,
+    "syn001.tp_flash": SYN001_WILSON,
     "syn001.stream_splitter": ROUTING,
     "syn001.product_sink": ROUTING,
-    "syn001.ph_flash": SYN001,
-    "syn001.valve": SYN001,
+    "syn001.ph_flash": SYN001_WILSON,
+    "syn001.valve": SYN001_WILSON,
     "syn001.liquid_pump": SYN001,
     "syn001.conversion_reactor": SYN001,
     "syn001.component_separator": SYN001,
@@ -84,6 +87,15 @@ REGISTERED: dict[str, frozenset[str]] = {
     # S11 (ADR 0050, R-810; design note §5's I1 row, §9): the column on SYN-001's basis and the
     # Wilson registry row's provider id.
     "syn001.column": frozenset({"syn001", "wilson-ig-v2"}),
+    # S11 units design §4.7 (I1b, §8.3): the seven `thermal.*` models on the pure-fluid bases, the
+    # compressor and turbine on Wilson as well.
+    "thermal.heater": PURE_FLUID,
+    "thermal.valve": PURE_FLUID,
+    "thermal.mixer": PURE_FLUID,
+    "thermal.flash": PURE_FLUID,
+    "thermal.pump": PURE_FLUID,
+    "thermal.compressor": PURE_FLUID | {"wilson-ig-v2"},
+    "thermal.turbine": PURE_FLUID | {"wilson-ig-v2"},
 }
 
 

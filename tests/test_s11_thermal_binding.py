@@ -780,3 +780,28 @@ def test_mixed_inlet_declarations_are_ambiguous() -> None:
     document = mixing("liquid", "vapor_liquid")
     document["connections"][1]["phase_capability"] = "vapor"
     assert refused(document) == Unbound("unsupported", "port_phase_ambiguous(U.inlet)")
+
+
+def test_list_models_lists_each_thermal_pin_with_its_encodings(tmp_path: Any) -> None:
+    """G-R6-6 for the `thermal.*` family (I1b): `list_models` serves the seven, and each pin's and
+    each option's `specifications` is its `pin_encodings` (7 in all: the heater's two options,
+    the flash's duty, and each pressure-changer's outlet pressure)."""
+    from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.revision_binding import MODEL_SIGNATURES, pin_encodings
+
+    with LocalApplication.create(tmp_path / "p", project_id="s11-thermal") as application:
+        view = application.list_models().as_document()
+    served = [model for model in view["models"] if model["model_id"].startswith("thermal.")]
+    assert sorted(model["model_id"] for model in served) == sorted(thermal_binding.SIGNATURES)
+    checked = 0
+    for model in served:
+        signature = MODEL_SIGNATURES[model["model_id"]]
+        options = [o for c in signature.choices for o in c.options]
+        listed = [*model["pins"], *(o for c in model["choices"] for o in c["options"])]
+        for entry, pin in zip(listed, (*signature.pins, *options), strict=True):
+            assert entry["name"] == pin.name
+            assert entry["specifications"] == [
+                e.as_document() for e in pin_encodings(signature, pin)
+            ]
+            checked += 1
+    assert checked == 7
