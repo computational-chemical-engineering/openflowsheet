@@ -52,6 +52,10 @@ in the run log below.
   the routing models first bind on those bases; A1 tests `provider_for` directly (the binder refuses
   `model_unsupported` before it constructs a provider). Alternative: a monkeypatched `MODEL_BASES` in A1. Reversible
   by: n/a (test placement).
+- DECISION: which bases does L01's measurement binding (`benchmarks/l01/retake.py`) carry now that the installed
+  binder has 127? → the bases whose providers W27 v1/v2 have provider lines for (`syn001`, `pr-c1-v1`), then
+  `pr-lib-v1`, so W27v2-A23's output is unchanged; with all 127 the v2 snapshot refuses `iapws95-v1` (W27-R63) and the
+  re-take cannot run. Alternative: carry all 127 and move the re-take to W27 v3. Reversible by: reverting this commit.
 
 ## Run log
 
