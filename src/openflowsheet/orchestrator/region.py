@@ -148,6 +148,7 @@ __all__ = [
     "RecoveryStart",
     "RegionResult",
     "Regime",
+    "StagedSplits",
     "VapourOnlyForm",
     "ZeroFlowForm",
     "region_ptc_problem",
@@ -300,6 +301,40 @@ class DormancyForm:
     label: tuple[str, str, str]
     #: The outlet's declared phase, which names the item's absence in a cause string (§7.8 (i)).
     declared: PhaseSignature
+
+
+@dataclass(frozen=True)
+class StagedSplits:
+    """The lifted splits of one *staged unit* (S11 design note §10.2, R-822): an instance whose
+    rows describe several splits (its model is in `splits.STAGED_MODELS`; the column's
+    equilibrium stages). Each split's `unit` is its **key**, an opaque string the instance owns;
+    the instance is the split's **owner**. The per-split maps sit beside the descriptors, as the
+    registry's do, keyed by the split key; there are no vapour-only forms (a staged unit that
+    needs them is a design-lane amendment).
+
+    `other_squared_rows` are the instance's `molar_flow_squared` rows that are no split's
+    equilibrium rows (§10.3): its own statement, so `splits.check_agreement` still leaves no such
+    row unclaimed."""
+
+    splits: tuple[LiftedSplit, ...]
+    closure_types: Mapping[str, ClosureType]
+    zero_flow_forms: Mapping[str, ZeroFlowForm]
+    split_temperatures: Mapping[str, tuple[str, ...]]
+    other_squared_rows: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        keys = [split.unit for split in self.splits]
+        if not keys:
+            raise ValueError("staged_splits_empty: a staged unit supplies at least one split")
+        if len(set(keys)) != len(keys):
+            raise ValueError(f"staged_split_keys_repeated: {keys}")
+        for name in ("closure_types", "zero_flow_forms", "split_temperatures"):
+            found = set(getattr(self, name))
+            if found != set(keys):
+                raise ValueError(
+                    f"staged_split_map_disagrees({name}): keys {sorted(found)}, splits "
+                    f"{sorted(keys)}"
+                )
 
 
 def syn001_lifted_splits(components: Sequence[str]) -> tuple[LiftedSplit, ...]:
@@ -1053,14 +1088,19 @@ type OpeningEntry = LiftedSplit | DormancyForm
 
 
 def _opening_order(
-    splits: Sequence[LiftedSplit], dormancy: Sequence[DormancyForm], units: Sequence[str]
+    splits: Sequence[LiftedSplit],
+    dormancy: Sequence[DormancyForm],
+    units: Sequence[str],
+    owners: Mapping[str, str] | None = None,
 ) -> tuple[OpeningEntry, ...]:
     """T05b spec §7.8 (ii) 1's pass order: units in declaration order (`units`, the region's);
     within a unit its lifted split, then its dormancy-form outlets as `dormancy` lists them (an
-    exchanger's hot before cold)."""
+    exchanger's hot before cold). A staged unit's splits (S11 §10.2) sit at their owner's
+    position, in the order supplied."""
     at = {unit: index for index, unit in enumerate(units)}
+    owner = owners or {}
     keyed: list[tuple[tuple[int, int, int], OpeningEntry]] = [
-        ((at[split.unit], 0, k), split) for k, split in enumerate(splits)
+        ((at[owner.get(split.unit, split.unit)], 0, k), split) for k, split in enumerate(splits)
     ]
     keyed += [((at[form.unit], 1, k), form) for k, form in enumerate(dormancy)]
     return tuple(entry for _, entry in sorted(keyed, key=lambda pair: pair[0]))
@@ -1742,6 +1782,7 @@ def solve_region(
     item0_opening_source: Literal["initializer", "eo_recovery_start"] = "initializer",
     warm_start: bool = False,
     vapour_only_forms: Mapping[str, VapourOnlyForm] | None = None,
+    split_owners: Mapping[str, str] | None = None,
 ) -> RegionResult:
     """§6's region solve from `state`, a full state over `spec.variable_ids` (the initializer),
     under ADR 0005's contract (T03 §4) as the policy's `phase_contract` states it.
@@ -1758,7 +1799,9 @@ def solve_region(
     closure sets to its `T`; a PH-type split without them under v2 is a defect (`ValueError`).
     Under v1 none of the five is read. `vapour_only_forms` (M02 design note §14.2 B13;
     `splits.vapour_only_forms`) are the splits' vapour-only forms, read in every `TWO_PHASE`
-    attempt; SYN-001's splits have none.
+    attempt; SYN-001's splits have none. `split_owners` (S11 §10.2, `splits.split_owners`) maps a
+    staged unit's split keys to the instance that owns them: a split is active iff its owner is
+    one of `region.units`, and opens at its owner's position; a key it omits is its own owner.
 
     Under `policy.globalization.eo_core = "ptc"` (T04 §7.1) every attempt runs the PTC core on
     `mass_mapping`'s holdups, validated before anything is evaluated: a mapping that fails T04
@@ -1809,6 +1852,7 @@ def solve_region(
             item0_opening_source=item0_opening_source,
             warm_start=warm_start,
             vapour_only_forms=vapour_only_forms,
+            split_owners=split_owners,
         )
     except _KernelRefusedError as refused:
         return RegionResult(
@@ -1841,6 +1885,7 @@ def _solve_region(
     item0_opening_source: Literal["initializer", "eo_recovery_start"] = "initializer",
     warm_start: bool = False,
     vapour_only_forms: Mapping[str, VapourOnlyForm] | None = None,
+    split_owners: Mapping[str, str] | None = None,
 ) -> RegionResult:
     if recovery is not None and compile_level is None:
         raise ValueError("a recovery solve compiles its λ-levels, and was given no compiler")
@@ -1873,7 +1918,10 @@ def _solve_region(
 
     context = new_context()
     scaling = Scaling.from_spec(spec)
-    active_splits = [split for split in splits if split.unit in set(region.units)]
+    # S11 §10.2 (R-822): a split is active iff its owner is a unit of the region.
+    owners: Mapping[str, str] = split_owners or {}
+    inside = set(region.units)
+    active_splits = [split for split in splits if owners.get(split.unit, split.unit) in inside]
     structure = compiled.structural_pattern() if hasattr(compiled, "structural_pattern") else None
 
     # T05b spec §6.6: v2's rules (§6.2–§6.5) are gated on the literal; under v1 no split is PH-type.
@@ -1896,7 +1944,7 @@ def _solve_region(
     current = {name: float(state[name]) for name in spec.variable_ids}
     # T05b spec §7.8 (ii) as amended: the opening fixed point's pass order, and attempt 0's item
     # reference — the items of the start as supplied, before any projection.
-    order = _opening_order(active_splits, dormancy, region.units) if v2 else ()
+    order = _opening_order(active_splits, dormancy, region.units, owners) if v2 else ()
     supplied_items = frozenset(item for item, _ in _items(dormancy, current))
     projections: list[str] = []
     regimes: dict[str, Regime] = {}

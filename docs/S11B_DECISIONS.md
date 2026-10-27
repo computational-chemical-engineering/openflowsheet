@@ -6,4 +6,104 @@ isolated and revertible. Measurements go in the run log below.
 
 ## Decisions
 
+DECISION: Q8 (does the application accept `s01-default-v1` for a revision solve?) → fact: no; `application/policies.APPLICATION_POLICIES` holds T06-revision-v2, T04-W12, T08-ptc-v1, T08-warm-v1 only. The note's default (register `s11-column-v1` = `S01_DEFAULT_V1`, isolated commit) is B3's and not done (B3 stopped at Q9). Alternative: n/a. Reversible by: n/a.
+DECISION: Q7 (does the binder require every multiplicity-1 port wired?) → fact: it requires every *declared* material port wired, of any multiplicity (`bind_revision_flowsheet`, `port_unwired`), so `many` does not make `top`/`bottom` optional; `ColumnUnit.ports()` declares only the ports its instance wires (the model's `PORTS` lists all five). Alternative: an optional-port notion in the binder (track A / I1 file, frozen-adjacent). Reversible by: making `ports()` return `PORTS`.
+DECISION (escalated): where the column's end specifications are read → instance parameters `condenser.<kind>[.<attr>]`, `reboiler.<kind>[.<attr>]` (a `role: fixed` specification with target `parameters.<end>.<kind>…` lands there too), one function `column_unit.end_entries`. The note's revision *pins* need a `condenser.*`/`reboiler.*` target path in `revision_flowsheet._PATH_KINDS` and the routing in `_read` (track A's file), and `PinColumn` has no non-stream quantity (`revision_binding.py`); the column's parameters are also absent from `_PARAMETER_KINDS`, so only SI-unit-of-the-declared-kind is checked. Alternative: the paths as the note says (design lane + A/I1). Reversible by: rewriting `end_entries` to read `view.pins`.
+DECISION: a column instance id must be a token (S01's `_token`: its property blocks are named after it) → refused at parse as `id_unsupported(<U>)` with a hint, not left to surface as `value_outside_model_domain`. Alternative: map ids to tokens (changes every row id). Reversible by: deleting the check.
+DECISION: every side feed on `feed` shares one declared phase (the revision reader's R4 is one phase per port: `port_phase_ambiguous`) → recorded in L-COL-1. Alternative: one port per feed. Reversible by: n/a (reader rule).
+DECISION: inlet ports `feed`/`top`/`bottom` declared `vapor_liquid`, or a `bottoms` not `liquid`, or a distillate neither → `port_unsupported(<U>.<port>)` as §4.7.1 says (the binder's idiom for one-phase ports is `port_phase_unsupported`). Alternative: the binder's idiom. Reversible by: renaming the code in `column_unit`.
+DECISION: `column_binding` imports `ModelSignature`/`Configuration` from `revision_binding`; I1 registering it inside `revision_binding` must import it lazily (or at the module end) to avoid a cycle. Alternative: move the two types. Reversible by: n/a (I1's choice).
+DECISION: where the recovery definition's row builder lives (`test_k02_unit_models` forbids a builder in a unit module) → `models/rows.py` `scaled_sum_definition_row`, a new function (no existing builder changed), though rows.py is not in track B's §5 list (track A does not touch it). Alternative: a design-lane amendment of the ownership table. Reversible by: reverting the B1 fix-up commit.
+DECISION (B3a): the column's manifest declared its derivatives as `output: rows` w.r.t. stage fields, so T02's `eo_capability` read `undeclared` and `plan_or_refusal` refused the M1 region `CAPABILITY_UNAVAILABLE` (found by the spike, after §10.2 placed the stages) → `output: residuals`, `with_respect_to: [free_variables]`, `method: ad`, as every CasADi-differentiated unit declares (the heater, the valve). Alternative: `analytic`. Reversible by: editing `ColumnUnit.manifest`.
+DECISION (B3a): `_opening_order(..., owners=None)` takes the owner map as an optional fourth argument, so `test_t05b_openings`' three-argument call (track-free file) is unchanged. Alternative: required, and edit that test. Reversible by: dropping the default.
+DECISION (B3a): `ColumnUnit.staged` is a dataclass field with `repr=False` (the 7-stage maps would swamp every repr of the unit). Alternative: plain field. Reversible by: removing `field(repr=False)`.
+DECISION (B3a, fact for I1/A91): the revision reader's `_ID` (`revision_flowsheet.py:83`, `^[A-Za-z0-9][A-Za-z0-9_-]*$`) refuses a dotted instance id at parse as `id_unsupported(<id>)`, although the schema admits one (F7). So no document can name an instance `C1.stage.<j>`: A91's revision is refused with exactly A91's code by the reader, before §10.2 step 9's check could run. A89 (3) therefore exercises (a″) with a staged unit whose key is `U-BOT`. Alternative: n/a. Reversible by: n/a.
+DECISION (B3b): §10.5 says `_COLUMN`'s signature lists the twelve end names as optional parameters, but `ModelSignature` (`revision_binding.py`, track A/I1) has no optional-parameter field → `_COLUMN` keeps `required=(stage_count,)` and its comment names `column_unit.END_PARAMETERS`; the parser stays the one reader and refuser. Alternative: an `optional` field on `ModelSignature` (I1, if a served description should list them). Reversible by: adding the field at I1.
+DECISION (B3b, consequence of R-824): a name now fixes its kind, so S02 §5 S2's "kind not taken at this end" and "kind not offered" items are unreachable from a document; `condenser_boilup_ratio` and `condenser_distillate_ratio` are `parameter_unsupported(<U>.<name>)` (B2's `S2-kind`/`S2-not-offered` cases re-coded; `structural_refusal` keeps the S2 check, now a backstop). Alternative: map a foreign kind to S2's code. Reversible by: a kind lookup in `end_entries`.
+DECISION (B3c, escalated — Q8's premise): `s11-column-v1` is NOT registered. Facts: the application's registered revision policy `T06-revision-v2` already carries `T05b-phase-contract-v2` and `newton_refined`; it differs from `S01_DEFAULT_V1` only in `eo_recovery` (`homotopy_or_sequential_restart` vs `homotopy`), and edge 3's homotopy is unsupported on every revision region anyway (F8, L-COL-9). M1 and J2 solve under `T06_REVISION_V2` converged, products equal to the standalone root (Δ = 0). Registering a fifth `APPLICATION_POLICIES` entry would move the served `get_project.solve_policies` (pinned by `test_t07_w5a_inspection`, `test_t08_b50_surface_content`) and need `REGISTERED_POLICY_IDS`/`benchmarks/registry.yaml` (`test_t07_b3_policies`) — files outside track B, a served-surface change for no capability. The cases run under `T06_REVISION_V2` (the application's policy) and `S01_DEFAULT_V1` (the standalone policy object). Alternative: register as the note's default says (one commit in `application/policies.py` + registry + the two pinned tests). Reversible by: that commit.
+DECISION (B3d): where A28's check sits → `executor._solve_revision_region`, after the specification-row refusal and before the warm start and the traversal: a region holding a unit whose model is in `STAGED_MODELS` under a policy whose `phase_contract` is not v2 ends `CAPABILITY_UNAVAILABLE`, message `phase_contract_unsupported(<model>)`, no attempt, no property call. (Without it, M1 under `T04-W12` "converged" in 0 iterations from the standalone root with v1's semantics.) Alternative: refuse in `plan_revision` (a `PlanRefusal`). Reversible by: moving the block.
+DECISION (B3e): the committed cases name the column instance after the standalone unit (`S02`/`S06`), so its stage columns carry the standalone ids and A29 compares against the registered roots (`test_s02_column_wo2.ref_state`, `test_s06_column_wo2.expected_root`) directly; each file equals `s11_column_support.column_case(name)` (a test; regenerate with `python tests/s11_column_support.py`). Alternative: `UCOL` and an id map. Reversible by: `unit=` in `column_case`.
+DECISION (B3e, Q29 fact): a column under `T08-ptc-v1` ends `PTC_MAPPING_INVALID` `ptc_mapping_invalid(<U>:stage:1:mole:A, missing)` before any attempt — a typed refusal, so §10.13's default holds: L-COL-10 at I1. Alternative: n/a. Reversible by: n/a.
+DECISION (B3e, Q11 not done): a Wilson column with a `none` end cannot be bound on this branch (the Wilson basis is track A's A1, not merged into wp/S11-b), and no code path refuses `none` for a composition-dependent form (`column.validate` restricts kinds only). Carried to after A merges (with C-MW/C-EW of A29). Alternative: n/a. Reversible by: n/a.
+
+## WO-B1 inventory: structural and inlet-dependent items (§4.7.2)
+
+Structural (checked at bind from `ColumnStructure`, B2; `validate` keeps its order and messages):
+S02 §5 R1 (`stage_count`), R3's stage-pressure half (`P_j*` in the provider's `P` box), R4 (side-feed
+stage in 1..N, one per stage), R6 (declared single phase: the parser's `port_unsupported`), S1 (kinds),
+S2 (presence and kind of each end specification), S3 (distillate and bottoms rates together), S4 (a
+direct kind's sign and finiteness), S6 (top/bottom inlet against the ends: by construction, the ends
+are read from the wiring), S7 (no side feed at a slot stage), S8 (N holds the ends), S9 (pressure
+monotone), S10-C D8 (γ–φ kinds: `specification_unsupported(<U>.<end>.<kind>)`), S06 §5 I1 (attribute),
+I2 (value, finite and 0 < x < 1).
+Inlet-dependent (left to `validate` at evaluate): R2 (inlet flows), R3's inlet `T`/`P` half, R5
+(inlet admissibility), S5 (rate ≥ feed), S10 (no feed: zero total flow), I3 (absent component), I4
+(temperature band: §4.7.2 lists it here), I5 (rank of the split rows, whose coefficients are the
+`F_c`), I6 (product split), R7 (energy precheck).
+
 ## Run log
+
+- 2026-10-27 B1 `1fb0b8f9`: S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 FAIL
+  (C branch shard 4: `test_k02_unit_models::test_no_unit_module_defines_a_row_builder_of_its_own`; fixed in `884b4973`).
+- 2026-10-27 B1 fix-up `884b4973`: S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[];
+  S11 PASS n=54497 changed=[] (698 s for the three).
+- 2026-10-27 B2 `ffc68146`: S08 PASS, S10C PASS; S11 FAIL (C branch shard 13: `test_t07_global_state::test_g20`, column_unit's `@cache`); fixed in `33a652a9` (hash uncached).
+- 2026-10-27 B2 fix-up `33a652a9` (includes the docs commit `5fdee2d9`): S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 PASS n=54497 changed=[] (949 s for the three).
+
+- 2026-10-27 B3a `e41b986b`: tests (§10.12 grep set + `test_s11_*`, 68 files) 2153 passed; S08 PASS n=52 changed=[S02.P1]
+  p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 PASS n=54497 changed=[] (703 s for the three).
+- 2026-10-27 B3a acceptance 1 (the spike, M1 under `S01_DEFAULT_V1`): CONVERGED, 0 Newton iterations from the
+  traversal start, products/T₁/T_N/Q₁/Q_N equal to `solve_column`'s root (|Δ| = 0). Same for M2–M4, J1–J8, P1; M1 and
+  J2 also under `T06_REVISION_V2`. `signature_units` = `UCOL.stage.1…7`.
+- 2026-10-27 B3d `63dc42a5`: tests (69 files) 2172 passed; S11 PASS n=54497 changed=[].
+- 2026-10-27 B3e Q14 timings (bind + plan + execute vs `solve_column`, two orders, cold process each; gate 3×s + 2 s):
+  M1 0.46/0.33 s, M2 0.34/0.23, M3 0.18/0.11, M4 0.22/0.14, J1 0.27/0.16, J2 0.25/0.14, J3 0.26/0.14, J4 0.27/0.15,
+  J5 0.19/0.11, J6 0.39/0.27, J7 0.28/0.18, J8 0.35/0.24 (all 0 Newton iterations); M1-recycle 0.93/0.33 s, 3 Newton
+  iterations (T06-revision-v2). Every case within its gate (worst 0.93 s against 2.96 s).
+
+- 2026-10-27 B3e `655f24f8` (end of B3): tests (69 files) 2201 passed; S08 PASS n=52 changed=[S02.P1]
+  p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 PASS n=54497 changed=[] (696 s for the three).
+
+## Q9 spike (WO-B3's first step): STOPPED (resolved by §10, R-822; implemented in B3a) — the region decomposition does not place the stage pseudo-units
+
+A29 on M1 alone (`feed_source → column → 2 product_sinks`, builder registered by monkeypatch, `S01_DEFAULT_V1`;
+script `tests/s11_column_support.column_revision` + `plan_revision` + `execute_plan`). Trace:
+
+1. `bind_revision_flowsheet` binds M1 square (`test_the_column_binds_square`); `plan_revision` then raises
+   `ValueError: lifted_split_unregistered(syn001.column)` at `orchestrator/splits.check_agreement` (splits.py:470):
+   the column's 7 × 3 `CAS-equilibrium` rows are `molar_flow_squared` and no descriptor names them. This is the
+   staged-split plumbing §4.7.5 assigns to B3 (expected).
+2. The plumbing would not suffice, and this is the Q9 answer. Every region map keys a split by `split.unit`, and
+   the standalone solve's region has `units = signature_units = (S02.stage.1 … S02.stage.N)` (column_solve.py:416-
+   423). A flowsheet region is built by `execution.build_region` (execution.py:404-437) from flowsheet instances:
+   rows by `declaration.rows[row].unit` (the authoring instance, `UCOL`), columns by `graph.column_owner`, and
+   `signature_units = _lifted_units(...)` = `(UCOL,)`. The region solve keeps only
+   `active_splits = [split for split in splits if split.unit in set(region.units)]` (region.py:1876), so every stage
+   split `UCOL.stage.j` would be dropped silently: the column's equilibrium rows would be solved with no phase
+   policy, and the attempt signature would carry `UCOL` instead of its stages.
+3. `check_agreement` also keys the `molar_flow_squared` rows by authoring instance (splits.py:463-466) and compares
+   them to one descriptor's equilibrium rows (b); a column's squared rows are N stages' rows plus the purity and
+   recovery definitions (`molar_flow_squared`, not equilibrium rows).
+
+Placing the stages needs a rule for region membership of pseudo-units (`region.units`/`signature_units` gaining
+`stage_unit(U, j)` for a column instance, or the filter at region.py:1876 resolving a pseudo-unit to its instance by
+the `stage_unit` prefix) and for (a)/(b) of `check_agreement`. That is region structure, which the brief and the
+note's Q9 reserve to the design lane; nothing was changed.
+
+## Handoff (where track B stands, 2026-10-27, after B3)
+
+- Done: B1 (`1fb0b8f9`, `884b4973`), B2 (`ffc68146`, `33a652a9`), B3a `e41b986b` (staged splits, R-822/R-823),
+  B3b `021f17f6` (end parameters `condenser_<kind>`/`reboiler_<kind>`, R-824), B3c `4afdd498` (decision only:
+  `s11-column-v1` not registered, escalated), B3d `63dc42a5` (A28), B3e `655f24f8` (cases, A29 SYN-001, A24′, Q29).
+- Passing: A87–A90 (`tests/test_s11_staged_splits.py`), A92 (`tests/test_s11_column_face.py`), A28, A29 on M1–M4,
+  J1–J8 and the recycle case, A24′, Q29 record (`tests/test_s11_column_solve.py`); B1/B2's tests renamed.
+- Identity at `655f24f8`: S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[];
+  S11 PASS n=54497 changed=[].
+- Not done (blocked on track A's Wilson basis, A1, not on this branch): A29's C-MW and C-EW, Q11. Add them as
+  `benchmarks/s11/flowsheets/C-MW.json`/`C-EW.json` (`column_case` with the Wilson `record_source`) after A merges.
+- Not track B's here: B4 (waits for A3 in wp/S11; the owner map per §10.11), I1 (A91 is already met by the
+  reader's `_ID`; A93; the sixteen `_PARAMETER_KINDS`; L-COL-9, L-COL-10 for Q29).
+- For the design lane (one batched ruling): B3c (Q8's premise: T06-revision-v2 carries v2; registration moves the
+  served `get_project.solve_policies`); B3b (`ModelSignature` has no optional-parameter field; S2's kind items now
+  unreachable by name); B3a (the manifest's derivative declaration corrected to `residuals`/`ad`).
+- Next action: rebase wp/S11-b on wp/S11 once A3 is merged, then B4 and the Wilson cases.
