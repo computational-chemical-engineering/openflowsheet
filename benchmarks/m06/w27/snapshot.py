@@ -34,7 +34,7 @@ Registration version 3 (`docs/derivations/W27-registration-v3.md`) reads the sam
 from __future__ import annotations
 
 import subprocess
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Final
@@ -58,8 +58,13 @@ class SnapshotUnsupportedError(RuntimeError):
     """§17 Q1: this build's route enumeration is not registered; no snapshot is built."""
 
 
-def list_models_document() -> tuple[dict[str, Any], str]:
-    """`list_models` through the operations table, and the SHA-256 of its canonical JSON."""
+def list_models_document(
+    model_ids: Collection[str] | None = None,
+) -> tuple[dict[str, Any], str]:
+    """`list_models` through the operations table, and the SHA-256 of its canonical JSON. With
+    `model_ids` (a binder's `LIST_MODELS`; `restrict_to_v2_models`), the served document with only
+    those entries: what `list_models` serves when `MODEL_BUILDERS` holds only them, since it lists
+    each id's signature in sorted id order. An id it does not serve is refused."""
     from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
     from openflowsheet.application.operations import dispatch  # noqa: PLC0415
     from openflowsheet.canonical import canonical_json  # noqa: PLC0415
@@ -69,7 +74,32 @@ def list_models_document() -> tuple[dict[str, Any], str]:
         document: dict[str, Any] = dispatch(app, "list_models", {})
     finally:
         app.close()
+    if model_ids is not None:
+        served = {m["model_id"] for m in document["models"]}
+        unserved = sorted(set(model_ids) - served)
+        if unserved or set(document) != {"models"}:
+            raise SnapshotUnsupportedError(
+                f"registry_snapshot: unsupported(LIST_MODELS names unserved ids {unserved})"
+            )
+        document = {"models": [m for m in document["models"] if m["model_id"] in model_ids]}
     return document, registration.sha256_bytes(canonical_json(document))
+
+
+def restrict_to_v2_models(binding: ModuleType) -> ModuleType:
+    """The installed binder's models as W27 v1/v2 read them (S11 I1b, extending R-837):
+    `MODEL_BASES` and `MODEL_BUILDERS` keep only the ids of v1/v2's model table (W27-R12), and
+    `LIST_MODELS` names them, so `build_snapshot` reads `list_models` restricted to them. S11's
+    models (the column, the `thermal.*` family) have rows in W27 v3 only (R-805, §4.10), which
+    reads the unrestricted build."""
+    table = registration.model_functions(2)
+    binding.MODEL_BASES = {  # type: ignore[attr-defined]
+        m: on for m, on in binding.MODEL_BASES.items() if m in table
+    }
+    binding.MODEL_BUILDERS = {  # type: ignore[attr-defined]
+        m: build for m, build in binding.MODEL_BUILDERS.items() if m in table
+    }
+    binding.LIST_MODELS = frozenset(table)  # type: ignore[attr-defined]
+    return binding
 
 
 def _component_rows(
@@ -293,7 +323,7 @@ def build_snapshot(
     version = __version__ if version is None else version
     binding = revision_binding if binding is None else binding
     reading = reading_for(binding, version)
-    document, digest = list_models_document()
+    document, digest = list_models_document(getattr(binding, "LIST_MODELS", None))
     if reading == "bases-v1":
         ids = [m["model_id"] for m in document["models"]]
         routes = _routes_bases_v1(binding, ids, registration_version)

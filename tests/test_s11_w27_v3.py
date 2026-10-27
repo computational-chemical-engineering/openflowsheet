@@ -247,13 +247,22 @@ def test_a33_the_iapws95_route_reads_water_from_the_s05_records() -> None:
 
 def test_v3_routes_are_the_v2_routes_with_their_record_sources() -> None:
     """W27v3-R05: `pr-c1-v1` keeps its v2 line and SYN-001's generic line reads what `_syn001_line`
-    read; only `record_source` is added."""
+    read; `record_source` is added, and a route's `model_ids` gain only S11's models on its basis,
+    which v1/v2's model table does not carry (R-805; `snapshot.restrict_to_v2_models`)."""
     from test_m06_w27_coverage import v2_binder  # noqa: PLC0415
 
     before = snapshot.build_snapshot(binding=v2_binder())["routes"]
     after = {r["provider_id"]: r for r in _build_v3()["routes"]}
+    table = registration.model_functions(2)
+    gained: dict[str, list[str]] = {}
     for r in before:
-        assert {k: v for k, v in after[r["provider_id"]].items() if k != "record_source"} == r
+        v3 = after[r["provider_id"]]
+        assert {k: v for k, v in v3.items() if k not in ("record_source", "model_ids")} == {
+            k: v for k, v in r.items() if k != "model_ids"
+        }
+        assert [m for m in v3["model_ids"] if m in table] == r["model_ids"]
+        gained[r["provider_id"]] = [m for m in v3["model_ids"] if m not in table]
+    assert gained == {"syn001": ["syn001.column"], "pr-c1-v1": []}
 
 
 def test_the_0_1_1_reading_carries_the_syn001_record_source_under_v3() -> None:

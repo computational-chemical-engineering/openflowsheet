@@ -496,3 +496,15 @@ Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. 
   2026-10-27" line under the entry, which `test_t08_b50_surface_content`'s `_register_entry` span includes (its
   comment now says so). Alternative: the rewritten entry. Reversible by: the one commit. Measured: b50 7 passed;
   `test_m07a_surface_chain` + `test_m07_mr12_extras_v02` pass.
+- DECISION (item 7, part 3a's OPEN, orchestrator default extending R-837): the v1/v2 reading of the installed build
+  also restricts its models: `snapshot.restrict_to_v2_models` keeps `MODEL_BASES`/`MODEL_BUILDERS` on v1/v2's model
+  table (W27-R12, 22 ids) and sets `LIST_MODELS`, which `build_snapshot` passes to `list_models_document`; that
+  filters the served document to those ids (what `list_models` serves when `MODEL_BUILDERS` holds only them: sorted
+  ids, one signature each; an unserved id is refused). Both v1/v2 readers use it: `v2_binder()` (tests) and L01's
+  `retake.measurement_binding()`. Follow-on test edits (same reading, no `AMENDED_TESTS` entry): `constructed_binder`
+  sets `LIST_MODELS` to the same 22 ids (its 13-id refusal still fires, "list_models-only");
+  `test_each_route_binds…` compares routes with `v2_binder().MODEL_BASES` (and checks it equals the installed one on
+  those ids); `test_s11_w27_v3::test_v3_routes_are_the_v2_routes…` states that v3's routes gain only S11's models
+  (`syn001.column` on SYN-001, none on `pr-c1-v1`). Alternative: amend the W27 tests under §8.3. Reversible by: the
+  one commit. Measured: the v2 reading's `list_models_sha256` = A3's `f070fbe0…` again; `test_m06_w27_coverage` +
+  `test_l01_retake` + `test_s11_w27_v3`: 95 passed, 2 skipped (was 8 failed, 6 errors).

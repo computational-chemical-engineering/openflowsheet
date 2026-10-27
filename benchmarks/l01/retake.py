@@ -96,8 +96,8 @@ def measurement_binding() -> types.ModuleType:
         return revision_binding.basis_provider(basis)
 
     # The measurement is W27 v1/v2's (W27v2-A23): the bases those registrations carry provider
-    # lines for, then the library basis. S11's added bases (ADR 0050) are W27 v3's and do not
-    # enter it, so its output is unchanged.
+    # lines for, then the library basis. S11's added bases (ADR 0050) and models (the column, the
+    # `thermal.*` family) are W27 v3's and do not enter it, so its output is unchanged.
     registered = tuple(
         b for b in revision_binding.SELECTABLE_BASES if b.provider_id in V2_BASIS_PROVIDERS
     )
@@ -105,7 +105,7 @@ def measurement_binding() -> types.ModuleType:
     binding.MODEL_BASES = revision_binding.MODEL_BASES  # type: ignore[attr-defined]
     binding.MODEL_BUILDERS = revision_binding.MODEL_BUILDERS  # type: ignore[attr-defined]
     binding.basis_provider = basis_provider  # type: ignore[attr-defined]
-    return binding
+    return snapshot.restrict_to_v2_models(binding)
 
 
 # -- the re-take ----------------------------------------------------------------------------------
