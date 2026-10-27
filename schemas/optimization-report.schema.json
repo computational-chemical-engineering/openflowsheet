@@ -703,7 +703,7 @@
     },
     "check": {
       "type": "object",
-      "description": "One of spec §8.5's checks on the re-solved simulation; members beyond `check` and `outcome` are what it measured.",
+      "description": "One of spec §8.5's checks on the re-solved simulation; members beyond `check` and `outcome` are what it measured. `V7` (E01 §4.10.3) is recorded only for a formulation with an assessment.",
       "required": [
         "check",
         "outcome"
@@ -716,7 +716,8 @@
             "V3",
             "V4",
             "V5",
-            "V6"
+            "V6",
+            "V7"
           ]
         },
         "outcome": {
@@ -799,6 +800,14 @@
               "properties": {
                 "check": {
                   "const": "V6"
+                }
+              }
+            },
+            {
+              "$ref": "#/$defs/check",
+              "properties": {
+                "check": {
+                  "const": "V7"
                 }
               }
             }
@@ -1087,7 +1096,7 @@
           ]
         },
         "checks": {
-          "description": "V1-V6 on the decisions the start returned, whatever Ipopt's status; empty when it returned none.",
+          "description": "V1-V6 (and V7 with an assessment, E01 §4.10.3) on the decisions the start returned, whatever Ipopt's status; empty when it returned none.",
           "oneOf": [
             {
               "type": "array",
@@ -1141,6 +1150,14 @@
                   "properties": {
                     "check": {
                       "const": "V6"
+                    }
+                  }
+                },
+                {
+                  "$ref": "#/$defs/check",
+                  "properties": {
+                    "check": {
+                      "const": "V7"
                     }
                   }
                 }
