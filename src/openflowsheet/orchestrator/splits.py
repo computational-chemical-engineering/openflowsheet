@@ -175,8 +175,27 @@ class DormancyRule:
     declared_phase: str
 
 
-#: The exchanger's configuration attribute the registry is keyed by (spec §7.6).
-_CONFIGURED_BY: Final[Mapping[str, str]] = {"syn001.heat_exchanger": "specification"}
+#: The S11 `thermal.*` units (S11 units design §4.9; `thermal.flash` is not in the registry).
+_THERMAL_MODELS: Final = (
+    "thermal.heater",
+    "thermal.valve",
+    "thermal.mixer",
+    "thermal.pump",
+    "thermal.compressor",
+    "thermal.turbine",
+)
+#: A `thermal.*` outlet's declared form (S11 units design §4.1): single-phase, or saturated.
+_THERMAL_FORMS: Final = ("LIQUID", "VAPOR", "SATURATED")
+#: The `thermal.heater`'s specification modes (S11 units design §4.4).
+_THERMAL_HEATER_MODES: Final = ("T", "duty", "quality")
+
+#: The configuration attribute each model the registry keys by one is keyed by: the exchanger's
+#: specification (spec §7.6); a `thermal.*` unit's `dormancy_configuration`, `"<spec>:<form>"`
+#: for the heater and `"<form>"` for the others (S11 units design §4.9).
+_CONFIGURED_BY: Final[Mapping[str, str]] = {
+    "syn001.heat_exchanger": "specification",
+    **dict.fromkeys(_THERMAL_MODELS, "dormancy_configuration"),
+}
 
 _PUMP_OUTLET: Final = DormancyRule("outlet", "inlet", "PUMP-energy", None, "LIQUID")
 _MIXER_OUTLET: Final = DormancyRule("outlet", "inlet", "MIX-energy", None, "LIQUID")
@@ -186,6 +205,34 @@ _HOT_SIDE: Final = DormancyRule("hot_outlet", "hot_inlet", "HX-energy-hot", "hot
 _COLD_SIDE: Final = DormancyRule(
     "cold_outlet", "cold_inlet", "HX-energy-cold", "cold", "cold_phase"
 )
+
+
+def _thermal_outlet(swapped: str, form: str) -> tuple[DormancyRule, ...]:
+    return (DormancyRule("outlet", "inlet", swapped, None, form),)
+
+
+#: S11 units design §4.9: a single-phase `thermal.*` outlet whose temperature no row reads at
+#: exact dormancy — the duty-mode heater's, the valve's, the mixer's, and each machine's on its
+#: one single-phase form — swaps its energy row for the label row. Every other configuration (a
+#: T- or quality-mode heater, a saturated outlet: `sat-T` still fixes T) has no form, and is a key
+#: so that `_dormancy_rules` does not raise.
+_THERMAL_DORMANCY: Final[Mapping[tuple[str, str | None], tuple[DormancyRule, ...]]] = {
+    **{
+        ("thermal.heater", f"{mode}:{form}"): ()
+        for mode in _THERMAL_HEATER_MODES
+        for form in _THERMAL_FORMS
+    },
+    **{(model, form): () for model in _THERMAL_MODELS[1:] for form in _THERMAL_FORMS},
+    ("thermal.heater", "duty:LIQUID"): _thermal_outlet("TH-energy", "LIQUID"),
+    ("thermal.heater", "duty:VAPOR"): _thermal_outlet("TH-energy", "VAPOR"),
+    ("thermal.valve", "LIQUID"): _thermal_outlet("TV-energy", "LIQUID"),
+    ("thermal.valve", "VAPOR"): _thermal_outlet("TV-energy", "VAPOR"),
+    ("thermal.mixer", "LIQUID"): _thermal_outlet("TM-energy", "LIQUID"),
+    ("thermal.mixer", "VAPOR"): _thermal_outlet("TM-energy", "VAPOR"),
+    ("thermal.pump", "LIQUID"): _thermal_outlet("TPU-energy", "LIQUID"),
+    ("thermal.compressor", "VAPOR"): _thermal_outlet("TCO-energy", "VAPOR"),
+    ("thermal.turbine", "VAPOR"): _thermal_outlet("TTU-energy", "VAPOR"),
+}
 
 #: Spec §7.6 (`ref.dormancy_forms`): `(model id, configuration)` → its dormancy-form outlets, in
 #: signature order (the exchanger's hot side before its cold side). The configuration is `None`
@@ -198,6 +245,7 @@ DORMANCY_RULES: Final[Mapping[tuple[str, str | None], tuple[DormancyRule, ...]]]
     ("syn001.heat_exchanger", "hot_outlet_temperature"): (_COLD_SIDE,),
     ("syn001.heat_exchanger", "cold_outlet_temperature"): (_HOT_SIDE,),
     ("c1.adiabatic_mixer", None): (_C1_MIXER_OUTLET,),
+    **_THERMAL_DORMANCY,
 }
 _DORMANCY_MODELS: Final = frozenset(model for model, _ in DORMANCY_RULES)
 #: A `declared_phase` read as the phase itself rather than as a configuration attribute.

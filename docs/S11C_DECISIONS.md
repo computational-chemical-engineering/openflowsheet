@@ -65,6 +65,14 @@ choice; the evidence is in the named test or module. Batched for the package's s
   check set (`test_s11_thermal_verifier.verifier_checks`, now taking a provider) at x_final, every check computed and
   passing. Alternative: `verify_revision` (refuses `thermal.*` until I1b registers the checks). Reversible by: the
   tests' `all_pass`.
+- DECISION C6-2: §4.9's registry entries make `test_m02_wo8_registries::test_the_dormancy_registry_is_syn001s_and_the_c1_mixers_vapour_outlet`
+  (it pins the full key set; not in §8.3) fail → it is restricted to the keys outside `thermal.`, as B13 restricted
+  the T05b tests to `syn001.`, and `test_the_dormancy_registry_holds_the_thermal_entries` pins the 27 thermal keys and
+  9 rules literally. No `bind_revision_flowsheet` call, so no identity key. Alternative: list the test in §8.3's
+  `AMENDED_TESTS` (it has no family C key to exclude). Reversible by: that hunk.
+- O-C6-1 (for I1b, not tested here): under v1 (`T04_W12`) the A62 flowsheet is CONVERGED at iteration 0 with Q = 0 (the
+  traversal start is the root) and `LINEAR_SOLVE_FAILED` (SuperLU exactly singular) with Q = 1 kW; §4.9's "typed
+  `RANK_DEFICIENT`" is the certificate's regularity status, judged only once I1b registers the thermal checks.
 
 ## Open questions for the design lane
 

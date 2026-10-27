@@ -69,7 +69,11 @@ def test_no_syn001_rule_declares_a_vapour_only_component() -> None:
 
 
 def test_the_dormancy_registry_is_syn001s_and_the_c1_mixers_vapour_outlet() -> None:
-    assert set(DORMANCY_RULES) == SYN001_DORMANCY_KEYS | {("c1.adiabatic_mixer", None)}
+    # S11 units design §4.9 (WO-C6): restricted to the keys outside `thermal.`; the `thermal.*`
+    # keys and rules are pinned literally by `test_s11_thermal_solve`.
+    assert {key for key in DORMANCY_RULES if not key[0].startswith("thermal.")} == (
+        SYN001_DORMANCY_KEYS | {("c1.adiabatic_mixer", None)}
+    )
     assert DORMANCY_RULES[("c1.adiabatic_mixer", None)] == (
         DormancyRule("outlet", "inlet", "C1MIX-energy", None, "VAPOR"),
     )

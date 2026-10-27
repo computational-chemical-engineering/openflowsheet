@@ -16,13 +16,14 @@ from collections.abc import Mapping
 from typing import Any
 
 import pytest
-from m02_c1_support import connection
+from m02_c1_support import connection, quantity
 from s11_thermal_support import CASES, _water, committed_case, solve
 from test_s11_thermal_binding import duty, feed, instance, outlet_temperature, register
 from test_s11_thermal_verifier import evaluated_state, verifier_checks
 
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.orchestrator.executor import PlanResult
+from openflowsheet.orchestrator.splits import DORMANCY_RULES, DormancyRule
 from openflowsheet.thermo import PropertyProvider
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify.checks import KIND_TOLERANCE
@@ -137,3 +138,86 @@ def test_th_v1_valve_to_drum_converges_and_verifies(registered: None) -> None:
     beta = state["S2.sat.V"] / state["S2.n.H2O"]
     assert 0.0 < beta < 1.0
     assert abs(state["S3.n.H2O"] - beta * state["S1.n.H2O"]) <= TAU_FLOW
+
+
+# -- §4.9: the dormancy registry, and S11.A62 ------------------------------------------------------
+
+
+def test_the_dormancy_registry_holds_the_thermal_entries() -> None:
+    """§4.9, literally: one rule per single-phase outlet whose temperature no row reads at
+    dormancy; every other configuration a key with no rule; `thermal.flash` absent."""
+    forms = ("LIQUID", "VAPOR", "SATURATED")
+    expected: dict[tuple[str, str | None], tuple[DormancyRule, ...]] = {
+        **{("thermal.heater", f"{m}:{f}"): () for m in ("T", "duty", "quality") for f in forms},
+        **{
+            (model, f): ()
+            for model in (
+                "thermal.valve",
+                "thermal.mixer",
+                "thermal.pump",
+                "thermal.compressor",
+                "thermal.turbine",
+            )
+            for f in forms
+        },
+    }
+    for key, swapped, form in (
+        (("thermal.heater", "duty:LIQUID"), "TH-energy", "LIQUID"),
+        (("thermal.heater", "duty:VAPOR"), "TH-energy", "VAPOR"),
+        (("thermal.valve", "LIQUID"), "TV-energy", "LIQUID"),
+        (("thermal.valve", "VAPOR"), "TV-energy", "VAPOR"),
+        (("thermal.mixer", "LIQUID"), "TM-energy", "LIQUID"),
+        (("thermal.mixer", "VAPOR"), "TM-energy", "VAPOR"),
+        (("thermal.pump", "LIQUID"), "TPU-energy", "LIQUID"),
+        (("thermal.compressor", "VAPOR"), "TCO-energy", "VAPOR"),
+        (("thermal.turbine", "VAPOR"), "TTU-energy", "VAPOR"),
+    ):
+        expected[key] = (DormancyRule("outlet", "inlet", swapped, None, form),)
+    thermal = {key: rules for key, rules in DORMANCY_RULES.items() if key[0].startswith("thermal.")}
+    assert thermal == expected
+
+
+def _dormant_heater(q: float) -> dict[str, Any]:
+    """F → splitter (fraction 0) → recycle → heater (duty `q`, liquid outlet) → sink; the purge to
+    a sink. The heater's inlet is exactly dormant."""
+    return _water(
+        "S11-C6-A62",
+        [
+            instance("F", "syn001.feed_source"),
+            instance(
+                "SP",
+                "syn001.stream_splitter",
+                {"split_fraction": quantity(0.0, "1", "dimensionless", [0] * 7)},
+            ),
+            instance("H", "thermal.heater"),
+            instance("K1", "syn001.product_sink"),
+            instance("K2", "syn001.product_sink"),
+        ],
+        [
+            connection("S1", ("F", "outlet"), ("SP", "inlet"), "liquid"),
+            connection("S2", ("SP", "recycle"), ("H", "inlet"), "liquid"),
+            connection("S3", ("SP", "purge"), ("K2", "inlet"), "liquid"),
+            connection("S4", ("H", "outlet"), ("K1", "inlet"), "liquid"),
+        ],
+        [*feed("S1", "H2O", 300.0, 1.0e6), duty("H", q)],
+    )
+
+
+def test_a62_a_dormant_heater_with_zero_duty_converges_on_the_label_row(registered: None) -> None:
+    """S11.A62 (Q_spec = 0, `T05b-phase-contract-v2`): CONVERGED in the attempt whose signature
+    holds `H.outlet` ZERO_FLOW, the outlet at its label temperature."""
+    _, run = solve(_dormant_heater(0.0))
+    assert run.outcome == "CONVERGED", run.message
+    assert run.state is not None
+    (step,) = run.steps
+    assert step.detail.attempts[-1].signature == (("H.outlet", "ZERO_FLOW"),)
+    assert run.state["S2.n.H2O"] == 0.0 and run.state["S4.n.H2O"] == 0.0
+    assert run.state["S4.T"] == run.state["S2.T"] == 300.0
+    assert run.state["H.Q"] == 0.0
+
+
+def test_a62_a_dormant_heater_with_a_duty_is_a_specification_conflict(registered: None) -> None:
+    """S11.A62 (Q_spec = 1 kW): `SPECIFICATION_CONFLICT` `zero_flow_conflict(H:TH-energy)`."""
+    _, run = solve(_dormant_heater(1.0e3))
+    assert run.outcome == "SPECIFICATION_CONFLICT"
+    assert run.message == "zero_flow_conflict(H:TH-energy)"
