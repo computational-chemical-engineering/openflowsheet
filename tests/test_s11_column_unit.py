@@ -80,37 +80,37 @@ STRUCTURAL: dict[str, tuple[InstanceView, str]] = {
         "port_unsupported(S02.feed)",
     ),
     "S2-missing": (
-        with_parameters(M1, {"condenser.reflux_ratio": None}),
+        with_parameters(M1, {"condenser_reflux_ratio": None}),
         "specification_missing(S02.condenser)",
     ),
     "S2-kind": (
-        with_parameters(M1, {"condenser.reflux_ratio": None, "condenser.boilup_ratio": 1.0}),
-        "specification_unsupported(S02.condenser.boilup_ratio)",
+        with_parameters(M1, {"condenser_reflux_ratio": None, "condenser_boilup_ratio": 1.0}),
+        "parameter_unsupported(S02.condenser_boilup_ratio)",
     ),
     "S2-not-offered": (
-        with_parameters(M1, {"condenser.reflux_ratio": None, "condenser.distillate_ratio": 0.4}),
-        "specification_unsupported(S02.condenser.distillate_ratio)",
+        with_parameters(M1, {"condenser_reflux_ratio": None, "condenser_distillate_ratio": 0.4}),
+        "parameter_unsupported(S02.condenser_distillate_ratio)",
     ),
     "S2-two": (
-        with_parameters(M1, {"condenser.distillate_rate": 0.4}),
+        with_parameters(M1, {"condenser_distillate_rate": 0.4}),
         "specification_conflict(S02.condenser)",
     ),
     "S2-none-end": (
-        with_parameters(SPECS["M3"], {"condenser.reflux_ratio": 2.0}),
+        with_parameters(SPECS["M3"], {"condenser_reflux_ratio": 2.0}),
         "specification_conflict(S02.condenser)",
     ),
     "S3": (
         with_parameters(
-            SPECS["M2"], {"condenser.reflux_ratio": None, "condenser.distillate_rate": 0.4}
+            SPECS["M2"], {"condenser_reflux_ratio": None, "condenser_distillate_rate": 0.4}
         ),
         "invalid_spec(redundant_specification)",
     ),
     "S4": (
-        with_parameters(M1, {"condenser.reflux_ratio": -1.0}),
+        with_parameters(M1, {"condenser_reflux_ratio": -1.0}),
         "invalid_spec(reflux_ratio:condenser)",
     ),
     "S4-duty": (
-        with_parameters(SPECS["M3"], {"reboiler.duty": -5.0}),
+        with_parameters(SPECS["M3"], {"reboiler_duty": -5.0}),
         "invalid_spec(duty:reboiler)",
     ),
     "S6": (
@@ -133,17 +133,17 @@ STRUCTURAL: dict[str, tuple[InstanceView, str]] = {
     ),
     "S9": (with_parameters(M1, {"stage_pressure.5": 1.0e5}), "invalid_spec(pressure_profile)"),
     "I1-component": (
-        with_parameters(J_CASES["J1"], {"condenser.purity.A": None, "condenser.purity.Z": 0.8}),
+        with_parameters(J_CASES["J1"], {"condenser_purity.A": None, "condenser_purity.Z": 0.8}),
         "invalid_spec(purity:condenser)",
     ),
     "I1-stage": (
         with_parameters(
-            J_CASES["J3"], {"reboiler.temperature.6": None, "reboiler.temperature.9": 368.0}
+            J_CASES["J3"], {"reboiler_temperature.6": None, "reboiler_temperature.9": 368.0}
         ),
         "invalid_spec(temperature:reboiler)",
     ),
     "I2": (
-        with_parameters(J_CASES["J1"], {"condenser.purity.A": 1.2}),
+        with_parameters(J_CASES["J1"], {"condenser_purity.A": 1.2}),
         "invalid_spec(purity:condenser)",
     ),
 }
@@ -169,7 +169,7 @@ def test_a26_every_registered_case_builds() -> None:
 
 def test_a27_a_wilson_column_refuses_a_purity_end() -> None:
     spec = column_spec("C-MW")
-    view = with_parameters(spec, {"condenser.reflux_ratio": None, "condenser.purity.CH3OH": 0.9})
+    view = with_parameters(spec, {"condenser_reflux_ratio": None, "condenser_purity.CH3OH": 0.9})
     with pytest.raises(RevisionError) as raised:
         build_column(view, REAL, DECLARATION_CONTEXT, spec.components)
     assert raised.value.code == "specification_unsupported(COL.condenser.purity)"

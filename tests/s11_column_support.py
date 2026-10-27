@@ -3,7 +3,7 @@ column registered in the binder's tables for the length of a test (I1 registers 
 
 `column_revision(spec)` writes `feed_source(s) → syn001.column → 2 product_sinks` (§6.1 A29): one
 feed source per inlet of `spec`, pinned to that inlet's state, the column's parameters as §4.7.1
-names them, its end specifications as instance parameters (`docs/S11B_DECISIONS.md`), and a
+names them, its end specifications as instance parameters `<end>_<kind>[.<attr>]` (§10.5), and a
 product sink on each product.
 """
 
@@ -108,7 +108,7 @@ def column_parameters(spec: ColumnSpec, feeds: tuple[str, ...]) -> dict[str, Any
         if given is None:
             continue
         attribute = given.component if given.component is not None else given.stage
-        name = f"{end}.{given.kind}" + ("" if attribute is None else f".{attribute}")
+        name = f"{end}_{given.kind}" + ("" if attribute is None else f".{attribute}")
         parameters[name] = quantity(given.value, _END_KIND[given.kind])
     return parameters
 

@@ -236,26 +236,41 @@ def _phase_of(view: InstanceView, port: str) -> Phase:
     return phase
 
 
-#: The end specification paths (§4.7.1): `<end>.<kind>`, `<end>.purity.<component>`,
-#: `<end>.recovery.<component>`, `<end>.temperature.<stage>`.
-END_PREFIXES: Final[tuple[str, ...]] = (f"{CONDENSER}.", f"{REBOILER}.")
+#: S11 §10.5 (R-824): the end specifications are instance parameters `<end>_<kind>[.<attribute>]`
+#: — `<end>_purity.<component>`, `<end>_recovery.<component>`, `<end>_temperature.<stage>` — so
+#: the name up to the first `.` fixes the kind (R6). Each end takes exactly its `END_KINDS`: the
+#: twelve first segments, each mapped to its end.
+END_PARAMETERS: Final[Mapping[str, str]] = {
+    f"{end}_{kind}": end for end in (CONDENSER, REBOILER) for kind in END_KINDS[end]
+}
+END_PREFIXES: Final[tuple[str, ...]] = (f"{CONDENSER}_", f"{REBOILER}_")
+#: The dotted spelling (`condenser.<kind>`), refused by name (§10.5).
+_DOTTED: Final[tuple[str, ...]] = (f"{CONDENSER}.", f"{REBOILER}.")
 
 
 def end_entries(view: InstanceView) -> dict[str, float]:
-    """The instance's end specifications, `<end>.<kind>[.<attribute>]` → value (SI).
-
-    Read from the instance's parameters (build decision, `docs/S11B_DECISIONS.md`: the revision
-    reader routes no `condenser.*`/`reboiler.*` target path to a pin), so a `role: fixed`
-    specification with target path `parameters.<end>.<kind>…` reaches it too."""
-    return {name: value for name, value in view.parameters.items() if name.startswith(END_PREFIXES)}
+    """The instance's end specifications, `<end>_<kind>[.<attribute>]` → value (SI), read from
+    its parameters, so a `role: fixed` specification with target path `parameters.<name>`
+    reaches it too (§10.5). Any other `condenser_*`/`reboiler_*` name, and any dotted
+    `condenser.`/`reboiler.` name, is `parameter_unsupported(<U>.<name>)`."""
+    entries: dict[str, float] = {}
+    for name, value in view.parameters.items():
+        if name.startswith(_DOTTED) or (
+            name.startswith(END_PREFIXES) and name.partition(".")[0] not in END_PARAMETERS
+        ):
+            raise RevisionError("unsupported", f"parameter_unsupported({view.unit_id}.{name})")
+        if name.startswith(END_PREFIXES):
+            entries[name] = value
+    return entries
 
 
 def _end_specification(
     view: InstanceView, end: str, entries: Mapping[str, float]
 ) -> EndSpecification | None:
     """The one specification of `end`, or `None`; two are `specification_conflict(<U>.<end>)`.
-    The kind and attribute are read as written: §5 S2 and S06 I1 judge them."""
-    given = [name for name in entries if name.startswith(f"{end}.")]
+    The kind is the rest of the name's first segment, the attribute what follows its `.`; S06 I1
+    judges the attribute."""
+    given = [name for name in entries if END_PARAMETERS[name.partition(".")[0]] == end]
     if not given:
         return None
     if len(given) > 1:
@@ -265,7 +280,7 @@ def _end_specification(
             f"Pin exactly one {end} specification; got {', '.join(sorted(given))}.",
         )
     (name,) = given
-    kind, _, attribute = name.removeprefix(f"{end}.").partition(".")
+    kind, _, attribute = name.removeprefix(f"{end}_").partition(".")
     value = entries[name]
     if kind == "temperature":
         stage = int(attribute) if attribute.isdigit() else None

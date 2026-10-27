@@ -7,8 +7,9 @@ until then a test registers the builder in a monkeypatched table, as `test_m02_w
 The builder parses the instance (`column_unit.column_structure`), applies the structural items of
 S02 §5 and S06 §5 at bind (`column_unit.structural_refusal`), and returns the unit with its
 configuration: which end specification each end reads. It consumes no pin: the column's end
-specifications are instance parameters (build decision, `docs/S11B_DECISIONS.md`), so a pin
-routed to a column instance is left unconsumed and refused by the binder.
+specifications are instance parameters `condenser_<kind>[.<attr>]`/`reboiler_<kind>[.<attr>]`
+(§10.5, R-824; `column_unit.END_PARAMETERS`), so a pin routed to a column instance is left
+unconsumed and refused by the binder.
 """
 
 from __future__ import annotations
@@ -32,7 +33,10 @@ from openflowsheet.thermo import PropertyProvider
 
 #: The column's signature (§4.7.1). Its end specifications are not `PinColumn`s (a pin is a
 #: stream quantity or a duty), so the signature names its one fixed parameter and no choice; the
-#: rest is `column_unit`'s to read and refuse.
+#: rest is `column_unit`'s to read and refuse. Its optional parameters — `stage_pressure.<j>`,
+#: `stage_duty.<j>`, `feed_stage.<stream>` and the twelve end parameters `END_PARAMETERS`
+#: (§10.5) — have no `ModelSignature` field to be listed in (build decision,
+#: `docs/S11B_DECISIONS.md`).
 _COLUMN: Final = ModelSignature(model_id=MODEL_ID, ports=PORTS, required=(STAGE_COUNT,))
 
 
@@ -41,7 +45,7 @@ def _label(end: str, given: EndSpecification | None) -> str | None:
     if given is None:
         return None
     attribute = given.component if given.component is not None else given.stage
-    return f"{end}.{given.kind}" + ("" if attribute is None else f".{attribute}")
+    return f"{end}_{given.kind}" + ("" if attribute is None else f".{attribute}")
 
 
 def build_column(

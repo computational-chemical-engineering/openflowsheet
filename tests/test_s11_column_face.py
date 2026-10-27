@@ -28,6 +28,7 @@ from openflowsheet.models.syn001.column import (
     F_REF,
     REBOILER,
     ColumnSpec,
+    EndSpecification,
     component_feeds,
     declared_rows,
     product_flow_id,
@@ -43,6 +44,8 @@ from openflowsheet.models.syn001.column_solve import (
     zero_flow_forms,
 )
 from openflowsheet.models.syn001.column_unit import (
+    END_PARAMETERS,
+    END_PREFIXES,
     ColumnStructure,
     column_structure,
     structural_spec,
@@ -103,7 +106,7 @@ def _end_entries(spec: ColumnSpec) -> dict[str, float]:
             continue
         attribute = given.component if given.component is not None else given.stage
         suffix = "" if attribute is None else f".{attribute}"
-        entries[f"{end}.{given.kind}{suffix}"] = given.value
+        entries[f"{end}_{given.kind}{suffix}"] = given.value
     return entries
 
 
@@ -357,7 +360,7 @@ def test_the_parser_refuses_an_undeclared_inlet_and_two_end_specifications() -> 
     with pytest.raises(RevisionError) as raised:
         column_structure(lifted, CASES["M1"].components)
     assert raised.value.code == "port_unsupported(S02.feed)"
-    doubled = replace(view, parameters={**view.parameters, "condenser.distillate_rate": 0.4})
+    doubled = replace(view, parameters={**view.parameters, "condenser_distillate_rate": 0.4})
     with pytest.raises(RevisionError) as raised:
         column_structure(doubled, CASES["M1"].components)
     assert raised.value.code == "specification_conflict(S02.condenser)"
@@ -379,3 +382,71 @@ def test_the_recovery_definition_sums_its_inlets_left_associated() -> None:
     assert found == 1.0 * 0.3 - 0.7 * ((0.1 + 0.2) + 1e-17)
     with pytest.raises(ValueError):
         scaled_sum_definition_row("n", "F", "w", ())
+
+
+# -- S11.A92: the end parameters (§10.5, R-824) ---------------------------------------------------
+
+#: The twelve end parameters, each with an attribute where its kind takes one, and the
+#: `EndSpecification` it configures (value 0.5; the parser judges no value).
+END_NAMES: dict[str, tuple[str, EndSpecification]] = {
+    "condenser_reflux_ratio": (CONDENSER, EndSpecification("reflux_ratio", 0.5)),
+    "condenser_distillate_rate": (CONDENSER, EndSpecification("distillate_rate", 0.5)),
+    "condenser_duty": (CONDENSER, EndSpecification("duty", 0.5)),
+    "condenser_purity.A": (CONDENSER, EndSpecification("purity", 0.5, component="A")),
+    "condenser_recovery.B": (CONDENSER, EndSpecification("recovery", 0.5, component="B")),
+    "condenser_temperature.2": (CONDENSER, EndSpecification("temperature", 0.5, stage=2)),
+    "reboiler_boilup_ratio": (REBOILER, EndSpecification("boilup_ratio", 0.5)),
+    "reboiler_bottoms_rate": (REBOILER, EndSpecification("bottoms_rate", 0.5)),
+    "reboiler_duty": (REBOILER, EndSpecification("duty", 0.5)),
+    "reboiler_purity.C": (REBOILER, EndSpecification("purity", 0.5, component="C")),
+    "reboiler_recovery.A": (REBOILER, EndSpecification("recovery", 0.5, component="A")),
+    "reboiler_temperature.6": (REBOILER, EndSpecification("temperature", 0.5, stage=6)),
+}
+
+
+def _with_end(view: InstanceView, ends: dict[str, float]) -> InstanceView:
+    """`view` with its end parameters replaced by `ends`."""
+    kept = {k: v for k, v in view.parameters.items() if not k.startswith(END_PREFIXES)}
+    return replace(view, parameters={**kept, **ends})
+
+
+def test_the_twelve_end_parameters_are_the_end_kinds() -> None:
+    assert len(END_NAMES) == 12
+    assert {name.partition(".")[0] for name in END_NAMES} == set(END_PARAMETERS)
+
+
+@pytest.mark.parametrize("name", sorted(END_NAMES))
+def test_each_end_parameter_configures_its_end_specification(name: str) -> None:
+    """S11.A92: each of the twelve names configures its `EndSpecification` at its end; the
+    other end keeps M1's."""
+    end, expected = END_NAMES[name]
+    view = view_of(CASES["M1"])
+    other = REBOILER if end == CONDENSER else CONDENSER
+    keep = {k: v for k, v in view.parameters.items() if k.startswith(f"{other}_")}
+    structure = column_structure(_with_end(view, {**keep, name: 0.5}), CASES["M1"].components)
+    found = structure.condenser_spec if end == CONDENSER else structure.reboiler_spec
+    assert found == expected
+
+
+@pytest.mark.parametrize(
+    "name", ["condenser.reflux_ratio", "reboiler.boilup_ratio", "condenser_boilup_ratio"]
+)
+def test_a_dotted_or_foreign_end_parameter_is_unsupported(name: str) -> None:
+    """S11.A92: the dotted spelling, and a kind the end does not take, by name."""
+    view = view_of(CASES["M1"])
+    with pytest.raises(RevisionError) as raised:
+        column_structure(
+            replace(view, parameters={**view.parameters, name: 2.0}), CASES["M1"].components
+        )
+    assert raised.value.code == f"parameter_unsupported(S02.{name})"
+
+
+def test_two_end_parameters_at_one_end_conflict() -> None:
+    """S11.A92: two `condenser_*` names."""
+    view = _with_end(
+        view_of(CASES["M1"]),
+        {"condenser_reflux_ratio": 2.0, "condenser_duty": -1.0, "reboiler_boilup_ratio": 1.5},
+    )
+    with pytest.raises(RevisionError) as raised:
+        column_structure(view, CASES["M1"].components)
+    assert raised.value.code == "specification_conflict(S02.condenser)"
