@@ -363,3 +363,67 @@ def test_a32_generator_check() -> None:
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "identical" in result.stdout and "DIFFER" not in result.stdout
+
+
+# =================================================================================================
+# S11.A40 and A84: snapshot S4 (W27v3-R08), and its classification of the development half
+# =================================================================================================
+
+S4_SCRIPT = ROOT / "scripts" / "s11_w27_s4.py"
+S4_RECORD = registration.RECORDS / "snapshot_s4.json"
+
+
+def test_a40_a84_the_build_snapshot_is_s4_and_classifies_the_225_rows() -> None:
+    """S11.A40: the build's version 3 snapshot equals S4 (every member but `git_commit`); rulings
+    item 3 acceptance 4: it classifies the 225 development rows with no refusal, to the recorded
+    tally. S11.A84: 127 routes, the Wilson route on `wilson-ig-v2`."""
+    env = {**os.environ, "PYTHONPATH": f"{ROOT / 'src'}{os.pathsep}{ROOT}"}
+    result = subprocess.run(
+        [sys.executable, str(S4_SCRIPT), "--check"],
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+        env=env,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "S4 OK: 0 problem(s)" in result.stdout
+    record = json.loads(S4_RECORD.read_bytes())
+    assert record["routes"] == len(record["snapshot"]["routes"]) == 127
+    assert record["wilson_route"] == ["wilson-ig-v2"]
+    assert record["snapshot"]["schema"] == "w27-registry-snapshot-v3"
+    assert record["development"]["rows"] == 225
+    # Regression pins (the S4 build's own output, not an independent expectation).
+    assert record["development"]["tally"]["classes"] == {
+        "ARTIFACT_INCOMPLETE": 0,
+        "CANDIDATE": 3,
+        "COMPONENT_UNAVAILABLE": 3,
+        "NOT_STEADY_STATE_SIMULATION": 32,
+        "PROPERTY_ROUTE_UNAVAILABLE": 3,
+        "UNIT_UNAVAILABLE": 184,
+    }
+    # W27v3-R08: S4 is registered with its SHA-256.
+    doc = (ROOT / "docs" / "derivations" / "W27-registration-v3.md").read_text(encoding="utf-8")
+    assert f"`{record['snapshot_sha256']}`" in doc
+
+
+def test_a40_the_s4_check_can_fail() -> None:
+    """The check sees a moved route, a moved tally and a stale SHA-256."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        import s11_w27_s4  # noqa: PLC0415
+    finally:
+        sys.path.remove(str(ROOT / "scripts"))
+    record = json.loads(S4_RECORD.read_bytes())
+    built = json.loads(S4_RECORD.read_bytes())
+    built["snapshot"]["git_commit"] = "0" * 40
+    assert s11_w27_s4.problems(record, built) == []
+    built["snapshot"]["routes"] = built["snapshot"]["routes"][1:]
+    built["development"]["tally"]["classes"]["CANDIDATE"] += 1
+    found = s11_w27_s4.problems(record, built)
+    assert "snapshot member 'routes' differs from the build's" in found
+    assert any(line.startswith("development differs") for line in found)
+    record["snapshot_sha256"] = "0" * 64
+    assert "snapshot_sha256 is not the SHA-256 of the stored snapshot" in s11_w27_s4.problems(
+        record, json.loads(S4_RECORD.read_bytes())
+    )

@@ -82,6 +82,11 @@ members.
   model per provider, so every route of one provider in a build carries the same models.
 - **W27v3-R08.** Snapshot S4 is the S11 build's routes (127), generated at WO-I1b (S11 §9) and registered with its
   SHA-256. It is not part of this transcription.
+  *Registered 2026-10-27 (WO-I1b):* S4 is `benchmarks/m06/openidaes450/snapshot_s4.json#/snapshot`, built at
+  `82a1d87b` (127 routes, the Wilson route on `wilson-ig-v2`), SHA-256
+  `58ba0d48e5e6f4d6a22bc94b2ad5f135d907b8488134dedb25eaeabf781d3231`. On the 225 development rows it classifies
+  under version 3 with no refusal: 3 `CANDIDATE`, 3 `COMPONENT_UNAVAILABLE`, 3 `PROPERTY_ROUTE_UNAVAILABLE`, 32
+  `NOT_STEADY_STATE_SIMULATION`, 184 `UNIT_UNAVAILABLE` (`scripts/s11_w27_s4.py --check`; S11.A40).
 - **W27v3-R09 (W27v2-R08 under version 3; R-832).** A non-synthetic registry record with no CAS RN (`cas` absent, null
   or empty) takes no part in W27v2-R08: it can match no case component (W27-R15), so no alias can close a collision
   with it. Records with a CAS RN keep W27v2-R08 unchanged. Versions 1 and 2 are unchanged.

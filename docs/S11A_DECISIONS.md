@@ -508,3 +508,16 @@ Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. 
   (`syn001.column` on SYN-001, none on `pr-c1-v1`). Alternative: amend the W27 tests under §8.3. Reversible by: the
   one commit. Measured: the v2 reading's `list_models_sha256` = A3's `f070fbe0…` again; `test_m06_w27_coverage` +
   `test_l01_retake` + `test_s11_w27_v3`: 95 passed, 2 skipped (was 8 failed, 6 errors).
+- Item 7 (S4, W27v3-R08, rulings item 3 acceptance 4, S11.A40/A84): `scripts/s11_w27_s4.py --emit` wrote
+  `benchmarks/m06/openidaes450/snapshot_s4.json` (S4 + its SHA-256 + the 225-row version 3 tally), built at
+  `82a1d87b`: 127 routes, Wilson on `wilson-ig-v2`, S4 SHA-256 `58ba0d48…3231`. No refusal on the 225 development
+  rows: 3 CANDIDATE, 3 COMPONENT_UNAVAILABLE, 3 PROPERTY_ROUTE_UNAVAILABLE, 32 NOT_STEADY, 184 UNIT_UNAVAILABLE
+  (committed v2 snapshot on the same rows: 9 COMPONENT_UNAVAILABLE, 0, 0; six rows move: the three IAPWS pump variants
+  → CANDIDATE, `official_btx_flash_canary`, `variant_hda_once_through_single_flash`,
+  `variant_methanol_water_nrtl_partial_condensation` → PROPERTY_ROUTE_UNAVAILABLE). `--check` rebuilds and compares
+  every member but `git_commit`. Tests `test_a40_a84_…` (+ the check-can-fail mutant) in `test_s11_w27_v3`.
+- DECISION (item 7): S4's SHA-256 registered by a dated "*Registered 2026-10-27 (WO-I1b)*" sentence under W27v3-R08
+  in `W27-registration-v3.md` (outside the generated blocks; `w27_registration_v3.py --check` identical), and S4 kept
+  in a record file beside `registration_v3.json`, with a `--check` generator (L01 retake record precedent: snapshot +
+  `snapshot_sha256`). Alternative: a member of `registration_v3.json` (would move the transcription the generator
+  pins). Reversible by: the record, the script, the one sentence.
