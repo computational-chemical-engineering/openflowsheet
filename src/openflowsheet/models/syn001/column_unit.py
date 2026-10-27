@@ -24,7 +24,6 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
-from functools import cache
 from pathlib import Path
 from typing import Any, Final
 
@@ -553,8 +552,8 @@ def _provider_id(provider: PropertyProvider) -> str:
     return provider.describe().provider_id
 
 
-@cache
 def _artifact_hash() -> str:
+    """The module source's SHA-256; read per manifest, uncached (no process-global state)."""
     return file_sha256(Path(__file__))
 
 
