@@ -1717,14 +1717,15 @@ def _basis_refusal(model_id: str, basis: ComponentBasis) -> Unbound:
     """R-288: `model_id` does not bind on `basis`. The hint names the bases it binds on and, when
     there is one, the model of the same function on `basis`.
 
-    S11 design §4.4: a refusal on SYN-001's or C1's basis keeps its pre-S11 text byte for byte
-    (S11.A13), so it names only those two bases; one on a basis S11 adds names every basis and
-    appends `_UNADMITTED`'s reason."""
+    S11.A13 (restated, R-841): on every basis the hint names every basis the model binds on
+    ("bases" when there is more than one), and appends `_UNADMITTED`'s reason where it has one.
+    A syn001/c1 hint is the base's byte for byte for a model whose bases S11 does not change."""
     bases = MODEL_BASES[model_id]
-    if basis.provider_id not in S11_BASES:
-        bases = bases - frozenset(S11_BASES)
     own = ", ".join(sorted(bases))
-    hint = f"{model_id} binds on the {own} basis only, not on this revision's {basis.provider_id}"
+    noun = "bases" if len(bases) > 1 else "basis"
+    hint = (
+        f"{model_id} binds on the {own} {noun} only, not on this revision's {basis.provider_id}"
+    )
     other = _SAME_FUNCTION.get(model_id)
     if other is not None and basis.provider_id in MODEL_BASES[other]:
         hint += f"; on {basis.provider_id} the same function is {other}"

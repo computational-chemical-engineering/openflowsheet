@@ -142,8 +142,9 @@ def test_syn001s_feed_to_sink_is_refused_on_the_c1_basis() -> None:
         "unsupported",
         "model_unsupported(syn001.feed_source)",
         hint=(
-            "syn001.feed_source binds on the syn001 basis only, not on this revision's "
-            "pr-c1-v1; on pr-c1-v1 the same function is c1.feed_source"
+            "syn001.feed_source binds on the coolprop-heos-v1, iapws95-v1, syn001, wilson-ig-v2 "
+            "bases only, not on this revision's pr-c1-v1; on pr-c1-v1 the same function is "
+            "c1.feed_source"
         ),
     )
 
@@ -158,8 +159,9 @@ def test_syn001s_splitter_is_refused_on_the_c1_basis() -> None:
         "unsupported",
         "model_unsupported(syn001.stream_splitter)",
         hint=(
-            "syn001.stream_splitter binds on the syn001 basis only, not on this revision's "
-            "pr-c1-v1; on pr-c1-v1 the same function is c1.stream_splitter"
+            "syn001.stream_splitter binds on the coolprop-heos-v1, iapws95-v1, syn001, "
+            "wilson-ig-v2 bases only, not on this revision's pr-c1-v1; on pr-c1-v1 the same "
+            "function is c1.stream_splitter"
         ),
     )
 
@@ -171,7 +173,10 @@ def test_a_model_with_no_same_function_model_on_the_other_basis_names_none() -> 
     assert bind_revision_flowsheet(document) == Unbound(
         "unsupported",
         "model_unsupported(syn001.valve)",
-        hint="syn001.valve binds on the syn001 basis only, not on this revision's pr-c1-v1",
+        hint=(
+            "syn001.valve binds on the syn001, wilson-ig-v2 bases only, not on this revision's "
+            "pr-c1-v1"
+        ),
     )
 
 

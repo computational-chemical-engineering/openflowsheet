@@ -391,3 +391,13 @@ commit). Not done, in order:
    `WORK_MODELS`, which now hold the thermal duty and work models). OPEN (design lane, not in §8.3): amend it under
    §8.3 (restricted to non-`thermal.` ids, the C6-2 precedent) — default; or the envelope reads the thermal Q/W from
    a separate set. Thermal/GP solve and verifier tests all pass through the real registration and hooks.
+
+## WO-I1b part 2 (continued): tests restated, R-841, envelope, samples, S4, item 10
+
+- `51dcc31d`: S11's own tests restated to §4.7 (A13, A39 23 → 30, the five admitted on Wilson, the
+  `wilson_admitted` fixture dropped); A82; A81's binder half (`thermal.pump` on GP-M2 → no-volume reason).
+- R-841 (rulings item 12): `_basis_refusal` names every basis the model binds on ("bases" when more than one); the
+  `S11_BASES` filter is gone. Measured at the base `8c34ecb0`: the 14 syn001/c1 pairs of the models whose
+  `MODEL_BASES` S11 does not change hash to `3bdca9c1…`, and the branch reproduces it byte for byte. The eight moved
+  pairs (three routing models, the five γ–φ units, on C1) and the new column/thermal pairs are asserted literally.
+  `AMENDED_TESTS` += `test_m02_join`'s three refusal tests (feed_source, stream_splitter, valve), citing R-841.
