@@ -111,6 +111,44 @@ def _fold(ids: Sequence[str]) -> FunctionalBuilder:
     return build
 
 
+def _theta_value(theta_id: str) -> FunctionalBuilder:
+    return lambda s, a: s.theta(theta_id)
+
+
+def _scaled(theta_id: str, output_id: str) -> FunctionalBuilder:
+    return lambda s, a: s.theta(theta_id) * s.out(output_id)
+
+
+def _flow_cost(flow: FunctionalBuilder, price: str, hours: str) -> FunctionalBuilder:
+    """`annual(p·ṅ, h)` (§4.7.2)."""
+    return lambda s, a: operating.annual(s.theta(price) * flow(s, a), s.theta(hours))
+
+
+def _energy_cost(
+    consume: tuple[SizedItem, ...],
+    generate: tuple[SizedItem, ...],
+    price: str,
+    export: str,
+    hours: str,
+) -> FunctionalBuilder:
+    """`annual(p·Σ consumed, h) − Σ annual(q·generated, h)` (§4.7.2; netting when q = p)."""
+
+    def build(s: Symbols, a: Algebra) -> Expr:
+        total: Expr = 0.0
+        for k, i in enumerate(consume):
+            rate_of = i.power or i.duty
+            assert rate_of is not None
+            rate = rate_of(s, a)
+            total = rate if k == 0 else total + rate
+        cost: Expr = operating.annual(s.theta(price) * total, s.theta(hours))
+        for i in generate:
+            assert i.power is not None
+            cost = cost - operating.annual(s.theta(export) * i.power(s, a), s.theta(hours))
+        return cost
+
+    return build
+
+
 def _covered(target: str, excluded: Mapping[str, str]) -> bool:
     return any(target == x or target.startswith(x + ".") for x in excluded)
 
@@ -752,27 +790,18 @@ class _Planner:
                     self.limitations.append(Limitation("ELECTRICITY_NETTED", u))
                     self._defaulted("electricity_export_price", "import", u)
 
-            def build(
-                s: Symbols,
-                a: Algebra,
-                consume=tuple(consume),
-                generate=tuple(generate),
-                p=price.theta_id,
-                q=export.theta_id,
-            ) -> Expr:
-                total: Expr = 0.0
-                for k, i in enumerate(consume):
-                    rate = (i.power or i.duty)(s, a)  # type: ignore[misc]
-                    total = rate if k == 0 else total + rate
-                cost: Expr = operating.annual(s.theta(p) * total, s.theta(h))
-                for i in generate:
-                    cost = cost - operating.annual(s.theta(q) * i.power(s, a), s.theta(h))  # type: ignore[misc]
-                return cost
-
-            self.outputs.append(OutputDef(output_id, cur, build))
+            self.outputs.append(
+                OutputDef(
+                    output_id,
+                    cur,
+                    _energy_cost(
+                        tuple(consume), tuple(generate), price.theta_id, export.theta_id, h
+                    ),
+                )
+            )
             lines.append(output_id)
-        users = {i.item_id for i in self.sizing.items if i.electricity is not None}
-        if users and not any(u["kind"] == "electricity" for u in self.doc.get("utilities", ())):
+        electric = {i.item_id for i in self.sizing.items if i.electricity is not None}
+        if electric and not any(u["kind"] == "electricity" for u in self.doc.get("utilities", ())):
             blocked.append("electricity")
             self.unavailable["opex.utility.electricity"] = "no utility of kind electricity declared"
         revenues: list[str] = []
@@ -793,14 +822,7 @@ class _Planner:
                 self.unavailable[output_id] = "price refused"
                 continue
             flow = self._flow(s_id, basis, material.get("component"), price.unit, masses)
-            p = price.theta_id
-            self.outputs.append(
-                OutputDef(
-                    output_id,
-                    cur,
-                    lambda s, a, f=flow, p=p: operating.annual(s.theta(p) * f(s, a), s.theta(h)),
-                )
-            )
+            self.outputs.append(OutputDef(output_id, cur, _flow_cost(flow, price.theta_id, h)))
             (revenues if prefix == "revenue" else lines).append(output_id)
         fixed = list(self.doc.get("fixed_opex", ()))
         if not fixed:
@@ -814,9 +836,7 @@ class _Planner:
                     cur,
                     f"fixed_opex {line['line']}",
                 )
-                self.outputs.append(
-                    OutputDef(output_id, cur, lambda s, a, t=t.theta_id: s.theta(t))
-                )
+                self.outputs.append(OutputDef(output_id, cur, _theta_value(t.theta_id)))
             else:
                 of = f"capex.{line['fraction_of']['of']}"
                 if of in self.unavailable:
@@ -829,11 +849,7 @@ class _Planner:
                     "1/yr",
                     f"fixed_opex {line['line']}",
                 )
-                self.outputs.append(
-                    OutputDef(
-                        output_id, cur, lambda s, a, t=t.theta_id, of=of: s.theta(t) * s.out(of)
-                    )
-                )
+                self.outputs.append(OutputDef(output_id, cur, _scaled(t.theta_id, of)))
             lines.append(output_id)
         self._sum("opex.total", lines, cur, blocked)
         unpriced = [r for r in revenues if r in self.unavailable]
@@ -935,7 +951,7 @@ class _Planner:
             except KeyError:
                 cost_set = None
             entry = None if cost_set is None else sets.entry_for(cost_set, "machine.drive")
-            if entry is not None and entry.form == "sslw-motor-v1":
+            if cost_set is not None and entry is not None and entry.form == "sslw-motor-v1":
                 found = sets.resolve(cost_set, entry.entry_id, {})
                 motor = found if isinstance(found, forms.ResolvedEntry) else None
         self.motor = motor
