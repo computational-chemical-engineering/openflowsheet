@@ -214,3 +214,5 @@ All four answered with the recommended default (Frank, 2026-10-25):
   follow-on package after S11 merges (removes L-COL-9; `S11-design.md` §10, R-827).
 - **Q31 (spelling of the column's end parameters):** Frank, 2026-10-27: **underscore** (`condenser_<kind>`, `reboiler_<kind>`;
   R-824).
+- **Cost estimation and LCA** (Frank, 2026-10-27): "I want cost estimation and LCA available, because these are input in
+  process optimization studies" → package E01, design pass right after S11; PrISMa's rework builds on it.

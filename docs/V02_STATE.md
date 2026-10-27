@@ -106,9 +106,15 @@ no must-fix): `S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61`; B2 1.
    `docs/briefs/S11-binding-recon.md`. Architect design + ADR 0050 running (register from R-800). Then tracks A and B in
    parallel, one review, one gate, one CI. Fold in: the two stale S10 limitation sentences; R-796's limitation into the
    S08b/S10-C manifests at their next regeneration.
-2. **After S11 merges: revision-region continuation** (edge 3 for flowsheet regions; Frank 2026-10-27 "plan for it at the
+2. **E01 — cost estimation and LCA as general capabilities** (Frank, 2026-10-27: "I want cost estimation and LCA available,
+   because these are input in process optimization studies"). Cost and impact as differentiable model quantities usable as
+   objectives/constraints (blueprint §line 435-447: NLP bridge, "assessment adapters with currency year, location, factors,
+   uncertainty, and provenance"); open correlation sets (Turton/Seider/Woods, NETL QGESS) as registered cost providers,
+   public cost index (not CEPCI by default); LCA linear in inventory flows on Brightway with a pluggable background (free
+   data shipped; ecoinvent via the user's licence); EF 3.x factors. Design pass right after S11; PrISMa builds on it.
+3. **After S11 merges: revision-region continuation** (edge 3 for flowsheet regions; Frank 2026-10-27 "plan for it at the
    appropriate time"; removes S11's L-COL-9, R-827). Design pass first.
-3. **PrISMa rework as a test case** (Frank, 2026-10-27: "get OpenFlowsheet to the level that it can rework PrISMa analysis
+4. **PrISMa rework as a test case** (Frank, 2026-10-27: "get OpenFlowsheet to the level that it can rework PrISMa analysis
    as one of the test cases"). Target: Charalambous et al., Nature 632 (2024), doi 10.1038/s41586-024-07683-8; data Zenodo
    10.5281/zenodo.11244258 (cifs, simulated isotherms, heat capacities, all case results); layer software on request only.
    Needs: adsorption-isotherm property model (CO2/N2/H2O), TSA/TVSA cycle unit (PrISMa's "ideal" model first), TEA (nCAC, CCC)
@@ -116,13 +122,13 @@ no must-fix): `S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61`; B2 1.
    equilibrium shortcut (SI §3.2, Ajenifuja 2020), GCMC isotherms + IAST, compression to 110 bar; TEA partly blocked
    (Aspen ACCE costs), LCA rebuild blocked (ecoinvent) but comparable; first target UK cement TSA-dry (MgMOF74, 13X, CALF-20).
    Design pass after S11.
-4. Ternary column claims need a methanol+ethanol refit (S10 S-4).
-5. Design-lane leftovers: S07 B-42, F-20.2, Q-A1-2; ADR 0046–0049 acceptance; S03 B6-1..B6-4; S10 B-86, B-87, B-90, B-91,
+5. Ternary column claims need a methanol+ethanol refit (S10 S-4).
+6. Design-lane leftovers: S07 B-42, F-20.2, Q-A1-2; ADR 0046–0049 acceptance; S03 B6-1..B6-4; S10 B-86, B-87, B-90, B-91,
    verdict F1/F2; S08 W5-7 (X31 in `evidence` not `requirements`, schema takes D/A ids), W5-9 classes; S10-C W5-1/W5-2;
    the two stale S10 limitation sentences (Frank "Do it later", at the next S10 change).
-6. S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
-7. Workstation backlog: M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
-8. For Frank (defaults set, `docs/FRANK_QUESTIONS.md`): S10-C Q1–Q4 (Wilson in flowsheets: no; IDAES column comparison:
+7. S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
+8. Workstation backlog: M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
+9. For Frank (defaults set, `docs/FRANK_QUESTIONS.md`): S10-C Q1–Q4 (Wilson in flowsheets: no; IDAES column comparison:
    deferred; cascade/other units: no; purity/recovery/temperature specs: refused); S10-C F2 (theorem premises at admission,
    deferred to the binding package, R-781); S08b Q1 (v3 feed-band rule: not now); S08 Q1/Q3/Q4/Q6; Q-S09-2; Q-A6.2/Q-A6.3;
    S10 Q-F3 (ship after rights check; RC-05/06/08 unresolved). Remote scratch branches `wp/S08`, `wp/S09`, `wp/S10C`,
