@@ -195,18 +195,32 @@ packages; URL and retrieval date for data). The design-lane ruling round is fold
   does; `RevisionFlowsheet.context` is the structural one), and the alias elimination with the certificate's
   pressure-shifted second state (structural when it cannot be built). TH-C1 eliminates no row. Reversible by: it.
 
-## Handoff (2026-10-27, end of WO-B1 and WO-B2) — resume from here
+## Handoff (2026-10-27, after the ESC-B1/B3 rulings and WO-B3 part 1) — resume from here
 
-- **Done (wp/E01, after 1301ca12):** WO-B1 (ff7f4343 extra, lock, env script, D04 records + A42 checker; 932455b3
-  tables, adapter, shipped IPCC and test-background tables, tests); WO-B2 (4ce0682b contributor + tests).
-- **Gates run:** `tests/test_e01_b_tables.py` 17 passed (A27 table part, A29 adapter part, A42); `tests/test_e01_b_lca.py`
-  10 passed (P4 = hand exactly, A26, A27, A28, A29 P4 part, allocation forms, refusals); `tests/test_e01_b_brightway.py`
-  skipped in `.venv` (not run), **fails** in the scratch lca env (A24 at 1e-12: Brightway float32, ESC-B1);
-  `scripts/e01_lca_data.py --check` current; `scripts/e01_d04_inventory.py --check` A42 PASS; pyproject-dependent
-  tests (t08 w4 package data, s07, m03 isolation, t07 server extra, m07 extras) 72 passed 13 skipped; A's report and core
-  tests still pass; ruff clean, mypy clean on `assessment/`; nothing under compile/, thermo/, models/ changed.
-- **Not done:** `.venv-lca` itself was not built at the repo root (only a scratch venv; `scripts/build-lca-env.sh` builds
-  it); packaging of `_data/assessment/**` (ESC-B2); A25 against Brightway (I1, needs ESC-B1's ruling); WO-B3, WO-B4.
-- **Open for the design lane (batched):** ESC-B1 (A24/A25 tolerance vs float32 — preferred remedy stated), ESC-B2
-  (packaging layout, T08 test amendments, NOTICE attributions), ESC-B3 (θ-range rights leak in `report.propagate`),
-  the new code `LCA_TABLE_INVALID`, the substitution sign, and every DECISION line above.
+- **Done (wp/E01 after 53ce3f55):** a7c4aa8b ESC-B1 (float64 Brightway path; A24 passes at 1e-12, rel ≤ 6.2e-17);
+  76e4831b ESC-B3 (report withholds ranged θ of forbidden tables; schema `value`|`withheld`); 9b214095 WO-B3 (1)
+  (study/optimization-report `$ref` links; `studies/assessment.py`: wrapper, revision host, TR hook).
+- **Gates run:** `tests/test_e01_b_brightway.py` 3 passed in the scratch lca env
+  (`$SCRATCH/venv-lca/bin/python -m pytest …`, SCRATCH = the session scratchpad); `test_e01_b_tables/lca` 28 passed;
+  `test_e01_b_studies.py` 10 passed (A30 on TH-C1, A31, A32, A37, A38 study part); A's report/links tests pass;
+  m02/m03/m04/m05 schema tests, t08 w4 package data, m07 journey a21 pass; policy `--check` exit 0; A42 PASS; ruff,
+  mypy clean. Nothing under compile/, thermo/, models/ changed; no S11 file touched; nothing pushed.
+- **Known failure, not B's to fix:** `test_m07_mr12_extras_v02.py::test_the_git_backed_measure_at_head` (the `lca`
+  extra trips S07 Ruling M's tripwire; the release spec adds `MR12_AUDITS` + the list). Logged above for I1.
+- **Next (WO-B3 part 2, §4.10.2), in the nlp env:** `NlpFormulation.assessment: AssessmentBinding(program, outputs,
+  output_scales)`; `assessment:<id>` names in `QuadraticExpression.variables`, split in `FullSpaceNlp`, unknown →
+  `ASSESSMENT_OUTPUT_UNKNOWN` before any solve; gray-box outputs = referenced outputs + admissibility rows in their
+  regime closure (catalogue order); `evaluate_outputs`/`evaluate_jacobian_outputs` (hstack x|p, fixed canonical CSC,
+  same pattern guard); scaling 1/scale (`max(|y(x₀)|,1)`, row nominal for admissibility); Pyomo mapping, `adm ≥ 0`;
+  `optimization_readiness` codes; `assessment is None` → `output_names() == []`, `build_model` unchanged (A35, G9:
+  M03 NLP fixtures bit-identical). Then **part 3 (§4.10.3):** V3 admissibility as constraints, V5 gradient via
+  `linearize` + adjoint (as `assessment_sensitivity`), V6 from `program.evaluate(x_sim)`, V7
+  `program.select(x_sim)` = held regime else `ASSESSMENT_REGIME_CHANGED(<entry>)`/`NOT_VERIFIED`;
+  `regime_bounds_active`; `formulation.assessment` in the optimization report. A33–A36 run in I1 on P2.
+- **Then WO-B4** (`benchmarks/e01/cost_hand/`): forms I–VII transcribed from the pinned SSLW.py (scratchpad
+  `idaes_src/`, sha256 in E01A's log), not from the set file; mpmath at S_min, √(S_min·S_max), S_max, floor bounds
+  and 1e-6 inside, P1–P3 sizes; A10–A12 hand cases with identity volumes; scripts never import openflowsheet;
+  `benchmarks/e01/brightway/` P4 `foreground_check` expectation (lca env) and the IDAES cross-check script (§9.5).
+- **Open for the design lane (batched):** ESC-B3 residue (interval/σ and single-exchange impacts still let a reader
+  back out a restricted q_k); the wrapper's default output scale; A32's reading; earlier B1/B2 items (new code
+  `LCA_TABLE_INVALID`, substitution sign, every DECISION line). ESC-B2 (packaging) is I1's.
