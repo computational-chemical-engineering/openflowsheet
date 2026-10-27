@@ -303,6 +303,18 @@ I1's.
 - DECISION: electricity with no `kind: electricity` utility → `opex.utility.electricity` + `opex.total` unavailable
   (no §4.12 code fits; none emitted). Heating/cooling prices must be energy `per` (else `PRICE_BASIS_MISMATCH`).
   User series load from `data.series[].path` when the canonical sha256 matches; otherwise not available.
+- Done (5): `cost/derived.py` (`DerivedContributor`, registered `derived`); `BuildContext.earlier` (the earlier
+  contributors' plans, empty for the first; additive, cost ignores it). `tests/test_e01_a_derived.py` 4 passed.
+- DECISION: derived references go backwards in document order only; a forward, self or unknown term →
+  `ASSESSMENT_OUTPUT_UNKNOWN(<term>)` and the output unavailable. Alternative: topological order over the declared
+  set. Reversible by: `derived.py` (the check is one comprehension). Terms fold in sorted id order (the canonical
+  document's), then `+ constant`; a denominator absent or all zero is no ratio; a second declaration of an id is
+  refused `ASSESSMENT_OUTPUT_UNKNOWN(derived.<id>)` "declared twice".
+- DECISION: the denominator sign is checked at plan time on floats (`METRIC_UNDEFINED(derived.<id>)`, unavailable)
+  and again by the report at the state it reports (section `undefined`). Alternative: an admissibility row (would add
+  a regime entry the design does not have). Reversible by: `derived.py`.
+- FIX: `_Planner._theta` looked document `uncertainty` up by the path without `asm:`, but the schema requires the
+  `asm:` key, so no declared range was ever applied. Now keyed by the full θ id. Values unchanged (ranges only).
 
 ## Handoff (2026-10-27, fifth context cap) — resume from here
 

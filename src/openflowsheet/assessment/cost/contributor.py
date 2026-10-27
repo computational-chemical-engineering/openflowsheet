@@ -194,7 +194,7 @@ class _Planner:
         structural: bool = False,
         relative_range: tuple[float, float] | None = None,
     ) -> Theta:
-        declared = dict(self.doc.get("uncertainty", {})).get(theta_id.removeprefix("asm:"))
+        declared = dict(self.doc.get("uncertainty", {})).get(theta_id)
         if declared is not None:
             lo, hi = declared["relative_range"]
             relative_range = (float(lo), float(hi))

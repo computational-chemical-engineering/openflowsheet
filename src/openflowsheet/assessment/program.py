@@ -364,6 +364,9 @@ class BuildContext:
     host_spec: ProblemSpec
     spec: AssessmentSpec
     regime: Regime
+    #: The plans of the contributors that ran before this one, by name (§4.2.2: `derived` may
+    #: reference any earlier output). Empty for the first contributor.
+    earlier: Mapping[str, ContributionPlan] = MappingProxyType({})
 
     def evaluate(
         self,
@@ -504,7 +507,9 @@ class AssessmentProgram:
         for contributor in contributors:
             if contributor.name in plans:
                 raise ValueError(f"contributor {contributor.name!r} given twice")
-            plan = contributor.plan(ctx, state)
+            plan = contributor.plan(
+                dataclasses.replace(ctx, earlier=MappingProxyType(dict(plans))), state
+            )
             plans[contributor.name] = plan
             origin = f"assessment:{contributor.name}"
             outputs.extend(_Row(o.output_id, o.unit, origin, o.build) for o in plan.outputs)
@@ -651,6 +656,11 @@ class AssessmentProgram:
         return Linearization(
             MappingProxyType(dict(zip(self.output_ids, values, strict=True))), d_dx, d_dp
         )
+
+    @property
+    def context(self) -> BuildContext:
+        """The context the program was planned in (the view, host, document and held regime)."""
+        return self._ctx
 
     def select(self, x: Mapping[str, float]) -> Regime:
         """The regime at `x` (§4.3.2): the held choice of every entry whose admissibility rows are
