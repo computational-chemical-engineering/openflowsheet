@@ -430,6 +430,50 @@ def test_the_chain_crf_and_tac_on_p1() -> None:
     assert chain["crf_0.08_20"]["value"] == pytest.approx(0.10185220882315059, abs=2.8e-17)
 
 
+# -- A15: the IDAES evaluation (benchmarks/e01/brightway/idaes_crosscheck.yaml) -------------------
+IDAES = REPO / "benchmarks" / "e01" / "brightway"
+
+
+def test_a15_the_idaes_evaluation_is_current() -> None:
+    """The committed IDAES run is of this script, on these cases, with the pinned SSLW.py."""
+    data = yaml.safe_load((IDAES / "idaes_crosscheck.yaml").read_text(encoding="utf-8"))
+    script = IDAES / "idaes_crosscheck.py"
+    assert data["script_sha256"] == hashlib.sha256(script.read_bytes()).hexdigest()
+    assert (
+        data["cases_sha256"] == hashlib.sha256((HAND / "cost_hand.yaml").read_bytes()).hexdigest()
+    )
+    env = data["environment"]
+    assert env["idaes_pse"] == "2.13.0"
+    assert env["SSLW.py_sha256"] == _hand()["transcribed_from"]["file_sha256"]
+
+
+def test_a15_package_and_transcription_against_idaes() -> None:
+    """Every non-refused case and every P-size item: the package's C_P and cost_hand's against
+    IDAES's at the effective inputs, rel ≤ 1e-9 (escalated, never loosened, if larger)."""
+    data = yaml.safe_load((IDAES / "idaes_crosscheck.yaml").read_text(encoding="utf-8"))
+    hand = _hand()
+    worst = {"package": 0.0, "hand": 0.0}
+    pairs: list[tuple[str, dict[str, Any], dict[str, Any]]] = []
+    for entry, block in hand["forms"].items():
+        live = [c for c in block["cases"] if not c.get("refused")]
+        assert [c["label"] for c in live] == [r["label"] for r in data["forms"][entry]], entry
+        pairs += [(entry, c, r) for c, r in zip(live, data["forms"][entry], strict=True)]
+    for name, block in hand["p_sizes"].items():
+        assert [r["item"] for r in block["items"]] == [r["item"] for r in data["p_sizes"][name]]
+        pairs += [
+            (row["entry"], row, r)
+            for row, r in zip(block["items"], data["p_sizes"][name], strict=True)
+        ]
+    for entry, case, idaes in pairs:
+        _, cost = _evaluate(entry, case["options"], case["inputs"])
+        assert cost is not None
+        for who, got in (("package", cost), ("hand", case["C_P"]["value"])):
+            rel = _rel(got, idaes["C_P"])
+            worst[who] = max(worst[who], rel)
+            assert rel <= 1e-9, (who, entry, case.get("label", case.get("item")), got, idaes)
+    print(f"A15 worst rel vs IDAES: package {worst['package']:.2e}, hand {worst['hand']:.2e}")
+
+
 if __name__ == "__main__":
     if sys.argv[1:] != ["--write-states"]:
         raise SystemExit("usage: python tests/test_e01_b_cost_hand.py --write-states")
