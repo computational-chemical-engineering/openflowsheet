@@ -199,3 +199,18 @@ All four answered with the recommended default (Frank, 2026-10-25):
   verifier-detected false successes into solver restarts, at the cost of a new contract version, an ADR and re-registered
   B34 records. **Default: no, not now** — revisit if a study or flowsheet needs `CONVERGED` + `VERIFIED` where it gets
   `FAILED`, or if an uncertified consumer of `solve_region` appears (`docs/derivations/S08b-design.md` §10 Q1).
+
+## S11 — the binding package (2026-10-26/27)
+
+- **Frank, 2026-10-26: "I want the binding package"** → S11 (`docs/derivations/S11-design.md`, ADR 0050). Supersedes the
+  library-only defaults S05 Q-8, S10 Q-F2 / R-709, and S10-C Q1 / Q3 as far as S11 reaches.
+- **First-pass Q1 (Wilson exposure):** Frank, 2026-10-27: **yes** — selectable in a source checkout, refused typed in a wheel
+  until the rights check (S10 Q-F3).
+- **First-pass Q2 (pure-fluid thermal units) and Q3 (Wilson units):** Frank, 2026-10-27: **include in S11** (was S11b/S11c)
+  → second design pass `docs/derivations/S11-units-design.md`, ADR 0051.
+- **Q17 (automatic liquid/vapour regime switching for pure fluids)** (default applied): **not in S11**; a stream in the wrong
+  regime is refused `phase_regime_mismatch`, naming the declaration to use.
+- **Q30 (continuation, edge 3, for revision regions):** Frank, 2026-10-27: **"Plan for it at the appropriate time"** → a
+  follow-on package after S11 merges (removes L-COL-9; `S11-design.md` §10, R-827).
+- **Q31 (spelling of the column's end parameters):** Frank, 2026-10-27: **underscore** (`condenser_<kind>`, `reboiler_<kind>`;
+  R-824).
