@@ -1,9 +1,10 @@
 """S11 WO-B3d/B3e: the column solved in a flowsheet (design note §4.7.5, §6.1, §10.8, §10.11).
 
 S11.A28 (a column under a phase-contract-v1 policy is refused before the traversal); A29 on the
-SYN-001 cases (`benchmarks/s11/flowsheets/*.json`: S02 M1–M4, S06 J1–J8 and the recycle case;
-the Wilson cases C-MW and C-EW wait for track A's basis); A24′ (no edge-3 continuation on a column
-region, as on every revision region); Q29 (the PTC policy: a typed refusal). The column is
+SYN-001 cases (`benchmarks/s11/flowsheets/*.json`: S02 M1–M4, S06 J1–J8 and the recycle case)
+and the Wilson cases C-MW and C-EW; Q11 (a Wilson column with a `none` end, admitted because
+`solve_column` accepts it); A24′ (no edge-3 continuation on a column region, as on every revision
+region); Q29 (the PTC policy: a typed refusal). The column is
 registered for the test only (`s11_column_support.column_registered`), as I1 has not registered
 it yet.
 """
@@ -17,6 +18,8 @@ import pytest
 from s11_column_support import (
     COLUMN_CASES,
     RECYCLE_CASE,
+    WILSON_CASES,
+    WILSON_STRIPPER,
     column_case,
     column_case_spec,
     column_registered,
@@ -26,6 +29,8 @@ from s11_column_support import (
 from test_s02_column_wo1 import SPECS
 from test_s02_column_wo2 import FLOW_ABS, FLOW_REL, Q_ABS, T_ABS, ref_state
 from test_s06_column_wo2 import expected_root
+from test_s10c_blocks import REAL
+from test_s10c_columns import deviations, root, worst
 from test_t05_w11_cases import case_document
 
 from openflowsheet.application.policies import T04_W12, T06_REVISION_V2, T08_PTC_V1
@@ -35,7 +40,7 @@ from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.models.syn001.cascade import stage_duty_id, stage_temperature_id
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
 from openflowsheet.models.syn001.column import ColumnSpec
-from openflowsheet.models.syn001.column_solve import product_columns
+from openflowsheet.models.syn001.column_solve import ColumnSolution, product_columns, solve_column
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.homotopy import continuation_parameter
@@ -48,6 +53,13 @@ M1 = SPECS["M1"]
 @pytest.fixture
 def registered(monkeypatch: pytest.MonkeyPatch) -> Iterator[pytest.MonkeyPatch]:
     with column_registered(monkeypatch):
+        yield monkeypatch
+
+
+@pytest.fixture
+def registered_wilson(monkeypatch: pytest.MonkeyPatch) -> Iterator[pytest.MonkeyPatch]:
+    """The column admitted on both of I1's bases (`MODEL_BASES = {syn001, wilson-ig-v1}`)."""
+    with column_registered(monkeypatch, frozenset({"syn001", "wilson-ig-v1"})):
         yield monkeypatch
 
 
@@ -88,7 +100,7 @@ def test_the_same_column_under_the_revision_policy_converges(
 # -- the committed cases --------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("name", [*COLUMN_CASES, RECYCLE_CASE])
+@pytest.mark.parametrize("name", [*COLUMN_CASES, RECYCLE_CASE, *WILSON_CASES, WILSON_STRIPPER])
 def test_the_committed_case_is_the_generated_one(name: str) -> None:
     """`benchmarks/s11/flowsheets/<name>.json` is `column_case(name)`, so the two cannot drift
     (regenerate with `python tests/s11_column_support.py`)."""
@@ -158,6 +170,92 @@ def test_the_column_with_a_recycle_converges_and_closes(registered: pytest.Monke
         out = run.state[flow_id("S-DISTILLATE", c)] + run.state[flow_id("S-PURGE", c)]
         assert abs(out - n) <= FLOW_REL * n + FLOW_ABS
         assert run.state[flow_id("S-REC", c)] > 0.0
+
+
+def _worst_wilson(spec: ColumnSpec, case: str, state: dict[str, float]) -> tuple[float, str]:
+    """A29 on a Wilson case: S10-C A41's `|Δ|/tolerance` over every registered variable
+    (`ref.columns.<case>.root`: stage T and flows, T_c, D, B, x_D, x_B, Q_c, Q_r, reflux and
+    distillate flows), plus the product streams against the same entries and tolerances, and their
+    pressures (pinned, 0.01 Pa)."""
+    found = deviations(case, state)
+    ref, bottom = root(case), spec.stage_count
+    condenser, stages = ref["condenser"], ref["stages"][str(bottom)]
+    found["product"] = []
+    for i, c in enumerate(spec.components):
+        found["product"] += [
+            (
+                abs(state[flow_id("S-DISTILLATE", c)] - float(condenser["distillate_n"][i]))
+                / float(condenser["tolerance"]["reflux_n_and_distillate_n"]),
+                f"S-DISTILLATE.n.{c}",
+            ),
+            (
+                abs(state[flow_id("S-BOTTOMS", c)] - float(stages["liquid_n"][i]))
+                / float(stages["tolerance"]["liquid_n"]),
+                f"S-BOTTOMS.n.{c}",
+            ),
+        ]
+    found["product"] += [
+        (
+            abs(state[temperature_id("S-DISTILLATE")] - float(condenser["T"]))
+            / float(condenser["tolerance"]["T"]),
+            "S-DISTILLATE.T",
+        ),
+        (
+            abs(state[temperature_id("S-BOTTOMS")] - float(stages["T"]))
+            / float(stages["tolerance"]["T"]),
+            "S-BOTTOMS.T",
+        ),
+        (abs(state[pressure_id("S-DISTILLATE")] - spec.pressures[0]) / 0.01, "S-DISTILLATE.P"),
+        (abs(state[pressure_id("S-BOTTOMS")] - spec.pressures[-1]) / 0.01, "S-BOTTOMS.P"),
+    ]
+    return worst(found)
+
+
+def _equals_library_root(spec: ColumnSpec, state: dict[str, float]) -> None:
+    """The flowsheet's column columns equal `solve_column`'s accepted root exactly (|Δ| = 0, as
+    measured for every SYN-001 case in B3a)."""
+    library = solve_column(spec, REAL)
+    assert isinstance(library, ColumnSolution), library
+    shared = [name for name in library.state if name in state]
+    assert shared
+    moved = {name: state[name] - library.state[name] for name in shared}
+    assert not any(moved.values()), {k: v for k, v in moved.items() if v}
+
+
+@pytest.mark.parametrize("name", WILSON_CASES)
+def test_the_wilson_column_in_a_flowsheet_reproduces_its_registered_root(
+    name: str, registered_wilson: pytest.MonkeyPatch
+) -> None:
+    """S11.A29 (C-MW, C-EW): on `wilson-ig-v1`, the flowsheet reproduces S10-C's registered root
+    (max |Δ|/tol ≤ 1) in ≤ 3 Newton iterations, and equals the standalone `solve_column` root."""
+    spec = column_case_spec(name)
+    run = _run(committed_case(name), S01_DEFAULT_V1)
+    assert run.outcome == "CONVERGED", run.message
+    (step,) = run.steps
+    assert step.iterations <= NEWTON_BUDGET
+    assert run.state is not None
+    state = dict(run.state)
+    largest = _worst_wilson(spec, name, state)
+    assert largest[0] <= 1.0, largest
+    _equals_library_root(spec, state)
+
+
+# -- §7 Q11 ----------------------------------------------------------------------------------------
+
+
+def test_a_wilson_column_with_a_none_end_is_admitted(registered_wilson: pytest.MonkeyPatch) -> None:
+    """§7 Q11 (recorded): `solve_column` accepts a Wilson stripper (no condenser) at library level,
+    so the flowsheet admits it; under both the standalone policy object and the application's
+    revision policy it converges to the library root exactly."""
+    spec = column_case_spec(WILSON_STRIPPER)
+    assert spec.condenser == "none" and spec.top is not None
+    for policy in (S01_DEFAULT_V1, T06_REVISION_V2):
+        run = _run(committed_case(WILSON_STRIPPER), policy)
+        assert run.outcome == "CONVERGED", run.message
+        (step,) = run.steps
+        assert step.iterations <= NEWTON_BUDGET
+        assert run.state is not None
+        _equals_library_root(spec, dict(run.state))
 
 
 # -- S11.A24′ --------------------------------------------------------------------------------------
