@@ -70,6 +70,28 @@ choice; the evidence is in the named test or module. Batched for the package's s
   the T05b tests to `syn001.`, and `test_the_dormancy_registry_holds_the_thermal_entries` pins the 27 thermal keys and
   9 rules literally. No `bind_revision_flowsheet` call, so no identity key. Alternative: list the test in §8.3's
   `AMENDED_TESTS` (it has no family C key to exclude). Reversible by: that hunk.
+- DECISION C6-3: S11.A63's hint "declare vapor_liquid" → asserted on the valve's own answer (the line the traversal
+  reads: `phase_regime_mismatch(S2)` + `declared liquid, closure SATURATED beta=…; declare vapor_liquid`); the plan's
+  message is `initializer_failed(V): phase_regime_mismatch(S2)`, since `revision.InitialStateFailure` keeps only the
+  first line (orchestrator code outside C6's §4.9 scope). Alternative: carry the hint through `FlowsheetPass` (an
+  orchestrator change). Reversible by: the A63 test.
+- DECISION C6-4: TH-R1's open inputs (A61: "C6 fixes the feed and duty") → feed 1 mol/s at 300 K, 0.5 MPa; heater duty
+  25 kW with its outlet declared `vapor_liquid` (a liquid outlet at 0.5 MPa flashes to at most β ≈ 0.06 at 0.2 MPa, so
+  0.1 < β < 0.9 needs a wet heater outlet; the heater's β is 0.241); pump η 0.75 (as TH-C1; A61 names none); drum Q = 0,
+  ΔP = 0; drum β = 0.2924. The mixer's extra `TM-pressure` row is eliminated by the plan (`SP:SPLIT-P:recycle`), as
+  for K02's mixer. Alternative: a larger feed temperature with a liquid heater outlet (β stays < 0.1). Reversible by:
+  `th_r1` and the reference.
+- DECISION C6-5: the C6 references (TH-C1 cycle, TH-C2 COP, TH-R1's sequential-modular solution, tear by direct
+  substitution to 1e-12 relative, 40 sweeps) are a `flowsheets:` section of C1's `s11_thermal_reference.py` and its
+  YAML (the existing sections byte-identical; `--check` OK on CoolProp 8.0.0). Alternative: a second script. Reversible
+  by: `_flowsheets`.
+- Measured (`test_s11_thermal_solve.py`; in-process wall incl. plan; the first CoolProp solve of a process 7.5 s):
+  | case | outcome | Newton steps | wall | energy closure | checks | vs reference |
+  | TH-V1 | CONVERGED | 0 | 0.05 s | −1.8e-12 W | 21 pass | units' own evaluation, every column ≤ tolerance |
+  | TH-C1 | CONVERGED | 0 | 0.08 s (0.17 s cold; gate 10 s) | −1.4e-10 W | 31 pass | η 0.28916684297, −8.9e-13 rel |
+  | TH-C2 | CONVERGED | 0 | 1.8 s | 0.0 W | 30 pass | COP 2.95878478600, +3.3e-10 rel |
+  | TH-R1 | CONVERGED | 3 | 0.26 s (0.65 s cold; gate 30 s) | 1.8e-11 W | 43 pass | flows ≤ 9e-13 rel, T ≤ 2.3e-9 K |
+  A62: Q = 0 CONVERGED (signature `H.outlet ZERO_FLOW`), Q = 1 kW `zero_flow_conflict(H:TH-energy)`.
 - O-C6-1 (for I1b, not tested here): under v1 (`T04_W12`) the A62 flowsheet is CONVERGED at iteration 0 with Q = 0 (the
   traversal start is the root) and `LINEAR_SOLVE_FAILED` (SuperLU exactly singular) with Q = 1 kW; §4.9's "typed
   `RANK_DEFICIENT`" is the certificate's regularity status, judged only once I1b registers the thermal checks.
