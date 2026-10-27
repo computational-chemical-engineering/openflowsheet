@@ -181,9 +181,9 @@ def _start_from_pass(
     flowsheet: RevisionFlowsheet, variable_ids: Sequence[str], traversed: FlowsheetPass
 ) -> TraversalStart | InitialStateFailure:
     """§2.2 steps 3–6 on one successful pass: the streams, the units' reported duty, work and
-    extent, each lifted split re-split from its stream, and the band routes — or the unit whose
-    split the kernel refused. `traversal_start` calls it on pass 2 (pass 1 when nothing is torn);
-    `restart_start` on the last pass its sequence kept."""
+    extent (and S11's `owned` columns), each lifted split re-split from its stream, and the band
+    routes — or the unit whose split the kernel refused. `traversal_start` calls it on pass 2
+    (pass 1 when nothing is torn); `restart_start` on the last pass its sequence kept."""
     wanted = set(variable_ids)
     values: dict[str, float] = {}
     for stream in flowsheet.streams:
@@ -211,6 +211,10 @@ def _start_from_pass(
                 if reported_value is None:
                     raise ValueError(f"{unit} reports no value for its column {name}")
                 values[name] = reported_value
+        # S11 §4.7.5: the columns a unit owns beyond these (the embedded column's state).
+        for name, owned_value in evaluation.owned.items():
+            if name in wanted:
+                values[name] = owned_value
 
     split_values = lifted_split_values(
         flowsheet,

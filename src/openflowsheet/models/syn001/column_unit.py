@@ -23,19 +23,63 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
-from typing import Final
+from dataclasses import dataclass, replace
+from functools import cache
+from pathlib import Path
+from typing import Any, Final
 
+from openflowsheet.canonical import file_sha256
+from openflowsheet.compiled import EvaluationContext
+from openflowsheet.models import (
+    Contribution,
+    DeclaredEquation,
+    DerivativeDeclaration,
+    Initialization,
+    Port,
+    SpecificationError,
+    UnitEvaluation,
+    Validity,
+    Wiring,
+    flow_id,
+    manifest_document,
+)
 from openflowsheet.models.revision_flowsheet import InstanceView, RevisionError
-from openflowsheet.models.syn001.cascade import BOTTOM, TOP, InletState, SideFeed
+from openflowsheet.models.syn001 import P_MAX, P_MIN
+from openflowsheet.models.syn001.cascade import (
+    _TOKEN,
+    BOTTOM,
+    TOP,
+    CascadeFailure,
+    InletState,
+    SideFeed,
+    inlet_stream,
+    stage_pressure_id,
+    stage_temperature_id,
+)
 from openflowsheet.models.syn001.column import (
+    COMPONENT_KINDS,
     CONDENSER,
+    END_KINDS,
+    EQUATIONS,
+    F_REF,
+    FLOWSHEET_EQUATIONS,
+    GAMMA_PHI_KINDS,
+    INVERSE_KINDS,
+    MODEL_ID,
     REBOILER,
     ColumnSpec,
     EndSpecification,
     FlowsheetLinks,
+    declared_rows,
+    product_flow_id,
+    product_total_id,
+    purity_flow_id,
+    recovery_flow_id,
 )
-from openflowsheet.thermo import Phase
+from openflowsheet.models.syn001.column_solve import ColumnSolution, products, solve_column
+from openflowsheet.models.syn001.equilibrium_form import equilibrium_form
+from openflowsheet.models.syn001.ph_kernel import port_enthalpy, typed_failure
+from openflowsheet.thermo import Phase, PropertyProvider, PropertyStatus, StreamState
 
 #: The unit's material ports (§4.7.1).
 FEED: Final = "feed"
@@ -210,6 +254,14 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
     own refusals (S02 §5, S06 §5) are not applied here: `structural_refusal` applies the
     structural ones at bind, `column.validate` all of them at evaluate."""
     unit = view.unit_id
+    if not _TOKEN.match(unit):
+        # The column's property blocks are named after its id (S01's `_token`).
+        raise RevisionError(
+            "unsupported",
+            f"id_unsupported({unit})",
+            f"A {MODEL_ID} instance id names its property blocks: a letter followed by letters, "
+            "digits and non-consecutive underscores (no '-').",
+        )
     for port in view.ports:
         if port not in (*INLET_PORTS, *OUTLET_PORTS):
             raise RevisionError("unsupported", f"port_unsupported({unit}.{port})")
@@ -319,3 +371,386 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
         bottoms=view.ports[BOTTOMS][0],
         components=tuple(components),
     )
+
+
+# -- bind-time refusals (§4.7.2) -----------------------------------------------------------------
+
+
+_NONE: Final = EndSpecification("none", 0.0)
+
+
+def _refuse(unit: str, key: str, message: str) -> SpecificationError:
+    """A structural item of S02 §5 / S06 §5 at bind: the column's own `invalid_spec(<key>)`."""
+    return SpecificationError(f"{unit}: invalid_spec({key}): {message}")
+
+
+def structural_refusal(structure: ColumnStructure, provider: PropertyProvider) -> None:
+    """§4.7.2: the structural items of S02 §5 and S06 §5 (inventory in `docs/S11B_DECISIONS.md`),
+    raised at bind: `RevisionError` for what the document's configuration leaves out or
+    contradicts (an end without its specification, a specification at a `none` end, a kind the
+    column or the basis does not offer), `SpecificationError` (`invalid_spec(<key>)`, the
+    column's own keys) for a value. The inlet-dependent items are `column.validate`'s, at
+    evaluate."""
+    unit, count = structure.unit_id, structure.stage_count
+    form = equilibrium_form(provider)
+    composition_dependent = form is not None and form.composition_dependent
+    p_bounds = form.domain["P"] if composition_dependent and form is not None else (P_MIN, P_MAX)
+    # R3, the stage pressures
+    for stage, value in enumerate(structure.pressures, start=1):
+        if not (math.isfinite(value) and p_bounds[0] <= value <= p_bounds[1]):
+            column = stage_pressure_id(unit, stage)
+            raise _refuse(unit, f"domain:{column}", f"{column} = {value!r} outside {p_bounds}")
+    # S2, S10-C D8, S06 I1 and I2: each end's specification
+    given: dict[str, EndSpecification] = {}
+    for end, kind, found in (
+        (CONDENSER, structure.condenser, structure.condenser_spec),
+        (REBOILER, structure.reboiler, structure.reboiler_spec),
+    ):
+        if kind == "none":
+            if found is not None:
+                raise RevisionError(
+                    "conflict",
+                    f"specification_conflict({unit}.{end})",
+                    f"{unit} has no {end} (its {'top' if end == CONDENSER else 'bottom'} port "
+                    "is connected); remove the specification.",
+                )
+            continue
+        offered = tuple(
+            k for k in END_KINDS[end] if not composition_dependent or k in GAMMA_PHI_KINDS
+        )
+        if found is None:
+            raise RevisionError(
+                "incomplete",
+                f"specification_missing({unit}.{end})",
+                f"Pin exactly one of {', '.join(f'{end}.{k}' for k in offered)}.",
+            )
+        if found.kind not in offered:
+            raise RevisionError(
+                "unsupported",
+                f"specification_unsupported({unit}.{end}.{found.kind})",
+                f"A {end} of {unit} on {_provider_id(provider)} takes {', '.join(offered)}.",
+            )
+        given[end] = found
+    # S3
+    if given.get(CONDENSER, _NONE).kind == "distillate_rate" and (
+        given.get(REBOILER, _NONE).kind == "bottoms_rate"
+    ):
+        raise _refuse(unit, "redundant_specification", "distillate and bottoms rates together")
+    for end, found in given.items():
+        value = found.value
+        if found.kind in INVERSE_KINDS:
+            # I1, I2
+            if found.kind == "temperature":
+                wrong = found.stage is None or not 1 <= found.stage <= count
+            else:
+                wrong = found.component not in structure.components or not 0.0 < value < 1.0
+            if wrong or not math.isfinite(value):
+                raise _refuse(unit, f"{found.kind}:{end}", f"{end} {found.kind} = {value!r}")
+            continue
+        # S4
+        if found.kind == "duty":
+            wrong = value >= 0.0 if end == CONDENSER else value <= 0.0
+        else:
+            wrong = value <= 0.0
+        if wrong or not math.isfinite(value):
+            raise _refuse(unit, f"{found.kind}:{end}", f"{end} {found.kind} = {value!r}")
+    # R4, S7
+    slots = {stage for stage, duty in enumerate(structure.duties, start=1) if duty is None}
+    taken: set[int] = set()
+    for inlet in structure.inlets:
+        if inlet.port != FEED:
+            continue
+        if not 1 <= inlet.stage <= count or inlet.stage in taken or inlet.stage in slots:
+            raise _refuse(
+                unit,
+                f"side_feed_stage:{inlet.name}",
+                f"side feed {inlet.name} ({inlet.stream}) at stage {inlet.stage} (N = {count}; one "
+                "side feed per stage, none at a condenser or reboiler stage)",
+            )
+        taken.add(inlet.stage)
+    # S8
+    if count < 1 + len(slots):
+        raise _refuse(unit, "stage_count", f"N = {count} cannot hold the condenser and reboiler")
+    # S9
+    for stage in range(1, count):
+        if structure.pressures[stage] < structure.pressures[stage - 1]:
+            raise _refuse(unit, "pressure_profile", f"P_{stage + 1}* < P_{stage}*")
+    # S10's structural half: an end needs an inlet
+    if slots and not structure.inlets:
+        raise _refuse(unit, "no_feed", "a column with a condenser or reboiler and no inlet")
+
+
+# -- the unit ------------------------------------------------------------------------------------
+
+#: §4.7.1. `top` and `bottom` are optional: the binder requires every material port a unit
+#: declares to be wired, so `ColumnUnit.ports()` declares only the ports its instance wires
+#: (build decision Q7, `docs/S11B_DECISIONS.md`); this table is the model's full set.
+PORTS: Final[tuple[Port, ...]] = (
+    Port(
+        name=FEED,
+        kind="material",
+        direction="inlet",
+        multiplicity="many",
+        component_mapping="revision_component_set",
+        state_definition="nTP-v1",
+        phase_capabilities=("liquid", "vapor"),
+    ),
+    *(
+        Port(
+            name=name,
+            kind="material",
+            direction="inlet",
+            multiplicity=1,
+            component_mapping="revision_component_set",
+            state_definition="nTP-v1",
+            phase_capabilities=("liquid", "vapor"),
+        )
+        for name in (TOP, BOTTOM)
+    ),
+    Port(
+        name=DISTILLATE,
+        kind="material",
+        direction="outlet",
+        multiplicity=1,
+        component_mapping="revision_component_set",
+        state_definition="nTP-v1",
+        phase_capabilities=("liquid", "vapor"),
+    ),
+    Port(
+        name=BOTTOMS,
+        kind="material",
+        direction="outlet",
+        multiplicity=1,
+        component_mapping="revision_component_set",
+        state_definition="nTP-v1",
+        phase_capabilities=("liquid",),
+    ),
+)
+
+#: §4.7.3 item 5.
+UNIT_EQUATIONS: Final[tuple[DeclaredEquation, ...]] = (
+    *EQUATIONS,
+    *FLOWSHEET_EQUATIONS,
+)
+
+#: §4.11's L-COL rows as the manifest states them.
+LIMITATIONS: Final[tuple[str, ...]] = (
+    "L-COL-1: one side feed per stage; every side feed on the `feed` port shares one declared "
+    "phase (liquid or vapor); a two-phase feed needs a flash first (S02 §5 R4, R6).",
+    "L-COL-2: `top` and `bottom` are optional inlets; connected, the condenser or reboiler is "
+    "`none`.",
+    "L-COL-3: the stage pressures are pinned instance parameters, one per stage.",
+    "L-COL-4: on a composition-dependent (gamma-phi) basis the end specifications are the direct "
+    "kinds only (S10-C D8).",
+    "L-COL-5: evaluate runs the standalone solve_column on the inlet states; its typed refusal is "
+    "the unit's failure.",
+    "L-COL-6: in a flowsheet a purity's tolerance acts on x directly (F_ref = 1 mol/s), the "
+    "standalone tolerance on F x (S06 §15 Q7 ruling).",
+)
+
+
+def _provider_id(provider: PropertyProvider) -> str:
+    return provider.describe().provider_id
+
+
+@cache
+def _artifact_hash() -> str:
+    return file_sha256(Path(__file__))
+
+
+def _status(outcome: str) -> PropertyStatus:
+    """A column failure's outcome as a unit's status: a refusal is `unsupported`, an
+    unconverged or conflicting solve `not_converged`."""
+    if outcome in ("INVALID_SPECIFICATION", "CAPABILITY_UNAVAILABLE"):
+        return "unsupported"
+    return "not_converged"
+
+
+@dataclass(frozen=True)
+class ColumnUnit:
+    """One `syn001.column` instance in a flowsheet (§4.7)."""
+
+    unit_id: str
+    structure: ColumnStructure
+    provider: PropertyProvider
+    context: EvaluationContext
+
+    @property
+    def model_id(self) -> str:
+        return MODEL_ID
+
+    @property
+    def components(self) -> tuple[str, ...]:
+        return self.structure.components
+
+    def ports(self) -> tuple[Port, ...]:
+        wired = {inlet.port for inlet in self.structure.inlets} | set(OUTLET_PORTS)
+        return tuple(port for port in PORTS if port.name in wired)
+
+    def declared_equations(self) -> tuple[DeclaredEquation, ...]:
+        return UNIT_EQUATIONS
+
+    def manifest(self) -> Mapping[str, Any]:
+        described = self.provider.describe()
+        return manifest_document(
+            model_id=MODEL_ID,
+            title="SYN-001 MESH column",
+            description=(
+                "S02/S06's MESH column embedded in a flowsheet: its own rows, link rows from the "
+                "inlet streams and to the two products (S11 §4.7)."
+            ),
+            ports=PORTS,
+            equations=UNIT_EQUATIONS,
+            derivatives=(
+                DerivativeDeclaration(
+                    output="rows",
+                    with_respect_to=("stage.l", "stage.v", "stage.T", "inlet.state", "stream"),
+                    method="analytic",
+                    regime="all",
+                    notes="The standalone column's rows; the link rows are linear.",
+                ),
+            ),
+            initialization=Initialization(
+                strategy="registered_initializer",
+                notes="evaluate runs the standalone solve_column; the EO start takes its root.",
+                registered_initializer="s02-profile-cmo-v1",
+            ),
+            validity=Validity(
+                components=self.components,
+                phases=("liquid", "vapor"),
+                limitations=LIMITATIONS,
+                temperature_k=described.domain.get("T"),
+                pressure_pa=described.domain.get("P"),
+            ),
+            module=__name__,
+            artifact_hash=_artifact_hash(),
+            execution_class="native_equation",
+            thread_safety="thread_safe",
+            evaluation_cost_class="expensive",
+            property_provider=described.provider_id,
+            reference_convention=described.reference_convention,
+        )
+
+    def _check(self, wiring: Wiring) -> None:
+        for inlet_port in INLET_PORTS:
+            expected = tuple(i.stream for i in self.structure.inlets if i.port == inlet_port)
+            if tuple(wiring.streams.get(inlet_port, ())) != expected:
+                raise SpecificationError(
+                    f"{self.unit_id}: port {inlet_port!r} wired to "
+                    f"{list(wiring.streams.get(inlet_port, ()))}, built for {list(expected)}"
+                )
+        if (wiring.one(DISTILLATE), wiring.one(BOTTOMS)) != (
+            self.structure.distillate,
+            self.structure.bottoms,
+        ):
+            raise SpecificationError(f"{self.unit_id}: products rewired since the build")
+
+    def contribute(self, wiring: Wiring, components: Sequence[str]) -> Contribution:
+        """§4.7.3: S02/S06's rows on the structural spec, with the flowsheet's links."""
+        self._check(wiring)
+        if tuple(components) != self.components:
+            raise SpecificationError(f"{self.unit_id}: components {list(components)}")
+        return declared_rows(
+            structural_spec(self.structure),
+            self.provider,
+            self.context,
+            links=self.structure.links(),
+        )
+
+    def evaluate(
+        self, inlets: Mapping[str, Sequence[StreamState]], context: EvaluationContext
+    ) -> UnitEvaluation:
+        """§4.7.5: the standalone `solve_column` on the inlet states."""
+        described = self.provider.describe()
+        states: dict[str, InletState] = {}
+        position: dict[str, int] = {}
+        for inlet in self.structure.inlets:
+            index = position.get(inlet.port, 0)
+            position[inlet.port] = index + 1
+            connected = tuple(inlets.get(inlet.port, ()))
+            if index >= len(connected):
+                raise SpecificationError(f"{self.unit_id}: no stream at {inlet.port}[{index}]")
+            stream = connected[index]
+            checked = port_enthalpy(
+                self.provider, stream, inlet.phase, self.components, context, port=inlet.port
+            )
+            if checked.failure is not None:
+                return replace(checked.failure, reference_convention=described.reference_convention)
+            states[inlet.name] = InletState(
+                n=tuple(stream.n),
+                temperature=stream.temperature,
+                pressure=stream.pressure,
+                phase=inlet.phase,
+            )
+        spec = self.structure.spec(states)
+        answer = solve_column(spec, self.provider)
+        if isinstance(answer, CascadeFailure):
+            return self._failure(_status(answer.outcome), answer.cause, answer.message)
+        if answer.outcome != "CONVERGED":
+            return self._failure("not_converged", str(answer.cause), "")
+        state = answer.state
+        flows = products(spec, state)
+        count = spec.stage_count
+        outlets = {
+            DISTILLATE: StreamState(
+                n=flows[DISTILLATE],
+                temperature=float(state[stage_temperature_id(self.unit_id, 1)]),
+                pressure=float(state[stage_pressure_id(self.unit_id, 1)]),
+            ),
+            BOTTOMS: StreamState(
+                n=flows[BOTTOMS],
+                temperature=float(state[stage_temperature_id(self.unit_id, count)]),
+                pressure=float(state[stage_pressure_id(self.unit_id, count)]),
+            ),
+        }
+        return UnitEvaluation(
+            status="ok",
+            outlets=outlets,
+            duty=None,
+            phase_signature=None,
+            iterations=answer.result.iterations if isinstance(answer, ColumnSolution) else 0,
+            provider_id=described.provider_id,
+            reference_convention=described.reference_convention,
+            message="",
+            owned=self._owned(spec, state),
+        )
+
+    def _failure(self, status: PropertyStatus, cause: str, detail: str) -> UnitEvaluation:
+        failed = typed_failure(status, cause, detail)
+        return replace(failed, reference_convention=self.provider.describe().reference_convention)
+
+    def _owned(self, spec: ColumnSpec, state: Mapping[str, float]) -> dict[str, float]:
+        """§4.7.5: every owned column of the flowsheet face; the standalone ones from the
+        solution, `u = fl(n_c/P)` and `w = fl(n_c/F_c)` (F_ref = 1) for the inverse ends."""
+        unit = self.unit_id
+        owned: dict[str, float] = {}
+        flowsheet_only: dict[str, float] = {}
+        for end in spec.ends():
+            given = spec.end_specification(end)
+            assert given is not None
+            stage = spec.end_stage(end)
+            if given.kind not in COMPONENT_KINDS:
+                continue
+            assert given.component is not None
+            flow = float(state[product_flow_id(spec, end, given.component)])
+            if given.kind == "purity":
+                flowsheet_only[purity_flow_id(unit, stage)] = (
+                    F_REF * flow / float(state[product_total_id(spec, end)])
+                )
+            else:
+                total = 0.0
+                for k, inlet in enumerate(spec.inlets()):
+                    value = float(state[flow_id(inlet_stream(unit, inlet.port), given.component)])
+                    total = value if k == 0 else total + value
+                flowsheet_only[recovery_flow_id(unit, stage)] = F_REF * flow / total
+        for name in self.contribute_ids():
+            owned[name] = flowsheet_only[name] if name in flowsheet_only else float(state[name])
+        return owned
+
+    def contribute_ids(self) -> tuple[str, ...]:
+        return declared_rows(
+            structural_spec(self.structure),
+            self.provider,
+            self.context,
+            links=self.structure.links(),
+        ).variable_ids
