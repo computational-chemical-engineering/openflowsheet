@@ -24,6 +24,8 @@ from openflowsheet.models.revision_flowsheet import WILSON_RECORDS
 from openflowsheet.models.syn001.cascade import BOTTOM, TOP
 from openflowsheet.models.syn001.column import CONDENSER, MODEL_ID, REBOILER, ColumnSpec
 from openflowsheet.units import dimension_of
+from openflowsheet.verify import column, table
+from openflowsheet.verify.table import ModelChecks
 
 _SI = {
     "molar_flow": "mol/s",
@@ -172,14 +174,27 @@ def column_revision(
     }
 
 
+def column_checks() -> ModelChecks:
+    """The column's verifier rows (§4.8, WO-B4), the entry I1 adds to `MODEL_CHECKS`."""
+    return ModelChecks(
+        material=column.material,
+        energy=column.energy,
+        specification=column.specification,
+        declared_ports=column.DECLARED_PORTS,
+        admissibility=column.admissibility,
+    )
+
+
 @contextmanager
 def column_registered(
     monkeypatch: pytest.MonkeyPatch, bases: frozenset[str] = frozenset({"syn001"})
 ) -> Iterator[None]:
-    """The column in `MODEL_BUILDERS`, `MODEL_SIGNATURES` and `MODEL_BASES` for one test."""
+    """The column in `MODEL_BUILDERS`, `MODEL_SIGNATURES`, `MODEL_BASES` and the verifier's
+    `MODEL_CHECKS` for one test."""
     monkeypatch.setitem(revision_binding.MODEL_BUILDERS, MODEL_ID, build_column)
     monkeypatch.setitem(revision_binding.MODEL_SIGNATURES, MODEL_ID, _COLUMN)
     monkeypatch.setitem(revision_binding.MODEL_BASES, MODEL_ID, bases)
+    monkeypatch.setitem(table.MODEL_CHECKS, MODEL_ID, column_checks())
     yield
 
 

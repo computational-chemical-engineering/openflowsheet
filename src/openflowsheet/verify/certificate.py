@@ -701,7 +701,7 @@ def verify_revision(
         component_basis,
         parse_revision,
     )
-    from openflowsheet.orchestrator.splits import lifted_splits
+    from openflowsheet.orchestrator.splits import lifted_splits, split_owners
     from openflowsheet.verify.surrogate import surrogate_items
     from openflowsheet.verify.table import revision_checks, revision_phase_branch
     from openflowsheet.verify.zero_flow import dormant_outlets, zero_flow_splits
@@ -754,9 +754,15 @@ def verify_revision(
         raise VerifierError(f"revision_unreadable({error.code})") from error
     if view.basis.provider_id != basis:
         raise VerifierError(f"basis_mismatch({view.basis.provider_id}, {basis})")
+    # S11 design §10.11 (B4): each staged instance's splits, as its builder holds them, from the
+    # revision's own reading of it; `owners` resolves a stage key to its instance.
+    staged = _staged_splits(view)
     splits = lifted_splits(
-        [(i.unit_id, i.model_id, i.wiring) for i in view.instances], view.components
+        [(i.unit_id, i.model_id, i.wiring) for i in view.instances],
+        view.components,
+        staged=staged,
     )
+    owners = split_owners(staged)
 
     rows, digest = residual_checks(
         target.compiled,
@@ -772,7 +778,7 @@ def verify_revision(
     # is judged on its zero-flow form, and so is a dormancy-form outlet whose trigger streams are
     # all dormant (ADR 0012 D12); each label row is checked after the compiled rows.
     zero_flow = (
-        *zero_flow_splits(view, splits, final_state),
+        *zero_flow_splits(view, splits, final_state, owners),
         *dormant_outlets(view, final_state),
     )
     labels = label_checks(zero_flow, final_state, resolved.tolerances)
@@ -801,6 +807,7 @@ def verify_revision(
             context=context,
             tolerances=resolved.tolerances,
             judged_at=judged_at,
+            owners=owners,
         ),
         final_state,
         projection,
@@ -843,6 +850,25 @@ def verify_revision(
         appended=surrogate_limitations,
         external=external,
     )
+
+
+def _staged_splits(view: Any) -> dict[str, Any]:
+    """S11 design §10.11 (B4): `column_staged_splits(column_structure(view, components))` for
+    each instance whose model is in `STAGED_MODELS`, by instance id in declaration order — the
+    function the column's builder calls, on the revision's own view of the instance."""
+    from openflowsheet.models.syn001.column import MODEL_ID as COLUMN
+    from openflowsheet.models.syn001.column_unit import column_staged_splits, column_structure
+    from openflowsheet.orchestrator.splits import STAGED_MODELS
+
+    staged: dict[str, Any] = {}
+    for instance in view.instances:
+        if instance.model_id not in STAGED_MODELS:
+            continue
+        if instance.model_id != COLUMN:
+            raise VerifierError(f"staged_model_unread({instance.model_id})")
+        structure = column_structure(instance, view.components)
+        staged[instance.unit_id] = column_staged_splits(structure)
+    return staged
 
 
 def alias_document(row: Any) -> dict[str, Any]:
