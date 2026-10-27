@@ -37,6 +37,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Final
 
 import numpy as np
@@ -342,6 +343,87 @@ class NlpFormulation:
 
 
 @dataclass(frozen=True)
+class AssessmentClosure:
+    """E01 §4.10.2's gray-box outputs of a binding: the bound outputs in catalogue (program)
+    order, then every admissibility row whose regime entry is in their dependency closure, in
+    catalogue order; each with its scale, and each admissibility row with its nominal."""
+
+    outputs: tuple[str, ...]
+    admissibility: tuple[str, ...]
+    scales: Mapping[str, float]
+    nominals: Mapping[str, float]
+
+    @property
+    def output_ids(self) -> tuple[str, ...]:
+        return (*self.outputs, *self.admissibility)
+
+
+def assessment_twin(
+    binding: AssessmentBinding, variable_ids: Sequence[str], decision_ids: Sequence[str]
+) -> ParametricTwin:
+    """The binding program's twin with the decisions symbolic, over the host's variables."""
+    program = binding.program
+    twin = program.twin(tuple(decision_ids))
+    if not isinstance(twin, ParametricTwin):
+        raise ValueError(f"the assessment twin is refused: {twin}")
+    if tuple(program.context.host_spec.variable_ids) != tuple(variable_ids):
+        raise ValueError("the assessment program's host is not this flowsheet's spec")
+    if tuple(twin.parameter_ids) != tuple(decision_ids):
+        raise ValueError("the assessment twin's symbols are not the decisions")
+    return twin
+
+
+def assessment_closure(
+    binding: AssessmentBinding,
+    twin: ParametricTwin,
+    x: npt.NDArray[np.float64],
+    decisions: Mapping[str, float],
+) -> AssessmentClosure:
+    """An admissibility row is a gray-box output when its regime entry is in the dependency
+    closure of a bound output: some row of the entry has a structural nonzero in a column (state
+    or decision) of `[G_x  G_d]` at `(x, d)` in which some bound output has one."""
+    program = binding.program
+    jacobian = _twin_jacobian(twin, x, decisions).tocsr()
+    pattern = {
+        name: set(jacobian.indices[jacobian.indptr[i] : jacobian.indptr[i + 1]].tolist())
+        for i, name in enumerate(program.output_ids)
+    }
+    outputs = [name for name in program.output_ids if name in set(binding.outputs)]
+    used = set().union(*(pattern[name] for name in outputs))
+    rows_of: dict[str, list[str]] = {}
+    nominal: dict[str, float] = {}
+    for entry in program.entries:
+        for row in entry.admissibility:
+            name = f"adm.{entry.entry_id}.{row.row_id}"
+            rows_of.setdefault(entry.entry_id, []).append(name)
+            nominal[name] = row.nominal
+    closure = {
+        name
+        for names in rows_of.values()
+        if any(pattern[name] & used for name in names)
+        for name in names
+    }
+    admissibility = [name for name in program.admissibility_ids if name in closure]
+    scales = {name: float(binding.output_scales[name]) for name in outputs}
+    # The program's admissibility rows are `a/nominal` already (§4.3.1): their scale is 1.
+    scales.update({name: 1.0 for name in admissibility})
+    return AssessmentClosure(
+        tuple(outputs),
+        tuple(admissibility),
+        MappingProxyType(scales),
+        MappingProxyType({name: nominal[name] for name in admissibility}),
+    )
+
+
+def _twin_jacobian(
+    twin: ParametricTwin, x: npt.NDArray[np.float64], decisions: Mapping[str, float]
+) -> sp.csc_matrix:
+    state = _sparse(twin.jacobian_x(x, decisions))
+    parameter = _sparse(twin.jacobian_p(x, decisions))
+    return sp.csc_matrix(sp.hstack([state, parameter], format="csc"))
+
+
+@dataclass(frozen=True)
 class VariableBound:
     """One primal's bounds (`None` is unbounded on that side) and why (spec §8.2)."""
 
@@ -393,67 +475,32 @@ class FullSpaceNlp:
         self.output_ids: tuple[str, ...] = ()
         self.output_scales: dict[str, float] = {}
         self.admissibility_nominals: dict[str, float] = {}
+        self.closure: AssessmentClosure | None = None
         if self.assessment is not None:
             self._bind(self.assessment)
 
     def _bind(self, binding: AssessmentBinding) -> None:
         """The gray box's outputs over the program's twin with the decisions symbolic (E01
-        §4.10.2). An admissibility row is an output when its regime entry is in the dependency
-        closure of a bound output: some row of the entry has a structural nonzero in a column
-        (state or decision) in which some bound output has one."""
-        program = binding.program
-        twin = program.twin(self.decision_ids)
-        if not isinstance(twin, ParametricTwin):
-            raise ValueError(f"the assessment twin is refused: {twin}")
-        if tuple(program.context.host_spec.variable_ids) != tuple(self.variable_ids):
-            raise ValueError("the assessment program's host is not this flowsheet's spec")
-        if tuple(twin.parameter_ids) != self.decision_ids:
-            raise ValueError("the assessment twin's symbols are not the decisions")
-        self.assessment_twin: ParametricTwin = twin
-        self._assessment_calls = _block_calls(twin)
+        §4.10.2): `assessment_closure` at the start."""
+        self.assessment_twin: ParametricTwin = assessment_twin(
+            binding, self.variable_ids, self.decision_ids
+        )
+        self._assessment_calls = _block_calls(self.assessment_twin)
         x, decisions = self.split(self.initial_point())
-        pattern = self._assessment_pattern(x, decisions, program.output_ids)
-        outputs = [name for name in program.output_ids if name in set(binding.outputs)]
-        used = set().union(*(pattern[name] for name in outputs))
-        rows_of: dict[str, list[str]] = {}
-        nominal: dict[str, float] = {}
-        for entry in program.entries:
-            for row in entry.admissibility:
-                name = f"adm.{entry.entry_id}.{row.row_id}"
-                rows_of.setdefault(entry.entry_id, []).append(name)
-                nominal[name] = row.nominal
-        closure = {
-            name
-            for names in rows_of.values()
-            if any(pattern[name] & used for name in names)
-            for name in names
-        }
-        admissibility = [name for name in program.admissibility_ids if name in closure]
-        self.output_ids = (*outputs, *admissibility)
+        closure = assessment_closure(binding, self.assessment_twin, x, decisions)
+        program = binding.program
+        self.closure = closure
+        self.output_ids = closure.output_ids
         self._outputs = np.array(
             [program.output_ids.index(name) for name in self.output_ids], dtype=np.intp
         )
-        self.output_scales = {name: float(binding.output_scales[name]) for name in outputs}
-        # The program's admissibility rows are `a/nominal` already (§4.3.1): their scale is 1.
-        self.output_scales.update({name: 1.0 for name in admissibility})
-        self.admissibility_nominals = {name: nominal[name] for name in admissibility}
-
-    def _assessment_pattern(
-        self, x: npt.NDArray[np.float64], decisions: Mapping[str, float], rows: Sequence[str]
-    ) -> dict[str, set[int]]:
-        """Each row's structural columns in `[G_x  G_d]` (state, then decisions)."""
-        jacobian = self._assessment_jacobian(x, decisions).tocsr()
-        return {
-            name: set(jacobian.indices[jacobian.indptr[i] : jacobian.indptr[i + 1]].tolist())
-            for i, name in enumerate(rows)
-        }
+        self.output_scales = dict(closure.scales)
+        self.admissibility_nominals = dict(closure.nominals)
 
     def _assessment_jacobian(
         self, x: npt.NDArray[np.float64], decisions: Mapping[str, float]
     ) -> sp.csc_matrix:
-        state = _sparse(self.assessment_twin.jacobian_x(x, decisions))
-        parameter = _sparse(self.assessment_twin.jacobian_p(x, decisions))
-        return sp.csc_matrix(sp.hstack([state, parameter], format="csc"))
+        return _twin_jacobian(self.assessment_twin, x, decisions)
 
     # -- primal layout -------------------------------------------------------------------------
 
