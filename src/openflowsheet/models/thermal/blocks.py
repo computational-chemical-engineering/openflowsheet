@@ -17,34 +17,49 @@ unit id is refused, never sanitized.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Final, Literal, NoReturn
 
 from openflowsheet.compile.spec import DomainError
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.syn001.tp_state import _BLOCK_TOKEN
+from openflowsheet.models.thermal import ADDITIVE_VAPOUR
 from openflowsheet.models.thermal.kernel import (
     DOMAIN_CODES,
     Failure,
     Jet,
     Sat,
+    _refusal,
+    _solve,
     isentropic_temperature,
     phase_properties,
     saturation,
 )
-from openflowsheet.thermo import Phase, PropertyProvider
+from openflowsheet.thermo import Phase, PropertyProvider, PropertyRequest, StreamState
 
 __all__ = [
     "IsentropicEnthalpyBlock",
+    "IsentropicState",
     "PhaseFlowBlock",
     "SaturatedFlowBlock",
     "isentropic_block_id",
+    "isentropic_state",
     "phase_block_id",
     "saturated_block_id",
 ]
 
-Variant = Literal["pure-single/single"]
-VARIANTS: Final[tuple[str, ...]] = ("pure-single/single",)
+Variant = Literal[
+    "pure-single/single", "pure-sat/single", "pure-single/sat", "pure-sat/sat", "additive-vapour"
+]
+#: The C = 1 variants: `pure-<inlet>/<isentropic state>`, each side single-phase or saturated.
+PURE_VARIANTS: Final[tuple[str, ...]] = (
+    "pure-single/single",
+    "pure-sat/single",
+    "pure-single/sat",
+    "pure-sat/sat",
+)
+VARIANTS: Final[tuple[str, ...]] = (*PURE_VARIANTS, "additive-vapour")
 
 
 def _token(name: str) -> str:
@@ -227,24 +242,142 @@ class SaturatedFlowBlock:
         ]
 
 
+# -- the isentropic state -------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class IsentropicState:
+    """A pure fluid's isentropic state at P_O (§4.3), intensive, with what its derivatives need.
+
+    `inlet` is s* and its T_I, P_I derivatives (the T_I entry is 0.0 for a saturated inlet, whose
+    s* = s^{phi_I}_sat(P_I) moves only along the line). A single-phase isentropic state carries
+    T_s and its `entropy` and `enthalpy` jets at (T_s, P_O); a saturated one carries `beta` and
+    the saturation `sat` at P_O, with T_s = T_sat(P_O).
+    """
+
+    temperature: float
+    inlet: Jet
+    entropy: Jet | None = None
+    enthalpy: Jet | None = None
+    beta: float | None = None
+    sat: Sat | None = None
+
+    @property
+    def h(self) -> float:
+        """The intensive h_s, J/mol."""
+        if self.sat is None:
+            assert self.enthalpy is not None
+            return self.enthalpy[0]
+        assert self.beta is not None
+        liquid, vapour = self.sat.value("LIQUID", "h"), self.sat.value("VAPOR", "h")
+        return liquid + self.beta * (vapour - liquid)
+
+
+def isentropic_state(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    variant: Variant,
+    inlet_phase: Phase,
+    isentropic_phase: Phase,
+    inlet_temperature: float | None,
+    inlet_pressure: float,
+    outlet_pressure: float,
+) -> IsentropicState | Failure:
+    """The pure variants' isentropic state (§4.3), or a typed refusal.
+
+    s* is s^{phi_I}(T_I, P_I), or s^{phi_I}_sat(P_I) for a saturated inlet. A single-phase
+    isentropic state solves s^{phi_s}(T_s, P_O) = s* from the inlet temperature (T_sat(P_I) for a
+    saturated inlet); a saturated one is beta_s = (s* - s^L_sat)/(s^V_sat - s^L_sat) at P_O. No
+    root on phi_s's side, or beta_s outside [0, 1], is `isentropic_state_two_phase`: the
+    isentropic state lies past the declared one (S11C_DECISIONS C3-2).
+    """
+    if variant not in PURE_VARIANTS:
+        raise ValueError(f"{variant!r} is not a pure-fluid isentropic variant")
+    inlet_side, outlet_side = variant.removeprefix("pure-").split("/")
+    if inlet_side == "sat":
+        at_inlet = saturation(provider, inlet_pressure, context)
+        if isinstance(at_inlet, Failure):
+            return at_inlet
+        inlet: Jet = (
+            at_inlet.value(inlet_phase, "s"),
+            0.0,
+            at_inlet.along(inlet_phase, "s"),
+        )
+        start = at_inlet.temperature
+    else:
+        if inlet_temperature is None:
+            raise ValueError(f"{variant} needs the inlet temperature")
+        jets = phase_properties(
+            provider, context, inlet_temperature, inlet_pressure, inlet_phase, ("s",)
+        )
+        if isinstance(jets, Failure):
+            return jets
+        inlet, start = jets["s"], inlet_temperature
+
+    if outlet_side == "single":
+        solved = isentropic_temperature(
+            provider, context, inlet[0], outlet_pressure, isentropic_phase, start
+        )
+        if isinstance(solved, Failure):
+            return solved
+        temperature = solved[0]
+        found: dict[str, Jet] = {}
+        for name in ("s", "h"):
+            answered = phase_properties(
+                provider, context, temperature, outlet_pressure, isentropic_phase, (name,)
+            )
+            if isinstance(answered, Failure):
+                return answered
+            found[name] = answered[name]
+        return IsentropicState(temperature, inlet, entropy=found["s"], enthalpy=found["h"])
+
+    sat = saturation(provider, outlet_pressure, context)
+    if isinstance(sat, Failure):
+        return sat
+    liquid, vapour = sat.value("LIQUID", "s"), sat.value("VAPOR", "s")
+    beta = (inlet[0] - liquid) / (vapour - liquid)
+    if not 0.0 <= beta <= 1.0:
+        return Failure(
+            "unsupported",
+            "isentropic_state_two_phase",
+            f"s* = {inlet[0]!r} gives beta_s = {beta!r} at {outlet_pressure!r} Pa: the isentropic "
+            "state is single-phase, not the declared saturated one",
+        )
+    return IsentropicState(sat.temperature, inlet, beta=beta, sat=sat)
+
+
 class IsentropicEnthalpyBlock:
     """`PFs_<U>`: the machine's isentropic enthalpy flow `Hs` (§4.3), one of five variants.
 
-    `pure-single/single`: inputs (n, T_I, P_I, P_O); s* = s^{phi_I}(T_I, P_I); T_s solves
-    s^{phi_s}(T_s, P_O) = s* on phi_s's side of T_sat(P_O) by the kernel's safeguarded Newton from
-    T_I; Hs = n h^{phi_s}(T_s, P_O). Derivatives by the implicit function theorem on
-    F = s^{phi_s}(T_s, P_O) - s^{phi_I}(T_I, P_I): dT_s/dx = -(dF/dx)/(dF/dT_s), then
-    dHs/dx = n (dh/dT_s) dT_s/dx + n dh/dx|_{T_s}; dT_s/dn = 0 exactly for C = 1.
-    Identities (A49): dHs/dT_I = n T_s c_p,I / T_I and dHs/dP_O = n v_s.
+    Pure variants (C = 1; `isentropic_state` gives the state):
+    - `pure-single/single`, inputs (n, T_I, P_I, P_O): Hs = n h^{phi_s}(T_s, P_O). Derivatives by
+      the implicit function theorem on F = s^{phi_s}(T_s, P_O) - s*: dT_s/dx = -(dF/dx)/(dF/dT_s),
+      then dHs/dx = n (dh/dT_s) dT_s/dx + n dh/dx|_{T_s}; dT_s/dn = 0 exactly for C = 1.
+      Identities (A49): dHs/dT_I = n T_s c_p,I / T_I and dHs/dP_O = n v_s.
+    - `pure-sat/single`, inputs (n, P_I, P_O): as above with s* = s^{phi_I}_sat(P_I), whose P_I
+      derivative is taken along the line.
+    - `pure-single/sat` and `pure-sat/sat`: Hs = n [h^L_sat + beta_s (h^V_sat - h^L_sat)](P_O);
+      d(beta_s)/dx = (ds*/dx)/ds_vap for x in {T_I, P_I}, and at P_O
+      d(beta_s)/dP_O = -(ds^L_sat/dP + beta_s d(ds_vap)/dP)/ds_vap; dHs/dn is the bracket.
 
-    **Dormant rule** (n == 0.0): value 0.0; the derivatives are evaluated at n = 1 and the n entry
-    is the intensive h_s, the others 0.0.
+    `additive-vapour` (Wilson), inputs (n_1..n_C, T_I, P_I, P_O): T_s solves
+    sum_j n_j [s_j(T_s, P_O) - s_j(T_I, P_I)] = 0 by the kernel's safeguarded Newton from T_I on the
+    provider's T domain, s_j and h_j the provider's VAPOR s and h at the pure composition e_j;
+    Hs = sum_j n_j h_j(T_s, P_O). Admitted by identity only (`ADDITIVE_VAPOUR`), phase VAPOR.
+
+    A state past the declared isentropic one (`isentropic_state_two_phase`) is a `DomainError` at
+    a trial (§4.3); the evaluate refuses it first at a solution.
+
+    **Dormant rule** (n == 0.0; n_tot == 0.0 for `additive-vapour`): value 0.0. For C = 1 the
+    derivatives are evaluated at n = 1 and the n entry is the intensive value, the others 0.0. For
+    `additive-vapour` T_s and the derivatives are evaluated at the probe n = (1, ..., 1) and the
+    T and P entries are scaled by 0.0 (S10-C's convention).
     """
 
     def __init__(
         self,
         provider: PropertyProvider,
-        component: str,
+        component: str | tuple[str, ...],
         context: EvaluationContext,
         *,
         block_id: str,
@@ -256,11 +389,19 @@ class IsentropicEnthalpyBlock:
             raise SpecificationError(
                 f"isentropic block variant {variant!r} is not one of {VARIANTS}"
             )
-        _pure(provider, component)
+        if variant == "additive-vapour":
+            components = (component,) if isinstance(component, str) else tuple(component)
+            _additive(provider, components, inlet_phase, isentropic_phase)
+            self._components = components
+        else:
+            if not isinstance(component, str):
+                raise SpecificationError(f"{variant} is a pure-fluid variant; got {component!r}")
+            _pure(provider, component)
+            self._components = (component,)
         self._provider = provider
         self._context = context
         self._block_id = block_id
-        self._variant = variant
+        self._variant: Variant = variant
         self._inlet_phase: Phase = inlet_phase
         self._phase: Phase = isentropic_phase
 
@@ -273,7 +414,15 @@ class IsentropicEnthalpyBlock:
         return self._variant
 
     @property
+    def _saturated_inlet(self) -> bool:
+        return self._variant.startswith("pure-sat/")
+
+    @property
     def input_ids(self) -> tuple[str, ...]:
+        if self._variant == "additive-vapour":
+            return (*(f"n_{name}" for name in self._components), "T_I", "P_I", "P_O")
+        if self._saturated_inlet:
+            return ("n", "P_I", "P_O")
         return ("n", "T_I", "P_I", "P_O")
 
     @property
@@ -281,57 +430,195 @@ class IsentropicEnthalpyBlock:
         return ("Hs",)
 
     def jacobian_pattern(self) -> tuple[tuple[int, int], ...]:
-        return ((0, 0), (0, 1), (0, 2), (0, 3))
+        return tuple((0, column) for column in range(len(self.input_ids)))
 
-    def _jets(self, name: str, temperature: float, pressure: float, phase: Phase) -> Jet:
-        jets = phase_properties(
-            self._provider, self._context, temperature, pressure, phase, (name,)
-        )
-        if isinstance(jets, Failure):
-            _raise(jets, self._block_id)
-        return jets[name]
+    # -- pure variants -------------------------------------------------------------------------
 
     def state(
-        self, inlet_temperature: float, inlet_pressure: float, outlet_pressure: float
-    ) -> tuple[float, Jet, Jet, Jet]:
-        """`(T_s, s^{phi_I} jet at the inlet, s^{phi_s} jet at T_s, h^{phi_s} jet at T_s)`."""
-        inlet = self._jets("s", inlet_temperature, inlet_pressure, self._inlet_phase)
-        solved = isentropic_temperature(
+        self, inlet_temperature: float | None, inlet_pressure: float, outlet_pressure: float
+    ) -> IsentropicState:
+        """The pure variants' isentropic state; a refusal raised as the compiled boundary wants."""
+        answer = isentropic_state(
             self._provider,
             self._context,
-            inlet[0],
-            outlet_pressure,
+            self._variant,
+            self._inlet_phase,
             self._phase,
             inlet_temperature,
+            inlet_pressure,
+            outlet_pressure,
         )
-        if isinstance(solved, Failure):
-            if solved.code == "isentropic_state_two_phase":
-                raise DomainError(f"{self._block_id}: {solved.message}")
-            _raise(solved, self._block_id)
-        temperature = solved[0]
-        entropy = self._jets("s", temperature, outlet_pressure, self._phase)
-        enthalpy = self._jets("h", temperature, outlet_pressure, self._phase)
-        return temperature, inlet, entropy, enthalpy
+        if isinstance(answer, Failure):
+            if answer.code == "isentropic_state_two_phase":
+                raise DomainError(f"{self._block_id}: {answer.message}")
+            _raise(answer, self._block_id)
+        return answer
+
+    def _pure_inputs(self, inputs: Sequence[float]) -> tuple[float, float | None, float, float]:
+        if self._saturated_inlet:
+            total, p_in, p_out = (float(value) for value in inputs)
+            return total, None, p_in, p_out
+        total, t_in, p_in, p_out = (float(value) for value in inputs)
+        return total, t_in, p_in, p_out
 
     def values(self, inputs: Sequence[float]) -> Sequence[float]:
-        total, t_in, p_in, p_out = (float(value) for value in inputs)
+        if self._variant == "additive-vapour":
+            return self._additive_values(inputs)
+        total, t_in, p_in, p_out = self._pure_inputs(inputs)
         if total == 0.0:
             return [0.0]
-        _, _, _, enthalpy = self.state(t_in, p_in, p_out)
-        return [total * enthalpy[0]]
+        return [total * self.state(t_in, p_in, p_out).h]
 
     def jacobian(self, inputs: Sequence[float]) -> Sequence[tuple[int, int, float]]:
-        total, t_in, p_in, p_out = (float(value) for value in inputs)
-        _, inlet, entropy, enthalpy = self.state(t_in, p_in, p_out)
-        h, h_t, h_p = enthalpy
-        _, s_t, s_p = entropy
-        dts_dtin = inlet[1] / s_t
-        dts_dpin = inlet[2] / s_t
-        dts_dpout = -s_p / s_t
+        if self._variant == "additive-vapour":
+            return self._additive_jacobian(inputs)
+        total, t_in, p_in, p_out = self._pure_inputs(inputs)
+        state = self.state(t_in, p_in, p_out)
+        inlet = state.inlet
         scale = total  # dormant: T, P entries carry the zero flow
-        return [
-            (0, 0, h),
-            (0, 1, scale * h_t * dts_dtin),
-            (0, 2, scale * h_t * dts_dpin),
-            (0, 3, scale * (h_t * dts_dpout + h_p)),
+        if state.sat is None:
+            assert state.entropy is not None and state.enthalpy is not None
+            h, h_t, h_p = state.enthalpy
+            _, s_t, s_p = state.entropy
+            dts_dtin = inlet[1] / s_t
+            dts_dpin = inlet[2] / s_t
+            dts_dpout = -s_p / s_t
+            d_tin = scale * h_t * dts_dtin
+            d_pin = scale * h_t * dts_dpin
+            d_pout = scale * (h_t * dts_dpout + h_p)
+        else:
+            assert state.beta is not None
+            sat, beta = state.sat, state.beta
+            h_l, h_v = sat.value("LIQUID", "h"), sat.value("VAPOR", "h")
+            ds_vap = sat.value("VAPOR", "s") - sat.value("LIQUID", "s")
+            dh_vap = h_v - h_l
+            h = h_l + beta * dh_vap
+            s_l_p, s_v_p = sat.along("LIQUID", "s"), sat.along("VAPOR", "s")
+            h_l_p, h_v_p = sat.along("LIQUID", "h"), sat.along("VAPOR", "h")
+            dbeta_dpout = -(s_l_p + beta * (s_v_p - s_l_p)) / ds_vap
+            d_tin = scale * dh_vap * (inlet[1] / ds_vap)
+            d_pin = scale * dh_vap * (inlet[2] / ds_vap)
+            d_pout = scale * (h_l_p + beta * (h_v_p - h_l_p) + dh_vap * dbeta_dpout)
+        if self._saturated_inlet:
+            return [(0, 0, h), (0, 1, d_pin), (0, 2, d_pout)]
+        return [(0, 0, h), (0, 1, d_tin), (0, 2, d_pin), (0, 3, d_pout)]
+
+    # -- additive-vapour -----------------------------------------------------------------------
+
+    def _component_jets(self, index: int, temperature: float, pressure: float) -> dict[str, Jet]:
+        """s_j and h_j, the provider's VAPOR s and h at e_j, with their T and P derivatives."""
+        flows = tuple(1.0 if k == index else 0.0 for k in range(len(self._components)))
+        result = self._provider.evaluate_phase(
+            PropertyRequest(
+                state=StreamState(n=flows, temperature=temperature, pressure=pressure),
+                phase="VAPOR",
+                properties=("s", "h"),
+                derivatives=("T", "P"),
+            ),
+            self._context,
+        )
+        if result.status != "ok":
+            _raise(_refusal(result.status, result.message), self._block_id)
+        return {
+            name: (
+                result.values[name],
+                result.derivatives[name]["T"],
+                result.derivatives[name]["P"],
+            )
+            for name in ("s", "h")
+        }
+
+    def _additive_state(
+        self, flows: tuple[float, ...], t_in: float, p_in: float, p_out: float
+    ) -> tuple[float, list[dict[str, Jet]], list[dict[str, Jet]]]:
+        """`(T_s, jets at (T_I, P_I), jets at (T_s, P_O))` per component."""
+        count = len(self._components)
+        at_inlet = [self._component_jets(j, t_in, p_in) for j in range(count)]
+        target = sum(n_j * jets["s"][0] for n_j, jets in zip(flows, at_inlet, strict=True))
+
+        def evaluate(temperature: float) -> tuple[float, float]:
+            at = [self._component_jets(j, temperature, p_out) for j in range(count)]
+            entropy = sum(n_j * jets["s"][0] for n_j, jets in zip(flows, at, strict=True))
+            slope = sum(n_j * jets["s"][1] for n_j, jets in zip(flows, at, strict=True))
+            return entropy - target, slope
+
+        t_low, t_high = (float(value) for value in self._provider.describe().domain["T"])
+        solved = _solve(
+            evaluate,
+            t_low,
+            t_high,
+            start=t_in,
+            what=f"additive-vapour isentropic state at {p_out!r} Pa",
+        )
+        if isinstance(solved, Failure):
+            _raise(solved, self._block_id)
+        temperature = solved[0]
+        at_outlet = [self._component_jets(j, temperature, p_out) for j in range(count)]
+        return temperature, at_inlet, at_outlet
+
+    def _additive_inputs(
+        self, inputs: Sequence[float]
+    ) -> tuple[tuple[float, ...], float, float, float]:
+        count = len(self._components)
+        flows = tuple(float(value) for value in inputs[:count])
+        t_in, p_in, p_out = (float(value) for value in inputs[count:])
+        return flows, t_in, p_in, p_out
+
+    def _additive_values(self, inputs: Sequence[float]) -> Sequence[float]:
+        flows, t_in, p_in, p_out = self._additive_inputs(inputs)
+        if sum(flows) == 0.0:
+            return [0.0]
+        _, _, at_outlet = self._additive_state(flows, t_in, p_in, p_out)
+        return [sum(n_j * jets["h"][0] for n_j, jets in zip(flows, at_outlet, strict=True))]
+
+    def _additive_jacobian(self, inputs: Sequence[float]) -> Sequence[tuple[int, int, float]]:
+        flows, t_in, p_in, p_out = self._additive_inputs(inputs)
+        count = len(flows)
+        dormant = sum(flows) == 0.0
+        if dormant:
+            flows = (1.0,) * count
+        _, at_inlet, at_outlet = self._additive_state(flows, t_in, p_in, p_out)
+        pairs = list(zip(flows, at_inlet, at_outlet, strict=True))
+        slope = sum(n_j * out["s"][1] for n_j, _, out in pairs)
+        h_t = sum(n_j * out["h"][1] for n_j, _, out in pairs)
+        h_p = sum(n_j * out["h"][2] for n_j, _, out in pairs)
+        dts_dtin = sum(n_j * inn["s"][1] for n_j, inn, _ in pairs) / slope
+        dts_dpin = sum(n_j * inn["s"][2] for n_j, inn, _ in pairs) / slope
+        dts_dpout = -sum(n_j * out["s"][2] for n_j, _, out in pairs) / slope
+        scale = 0.0 if dormant else 1.0
+        entries = [
+            (0, j, out["h"][0] - h_t * (out["s"][0] - inn["s"][0]) / slope)
+            for j, (_, inn, out) in enumerate(pairs)
         ]
+        entries += [
+            (0, count, scale * h_t * dts_dtin),
+            (0, count + 1, scale * h_t * dts_dpin),
+            (0, count + 2, scale * (h_t * dts_dpout + h_p)),
+        ]
+        return entries
+
+
+def _additive(
+    provider: PropertyProvider,
+    components: tuple[str, ...],
+    inlet_phase: Phase,
+    isentropic_phase: Phase,
+) -> None:
+    """The additive premise is admitted by identity only (§4.3), for a vapour on both sides."""
+    described = provider.describe()
+    identity = (described.provider_id, described.reference_convention)
+    if identity not in ADDITIVE_VAPOUR:
+        raise SpecificationError(
+            f"the additive-vapour isentropic block is admitted only on {sorted(ADDITIVE_VAPOUR)}; "
+            f"got {identity}"
+        )
+    if tuple(described.components) != components:
+        raise SpecificationError(
+            f"the additive-vapour block is built for {components}, the provider has "
+            f"{tuple(described.components)}"
+        )
+    if (inlet_phase, isentropic_phase) != ("VAPOR", "VAPOR"):
+        raise SpecificationError(
+            f"the additive-vapour block is a vapour on both sides, got {inlet_phase}, "
+            f"{isentropic_phase}"
+        )

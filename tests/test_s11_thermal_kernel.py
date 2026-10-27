@@ -432,7 +432,7 @@ def test_a46_identities_pin_the_small_entries() -> None:
     for phase, total, t_in, p_in, p_out in ISENTROPIC_STATES:
         block = _isentropic(phase)
         entries = {(i, j): v for i, j, v in block.jacobian((total, t_in, p_in, p_out))}
-        t_s = block.state(t_in, p_in, p_out)[0]
+        t_s = block.state(t_in, p_in, p_out).temperature
         v = _ok(k.phase_properties(WATER, CONTEXT, t_in, p_in, phase, ("v",)))["v"]  # type: ignore[arg-type]
         expected = -total * t_s * v[1]
         assert abs(entries[(0, 2)] - expected) <= 1e-9 * abs(expected)
@@ -559,7 +559,7 @@ def test_a49_isentropic_identities(
 ) -> None:
     block = _isentropic(phase)
     entries = {(i, j): v for i, j, v in block.jacobian((total, t_in, p_in, p_out))}
-    t_s, _, _, _ = block.state(t_in, p_in, p_out)
+    t_s = block.state(t_in, p_in, p_out).temperature
     inlet = _ok(k.phase_properties(WATER, CONTEXT, t_in, p_in, phase, ("cp",)))  # type: ignore[arg-type]
     outlet = _ok(k.phase_properties(WATER, CONTEXT, t_s, p_out, phase, ("v",)))  # type: ignore[arg-type]
     by_t_in = total * t_s * inlet["cp"][0] / t_in
