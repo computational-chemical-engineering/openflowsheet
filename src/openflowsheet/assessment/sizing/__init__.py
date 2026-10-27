@@ -102,6 +102,8 @@ class SizingInput:
     #: Where a volumetric quantity's `v` came from (§9.4): `provider`, `model_identity`,
     #: `declared_item` or `declared_components`; `None` for every other input.
     v_source: str | None = None
+    #: The `defaults.py` key a defaulted input took its value from (§4.9, A41); `None` otherwise.
+    default_key: str | None = None
 
 
 @dataclass(frozen=True)
@@ -268,7 +270,9 @@ class SizingContext:
             raise KeyError(f"{item_id}.{name} has neither a document value nor a default")
         theta_id = f"asm:item.{item_id}.{name}"
         theta = Theta(theta_id, value, unit, provenance, structural=structural)
-        return theta, SizingInput(name, value, unit, defaulted, theta_id)
+        return theta, SizingInput(
+            name, value, unit, defaulted, theta_id, default_key=default_key if defaulted else None
+        )
 
     def x(self, variable_id: str) -> float:
         return float(self.state[variable_id])

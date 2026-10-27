@@ -999,7 +999,12 @@ class _Planner:
             for record in item.inputs:
                 if record.defaulted:
                     defaulted.append(
-                        {"key": record.name, "value": record.value, "target": item.item_id}
+                        {
+                            "key": record.default_key or record.name,
+                            "input": record.name,
+                            "value": record.value,
+                            "target": item.item_id,
+                        }
                     )
         refusals = [
             r for r in (*self.sizing.refusals, *self.refusals) if not _covered(r.target, excluded)

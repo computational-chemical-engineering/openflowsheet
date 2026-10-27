@@ -315,6 +315,16 @@ I1's.
   a regime entry the design does not have). Reversible by: `derived.py`.
 - FIX: `_Planner._theta` looked document `uncertainty` up by the path without `asm:`, but the schema requires the
   `asm:` key, so no declared range was ever applied. Now keyed by the full θ id. Values unchanged (ranges only).
+- Done (6): contributor tests on TH-C1 (`tests/test_e01_a_contributor_c1.py`, 6 passed): pump drive by
+  `motor.electric` at its floor (exp(5.8259)·500/394·E, rel 1e-14); electricity W_P/η_m − W_T·η_gen netted
+  (`ELECTRICITY_NETTED`) and with `export_price`; A19 through the contributor (E = 1 → bitwise; exponent rel 1e-15);
+  held-regime round trip (same regime sha, label, repr-identical values; `select` keeps it; `P.size: units:1` →
+  `ASSESSMENT_REGIME_INADMISSIBLE`); 16 MPa boiler → `CORRELATION_OUT_OF_RANGE(B.pressure)`, with
+  `allow_extrapolation` → `CORRELATION_EXTRAPOLATED`; materials, revenue, `product.annual`, `lcox`, `profit`.
+- DECISION (A41 enabler): `SizingInput.default_key` names the `defaults.py` key a defaulted input took; the cost
+  section's `defaulted_inputs` entries are `{key: <defaults.py key or input name>, input, value, target}`;
+  `drum_orientation` and `service_at_zero_duty` (Q = 0.0, nothing declared or held) are now recorded. Provenance
+  only, values unchanged. Alternative: keep input names and map in the A41 test. Reversible by: that commit.
 
 ## Handoff (2026-10-27, fifth context cap) — resume from here
 

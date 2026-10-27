@@ -179,6 +179,12 @@ def exchanger_utility(
     service_entry_id = f"{item_id}.service"
     declared = forced_service or doc.get("service")
     service = regime.choice(service_entry_id) or select_service(duty.value, declared)
+    # Rule 1 at Q == 0.0 with nothing declared or held takes `service_at_zero_duty` (A41).
+    service_default = (
+        (SizingInput("service", service, "", True, default_key="service_at_zero_duty"),)
+        if duty.value == 0.0 and declared is None and regime.choice(service_entry_id) is None
+        else ()
+    )
     duty_build = duty.build
     if service == "heating":
         signed: FunctionalBuilder = duty_build
@@ -306,6 +312,7 @@ def exchanger_utility(
             SizingInput("T_return", t_ur, "K", "T_return" not in chosen, back.theta_id),
             SizingInput("dT_min", dt_min, "K", False, minimum.theta_id),
             SizingInput("Q", duty.value, "W", False),
+            *service_default,
         ),
         design_pressure=design_pressure,
         options=_options(doc),
@@ -511,6 +518,7 @@ def drum(sctx: SizingContext, unit: UnitRef, item_id: str) -> SizingPlan:
         OutputDef(size_output(item_id, "height"), "m", height),
     ]
     orientation = doc.get("orientation") or sctx.defaults.get("drum_orientation") or "vertical"
+    defaulted_orientation = "orientation" not in doc and "drum_orientation" not in sctx.defaults
     item = SizedItem(
         item_id=item_id,
         unit_id=unit.unit_id,
@@ -523,7 +531,8 @@ def drum(sctx: SizingContext, unit: UnitRef, item_id: str) -> SizingPlan:
                 "orientation",
                 orientation,
                 "",
-                "orientation" not in doc and "drum_orientation" not in sctx.defaults,
+                defaulted_orientation,
+                default_key="drum_orientation" if defaulted_orientation else None,
             ),
         ),
         design_pressure=pressure_id(inlet),
