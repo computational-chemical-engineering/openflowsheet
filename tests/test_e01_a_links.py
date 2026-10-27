@@ -28,7 +28,7 @@ DIGEST = "0" * 64
 def test_the_e01_exact_names_are_the_two_link_digests_and_lie_outside_v2s_domain() -> None:
     table = t08_numerical_policy.external_policy(E01_ADDENDUM)
     assert table["exact_sha256"] == ["assessment_sha256", "regime_sha256"]
-    assert table["schemas"] == ["assessment.schema.json"]
+    assert table["schemas"] == ["assessment-report.schema.json", "assessment.schema.json"]
     assert not set(table["exact_sha256"]) & t08_numerical_policy.schema_sha256_names()
     declared = t08_numerical_policy.schema_sha256_names(external=True, addendum=table)
     assert {"assessment_sha256", "regime_sha256"} <= declared

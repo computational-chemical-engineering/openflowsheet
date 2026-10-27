@@ -9,6 +9,7 @@
 numerical_policy_external:
   id: E01-numerical-policy-external-v1
   schemas:
+  - assessment-report.schema.json
   - assessment.schema.json
   # `assessment.schema.json` declares `applies_to.configuration_sha256` (§4.11), a name M02's
   # addendum already classifies as an exact digest; a reused name keeps its class. Its `$defs`
@@ -16,9 +17,10 @@ numerical_policy_external:
   # `assessment_sha256` (canonical hash of the assessment document) and `regime_sha256` (of the
   # regime signature), both exact digests (none is a float digest, ADR 0007 D1 row 3); the study and
   # optimization-report schemas reach them by `$ref`, so no `sha256` name enters v2's domain.
-  # WO-A5's `assessment-report.schema.json` joins `schemas`: its `state_sha256` keeps v2's
-  # float-digest class and is never listed here, and its `regime.sha256` and `tables[].sha256` reuse
-  # `sha256`, which keeps v2's class. The audit refuses a classified name no schema declares.
+  # WO-A5's `assessment-report.schema.json` (design note §4.11, §9.5) declares `assessment_sha256`
+  # (reused: exact, as above), `state_sha256` (the host state's float digest, ADR 0008 D2: it keeps
+  # v2's float-digest class and is never listed here), and `regime.sha256` and `lca.tables[].sha256`,
+  # which reuse `sha256` and keep v2's class. The audit refuses a classified name no schema declares.
   exact_sha256:
   - assessment_sha256
   - regime_sha256
