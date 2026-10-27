@@ -50,7 +50,7 @@ needs_coolprop = pytest.mark.skipif(
 )
 
 ROUTING = ("syn001.feed_source", "syn001.product_sink", "syn001.stream_splitter")
-NEW = ("iapws95-v1", "coolprop-heos-v1", "wilson-ig-v1")
+NEW = ("iapws95-v1", "coolprop-heos-v1", "wilson-ig-v2")
 ROLES = {
     "syn001.feed_source": "feed",
     "syn001.product_sink": "product_sink",
@@ -281,7 +281,7 @@ def test_a09_a_wilson_revision_without_its_records_is_unavailable(
     monkeypatch.setattr(wilson_ig, "_checkout_records", lambda: tmp_path / "absent.yaml")
     refused = bind_revision_flowsheet(case_revision("wilson"))
     assert isinstance(refused, Unbound)
-    assert (refused.kind, refused.detail) == ("unsupported", "basis_unavailable(wilson-ig-v1)")
+    assert (refused.kind, refused.detail) == ("unsupported", "basis_unavailable(wilson-ig-v2)")
     assert refused.hint is not None and refused.hint.startswith("records_missing: ")
 
 

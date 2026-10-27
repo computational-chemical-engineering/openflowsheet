@@ -51,7 +51,7 @@ members.
 
 - **W27v3-R02.** `provider_methods` is v2's table plus `iapws95-v1 → iapws95`, `wilson-ig-v1 → activity_coefficient`
   and `coolprop-heos-v1 → pure_helmholtz`. (S11 §9 adds `wilson-ig-v2 → activity_coefficient`, keeping v1's row; that
-  row is WO-D5's and is not in this registration yet.)
+  row is WO-D5's, and since D5 it is in this registration, with its line.)
 - **W27v3-R03.** `methods` gains `pure_helmholtz`: "a pure-fluid multiparameter Helmholtz EOS other than IAPWS-95
   (CoolProp HEOS); matches no case method".
 - **W27v3-R04.** `model_functions` gains `syn001.column: {function: null, offers: [], why_none:
@@ -92,6 +92,7 @@ The provider table and lines:
 | `pr-lib-v1` | `cubic_pr` | version 2's line (pr_lib.RECORDS_PATH; vapor for every component) |
 | `syn001` | `synthetic_syn001` | the records at ROOT / basis.record_source ({id, name, formula, cas, synthetic} from each record's identifiers); every phase of describe().phases for every component |
 | `wilson-ig-v1` | `activity_coefficient` (added) | the records at ROOT / basis.record_source ({id, name, formula, cas, synthetic} from each record's identifiers); every phase of describe().phases for every component |
+| `wilson-ig-v2` | `activity_coefficient` (added) | the records at ROOT / basis.record_source ({id, name, formula, cas, synthetic} from each record's identifiers); every phase of describe().phases for every component |
 <!-- s11:end:providers -->
 
 ## 5. Registered states and assertions
@@ -146,7 +147,7 @@ no `SnapshotUnsupportedError`. S11.A40 (that snapshot equals S4) is WO-I1b's.
 ## 6. Generator self-claims (`w27_registration_v3.py` refuses to emit if one fails)
 
 - **GC-V3-1** — version 1's and version 2's registrations, documents and generators have their pinned SHA-256.
-- **GC-V3-2** — the version 3 provider table is version 2's plus exactly the three rows of R02, onto registered
+- **GC-V3-2** — the version 3 provider table is version 2's plus exactly the rows of R02 (three, and D5's fourth), onto registered
   methods; `pure_helmholtz` is new and matches no case package; every provider has a line.
 - **GC-V3-3** — `syn001.column` is new to the model table and its `why_none` is a new registered reason; the CoolProp
   file holds 123 records with distinct ids; the IAPWS-95 file holds H2O with CAS `7732-18-5`; B has 126 routes.
@@ -182,7 +183,7 @@ no `SnapshotUnsupportedError`. S11.A40 (that snapshot equals S4) is WO-I1b's.
   the refusal as the rules now give it; an amendment that settles Q-1 changes that state. *Default proposed:* a record
   with no CAS RN is skipped by the spelling rule (it can match no case component, by W27-R15's CAS identity), as an
   amendment to this document; alternatively the Wilson records gain CAS RNs (R-706 holds them back). Not decided here.
-- **Q-2 (scheduled).** `wilson-ig-v2 → activity_coefficient` and its line are added with WO-D5 (S11 §9).
+- **Q-2 (done at WO-D5).** `wilson-ig-v2 → activity_coefficient` and its line are added with WO-D5 (S11 §9).
 
 ## 10. Decision-register entries
 

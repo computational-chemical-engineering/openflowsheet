@@ -151,3 +151,25 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
   alone per the orchestrator); ADR 0013 D3's unresolved route on γ–φ splits (not taken); D3's Δl-under-SYN-ids and
   stability-value choices above.
 - Next: D5 (select v2; A79) then D6 (GP flowsheets; Q18 spike first).
+
+## WO-D5 (select `wilson-ig-v2`; S11.A79)
+
+- DECISION (D5): the sites of §4.6 → `revision_flowsheet._WILSON_ID` (the registry row), `revision_binding._WILSON`
+  (now `WILSON_BASIS.provider_id`; the routing rows and the column row follow), `basis_provider`'s Wilson branch
+  constructs `WilsonIdealGasProviderV2`, `provider_for`'s P1–P3 key, `verify.certificate.FRESH_PROVIDERS` and
+  `fresh_provider` (v1 replaced by v2: no basis selects v1, so the verifier's table holds no v1 entry). Alternative:
+  keep v1 in both constructor tables beside v2 (dead entries). Reversible by: the D5 commit.
+- DECISION (D5): the bind and verifier refusal codes name the selected provider, `basis_unavailable(wilson-ig-v2)` and
+  `basis_premises_unmet(wilson-ig-v2)` (the code names the basis that is refused). Alternative: keep v1's spelling
+  (a label naming a provider the basis no longer holds). Reversible by: `_wilson_refusal`, `_wilson_provider`.
+- DECISION (D5, W27 v3): `PROVIDER_ADD`, `PROVIDER_LINES` and `RECORD_SOURCES` gain `wilson-ig-v2` (v1's rows kept);
+  the registered snapshot B keeps its `wilson-ig-v1` route (a hand-written registered state; S4, the build's
+  routes, is I1b's and is generated on v2). `snapshot.PROVIDER_LINES_V3` gains v2's line. Doc R02, GC-V3-2 and Q-2
+  restated in place. Alternative: move B's route to v2 (re-registers a state). Reversible by: the generator rows.
+- DECISION (D5, envelope): besides the axis, `other_basis_providers` and L-S11-3, the `unit_models` statement and
+  L-COL-4/L-COL-7 name `wilson-ig-v2` (they describe the bound Wilson basis); L-S11-3 says v2 is v1's answers with
+  `s`. `LIBRARY_ONLY_PROVIDERS` += `"wilson-ig-v1": "S10"` (S10's U02 items already name it library-only). S11's
+  A34 test is renamed `…_pr_lib_and_wilson_v1_are_library_only`. Reversible by: the rows.
+- DECISION (D5): not touched — `thermal_binding.BASES` (C4-7 said the machines gain v2 "at D5"; the machines still
+  refuse Wilson at construction, C3-4, and the thermal rows of `MODEL_BASES` are I1b's); `equilibrium_form._SCOPE`;
+  the D1 unit tests that build units on a v1 provider directly (library level; v1 stays admitted).

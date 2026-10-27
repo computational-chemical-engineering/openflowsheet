@@ -54,8 +54,9 @@ C1 = frozenset({"pr-c1-v1"})
 
 #: R-288: the twenty-two models and the bases each binds on.
 #: S11 design §4.4 (ADR 0050 D3; amended on purpose, R-810): the three routing models bind on
-#: every basis except C1's.
-ROUTING = frozenset({"syn001", "iapws95-v1", "coolprop-heos-v1", "wilson-ig-v1"})
+#: every basis except C1's. Wilson's is `wilson-ig-v2` since S11 WO-D5 (ADR 0051, units design
+#: §4.6).
+ROUTING = frozenset({"syn001", "iapws95-v1", "coolprop-heos-v1", "wilson-ig-v2"})
 REGISTERED: dict[str, frozenset[str]] = {
     "syn001.feed_source": ROUTING,
     "syn001.adiabatic_mixer": SYN001,
@@ -82,7 +83,7 @@ REGISTERED: dict[str, frozenset[str]] = {
     "c1.reactor_surrogate": C1,
     # S11 (ADR 0050, R-810; design note §5's I1 row, §9): the column on SYN-001's basis and the
     # Wilson registry row's provider id.
-    "syn001.column": frozenset({"syn001", "wilson-ig-v1"}),
+    "syn001.column": frozenset({"syn001", "wilson-ig-v2"}),
 }
 
 

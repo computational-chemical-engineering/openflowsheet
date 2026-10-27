@@ -111,7 +111,7 @@ def test_a29_a35_a_syn001_case_through_the_application(app: LocalApplication, na
 
 @pytest.mark.parametrize("name", [*WILSON_CASES, WILSON_STRIPPER])
 def test_a29_a35_a_wilson_case_through_the_application(app: LocalApplication, name: str) -> None:
-    """A29 on `wilson-ig-v1` (C-MW, C-EW: S10-C's registered root, max |Δ|/tol ≤ 1; every case:
+    """A29 on `wilson-ig-v2` (C-MW, C-EW: S10-C's registered root, max |Δ|/tol ≤ 1; every case:
     the standalone `solve_column` root exactly) in ≤ 3 Newton iterations; A35 as restated by R-831:
     every row passes, VERIFIED, no partial derivative witness."""
     result, state, certificate = _solve(app, name)

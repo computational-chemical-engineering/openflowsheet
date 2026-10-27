@@ -96,6 +96,7 @@ def test_version_3_tables_are_read_from_registration_v3() -> None:
         "coolprop-heos-v1": "pure_helmholtz",
         "iapws95-v1": "iapws95",
         "wilson-ig-v1": "activity_coefficient",
+        "wilson-ig-v2": "activity_coefficient",
     }
     assert registration.model_functions(3)["syn001.column"] == {
         "function": None,

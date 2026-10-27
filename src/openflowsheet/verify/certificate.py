@@ -613,29 +613,30 @@ def verify_bound(
 
 #: M02 design note §14.2 B15, S11 design §4.6 (ADR 0050 D5): the provider ids the verifier's own
 #: table constructs a fresh provider for (`fresh_provider`). It never calls the binder's
-#: constructor (`revision_binding.basis_provider`).
+#: constructor (`revision_binding.basis_provider`). Wilson's is `wilson-ig-v2`, the provider its
+#: record source selects (units design §4.6, WO-D5).
 FRESH_PROVIDERS: Final = (
     "syn001",
     "pr-c1-v1",
     "iapws95-v1",
-    "wilson-ig-v1",
+    "wilson-ig-v2",
     "coolprop-heos-v1",
 )
 
 
 def _wilson_provider() -> PropertyProvider:
     """S11 design §4.3, as the binder checks it: the real records must load and satisfy P1–P3."""
-    from openflowsheet.thermo import wilson_ig, wilson_premises  # noqa: PLC0415
+    from openflowsheet.thermo import wilson_ig, wilson_ig_v2, wilson_premises  # noqa: PLC0415
 
     try:
         records = wilson_ig.load_records()
     except wilson_ig.RecordError as error:
         cause = (str(error).splitlines() or [""])[0].split(":", 1)[0]
-        raise VerifierError(f"basis_unavailable(wilson-ig-v1): {cause}") from error
+        raise VerifierError(f"basis_unavailable(wilson-ig-v2): {cause}") from error
     found = wilson_premises.violations(records)
     if found:
-        raise VerifierError(f"basis_premises_unmet(wilson-ig-v1): {found[0].hint}")
-    return wilson_ig.WilsonIdealGasProvider()
+        raise VerifierError(f"basis_premises_unmet(wilson-ig-v2): {found[0].hint}")
+    return wilson_ig_v2.WilsonIdealGasProviderV2()
 
 
 def fresh_provider(basis: ComponentBasis) -> PropertyProvider:
@@ -653,7 +654,7 @@ def fresh_provider(basis: ComponentBasis) -> PropertyProvider:
         from openflowsheet.thermo.iapws95 import Iapws95Provider  # noqa: PLC0415
 
         provider = Iapws95Provider()
-    elif provider_id == "wilson-ig-v1":
+    elif provider_id == "wilson-ig-v2":
         provider = _wilson_provider()
     elif provider_id == "coolprop-heos-v1":
         from openflowsheet.thermo.coolprop_heos import CoolPropHeosProvider  # noqa: PLC0415

@@ -189,6 +189,7 @@ PROVIDER_LINES_V3: Final[Mapping[str, Callable[[Any, Sequence[str], list[str]], 
     "pr-lib-v1": _v2_line(_pr_lib_line),
     "iapws95-v1": _record_line,
     "wilson-ig-v1": _record_line,
+    "wilson-ig-v2": _record_line,
     "coolprop-heos-v1": _record_line,
 }
 

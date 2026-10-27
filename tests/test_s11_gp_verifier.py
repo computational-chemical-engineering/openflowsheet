@@ -377,7 +377,7 @@ def test_a73_the_column_certificate_has_the_first_passs_checks(
         calls.append(len(first))
         return first
 
-    with column_registered(monkeypatch, frozenset({"syn001", "wilson-ig-v1"})):
+    with column_registered(monkeypatch, frozenset({"syn001", "wilson-ig-v2"})):
         document = committed_case(name)
         binding = bind_revision_flowsheet(document)
         assert isinstance(binding, RevisionBinding), binding

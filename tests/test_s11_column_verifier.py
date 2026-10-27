@@ -52,7 +52,7 @@ from openflowsheet.verify.certificate import (
 from openflowsheet.verify.checks import DERIVATIVE_TOLERANCE, derivative_witness, one_sided_columns
 from openflowsheet.verify.zero_flow import zero_flow_splits
 
-BASES = frozenset({"syn001", "wilson-ig-v1"})
+BASES = frozenset({"syn001", "wilson-ig-v2"})
 
 
 @pytest.fixture

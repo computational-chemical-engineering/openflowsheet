@@ -106,7 +106,8 @@ class ComponentBasis:
 
     Selected by the revision's `component_set.record_source` (`component_basis`) from the registry
     of record sources (S11 design §4.1): the C1 records (`pr_c1.RECORDS_PATH`) select `pr-c1-v1`,
-    `IAPWS95_RECORDS` `iapws95-v1`, `WILSON_RECORDS` `wilson-ig-v1`, and `COOLPROP_RECORDS`
+    `IAPWS95_RECORDS` `iapws95-v1`, `WILSON_RECORDS` `wilson-ig-v2` (units design §4.6, WO-D5;
+    `wilson-ig-v1` until then), and `COOLPROP_RECORDS`
     `coolprop-heos-v1` on the revision's one declared fluid; **every other value**, absent
     included, selects SYN-001 exactly as before M02, when `record_source` was not read at bind
     time (T06 spec §15's v0.1 limit).
@@ -133,7 +134,7 @@ WILSON_RECORDS: str = "benchmarks/s10/records.yaml"
 COOLPROP_RECORDS: str = "benchmarks/s07/components.yaml"
 
 _IAPWS95_ID = "iapws95-v1"
-_WILSON_ID = "wilson-ig-v1"
+_WILSON_ID = "wilson-ig-v2"
 _COOLPROP_ID = "coolprop-heos-v1"
 
 #: SYN-001's basis: every revision whose `record_source` is not a registered one.

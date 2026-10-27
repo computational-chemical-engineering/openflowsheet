@@ -233,7 +233,7 @@ def test_the_column_binds_square(name: str, monkeypatch: pytest.MonkeyPatch) -> 
 def test_the_column_is_refused_on_a_basis_it_is_not_admitted_on(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    with column_registered(monkeypatch, frozenset({"wilson-ig-v1"})):
+    with column_registered(monkeypatch, frozenset({"wilson-ig-v2"})):
         found = bind_revision_flowsheet(column_revision(M1))
     assert isinstance(found, Unbound) and found.detail.startswith("model_unsupported"), found
 

@@ -1512,7 +1512,8 @@ MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
 
 _IAPWS95: Final = "iapws95-v1"
 _COOLPROP: Final = "coolprop-heos-v1"
-_WILSON: Final = "wilson-ig-v1"
+#: Units design §4.6 (WO-D5): the Wilson record source selects `wilson-ig-v2`.
+_WILSON: Final = WILSON_BASIS.provider_id
 #: The provider ids of the bases S11 makes selectable (ADR 0050 D1).
 S11_BASES: Final = (_IAPWS95, _COOLPROP, _WILSON)
 #: S11 design §4.4: the models that hold no provider and evaluate no property.
@@ -1749,10 +1750,10 @@ def basis_provider(basis: ComponentBasis) -> PropertyProvider:
         from openflowsheet.thermo.iapws95 import Iapws95Provider  # noqa: PLC0415
 
         return Iapws95Provider()
-    if basis.provider_id == "wilson-ig-v1":
-        from openflowsheet.thermo.wilson_ig import WilsonIdealGasProvider  # noqa: PLC0415
+    if basis.provider_id == _WILSON:
+        from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2  # noqa: PLC0415
 
-        return WilsonIdealGasProvider()
+        return WilsonIdealGasProviderV2()
     if basis.provider_id == "coolprop-heos-v1":
         from openflowsheet.thermo.coolprop_heos import CoolPropHeosProvider  # noqa: PLC0415
 
@@ -1780,7 +1781,7 @@ def provider_for(basis: ComponentBasis) -> PropertyProvider | Unbound:
         return Unbound(
             "unsupported", "basis_unavailable(coolprop-heos-v1)", hint=COOLPROP_UNAVAILABLE_HINT
         )
-    if basis.provider_id == "wilson-ig-v1":
+    if basis.provider_id == _WILSON:
         refusal = _wilson_refusal()
         if refusal is not None:
             code, hint = refusal
@@ -1800,13 +1801,13 @@ def _wilson_refusal() -> tuple[str, str] | None:
     except wilson_ig.RecordError as error:
         cause = _first_line(error).split(":", 1)[0]
         return (
-            "basis_unavailable(wilson-ig-v1)",
+            f"basis_unavailable({_WILSON})",
             f"{cause}: the records {wilson_ig.RECORDS_PATH} are repository-only until Frank's "
             "Q-F3 (R-706)",
         )
     found = wilson_premises.violations(records)
     if found:
-        return "basis_premises_unmet(wilson-ig-v1)", found[0].hint
+        return f"basis_premises_unmet({_WILSON})", found[0].hint
     return None
 
 

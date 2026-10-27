@@ -6,7 +6,7 @@
 SYN-001's, and nothing on SYN-001's, so the SYN-001 construction is identical.
 
 `MODEL_BASES` admits these models on SYN-001's basis only until the integration WO (I1b) adds
-Wilson's row; here it is monkeypatched to admit `wilson-ig-v1` (v1 until D5 selects v2), and one
+Wilson's row; here it is monkeypatched to admit `wilson-ig-v2` (the provider WO-D5 selects), and one
 test pins the unpatched refusal so that the patch is seen to be what lets them bind.
 """
 
@@ -44,7 +44,7 @@ MIXER, HEATER, TP_FLASH, PH_FLASH, VALVE = (
     "syn001.valve",
 )
 FIVE = (MIXER, HEATER, TP_FLASH, PH_FLASH, VALVE)
-WILSON_V1 = "wilson-ig-v1"
+WILSON = "wilson-ig-v2"
 ROLES = {"syn001.feed_source": "feed", "syn001.product_sink": "product_sink"}
 
 Document = dict[str, Any]
@@ -179,10 +179,10 @@ def syn001_revision(model: str, **kwargs: float) -> Document:
 
 @pytest.fixture
 def wilson_admitted(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
-    """`MODEL_BASES` with Wilson's row for the five, as I1b will add it (v1 until D5)."""
+    """`MODEL_BASES` with Wilson's row for the five, as I1b will add it (v2 since WO-D5)."""
     for model in FIVE:
         monkeypatch.setitem(
-            revision_binding.MODEL_BASES, model, frozenset({*MODEL_BASES[model], WILSON_V1})
+            revision_binding.MODEL_BASES, model, frozenset({*MODEL_BASES[model], WILSON})
         )
     yield
 
@@ -207,9 +207,9 @@ def test_on_wilson_the_unit_carries_the_bound_providers_fields(model: str) -> No
     bound = bind_revision_flowsheet(document)
     assert isinstance(bound, RevisionBinding), bound
     described = basis_provider(component_basis(document)).describe()
-    assert described.provider_id == WILSON_V1
+    assert described.provider_id == WILSON
     unit = _unit(bound)
-    assert unit.provider.describe().provider_id == WILSON_V1
+    assert unit.provider.describe().provider_id == WILSON
     assert unit.components == WILSON_BASIS.components
     assert (unit.property_provider, unit.reference_convention) == (
         described.provider_id,
@@ -221,7 +221,7 @@ def test_on_wilson_the_unit_carries_the_bound_providers_fields(model: str) -> No
     }
     manifest = unit.manifest()
     requirements, domain = manifest["execution_requirements"], manifest["validity"]["domain"]
-    assert requirements["property_provider"] == WILSON_V1
+    assert requirements["property_provider"] == WILSON
     assert requirements["reference_convention"] == described.reference_convention
     assert (domain["temperature_K"]["min"], domain["temperature_K"]["max"]) == tuple(
         described.domain["T"]

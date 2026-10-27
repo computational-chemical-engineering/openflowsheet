@@ -153,13 +153,13 @@ def test_a19_a_basis_whose_components_disagree_is_a_mismatch() -> None:
         "syn001",
         "pr-c1-v1",
         "iapws95-v1",
-        "wilson-ig-v1",
+        "wilson-ig-v2",
         "coolprop-heos-v1",
     )
     with pytest.raises(VerifierError, match=r"^basis_mismatch\(iapws95-v1 \['D2O'\]"):
         fresh_provider(dataclasses.replace(IAPWS95_BASIS, components=("D2O",)))
     reversed_ = dataclasses.replace(WILSON_BASIS, components=WILSON_BASIS.components[::-1])
-    with pytest.raises(VerifierError, match=r"^basis_mismatch\(wilson-ig-v1 "):
+    with pytest.raises(VerifierError, match=r"^basis_mismatch\(wilson-ig-v2 "):
         fresh_provider(reversed_)
     for basis in (IAPWS95_BASIS, WILSON_BASIS):
         assert fresh_provider(basis).describe().provider_id == basis.provider_id

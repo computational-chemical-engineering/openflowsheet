@@ -69,16 +69,16 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
     assert len(facts["models"]) == 23
     assert facts["synthetic_models"] == ["c1.reactor_standin"]
     # M01 adds `pr-c1-v1` (ADR 0026); S11 makes S05's `iapws95-v1`, S07's `coolprop-heos-v1` and
-    # S10's `wilson-ig-v1` selectable (ADR 0050, R-810).
+    # S10's Wilson records selectable (ADR 0050, R-810), on `wilson-ig-v2` since WO-D5 (ADR 0051).
     assert facts["providers"] == [
         "coolprop-heos-v1",
         "iapws95-v1",
         "pr-c1-v1",
         "syn001",
-        "wilson-ig-v1",
+        "wilson-ig-v2",
     ]
     # The axis is the selectable providers (spec §5.7 Amendment S04, R-568); the module scan also
-    # finds S04's library-only `pr-lib-v1` (R-569, R-809).
+    # finds S04's library-only `pr-lib-v1` (R-569, R-809) and, since WO-D5, S10's `wilson-ig-v1`.
     assert facts["scanned_providers"] == [
         "coolprop-heos-v1",
         "iapws95-v1",
@@ -86,6 +86,7 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
         "pr-lib-v1",
         "syn001",
         "wilson-ig-v1",
+        "wilson-ig-v2",
     ]
     assert facts["unit_spellings"] == facts["adr_0016_spellings"]
 
@@ -348,8 +349,11 @@ def test_d1_a_u04_item_that_loses_its_model_id_trips_the_wire(envelope: dict[str
 #: adds it to the providers axis and reclassifies its package's U02 items (L01 spec §13.4).
 #: S11 (ADR 0050, R-810) made `iapws95-v1`, `coolprop-heos-v1` and `wilson-ig-v1` selectable;
 #: their packages' U02 harvest items are not edited (S11 §4.11: no earlier harvest entry is).
+#: S11 WO-D5 (ADR 0051, units design §4.6) selects `wilson-ig-v2` on the Wilson records, so
+#: `wilson-ig-v1` is library-only again, with S10's U02 items.
 LIBRARY_ONLY_PROVIDERS = {
     "pr-lib-v1": "S04",
+    "wilson-ig-v1": "S10",
 }
 
 
@@ -397,25 +401,26 @@ def _selectable() -> set[str]:
     return {basis.provider_id for basis in revision_binding.SELECTABLE_BASES}
 
 
-def test_s11_a34_the_providers_axis_is_the_five_and_pr_lib_alone_is_library_only(
+def test_s11_a34_the_providers_axis_is_the_five_and_pr_lib_and_wilson_v1_are_library_only(
     envelope: dict[str, Any],
 ) -> None:
-    """S11.A34 (ADR 0050, R-809, R-810)."""
+    """S11.A34 (ADR 0050, R-809, R-810), with units design §4.6 (ADR 0051, WO-D5): `wilson-ig-v1`
+    library-only again."""
     (axis,) = (row for row in envelope["axes"] if row["id"] == "property_model")
     assert axis["providers"] == [
         "coolprop-heos-v1",
         "iapws95-v1",
         "pr-c1-v1",
         "syn001",
-        "wilson-ig-v1",
+        "wilson-ig-v2",
     ]
     assert [p["id"] for p in axis["other_basis_providers"]] == [
         "pr-c1-v1",
         "iapws95-v1",
         "coolprop-heos-v1",
-        "wilson-ig-v1",
+        "wilson-ig-v2",
     ]
-    assert LIBRARY_ONLY_PROVIDERS == {"pr-lib-v1": "S04"}
+    assert LIBRARY_ONLY_PROVIDERS == {"pr-lib-v1": "S04", "wilson-ig-v1": "S10"}
 
 
 def test_c3_the_library_only_providers_are_unselectable_with_their_u02_items(

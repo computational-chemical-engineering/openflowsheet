@@ -65,12 +65,14 @@ BASE_PINS = {
     ),
 }
 
-#: W27v3-R02: the provider rows version 3 adds to version 2's table. (`wilson-ig-v2 →
-#: activity_coefficient` is S11 WO-D5's row, units design §5.4 item 2; it is not added here.)
+#: W27v3-R02: the provider rows version 3 adds to version 2's table, with S11 WO-D5's
+#: `wilson-ig-v2 → activity_coefficient` (units design §5.4 item 2; v1's row kept, as version 2
+#: keeps `pr-lib-v1`'s).
 PROVIDER_ADD = {
     "coolprop-heos-v1": "pure_helmholtz",
     "iapws95-v1": "iapws95",
     "wilson-ig-v1": "activity_coefficient",
+    "wilson-ig-v2": "activity_coefficient",
 }
 #: W27v3-R03.
 METHODS_ADD = {
@@ -98,6 +100,7 @@ PROVIDER_LINES = {
     "pr-lib-v1": "version 2's line (pr_lib.RECORDS_PATH; vapor for every component)",
     "syn001": GENERIC_LINE,
     "wilson-ig-v1": GENERIC_LINE,
+    "wilson-ig-v2": GENERIC_LINE,
 }
 #: S11 §4.1: the `record_source` each provider's basis carries (`zz-test-pr` holds library rows).
 RECORD_SOURCES = {
@@ -107,6 +110,7 @@ RECORD_SOURCES = {
     "pr-lib-v1": "benchmarks/l01/components.yaml",
     "syn001": "benchmarks/syn001/components.yaml",
     "wilson-ig-v1": "benchmarks/s10/records.yaml",
+    "wilson-ig-v2": "benchmarks/s10/records.yaml",
     v2.TEST_PROVIDER: "benchmarks/l01/components.yaml",
 }
 #: S11 A2: the routing models every S11 basis admits.

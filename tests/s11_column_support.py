@@ -206,7 +206,7 @@ def column_registered(
 COLUMN_CASES: tuple[str, ...] = ("M1", "M2", "M3", "M4", *(f"J{k}" for k in range(1, 9)))
 #: A29's recycle case: M1 with its bottoms split 0.2 back to a side feed on stage 5.
 RECYCLE_CASE = "M1-recycle"
-#: §6.1 A29's Wilson cases (S10-C `ref.columns.<case>`), on the `wilson-ig-v1` basis.
+#: §6.1 A29's Wilson cases (S10-C `ref.columns.<case>`), on the `wilson-ig-v2` basis (WO-D5).
 WILSON_CASES: tuple[str, ...] = ("C-MW", "C-EW")
 #: §7 Q11's Wilson column with a `none` end: C-MW's feed as the `top` liquid of a 10-stage stripper
 #: (no condenser, C-MW's reboiler and `bottoms_rate`), which `solve_column` accepts.

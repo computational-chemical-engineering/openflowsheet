@@ -12348,7 +12348,8 @@
       "pr-c1-v1": "version 2's line (pr_c1.RECORDS_PATH; vapor for pr_c1.LIGHT, every phase else)",
       "pr-lib-v1": "version 2's line (pr_lib.RECORDS_PATH; vapor for every component)",
       "syn001": "the records at ROOT / basis.record_source ({id, name, formula, cas, synthetic} from each record's identifiers); every phase of describe().phases for every component",
-      "wilson-ig-v1": "the records at ROOT / basis.record_source ({id, name, formula, cas, synthetic} from each record's identifiers); every phase of describe().phases for every component"
+      "wilson-ig-v1": "the records at ROOT / basis.record_source ({id, name, formula, cas, synthetic} from each record's identifiers); every phase of describe().phases for every component",
+      "wilson-ig-v2": "the records at ROOT / basis.record_source ({id, name, formula, cas, synthetic} from each record's identifiers); every phase of describe().phases for every component"
     },
     "provider_methods": {
       "coolprop-heos-v1": "pure_helmholtz",
@@ -12356,12 +12357,14 @@
       "pr-c1-v1": "cubic_pr",
       "pr-lib-v1": "cubic_pr",
       "syn001": "synthetic_syn001",
-      "wilson-ig-v1": "activity_coefficient"
+      "wilson-ig-v1": "activity_coefficient",
+      "wilson-ig-v2": "activity_coefficient"
     },
     "provider_methods_added": {
       "coolprop-heos-v1": "pure_helmholtz",
       "iapws95-v1": "iapws95",
-      "wilson-ig-v1": "activity_coefficient"
+      "wilson-ig-v1": "activity_coefficient",
+      "wilson-ig-v2": "activity_coefficient"
     }
   },
   "test_provider_methods": {

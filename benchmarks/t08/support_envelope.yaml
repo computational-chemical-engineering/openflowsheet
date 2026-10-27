@@ -36,7 +36,7 @@ axes:
       own basis (R-288). Since S11 a revision's `record_source` selects one of five bases (ADR
       0050, R-810): SYN-001, C1, IAPWS-95, CoolProp HEOS (one fluid) or Wilson's records, each
       with its own components, domain and limitation row; any other value selects SYN-001.
-    providers: [coolprop-heos-v1, iapws95-v1, pr-c1-v1, syn001, wilson-ig-v1]
+    providers: [coolprop-heos-v1, iapws95-v1, pr-c1-v1, syn001, wilson-ig-v2]
     #: Shipped providers that bind on a basis other than syn001's (R-288's `MODEL_BASES`); each
     #: has its own components, domain and limitation row; the components and domain axes below
     #: are syn001's.
@@ -56,7 +56,7 @@ axes:
         caveat: >-
           one fluid per revision among 123, S07's tiers and per-fluid domains, the routing models
           only, and the `coolprop` extra installed
-      - id: wilson-ig-v1
+      - id: wilson-ig-v2
         limitation: L-S11-3
         caveat: >-
           its own three components (CH3OH, C2H5OH, H2O; records in the source repository only)
@@ -106,7 +106,7 @@ axes:
       L27–L31, L-CSTR-1..3, L-COL-1..10; the surrogate's Q0–Q7): SYN-001's thirteen, on SYN-001's
       basis only except the three routing models (`syn001.feed_source`, `syn001.product_sink`,
       `syn001.stream_splitter`), which since S11 (R-810) bind on every selectable basis (L-S11-1..3);
-      since S11 the column `syn001.column`, on SYN-001's and `wilson-ig-v1`'s bases (L-S11-3); and
+      since S11 the column `syn001.column`, on SYN-001's and `wilson-ig-v2`'s bases (L-S11-3); and
       since M02's join (R-280) the eight C1 models and since W27 Amendment 3 (R-301) M04's
       `c1.reactor_surrogate`, on the `pr-c1-v1` basis only (R-288). `c1.reactor_standin` is
       synthetic only: the stand-in for the C1 reactor (ADR 0034 D9), labelled synthetic in its
@@ -970,11 +970,12 @@ limitations:
       - doc:docs/derivations/S11-design.md §4.11
   - id: L-S11-3
     text: >-
-      `wilson-ig-v1` (S10's Wilson activity model with an ideal-gas vapour) is selected by
+      `wilson-ig-v2` (S10's Wilson activity model with an ideal-gas vapour; `wilson-ig-v1`'s answers
+      with the molar entropy added, S11 units design §4.6) is selected by
       `record_source: benchmarks/s10/records.yaml` for its three record components (CH3OH,
       C2H5OH, H2O, in any order), over 300–400 K and 30–200 kPa. The routing models and the
       column (`syn001.column`, L-COL-1..10) bind on it. Its records are in the source repository
-      only, so in a wheel binding is refused `basis_unavailable(wilson-ig-v1)` (R-706, R-811). Premises P1–P3 are checked at binding.
+      only, so in a wheel binding is refused `basis_unavailable(wilson-ig-v2)` (R-706, R-811). Premises P1–P3 are checked at binding.
       The S10 VAL-1–3 bands apply, and the VAL-3 latent-heat miss (methanol, +5.72 % against
       5 %) is carried. Results are compared across architectures by tolerance, not bitwise.
     evidence:
@@ -1012,7 +1013,7 @@ limitations:
       - doc:docs/derivations/S11-design.md §4.11
   - id: L-COL-4
     text: >-
-      On `wilson-ig-v1` the column's end specifications are ratio, rate and duty only: a purity,
+      On `wilson-ig-v2` the column's end specifications are ratio, rate and duty only: a purity,
       recovery or temperature end is refused at binding (S10-C D8).
     evidence:
       - tests/test_s11_column_unit.py::test_a27_a_wilson_column_refuses_a_purity_end
@@ -1036,7 +1037,7 @@ limitations:
       - doc:docs/derivations/S11-design.md §4.7.4
   - id: L-COL-7
     text: >-
-      On `wilson-ig-v1` the column's Stage B (S08's block re-entry) is tested at the opening level
+      On `wilson-ig-v2` the column's Stage B (S08's block re-entry) is tested at the opening level
       only (S10-C).
     evidence:
       - doc:docs/derivations/S10C-spec.md

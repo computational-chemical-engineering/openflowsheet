@@ -34,9 +34,15 @@ from test_s10c_columns import deviations, root, worst
 from test_t05_w11_cases import case_document
 
 from openflowsheet.application.policies import T04_W12, T06_REVISION_V2, T08_PTC_V1
-from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
+from openflowsheet.application.revision_binding import (
+    SELECTABLE_BASES,
+    RevisionBinding,
+    basis_provider,
+    bind_revision_flowsheet,
+)
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.models import flow_id, pressure_id, temperature_id
+from openflowsheet.models.revision_flowsheet import WILSON_BASIS, WILSON_RECORDS
 from openflowsheet.models.syn001.cascade import stage_duty_id, stage_temperature_id
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
 from openflowsheet.models.syn001.column import ColumnSpec
@@ -46,6 +52,8 @@ from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.homotopy import continuation_parameter
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePolicy
+from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2
+from openflowsheet.verify.certificate import fresh_provider
 
 M1 = SPECS["M1"]
 
@@ -58,8 +66,8 @@ def registered(monkeypatch: pytest.MonkeyPatch) -> Iterator[pytest.MonkeyPatch]:
 
 @pytest.fixture
 def registered_wilson(monkeypatch: pytest.MonkeyPatch) -> Iterator[pytest.MonkeyPatch]:
-    """The column admitted on both of I1's bases (`MODEL_BASES = {syn001, wilson-ig-v1}`)."""
-    with column_registered(monkeypatch, frozenset({"syn001", "wilson-ig-v1"})):
+    """The column admitted on both of I1's bases (`MODEL_BASES = {syn001, wilson-ig-v2}`)."""
+    with column_registered(monkeypatch, frozenset({"syn001", "wilson-ig-v2"})):
         yield monkeypatch
 
 
@@ -226,7 +234,7 @@ def _equals_library_root(spec: ColumnSpec, state: dict[str, float]) -> None:
 def test_the_wilson_column_in_a_flowsheet_reproduces_its_registered_root(
     name: str, registered_wilson: pytest.MonkeyPatch
 ) -> None:
-    """S11.A29 (C-MW, C-EW): on `wilson-ig-v1`, the flowsheet reproduces S10-C's registered root
+    """S11.A29 (C-MW, C-EW): on `wilson-ig-v2`, the flowsheet reproduces S10-C's registered root
     (max |Δ|/tol ≤ 1) in ≤ 3 Newton iterations, and equals the standalone `solve_column` root."""
     spec = column_case_spec(name)
     run = _run(committed_case(name), S01_DEFAULT_V1)
@@ -238,6 +246,36 @@ def test_the_wilson_column_in_a_flowsheet_reproduces_its_registered_root(
     largest = _worst_wilson(spec, name, state)
     assert largest[0] <= 1.0, largest
     _equals_library_root(spec, state)
+
+
+# -- S11.A79 (units design §4.6, WO-D5) ------------------------------------------------------------
+
+
+def test_a79_the_wilson_record_source_selects_v2() -> None:
+    """The Wilson `SELECTABLE_BASES` entry is `wilson-ig-v2`, the count stays 127, and the binder
+    and the verifier each construct v2 for it."""
+    wilson = [b for b in SELECTABLE_BASES if b.record_source == WILSON_RECORDS]
+    assert len(SELECTABLE_BASES) == 127
+    assert wilson == [WILSON_BASIS] and WILSON_BASIS.provider_id == "wilson-ig-v2"
+    assert type(basis_provider(WILSON_BASIS)) is WilsonIdealGasProviderV2
+    assert type(fresh_provider(WILSON_BASIS)) is WilsonIdealGasProviderV2
+    assert "wilson-ig-v1" not in {b.provider_id for b in SELECTABLE_BASES}
+
+
+@pytest.mark.parametrize("name", [*WILSON_CASES, WILSON_STRIPPER])
+def test_a79_the_wilson_columns_on_v2_equal_v1s_library_root(name: str) -> None:
+    """The column cases' x_final on the selected `wilson-ig-v2` basis (the registry rows, not a
+    patch) equal `solve_column`'s root on a `wilson-ig-v1` provider exactly: the switch moves no
+    value (measured before and after D5: 1508 values over six runs, `float.hex` equal)."""
+    binding = bind_revision_flowsheet(committed_case(name))
+    assert isinstance(binding, RevisionBinding), binding
+    (unit,) = (u for u in binding.flowsheet.units() if u.model_id == "syn001.column")
+    assert unit.provider.describe().provider_id == "wilson-ig-v2"
+    assert REAL.describe().provider_id == "wilson-ig-v1"
+    run = _run(committed_case(name), T06_REVISION_V2)
+    assert run.outcome == "CONVERGED", run.message
+    assert run.state is not None
+    _equals_library_root(column_case_spec(name), dict(run.state))
 
 
 # -- §7 Q11 ----------------------------------------------------------------------------------------

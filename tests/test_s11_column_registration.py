@@ -74,9 +74,9 @@ def _column_instance(document: dict[str, Any], unit: str = "UCOL") -> dict[str, 
 def test_a39_the_registries_agree_and_the_column_binds_on_syn001_and_wilson() -> None:
     assert set(MODEL_BASES) == set(MODEL_BUILDERS) == set(MODEL_SIGNATURES)
     assert len(MODEL_BUILDERS) == 23
-    # §9: the provider id the Wilson registry row holds (v1 until D5).
+    # §9: the provider id the Wilson registry row holds (v2 since WO-D5, units design §4.6).
     assert MODEL_BASES[COLUMN] == frozenset({"syn001", WILSON_BASIS.provider_id})
-    assert WILSON_BASIS.provider_id == "wilson-ig-v1"
+    assert WILSON_BASIS.provider_id == "wilson-ig-v2"
 
 
 def test_the_column_binds_without_a_monkeypatched_registry() -> None:

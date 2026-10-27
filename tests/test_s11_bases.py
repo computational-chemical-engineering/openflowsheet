@@ -273,7 +273,7 @@ def test_a08_the_binder_refuses_unmet_premises(monkeypatch: pytest.MonkeyPatch) 
     monkeypatch.setattr(wilson_ig, "load_records", lambda path=None: widened)
     refused = provider_for(WILSON_BASIS)
     assert isinstance(refused, Unbound)
-    assert (refused.kind, refused.detail) == ("unsupported", "basis_premises_unmet(wilson-ig-v1)")
+    assert (refused.kind, refused.detail) == ("unsupported", "basis_premises_unmet(wilson-ig-v2)")
     assert refused.hint is not None and refused.hint.startswith("P2: H2O min ")
     temperature = float(refused.hint.split("at T = ")[1].removesuffix(" K"))
     assert 750.0 <= temperature <= 800.0
@@ -306,7 +306,7 @@ def test_a09_wilson_without_its_records_is_unavailable(
         load()
     refused = provider_for(WILSON_BASIS)
     assert isinstance(refused, Unbound)
-    assert (refused.kind, refused.detail) == ("unsupported", "basis_unavailable(wilson-ig-v1)")
+    assert (refused.kind, refused.detail) == ("unsupported", "basis_unavailable(wilson-ig-v2)")
     assert refused.hint is not None
     assert refused.hint.startswith("records_missing: ") and "R-706" in refused.hint
     assert "Q-F3" in refused.hint
