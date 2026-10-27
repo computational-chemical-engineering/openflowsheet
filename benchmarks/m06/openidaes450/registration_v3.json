@@ -200,6 +200,69 @@
           ]
         }
       ]
+    },
+    "co": {
+      "case_id": "synthetic-w27",
+      "expected_dof": 0,
+      "family": "synthetic",
+      "files_missing": [],
+      "in_full82": false,
+      "listed_components": [
+        "co"
+      ],
+      "model_type": "native_IDAES",
+      "objective_declared": false,
+      "package_source": "property_packages.json",
+      "packages": [
+        {
+          "classes": [
+            "GenericParameterBlock"
+          ],
+          "components": [
+            "co"
+          ],
+          "key": "generic[Vap:VaporPhase:Cubic(type=PR)]",
+          "name": "fs.props",
+          "phases": [
+            "vapor"
+          ]
+        }
+      ],
+      "parse_errors": [],
+      "residual_check": "pass",
+      "solve_dynamic": false,
+      "steady_state": true,
+      "topology_entry_ids": [],
+      "topology_kinds": [
+        "Feed",
+        "Heater",
+        "Product"
+      ],
+      "topology_package_names": [],
+      "unit_source": "units.json",
+      "units": [
+        {
+          "class_leaf": "_ScalarFeed",
+          "key": "idaes:Feed",
+          "names": [
+            "fs.feed"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarHeater",
+          "key": "idaes:Heater",
+          "names": [
+            "fs.heater"
+          ]
+        },
+        {
+          "class_leaf": "_ScalarProduct",
+          "key": "idaes:Product",
+          "names": [
+            "fs.product"
+          ]
+        }
+      ]
     }
   },
   "document": "docs/derivations/W27-registration-v3.md",
@@ -215,7 +278,9 @@
     "duplicate_provider_refusal",
     "no_key_refusal",
     "record_source_ignored",
-    "first_serving"
+    "first_serving",
+    "cas_less_refused",
+    "spelling_rule_off"
   ],
   "registration_version": 3,
   "rules": {
@@ -223,6 +288,7 @@
       "a",
       "b",
       "c:case_distinct",
+      "c:no_cas_skipped",
       "d:routes_per_revision",
       "d:no_record_source",
       "d:duplicate_route_keys",
@@ -11784,6 +11850,123 @@
       "routes_per_revision": 1,
       "schema": "w27-registry-snapshot-v3"
     },
+    "S1co": {
+      "basis": "C9 registered state (W27-registration-v2 §5.1)",
+      "git_commit": null,
+      "list_models_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "models": [
+        {
+          "model_id": "c1.adiabatic_mixer"
+        },
+        {
+          "model_id": "c1.feed_source"
+        },
+        {
+          "model_id": "c1.product_sink"
+        },
+        {
+          "model_id": "c1.reactor"
+        },
+        {
+          "model_id": "c1.reactor_standin"
+        },
+        {
+          "model_id": "c1.reactor_surrogate"
+        },
+        {
+          "model_id": "c1.stream_splitter"
+        },
+        {
+          "model_id": "c1.tp_flash"
+        },
+        {
+          "model_id": "c1.tp_heater"
+        }
+      ],
+      "package_version": "c9-registered-state",
+      "routes": [
+        {
+          "components": [
+            {
+              "cas": "1333-74-0",
+              "formula": "H2",
+              "id": "H2",
+              "name": "hydrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7727-37-9",
+              "formula": "N2",
+              "id": "N2",
+              "name": "nitrogen",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7664-41-7",
+              "formula": "H3N",
+              "id": "NH3",
+              "name": "ammonia",
+              "phases": [
+                "liquid",
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "7440-37-1",
+              "formula": "Ar",
+              "id": "Ar",
+              "name": "argon",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "74-82-8",
+              "formula": "CH4",
+              "id": "CH4",
+              "name": "methane",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            },
+            {
+              "cas": "630-08-0",
+              "formula": "CO",
+              "id": "CO",
+              "name": "carbon monoxide",
+              "phases": [
+                "vapor"
+              ],
+              "synthetic": false
+            }
+          ],
+          "model_ids": [
+            "c1.adiabatic_mixer",
+            "c1.feed_source",
+            "c1.product_sink",
+            "c1.reactor",
+            "c1.reactor_standin",
+            "c1.reactor_surrogate",
+            "c1.stream_splitter",
+            "c1.tp_flash",
+            "c1.tp_heater"
+          ],
+          "provider_id": "pr-c1-v1",
+          "record_source": "benchmarks/m01/components.yaml"
+        }
+      ],
+      "routes_per_revision": 1,
+      "schema": "w27-registry-snapshot-v3"
+    },
     "T": {
       "basis": "S11 registered state (W27-registration-v3 §5.1)",
       "git_commit": null,
@@ -12318,14 +12501,55 @@
     },
     {
       "case": "H2O-iapws",
-      "discriminates": [],
+      "discriminates": [
+        "cas_less_refused"
+      ],
       "expected": {
-        "refusal": "archive spellings of registry chemicals not aliased ['H2O->None']"
+        "class": "UNIT_UNAVAILABLE",
+        "reasons": [
+          [
+            "UNIT_UNAVAILABLE",
+            "Heater",
+            "no_model:heater units=fs.heater"
+          ]
+        ],
+        "units": [
+          [
+            "idaes:Feed",
+            [
+              "syn001.feed_source"
+            ]
+          ],
+          [
+            "idaes:Heater",
+            []
+          ],
+          [
+            "idaes:Product",
+            [
+              "syn001.product_sink"
+            ]
+          ]
+        ],
+        "units_judged_on": "iapws95-v1"
       },
       "id": "W27v3-A08",
       "registration_version": 3,
       "snapshot": "B",
-      "why": "§9 Q-1 (open): version 2's spelling rule refuses the Wilson H2O record, which has no CAS RN, once a case spells H2O"
+      "why": "A04's outcome, now on B: the Wilson records carry no CAS RN, so W27v3-R09 skips them (R-832)"
+    },
+    {
+      "case": "co",
+      "discriminates": [
+        "spelling_rule_off"
+      ],
+      "expected": {
+        "refusal": "archive spellings of registry chemicals not aliased ['co->630-08-0']"
+      },
+      "id": "W27v3-A09",
+      "registration_version": 3,
+      "snapshot": "S1co",
+      "why": "W27v2-A16's refusal under version 3: records with a CAS RN keep W27v2-R08 (R-832)"
     }
   ],
   "tables": {
@@ -12337,6 +12561,34 @@
         "function": null,
         "offers": [],
         "why_none": "column_function_unregistered"
+      },
+      "thermal.compressor": {
+        "function": "compressor",
+        "offers": []
+      },
+      "thermal.flash": {
+        "function": "flash",
+        "offers": []
+      },
+      "thermal.heater": {
+        "function": "heater",
+        "offers": []
+      },
+      "thermal.mixer": {
+        "function": "mixer",
+        "offers": []
+      },
+      "thermal.pump": {
+        "function": "pump",
+        "offers": []
+      },
+      "thermal.turbine": {
+        "function": "expander",
+        "offers": []
+      },
+      "thermal.valve": {
+        "function": "valve",
+        "offers": []
       }
     },
     "model_none_reasons_added": {

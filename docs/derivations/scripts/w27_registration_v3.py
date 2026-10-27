@@ -79,9 +79,17 @@ METHODS_ADD = {
     "pure_helmholtz": "a pure-fluid multiparameter Helmholtz EOS other than IAPWS-95 (CoolProp "
     "HEOS); matches no case method"
 }
-#: W27v3-R04, with the meaning of its `why_none` (as `#/units/model_none_reasons` gives each).
+#: W27v3-R04, with the meaning of its `why_none` (as `#/units/model_none_reasons` gives each),
+#: and S11 units design §4.10's seven thermal rows, each onto an existing function.
 MODEL_FUNCTIONS_ADD = {
-    "syn001.column": {"function": None, "offers": [], "why_none": "column_function_unregistered"}
+    "syn001.column": {"function": None, "offers": [], "why_none": "column_function_unregistered"},
+    "thermal.heater": {"function": "heater", "offers": []},
+    "thermal.valve": {"function": "valve", "offers": []},
+    "thermal.mixer": {"function": "mixer", "offers": []},
+    "thermal.flash": {"function": "flash", "offers": []},
+    "thermal.pump": {"function": "pump", "offers": []},
+    "thermal.compressor": {"function": "compressor", "offers": []},
+    "thermal.turbine": {"function": "expander", "offers": []},
 }
 MODEL_NONE_REASONS_ADD = {
     "column_function_unregistered": "no W27 function is registered for the counter-current "
@@ -123,6 +131,8 @@ MUTANTS = (
     "no_key_refusal",
     "record_source_ignored",
     "first_serving",
+    "cas_less_refused",
+    "spelling_rule_off",
 )
 
 
@@ -222,6 +232,7 @@ def snapshots() -> dict[str, dict[str, Any]]:
         "Bsrc": unkeyed,
         "T": snap(tie_models, c1, tie_b, tie_a),
         "Tr": snap(tie_models, c1, tie_a, tie_b),
+        "S1co": with_sources(v2.snapshots()["S1co"]),
     }
 
 
@@ -238,7 +249,7 @@ def cases() -> dict[str, dict[str, Any]]:
             "phases": ["liquid", "vapor"],
         }
     ]
-    return {"H2": table["H2"], "H2O": table["H2O"], "H2O-iapws": water}
+    return {"H2": table["H2"], "H2O": table["H2O"], "H2O-iapws": water, "co": table["co"]}
 
 
 # =================================================================================================
@@ -270,11 +281,26 @@ def key(r: dict[str, Any], mutant: str | None = None) -> tuple[str, ...]:
     return (r["provider_id"], r["record_source"], ids)
 
 
+def spelling_problems_v3(
+    snapshot: dict[str, Any], names: set[str], mutant: str | None
+) -> list[str]:
+    """W27v3-R09: W27v2-R08 over the records that have a CAS RN; a non-synthetic record with no
+    CAS RN (`cas` absent, null or empty) can match no case component (W27-R15) and takes no part.
+    """
+    if mutant == "spelling_rule_off":
+        return []
+    keyed = copy.deepcopy(snapshot)
+    if mutant != "cas_less_refused":
+        for r in keyed["routes"]:
+            r["components"] = [c for c in r["components"] if c["synthetic"] or c.get("cas")]
+    return v2.spelling_problems(keyed, names, None)
+
+
 def refusal_v3(
     snapshot: dict[str, Any], names: set[str], methods: dict[str, str], mutant: str | None
 ) -> str | None:
-    """W27v2-R07 with version 3's tables and W27v3-R06's (d), against the archive spellings
-    `names`."""
+    """W27v2-R07 with version 3's tables, W27v3-R09's spelling rule for (c) and W27v3-R06's (d),
+    against the archive spellings `names`."""
     functions = model_functions(mutant)
     problems = []
     unknown_models = sorted(
@@ -283,7 +309,7 @@ def refusal_v3(
     unknown_providers = sorted(
         r["provider_id"] for r in snapshot["routes"] if r["provider_id"] not in methods
     )
-    unaliased = v2.spelling_problems(snapshot, names, None)
+    unaliased = spelling_problems_v3(snapshot, names, mutant)
     if unknown_models:
         problems.append(f"unregistered model ids {unknown_models}")
     if unknown_providers:
@@ -540,10 +566,24 @@ STATES: list[tuple[str, int, str, str, dict[str, Any], list[str], str]] = [
         3,
         "B",
         "H2O-iapws",
-        {"refusal": "archive spellings of registry chemicals not aliased ['H2O->None']"},
-        [],
-        "§9 Q-1 (open): version 2's spelling rule refuses the Wilson H2O record, which has no "
-        "CAS RN, once a case spells H2O",
+        judged(
+            "iapws95-v1",
+            "UNIT_UNAVAILABLE",
+            [["UNIT_UNAVAILABLE", "Heater", "no_model:heater units=fs.heater"]],
+            [FEED, ["idaes:Heater", []], PRODUCT],
+        ),
+        ["cas_less_refused"],
+        "A04's outcome, now on B: the Wilson records carry no CAS RN, so W27v3-R09 skips them "
+        "(R-832)",
+    ),
+    (
+        "W27v3-A09",
+        3,
+        "S1co",
+        "co",
+        {"refusal": "archive spellings of registry chemicals not aliased ['co->630-08-0']"},
+        ["spelling_rule_off"],
+        "W27v2-A16's refusal under version 3: records with a CAS RN keep W27v2-R08 (R-832)",
     ),
 ]
 
@@ -581,12 +621,22 @@ def build() -> dict[str, Any]:
     # GC-V3-3: the column row is new, its reason is registered, and the records are as S11 says.
     claim(
         not set(MODEL_FUNCTIONS_ADD) & set(reg["units"]["model_functions"]),
-        "GC-V3-3: syn001.column is already a v1 model",
+        "GC-V3-3: an added model id is already a v1 model",
     )
     claim(
-        {e["why_none"] for e in MODEL_FUNCTIONS_ADD.values()} == set(MODEL_NONE_REASONS_ADD)
+        {e["why_none"] for e in MODEL_FUNCTIONS_ADD.values() if e["function"] is None}
+        == set(MODEL_NONE_REASONS_ADD)
         and not set(MODEL_NONE_REASONS_ADD) & set(reg["units"]["model_none_reasons"]),
         "GC-V3-3: why_none is not a new registered reason",
+    )
+    claim(
+        all(
+            e["offers"] == [] and (e["function"] is None) == ("why_none" in e)
+            for e in MODEL_FUNCTIONS_ADD.values()
+        )
+        and {e["function"] for e in MODEL_FUNCTIONS_ADD.values()} - {None}
+        <= set(reg["units"]["functions"]),
+        "GC-V3-3: an added model row is not onto an existing function",
     )
     cool = generic_rows(RECORD_SOURCES["coolprop-heos-v1"])
     claim(
@@ -683,6 +733,7 @@ def build() -> dict[str, Any]:
                 "a",
                 "b",
                 "c:case_distinct",
+                "c:no_cas_skipped",
                 "d:routes_per_revision",
                 "d:no_record_source",
                 "d:duplicate_route_keys",

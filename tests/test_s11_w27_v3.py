@@ -71,8 +71,9 @@ def test_registered_state(state: dict[str, Any]) -> None:
     assert [[u["key"], u["models"]] for u in row["units"]] == expected["units"]
 
 
-def test_the_states_are_the_registered_eight() -> None:
-    assert [s["id"] for s in _states()] == [f"W27v3-A{n:02d}" for n in range(1, 9)]
+def test_the_states_are_the_registered_nine() -> None:
+    """A01-A08, and A09 added by R-832 (W27v3-R09)."""
+    assert [s["id"] for s in _states()] == [f"W27v3-A{n:02d}" for n in range(1, 10)]
 
 
 def test_r07_the_tie_goes_to_the_smaller_key_not_the_first_route() -> None:
@@ -103,6 +104,18 @@ def test_version_3_tables_are_read_from_registration_v3() -> None:
         "offers": [],
         "why_none": "column_function_unregistered",
     }
+    thermal = {
+        "thermal.heater": "heater",
+        "thermal.valve": "valve",
+        "thermal.mixer": "mixer",
+        "thermal.flash": "flash",
+        "thermal.pump": "pump",
+        "thermal.compressor": "compressor",
+        "thermal.turbine": "expander",
+    }
+    for model_id, function in thermal.items():  # S11 units design §4.10
+        assert registration.model_functions(3)[model_id] == {"function": function, "offers": []}
+        assert model_id not in registration.model_functions(2)
     assert registration.model_functions(1) == registration.model_functions(2)
     assert "syn001.column" not in registration.model_functions(2)
     with pytest.raises(ValueError, match="not 1, 2 or 3"):

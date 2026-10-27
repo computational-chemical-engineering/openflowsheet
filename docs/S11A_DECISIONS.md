@@ -314,3 +314,25 @@ W27 `test_m06_w27_coverage` 4 and `test_l01_retake` 6 errors (`unregistered mode
 4. a20's `scanned_providers` now fails only on `wilson-ig-v2` (as c3): D5 registers it.
 
 Identity at `079be287` (final, clean scratch worktree): `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 7, 15] exited non-zero)` — the remaining failures are exactly the envelope a20 + six c3 (`wilson-ig-v2`, D5), `test_m06_w27_coverage` 4 and `test_l01_retake` 6 errors (I1b). S08 and S10C lines as above, unchanged.
+
+## WO-I1b part 3a: rulings item 3 (R-832) and §4.10's model rows
+
+- W27v3-R09 implemented in the generator (`spelling_problems_v3`: W27v2-R08 over the records that have a CAS RN) and in
+  `coverage._check_snapshot_v3`; A08 restated by hand (A04's outcome on B), A09 added (S1co with record sources, case
+  `co`, `['co->630-08-0']`). Mutants `cas_less_refused` (changes only A08, back to `['H2O->None']`) and
+  `spelling_rule_off` (changes only A09, to `COMPONENT_UNAVAILABLE`). The generator's reference reproduced the
+  hand-written A08 at the first run. `--check` identical (9 states); GC-V3-5 holds (225/225); S11.A30 holds.
+- §4.10's seven `thermal.*` → function rows (`offers: []`) are in `MODEL_FUNCTIONS_ADD`; GC-V3-3 now claims each
+  non-null row is onto an existing `units.functions` name and only null rows carry `why_none`.
+- DECISION (I1b, item 3): the rules list of `registration_v3.json` names R09 as `c:no_cas_skipped` beside
+  `c:case_distinct`. Alternative: no tag (the list is descriptive). Reversible by: the one list entry and `--emit`.
+- Diagnosis (not cleared here): `test_m06_w27_coverage` (4) and `test_l01_retake` (6 errors) snapshot the installed
+  build under v1/v2 through `v2_binder()`. Since I1, `MODEL_BASES` puts `syn001.column` on SYN-001's basis, which
+  `v2_binder()` keeps, and `list_models` lists it; v1/v2's model table has no row for it (R-805: v3 only), so v1/v2
+  refuse (`unregistered model ids ['syn001.column']`, `list_models-only ['syn001.column']`,
+  `list_models_sha256` moved). v3's rows cannot clear a v1/v2 test, and S4 does not either. OPEN (design lane,
+  extends R-837): `v2_binder()` also restricts the models (and `list_models`) to v1's model table — default; or these
+  tests are amended under §8.3. The thermal models will meet the same refusal when they enter `MODEL_BASES`.
+- S4 (acceptance 4, next WO, after the thermal registry commit): `snapshot.build_snapshot(registration_version=3)` of
+  the installed build, then classify the 225 development rows under version 3 with no refusal and record the counts
+  (`benchmarks/m06/w27`, S11.A40; register S4's SHA-256 in W27v3-R08).

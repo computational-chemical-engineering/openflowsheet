@@ -1,8 +1,8 @@
 # W27 registration, version 3 — S11's bases, the route key, and the column row
 
 **Status:** transcribed 2026-10-27 by the build lane (S11 WO-A4, branch `wp/S11-a`) from the S11 design note
-`docs/derivations/S11-design.md` §4.10, which is the normative text (ADR 0050 D9, register R-808), as amended by its §9
-and by `docs/derivations/S11-units-design.md` §5.4 item 2. Where this document says more than §4.10, the addition is a
+`docs/derivations/S11-design.md` §4.10, which is the normative text (ADR 0050 D9, register R-808), as amended by its §9,
+by `docs/derivations/S11-units-design.md` §5.4 item 2 and §4.10, and by the S11 rulings item 3 (R-832, W27v3-R09). Where this document says more than §4.10, the addition is a
 build-lane reading, marked **(reading)** and logged in `docs/S11A_DECISIONS.md`; the design lane may overrule it.
 **Applies to:** W27 coverage classification when a caller selects registration version 3. The next release's preflight
 and release gate select it (W27v3-R01). **Versions 1 and 2 are unchanged**: this document edits none of their files.
@@ -17,9 +17,10 @@ self-claim (§6) makes it exit 2 and write nothing.
 
 - **Version 2** is `docs/derivations/W27-registration-v2.md` with `registration_v2.json`. **Version 3** is version 2
   with the rules of §4 replacing or extending the rules they name. Every other version 2 rule stands unchanged
-  (W27v2-R04, the serving rule; W27v2-R08, the spelling rule; the maps, the sample, scoring).
-- Numbering: **W27v3-R01…R08** are §4.10's rules, **W27v3-A01…A08** are registered states, and **GC-V3-1…6** are
-  generator self-claims. S11's own assertions S11.A30–A33 (§5.3) are what the build lane's tests check.
+  (W27v2-R04, the serving rule; W27v2-R08, the spelling rule, except as W27v3-R09 restricts it; the maps, the sample,
+  scoring).
+- Numbering: **W27v3-R01…R08** are §4.10's rules and **W27v3-R09** is R-832's, **W27v3-A01…A09** are registered
+  states, and **GC-V3-1…6** are generator self-claims. S11's own assertions S11.A30–A33 (§5.3) are what the build lane's tests check.
 - Every expected value is discrete (a class, a provider id, a reason triple, a refusal string). Comparison is exact
   equality. No tolerance applies anywhere.
 
@@ -57,6 +58,10 @@ members.
 - **W27v3-R04.** `model_functions` gains `syn001.column: {function: null, offers: [], why_none:
   "column_function_unregistered"}`. Registering a `column` function against the archive is a workstation follow-on.
   **(reading)** `model_none_reasons` gains the meaning of `column_function_unregistered` (`registration_v3.json`).
+  S11 units design §4.10 adds seven rows, each with `offers: []` and onto an existing function of
+  `registration.json` `units.functions`: `thermal.heater` → `heater`, `thermal.valve` → `valve`, `thermal.mixer` →
+  `mixer`, `thermal.flash` → `flash`, `thermal.pump` → `pump`, `thermal.compressor` → `compressor`, `thermal.turbine`
+  → `expander`.
 - **W27v3-R05.** `PROVIDER_LINES_V3(basis, ids, every)`:
   - `pr-c1-v1` and `pr-lib-v1` keep their v2 lines;
   - every other basis takes `ROOT / basis.record_source`, reading `{id, name, formula, cas, synthetic}` from each
@@ -77,9 +82,12 @@ members.
   model per provider, so every route of one provider in a build carries the same models.
 - **W27v3-R08.** Snapshot S4 is the S11 build's routes (127), generated at WO-I1b (S11 §9) and registered with its
   SHA-256. It is not part of this transcription.
+- **W27v3-R09 (W27v2-R08 under version 3; R-832).** A non-synthetic registry record with no CAS RN (`cas` absent, null
+  or empty) takes no part in W27v2-R08: it can match no case component (W27-R15), so no alias can close a collision
+  with it. Records with a CAS RN keep W27v2-R08 unchanged. Versions 1 and 2 are unchanged.
 
-**Effects (S11 §4.10).** The Wilson records carry no CAS RN (R-706), so its route serves no case; CoolProp's method
-matches no case; IAPWS-95's route serves the property side of IDAES `iapws95` cases.
+**Effects (S11 §4.10).** The Wilson records carry no CAS RN (R-706), so W27v3-R09 skips them and the route serves no
+case; CoolProp's method matches no case; IAPWS-95's route serves the property side of IDAES `iapws95` cases.
 
 The provider table and lines:
 
@@ -102,15 +110,17 @@ The provider table and lines:
 | Snapshot | Routes, in snapshot order | Why it is in the list |
 | --- | --- | --- |
 | B | `pr-c1-v1` (the nine `c1.*` models), `iapws95-v1` (H2O), `wilson-ig-v1` (the three records; routing models and `syn001.column`), then 123 `coolprop-heos-v1` routes, one per record of `s07/components.yaml` | S11's bases beside C1; the routing models are `syn001.feed_source`, `product_sink`, `stream_splitter` |
-| Bi | B without the Wilson route (and without `syn001.column`) | IAPWS-95 serving an `iapws95` case (see §9 Q-1 for why not on B) |
+| Bi | B without the Wilson route (and without `syn001.column`) | IAPWS-95 serving an `iapws95` case without the Wilson route (A04; A08 is the same case on B) |
 | Bdup | B with the CO2 CoolProp route listed twice | duplicate route key |
 | Bsrc | B with the IAPWS-95 route's `record_source` removed | a route with no key |
 | T | `pr-c1-v1`, then two `zz-test-pr` routes over the library's H2 and H2O, record sources `benchmarks/zz-test/b.yaml` (feed, product, `c1.tp_heater`) and `…/a.yaml` (the same plus `syn001.tp_heater`) | two routes of one provider that differ only by record source |
 | Tr | T with the two `zz-test-pr` routes reversed | the order must not decide |
+| S1co | version 2's S1co (W27v2-A16) with each route's `record_source` added | W27v2-R08 still refuses records that have a CAS RN (W27v3-R09) |
 
 Every S11 route admits liquid and vapour for each component (the bases' `describe().phases`). The cases are version
 2's **H2** and **H2O** (W27-A13's base row, a PR vapour package), and **H2O-iapws**: the base row declaring H2O
-with the one package `idaes.models.properties.iapws95.Iapws95ParameterBlock` in liquid and vapour.
+with the one package `idaes.models.properties.iapws95.Iapws95ParameterBlock` in liquid and vapour; and version 2's
+**co** (W27v2-A16's case, which spells `co`).
 
 ### 5.2 The states (`registration_v3.json#/states`)
 
@@ -128,7 +138,8 @@ the Heater's.
 | W27v3-A05 | 3 | T | H2O | `CANDIDATE`, judged on `zz-test-pr`; reasons: none; Heater models: `c1.tp_heater`, `syn001.tp_heater` | `first_serving`, `record_source_ignored` | two routes of one provider differ only by record_source; a tie goes to the smaller key (benchmarks/zz-test/a.yaml), not the first route |
 | W27v3-A06 | 3 | Tr | H2O | `CANDIDATE`, judged on `zz-test-pr`; reasons: none; Heater models: `c1.tp_heater`, `syn001.tp_heater` | `record_source_ignored` | the same build with the two routes reversed: the order does not decide |
 | W27v3-A07 | 2 | T | H2O | refused: `duplicate provider ids ['zz-test-pr']` | — | version 2 is unchanged: it refuses two routes of one provider id |
-| W27v3-A08 | 3 | B | H2O-iapws | refused: `archive spellings of registry chemicals not aliased ['H2O->None']` | — | §9 Q-1 (open): version 2's spelling rule refuses the Wilson H2O record, which has no CAS RN, once a case spells H2O |
+| W27v3-A08 | 3 | B | H2O-iapws | `UNIT_UNAVAILABLE`, judged on `iapws95-v1`; reasons: `UNIT_UNAVAILABLE` `Heater` `no_model:heater units=fs.heater`; Heater models: none | `cas_less_refused` | A04's outcome, now on B: the Wilson records carry no CAS RN, so W27v3-R09 skips them (R-832) |
+| W27v3-A09 | 3 | S1co | co | refused: `archive spellings of registry chemicals not aliased ['co->630-08-0']` | `spelling_rule_off` | W27v2-A16's refusal under version 3: records with a CAS RN keep W27v2-R08 (R-832) |
 <!-- s11:end:states -->
 
 ### 5.3 S11's assertions (the build lane's tests, `tests/test_s11_w27_v3.py`)
@@ -149,12 +160,14 @@ no `SnapshotUnsupportedError`. S11.A40 (that snapshot equals S4) is WO-I1b's.
 - **GC-V3-1** — version 1's and version 2's registrations, documents and generators have their pinned SHA-256.
 - **GC-V3-2** — the version 3 provider table is version 2's plus exactly the rows of R02 (three, and D5's fourth), onto registered
   methods; `pure_helmholtz` is new and matches no case package; every provider has a line.
-- **GC-V3-3** — `syn001.column` is new to the model table and its `why_none` is a new registered reason; the CoolProp
+- **GC-V3-3** — `syn001.column` and the seven `thermal.*` rows are new to the model table; the column's `why_none` is
+  a new registered reason and each thermal row is onto an existing function with `offers: []`; the CoolProp
   file holds 123 records with distinct ids; the IAPWS-95 file holds H2O with CAS `7732-18-5`; B has 126 routes.
 - **GC-V3-4** — every state of §5.2 gives its hand-written outcome; every listed mutant changes its state, and each
   mutant is caught by at least one state. The mutants: `provider_table_v2` (no added rows), `column_unregistered`
   (no R04 row), `duplicate_provider_refusal` (v2's (d)), `no_key_refusal`, `record_source_ignored` (a key without
-  `record_source`), `first_serving` (snapshot order).
+  `record_source`), `first_serving` (snapshot order), `cas_less_refused` (W27v2-R08 applied to CAS-less records, no
+  W27v3-R09) and `spelling_rule_off` (W27v2-R08 skipped for every record).
 - **GC-V3-5** — version 3 equals version 2 wherever version 2 accepts: on every version 2 registered snapshot × case
   with each route's record source added, and on the 225 development rows at the committed snapshot.
 - **GC-V3-6** — the generated blocks of this document are current (`--check`).
@@ -163,8 +176,8 @@ no `SnapshotUnsupportedError`. S11.A40 (that snapshot equals S4) is WO-I1b's.
 
 - **On committed records:** none. Versions 1 and 2 and every W27 record keep their bytes. `registration_v3.json` is
   new and holds no held-out id.
-- **On the next release's W27 run:** it selects version 3 and reads the S11 build's 127 routes. See §9 Q-1 before
-  that run.
+- **On the next release's W27 run:** it selects version 3 and reads the S11 build's 127 routes. The Wilson route
+  serves no case (W27v3-R09); the release's W27 record states this conservative under-count (R-832).
 
 ## 8. What this does not establish
 
@@ -174,7 +187,7 @@ no `SnapshotUnsupportedError`. S11.A40 (that snapshot equals S4) is WO-I1b's.
 
 ## 9. Open questions, each with a recommended default
 
-- **Q-1 (design lane; found while transcribing).** The Wilson records carry no CAS RN, and version 2's spelling rule
+- **Q-1 (ruled: R-832; W27v3-R09, A08 restated, A09).** The Wilson records carry no CAS RN, and version 2's spelling rule
   (W27v2-R08, unchanged here) refuses a non-synthetic record whose id, name or formula an archive case spells, unless
   that spelling's alias is the record's CAS RN. Measured on this build's records against `case_facts.json`'s
   spellings: the Wilson route alone gives five, `CH3OH->None`, `H2O->None`, `ethanol->None`, `methanol->None` and
@@ -182,9 +195,10 @@ no `SnapshotUnsupportedError`. S11.A40 (that snapshot equals S4) is WO-I1b's.
   classification, which contradicts §4.10's stated effect ("its route serves no case"). State W27v3-A08 registers
   the refusal as the rules now give it; an amendment that settles Q-1 changes that state. *Default proposed:* a record
   with no CAS RN is skipped by the spelling rule (it can match no case component, by W27-R15's CAS identity), as an
-  amendment to this document; alternatively the Wilson records gain CAS RNs (R-706 holds them back). Not decided here.
+  amendment to this document; alternatively the Wilson records gain CAS RNs (R-706 holds them back). *Ruled (R-832):*
+  the default, as W27v3-R09; giving the Wilson records CAS RNs stays with R-706.
 - **Q-2 (done at WO-D5).** `wilson-ig-v2 → activity_coefficient` and its line are added with WO-D5 (S11 §9).
 
 ## 10. Decision-register entries
 
-R-808 (`docs/decision-register.md`).
+R-808, R-832 (`docs/decision-register.md`).

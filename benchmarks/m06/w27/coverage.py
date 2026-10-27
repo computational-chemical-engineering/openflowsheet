@@ -976,9 +976,9 @@ def _check_snapshot_v3(
     case_facts: Mapping[str, Any],
     provider_methods: Mapping[str, str] | None,
 ) -> None:
-    """W27v2-R07 with version 3's tables (W27v3-R02, R04) and W27v3-R06's (d): two routes with one
-    key are refused, in place of two routes with one provider id. A route with no
-    `record_source` has no key and is refused."""
+    """W27v2-R07 with version 3's tables (W27v3-R02, R04), W27v3-R09's spelling rule for (c) and
+    W27v3-R06's (d): two routes with one key are refused, in place of two routes with one
+    provider id. A route with no `record_source` has no key and is refused."""
     methods = registration.provider_methods(3) if provider_methods is None else provider_methods
     model_functions = registration.model_functions(3)
     unknown_models = sorted(
@@ -987,7 +987,15 @@ def _check_snapshot_v3(
     unknown_providers = sorted(
         r["provider_id"] for r in snapshot["routes"] if r["provider_id"] not in methods
     )
-    unaliased = _unaliased_v2(snapshot, case_facts)
+    # W27v3-R09: a non-synthetic record with no CAS RN can match no case component (W27-R15), so
+    # it takes no part in W27v2-R08; records with a CAS RN keep W27v2-R08 unchanged.
+    keyed = {
+        "routes": [
+            {"components": [c for c in r["components"] if c["synthetic"] or c.get("cas")]}
+            for r in snapshot["routes"]
+        ]
+    }
+    unaliased = _unaliased_v2(keyed, case_facts)
     problems = []
     if unknown_models:
         problems.append(f"unregistered model ids {unknown_models}")
