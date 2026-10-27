@@ -1723,9 +1723,7 @@ def _basis_refusal(model_id: str, basis: ComponentBasis) -> Unbound:
     bases = MODEL_BASES[model_id]
     own = ", ".join(sorted(bases))
     noun = "bases" if len(bases) > 1 else "basis"
-    hint = (
-        f"{model_id} binds on the {own} {noun} only, not on this revision's {basis.provider_id}"
-    )
+    hint = f"{model_id} binds on the {own} {noun} only, not on this revision's {basis.provider_id}"
     other = _SAME_FUNCTION.get(model_id)
     if other is not None and basis.provider_id in MODEL_BASES[other]:
         hint += f"; on {basis.provider_id} the same function is {other}"
@@ -1739,9 +1737,15 @@ def _basis_refusal(model_id: str, basis: ComponentBasis) -> Unbound:
 #: `syn001.column` or a `thermal.*` model is not admitted on a basis), appended to R-288's hint.
 #: No pair between SYN-001 and C1 of a model outside the `thermal.*` family reads it.
 _UNADMITTED: Final[Mapping[str, str]] = {
-    "gamma_phi": "its EO face reads lnK and h_<c>; γ–φ faces are S11c",
+    # I1b (orchestrator ruling): the first pass's "S11b"/"S11c" texts restated to the admission
+    # S11 ends with; the pairs are those of §4.7's "—" cells that no rewritten reason covers.
+    "gamma_phi": (
+        "its EO face reads lnK and h_<c>, and S11 gives γ–φ faces to the five K02/T05 units "
+        "only (L-GP-1)"
+    ),
     "pure_fluid": (
-        "pure-fluid units are S11b (two-phase pure-fluid streams are not representable in nTP-v1)"
+        "pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; "
+        "none of them has this function"
     ),
     "c1_physics": "the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
     "column_vapour": "pr-c1-v1 is vapour-only (S02 §0)",
@@ -1802,7 +1806,7 @@ def _unadmitted(model_id: str, provider_id: str) -> str | None:
         namesake = _THERMAL_NAMESAKE.get(model_id)
         if namesake is not None:
             return _UNADMITTED["declared_regime"].format(namesake=namesake)
-        return _UNADMITTED["pure_fluid"]
+        return _UNADMITTED["pure_fluid" if model_id.startswith("syn001.") else "c1_physics"]
     if provider_id == _WILSON:
         if model_id == _LIQUID_PUMP.model_id:
             return _UNADMITTED["no_volume"]

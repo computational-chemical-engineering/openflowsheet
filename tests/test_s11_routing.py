@@ -289,11 +289,16 @@ def test_a09_a_wilson_revision_without_its_records_is_unavailable(
 
 # -- S11.A13, S11.A82: the admission matrix and its refusals -----------------------------------
 
-#: The first pass's §4.4 reasons, by the pair's class.
+#: The first pass's §4.4 reasons, restated at I1b to S11's final admission (orchestrator ruling;
+#: they said "S11b"/"S11c"), by the pair's class.
 PURE_FLUID = (
-    "pure-fluid units are S11b (two-phase pure-fluid streams are not representable in nTP-v1)"
+    "pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; "
+    "none of them has this function"
 )
-GAMMA_PHI = "its EO face reads lnK and h_<c>; γ–φ faces are S11c"
+GAMMA_PHI = (
+    "its EO face reads lnK and h_<c>, and S11 gives γ–φ faces to the five K02/T05 units only "
+    "(L-GP-1)"
+)
 C1_PHYSICS = "the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)"
 #: SHA-256 over the refused (model, basis) pairs between SYN-001 and C1 of the models whose
 #: `MODEL_BASES` S11 does not change, each as `model|provider|detail|hint`, measured at the base
@@ -440,7 +445,7 @@ def _expected_reason(model: str, provider: str) -> str | None:
     if provider in PURE:
         if model in THERMAL_NAMESAKE:
             return DECLARED_REGIME.format(THERMAL_NAMESAKE[model])
-        return PURE_FLUID
+        return PURE_FLUID if model.startswith("syn001.") else C1_PHYSICS
     if model == "thermal.pump" or model == "syn001.liquid_pump":
         return NO_VOLUME
     if model in LIFTED_NAMESAKE:

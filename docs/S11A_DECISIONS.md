@@ -401,3 +401,9 @@ commit). Not done, in order:
   `MODEL_BASES` S11 does not change hash to `3bdca9c1…`, and the branch reproduces it byte for byte. The eight moved
   pairs (three routing models, the five γ–φ units, on C1) and the new column/thermal pairs are asserted literally.
   `AMENDED_TESTS` += `test_m02_join`'s three refusal tests (feed_source, stream_splitter, valve), citing R-841.
+- DECISION (orchestrator ruling): the first-pass `_UNADMITTED` reasons that said "S11b"/"S11c" → restated to the
+  admission S11 ends with: `syn001` exchanger/separator/reactors on a pure fluid read "pure-fluid streams are
+  declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function"; on Wilson "its
+  EO face reads lnK and h_<c>, and S11 gives γ–φ faces to the five K02/T05 units only (L-GP-1)"; a non-routing
+  `c1.*` model on a pure fluid now reads C1's own-physics reason (ADR 0050 D3), as it does on Wilson. Alternative:
+  keep the first-pass texts. Reversible by: the two `_UNADMITTED` strings and the one `c1_physics` branch.
