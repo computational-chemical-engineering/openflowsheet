@@ -178,6 +178,10 @@ def _ports(machine: str) -> tuple[Port, ...]:
     )
 
 
+#: Machine -> its ports, as the unit's `ports()` gives them (read by the binder's signatures).
+PORTS: Final[dict[str, tuple[Port, ...]]] = {machine: _ports(machine) for machine in MODEL_IDS}
+
+
 @dataclass(frozen=True)
 class ThermalMachine:
     """One pump, compressor or turbine instance; `isentropic_phase` is the turbine's choice."""

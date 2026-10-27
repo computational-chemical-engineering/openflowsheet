@@ -1,4 +1,4 @@
-# S11 track C — build decisions (WO-C1…C3)
+# S11 track C — build decisions (WO-C1…C5)
 
 Normative design: `docs/derivations/S11-units-design.md` (ADR 0051 Proposed; R-813…R-821). One line per open
 choice; the evidence is in the named test or module. Batched for the package's single `reviewer` pass.
@@ -32,6 +32,16 @@ choice; the evidence is in the named test or module. Batched for the package's s
 - DECISION C3-6: A55's dry fluid → n-Pentane (S07 table, tier B; Q19), saturated vapour 1 → 3 bar: `isentropic_state_two_phase(U1)`; the `pure-sat/sat` state agrees with CoolProp's PS flash (beta_s 4.7e-15 relative, T 1.3e-12 K). Alternative: none needed.
 - DECISION C3-7: §4.4's machine bind refusals are also enforced at construction (`SpecificationError`, `specification_unsupported(<U>.inlet|outlet|isentropic_phase)`, `efficiency_outside_interval`), as C2's heater does, so a directly built unit cannot hold one; `isentropic_phase` on a pump or compressor is refused the same way. A turbine with a vapour outlet may declare `isentropic_phase = vapor_liquid` (`pure-*/sat`; tested at eta = 0.3 and 0.1). Alternative: leave them to C4's binder only. Reversible by: `ThermalMachine.__post_init__`.
 
+## WO-C4 (binding)
+
+- DECISION C4-1: where the one `_PARAMETER_KINDS` entry (`outlet_vapor_fraction` → `dimensionless`, units design §2.4) goes → after `efficiency`, away from the table's end where I1's sixteen column entries go (R-825; no key collides, so the risk is only textual). Alternative: append. Reversible by: moving the line.
+- DECISION C4-2: the thermal builders do not call `instance_contract`, whose converse of R4 refuses a `vapor_liquid` outlet of any model that is not an `outlet`-style lifting model in `SPLIT_RULES` → `thermal_binding` reads parameters and wiring itself with the binder's codes (`parameter_unsupported/missing`, `port_unwired`, `port_direction_unsupported`, `port_multiplicity_unsupported`) and reuses `revision_binding`'s private `_column`, `_pin`, `_pinned`, `_missing_choice_hint`. Alternative: teach `instance_contract` the pure-fluid form (track A's file; I1b). Reversible by: the helpers `_parameters`/`_wired`.
+- DECISION C4-3: the turbine's `isentropic_phase` ("a choice given as `syn001.heat_exchanger` takes `specification`") → not expressible: the exchanger chooses by which pin is set, a revision parameter is a numeric Quantity, and §2.4 admits one new parameter name only. The builder leaves it at its default, the outlet's form; a parameter `isentropic_phase` is `parameter_unsupported`; the §4.4 row "`isentropic_phase = vapor` with outlet `vapor_liquid`" is enforced at construction only (C3-7). Escalated as Q-C2. Alternative: a numeric code parameter (a new interface). Reversible by: `_machine`.
+- DECISION C4-4: the heater's optional parameters `pressure_drop` (default 0) and `outlet_vapor_fraction` have no `ModelSignature` field → read by the builder, unlisted (as track B's `column_binding` leaves the column's optional parameters); the one-of is reported as `specification_missing(<U>.specification)` / `specification_conflict(<U>.specification)` (the choice's options plus the parameter), the missing hint ending "; or give the parameter outlet_vapor_fraction (a vapor_liquid outlet)". Alternative: a signature field (frozen `ModelSignature`, served by `list_models`). Reversible by: `_heater`.
+- DECISION C4-5: the §4.4 refusals come from the units' construction refusals (C2, C3-7), translated `SpecificationError("specification_unsupported(...)\n<hint>")` → `RevisionError("unsupported", code, hint)`, so code and hint have one source; the heater's one-of and a Wilson machine's non-vapour port (L-GP-2) are the builder's own, before construction. Every other construction refusal (`efficiency_outside_interval`) stays the binder's `value_outside_model_domain`, as the SYN-001 pump's. Alternative: re-state each check in the binder. Reversible by: `_construct`.
+- DECISION C4-6: parameters → `thermal.mixer` none (the K02 mixer's zero-only `pressure_drop` is not carried; §4.4 says only "adiabatic"), `thermal.valve` none, `thermal.flash` requires `pressure_drop` (as `syn001.ph_flash`), the machines require `efficiency`. Alternative: the mixer accepts `pressure_drop = 0`. Reversible by: the signatures.
+- DECISION C4-7: configuration → `{"specification": <pin or parameter name>}` for the heater plus each material port's form (`LIQUID|VAPOR|SATURATED`) for all seven, so a form or mode change moves the label (tested). `BASES`: the two pure-fluid bases; compressor and turbine gain `wilson-ig-v2` at D5. Reversible by: `_port_forms`, `BASES`.
+
 ## Open questions for the design lane
 
 - Q-C1 (C1-4): A46 asks for a central difference within 1e-6 of the saturation range's ends at a 1e-6 relative step and
@@ -39,11 +49,19 @@ choice; the evidence is in the named test or module. Batched for the package's s
   admissible step. Default taken: the measured floor is added there (bounded ≤ 1e-4). Needs: confirmation, or a
   restated A46 clause for the range ends.
 
-## Open observations for the reviewer (C3)
+- Q-C2 (C4-3): the turbine's `isentropic_phase` cannot be stated in a revision (no string-valued parameter; §2.4 adds
+  one parameter name). Default taken: the outlet's form; a wet isentropic state with a vapour outlet is reachable by
+  direct construction only. Needs: accept the restriction, or name the encoding (a parameter name and its values).
+
+## Open observations for the reviewer (C3, C4)
 
 - O-C3-1 (C1 kernel, not changed): the `h` closure at 22.85 MPa, h* ≈ 47.8 kJ/mol (supercritical, near the
   pseudo-critical line) returns `not_converged`: the root sits at the provider's LIQUID/VAPOR label switch at T_c
   (S05 §4.2), where the labelled h is discontinuous. 4 of 11 200 grid outcomes (C3-1's grid); before and after C3-1.
+
+- O-C4-1 (R4, not changed): a revision declares one phase per port, so a revision's `thermal.mixer` cannot take a
+  liquid and a vapour inlet together (`port_phase_ambiguous(<U>.inlet)`); S11.A56's first case stays a
+  direct-construction case. C6's TH-R1 (both inlets liquid) is unaffected.
 
 ## Handoff after WO-C3 (2026-10-27; C3 done, C4 not started)
 
