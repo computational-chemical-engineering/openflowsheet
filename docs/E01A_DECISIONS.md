@@ -64,6 +64,22 @@ I1's.
   note's field, or editing v2 (moves a registered policy file). Owner to decide: I1 / design lane.
   (`test_m07_journey.py::test_a21_…` failed only on the uncommitted tree: it compares HEAD to the working tree.)
 
+- **ESC-A1 ruled (orchestrator, 2026-10-27).** DECISION: E01 sha256 names (ESC-A1) → an E01 addendum in ADDENDA, as
+  M04/M05 (`benchmarks/e01/numerical_policy_external.yaml`, id `E01-numerical-policy-external-v1`, schemas
+  `[assessment.schema.json]`, `exact_sha256: []` — `configuration_sha256` keeps M02's class; A5 adds
+  `assessment-report.schema.json` with `assessment_sha256`, `state_sha256`, `regime_sha256`, which the audit lets an
+  addendum list only once a schema declares them). Alternative: rename the field. Reversible by: reverting that
+  commit. v2 bytes unchanged (`--check`: equals, sha256 `6b449911…d707c`). Amended on purpose (ADR 0052):
+  `tests/test_m05_study_record.py::test_the_m05_addendum_is_audited_after_m02s_and_its_partition_holds` pinned
+  `ADDENDA` to `[m02, m05]`; now `[m02, m05, e01]`. **For I1:** add that node id to `AMENDED_TESTS`
+  (`scripts/s11_identity.py`, S11's file, not edited here).
+- **ESC-A2 (open, for A5/B2/I1).** `study.schema.json` and `optimization-report.schema.json` are in v2's own partition
+  (no addendum names them), and v2's audit demands `declared == float_digests ∪ exact_sha256` there. §4.11's additive
+  `assessment {assessment_sha256, regime_sha256}` in those two schemas will therefore fail `--check` unless v2 moves
+  or the auditor learns that an addendum may classify names in schemas it does not own. Proposed: an E01-addendum key
+  `classifies_in: [study.schema.json, optimization-report.schema.json]` whose names v2's audit subtracts — an auditor
+  change, so a design-lane ruling. Not needed until those schemas are edited.
+
 ## Facts confirmed before WO-A3 (2026-10-27)
 
 - FACT (Q7, pinned release): IDAES-PSE **2.13.0** (PyPI upload 2026-09-16, > 2 weeks old; latest). Wheel
