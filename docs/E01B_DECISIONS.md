@@ -87,5 +87,48 @@ packages; URL and retrieval date for data). The design-lane ruling round is fold
   is left to I1 with a ruling; nothing was changed. Until then a wheel does not carry the assessment data.
 - **ESC-B3 (rights leak through θ listing).** The report's `uncertainty.parameters` lists the value of every θ that
   carries a declared range; a user who declares a range on `asm:lca.q.<forbidden table>.…` would print a forbidden
-  score. B2 refuses such a range (see WO-B2), but `report.propagate` (A's) still lists it; a one-line redaction there
-  is the fix.
+  score. `report.propagate` is A's file; a redaction there (skip, or list by id only, every θ of a table whose
+  rights forbid redistribution) is the fix. A28 passes on documents without such a range.
+
+## WO-B2 (LCA contributor)
+
+- FACT (P4 vs track A's hand superposition, A25 hand clause): `impact.climate_change_test.rate` 0.024320113943021117,
+  `.annual` 700419.2815590082, `.per_fu` 1.3499723647198096 — relative difference **0.0** for all three against
+  `benchmarks/e01/lca_hand/lca_hand.yaml` (tolerance 1e-12); inventory a_k within 1e-12; electricity net negative.
+- FACT (A26): doubling every `amount` doubles rate, annual and per_fu bitwise. `∂h/∂x` equals
+  `Σ_k (q_k·α_k)·∂φ_k/∂x` bitwise in construction order — CasADi's reverse sweep associates `(q·α)·∂φ`; the
+  association `q·(α·∂φ)` differs by 1 ulp at `T.W` (1.4442064292114692e-07 vs …95e-07), so the test reads the
+  design's formula left to right, with `∂φ_k/∂x` from the same program at `α_k = 1` exactly. `∂h/∂q_k = a_k` exactly.
+- FACT (A27): 1 kg/s through an emission stream mapped to `ch4_fossil_air` gives exactly 29.8 kg CO2-eq/s.
+- FACT (A28): with a `redistribution: forbidden` table the report and an export (document + report + `exportable`)
+  carry its id and sha256 and none of its scores (byte search on `repr` and 12-character prefixes).
+- DECISION (convention, track A's question 6): `a_k = amount·φ_k/SI(per)`, electricity net, as A5's expectations.
+  §4.8.1's "the table activity's `si_per_unit` converts it" does not contradict it: the schema gives `amount` no unit
+  of its own, so it is in activity units and only `per`'s SI factor enters; `si_per_unit` stays in the table for the
+  adapter and documentation. No discrepancy to stop on. Alternative: `amount` in SI of the activity's product,
+  divided by `si_per_unit` (needs a schema field). Reversible by: `inventory._alpha`.
+- DECISION: a utility's φ comes from the cost plan (`ctx.earlier["cost"]`): the drive's consumption is the cost
+  output `size.<U>.drive.power` (so W/η_m when the set has a motor), generation the turbine item's `−W·η_gen`, a
+  heating/cooling utility `Σ|Q|` of its users; `plan_sizing` is re-run only to enumerate the items. Without a cost
+  plan the utility exchanges are withheld. Alternative: re-plan sizing and drives inside the LCA contributor.
+  Reversible by: `inventory.plan_inventory`.
+- DECISION: exchange ids `utility.<u>.<activity>`, `material.<s>.<activity>`, `emission.<s>.<c>` (repeat → `.<j>`);
+  θ ids `asm:lca.alpha.<k>`, `asm:lca.q.<table>.<m>.<activity>`, `asm:lca.c.<table>.<m>.<flow>`,
+  `asm:lca.allocation.factor`; construction order utilities then materials, each in document order.
+  Reversible by: inventory/impact.
+- DECISION: `lca.categories` absent → every category of the listed tables (unit-score first). A category some used
+  table lacks, or whose unit differs across tables, withholds that category (refusal `LCA_ACTIVITY_UNKNOWN` /
+  `LCA_FLOW_UNKNOWN(<table>.<m>)`), never a silent zero. Reversible by: `impact._blocked`.
+- DECISION (allocation forms §4.8.1 leaves open): `substitution` multiplies by nothing — the avoided activities are
+  exchanges the document declares with a negative `amount` (the contributor never flips a sign itself); `mass` uses
+  total stream masses of the FU connection and of `products` (default: materials with role product/co_product);
+  `economic` uses the cost contributor's price θ with the flow matching the price's unit; a non-positive
+  denominator at the planning state refuses every impact `ASSESSMENT_EVALUATION_FAILED(lca.allocation)`; a missing
+  price or FU → `METRIC_UNDEFINED(lca.allocation)`. Alternative: substitution flips co-product exchanges.
+  Reversible by: `impact.allocation`. (Design lane: the substitution sign is a semantic choice.)
+- DECISION: `.annual` uses the cost plan's θ `asm:operation.hours_per_year`, else declares it (document or default);
+  `.per_fu` divides by the FU stream's mass (kg/s) or, for `molar_total`, amount (mol/s). Reversible by: impact.
+- DECISION: `per` that cannot measure the boundary quantity (a utility with a mass `per`, a material with an energy
+  `per`) → `LCA_ACTIVITY_UNKNOWN(<path>.per)` and the impacts withheld. Reversible by: `inventory.technosphere`.
+- DECISION: the contributor class lives in `lca/section.py` beside its section (the note names no file for it);
+  it registers as `lca`. Reversible by: moving it.
