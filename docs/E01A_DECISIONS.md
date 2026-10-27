@@ -63,3 +63,57 @@ I1's.
   own policy table classifying the assessment schemas' names, so v2's content does not move. Not taken: renaming the
   note's field, or editing v2 (moves a registered policy file). Owner to decide: I1 / design lane.
   (`test_m07_journey.py::test_a21_…` failed only on the uncommitted tree: it compares HEAD to the working tree.)
+
+## Facts confirmed before WO-A3 (2026-10-27)
+
+- FACT (Q7, pinned release): IDAES-PSE **2.13.0** (PyPI upload 2026-09-16, > 2 weeks old; latest). Wheel
+  `idaes_pse-2.13.0-py3-none-any.whl` sha256 `2b67301afe6dc0c2f0e7342253ebcbab6e91607c0204d9bd663a2735f1ec85f9`
+  (matches PyPI); obtained by `pip download --no-deps --only-binary=:all:` into a scratch dir, never installed.
+  `idaes/models/costing/SSLW.py` (1770 lines) sha256 `362b0a22e78ad578c4ce6408224aa6193fc6330cb7041fc1d4aaee0e060b1184`;
+  `idaes_pse-2.13.0.dist-info/licenses/LICENSE.md` sha256 `4fdde00bd663a045a688899c7e6924bd3b747204518e75540273c97f4bc98fa0`
+  (BSD-3-Clause text, "IDAES PSE Framework Copyright (c) 2018-2026 … All rights reserved."; METADATA `License: BSD`);
+  `idaes/core/base/costing_base.py` sha256 `cdd71f362a2b59e5c1ed4261e8811f7fc749d0999aba0d01d32ad1999b0bfc38`.
+  SSLW.py's header notice (lines 1–12) is the verbatim notice for `sslw-idaes-v1.json`'s `source.notice`.
+- FACT (Q7, coverage): SSLW 2.13.0 costs `cost_heat_exchanger` (HXType floating_head, fixed_head, Utube, Kettle_vap;
+  10 materials; tube length 8/12/16/20 ft), `cost_vessel` / `cost_vertical_vessel` / `cost_horizontal_vessel`
+  (10 materials; trays Sieve/Valve/BubbleCap, 5 tray materials; platforms and ladders), `cost_fired_heater`,
+  `cost_compressor` (Centrifugal/Reciprocating/Screw; drives ElectricMotor/SteamTurbine/GasTurbine),
+  `cost_fan`, `cost_blower`, `cost_turbine`, `cost_pump` (Centrifugal/ExternalGear/Reciprocating; motor
+  open/enclosed/explosion_proof), `cost_pressure_changer`. Every day-one family of §4.4 has an SSLW entry
+  (exchangers, drums/vessels, column shell + trays, pump + motor, compressor, turbine, reactor as vessel).
+  Base: "Chemical Engineering base cost index of 500" (`USD_CE500`, SSLW.py:343).
+- FACT (Q7, CE 500 → year): IDAES's own currency table (`costing_base.py:81–85`) gives CEPCI 2005 = 468.2,
+  2006 = 499.6, 2007 = 525.4: **2006** is the year whose index is nearest 500. The note's default stands
+  (`year_equivalent: 2006`, limitation `INDEX_BASIS_MAPPED`). CEPCI values are recorded here as a fact only, never
+  shipped (D6).
+- FACT (Q13, byte pins): no test pins the bytes or hash of `schemas/study.schema.json`,
+  `schemas/optimization-report.schema.json` or `schemas/registry.json`. `registry.json` is checked structurally
+  (`test_t08_w4_package_data.py` A48: sorted, one name per line, equals the schema directory and the published set):
+  passes with `assessment.schema.json`. Pins that do bite: (i) T08's sha256 **property-name** partition (ESC-A1);
+  (ii) `test_t08_w4_package_data.py::test_the_package_data_patterns_cover_exactly_what_is_packaged` will fail when B
+  adds the `_data/assessment/**/*.json` glob unless `src/openflowsheet/resources.py` `PACKAGED` gains the path —
+  `resources.py` is in no track's ownership (escalate at B1/I1); (iii) M07's R3 carry pathspecs include all of
+  `src/openflowsheet` (`tests/test_m07_journey.py:796`), so the R3 carry identity of the release journey moves with
+  any E01 source file — an RC-time fact, not a test failure. `AMENDED_TESTS` stays empty so far.
+
+## Handoff (2026-10-27, context cap) — resume from here
+
+- **Done:** WO-A1 (commits `66b71db0` schema+registry, `1ea9bb60` core). `tests/test_e01_a_core.py` 19 passed;
+  ruff/format/mypy clean on `src/openflowsheet/assessment`. Protected-path diff vs `f8a68fed`: empty.
+  Schema-touching suite (37 files): 2463 passed, 5 failed = ESC-A1's 4 + m07 A21 (passes once committed).
+- **Not done:** WO-A2 (sizing), WO-A3 (cost data and forms). Pre-A3 facts above are confirmed; IDAES source is
+  re-obtainable with the same `pip download` (hash above). Nothing of A2/A3 is started.
+- **Next (A2):** `assessment/blocks.py` `VolumetricFlowBlock` (§4.4.3; read `thermo.PropertyProvider.evaluate_phase`
+  and the S11 saturation routine, record the names), `assessment/sizing/__init__.py` (`FAMILIES`, `register_family`)
+  and the families §4.4.1–§4.4.7 as `ContributionPlan` pieces using `program.Symbols`/`OutputDef`/`Theta` and
+  `regimes.RegimeEntry`/`AdmissibilityRow` (pattern: the `Toy` in `tests/test_e01_a_core.py`). The size regime
+  belongs to the cost entry (A3/A4), sizing outputs are `size.<item>.<q>`. Tests `tests/test_e01_a_sizing.py`:
+  A9 (Underwood numbers), A10 (hand case in §6.1), A13; A11/A12 need B4's hand cases.
+- **Next (A3):** `cost/forms.py`, `cost/sets.py`, `_data/assessment/cost/sslw-idaes-v1.json` (every number with
+  `source_line` into SSLW.py 2.13.0; notice = SSLW.py:1–12), `cost/index.py`, the three series files (BLS WPU11,
+  Eurostat C28 euro area, FRB G.5A) with licence text; read them with `importlib.resources.files("openflowsheet")
+  .joinpath("_data", "assessment", …)` (not `resources.packaged`, which refuses unlisted paths). A16–A19.
+- **API notes for A2+:** builders never branch on symbols; choices come from `ctx.regime.choice(id)` or the rule on
+  floats via `ctx.evaluate(state, [OutputDef…], theta, blocks)`; admissibility rows are `AdmissibilityRow(row_id,
+  build, nominal)` published as `adm.<entry>.<row_id>`; a refusal is `program.Refusal(code, target, detail)` in the
+  plan, never raised.
