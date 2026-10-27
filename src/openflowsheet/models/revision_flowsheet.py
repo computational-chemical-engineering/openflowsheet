@@ -252,6 +252,8 @@ _PARAMETER_KINDS: Mapping[str, str] = {
     "pressure_drop": "pressure",
     "split_fraction": "dimensionless",
     "efficiency": "dimensionless",
+    # S11 units design §2.4 (ADR 0051): `thermal.heater`'s quality mode, a vapour fraction.
+    "outlet_vapor_fraction": "dimensionless",
     "nu": "dimensionless",
     "conversion": "dimensionless",
     "split": "dimensionless",
