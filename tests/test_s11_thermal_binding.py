@@ -61,6 +61,10 @@ FORM = {"liquid": "LIQUID", "vapor": "VAPOR", "vapor_liquid": "SATURATED"}
 
 @pytest.fixture
 def registered(monkeypatch: pytest.MonkeyPatch) -> None:
+    register(monkeypatch)
+
+
+def register(monkeypatch: pytest.MonkeyPatch) -> None:
     """The seven models in the binder's tables, as I1b will register them."""
     for model_id in THERMAL:
         monkeypatch.setitem(
