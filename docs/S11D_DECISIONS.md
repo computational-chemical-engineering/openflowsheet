@@ -182,3 +182,15 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
   `wilson-ig-v1-4bcd8f4dc811` → `wilson-ig-v2-8eab3b83551a`, the 3653-line structure otherwise equal).
 - A79 measured: the column cases' x_final (C-MW, C-EW, C-MW-stripper under S01_DEFAULT_V1 and T06-revision-v2; 1508
   values) `float.hex`-equal before and after D5; `test_a79_*` (4) pin it against v1's `solve_column` root.
+
+## WO-D6 (Wilson flowsheets; S11.A69–A71, A80, A81)
+
+- Spike (Q18, D6's half): the region carries GP-C1 (C-MW's feed, 330 K liquid → `tp_heater` at 352 K → `tp_flash` at
+  355 K, 101 325 Pa) on `wilson-ig-v2`. From the units' start: CONVERGED in 0 Newton steps (0.15 s). From a start
+  1 % off in every flow, split and T: 5 accepted steps, back to the root within 1.1e-9; 5 % off: 3 steps, a second
+  attempt with backtracking trials; 10 % low: the feed T leaves the records' domain (297 K), the region falls back to
+  the units' start (0 steps). Certificate VERIFIED with the γ–φ dispatch (68 checks); |Z| = 6 (the ethanol columns),
+  one-sided worst 1.19e-10 (limit 1e-8), on-pattern 3.5e-9, off-pattern 0.
+- DECISION (D6): `MODEL_BASES` (the five) and `table.revision_checks`' v2 dispatch are monkeypatched in
+  `tests/s11_gp_support.py` (`admit_wilson`, `dispatch_gamma_phi`) until I1b, as D2's and D3's tests do. Reversible
+  by: dropping the two helpers at I1b.
