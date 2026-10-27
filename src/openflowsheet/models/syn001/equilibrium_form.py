@@ -68,7 +68,8 @@ ADMITTED: Final[Mapping[tuple[str, str], str]] = {
 #: The column's supported scope, as its refusal names it (design note §4.1 admission step 1).
 _SCOPE: Final = (
     f"SYN-001 (provider_id {PROVIDER_ID!r}, reference_convention {REFERENCE_CONVENTION!r}) and "
-    "wilson-ig-v1 (reference conventions 'WILSON-IG-ref-v1', 'S10-VER-ref-v1')"
+    "wilson-ig-v1 (reference conventions 'WILSON-IG-ref-v1', 'S10-VER-ref-v1') and wilson-ig-v2 "
+    "(the same reference conventions)"
 )
 
 
