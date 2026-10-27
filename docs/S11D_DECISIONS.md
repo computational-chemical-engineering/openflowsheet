@@ -275,3 +275,9 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
   not asked), Ḣ_s = Σ_j n_j h_j(T_s, P_O); a root at a domain end → `IsentropicStateError` (check `unsupported`).
   `_machine_specification` dispatches on the `ADDITIVE_VAPOUR` identity; the pure path's arithmetic is unchanged
   (n·h_s − Ḣ_I, same order). Against the closed-form ideal-gas isentrope (20 states): worst |ΔḢ_s| 2.9e-11 W.
+- DECISION: the bound Wilson machine's provider is the binder's `PropertyMeter`, which forwarded only the frozen
+  Protocol's three methods, so §4.4's "the provider's `stability()`" raised `AttributeError` in a bound flowsheet →
+  `PropertyMeter.stability` forwards it, counted as one call (budget-enforced like the others); a provider without
+  it raises `AttributeError` as unwrapped. No Protocol change (stability stays a concrete-class addition,
+  `thermo.stability`); no existing call path moves. Alternative: judge the outlet by the frozen `flash()` (its label
+  in `message`) or by R-007's admissibility, neither of which is §4.4's `stability()`. Reversible by: the commit.

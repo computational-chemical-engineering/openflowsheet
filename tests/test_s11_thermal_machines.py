@@ -48,6 +48,7 @@ from openflowsheet.models.thermal.blocks import (
 )
 from openflowsheet.models.thermal.machines import ThermalMachine
 from openflowsheet.models.thermal.state import SaturatedStreamState, liquid_id, vapor_id
+from openflowsheet.orchestrator.budget import PropertyMeter
 from openflowsheet.thermo import PropertyProvider, PropertyRequest, PropertyResult, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
 from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2
@@ -1047,3 +1048,14 @@ def test_a_wilson_isentropic_state_past_the_dew_point_is_refused() -> None:
     answer = _run(turbine, StreamState((0.4, 0.0, 0.6), 375.25, 150_000.0))
     _refusal(answer, "isentropic_state_two_phase(U1)")
     assert (answer.provider_id, answer.reference_convention) == ("wilson-ig-v2", "WILSON-IG-ref-v1")
+
+
+def test_the_meter_forwards_and_counts_stability() -> None:
+    """The binder's `PropertyMeter` forwards `stability()` (outside the frozen Protocol) as one
+    counted call, so a bound Wilson machine can ask it; a provider without it raises."""
+    meter = PropertyMeter(WILSON)
+    state = StreamState((0.4, 0.1, 0.5), 370.0, 40_000.0)
+    assert meter.stability(state, "VAPOR", CONTEXT) == WILSON.stability(state, "VAPOR", CONTEXT)
+    assert meter.calls == 1
+    with pytest.raises(AttributeError):
+        PropertyMeter(WATER).stability(StreamState((1.0,), 400.0, 1.0e5), "VAPOR", CONTEXT)
