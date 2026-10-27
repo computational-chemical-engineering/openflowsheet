@@ -11,6 +11,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib.util
+import math
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -118,12 +119,14 @@ def routing_revision(
     return document
 
 
-#: S11.A12's three cases: (record source, components, flows, T, P, declared phase).
+#: S11.A12's cases (restated, S11 rulings item 6, R-835): (record source, components, flows, T, P,
+#: declared phase). The balance holds to the arithmetic of the splitter's two binary64 rows
+#: (n2 = r n, n3 = (1 - r) n): within 2 ulp(n) per component, exactly 0.0 at (0.25, 0.25, 0.5),
+#: and exactly -ulp(n), non-zero, at the registered non-exact state (0.4, 0.4, 0.8), which is
+#: registered *because* the discrepancy is non-zero there.
 CASES: Mapping[str, tuple[str, tuple[str, ...], tuple[float, ...], float, float, str]] = {
     "iapws95": (IAPWS95_RECORDS, ("H2O",), (1.0,), 300.0, 1.0e6, "liquid"),
     "coolprop": (COOLPROP_RECORDS, ("CO2",), (1.0,), 300.0, 1.0e5, "vapor"),
-    # Flows whose split products are exact in binary64, so that the balance is `==`: the splitter's
-    # own rows (n_rec = r n, n_purge = (1 - r) n) leave one ulp at e.g. n = 0.4 (S11A_DECISIONS).
     "wilson": (
         WILSON_RECORDS,
         WILSON_BASIS.components,
@@ -132,12 +135,24 @@ CASES: Mapping[str, tuple[str, tuple[str, ...], tuple[float, ...], float, float,
         101325.0,
         "liquid",
     ),
+    "wilson-ulp": (
+        WILSON_RECORDS,
+        WILSON_BASIS.components,
+        (0.4, 0.4, 0.8),
+        330.0,
+        101325.0,
+        "liquid",
+    ),
 }
+#: S11.A12's discrepancy (n2 + n3) - n per component, in units of ulp(n), where it is registered.
+A12_DISCREPANCY_ULPS = {"wilson": (0.0, 0.0, 0.0), "wilson-ulp": (-1.0, -1.0, -1.0)}
 CASE_PARAMS = [
     pytest.param("iapws95", id="iapws95"),
     pytest.param("coolprop", id="coolprop", marks=needs_coolprop),
     pytest.param("wilson", id="wilson"),
 ]
+#: A12's four cases; A11 and A16 keep their three (`CASE_PARAMS`).
+A12_PARAMS = [*CASE_PARAMS, pytest.param("wilson-ulp", id="wilson-ulp")]
 
 
 def case_revision(case: str, *, declared: bool = True) -> dict[str, Any]:
@@ -216,15 +231,25 @@ def _solved(case: str) -> Solved:
     return solved
 
 
-@pytest.mark.parametrize("case", CASE_PARAMS)
+@pytest.mark.parametrize("case", A12_PARAMS)
 def test_a12_routing_solves_on_each_new_basis(case: str) -> None:
+    """S11.A12 (restated, R-835): the products are the splitter's binary64 rows exactly, and the
+    balance holds within their arithmetic (2 ulp(n)); a statement about the traversal start, not
+    about conservation in a state Newton moved."""
     _, components, flows, temperature, pressure, _ = CASES[case]
     state = _solved(case).run.state
     assert state is not None
+    discrepancies = []
     for component, flow in zip(components, flows, strict=True):
+        n2, n3 = state[f"S2.n.{component}"], state[f"S3.n.{component}"]
         assert state[f"S1.n.{component}"] == flow
-        assert state[f"S2.n.{component}"] + state[f"S3.n.{component}"] == flow
-        assert state[f"S2.n.{component}"] == 0.3 * flow
+        assert n2 == 0.3 * flow
+        assert n3 == (1 - 0.3) * flow
+        discrepancy = n2 + n3 - flow
+        assert abs(discrepancy) <= 2 * math.ulp(flow)
+        discrepancies.append(discrepancy / math.ulp(flow))
+    if case in A12_DISCREPANCY_ULPS:
+        assert tuple(discrepancies) == A12_DISCREPANCY_ULPS[case]
     for stream in ("S2", "S3"):
         assert state[f"{stream}.T"] == state["S1.T"] == temperature
         assert state[f"{stream}.P"] == state["S1.P"] == pressure
