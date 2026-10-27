@@ -1,0 +1,942 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/assessment.schema.json",
+  "title": "Assessment",
+  "description": "E01 design §4.11, ADR 0052 (Proposed): one cost and life-cycle assessment of a solved flowsheet — its basis (currency, year, location), operation, data files by {id, sha256}, defaults, per-item sizing and costing inputs or quotes, utilities, materials, capital chain, fixed operating lines, LCA section, derived outputs and declared uncertainty. SI only for physical quantities. The assessment is a post-solve functional: it never enters the flowsheet's equations. Rules a JSON Schema cannot express (a step's `of` names an earlier step, derived outputs are acyclic, a price's basis matches the assessment's or names a series) are checked by `openflowsheet.assessment`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "assessment_id",
+    "basis"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "assessment-v1"
+    },
+    "assessment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "applies_to": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "revision_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "configuration_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2200
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "location_factor": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        "escalation_series": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Z]{3}$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "exchange_rates": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "currency",
+        "year"
+      ]
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hours_per_year": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 8784
+        },
+        "lifetime_years": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "discount_rate": {
+          "type": "number"
+        }
+      }
+    },
+    "correlation_set": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/data_ref"
+          }
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/data_ref"
+          }
+        },
+        "tables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/data_ref"
+          }
+        }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "F_T": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "U_by_service": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "heating": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "cooling": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        "drum_orientation": {
+          "enum": [
+            "vertical",
+            "horizontal"
+          ]
+        },
+        "drum_residence_time": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "drum_fill_fraction": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "drum_LD": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "drum_K_SB": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "drive_efficiency": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "generator_efficiency": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "column_C_SB": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "column_flooding_fraction": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "column_active_area_fraction": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "column_tray_spacing": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "column_overall_efficiency": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "column_H_top": {
+          "type": "number",
+          "minimum": 0
+        },
+        "column_H_bottom": {
+          "type": "number",
+          "minimum": 0
+        },
+        "reactor_LD": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "items": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/item"
+      }
+    },
+    "utilities": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/utility"
+      }
+    },
+    "materials": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/material"
+      }
+    },
+    "capital": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "chain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/chain_step"
+          }
+        },
+        "capital_total": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fci": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "fixed_opex": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "line": {
+            "type": "string",
+            "minLength": 1
+          },
+          "constant": {
+            "type": "number"
+          },
+          "fraction_of": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "of": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fraction": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "of",
+              "fraction"
+            ]
+          }
+        },
+        "required": [
+          "line"
+        ]
+      }
+    },
+    "lca": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tables": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "direct_factors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "functional_unit": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "connection": {
+              "type": "string",
+              "minLength": 1
+            },
+            "basis": {
+              "enum": [
+                "mass_total",
+                "component",
+                "molar_total"
+              ]
+            },
+            "component": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "connection",
+            "basis"
+          ]
+        },
+        "allocation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "none",
+                "substitution",
+                "factor",
+                "mass",
+                "economic"
+              ]
+            },
+            "factor": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "required": [
+            "method"
+          ]
+        }
+      }
+    },
+    "derived": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]+$"
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "numerator": {
+            "$ref": "#/$defs/affine"
+          },
+          "denominator": {
+            "$ref": "#/$defs/affine"
+          }
+        },
+        "required": [
+          "id",
+          "unit",
+          "numerator"
+        ]
+      }
+    },
+    "uncertainty": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^asm:"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "relative_range": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "relative_range"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "data_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "sha256"
+      ]
+    },
+    "price": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "per": {
+          "enum": [
+            "J",
+            "kJ",
+            "MJ",
+            "GJ",
+            "kWh",
+            "MWh",
+            "kg",
+            "t",
+            "mol",
+            "kmol",
+            "m3",
+            "s",
+            "year"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2200
+        },
+        "escalation_series": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "value",
+        "per"
+      ]
+    },
+    "quote": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cost": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2200
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "purchased",
+            "bare_module"
+          ]
+        },
+        "size": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "quantity": {
+              "type": "string",
+              "minLength": 1
+            },
+            "value": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "quantity",
+            "value"
+          ]
+        },
+        "exponent": {
+          "type": "number"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accuracy_class": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "relative_range": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "cost",
+        "currency",
+        "year",
+        "kind",
+        "source"
+      ]
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "correlation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "set": {
+              "type": "string",
+              "minLength": 1
+            },
+            "entry": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "set",
+            "entry"
+          ]
+        },
+        "quote": {
+          "$ref": "#/$defs/quote"
+        },
+        "exclude": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "reason"
+          ]
+        },
+        "U": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "F_T": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "dT_min": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "service": {
+          "enum": [
+            "heating",
+            "cooling"
+          ]
+        },
+        "utility": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orientation": {
+          "enum": [
+            "vertical",
+            "horizontal"
+          ]
+        },
+        "material": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subtype": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tray_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allow_extrapolation": {
+          "type": "boolean"
+        },
+        "liquid_molar_volume": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "residence_time_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "fill_fraction": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "LD": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "K_SB": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "drive_efficiency": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "generator_efficiency": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "C_SB": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "flooding_fraction": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "active_area_fraction": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "tray_spacing": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "overall_efficiency": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "H_top": {
+          "type": "number",
+          "minimum": 0
+        },
+        "H_bottom": {
+          "type": "number",
+          "minimum": 0
+        },
+        "F_BM": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "lca_exchange": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "table": {
+          "type": "string",
+          "minLength": 1
+        },
+        "activity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "amount": {
+          "type": "number"
+        },
+        "per": {
+          "enum": [
+            "J",
+            "kJ",
+            "MJ",
+            "GJ",
+            "kWh",
+            "MWh",
+            "kg",
+            "t",
+            "mol",
+            "kmol",
+            "m3",
+            "s",
+            "year"
+          ]
+        }
+      },
+      "required": [
+        "table",
+        "activity",
+        "amount",
+        "per"
+      ]
+    },
+    "utility": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "utility_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "heating",
+            "cooling",
+            "electricity"
+          ]
+        },
+        "T_supply": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "T_return": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "dT_min": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "price": {
+          "$ref": "#/$defs/price"
+        },
+        "export_price": {
+          "$ref": "#/$defs/price"
+        },
+        "lca": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lca_exchange"
+          }
+        }
+      },
+      "required": [
+        "utility_id",
+        "kind",
+        "price"
+      ]
+    },
+    "material": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "connection": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "enum": [
+            "raw_material",
+            "waste",
+            "product",
+            "co_product",
+            "emission"
+          ]
+        },
+        "basis": {
+          "enum": [
+            "mass_total",
+            "component",
+            "molar_total"
+          ]
+        },
+        "component": {
+          "type": "string",
+          "minLength": 1
+        },
+        "price": {
+          "$ref": "#/$defs/price"
+        },
+        "lca": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lca_exchange"
+          }
+        },
+        "emission": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "table": {
+              "type": "string",
+              "minLength": 1
+            },
+            "flows": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "required": [
+            "table",
+            "flows"
+          ]
+        }
+      },
+      "required": [
+        "connection",
+        "role",
+        "basis"
+      ]
+    },
+    "chain_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_]+$"
+        },
+        "terms": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "of": {
+                "type": "string",
+                "minLength": 1
+              },
+              "factor": {
+                "type": "number"
+              },
+              "factor_product": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "of"
+            ]
+          }
+        }
+      },
+      "required": [
+        "name",
+        "terms"
+      ]
+    },
+    "affine": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "terms": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "constant": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}
