@@ -284,41 +284,43 @@ I1's.
   Alternative: a new code (needs the design lane). Reversible by: the contributor's mapping.
 - DECISION: a price in another basis is escalated with §4.6's formula as written, including `LF`. Alternative: LF
   only on capital. Reversible by: `operating.price_on_basis` (pass `location_factor=1.0`).
+- Done (4): `cost/contributor.py` (`CostContributor`, registered `cost`): sizing → §4.5.3 entry → options → form
+  select/held regime (`<item>.size`, `<item>.<target>.piece`; piece 0 = `floor`) → §4.6 escalation → `capex.*`
+  → chain → OPEX → `annual.capital_charge`, `tac`, `profit`, `product.annual`/`lcox`. §9.2.7 drives: motor reads
+  `size.<U>.power`, inherits N; `includes_drive` → drive capital 0.0, `included_in`; electricity W/η_m(W/N), θ
+  `eta_drive` dropped. `tests/test_e01_a_contributor.py` 6 passed (water TH-C2 loop: no refusals; drive A44; A22
+  rel 1e-15; A20 on the program; A40; F_BM refusal only on a bare-module chain; A21 domain; A23 helper).
+- DECISION: `ContributionPlan.unavailable` / `AssessmentProgram.unavailable` (`output → reason`): an output that would
+  depend on a refused, not excluded item is not built (report: `null`; B3: `ASSESSMENT_OUTPUT_UNAVAILABLE`).
+  Alternative: build over costed items and null in the report. Reversible by: program.py field + contributor.
+- DECISION: any non-excluded *sizing* refusal withholds the capital sums **and** `opex.total` (conservative; the unit's
+  energy may be unknown); cost-only refusals withhold capital only. `exclude` matches the item id and its `<id>.`
+  sub-targets; an excluded item's duty/electricity still counts in OPEX. Reversible by: `_Planner.items`.
+- DECISION: per-item θ `asm:item.<i>.E` (escalation) and `asm:item.<i>.accuracy` (1.0, carrying the entry's or
+  quote's `relative_range`, §4.9); `C = C_base·E·u`. A quote without `accuracy_class` → class `None`. Item
+  `material` → option `material` or `tray_material`; `subtype` → the single `*_type` option; else `NO_CORRELATION`.
+  `generic-v1` entries → `NO_CORRELATION` kind `unsupported`. A bare-module quote leaves `sum_purchased` unavailable.
+- DECISION: electricity with no `kind: electricity` utility → `opex.utility.electricity` + `opex.total` unavailable
+  (no §4.12 code fits; none emitted). Heating/cooling prices must be energy `per` (else `PRICE_BASIS_MISMATCH`).
+  User series load from `data.series[].path` when the canonical sha256 matches; otherwise not available.
 
-## Handoff (2026-10-27, fourth context cap) — resume from here
+## Handoff (2026-10-27, fifth context cap) — resume from here
 
-- **Done (wp/E01):** A1, A2, A3a, A3 (earlier); **A2b** `79ef7539` (identity/declared volumes, kinetic CSTR, dormant
-  liquid; A46, A47); **A4 (1)–(3)** `48373937` capital chain + CRF, `c992ea96` price basis + AACE/propagation helpers,
-  `d273ab9c` item `options` + `shell_thickness` schema. Policy `--check` exit 0 (v2 `6b449911…d707c`). Protected paths
-  untouched. Track A tests: sizing 24, core/cost/links 52, capital 7 — all pass.
-- **Next: the cost contributor** (rest of WO-A4, §5.2 + §9.2.6/§9.2.7), a new `assessment/cost/contributor.py`
-  registered as `cost` (`program.register_contributor`), replacing the tests' `Sizing` stand-in:
-  1. `plan_sizing(ctx, state)` → per `SizedItem`: quote (`quotes.quote_from`) or `exclude`, else correlation
-     (§4.5.3: item `correlation` or `correlation_set` + `sets.entry_for(set, item.family, orientation)`), options =
-     `item.options` ∪ {`material`, `tray_type`} (conflict → `NO_CORRELATION`), `sets.resolve`; inputs per
-     `FORMS[e.form].inputs` from `item.size` outputs, `design_pressure`, θ `t_shell` (default 0.03175 m, reported),
-     `N_act`; `forms.select(form, e, x_floats, allow_extrapolation, units)` → regime entries (`<item>.size`,
-     `<item>.<target>.piece`) + `forms.rows`; `capex.purchased.<item>` = `form.cost(...)` × E (θ product).
-  2. Escalation per entry basis (§9.2.6: CE 394 → CE 500 factor inside the form; SSLW basis
-     `SourceBasis("USD", index=("CEPCI", 500.0), year_equivalent=2006, set_id)`), `index.escalate` with
-     `basis.escalation_series` (+ user series), limitation `INDEX_BASIS_MAPPED`.
-  3. Drives (§9.2.7): machine entry `includes_drive` → `<U>.drive` capital 0.0, provenance `included_in`;
-     η_drive = `forms.motor_efficiency` at W/N (replaces the 0.95 θ for SSLW sets); drive N = machine N.
-  4. Bare module: entry/item `F_BM` → `capex.bare_module.<item>`, else `BARE_MODULE_FACTOR_MISSING`; refuse the chain
-     only if `chain.bases` contains `sum_bare_module`. Sums as left folds in item order (§4.2.4).
-  5. Chain (`capital.chain` preset via `load_chain`, else `chain_from(steps, capital_total, fci)`; `ChainError` →
-     `ASSESSMENT_OUTPUT_UNKNOWN`), `capex.<step>`, `capex.total`, `capex.fci`.
-  6. OPEX (§4.7.2): utilities from `SizedItem.utility`/`duty`; electricity from `electricity`/`power` with the
-     `kind: electricity` utility (export price default = import, `ELECTRICITY_NETTED`); materials by role; fixed lines;
-     `FIXED_OPEX_UNDECLARED`; prices via `operating.price_on_basis` (θ `asm:utility.<u>.price` etc.).
-  7. `annual.capital_charge = CRF·capex.total` (θ i, n structural; `DISCOUNT_RATE_OUT_OF_DOMAIN`), `tac`, `revenue.*`,
-     `profit`, `product.annual`/`lcox` (§4.7.4), `derived.*` (§4.7.5; acyclic; `METRIC_UNDEFINED`) — `derived` may be a
-     separate contributor (`cost, lca, derived` order).
-  8. Uncertainty (§4.9) with `cost/uncertainty.py`: class over costed items, θ ranges symbolic in a twin, worst case
-     + RSS; status/partial rule. Then A22 (tac from report fields, rel 1e-15), A23 end-to-end, A44 drives.
-- **Open for the design lane (batched):** none blocking. Logged choices: provider-v fall-through, `v_source` record
-  shape, θ emission of declarations, chain error code mapping, LF on prices, the options schema.
-- **For B1/I1 (unchanged):** `_data/assessment/**` package-data globs and `resources.PACKAGED` (now also
-  `cost/chains.json`); M05 ADDENDA pin → `AMENDED_TESTS`; A48 is an RC item. P3 = C-MW needs
-  `column_registered(…, {"syn001", "wilson-ig-v2"})` and the §9.4 test volumes (as `WILSON_VOLUMES` in the sizing test).
-- **Scratch (not in repo):** IDAES wheel/sources, `a3tools/`, `series_dl/` under the session scratchpad.
+- **Done (wp/E01):** A1–A3, A2b, A4 (1)–(3) earlier; **A4 (4)** the cost contributor (this commit). Track A tests:
+  core/cost/links/capital/sizing 83 + contributor 6 pass. Protected paths untouched. No schema change in (4).
+- **Not done in WO-A4:** (a) `derived` contributor (§4.7.5; put in `assessment/cost/derived.py`, register `derived`;
+  acyclic; plan-time non-positive denominator → `METRIC_UNDEFINED`, output unavailable); (b) the §4.9 propagation
+  pass (`program.linearize(x, outputs, symbolic=[θ with relative_range])` → `uncertainty.worst_case`/`rss`; class
+  from the section's item `accuracy_class`/`extrapolated`) — natural home is `report.py` (A5); (c) tests still owed:
+  A44 drive on a compressor *with* a pump (pump drive costs `motor.electric`), a quote item (A19 through the
+  contributor), held-regime build round trip, `CORRELATION_EXTRAPOLATED` → class none end to end, materials/revenue
+  and `lcox` (needs a functional unit doc), turbine generation + `ELECTRICITY_NETTED` (TH-C1).
+- **Then WO-A5** (untouched): `report.py`, `assessment-report.schema.json` + registry entry (E01 addendum `schemas`;
+  `exact_sha256` stays `[assessment_sha256, regime_sha256]`, `state_sha256` keeps v2's float-digest class; policy
+  `--check`), fixtures from P1/P3, `benchmarks/e01/lca_hand/`, A38–A41, A43 report part. The contributor's
+  `section(values)` already returns `items` (provenance incl. regime, escalation, options, index_basis), `excluded`,
+  `defaulted_inputs`; `program.unavailable` gives the nulls.
+- **Fixture note:** CoolProp is not in `.venv`; the contributor test runs S11's TH-C2 loop on IAPWS-95 water
+  (record source `benchmarks/s05/components.yaml`, S1 at 410 K). All its items sit in `floor`.
+- **Open for the design lane (batched):** the four new DECISION lines above, plus the earlier ones.
+- **For B1/I1 (unchanged):** package-data globs, `resources.PACKAGED`, M05 ADDENDA pin, A48 RC item, P3 volumes.

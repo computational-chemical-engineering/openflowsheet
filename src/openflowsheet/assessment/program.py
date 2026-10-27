@@ -143,6 +143,10 @@ class ContributionPlan:
     limitations: tuple[Limitation, ...] = ()
     #: The contributor's report section from evaluated values (§4.2.2; written at WO-A5).
     section: Callable[[Mapping[str, float]], dict[str, Any]] | None = None
+    #: Outputs withheld because they would depend on a refused, not excluded item, or on an
+    #: input the document lacks: `(output_id, reason)`. The report prints them as `null` and a
+    #: study naming one is refused `ASSESSMENT_OUTPUT_UNAVAILABLE` (§4.9, A40).
+    unavailable: tuple[tuple[str, str], ...] = ()
 
 
 class Contributor(Protocol):
@@ -441,6 +445,9 @@ class AssessmentProgram:
         self.plans = MappingProxyType(dict(plans))
         self.refusals = tuple(r for plan in plans.values() for r in plan.refusals)
         self.limitations = tuple(lim for plan in plans.values() for lim in plan.limitations)
+        self.unavailable: Mapping[str, str] = MappingProxyType(
+            {name: why for plan in plans.values() for name, why in plan.unavailable}
+        )
         label = f"ASM1-{ctx.spec.assessment_sha256[:12]}-{self.regime.sha256[:8]}"
         self._functional, self.memo = _assemble(label, ctx.host_spec, rows, theta, blocks)
         self._twins: dict[tuple[str, ...], ParametricTwin] = {}
