@@ -42,7 +42,7 @@ from openflowsheet.verify import CheckResult
 from openflowsheet.verify import thermal as vt
 from openflowsheet.verify.checks import KIND_TOLERANCE, qualification
 from openflowsheet.verify.forms import declared_phases, stream_admissibility
-from openflowsheet.verify.table import Unit
+from openflowsheet.verify.table import EXTERNAL_DUTY_MODELS, WORK_MODELS, Unit
 
 TAU_FLOW = KIND_TOLERANCE["molar_flow"]
 CONTEXT = _CONTEXT
@@ -434,3 +434,18 @@ def test_an_additive_isentropic_state_outside_the_domain_is_refused() -> None:
     gas = _IdealGas(("A", "B", "C"))
     with pytest.raises(vt.IsentropicStateError, match="at an end of"):
         vt.additive_isentropic_enthalpy(gas, CONTEXT, (0.2, 0.5, 0.3), 1900.0, 1.0e5, 1.0e6)
+
+
+def test_the_envelope_reads_the_thermal_duty_and_work() -> None:
+    """Units design §4.4, §4.8 (I1b): the heater's and flash's `<U>.Q` are external duties, appended
+    after the base's ids, and the three machines' `<U>.W` is shaft work."""
+    assert EXTERNAL_DUTY_MODELS[-2:] == ("thermal.heater", "thermal.flash")
+    assert [m for m in EXTERNAL_DUTY_MODELS if m.startswith("thermal.")] == [
+        "thermal.heater",
+        "thermal.flash",
+    ]
+    assert {m for m in WORK_MODELS if m.startswith("thermal.")} == {
+        "thermal.pump",
+        "thermal.compressor",
+        "thermal.turbine",
+    }

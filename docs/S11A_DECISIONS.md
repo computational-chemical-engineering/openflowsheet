@@ -407,3 +407,8 @@ commit). Not done, in order:
   EO face reads lnK and h_<c>, and S11 gives γ–φ faces to the five K02/T05 units only (L-GP-1)"; a non-routing
   `c1.*` model on a pure fluid now reads C1's own-physics reason (ADR 0050 D3), as it does on Wilson. Alternative:
   keep the first-pass texts. Reversible by: the two `_UNADMITTED` strings and the one `c1_physics` branch.
+- DECISION (orchestrator ruling): `test_m02_wo8_registries::test_the_envelope_sets_gain_the_c1_ids` → restricted to
+  the `EXTERNAL_DUTY_MODELS` ids outside `thermal.` (C6-2 precedent; its recorded operands stay the base's, so no
+  `AMENDED_TESTS` entry); `test_s11_thermal_verifier::test_the_envelope_reads_the_thermal_duty_and_work` pins the
+  thermal duty and work ids literally. Alternative: leave it failing for the reviewer. Reversible by: the one
+  `base_duty` line.
