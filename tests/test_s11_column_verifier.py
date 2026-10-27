@@ -10,14 +10,18 @@ column's balance, specification and stage rows. The mutations inject a state (`s
 from __future__ import annotations
 
 from collections.abc import Iterator, Mapping
+from dataclasses import replace
 from functools import cache
+from types import SimpleNamespace
 from typing import Any
 
+import numpy as np
 import pytest
 from s11_column_support import (
     COLUMN_CASES,
     RECYCLE_CASE,
     WILSON_CASES,
+    WILSON_STRIPPER,
     column_case_spec,
     column_registered,
     committed_case,
@@ -25,6 +29,8 @@ from s11_column_support import (
 
 from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
+from openflowsheet.compile.casadi_backend import compile_problem
+from openflowsheet.compile.reference import state_vector
 from openflowsheet.models import flow_id
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.syn001.cascade import stage_duty_id, stage_temperature_id
@@ -36,11 +42,14 @@ from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.splits import lifted_splits, split_owners
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify.certificate import (
+    BoundDeclaration,
     CheckPolicy,
     SolutionCertificate,
     _staged_splits,
+    fresh_provider,
     verify_revision,
 )
+from openflowsheet.verify.checks import DERIVATIVE_TOLERANCE, derivative_witness, one_sided_columns
 from openflowsheet.verify.zero_flow import zero_flow_splits
 
 BASES = frozenset({"syn001", "wilson-ig-v1"})
@@ -115,25 +124,91 @@ def test_a35_the_syn001_column_certificates_verify(
     ]
 
 
-@pytest.mark.parametrize("name", WILSON_CASES)
+#: S11 rulings item 2 (R-831): each Wilson case's absent component (S10-C: C-MW is methanol-water,
+#: C-EW ethanol-water, the stripper C-MW's feed) and the measured |Z| (63, 63, 34).
+ABSENT = {"C-MW": ("C2H5OH", 63), "C-EW": ("CH3OH", 63), WILSON_STRIPPER: ("C2H5OH", 34)}
+
+
+def _target(name: str) -> tuple[BoundDeclaration, dict[str, float], frozenset[str]]:
+    """The certificate's target at the case's converged state, and its Z (R-831)."""
+    binding, document, _, _ = solved(name)
+    view = parse_revision(document)
+    state = _final_state(name)
+    domain = fresh_provider(view.basis).describe().domain["P"]
+    target = BoundDeclaration(
+        binding.spec, compile_problem(binding.spec), state, pressure_domain=domain
+    )
+    return target, state, one_sided_columns(binding.spec.variable_ids, state, view.components)
+
+
+@pytest.mark.parametrize("name", [*WILSON_CASES, WILSON_STRIPPER])
 def test_a35_the_wilson_column_rows_pass(name: str, registered: pytest.MonkeyPatch) -> None:
-    """S11.A35 on C-MW and C-EW: every table row passes, the column's included. The certificate
-    is capped at UNVERIFIED by the derivative witness alone: its stencil leaves the domain at the
-    absent component's exactly-zero internal flows (R-785), which only `pr-c1-v1`'s stream flows
-    are exempt from (R-281). Escalated (S11B_DECISIONS, B4); this test pins the fact."""
+    """S11.A35 on C-MW, C-EW and the stripper, as restated by S11 rulings item 2 (R-831): every
+    row passes and the certificate is VERIFIED. The absent component's exactly-zero columns beside
+    a positive sibling (Z) are differenced by the forward five-point stencil, whose part of the
+    witness is at roundoff: <= DERIVATIVE_TOLERANCE/10 (measured 6.09e-10, 6.22e-10, 3.27e-10)."""
     certificate = certify(name)
     checks = by_id(certificate)
     column_items(column_case_spec(name), checks)
-    others = {
-        k: (c.result, c.reason)
-        for k, c in checks.items()
-        if c.result != "pass" and c.category != "derivative_witness"
-    }
-    assert not others, others
+    failing = {k: (c.result, c.reason) for k, c in checks.items() if c.result != "pass"}
+    assert not failing, failing
+    assert certificate.verification_status == "VERIFIED"
+    assert not [x for x in certificate.limitations if x.kind == "derivative_witness_partial"]
+
+    absent, size = ABSENT[name]
+    target, state, z = _target(name)
+    assert len(z) == size
+    assert all(column.rpartition(".")[2] == absent for column in z), sorted(z)
     witness = [c for c in certificate.checks if c.category == "derivative_witness"]
-    assert [c.result for c in witness] == ["unsupported", "unsupported"]
-    assert all(c.reason.startswith("witness_stencil_invalid_trial_state(COL.") for c in witness)
-    assert certificate.verification_status == "UNVERIFIED"
+    assert [c.id for c in witness] == [
+        "derivative_witness.on_pattern",
+        "derivative_witness.off_pattern",
+    ]
+    assert all(c.value is not None and c.value <= DERIVATIVE_TOLERANCE for c in witness)
+    # The one-sided part alone: every column outside Z left undifferenced.
+    rest = frozenset(target.spec.variable_ids) - z
+    one_sided = derivative_witness(target, state, unstenciled=rest, one_sided=z)
+    assert [c.result for c in one_sided] == ["pass", "pass"]
+    worst = max(c.value or 0.0 for c in one_sided)
+    assert worst <= DERIVATIVE_TOLERANCE / 10, worst
+
+
+def test_a35_a_wrong_ad_entry_in_a_one_sided_column_fails_the_witness(
+    registered: pytest.MonkeyPatch,
+) -> None:
+    """S11 rulings item 2 (R-831), mutation: on C-MW, the AD entry of largest scaled magnitude in a
+    Z column set to 0.0 makes `derivative_witness.on_pattern` FAIL, so the one-sided stencil
+    witnesses those columns."""
+    target, state, z = _target("C-MW")
+    compiled, scaling = target.compiled, target.scaling
+    base = compiled.jacobian(np.array(state_vector(target.spec, state)), target.context)
+    largest, at = 0.0, -1
+    for column, name in enumerate(base.col_ids):
+        if name not in z:
+            continue
+        for offset in range(base.indptr[column], base.indptr[column + 1]):
+            row_id = base.row_ids[base.indices[offset]]
+            scaled = abs(base.data[offset]) * scaling.column[name] / scaling.row[row_id]
+            if scaled > largest:
+                largest, at = scaled, offset
+    assert at >= 0 and largest > 0.0
+
+    class Mutated:
+        def residual(self, x: Any, context: Any) -> Any:
+            return compiled.residual(x, context)
+
+        def jacobian(self, x: Any, context: Any) -> Any:
+            found = compiled.jacobian(x, context)
+            data = list(found.data)
+            data[at] = 0.0
+            return replace(found, data=tuple(data))
+
+    tear = SimpleNamespace(
+        spec=target.spec, compiled=Mutated(), context=target.context, scaling=scaling
+    )
+    checks = {c.id: c for c in derivative_witness(tear, state, one_sided=z)}
+    assert checks["derivative_witness.on_pattern"].result == "fail"
+    assert (checks["derivative_witness.on_pattern"].value or 0.0) >= largest / 2
 
 
 # -- S11.A36 ---------------------------------------------------------------------------------------

@@ -61,6 +61,7 @@ from openflowsheet.verify import (
 )
 from openflowsheet.verify.checks import (
     KIND_TOLERANCE,
+    ONE_SIDED_BASES,
     VerifierError,
     admissibility_checks,
     alias_checks,
@@ -69,6 +70,7 @@ from openflowsheet.verify.checks import (
     energy_checks,
     label_checks,
     material_checks,
+    one_sided_columns,
     qualification,
     residual_checks,
     routing_tolerances,
@@ -847,6 +849,11 @@ def verify_revision(
         )
         if basis == "pr-c1-v1"
         else frozenset(),
+        # S11 rulings item 2 (R-831): on a Wilson basis, each exactly-zero component column beside
+        # a positive sibling is differenced one-sided (Z); empty on every other basis.
+        one_sided=one_sided_columns(target.spec.variable_ids, final_state, view.components)
+        if basis in ONE_SIDED_BASES
+        else frozenset(),
         appended=surrogate_limitations,
         external=external,
     )
@@ -1269,6 +1276,7 @@ def _issue(
     projection: Projection,
     provider: PropertyProvider | None = None,
     unstenciled: frozenset[str] = frozenset(),
+    one_sided: frozenset[str] = frozenset(),
     appended: Sequence[Limitation] = (),
     external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
@@ -1288,7 +1296,7 @@ def _issue(
     if external is not None:
         # M02 design note §4.4: the coupling checks are judged with the check set.
         checks += external.checks
-    checks += derivative_witness(target, final_state, unstenciled=unstenciled)
+    checks += derivative_witness(target, final_state, unstenciled=unstenciled, one_sided=one_sided)
 
     matrix, scaled_residual = screened.matrix, screened.scaled_residual
     identity, regularity = screened.identity, screened.regularity
