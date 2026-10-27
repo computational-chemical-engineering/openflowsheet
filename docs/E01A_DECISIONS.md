@@ -146,6 +146,13 @@ I1's.
   only `v` (`test_column_m1_shell_formula_on_a_volume_test_provider`). Likewise P2 (SYN-001): the drum is refused.
   Needs: a column case on a `v`-capable basis, or a ruling that the ideal-gas vapour volume RT/P is the providers' `v`.
 
+## WO-A3a (links, §9.1)
+
+- Done as ruled: `$defs` `assessment_link`, `formulation_assessment` in `schemas/assessment.schema.json`; E01 addendum
+  `exact_sha256: [assessment_sha256, regime_sha256]`, comment corrected (`state_sha256` keeps v2's float-digest class).
+  `--check` exit 0, v2 sha256 `6b449911…d707c` unchanged. `tests/test_e01_a_links.py` 4 passed; with core, m04 A37,
+  m02 G1, t08_adr0025, m05 study record, t08_w4 package data: 297 passed. The study/optimization-report `$ref`s are B3's.
+
 ## Facts confirmed before WO-A3 (2026-10-27)
 
 - FACT (Q7, pinned release): IDAES-PSE **2.13.0** (PyPI upload 2026-09-16, > 2 weeks old; latest). Wheel

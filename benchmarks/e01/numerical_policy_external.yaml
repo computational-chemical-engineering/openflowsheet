@@ -11,11 +11,14 @@ numerical_policy_external:
   schemas:
   - assessment.schema.json
   # `assessment.schema.json` declares `applies_to.configuration_sha256` (§4.11), a name M02's
-  # addendum already classifies as an exact digest; a reused name keeps its class, so the list of
-  # names E01 adds is empty. WO-A5's `assessment-report.schema.json` joins `schemas` with the
-  # names it declares, all exact digests (none is a float digest, ADR 0007 D1 row 3):
-  # `assessment_sha256` (canonical hash of the assessment document), `state_sha256` (of the
-  # evaluated state) and `regime_sha256` (of the regime signature); its `regime.sha256` and
-  # `tables[].sha256` reuse `sha256` and keep T08's class. The audit refuses a classified name no
-  # schema declares, so each is listed here when its schema declares it.
-  exact_sha256: []
+  # addendum already classifies as an exact digest; a reused name keeps its class. Its `$defs`
+  # `assessment_link` and `formulation_assessment` (design note §9.1, R-863) declare
+  # `assessment_sha256` (canonical hash of the assessment document) and `regime_sha256` (of the
+  # regime signature), both exact digests (none is a float digest, ADR 0007 D1 row 3); the study and
+  # optimization-report schemas reach them by `$ref`, so no `sha256` name enters v2's domain.
+  # WO-A5's `assessment-report.schema.json` joins `schemas`: its `state_sha256` keeps v2's
+  # float-digest class and is never listed here, and its `regime.sha256` and `tables[].sha256` reuse
+  # `sha256`, which keeps v2's class. The audit refuses a classified name no schema declares.
+  exact_sha256:
+  - assessment_sha256
+  - regime_sha256

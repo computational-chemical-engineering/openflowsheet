@@ -937,6 +937,124 @@
           "type": "number"
         }
       }
+    },
+    "assessment_link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessment_id",
+        "assessment_sha256"
+      ],
+      "properties": {
+        "assessment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assessment_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+        },
+        "regime_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+        }
+      }
+    },
+    "formulation_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessment_id",
+        "assessment_sha256",
+        "regime_sha256",
+        "regime_entries",
+        "outputs",
+        "admissibility",
+        "regime_bounds_active"
+      ],
+      "properties": {
+        "assessment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assessment_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+        },
+        "regime_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/evaluation-result.schema.json#/$defs/sha256"
+        },
+        "regime_entries": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "scale"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "scale": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          }
+        },
+        "admissibility": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "nominal"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "nominal": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          }
+        },
+        "regime_bounds_active": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "slack",
+              "multiplier"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "slack": {
+                "type": "number"
+              },
+              "multiplier": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
