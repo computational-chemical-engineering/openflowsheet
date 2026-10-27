@@ -34,15 +34,18 @@ are in `docs/t07-measurements.md` § W4b.
 from __future__ import annotations
 
 import ast
+import ctypes
 import json
 import threading
 from collections.abc import Iterator
 from dataclasses import dataclass, replace
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pytest
-from conftest import REPO_ROOT
+import scipy
+from conftest import REPO_ROOT, TERMINAL_REPORT
 from t06_ensemble_support import STARTS_FILE, ensemble_cases
 
 from benchmarks.t06 import ensemble, generator
@@ -77,6 +80,9 @@ RUNS = (("STR-01", None), ("NET-03", 18), ("THM-09", 4))
 #: class the length is not pinned (T06 §7.5: reported, never gated); the interrupts still run.
 #: ci-x86-64 is not pinned either: its runners' CPU varies (EPYC 7763 / 9V74, note §8 Q-C) and the
 #: length with it — 94 in CI run 40295317759, 136 in CI run 40359016227 (S08b build decision T07-1).
+#: Every run, on every class, reports the length in the terminal summary (R-796, C1; the lines go
+#: to `docs/t07-measurements.md` § W4b.5); a (class, `cpu_model`, OpenBLAS core) key is pinned only
+#: under R-796's re-pin rule.
 THM09_RECORDS = {"ref-x86-64": 94, "ci-aarch64": 136}
 #: The test-local property budget that keeps a budget refusal in the every-record leg since R-782
 #: (THM-09 start 4 converges in 424 calls uncapped). The registry's `T06-revision-v2` is unchanged.
@@ -229,16 +235,40 @@ def interrupt_at(
     assert_same_rng(before, rng_state())
 
 
+def openblas_core(package: Any, pattern: str, symbol: str) -> str:
+    """The OpenBLAS core `package`'s bundled library (`<package>.libs/<pattern>`) selected at
+    run time, read through its `symbol`; `unknown` on any failure (R-796, C1)."""
+    try:
+        libs = Path(package.__file__).parent.parent / f"{package.__name__}.libs"
+        (library,) = libs.glob(pattern)
+        corename = getattr(ctypes.CDLL(str(library)), symbol)
+        corename.restype = ctypes.c_char_p
+        return str(corename().decode())
+    except Exception:
+        return "unknown"
+
+
+def thm09_report(ref: Reference) -> str:
+    """R-796's one line for THM-09 start 4's uncapped run: what the length is measured on, and the
+    length."""
+    numpy_core = openblas_core(np, "libscipy_openblas64_*.so", "scipy_openblas_get_corename64_")
+    scipy_core = openblas_core(scipy, "libscipy_openblas*.so", "scipy_openblas_get_corename")
+    return (
+        f"T07 THM-09/4 uncapped: machine_class={ensemble.machine_class()}"
+        f" cpu_model={generator._cpu_model()} openblas_numpy={numpy_core}"
+        f" openblas_scipy={scipy_core} records={len(ref.lengths)} outcome={ref.outcome}"
+    )
+
+
 @pytest.mark.parametrize(("case_id", "start"), RUNS, ids=[f"{c}-{s}" for c, s in RUNS])
 def test_interrupt_at_record_k(case_id: str, start: int | None) -> None:
     ref = reference(case_id, start)
     if case_id == "THM-09":
+        report = thm09_report(ref)
+        TERMINAL_REPORT.append(report)
         machine = ensemble.machine_class()
         if machine in THM09_RECORDS:
-            assert len(ref.lengths) == THM09_RECORDS[machine], (
-                machine,
-                generator._cpu_model(),
-            )
+            assert len(ref.lengths) == THM09_RECORDS[machine], report
     else:
         assert len(ref.lengths) == {"STR-01": 8, "NET-03": 126}[case_id]
     assert len(ref.lengths) > max(K) or case_id == "STR-01"

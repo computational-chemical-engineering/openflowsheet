@@ -302,3 +302,8 @@ parallel (the note's §4.6 set-up).
   (`test_k03*`, `t06*`, `t07*`, `s01_`, `s02_`, `s06_`, `s03_`, `s08_`, `t05*`, `s10_`, `s10c_`, ledger, `t08_*`,
   `m07a*`; 224 files, one process each): 7050 passed, 31 skipped, 0 failed; ruff, ruff format (912 files), mypy (250)
   clean.
+- RULING (2026-10-26, `docs/reviews/S10C-S08b-build-decision-rulings.md`): G2 amended by R-795 (WO-D1 `37c2403f`;
+  manifest not regenerated, its G2 description already discloses the admission); THM-09/4 pins per R-796 (C1
+  `6ca7c47a`). Limitation that travels with R-796 into this package's manifest and the release report: "THM-09/4's
+  uncapped record length is regression-pinned on ref-x86-64 and ci-aarch64 only. On ci-x86-64 and on unregistered
+  classes it is reported, not pinned. G5's interruption assertions run on every class."

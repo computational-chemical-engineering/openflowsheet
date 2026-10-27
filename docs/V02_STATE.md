@@ -92,25 +92,47 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-26, workstation; no cloud sessions).** `main` = `764860d1` (S08b merged `e65b0690` at wp/S08b `1d4ca814`;
-tree identical; then its review docs). Last full gate: PASS at `1d4ca814`: 13286 passed, 3137 skipped. CI 40373688071 green
-(x86-64, aarch64, default-install, identity). v0.3 packages tested: S01–S05, S07, S08, S08b, S09, S10, S10-C; R01–R03 open.
+**Position (2026-10-26, workstation; no cloud sessions).** `main` = `77f54168` (wp/R796 merged at `3a2c17ae`, tree identical:
+R-795, R-796, T07 report line). Last full gate: PASS at `3a2c17ae`: 13288 passed, 3137 skipped. CI 40403579501 green.
+v0.3 packages tested: S01–S05, S07, S08, S08b, S09, S10, S10-C; R01–R03 open. **Way of working (Frank, 2026-10-26):** batch
+several items per branch, two engineers in parallel, one gate + one CI per batch.
 **S08b** (manifest `evidence/S08b/acbd1266…` tested 18/20, gate/CI unsupported; review `docs/reviews/S08b-review.md` sound,
 no must-fix): `S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61`; B2 1.6e-6 K. HARVEST_SIZE (59, 832, 101).
 **S10-C** (ADR 0049 Proposed; `evidence/S10c/2aedd250…` tested): γ–φ PH flash and column; R-782/R-785/R-786.
 
 **Next actions (in order):**
-1. **S08b review follow-up** (wp/S08b-f, worktree `s08b-f`): F1 (B1 docstring; `solved("C2")` memo filled before the
-   patches in `test_s01_cascade_wo3._forced_edge_3`) and F2 (a `_proposal`-level `items` test). Running. Then gate, CI, merge.
-2. Design-lane ruling round on build decisions: S10-C G2 admits `numerics/newton.py` and the two R-782 test edits by name;
-   T07 on an unregistered machine class checks only > 89 records; T07-1 (S08b log) unpins ci-x86-64 (runner CPU varies,
-   EPYC 7763 / 9V74: 94 vs 136). Ternary column claims need a methanol+ethanol refit (S10 S-4).
-3. Design-lane leftovers: S07 B-42, F-20.2, Q-A1-2; ADR 0046–0049 acceptance; S03 B6-1..B6-4; S10 B-86, B-87, B-90, B-91,
+1. **S11 — the binding package** (Frank, 2026-10-26: "I want the binding package"; supersedes the library-only defaults S05
+   Q-8, S10 Q-F2/R-709, S10-C Q1/Q3). wp/S11, worktree `s11`; brief `docs/briefs/S11-binding-design.md`, recon
+   `docs/briefs/S11-binding-recon.md`. Architect design + ADR 0050 running (register from R-800). Then tracks A and B in
+   parallel, one review, one gate, one CI. Fold in: the two stale S10 limitation sentences; R-796's limitation into the
+   S08b/S10-C manifests at their next regeneration.
+2. **E01 — cost estimation and LCA as general capabilities** (Frank, 2026-10-27: "I want cost estimation and LCA available,
+   because these are input in process optimization studies"). Cost and impact as differentiable model quantities usable as
+   objectives/constraints (blueprint §line 435-447: NLP bridge, "assessment adapters with currency year, location, factors,
+   uncertainty, and provenance"); open correlation sets (Turton/Seider/Woods, NETL QGESS) as registered cost providers,
+   public cost index (not CEPCI by default); LCA linear in inventory flows on Brightway with a pluggable background (free
+   data shipped; ecoinvent via the user's licence). Design done (`wp/E01` `49fef97c`, ADR 0052, R-850…R-862): post-solve
+   functionals through the parametric twin, exact Jacobians; SSLW from IDAES 2.13.0 (BSD); BLS/Eurostat PPI; AR6 GWP100.
+   Building (track A on `wp/E01`, which merged wp/S11). Frank 2026-10-27: optimiser generalisation = next package; Python
+   first; discrete choices fixed.
+2b. **NLP optimiser on revision flowsheets** (after E01; Frank 2026-10-27), with MCP/CLI/HTTP bindings for cost/LCA.
+3. **After S11 merges: revision-region continuation** (edge 3 for flowsheet regions; Frank 2026-10-27 "plan for it at the
+   appropriate time"; removes S11's L-COL-9, R-827). Design pass first.
+4. **PrISMa rework as a test case** (Frank, 2026-10-27: "get OpenFlowsheet to the level that it can rework PrISMa analysis
+   as one of the test cases"). Target: Charalambous et al., Nature 632 (2024), doi 10.1038/s41586-024-07683-8; data Zenodo
+   10.5281/zenodo.11244258 (cifs, simulated isotherms, heat capacities, all case results); layer software on request only.
+   Needs: adsorption-isotherm property model (CO2/N2/H2O), TSA/TVSA cycle unit (PrISMa's "ideal" model first), TEA (nCAC, CCC)
+   and LCA adapters, MEA reference, CO2 compression (S11). Scoping digest `docs/briefs/PrISMa-scoping.md` (2026-10-27):
+   equilibrium shortcut (SI §3.2, Ajenifuja 2020), GCMC isotherms + IAST, compression to 110 bar; TEA partly blocked
+   (Aspen ACCE costs), LCA rebuild blocked (ecoinvent) but comparable; first target UK cement TSA-dry (MgMOF74, 13X, CALF-20).
+   Design pass after S11.
+5. Ternary column claims need a methanol+ethanol refit (S10 S-4).
+6. Design-lane leftovers: S07 B-42, F-20.2, Q-A1-2; ADR 0046–0049 acceptance; S03 B6-1..B6-4; S10 B-86, B-87, B-90, B-91,
    verdict F1/F2; S08 W5-7 (X31 in `evidence` not `requirements`, schema takes D/A ids), W5-9 classes; S10-C W5-1/W5-2;
    the two stale S10 limitation sentences (Frank "Do it later", at the next S10 change).
-4. Binding package (S05/S07/S10 into flowsheets; needs Frank's go); S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
-5. Workstation backlog: M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
-6. For Frank (defaults set, `docs/FRANK_QUESTIONS.md`): S10-C Q1–Q4 (Wilson in flowsheets: no; IDAES column comparison:
+7. S07b cryogenic liquids; crosscheck re-take; pr-lib-v1 clean-up.
+8. Workstation backlog: M05 N1/S75/S77 (L2), M04 off-Haswell / J25 (L3), L1.
+9. For Frank (defaults set, `docs/FRANK_QUESTIONS.md`): S10-C Q1–Q4 (Wilson in flowsheets: no; IDAES column comparison:
    deferred; cascade/other units: no; purity/recovery/temperature specs: refused); S10-C F2 (theorem premises at admission,
    deferred to the binding package, R-781); S08b Q1 (v3 feed-band rule: not now); S08 Q1/Q3/Q4/Q6; Q-S09-2; Q-A6.2/Q-A6.3;
    S10 Q-F3 (ship after rights check; RC-05/06/08 unresolved). Remote scratch branches `wp/S08`, `wp/S09`, `wp/S10C`,
