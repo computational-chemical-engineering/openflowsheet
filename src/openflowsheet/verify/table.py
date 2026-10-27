@@ -26,14 +26,16 @@ A model id without an entry yields one `unsupported` check and caps the verdict 
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Iterator, Mapping, MutableMapping, Sequence
 from dataclasses import dataclass, field, replace
+from types import ModuleType
 from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import duty_id, flow_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import InstanceView, RevisionView
 from openflowsheet.models.syn001.conversion_reactor import extent_id
+from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.flash import total_flow_id
 from openflowsheet.models.syn001.pump import work_id
 from openflowsheet.models.syn001.tp_state import (
@@ -142,12 +144,18 @@ EXTERNAL_DUTY_MODELS: Final = (
     "c1.reactor_standin",
     # M04 WO-7: the surrogate's duty `<U>.Q`, M02's row (spec §3.2).
     "c1.reactor_surrogate",
+    # S11 units design §4.4 (I1b): the thermal heater's and flash's duty `<U>.Q`.
+    "thermal.heater",
+    "thermal.flash",
 )
 #: S11 design §4.8: a staged unit's duties are its own (`verify.column.duty`: each end's `Q_j` at
 #: the state, then the fixed `Q_j*`), not one `<U>.Q`.
 STAGED_DUTY_MODELS: Final = frozenset({"syn001.column"})
 #: `W`: the shaft work `<U>.W`.
-WORK_MODELS: Final = frozenset({"syn001.liquid_pump"})
+WORK_MODELS: Final = frozenset(
+    # S11 units design §4.4 (I1b): the three thermal machines' `<U>.W`.
+    {"syn001.liquid_pump", "thermal.pump", "thermal.compressor", "thermal.turbine"}
+)
 #: `ν_c ξ` on the material envelope; ADR 0011 D2's note on the energy balances. A conversion
 #: reactor's `ξ` is its extent column; a kinetic CSTR's is its rate `r`, which it does not own and
 #: the table recomputes from the state and the revision (`_cstr_rate`, T08 build-first §A1.6).
@@ -980,7 +988,7 @@ def _exchanger_bounds(unit: Unit, components: Sequence[str]) -> list[CheckResult
 
 #: §4.3's table, keyed by model id: the K02 entries (W1.d) and the T05 ones (W12), with spec
 #: §12.2's ids and formulas in §4.3's order and conventions.
-MODEL_CHECKS: Final[Mapping[str, ModelChecks]] = {
+_OWN_MODEL_CHECKS: Final[dict[str, ModelChecks]] = {
     "syn001.feed_source": ModelChecks(specification=_feed_specification),
     "syn001.adiabatic_mixer": ModelChecks(
         material=_mixer_material,
@@ -1103,6 +1111,43 @@ MODEL_CHECKS: Final[Mapping[str, ModelChecks]] = {
         for model in sorted(pr_c1.REACTOR_MODELS)
     },
 }
+
+
+class _ModelChecksTable(MutableMapping[str, ModelChecks]):
+    """`MODEL_CHECKS`: this module's rows, then `verify.thermal.MODEL_CHECKS`'s seven `thermal.*`
+    rows (units design §4.8, I1b), imported at the read because that module imports this one.
+    A write goes to this module's rows (a test registering one, `monkeypatch.setitem`)."""
+
+    def __init__(self, own: dict[str, ModelChecks]) -> None:
+        self._own = own
+
+    @staticmethod
+    def _thermal() -> Mapping[str, ModelChecks]:
+        from openflowsheet.verify import thermal  # noqa: PLC0415
+
+        return thermal.MODEL_CHECKS
+
+    def __getitem__(self, model: str) -> ModelChecks:
+        if model in self._own:
+            return self._own[model]
+        return self._thermal()[model]
+
+    def __setitem__(self, model: str, entry: ModelChecks) -> None:
+        self._own[model] = entry
+
+    def __delitem__(self, model: str) -> None:
+        del self._own[model]
+
+    def __iter__(self) -> Iterator[str]:
+        yield from self._own
+        yield from (model for model in self._thermal() if model not in self._own)
+
+    def __len__(self) -> int:
+        return len(self._own.keys() | self._thermal().keys())
+
+
+#: Model id -> its rows: SYN-001's, C1's, the column's, and the seven `thermal.*` models'.
+MODEL_CHECKS: Final[MutableMapping[str, ModelChecks]] = _ModelChecksTable(_OWN_MODEL_CHECKS)
 
 
 # -- the flowsheet rows ------------------------------------------------------------------------
@@ -1632,6 +1677,13 @@ def degeneracy(
 # -- the check set -----------------------------------------------------------------------------
 
 
+def _thermal_rows() -> ModuleType:
+    """`verify.thermal`, imported at the call: it imports this module."""
+    from openflowsheet.verify import thermal  # noqa: PLC0415
+
+    return thermal
+
+
 def revision_checks(
     view: RevisionView,
     splits: Sequence[LiftedSplit],
@@ -1671,17 +1723,53 @@ def revision_checks(
     # B15: a `pr-c1-v1` revision takes `verify.pr_c1`'s forms at the sites below, SYN-001's runs
     # SYN-001's lines, and every other basis the declared-phase mixture form (`verify.forms`).
     form = forms.form_of(view.basis.provider_id)
+    if form == forms.GAMMA_PHI_UNITS:
+        # Units design §4.8 (I1b): `wilson-ig-v2` revisions take the γ–φ form, which imports this
+        # module.
+        from openflowsheet.verify import gamma_phi_units  # noqa: PLC0415
+
+        return gamma_phi_units.revision_checks(
+            view,
+            splits,
+            state,
+            provider=provider,
+            context=context,
+            tolerances=tolerances,
+            judged_at=judged_at,
+            owners=owners,
+        )
     pr = form == forms.PR
     mixture = form == forms.DECLARED_MIXTURE
     declared = forms.declared_phases(view) if mixture else {}
+    # Units design §4.8 (I1b): on a pure-fluid basis a `vapor_liquid` outlet of a `thermal.*` unit
+    # is saturated (ADR 0051 D1; L-TH-2), read from its carried split by `verify.thermal`; any other
+    # stream without a declared phase stays unlifted (S11.A17).
+    saturated = (
+        frozenset(
+            stream
+            for instance in view.instances
+            if instance.model_id.startswith("thermal.")
+            for port, streams in instance.ports.items()
+            if instance.directions.get(port) == "outlet" and instance.phases.get(port) is None
+            for stream in streams
+        )
+        if mixture and not composition_dependent(provider)
+        else frozenset()
+    )
     if mixture:
         # No bands; a flowing stream without a declared phase is unlifted (its checks blocked).
         degenerate = Degeneracy(
+            notes={
+                stream: _thermal_rows().CARRIED_SPLIT_NOTE.format(stream=stream)
+                for stream in saturated
+            },
             unlifted=frozenset(
                 stream
                 for stream, phase in declared.items()
-                if phase is None and not stream_of(at, stream, components).is_dormant
-            )
+                if phase is None
+                and stream not in saturated
+                and not stream_of(at, stream, components).is_dormant
+            ),
         )
     else:
         degenerate = (
@@ -1709,10 +1797,15 @@ def revision_checks(
             enthalpy[stream] = pr_c1.enthalpy_flow(provider, carried, context, components)
         elif mixture:
             phase = declared[stream]
-            # An unlifted stream's value is never judged: every check reading it is blocked.
-            enthalpy[stream] = (
-                0.0 if phase is None else forms.enthalpy_flow(provider, carried, phase, context)
-            )
+            if stream in saturated:
+                enthalpy[stream] = _thermal_rows().saturated_enthalpy(
+                    provider, at, stream, context, components
+                )
+            else:
+                # An unlifted stream's value is never judged: every check reading it is blocked.
+                enthalpy[stream] = (
+                    0.0 if phase is None else forms.enthalpy_flow(provider, carried, phase, context)
+                )
         else:
             enthalpy[stream] = enthalpy_flow(provider, carried, context)
 
@@ -1770,6 +1863,10 @@ def revision_checks(
     admissibility: list[CheckResult] = []
     if mixture:
         admissibility += forms.stream_admissibility(view, declared, at, provider, context, note)
+        if saturated:
+            admissibility += _thermal_rows().saturated_stream_checks(
+                view, at, provider, context, tolerances, note
+            )
         admissibility += own_admissibility
         return [*material, *energy, *specification, *bounds, *admissibility]
     if pr:

@@ -1,8 +1,9 @@
 """The verifier's rows for the `thermal.*` family and the saturated pure-fluid stream (S11 units
 design §4.8; ADR 0051; WO-C5).
 
-Hooked at I1b into the first pass's `DECLARED_MIXTURE` form (`verify.table`, `verify.forms`); until
-then its tests call these functions directly. Everything here is the verifier's own computation
+Hooked at I1b into the first pass's `DECLARED_MIXTURE` form: `verify.table.MODEL_CHECKS` reads
+this module's `MODEL_CHECKS`, and on a pure-fluid basis `revision_checks` takes a saturated
+stream's enthalpy and checks from here. Everything here is the verifier's own computation
 from the fresh provider and the state; nothing calls `models.thermal.kernel` (S11.A66).
 
 - **The enthalpy map** (`enthalpy_map`). A single-phase stream keeps A3's rule, `n·h(T, P, phase)`

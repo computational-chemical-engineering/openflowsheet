@@ -1,7 +1,8 @@
 """S11 WO-C5: the verifier's `thermal.*` rows and saturated streams (S11 units design §4.8).
 
 The functions of `verify.thermal` are called directly (they enter the table at I1b) on states the
-C2/C3 units produce: each test binds a revision with the C4 builders (monkeypatched tables), runs
+C2/C3 units produce: each test binds a revision with the C4 builders (the binder's tables since
+I1b), runs
 the units' own `evaluate` in order, and judges that state with a fresh provider. S11.A64's check
 set on these states, A65's mutations, A66's independence from `models.thermal.kernel`.
 """
@@ -22,7 +23,6 @@ from test_s11_thermal_binding import (
     outlet_pressure,
     outlet_temperature,
     pascal,
-    register,
 )
 from test_s11_thermal_machines import ADDITIVE_STATES, CP, _closed_form, _IdealGas
 
@@ -215,9 +215,8 @@ def by_id(checks: Sequence[CheckResult]) -> dict[str, CheckResult]:
 
 
 @pytest.fixture
-def judged(monkeypatch: pytest.MonkeyPatch) -> Any:
-    """Returns `(view, state, checks)` for a case name, the C4 builders registered."""
-    register(monkeypatch)
+def judged() -> Any:
+    """Returns `(view, state, checks)` for a case name."""
 
     def judge(case: str) -> tuple[RevisionView, dict[str, float], dict[str, CheckResult]]:
         document = CASES[case]()

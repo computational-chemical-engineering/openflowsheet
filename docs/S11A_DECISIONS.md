@@ -336,3 +336,58 @@ Identity at `079be287` (final, clean scratch worktree): `S11-IDENTITY FAIL n=544
 - S4 (acceptance 4, next WO, after the thermal registry commit): `snapshot.build_snapshot(registration_version=3)` of
   the installed build, then classify the 225 development rows under version 3 with no refusal and record the counts
   (`benchmarks/m06/w27`, S11.A40; register S4's SHA-256 in W27v3-R08).
+
+## WO-I1b part 2: registration, hooks and refusal texts (registration commit), and the handoff
+
+- Registration: the seven `thermal.*` signatures are defined in `revision_binding` (`_THERMAL_*`, as `_COLUMN` is
+  for `column_binding`: `thermal_binding` imports `revision_binding`, so a bottom-of-module import breaks when
+  `thermal_binding` is imported first); `MODEL_BUILDERS` holds `_thermal_builder(id)`, which imports
+  `thermal_binding.BUILDERS` at the call; `thermal_binding.SIGNATURES`/`BASES` now read the binder's rows. The five
+  γ–φ-faced `syn001.*` units gain `wilson-ig-v2`. 30 members in all three tables (both import orders checked).
+- Hooks: `forms.GAMMA_PHI_UNITS` (`wilson-ig-v2` → it; v1 stays `DECLARED_MIXTURE`); `table.revision_checks`
+  dispatches it to `gamma_phi_units.revision_checks` (lazy import). `table.MODEL_CHECKS` is a `MutableMapping`
+  over the table's own rows then `verify.thermal.MODEL_CHECKS` (lazy; writes go to the own rows so
+  `monkeypatch.setitem` still works). `EXTERNAL_DUTY_MODELS` += thermal heater, flash; `WORK_MODELS` += the three
+  machines (without them the envelope misses Q/W; S11D D's DECISION measured −878.17 W).
+- DECISION: on a pure-fluid basis only a `vapor_liquid` outlet of a `thermal.*` instance is saturated (read from
+  its carried split, `verify.thermal.saturated_*`); any other undeclared stream stays unlifted, because S11.A17
+  (restated R-841) drives `vapor_liquid` routing products through `revision_checks` directly and needs them
+  blocked. Alternative: every `vapor_liquid` stream on a pure basis (§4.8's literal reading; breaks A17). Reversible
+  by: the `saturated` set in `table.revision_checks`.
+- DECISION: `thermal.flash` on Wilson names `syn001.ph_flash` (both duty-specified). Alternative: `syn001.tp_flash`.
+  Reversible by: `_LIFTED_NAMESAKE`.
+- DECISION: the no-volume reason reads "wilson-ig-v2 has no liquid volume, which a pump needs (L-GP-1)" (§4.7 gives
+  no literal). Alternative: any other wording. Reversible by: `_UNADMITTED["no_volume"]`.
+- OPEN: pairs §4.7 does not rewrite keep their first-pass reason, so `syn001.heat_exchanger`, separator and reactors
+  on a pure fluid still say "pure-fluid units are S11b (...)" and on Wilson "γ–φ faces are S11c", which are stale.
+  Default: leave (not this WO's text); design lane to give texts.
+- Dropped helpers: `test_s11_thermal_binding.register`/`registered`, `s11_gp_support.admit_wilson`,
+  `admit_machines`; `dispatch_gamma_phi` became `count_gamma_phi` (a spy on the real dispatch). The test
+  `test_until_i1b_the_binder_refuses_the_family` became `test_since_i1b_the_binder_holds_the_family`.
+
+**Handoff (context cap reached; the next engineer resumes here).** Done: brief part 2 items 1–3 (registration
+commit). Not done, in order:
+1. G1 identity on the registration commit (expect `changed=[]` plus possibly the new-matrix S11-own tests).
+2. `tests/test_s11_routing.py` A13 tests (`test_a13_the_admission_matrix`, `..._every_refused_pair_on_a_new_basis...`
+   `_expected_reason`) still encode the pre-I1b matrix: restate them to §4.7 (five units + Wilson; thermal rows;
+   new reasons) — S11's own tests, no AMENDED_TESTS entry. Add A82 (30 members, admission = §4.7) and the
+   `model_unsupported(thermal.pump)` no-volume assertion to GP-M2's test (A81 binder half).
+3. Item 12 (R-841): remove the `S11_BASES` filter in `_basis_refusal` ("bases" when > 1). NOTE: until then a
+   `thermal.*` refusal on SYN-001/C1 renders an empty basis list (all its bases are S11's) — do it next.
+   Expected moved base tests: `tests/test_m02_join.py` feed_source, stream_splitter and valve refusal tests
+   (`syn001.valve` gained Wilson) → `AMENDED_TESTS` citing R-841. Re-derive `BASE_SYN001_C1_HINTS` (22 pairs) as
+   the unchanged-model subset, measured at the base `8c34ecb0`.
+4. Brief items 5 (envelope, support matrix, L-TH-1…8, L-GP-1…3, providers axis, `--emit/--check`), 6 (samples,
+   §8.3 count tests), 7 (S4, `v2_binder()` restriction — the default stands: restrict models and `list_models` to
+   v1/v2's table, isolated commit, DECISION extending R-837), 8 (item 10: Q-C2, C3-2 new code
+   `isentropic_state_single_phase`, O-C6-1 RANK_DEFICIENT check — STOP if not), then G1/S08/S10C.
+5. Measured at this commit (`pytest tests/test_s11_*.py test_m02_wo8_registries test_t05_w1d_verifier
+   test_m02_wo9_reactor`): 978 passed, 64 skipped, **14 failed**, each the pre-I1b matrix pinned by a test:
+   `test_s11_routing` A13 ×6 (item 2/3 above), `test_s11_gp_binding::test_unpatched_the_five_are_refused_on_wilson`
+   ×5 (obsolete since the Wilson rows landed: restate as admitted), `test_s11_column_registration::test_a39_...`
+   (registry size 23 → 30), `test_s11_w27_v3::test_v3_routes_are_the_v2_routes_with_their_record_sources` (the
+   thermal models through `v2_binder()`: item 7's restriction), and the BASE test
+   `tests/test_m02_wo8_registries.py::test_the_envelope_sets_gain_the_c1_ids` (pins `EXTERNAL_DUTY_MODELS` /
+   `WORK_MODELS`, which now hold the thermal duty and work models). OPEN (design lane, not in §8.3): amend it under
+   §8.3 (restricted to non-`thermal.` ids, the C6-2 precedent) — default; or the envelope reads the thermal Q/W from
+   a separate set. Thermal/GP solve and verifier tests all pass through the real registration and hooks.

@@ -6,8 +6,9 @@ from the units' own start it closes with no Newton step, and from a perturbed st
 on the γ–φ rows (`GammaPhiLnKBlock`, the mixture enthalpy blocks) back to the same root.
 
 "VERIFIED" is `verify_revision`'s certificate with the v2 basis dispatched to the γ–φ form
-(`s11_gp_support.dispatch_gamma_phi`, I1b's hook), every check passing. Each certificate's
-derivative witness records |Z| (S11 rulings item 2, R-831: the exactly-zero component columns
+(I1b's hook; `s11_gp_support.count_gamma_phi` counts its calls), every check passing. Each
+certificate's derivative witness records |Z| (S11 rulings item 2, R-831: the exactly-zero component
+columns
 beside a positive sibling, differenced one-sided) and the one-sided part's worst, which must stay
 ≤ `DERIVATIVE_TOLERANCE`/10 (a larger value is a stop, never a widening).
 """
@@ -25,10 +26,8 @@ from s11_gp_support import (
     GP_M1_OUTLET_P,
     GP_M2_INLET,
     GP_M2_OUTLET_P,
-    admit_machines,
-    admit_wilson,
     committed_case,
-    dispatch_gamma_phi,
+    count_gamma_phi,
     gp_c3,
     solve,
 )
@@ -71,14 +70,9 @@ P_ATM = 101_325.0
 CONTEXT = EvaluationContext(model_version="t", constants_sha256="0" * 64, phase_signature=None)
 
 
-@pytest.fixture(autouse=True)
-def wilson_admitted(monkeypatch: pytest.MonkeyPatch) -> None:
-    admit_wilson(monkeypatch)
-
-
 @pytest.fixture
 def gamma_phi(monkeypatch: pytest.MonkeyPatch) -> list[int]:
-    return dispatch_gamma_phi(monkeypatch)
+    return count_gamma_phi(monkeypatch)
 
 
 @pytest.mark.parametrize("name", sorted(CASES))
@@ -366,14 +360,13 @@ def _pure_vapour_enthalpy(
     return total
 
 
-def test_a80_gp_m1_wilson_compressor(gamma_phi: list[int], monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a80_gp_m1_wilson_compressor(gamma_phi: list[int]) -> None:
     """S11.A80: VERIFIED with the γ–φ dispatch; W = Σ_j n_j[h_j(T_s, P_O) − h_j(T_I, P_I)]/η with
     T_s from the verifier's own bisection, within τ_E; the outlet's `stability` is
     STABLE_WITHIN_TESTED_SCOPE; the outlet inside the records' 400 K with a dew-point margin of
     at least 5 K at both ends. Measured: CONVERGED, 41 checks; T_O 391.72 K, W 878.17 W, equal to
     the verifier's Ḣ_s form to 0.0 W; dew margins 31.2 K (inlet) and 47.7 K (outlet); the
     outlet's liquid-trial tm 0.826; |Z| = 2 (the ethanol columns), one-sided worst 1.75e-10."""
-    admit_machines(monkeypatch)
     certificate, state, witness, _ = certified(committed_case("GP-M1"), gamma_phi)
     assert_verified(certificate)
     assert {c.id for c in certificate.checks if c.category == "energy_balance"} >= {
@@ -413,7 +406,6 @@ def test_a81_gp_m2_a_wilson_turbine_crossing_the_dew_point_is_refused(
     refuses at initialization, typed, before any Newton step. A81 admits either code; with
     S11D WO-I1b B's reading it is `isentropic_state_two_phase(M)` (without it, the outlet's
     `phase_regime_mismatch(S2)`)."""
-    admit_machines(monkeypatch)
     document = committed_case("GP-M2")
     _, _, run = solve(document)
     assert run.outcome == "INITIALIZATION_FAILED", (run.outcome, run.message)

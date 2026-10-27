@@ -4,8 +4,8 @@ The spike first (Q18): does the region backtrack on a block's `invalid_trial_sta
 trial? A duty-mode heater with a liquid outlet, started cold, takes a full Newton step past T_sat;
 the liquid block refuses it (`phase_not_stable`, a `DomainError`), the compiled boundary reports
 `invalid_trial_state`, and the Newton core halves the step. TH-V1 (valve → drum) is the first
-registered case through the region. The seven models are registered in monkeypatched tables
-(`s11_thermal_support`), as I1b has not registered them yet; "VERIFIED" here is the C5 check set
+registered case through the region. The seven models are rows of the binder's tables (I1b);
+"VERIFIED" here is the C5 check set
 (`test_s11_thermal_verifier.verifier_checks`, the I1b hook's assembly) at x_final, every check
 computed and passing.
 """
@@ -27,7 +27,6 @@ from test_s11_thermal_binding import (
     instance,
     outlet_pressure,
     outlet_temperature,
-    register,
 )
 from test_s11_thermal_verifier import CONTEXT, evaluated_state, verifier_checks
 
@@ -45,11 +44,6 @@ ROOT = Path(__file__).resolve().parents[1]
 TAU_E = KIND_TOLERANCE["heat_rate"]
 TAU_FLOW = KIND_TOLERANCE["molar_flow"]
 TAU_T = KIND_TOLERANCE["temperature"]
-
-
-@pytest.fixture
-def registered(monkeypatch: pytest.MonkeyPatch) -> None:
-    register(monkeypatch)
 
 
 def accepted_steps(run: PlanResult) -> int:
@@ -100,7 +94,7 @@ def _heater(specification: dict[str, Any]) -> dict[str, Any]:
     )
 
 
-def test_q18_the_region_backtracks_on_a_blocks_invalid_trial_state(registered: None) -> None:
+def test_q18_the_region_backtracks_on_a_blocks_invalid_trial_state() -> None:
     """Q18: the duty that takes 300 K liquid to 452.5 K at 1 MPa (T_sat 453.03 K), solved from a
     start with the outlet at 300 K. The first full Newton step lands above T_sat; the trial is
     rejected `invalid_trial` with the liquid block's `phase_not_stable`, the step halves, and
@@ -132,7 +126,7 @@ def test_q18_the_region_backtracks_on_a_blocks_invalid_trial_state(registered: N
 # -- TH-V1 -----------------------------------------------------------------------------------------
 
 
-def test_th_v1_valve_to_drum_converges_and_verifies(registered: None) -> None:
+def test_th_v1_valve_to_drum_converges_and_verifies() -> None:
     """TH-V1 through the region from the traversal start: CONVERGED; the state is the units' own
     sequential evaluation; every C5 check passes; Ḣ_S1 = Ḣ_S3 + Ḣ_S4 (Q = 0) within τ_E."""
     document = committed_case("TH-V1")
@@ -217,7 +211,7 @@ def _dormant_heater(q: float) -> dict[str, Any]:
     )
 
 
-def test_a62_a_dormant_heater_with_zero_duty_converges_on_the_label_row(registered: None) -> None:
+def test_a62_a_dormant_heater_with_zero_duty_converges_on_the_label_row() -> None:
     """S11.A62 (Q_spec = 0, `T05b-phase-contract-v2`): CONVERGED in the attempt whose signature
     holds `H.outlet` ZERO_FLOW, the outlet at its label temperature."""
     _, run = solve(_dormant_heater(0.0))
@@ -230,7 +224,7 @@ def test_a62_a_dormant_heater_with_zero_duty_converges_on_the_label_row(register
     assert run.state["H.Q"] == 0.0
 
 
-def test_a62_a_dormant_heater_with_a_duty_is_a_specification_conflict(registered: None) -> None:
+def test_a62_a_dormant_heater_with_a_duty_is_a_specification_conflict() -> None:
     """S11.A62 (Q_spec = 1 kW): `SPECIFICATION_CONFLICT` `zero_flow_conflict(H:TH-energy)`."""
     _, run = solve(_dormant_heater(1.0e3))
     assert run.outcome == "SPECIFICATION_CONFLICT"
@@ -259,7 +253,7 @@ def energy_closure(
     return supplied - (sum(enthalpy[s] for s in products) - sum(enthalpy[s] for s in feeds))
 
 
-def test_a59_th_c1_rankine(registered: None) -> None:
+def test_a59_th_c1_rankine() -> None:
     """S11.A59: CONVERGED and every C5 check passing; the cycle's energy closes within 5 τ_E;
     (−W_t − W_p)/Q_b equals CoolProp's reference cycle within 1e-7 relative."""
     document = committed_case("TH-C1")
@@ -278,7 +272,7 @@ def test_a59_th_c1_rankine(registered: None) -> None:
     assert abs(beta - reference["turbine_outlet"]["beta"]) <= 1e-7
 
 
-def test_a60_th_c2_refrigeration(registered: None) -> None:
+def test_a60_th_c2_refrigeration() -> None:
     """S11.A60 on `coolprop-heos-v1` R134a: CONVERGED, every C5 check passing; the COP equals
     the reference within 1e-7 relative."""
     require_coolprop()
@@ -297,7 +291,7 @@ def test_a60_th_c2_refrigeration(registered: None) -> None:
     assert abs(cop - reference["COP"]) <= 1e-7 * reference["COP"]
 
 
-def test_a61_th_r1_recycle(registered: None) -> None:
+def test_a61_th_r1_recycle() -> None:
     """S11.A61: CONVERGED, every C5 check passing; every stream's flow and T equal the reference
     script's sequential-modular solution within 1e-6 relative and 1e-5 K; 0.1 < β < 0.9 at the
     drum."""
@@ -360,7 +354,7 @@ def _throttle(outlet: str) -> dict[str, Any]:
     )
 
 
-def test_a63_a_liquid_valve_outlet_that_flashes_is_a_regime_mismatch(registered: None) -> None:
+def test_a63_a_liquid_valve_outlet_that_flashes_is_a_regime_mismatch() -> None:
     """S11.A63: the traversal refuses `phase_regime_mismatch(S2)`; the valve's answer, the line
     the traversal reads, carries the hint "declare vapor_liquid". Declared `vapor_liquid`, the
     same throttle converges."""

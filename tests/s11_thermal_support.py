@@ -2,8 +2,7 @@
 
 Each case is a revision document built here and committed under `benchmarks/s11/thermal/`; the
 test `test_the_committed_case_is_the_generated_one` keeps the two equal. The seven `thermal.*`
-models enter the binder's tables only at I1b, so a solve registers them in monkeypatched tables
-(`test_s11_thermal_binding.register`). Regenerate the committed cases with
+models are rows of the binder's tables since I1b. Regenerate the committed cases with
 `PYTHONPATH=src:tests python tests/s11_thermal_support.py`.
 """
 

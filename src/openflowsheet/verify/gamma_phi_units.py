@@ -1,8 +1,8 @@
 """The verifier's γ–φ form for the K02/T05 units' lifted splits (S11 units design §4.8; ADR 0051;
 WO-D3).
 
-The dispatch at I1b sends `wilson-ig-v2` revisions here (`GAMMA_PHI_UNITS`); until then the tests
-call `revision_checks` directly. It is the first pass's `DECLARED_MIXTURE` form (`verify.forms`,
+Since I1b `verify.table.revision_checks` sends `wilson-ig-v2` revisions here (`GAMMA_PHI_UNITS`).
+It is the first pass's `DECLARED_MIXTURE` form (`verify.forms`,
 `verify.table.revision_checks`) with one addition, so that the five γ–φ-faced units of WO-D1 are
 verified rather than blocked:
 
@@ -86,8 +86,9 @@ __all__ = [
     "split_checks",
 ]
 
-#: The form's name, for the dispatch at I1b (`verify.forms.Form` gains it there).
-GAMMA_PHI_UNITS: Final = "GAMMA_PHI_UNITS"
+#: The form's name: `verify.forms.form_of("wilson-ig-v2")`, which `verify.table.revision_checks`
+#: dispatches here (I1b).
+GAMMA_PHI_UNITS: Final = forms.GAMMA_PHI_UNITS
 #: A09, as A3's `verify.forms._SHARED` for the admissibility criterion: the band is the units' own.
 BAND_NOTE: Final = (
     "; the band is models.syn001.saturation_band.degeneracy_distance, the implementation the "

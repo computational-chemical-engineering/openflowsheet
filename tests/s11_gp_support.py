@@ -4,12 +4,10 @@ Each case is a revision on Wilson's real records (`WILSON_RECORDS`, which select
 since WO-D5), built here and committed as `benchmarks/s11/gp/<name>.json` (regenerate with
 `python tests/s11_gp_support.py`; a test asserts the committed file is the generated one).
 
-`MODEL_BASES` admits the five K02/T05 units on SYN-001's basis only until the integration WO (I1b)
-adds Wilson's row, so `admit_wilson` monkeypatches that row, as `test_s11_gp_binding` does; and
-`table.revision_checks` dispatches the v2 basis to `gamma_phi_units.revision_checks` only from
-I1b, so `dispatch_gamma_phi` patches that one call. The Wilson compressor and turbine (GP-M1,
-GP-M2) enter the binder's tables and `verify.table.MODEL_CHECKS` at I1b's registration commit;
-until then `admit_machines` registers them, as `test_s11_thermal_binding.register` does.
+Since I1b `MODEL_BASES` admits the five K02/T05 units and the Wilson compressor and turbine on
+`wilson-ig-v2`, and `table.revision_checks` dispatches the v2 basis to
+`gamma_phi_units.revision_checks`; `count_gamma_phi` counts those calls, so a test can see the
+form was used.
 """
 
 from __future__ import annotations
@@ -21,11 +19,10 @@ from typing import Any
 
 import pytest
 from m02_c1_support import connection, quantity, revision, specification
-from test_s11_thermal_binding import dimensionless, register
+from test_s11_thermal_binding import dimensionless
 
 from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_binding import (
-    MODEL_BASES,
     RevisionBinding,
     bind_revision_flowsheet,
 )
@@ -34,8 +31,7 @@ from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePolicy
-from openflowsheet.verify import CheckResult, gamma_phi_units, table
-from openflowsheet.verify import thermal as verify_thermal
+from openflowsheet.verify import CheckResult, gamma_phi_units
 
 GP = Path(__file__).resolve().parents[1] / "benchmarks" / "s11" / "gp"
 
@@ -276,38 +272,18 @@ def committed_case(name: str) -> Document:
     return document
 
 
-def admit_wilson(monkeypatch: pytest.MonkeyPatch) -> None:
-    """`MODEL_BASES` with Wilson's row for the five, as I1b will add it."""
-    for model in FIVE:
-        monkeypatch.setitem(
-            MODEL_BASES, model, frozenset({*MODEL_BASES[model], WILSON_BASIS.provider_id})
-        )
-
-
-def admit_machines(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The seven `thermal.*` models in the binder's tables (their `BASES` give the compressor and
-    turbine Wilson's row), and the two machines' rows in `verify.table.MODEL_CHECKS` and their W
-    in the energy envelope's `WORK_MODELS`, as I1b's registration commit will add them."""
-    register(monkeypatch)
-    for model in (COMPRESSOR, TURBINE):
-        monkeypatch.setitem(table.MODEL_CHECKS, model, verify_thermal.MODEL_CHECKS[model])
-    monkeypatch.setattr(table, "WORK_MODELS", table.WORK_MODELS | {COMPRESSOR, TURBINE})
-
-
-def dispatch_gamma_phi(monkeypatch: pytest.MonkeyPatch) -> list[int]:
-    """`table.revision_checks` sending the v2 basis to the γ–φ form, as I1b's hook will; returns
-    the number of checks of each dispatched call, so a test can see the form was used."""
-    original = table.revision_checks
+def count_gamma_phi(monkeypatch: pytest.MonkeyPatch) -> list[int]:
+    """`gamma_phi_units.revision_checks` wrapped to record the number of checks of each call that
+    `table.revision_checks` dispatches to it (I1b's hook), so a test can see the form was used."""
+    original = gamma_phi_units.revision_checks
     calls: list[int] = []
 
-    def dispatch(view: Any, *args: Any, **kwargs: Any) -> list[CheckResult]:
-        if view.basis.provider_id == WILSON_BASIS.provider_id:
-            found = gamma_phi_units.revision_checks(view, *args, **kwargs)
-            calls.append(len(found))
-            return found
-        return original(view, *args, **kwargs)
+    def counted(*args: Any, **kwargs: Any) -> list[CheckResult]:
+        found = original(*args, **kwargs)
+        calls.append(len(found))
+        return found
 
-    monkeypatch.setattr(table, "revision_checks", dispatch)
+    monkeypatch.setattr(gamma_phi_units, "revision_checks", counted)
     return calls
 
 

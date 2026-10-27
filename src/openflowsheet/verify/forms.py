@@ -34,6 +34,7 @@ from openflowsheet.verify.checks import KIND_REFERENCE, VerifierError, stream_of
 
 __all__ = [
     "DECLARED_MIXTURE",
+    "GAMMA_PHI_UNITS",
     "PR",
     "PURE_FLUID_MARGIN",
     "SYN",
@@ -44,11 +45,17 @@ __all__ = [
     "stream_admissibility",
 ]
 
-Form = Literal["SYN", "PR", "DECLARED_MIXTURE"]
+Form = Literal["SYN", "PR", "DECLARED_MIXTURE", "GAMMA_PHI_UNITS"]
 SYN: Final[Form] = "SYN"
 PR: Final[Form] = "PR"
 DECLARED_MIXTURE: Final[Form] = "DECLARED_MIXTURE"
-_FORMS: Final[Mapping[str, Form]] = {"syn001": SYN, "pr-c1-v1": PR}
+#: Units design §4.8 (I1b): `wilson-ig-v2`'s form, `verify.gamma_phi_units` (its `GAMMA_PHI_UNITS`).
+GAMMA_PHI_UNITS: Final[Form] = "GAMMA_PHI_UNITS"
+_FORMS: Final[Mapping[str, Form]] = {
+    "syn001": SYN,
+    "pr-c1-v1": PR,
+    "wilson-ig-v2": GAMMA_PHI_UNITS,
+}
 #: A09: the γ–φ admissibility criterion is the units' own implementation, not an independent one.
 _SHARED: Final = (
     "; the admissibility criterion is models.syn001.tp_state.single_phase_admissible, the "
