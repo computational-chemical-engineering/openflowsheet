@@ -10,17 +10,13 @@ provider: the kernel takes floats (units design §2.4, §4.1).
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from dataclasses import dataclass
 
-from openflowsheet.models import UnitEvaluation
 from openflowsheet.models.thermal.kernel import Failure
 from openflowsheet.thermo import StreamState
 
 __all__ = [
     "SaturatedStreamState",
-    "ThermalEvaluation",
     "carried_fraction",
     "liquid_id",
     "saturated_owned",
@@ -73,28 +69,3 @@ def carried_fraction(state: StreamState, stream: str) -> float | Failure:
         f"carried_split_missing({stream})",
         f"{stream} is declared vapor_liquid but arrived without its carried split",
     )
-
-
-if TYPE_CHECKING or "owned" not in UnitEvaluation.__dataclass_fields__:
-
-    @dataclass(frozen=True)
-    class ThermalEvaluation(UnitEvaluation):
-        """`UnitEvaluation` with WO-B2's `owned` (S11 design §4.7.5), until B2 merges.
-
-        Track C is built on `wp/S11` before track B's B2 lands; `models/__init__.py` is track B's
-        file, so the field is bridged here with B2's exact semantics (a failed evaluation owns
-        nothing) and the bridge disappears once the base class has it (S11C_DECISIONS C1-1).
-        """
-
-        owned: Mapping[str, float] = field(default_factory=dict)
-
-        def __post_init__(self) -> None:
-            super().__post_init__()
-            if self.status != "ok" and self.owned:
-                raise ValueError(
-                    f"status {self.status!r} carries owned values; a failed evaluation reports "
-                    "what went wrong and nothing a caller could mistake for an answer"
-                )
-
-else:  # pragma: no cover - once WO-B2's `UnitEvaluation.owned` reaches this branch
-    ThermalEvaluation = UnitEvaluation

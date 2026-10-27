@@ -67,7 +67,7 @@ from openflowsheet.models.thermal.common import (
 )
 from openflowsheet.models.thermal.kernel import Failure, Mismatch, declared_state
 from openflowsheet.models.thermal.rows import expansion_work_row
-from openflowsheet.models.thermal.state import ThermalEvaluation, carried_fraction
+from openflowsheet.models.thermal.state import carried_fraction
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 SPECIFICATION: Final = "docs/derivations/S11-units-design.md §4.4"
@@ -498,7 +498,7 @@ class ThermalMachine:
         # (0) Dormant: zero work; the outlet labelled with the inlet's T at P_spec (§4.4).
         if feed.is_dormant:
             dormant = outlet(out, form, (0.0,), feed.temperature, pressure)
-            return ThermalEvaluation(
+            return UnitEvaluation(
                 status="ok",
                 outlets={"outlet": dormant.state},
                 work=0.0,
@@ -572,7 +572,7 @@ class ThermalMachine:
         if isinstance(closed, Mismatch):
             return self._failure(closed.failure(out))
         done = outlet(out, form, feed.n, closed.temperature, pressure, closed.beta)
-        return ThermalEvaluation(
+        return UnitEvaluation(
             status="ok",
             outlets={"outlet": done.state},
             work=work,

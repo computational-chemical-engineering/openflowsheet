@@ -57,7 +57,7 @@ from openflowsheet.models.thermal.kernel import (
     saturation,
 )
 from openflowsheet.models.thermal.rows import quality_row
-from openflowsheet.models.thermal.state import ThermalEvaluation, vapor_id
+from openflowsheet.models.thermal.state import vapor_id
 from openflowsheet.thermo import PropertyProvider, StreamState
 
 MODEL_ID: Final = "thermal.heater"
@@ -375,7 +375,7 @@ class ThermalHeater:
 
         if feed.is_dormant:
             dormant = outlet(out, form, (0.0,), feed.temperature, pressure)
-            return ThermalEvaluation(
+            return UnitEvaluation(
                 status="ok",
                 outlets={"outlet": dormant.state},
                 duty=0.0,
@@ -430,7 +430,7 @@ class ThermalHeater:
             done = outlet(out, form, feed.n, sat.temperature, pressure, beta)
             duty = leaving - entering
 
-        return ThermalEvaluation(
+        return UnitEvaluation(
             status="ok",
             outlets={"outlet": done.state},
             duty=duty,
