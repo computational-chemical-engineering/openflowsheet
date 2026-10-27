@@ -16849,3 +16849,123 @@ matters against a class-4 range.
 **Rejected:** *Totals over the costed subset with a warning.*
 
 **Watch for.** A total computed while an item is refused and not excluded.
+
+## R-863 — E01: the study and optimization-report assessment links are `$ref`s into `assessment.schema.json`
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 ruling A (ESC-A2) |
+| Normative text | E01 design §9.1; assertion A43 |
+| Evidence | `scripts/t08_numerical_policy.py:164-197, 278-346` (the partition is by declaring schema); `benchmarks/t08/numerical_policy_v2.yaml:85-90` (`state_sha256` is a float digest) |
+| Affected packages | E01 (WO-A3a, A5, B3); T08 policy unchanged |
+
+**Decision.**
+- `assessment.schema.json` holds `$defs.assessment_link` and `$defs.formulation_assessment`. `study.schema.json` and
+  `optimization-report.schema.json` reference them by absolute `$id`.
+- E01's addendum lists `exact_sha256: [assessment_sha256, regime_sha256]`. `state_sha256` keeps v2's float-digest
+  class.
+
+**Rejected:**
+- *`classifies_in`* (an addendum classifying names in schemas it does not own).
+- *Editing v2.*
+- *Field names without `sha256`.*
+
+**Watch for.** A `sha256` property name added directly to a v2-domain schema.
+
+## R-864 — E01: SSLW is seven code forms over a sourced coefficient table, not a generic grammar
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 ruling A (ESC-A3) |
+| Normative text | E01 design §9.2.1–§9.2.4, §9.2.6, §9.2.7; assertions A44, A45 |
+| Evidence | Pinned IDAES 2.13.0 `SSLW.py` (sha256 `362b0a22…1184`): oversize 1.1 (:393); size-dependent F_M (:454-462); polynomial F_P (:488-498); thickness an input (:513); additive platforms and trays (:719-868); CE 394 pumps and motors (:1579, :1647) |
+| Affected packages | E01 (WO-A3, A4, B4) |
+
+**Decision.**
+- Forms `sslw-exchanger-v1`, `-vessel-v1`, `-trays-v1`, `-pump-v1`, `-motor-v1`, `-compressor-v1` and `-turbine-v1`
+  mirror the IDAES methods. Every number is data with a `source_line`.
+- The listed departures are: ranges; the exact `max` instead of `smooth_max`; `cost_vessel` instead of the buggy
+  wrappers; the platform piece; N from the size regime; electric drive only; WO-A2's design pressure.
+- Each entry has its own index basis (CE 394 converted by the source's 500/394.0).
+- The compressor entry includes its drive. η_m serves every electric drive.
+
+**Rejected:**
+- *Extending the generic grammar until SSLW fits in data* (an expression interpreter).
+- *Re-deriving SSLW from the book.*
+- *Mapping CE 394 to the year 2000 and escalating with a public PPI.*
+
+**Watch for.** A set-file number without `source_line`. A form whose arithmetic differs from the IDAES line it cites.
+
+## R-865 — E01: correlation ranges — pinned first, book-cited only for size quantities, floors below input bounds
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 ruling A (ESC-A3); Frank's check pending (design §9.7 QA1, QA3) |
+| Normative text | E01 design §9.2.5; assertions A45, A48; gate G10 |
+| Evidence | IDAES states ranges only for the exchanger pressure factor (:492), vessel weights and platforms (:534-537) and tray diameter (:825). The floating-head log-quadratic has its minimum at 125.92 ft², so an unfloored exchanger costs more as it shrinks |
+| Affected packages | E01; any later cost set |
+
+**Decision.**
+- Range sources, in order: pinned (cited by line); primary (Seider et al. 3rd ed., size quantities only,
+  `verified: false` until a person checks the book); none.
+- Below an input bound, a declared `floor` evaluates the input at the bound. The loader rejects a floor that would
+  undercut.
+- Above any bound, §4.3.2 applies.
+- A release candidate requires every primary range to be `verified: true` (A48). An agent never sets that flag.
+
+**Rejected:**
+- *IDAES's unguarded extrapolation.*
+- *No size range where IDAES states none.*
+- *Input ranges from memory.*
+
+**Watch for.** A `primary` range flipped to `verified: true` without a cited page.
+
+## R-866 — E01: kinetic CSTR volume from a declared residence time; a dormant drum liquid needs a declared density
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 ruling A (ESC-A4) |
+| Normative text | E01 design §9.3; assertion A47 |
+| Evidence | `models/syn001/kinetic_cstr.py:3-7` (Da = k·τ is the only kinetic parameter). With a dormant liquid there is no composition, so no M̄_L |
+| Affected packages | E01 (WO-A2b) |
+
+**Decision.**
+- Kinetic CSTR: V = τ_R·V̇_out, with `residence_time_s` required and no default. `implied_rate_constant = Da/τ_R` is
+  reported.
+- The drum θ `dormant_liquid_density` is ρ_L while the liquid is dormant. Without it, the drum is refused.
+
+**Rejected:**
+- *Always refusing the CSTR vessel.*
+- *An incipient-liquid flash inside the assessment.*
+- *The vapour's M̄ standing in for the liquid's.*
+
+**Watch for.** A default residence time.
+
+## R-867 — E01: phase volumes from the provider's own model identity (SYN-001 both phases; Wilson vapour), declared liquid volumes otherwise
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), E01 ruling A (ESC-A5) |
+| Normative text | E01 design §9.4; assertion A46 |
+| Evidence | `docs/derivations/SYN-001.md:20-30, 51` (v^L = Σx_i v_i, v^V = RT/P); `thermo/wilson_ig.py:5, 14` (ln φ^V ≡ 0); `thermo/wilson_ig_v2.py:33-36` (liquid g independent of P) |
+| Affected packages | E01 (WO-A2b, B4, I1) |
+
+**Decision.**
+- Identity table: syn001 VAPOR RT/P and LIQUID Σ n_c v_c; wilson-ig and wilson-ig-v2 VAPOR RT/P. These are algebraic
+  rows, with constants imported read-only.
+- Precedence: provider `v`, then the identity, then the item's `liquid_molar_volume`, then the document's per-component
+  `liquid_molar_volumes` (Amagat), then refusal.
+- `v_source` is reported. Guard tests pin each identity to the provider's own derivatives.
+
+**Rejected:**
+- *Only adding a column case on a `v`-capable basis.*
+- *RT/P for bases without an ideal-gas identity.*
+- *Rackett.*
+- *Editing `thermo/`.*
+
+**Watch for.** A provider added to the identity table without a guard test.

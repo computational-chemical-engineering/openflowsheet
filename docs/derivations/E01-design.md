@@ -3,6 +3,7 @@
 **Status:** design lane (`architect`), 2026-10-27. Branch `wp/E01` from `main` `5c8f6006`; built after S11 merges.
 **Brief:** `docs/briefs/E01-cost-lca-design.md`. **Records:** ADR 0052 (`docs/adr/0052-e01-assessment-functionals.md`,
 Proposed); register R-850…R-862.
+**Amended:** 2026-10-27, §9 (ruling A on ESC-A2…ESC-A5; register R-863…R-867). §9 wins where it conflicts.
 **Normative for:** where cost and impact live and how they are differentiated; the assessment document, program,
 regimes and report; the sizing model of every day-one unit family; the cost-provider forms, data sets, quotes and
 provenance; the cost basis (index, currency, location); operating cost and annualisation; the LCA formulation, its
@@ -463,7 +464,7 @@ condenser and reboiler duty columns and stage variables as `syn001.column` decla
 | `thermal.compressor` | `machine.compressor` | `<U>`, `<U>.drive` |
 | `thermal.turbine` | `machine.turbine` | `<U>` |
 | `syn001.column` | `column` | `<U>.shell`, `<U>.trays`, `<U>.condenser` (if a condenser), `<U>.reboiler` (if a reboiler) |
-| `syn001.kinetic_cstr` | `reactor.vessel` | `<U>.vessel` (volume = its volume parameter), plus `<U>.duty` as above |
+| `syn001.kinetic_cstr` | `reactor.vessel` | `<U>.vessel` (volume = `τ_R · V̇_out`; `residence_time_s` required; §9.3), plus `<U>.duty` as above |
 | `syn001.conversion_reactor` | `reactor.vessel` | `<U>.vessel` (volume = `τ_R · V̇_out`; `residence_time_s` required), plus `<U>.duty` |
 | valves, mixers, splitters, feeds, sinks (`thermal.valve`, `thermal.mixer`, `syn001.valve`, the SYN-001/C1 mixers, splitters, feeds, sinks) | `none` | none: listed `NO_EQUIPMENT` |
 | `syn001.component_separator`, the C1 reactor, any unknown model id | `unsupported` | `<U>`: refused `NO_SIZING_MODEL(<U>)` unless it has a `quote` or `exclude` |
@@ -504,7 +505,7 @@ Every item may carry a `quote` (§4.5.4) or `exclude: {reason}`. Every item reco
 - Saturated pure-fluid stream: `V̇ = V·v^V_sat(P) + L·v^L_sat(P)`, from the S11 saturation routine. WO-A2 names it: in
   `models/thermal/kernel.py`, or the provider's saturation properties. A missing derivative is refusal
   `SIZING_INPUT_UNAVAILABLE(<item>.v_sat)`, not an approximation.
-- A provider that does not offer `v` for the phase is refusal `SIZING_INPUT_UNAVAILABLE(<item>.v)`. Example: the
+- (Amended §9.4: model-identity volumes and declared liquid volumes come before this refusal.) A provider that does not offer `v` for the phase is refusal `SIZING_INPUT_UNAVAILABLE(<item>.v)`. Example: the
   Wilson liquid; S11 records that "the method's liquid has no volume". The exception is an item that declares
   `liquid_molar_volume` (m³/mol, a θ), used as `V̇ = Σn · v_decl`.
 - The derivatives come from the provider's own derivative outputs and are declared sparse.
@@ -525,7 +526,8 @@ argmax regime over {L: D_L², V: D_V²};  D = sqrt(D_{j*}²);  height L = LD · 
 - Orientation `horizontal` uses the same D and L with the set's horizontal-vessel entry.
 - A dormant vapour product removes the `V` member (no admissibility row).
 - A dormant liquid product gives `V = 0` and the `floor` regime, but `ρ_L` is then undefined. The `V` member is
-  therefore refused `SIZING_INPUT_UNAVAILABLE(<item>.rho_L)`, unless the item declares `liquid_molar_volume`.
+  therefore refused `SIZING_INPUT_UNAVAILABLE(<item>.rho_L)`, unless the item declares `dormant_liquid_density`
+  (amended §9.3; `liquid_molar_volume` cannot give ρ_L without a liquid composition).
 - Design pressure input = inlet pressure (the maximum by construction, since ΔP ≥ 0).
 
 #### 4.4.5 Machines
@@ -537,7 +539,8 @@ argmax regime over {L: D_L², V: D_V²};  D = sqrt(D_{j*}²);  height L = LD · 
   gpm·ft^{0.5}).
 - Drive (`<U>.drive`): consumed power `W/η_drive`. `η_drive` comes from the set's motor-efficiency correlation if the
   set defines one, else `defaults.drive_efficiency` = 0.95. It is costed by the set's motor entry; absent → the drive is
-  refused `NO_CORRELATION(<U>.drive)`.
+  refused `NO_CORRELATION(<U>.drive)`. (Amended §9.2.7: a machine entry with `includes_drive` costs its drive; η_drive
+  is the motor entry's η_m at the per-unit shaft power.)
 - Turbine generation `−W·η_gen`, with `η_gen` = `defaults.generator_efficiency` = 0.95. No generator equipment is
   costed: limitation `GENERATOR_NOT_COSTED`.
 
@@ -598,12 +601,15 @@ H = (N_act − 1) · s_tray + H_top + H_bottom
   - else `C_BM = C_base · (B1 + B2·F_M·F_P)` for a set using that form;
   - else the item has no bare-module cost (`BARE_MODULE_FACTOR_MISSING(<item>)`). A chain that references
     `sum_bare_module` is then refused, while a chain on `sum_purchased` still works.
-- **SSLW vessels.** Cost by shell weight per IDAES's vessel method: ASME wall thickness from design pressure,
+- **SSLW vessels.** (Superseded by §9.2.4 form II: IDAES 2.13.0 takes the shell thickness as an input and computes no
+  ASME thickness.) Cost by shell weight per IDAES's vessel method: ASME wall thickness from design pressure,
   minimum-thickness steps by diameter, weight from D, L and t.
   - Each `max(…)` and each step is a `piece` entry with its own admissibility rows.
   - WO-A3 enumerates the pieces in the set file, each with its source line.
 
 #### 4.5.2 Set file format (`_data/assessment/cost/<set>.json`)
+
+(Amended §9.2.3: every entry names its `form`; this layout is `"form": "generic-v1"`; SSLW entries use §9.2.3's layout.)
 
 ```json
 {"set_id": "sslw-idaes-v1", "schema": "cost-set-v1",
@@ -974,10 +980,11 @@ blocks as `EFHolder` outputs and register a TR formulation with an assessment ob
   - `defaulted_inputs []`, `limitations []`, `refusals []`, `excluded []`;
   - `statement`;
   - `provenance` (versions, timestamps; outside every hash).
-- **`study.schema.json`** (additive): optional top-level `assessment {assessment_id, assessment_sha256,
-  regime_sha256}`. `output_functional.coefficients` keys are unconstrained strings already, so `assessment:<id>` is
+- **`study.schema.json`** (additive; as a `$ref` to `assessment.schema.json#/$defs/assessment_link`, §9.1): optional
+  top-level `assessment {assessment_id, assessment_sha256, regime_sha256}`. `output_functional.coefficients` keys are unconstrained strings already, so `assessment:<id>` is
   valid.
-- **`optimization-report.schema.json`** (additive): optional `formulation.assessment {assessment_id,
+- **`optimization-report.schema.json`** (additive; as a `$ref` to `assessment.schema.json#/$defs/formulation_assessment`,
+  §9.1): optional `formulation.assessment {assessment_id,
   assessment_sha256, regime_sha256, regime_entries, outputs [{id, scale}], admissibility [{id, nominal}],
   regime_bounds_active [{id, slack, multiplier}]}`. The V7 check is recorded in the existing per-start check list,
   under the name `V7`.
@@ -1268,3 +1275,602 @@ R-850…R-862 in `docs/decision-register.md` (written with this note).
 ### 8.4 Decisions logs
 
 `docs/E01A_DECISIONS.md` and `docs/E01B_DECISIONS.md`, one line per choice, folded into the single `reviewer` pass.
+
+---
+
+## 9. Amendment 2026-10-27 — ruling A on track A's escalations ESC-A2…ESC-A5
+
+**Status:** design lane (`architect`), 2026-10-27, at `wp/E01` `ff7a62a7`. Brief: `docs/briefs/E01-ruling-a.md`. Register:
+R-863…R-867. This section is normative. Where it conflicts with §1–§8, this section wins. It supersedes these parts:
+- the *form* of the study and optimization-report additions in §4.11;
+- §4.4.0's `syn001.kinetic_cstr` row;
+- §4.4.3's bullet on a provider without `v`;
+- §4.4.4's dormant-liquid bullet;
+- §4.4.5's drive-costing sentence;
+- §4.5.1's "SSLW vessels" paragraph;
+- §4.5.2 for SSLW entries.
+
+Nothing under `compile/`, `thermo/` or `models/` changes. No registered file or result moves. `AMENDED_TESTS` gains
+nothing from this ruling.
+
+**Pinned source** throughout:
+- the IDAES-PSE 2.13.0 wheel, sha256 `2b67301a…85f9`;
+- `idaes/models/costing/SSLW.py`, sha256 `362b0a22…1184` ("SSLW.py:N" below);
+- `idaes/core/base/costing_base.py`, sha256 `cdd71f36…fc38`;
+- `idaes/core/util/math.py` from the same wheel.
+
+Full hashes are in `docs/E01A_DECISIONS.md` ("Facts confirmed before WO-A3"). The line numbers below are anchors for
+the transcriber, who records the exact line of every number in the set file.
+
+### 9.1 ESC-A2 — the study and report links are a `$ref` into E01's own schema (R-863)
+
+**Facts.**
+- T08's `--check` partitions `sha256` property names by the schema that declares them
+  (`scripts/t08_numerical_policy.py:164-197, 278-307, 316-346`).
+  - A name in a schema that no addendum lists belongs to v2, and must lie in v2's `float_digests ∪ exact_sha256`.
+  - An addendum classifies names only in its own `schemas`.
+  - So `assessment_sha256` or `regime_sha256` written as properties of `study.schema.json` or
+    `optimization-report.schema.json` would be unclassified v2 names.
+- `state_sha256` is a v2 **float digest** (`benchmarks/t08/numerical_policy_v2.yaml:85-90`), not an exact digest. The
+  comment in `benchmarks/e01/numerical_policy_external.yaml`, which lists it among A5's exact names, is wrong.
+
+**Decision.** The two link objects are defined once, as `$defs` of `schemas/assessment.schema.json`, a file that E01's
+addendum already owns. The two existing schemas reference them by absolute `$id` URL.
+- This is the repository's established cross-schema pattern. For example,
+  `optimization-report.schema.json:268` refers to `evaluation-result.schema.json#/$defs/sha256`.
+- Validation resolves the reference through the published-schema registry (`application/types.py:157-170`).
+- No property name containing `sha256` enters a v2-domain schema, so neither the auditor nor v2 changes.
+
+`assessment.schema.json` gains (B below is `https://github.com/frankp/process-runtime/schemas/`):
+```json
+"$defs": {
+  "assessment_link": {"type": "object", "additionalProperties": false,
+    "required": ["assessment_id", "assessment_sha256"],
+    "properties": {
+      "assessment_id": {"type": "string", "minLength": 1},
+      "assessment_sha256": {"$ref": "B/evaluation-result.schema.json#/$defs/sha256"},
+      "regime_sha256": {"$ref": "B/evaluation-result.schema.json#/$defs/sha256"}}},
+  "formulation_assessment": {"type": "object", "additionalProperties": false,
+    "required": ["assessment_id", "assessment_sha256", "regime_sha256", "regime_entries", "outputs",
+                 "admissibility", "regime_bounds_active"],
+    "properties": {
+      "assessment_id": {"type": "string", "minLength": 1},
+      "assessment_sha256": {"$ref": "B/evaluation-result.schema.json#/$defs/sha256"},
+      "regime_sha256": {"$ref": "B/evaluation-result.schema.json#/$defs/sha256"},
+      "regime_entries": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
+      "outputs": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+        "required": ["id", "scale"],
+        "properties": {"id": {"type": "string", "minLength": 1}, "scale": {"type": "number", "exclusiveMinimum": 0}}}},
+      "admissibility": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+        "required": ["id", "nominal"],
+        "properties": {"id": {"type": "string", "minLength": 1}, "nominal": {"type": "number", "exclusiveMinimum": 0}}}},
+      "regime_bounds_active": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+        "required": ["id", "slack", "multiplier"],
+        "properties": {"id": {"type": "string", "minLength": 1}, "slack": {"type": "number"},
+                       "multiplier": {"type": "number"}}}}}}}
+```
+(`B/` stands for the full base URL. Write the URL out in the file.)
+
+The other changes:
+- `study.schema.json`: its top-level `properties` gains `"assessment": {"$ref": "B/assessment.schema.json#/$defs/assessment_link"}`, optional.
+- `optimization-report.schema.json`: `formulation.properties` gains
+  `"assessment": {"$ref": "B/assessment.schema.json#/$defs/formulation_assessment"}`, optional.
+- **The same commit as the `$defs`** changes `benchmarks/e01/numerical_policy_external.yaml`:
+  - it sets `exact_sha256: [assessment_sha256, regime_sha256]`;
+  - it corrects the comment: A5's `state_sha256` keeps v2's float-digest class and is never listed, and `regime.sha256`
+    and `tables[].sha256` reuse `sha256`, which keeps v2's class.
+- **Semantics.**
+  - If a study omits `regime_sha256`, the regime is selected at x₀ by §4.3.2.
+  - If a study gives it, the regime is held and checked at the start (`ASSESSMENT_REGIME_INADMISSIBLE`, §4.10.2).
+  - The optimization report always records it.
+- §8.3's note gains this sentence: "The `$defs` `assessment_link` and `formulation_assessment` of
+  `assessment.schema.json` are part of the study and optimization-report interfaces and change only with them."
+
+**Rejected.**
+- *`classifies_in`*, an addendum that classifies names in schemas it does not own. It makes v2's closed partition
+  depend on later tables. It changes an auditor that T08 owns. It also breaks the tests that re-derive the partition
+  (the pattern of `tests/test_m02_schemas.py:69`). Finally, it invites every later package to reach into v2's schemas.
+- *Editing v2.* That moves a registered policy file.
+- *Field names without `sha256`.* They evade a partition whose purpose (ADR 0025 D2.3) is that no digest goes
+  unclassified.
+
+### 9.2 ESC-A3 — SSLW as seven code forms over a coefficient table (R-864, R-865)
+
+#### 9.2.1 Decision
+
+The pinned SSLW methods do not fit §4.5.1's generic forms:
+- an oversize multiplier;
+- a material factor that depends on size;
+- a polynomial pressure factor;
+- a weight-based vessel with thickness as an input;
+- additive platform and tray terms;
+- a CE 394 basis for pumps and motors.
+
+**Decision.** Each IDAES SSLW method that a day-one family uses becomes a **form in code**
+(`assessment/cost/forms.py`), mirroring the IDAES function one to one. Every number the form uses is data in
+`sslw-idaes-v1.json`, with its source: coefficients, factor tables, option defaults and ranges.
+
+The generic forms stay as §4.5.1–§4.5.2 define them, for sets users register (Turton-like) and for quotes:
+- `log-polynomial-v1`, `power-law-v1`, `constant-v1`;
+- constant factors;
+- the piecewise log-polynomial pressure factor;
+- the `F_BM` and `B1 + B2·F_M·F_P` bare-module forms.
+
+SSLW has no bare-module factors, so §4.5.1's `BARE_MODULE_FACTOR_MISSING` rule applies to every SSLW item.
+
+**Rejected.**
+- *Extending the generic grammar until SSLW fits in data.* That needs size-power and polynomial factors, adders,
+  derived variables, products of powers, per-option tables and pieces. The result is an expression interpreter with
+  its own test burden, wider than the problem, and harder to audit against IDAES than a function placed beside the
+  function it transcribes. Sets that users register do not share SSLW's peculiarities.
+- *Re-deriving SSLW from the book* (ASME thickness, or F_P extended down to 0 psig). That is not a transcription, and
+  WO-B4 could not check it against the pinned source.
+
+#### 9.2.2 Transcription versus policy
+
+A form transcribes IDAES's arithmetic. The departures below are deliberate. Each one is recorded in the provenance of
+the item it affects.
+1. **Ranges.** IDAES enforces none. Ours follow §4.3.2 and §9.2.5.
+2. **Tray count factor.** IDAES uses `smooth_max(1, 2.25/1.0414^N)` with eps = 1e-4 (SSLW.py:841; `math.py:97`).
+   Ours is the exact `max`, evaluated on floats at build time. N_act is structural, and D3 forbids smoothing.
+3. **Vessel wrappers.** `cost_vertical_vessel` and `cost_horizontal_vessel` pass hard-coded defaults instead of
+   their arguments (SSLW.py:913-926, 957-966). Ours transcribes `cost_vessel` (:509-727) and passes the options
+   through.
+4. **Vertical platforms.** IDAES's `aspect_ratio_range` is a user option with default 1. Ours is a `piece` regime on
+   L (§9.2.4 form II).
+5. **Number of units.** IDAES fixes `number_of_units` at 1. Ours is the size regime's N, for parallel forms only.
+6. **Compressor drive.** Only `ElectricMotor` is offered for `drive_type` in E01. A steam or gas turbine drive's
+   energy is not electricity, and electricity is the only drive energy §4.7.2 prices.
+7. **Exchanger design pressure.** IDAES reads the hot-side inlet (SSLW.py:464-498: "Assume higher pressure fluid is
+   tube side"). Ours keeps WO-A2's rule:
+   - `exchanger.utility`: the process inlet;
+   - `exchanger.process`: the higher of the two inlets, fixed at build.
+
+#### 9.2.3 Set-file grammar (`cost-set-v1`, amended before first use)
+
+**Top level.** As §4.5.2, with `source.transcribed_from` as an object:
+`{package: "idaes-pse", version: "2.13.0", wheel_sha256, file: "idaes/models/costing/SSLW.py", file_sha256,
+aux: [{file: "idaes/core/base/costing_base.py", sha256}]}`.
+
+**Entries.** Every entry names its `form`. `"form": "generic-v1"` is §4.5.2's layout (`size`, `base`, `factors`,
+`bare_module`). An SSLW entry has this layout (shown abridged):
+```json
+{"entry_id": "exchanger.shell_tube", "form": "sslw-exchanger-v1", "method_lines": "SSLW.py:327-507",
+ "family": ["exchanger.utility", "exchanger.process"],
+ "index_basis": {"series": "CEPCI", "value": 500.0},
+ "options": {
+   "hx_type": {"default": "Utube", "default_source_line": "SSLW.py:329",
+     "choices": {"Utube": {"alpha1": {"value": 11.3852, "source_line": "SSLW.py:403"},
+                           "alpha2": {"value": 0.9186, "source_line": "SSLW.py:403"},
+                           "alpha3": {"value": 0.09790, "source_line": "SSLW.py:403"}},
+                 "floating_head": {"...": "..."}, "fixed_head": {"...": "..."}, "kettle_vap": {"...": "..."}}},
+   "material": {"default": "StainlessSteelStainlessSteel", "default_source_line": "SSLW.py:330", "choices": {"...": "..."}},
+   "tube_length": {"default": "TwelveFoot", "default_source_line": "SSLW.py:331", "choices": {"...": "..."}}},
+ "coefficients": {"oversize": {"value": 1.1, "source_line": "SSLW.py:393"},
+                  "material_area_ref_ft2": {"value": 100, "source_line": "SSLW.py:460"},
+                  "pressure_a": [{"value": 0.9803, "source_line": "SSLW.py:494"}, {"...": "..."}, {"...": "..."}],
+                  "pressure_ref_psig": {"value": 100, "source_line": "SSLW.py:495"}},
+ "ranges": {
+   "area_ft2": {"role": "size", "min": 150.0, "max": 12000.0,
+     "source": {"kind": "primary", "citation": "Seider, Seader, Lewin, Widagdo, 3rd ed., ch. 22, shell-and-tube purchase cost", "verified": false}},
+   "pressure_psig": {"role": "input", "min": 100.0, "max": 2000.0, "below": "floor", "above": "refuse",
+     "source": {"kind": "pinned", "source_line": "SSLW.py:492"}}},
+ "uncertainty": {"relative_range": [-0.3, 0.5]}}
+```
+
+**Rules.**
+- **Numbers.** Every number taken from the source is `{"value", "source_line"}`. `value` is the decimal exactly as
+  printed, as a JSON number that Python's `json` parses correctly rounded. A sign written in the formula (for example
+  `− α2·ln z`) stays in the form; the table holds α as printed.
+- **Options.**
+  - Choice keys are IDAES's enum member names, verbatim (`Utube`, `floating_head`, `StainlessSteelStainlessSteel`,
+    `TwelveFoot`, …). `pump_type_factor` keys are the decimal strings `"1.1"`…`"2.2"`; `weight_limit` keys are `"1"`
+    and `"2"`.
+  - Defaults are IDAES's argument defaults, each with its `default_source_line`. Every default used appears in
+    `defaulted_inputs` (§4.5.5).
+  - An item option outside `choices`, or a combination IDAES refuses (pump material against pump type,
+    SSLW.py:1420-1441), gives `NO_CORRELATION(<item>)` with the reason in the detail.
+  - Options are structural θ.
+- **Ranges.** `role` is either:
+  - `size`: §4.3's size regime with S_min and S_max. No `below` or `above` is written; the form decides whether units
+    may be split (`parallel`, §9.2.4);
+  - `input`: a `piece` entry, with `below` ∈ {`floor`, `refuse`} and `above` = `refuse` (§9.2.5).
+- **Index basis.** `index_basis` is per entry; absent means the set's basis (§9.2.6).
+- **Loader refusals.** The loader refuses a set with any of:
+  - an unknown `form`;
+  - a missing `source_line` on a coefficient, a choice value or a default;
+  - a range without `source`, or a `primary` source without `verified`;
+  - a `size` range with `max < 2·min` (unchanged);
+  - an `input` range declaring `below: floor` whose form value at `min` is smaller than at `min − 1e-6·max(1, |min|)`.
+    A floor must never undercut; this is checked on floats at load.
+
+#### 9.2.4 The seven forms
+
+**Common rules.**
+- Per-unit quantity = the item quantity divided by N (parallel forms only).
+- Unit factors (§2.1), each a binary64 constant computed once:
+  - ft² per m² κ_A = 1/0.3048² = 10.763910416709722;
+  - gpm per m³/s κ_Q = 60/3.785411784e-3 = 15850.323141488905;
+  - hp per W κ_W = 1/745.6998715822702 = 0.0013410220895950279;
+  - inches = m/0.0254; ft = m/0.3048;
+  - gauge psig p = (P − 101325)/6894.757293168361.
+- Notation: ℓ(·) = ln(·). Products are evaluated left to right, in the order IDAES writes them.
+- Item cost C_P = N·C_P1 for a parallel form; C_P = C_P1 otherwise.
+- Size floor: the size quantity is replaced by S_min wherever it enters. Each form lists where.
+
+**I. `sslw-exchanger-v1`** (SSLW.py:327-507). Entry `exchanger.shell_tube`; parallel.
+- Options:
+  - `hx_type`: 4 choices with α1, α2, α3 (:400-405); default `Utube` (:329);
+  - `material`: 10 choices with A, B (:438-452); default `StainlessSteelStainlessSteel` (:330).
+    `CarbonSteelCarbonSteel` gives F_M = 1.0 exactly, as IDAES does (:454-462);
+  - `tube_length`: F_L = 1.25 / 1.12 / 1.05 / 1.00 for 8 / 12 / 16 / 20 ft (:384); default `TwelveFoot` (:331).
+- Formulas:
+  - A = (S/N)·κ_A in ft²; z = 1.1·A (oversize, :393);
+  - C_B = exp(α1 − α2·ℓ(z) + α3·ℓ(z)²) (:415-425);
+  - F_M = A_mat + (A/100)^B_mat (:454-462), with A per unit and without the oversize;
+  - F_P = 0.9803 + 0.0180·u + 0.0017·u², with u = p/100 (:488-498);
+  - C_P1 = F_P·F_M·F_L·C_B (:501-507).
+- Size: `area_ft2` = S·κ_A (total), [150, 12000] (primary). The floor puts A = 150 into both C_B and F_M.
+- Input: `pressure_psig`, [100, 2000] (pinned, :492). Below 100 psig the floor applies, and F_P = 1.0 exactly in
+  binary64 with ∂ ≡ 0. Above 2000 psig the item is refused. Piece entry `<item>.pressure.piece`: 0 = floor, 1 = in range.
+
+**II. `sslw-vessel-v1`** (SSLW.py:509-776). Not parallel: N = 1.
+- Entries:
+  - `vessel.vertical`: orientation vertical; family `drum`, `column.shell`, `reactor.vessel`;
+  - `vessel.horizontal`: orientation horizontal; family `drum`.
+
+  The vertical entry comes first, so a drum that declares no orientation is vertical (§4.4.4).
+- Options:
+  - `material`: 10 choices, each with F_M and ρ_m in lb/in³ (:620-631); default `CarbonSteel` (:512);
+  - `weight_limit` (vertical only): `"1"` gives α = (7.0132, 0.18255, 0.02297), `"2"` gives (7.2756, 0.18255, 0.02297)
+    (:675-679); default `"1"` (:514). Horizontal: α = (8.9552, −0.2330, 0.04333) (:674);
+  - `platforms_ladders`: boolean; default true (:516).
+- Continuous θ `t_shell`, in m, default 0.03175 m = 1.25 in (:513). Its `defaulted_inputs` text: "IDAES default
+  shell thickness, including pressure allowance; not computed from the design pressure (SSLW.py:643-644)".
+- Formulas:
+  - D_in = D/0.0254, L_in = L/0.0254, t_in = t_shell/0.0254;
+  - W = π·(D_in + t_in)·(L_in + 0.8·D_in)·t_in·ρ_m in lb (:661-669), with π = `math.pi` (IDAES `Constants.pi`, :663);
+  - C_v = exp(α1 + α2·ℓ(W) + α3·ℓ(W)²) (:687-699);
+  - C_P1 = F_M·C_v + C_PL (:719-727).
+- Platforms and ladders, C_PL (only if `platforms_ladders`), with D_ft = D/0.3048 and L_ft = L/0.3048:
+  - horizontal: C_PL = 2005·D_ft^0.20294 (:747-753), with no range;
+  - vertical, by piece on L_ft (ranges pinned at :536-537):
+    - piece 1, [12, 40): C_PL = 361.8·D_ft^0.73960·L_ft^0.70684 (:756-762), D range [3, 21];
+    - piece 2, [40, 170]: C_PL = 309.9·D_ft^0.63316·L_ft^0.80161 (:763-769), D range [3, 24];
+    - L_ft < 12: floor, using the piece 1 formula at L_ft = 12;
+    - D_ft < 3: floor, D_ft = 3;
+    - L_ft > 170, or D_ft above the selected piece's maximum: refused by §4.3.2.
+  - Piece entries `<item>.platforms.L.piece` (0 = floor, 1, 2) and `<item>.platforms.D.piece` (0 = floor, 1 = in
+    range). The upper admissibility row of the D entry uses the D maximum of the selected L piece.
+- Size: W in lb, pinned (docstring :534). Ranges: [1000, 920000] for `weight_limit` `"1"` and for horizontal vessels;
+  [4200, 1000000] for `"2"`. Choices are `units:1` and `floor`. W > max gives
+  `CORRELATION_OUT_OF_RANGE(<item>.weight)`, or the extrapolation of §4.3.2. The floor puts W = W_min into C_v only.
+- The design pressure is recorded in the item's inputs and is not used (IDAES :643-644).
+
+**III. `sslw-trays-v1`** (SSLW.py:777-868). Entry `column.trays`, family `column.trays`; not parallel.
+- Options:
+  - `tray_type`: Sieve 1, Valve 1.18, BubbleCap 1.87 (:803-807); default `Sieve` (:522);
+  - `tray_material`: (α1, α2) pairs (:816-822); default `CarbonSteel` (:521).
+- N_act is structural (§4.4.6).
+- Formulas, with D_ft = (the shell's D)/0.3048:
+  - F_TM = α1 + α2·D_ft (:827-831);
+  - C_t = 468.00·exp(0.1739·D_ft) (:854-858);
+  - F_NT = max(1.0, 2.25/1.0414**N_act), in binary64 at build (:840-845; departure 2);
+  - C_P1 = N_act·F_NT·F_TT·F_TM·C_t (:861-868).
+- Size: D_ft, [2, 16] (pinned, :825). Choices are `units:1` and `floor`. The floor puts D_ft = 2 into F_TM and C_t.
+  D_ft > 16 is refused, or extrapolated by §4.3.2.
+
+**IV. `sslw-pump-v1`** (SSLW.py:1387-1580). Entry `pump`, family `machine.pump`; parallel; `index_basis` CEPCI 394
+(:1579).
+- Options:
+  - `pump_type`: `Centrifugal` (default, :1389), `ExternalGear`, `Reciprocating`;
+  - `material`: one table per type (:1527-1546); default `StainlessSteel` (:1390);
+  - `pump_type_factor`: Centrifugal only, F_T table at :1554-1561; default `"1.4"` (:1391). F_T = 1 for the other
+    types.
+- Per-unit variables:
+  - Q = (V̇_in/N)·κ_Q in gpm;
+  - H_ft = head/0.3048. §4.4.5's head with g = 9.80665 equals IDAES's ΔP/ρ in lbf·ft/lb;
+  - W_hp = (W/N)·κ_W.
+- Base cost by type:
+  - Centrifugal: S = Q·H_ft**0.5 and C_B = exp(9.7171 − 0.6019·ℓ(S) + 0.0519·ℓ(S)²) (:1585-1590);
+  - ExternalGear: C_B = exp(7.6964 + 0.1986·ℓ(Q) + 0.0291·ℓ(Q)²) (:1591-1596);
+  - Reciprocating: C_B = exp(7.8103 + 0.26986·ℓ(W_hp) + 0.06718·ℓ(W_hp)²) (:1597-1602).
+- C_P1 = F_T·F_M·C_B, at CE 394, converted by §9.2.6.
+- Size (primary): Centrifugal S in [400, 100000] gpm·ft^0.5; ExternalGear Q in [10, 900] gpm; Reciprocating W_hp in
+  [1, 200] hp. The floor puts S_min into C_B.
+
+**V. `sslw-motor-v1`** (SSLW.py:1625-1661). Entry `motor.electric`, family `machine.drive`; `index_basis` CEPCI 394
+(:1647).
+- N is the machine item's N. Choices are `units:<N_machine>` and `floor`; rows use the per-unit W_m.
+- Option `motor_type`: Open 1, Enclosed 1.4, ExplosionProof 1.8 (:1625-1629); default `Open` (:1392).
+- Formulas:
+  - W_hp = (W_shaft/N)·κ_W;
+  - η_m = 0.80 + 0.0319·ℓ(W_hp) − 0.00182·ℓ(W_hp)² (:1637-1641);
+  - W_m = W_hp/η_m;
+  - C_B = exp(5.8259 + 0.13141·λ + 0.053255·λ² + 0.028628·λ³ − 0.0035549·λ⁴), with λ = ℓ(W_m) (:1650-1661);
+  - C_P1 = F_MT·C_B, at CE 394.
+- Size: W_m per unit, [1, 700] hp (primary). The floor puts W_m = 1 into C_B and leaves η_m unchanged.
+- η_m is the set's motor-efficiency correlation (§4.4.5, §9.2.7). It has no range, since IDAES states none. Domain
+  guard: 0 < η_m ≤ 1, else `CORRELATION_OUT_OF_RANGE(<U>.drive.eta)`.
+
+**VI. `sslw-compressor-v1`** (SSLW.py:1080-1178). Entry `compressor`, family `machine.compressor`; parallel;
+`includes_drive: true` (§9.2.7).
+- Options:
+  - `compressor_type`: (α1, α2) per type (:1155-1159); default `Centrifugal` (:1082);
+  - `drive_type`: `ElectricMotor` only, with F_D = 1 (:1135-1139; default :1083; departure 6);
+  - `material`: CarbonSteel 1, StainlessSteel 2.5, NickelAlloy 5.0 (:1144-1148); default `StainlessSteel` (:1084).
+- Formulas:
+  - W_hp = (W/N)·κ_W;
+  - C_B = exp(α1 + α2·ℓ(W_hp)) (:1164-1169);
+  - C_P1 = F_D·F_M·C_B (:1175-1178).
+- Size W_hp (primary): Centrifugal [200, 30000], Reciprocating [100, 20000], Screw [10, 750] hp. The floor puts
+  W_hp = min into C_B.
+
+**VII. `sslw-turbine-v1`** (SSLW.py:1338-1386). Entry `turbine`, family `machine.turbine`.
+- W_hp = (−W/N)·κ_W; C_P1 = 530·W_hp^0.81 (:1376-1386).
+- No size range: IDAES states none, and I do not recall the book's reliably (QA1). So there is no size regime (N = 1,
+  no floor). The power law is monotone, so it has no non-physical branch. The provenance reads `range: none stated`.
+
+The entries appear in the file in this order: `exchanger.shell_tube`, `vessel.vertical`, `vessel.horizontal`,
+`column.trays`, `pump`, `motor.electric`, `compressor`, `turbine`. Every number not anchored above is anchored by
+its line in the set file.
+
+#### 9.2.5 Range policy (R-865)
+
+**Sources**, in order of preference:
+1. **pinned**: a range stated in the pinned source (code, comment or docstring), cited by line.
+2. **primary**: used **for a size quantity only**, where IDAES states none. It is the range of the same equation in
+   Seider et al., 3rd ed., ch. 22, cited with `verified: false` until a person checks it against the book (QA1).
+   - The size regime needs S_min and S_max.
+   - The log-quadratics also turn upward below their minimum. The floating-head form, for example, has its minimum at
+     z = exp(α2/(2α3)) = 125.92 ft², below the book's 150 ft². Without a floor, an exchanger would cost more as it
+     shrinks.
+   - An input range is never taken from memory.
+3. **none**: the input is unbounded, and the provenance says `range: none stated`.
+
+The primary ranges in §9.2.4 are my recollection of the book, not a transcription.
+
+**Behaviour.**
+- **Size quantity:** §4.3.2, unchanged. Below S_min the floor applies. Above S_max the item is split into units:N if
+  the form is parallel, and refused otherwise.
+- **Input below `min` with `floor`:** the input is replaced by `min` in that factor. This is a constant piece with
+  derivative exactly 0 and admissibility row `min − z ≥ 0`. It costs the least-demanding design the correlation
+  covers, and it never undercuts (the loader checks this). For the SSLW floors:
+  - the exchanger pressure factor exceeds IDAES's extrapolated F_P by at most 2.28 %: F_P = 0.97769 at full vacuum
+    and 1.0 at 100 psig;
+  - the vertical platform terms floor at L_ft = 12 and D_ft = 3.
+- **Input below `min` with `refuse`, or any input above `max`:** §4.3.2 applies: refused, unless `allow_extrapolation`
+  is set, in which case the item is extrapolated, with the limitation and accuracy class `none`.
+
+**No new limitation code.**
+- A floor is a regime choice and is listed with the item's regimes.
+- A primary range shows its citation and its `verified` flag in the item's provenance. The `source_line`s of §4.5.5
+  become `sources`.
+
+**Release gate (A48).** Before a release candidate, every shipped `primary` range must be `verified: true`. An agent
+never sets that flag. A person makes or approves the commit that flips it, and the commit cites the book page.
+
+#### 9.2.6 Index basis per entry
+
+- Each entry declares `index_basis` as `{series: "CEPCI", value}`. The pump and motor entries are at CE 394
+  (SSLW.py:1579, :1647).
+- IDAES converts with `USD_CE394 = 500/394.0 * USD_CE500` (costing_base.py:66). The form does the same: it multiplies
+  C_P1, as the last operation, by r = (set index value)/(entry index value), a binary64 constant computed once as
+  500.0/394.0 = 1.2690355329949239.
+- §4.6 then applies unchanged, on the set's basis:
+  - with a user CEPCI series, the result equals I(Y_t)/394 to rounding;
+  - without one, the set's `year_equivalent` 2006 and `INDEX_BASIS_MAPPED` apply.
+- The provenance records `index_basis: CEPCI 394 → 500 by the source's ratio`.
+- **Rejected:** mapping CE 394 to its own year (2000, CEPCI 394.1) and escalating from there with a public PPI. That
+  would replace the source's own 394→500 ratio with a different index over 2000–2006, and pump costs would drift
+  relative to the rest of the set.
+
+#### 9.2.7 Drives
+
+- The drive item `<U>.drive` is costed by the set's `machine.drive` entry (`motor.electric`), with N equal to the
+  machine item's N.
+- A machine entry with `includes_drive: true` already costs its drive. In the SSLW compressor, the drive factor is 1.0
+  for an electric motor and greater than 1 for turbines, so its base cost includes an electric-motor drive. For such an
+  entry:
+  - the drive item's capital is exactly 0.0, with provenance `included_in: <U>`;
+  - the drive item keeps its electricity.
+- For every electric drive, pump or compressor, η_drive is the `machine.drive` entry's η_m at the machine's per-unit
+  shaft power, whenever the set has such an entry. Otherwise it is `defaults.drive_efficiency`.
+  - Electricity consumed = W/η_m(W/N), with W the total shaft power.
+  - The θ `eta_drive` is then not created and does not appear in `defaulted_inputs`.
+
+### 9.3 ESC-A4 — the kinetic CSTR's volume and a drum with a dormant liquid (R-866)
+
+**(i) `syn001.kinetic_cstr`: V = τ_R·V̇_out.**
+- **Why this is the CSTR volume.**
+  - The model's rate is Da·exp((T_out − T_ref)/T_s)·n_out,k, with Da = k_ref·τ (`models/syn001/kinetic_cstr.py:3-7`).
+  - With τ = V/V̇_out, the declared residence time and the outlet's volumetric flow give the CSTR volume exactly.
+  - Da alone gives no volume.
+- **Input.** `residence_time_s` is a required continuous θ with no default; a default τ would invent k_ref.
+- **V̇_out** is the outlet's volumetric flow in its declared phase (§4.4.3, §9.4).
+- **Report.** The informational input `implied_rate_constant` = Da/τ_R, in s⁻¹, with Da read from the unit's
+  parameters.
+- **Missing τ:** refusal `SIZING_INPUT_MISSING(<U>.vessel.residence_time_s)`. The duty item stays.
+- **Rejected:** always refusing (the engineer's interim choice). It refuses where one declared number gives the exact
+  CSTR volume.
+
+**(ii) A drum whose liquid product is dormant.**
+- **New input.** The item θ `dormant_liquid_density` (kg m⁻³, continuous, no default) is ρ_L in Souders–Brown while
+  the liquid product is in its `dormant` regime.
+- **Active regime.** ρ_L = M̄_L/v_L as before, and the declaration is reported `used: false`.
+- **Missing declaration with a dormant liquid:** the V member is refused `SIZING_INPUT_UNAVAILABLE(<item>.rho_L)`, and
+  the drum is refused (WO-A2's rule).
+- `liquid_molar_volume` cannot rescue this case. Without a liquid composition there is no M̄_L.
+- **Rejected:**
+  - computing the incipient-liquid composition x = y/K, which needs a flash inside the assessment;
+  - using the vapour's M̄ as the liquid's, which has no basis.
+
+### 9.4 ESC-A5 — model-identity volumes and declared liquid volumes (R-867)
+
+**Facts.**
+- **SYN-001's potential defines both volumes** (`docs/derivations/SYN-001.md:20-30, 51`):
+  - g_i^L = a(T) + v_i(P − P_r) and g_i^V = … + RT ln(P/P_r), with ideal mixing;
+  - so v^V = RT/P and v^L = Σ x_i v_i, with v_i = 1.0e-4 m³/mol (`thermo/syn001.py:46, 53`: `R`, `V_MOLAR`).
+- **Wilson-ig v1 and v2.**
+  - ln φ^V ≡ 0 (`thermo/wilson_ig.py:5, 14`). Since ∂ln φ_i/∂P = (v̄_i − RT/P)/(RT) = 0, v^V = RT/P exactly.
+  - The liquid's g does not depend on P (`thermo/wilson_ig_v2.py:33-36`), so the model's v^L is 0, which is not a
+    volume.
+- **Why the providers do not *offer* `v`:** nothing consumed it (SYN-001), or offering v^L = 0 would let a pump
+  compute W = 0 (Wilson).
+
+**Decision.** Where the provider's published potential defines a phase's volume, the assessment computes it from that
+model identity:
+
+| provider_id | VAPOR | LIQUID |
+| --- | --- | --- |
+| `syn001` | RT/P | Σ_c x_c·v_c (`V_MOLAR`) |
+| `wilson-ig`, `wilson-ig-v2` | RT/P | none |
+
+**Implementation.**
+- The identities are algebraic rows on host variables in `assessment/blocks.py`, with no `PropertyBlock`:
+  - V̇^V = (Σ_c n_c)·R·T/P;
+  - V̇^L = Σ_c n_c·v_c.
+- Derivatives come from the algebra:
+  - vapour: ∂V̇/∂n_c = RT/P, ∂V̇/∂T = nR/P, ∂V̇/∂P = −nRT/P²;
+  - liquid: ∂V̇/∂n_c = v_c.
+- `R` and `V_MOLAR` are imported read-only from `openflowsheet.thermo.syn001` and `openflowsheet.thermo.wilson_ig`.
+  Nothing under `thermo/` is edited.
+- ρ = M̄/v, as in §4.4.3.
+
+**Where a phase's v comes from**, in order:
+1. the provider's own `v`;
+2. the model identity in the table above;
+3. the item's `liquid_molar_volume` (a mixture θ);
+4. the document's `liquid_molar_volumes` (new: per component, mixed by Amagat as V̇^L = Σ n_c·v_c);
+5. otherwise, refusal `SIZING_INPUT_UNAVAILABLE(<item>.v)`.
+
+Steps 3 and 4 apply to LIQUID only. A declaration that is not used is reported `used: false`.
+
+**New document field** (track A's schema): top-level `liquid_molar_volumes: {<component_id>: {value, source}}`, with
+`value` in m³/mol and > 0, and `source` a string. The θ ids are `asm:liquid_molar_volume.<component_id>`, continuous.
+For a Wilson liquid, Amagat mixing is the model-consistent completion: the model's g^E does not depend on P, so its
+excess volume is zero.
+
+**Report.** Every volumetric quantity in an item's inputs carries `v_source`, one of `provider`, `model_identity`,
+`declared_item` or `declared_components`. None of these is a limitation: an identity is the model's own volume, and a
+declaration is an input like U.
+
+**Guards** (falsifiable; A46). A provider id absent from the table never gets an identity.
+- syn001: at ≥ 3 states per phase inside the domain, the provider's R·T·∂lnK_i/∂P equals the identity's v_i − RT/P,
+  within rel 1e-12 of RT/P.
+- Wilson v1 and v2: the vapour `lnphi_<c>` and its T and P derivatives equal 0.0 exactly.
+- v2: P·∂s^V/∂P = −R, within rel 1e-15.
+- `thermo.wilson_ig.R == thermo.syn001.R == 8.31446261815324`.
+
+**Consequences.**
+- P2's drum is sized with no declaration.
+- P3's shell and trays are sized once P3's document declares `liquid_molar_volumes`. I1 uses test inputs of 1.0e-4
+  m³/mol per component, with `source: "E01 test input; not a property claim"`. A12 then runs on P3.
+- Pumps on Wilson liquids get `vol_flow` and `head` from the declarations.
+
+**Rejected.**
+- *Only adding a column case on a basis that offers `v`.* Every SYN-001 and Wilson user would still meet refusals.
+- *RT/P for any basis.* Where the model has no ideal-gas identity, RT/P is an approximation, not the model.
+- *A Rackett liquid volume.* It needs critical data that the records do not carry, and it is a new model.
+- *Editing the providers to offer `v`.* `thermo/` is a protected path.
+
+### 9.5 Revised work orders
+
+Track A's file ownership gains nothing new. WO-B3 depends on WO-A3a.
+
+| WO | Content | Depends | Acceptance |
+| --- | --- | --- | --- |
+| **A3a** links (first) | §9.1: the two `$defs` in `assessment.schema.json`; `exact_sha256` and the corrected comment in `benchmarks/e01/numerical_policy_external.yaml` | A1 | A43 (partition part) |
+| **A2b** volumes, CSTR, dormant liquid | §9.3, §9.4: the identity table and rows in `blocks.py`; volume precedence; `liquid_molar_volumes`, `dormant_liquid_density` and `residence_time_s` for `syn001.kinetic_cstr` in `assessment.schema.json`; families; `v_source` on item inputs | A2 | A46, A47; A4 and A5 on the new rows |
+| **A3** (revised) | Generic forms and the seven SSLW forms (§9.2.4); `sets.py` with §9.2.3's checks; `sslw-idaes-v1.json` (every number with `source_line` from the pinned file, the notice verbatim, primary ranges `verified: false`); quotes; `cost/index.py`; the three series files | A3a, A1 | A16–A19, A44 (forms), A45 |
+| **A4** (amended) | As §5.2, plus §9.2.6's conversion and §9.2.7: drive inclusion, η_m for electric drives, inherited N | A2b, A3 | A20–A23, A44 (drives) |
+| **A5** (amended) | As §5.2. The report records the range sources and `verified` flags, the index-basis conversion, the options with `defaulted`, and `v_source`. `assessment-report.schema.json` joins the E01 addendum's `schemas`; `state_sha256` is not listed | A4 | A38–A41, A43 (report part) |
+| **B3** (amended) | The two additive properties as the `$ref`s of §9.1; no auditor change | A3a | A38 (study schemas), A43 (validation part) |
+| **B4** (amended) | Transcribe forms I–VII independently from SSLW.py (not from the set file), with the pinned ranges and defaults. mpmath values (below). IDAES cross-check (below). Hand cases A11 and A12 compute the identity volumes (RT/P, Amagat) independently | B1 | A14/A15 YAML; the two transcriptions agree number for number |
+| **I1** (amended) | P3's document declares `liquid_molar_volumes` (test inputs, §9.4). P1 exchangers above 2000 psig keep their refusal, or I1 sets `allow_extrapolation: true` on that item explicitly and logs it (QA4) | all | as §5.4 |
+
+**WO-B4's mpmath values** are taken at:
+- S_min, √(S_min·S_max) and S_max of each size range (turbine: 10, 100 and 1000 hp);
+- each floor bound, and 1e-6 relative inside it;
+- P1–P3's sizes.
+
+**WO-B4's IDAES cross-check (A15)** runs at our *effective* inputs: floored values, the selected platform formula
+passed as `aspect_ratio_range`, and N. It also:
+- calls `SSLWCostingData.cost_vessel` directly (departure 3);
+- rescales IDAES's tray cost by max(1, f)/value(`number_trays_factor`) (departure 2);
+- compares pump and motor costs in `USD_CE500`.
+
+### 9.6 Assertions and gates
+
+**New assertions.**
+- **A43 (links).**
+  - `PYTHONPATH=src .venv/bin/python scripts/t08_numerical_policy.py --check` exits 0 and prints `equals`, with v2's
+    sha256 unchanged (`6b449911…d707c`).
+  - E01's `exact_sha256` is exactly `[assessment_sha256, regime_sha256]`, and it does not intersect
+    `schema_sha256_names()` (v2's domain).
+  - These pass: `test_m04_numerical_policy.py::test_a37_…`, `test_m02_schemas.py::test_g1_…` and the two
+    `test_t08_adr0025.py` A1 tests.
+  - Every existing study and optimization-report fixture validates. A study carrying `assessment` validates; one with
+    an extra key inside `assessment` fails.
+- **A44 (forms).**
+  - **Exchanger.** F_P at p ≤ 100 psig equals 1.0 bitwise, and its ∂/∂P row is structurally empty. At
+    p = 2000·(1 + 1e-9) psig the item is refused `CORRELATION_OUT_OF_RANGE(<item>.pressure)`. `CarbonSteelCarbonSteel`
+    gives F_M == 1.0.
+  - **Trays.** F_NT(10) = 1.4997082643358985 and F_NT(19) = 1.0409949546984238, each within rel 1e-15.
+    F_NT(20) == F_NT(21) == 1.0.
+  - **Vessel hand case** (vertical, `weight_limit` "1", CarbonSteel; D = 1 m, L = 3 m, t = 0.03175 m):
+    - W = 6777.48970680199 lb (rel 1e-13);
+    - C_v = 33222.512431689356 (rel 1e-12);
+    - C_PL = 5045.446066094272 (L floored at 12 ft, D in range; rel 1e-12);
+    - C_P1 = 38267.95849778363 at CE 500 (rel 1e-12).
+  - **CE 394 conversion.** r == 500.0/394.0 == 1.2690355329949239.
+  - **Drives.** η_m(1 hp) == 0.8, and η_m(10 hp) = 0.8638030099054395 (rel 1e-15). A compressor's `<U>.drive` capital
+    == 0.0, with provenance `included_in`, and its electricity = W/η_m(W/N) (rel 1e-15).
+- **A45 (loader).** The loader refuses each of these, built in the test and never shipped:
+  - a set missing a `source_line`;
+  - a `primary` source without `verified`;
+  - a `floor` on a decreasing form;
+  - an unknown option choice;
+  - non-contiguous pieces.
+
+  The shipped set loads, and the test prints each range's source kind.
+- **A46 (volumes).**
+  - The §9.4 guards hold.
+  - P2's drum is sized, with `v_source = model_identity` on both products.
+  - P3's shell and trays are sized from the declared volumes.
+  - For the new rows, twin = reference ≤ 1e-13, and A5's finite-difference oracle holds.
+- **A47 (ESC-A4).**
+  - Kinetic CSTR: V = τ_R·V̇_out against a hand value (rel 1e-14). Without τ it is refused
+    `SIZING_INPUT_MISSING(<U>.vessel.residence_time_s)`, and the duty item remains.
+  - Drum with a dormant liquid: with `dormant_liquid_density`, D_V matches the hand value (rel 1e-12). Without it, the
+    item is refused `SIZING_INPUT_UNAVAILABLE(<item>.rho_L)`.
+- **A48 (release candidate).** Every `primary` range in shipped sets is `verified: true`.
+
+**Changed assertions.**
+- A12 runs on P3 (§9.4).
+- A11 and A12's expectations include the identity volumes.
+- A14 and A15 follow WO-B4 (amended).
+
+**Gates.**
+- G3 adds A46 and A47.
+- G4 adds A44 and A45.
+- G7 adds A43.
+- New **G10, release-candidate data:** A48. It runs at the release-candidate cut. At E01's merge it is recorded as
+  `not run (RC item)`, which is not a pass.
+
+### 9.7 Open questions (each with a default; work proceeds on the default)
+
+| # | Question | Needs | Default |
+| --- | --- | --- | --- |
+| QA1 | The primary ranges of §9.2.4 against Seider 3rd ed. ch. 22: exchanger 150–12 000 ft²; centrifugal pump S 400–100 000; external gear Q 10–900 gpm; reciprocating pump 1–200 hp; motor 1–700 hp; compressors 200–30 000, 100–20 000 and 10–750 hp. Also: the turbine's range; whether IDAES's docstring weight ranges (:534) match the book; whether `weight_limit` "2" is the book's tower fit | Fact: a person with the book | Ship the recalled values with `verified: false`. The release candidate is blocked until they are verified (A48). The turbine has no size regime |
+| QA2 | Option defaults: IDAES's argument defaults (stainless steel exchanger, pump and compressor; U-tube; 12 ft tubes; pump type factor 1.4; open motor; carbon-steel vessel; sieve carbon-steel trays) or carbon steel throughout (the book's base) | Frank's preference | IDAES's defaults, each reported in `defaulted_inputs` |
+| QA3 | Below a stated lower bound: floors (conservative, at most +2.28 % on F_P; the platform terms at the boundary) or IDAES's extrapolation (with limitation and class `none`) | Frank's preference | Floors |
+| QA4 | Does any P1 exchanger's design pressure exceed 2000 psig (13.79 MPa gauge)? | Fact: I1 reads P1's state | The refusal stands. I1 sets `allow_extrapolation` explicitly per item if P1 needs a complete report, and logs it |
+| QA5 | Steam-turbine and gas-turbine compressor drives | Frank's preference (scope) | Not offered in E01 |
+| QA6 | Does SSLW's compressor base cost include the electric motor? This is inferred from F_D = 1 for an electric motor | Fact: QA1's book check | Included (`includes_drive: true`) |
+| QA7 | Wilson liquid volumes: declared per component, or a correlation | Frank's preference | Declared (§9.4); no correlation |
+| QA8 | Vessel shell thickness: an input (IDAES) or computed from the design pressure (ASME; not in the pinned source) | Frank's preference | An input, default 1.25 in, reported. A pressure-based thickness would need its own ADR |
+
+Risk (fact, measured in I1): on SYN-001 (P2), most items sit in the `floor` regime, because the flows are small. Their
+capital is then constant, so ∂tac/∂x comes from operating cost and from the items that are not floored. A33 still
+tests what it states. If I1 finds every capital row floored, it records that, and it does not resize P2.
