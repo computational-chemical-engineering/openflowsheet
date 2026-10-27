@@ -200,10 +200,11 @@ def test_a48_dormant_new_variants(
 
 
 def test_saturated_variants_refuse_a_single_phase_isentropic_state() -> None:
-    """beta_s outside [0, 1] is a trial-state DomainError (and the evaluate's refusal)."""
-    with pytest.raises(DomainError, match="isentropic_state_two_phase"):
+    """beta_s outside [0, 1] is a trial-state DomainError (and the evaluate's refusal), coded
+    `isentropic_state_single_phase` (C3-2, R-839)."""
+    with pytest.raises(DomainError, match="isentropic_state_single_phase"):
         _block("pure-single/sat", "VAPOR", "SATURATED").values((1.0, 900.0, 1.0e6, 5.0e5))
-    with pytest.raises(DomainError, match="isentropic_state_two_phase"):
+    with pytest.raises(DomainError, match="isentropic_state_single_phase"):
         # Saturated steam compressed: the isentropic state is superheated, not wet.
         _block("pure-sat/sat", "VAPOR", "SATURATED").values((1.0, 1.0e5, 3.0e5))
 
@@ -705,7 +706,7 @@ EVALUATE_REFUSALS: list[tuple[str, str, str, Any, float, dict[str, Any], str, st
         "isentropic_state_two_phase(U1)",
         "unsupported",
     ),
-    # A wet isentropic state declared where it is superheated (C3-2).
+    # A wet isentropic state declared where it is superheated, beta_s > 1 (C3-7; C3-2, R-839).
     (
         "turbine",
         "VAPOR",
@@ -713,7 +714,7 @@ EVALUATE_REFUSALS: list[tuple[str, str, str, Any, float, dict[str, Any], str, st
         (900.0, 1.0e6),
         5.0e5,
         {"isentropic_phase": "vapor_liquid"},
-        "isentropic_state_two_phase(U1)",
+        "isentropic_state_single_phase(U1)",
         "unsupported",
     ),
     # A53's expansion with a vapour outlet declared: it lands wet.

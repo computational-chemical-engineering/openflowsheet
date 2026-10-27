@@ -27,6 +27,7 @@ from openflowsheet.models.syn001.tp_state import _BLOCK_TOKEN
 from openflowsheet.models.thermal import ADDITIVE_VAPOUR
 from openflowsheet.models.thermal.kernel import (
     DOMAIN_CODES,
+    ISENTROPIC_FORM_CODES,
     Failure,
     Jet,
     Sat,
@@ -288,8 +289,9 @@ def isentropic_state(
     s* is s^{phi_I}(T_I, P_I), or s^{phi_I}_sat(P_I) for a saturated inlet. A single-phase
     isentropic state solves s^{phi_s}(T_s, P_O) = s* from the inlet temperature (T_sat(P_I) for a
     saturated inlet); a saturated one is beta_s = (s* - s^L_sat)/(s^V_sat - s^L_sat) at P_O. No
-    root on phi_s's side, or beta_s outside [0, 1], is `isentropic_state_two_phase`: the
-    isentropic state lies past the declared one (S11C_DECISIONS C3-2).
+    root on phi_s's side is `isentropic_state_two_phase` (the kernel's); beta_s outside [0, 1] is
+    `isentropic_state_single_phase`: the isentropic state is single-phase, not the declared
+    saturated one (R-839, replacing S11C_DECISIONS C3-2's code).
     """
     if variant not in PURE_VARIANTS:
         raise ValueError(f"{variant!r} is not a pure-fluid isentropic variant")
@@ -339,7 +341,7 @@ def isentropic_state(
     if not 0.0 <= beta <= 1.0:
         return Failure(
             "unsupported",
-            "isentropic_state_two_phase",
+            "isentropic_state_single_phase",
             f"s* = {inlet[0]!r} gives beta_s = {beta!r} at {outlet_pressure!r} Pa: the isentropic "
             "state is single-phase, not the declared saturated one",
         )
@@ -365,8 +367,9 @@ class IsentropicEnthalpyBlock:
     provider's T domain, s_j and h_j the provider's VAPOR s and h at the pure composition e_j;
     Hs = sum_j n_j h_j(T_s, P_O). Admitted by identity only (`ADDITIVE_VAPOUR`), phase VAPOR.
 
-    A state past the declared isentropic one (`isentropic_state_two_phase`) is a `DomainError` at
-    a trial (§4.3); the evaluate refuses it first at a solution.
+    An isentropic state other than the declared one (`isentropic_state_two_phase`,
+    `isentropic_state_single_phase`) is a `DomainError` at a trial (§4.3); the evaluate refuses it
+    first at a solution.
 
     **Dormant rule** (n == 0.0; n_tot == 0.0 for `additive-vapour`): value 0.0. For C = 1 the
     derivatives are evaluated at n = 1 and the n entry is the intensive value, the others 0.0. For
@@ -449,7 +452,7 @@ class IsentropicEnthalpyBlock:
             outlet_pressure,
         )
         if isinstance(answer, Failure):
-            if answer.code == "isentropic_state_two_phase":
+            if answer.code in ISENTROPIC_FORM_CODES:
                 raise DomainError(f"{self._block_id}: {answer.message}")
             _raise(answer, self._block_id)
         return answer

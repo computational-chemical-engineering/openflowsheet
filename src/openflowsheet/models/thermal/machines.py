@@ -73,6 +73,7 @@ from openflowsheet.models.thermal.common import (
     stream_face,
 )
 from openflowsheet.models.thermal.kernel import (
+    ISENTROPIC_FORM_CODES,
     Failure,
     Mismatch,
     _refusal,
@@ -414,9 +415,12 @@ class ThermalMachine:
                 *LIMITATIONS,
                 f"P_spec on the wrong side of the inlet pressure is refused "
                 f"{self._bound_code()}; it is an inequality on the state, not a row.",
-                "An isentropic state past the declared one (a wet compressor or pump state, a "
-                "turbine's single-phase state where vapor_liquid is declared, or the reverse) is "
-                f"refused isentropic_state_two_phase({self.unit_id}).",
+                "An isentropic state past the declared single-phase one (a wet compressor, pump "
+                "or vapour-turbine state) is refused "
+                f"isentropic_state_two_phase({self.unit_id}); a single-phase isentropic state "
+                "where vapor_liquid is declared (beta_s outside [0, 1]), or a root outside the "
+                "saturation range whose label is not the declared phase, is refused "
+                f"isentropic_state_single_phase({self.unit_id}).",
                 *((_WILSON_LIMITATION,) if self.additive else ()),
             ),
             module=__name__,
@@ -695,11 +699,9 @@ class ThermalMachine:
             pressure,
         )
         if isinstance(ideal, Failure):
-            if ideal.code == "isentropic_state_two_phase":
+            if ideal.code in ISENTROPIC_FORM_CODES:
                 return self._failure(
-                    Failure(
-                        "unsupported", f"isentropic_state_two_phase({self.unit_id})", ideal.detail
-                    )
+                    Failure("unsupported", f"{ideal.code}({self.unit_id})", ideal.detail)
                 )
             return self._failure(ideal)
 

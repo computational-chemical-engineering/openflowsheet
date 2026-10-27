@@ -521,3 +521,12 @@ Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. 
   in a record file beside `registration_v3.json`, with a `--check` generator (L01 retake record precedent: snapshot +
   `snapshot_sha256`). Alternative: a member of `registration_v3.json` (would move the transcription the generator
   pins). Reversible by: the record, the script, the one sentence.
+- Item 8, C3-2 (rulings item 10, R-839): new code `isentropic_state_single_phase` — `blocks.isentropic_state`'s
+  beta_s outside [0, 1], and `kernel.isentropic_temperature`'s root outside the saturation range with the other label;
+  `isentropic_state_two_phase` keeps s* past the saturated entropy (and the Wilson UNSTABLE vapour). Both codes are
+  `kernel.ISENTROPIC_FORM_CODES`: a `DomainError` at a trial in the block (behaviour unchanged, the code alone moves)
+  and `<code>(<U>)` in `machines.evaluate`; the machines' manifest limitation names both. C3-7's turbine (vapor_liquid
+  declared, beta_s > 1) → `isentropic_state_single_phase(U1)`; A55's n-pentane compressor still
+  `isentropic_state_two_phase(U1)` (CoolProp run). The verifier's mirror (`verify.thermal.isentropic_enthalpy`) names
+  no code (`isentropic_state_refused: <message>`): unchanged. Measured: thermal/GP/bases/ADR 0008 with CoolProp: 740
+  passed.

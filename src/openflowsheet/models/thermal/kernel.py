@@ -20,8 +20,9 @@ form accepts iff the closure is SATURATED. Otherwise `phase_regime_mismatch(<S>)
 declaration that would fit.
 
 **Typed codes** (each the first line of a refusal message): `phase_regime_mismatch`,
-`no_saturation`, `isentropic_state_two_phase`, `inadmissible_phase(<port>, <PHASE>)`,
-`carried_split_missing`, `not_converged`, `out_of_domain`, `near_critical`.
+`no_saturation`, `isentropic_state_two_phase`, `isentropic_state_single_phase` (R-839),
+`inadmissible_phase(<port>, <PHASE>)`, `carried_split_missing`, `not_converged`, `out_of_domain`,
+`near_critical`.
 """
 
 from __future__ import annotations
@@ -77,6 +78,11 @@ ADMISSIBILITY_MARGIN: Final = 1e-9
 #: Provider refusal codes that mean "outside this regime's domain" (§4.1 trial states).
 DOMAIN_CODES: Final[frozenset[str]] = frozenset(
     {"phase_not_stable", "near_critical", "no_saturation", "out_of_domain"}
+)
+#: The codes of an isentropic state that is not the declared form (§4.2, R-839): past a declared
+#: single-phase side (two-phase), or single-phase where another form is declared.
+ISENTROPIC_FORM_CODES: Final[frozenset[str]] = frozenset(
+    {"isentropic_state_two_phase", "isentropic_state_single_phase"}
 )
 
 
@@ -621,7 +627,8 @@ def isentropic_temperature(
 
     Safeguarded Newton from `start` (the machine's inlet temperature: a fixed rule, so T_s is a
     function of its inputs). No root on the declared side is `isentropic_state_two_phase`; outside
-    the saturation range the root's label must be `phase`.
+    the saturation range the root's label must be `phase`, else `isentropic_state_single_phase`
+    (the state is single-phase, of the other label; R-839).
     """
     fluid = limits(provider)
     sat = saturation(provider, pressure, context)
@@ -645,7 +652,7 @@ def isentropic_temperature(
         if label != phase:
             return Failure(
                 "unsupported",
-                "isentropic_state_two_phase",
+                "isentropic_state_single_phase",
                 f"the isentropic state at {pressure!r} Pa is {label}, not {phase}",
             )
         return solved
