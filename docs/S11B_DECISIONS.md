@@ -6,6 +6,8 @@ isolated and revertible. Measurements go in the run log below.
 
 ## Decisions
 
+DECISION: where the recovery definition's row builder lives (`test_k02_unit_models` forbids a builder in a unit module) → `models/rows.py` `scaled_sum_definition_row`, a new function (no existing builder changed), though rows.py is not in track B's §5 list (track A does not touch it). Alternative: a design-lane amendment of the ownership table. Reversible by: reverting the B1 fix-up commit.
+
 ## WO-B1 inventory: structural and inlet-dependent items (§4.7.2)
 
 Structural (checked at bind from `ColumnStructure`, B2; `validate` keeps its order and messages):

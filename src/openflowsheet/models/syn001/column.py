@@ -33,7 +33,7 @@ from typing import Final
 
 from openflowsheet.canonical import normalize_zero
 from openflowsheet.compile.reference import row_values
-from openflowsheet.compile.spec import Algebra, EquationSpec, Expr, QuantityKind, RowBuilder
+from openflowsheet.compile.spec import EquationSpec, QuantityKind, RowBuilder
 from openflowsheet.compiled import EvaluationContext, RowAccumulation
 from openflowsheet.models import (
     Accumulation,
@@ -55,6 +55,7 @@ from openflowsheet.models.rows import (
     fraction_row,
     ratio_row,
     scaled_definition_row,
+    scaled_sum_definition_row,
     specification_row,
 )
 from openflowsheet.models.syn001 import (
@@ -1450,7 +1451,7 @@ def declared_rows(
             column(scaled, "molar_flow")
             row(
                 stage_row_id(unit, stage, "spec", "recovery_definition"),
-                _recovery_definition_row(
+                scaled_sum_definition_row(
                     product_flow_id(spec, end, given.component),
                     pin(recovery_reference_parameter(unit, stage), F_REF),
                     scaled,
@@ -1695,29 +1696,6 @@ def declared_rows(
         variable_kinds=variable_kinds,
         row_kinds=row_kinds,
     )
-
-
-def _recovery_definition_row(
-    part: str, scale: str, scaled: str, feeds: tuple[str, ...]
-) -> RowBuilder:
-    """S11 §4.7.4: `F_ref part − w (feeds[0] + feeds[1] + …)`, the sum left-associated in the
-    given order; `F_ref` a pinned input and `w` a free variable. The division-free form of
-    `w / F_ref = part / Σ feeds`, bilinear like S06's purity definition and of its kind."""
-    if not feeds:
-        raise ValueError("a recovery definition needs at least one inlet flow")
-
-    def build(
-        variables: Mapping[str, Expr],
-        blocks: Mapping[str, Expr],
-        parameters: Mapping[str, float],
-        algebra: Algebra,
-    ) -> Expr:
-        total = variables[feeds[0]]
-        for name in feeds[1:]:
-            total = total + variables[name]
-        return parameters[scale] * variables[part] - variables[scaled] * total
-
-    return build
 
 
 def _link_rows(

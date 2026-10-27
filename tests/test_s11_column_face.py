@@ -367,3 +367,15 @@ def test_the_parser_refuses_an_undeclared_inlet_and_two_end_specifications() -> 
     with pytest.raises(RevisionError) as raised:
         column_structure(top, CASES["M3"].components)
     assert raised.value.code == "specification_conflict(S02.distillate)"
+
+
+def test_the_recovery_definition_sums_its_inlets_left_associated() -> None:
+    """§4.7.4: `F_ref n_c − w Σ_k n_{k,c}`, the sum in the given order, left-associated."""
+    from openflowsheet.models.rows import scaled_sum_definition_row
+
+    build = scaled_sum_definition_row("n", "F", "w", ("a", "b", "c"))
+    values = {"n": 0.3, "w": 0.7, "a": 0.1, "b": 0.2, "c": 1e-17}
+    found = build(values, {}, {"F": 1.0}, None)  # type: ignore[arg-type]
+    assert found == 1.0 * 0.3 - 0.7 * ((0.1 + 0.2) + 1e-17)
+    with pytest.raises(ValueError):
+        scaled_sum_definition_row("n", "F", "w", ())
