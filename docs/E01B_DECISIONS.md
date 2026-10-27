@@ -343,3 +343,57 @@ packages; URL and retrieval date for data). The design-lane ruling round is fold
   named constraints; V5 functional rules; not-evaluable handling; V7 absent without an assessment and the V7→V8
   test example; `formulation.assessment.outputs` = bound outputs only), plus part 2's and the earlier ones.
 - **Not B's:** `test_m07_mr12_extras_v02::test_the_git_backed_measure_at_head` (I1); packaging `_data/assessment/**`.
+
+## WO-B4 (independent cost expectations)
+
+- DECISION: A11's host is TH-R1's flash `D.drum` → TH-C1 (P1's fixture) has no flash; E01A names TH-C1 and TH-R1 as the
+  P1 candidates. Alternative: wait for I1 to name a P1 with all four units. Reversible by: `a11_th_r1_drum` in
+  `recorded_states.yaml` and `test_a11_*`.
+- DECISION: A11/A12's solved-state inputs are written by `tests/test_e01_b_cost_hand.py --write-states` (S11 solve, the
+  IAPWS-95 provider through S11's `saturation`/`phase_properties`, syn001's `V_MOLAR`, the document's molar masses; no
+  assessment code) into `benchmarks/e01/cost_hand/recorded_states.yaml`; a test re-solves (rel 1e-9) and checks the
+  fixtures' `state_sha256`. `cost_hand.py` reads the file as data. Alternative: transcribe values into the script.
+- DECISION: registered `S_max` points are targeted at `S_max·(1−1e-14)` (and the 40 ft piece boundary and D maxima at
+  ±1e-12) → binary64 rounding of a multi-step size must not cross into `units:2`, a discontinuous regime. The package's
+  regime label is not asserted at an exact floor bound (cost continuous there). Reversible by: `cost_hand.py`.
+- FACT (observation for the design lane, not numerics): the package refuses an explicit `pump_type_factor` on a
+  non-centrifugal pump (`NO_CORRELATION`); IDAES ignores it (F_T = 1, SSLW.py:1570-1571). The expectations omit it.
+- FACT: the note's F_NT(10), F_NT(19) are binary64 evaluations (1.0414 rounded: rel 1.0e-15 from the decimal value
+  used in cost_hand); A21's CRF is the float value within 2 ulp (exact 0.1018522088231506168). The script asserts every
+  §6.1/§9.6 number it recomputes (A10, A20, A21, A44 vessel/η_m/F_NT/r) at those tolerances; all agree.
+- FACT (escalation): WPU11 2006/2023 annual 126.167/174.192 equal the means of BLS's monthly values (raw API files,
+  sha256 a1ec04c4…1727, 62bfea28…f522) to 3 decimals: 126.16667, 174.19217.
+- DECISION: A15's IDAES run uses a stand-in namespace for the unit model and solves each `var == expr` constraint for
+  its free variable (`calculate_variable_from_constraint`), in a scratch venv (`$SCRATCH/venv-idaes`: the pinned wheel,
+  pyomo 6.10.1, pint 0.26.2, pyyaml). The script sits in `benchmarks/e01/brightway/` as §5.3 places it.
+- DECISION: the Brightway P4 expectation uses bw2calc on float64 bw_processing vectors written from §4.8.5 (no bw2data,
+  no adapter code) → independent of the adapter's assembly. Alternative: record the adapter's `foreground_check`.
+
+### WO-B4 gates (2026-10-28)
+
+| Check | Result |
+| --- | --- |
+| A14 registered sizes (87 cases, 8 entries; package vs mpmath) | worst rel 2.29e-15 (limit 1e-10); regimes and 2 refusals match |
+| A14 P-sizes (TH-C1, TH-R1, M1: 13 items; package and fixture purchased) | worst rel 1.01e-15 |
+| A15 vs IDAES 2.13.0 (85 cases + 13 items) | package 1.00e-14, transcription 1.02e-14 (limit 1e-9); tray smooth_max +2.45e-9 rescaled |
+| A10 / A11 / A12 | ΔT_lm, area rel ≤ 1e-13; drum D, L, V ≤ 2.2e-16, `L` controls; shell D_j² (5 trays), j* = 2, D, H, N_act 8 ≤ 1e-12 |
+| Chain on P1 (E, TDC, EPC, CAPEX, CRF, tac) | ≤ 6.7e-16 against the fixture |
+| A25 P4 rate vs Brightway (bw2calc 2.5.0) | 2.85e-16 (limit 1e-10); adapter `foreground_check` vs record ≤ 1e-12 (lca env) |
+
+Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-14.
+
+## Handoff (2026-10-28, after WO-B4) — resume from here
+
+- **Done (wp/E01 after 30241187):** d8907283 `benchmarks/e01/cost_hand/` (cost_hand.py → cost_hand.yaml, `--check`;
+  recorded_states.yaml) + `tests/test_e01_b_cost_hand.py`; 8742596b IDAES cross-check (`benchmarks/e01/brightway/
+  idaes_crosscheck.{py,yaml}`); cd44133b Brightway P4 expectation (`foreground_p4.{py,yaml}`), A25 test, lca-env test.
+- **Gates run:** `test_e01_b_cost_hand.py` 12 passed; with `test_e01_b_lca`, `test_e01_a_report`, `test_e01_a_cost`:
+  69 passed (default env); `test_e01_b_brightway.py` 4 passed (`$SCRATCH/venv-lca`); `e01_d04_inventory.py --check`
+  A42 PASS; ruff/format clean; mypy clean on the three new benchmark scripts. No full gate. Not pushed.
+- **Re-runs:** if `cost_hand.yaml` changes, re-run `idaes_crosscheck.py` in `$SCRATCH/venv-idaes` (the test checks the
+  case-file sha256); if `lca_hand.yaml` changes, re-run `foreground_p4.py` in `$SCRATCH/venv-lca`. If S11 solves move,
+  `python tests/test_e01_b_cost_hand.py --write-states`, then `cost_hand.py`.
+- **For I1:** A14/A15/A25 are in place on P1 = TH-C1 (+ TH-R1 for the drum) and P3 = M1; if I1 names another P1, add
+  its fixture's items to `P_SIZES` in cost_hand.py and re-run both records. Most P-size items sit in `floor` (§9.7 risk).
+- **Open for the design lane (batched):** the decision lines above, and the pump_type_factor observation.
+- WO-B4 is complete. Nothing under compile/, thermo/, models/; no S11 file.
