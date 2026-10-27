@@ -163,3 +163,7 @@ Next: track C's single `reviewer` pass (C1–C6), then merge `wp/S11-c` into `wp
   | identity dHs/dP_I = −n T_s (dv/dT)_I (20 states) | 9.01e-14 | 1e-9 |
 
   aarch64 values come from CI at I2.
+- Item 7 (R-836): `test_a77_iii_equal_gibbs_energies_at_saturation` asserts the judged set equals R-836's 8 pairs (by
+  hand: verification VA 350, VB 350, VC 390; real CH3OH 310/350, C2H5OH 350, H2O 350/390), that they cover all six
+  components, and (already) that the other 10 are refused `out_of_domain` by v2; `asked >= 3` is replaced. The A68
+  test stands unchanged.

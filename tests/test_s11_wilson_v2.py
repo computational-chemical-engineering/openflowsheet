@@ -309,11 +309,24 @@ def test_a77_ii_the_pressure_derivatives(pair: tuple[str, Any, Any]) -> None:
             assert abs(by_p - want) <= 1e-15 * abs(want), entry["id"]
 
 
-def test_a77_iii_equal_gibbs_energies_at_saturation(pair: tuple[str, Any, Any]) -> None:
-    """Pure i at P = P_i^sat(T), T ∈ {310, 350, 390} K: s^V − s^L = (h^V − h^L)/T.
+#: S11.A77(iii)'s 8 judged pairs, by hand from R-836; the other 10 of the 18 are refused.
+A77_III_JUDGED = {
+    "verification": {("VA", 350.0), ("VB", 350.0), ("VC", 390.0)},
+    "real": {
+        ("CH3OH", 310.0),
+        ("CH3OH", 350.0),
+        ("C2H5OH", 350.0),
+        ("H2O", 350.0),
+        ("H2O", 390.0),
+    },
+}
 
-    Only the (i, T) whose P_i^sat lies in the records' pressure domain can be asked; the others
-    are refused `out_of_domain` by v1 (S11D decisions). The reference lists both kinds.
+
+def test_a77_iii_equal_gibbs_energies_at_saturation(pair: tuple[str, Any, Any]) -> None:
+    """S11.A77(iii) (restated, R-836). Pure i at P = P_i^sat(T), T ∈ {310, 350, 390} K, with
+    P_i^sat inside the records' P domain: s^V − s^L = (h^V − h^L)/T to 1e-12 relative. The other
+    pairs are refused `out_of_domain` by v2 (forwarding v1's P box), and the judged pairs cover
+    every component of the record file.
     """
     name, _, v2 = pair
     ids = v2.records.components
@@ -321,7 +334,7 @@ def test_a77_iii_equal_gibbs_energies_at_saturation(pair: tuple[str, Any, Any]) 
     assert {(row["component"], row["T"]) for row in rows} == {
         (c, float(t)) for c in ids for t in (310, 350, 390)
     }
-    asked = 0
+    judged: set[tuple[str, float]] = set()
     for row in rows:
         n = tuple(1.0 if c == row["component"] else 0.0 for c in ids)
         stream = StreamState(n=n, temperature=row["T"], pressure=row["P_sat"])
@@ -337,8 +350,9 @@ def test_a77_iii_equal_gibbs_energies_at_saturation(pair: tuple[str, Any, Any]) 
         vapour, liquid = answers["VAPOR"].values, answers["LIQUID"].values
         want = (vapour["h"] - liquid["h"]) / row["T"]
         assert abs((vapour["s"] - liquid["s"]) - want) <= 1e-12 * abs(want), row
-        asked += 1
-    assert asked >= 3, asked
+        judged.add((row["component"], row["T"]))
+    assert judged == A77_III_JUDGED[name], judged
+    assert {component for component, _ in judged} == set(ids)
 
 
 #: Vapour compressions inside both records' domains: (n…, T_I, P_I, P_O).
