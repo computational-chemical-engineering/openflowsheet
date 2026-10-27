@@ -34,7 +34,7 @@ from openflowsheet.models.revision_flowsheet import IAPWS95_RECORDS, RevisionVie
 from openflowsheet.models.syn001.pump import work_id
 from openflowsheet.models.thermal import kernel
 from openflowsheet.models.thermal.state import liquid_id, vapor_id
-from openflowsheet.thermo import StreamState
+from openflowsheet.thermo import PropertyProvider, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify import thermal as vt
@@ -175,10 +175,12 @@ def evaluated_state(document: Mapping[str, Any]) -> dict[str, float]:
     return state
 
 
-def verifier_checks(view: RevisionView, state: Mapping[str, float]) -> list[CheckResult]:
+def verifier_checks(
+    view: RevisionView, state: Mapping[str, float], provider: PropertyProvider | None = None
+) -> list[CheckResult]:
     """The thermal rows, the saturated streams' checks and the single-phase admissibility, with
-    a fresh provider, as the I1b hook will assemble them."""
-    provider = Iapws95Provider()
+    a fresh provider (IAPWS-95 unless given), as the I1b hook will assemble them."""
+    provider = Iapws95Provider() if provider is None else provider
     note = qualification(provider)
     enthalpy, notes = vt.enthalpy_map(view, state, provider, CONTEXT)
     checks: list[CheckResult] = []
