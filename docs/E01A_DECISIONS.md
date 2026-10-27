@@ -49,6 +49,61 @@ I1's.
   the schema file (no fixture yet).
 - DECISION: admissibility nominal of every `size` row → `S_max` (§4.3.1's example), set by the contributor.
 
+## WO-A2 (sizing)
+
+- FACT (§4.4.0 model ids, registry): `MODEL_ID` constants — thermal: `thermal.{heater,flash,mixer,valve}`,
+  `thermal.{pump,compressor,turbine}` (`models/thermal/machines.py:78-82`); syn001: `syn001.{tp_heater,tp_flash,
+  ph_flash,heat_exchanger,column,kinetic_cstr,conversion_reactor,adiabatic_mixer,stream_splitter,feed_source,
+  product_sink,valve,component_separator,cascade}` and **`syn001.liquid_pump`** (the note's `syn001.pump` does not
+  exist); C1: `c1.{tp_heater,tp_flash,reactor,reactor_standin,adiabatic_mixer,stream_splitter,feed_source,
+  product_sink}`. Registered in `assessment/sizing/families.py::_TABLE`; `syn001.cascade` (absent from §4.4.0) falls
+  to `NO_SIZING_MODEL`.
+- FACT (ids read): duty `models.duty_id(U)` = `<U>.Q` (heaters, flashes, reactors, `syn001.heat_exchanger` as the
+  hot side's sink); `<U>.Q_spec` the pinned duty (thermal heater Q mode, thermal flash, ph_flash); work
+  `models.syn001.pump.work_id(U)` = `<U>.W` (also the thermal machines); streams `<S>.n.<c>`, `<S>.T`, `<S>.P`;
+  saturated streams `<S>.sat.V`/`<S>.sat.L` (`models/thermal/state.py`); column (`models/syn001/cascade.py`)
+  `<U>.stage.<j>.{v.<c>,l.<c>,T,P,Q}`, condenser duty `<U>.stage.1.Q`, reboiler `<U>.stage.<N>.Q`, stage 1 top;
+  `ColumnStructure.{stage_count,condenser,reboiler,pressures}` via `UnitRef.structure.structure`. Ports: heater
+  `inlet/outlet`, flash `inlet/vapor/liquid`, machines `inlet/outlet`, exchanger `hot_inlet/hot_outlet/cold_inlet/
+  cold_outlet`, reactors `inlet/outlet`.
+- FACT (§4.4.3 saturation routine, named): `models/thermal/kernel.py::saturation` (T_sat(P), dT_sat/dP) and
+  `phase_properties(…, ("v",))` at (T_sat, P) per phase; no existing v_sat routine, so
+  `SaturatedVolumetricFlowBlock` chains the two (`dv_sat/dP = ∂v/∂T·dT_sat/dP + ∂v/∂P`), as
+  `SaturatedFlowBlock` does for h. Providers offering `v`: iapws95, coolprop-heos, pr-c1 (liquid only pure NH3),
+  pr-lib (vapour only). **No `v`:** syn001, wilson-ig, wilson-ig-v2 (also their ideal-gas vapour).
+- DECISION: block ids → ordinals `ASMVF_<k>` in construction order. Alternative: sanitised stream names (`U-FLASH`
+  fails the backend token rule; sanitising can merge ids). Reversible by: `blocks.volumetric_block_id`.
+- DECISION: a pure fluid's block requests only (T, P) derivatives, `∂v/∂n = 0` (intensive; the thermal blocks' rule);
+  a mixture requests `n_<c>` too and refuses a missing one. Reversible by: `VolumetricFlowBlock.__init__`.
+- DECISION: utility rule 2 compares `price.value / factor(per)` for energy `per`s only (§4.5.6), as stated — no
+  escalation across currencies/years before WO-A4's basis exists; a utility without an energy price, `T_supply` or a
+  ΔT_min is not an `auto` candidate. `T_return` absent → equal to `T_supply` (isothermal). Alternative: escalate first.
+  Reversible by: `families._price_per_joule`.
+- DECISION: utility temperatures and ΔT_min are per-item θ (`asm:item.<item>.T_supply|T_return|dT_min`), not shared
+  `asm:utility.<u>.*`, so two items on one utility never collide in the functional spec's parameters. Alternative:
+  one θ per utility with dedup. Reversible by: `families.exchanger_utility`.
+- DECISION: a duty item is omitted when `<U>.Q_spec` is pinned at 0.0 even if `<U>.Q` is also a host variable (thermal
+  flash). A study decision moving that pin later finds no duty item (§4.4.0's "not a decision" is not visible at
+  build). Reversible by: `families._duty_item_needed`.
+- DECISION: `N_act = ⌈N_tr/E_o⌉` with `E_o` read as its decimal repr (`Fraction(repr(E_o))`): 7/0.7 → 10, not
+  binary64's 11. Reversible by: `families.actual_trays`.
+- DECISION: column condenser/reboiler services are forced (cooling/heating) but kept as `service` entries with their
+  sign rows; a column shell refusal does not remove them. The condenser/reboiler carry no phase-change limitation
+  (no process streams). Reversible by: `families._Column.plan`.
+- DECISION: a conversion reactor's outlet phase for `V̇_out` = the provider's TP-flash label at the planning state;
+  two-phase or unanswered → `SIZING_INPUT_UNAVAILABLE(<U>.vessel.v)`. Alternative: a declared phase. Reversible by:
+  `families._Reactor.plan`.
+- DECISION: a pump whose inlet `v` is unavailable keeps `size.<U>.power` and refuses only `vol_flow`/`head` (the cost
+  entry decides). The drum refuses whole when either product's `v` is unavailable. Reversible by: `_Machine`, `drum`.
+- DECISION: `size.<item>.volume` of a drum is §4.4.4's `V = τ V̇_L/φ_fill` even when the vapour member controls D.
+- DECISION: `SizedItem.duty`/`.power` carry builders (|Q|, consumed/generated electric power) for WO-A4's OPEX, not
+  output ids (the catalogue has no such ids). Reversible by: `sizing.SizedItem`.
+- Tests: `tests/test_e01_a_sizing.py` 15 passed (A9; A10 + utility auto/U-required; A13 ×3 bitwise on iapws95 liquid,
+  pr-lib vapour mixture with n-derivatives, iapws95 saturated; SYN-001 items/refusals, area = formula at rel 1e-13,
+  twin = reference ≤ 1e-13, FD gradient on 3 columns; TH-R1 drum (D, L, V, controlling) and pump (V̇, head, drive)
+  by hand at rel 1e-12; TH-C1 boiler/condenser areas rel 1e-13, turbine, limitations; M1 column refusal +
+  condenser/reboiler by hand; M1 shell D_j², j*, D, H on a `v` test provider). A11/A12 need B4's hand cases.
+
 ## Escalations (open)
 
 - **ESC-A1 (schema identity partition; blocks green on 4 tests).** `schemas/assessment.schema.json` declares
@@ -79,6 +134,17 @@ I1's.
   or the auditor learns that an addendum may classify names in schemas it does not own. Proposed: an E01-addendum key
   `classifies_in: [study.schema.json, optimization-report.schema.json]` whose names v2's audit subtracts — an auditor
   change, so a design-lane ruling. Not needed until those schemas are edited.
+
+- **ESC-A4 (open, design lane).** (i) `syn001.kinetic_cstr` carries no volume parameter (Damköhler form,
+  `kinetic_cstr.py:9`); §4.4.0 says "volume = its volume parameter". Taken: refusal `SIZING_INPUT_MISSING(<U>.vessel.
+  volume)`; the duty item stays. Alternative: size it as the conversion reactor (`τ_R·V̇_out`, `residence_time_s`).
+  (ii) A drum whose liquid product is dormant but which declares `liquid_molar_volume`: ρ_L = M̄_L/v_decl has no M̄_L
+  (no liquid composition). Taken: the V member is refused `SIZING_INPUT_UNAVAILABLE(<item>.rho_L)` regardless.
+- **ESC-A5 (open, for I1/B4).** No registered column basis offers `v` (syn001, wilson-ig-v2), so P3's shell and trays
+  are refused `SIZING_INPUT_UNAVAILABLE(<U>.shell.v)` and A12's hand case has nothing to compare on a registered case;
+  the condenser and reboiler are sized. The shell formula is exercised on M1's stages with a test provider answering
+  only `v` (`test_column_m1_shell_formula_on_a_volume_test_provider`). Likewise P2 (SYN-001): the drum is refused.
+  Needs: a column case on a `v`-capable basis, or a ruling that the ideal-gas vapour volume RT/P is the providers' `v`.
 
 ## Facts confirmed before WO-A3 (2026-10-27)
 
