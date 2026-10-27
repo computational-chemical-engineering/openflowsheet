@@ -18,8 +18,8 @@ line the code and the rest the hint; S11C build decisions C2/C3-7), so a builder
 exactly those into `RevisionError` and leaves every other construction refusal to the binder's
 `value_outside_model_domain` (T07 ruling round 5, S3), as the SYN-001 builders do. Two refusals
 are the binder's own: the heater's one-of specification, which the binder's missing and conflict
-codes report, and a Wilson machine's non-vapour port, which no unit can see once its provider is
-refused (C3-4).
+codes report, and a Wilson machine's non-vapour port, which the binder refuses before it constructs
+the unit (the unit refuses it too, with the same code and hint, `machines.WILSON_PORT_HINT`).
 
 What the signatures cannot list (as `column_binding`'s cannot; S11B build decision): the heater's
 optional parameters `pressure_drop` (default 0) and `outlet_vapor_fraction` (its quality mode).
@@ -302,7 +302,7 @@ _MACHINES: Final[Mapping[str, ModelSignature]] = {
 }
 
 #: §4.4: an additive-vapour (Wilson) machine has no γ–φ two-phase PS closure.
-_WILSON_PORT_HINT: Final = "no γ–φ two-phase PS closure (L-GP-2)"
+_WILSON_PORT_HINT: Final = machines.WILSON_PORT_HINT
 
 
 def _machine(
@@ -372,7 +372,10 @@ BUILDERS: Final[Mapping[str, Builder]] = {
 }
 
 #: Model id -> the provider ids of the bases it binds on (units design §4.7): the two pure-fluid
-#: bases. The compressor and turbine gain `wilson-ig-v2` when WO-D5 selects it.
-BASES: Final[Mapping[str, frozenset[str]]] = dict.fromkeys(
-    SIGNATURES, frozenset({"iapws95-v1", "coolprop-heos-v1"})
-)
+#: bases, and for the compressor and turbine (vapour, L-GP-2) also Wilson's `wilson-ig-v2`.
+_PURE_BASES: Final = frozenset({"iapws95-v1", "coolprop-heos-v1"})
+_WILSON_MACHINES: Final = (machines.MODEL_IDS["compressor"], machines.MODEL_IDS["turbine"])
+BASES: Final[Mapping[str, frozenset[str]]] = {
+    model_id: _PURE_BASES | ({"wilson-ig-v2"} if model_id in _WILSON_MACHINES else set())
+    for model_id in SIGNATURES
+}

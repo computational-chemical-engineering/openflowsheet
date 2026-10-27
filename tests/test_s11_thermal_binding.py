@@ -264,9 +264,12 @@ def test_the_three_tables_name_the_seven_models() -> None:
     assert set(thermal_binding.SIGNATURES) == set(THERMAL)
     assert set(thermal_binding.BUILDERS) == set(THERMAL)
     assert set(thermal_binding.BASES) == set(THERMAL)
-    assert all(
-        bases == {"iapws95-v1", "coolprop-heos-v1"} for bases in thermal_binding.BASES.values()
-    )
+    wilson = {"thermal.compressor", "thermal.turbine"}
+    for model_id, bases in thermal_binding.BASES.items():
+        expected = {"iapws95-v1", "coolprop-heos-v1"} | (
+            {"wilson-ig-v2"} if model_id in wilson else set()
+        )
+        assert bases == expected, model_id
 
 
 def test_until_i1b_the_binder_refuses_the_family() -> None:
@@ -687,7 +690,7 @@ def test_the_turbine_takes_no_isentropic_phase_parameter(registered: None) -> No
 
 
 def _wilson_v2() -> Any:
-    """A provider that only describes itself as `wilson-ig-v2` (the C3-4 refusal comes first)."""
+    """A provider that only describes itself as `wilson-ig-v2` (construction reads no more)."""
     described = SimpleNamespace(
         provider_id="wilson-ig-v2",
         reference_convention="WILSON-IG-ref-v1",
@@ -731,17 +734,15 @@ def test_a_wilson_machine_port_must_be_vapour(
 
 
 @pytest.mark.parametrize("model", ["thermal.compressor", "thermal.turbine"])
-def test_an_all_vapour_wilson_machine_is_refused_until_d5(model: str) -> None:
-    """C3-4: the unit refuses the additive-vapour provider until WO-D4/D5; the builder reports it
-    as the binder's `unsupported`."""
-    with pytest.raises(RevisionError) as raised:
-        thermal_binding.BUILDERS[model](
-            _view(model, "VAPOR", "VAPOR"), _wilson_v2(), _CONTEXT, ("benzene", "toluene")
-        )
-    assert (raised.value.kind, raised.value.code) == (
-        "unsupported",
-        "specification_unsupported(U.provider)",
+def test_an_all_vapour_wilson_machine_binds_as_additive_vapour(model: str) -> None:
+    """§4.4 (C3-4 wired at I1b): an all-vapour compressor or turbine on `wilson-ig-v2` builds the
+    additive-vapour machine, its ports vapour."""
+    unit, _ = thermal_binding.BUILDERS[model](
+        _view(model, "VAPOR", "VAPOR"), _wilson_v2(), _CONTEXT, ("benzene", "toluene")
     )
+    assert isinstance(unit, ThermalMachine)
+    assert unit.variant == "additive-vapour"
+    assert (unit.inlet_form, unit.outlet_form) == ("VAPOR", "VAPOR")
 
 
 # -- the binder's other codes, unchanged for the family ------------------------------------------

@@ -245,3 +245,21 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
 ## WO-I1b (Wilson machines)
 
 - DECISION: Wilson machine wiring (C3-4) → I1b's first commits. Alternative: a separate WO. Reversible by: reverting them.
+- Commit A (C3-4 wired, §4.4 Wilson path): `ThermalMachine` admits `ADDITIVE_VAPOUR` on vapour ports only
+  (`specification_unsupported(<U>.inlet|outlet|isentropic_phase)`, hint `machines.WILSON_PORT_HINT`, which the
+  binder now imports, so code and hint have one source); variant `additive-vapour`; faces from
+  `tp_state.single_phase_enthalpy(…, "VAPOR")` (shared with syn001 readers); `F-mole:<c>` per component; the
+  evaluate reads Ḣ_s from the machine's own `PFs_<U>` (`IsentropicEnthalpyBlock.additive_state`, the function
+  `values` raises from), inverts n_tot·h^V(T, P_O, x) = Ḣ_I + W on the domain T box (`kernel._solve` with
+  `gamma_phi.enthalpy_and_slope`), then `stability(outlet, VAPOR)` must be STABLE_WITHIN_TESTED_SCOPE, else
+  `phase_regime_mismatch(<O>)`; every Wilson failure carries R-840's labels. `thermal_binding.BASES`: compressor and
+  turbine gain `wilson-ig-v2`. Structural enabler in `blocks.py`: the additive state returns its typed `Failure`
+  instead of raising (`values`/`jacobian` raise it exactly as before, same message), so the evaluate maps no
+  exception text.
+  Measured on the real records: compressor (0.4, 0.1, 0.5), 370 K, 40 → 50 kPa, η 0.8: T_O 389.58 K, W 876.22 W,
+  6 evaluations; contribution Jacobian vs central differences (step 1e-6·x, row-scaled) worst 6.24e-9 (compressor),
+  6.78e-9 (turbine 375 K, 60 → 45 kPa); every row within its kind's tolerance at the evaluation. Rewritten S11 tests
+  (no base keys): `test_a50_the_wet_outlet_hint_and_the_wilson_machines` → `test_a50_the_wet_outlet_hint` +
+  `test_a_wilson_machine_is_vapour_on_both_ports`; `test_an_all_vapour_wilson_machine_is_refused_until_d5` →
+  `…_binds_as_additive_vapour`; `test_the_three_tables_name_the_seven_models` (the Wilson row). S11 thermal/gp/v2
+  tests: 336 passed, 58 skipped (CoolProp).

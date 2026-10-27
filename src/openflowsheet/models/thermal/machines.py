@@ -17,8 +17,12 @@ compressor eta W - (Hs - H_I); turbine W - eta (Hs - H_I)), `F-energy` (W + H_I 
 into the unit, ADR 0001 D4.1), and the saturated rows of a saturated turbine outlet (§4.1).
 Owned: W (kind heat_rate, R-043), and `<O>.sat.V`, `<O>.sat.L`.
 
-The additive-vapour (Wilson) compressor and turbine need `wilson-ig-v2` (WO-D4) and its wiring
-(WO-D5); until then they are refused at construction (S11C_DECISIONS C3-4).
+The additive-vapour (Wilson) compressor and turbine (§4.4's Wilson path, on `wilson-ig-v2`) are
+single-phase vapour on both ports (L-GP-2): the faces are `tp_state.single_phase_enthalpy`'s
+mixture blocks, shared with any syn001 unit reading the stream (§4.3); the mole rows are per
+component; the isentropic block is `additive-vapour`. The evaluate inverts the outlet's vapour
+enthalpy at P_spec on the provider's T domain and asks the provider's `stability()` of the outlet,
+which must be STABLE_WITHIN_TESTED_SCOPE, else `phase_regime_mismatch(<O>)`.
 """
 
 from __future__ import annotations
@@ -43,7 +47,10 @@ from openflowsheet.models import (
 )
 from openflowsheet.models.rows import balance_row, energy_row, specification_row, work_row
 from openflowsheet.models.syn001 import MOLAR_FLOW, POWER, PRESSURE
+from openflowsheet.models.syn001.gamma_phi import enthalpy_and_slope
+from openflowsheet.models.syn001.ph_kernel import failure_labels, port_enthalpy, typed_failure
 from openflowsheet.models.syn001.pump import work_id
+from openflowsheet.models.syn001.tp_state import single_phase_enthalpy
 from openflowsheet.models.thermal import ADDITIVE_VAPOUR, Form, admitted_identity
 from openflowsheet.models.thermal.blocks import (
     IsentropicEnthalpyBlock,
@@ -65,7 +72,13 @@ from openflowsheet.models.thermal.common import (
     saturated_rows,
     stream_face,
 )
-from openflowsheet.models.thermal.kernel import Failure, Mismatch, declared_state
+from openflowsheet.models.thermal.kernel import (
+    Failure,
+    Mismatch,
+    _refusal,
+    _solve,
+    declared_state,
+)
 from openflowsheet.models.thermal.rows import expansion_work_row
 from openflowsheet.models.thermal.state import carried_fraction
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
@@ -117,6 +130,16 @@ _DESCRIPTIONS: Final[dict[str, str]] = {
         "the outlet state are calculated."
     ),
 }
+
+
+#: §4.4's bind refusal of a Wilson machine's non-vapour port, and the binder's (L-GP-2).
+WILSON_PORT_HINT: Final = "no γ–φ two-phase PS closure (L-GP-2)"
+_STABLE: Final = "STABLE_WITHIN_TESTED_SCOPE"
+_WILSON_LIMITATION: Final = (
+    "L-GP-2: an additive-vapour (Wilson) machine is single-phase vapour on both ports, within "
+    "the records' domain; its outlet must be judged STABLE_WITHIN_TESTED_SCOPE by the provider's "
+    "stability(), else phase_regime_mismatch(<O>): there is no γ–φ two-phase PS closure."
+)
 
 
 def _refused(unit_id: str, what: str, hint: str) -> SpecificationError:
@@ -209,14 +232,13 @@ class ThermalMachine:
             self.model_id,
             additive_vapour=self.machine != "pump",
         )
-        if identity in ADDITIVE_VAPOUR:
-            raise _refused(
-                self.unit_id,
-                "provider",
-                f"the additive-vapour {self.machine} on {identity} is wired with wilson-ig-v2 "
-                "(S11 WO-D4, WO-D5); until then it is refused",
-            )
         check_wiring(self.unit_id, self.streams, self.forms)
+        if identity in ADDITIVE_VAPOUR:
+            for port, form in (("inlet", self.inlet_form), ("outlet", self.outlet_form)):
+                if form != "VAPOR":
+                    raise _refused(self.unit_id, port, WILSON_PORT_HINT)
+            if self.isentropic_phase not in (None, "vapor"):
+                raise _refused(self.unit_id, "isentropic_phase", WILSON_PORT_HINT)
         if not 0.0 < self.efficiency <= 1.0:
             raise SpecificationError(
                 "efficiency_outside_interval\n"
@@ -269,6 +291,17 @@ class ThermalMachine:
         return FAMILIES[self.machine]
 
     @property
+    def additive(self) -> bool:
+        """The additive-vapour (Wilson) configuration: the provider's identity is in
+        `ADDITIVE_VAPOUR` (§4.3)."""
+        described = self.provider.describe()
+        return (described.provider_id, described.reference_convention) in ADDITIVE_VAPOUR
+
+    @property
+    def components(self) -> tuple[str, ...]:
+        return tuple(self.provider.describe().components)
+
+    @property
     def component(self) -> str:
         (component,) = self.provider.describe().components
         return component
@@ -303,6 +336,8 @@ class ThermalMachine:
 
     @property
     def variant(self) -> Variant:
+        if self.additive:
+            return "additive-vapour"
         inlet = "sat" if self.inlet_form == "SATURATED" else "single"
         state = "sat" if self.isentropic_form == "SATURATED" else "single"
         return f"pure-{inlet}/{state}"  # type: ignore[return-value]
@@ -367,6 +402,7 @@ class ThermalMachine:
                 "An isentropic state past the declared one (a wet compressor or pump state, a "
                 "turbine's single-phase state where vapor_liquid is declared, or the reverse) is "
                 f"refused isentropic_state_two_phase({self.unit_id}).",
+                *((_WILSON_LIMITATION,) if self.additive else ()),
             ),
             module=__name__,
             path=Path(__file__),
@@ -375,6 +411,16 @@ class ThermalMachine:
     # -- rows ----------------------------------------------------------------------------------
 
     def _isentropic_block(self) -> IsentropicEnthalpyBlock:
+        if self.additive:
+            return IsentropicEnthalpyBlock(
+                self.provider,
+                self.components,
+                self.context,
+                block_id=isentropic_block_id(self.unit_id),
+                variant="additive-vapour",
+                inlet_phase="VAPOR",
+                isentropic_phase="VAPOR",
+            )
         return IsentropicEnthalpyBlock(
             self.provider,
             self.component,
@@ -386,6 +432,8 @@ class ThermalMachine:
         )
 
     def contribute(self, wiring: Wiring, components: Sequence[str]) -> Contribution:
+        if self.additive:
+            return self._additive_contribution(wiring, components)
         component = self.component
         if tuple(components) != (component,):
             raise SpecificationError(f"{self.unit_id}: wired into {tuple(components)}")
@@ -465,6 +513,83 @@ class ThermalMachine:
             },
         )
 
+    def _additive_contribution(self, wiring: Wiring, components: Sequence[str]) -> Contribution:
+        """The Wilson rows (§4.4): the faces are `single_phase_enthalpy`'s VAPOR mixture blocks
+        (`<block>.H` = n_tot h^V), one mole row per component, and the `additive-vapour`
+        isentropic block fed by the inlet's flows, T_I, P_I and P_O."""
+        names = self.components
+        if tuple(components) != names:
+            raise SpecificationError(f"{self.unit_id}: wired into {tuple(components)}")
+        check_wiring(self.unit_id, self.streams, self.forms, wiring)
+        inlet, out = self.inlet_stream, self.outlet_stream
+        work = work_id(self.unit_id)
+        inlet_block, inlet_feeding, inlet_keys = single_phase_enthalpy(
+            self.provider, names, self.context, inlet, "VAPOR"
+        )
+        outlet_block, outlet_feeding, outlet_keys = single_phase_enthalpy(
+            self.provider, names, self.context, out, "VAPOR"
+        )
+        ideal = self._isentropic_block()
+        ideal_feeding = (
+            *(flow_id(inlet, name) for name in names),
+            temperature_id(inlet),
+            pressure_id(inlet),
+            pressure_id(out),
+        )
+        ideal_key = f"{ideal.block_id}.Hs"
+        pressure, efficiency = self.pressure_parameter, self.efficiency_parameter
+        family = self.family
+
+        rows = Rows()
+        rows.own(work, "heat_rate")
+        for name in names:
+            rows.add(
+                self.unit_id,
+                self.model_id,
+                f"{family}-mole",
+                balance_row((flow_id(inlet, name),), (flow_id(out, name),)),
+                "molar_flow",
+                "zero_holdup_balance",
+                (name,),
+            )
+        rows.add(
+            self.unit_id,
+            self.model_id,
+            f"{family}-P",
+            specification_row(pressure_id(out), pressure),
+            "pressure",
+        )
+        if self.machine == "turbine":
+            work_build = expansion_work_row(work, efficiency, ideal_key, inlet_keys)
+        else:
+            work_build = work_row(work, efficiency, (ideal_key,), inlet_keys)
+        rows.add(self.unit_id, self.model_id, f"{family}-work", work_build, "heat_rate")
+        rows.add(
+            self.unit_id,
+            self.model_id,
+            f"{family}-energy",
+            energy_row(inlet_keys, outlet_keys, source=work),
+            "heat_rate",
+            "zero_holdup_balance",
+        )
+        return Contribution(
+            variable_ids=tuple(rows.owned),
+            equations=tuple(rows.equations),
+            variable_kinds=rows.owned_kinds,
+            row_kinds=rows.row_kinds,
+            blocks=(inlet_block, outlet_block, ideal),
+            block_inputs={
+                inlet_block.block_id: inlet_feeding,
+                outlet_block.block_id: outlet_feeding,
+                ideal.block_id: ideal_feeding,
+            },
+            parameter_ids=(pressure, efficiency),
+            parameters={
+                pressure: float(self.outlet_pressure),
+                efficiency: float(self.efficiency),
+            },
+        )
+
     # -- evaluator -----------------------------------------------------------------------------
 
     def _bound_code(self) -> str:
@@ -497,7 +622,7 @@ class ThermalMachine:
 
         # (0) Dormant: zero work; the outlet labelled with the inlet's T at P_spec (§4.4).
         if feed.is_dormant:
-            dormant = outlet(out, form, (0.0,), feed.temperature, pressure)
+            dormant = outlet(out, form, (0.0,) * len(feed.n), feed.temperature, pressure)
             return UnitEvaluation(
                 status="ok",
                 outlets={"outlet": dormant.state},
@@ -518,6 +643,9 @@ class ThermalMachine:
                     f"P_spec = {pressure!r} Pa is {side} the inlet's {feed.pressure!r} Pa",
                 )
             )
+
+        if self.additive:
+            return self._additive_evaluate(feed, pressure, context)
 
         # (1) A saturated inlet's vapour fraction is the stated one, exactly.
         phase = _INLET_PHASE[self.machine]
@@ -581,4 +709,80 @@ class ThermalMachine:
             provider_id=described.provider_id,
             reference_convention=described.reference_convention,
             owned=done.owned,
+        )
+
+    def _additive_evaluate(
+        self, feed: StreamState, pressure: float, context: EvaluationContext
+    ) -> UnitEvaluation:
+        """§4.4's Wilson path for a flowing feed inside the bounds: the inlet's vapour enthalpy
+        (R-007's admissibility), Ḣ_s from the machine's own `PFs_<U>` block (the function the
+        work row reads), W, then the outlet's vapour h-inversion at P_spec on the provider's T
+        domain and the provider's `stability()` of the outlet. Every failure carries R-840's
+        labels."""
+        described = self.provider.describe()
+        labels = failure_labels(described.provider_id, described.reference_convention)
+        names = self.components
+        out = self.outlet_stream
+
+        def failed(failure: Failure) -> UnitEvaluation:
+            return typed_failure(failure.status, failure.code, failure.detail, **labels)
+
+        entering = port_enthalpy(
+            self.provider, feed, "VAPOR", names, context, port="inlet", labels=labels
+        )
+        if entering.failure is not None:
+            return entering.failure
+        assert entering.enthalpy_flow is not None
+        ideal = self._isentropic_block().additive_state(
+            (*feed.n, feed.temperature, feed.pressure, pressure)
+        )
+        if isinstance(ideal, Failure):
+            return failed(ideal)
+        _, isentropic = ideal
+
+        rise = isentropic - entering.enthalpy_flow
+        efficiency = float(self.efficiency)
+        work = efficiency * rise if self.machine == "turbine" else rise / efficiency
+        target = entering.enthalpy_flow + work
+
+        def residual(temperature: float) -> tuple[float, float] | Failure:
+            status, enthalpy, slope, message = enthalpy_and_slope(
+                self.provider, StreamState(feed.n, temperature, pressure), "VAPOR", context
+            )
+            if status != "ok":
+                return _refusal(status, message)
+            return enthalpy - target, slope
+
+        t_low, t_high = (float(value) for value in described.domain["T"])
+        solved = _solve(
+            residual,
+            t_low,
+            t_high,
+            start=feed.temperature,
+            what=f"{out}'s vapour enthalpy at {pressure!r} Pa",
+        )
+        if isinstance(solved, Failure):
+            return failed(solved)
+        temperature, evaluations = solved
+        state = StreamState(feed.n, temperature, pressure)
+        report = self.provider.stability(state, "VAPOR", context)  # type: ignore[attr-defined]
+        if report.label != _STABLE:
+            return failed(
+                Failure(
+                    "unsupported",
+                    f"phase_regime_mismatch({out})",
+                    f"declared vapor; stability() of the vapour outlet at ({temperature!r} K, "
+                    f"{pressure!r} Pa) is {report.label}"
+                    + (f" ({report.reason})" if report.reason else "")
+                    + f"; {WILSON_PORT_HINT}",
+                )
+            )
+        return UnitEvaluation(
+            status="ok",
+            outlets={"outlet": state},
+            work=work,
+            phase_signature="VAPOR",
+            iterations=evaluations,
+            provider_id=described.provider_id,
+            reference_convention=described.reference_convention,
         )
