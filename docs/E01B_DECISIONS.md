@@ -132,3 +132,19 @@ packages; URL and retrieval date for data). The design-lane ruling round is fold
   `per`) → `LCA_ACTIVITY_UNKNOWN(<path>.per)` and the impacts withheld. Reversible by: `inventory.technosphere`.
 - DECISION: the contributor class lives in `lca/section.py` beside its section (the note names no file for it);
   it registers as `lca`. Reversible by: moving it.
+
+## Handoff (2026-10-27, end of WO-B1 and WO-B2) — resume from here
+
+- **Done (wp/E01, after 1301ca12):** WO-B1 (ff7f4343 extra, lock, env script, D04 records + A42 checker; 932455b3
+  tables, adapter, shipped IPCC and test-background tables, tests); WO-B2 (4ce0682b contributor + tests).
+- **Gates run:** `tests/test_e01_b_tables.py` 17 passed (A27 table part, A29 adapter part, A42); `tests/test_e01_b_lca.py`
+  10 passed (P4 = hand exactly, A26, A27, A28, A29 P4 part, allocation forms, refusals); `tests/test_e01_b_brightway.py`
+  skipped in `.venv` (not run), **fails** in the scratch lca env (A24 at 1e-12: Brightway float32, ESC-B1);
+  `scripts/e01_lca_data.py --check` current; `scripts/e01_d04_inventory.py --check` A42 PASS; pyproject-dependent
+  tests (t08 w4 package data, s07, m03 isolation, t07 server extra, m07 extras) 72 passed 13 skipped; A's report and core
+  tests still pass; ruff clean, mypy clean on `assessment/`; nothing under compile/, thermo/, models/ changed.
+- **Not done:** `.venv-lca` itself was not built at the repo root (only a scratch venv; `scripts/build-lca-env.sh` builds
+  it); packaging of `_data/assessment/**` (ESC-B2); A25 against Brightway (I1, needs ESC-B1's ruling); WO-B3, WO-B4.
+- **Open for the design lane (batched):** ESC-B1 (A24/A25 tolerance vs float32 — preferred remedy stated), ESC-B2
+  (packaging layout, T08 test amendments, NOTICE attributions), ESC-B3 (θ-range rights leak in `report.propagate`),
+  the new code `LCA_TABLE_INVALID`, the substitution sign, and every DECISION line above.
