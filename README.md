@@ -7,18 +7,19 @@ and reuses established differentiation, linear-algebra and optimization infrastr
 
 ## Status
 
-**Pre-release. Phase 0 is complete; no capability is released, and nothing here is validated against
-experiment or an independent process simulator.**
+**Early development. Version 0.2.0 is released** (20 October 2026, on PyPI and as a GitHub release).
+Work toward v0.3 continues on `main`; nothing merged after the `v0.2.0` tag is released.
 
 | | |
 | --- | --- |
-| Complete | P00 repository and gate, P01 state semantics and the SYN-001 oracle, P02 matched backend spikes, P03 backend and distribution verdicts |
-| In progress | K01 — the production `CompiledProblem` compiler on the selected backend |
-| Established | Numerical verification against independent references: the P01 oracle agrees with 20-digit reference values to 7.1e-15 worst relative deviation, and P02's two backend routes agree with each other and with that reference inside every registered tolerance |
-| **Not** established | Empirical validation against experiment or another simulator; optimality evidence; human numerical or process-modeling review — `review.numerical` and `review.process_model` are `pending` in every evidence manifest and no agent may set them |
+| Released in 0.2.0 | The application contract (local, HTTP and MCP), the unit-model library, the planner, the verifier with its certificate or typed failure, and the replay bundle; the Peng–Robinson property route of the ammonia-synthesis loop (M01); the pinned PyMRM reactor as a unit model (M02); parametric sensitivities, studies and the NLP bridge (M03); surrogate evidence (M04); the trust-region study of the loop (M05); the diagnostic web shell (M06); the reference journey and the release gate (M07). The supported envelope is `docs/support-matrix.md`: unlisted is unsupported |
+| On `main`, not released | Countercurrent equilibrium-stage columns (S01, S02, S08); IAPWS-95 water (S05); CoolProp as an optional pure-fluid provider (S07); the Wilson liquid-mixture method with TP flash (S10) and its PH flash and column (S10-C); blind comparisons of columns with IDAES, DWSIM and BioSTEAM (S03, S09) |
+| Established | Numerical verification against independent references, for example the P01 oracle against 20-digit reference values (7.1e-15 worst relative deviation); agreement with IDAES and DWSIM on shared cases, which share the equations and are therefore not validation |
+| Validation against data | **0.2.0:** none against experiment; the C1 loop and its reactor results are not empirically validated. **`main`:** the Wilson method is within its pre-registered bands against measured vapour–liquid equilibrium of methanol–ethanol–water (ternary at 101.3 kPa; binaries with water at 323–333 K), and methanol's liquid enthalpy and heat capacity are not within band against CoolProp (`docs/s10-validation-report.md`) |
+| **Not** established | Optimality evidence; human numerical or process-modeling review — `review.numerical` and `review.process_model` are `pending` in every evidence manifest and no agent may set them |
 
-What the project has and has not shown is recorded per package in `evidence/<ID>/<commit>/manifest.json`,
-and the current position is `docs/progress.md`.
+What the project has and has not shown is recorded per package in `evidence/<ID>/<commit>/manifest.json`;
+what each release claims is in `CHANGELOG.md`, and the current position is `docs/progress.md`.
 
 ## Authorities
 
