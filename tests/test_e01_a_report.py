@@ -488,3 +488,41 @@ if __name__ == "__main__":
     if sys.argv[1:] != ["--write"]:
         raise SystemExit("usage: python tests/test_e01_a_report.py --write")
     _write()
+
+
+# -- WO-A5: the LCA hand expectations (benchmarks/e01/lca_hand, R-861) ---------------------------
+
+LCA_HAND = REPO / "benchmarks" / "e01" / "lca_hand"
+
+
+def test_lca_hand_expectations_are_current_and_read_the_p1_fixture() -> None:
+    import hashlib  # noqa: PLC0415
+    import subprocess  # noqa: PLC0415
+
+    import yaml  # noqa: PLC0415
+
+    script = LCA_HAND / "lca_hand.py"
+    committed = (LCA_HAND / "lca_hand.yaml").read_text(encoding="utf-8")
+    data = yaml.safe_load(committed)
+    assert data["script_sha256"] == hashlib.sha256(script.read_bytes()).hexdigest()
+    run = subprocess.run(
+        [sys.executable, "-I", str(script), "--print"], capture_output=True, text=True, check=True
+    )
+    assert run.stdout == committed
+    # The recorded inputs are the P1 fixture's values.
+    fixture = json.loads((FIXTURES / "valid" / "p1_th_c1.json").read_text(encoding="utf-8"))
+    items = {i["item_id"]: i for i in fixture["items"]}
+    recorded = {k: float(v["value"]) for k, v in data["p4"]["recorded_inputs"].items()}
+    assert recorded["w_consumed_W"] == items["P.drive"]["size"]["power"]
+    assert recorded["w_turbine_W"] == items["T"]["size"]["power"]
+    assert recorded["q_boiler_W"] == next(
+        i["value"] for i in items["B"]["inputs"] if i["name"] == "Q"
+    )
+    assert fixture["state_sha256"] in script.read_text(encoding="utf-8")
+    # A24's values (§4.8.5), to the binary64 nearest.
+    q = {k: v["value"] for k, v in data["background"]["unit_scores"].items()}
+    assert q == {
+        "tb.electricity": 0.5472782258064516,
+        "tb.heat": 0.18911290322580646,
+        "tb.chemical_x": 0.9018649193548387,
+    }

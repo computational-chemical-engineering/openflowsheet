@@ -1,0 +1,95 @@
+id: e01-lca-hand-v1
+script: benchmarks/e01/lca_hand/lca_hand.py
+script_sha256: e56a362768e2bca4dad83b307c56897775beb279de02e4226fced35d1b375da9
+mpmath_dps: 30
+background:
+  table: test-background-v1
+  category: climate_change_test
+  unit: kg CO2-eq per activity unit
+  unit_scores:
+    tb.electricity:
+      value: 0.5472782258064516
+      mp30: '0.547278225806451612903225806452'
+    tb.heat:
+      value: 0.18911290322580646
+      mp30: '0.189112903225806451612903225806'
+    tb.chemical_x:
+      value: 0.9018649193548387
+      mp30: '0.901864919354838709677419354839'
+  a24_design_values_agree_to: 1e-27
+p4:
+  host: S11 TH-C1 (P1 fixture p1_th_c1.json)
+  recorded_inputs:
+    w_consumed_W:
+      source: items[P.drive].size.power
+      value: '101.2739580708677'
+    w_turbine_W:
+      source: items[T].size.power
+      value: '15905.094362301697'
+    eta_gen:
+      source: items[T].inputs.eta_gen (default generator_efficiency)
+      value: '0.95'
+    q_boiler_W:
+      source: items[B].inputs.Q
+      value: '54752.49787667207'
+    m_s1_kg_s:
+      source: 'S1: 1.0 mol/s H2O x M 0.018015268 kg/mol (benchmarks/s05/components.yaml)'
+      value: '0.018015268'
+    m_fu_kg_s:
+      source: 'S5: 1.0 mol/s H2O (sat.L 1.0, sat.V 0.0) x M'
+      value: '0.018015268'
+    hours_per_year:
+      source: operation.hours_per_year
+      value: '8000'
+  document_fragment:
+    utilities.EL.lca:
+    - table: test-background-v1
+      activity: tb.electricity
+      amount: 1.0
+      per: kWh
+    utilities.HPS.lca:
+    - table: test-background-v1
+      activity: tb.heat
+      amount: 1.0
+      per: MJ
+    materials.S1.lca:
+    - table: test-background-v1
+      activity: tb.chemical_x
+      amount: 1.0
+      per: kg
+    lca.functional_unit:
+      connection: S5
+      basis: mass_total
+    lca.categories:
+    - climate_change_test
+  convention: a_k = amount * phi_k / SI(per); rate = sum_k q_k a_k; no allocation; no direct emissions
+  exchange_amounts_per_s:
+    tb.electricity:
+      value: -0.0041690460239210405
+      mp30: '-0.004169046023921040125'
+    tb.heat:
+      value: 0.05475249787667207
+      mp30: '0.05475249787667207'
+    tb.chemical_x:
+      value: 0.018015268
+      mp30: '0.018015268'
+  contributions_kg_co2eq_per_s:
+    tb.electricity:
+      value: -0.002281628111276948
+      mp30: '-0.00228162811127694827002268145161'
+    tb.heat:
+      value: 0.010354403832322258
+      mp30: '0.0103544038323222583991935483871'
+    tb.chemical_x:
+      value: 0.016247338221975806
+      mp30: '0.0162473382219758064516129032258'
+  impact.climate_change_test.rate:
+    value: 0.024320113943021117
+    mp30: '0.0243201139430211165807837701613'
+  impact.climate_change_test.annual:
+    value: 700419.2815590082
+    mp30: '700419.281559008157526572580645'
+  impact.climate_change_test.per_fu:
+    value: 1.3499723647198096
+    mp30: '1.34997236471980969590814692078'
+  superposition_agrees_to: 1e-27 relative

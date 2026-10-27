@@ -359,6 +359,17 @@ I1's.
   has all four of §5.4's P1 units. P3 = M1 (column on syn001; shell/trays sized by the model identity, §9.4). F_BM
   values in the fixture documents are test inputs (exchanger 3.17, vessel 4.16, trays 1.0, pump 3.3, motor 1.5,
   turbine 3.5).
+- Done (3): `benchmarks/e01/lca_hand/lca_hand.py` → `lca_hand.yaml` (mpmath 30 digits, nothing from
+  openflowsheet; script sha256 recorded): test-background-v1's unit scores agree with §4.8.5's rationals to 1e-27
+  (q_E 0.5472782258064516, q_H 0.18911290322580646, q_X 0.9018649193548387); P4 on the P1 fixture's recorded φ
+  (pump W/η_m 101.274 W, turbine 15905.09 W·0.95, boiler 54752.50 W, ṁ_S1 0.018015268 kg/s): rate
+  0.024320113943021117 kg CO2-eq/s; superposition (one solve of A s = Σ a_k e_k) agrees to 1e-27 relative. Test:
+  YAML current (`--print` byte-equal), inputs equal the fixture's.
+- DECISION (for B2 / the design lane): exchange convention `a_k = amount · φ_k / SI(per)` in the activity's unit
+  per second (the document's `amount` is activity units per `per` unit of the boundary quantity); the activity's
+  `si_per_unit` is not needed on this path. Electricity's φ is net (consumption − generation). §4.8.1's sentence on
+  `si_per_unit` admits another reading; B2 matches this or escalates. P4's LCA fragment is in the script
+  (`P4_LCA`); I1 may adopt it. Reversible by: the script (and its YAML).
 
 ## Handoff (2026-10-27, fifth context cap) — resume from here
 
