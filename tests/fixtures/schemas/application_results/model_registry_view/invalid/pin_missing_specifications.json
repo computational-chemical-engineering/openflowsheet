@@ -475,6 +475,47 @@
       },
       {
         "choices": [],
+        "model_id": "syn001.column",
+        "pins": [],
+        "ports": [
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": "many",
+            "name": "feed"
+          },
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "top"
+          },
+          {
+            "direction": "inlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "bottom"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "distillate"
+          },
+          {
+            "direction": "outlet",
+            "kind": "material",
+            "multiplicity": 1,
+            "name": "bottoms"
+          }
+        ],
+        "required": [
+          "stage_count"
+        ],
+        "zero": []
+      },
+      {
+        "choices": [],
         "model_id": "syn001.component_separator",
         "pins": [],
         "ports": [

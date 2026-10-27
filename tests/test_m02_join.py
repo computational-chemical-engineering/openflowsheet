@@ -231,10 +231,19 @@ def _sha(document: Any) -> str:
     return hashlib.sha256(canonical_json(document)).hexdigest()
 
 
+#: Models registered after M02's join, which the pre-M02 fixtures never had: S11's column
+#: (ADR 0050, R-810).
+_AFTER_M02 = ("syn001.column",)
+
+
 def _without_c1(registry: dict[str, Any]) -> dict[str, Any]:
     return {
         **registry,
-        "models": [m for m in registry["models"] if not m["model_id"].startswith("c1.")],
+        "models": [
+            m
+            for m in registry["models"]
+            if not m["model_id"].startswith("c1.") and m["model_id"] not in _AFTER_M02
+        ],
     }
 
 
@@ -244,6 +253,7 @@ def test_the_list_models_fixtures_decompose_onto_the_pre_m02_ones() -> None:
     invalid = json.loads((view / "invalid" / "pin_missing_specifications.json").read_text("utf-8"))
     c1 = sorted(m["model_id"] for m in valid["models"] if m["model_id"].startswith("c1."))
     assert c1 == sorted(model for model, bases in REGISTERED.items() if bases == C1)
+    assert {m["model_id"] for m in valid["models"]} >= set(_AFTER_M02)
     assert _sha(_without_c1(valid)) == PRE_M02_REGISTERED_MODELS
     # The invalid fixture removes the first pin's `specifications` (its generator's rule); since
     # the join that pin is `c1.feed_source`'s, so stripping the C1 entries leaves the valid
