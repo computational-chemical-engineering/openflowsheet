@@ -195,6 +195,32 @@ packages; URL and retrieval date for data). The design-lane ruling round is fold
   does; `RevisionFlowsheet.context` is the structural one), and the alias elimination with the certificate's
   pressure-shifted second state (structural when it cannot be built). TH-C1 eliminates no row. Reversible by: it.
 
+- Done (3, part 2, §4.10.2): `AssessmentBinding(program, outputs, output_scales)` (`.at` takes
+  `max(|y(x₀)|,1)` at a state), `NlpFormulation.assessment`; `variables` now lists state names only,
+  `assessment_outputs` the `assessment:<id>` ones; `FullSpaceNlp` raises `AssessmentOutputUnknownError` and
+  readiness reports `ASSESSMENT_OUTPUT_UNKNOWN` before any solve; gray-box outputs, Jacobian `[G_x G_d]` (canonical
+  CSC, the equality Jacobian's pattern guard), output scaling, Pyomo mapping, `adm ≥ 0` (scaling 1), `G(x₀)` initial
+  values; readiness codes. `tests/test_e01_b_nlp.py`: 11 default-env + 2 nlp tests pass. G9: the M03 NLP fixture
+  documents (wall times blanked) and the no-assessment Pyomo component list and objective are byte-identical before
+  and after (scratch dump, `cmp` equal); `test_m03_nlp_greybox.py` 18 passed in the audited env (m05's `.venv-nlp`).
+- DECISION (closure reading): an admissibility row is a gray-box output when some row of its regime entry has a
+  structural nonzero in a column (state or decision) of `[G_x G_d]` where some bound output has one; rows in
+  `program.admissibility_ids` order after the bound outputs in `program.output_ids` order. A floor item's rows can
+  fall outside (its capex row is empty); V7 then catches a regime change post hoc. Alternative: every admissibility
+  row (over-restricts an impact objective), or a trace of `out()` dependencies. Reversible by: `FullSpaceNlp._bind`.
+- DECISION: the gray-box scale of an admissibility row is 1, because the program's rows are already `a/nominal`
+  (§4.3.1); the nominal is recorded per row (`admissibility_nominals`) for the report. Alternative: `1/nominal` again
+  (double scaling). Reversible by: `_bind`.
+- DECISION: the output *variables* get Pyomo primal scaling `1/scale` too (the output rows get it per §4.10.2), so a
+  `tac` of 1e6 is an O(1) primal. Alternative: leave them unscaled (factor 1). Reversible by: `build_model`.
+- DECISION: readiness order — the four output/parameter codes after `UNKNOWN_VARIABLE`, `ASSESSMENT_REGIME_INADMISSIBLE`
+  after `SIMULATION_NOT_READY` (it needs each start's certified state; "at the start" read as "at each start"). A θ
+  decision gives `ASSESSMENT_PARAMETER_DECISION` (or `_STRUCTURAL`), not `UNKNOWN_DECISION`. The schema's two
+  readiness-code enums gain the five codes (additive; §4.10.2 names the codes; separate commit). Reversible by:
+  `READINESS_ORDER`, that commit.
+- DECISION: the assessment twin's property-block calls since the start's `FullSpaceNlp` was built are added to the
+  start's `property_calls` (0 without an assessment). Reversible by: `_evaluations`.
+
 ## Handoff (2026-10-27, after the ESC-B1/B3 rulings and WO-B3 part 1) — resume from here
 
 - **Done (wp/E01 after 53ce3f55):** a7c4aa8b ESC-B1 (float64 Brightway path; A24 passes at 1e-12, rel ≤ 6.2e-17);

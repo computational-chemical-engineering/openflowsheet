@@ -11,8 +11,13 @@ importable; otherwise `unsupported` with every failing reason, in the specificat
 | `START_OUTSIDE_BOUNDS` | every start inside the box |
 | `DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS` | the decisions pass Q3 at every start |
 | `UNKNOWN_VARIABLE` | every variable the objective and constraints name exists |
+| `ASSESSMENT_OUTPUT_UNKNOWN` | every `assessment:<id>` named is bound (E01 §4.10.2) |
+| `ASSESSMENT_OUTPUT_UNAVAILABLE` | no `assessment:<id>` named is `null` in the program (E01 §4.9) |
+| `ASSESSMENT_PARAMETER_STRUCTURAL` | no decision is a structural θ of the program |
+| `ASSESSMENT_PARAMETER_DECISION` | no decision is a θ of the program (unsupported on day one) |
 | `HESSIAN_UNAVAILABLE` | the Hessian policy is the limited-memory approximation |
 | `SIMULATION_NOT_READY` | every start solves and certifies `VERIFIED` |
+| `ASSESSMENT_REGIME_INADMISSIBLE` | the held regime's rows are ≥ −τ_feas at every start |
 | `NLP_SOLVER_UNAVAILABLE` | the `nlp` extra and its adapter installed; [A10] verdict `PASS` |
 
 `optimize()` calls it first and returns an `OptimizationReport` with status `UNSUPPORTED` and those
@@ -37,7 +42,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Final, Literal
 
-from openflowsheet.compile.casadi_backend import compile_problem
+from openflowsheet.compile.casadi_backend import TwinEvaluationError, compile_problem
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.studies.nlp.formulation import (
@@ -47,7 +52,12 @@ from openflowsheet.studies.nlp.formulation import (
     IPOPT_OPTIONS,
     NlpFormulation,
 )
-from openflowsheet.studies.nlp.verification import CHECKS, CheckOutcome, declared_regimes
+from openflowsheet.studies.nlp.verification import (
+    CHECKS,
+    TAU_FEAS,
+    CheckOutcome,
+    declared_regimes,
+)
 from openflowsheet.studies.sensitivity import TAU_ALIAS, OutputFunctional, StudyParameter
 from openflowsheet.studies.syn001 import solve_certified, syn001_sensitivity, with_pinned
 
@@ -79,8 +89,13 @@ ReadinessCode = Literal[
     "START_OUTSIDE_BOUNDS",
     "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
     "UNKNOWN_VARIABLE",
+    "ASSESSMENT_OUTPUT_UNKNOWN",
+    "ASSESSMENT_OUTPUT_UNAVAILABLE",
+    "ASSESSMENT_PARAMETER_STRUCTURAL",
+    "ASSESSMENT_PARAMETER_DECISION",
     "HESSIAN_UNAVAILABLE",
     "SIMULATION_NOT_READY",
+    "ASSESSMENT_REGIME_INADMISSIBLE",
     "NLP_SOLVER_UNAVAILABLE",
 ]
 #: Spec §8.7's order, which is the order reasons are listed in.
@@ -90,8 +105,13 @@ READINESS_ORDER: Final[tuple[ReadinessCode, ...]] = (
     "START_OUTSIDE_BOUNDS",
     "DECISION_INCONSISTENT_WITH_ELIMINATED_ROWS",
     "UNKNOWN_VARIABLE",
+    "ASSESSMENT_OUTPUT_UNKNOWN",
+    "ASSESSMENT_OUTPUT_UNAVAILABLE",
+    "ASSESSMENT_PARAMETER_STRUCTURAL",
+    "ASSESSMENT_PARAMETER_DECISION",
     "HESSIAN_UNAVAILABLE",
     "SIMULATION_NOT_READY",
+    "ASSESSMENT_REGIME_INADMISSIBLE",
     "NLP_SOLVER_UNAVAILABLE",
 )
 ReadinessStatus = Literal["READY_FOR_OPTIMIZATION", "unsupported"]
@@ -281,7 +301,11 @@ def optimization_readiness(
     known_decisions = True
     if spec is not None:
         for decision_id in formulation.decision_ids:
-            if decision_id not in spec.parameter_ids:
+            theta = _assessment_theta(formulation, decision_id)
+            if theta is not None:
+                known_decisions = False
+                reasons.append(theta)
+            elif decision_id not in spec.parameter_ids:
                 known_decisions = False
                 reasons.append(
                     ReadinessReason(
@@ -321,6 +345,7 @@ def optimization_readiness(
                         "UNKNOWN_VARIABLE", f"{name!r} is not a variable of {spec.label!r}", name
                     )
                 )
+    reasons.extend(_assessment_outputs(formulation))
     if formulation.hessian != HESSIAN_APPROXIMATION:
         reasons.append(
             ReadinessReason(
@@ -336,6 +361,7 @@ def optimization_readiness(
             record, found = _start(formulation, flowsheet, index, start, bounded, spec)
             starts.append(record)
             reasons.extend(found)
+            reasons.extend(_assessment_regime(formulation, index, record))
 
     solver = solver_probe()
     if not solver.available:
@@ -349,6 +375,84 @@ def optimization_readiness(
         solver=solver,
         starts=tuple(starts),
     )
+
+
+def _assessment_theta(formulation: NlpFormulation, decision_id: str) -> ReadinessReason | None:
+    """E01 §4.10.2: a decision that is a θ of the bound program. Assessment parameters are never
+    decisions on day one; a structural one is named as such."""
+    binding = formulation.assessment
+    if binding is None or decision_id not in binding.program.theta:
+        return None
+    if binding.program.theta[decision_id].structural:
+        return ReadinessReason(
+            "ASSESSMENT_PARAMETER_STRUCTURAL",
+            f"{decision_id!r} is a structural assessment parameter; it is never continuous",
+            decision_id,
+        )
+    return ReadinessReason(
+        "ASSESSMENT_PARAMETER_DECISION",
+        f"{decision_id!r} is an assessment parameter; assessment parameters are not decisions "
+        "(unsupported)",
+        decision_id,
+    )
+
+
+def _assessment_outputs(formulation: NlpFormulation) -> list[ReadinessReason]:
+    """E01 §4.10.2: every `assessment:<id>` named is a bound, published, non-null output."""
+    binding = formulation.assessment
+    unavailable = {} if binding is None else dict(binding.program.unavailable)
+    unknown = set(formulation.unknown_assessment_outputs())
+    reasons: list[ReadinessReason] = []
+    for name in formulation.assessment_outputs:
+        if name in unavailable:
+            reasons.append(
+                ReadinessReason(
+                    "ASSESSMENT_OUTPUT_UNAVAILABLE",
+                    f"assessment:{name} is null: {unavailable[name]}",
+                    name,
+                )
+            )
+        elif name in unknown:
+            reasons.append(
+                ReadinessReason(
+                    "ASSESSMENT_OUTPUT_UNKNOWN",
+                    f"assessment:{name} is not "
+                    + ("bound" if binding is None else "a bound output of the program"),
+                    name,
+                )
+            )
+    return reasons
+
+
+def _assessment_regime(
+    formulation: NlpFormulation, index: int, start: StartReadiness
+) -> list[ReadinessReason]:
+    """E01 §4.10.2: the held regime is admissible at a verified start — every admissibility row
+    `≥ −τ_feas` at its state and decisions — else `ASSESSMENT_REGIME_INADMISSIBLE`."""
+    binding = formulation.assessment
+    if binding is None or start.state is None:
+        return []
+    program = binding.program
+    try:
+        values = program.evaluate(start.state, formulation.decision_values(start.start))
+    except TwinEvaluationError as error:
+        return [
+            ReadinessReason(
+                "ASSESSMENT_REGIME_INADMISSIBLE", f"start {index}: not evaluable: {error}"
+            )
+        ]
+    if not isinstance(values, Mapping):
+        return [ReadinessReason("ASSESSMENT_REGIME_INADMISSIBLE", f"start {index}: {values}")]
+    violated = [name for name in program.admissibility_ids if values[name] < -TAU_FEAS]
+    if not violated:
+        return []
+    return [
+        ReadinessReason(
+            "ASSESSMENT_REGIME_INADMISSIBLE",
+            f"start {index}: rows below -tau_feas={TAU_FEAS}: {','.join(violated)}",
+            ",".join(violated),
+        )
+    ]
 
 
 def _start(
