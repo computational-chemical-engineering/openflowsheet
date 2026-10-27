@@ -72,25 +72,25 @@ choice; the evidence is in the named test or module. Batched for the package's s
   liquid and a vapour inlet together (`port_phase_ambiguous(<U>.inlet)`); S11.A56's first case stays a
   direct-construction case. C6's TH-R1 (both inlets liquid) is unaffected.
 
-## Handoff after WO-C3 (2026-10-27; C3 done, C4 not started)
+## Handoff after WO-C5 (2026-10-27; C4 and C5 done, C6 not started)
 
-Branch `wp/S11-c` (worktree `.claude/worktrees/s11-c`), not pushed. C3 commits: 36ea9175 (kernel `_solve` R-600
-fix, C3-1), c673ebf8 (isentropic variants, C3-2/C3-3), 1e602650 (machines, C3-4..C3-7). No shared file touched;
-`scripts/s11_identity.py` not triggered (only `models/thermal/*` and S11 thermal tests).
-Gates (no-CoolProp | CoolProp 8.0.0): `test_s11_thermal_kernel.py` 70 passed 52 skipped | 122 passed;
-`test_s11_thermal_units.py` 37 | 37; `test_s11_thermal_machines.py` 58 passed 2 skipped | 60 passed.
-pure-single/single proved bit-identical (values and Jacobians, 20 states + dormant) across the C3 block rewrite.
-A46 FD worst (20 states each): pure-sat/single L 3.4e-7, V 3.0e-10; pure-single/sat 1.2e-9; pure-sat/sat 1.5e-9;
-additive-vapour 1.8e-10 (test-local ideal gas). A53/A54/A55 against CoolProp ≤ 1.4e-12 relative, ≤ 1.4e-10 K.
+Branch `wp/S11-c` (worktree `.claude/worktrees/s11-c`), not pushed. C1–C3 as before (C3: 36ea9175, c673ebf8,
+1e602650). C4: 5ca61ba2 (`_PARAMETER_KINDS` entry, C4-1), c7710dc9 (`application/thermal_binding.py`, C4-2..7;
+`machines.PORTS` added), 5f3b80b6 (G20 registration of the C1/C2 `@cache`s, C4-8). C5: 4ab866b7
+(`verify/thermal.py`, C5-1..4).
 
-**Next: WO-C4 (binding)** — `application/thermal_binding.py`, `tests/test_s11_thermal_binding.py`, and one
-`_PARAMETER_KINDS` entry (`outlet_vapor_fraction` → `dimensionless`, units note §2.4) in `models/revision_flowsheet.py`.
-- R-825 (S11-design §10.6) gives I1 sixteen *column* entries in the same table and rejected B3 "because the file is
-  track A's"; it does not cover `outlet_vapor_fraction`, so there is no semantic conflict. Track A is merged, so the
-  remaining risk is textual: add the one entry apart from where I1's sixteen go, and log it (C4-1).
-- Builders construct `ThermalHeater/Valve/Mixer/Flash` (C2) and `ThermalMachine(machine=...)` (C3) with
-  `streams` (port → stream ids) and `forms` (stream id → LIQUID|VAPOR|SATURATED from the declared
-  `phase_capability`); constructors already raise every §4.4 refusal as
-  `SpecificationError("specification_unsupported(<U>.<what>)\n<hint>")` — the binder maps them to
-  `Unbound("unsupported", ...)`; Wilson compressor/turbine raise `specification_unsupported(<U>.provider)` (C3-4).
-- Turbine `isentropic_phase` arrives as a choice like `syn001.heat_exchanger`'s `specification`.
+Gates (no-CoolProp | CoolProp 8.0.0): `test_s11_thermal_binding.py` 67 passed 3 skipped | 70 passed;
+`test_s11_thermal_verifier.py` 12 | 12; `test_t07_global_state.py` 3 passed. ruff, ruff format, mypy clean.
+`scripts/s11_identity.py`: after c7710dc9 `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 5, 13, 14, 15]
+exited non-zero)` — shard 13 was G20 (C4-8); after 4ab866b7 `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards
+[1, 5, 14, 15] exited non-zero)`, track A's recorded line (the A5-owned amended tests and T08.A32).
+
+For I1b: register `thermal_binding.SIGNATURES/BUILDERS/BASES` in the binder's tables (the tests show how), merge
+`verify.thermal.MODEL_CHECKS` and hook `enthalpy_map`/`saturated_stream_checks` on a pure basis (C5-1).
+
+Open for the design lane: Q-C1 (A46 at the range top), Q-C2 (turbine `isentropic_phase` not expressible in a
+revision); for the reviewer: O-C3-1, O-C4-1.
+
+**Next: WO-C6** (dormancy entries in `orchestrator/splits.py` after B3 merges, the four flowsheets, S11.A59–A63; the
+first commit is the TH-V1 spike). Rebase on `wp/S11` once B3 is merged there. `tests/test_s11_thermal_verifier.py`'s
+`evaluated_state` (the units' own sequential evaluation) gives C6 a reference start for TH-C1 and TH-V1.
