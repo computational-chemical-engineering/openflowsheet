@@ -83,6 +83,14 @@ Inlet-dependent (left to `validate` at evaluate): R2 (inlet flows), R3's inlet `
 
 - 2026-10-27 B3e `655f24f8` (end of B3): tests (69 files) 2201 passed; S08 PASS n=52 changed=[S02.P1]
   p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 PASS n=54497 changed=[] (696 s for the three).
+- 2026-10-27 B3f `0e3d6b77`: `test_s11_column_solve.py` 37 passed (tests/benchmarks only: no identity trigger).
+  C-MW/C-EW worst |Δ|/tol 1.3e-7/2.1e-8 against S10-C's root, 0 Newton iterations, |Δ| = 0 against
+  `solve_column` on 277 columns; the stripper |Δ| = 0 on 145 columns.
+- 2026-10-27 B4 `9100ff11`: tests (52 files: every `verify_revision|revision_checks|degeneracy|zero_flow_splits|
+  ModelChecks|MODEL_CHECKS` user and `test_s11_*`) 1588 passed / 6 skipped. S08 PASS n=52 changed=[S02.P1]
+  p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 FAIL n=54497 changed=[] (C branch shards [1, 5, 14, 15]
+  exited non-zero): rerun with `--keep`, exactly A3's eleven known failures (s05 a25, s07 a30, s10 a27, t08
+  support-envelope a20 + six c3, T08.A32), nothing new (788 s for the three).
 
 ## Q9 spike (WO-B3's first step): STOPPED (resolved by §10, R-822; implemented in B3a) — the region decomposition does not place the stage pseudo-units
 
@@ -110,20 +118,18 @@ Placing the stages needs a rule for region membership of pseudo-units (`region.u
 the `stage_unit` prefix) and for (a)/(b) of `check_agreement`. That is region structure, which the brief and the
 note's Q9 reserve to the design lane; nothing was changed.
 
-## Handoff (where track B stands, 2026-10-27, after B3)
+## Handoff (where track B stands, 2026-10-27, after B3f and B4)
 
-- Done: B1 (`1fb0b8f9`, `884b4973`), B2 (`ffc68146`, `33a652a9`), B3a `e41b986b` (staged splits, R-822/R-823),
-  B3b `021f17f6` (end parameters `condenser_<kind>`/`reboiler_<kind>`, R-824), B3c `4afdd498` (decision only:
-  `s11-column-v1` not registered, escalated), B3d `63dc42a5` (A28), B3e `655f24f8` (cases, A29 SYN-001, A24′, Q29).
-- Passing: A87–A90 (`tests/test_s11_staged_splits.py`), A92 (`tests/test_s11_column_face.py`), A28, A29 on M1–M4,
-  J1–J8 and the recycle case, A24′, Q29 record (`tests/test_s11_column_solve.py`); B1/B2's tests renamed.
-- Identity at `655f24f8`: S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[];
-  S11 PASS n=54497 changed=[].
-- Not done (blocked on track A's Wilson basis, A1, not on this branch): A29's C-MW and C-EW, Q11. Add them as
-  `benchmarks/s11/flowsheets/C-MW.json`/`C-EW.json` (`column_case` with the Wilson `record_source`) after A merges.
-- Not track B's here: B4 (waits for A3 in wp/S11; the owner map per §10.11), I1 (A91 is already met by the
-  reader's `_ID`; A93; the sixteen `_PARAMETER_KINDS`; L-COL-9, L-COL-10 for Q29).
-- For the design lane (one batched ruling): B3c (Q8's premise: T06-revision-v2 carries v2; registration moves the
-  served `get_project.solve_policies`); B3b (`ModelSignature` has no optional-parameter field; S2's kind items now
-  unreachable by name); B3a (the manifest's derivative declaration corrected to `residuals`/`ad`).
-- Next action: rebase wp/S11-b on wp/S11 once A3 is merged, then B4 and the Wilson cases.
+- Done: B1, B2, B3a–B3e (see the run log), **B3f** `0e3d6b77` (A29 C-MW/C-EW, Q11 admitted: the stripper case),
+  **B4** `9100ff11` (`verify/column.py`; `certificate._staged_splits` → `lifted_splits(staged=)`, `split_owners` →
+  `degeneracy`/`zero_flow_splits`; `ModelChecks.admissibility`; the column's duties in the envelope).
+- Passing: A29 on all fourteen cases + recycle (`test_s11_column_solve.py`, 39), A35 on M1–M4/J1–J8/recycle
+  (VERIFIED), A36, A37, A38 (`test_s11_column_verifier.py`, 23).
+- Not met: **A35 on C-MW/C-EW** (UNVERIFIED on the derivative witness alone; escalated above, certificate policy).
+- Escalated for the batched ruling (with B3a–c's): the witness at absent-component zero flows (B4); the column's
+  ZERO_FLOW form in `verify/zero_flow.py` (B4, Q10 class, unreachable today); the linear form of the specification
+  rows (B4); the envelope's column duties (B4).
+- For I1: `MODEL_CHECKS["syn001.column"] = s11_column_support.column_checks()`'s `ModelChecks` (material, energy,
+  specification, `declared_ports=column.DECLARED_PORTS`, admissibility); `column_registered` also patches it today.
+- Next action: I1 (not track B's). Track B's WOs are complete except the escalated items.
+
