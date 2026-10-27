@@ -24,6 +24,7 @@ from openflowsheet.models.syn001.column_unit import (
     PORTS,
     STAGE_COUNT,
     ColumnUnit,
+    column_staged_splits,
     column_structure,
     structural_refusal,
 )
@@ -52,7 +53,13 @@ def build_column(
     """§4.7.1–§4.7.2: the column instance, or the typed refusal of its structure."""
     structure = column_structure(view, components)
     structural_refusal(structure, provider)
-    unit = ColumnUnit(unit_id=view.unit_id, structure=structure, provider=provider, context=context)
+    unit = ColumnUnit(
+        unit_id=view.unit_id,
+        structure=structure,
+        provider=provider,
+        context=context,
+        staged=column_staged_splits(structure),
+    )
     configuration = {
         CONDENSER: _label(CONDENSER, structure.condenser_spec),
         REBOILER: _label(REBOILER, structure.reboiler_spec),

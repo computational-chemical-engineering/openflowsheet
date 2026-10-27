@@ -70,6 +70,7 @@ from openflowsheet.orchestrator.region import (
     ClosureType,
     DormancyForm,
     LiftedSplit,
+    StagedSplits,
     VapourOnlyForm,
     ZeroFlowForm,
 )
@@ -80,14 +81,19 @@ if TYPE_CHECKING:
 __all__ = [
     "DORMANCY_RULES",
     "SPLIT_RULES",
+    "STAGED_MODELS",
     "DormancyRule",
+    "RegionSplits",
     "SplitRule",
     "SplitStyle",
     "check_agreement",
     "closure_types",
     "dormancy_forms",
     "lifted_splits",
+    "region_splits",
+    "split_owners",
     "split_temperatures",
+    "staged_units",
     "vapour_only_forms",
     "zero_flow_forms",
 ]
@@ -142,6 +148,12 @@ SPLIT_RULES: Final[Mapping[str, SplitRule]] = {
         vapour_only=("H2", "N2", "Ar", "CH4"),
     ),
 }
+
+
+#: S11 design note §10.2 (R-822): the models whose instance describes several lifted splits and
+#: supplies them itself, as one `StagedSplits` (its method `staged_splits()`). Disjoint from
+#: `SPLIT_RULES`. A split's key is then not its instance: `split_owners` maps it to its owner.
+STAGED_MODELS: Final[frozenset[str]] = frozenset({"syn001.column"})
 
 
 @dataclass(frozen=True)
@@ -322,19 +334,91 @@ def _descriptor(
     )
 
 
+def staged_units(units: Sequence[UnitModel]) -> dict[str, StagedSplits]:
+    """S11 §10.2: each staged unit's `StagedSplits` (its model is in `STAGED_MODELS`), by unit
+    id, in declaration order."""
+    found: dict[str, StagedSplits] = {}
+    for unit in units:
+        if unit.model_id in STAGED_MODELS:
+            found[unit.unit_id] = unit.staged_splits()  # type: ignore[attr-defined]
+    return found
+
+
+def split_owners(staged: Mapping[str, StagedSplits]) -> dict[str, str]:
+    """S11 §10.2: the owner map, split key → the staged instance that supplied it. A registry
+    split is keyed by its instance and is not listed: `owners.get(key, key)` is its owner."""
+    return {split.unit: unit for unit, given in staged.items() for split in given.splits}
+
+
 def lifted_splits(
-    instances: Sequence[tuple[str, str, Wiring]], components: Sequence[str]
+    instances: Sequence[tuple[str, str, Wiring]],
+    components: Sequence[str],
+    *,
+    staged: Mapping[str, StagedSplits] | None = None,
 ) -> tuple[LiftedSplit, ...]:
     """One descriptor per `(unit id, model id, wiring)` whose model has a rule, in the order given.
 
     The order given is the flowsheet's declaration order, which is the order the region's phase
     policy visits the splits in. An instance whose model has no rule contributes nothing here;
     whether it *should* have had one is `check_agreement`'s question, answered from its rows.
+
+    With `staged` (S11 §10.2), an instance whose id it holds contributes its splits there, in the
+    order supplied; an instance in both registries is a defect (`staged_unit_has_rule(<U>)`).
+    `staged=None` and `staged={}` give the registry's descriptors alone.
     """
-    return tuple(
-        _descriptor(unit, SPLIT_RULES[model], wiring, components)
-        for unit, model, wiring in instances
-        if model in SPLIT_RULES
+    given = staged or {}
+    found: list[LiftedSplit] = []
+    for unit, model, wiring in instances:
+        if model in SPLIT_RULES:
+            if unit in given:
+                raise ValueError(f"staged_unit_has_rule({unit})")
+            found.append(_descriptor(unit, SPLIT_RULES[model], wiring, components))
+        elif unit in given:
+            found.extend(given[unit].splits)
+    return tuple(found)
+
+
+@dataclass(frozen=True)
+class RegionSplits:
+    """S11 §10.2: a revision's lifted splits and every per-split map the region reads, registry
+    and staged merged — `region_splits` is the one place the merge is written."""
+
+    splits: tuple[LiftedSplit, ...]
+    owners: Mapping[str, str]
+    staged: Mapping[str, StagedSplits]
+    closure_types: Mapping[str, ClosureType]
+    zero_flow_forms: Mapping[str, ZeroFlowForm]
+    split_temperatures: Mapping[str, tuple[str, ...]]
+    vapour_only_forms: Mapping[str, VapourOnlyForm]
+
+
+def region_splits(
+    instances: Sequence[tuple[str, str, Wiring]],
+    units: Sequence[UnitModel],
+    components: Sequence[str],
+) -> RegionSplits:
+    """S11 §10.2 step 3: the registry's splits and maps, with each staged unit's merged after
+    them in declaration order. The registry functions see the registry's splits only (they look
+    up a split's key as an instance). With no staged unit every field equals the registry
+    function's output for the same arguments, in the same key order (S11.A87)."""
+    staged = staged_units(units)
+    registry = lifted_splits(instances, components)
+    types = closure_types(units)
+    merged_types: dict[str, ClosureType] = dict(types)
+    merged_forms = zero_flow_forms(instances, registry, types, components)
+    merged_temperatures = split_temperatures(instances, registry)
+    for given in staged.values():
+        merged_types.update(given.closure_types)
+        merged_forms.update(given.zero_flow_forms)
+        merged_temperatures.update(given.split_temperatures)
+    return RegionSplits(
+        splits=lifted_splits(instances, components, staged=staged),
+        owners=split_owners(staged),
+        staged=staged,
+        closure_types=merged_types,
+        zero_flow_forms=merged_forms,
+        split_temperatures=merged_temperatures,
+        vapour_only_forms=vapour_only_forms(instances, registry, components),
     )
 
 
@@ -428,6 +512,8 @@ def check_agreement(
     forms: Mapping[str, ZeroFlowForm] | None = None,
     dormancy: Sequence[DormancyForm] | None = None,
     vapour_only: Mapping[str, VapourOnlyForm] | None = None,
+    *,
+    staged: Mapping[str, StagedSplits] | None = None,
 ) -> None:
     """§3.3: the registry and the rows the units authored describe the same splits.
 
@@ -457,25 +543,45 @@ def check_agreement(
     declares vapour-only components have a form; each form's columns are columns of the spec and
     exactly that split's liquid flows of those components, in component order; each of its rows
     is its unit's row and reads exactly its column (`vapour_only_form_disagrees(<unit>, …)`).
+
+    With `staged` (S11 §10.3, R-823), a split's unit is its key and `split_owners(staged)` names
+    its owner: (a′) compares the units with `molar_flow_squared` rows with the owners; (a″) the
+    keys are pairwise distinct and no staged key is an instance id
+    (`lifted_split_key_collision(<key>)`); (b′) replaces (b) for a staged instance — each split's
+    equilibrium rows are its owner's squared rows in `equation_ids` order
+    (`lifted_split_rows_disagree(<key>)`), and the instance's squared rows are exactly its splits'
+    equilibrium rows and its `other_squared_rows`, all pairwise disjoint
+    (`staged_split_rows_disagree(<U>)`); (f′) compares a form's rows with the owner's.
     """
     models = {unit: model for unit, model, _ in instances}
+    given = staged or {}
+    owners = split_owners(given)
     squared: dict[str, list[str]] = {}
     for row in spec.equation_ids:
         if spec.row_kinds.get(row) == "molar_flow_squared":
             squared.setdefault(row_units[row], []).append(row)
 
-    described = {split.unit for split in splits}
+    described = {owners.get(split.unit, split.unit) for split in splits}
     for unit in squared:
         if unit not in described:
             raise ValueError(f"lifted_split_unregistered({models.get(unit, unit)})")
     for split in splits:
-        if split.unit not in squared:
+        if owners.get(split.unit, split.unit) not in squared:
             raise ValueError(f"lifted_split_without_rows({split.unit})")
+    keys: set[str] = set()
+    for split in splits:
+        if split.unit in keys or (split.unit in owners and split.unit in models):
+            raise ValueError(f"lifted_split_key_collision({split.unit})")
+        keys.add(split.unit)
+    for unit, staging in given.items():
+        _check_staged_rows(unit, staging, squared.get(unit, []))
 
     columns = set(spec.variable_ids)
     for split in splits:
         rule = _rule(models, split)
-        if rule.vapour_only:
+        if split.unit in owners:
+            pass  # (b′), checked above for the whole staged instance.
+        elif rule.vapour_only:
             zero = _vapour_only_rows(split, rule)
             others = tuple(row for row in split.equilibrium_rows if row not in zero)
             authored = [
@@ -552,7 +658,8 @@ def check_agreement(
         form = forms.get(split.unit)
         if form is None:
             raise ValueError(f"zero_flow_form_disagrees({split.unit}): no form")
-        foreign = [row for row in form.rows if row_units.get(row) != split.unit]
+        owner = owners.get(split.unit, split.unit)
+        foreign = [row for row in form.rows if row_units.get(row) != owner]
         if foreign:
             raise ValueError(
                 f"zero_flow_form_disagrees({split.unit}): not rows the unit authored: {foreign}"
@@ -575,6 +682,32 @@ def check_agreement(
         _check_dormancy_form(dormant, wirings, columns, row_units, declaration)
     if vapour_only is not None:
         _check_vapour_only_forms(models, splits, vapour_only, columns, row_units, declaration)
+
+
+def _check_staged_rows(unit: str, staging: StagedSplits, squared: Sequence[str]) -> None:
+    """`check_agreement` (b′) for one staged instance (S11 §10.3)."""
+    for split in staging.splits:
+        mine = set(split.equilibrium_rows)
+        found = tuple(row for row in squared if row in mine)
+        if found != split.equilibrium_rows:
+            raise ValueError(
+                f"lifted_split_rows_disagree({split.unit}): the unit names "
+                f"{list(split.equilibrium_rows)}, its owner {unit} authors {list(found)} of them"
+            )
+    claimed = [row for split in staging.splits for row in split.equilibrium_rows]
+    claimed += staging.other_squared_rows
+    seen: set[str] = set()
+    repeated: set[str] = set()
+    for row in claimed:
+        (repeated if row in seen else seen).add(row)
+    unclaimed = [row for row in squared if row not in seen]
+    authored = set(squared)
+    foreign = [row for row in claimed if row not in authored]
+    if repeated or unclaimed or foreign:
+        raise ValueError(
+            f"staged_split_rows_disagree({unit}): unclaimed {unclaimed}; claimed but not "
+            f"{unit}'s molar_flow_squared rows {foreign}; claimed twice {sorted(repeated)}"
+        )
 
 
 def _rule(models: Mapping[str, str], split: LiftedSplit) -> SplitRule:

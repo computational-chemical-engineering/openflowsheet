@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Final
 
@@ -53,6 +53,7 @@ from openflowsheet.models.syn001.cascade import (
     SideFeed,
     inlet_stream,
     stage_pressure_id,
+    stage_row_id,
     stage_temperature_id,
 )
 from openflowsheet.models.syn001.column import (
@@ -75,9 +76,18 @@ from openflowsheet.models.syn001.column import (
     purity_flow_id,
     recovery_flow_id,
 )
-from openflowsheet.models.syn001.column_solve import ColumnSolution, products, solve_column
+from openflowsheet.models.syn001.column_solve import (
+    ColumnSolution,
+    closure_types,
+    lifted_splits,
+    products,
+    solve_column,
+    split_temperatures,
+    zero_flow_forms,
+)
 from openflowsheet.models.syn001.equilibrium_form import equilibrium_form
 from openflowsheet.models.syn001.ph_kernel import port_enthalpy, typed_failure
+from openflowsheet.orchestrator.region import StagedSplits
 from openflowsheet.thermo import Phase, PropertyProvider, PropertyStatus, StreamState
 
 #: The unit's material ports (§4.7.1).
@@ -178,6 +188,28 @@ def structural_spec(structure: ColumnStructure) -> ColumnSpec:
             )
             for inlet in structure.inlets
         }
+    )
+
+
+def column_staged_splits(structure: ColumnStructure) -> StagedSplits:
+    """S11 §10.2 step 7: the column's lifted splits as a staged unit — the standalone solve's
+    per-stage descriptors and maps (`column_solve`), keyed `stage_unit(U, j)`, from
+    `structural_spec`. Its other `molar_flow_squared` rows are the definition rows of a `purity`
+    end (S06's) and of a `recovery` end (§4.7.4), condenser first. Pure: the builder holds the
+    answer on the unit, and the verifier calls the same function."""
+    spec = structural_spec(structure)
+    kinds = {end: getattr(spec.end_specification(end), "kind", None) for end in spec.ends()}
+    other = tuple(
+        stage_row_id(spec.unit_id, spec.end_stage(end), "spec", f"{kind}_definition")
+        for end, kind in kinds.items()
+        if kind in COMPONENT_KINDS
+    )
+    return StagedSplits(
+        splits=lifted_splits(spec),
+        closure_types=closure_types(spec),
+        zero_flow_forms=zero_flow_forms(spec),
+        split_temperatures=split_temperatures(spec),
+        other_squared_rows=other,
     )
 
 
@@ -573,6 +605,8 @@ class ColumnUnit:
     structure: ColumnStructure
     provider: PropertyProvider
     context: EvaluationContext
+    #: `column_staged_splits(structure)`, computed once by the builder (S11 §10.2 step 7).
+    staged: StagedSplits = field(repr=False)
 
     @property
     def model_id(self) -> str:
@@ -589,6 +623,10 @@ class ColumnUnit:
     def declared_equations(self) -> tuple[DeclaredEquation, ...]:
         return UNIT_EQUATIONS
 
+    def staged_splits(self) -> StagedSplits:
+        """S11 §10.2: the column's per-stage lifted splits (`splits.STAGED_MODELS`)."""
+        return self.staged
+
     def manifest(self) -> Mapping[str, Any]:
         described = self.provider.describe()
         return manifest_document(
@@ -602,11 +640,16 @@ class ColumnUnit:
             equations=UNIT_EQUATIONS,
             derivatives=(
                 DerivativeDeclaration(
-                    output="rows",
-                    with_respect_to=("stage.l", "stage.v", "stage.T", "inlet.state", "stream"),
-                    method="analytic",
+                    output="residuals",
+                    with_respect_to=("free_variables",),
+                    method="ad",
                     regime="all",
-                    notes="The standalone column's rows; the link rows are linear.",
+                    notes=(
+                        "The standalone column's rows, every stage's phase split lifted into "
+                        "variables, and linear link rows: differentiated exactly through the K01 "
+                        "adapter, the property blocks supplying their declared-sparse analytic "
+                        "derivatives. No inner solve sits inside a residual evaluation."
+                    ),
                 ),
             ),
             initialization=Initialization(
