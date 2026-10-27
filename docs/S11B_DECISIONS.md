@@ -61,7 +61,10 @@ Inlet-dependent (left to `validate` at evaluate): R2 (inlet flows), R3's inlet `
   J5 0.19/0.11, J6 0.39/0.27, J7 0.28/0.18, J8 0.35/0.24 (all 0 Newton iterations); M1-recycle 0.93/0.33 s, 3 Newton
   iterations (T06-revision-v2). Every case within its gate (worst 0.93 s against 2.96 s).
 
-## Q9 spike (WO-B3's first step): STOPPED — the region decomposition does not place the stage pseudo-units
+- 2026-10-27 B3e `655f24f8` (end of B3): tests (69 files) 2201 passed; S08 PASS n=52 changed=[S02.P1]
+  p1_stage_a=EQUAL; S10C PASS n=858 changed=[]; S11 PASS n=54497 changed=[] (696 s for the three).
+
+## Q9 spike (WO-B3's first step): STOPPED (resolved by §10, R-822; implemented in B3a) — the region decomposition does not place the stage pseudo-units
 
 A29 on M1 alone (`feed_source → column → 2 product_sinks`, builder registered by monkeypatch, `S01_DEFAULT_V1`;
 script `tests/s11_column_support.column_revision` + `plan_revision` + `execute_plan`). Trace:
@@ -87,16 +90,20 @@ Placing the stages needs a rule for region membership of pseudo-units (`region.u
 the `stage_unit` prefix) and for (a)/(b) of `check_agreement`. That is region structure, which the brief and the
 note's Q9 reserve to the design lane; nothing was changed.
 
-## Handoff (where track B stopped)
+## Handoff (where track B stands, 2026-10-27, after B3)
 
-- Done: B1 (`1fb0b8f9`, `884b4973`), B2 (`ffc68146`). Tests: `tests/test_s11_column_face.py` (65),
-  `tests/test_s11_column_unit.py` (35), support `tests/s11_column_support.py`.
-- Stopped: B3 at its first step, the Q9 spike (above). Not started: staged splits in `orchestrator/splits.py` and
-  `executor.py`, the v1-policy check (A28), the `s11-column-v1` registration (Q8), the S11 flowsheet cases, A24,
-  A29, Q11 (a Wilson column with a `none` end), Q14 timings. B4 is not track B's yet (waits for A3).
-- Open for the design lane: Q9 (region membership of stage pseudo-units; the rule at region.py:1876 and
-  check_agreement (a)/(b)); the end-specification routing (instance parameters now; the note's pins need
-  track-A/I1 files); `_PARAMETER_KINDS` entries for the column's parameters; the `rows.py` ownership exception.
-- Next action once Q9 is ruled: implement the ruling + `lifted_splits(..., staged=)`, merge the staged maps in
-  `executor._splits/_closure_types/_zero_flow_forms/_split_temperatures` and in `plan_revision`, then rerun the spike
-  (`column_revision(SPECS["M1"])`, `plan_revision`, `execute_plan` under `S01_DEFAULT_V1`).
+- Done: B1 (`1fb0b8f9`, `884b4973`), B2 (`ffc68146`, `33a652a9`), B3a `e41b986b` (staged splits, R-822/R-823),
+  B3b `021f17f6` (end parameters `condenser_<kind>`/`reboiler_<kind>`, R-824), B3c `4afdd498` (decision only:
+  `s11-column-v1` not registered, escalated), B3d `63dc42a5` (A28), B3e `655f24f8` (cases, A29 SYN-001, A24′, Q29).
+- Passing: A87–A90 (`tests/test_s11_staged_splits.py`), A92 (`tests/test_s11_column_face.py`), A28, A29 on M1–M4,
+  J1–J8 and the recycle case, A24′, Q29 record (`tests/test_s11_column_solve.py`); B1/B2's tests renamed.
+- Identity at `655f24f8`: S08 PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL; S10C PASS n=858 changed=[];
+  S11 PASS n=54497 changed=[].
+- Not done (blocked on track A's Wilson basis, A1, not on this branch): A29's C-MW and C-EW, Q11. Add them as
+  `benchmarks/s11/flowsheets/C-MW.json`/`C-EW.json` (`column_case` with the Wilson `record_source`) after A merges.
+- Not track B's here: B4 (waits for A3 in wp/S11; the owner map per §10.11), I1 (A91 is already met by the
+  reader's `_ID`; A93; the sixteen `_PARAMETER_KINDS`; L-COL-9, L-COL-10 for Q29).
+- For the design lane (one batched ruling): B3c (Q8's premise: T06-revision-v2 carries v2; registration moves the
+  served `get_project.solve_policies`); B3b (`ModelSignature` has no optional-parameter field; S2's kind items now
+  unreachable by name); B3a (the manifest's derivative declaration corrected to `residuals`/`ad`).
+- Next action: rebase wp/S11-b on wp/S11 once A3 is merged, then B4 and the Wilson cases.
