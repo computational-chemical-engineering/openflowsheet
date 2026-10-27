@@ -347,8 +347,11 @@ EXPECTED: dict[str, str] = {
     "S11:M1": (
         "binds fdbba42e1b518b2af7d887f81ce208c167ce46fd688cd9c137162e718895276f"
     ),
+    # S11 WO-D5 (ADR 0051): the Wilson basis selects `wilson-ig-v2`; the one moved field is the
+    # flowsheet label's provider id and implementation hash (wilson-ig-v1-4bcd8f4dc811 →
+    # wilson-ig-v2-8eab3b83551a), every other byte of the structure equal.
     "S11:C-MW": (
-        "binds 0d8c524d78dc7eba519454a31bddf362524e20971ef46bc8411a463c0a35a49b"
+        "binds 90452d2807b3ec3f6ec02c01bf70edf54184bc70ad50715b4f8b5c259d2ae58d"
     ),
 }
 

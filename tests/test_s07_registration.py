@@ -164,9 +164,10 @@ def test_a30_library_only_registration() -> None:
     matrix = _script("t08_support_matrix")
     assert PROVIDER_ID in matrix.code_facts()["scanned_providers"]
     assert PROVIDER_ID in matrix.code_facts()["providers"]
-    # control: the S05 provider is selectable the same way, and S04's stays library-only
+    # control: the S05 provider is selectable the same way, and S04's stays library-only (with
+    # S10's `wilson-ig-v1` since S11 WO-D5 selects `wilson-ig-v2`, ADR 0051)
     assert "iapws95-v1" in selectable and "iapws95-v1" not in LIBRARY_ONLY_PROVIDERS
-    assert LIBRARY_ONLY_PROVIDERS == {"pr-lib-v1": "S04"}
+    assert LIBRARY_ONLY_PROVIDERS == {"pr-lib-v1": "S04", "wilson-ig-v1": "S10"}
 
 
 def test_a30_the_u02_note_names_the_provider() -> None:

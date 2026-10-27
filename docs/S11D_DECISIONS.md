@@ -173,3 +173,12 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
 - DECISION (D5): not touched — `thermal_binding.BASES` (C4-7 said the machines gain v2 "at D5"; the machines still
   refuse Wilson at construction, C3-4, and the thermal rows of `MODEL_BASES` are I1b's); `equilibrium_form._SCOPE`;
   the D1 unit tests that build units on a v1 provider directly (library level; v1 stays admitted).
+- D5 identity at `df6e75be` (clean scratch worktree): `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [7, 15]
+  exited non-zero)`; `S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL`; `S10C-IDENTITY PASS n=858
+  changed=[]`. The envelope a20 and the six c3 now pass (shard 1 clean). Branch failures: I1b's W27 (`test_m06_w27_coverage`
+  4, `test_l01_retake` 6 errors, unchanged) and two `AMENDED_TESTS` that D5 moves, fixed in the next commit:
+  `test_s07_registration::test_a30` (its `LIBRARY_ONLY_PROVIDERS ==` control gains `wilson-ig-v1: S10`) and
+  `test_t07_w5c_signatures` `S11:C-MW` (re-pinned: the one moved byte range is the flowsheet label,
+  `wilson-ig-v1-4bcd8f4dc811` → `wilson-ig-v2-8eab3b83551a`, the 3653-line structure otherwise equal).
+- A79 measured: the column cases' x_final (C-MW, C-EW, C-MW-stripper under S01_DEFAULT_V1 and T06-revision-v2; 1508
+  values) `float.hex`-equal before and after D5; `test_a79_*` (4) pin it against v1's `solve_column` root.
