@@ -17,9 +17,10 @@ than hidden by a reformulation that would make the evaluator disagree with the r
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Final
 
 from openflowsheet.canonical import file_sha256, normalize_zero
@@ -60,6 +61,10 @@ from openflowsheet.models.syn001 import (
 from openflowsheet.thermo import StreamState
 
 MODEL_ID: Final = "syn001.stream_splitter"
+#: SYN-001's state domain, the default `domain` (S11 design §4.5).
+DOMAIN: Final[Mapping[str, tuple[float, float]]] = MappingProxyType(
+    {"T": (T_MIN, T_MAX), "P": (P_MIN, P_MAX)}
+)
 
 PORTS: Final[tuple[Port, ...]] = tuple(
     Port(
@@ -132,6 +137,11 @@ class StreamSplitter:
     unit_id: str
     split_fraction: float
     components: tuple[str, ...] = COMPONENTS
+    #: S11 design §4.5 (ADR 0050 D3): the bound provider's identity, convention and domain, which
+    #: `manifest()` reports; SYN-001's constants by default. The unit evaluates no property.
+    property_provider: str = PROVIDER_ID
+    reference_convention: str = REFERENCE_CONVENTION
+    domain: Mapping[str, tuple[float, float]] = field(default=DOMAIN, hash=False)
 
     def __post_init__(self) -> None:
         fraction = self.split_fraction
@@ -216,16 +226,16 @@ class StreamSplitter:
                     "short by 4.4e-16 mol/s at r = 0.3 and n_in,i = 3. The evaluator is not "
                     "reformulated as n_in - n_rec to hide that, because the row is not.",
                 ),
-                temperature_k=(T_MIN, T_MAX),
-                pressure_pa=(P_MIN, P_MAX),
+                temperature_k=self.domain["T"],
+                pressure_pa=self.domain["P"],
             ),
             module=__name__,
             artifact_hash=_artifact_hash(),
             execution_class="native_equation",
             thread_safety="thread_safe",
             evaluation_cost_class="cheap",
-            property_provider=PROVIDER_ID,
-            reference_convention=REFERENCE_CONVENTION,
+            property_provider=self.property_provider,
+            reference_convention=self.reference_convention,
         )
 
     # -- rows --------------------------------------------------------------------------------
@@ -330,7 +340,7 @@ class StreamSplitter:
             outlets={"recycle": recycle, "purge": purge},
             duty=None,
             phase_signature="ZERO_FLOW" if feed.is_dormant else None,
-            reference_convention=REFERENCE_CONVENTION,
+            reference_convention=self.reference_convention,
             message=(
                 "phase signature not reported: a splitter changes no intensive state and holds "
                 "no property provider"

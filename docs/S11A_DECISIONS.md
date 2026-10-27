@@ -29,6 +29,91 @@ in the run log below.
   deterministic (a file outside WO-0). Reversible by: reverting the commit that adds `VOLATILE` to
   `scripts/s11_identity_recorder.py`.
 
+## Track A: A1 registry and selection (§4.1–§4.3)
+
+- DECISION: `elemental_verification` of the generated CoolProp records (null formula) → `NOT_APPLICABLE`, because
+  `component-record.schema.json`'s `if/then` refuses `PENDING` with `elemental_composition: null` (the fallback §4.1
+  names). Alternative: `PENDING` with a schema change. Reversible by: one line in `s11_coolprop_records.py`, re-emit.
+- DECISION: does generating `benchmarks/s07/components.yaml` need CoolProp? → no: every value §4.1 names (`id`, `name`,
+  `cas`, `M`, `bibtex_eos`) is in the committed `_coolprop_heos_fluids.FLUIDS`, so the generator and its `--check`
+  import nothing from CoolProp and run in `.venv`; no scratch venv was used. Alternative: re-read CoolProp 8.0.0 in a
+  scratch venv. Reversible by: n/a (no numerics read).
+- DECISION: what does DIM-01 use when `component_basis` raises (a CoolProp revision with ≠ 1 admitted fluid)? → an
+  empty molar-mass table (a mass-basis value is then DIM-01's unconvertible FAIL beside COMP-02's FAIL); no existing
+  revision raises, so every existing report is unchanged (measured: the 56 T07+C1 corpus reports hash to `e6c92d90…`
+  at `8c34ecb0` and on the branch). Alternative: the admitted rows' `M` for the declared ids. Reversible by: the
+  `except RevisionError` branch in `validation.validate`.
+- DECISION: hint texts §4.1/§4.3 leave open → excluded fluid: `'<id>' is excluded from coolprop-heos-v1: <name>:
+  <reason>` (the provider constructor's wording); Wilson records absent: `<code>: the records <path> are
+  repository-only until Frank's Q-F3 (R-706)`; premises: `<P>: <component> min <value .4g> at T = <T .4g> K`.
+  Alternative: other wording. Reversible by: the strings in `revision_flowsheet._coolprop_selected` and
+  `revision_binding._wilson_refusal` / `wilson_premises.Minimum.hint`.
+- DECISION: S11.A09 at revision level (a bound CoolProp/Wilson revision gives `basis_unavailable`) → tested at A2, where
+  the routing models first bind on those bases; A1 tests `provider_for` directly (the binder refuses
+  `model_unsupported` before it constructs a provider). Alternative: a monkeypatched `MODEL_BASES` in A1. Reversible
+  by: n/a (test placement).
+- DECISION: which bases does L01's measurement binding (`benchmarks/l01/retake.py`) carry now that the installed
+  binder has 127? → the bases whose providers W27 v1/v2 have provider lines for (`syn001`, `pr-c1-v1`), then
+  `pr-lib-v1`, so W27v2-A23's output is unchanged; with all 127 the v2 snapshot refuses `iapws95-v1` (W27-R63) and the
+  re-take cannot run. Alternative: carry all 127 and move the re-take to W27 v3. Reversible by: reverting this commit.
+- DECISION: W27's tests that snapshot the installed binder (`test_m06_w27_coverage.py`:
+  `test_snapshot_of_this_build_is_todays_registry`, `test_each_route_binds_a_revision_with_its_component_set`,
+  `test_coverage_document_and_g14`, `test_committed_coverage_json_is_g14_and_this_builds_classification`;
+  `test_l01_retake.py::test_a27_2_…`) fail at A1, because v1/v2 have no provider line for S11's bases (D9's own
+  statement) and §8.3 does not list them → they read the build through `v2_binder()` (the installed tables with
+  `SELECTABLE_BASES` restricted to the bases `snapshot.PROVIDER_LINES` covers), and a new test pins D9's refusal of
+  the unrestricted build. Their routes and bind calls are the base's, so no family-C key moves and `AMENDED_TESTS`
+  is unchanged. **Escalated** (§4.10 says "all existing W27 tests pass unchanged"; that cannot hold once A1 lands).
+  Alternative: list them in `AMENDED_TESTS` and re-point them at v3 in A4. Reversible by: reverting this commit.
+- OPEN (escalated, not decided): `tests/test_t08_w2_inventory.py::test_a32_every_component_record_is_synthetic_or_a_
+  vetted_real_record_with_rights` (T08.A32, R-158/R-529/R-722) refuses the two new record files: their records are
+  `synthetic: false` but the files are not in `VETTED_RECORD_FILES` (no crosscheck JSON, no InChI/InChIKey, no
+  retrieval equality), and (v') fails against `l01`/`m01`/`s10` (name `Water` ≠ `water`, null composition, no shared
+  parameter, since §4.1 gives them `parameters {}`). The design note does not mention T08.A32. Amending it is a
+  test-specification change (design lane); the test is left failing. Default I would propose: a registered class of
+  "provider-identity record files" (S11 §4.1: no parameters; the provider's data is pinned by its own hashes),
+  exempt from (iv) and (v'), with (ii) reduced to `cas` (InChI/InChIKey could be added to the CoolProp file from
+  CoolProp 8.0.0 in a scratch venv). Needs: the `specifier`'s ruling on T08.A32.
+
+## Track A: A2 routing on every basis (§4.4–§4.5)
+
+- DECISION: does a routing unit's `evaluate()` report the bound convention too? → yes, `UnitEvaluation.reference_
+  convention = self.reference_convention` (SYN-001's constant by default, so no SYN-001 output moves); reporting
+  `SYN-001-ref-v1` for an IAPWS-95 stream would contradict ADR 0001 D5.2. Alternative: only `manifest()` reads the
+  fields (§4.5's letter). Reversible by: three lines in feed/sink/splitter `evaluate`.
+- DECISION: R-288's hint for a routing model refused on C1 (`syn001.feed_source binds on the … basis only`) → on
+  SYN-001's and C1's bases `_basis_refusal` lists only those two bases, so the 22 syn001↔c1 hints stay byte-identical
+  (S11.A13; measured digest `71983ce5…` at `8c34ecb0` and on the branch; family C judges them). The text then
+  under-states where the routing models bind. On an S11 basis it lists all bases and appends `_UNADMITTED`.
+  Alternative: list every basis (moves 4 family-C keys, the WO-0 control's). Reversible by: the `S11_BASES` filter.
+- DECISION: the reason for a `c1.*` unit on Wilson (§4.4 lists none) → "the c1.* units carry pr-c1-v1's own physics
+  (ADR 0050 D3)"; the C1 routing models get only their namesake hint. Alternative: no reason. Reversible by:
+  `_UNADMITTED["c1_physics"]`.
+- DECISION: S11.A12's "material balance exact (==)" → holds for flows whose split products are exact in binary64; the
+  Wilson case uses (0.25, 0.25, 0.5). The splitter's own rows (`n_rec = r·n`, `n_purge = (1 − r)·n`, unchanged)
+  leave one ulp at e.g. n = 0.4: 0.12 + 0.27999999999999997 ≠ 0.4 (measured). Alternative: assert within one ulp.
+  Reversible by: the `CASES` row.
+- DECISION: the routing units' `domain` field → a `Mapping` with `hash=False` (frozen dataclasses stay hashable).
+  Alternative: a tuple of pairs. Reversible by: the field declarations.
+
+## Track A: A3 verifier forms (§4.6)
+
+- DECISION: the declared-mixture admissibility check's numbers → γ–φ: value = `single_phase_admissible`'s temperature
+  gap (or degeneracy distance), tolerance its registered `TEMPERATURE_TOLERANCE`, result = its verdict, with A09's
+  shared-implementation note; pure fluid: value 0.0 when §4.6's rule holds, else the relative distance past `Psat`
+  (1.0 for a liquid at or above `T_c`), tolerance 0.0, so the result is exactly the rule. `Psat` refused →
+  `unsupported` with the provider's message. Alternative: other encodings of the same verdicts. Reversible by:
+  `verify/forms.py`.
+- DECISION: S11.A17 (the A12 flowsheets with no declared phase) → unreachable through the binder: the feed source's
+  and splitter's ports take `liquid` or `vapor` only (`port_phase_unsupported` on `vapor_liquid`), so the unlifted
+  path is exercised on `revision_checks` directly, with the splitter's products `vapor_liquid` at the declared
+  flowsheet's solved state; the blocked reason is the existing `temperature_degenerate_unlifted(<S>)` (§4.6: "the
+  existing mechanism"). Alternative: a new reason text. Reversible by: test placement / one string.
+- DECISION: `tests/test_m02_wo8_verifier.py::test_the_verifier_builds_its_fresh_provider_from_the_basis` pins the old
+  `fresh_provider(provider_id)` and the two-id `FRESH_PROVIDERS` → amended to the basis API and five ids (§4.6 changes
+  both; the test makes no bind call, so no family-C key). Alternative: keep a provider-id overload. Reversible by:
+  reverting the A3 commit's hunk.
+
 ## Run log
 
 - WO-0 gate, unmodified tree (`acffd034`), 16 shards per tree, 614 s:
@@ -46,3 +131,37 @@ in the run log below.
   Every shard of both trees exited 0: the tests that state those hints compare `Unbound`s, whose `hint` is
   `compare=False`, so only the gate sees the move.
 - `tests/test_s11_identity_gate.py`: 24 passed (2.4 s); ruff, ruff format, mypy clean on the three files.
+- A2 gate (`15b81efe`, base tree reused): `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 5, 14, 15]
+  exited non-zero)`. changed=[] and no base-only keys; the failing tests are the `AMENDED_TESTS` A5 owns
+  (`test_s05_envelope::test_a25`, `test_s07_registration::test_a30`, `test_s10_provider::test_a27`,
+  `test_t08_w2_support_envelope` a20/c3) and T08.A32 (escalated, above). A1's first run (`97dded60`) had in addition
+  the 4 base-only keys of `test_each_route_binds_a_revision_with_its_component_set` (fixed by `7302a507`).
+- A3 gate (`da6c06df`): `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 5, 14, 15] exited non-zero)`:
+  the same eleven known failures as A2, nothing new (every SYN-001 and C1 certificate test passes).
+
+## Handoff (2026-10-27, end of the A1–A3 engineer; A4 not started)
+
+**Done** on `wp/S11-a` (not pushed): A1 `fba583ac` (+ decisions `97dded60` L01 re-take bases, `7302a507` W27
+installed-build tests via `v2_binder`), A2 `15b81efe`, A3 `da6c06df`. S11.A01–A19 pass (`tests/test_s11_bases.py`,
+`test_s11_routing.py`, `test_s11_verifier_forms.py`: 351 passed / 6 skipped without CoolProp; the CoolProp cases
+pass with CoolProp 8.0.0 on `PYTHONPATH`, installed by `pip install --target <scratch>/cp CoolProp==8.0.0` with its
+numpy removed — never in `.venv`).
+
+**Identity:** every run `changed=[]`, n=54497, no base-only keys since `7302a507`. The gate still prints FAIL because
+shards exit non-zero on (a) the `AMENDED_TESTS` that A5 amends (s05 a25, s07 a30, s10 a27, t08 support-envelope
+a20/c3) and (b) T08.A32 (`test_t08_w2_inventory::test_a32_…`), escalated, OPEN above.
+
+**Open for the design lane (batch with the package's ruling round):**
+1. T08.A32 vs the two new record files (OPEN entry above): needs a `specifier` ruling; until then the test fails.
+2. §4.10's "all existing W27 tests pass unchanged" cannot hold after A1 (D9's own effect); `7302a507` reads the
+   installed build under v1/v2 through `v2_binder()` — confirm, or have A4 re-point those tests at v3.
+3. §6.1 A12's "exact ==" balance holds only for flows whose split products are exact in binary64 (A2 entry).
+
+**Next: WO-A4** (W27 v3, §4.10, S11.A30–A33). Files: `docs/derivations/W27-registration-v3.md` (transcribe §4.10
+R01–R08), `docs/derivations/scripts/w27_registration_v3.py --check` → `benchmarks/m06/openidaes450/registration_v3.json`,
+`benchmarks/m06/w27/{coverage,registration,snapshot}.py`, `tests/test_s11_w27_v3.py`. Facts found: `snapshot.py`'s
+`PROVIDER_LINES` (syn001, pr-c1-v1, pr-lib-v1) is version-independent and `_routes_bases_v1` reads it; v3 needs
+`PROVIDER_LINES_V3` (generic records line from `ROOT / basis.record_source`, `identifiers.{cas,…}`) selected by the
+registration version, the route key `(provider_id, record_source, components)` (R06/R07), and
+`registration.provider_methods(3)`. W27v3-R02's `wilson-ig-v2` row is D5's (units-design §5.4 item 2), not A4's.
+S4 is I1b's. Check v1/v2 outputs stay byte-identical (A30) with the existing W27 tests plus `v2_binder`.
