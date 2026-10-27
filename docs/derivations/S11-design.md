@@ -882,3 +882,382 @@ R-813…R-821.
 - **§6.1 S11.A11 (erratum).** Compare the routing manifests with `implementation_artifact.artifact_hash` removed. That
   hash is `file_sha256` of the module (`tests/test_k02_unit_models.py:191`), so A2's edits to `feed.py`, `sink.py` and
   `splitter.py` necessarily move it.
+
+---
+
+## 10. Amendment, 2026-10-27: Q9 (stage splits in a flowsheet region) and three track-B escalations (design lane, `architect`)
+
+Brief: `docs/briefs/S11-q9-ruling.md`. Facts: track B's Q9 spike (`docs/S11B_DECISIONS.md` on `wp/S11-b`) and the code
+anchors in §10.1, all read at `wp/S11-b` `845faa48`. This section amends §2.3, §4.7.1, §4.7.3, §4.7.5, §5, §6 and §7
+in place; everything else stands. Register R-822…R-827.
+
+### 10.1 Facts the ruling rests on
+
+- **F1.** `Region.units` is a list of flowsheet instances everywhere it is read. `build_region` places a row iff its
+  authoring instance (`declaration.rows[row].unit`) is in `units` (`orchestrator/execution.py:418`).
+  `plan_or_refusal` looks up `claimed[unit]` and `capable[unit]` for every unit of a specification region, and
+  `capable` is keyed by `graph.units` (`execution.py:614-621`). `PlanStep.units` and `StepResult.units` are
+  `region.units`.
+- **F2.** The region solve keeps `split.unit in set(region.units)` (`orchestrator/region.py:1876`). Under v2,
+  `_opening_order` indexes `at[split.unit]` with `at` built from `region.units` (`region.py:1061-1063`); a pseudo-unit
+  that passed the filter would raise `KeyError` there.
+- **F3.** The region solve never reads `region.signature_units`. It is plan identity: `SolvePlan.signature_units`,
+  `_PLAN_IDENTITY` (`orchestrator/executor.py:567-575`), the replay projection (`run/identity.py:71`), and the
+  schema types it as an array of non-empty strings. The attempt signature's lifted entries are
+  `(split.unit, regime)` over the active splits (`region.py:1290`). Today `signature_units` equals those keys, in that
+  order, for every registered flowsheet (instance ids) and for the standalone column (`column_solve.py:416-423`:
+  stage keys).
+- **F4.** The registry functions `zero_flow_forms`, `vapour_only_forms` and `split_temperatures`
+  (`orchestrator/splits.py:341-420`) look up `models[split.unit]` and raise `KeyError` on a stage key. `_rule` and
+  `_check_vapour_only_forms` tolerate one (they answer `_NO_RULE`).
+- **F5.** `check_agreement` keys the `molar_flow_squared` rows by authoring instance (`splits.py:463-466`), and its
+  check (f) compares `row_units[row]` with `split.unit` (`splits.py:555`).
+- **F6.** `_resplit` (`orchestrator/revision.py:271`) re-splits the registry splits only. The column's stage columns
+  enter the EO start through `UnitEvaluation.owned` (B2).
+- **F7.** An instance id may contain `.` (`schemas/process-revision.schema.json:59`,
+  `^[A-Za-z0-9][A-Za-z0-9_.:-]*$`). So `C1.stage.2` is a legal instance id beside a column `C1`.
+- **F8 (premise error in §4.7.3).** `plan_revision` builds its region with no specification rows
+  (`revision.py:400-405`). `continuation_parameter` returns `None` for a region without them (`homotopy.py:89`), so
+  edge 3 on the revision path records `unsupported(no_continuation_parameter)` under `eo_recovery = "homotopy"` for
+  every revision region. §4.7.3's "as for every other unit's pinned specification" does not hold there.
+- **F9.** `TARGET_PATH_KINDS` generates the target-path table that the tool descriptions carry
+  (`application/revision_binding.py:479-497`). A new pin path moves the served descriptions, which §2.2 forbids.
+  `_PARAMETER_KINDS` is private (`models/revision_flowsheet.py:148`) and is read only by `required_kind` (`:541`)
+  and `read_parameter` (`:701`), both keyed by the parameter name up to its first `.`.
+- **F10.** `PinColumn` pins a column of the declaration: a stream quantity or the unit's duty
+  (`revision_binding.py:195-210`). A reflux or boilup ratio, a purity and a recovery are not columns. They are
+  constants of slot rows that the column itself authors.
+
+### 10.2 The rule: split key and owner (Q9; R-822)
+
+Every `LiftedSplit` has a **key**, `split.unit`, and an **owner**, the flowsheet instance that authored its rows.
+
+- A registry split (`SPLIT_RULES`) is keyed by its instance, so its key is its owner.
+- A **staged unit** is an instance whose rows describe several lifted splits.
+  - Its model is in `orchestrator.splits.STAGED_MODELS`, which is `frozenset({"syn001.column"})` in S11 and is
+    disjoint from `SPLIT_RULES`.
+  - The instance supplies its splits as one `StagedSplits` value, through its method `staged_splits()`.
+  - Its keys are opaque strings, each owned by the instance. The column's keys are `stage_unit(U, j)`, the standalone
+    keys.
+  - A key must differ from every other key and from every instance id of the revision.
+- The **owner map** `owners: key → instance` lists the staged keys only, and `owner(split) = owners.get(split.unit,
+  split.unit)`. The staged unit supplies the map; it is never derived from id text (R-019).
+
+| Keyed by the split key | Keyed by the owner |
+| --- | --- |
+| closure types, zero-flow forms, split temperatures, vapour-only forms, regimes, PH units, F2 records, the attempt signature's lifted entries, `signature_units` | region membership, row authorship (`row_units`), the opening position, dormancy forms, `Region.units`, `PlanStep.units`, capability, step reports |
+
+- **Region membership.** A split is active in a region iff `owner(split) ∈ region.units`. `build_region` places a row
+  iff its author is in the region (F1), so this is exactly §4.7.5's "the region that holds its equilibrium rows".
+  `Region.units` stays a list of flowsheet instances.
+- **Opening order (v2).** `_opening_order` keys a split by `(index of owner(split) in region.units, 0, k)`, where `k` is
+  the split's index in the active splits. So a staged unit's splits sit at its declaration position, in the order
+  supplied. For the column that is `spec.equilibrium_stages()` order, as in the standalone solve. They are followed
+  by the unit's dormancy-form outlets (the column has none).
+- **`signature_units`.** These are the region's units that author a `molar_flow_squared` row, in region order
+  (`_lifted_units`, unchanged), with each staged instance replaced, in place, by its keys in the order supplied. The
+  invariant is `region.signature_units == tuple(split.unit for split in active splits)` (F3). Step 5 below guards it.
+- **Declaration order of the splits.** `lifted_splits(instances, components, *, staged=None)` works per instance:
+  - an instance whose model is in `SPLIT_RULES` contributes its descriptor;
+  - an instance whose id is in `staged` contributes `staged[id].splits`;
+  - an instance in both raises `ValueError(staged_unit_has_rule(<U>))`.
+
+  `staged=None` and `staged={}` give today's output.
+
+**The code, exactly:**
+
+1. **`orchestrator/region.py`** gets a frozen dataclass `StagedSplits`, beside `LiftedSplit` and `ZeroFlowForm` (no new
+   import edge for the models). Its fields:
+   - `splits: tuple[LiftedSplit, ...]`;
+   - `closure_types: Mapping[str, ClosureType]`;
+   - `zero_flow_forms: Mapping[str, ZeroFlowForm]`;
+   - `split_temperatures: Mapping[str, tuple[str, ...]]`;
+   - `other_squared_rows: tuple[str, ...]`: the instance's `molar_flow_squared` rows that are no split's equilibrium
+     rows (§10.3).
+
+   `__post_init__` raises `ValueError` unless `splits` is non-empty, its keys are pairwise distinct, and the key sets
+   of the three maps each equal the set of keys. There are no vapour-only forms: a staged unit that needs them is a
+   design-lane amendment.
+2. **`solve_region(..., split_owners: Mapping[str, str] | None = None)`.** Let `owners = split_owners or {}` and
+   `inside = set(region.units)`. Line 1876 becomes
+   `active_splits = [split for split in splits if owners.get(split.unit, split.unit) in inside]`. Line 1899 passes
+   `owners` to `_opening_order(active_splits, dormancy, region.units, owners)`, whose key is
+   `(at[owners.get(split.unit, split.unit)], 0, k)`. Nothing else in `region.py` changes.
+3. **`orchestrator/splits.py`:**
+   - `STAGED_MODELS`.
+   - `staged_units(units) -> dict[str, StagedSplits]`: `unit.staged_splits()` for each unit whose `model_id` is in
+     `STAGED_MODELS`, in declaration order.
+   - `split_owners(staged) -> dict[str, str]`.
+   - `lifted_splits(..., staged=None)`, as above.
+   - A frozen `RegionSplits` and `region_splits(instances, units, components) -> RegionSplits`. This is **the only
+     place the merge is written**:
+
+     ```
+     staged   = staged_units(units)
+     registry = lifted_splits(instances, components)            # registry functions take these only (F4)
+     types    = closure_types(units)
+     RegionSplits(
+       splits             = lifted_splits(instances, components, staged=staged),
+       owners             = split_owners(staged),
+       staged             = staged,
+       closure_types      = {**types, **⋃ s.closure_types},
+       zero_flow_forms    = {**zero_flow_forms(instances, registry, types, components), **⋃ s.zero_flow_forms},
+       split_temperatures = {**split_temperatures(instances, registry), **⋃ s.split_temperatures},
+       vapour_only_forms  = vapour_only_forms(instances, registry, components))
+     ```
+
+     Here ⋃ runs over `staged.values()` in declaration order.
+4. **`build_region(..., staged_units: Mapping[str, tuple[str, ...]] | None = None)`** (`execution.py`):
+   `signature_units = tuple(key for unit in _lifted_units(declaration, units) for key in (staged_units or
+   {}).get(unit, (unit,)))`. Its other callers pass nothing.
+5. **`plan_revision`** (`orchestrator/revision.py`):
+   - `rs = region_splits(instances_of(flowsheet), flowsheet.units(), flowsheet.components)`.
+   - `check_agreement(instances, rs.splits, spec, binding.row_units, declaration, rs.zero_flow_forms,
+     dormancy_forms(...), rs.vapour_only_forms, staged=rs.staged)`.
+   - `whole = build_region(..., staged_units={u: tuple(s.unit for s in st.splits) for u, st in rs.staged.items()})`.
+   - The guard: if `whole.signature_units != tuple(split.unit for split in rs.splits)`, raise
+     `ValueError("signature_units_disagree: plan […], splits […]")`. The region holds every author, and by
+     check (a′) every owner authors a row, so the right-hand side is every split.
+6. **`executor.py`.** The revision branches of `_splits`, `_closure_types`, `_zero_flow_forms`, `_split_temperatures`
+   and `_vapour_only_forms` return the matching `region_splits(...)` field. A new `_split_owners(flowsheet)` is `{}`
+   for `Syn001Flowsheet` and `.owners` otherwise. The single `solve_region` call (`executor.py:1069`) passes
+   `split_owners=_split_owners(flowsheet)`. The `Syn001Flowsheet` branches, `_dormancy_forms` and `_mass_mapping` do
+   not change.
+7. **`models/syn001/column_unit.py`.** `column_staged_splits(structure) -> StagedSplits` builds from
+   `structural_spec(structure)` with `column_solve.lifted_splits`, `closure_types`, `zero_flow_forms` and
+   `split_temperatures` (§4.7.2's permitted uses). Its `other_squared_rows` are the definition row of each `purity`
+   end (S06's id) and of each `recovery` end (`<U>:stage:<j>:spec:recovery_definition`), condenser first; it is
+   empty otherwise.
+   - The builder (`application/column_binding.py`) computes it once and the `ColumnUnit` holds it as a field.
+     `staged_splits()` returns that field. There is no module-level cache (`test_t07_global_state` G20).
+   - The verifier calls the same pure function (§10.11, B4).
+8. **`_resplit` does not change** (F6): it stays registry-only.
+9. **Bind-time key check (I1, `revision_binding.py`).** After every unit is built, the binder refuses any instance id
+   in `split_owners(staged_units(units))` as `id_unsupported(<id>)`. The hint is: "Instance id `<id>` is a
+   lifted-split key of instance `<U>`; rename the instance." This is a set intersection of supplied keys with ids, not
+   parsing. Until I1 the column is reachable only through the tests' monkeypatched builder, and check (a″) (§10.3) is
+   the backstop.
+
+**Identity argument.** No registered flowsheet holds a staged unit, so `staged == {}` and `owners == {}` there, and
+every changed expression reduces to today's:
+- `lifted_splits(..., staged={})` is `lifted_splits(...)`, so `rs.splits is`-equal to `registry`;
+- every `{**m, **{}}` equals `m` with the same key order. The three registry functions receive the same arguments as
+  today (`executor` passed `_splits(fs)` and `closure_types(units)`; `plan_revision` passed `splits` and
+  `closure_types(flowsheet.units())`);
+- `owners.get(k, k) == k`, so the filter predicate and the `_opening_order` keys are unchanged;
+- `(staged_units or {}).get(u, (u,)) == (u,)`, so `signature_units` is unchanged;
+- `check_agreement(staged=None)` takes no new branch, its messages are unchanged, and (a″) cannot fire, because the
+  keys are distinct instance ids;
+- the guard holds by construction. `_lifted_units` lists the authors with a squared row in `flowsheet.units()` order.
+  The registry splits list the instances with a rule in `instances_of` order, which is the same order. Check (a)
+  proves the two sets equal;
+- `Syn001Flowsheet`, `compile_column` (standalone), `cascade_solve` and `tear` call `solve_region` without
+  `split_owners`, and `build_region` without `staged_units`.
+
+The proof is this argument together with `scripts/s11_identity.py`: `changed=[]`, no base-only keys, and `n ≥ 54497`
+because new tests add keys. The S08 and S10-C lines must reproduce, and the touched test files must pass (§10.12).
+
+### 10.3 `check_agreement` with staged splits (R-823)
+
+`check_agreement(..., staged: Mapping[str, StagedSplits] | None = None)`. Let `owners = split_owners(staged or {})`,
+`Q(U)` be U's `molar_flow_squared` rows in `equation_ids` order (as today), and `E(U)` the union of the equilibrium
+rows of U's staged splits.
+
+- **(a′)** The units in `Q` are exactly `{owner(s) for s in splits}`. A unit with no descriptor raises
+  `lifted_split_unregistered(<model>)` (as today), and a split whose owner has no squared rows raises
+  `lifted_split_without_rows(<key>)` (as today).
+- **(a″)** The keys `[s.unit for s in splits]` are pairwise distinct, and no staged key is an instance id. Otherwise
+  it raises `lifted_split_key_collision(<key>)`.
+- **(b)** For a registry split: unchanged.
+- **(b′)** For a staged instance U:
+  1. For each of its splits `s`, `tuple(r for r in Q(U) if r in set(s.equilibrium_rows)) == s.equilibrium_rows`.
+     Otherwise it raises `lifted_split_rows_disagree(<key>)`, naming both lists.
+  2. The equilibrium rows of U's splits are pairwise disjoint, they are disjoint from `staged[U].other_squared_rows`,
+     and `set(Q(U)) == E(U) ∪ set(other_squared_rows)`. Otherwise it raises `staged_split_rows_disagree(<U>)`, naming
+     the unclaimed rows and the claimed rows that U did not author.
+- **(c)–(e), (g), (h):** unchanged, applied to every split. A stage key answers `_NO_RULE`.
+- **(f′):** `foreign = [row for row in form.rows if row_units.get(row) != owner(split)]`. The rest is unchanged.
+
+`other_squared_rows` is the unit's own independent statement. The check therefore keeps today's invariant that no
+`molar_flow_squared` row is unclaimed, and an omitted stage descriptor still raises. If (c)–(f′) fails on the
+column's own descriptors, stop and escalate with the message (Q28). Never relax the check.
+
+### 10.4 Rejected for Q9
+
+- **Stage keys in `Region.units`.** This breaks `plan_or_refusal`'s `capable[unit]` and `claimed[unit]` lookups (F1),
+  and it puts pseudo-units into `PlanStep.units`, the step reports and every consumer that treats `units` as
+  instances.
+- **Resolving a stage key to its instance by the `.stage.` prefix.** R-019 forbids deriving an author from id text,
+  and F7 makes the parse ambiguous. This also replaces §7 Q10's prefix default (§10.11, B4).
+- **An `instance` field on `LiftedSplit`.** It would move `LiftedSplit`'s registered `repr` digest. The project keeps
+  per-split facts in maps beside the descriptor (`zero_flow_forms`, `split_temperatures`, `vapour_only_forms`), and the
+  owner map follows that pattern.
+- **Exempting staged units from (a)/(b).** That silently admits an unclaimed equilibrium row, which is the Q9 failure
+  itself.
+- **Duck-typing `getattr(unit, "staged_splits", None)` instead of `STAGED_MODELS`.** A registry keyed by model id
+  mirrors `SPLIT_RULES` and is robust to test stand-ins, whose `getattr` answers a callable.
+
+### 10.5 End specifications are instance parameters (R-824)
+
+The end specifications are **instance parameters**, as track B built them. They are renamed so that the name up to the
+first `.` fixes the kind (R6):
+
+| Parameter | Kind | Parameter | Kind |
+| --- | --- | --- | --- |
+| `condenser_reflux_ratio` | dimensionless | `reboiler_boilup_ratio` | dimensionless |
+| `condenser_distillate_rate` | molar_flow | `reboiler_bottoms_rate` | molar_flow |
+| `condenser_duty` | heat_rate | `reboiler_duty` | heat_rate |
+| `condenser_purity.<component>` | dimensionless | `reboiler_purity.<component>` | dimensionless |
+| `condenser_recovery.<component>` | dimensionless | `reboiler_recovery.<component>` | dimensionless |
+| `condenser_temperature.<stage>` | temperature | `reboiler_temperature.<stage>` | temperature |
+
+- `end_entries` reads the names that start with `condenser_` or `reboiler_`.
+- The kind is the rest of the first segment, and the attribute follows the `.`.
+- Two names at one end raise `specification_conflict(<U>.<end>)`, as now. Any other `condenser_*`/`reboiler_*` name,
+  and any dotted `condenser.`/`reboiler.` name, raises `parameter_unsupported(<U>.<name>)`.
+- A `role: fixed` specification with target path `parameters.<name>` lands here, as before.
+- The slot rows keep S02/S06's ids and `"<column>*"` parameter names; their values come from these parameters.
+- `_COLUMN`'s signature lists the twelve as optional parameters.
+- §4.7.1's `SpecificationChoice` sentence and its pin-encoding sentence are withdrawn, and so is §4.7.3's last
+  paragraph (§10.8).
+
+**Rejected:**
+- **Pins.** A pin pins a column, and ratios, purities and recoveries are constants of the column's own slot rows
+  (F10). New pin paths would move the served tool descriptions (F9, §2.2). Pins would also need track A's `_read` and
+  a non-stream `PinQuantity`. And A24 does not follow from them on the revision path anyway (F8).
+- **Dotted `condenser.<kind>`.** R6 types a parameter by its first segment, so typing these would need a two-level
+  lookup rule in track A's `read_parameter` and `required_kind`.
+
+### 10.6 `_PARAMETER_KINDS` (R-825)
+
+**I1** adds sixteen entries to `models/revision_flowsheet.py` `_PARAMETER_KINDS`:
+- `stage_count`: dimensionless;
+- `stage_pressure`: pressure;
+- `feed_stage`: dimensionless;
+- `stage_duty`: heat_rate;
+- the twelve names of §10.5.
+
+These are data only; the lookup rule does not change. `_PARAMETER_KINDS` feeds no served text (F9), and no existing
+key collides.
+
+Why I1:
+- the file is track A's (A1), and A is building now;
+- until I1 the column is reachable only through the tests' monkeypatched builder;
+- B3's cases write SI values of the right declared kind, so they do not depend on the table.
+
+### 10.7 `models/rows.py` (R-826)
+
+Accepted. B1's `scaled_sum_definition_row` is a new function, and no existing builder changes.
+- `test_k02_unit_models` forbids row builders in unit modules, so `rows.py` is their home.
+- Track A does not touch it, and tracks C/D use `models/thermal/rows.py`.
+- `models/rows.py` is added to B1's file list retroactively. It is track B's until B merges. After that, any WO may
+  add a function to it, but may not edit an existing one.
+- The per-commit identity trigger list (§5) gains `models/rows.py`.
+
+### 10.8 A24 and edge 3 on the revision path (R-827)
+
+F8 voids A24's premise. Giving revision regions specification rows would change every revision plan and send the
+executor down the promoted-specification path (`executor.py:670`), which is outside S11.
+
+- **S11.A24′** replaces A24. On the M1 column revision, `region.specification_rows == ()` and
+  `continuation_parameter(...) is None`, exactly as for a registered T05 heater→flash revision.
+- New limitation **L-COL-9**: "In a flowsheet a column region has no edge-3 continuation (no revision region has one).
+  The unit's own `evaluate` keeps S02's full standalone path, S08 Stage B included, so the traversal start is the
+  standalone answer."
+- §4.7.3's sentence that WO-B3 checks the binder's promotion naming is withdrawn.
+
+### 10.9 Interaction with the units design's C6/D6 spikes (Q18)
+
+There is no functional interaction. The thermal units author no `molar_flow_squared` row, and the Wilson K02/T05 units
+are registry splits, so their key equals their owner and §10.2 is inert for them.
+
+The file order is as follows:
+- B3a is the only S11 commit that edits `region.py`. If Q18 ends in a region ruling, that work rebases on it.
+- C6's `splits.py` entries (`_CONFIGURED_BY`, `DORMANCY_RULES`) come after B3 merges, as the units design §4.9
+  already says, and touch other functions.
+
+### 10.10 File ownership
+
+| File | Change | WO (track) |
+| --- | --- | --- |
+| `orchestrator/region.py` | `StagedSplits`; `split_owners`; line 1876; `_opening_order` key | B3a (B) |
+| `orchestrator/execution.py` | `build_region(staged_units=)`, `_lifted_units` expansion | B3a (B) |
+| `orchestrator/splits.py` | `STAGED_MODELS`, `staged_units`, `split_owners`, `lifted_splits(staged=)`, `RegionSplits`/`region_splits`, `check_agreement(staged=)` | B3a (B) |
+| `orchestrator/executor.py`, `orchestrator/revision.py` | §10.2 steps 5–6 | B3a (B) |
+| `models/syn001/column_unit.py`, `application/column_binding.py` | `column_staged_splits`, the held field; end-parameter names | B3a, B3b (B) |
+| `models/rows.py` | (done) | B1 (B), accepted |
+| `models/revision_flowsheet.py` | sixteen `_PARAMETER_KINDS` entries | I1 |
+| `application/revision_binding.py` | the key check, §10.2 step 9 | I1 |
+| `verify/table.py`, `verify/zero_flow.py`, `verify/certificate.py` | the owner map | B4 (B) |
+| `benchmarks/t08/support_envelope.yaml`, `docs/support-matrix.md` | L-COL-9 (L-COL-1…9) | I1 |
+
+### 10.11 Revised work orders
+
+**B3** (replaces §5's B3 row). Depends on B2. Commits, in order:
+- **B3a: staged splits** (R-822, R-823). §10.2 steps 1–8, §10.3, and the new `tests/test_s11_staged_splits.py`
+  (A87–A90). Acceptance:
+  1. Rerun the spike (`column_revision(SPECS["M1"])`, `plan_revision`, `execute_plan` under `S01_DEFAULT_V1` passed as
+     the policy object). It must end converged, with A29's M1 numbers.
+  2. The §10.12 per-commit check.
+- **B3b: end-parameter names** (R-824): `column_unit.end_entries`/`_end_specification`, `END_PREFIXES`, `_COLUMN`'s
+  parameters, and the B1/B2 tests and support. Acceptance: A92, and B1/B2's tests pass renamed.
+- **B3c:** Q8's `s11-column-v1` registration (isolated, as §4.7.5).
+- **B3d:** A28's policy check.
+- **B3e:** the cases (`benchmarks/s11/flowsheets/*.json`, `tests/test_s11_column_solve.py`): A29, A24′, Q11, the Q14
+  timings, and the Q29 record.
+
+**B4.** §7 Q10's default is replaced:
+- for each instance whose model is in `STAGED_MODELS`, the verifier builds
+  `column_staged_splits(column_structure(view, components))`, and passes the result to its `lifted_splits(...,
+  staged=)` call (`certificate.py:706`) and to `split_owners`;
+- `table.py:1531` and `zero_flow.py:149` look up `instances[owner(split)]`;
+- a consumer that needs per-stage instance data beyond the owner is escalated.
+
+**I1** gains:
+- R-825's sixteen entries and A93;
+- §10.2 step 9 and A91;
+- L-COL-9 in the envelope.
+
+**§5 trigger list** gains `models/rows.py`.
+
+### 10.12 Assertions and gates
+
+- **S11.A87 (inert).** On the M02 flash revision and one T05 heater→flash revision, `region_splits(...)` gives
+  `splits == lifted_splits(instances, components)` and `owners == {}`. Each map equals, with the same key order, the
+  registry function's output for the same arguments.
+- **S11.A88 (placement).** On M1:
+  - the plan's `solve_eo` `units` holds no stage key;
+  - `signature_units == tuple(stage_unit("UCOL", j) for j in equilibrium stages)`;
+  - the active splits number N_eq;
+  - attempt 0's lifted signature keys equal `signature_units`, in order.
+- **S11.A89 (agreement defects).** Each of the following raises its named `ValueError`:
+  - a `StagedSplits` missing one stage;
+  - a recovery case whose `other_squared_rows` misses its definition row;
+  - a staged key equal to an instance id;
+  - an instance in both registries.
+- **S11.A90 (guard).** On M1, a region built without `staged_units` makes the guard raise
+  `signature_units_disagree`.
+- **S11.A91 (I1).** Column `C1` beside an instance `C1.stage.<j>`, for j an equilibrium stage, is refused at bind as
+  `id_unsupported(C1.stage.<j>)`.
+- **S11.A92 (B3b).** Each of the twelve names configures its `EndSpecification`. `condenser.reflux_ratio` raises
+  `parameter_unsupported(<U>.condenser.reflux_ratio)`. Two `condenser_*` names raise `specification_conflict(<U>.condenser)`.
+- **S11.A93 (I1).** Each of the sixteen names with a wrong declared kind raises `parameter_kind_unsupported(<U>.<name>)`.
+  `stage_pressure.1` given in `bar` reads as `unit-conversion-v2`'s Pa value, `float.hex`-equal.
+- **S11.A24′:** §10.8.
+- **Per-commit check for B3a** (batched, one run): `scripts/s11_identity.py` in the background with one wait, giving
+  `S11-IDENTITY PASS changed=[]` with the S08 and S10-C lines, plus pytest on
+  `$(grep -lE 'solve_region|check_agreement|lifted_splits|build_region|plan_revision|_opening_order' tests/test_*.py)`
+  (76 files at `845faa48`) and `tests/test_s11_*.py`. No new gate.
+- **G6** gains A87–A90, A92 and A24′. I1's acceptance gains A91 and A93.
+
+### 10.13 Open questions (each with a default)
+
+| Id | Question | Needs | Default |
+| --- | --- | --- | --- |
+| Q9 | answered by §10.2 (R-822) | — | — |
+| Q10 | superseded by the owner map (§10.11, B4) | — | Escalate a consumer that needs more than the owner |
+| Q28 | Do (c)–(f′) hold on the column's own stage descriptors (definition-row incidence, label, swapped row)? | fact (B3a) | Expected yes: the standalone solve reads the same descriptors and forms. If not, stop and escalate the message; never relax |
+| Q29 | A column under a PTC policy (`eo_core = "ptc"`): typed `PTC_MAPPING_INVALID`, or a mapping? | fact (B3e) | Record the outcome. A typed refusal is accepted as L-COL-10 at I1; an exception is escalated |
+| Q30 | An edge-3 continuation for revision regions (column slot rows included) | Frank's preference (scope) | **Not in S11** (L-COL-9); a follow-up package |
+| Q31 | Spelling of the end parameters: `condenser_reflux_ratio` or dotted with a two-level kind lookup | Frank's preference (taste) | **Underscore** (R-824). Reversible: one rename in `column_unit` plus a lookup-rule change in track A's file |
+| Q32 | Does any of the sixteen new `_PARAMETER_KINDS` names occur on another model in the suite's documents? | fact (I1, family C) | Expected none. A changed family-C key is a refusal-code change on a registered document: stop and escalate |

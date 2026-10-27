@@ -16127,3 +16127,123 @@ statement and every SYN-001 `ProblemSpec` unchanged (gate G1); only the manifest
 - The per-commit identity trigger list gains the seven `models/syn001` files that track D edits.
 
 **Rejected:** *registering tracks C and D inside I1.* That changes I1's WO.
+
+## R-822 — S11: a lifted split has a key and an owner; staged units supply their splits and the owner map
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), answering S11 Q9 after track B's spike |
+| Normative text | `docs/derivations/S11-design.md` §10.2 |
+| Evidence | `docs/S11B_DECISIONS.md` (wp/S11-b, Q9 spike); §10.1 F1–F3, F7 |
+| Affected packages | S11 (B3, B4, I1) |
+
+**Decision.**
+- A split's key (`split.unit`) and its owner (the authoring instance) are distinct notions. A registry split's key is
+  its owner.
+- A staged unit has a model in `STAGED_MODELS`. It supplies a `StagedSplits` value, and from it the owner map,
+  key → instance.
+- Region membership, the opening position and `Region.units` go by owner. The split maps and the attempt signature go
+  by key.
+- `signature_units` replaces each staged instance by its keys. `plan_revision` guards that it equals the active split
+  keys.
+- The merge is written once, in `splits.region_splits`. The binder refuses an instance id that equals a staged key.
+
+**Rejected:**
+- *Stage keys in `Region.units`.* That breaks `plan_or_refusal`'s `capable`/`claimed` lookups and leaks pseudo-units
+  into the step units.
+- *Resolving a key by its `.stage.` prefix.* R-019 forbids it, and ids may contain `.`.
+- *An `instance` field on `LiftedSplit`.* It would move the registered `repr` digest.
+
+## R-823 — S11: `check_agreement` accepts staged splits without exempting them
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`) |
+| Normative text | `docs/derivations/S11-design.md` §10.3 |
+| Evidence | §10.1 F5; `orchestrator/splits.py:463-470` |
+| Affected packages | S11 (B3) |
+
+**Decision.**
+- (a) is checked by owner.
+- (a″) requires distinct keys, none of which is an instance id.
+- (b′) applies per stage, in order. The staged unit's squared rows must be exactly its splits' equilibrium rows plus
+  the `other_squared_rows` it declares (the column's purity and recovery definition rows).
+- (f) compares a form's rows with the owner.
+
+**Rejected:**
+- *Exempting staged units from (a)/(b).* That silently admits an unclaimed equilibrium row, which is the Q9 failure
+  mode.
+- *Deriving the non-equilibrium squared rows from the unit's own rows.* That makes the check vacuous.
+
+## R-824 — S11: the column's end specifications are instance parameters `<end>_<kind>[.<attribute>]`
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), on track B's escalation |
+| Normative text | `docs/derivations/S11-design.md` §10.5 (supersedes §4.7.1's pins) |
+| Evidence | §10.1 F9 (served target-path table), F10 (`PinColumn` pins columns) |
+| Affected packages | S11 (B3, I1) |
+
+**Decision.** Twelve parameters set the end specifications, from `condenser_reflux_ratio` to
+`reboiler_temperature.<stage>`. The first segment fixes the kind under R6's rule. The slot rows keep S02/S06's ids and
+parameter names.
+
+**Rejected:**
+- *Revision pins.* A ratio, a purity or a recovery is not a column. New pin paths move the served tool descriptions
+  (§2.2).
+- *Dotted `condenser.<kind>` names.* They need a two-level kind lookup in track A's reader.
+
+## R-825 — S11: the column's parameter kinds enter `_PARAMETER_KINDS` at I1
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`) |
+| Normative text | `docs/derivations/S11-design.md` §10.6 |
+| Evidence | `models/revision_flowsheet.py:148, 541, 701` (private table, first-segment key) |
+| Affected packages | S11 (I1) |
+
+**Decision.** I1 adds sixteen entries: `stage_count`, `stage_pressure`, `feed_stage`, `stage_duty`, and R-824's twelve.
+This is data only.
+
+**Rejected:**
+- *Adding them in B3.* The file is track A's.
+- *Adding them in A1.* Track A is mid-build, and the column is unreachable by users until I1.
+
+## R-826 — S11: `models/rows.py` is the home of B1's `scaled_sum_definition_row`
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), on track B's escalation |
+| Normative text | `docs/derivations/S11-design.md` §10.7 |
+| Evidence | `tests/test_k02_unit_models.py` (no row builder in a unit module); `docs/S11B_DECISIONS.md` |
+| Affected packages | S11 (B1) |
+
+**Decision.**
+- Accepted, and added to B1's file list.
+- Later WOs may add functions to `rows.py`, but may not edit existing ones.
+- `models/rows.py` joins the per-commit identity trigger list.
+
+**Rejected:** *a builder in `column.py`.* `test_k02_unit_models` forbids it.
+
+## R-827 — S11: A24's premise was false on the revision path; A24′ and L-COL-9 replace it
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`) |
+| Normative text | `docs/derivations/S11-design.md` §10.8 |
+| Evidence | `orchestrator/revision.py:400-405` (no specification rows); `orchestrator/homotopy.py:89` |
+| Affected packages | S11 (B3, I1) |
+
+**Decision.**
+- No revision region has an edge-3 continuation, so the column region has none either. A24′ asserts this, and
+  L-COL-9 records it.
+- A revision-path continuation is a scope question for Frank (S11 §10.13 Q30). The default is a follow-up package.
+
+**Rejected:** *giving revision regions specification rows in S11.* That changes every revision plan and enters the
+promoted-specification path.
