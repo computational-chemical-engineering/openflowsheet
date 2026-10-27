@@ -222,3 +222,22 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
   (`thermal_binding.BASES`, then `MODEL_BASES`) is I1b's. A81's pump refusal text (`model_unsupported(thermal.pump)`,
   the no-volume reason) is I1b's `_UNADMITTED`. Default: a short build-lane WO (C3-4's wiring in `machines.py` + the
   machines' v2 row) before I1b, then GP-M1/GP-M2 in `tests/test_s11_gp_solve.py` on the `s11_gp_support` pattern.
+- Identity at `ad4be810` (D5 + its fix + the D6 spike + R-840; clean scratch worktree): `S11-IDENTITY FAIL n=54497
+  changed=[] (C branch shards [7, 15] exited non-zero)` — only I1b's W27 failures (`test_m06_w27_coverage` 4,
+  `test_l01_retake` 6 errors); `S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL`; `S10C-IDENTITY PASS n=858
+  changed=[]`. `86dd9b21` adds test and case files only (no run).
+
+## Handoff (after D5, D6 part 1)
+
+- Done on `wp/S11` (not pushed): D5 `df6e75be` + `1a6d2ac3` (two amended tests the switch moves); D6 spike
+  `ed2b3c94` (GP-C1, Q18 answered yes); R-840 labels `ad4be810`; GP-C2/GP-C3 + OQ-5 fact `86dd9b21`.
+- A79: Wilson entry `wilson-ig-v2`, 127 bases; column x_final `float.hex`-equal to before (1508 values); S11's Wilson
+  tests pass. `t08_support_matrix.py --check` 0 problems; `w27_registration_v3.py --check` identical.
+- Per GP certificate (|Z|, one-sided worst; limit 1e-8): GP-C1 6, 1.19e-10; GP-C2 6, 1.67e-10; GP-C3 2, 6.87e-11.
+- Not done: GP-M1, GP-M2 (A80, A81) — blocked, see the bullet above (no WO owns the Wilson machines' evaluate;
+  A81's pump text is I1b's). Cross-architecture comparison (G8) is I2's.
+- Open for the design lane (batch with the package's reviewer pass): OQ-5 fact (β = 0 lifted outlet → witness
+  unsupported); the R-840 choice of no label on SYN-001 failures; D5's envelope L-COL-4/7 renames and W27 B kept on v1;
+  the Wilson-machine WO assignment.
+- Still failing on the branch, not D5/D6's: `test_m06_w27_coverage` (4), `test_l01_retake` (6 errors) — I1b's
+  `model_functions`/S4.
