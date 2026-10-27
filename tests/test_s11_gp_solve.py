@@ -21,6 +21,9 @@ from typing import Any
 import pytest
 from s11_gp_support import (
     CASES,
+    GP_M1_INLET,
+    GP_M1_OUTLET_P,
+    admit_machines,
     admit_wilson,
     committed_case,
     dispatch_gamma_phi,
@@ -36,10 +39,12 @@ from openflowsheet.models.revision_flowsheet import WILSON_BASIS, parse_revision
 from openflowsheet.models.syn001 import REFERENCE_CONVENTION
 from openflowsheet.models.syn001.ph_flash import PHFlash
 from openflowsheet.models.syn001.ph_kernel import ph_state
+from openflowsheet.models.syn001.pump import work_id
+from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import tp_state
 from openflowsheet.models.syn001.valve import Valve
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.thermo import FlashRequest, PropertyProvider, StreamState
+from openflowsheet.thermo import FlashRequest, PropertyProvider, PropertyRequest, StreamState
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify.certificate import BoundDeclaration, fresh_provider, verify_revision
 from openflowsheet.verify.checks import (
@@ -48,6 +53,7 @@ from openflowsheet.verify.checks import (
     derivative_witness,
     one_sided_columns,
 )
+from openflowsheet.verify.thermal import additive_isentropic_enthalpy
 
 TAU_E = KIND_TOLERANCE["heat_rate"]
 TAU_FLOW = KIND_TOLERANCE["molar_flow"]
@@ -326,3 +332,62 @@ def test_r840_syn001s_failure_label_is_the_same_constant() -> None:
     for code, failure in _labelled(Syn001Provider()).items():
         assert failure.status != "ok" and failure.message.split("\n", 1)[0] == code
         assert (failure.provider_id, failure.reference_convention) == ("", REFERENCE_CONVENTION)
+
+
+# -- S11.A80: GP-M1, the Wilson compressor ---------------------------------------------------------
+
+
+def _pure_vapour_enthalpy(
+    provider: PropertyProvider, flows: tuple[float, ...], temperature: float, pressure: float
+) -> float:
+    """Σ_j n_j h_j(T, P), h_j the provider's VAPOR h at the pure composition e_j."""
+    total = 0.0
+    for j, flow in enumerate(flows):
+        pure = tuple(1.0 if k == j else 0.0 for k in range(len(flows)))
+        result = provider.evaluate_phase(
+            PropertyRequest(
+                state=StreamState(n=pure, temperature=temperature, pressure=pressure),
+                phase="VAPOR",
+                properties=("h",),
+            ),
+            CONTEXT,
+        )
+        assert result.status == "ok", result.message
+        total += flow * result.values["h"]
+    return total
+
+
+def test_a80_gp_m1_wilson_compressor(gamma_phi: list[int], monkeypatch: pytest.MonkeyPatch) -> None:
+    """S11.A80: VERIFIED with the γ–φ dispatch; W = Σ_j n_j[h_j(T_s, P_O) − h_j(T_I, P_I)]/η with
+    T_s from the verifier's own bisection, within τ_E; the outlet's `stability` is
+    STABLE_WITHIN_TESTED_SCOPE; the outlet inside the records' 400 K with a dew-point margin of
+    at least 5 K at both ends. Measured: CONVERGED, 41 checks; T_O 391.72 K, W 878.17 W, equal to
+    the verifier's Ḣ_s form to 0.0 W; dew margins 31.2 K (inlet) and 47.7 K (outlet); the
+    outlet's liquid-trial tm 0.826; |Z| = 2 (the ethanol columns), one-sided worst 1.75e-10."""
+    admit_machines(monkeypatch)
+    certificate, state, witness, _ = certified(committed_case("GP-M1"), gamma_phi)
+    assert_verified(certificate)
+    assert {c.id for c in certificate.checks if c.category == "energy_balance"} >= {
+        "energy_balance.M",
+        "energy_balance.envelope",
+    }
+    assert "specification.M.isentropic_work" in {c.id for c in certificate.checks}
+    provider = fresh_provider(WILSON_BASIS)
+    inlet, outlet = _stream(state, "S1"), _stream(state, "S2")
+    assert (inlet.temperature, inlet.pressure) == GP_M1_INLET
+    assert outlet.pressure == GP_M1_OUTLET_P
+    isentropic = additive_isentropic_enthalpy(
+        provider, CONTEXT, inlet.n, inlet.temperature, inlet.pressure, outlet.pressure
+    )
+    entering = _pure_vapour_enthalpy(provider, inlet.n, inlet.temperature, inlet.pressure)
+    work = state[work_id("M")]
+    assert abs(work - (isentropic - entering) / 0.8) <= TAU_E, work
+    report = provider.stability(outlet, "VAPOR", CONTEXT)  # type: ignore[attr-defined]
+    assert report.label == "STABLE_WITHIN_TESTED_SCOPE", report
+    assert outlet.temperature <= 400.0
+    for end in (inlet, outlet):
+        dew = band_temperature(provider, end.n, end.pressure, 1.0, CONTEXT)
+        assert dew.position == "inside"
+        assert end.temperature - dew.temperature >= 5.0, (end, dew.temperature)
+    assert witness["Z"] == 2  # the ethanol columns of S1 and S2
+    assert witness["one_sided_worst"] <= DERIVATIVE_TOLERANCE / 10, witness

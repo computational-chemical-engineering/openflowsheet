@@ -7,7 +7,9 @@ since WO-D5), built here and committed as `benchmarks/s11/gp/<name>.json` (regen
 `MODEL_BASES` admits the five K02/T05 units on SYN-001's basis only until the integration WO (I1b)
 adds Wilson's row, so `admit_wilson` monkeypatches that row, as `test_s11_gp_binding` does; and
 `table.revision_checks` dispatches the v2 basis to `gamma_phi_units.revision_checks` only from
-I1b, so `dispatch_gamma_phi` patches that one call.
+I1b, so `dispatch_gamma_phi` patches that one call. The Wilson compressor and turbine (GP-M1,
+GP-M2) enter the binder's tables and `verify.table.MODEL_CHECKS` at I1b's registration commit;
+until then `admit_machines` registers them, as `test_s11_thermal_binding.register` does.
 """
 
 from __future__ import annotations
@@ -19,6 +21,7 @@ from typing import Any
 
 import pytest
 from m02_c1_support import connection, quantity, revision, specification
+from test_s11_thermal_binding import dimensionless, register
 
 from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_binding import (
@@ -32,6 +35,7 @@ from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.verify import CheckResult, gamma_phi_units, table
+from openflowsheet.verify import thermal as verify_thermal
 
 GP = Path(__file__).resolve().parents[1] / "benchmarks" / "s11" / "gp"
 
@@ -199,11 +203,58 @@ def gp_c3(heater_temperature: float = 354.0) -> Document:
     )
 
 
+COMPRESSOR = "thermal.compressor"
+TURBINE = "thermal.turbine"
+#: GP-M1's inlet (S11.A80): C-MW's vapour at 370 K, 40 kPa (dew point 338.84 K), compressed to
+#: 50 kPa (dew point 343.99 K) at eta = 0.8.
+GP_M1_INLET = (370.0, 40_000.0)
+GP_M1_OUTLET_P = 50_000.0
+
+
+def _outlet_pressure(unit: str, value: float) -> Document:
+    return specification(f"SPEC-{unit}-P", "instance", unit, "outlet.P", value, "pressure")
+
+
+def _machine_case(
+    model: str,
+    efficiency: float,
+    inlet: tuple[float, float],
+    outlet_pressure: float,
+    revision_id: str,
+) -> Document:
+    """C-MW's vapour → one Wilson machine → a sink, every stream declared `vapor` (L-GP-2)."""
+    instances = [
+        _instance("F", "syn001.feed_source"),
+        _instance("M", model, {"efficiency": dimensionless(efficiency)}),
+        _instance("K", "syn001.product_sink"),
+    ]
+    connections = [
+        connection("S1", ("F", "outlet"), ("M", "inlet"), "vapor"),
+        connection("S2", ("M", "outlet"), ("K", "inlet"), "vapor"),
+    ]
+    pins = [*_feed_pins("S1", C_MW_FEED, *inlet), _outlet_pressure("M", outlet_pressure)]
+    return revision(
+        instances,
+        connections,
+        pins,
+        components=WILSON_BASIS.components,
+        record_source=WILSON_RECORDS,
+        revision_id=revision_id,
+    )
+
+
+def gp_m1() -> Document:
+    """S11.A80 GP-M1: C-MW's vapour at 370 K and 40 kPa → `thermal.compressor` to 50 kPa at
+    eta = 0.8 (outlet ≈ 391.7 K, inside the records' 400 K) → a sink."""
+    return _machine_case(COMPRESSOR, 0.8, GP_M1_INLET, GP_M1_OUTLET_P, "S11-GP-M1")
+
+
 #: Case name -> document builder; the committed file is `GP / f"{name}.json"`.
 CASES: Mapping[str, Callable[[], Document]] = {
     "GP-C1": gp_c1,
     "GP-C2": gp_c2,
     "GP-C3": gp_c3,
+    "GP-M1": gp_m1,
 }
 
 
@@ -218,6 +269,16 @@ def admit_wilson(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setitem(
             MODEL_BASES, model, frozenset({*MODEL_BASES[model], WILSON_BASIS.provider_id})
         )
+
+
+def admit_machines(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The seven `thermal.*` models in the binder's tables (their `BASES` give the compressor and
+    turbine Wilson's row), and the two machines' rows in `verify.table.MODEL_CHECKS` and their W
+    in the energy envelope's `WORK_MODELS`, as I1b's registration commit will add them."""
+    register(monkeypatch)
+    for model in (COMPRESSOR, TURBINE):
+        monkeypatch.setitem(table.MODEL_CHECKS, model, verify_thermal.MODEL_CHECKS[model])
+    monkeypatch.setattr(table, "WORK_MODELS", table.WORK_MODELS | {COMPRESSOR, TURBINE})
 
 
 def dispatch_gamma_phi(monkeypatch: pytest.MonkeyPatch) -> list[int]:

@@ -281,3 +281,14 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
   it raises `AttributeError` as unwrapped. No Protocol change (stability stays a concrete-class addition,
   `thermo.stability`); no existing call path moves. Alternative: judge the outlet by the frozen `flash()` (its label
   in `message`) or by R-007's admissibility, neither of which is §4.4's `stability()`. Reversible by: the commit.
+- Commit D, GP-M1 (S11.A80; `benchmarks/s11/gp/GP-M1.json`, generated): C-MW's vapour (0.4, 0.0, 0.6) at 370 K,
+  40 kPa → `thermal.compressor` to 50 kPa, η 0.8 → sink, as registered (no P_O lowering needed). Dew points
+  (`saturation_band.band_temperature`, β = 1): 338.84 K at 40 kPa, 343.99 K at 50 kPa → margins 31.2 K (inlet),
+  47.7 K (outlet); T_O 391.72 K ≤ 400 K. CONVERGED (0.11 s), VERIFIED with the γ–φ dispatch, 41 checks;
+  energy_balance.M 0.0 W, envelope 7.3e-12 W; `specification.M.isentropic_work` 0.0 W; W 878.17 W equals
+  Σ_j n_j[h_j(T_s, P_O) − h_j(T_I, P_I)]/η with the verifier's bisection to 0.0 W; outlet STABLE_WITHIN_TESTED_SCOPE
+  (liquid-trial tm 0.826); |Z| = 2 (S1/S2 ethanol), one-sided worst 1.75e-10 (limit 1e-8).
+  DECISION: `s11_gp_support.admit_machines` registers the seven thermal models (`test_s11_thermal_binding.register`),
+  the two machines' `verify.thermal.MODEL_CHECKS` rows in `verify.table.MODEL_CHECKS`, and adds them to
+  `table.WORK_MODELS` (without which the envelope misses W: measured −878.17 W, `fail`). Alternative: none short of
+  I1b's registration. Reversible by: dropping the helper at I1b's registration commit (with `admit_wilson`).
