@@ -4147,49 +4147,47 @@ harvest:
   sha256: fef5627ab794118d9429d4df31a5c0c2d261bb5f5f4c78f1d4adfa7ee6e28d7a
   class: E
   to:
-  - U04
   - L19
   - L20
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no uniqueness or global convergence
+  - L-COL-5
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); no uniqueness or global convergence
 - manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
   item: limitations[3]
   sha256: 5d934fecba68b95d75a7e3eff8e787ae0730b0d3581a9cc360c6b0e3405af58e
   class: E
   to:
-  - U04
   - L20
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no phase-transition robustness, P1 ends typed (A12)
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); no phase-transition robustness, P1 ends typed (A12)
 - manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
   item: limitations[4]
   sha256: 0563960199d14525f4805b446b66be8199faed27f9bc60f1b559982ea18faae6
   class: E
   to:
-  - U04
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no inverse specifications, subcooled or total ends, side draws, hydraulics, efficiencies
+  - L-COL-2
+  - L-COL-3
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); no inverse specifications (S06's since), subcooled or total ends, side draws, hydraulics, efficiencies
 - manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
   item: limitations[5]
   sha256: d388949232bbda9e4a17073e058517c6325ea69228b6794eaac06a455ef30faa
   class: E
   to:
-  - U04
   - U05
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no inside-out, rate-based or sensitivity results (U05)
+  - L-COL-2
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); no inside-out, rate-based or sensitivity results (U05)
 - manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
   item: limitations[6]
   sha256: 60595b7c7fc35a37f13d138a01b1c87697ed4de90359886cd154eae29ecc85c0
   class: E
   to:
-  - U04
   - L19
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); admissibility claimed only at the registered roots
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); admissibility claimed only at the registered roots
 - manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
   item: limitations[7]
   sha256: 5976309a8be33d2d0cf7b5f543cfc90ff0b1053efe4fa048bf00c94b87b10ae5
   class: E
   to:
-  - U04
   - L20
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); bubble-point sweeps measured on ten columns only, no contraction proof; R2 is a second root
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); bubble-point sweeps measured on ten columns only, no contraction proof; R2 is a second root
 - manifest: evidence/S02/66377ba683b61cfefe8ccf5fde5ca8b0729a0d15/manifest.json
   item: limitations[8]
   sha256: 77751fa98b52bdbddcccbdda0f2564f964039d4ec74b8f52bd1d892be5e8ca23
@@ -4260,49 +4258,47 @@ harvest:
   sha256: fef5627ab794118d9429d4df31a5c0c2d261bb5f5f4c78f1d4adfa7ee6e28d7a
   class: E
   to:
-  - U04
   - L19
   - L20
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no uniqueness or global convergence
+  - L-COL-5
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); no uniqueness or global convergence
 - manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
   item: limitations[3]
   sha256: 5d934fecba68b95d75a7e3eff8e787ae0730b0d3581a9cc360c6b0e3405af58e
   class: E
   to:
-  - U04
   - L20
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no phase-transition robustness, P1 ends typed (A12)
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); no phase-transition robustness, P1 ends typed (A12)
 - manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
   item: limitations[4]
   sha256: 0563960199d14525f4805b446b66be8199faed27f9bc60f1b559982ea18faae6
   class: E
   to:
-  - U04
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no inverse specifications, subcooled or total ends, side draws, hydraulics, efficiencies
+  - L-COL-2
+  - L-COL-3
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); no inverse specifications (S06's since), subcooled or total ends, side draws, hydraulics, efficiencies
 - manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
   item: limitations[5]
   sha256: d388949232bbda9e4a17073e058517c6325ea69228b6794eaac06a455ef30faa
   class: E
   to:
-  - U04
   - U05
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); no inside-out, rate-based or sensitivity results (U05)
+  - L-COL-2
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); no inside-out, rate-based or sensitivity results (U05)
 - manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
   item: limitations[6]
   sha256: 60595b7c7fc35a37f13d138a01b1c87697ed4de90359886cd154eae29ecc85c0
   class: E
   to:
-  - U04
   - L19
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); admissibility claimed only at the registered roots
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); admissibility claimed only at the registered roots
 - manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
   item: limitations[7]
   sha256: 5976309a8be33d2d0cf7b5f543cfc90ff0b1053efe4fa048bf00c94b87b10ae5
   class: E
   to:
-  - U04
   - L20
-  note: S02's column (`syn001.column`) is library-only, not in MODEL_BUILDERS (U04); bubble-point sweeps measured on ten columns only, no contraction proof; R2 is a second root
+  note: S02's column (`syn001.column`), bound by S11 (U04 reclassified, R-561, R-810); bubble-point sweeps measured on ten columns only, no contraction proof; R2 is a second root
 - manifest: evidence/S02/1810dde801457470139adc1471e8f550f3dba796/manifest.json
   item: limitations[8]
   sha256: 77751fa98b52bdbddcccbdda0f2564f964039d4ec74b8f52bd1d892be5e8ca23
