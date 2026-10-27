@@ -132,3 +132,25 @@ def test_foreground_check_reproduces_the_hand_superposition(
     assert isinstance(score, float), score
     assert abs(Fraction(score) - hand) <= Fraction(1, 10**12) * hand, (score, float(hand))
     assert set(bd.projects) == before
+
+
+def test_foreground_check_on_p4_against_the_b4_expectation(
+    background: tables.UnitScoreTable,
+) -> None:
+    """A25's engine side on P4: the adapter's `foreground_check` on P4's exchange amounts against
+    `benchmarks/e01/brightway/foreground_p4.yaml` (bw2calc on matrices that script built), rel ≤
+    1e-12."""
+    from pathlib import Path  # noqa: PLC0415
+
+    import yaml  # noqa: PLC0415
+
+    record = Path(__file__).resolve().parents[1] / "benchmarks/e01/brightway/foreground_p4.yaml"
+    data = yaml.safe_load(record.read_text(encoding="utf-8"))
+    keys = {a.activity_id: a.key for a in background.activities}
+    exchanges = [(keys[k], a) for k, a in data["exchange_amounts_per_s"].items()]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        score = brightway.foreground_check(PROJECT, exchanges, [], background.categories[0].method)
+    assert isinstance(score, float), score
+    expected = data["impact.climate_change_test.rate"]
+    assert abs(score - expected) <= 1e-12 * abs(expected), (score, expected)

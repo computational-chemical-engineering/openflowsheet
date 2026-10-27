@@ -1,0 +1,22 @@
+id: e01-brightway-foreground-p4-v1
+script: benchmarks/e01/brightway/foreground_p4.py
+script_sha256: d16a30897c10e32956dfd8b58c5f985cda181755a0678eda57aa3fda84e2ee1c
+amounts_from: benchmarks/e01/lca_hand/lca_hand.yaml p4.exchange_amounts_per_s
+amounts_sha256: 248d3a0f315c7e47bc82abbcc693633a250c5a3bdae12294fc8b7f53aeb1925c
+environment:
+  bw2calc: 2.5.0
+  bw_processing: '1.6'
+  numpy: 2.2.4
+  scipy: 1.15.3
+  python: 3.13.5
+  machine: x86_64
+exchange_amounts_per_s:
+  tb.electricity: -0.0041690460239210405
+  tb.heat: 0.05475249787667207
+  tb.chemical_x: 0.018015268
+unit_scores:
+  tb.electricity: 0.5472782258064516
+  tb.heat: 0.18911290322580643
+  tb.chemical_x: 0.9018649193548387
+impact.climate_change_test.rate: 0.024320113943021124
+unit: kg CO2-eq per s

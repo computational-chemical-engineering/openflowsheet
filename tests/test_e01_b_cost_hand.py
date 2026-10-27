@@ -35,6 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from s11_column_support import column_registered  # noqa: E402
 from s11_column_support import committed_case as column_case  # noqa: E402
 from s11_thermal_support import committed_case, solve  # noqa: E402
+from test_e01_a_report import registered  # noqa: E402, F401
 from test_s11_thermal_binding import register  # noqa: E402
 
 from openflowsheet.application.policies import T06_REVISION_V2  # noqa: E402
@@ -472,6 +473,47 @@ def test_a15_package_and_transcription_against_idaes() -> None:
             worst[who] = max(worst[who], rel)
             assert rel <= 1e-9, (who, entry, case.get("label", case.get("item")), got, idaes)
     print(f"A15 worst rel vs IDAES: package {worst['package']:.2e}, hand {worst['hand']:.2e}")
+
+
+# -- the Brightway expectation for P4 (A25; benchmarks/e01/brightway/foreground_p4.yaml) ----------
+def _foreground() -> dict[str, Any]:
+    data: dict[str, Any] = yaml.safe_load(
+        (IDAES / "foreground_p4.yaml").read_text(encoding="utf-8")
+    )
+    return data
+
+
+def test_the_brightway_p4_expectation_is_current_and_agrees_with_the_hand_values() -> None:
+    data = _foreground()
+    lca_hand = REPO / "benchmarks" / "e01" / "lca_hand" / "lca_hand.yaml"
+    script = IDAES / "foreground_p4.py"
+    assert data["script_sha256"] == hashlib.sha256(script.read_bytes()).hexdigest()
+    assert data["amounts_sha256"] == hashlib.sha256(lca_hand.read_bytes()).hexdigest()
+    hand = yaml.safe_load(lca_hand.read_text(encoding="utf-8"))
+    rate = hand["p4"]["impact.climate_change_test.rate"]["value"]
+    assert _rel(data["impact.climate_change_test.rate"], rate) <= 1e-12
+    design = {
+        "tb.electricity": 16.965625 / 31,
+        "tb.heat": 5.8625 / 31,
+        "tb.chemical_x": 27.9578125 / 31,
+    }
+    for k, q in design.items():
+        assert _rel(data["unit_scores"][k], q) <= 1e-12, k
+
+
+def test_a25_the_p4_rate_against_brightways_score(registered: None) -> None:  # noqa: F811
+    """A25: the package's `impact.climate_change_test.rate` on P4 against Brightway's score of
+    the same exchange amounts (bw2calc on float64 matrices built by foreground_p4.py), rel ≤
+    1e-10. Runs in the default environment: the Brightway number is the committed record."""
+    from test_e01_b_lca import P4_DOC, RATE, _values  # noqa: PLC0415
+
+    data = _foreground()
+    rate = _values(P4_DOC)[RATE]
+    rel = _rel(rate, data["impact.climate_change_test.rate"])
+    print(
+        f"A25 P4 rate {rate!r} vs Brightway {data['impact.climate_change_test.rate']!r}: {rel:.2e}"
+    )
+    assert rel <= 1e-10
 
 
 if __name__ == "__main__":
