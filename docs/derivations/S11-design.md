@@ -843,3 +843,42 @@ R-800…R-812 (numbering note: R-795 and R-796 are held by `wp/R796`; S11 starts
 ### 8.4 Decisions logs
 
 `docs/S11A_DECISIONS.md` and `docs/S11B_DECISIONS.md`, one line per decision.
+
+---
+
+## 9. Amendment, 2026-10-27: Frank's answers to Q2 and Q3 (design lane, `architect`)
+
+On 2026-10-27 Frank answered §7 Q2 and Q3 with "Include in S11" for both. His directive is "as few limitations as
+possible" (R-813). The sections below are amended in place by this section and are otherwise unchanged. The
+normative text for the added scope is `docs/derivations/S11-units-design.md` (the units design), with ADR 0051 and
+R-813…R-821.
+
+- **§0 item 10 and D10.** The pure-fluid thermal units and the γ–φ faces of the K02/T05 units are **in S11**.
+  - Pure-fluid streams are declared-regime: `vapor_liquid` means saturated, with a carried split (ADR 0051 D1–D3).
+  - The new `thermal.*` family serves the pure-fluid bases.
+  - On Wilson, `syn001.tp_heater`, `tp_flash`, `ph_flash`, `valve` and `adiabatic_mixer` are admitted by dispatch.
+  - `wilson-ig-v2` adds `s`, for a vapour compressor and turbine on Wilson.
+
+  What stays out: `pr-lib-v1` (R-809), NRTL/UNIQUAC/LLE, and the units design §1's out-of-scope list.
+- **§4.4, the admission matrix.** The rows of the units design §4.7 are added. Its refusal reasons replace the two
+  bullets that name S11b and S11c.
+- **§4.4, "what each basis lacks":**
+  - The Wilson `s` row is now closed by `wilson-ig-v2`; the isentropic machines are admitted on vapour, and the PS
+    closures stay single-phase.
+  - The Wilson `v`/`Z` row stays a refusal, now with the reason "the method's liquid has no volume (S10 §3.4)".
+  - The IAPWS-95 and CoolProp row is closed: their two-phase states are the saturated form.
+- **§7 Q2 and Q3** are answered. Their defaults (S11b, S11c) are superseded.
+- **§4.1, §4.2, §4.3, §4.6 and §4.11** (Wilson provider id): from WO-D5, the Wilson record source selects
+  `wilson-ig-v2`; `wilson-ig-v1` returns to `LIBRARY_ONLY_PROVIDERS` (units design §4.6). The count of 127 is
+  unchanged.
+- **§4.10, W27v3-R02 and R-08:** the row `wilson-ig-v2 → activity_coefficient` is added (v1's row is kept), and S4 is
+  generated at I1b, not I1.
+- **§5:**
+  - I1 writes `MODEL_BASES["syn001.column"]` with the provider id that the Wilson registry row holds.
+  - I2 also records G9–G13.
+  - The per-commit identity trigger list gains `models/syn001/{tp_state,heater,flash,ph_flash,valve,mixer,
+    equilibrium_form}.py`.
+  - The integration WO I1b runs between I1 and I2.
+- **§6.1 S11.A11 (erratum).** Compare the routing manifests with `implementation_artifact.artifact_hash` removed. That
+  hash is `file_sha256` of the module (`tests/test_k02_unit_models.py:191`), so A2's edits to `feed.py`, `sink.py` and
+  `splitter.py` necessarily move it.

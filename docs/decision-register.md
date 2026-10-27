@@ -15921,3 +15921,209 @@ gap, and that distinguishes it from R-615's case.
 - The S08 and S10-C pass lines must also reproduce.
 
 **Rejected alternative.** *Committed revision files only.* They miss the revisions the tests build in code.
+
+## R-813 — S11: Frank's answers to the first pass's Q2 and Q3 supersede its defaults ("Include in S11", 2026-10-27)
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | Frank Peters ("Include in S11" for Q2 and Q3; "as few limitations as possible"), recorded by the design lane (`architect`) |
+| Normative text | ADR 0051 header; `docs/derivations/S11-units-design.md` §0, §1; `docs/derivations/S11-design.md` §9 |
+| Evidence | First pass §7 Q2 and Q3 (defaults: S11b, S11c) |
+| Affected packages | S11 (tracks C and D, I1b) |
+
+**Superseded:**
+- first pass §0 item 10 and D10 (the pure-fluid thermal units and the γ–φ faces left out);
+- §4.4's refusal reasons that name S11b and S11c;
+- §7 Q2 and Q3.
+
+**Not superseded:**
+- R-809 (`pr-lib-v1`);
+- the out-of-scope items of the units design §1: NRTL/UNIQUAC/LLE, Helmholtz mixtures, reactors, side draws, the
+  exchanger and separator on Wilson.
+
+## R-814 — S11: pure-fluid stream regimes are declared; a `vapor_liquid` pure stream is saturated, with a carried split
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`) |
+| Normative text | ADR 0051 D1–D3, D5; units design §4.1–§4.3 |
+| Evidence | S05 §4.2 and `thermo/iapws95.py` `_rule`: a phase is answered only on its stable side or within ε_σ = 1e-6 in ln(P/P_sat); the same in `coolprop_heos.py` |
+| Affected packages | S11; amends ADR 0001 D2.5; extends ADR 0012 D7 |
+
+**Decision.**
+- On `iapws95-v1` and `coolprop-heos-v1`, `liquid` and `vapor` are single-phase forms, and `vapor_liquid` is the
+  saturated form.
+- A saturated form's producer authors `<S>.sat.V` and `<S>.sat.L`, the row T − T_sat(P) = 0 and the row
+  V + L − n = 0. Its enthalpy is V·h^V_sat(P) + L·h^L_sat(P).
+- In the traversal it travels as `SaturatedStreamState(vapor_fraction)`, a models-layer subclass that is never passed
+  to a provider.
+- A closure in another regime is refused `phase_regime_mismatch(<S>)`.
+- Block refusals of `phase_not_stable`, `near_critical` and `no_saturation` are `invalid_trial_state`.
+
+**Rejected alternatives, and why:**
+- *Lifted splits with discovered regimes.* One compiled function serves every regime, so phase blocks would be
+  evaluated off the line, where the provider refuses them. The fix is T05b-scale region work (deferred, units
+  design Q17).
+- *The K-form row for C = 1.* It degenerates to V·L·(1 − K).
+- *A field on `StreamState`, or an (n, H, P) state definition.* The first is a frozen type; the second re-plumbs
+  the stack.
+- *Reading wet inlets by (n, T, P).* Readers would start with their latent heat misplaced.
+
+**Watch for:**
+- a later "regime discovery" change that evaluates a Helmholtz phase at an off-line (T, P);
+- any code that drops a `SaturatedStreamState` to a plain `StreamState` between a thermal producer and its reader.
+
+## R-815 — S11: only `thermal.*` units produce saturated pure-fluid streams
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`) |
+| Normative text | ADR 0051 D4; units design §4.1 |
+| Evidence | The routing models' EO faces author no split (first pass §4.5) |
+| Affected packages | S11 (I1b) |
+
+**Decision.**
+- On a pure-fluid basis, a `syn001.feed_source` or `syn001.stream_splitter` outlet declared `vapor_liquid` is refused
+  `phase_capability_unsupported(<S>)`.
+- `syn001.product_sink` may read a saturated stream.
+- `thermal.flash`'s products are declared `vapor_liquid`.
+
+**Rejected:**
+- *Teaching the splitter to carry a saturated split.* It would amend A2's EO face, for a rare case.
+- *Wet feeds through a new pin.* That is a scope item (units design Q21).
+
+## R-816 — S11: the `thermal.*` family, basis-generic over declared stream forms, in new modules (name open to Frank)
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`); the public name is Frank's (units design Q16, default `thermal.*`) |
+| Normative text | ADR 0051 D6; units design §4.4, §4.7 |
+| Evidence | First pass D3 (identity admission; no N×M namesakes) |
+| Affected packages | S11 (track C, I1b), W27 v3, T08 envelope |
+
+**Decision.**
+- Seven models: `thermal.heater` (T, duty or vapour-fraction mode), `valve`, `mixer`, `flash`, `pump`,
+  `compressor`, `turbine`.
+- All seven are admitted on both pure-fluid bases; `compressor` and `turbine` also on `wilson-ig-v2`, vapour only.
+- Each model refuses any provider outside its identity allow-list.
+
+**Rejected:**
+- *Generalizing the `syn001.*` units to pure fluids.* Their two-phase form is the lifted split.
+- *`pure.*` and `wilson.*` namesake families.* N×M duplication.
+
+## R-817 — S11: isentropic machines without entropy rows — an isentropic-enthalpy block
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`) |
+| Normative text | ADR 0051 D6; units design §4.3, §4.4 |
+| Evidence | No entropy row kind in `KIND_TOLERANCE`; the dormancy registry carries one label per outlet port (`orchestrator/splits.py` `DormancyRule`) |
+| Affected packages | S11 (tracks C and D) |
+
+**Decision.**
+- The machines' work row reads `PFs_<U>.Hs`.
+- For a single-phase isentropic state, the block solves the PS relation inside itself: Newton from T_I, S05's 4ε
+  rule, implicit-function derivatives.
+- For a saturated isentropic state the block is closed form.
+- Wilson uses the additive-entropy premise (pure-component vapour entropies), admitted by identity.
+
+**Rejected:**
+- *A T_s column with an entropy row.* There is no row kind for it, and T_s would have no dormancy label.
+- *A PS flash in the provider.* The provider modules are frozen.
+
+**Watch for:** a provider admitted to the additive variant whose mixing or excess entropy depends on T or P.
+
+## R-818 — S11: the five K02/T05 units on Wilson by dispatch in the shared `tp_state` helpers
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`) |
+| Normative text | ADR 0051 D7; units design §4.5 |
+| Evidence | S10-C's `GammaPhiLnKBlock` and `MixtureEnthalpyFlowBlock`; the procedural kernels and region paths that already dispatch on `composition_dependent` |
+| Affected packages | S11 (track D) |
+
+**Decision.**
+- `single_phase_enthalpy`, `lift_two_phase_stream`, `stream_enthalpy_terms` and the new `equilibrium_block` branch
+  to the γ–φ blocks for a composition-dependent form. Below the branch, the code is unchanged.
+- `syn001.tp_heater`, `tp_flash`, `ph_flash`, `valve` and `adiabatic_mixer` gain optional fields
+  `property_provider`, `reference_convention` and `domain`, as the routing models did (A2).
+- They are admitted on Wilson.
+
+**Rejected:**
+- *New `wilson.*` ids.* Duplicates in `SPLIT_RULES`, `DORMANCY_RULES`, `MODEL_CHECKS` and `PH_TYPE_ENERGY_ROWS`.
+- *A subclass per basis.* Duplicated `contribute` methods.
+
+**Note.** R-046's rejected alternative assumed that the K02 units are not edited. These edits leave every SYN-001
+statement and every SYN-001 `ProblemSpec` unchanged (gate G1); only the manifests' `artifact_hash` moves.
+
+## R-819 — S11: `wilson-ig-v2` adds `s` and becomes the Wilson basis's provider; the pump stays refused on Wilson
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`), under Frank's directive "as few limitations as possible" |
+| Normative text | ADR 0051 D8; units design §4.6 |
+| Evidence | S10's potential: h^E = 0 and Λ constant; latent heat by Gibbs–Helmholtz; no Poynting, so liquid v ≡ 0 (`thermo/wilson_ig.py` docstring) |
+| Affected packages | S10 (consumed unchanged), S11 (D4, D5); amends ADR 0050 D1 |
+
+**Decision.**
+- A new module forwards every v1 answer bit for bit and adds `s` in closed form, with the datum
+  s_i^ig(298.15 K, 101 325 Pa) = 0.
+- It refuses n-derivatives of `s` at a zero mole fraction.
+- WO-D5 switches the Wilson record source's provider to v2, gated bitwise; on failure D5 is reverted.
+- v1 stays the library provider of S10 and S10-C.
+
+**Rejected:**
+- *Refusing the compressor and turbine.* Against the directive.
+- *Entropy in the unit layer.* A provider bypass.
+- *A v2 with a liquid volume and Poynting.* That changes v1's numbers: a different method.
+- *A second Wilson basis.* Two record sources for one file.
+- *Declaring v^L = 0.* A pump would compute W = 0 silently.
+
+## R-820 — S11: verifier forms for the thermal and the Wilson units
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`) |
+| Normative text | ADR 0051 D9; units design §4.8 |
+| Evidence | ADR 0012 D7 (stored-split judgement for temperature-degenerate streams); R-016 (verifier independence) |
+| Affected packages | S11 (C5, D3, I1b) |
+
+**Decision.**
+- A saturated pure stream's enthalpy is read from its carried split, with the checks
+  `phase_admissibility.stream.<S>.saturation` and `.fraction`; `independent_split` is
+  `not_applicable(temperature_degenerate)`.
+- The machines are checked against the verifier's own PS bisection.
+- `GAMMA_PHI_UNITS` extends `DECLARED_MIXTURE` and gives identical checks wherever the latter applies. For Wilson
+  lifted splits it adds a fresh TP flash, `stability()` and degeneracy routing.
+
+**Rejected:**
+- *Calling the unit kernel from the verifier.* That is not independent.
+- *Judging a saturated pure stream by a fresh flash.* (n, T, P) does not determine its split.
+
+## R-821 — S11: integration of tracks C and D in I1b, and the minimal amendments to the first pass's WOs
+
+| | |
+| --- | --- |
+| Date | 2026-10-27 |
+| Decided by | design lane (`architect`) |
+| Normative text | Units design §5.4; first pass §9 |
+| Evidence | Brief: tracks A and B's WOs do not change; tracks C and D use disjoint files |
+| Affected packages | S11 |
+
+**Decision.**
+- I1b runs after I1 and before I2, and carries every registration of tracks C and D.
+- W27v3-R08: S4 is generated at I1b.
+- I1 writes the column's Wilson admission with the registry's provider id.
+- I2 records G9–G13.
+- The first pass's S11.A11 excludes `artifact_hash` from its comparison (erratum).
+- The per-commit identity trigger list gains the seven `models/syn001` files that track D edits.
+
+**Rejected:** *registering tracks C and D inside I1.* That changes I1's WO.
