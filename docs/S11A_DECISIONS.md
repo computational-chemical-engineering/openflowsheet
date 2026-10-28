@@ -583,3 +583,45 @@ OPEN for the design lane (batch with the reviewer pass):
    restriction and its three test follow-ons, S4's record/registration form, `_AFTER_M02`, L-TH-4 `{U}`.
 Not done (out of scope): manifests/harvest (I2), the full gate, push. A stale scratch worktree `scratchpad/i1b/wt-E`
 from an earlier engineer is still registered (`git worktree remove --force` it when convenient).
+
+## WO-I2 (gates and records, minus the full gate, CI and the reviewer)
+
+- DECISION (I2): how CoolProp-dependent nodes are judged → two runs of the same files, A in the locked env, B with
+  `--coolprop-site` (CoolProp 8.0.0) importable; a node's outcome is the worse of the two (failed in either fails).
+  Alternative: one CoolProp run only (hides a CoolProp-absent defect). Reversible by: `merged()` in the generator.
+- DECISION (I2): `S11.suites` (the non-S11 files run) → no node failed or errored, no skipped node cited by an S11
+  assertion; the 29 skips are listed with reasons and in the limitations, never counted as passed (26 W27 nodes: the
+  OpenIDAES-450 archive is absent on this workstation; 2 `OFS_S0{5,7}_BUILD_PYTHON`; 1 L01 source re-run). `S11.suite`
+  (tests/test_s11_*) and every assertion stay strict. Alternative: S02's `_verdict` (a skip fails the package for an
+  environment fact S11 does not own). Reversible by: `suites_check`.
+- DECISION (I2): assertions not cited by name are cited through `CITATIONS` (A24′, A28, A41, A86, A87–A90, A92, read
+  from the tests' docstrings); A24 is judged by A24′ (§10.8); A23 and A85 by the S08/S10-C lines (+ G1 for A85).
+  Reversible by: the map.
+- DECISION (I2): the manifest's recorded numbers (G4 minima, item 2's table, F-1, item 5) are measured each run by
+  `scripts/s11_recorded_values.py`, which calls the tests' own helpers; rulings item 4's negative control runs in a
+  detached worktree of `36ea9175` on every generation (not once by hand). Reversible by: dropping the two checks.
+- Finding (I2, first generation at `893012f7`): `S11.ruff`, `S11.format`, `S11.mypy` failed on S11 code — mypy
+  `models/thermal/heater.py:131` (`_SPECIFICATION_ROWS` keyed `str`, `EQUATIONS` declared `Mode`), E501 in
+  `scripts/t08_support_matrix.py:9`, `tests/test_t07_w5c_signatures.py` unformatted. Fixed in `01e72ca4` (an annotation,
+  a docstring wrap, `ruff format`; no runtime change; G1 re-measured on it: PASS).
+- DECISION (I2): harvest classes → the 24 L-rows E to themselves; O-C6-1 E to L-TH-7; verification-not-validation E to
+  L18 and L-COL-8; the other 9 limitations and the 3 unsupported checks P. Reversible by: the 38 appended entries.
+
+**Handoff (2026-10-28, WO-I2 complete except the orchestrator's items).** Commits: `893012f7` generator
+(`scripts/s11_evidence_manifest.py`) and probe (`scripts/s11_recorded_values.py`); `01e72ca4` lint fixes; `76202522`
+manifest `evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json` — **`status: tested`, 123/126** (G8, gate,
+CI `unsupported`); `7c3284e0` T08 harvest (append-only; 35 limitations + 3 checks), `docs/support-matrix.md` re-emitted,
+`HARVEST_SIZE` (60, 867, 104); `862edb9d` records (ADR 0050/0051 implemented-tested lines, ADR 0050's R-830…R-842
+amendment line, ADR 0013 A3 item 7 → R-831, progress, FRANK_QUESTIONS).
+Measured at `01e72ca4` (generator, 1757 s): `S11-IDENTITY PASS n=54494 changed=[]`; `S08-IDENTITY PASS n=52
+changed=[S02.P1] p1_stage_a=EQUAL`; `S10C-IDENTITY PASS n=858 changed=[]`; S11 tests 1034 passed (worse of A/B); other
+files 1985 passed, 29 skipped (uncited); six generator `--check`s OK (t08 0 problems, W27 v3 identical, S4 OK, thermal
+reference matches CoolProp 8.0.0, 347 Wilson-entropy claims, 123 CoolProp records); R-831 |Z| 63/63/34, one-sided
+6.09e-10/6.22e-10/3.27e-10, central 8.243e-8/4.644e-8/2.083e-9; F-1 C-MW 7.42e-7/8.24e-8/7.42e-9/8.25e-10 at
+3e-5/1e-5/3e-6/1e-6; item 5 (x86-64) as the WO-I1b table (1.30e-6 and 3.53e-7 near the top); R-833 control: 4 passed
+at `36ea9175`, 4 failed `not_converged` with the line reverted; ruff/format/mypy clean.
+Regenerate: `PYTHONPATH=src .venv/bin/python scripts/s11_evidence_manifest.py --coolprop-site DIR` on a clean tree.
+Not done (orchestrator): full `scripts/gate.sh`, CI on both architectures (aarch64 A46 values; G8's cross-architecture
+comparisons), the single `reviewer` pass (O-C6-1 and the I1b/I2 DECISIONs for it), merge, push.
+Note: the rulings' Frank-preference questions OQ-1, OQ-2, OQ-3, OQ-6, OQ-7 (defaults applied) are not listed in
+`docs/FRANK_QUESTIONS.md`; adding them is the orchestrator's call.
