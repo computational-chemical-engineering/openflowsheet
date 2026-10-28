@@ -226,3 +226,7 @@ All four answered with the recommended default (Frank, 2026-10-25):
   **not required**.
 - **E01 QA1** (before any release): check the Seider et al. 3rd-ed size ranges the E01 cost set cites (flagged
   `verified: false`; release gate G10/A48). **E01 default material:** IDAES's defaults (stainless steel); say if carbon steel.
+- **Activity models and extensibility** (Frank, 2026-10-28): NRTL + UNIQUAC (VLE only, splits refused) after the optimiser
+  package; two liquid phases wait for a case. "In some way I want OpenFlowsheet to be extensible … more about the flexibility
+  of the basic infrastructure than having all models on board" → X01: extensibility infrastructure piloted by NRTL,
+  UNIQUAC and original UNIFAC.

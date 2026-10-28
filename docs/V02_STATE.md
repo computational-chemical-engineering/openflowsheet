@@ -115,6 +115,17 @@ sending personal identifiers to external services.
    `reviewer` pass (batched build questions in the two E01 logs, incl. the uncertainty-interval disclosure of restricted
    scores and QA1: Frank checks the Seider 3rd-ed size ranges before any release); gate; CI; merge.
 2b. **NLP optimiser on revision flowsheets** (Frank 2026-10-27: right after E01), with MCP/CLI/HTTP for cost/LCA.
+2c. **X01 — model extensibility infrastructure, piloted by NRTL + UNIQUAC (+ original UNIFAC), VLE only** (Frank,
+   2026-10-28: "more about the flexibility of the basic infrastructure than having all models on board"; adding a model
+   should be easy, e.g. by asking a coding agent). After the optimiser package. Design pass decides: one registration
+   point per provider (today a new basis touches ~10 sites: `SELECTABLE_BASES`, `basis_provider`, verifier
+   `fresh_provider`, `MODEL_BASES`, W27 lines, envelope, T08 inventory, records); an activity-model interface (ln γ(T,x)
+   with derivatives by AD) from which the γ–φ flash, column, binding and verifier follow; a conformance kit (derivatives,
+   Gibbs–Duhem, limits, symmetry, stability) plus a reference-comparison scaffold; library-only until both pass; an
+   agent recipe ("add a model") as a skill/doc. Pilots: NRTL, UNIQUAC, original UNIFAC (rights check of parameter
+   tables; Dortmund UNIFAC is licensed). A predicted liquid split is refused typed.
+2d. **Two liquid phases (LLE/VLLE)** — waits for a case (Frank 2026-10-28); needs an interface ADR (FlashResult carries
+   one liquid, S10 F-1), three-phase flash, decanter, verifier.
 3. **After S11 merges: revision-region continuation** (edge 3 for flowsheet regions; Frank 2026-10-27 "plan for it at the
    appropriate time"; removes S11's L-COL-9, R-827). Design pass first.
 4. **PrISMa rework as a test case** (Frank, 2026-10-27: "get OpenFlowsheet to the level that it can rework PrISMa analysis
