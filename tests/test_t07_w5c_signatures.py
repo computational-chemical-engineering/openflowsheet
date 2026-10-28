@@ -351,26 +351,16 @@ EXPECTED: dict[str, str] = {
     ),
     # S11 (R-810; design note §8.3, I1): the column's sample, generated at its registration. The
     # rows above are unchanged by it.
-    "S11:M1": (
-        "binds fdbba42e1b518b2af7d887f81ce208c167ce46fd688cd9c137162e718895276f"
-    ),
+    "S11:M1": ("binds fdbba42e1b518b2af7d887f81ce208c167ce46fd688cd9c137162e718895276f"),
     # S11 WO-D5 (ADR 0051): the Wilson basis selects `wilson-ig-v2`; the one moved field is the
     # flowsheet label's provider id and implementation hash (wilson-ig-v1-4bcd8f4dc811 →
     # wilson-ig-v2-8eab3b83551a), every other byte of the structure equal.
-    "S11:C-MW": (
-        "binds 90452d2807b3ec3f6ec02c01bf70edf54184bc70ad50715b4f8b5c259d2ae58d"
-    ),
+    "S11:C-MW": ("binds 90452d2807b3ec3f6ec02c01bf70edf54184bc70ad50715b4f8b5c259d2ae58d"),
     # S11 units design §5.4 (I1b, S11.A86): the `thermal.*` sample, generated at its registration
     # (a regression pin). The rows above are unchanged by it.
-    "S11:TH-C1": (
-        "binds 761b0be00991dfe89c15091509f9ba18daa859c60745b5d8afeff9d1a86e3e3b"
-    ),
-    "S11:TH-R1": (
-        "binds 12c7f4711875cefd0b8c455b41454febc5ed2cd1dd80d1857866918578fbd335"
-    ),
-    "S11:GP-M1": (
-        "binds dbc60ac7c2721013ea32f75b29902654975f71ef51edc6798ef271af8b2ac776"
-    ),
+    "S11:TH-C1": ("binds 761b0be00991dfe89c15091509f9ba18daa859c60745b5d8afeff9d1a86e3e3b"),
+    "S11:TH-R1": ("binds 12c7f4711875cefd0b8c455b41454febc5ed2cd1dd80d1857866918578fbd335"),
+    "S11:GP-M1": ("binds dbc60ac7c2721013ea32f75b29902654975f71ef51edc6798ef271af8b2ac776"),
 }
 
 

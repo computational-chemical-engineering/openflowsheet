@@ -6,8 +6,9 @@ evidence tree:
 
 - **T08.A20** — the enumerated axes equal the code: the twenty operations of `OPERATIONS` (with
   their transports), the models of `MODEL_BUILDERS` (SYN-001's thirteen and, since M02's join,
-  the eight C1 models, R-280, and since S11 the column, R-810) and which of them are synthetic only, the offered policies
-  (`APPLICATION_POLICIES`), the unit spellings of `CONVERSION_ROWS` *and* of ADR 0016's table, the
+  the eight C1 models, R-280, and since S11 the column, R-810) and which of them are synthetic
+  only, the offered policies (`APPLICATION_POLICIES`), the unit spellings of `CONVERSION_ROWS`
+  *and* of ADR 0016's table, the
   selectable providers (the provider ids of `revision_binding.SELECTABLE_BASES`; spec §5.7
   Amendment S04, R-568; the modules of `openflowsheet.thermo` that define `PROVIDER_ID` are
   reported as `scanned_providers`, and a scanned provider outside the axis is library-only), the

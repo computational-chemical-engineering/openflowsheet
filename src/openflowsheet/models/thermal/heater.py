@@ -94,7 +94,7 @@ _BASE: Final[tuple[DeclaredEquation, ...]] = (
         source=SPECIFICATION,
     ),
 )
-_SPECIFICATION_ROWS: Final[dict[str, DeclaredEquation]] = {
+_SPECIFICATION_ROWS: Final[dict[Mode, DeclaredEquation]] = {
     "T": DeclaredEquation(
         equation_id="TH-T",
         statement="T_O - T_spec = 0",
