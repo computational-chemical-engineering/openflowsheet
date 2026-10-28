@@ -5,6 +5,10 @@
   `docs/derivations/S11-units-design.md` §6);
 - the single `reviewer` pass has passed tracks C and D against the units design note.
 
+**Implemented, tested (2026-10-28, WO-I2):** `evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json` is `status: tested`, 123 of 126
+checks: S11.A42–A86 and G9–G13 pass, with G1–G7. G8 (the full gate, CI on both architectures and the
+cross-architecture comparisons) and the single `reviewer` pass are outstanding, so the status stays **Proposed**.
+
 **Date:** 2026-10-27
 **Author:** design lane (`architect`), brief `docs/briefs/S11-units-design.md`.
 **Normative text:** `docs/derivations/S11-units-design.md`.

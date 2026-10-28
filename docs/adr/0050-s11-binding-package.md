@@ -4,6 +4,17 @@
 - S11's evidence manifest is `tested`, with gates G1–G8 of the design note passing;
 - the `reviewer` has passed the work orders against the design note.
 
+**Implemented, tested (2026-10-28, WO-I2):** `evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json` is `status: tested`, 123 of 126
+checks: S11.A01–A93 and A24′, G1–G7 and G9–G13. G8 (the full gate, CI on both architectures and the
+cross-architecture comparisons) and the `reviewer` pass are outstanding, so the status stays **Proposed**.
+
+**Amended 2026-10-27 by the design lane's rulings on S11's build decisions** (`docs/reviews/S11-rulings.md`,
+R-830…R-842): a class of provider-identity record files for T08.A32 (R-830); a one-sided five-point derivative
+witness at absent-component zero columns on Wilson, R-281 not extended (R-831); W27v3-R09 (R-832); kernel fix C3-1
+accepted (R-833); S11.A46 restated with a fixed 1e-5 at the two near-top states (R-834); S11.A12 restated to ≤ 2 ulp
+(R-835); A68 and A77(iii) restated (R-836); "all existing W27 tests pass unchanged" read through `v2_binder()`
+(R-837); tracks B, C, D and A's decisions (R-838…R-841); the identity gate's `VOLATILE` revision ids (R-842).
+
 **Date:** 2026-10-26
 **Author:** design lane (`architect`), brief `docs/briefs/S11-binding-design.md`.
 **Normative text:** `docs/derivations/S11-design.md`. W27 registration version 3 is
