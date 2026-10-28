@@ -219,3 +219,10 @@ All four answered with the recommended default (Frank, 2026-10-25):
 - **E01 scope answers** (Frank, 2026-10-27): (1) generalising the M03 optimiser to revision flowsheets → **a separate
   package right after E01**; (2) cost/LCA access → **Python first**, MCP/CLI/HTTP in the next binding pass; (3) discrete
   design choices (parallel units, utility, material) → **held fixed by the study for now**, compared as separate candidates.
+- **S11 rulings' open questions** (defaults applied, `docs/reviews/S11-rulings.md` §7; Frank may overrule): OQ-1 a vapour
+  turbine whose isentropic state is two-phase — **refused in S11** (L-TH-4), follow-up later; OQ-2 one declared phase per
+  port (mixer, column side feeds) — **kept**; OQ-3 carrying a unit's refusal hint through the plan's message — **later**
+  (moves existing messages); OQ-6 CAS numbers in the water/CoolProp record files — **kept**; OQ-7 InChI for those records —
+  **not required**.
+- **E01 QA1** (before any release): check the Seider et al. 3rd-ed size ranges the E01 cost set cites (flagged
+  `verified: false`; release gate G10/A48). **E01 default material:** IDAES's defaults (stainless steel); say if carbon steel.
