@@ -7438,3 +7438,261 @@ harvest:
   class: P
   to: []
   note: CI on both architectures is checked before merge, not by the generator; unsupported here
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[0]
+  sha256: ef677c1e45f44865fc59bc373d6678efad8b78fcb8e825173dee0cab1814adfb
+  class: E
+  to:
+  - L-S11-1
+  note: 'S11''s envelope row L-S11-1, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[1]
+  sha256: 3e8c38b70e2f665da6ca12bf7253de10981d908f53715f235e462450c0f6a519
+  class: E
+  to:
+  - L-S11-2
+  note: 'S11''s envelope row L-S11-2, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[2]
+  sha256: b8d3a1320207fe7cd2ee98e695eaa7da6257f81f159f5c9187e143596f86e951
+  class: E
+  to:
+  - L-S11-3
+  note: 'S11''s envelope row L-S11-3, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[3]
+  sha256: aee0375ef0aaf2340f726c4e3e3df0b21bfb4c27c4802ca2b3b83fe6f0c88e3d
+  class: E
+  to:
+  - L-COL-1
+  note: 'S11''s envelope row L-COL-1, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[4]
+  sha256: 7eea5d2b68eb78937f7ae378c1e5f4cbbb9c8196587d97cd80878b6fe04c7351
+  class: E
+  to:
+  - L-COL-2
+  note: 'S11''s envelope row L-COL-2, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[5]
+  sha256: 7c6a7acc630da9225b17d87febadde203d08e0bddfa3c39348e01db5a74f69ea
+  class: E
+  to:
+  - L-COL-3
+  note: 'S11''s envelope row L-COL-3, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[6]
+  sha256: 5bafcdbb6c12c910be80b572b04d0b482b94e7eb87a513d49dc02e1f9e4c4742
+  class: E
+  to:
+  - L-COL-4
+  note: 'S11''s envelope row L-COL-4, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[7]
+  sha256: c582db1d9722b7cb489babc5386f275f007fe164fc8be5d50b2a5532a9faa631
+  class: E
+  to:
+  - L-COL-5
+  note: 'S11''s envelope row L-COL-5, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[8]
+  sha256: 369a19efe1f17e4c1a68052ec904f76d2b4793b66b3cb9fdd3708a2672f48bfb
+  class: E
+  to:
+  - L-COL-6
+  note: 'S11''s envelope row L-COL-6, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[9]
+  sha256: 18f04124327509f1fbc6f506d4cb46503434148db90e8fa062f294b272e62c5f
+  class: E
+  to:
+  - L-COL-7
+  note: 'S11''s envelope row L-COL-7, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[10]
+  sha256: 5fb29c3a2fc41f24212d01dfca5ae0f3ab7186a5b817823d2b8fbd1c13e80ef5
+  class: E
+  to:
+  - L-COL-8
+  note: 'S11''s envelope row L-COL-8, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[11]
+  sha256: b09586bc9536d08a8765315a4ad75561c97aecf4d0e70b7919d1986ea7badac6
+  class: E
+  to:
+  - L-COL-9
+  note: 'S11''s envelope row L-COL-9, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[12]
+  sha256: 532a226917fb7747cda9fba269420a91ba12973be47913cbaf742adc29ec7135
+  class: E
+  to:
+  - L-COL-10
+  note: 'S11''s envelope row L-COL-10, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[13]
+  sha256: b56507ecf60e64466da901eaf11393b0950113fa3f25a5d7e47aa4b016045425
+  class: E
+  to:
+  - L-TH-1
+  note: 'S11''s envelope row L-TH-1, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[14]
+  sha256: 78d823cf1f636e9d2b03e7695a222e3f53c6207891be8d2b165569b77b219f0a
+  class: E
+  to:
+  - L-TH-2
+  note: 'S11''s envelope row L-TH-2, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[15]
+  sha256: 742a3e79c21114ae56f15fe121a99caf9605a8ba00b80207280f058c432e3bdd
+  class: E
+  to:
+  - L-TH-3
+  note: 'S11''s envelope row L-TH-3, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[16]
+  sha256: 8bfd0697475923ad47a6a0bfb0dfaea10e1191e470113e538fb7bde2f3793521
+  class: E
+  to:
+  - L-TH-4
+  note: 'S11''s envelope row L-TH-4, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[17]
+  sha256: 2d8b557c2ac35c75dc821375ffca84fef4c78047c966c4d1e6169a96e055c650
+  class: E
+  to:
+  - L-TH-5
+  note: 'S11''s envelope row L-TH-5, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[18]
+  sha256: c057ad50c80794def2a6d90aa1c19e7a735297d173b5951ac3067f7ca1362388
+  class: E
+  to:
+  - L-TH-6
+  note: 'S11''s envelope row L-TH-6, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[19]
+  sha256: 044074c2709c3f012973fe49d2bac4a91c6913e02d379eaec8387de0ca8d74d2
+  class: E
+  to:
+  - L-TH-7
+  note: 'S11''s envelope row L-TH-7, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[20]
+  sha256: 0900304eab8a6747ac86fb52d672e8cef30bfb91b4c2cc4db5a134bf96adb2b6
+  class: E
+  to:
+  - L-TH-8
+  note: 'S11''s envelope row L-TH-8, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[21]
+  sha256: ee76521371dc9b5960773c2b18675d5990723a0ce45ddadd107eecefb2a54c32
+  class: E
+  to:
+  - L-GP-1
+  note: 'S11''s envelope row L-GP-1, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[22]
+  sha256: 2c8ecf748bfe2fcb56bd767d9942314857c32352b562d2e9753f9a4e0a7e3f03
+  class: E
+  to:
+  - L-GP-2
+  note: 'S11''s envelope row L-GP-2, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[23]
+  sha256: 6ff3836edac84d45163c42e07f6737e29decc8799b5f4300a9c2c8eb7ee7f696
+  class: E
+  to:
+  - L-GP-3
+  note: 'S11''s envelope row L-GP-3, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[24]
+  sha256: 0ba2c2092916839e3b70865be0515b0482696bbc15a7b39c1b0944ef3de29c8e
+  class: P
+  to: []
+  note: 'platform note: THM-09/4''s uncapped length is pinned on ref-x86-64 and ci-aarch64 only (R-796)'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[25]
+  sha256: 1bbe3bf9bcfdb83a07f1d65e1e2d9c4ba1e131e2fb43ea40443510aebe96064d
+  class: P
+  to: []
+  note: 'requirements empty: no D/A id assigned to S11, no ledger entry'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[26]
+  sha256: 2b1a65040c66ef053c1822234d7a9d6e5d5ca65d41541c13d126dffa4a2b4ed9
+  class: P
+  to: []
+  note: 'G8 (gate, CI, cross-architecture comparisons) runs once before merge, not by the generator; aarch64 A46 values from that CI'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[27]
+  sha256: 680a3b5b1c3668134da462d9c6c26b6a431a052e98c9d678fcb6dafc42b0d348
+  class: P
+  to: []
+  note: 'S11''s single reviewer pass follows this manifest; human numerical and process-model review pending; neither reviewed nor released claimed'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[28]
+  sha256: fb57e23c997eddf5b16e1c655130628025a49687127ec2ca6a4df8bdb204eedf
+  class: E
+  to:
+  - L-TH-7
+  note: 'O-C6-1 open: a dormant thermal outlet certifies UNVERIFIED/RANK_DEFICIENT (no thermal.* entry in DORMANT_OUTLETS); the dormancy row is L-TH-7'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[29]
+  sha256: dbff1b2bd05d9913f94c336c893dd4d3f0c4a04855c6e9f6e061121a2f7137c8
+  class: P
+  to: []
+  note: 'environment note: the CoolProp checks ran with CoolProp 8.0.0 from a scratch site, outside requirements.lock'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[30]
+  sha256: 59f7bc9912151d4e1b2c6e21d43574cb9e78cc9ccc24f4d6818d0c4f9f1dd1bc
+  class: P
+  to: []
+  note: 'method note: family C runs the whole suite in both trees; it is not the full gate'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[31]
+  sha256: 035d3209674e819910da1c25277e1ee483a84ca5ed8b255141f748c449564fb1
+  class: E
+  to:
+  - L18
+  - L-COL-8
+  note: 'numerical verification, not empirical validation; SYN-001 columns synthetic (L18, L-COL-8)'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[32]
+  sha256: 2356d4719362db9ba4248473602db8f753098a612ad7323638600e31832e0afc
+  class: P
+  to: []
+  note: 'method note: the gate rows'' wall times are JUnit times; §4.12''s ratio gate is the build logs'''
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[33]
+  sha256: 5990531611847a1225af307250d08ea06f69ba268b36625adbbb81a0309355b2
+  class: P
+  to: []
+  note: 'process note: this harvest follows the manifest''s generation'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[34]
+  sha256: 0bc7abadfc93e51314b6f0e5503509e14c24dad7e27a783e2fc120231faf30f9
+  class: P
+  to: []
+  note: 'environment note: the OpenIDAES-450 archive, the S05/S07 build Python and L01''s source distributions are absent here; the skipped nodes are cited by no S11 assertion'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: checks[123]
+  check_id: S11.G8
+  sha256: ca30a21172d6b4b1b8b95f940b6a37283b38d68e0b52387d2bb53b1b80736ebf
+  class: P
+  to: []
+  note: G8 runs once before merge (full gate, CI on both architectures, cross-architecture comparisons), not by the generator; unsupported here
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: checks[124]
+  check_id: S11.gate
+  sha256: 3c91c4e6dbdf7d41ac9d551d16cdd8553e7e9f8dbf3ac560212f771b20148fca
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: checks[125]
+  check_id: S11.ci
+  sha256: 35aa09b3a994dab5108284efef4e0a1c587945f8c0e7ab90796f47493a27ea6a
+  class: P
+  to: []
+  note: CI on both architectures is checked before merge, not by the generator; unsupported here
