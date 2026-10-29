@@ -551,3 +551,5 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   `sets.unverified_primary_ranges`) returns `fail` with 8 unverified primary ranges (all in `sslw-idaes-v1`);
   `tests/test_e01_a48_tripwire.py` pins 8 and `fail` (normal suite passes, a release cannot) and checks the measure
   passes once every range is flipped. The manifest's A48 stays `not run (RC item)`.
+- FACT (N1): the worst-case interval label is the review's text, "linear, first order; each input at its own adverse
+  bound (box worst case; conservative for any correlation)"; the four assessment-report fixtures carry it (label only).

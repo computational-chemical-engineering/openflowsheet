@@ -834,7 +834,7 @@
     ]
    },
    "assumptions": {
-    "linear_interval": "linear, first order; inputs fully correlated (conservative)",
+    "linear_interval": "linear, first order; each input at its own adverse bound (box worst case; conservative for any correlation)",
     "rss_sigma": "linear, first order; inputs independent and uniform on their ranges"
    },
    "linear_interval": {

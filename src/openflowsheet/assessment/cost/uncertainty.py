@@ -4,7 +4,7 @@
 - `estimate_class` — the maximum class over costed items; `None` (class `none`) when any item was
   computed with `CORRELATION_EXTRAPOLATED`. Excluded items are not passed in.
 - `worst_case` and `rss` — for one output y, from `g_k = ∂y/∂θ_k · θ_k` and each θ's declared
-  relative range `[lo_k, hi_k]`: the fully correlated interval `y + Σ_k min/max(g_k lo_k, g_k hi_k)`
+  relative range `[lo_k, hi_k]`: the box worst-case interval `y + Σ_k min/max(g_k lo_k, g_k hi_k)`
   and the independent-uniform standard deviation `sqrt(Σ_k g_k² (hi_k − lo_k)²/12)`, left folds in
   θ order.
 """
@@ -28,7 +28,10 @@ AACE_RANGES: Final[Mapping[int, tuple[tuple[float, float], tuple[float, float]]]
 
 #: The labels each propagated quantity carries (§4.9).
 ASSUMPTIONS: Final[Mapping[str, str]] = {
-    "worst_case": "linear, first order; inputs fully correlated (conservative)",
+    "worst_case": (
+        "linear, first order; each input at its own adverse bound "
+        "(box worst case; conservative for any correlation)"
+    ),
     "rss": "linear, first order; inputs independent and uniform on their ranges",
 }
 
