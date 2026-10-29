@@ -306,7 +306,18 @@ def _error_build(document: Mapping[str, Any] | None) -> ApiError | None:
 
 @dataclass(frozen=True)
 class Edit:
-    """§5.2. `set` and `append` carry a `value` (possibly null); `remove` carries none."""
+    """§5.2. `set` and `append` carry a `value` (possibly null); `remove` carries none.
+
+    Parameters
+    ----------
+    operation
+        `"set"`, `"append"` or `"remove"`.
+    path
+        The JSON path into the revision document: member names and array indices, for example
+        `("specifications", 4, "value")`.
+    value
+        The new value for `set` and `append`; omitted for `remove`.
+    """
 
     operation: EditOperation
     path: tuple[str | int, ...]
@@ -350,6 +361,19 @@ class Change:
 
     Those two are `commit_change`'s own parameters, so a `Change` has no document of its own: its
     document is the ChangeSet, written by `as_change_set` and read by `from_change_set`.
+
+    Parameters
+    ----------
+    edits
+        The edits, applied in order to the head revision (`Edit`).
+    new_revision_id
+        The new revision's id; the project assigns `rev-<ordinal>` when omitted.
+    restore_from
+        A revision to restore as the new head instead of editing.
+    task
+        The task the new revision is validated for.
+    author
+        Recorded in the revision's provenance.
     """
 
     edits: tuple[Edit, ...] = ()

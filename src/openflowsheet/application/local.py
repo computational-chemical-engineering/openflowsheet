@@ -153,7 +153,18 @@ MAX_EVENT_PAGE: Final[int] = 500
 
 
 class LocalApplication:
-    """One project, opened by one owner. Construct through `create`, `open` or `in_memory`."""
+    """One project, opened by one owner. Construct through `create`, `open` or `in_memory`.
+
+    The Python transport of the application contract: every operation of the operations table is
+    a method of the same name, taking the request's members as parameters and returning the
+    result type whose `as_document()` is the response the CLI, HTTP and MCP carry.
+
+    Examples
+    --------
+    >>> from openflowsheet.application.local import LocalApplication
+    >>> with LocalApplication.in_memory() as app:
+    ...     models = app.list_models()
+    """
 
     def __init__(
         self,
@@ -179,7 +190,20 @@ class LocalApplication:
     def create(
         cls, directory: str | os.PathLike[str], *, project_id: str | None = None
     ) -> LocalApplication:
-        """A new project in `directory` (absent or empty), opened by the local owner."""
+        """A new project in `directory` (absent or empty), opened by the local owner.
+
+        Parameters
+        ----------
+        directory
+            Where the project is created; it must be absent or empty.
+        project_id
+            The project's id; a fresh `project-<hex>` id when omitted.
+
+        Returns
+        -------
+        LocalApplication
+            The new project, opened with the inline executor.
+        """
         ProjectStore.create(
             Path(directory),
             project_id=project_id if project_id is not None else f"project-{uuid.uuid4().hex[:12]}",
@@ -201,6 +225,21 @@ class LocalApplication:
 
         An invalid policy file with no valid one before it refuses the open
         (`PolicyRefusedError`): a policy is never defaulted (§10.3).
+
+        Parameters
+        ----------
+        directory
+            An existing project directory (`create`, or `openflowsheet project init`).
+        capability
+            The capability to act as; the local owner, holding every right, when omitted.
+        executor
+            `"inline"` (jobs run in the calling process), `"process"` (a worker process), or an
+            unbound `ProcessExecutor`.
+
+        Returns
+        -------
+        LocalApplication
+            The opened project. Close it with `close`, or use it as a context manager.
         """
         process: ProcessExecutor | None = None
         if isinstance(executor, ProcessExecutor):
@@ -237,7 +276,13 @@ class LocalApplication:
 
     @classmethod
     def in_memory(cls) -> LocalApplication:
-        """SQLite `:memory:`, inline execution only, the local owner only; nothing survives."""
+        """SQLite `:memory:`, inline execution only, the local owner only; nothing survives.
+
+        Returns
+        -------
+        LocalApplication
+            A throw-away project; its files live in a scratch directory removed on `close`.
+        """
         project_id = f"memory-{uuid.uuid4().hex[:12]}"
         store = ProjectStore.in_memory(project_id=project_id)
         policy = StaticPolicy(
@@ -396,7 +441,25 @@ class LocalApplication:
     # -------------------------------------------------------------------- Application (frozen)
 
     def validate(self, revision_id: str, task: Task) -> ValidationReport:
-        """§4.2: the stored revision's validation report for `task`; no side effects. `read`."""
+        """§4.2: the stored revision's validation report for `task`; no side effects. `read`.
+
+        Parameters
+        ----------
+        revision_id
+            A revision of this project.
+        task
+            `"simulation"`. `"optimization"` is refused `unsupported`.
+
+        Returns
+        -------
+        ValidationReport
+            The status (`INVALID`, `DRAFT` or `READY_FOR_SIMULATION`) and every check.
+
+        Raises
+        ------
+        ApplicationError
+            `invalid_request`, `unsupported` (the optimization task) or `not_found`.
+        """
         self._authorize("validate")
         if task not in TASKS:
             self._refuse(
@@ -433,6 +496,28 @@ class LocalApplication:
         row and the audit row. Returned: `committed`, `replayed` (same key, same request),
         `conflict` (the head moved) or `rejected` (a bad edit path, a taken or unknown id, a
         non-canonical value). Raised: a refusal, and a key reused with a different request.
+
+        Parameters
+        ----------
+        change
+            The edits to apply to the head (`Change`), with its optional new revision id.
+        expected_revision
+            The head the change was written against; `None` for a project's first revision.
+        idempotency_key
+            A key of the caller's choosing: the same key with the same request returns the
+            first result (`replayed`) and never commits twice.
+
+        Returns
+        -------
+        TransactionResult
+            `status` is `committed`, `replayed`, `conflict` or `rejected`; a commit carries the
+            new `revision_id`, the semantic diff and the validation report.
+
+        Raises
+        ------
+        ApplicationError
+            A refusal, for example `forbidden`, `document_not_canonical` or
+            `idempotency_key_reused` (the key with a different request).
         """
         operation = "commit_change"
         caller = self._authorize(operation)
@@ -523,7 +608,28 @@ class LocalApplication:
     def solve(self, revision_id: str, policy_id: str) -> RunResult:
         """§4.2: `submit_job` with a fresh `auto:` key, `wait_job` until it ends (no time-out),
         then `get_job_result(...).run_result`. Needs `execute`; a refusal at submission is raised.
-        `policy_id` may be `"default"`, the route's registered policy (R2.3)."""
+        `policy_id` may be `"default"`, the route's registered policy (R2.3).
+
+        Parameters
+        ----------
+        revision_id
+            A revision that validates `READY_FOR_SIMULATION`.
+        policy_id
+            An offered solve policy id, or `"default"`.
+
+        Returns
+        -------
+        RunResult
+            The job status, the solver's outcome, the verifier's verdict and the artifacts the run
+            registered (solution certificate, run manifest, replay bundle). A failed solve is a
+            result, not an exception.
+
+        Raises
+        ------
+        ApplicationError
+            A refusal at submission, for example `revision_not_ready`, `not_found` (an unknown
+            policy) or `unsupported` (a registered policy that is not offered).
+        """
         caller = self._authorize("solve")
         request = JobRequest(
             operation="solve",
@@ -1096,7 +1202,14 @@ class LocalApplication:
 
     def list_models(self) -> ModelRegistryView:
         """§4.2: each model id in `MODEL_BUILDERS` with its declarative `ModelSignature`; nothing
-        is constructed ("inspect manifests without executing them"). `read`."""
+        is constructed ("inspect manifests without executing them"). `read`.
+
+        Returns
+        -------
+        ModelRegistryView
+            Every model with its ports, required parameters, pins and one-of specifications, and
+            for each pin the specification targets that can fix it.
+        """
         self._authorize("list_models")
         return ModelRegistryView(
             models=tuple(
@@ -1197,6 +1310,20 @@ class LocalApplication:
         its members listed — `solution-state.json` among them when the bundle has one (ruling
         round 2) — and each read in turn as `<bundle id>/<file>`. `sha256` is the registered
         one: the file's bytes, or the bundle's directory hash.
+
+        Parameters
+        ----------
+        artifact_id
+            An artifact id from a run's `outputs`, or `<bundle id>/<file>` for a bundle member.
+        pointer
+            A JSON pointer into the document; the whole document when empty.
+        depth, cursor, limit
+            Bounds of the projection, and the cursor of its next page.
+
+        Returns
+        -------
+        Projection
+            The value at `pointer`, with the artifact's SHA-256 and whether it was truncated.
         """
         operation = "get_artifact"
         self._authorize(operation)
@@ -1312,7 +1439,18 @@ class LocalApplication:
 
     def artifact_bytes(self, artifact_id: str) -> bytes:
         """§4.3, §10.4: an artifact file's bytes exactly as stored — the raw export (Python, CLI,
-        HTTP; never MCP). A bundle is a directory, exported member by member. `read`."""
+        HTTP; never MCP). A bundle is a directory, exported member by member. `read`.
+
+        Parameters
+        ----------
+        artifact_id
+            A file artifact, for example `<bundle id>/solution-state.json`.
+
+        Returns
+        -------
+        bytes
+            The file's bytes as stored.
+        """
         operation = "artifact_bytes"
         self._authorize(operation)
         row = self._artifact_row(artifact_id, operation)
