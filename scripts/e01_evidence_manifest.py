@@ -47,6 +47,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import filecmp
 import json
 import os
@@ -55,6 +56,7 @@ import subprocess
 import sys
 import tempfile
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree
@@ -342,11 +344,20 @@ def run(
         list(argv), cwd=cwd, env=variables, capture_output=True, text=True, check=False
     )
     cmd = prefix + " ".join(environments.display(part) for part in argv)
-    return Run(cmd, completed.returncode, completed.stdout + completed.stderr)
+    return Ran(cmd, completed.returncode, completed.stdout + completed.stderr, completed.stdout)
+
+
+@dataclass(frozen=True)
+class Ran(Run):
+    """S01's `Run` (its `stdout` is stdout then stderr, hashed in `commands`) with stdout alone,
+    whose last line is the verdict: a warning on stderr must not hide it."""
+
+    out: str = ""
 
 
 def _last_line(entry: Run) -> str:
-    return entry.stdout.strip().splitlines()[-1] if entry.stdout.strip() else ""
+    text_out = entry.out if isinstance(entry, Ran) else entry.stdout
+    return text_out.strip().splitlines()[-1] if text_out.strip() else ""
 
 
 def _git(*arguments: str) -> str:
@@ -488,9 +499,7 @@ def m03_dump(environments: Environments, artifacts: Path) -> tuple[dict[str, Any
                     + "src:$NLP_CACHE/nlp-test-tools ",
                 )
                 if name == "base":
-                    entry = Run(
-                        entry.cmd.replace(str(tree), shown_tree), entry.exit_code, entry.stdout
-                    )
+                    entry = dataclasses.replace(entry, cmd=entry.cmd.replace(str(tree), shown_tree))
                 runs.append(entry)
         finally:
             subprocess.run(
