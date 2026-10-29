@@ -668,3 +668,34 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   C_v × 1.13320016 (M1); vertical "1"/"2" weight cases regenerated on the new ranges (targets moved; "2" below floor
   C_v 51,120.6 = 32,773.18 × 1.559829, M2′); new fixed-head case (M7), compressor cases on P_C (M5), turbine cases on
   20–5,000 hp (M6). Horizontal vessels, the other exchangers and trays: unchanged. No other number moved.
+
+## Handoff (2026-10-29, E01b build 2 at the context cap) — resume from here
+
+- **Done on wp/E01b** (no push, no merge): `cf3adaa1` C3′ (forms/contributor from `e37dacb1`; loader §10.10.5.2; set
+  data §10.10.5.1/.3/.4; brief 2 committed); `c2695ec0` C4′ part 1 (B4 + regenerated `cost_hand.yaml`, audit above).
+- **Next: C4′ part 2, A49.** Write `benchmarks/e01/cost_hand/seider3.yaml` and `tests/test_e01_b_seider3.py` per
+  §10.10.5.7 (relations `same`/`shift`/`amended`/`basis`/`range`/`not_in_book`; completeness over every number object
+  `{value, source_line}` — both entry bases included — and every range). Reuse `_at`/`_walk`/`same`+`sign` from held
+  `git show c73a0721:tests/test_e01_b_seider4.py`. The universe is ~200 numbers: list it with a walk over
+  `entries[*]` minus `entry_id/form/family/method_lines` (exchanger 43 numbers + 2 ranges, vertical 33 + ranges incl.
+  `platform_length_ft` pieces, horizontal 27 + 1, trays 18 + 1, pump 39 + 3, motor 12 + 1, compressor 10 + 3, turbine
+  2 + 1). Book values: §10.10.1/§10.10.3 give most; the factor tables (Tables 22.20–22.22, 22.25, 22.26, p. 577 tray
+  factors) must be typed from `/home/frankp/.cache/seider3/ch22_534_595.md` (licensed: numbers + page only; grep the
+  table, never copy text). Signs: exchanger α2, pump Centrifugal a1, motor eta[2], base[4], horizontal α2 are
+  applied with the form's sign — check `forms.py` before typing `sign`. `not_in_book`: G11 (oversize, nine densities,
+  `shell_thickness_in`) plus any structural constant you find (e.g. `unity`, `count_floor`, `type_factor_other`,
+  `material_area_ref_ft2`, `pressure_ref_psig`) only if the book does not print it — else `same`.
+- **Then C5′** (`git cherry-pick -n 02477928`, resolve the log conflict to ours; A15 deltas §10.10.5.7: pump/motor
+  × 394/500, horizontal platforms and "2" no factor, piece 2 × 300.9/309.9; re-run in
+  `/home/frankp/.cache/idaes-2.13/venv`; acceptance rel ≤ 1e-9). **Then C6′** per §10.10.7 item 4, plus the two
+  package tests named in the C4′ DECISION (A44 CE-394 bullet and `test_e01_a_contributor_c1.py` motor floor → R-896).
+  The P2 drum `floor` assertion in its own commit. Fixtures via `test_e01_a_report._write()`; pins (t08, licences via
+  `scripts/e01_d04_inventory.py`, `docs/E01A_DECISIONS.md`); extend `scripts/e01_evidence_manifest.py` for S12b;
+  manifest `evidence/S12b/<commit>/manifest.json`; `QA1b.patch` (C7, five flags of §10.10.8) uncommitted.
+- **Known now-failing tests (expected until C5′/C6′):** `test_e01_b_cost_hand.py` A14 + chain (fixtures), A15 ×2
+  (crosscheck yaml); `test_e01_a_cost.py` A44 CE-394 test; `test_e01_a_contributor_c1.py` motor floor; A48 tripwire
+  (pins 3, now 5); t08 set sha256 pin; report-fixture tests. Not yet run: the E01 suite, acceptance grep, S11 identity.
+- **Acceptance grep pre-check:** `cost_hand.py` has no 2275/0.2094/10.5449/0.4672/0.05482/567; the set JSON has "567"
+  only if inside a hash (check and log); `idaes_crosscheck.py` is C5′'s.
+- **Open for the design lane (batched):** the C4′ DECISION (A44 "CE 394 conversion" superseded by R-896). No number
+  outside §10.10.7's list has moved so far.
