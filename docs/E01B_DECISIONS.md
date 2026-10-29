@@ -409,3 +409,8 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   per file; `SHIPPED_DATA` gains the synthetic `test-background-v1.json`; L40's text names the six and
   `docs/support-matrix.md` is re-emitted. Alternative: `assessment-data/` + a `REPOSITORY_PATHS` entry (ESC-B2's
   proposal; amends the web-shell test). Reversible by: the packaging commit.
+- DECISION: MR-12 for the `lca` extra → S07 Ruling M's pattern: the `HEAD` tripwire of
+  `test_m07_mr12_extras_v02::test_the_git_backed_measure_at_head` lists `lca` beside `coolprop`, each without an
+  `MR12_AUDITS` entry, and still expects `fail`; the measure is unchanged and the release specification supplies the
+  entries (F-9). Alternative: an `MR12_AUDITS["lca"]` entry now — it needs a step-14 RC check id that does not exist,
+  so the measure would still fail and the entry would be invented. Reversible by: the MR-12 commit.
