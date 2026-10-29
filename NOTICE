@@ -42,3 +42,30 @@ Please cite as: International Association for the Properties of Water and
 Steam, IAPWS R6-95(2018), Revised Release on the IAPWS Formulation 1995 for
 the Thermodynamic Properties of Ordinary Water Substance for General and
 Scientific Use (2018).
+
+Third-party data: the Wilson records and the points they are fitted to
+
+The file openflowsheet/_data/benchmarks/s10/records.yaml (repository path
+benchmarks/s10/records.yaml), read by the property providers wilson-ig-v1 and
+wilson-ig-v2, holds parameters this project fitted and published values it
+took, for methanol, ethanol and water:
+
+- ideal-gas heat capacities and formation enthalpies from
+  NASA TM-4513 (B.J. McBride, S. Gordon and M.A. Reno, October 1993), work of
+  the US Government, public use permitted, read through Cantera 3.2.0;
+- vapour-pressure parameters fitted to saturation pressures computed with
+  CoolProp 8.0.0 (MIT licence; Copyright (c) 2012-2018 Ian H. Bell and other
+  CoolProp developers) from the reference equations of state of methanol
+  (deReuck-BOOK-1993), ethanol (Schroeder-JPCRD-2014) and water
+  (Wagner-JPCRD-2002, the IAPWS-95 formulation attributed above);
+- Wilson parameters fitted to the vapour-liquid equilibrium data of
+  K. Kurihara, M. Nakamichi and K. Kojima,
+  J. Chem. Eng. Data 38 (1993) 446-449, Table II (© 1993 American Chemical
+  Society);
+- molar masses from the CIAAW 2021 conventional atomic weights (H 1.008,
+  C 12.011, O 15.999) of IUPAC's Commission on Isotopic Abundances and Atomic
+  Weights.
+
+The file openflowsheet/_data/benchmarks/s10/vle/kurihara1993_binaries.csv
+(repository path benchmarks/s10/vle/kurihara1993_binaries.csv) transcribes
+the 49 measured points (T, x1, y1 at 101.3 kPa) of Table II of that paper.

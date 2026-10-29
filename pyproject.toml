@@ -80,6 +80,10 @@ openflowsheet = [
     "_data/benchmarks/m02/numerical_policy_external.yaml",
     # S05 (R-616): the IAPWS-95 coefficients `iapws95-v1` reads, with IAPWS's attribution in NOTICE.
     "_data/benchmarks/s05/iapws95_coefficients.json",
+    # V03 (R-880): Wilson's records and the Kurihara 1993 Table II points, with their attribution
+    # in NOTICE.
+    "_data/benchmarks/s10/records.yaml",
+    "_data/benchmarks/s10/vle/kurihara1993_binaries.csv",
     # M06 (ADR 0030 D2): the diagnostic web shell, `_data/web` → `apps/web/`, one glob per
     # directory (`serve-http --ui`).
     "_data/web/*.html",
