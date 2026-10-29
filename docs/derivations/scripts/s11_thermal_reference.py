@@ -31,6 +31,12 @@ byte. Elsewhere it compares the parsed documents leaf by leaf (`classed_problems
 key order, strings, integers and nulls exactly, and every other float within
 1e-10·max(|x|, s_f), with the floor s_f set by the leaf's key (`floor_class`). On every
 architecture it prints the worst |Δ|/bound per class.
+
+**The flash class (R-845).** The `T` of a single-phase (LIQUID or VAPOR) PH/PS flash answer is a
+root CoolProp converges only to about 1e-9·T, so it takes its own class `flash`,
+|Δ| <= B_FLASH·|x| with no floor. The generator asserts that floor at every grid point with a
+nominal T (`_grid_point`), on every architecture. Every other class and the x86-64 byte check
+are unchanged.
 """
 
 from __future__ import annotations
@@ -50,13 +56,16 @@ PINNED_VERSION = "8.0.0"
 
 #: R-843: off x86-64, a float leaf passes when |Δ| <= B_REL·max(|x|, s_f).
 B_REL = 1e-10
+#: R-845: the `flash` class, a single-phase flash's T: |Δ| <= B_FLASH·|x|, no floor (the flash
+#: converges T only to about 1e-9·T; measured 9.27e-10 on x86-64).
+B_FLASH = 1e-8
 #: R-843's watch: a classed worst above this fraction of its bound (1e-11 relative) goes to the
 #: design lane with the printed line; the bound is never widened here.
 WATCH_FRACTION = 0.1
 #: The molar gas constant, J/(mol K) (CODATA 2018, exact): the floors' energy and entropy scale.
 R_GAS = 8.314462618
 #: R-843's floor classes, in print order.
-CLASSES = ("energy", "entropy", "unit", "relative")
+CLASSES = ("energy", "entropy", "unit", "relative", "flash")
 #: Keys of class `relative` (s_f = 0): temperatures and pressures (any key beginning `T` or `P`),
 #: and these flows and inputs.
 _RELATIVE_KEYS = frozenset({"n", "L", "V", "valve_P", "split_fraction"})
@@ -208,14 +217,26 @@ def _grid_point(
     key, value = at
     h = fluid("Hmolar", "P", pressure, key, value)
     s = fluid("Smolar", "P", pressure, key, value)
+    ph = fluid.ph(pressure, h)
+    ps = fluid.ps(pressure, s)
+    if key == "T":
+        # R-845: the flash lands within the watch fraction of B_FLASH·T of the nominal T.
+        for name, answer in (("ph", ph), ("ps", ps)):
+            if answer["regime"] in ("LIQUID", "VAPOR"):
+                _sanity(
+                    f"{fluid.component}[{label}] {name} T",
+                    answer["T"],
+                    value,
+                    WATCH_FRACTION * B_FLASH * value,
+                )
     return {
         "label": label,
         "P": pressure,
         "nominal": {key: value},
         "h": h,
         "s": s,
-        "ph": fluid.ph(pressure, h),
-        "ps": fluid.ps(pressure, s),
+        "ph": ph,
+        "ps": ps,
     }
 
 
@@ -489,14 +510,17 @@ def render(document: dict[str, Any]) -> str:
     return text
 
 
-def floor_class(key: str, where: str) -> str:
+def floor_class(key: str, where: str, parent: dict[str, Any]) -> str:
     """R-843's class of a float leaf, by its key: `energy` (s_f = R·T_c, times the case's n for a
-    rate), `entropy` (s_f = R), `unit` (s_f = 1) or `relative` (s_f = 0).
+    rate), `entropy` (s_f = R), `unit` (s_f = 1) or `relative` (s_f = 0); R-845's `flash` is a `T`
+    whose enclosing mapping `parent` has `regime` LIQUID or VAPOR (bound B_FLASH·|x|, no floor).
 
     A grid point's `nominal.Q` is the nominal quality, a generator input, so it takes beta's
     class `unit`, not the heat-duty class its initial would give; `split_fraction` is a
     dimensionless input of class `relative`, not an entropy. A key outside the map is an error.
     """
+    if key == "T" and parent.get("regime") in ("LIQUID", "VAPOR"):
+        return "flash"
     if key == "Q" and where.endswith(".nominal.Q"):
         return "unit"
     if key in _RELATIVE_KEYS or key[:1] in ("T", "P"):
@@ -524,8 +548,9 @@ def classed_problems(
     that becomes a number, or the reverse, is a problem). Every other float: |Δ| <= B_REL·max(|x|,
     s_f) with x the committed value and s_f the floor of `floor_class`: R·T_c of the case's fluid
     for `energy` (times the case's n for a rate), R for `entropy`, 1 for `unit`, 0 for
-    `relative`. T_c is the committed document's; a case is a fluid's `saturation`/`grid` list, or a
-    `units`/`flowsheets` entry (its `fluid`, and its `n` or, for TH-R1, its feed's).
+    `relative`; the class `flash` (R-845) is bounded B_FLASH·|x| instead. T_c is the committed
+    document's; a case is a fluid's `saturation`/`grid` list, or a `units`/`flowsheets` entry (its
+    `fluid`, and its `n` or, for TH-R1, its feed's).
     """
     problems: list[str] = []
     worst: dict[str, tuple[float, str]] = {c: (0.0, "-") for c in CLASSES}
@@ -542,11 +567,13 @@ def classed_problems(
             return case.get("fluid"), n
         return None, None
 
-    def floor(key: str, where: str, path: tuple[str, ...]) -> tuple[str, float]:
-        kind = floor_class(key, where)
+    def floor(
+        key: str, where: str, path: tuple[str, ...], parent: dict[str, Any]
+    ) -> tuple[str, float]:
+        kind = floor_class(key, where, parent)
         if kind == "unit":
             return kind, 1.0
-        if kind == "relative":
+        if kind in ("relative", "flash"):
             return kind, 0.0
         fluid, n = case_of(path)
         if kind == "entropy":
@@ -560,22 +587,24 @@ def classed_problems(
             scale *= n
         return kind, scale
 
-    def walk(a: Any, b: Any, where: str, path: tuple[str, ...], key: str) -> None:
+    def walk(
+        a: Any, b: Any, where: str, path: tuple[str, ...], key: str, parent: dict[str, Any]
+    ) -> None:
         if isinstance(a, dict) and isinstance(b, dict):
             if list(a) != list(b):
                 problems.append(f"{where}: keys {list(a)} != {list(b)}")
                 return
             for k in a:
-                walk(a[k], b[k], f"{where}.{k}", (*path, str(k)), str(k))
+                walk(a[k], b[k], f"{where}.{k}", (*path, str(k)), str(k), a)
         elif isinstance(a, list) and isinstance(b, list):
             if len(a) != len(b):
                 problems.append(f"{where}: length {len(a)} != {len(b)}")
                 return
             for i, (x, y) in enumerate(zip(a, b, strict=True)):
-                walk(x, y, f"{where}[{i}]", path, key)
+                walk(x, y, f"{where}[{i}]", path, key, parent)
         elif type(a) is float and type(b) is float:
-            kind, s_f = floor(key, where, path)
-            bound = B_REL * max(abs(a), s_f)
+            kind, s_f = floor(key, where, path, parent)
+            bound = (B_FLASH * abs(a)) if kind == "flash" else B_REL * max(abs(a), s_f)
             delta = abs(a - b)
             ratio = delta / bound if bound > 0.0 else (0.0 if delta == 0.0 else float("inf"))
             if ratio > worst[kind][0] or worst[kind][1] == "-":
@@ -585,7 +614,7 @@ def classed_problems(
         elif type(a) is not type(b) or a != b:
             problems.append(f"{where}: {a!r} != {b!r}")
 
-    walk(committed, computed, "$", (), "")
+    walk(committed, computed, "$", (), "", {})
     return problems, worst
 
 

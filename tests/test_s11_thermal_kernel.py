@@ -660,7 +660,8 @@ def _committed() -> Any:
 
 
 #: Float leaves of every R-843 class, with the expected class: a molar h, a rate (A54's cancelled
-#: pump work), an entropy, a quality, a nominal quality, a COP, a temperature and a flow. Both
+#: pump work), an entropy, a quality, a nominal quality, a COP, a single-phase flash temperature
+#: (R-845, `flash`), a saturated temperature and a flow. Both
 #: energy leaves are water's at n = 1 mol/s, so their floor is R·T_c(H2O).
 _LEAVES = (
     (("units", "A54_pump", "isentropic", "h"), "energy"),
@@ -669,7 +670,9 @@ _LEAVES = (
     (("units", "A53_turbine", "outlet", "beta"), "unit"),
     (("grid", "CO2", 2, "nominal", "Q"), "unit"),
     (("flowsheets", "TH-C2", "COP"), "unit"),
-    (("grid", "H2O", 0, "ph", "T"), "relative"),
+    (("grid", "H2O", 0, "ph", "T"), "flash"),
+    (("flowsheets", "TH-C1", "pump_outlet", "T"), "flash"),
+    (("grid", "H2O", 2, "ph", "T"), "relative"),
     (("flowsheets", "TH-R1", "recycle", "n"), "relative"),
 )
 
@@ -702,7 +705,7 @@ def test_r843_the_committed_file_is_classed_equal_to_itself_with_every_float_cla
     module = _reference_module()
     problems, worst = module.classed_problems(_committed(), _committed())
     assert problems == []
-    assert set(worst) == {"energy", "entropy", "unit", "relative"}
+    assert set(worst) == {"energy", "entropy", "unit", "relative", "flash"}
     assert all(ratio == 0.0 and where != "-" for ratio, where in worst.values())
 
 
@@ -723,12 +726,38 @@ def test_r843_a_1e_9_change_fails(path: tuple[Any, ...], kind: str) -> None:
     module = _reference_module()
     computed = _committed()
     x = _get(computed, path)
-    # 1e-9·max(|x|, s_f): ten times the bound, also where x is small (beta = 0, a cancelled W).
-    _set(computed, path, x + 1e-9 * max(abs(x), _floor(kind)))
+    # Ten times the class's bound, also where x is small (beta = 0, a cancelled W): 1e-9·max(|x|,
+    # s_f), and for `flash` (R-845, bound 1e-8·|x|) 1e-7·|x|.
+    delta = 1e-7 * abs(x) if kind == "flash" else 1e-9 * max(abs(x), _floor(kind))
+    _set(computed, path, x + delta)
     problems, worst = module.classed_problems(_committed(), computed)
     assert len(problems) == 1
     assert problems[0].startswith(_where(path)) and f"({kind})" in problems[0]
     assert worst[kind][0] > 1.0
+
+
+def test_r845_the_flash_class_passes_its_measured_deviation_and_only_there() -> None:
+    module = _reference_module()
+    flash = ("flowsheets", "TH-C1", "pump_outlet", "T")
+    saturated = ("grid", "H2O", 2, "ph", "T")
+    computed = _committed()
+    _set(computed, flash, _get(computed, flash) * (1.0 + 2.403e-10))
+    problems, worst = module.classed_problems(_committed(), computed)
+    assert problems == []
+    assert worst["flash"][1] == _where(flash)
+    assert worst["flash"][0] == pytest.approx(0.02403, rel=1e-3)
+    assert worst["flash"][0] < module.WATCH_FRACTION
+    computed = _committed()
+    _set(computed, saturated, _get(computed, saturated) * (1.0 + 2.403e-10))
+    problems, worst = module.classed_problems(_committed(), computed)
+    assert len(problems) == 1 and "(relative)" in problems[0]
+    assert worst["relative"][1] == _where(saturated)
+    assert worst["relative"][0] > 1.0
+    computed = _committed()
+    _set(computed, flash, _get(computed, flash) * (1.0 + 1.5e-9))
+    problems, worst = module.classed_problems(_committed(), computed)
+    assert problems == []
+    assert worst["flash"][0] > module.WATCH_FRACTION
 
 
 def test_r843_the_floors_are_the_rulings() -> None:
