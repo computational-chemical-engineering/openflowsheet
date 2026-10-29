@@ -169,6 +169,89 @@ def test_an_unavailable_output_is_refused_before_the_host_runs(
     assert [r.code for r in result.refusals] == ["ASSESSMENT_OUTPUT_UNKNOWN"]
 
 
+class _AtBoundary:
+    """A test `cost` contributor on TH-C1: `size.TOY.area = S3.T` held at its `max` boundary
+    (zero slack at x*), `size.FAR.area = S4.T` with half its range left (E01 review S2)."""
+
+    name = "cost"
+
+    def plan(self, ctx: Any, state: Any) -> Any:
+        from openflowsheet.assessment.program import ContributionPlan, OutputDef
+        from openflowsheet.assessment.regimes import AdmissibilityRow, RegimeEntry
+
+        toy = OutputDef("size.TOY.area", "m2", lambda s, a: s.x("S3.T"))
+        far = OutputDef("size.FAR.area", "m2", lambda s, a: s.x("S4.T"))
+        at = ctx.evaluate(state, [toy, far])
+        entries = tuple(
+            RegimeEntry(
+                f"{item}.size",
+                "size",
+                "units:1",
+                "test",
+                (
+                    AdmissibilityRow(
+                        "max",
+                        lambda s, a, i=output.output_id, h=room * at[output.output_id]: (
+                            h - s.out(i)
+                        ),
+                        room * at[output.output_id],
+                    ),
+                ),
+            )
+            for item, output, room in (("TOY", toy, 1.0), ("FAR", far, 2.0))
+        )
+        return ContributionPlan(outputs=(toy, far), regime_entries=entries)
+
+
+def test_an_active_regime_boundary_is_listed_and_labels_the_outputs_it_bounds(
+    registered: None,  # noqa: F811
+) -> None:
+    from openflowsheet.assessment.spec import load_assessment
+    from openflowsheet.assessment.views import view_of
+
+    _, host, x, state = _base()
+    binding, spec, _ = _solved("TH-C1")
+    program = AssessmentProgram.build(
+        view_of(binding.flowsheet),
+        spec,
+        load_assessment(
+            {
+                "schema_version": "assessment-v1",
+                "assessment_id": "e01-review-s2",
+                "basis": {"currency": "USD", "year": 2024},
+            }
+        ),
+        state,
+        contributors=[_AtBoundary()],
+    )
+    assert isinstance(program, AssessmentProgram), program
+    context = study_assessment.evaluation_context(host.compiled)
+    outputs = ("size.TOY.area", "size.FAR.area")
+    result = study_assessment.assessment_sensitivity(
+        program, host, _request(context, "forward"), x, outputs
+    )
+    assert result.refusals == ()
+    ((row, slack),) = result.regime_bounds_active
+    assert row == "adm.TOY.size.max" and abs(slack) <= 1e-12
+    assert [(lim.code, lim.target, dict(lim.detail)) for lim in result.limitations] == [
+        ("REGIME_BOUNDARY_ACTIVE", "size.TOY.area", {"row": "adm.TOY.size.max"})
+    ]
+    toy_slack, far_slack = (result.regime_slack[name] for name in outputs)
+    assert toy_slack is not None and abs(toy_slack) <= 1e-12
+    assert far_slack == pytest.approx(0.5, rel=1e-12)
+    document = result.as_document()
+    assert document["regime_bounds_active"] == [{"id": row, "slack": slack}]
+    assert document["limitations"] == [
+        {"code": "REGIME_BOUNDARY_ACTIVE", "target": "size.TOY.area", "row": "adm.TOY.size.max"}
+    ]
+    # P4 at the same state has no active row: nothing listed, nothing labelled.
+    p4, _, _, _ = _base()
+    plain = study_assessment.assessment_sensitivity(
+        p4, host, _request(context, "forward"), x, OUTPUTS
+    )
+    assert plain.regime_bounds_active == () and plain.limitations == ()
+
+
 def test_a37_a_trust_region_objective_from_an_assessment_is_unsupported(
     registered: None,  # noqa: F811
 ) -> None:

@@ -540,3 +540,8 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   enums), one reason per start, subject the named outputs, detail with the binding's scales. Four existing readiness
   tests used the unscaled `tac_objective()` and now use `tac/|tac(x₀)|` (`scaled_tac()`). Alternative: silent
   normalisation (rejected by the review: it changes the declared problem). Reversible by: the commit carrying this line.
+- FACT (S2): `assessment_sensitivity` lists every admissibility row with scaled slack ≤ τ_active (1e-6, imported from
+  `studies.nlp.verification`) under `regime_bounds_active` (twin values at x*), records each output's closure's smallest
+  slack (`regime_slack`), and puts `REGIME_BOUNDARY_ACTIVE` (row beside it) on each output whose closure holds an active
+  row; closure = entries with a row sharing a column of `[∇ₓG ∂G/∂p]`, the NLP's rule. One extra `linearize` of the
+  admissibility rows; the existing rows and values are untouched. Test: a TH-C1 contributor at zero slack.

@@ -15,7 +15,13 @@ sensitivity is `dy/dp = ∇ₓG·X + ∂G/∂p`, with `X = dx/dp` the host's.
    `STATE_INDEPENDENT`;
 5. a refusal of the underlying request propagates unchanged: no host block, every value `None`
    (a state-independent output too, since the state is not qualified); a refused column is
-   `None` in the state-dependent rows.
+   `None` in the state-dependent rows;
+6. every admissibility row with scaled slack ≤ τ_active at x* is listed under
+   `regime_bounds_active`, and each output whose closure contains it carries limitation
+   `REGIME_BOUNDARY_ACTIVE` (the row beside it): the derivative is one-sided (§4.10.1 erratum
+   2026-10-29, E01 review S2). An output's closure is the entries with a row sharing a column of
+   `[∇ₓG ∂G/∂p]` with it, the NLP's rule (`studies.nlp.formulation.assessment_closure`); each
+   output also records its closure's smallest slack.
 
 `revision_sensitivity_host` is `syn001.host_of` for any revision flowsheet: its spec, the compiled
 problem, K03 scales from the spec's kinds, and the alias rows eliminated at `x*` by the
@@ -36,11 +42,17 @@ from typing import Any, Final, Literal
 import numpy as np
 import numpy.typing as npt
 
-from openflowsheet.assessment.program import AssessmentProgram, Linearization, Refusal
+from openflowsheet.assessment.program import (
+    AssessmentProgram,
+    Limitation,
+    Linearization,
+    Refusal,
+)
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.rank import eliminate_alias_rows, pressure_shifted_state
+from openflowsheet.studies.nlp.verification import TAU_ACTIVE
 from openflowsheet.studies.sensitivity import (
     CertificateEvidence,
     OutputFunctional,
@@ -82,6 +94,11 @@ class AssessmentSensitivity:
     adjoint: SensitivityBlock | None
     base: SensitivityResult | None
     refusals: tuple[Refusal, ...] = ()
+    #: Step 6: `(row, scaled slack)` of every admissibility row with slack ≤ τ_active at x*.
+    regime_bounds_active: tuple[tuple[str, float], ...] = ()
+    #: Step 6: each output's closure's smallest scaled slack, `None` when its closure is empty.
+    regime_slack: Mapping[str, float | None] = dataclasses.field(default_factory=dict)
+    limitations: tuple[Limitation, ...] = ()
 
     def as_document(self) -> dict[str, Any]:
         return {
@@ -90,12 +107,17 @@ class AssessmentSensitivity:
                     "id": name,
                     "scale": self.scales[name],
                     "dependence": self.dependence[name],
+                    "regime_slack": self.regime_slack.get(name),
                 }
                 for name in self.outputs
             ],
             "parameters": list(self.parameter_ids),
             "forward": None if self.forward is None else self.forward.as_document(),
             "adjoint": None if self.adjoint is None else self.adjoint.as_document(),
+            "regime_bounds_active": [
+                {"id": row, "slack": slack} for row, slack in self.regime_bounds_active
+            ],
+            "limitations": [lim.as_document() for lim in self.limitations],
             "refusals": [r.as_document() for r in self.refusals],
         }
 
@@ -228,6 +250,7 @@ def assessment_sensitivity(
         if request.mode in ("adjoint", "both")
         else None
     )
+    active, slack, limitations = _regime_boundaries(program, x, lin, outputs, symbolic)
     return AssessmentSensitivity(
         outputs=tuple(outputs),
         parameter_ids=request.parameter_ids,
@@ -236,7 +259,61 @@ def assessment_sensitivity(
         forward=forward,
         adjoint=adjoint,
         base=base,
+        regime_bounds_active=active,
+        regime_slack=slack,
+        limitations=limitations,
     )
+
+
+def _pattern(lin: Linearization, name: str) -> set[str]:
+    """The columns (host variables, then requested parameters) of `name`'s stored nonzeros."""
+    found: set[str] = set()
+    for matrix in (lin.d_dx, lin.d_dp):
+        i = matrix.row_ids.index(name)
+        for j, column in enumerate(matrix.col_ids):
+            if i in matrix.indices[matrix.indptr[j] : matrix.indptr[j + 1]]:
+                found.add(column)
+    return found
+
+
+def _regime_boundaries(
+    program: AssessmentProgram,
+    x: Mapping[str, float],
+    lin: Linearization,
+    outputs: Sequence[str],
+    symbolic: Sequence[str],
+) -> tuple[tuple[tuple[str, float], ...], dict[str, float | None], tuple[Limitation, ...]]:
+    """Step 6: the active admissibility rows at x*, each output's closure's smallest slack, and
+    `REGIME_BOUNDARY_ACTIVE` on each output whose closure holds an active row."""
+    rows = list(program.admissibility_ids)
+    if not rows:
+        return (), dict.fromkeys(outputs), ()
+    adm = program.linearize(x, {}, rows, symbolic)
+    assert isinstance(adm, Linearization), adm
+    slack = {row: float(adm.values[row]) for row in rows}
+    active = tuple((row, slack[row]) for row in rows if slack[row] <= TAU_ACTIVE)
+    entries = [
+        [f"adm.{entry.entry_id}.{row.row_id}" for row in entry.admissibility]
+        for entry in program.entries
+    ]
+    adm_pattern = {row: _pattern(adm, row) for row in rows}
+    smallest: dict[str, float | None] = {}
+    limitations: list[Limitation] = []
+    for name in outputs:
+        used = _pattern(lin, name)
+        closure = [
+            row
+            for names in entries
+            if any(adm_pattern[row] & used for row in names)
+            for row in names
+        ]
+        smallest[name] = min((slack[row] for row in closure), default=None)
+        limitations.extend(
+            Limitation("REGIME_BOUNDARY_ACTIVE", name, {"row": row})
+            for row, _ in active
+            if row in closure
+        )
+    return active, smallest, tuple(limitations)
 
 
 def evaluation_context(compiled: Any) -> EvaluationContext:
