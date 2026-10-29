@@ -699,3 +699,19 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   only if inside a hash (check and log); `idaes_crosscheck.py` is C5′'s.
 - **Open for the design lane (batched):** the C4′ DECISION (A44 "CE 394 conversion" superseded by R-896). No number
   outside §10.10.7's list has moved so far.
+
+## E01b, build 3 (2026-10-29; brief `docs/briefs/E01b-build3.md`; work order design note §10.10.7)
+
+- C4′ part 2 (A49): `seider3.yaml` typed from the 3rd ed.'s pages (printed page = PDF page − 38 in the local
+  copy; numbers with page and equation/table only). 188 number records (187 number objects; the floating-head
+  α1 twice: `shift` and Example 22.10's `same`), 21 `not_in_book` (oversize, 2 × 9 densities, 2 ×
+  `shell_thickness_in`) among them, 17 range records. `test_e01_b_seider3.py`: 3 passed; four mutations of the
+  YAML (a book digit, a dropped record, a range bound, a sign) each fail it.
+- FACT (A49): the completeness universe includes the set's own `basis.index.value` (500, entry `set`), besides the
+  two entry bases — "every number object in the set" read literally; its record is `same` against p. 561's
+  CE = 500 (the first §22.5 statement of the basis). Pump F_T keys contain a dot (`"1.1"` …): a path step with a
+  dot is written quoted (`choices."1.1".F_T`); amended paths have none, so they match `ResolvedEntry.amended`.
+- FACT (A49): structural constants the book implies rather than prints are `same` with a note, not
+  `not_in_book` (design §10.10.3 rows 7, 28, 36, 47 class them M): exchanger `unity` (a = b = 0 in Eq. 22.44),
+  tray carbon-steel F_TM α2 = 0 (printed without a D term), `type_factor_other` (Eqs. 22.22/22.23 carry no F_T),
+  compressor `ElectricMotor.F_D` and `CarbonSteel.F_M` = 1 (the base cost of Eq. 22.35).
