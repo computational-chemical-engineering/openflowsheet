@@ -545,3 +545,5 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   slack (`regime_slack`), and puts `REGIME_BOUNDARY_ACTIVE` (row beside it) on each output whose closure holds an active
   row; closure = entries with a row sharing a column of `[∇ₓG ∂G/∂p]`, the NLP's rule. One extra `linearize` of the
   admissibility rows; the existing rows and values are untouched. Test: a TH-C1 contributor at zero slack.
+- FACT (S3, R-871; no code): the over-restriction is recorded as a dated limitation under design §4.10.3 and as a
+  manifest limitation (generator text); R-871 is in the register since the review commit.

@@ -585,6 +585,11 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], a33: Mapping[str, An
         "impact; test-background-v1 is synthetic, and the KKT_POINT_VERIFIED candidate of A33 is "
         "a verified local point, not optimality evidence. Self-generated fixtures (the "
         "assessment-report fixtures) are regression fixtures.",
+        "Regimes (R-871, E01 review S3): the closure (column overlap) and V7 (every entry) hold "
+        "every regime of the program for any assessment objective — sound, no candidate is "
+        "verified across a regime change, but over-restrictive (an impact objective is held to "
+        "the capex size regimes; a floor row outside the closure shows as a V7 failure, not a "
+        "binding row). Dependency-declared closures are the follow-up.",
         "The wall times in S12.G6 are the JUnit times of the cited nodes in this run (each "
         "includes binding, solving and verification where the test does).",
         "The T08 support envelope's harvest of this manifest, if t08_support_matrix.py --check "

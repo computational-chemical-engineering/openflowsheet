@@ -972,6 +972,12 @@ At `x_sim`, the re-solved certified state:
   - Status precedence: as V2.
 - **Report.** `regime_bounds_active`: each admissibility row with scaled slack ≤ τ_feas, with its multiplier from V5's
   least squares.
+- *Limitation 2026-10-29 (E01 review S3, R-871):* the closure (column overlap, §4.10.2) and V7 (every entry) together
+  hold every regime of the program for any assessment objective. This is sound — no candidate is verified across a
+  regime change — but over-restrictive: an impact objective is held to the capex size regimes whose rows share Q, and
+  a floor row whose size columns no bound output shares lies outside the closure, so the optimizer sees slope 0 there
+  and V7 rejects the candidate afterwards (a V7 failure, not a binding row). The follow-up: each `OutputDef` declares
+  the regime entries it read, and the closure and V7 both use that dependency closure.
 
 #### 4.10.4 Trust region
 
