@@ -443,3 +443,26 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   S11 merges.
 - FACT (G9/A3): M03 NLP fixture dump (`$SCRATCH/b3/g9.sh i1`) IDENTICAL to the pre-E01 base; nlp env
   `test_m03_nlp_greybox` + `test_e01_b_nlp` + `test_e01_integration`: 22 passed, 1 xfailed (ESC-I1).
+
+## Handoff (2026-10-29, WO-I1 at the context cap) — resume from here
+
+- **Done (wp/E01 after 4f000563):** 17b7f9ed packaging (`assessment/{cost,index,lca}` repository copies, per-file
+  links, 7 `PACKAGED` entries, globs, NOTICE, T08.A32 `ATTRIBUTED_DATA`/`E01_ATTRIBUTION`, W4 count 13, L40 +
+  support matrix); f0542cf1 MR-12 tripwire (`lca`); 4a5e5659 E01 tests import after the S11 merge; 739eaf62
+  `assessment` layer; ee1a5d4d `tests/test_e01_integration.py` + decisions; 613eaf7c interfaces-frozen note;
+  887cb275 ADR/progress.
+- **Gates run:** E01 tests 203 passed, 1 skipped; integration 3 passed (default env); nlp env (m05's, `TMPDIR` on
+  disk) 22 passed, 1 xfailed; T08 inventory incl. built artifacts, W4, S05 envelope (with `OFS_S05_BUILD_PYTHON=
+  /usr/bin/python3`), envelope/NOTICE/resources tests 1320 passed; `t08_dist.py` T08.A43 PASS (wheel holds the 7 files);
+  `t08_support_matrix.py --check` 0; `e01_d04_inventory.py --check` A42 PASS; G9 dump IDENTICAL; A1 empty vs 8d2ee175.
+- **S11 identity:** `S11-IDENTITY FAIL n=54494 changed=[] (C base shards [1] exited non-zero)` — every E01-tree shard
+  exit 0; the base tree's `test_m06_browser_smoke::test_cancel_stops_a_running_job` failed on timing under load. Re-run:
+  `$SCRATCH/i1e01/guarded_id.sh` (sets `TMPDIR=/home/frankp/.cache/e01-i1-tmp`; **/tmp is a tmpfs with 1M inodes —
+  the default TMPDIR exhausted it once and blocked every shell**), expect `PASS … changed=[]`.
+- **Not done:** `scripts/e01_evidence_manifest.py` (model: `scripts/s11_evidence_manifest.py` build()/status()/main;
+  assertions A01–A48 of §6.1/§9.6 cited by test names `test_aNN_…` plus a CITATIONS map for `test_e01_*`; G1 = A1
+  diff vs the S11 head + `s11_identity.py`; G5's A24/A25 need `$SCRATCH/venv-lca`; G6's A33–A36 need the nlp env;
+  G8 gate/CI `unsupported`; G10/A48 `not run (RC item)` recorded as a limitation). Blocked on **ESC-I2** (schema refuses
+  `E01`) and **ESC-I1** (A33). T08 harvest only if `t08_support_matrix.py --check` asks after a manifest exists.
+- **Open for the design lane:** ESC-I1, ESC-I2, and the WO-I1 DECISION lines (repository path `assessment/`, MR-12
+  pattern, configurations), plus the default-build observation.
