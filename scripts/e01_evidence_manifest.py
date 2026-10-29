@@ -586,16 +586,17 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], a33: Mapping[str, An
         "verified: true) is not run (RC item): S12.A48 and S12.G10 are unsupported, which is not "
         "a pass. The shipped SSLW primary ranges carry verified: false until a person with Seider "
         "3rd ed. ch. 22 checks them (§9.7 QA1); the release candidate is blocked until then.",
-        "Review: the design lane's single reviewer pass over tracks A and B and WO-I1 against the "
-        "design note (ADR 0052's acceptance) has not happened; the review fields stay pending, "
-        "and the human numerical and process-model review is pending. This manifest claims "
-        "neither.",
-        "Open for the design lane (docs/E01B_DECISIONS.md, WO-I1): the DECISION lines on the "
-        "repository path assessment/, the MR-12 pattern for the lca extra and the P1–P4 "
-        "configurations; and the observation that AssessmentProgram.build(contributors=None) "
-        "takes only the contributors registered by importing assessment.cost.contributor, "
-        "cost.derived and lca.section, which nothing in src imports, so a default build yields "
-        "an empty program without a refusal (the tests pass explicit contributors).",
+        "Review: the design lane's reviewer pass (docs/reviews/E01-review.md, at de63b9a2) found "
+        "two must-fix items (M1 derived-ratio denominators, R-868; M2 the default build, R-869), "
+        "four should-fix items (S1 objective scaling, S2 sensitivity regime boundaries, S3 "
+        "R-871, S4 the A48 tripwire) and notes; they are applied on wp/E01 after it "
+        "(docs/E01B_DECISIONS.md, 'E01 review fixes'). R-870 is decided with Frank's "
+        "confirmation (2026-10-29). The review fields stay pending until the design lane accepts "
+        "the fixes, and the human numerical and process-model review is pending. This manifest "
+        "claims neither.",
+        "Not applied from the review: the lower-priority domain entries for .per_fu, lcox and "
+        "the allocation ratios (§4.7.5 erratum); N2 (layering, deferred by the review until "
+        "numerics/ opens); N3 (the platform piece's provenance in the shipped set).",
         "Environments: run A is the locked environment; run L (A24, A25) is the lca extra's "
         "environment built by scripts/build-lca-env.sh in a scratch directory, outside "
         "requirements.lock; run N (A33–A36, M03 and M05 nlp tests, A3's dumps and "
