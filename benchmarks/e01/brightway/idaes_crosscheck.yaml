@@ -1,6 +1,6 @@
 id: e01-idaes-crosscheck-v1
 script: benchmarks/e01/brightway/idaes_crosscheck.py
-script_sha256: f8a10c737fab2a0bd438ea8bb8d833ec0c2f4d10a6ca4ea3f462bc7df8dbae0f
+script_sha256: 94c0ad5ba33063401c769c13cd7dcd62b2687700873bab105a3e0845e9b4f0c1
 cases_from: benchmarks/e01/cost_hand/cost_hand.yaml
 cases_sha256: b73bb4eaf055cd8fa34cc7b1dcfebd515ff3c05478aa956c6cee766b67bad3eb
 environment:

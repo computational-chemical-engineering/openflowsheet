@@ -757,3 +757,6 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   `test_e01_b_seider3.py`, `test_a50_*`/`test_a51_*` in `test_e01_a_cost.py`); the G10 limitation states the five
   unverified ranges and C7; one E01b limitation (numerics changed, reviewer pending, Q-B defaults, A49 is
   transcription verification).
+- C6′ fix (found by the S12b generator's mypy at `da0eadd9`, status `implemented`, 70/76, fail `S12b.mypy`):
+  `idaes_crosscheck.py` `motor()` builds its row as `pump()` does (`out.update`), so the dict type checks; YAML
+  values byte-identical, only `script_sha256` moves. The `da0eadd9` manifest is discarded, not committed.

@@ -302,14 +302,10 @@ def motor(case: Mapping[str, Any], floor_shaft: float) -> dict[str, float]:
     pump_opt = {"pump_type": "Centrifugal", "material": "StainlessSteel"}
     blk = _pump_block(work, 1.0e5, 1.0e-3, pump_opt, n, motor_type=opt["motor_type"])
     raw = pyo.value(blk.motor_capital_cost)
+    out = {"C_P": raw, "N": n, "shaft_power_W": work}
     factor = CE_BASIS[0] / CE_BASIS[1]  # as the pump: CE 500, not IDAES's CE 394 label
-    return {
-        "C_P": raw * factor,
-        "N": n,
-        "shaft_power_W": work,
-        "C_P_idaes": raw,
-        "amended": {"basis": factor},
-    }
+    out.update({"C_P": raw * factor, "C_P_idaes": raw, "amended": {"basis": factor}})
+    return out
 
 
 def compressor(case: Mapping[str, Any]) -> dict[str, float]:
