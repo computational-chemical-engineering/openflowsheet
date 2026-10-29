@@ -2,7 +2,8 @@
 
 Track B's transcription of the IDAES SSLW costing methods used by E01, made directly from the pinned
 source and from nothing else: idaes-pse 2.13.0, `idaes/models/costing/SSLW.py` (sha256 below), with
-`idaes/core/base/costing_base.py` for the CE 394 currency unit. Every number taken from the source
+`idaes/core/base/costing_base.py`, whose CE 394 label on the pump and motor base costs the 3rd ed.
+corrects to CE 500 (design §10.10, R-896). Every number taken from the source
 carries its line (`SSLW.py:<n>`). This script imports nothing from `openflowsheet` and reads none of
 track A's code or data (`_data/assessment/cost/sslw-idaes-v1.json` included); the two transcriptions
 meet only in `tests/test_e01_b_cost_hand.py`. Arithmetic is mpmath at 30 digits on the binary64
@@ -18,6 +19,18 @@ Where the design note departs from IDAES on purpose (§9.2.2), this script follo
   6. compressor drive: ElectricMotor only (F_D = 1);
   7. exchanger design pressure: an input here (the package's rule picks it), IDAES reads the hot
      side's inlet (SSLW.py:472-485).
+Ruling B on QA1 and its Amendment 1 (design §10, §10.10; R-890, R-893, R-895…R-898) add,
+transcribed from §10.10.5.7 and from Seider, Seader, Lewin, Widagdo, Product and Process Design
+Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22 (individual numbers
+with their page and equation, `S3 p. <n>`), never from the set file:
+  8. compressor: sized on the consumed power P_C = w1/eta_m(w1) of each unit (p. 569), eta_m the
+     motor's Eq. 22.18 (p. 562); N the smallest n >= n0 with n*P_C(W/n) <= n*S_max (§10.4.4);
+  9. amended numbers: fixed-head alpha2 0.9228 (p. 571, Eq. 22.40); the tower platform piece
+     300.9 (p. 575, Eq. 22.58); every pump and the motor at CE 500 (pp. 561-563), so no 500/394
+     factor anywhere;
+ 10. turbine: size range 20-5,000 hp (p. 593, Table 22.32), floored below, parallel above;
+ 11. vessel weight ranges: "1" 4,200-1,000,000 lb (p. 574, Eq. 22.54), "2" 9,000-2,500,000 lb
+     (p. 575, Eq. 22.57); horizontal 1,000-920,000 lb (p. 574, Eq. 22.53).
 
 Sections of the YAML:
   - `forms`: each entry at S_min, sqrt(S_min*S_max), S_max (the S_max point is targeted at
@@ -78,7 +91,6 @@ ATM = F(101325)  # Pa
 KAPPA_A = 1 / FT**2  # ft2 per m2
 KAPPA_Q = 60 / GALLON  # gpm per m3/s
 KAPPA_W = 1 / HP  # hp per W
-CE_RATIO = F(500) / F("394.0")  # costing_base.py:66, "USD_CE394 = 500/394.0 * USD_CE500"
 PI = mpmath.pi  # IDAES Constants.pi (SSLW.py:663)
 
 
@@ -87,10 +99,15 @@ def n(value: str, line: int) -> tuple[Num, str]:
     return F(value), f"SSLW.py:{line}"
 
 
+def s3(value: str, page: str) -> tuple[Num, str]:
+    """A number from the 3rd ed. at CE 500 (design §10.10.5.1), with its page and equation."""
+    return F(value), f"S3 p. {page}"
+
+
 # I. cost_heat_exchanger (SSLW.py:327-507)
 HX_ALPHA = {  # :400-405, exp(a1 - a2 ln z + a3 ln z^2) (:418-422)
     "floating_head": (n("11.9052", 401), n("0.8709", 401), n("0.09005", 401)),
-    "fixed_head": (n("11.2927", 402), n("0.8228", 402), n("0.09861", 402)),
+    "fixed_head": (n("11.2927", 402), s3("0.9228", "571 Eq. 22.40"), n("0.09861", 402)),
     "Utube": (n("11.3852", 403), n("0.9186", 403), n("0.09790", 403)),
     "kettle_vap": (n("12.2052", 404), n("0.8709", 404), n("0.09005", 404)),
 }
@@ -142,13 +159,17 @@ VESSEL_W_LENGTH = n("0.8", 665)  # W = pi (D+t)(L + 0.8 D) t rho (:662-668)
 VESSEL_ALPHA = {  # :673-679, exp(a1 + a2 ln W + a3 ln W^2) (:688-694)
     ("horizontal", "1"): (n("8.9552", 674), n("-0.2330", 674), n("0.04333", 674)),
     ("vertical", "1"): (n("7.0132", 676), n("0.18255", 676), n("0.02297", 676)),
-    ("vertical", "2"): (n("7.2756", 677), n("0.18255", 677), n("0.02297", 677)),
+    ("vertical", "2"): (n("7.2756", 677), n("0.18255", 677), n("0.02297", 677)),  # S3 Eq. 22.57
 }
-VESSEL_W_RANGE = {"1": (F(1000), F(920000)), "2": (F(4200), F(1000000))}  # lb, docstring :534
-PL_HORIZONTAL = (n("2005", 749), n("0.20294", 749))  # C = 2005 D^0.20294
+#: lb: "1" the vertical-vessel fit's range (S3 p. 574 Eq. 22.54), "2" the towers' (p. 575
+#: Eq. 22.57); R-898
+VESSEL_W_RANGE = {"1": (F(4200), F(1000000)), "2": (F(9000), F(2500000))}
+#: horizontal vessels keep the docstring's 1,000-920,000 lb (:534; S3 p. 574 Eq. 22.53)
+VESSEL_W_RANGE_HORIZONTAL = (F(1000), F(920000))
+PL_HORIZONTAL = (n("2005", 749), n("0.20294", 749))  # C = 2005 D^0.20294 (S3 p. 574 Eq. 22.55)
 PL_VERTICAL = {  # piece: (c, D exponent, L exponent); L and D ranges from the docstring :537
     1: (n("361.8", 758), n("0.73960", 759), n("0.70684", 760)),
-    2: (n("309.9", 765), n("0.63316", 766), n("0.80161", 767)),
+    2: (s3("300.9", "575 Eq. 22.58"), n("0.63316", 766), n("0.80161", 767)),
 }
 PL_L_PIECES = {1: (F(12), F(40)), 2: (F(40), F(170))}  # ft; §9.2.4 II (piece 2 from 40 ft)
 PL_D_RANGE = {1: (F(3), F(21)), 2: (F(3), F(24))}  # ft, :537
@@ -172,7 +193,8 @@ TRAY_COST = (n("468.00", 856), n("0.1739", 856))  # 468 exp(0.1739 D_ft) (:855-8
 TRAY_D_RANGE = (F(2), F(16))  # ft, comment at :825 "eqn. valid for 2 to 16 ft"
 TRAY_DEFAULTS = {"tray_type": "Sieve", "tray_material": "CarbonSteel"}  # :521-522
 
-# IV. cost_pump (SSLW.py:1387-1623); base cost at CE 394 (:1579)
+# IV. cost_pump (SSLW.py:1387-1623); base cost at CE 500 (S3 pp. 561, 563; IDAES's CE 394 label
+# at :1579 corrected, R-896)
 PUMP_MATERIAL = {
     "nonreciprocating": {  # :1528-1538
         "CastIron": n("1.00", 1529),
@@ -218,7 +240,8 @@ PUMP_DEFAULTS = {
     "pump_type_factor": "1.4",
 }  # :1389-1391
 
-# V. pump motor (SSLW.py:1624-1677); base cost at CE 394 (:1647)
+# V. pump motor (SSLW.py:1624-1677); base cost at CE 500 (S3 p. 562; IDAES's CE 394 label at
+# :1647 corrected, R-896)
 MOTOR_TYPE = {"Open": n("1", 1626), "Enclosed": n("1.4", 1627), "ExplosionProof": n("1.8", 1628)}
 MOTOR_ETA = (n("0.80", 1638), n("0.0319", 1639), n("-0.00182", 1640))
 MOTOR_BASE = (
@@ -249,7 +272,7 @@ COMPRESSOR_RANGE = {
     "Centrifugal": (F(200), F(30000)),
     "Reciprocating": (F(100), F(20000)),
     "Screw": (F(10), F(750)),
-}  # hp, primary (§9.2.4 VI; QA1)
+}  # consumed power P_C, hp (S3 p. 569 Eqs. 22.36-22.38; §10.10.5.3)
 COMPRESSOR_DEFAULTS = {
     "compressor_type": "Centrifugal",
     "drive_type": "ElectricMotor",
@@ -258,6 +281,7 @@ COMPRESSOR_DEFAULTS = {
 
 # VII. cost_turbine (SSLW.py:1338-1386)
 TURBINE = (n("530", 1382), n("0.81", 1383))  # 530 W_hp^0.81, W_hp = -W (:1374-1376)
+TURBINE_RANGE = (F(20), F(5000))  # hp, gas expander (S3 p. 593 Table 22.32; §10.10.5.3)
 
 
 # -- Regime helpers (§4.3.2, §9.2.5) ---------------------------------------------------------------
@@ -340,10 +364,11 @@ def vessel(x: Mapping[str, float], opt: Mapping[str, Any]) -> dict[str, Any]:
     t_in = F(x["t_shell_m"]) / INCH
     f_m, rho = (v(c) for c in VESSEL_MATERIAL[opt["material"]])
     w = PI * (d_in + t_in) * (l_in + v(VESSEL_W_LENGTH) * d_in) * t_in * rho
-    regime, _ = size_regime(w, *VESSEL_W_RANGE[limit], parallel=False)
+    w_range = VESSEL_W_RANGE[limit] if orientation == "vertical" else VESSEL_W_RANGE_HORIZONTAL
+    regime, _ = size_regime(w, *w_range, parallel=False)
     if regime == "refused":
         return {"regime": {"size": regime}, "C_P": None}
-    w_eff = VESSEL_W_RANGE[limit][0] if regime == "floor" else w
+    w_eff = w_range[0] if regime == "floor" else w
     a1, a2, a3 = (v(c) for c in VESSEL_ALPHA[(orientation, limit)])
     c_v = mpmath.exp(a1 + a2 * mpmath.log(w_eff) + a3 * mpmath.log(w_eff) ** 2)
     d_ft = F(x["D_m"]) / FT
@@ -418,14 +443,14 @@ def pump(x: Mapping[str, float], opt: Mapping[str, str]) -> dict[str, Any]:
         if kind == "Centrifugal"
         else v(PUMP_OTHER_TYPE_FACTOR)
     )
-    c_p1 = f_t * f_m * c_b * CE_RATIO
+    c_p1 = f_t * f_m * c_b
     return {
         "regime": {"size": regime},
         "quantities": {
             "size": size_of(units),
             "Q_gpm_per_unit": q_total / units,
             "H_ft": h_ft,
-            "C_B_CE394": c_b,
+            "C_B_CE500": c_b,
             "F_M": f_m,
             "F_T": f_t,
         },
@@ -452,14 +477,14 @@ def motor(x: Mapping[str, Any], opt: Mapping[str, str]) -> dict[str, Any]:
     b = [v(c) for c in MOTOR_BASE]
     c_b = mpmath.exp(b[0] + b[1] * lam + b[2] * lam**2 + b[3] * lam**3 + b[4] * lam**4)
     f_mt = v(MOTOR_TYPE[opt["motor_type"]])
-    c_p1 = f_mt * c_b * CE_RATIO
+    c_p1 = f_mt * c_b
     return {
         "regime": {"size": regime},
         "quantities": {
             "W_hp_per_unit": w_hp,
             "eta_m": eta,
             "W_m_hp": w_m,
-            "C_B_CE394": c_b,
+            "C_B_CE500": c_b,
             "F_MT": f_mt,
             "electricity_W": F(x["shaft_power_W"]) / eta,
         },
@@ -468,19 +493,39 @@ def motor(x: Mapping[str, Any], opt: Mapping[str, str]) -> dict[str, Any]:
     }
 
 
+def consumed_power(w_total: Num, units: int) -> Num:
+    """S(n) = n*P_C(W/n), P_C(w) = w/eta_m(w) (§10.4.4; S3 p. 569, Eq. 22.16)."""
+    w1 = w_total / units
+    return units * (w1 / motor_efficiency(w1))
+
+
 def compressor(x: Mapping[str, float], opt: Mapping[str, str]) -> dict[str, Any]:
     kind = opt["compressor_type"]
     w_total = F(x["power_W"]) * KAPPA_W
-    regime, units = size_regime(w_total, *COMPRESSOR_RANGE[kind], parallel=True)
-    w_hp = COMPRESSOR_RANGE[kind][0] if regime == "floor" else w_total / units
+    lo, hi = COMPRESSOR_RANGE[kind]
+    if consumed_power(w_total, 1) < lo:
+        regime, units = "floor", 1
+    else:
+        units = max(1, int(mpmath.ceil(w_total / hi)))  # n0: the brake power bounds P_C below
+        while consumed_power(w_total, units) > units * hi:
+            units += 1
+        regime = f"units:{units}"
+    p_c = lo if regime == "floor" else consumed_power(w_total, units) / units
     a1, a2 = (v(c) for c in COMPRESSOR_ALPHA[kind])
-    c_b = mpmath.exp(a1 + a2 * mpmath.log(w_hp))
+    c_b = mpmath.exp(a1 + a2 * mpmath.log(p_c))
     f_d = v(COMPRESSOR_DRIVE[opt["drive_type"]])
     f_m = v(COMPRESSOR_MATERIAL[opt["material"]])
     c_p1 = f_d * f_m * c_b
     return {
         "regime": {"size": regime},
-        "quantities": {"W_hp_per_unit": w_total / units, "C_B": c_b, "F_D": f_d, "F_M": f_m},
+        "quantities": {
+            "W_hp_per_unit": w_total / units,
+            "eta_m": motor_efficiency(w_total / units),
+            "P_C_hp_total": consumed_power(w_total, units),
+            "C_B": c_b,
+            "F_D": f_d,
+            "F_M": f_m,
+        },
         "C_P1": c_p1,
         "C_P": units * c_p1,
     }
@@ -488,9 +533,16 @@ def compressor(x: Mapping[str, float], opt: Mapping[str, str]) -> dict[str, Any]
 
 def turbine(x: Mapping[str, float], opt: Mapping[str, str]) -> dict[str, Any]:
     w_hp = -F(x["power_W"]) * KAPPA_W  # the turbine's W < 0 (SSLW.py:1374)
+    regime, units = size_regime(w_hp, *TURBINE_RANGE, parallel=True)
+    w_eff = TURBINE_RANGE[0] if regime == "floor" else w_hp / units
     c, e = (v(q) for q in TURBINE)
-    c_p1 = c * w_hp**e
-    return {"regime": {}, "quantities": {"W_hp": w_hp}, "C_P1": c_p1, "C_P": c_p1}
+    c_p1 = c * w_eff**e
+    return {
+        "regime": {"size": regime},
+        "quantities": {"W_hp": w_hp, "W_hp_per_unit": w_hp / units},
+        "C_P1": c_p1,
+        "C_P": units * c_p1,
+    }
 
 
 FORMS: dict[str, tuple[str, Callable[..., dict[str, Any]]]] = {
@@ -576,6 +628,13 @@ def registered_cases() -> dict[str, list[dict[str, Any]]]:
             "inputs": {"area_m2": a_mid, "P_Pa": hx_p},
         }
     )
+    out["exchanger.shell_tube"].append(
+        {
+            "label": "fixed_head (alpha2 0.9228, S3 p. 571)",
+            "options": {**HX_DEFAULTS, "hx_type": "fixed_head"},
+            "inputs": {"area_m2": a_mid, "P_Pa": hx_p},
+        }
+    )
 
     t_m = fl(v(VESSEL_T_SHELL_IN) * INCH)
     rho_cs = v(VESSEL_MATERIAL["CarbonSteel"][1])
@@ -594,7 +653,10 @@ def registered_cases() -> dict[str, list[dict[str, Any]]]:
             }
             if orientation == "horizontal":
                 del opt["weight_limit"]  # vertical only (SSLW.py:584-587)
-            for label, w in size_targets(*VESSEL_W_RANGE[limit], parallel=False):
+            w_range = (
+                VESSEL_W_RANGE[limit] if orientation == "vertical" else VESSEL_W_RANGE_HORIZONTAL
+            )
+            for label, w in size_targets(*w_range, parallel=False):
                 d_m, l_m = vessel_geometry(w, rho_cs, t_in)
                 cases.append(
                     {
@@ -678,19 +740,20 @@ def registered_cases() -> dict[str, list[dict[str, Any]]]:
     comp = []
     for kind in ("Centrifugal", "Reciprocating", "Screw"):
         opt = {**COMPRESSOR_DEFAULTS, "compressor_type": kind}
-        for label, w in size_targets(*COMPRESSOR_RANGE[kind], parallel=True):
+        for label, p_c in size_targets(*COMPRESSOR_RANGE[kind], parallel=True):
+            # the target is the consumed power at one unit, P_C(W); W by inverting it
             comp.append(
                 {
-                    "label": f"{kind} W_hp {label}",
+                    "label": f"{kind} P_C {label}",
                     "options": opt,
-                    "inputs": {"power_W": fl(w / KAPPA_W)},
+                    "inputs": {"power_W": motor_shaft_for(p_c)},
                 }
             )
     out["compressor"] = comp
 
     out["turbine"] = [
-        {"label": f"W_hp {w} hp", "options": {}, "inputs": {"power_W": fl(-F(w) / KAPPA_W)}}
-        for w in (10, 100, 1000)
+        {"label": f"W_hp {label}", "options": {}, "inputs": {"power_W": fl(-w / KAPPA_W)}}
+        for label, w in size_targets(*TURBINE_RANGE, parallel=True)
     ]
     return out
 
@@ -1058,7 +1121,6 @@ def build() -> dict[str, Any]:
             | {"C_P1": number(w_case["C_P1"])},
             "eta_m_1hp": number(motor_efficiency(F(1))),
             "eta_m_10hp": number(motor_efficiency(F(10))),
-            "ce_ratio": number(CE_RATIO),
             "F_P_at_100_psig": number(HX_PRESSURE[0][0] + HX_PRESSURE[1][0] + HX_PRESSURE[2][0]),
         },
     }
@@ -1076,7 +1138,6 @@ def build() -> dict[str, Any]:
         (w_case["quantities"]["C_PL"], "5045.446066094272", "1e-14"),
         (w_case["C_P1"], "38267.95849778363", "1e-14"),
         (motor_efficiency(F(10)), "0.8638030099054395", "1e-15"),
-        (CE_RATIO, "1.2690355329949239", "1e-16"),
     ]
     for got, want, rel in stated:
         assert abs(got / F(want) - 1) <= F(rel), (s30(got), want)
@@ -1117,9 +1178,8 @@ def build() -> dict[str, Any]:
             "kappa_Q_gpm_per_m3s": number(KAPPA_Q),
             "kappa_W_hp_per_W": number(KAPPA_W),
             "psi_Pa": number(PSI),
-            "ce394_to_ce500": number(CE_RATIO),
         },
-        "basis": "C_P in USD at CEPCI 500 (pump and motor converted from CE 394 by 500/394.0)",
+        "basis": "C_P in USD at CEPCI 500 (every correlation, pump and motor included; R-896)",
         "forms": forms_out,
         "p_sizes": p_out,
         "design_note": design_note,

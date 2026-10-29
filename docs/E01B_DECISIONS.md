@@ -648,3 +648,23 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   quantity (`CORRELATION_OUT_OF_RANGE(<U>.power)`), and `η_m ∉ (0, 1]` at any per-unit power evaluated is
   `CORRELATION_OUT_OF_RANGE(<U>.eta)` (§10.4.4 "Domain"; η_m is the 3rd ed.'s Eq. 22.18, p. 562). Alternative: route
   both to `.eta`. Reversible by: `_Compressor.domain`.
+- C4′ part 1 (B4): `c73a0721` cherry-picked with `-n`, then §10.10.5.7's deltas (S3 pages; pumps and motor at CE 500,
+  every base-cost key `C_B_CE500`; `PL_HORIZONTAL` IDAES's (2005, 0.20294); piece 2 300.9; "2" IDAES's fit; ranges "1"
+  (4,200, 1e6), "2" (9,000, 2.5e6)). Held `seider4.yaml` and its test not taken (A49 on `seider3.yaml` still to do).
+  `cost_hand.py --check` exits 0. `test_e01_b_cost_hand.py`: 8 passed, 4 failed — A14 and the chain compare against
+  the report fixtures (C6′), A15 against `idaes_crosscheck.yaml` (C5′); the package-vs-hand forms test passes.
+- DECISION: C4′ — `cost_hand.py` has no `CE_RATIO` at all (§10.10.5.7 "no 500/394 factor anywhere"): the YAML loses
+  `design_note.A44.ce_ratio` and `units.ce394_to_ce500`, and the stated check of 1.2690355329949239 goes. A44's "CE 394
+  conversion" bullet is thereby superseded by R-896; in C6′ the package tests `test_e01_a_cost.py::
+  test_a44_the_ce394_ratio_and_the_pump_forms` (pump.ratio == 500/394, × 500/394 on four costs) and
+  `test_e01_a_contributor_c1.py` (motor floor × 500/394) must follow R-896 (ratio 1.0, basis 500.0, no factor) — a
+  registered move (M4′), not a widened check. Alternative: keep the constant for the stated check only. Reversible by:
+  the C4′ hunks and a regeneration. For the design lane (batched).
+- C4′ cost_hand.yaml audit against `15307c6a` (script ratios): pump 72 and motor 24 values × 0.788 (C_P, C_P1; base
+  costs unchanged, key renamed); p1_th_c1/p1_th_r1 pump and drive items × 0.788; chain p1_th_c1 totals × 0.970804299,
+  0.971250158, 0.979018563 (derived from the pump and drive, M4′); vertical piece-2 C_PL × 0.970958374 (M3′); vertical
+  "platforms L and D floored" (W < 4,200 lb) `units:1` → `floor`, C_v × 1.155567915 (M1); P1 TH-R1 drum C_P1
+  × 1.81881447, C_v × 2.14833611 (16,456.63 → 29,931.56; M1); P3 M1 `S02.shell` `units:1` → `floor`, C_P1 × 1.09607835,
+  C_v × 1.13320016 (M1); vertical "1"/"2" weight cases regenerated on the new ranges (targets moved; "2" below floor
+  C_v 51,120.6 = 32,773.18 × 1.559829, M2′); new fixed-head case (M7), compressor cases on P_C (M5), turbine cases on
+  20–5,000 hp (M6). Horizontal vessels, the other exchangers and trays: unchanged. No other number moved.
