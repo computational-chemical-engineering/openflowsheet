@@ -16,6 +16,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -24,6 +25,8 @@ import pytest
 from conftest import REPO_ROOT
 
 EXAMPLES = REPO_ROOT / "examples"
+SITE = REPO_ROOT / "docs-site"
+CHANGE_SET = EXAMPLES / "rankine-cycle.changeset.json"
 
 #: Notebook -> (Python expression over the notebook's names, the text its closing cell states).
 STATED: dict[str, list[tuple[str, str]]] = {
@@ -115,3 +118,76 @@ def test_the_example_runs_and_reproduces_its_stated_numbers(name: str) -> None:
     assert completed.returncode == 0, completed.stderr[-4000:]
     computed = json.loads(completed.stdout.rsplit("@@STATED@@", 1)[1])
     assert computed == [stated for _, stated in STATED[name]], completed.stdout[-2000:]
+
+
+def _blocks(page: Path, language: str) -> list[str]:
+    """The fenced code blocks of `language` in a documentation page, in order."""
+    blocks, current = [], None
+    for line in page.read_text(encoding="utf-8").splitlines():
+        if current is None and line.strip() == f"```{language}":
+            current = []
+        elif current is not None and line.strip() == "```":
+            blocks.append("\n".join(current))
+            current = None
+        elif current is not None:
+            current.append(line)
+    return blocks
+
+
+def _run(arguments: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+    environment = {**os.environ, "PYTHONPATH": str(REPO_ROOT / "src")}
+    return subprocess.run(
+        arguments, cwd=cwd, env=environment, capture_output=True, text=True, timeout=900
+    )
+
+
+def test_the_change_set_creates_the_rankine_notebooks_revision() -> None:
+    """The quickstart's change set is the Rankine notebook's document, member for member."""
+    namespace: dict[str, object] = {}
+    for source in _cells(EXAMPLES / "rankine-cycle.ipynb", "code")[:2]:
+        exec(compile(source, "rankine-cycle.ipynb", "exec"), namespace)
+    document = namespace["rankine"]
+    assert isinstance(document, dict)
+    change_set = json.loads(CHANGE_SET.read_text(encoding="utf-8"))
+    edits = {edit["path"][0]: edit["value"] for edit in change_set["edits"]}
+    assert all(edit["operation"] == "set" for edit in change_set["edits"])
+    assert edits == document
+
+
+def test_the_quickstart_python_block_runs(tmp_path: Path) -> None:
+    (python,) = [block for block in _blocks(SITE / "getting-started/quickstart.md", "python")][:1]
+    (tmp_path / CHANGE_SET.name).write_bytes(CHANGE_SET.read_bytes())
+    completed = _run([sys.executable, "-c", python], tmp_path)
+    assert completed.returncode == 0, completed.stderr[-4000:]
+    lines = completed.stdout.splitlines()
+    assert lines[:2] == ["READY_FOR_SIMULATION", "CONVERGED VERIFIED"]
+    work, duty = (float(value) for value in lines[2].split())
+    assert (f"{work:.1f}", f"{duty:.1f}") == ("-15905.1", "54752.5")
+
+
+def test_the_quickstart_command_lines_run(tmp_path: Path) -> None:
+    """Every `openflowsheet` command of the quickstart's CLI section, in order."""
+    (tmp_path / CHANGE_SET.name).write_bytes(CHANGE_SET.read_bytes())
+    commands = " ".join(
+        block.replace("\\\n", " ")
+        for block in _blocks(SITE / "getting-started/quickstart.md", "bash")
+    )
+    responses = []
+    for line in commands.split("openflowsheet ")[1:]:
+        arguments = shlex.split(line)
+        completed = _run(
+            [sys.executable, "-m", "openflowsheet.application.cli", *arguments], tmp_path
+        )
+        assert completed.returncode == 0, (line, completed.stderr[-2000:])
+        responses.append(completed.stdout)
+    assert len(responses) == 5
+    solve, work, verdict = (json.loads(r) for r in responses[2:])
+    assert (solve["outcome"], solve["verification_status"]) == ("CONVERGED", "VERIFIED")
+    assert f"{work['value']:.2f}" == "-15905.09" and verdict["value"] == "VERIFIED"
+
+
+def test_the_first_flowsheet_tutorial_runs(tmp_path: Path) -> None:
+    source = "\n\n".join(_blocks(SITE / "tutorials/first-flowsheet.md", "python"))
+    completed = _run([sys.executable, "-c", source], tmp_path)
+    assert completed.returncode == 0, completed.stderr[-4000:]
+    assert completed.stdout.splitlines()[-1] == "CONVERGED VERIFIED", completed.stdout
