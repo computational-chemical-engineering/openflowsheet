@@ -24,9 +24,10 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Final
 
 from openflowsheet.canonical import file_sha256
@@ -75,16 +76,17 @@ from openflowsheet.models.syn001 import (
     T_MIN,
     TEMPERATURE,
 )
-from openflowsheet.models.syn001.blocks import LnKBlock
 from openflowsheet.models.syn001.flash import total_flow_id
 from openflowsheet.models.syn001.ph_kernel import (
     PHState,
     closure_failure,
+    failure_labels,
     ph_state,
     port_enthalpy,
     typed_failure,
 )
 from openflowsheet.models.syn001.tp_state import (
+    equilibrium_block,
     lnk_block_id,
     single_phase_enthalpy,
     stream_enthalpy_terms,
@@ -92,6 +94,10 @@ from openflowsheet.models.syn001.tp_state import (
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 MODEL_ID: Final = "syn001.ph_flash"
+#: SYN-001's state domain, the default `domain` (S11 units design §4.5).
+DOMAIN: Final[Mapping[str, tuple[float, float]]] = MappingProxyType(
+    {"T": (T_MIN, T_MAX), "P": (P_MIN, P_MAX)}
+)
 
 #: Where the equations are stated. T05's models are specified by the T05 document, not SYN-001's.
 SPECIFICATION: Final = "docs/derivations/T05-unit-models-spec.md §5"
@@ -235,6 +241,11 @@ class PHFlash:
     #: The declared regime of the inlet; `None` means its split is lifted by its producer.
     inlet_phase: Phase | None = "LIQUID"
     components: tuple[str, ...] = COMPONENTS
+    #: S11 units design §4.5: the bound provider's identity, convention and domain, which
+    #: `manifest()`, every `UnitEvaluation` and the range checks read; SYN-001's by default.
+    property_provider: str = PROVIDER_ID
+    reference_convention: str = REFERENCE_CONVENTION
+    domain: Mapping[str, tuple[float, float]] = field(default=DOMAIN, hash=False)
 
     def __post_init__(self) -> None:
         # Spec §5.1 as amended (ruling round §3 block, U1 (2), review N6): a non-finite pinned
@@ -354,16 +365,16 @@ class PHFlash:
                     "Relies on Hdot_TP being strictly increasing in T on the domain, which "
                     "holds for SYN-001 (T05 spec §4.2) and is not a PropertyCapabilities field.",
                 ),
-                temperature_k=(T_MIN, T_MAX),
-                pressure_pa=(P_MIN, P_MAX),
+                temperature_k=self.domain["T"],
+                pressure_pa=self.domain["P"],
             ),
             module=__name__,
             artifact_hash=_artifact_hash(),
             execution_class="native_equation",
             thread_safety="not_thread_safe",
             evaluation_cost_class="moderate",
-            property_provider=PROVIDER_ID,
-            reference_convention=REFERENCE_CONVENTION,
+            property_provider=self.property_provider,
+            reference_convention=self.reference_convention,
             package="T05",
         )
 
@@ -381,7 +392,15 @@ class PHFlash:
         duty = duty_id(self.unit_id)
         total_vapor, total_liquid = total_flow_id(vapor), total_flow_id(liquid)
 
-        lnk = LnKBlock(self.provider, self.components, self.context, block_id=lnk_block_id(vapor))
+        lnk, lnk_inputs = equilibrium_block(
+            self.provider,
+            self.components,
+            self.context,
+            block_id=lnk_block_id(vapor),
+            temperature=temperature_id(vapor),
+            pressure=pressure_id(vapor),
+            liquid=tuple(flow_id(liquid, name) for name in self.components),
+        )
         vapor_block, vapor_feeding, vapor_keys = single_phase_enthalpy(
             self.provider, self.components, self.context, vapor, "VAPOR"
         )
@@ -492,7 +511,7 @@ class PHFlash:
             row_kinds=kinds,
             blocks=(lnk, vapor_block, liquid_block, *inlet_blocks),
             block_inputs={
-                lnk.block_id: (temperature_id(vapor), pressure_id(vapor)),
+                lnk.block_id: lnk_inputs,
                 vapor_block.block_id: vapor_feeding,
                 liquid_block.block_id: liquid_feeding,
                 **inlet_inputs,
@@ -534,6 +553,10 @@ class PHFlash:
             )
         outlet_pressure = feed.pressure - float(self.pressure_drop)
 
+        # S11 rulings item 11 (R-840): a typed failure names the bound provider (none added on
+        # SYN-001's).
+        labels = failure_labels(self.property_provider, self.reference_convention)
+
         # (1) Spec §4.7: dormant outlets carry the inlet temperature as a label.
         if feed.is_dormant:
             if self.duty != 0.0:
@@ -542,6 +565,7 @@ class PHFlash:
                         "error",
                         "duty_into_dormant_stream",
                         f"Q_spec = {self.duty} W into a dormant stream; PHF-duty forces Q = 0",
+                        **labels,
                     ),
                     None,
                 )
@@ -556,25 +580,33 @@ class PHFlash:
                     outlets={"vapor": dormant, "liquid": dormant},
                     duty=0.0,
                     phase_signature="ZERO_FLOW",
-                    reference_convention=REFERENCE_CONVENTION,
+                    reference_convention=self.reference_convention,
                 ),
                 None,
             )
 
         # (2)
-        if not P_MIN <= outlet_pressure <= P_MAX:
+        p_min, p_max = self.domain["P"]
+        if not p_min <= outlet_pressure <= p_max:
             return (
                 typed_failure(
                     "out_of_domain",
                     "pressure_outside_domain(outlet)",
-                    f"P_in - dP = {outlet_pressure} Pa outside [{P_MIN}, {P_MAX}] Pa",
+                    f"P_in - dP = {outlet_pressure} Pa outside [{p_min}, {p_max}] Pa",
+                    **labels,
                 ),
                 None,
             )
 
         # (3)
         inlet = port_enthalpy(
-            self.provider, feed, self.inlet_phase, self.components, context, port="inlet"
+            self.provider,
+            feed,
+            self.inlet_phase,
+            self.components,
+            context,
+            port="inlet",
+            labels=labels,
         )
         if inlet.failure is not None:
             return inlet.failure, None
@@ -585,7 +617,7 @@ class PHFlash:
             self.provider, feed.n, outlet_pressure, inlet.enthalpy_flow + self.duty, context
         )
         if closure.status != "ok":
-            return closure_failure(closure), closure
+            return closure_failure(closure, **labels), closure
         split = closure.split
         assert split is not None and split.vapor is not None and split.liquid is not None
 

@@ -91,17 +91,18 @@ def test_a19_the_states_are_the_registered_seventeen() -> None:
 def test_version_switch_refuses_other_versions() -> None:
     snap = V2["snapshots"]["S1"]
     case = V2["cases"]["H2"]
-    for version in (0, 3, True):
-        with pytest.raises(ValueError, match="not 1 or 2"):
+    # S11 (W27v3-R01) adds version 3; every other version is still refused.
+    for version in (0, 4, True):
+        with pytest.raises(ValueError, match="not 1, 2 or 3"):
             coverage.check_snapshot(snap, {"cases": [case]}, registration_version=version)
-        with pytest.raises(ValueError, match="not 1 or 2"):
+        with pytest.raises(ValueError, match="not 1, 2 or 3"):
             coverage.classify_case(case, snap, registration_version=version)
-        with pytest.raises(ValueError, match="not 1 or 2"):
+        with pytest.raises(ValueError, match="not 1, 2 or 3"):
             coverage.classify({"cases": [case]}, snap, registration_version=version)
-        with pytest.raises(ValueError, match="not 1 or 2"):
+        with pytest.raises(ValueError, match="not 1, 2 or 3"):
             coverage.coverage_document({"cases": [case]}, snap, registration_version=version)
-    with pytest.raises(ValueError, match="not 1 or 2"):
-        registration.provider_methods(3)
+    with pytest.raises(ValueError, match="not 1, 2 or 3"):
+        registration.provider_methods(4)
 
 
 def test_tables_are_read_from_registration_v2() -> None:

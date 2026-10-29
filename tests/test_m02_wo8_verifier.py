@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping
+from dataclasses import replace
 from typing import Any
 
 import pytest
@@ -26,7 +27,12 @@ from test_t05_table_independence import violations
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1.phase import classify
-from openflowsheet.models.revision_flowsheet import RevisionError, parse_revision
+from openflowsheet.models.revision_flowsheet import (
+    SYN001_BASIS,
+    RevisionError,
+    component_basis,
+    parse_revision,
+)
 from openflowsheet.orchestrator.region import LiftedSplit
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import lifted_splits
@@ -57,11 +63,14 @@ def _raised(n: tuple[float, ...], delta: float) -> tuple[float, ...]:
 
 
 def test_the_verifier_builds_its_fresh_provider_from_the_basis() -> None:
-    assert FRESH_PROVIDERS == ("syn001", "pr-c1-v1")
-    assert isinstance(fresh_provider("syn001"), Syn001Provider)
-    assert isinstance(fresh_provider("pr-c1-v1"), PrC1Provider)
+    # S11 design §4.6 (ADR 0050 D5): `fresh_provider` takes the basis, five providers (amended
+    # on purpose; the other three are `tests/test_s11_verifier_forms.py`'s).
+    assert FRESH_PROVIDERS[:2] == ("syn001", "pr-c1-v1") and len(FRESH_PROVIDERS) == 5
+    c1 = component_basis({"component_set": {"record_source": "benchmarks/m01/components.yaml"}})
+    assert isinstance(fresh_provider(SYN001_BASIS), Syn001Provider)
+    assert isinstance(fresh_provider(c1), PrC1Provider)
     with pytest.raises(VerifierError, match=r"^provider_unknown\(other\)$"):
-        fresh_provider("other")
+        fresh_provider(replace(SYN001_BASIS, provider_id="other"))
 
 
 def test_the_verifier_module_does_not_import_the_binders_constructor() -> None:

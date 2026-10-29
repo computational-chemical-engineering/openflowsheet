@@ -69,7 +69,11 @@ def test_no_syn001_rule_declares_a_vapour_only_component() -> None:
 
 
 def test_the_dormancy_registry_is_syn001s_and_the_c1_mixers_vapour_outlet() -> None:
-    assert set(DORMANCY_RULES) == SYN001_DORMANCY_KEYS | {("c1.adiabatic_mixer", None)}
+    # S11 units design §4.9 (WO-C6): restricted to the keys outside `thermal.`; the `thermal.*`
+    # keys and rules are pinned literally by `test_s11_thermal_solve`.
+    assert {key for key in DORMANCY_RULES if not key[0].startswith("thermal.")} == (
+        SYN001_DORMANCY_KEYS | {("c1.adiabatic_mixer", None)}
+    )
     assert DORMANCY_RULES[("c1.adiabatic_mixer", None)] == (
         DormancyRule("outlet", "inlet", "C1MIX-energy", None, "VAPOR"),
     )
@@ -184,8 +188,11 @@ def test_model_checks_hold_the_c1_entries_from_syn001s_rule_functions() -> None:
 def test_the_envelope_sets_gain_the_c1_ids() -> None:
     assert FEED_MODELS == {"syn001.feed_source", "c1.feed_source"}
     assert PRODUCT_MODELS == {"syn001.product_sink", "c1.product_sink"}
-    # M04 WO-7 appends the surrogate's duty after M02's four.
-    assert EXTERNAL_DUTY_MODELS[-5:] == (
+    # M04 WO-7 appends the surrogate's duty after M02's four. S11 I1b (orchestrator ruling, the
+    # C6-2 precedent): restricted to the ids outside `thermal.`; the thermal duty and work models
+    # are pinned literally by `test_s11_thermal_verifier`.
+    base_duty = tuple(m for m in EXTERNAL_DUTY_MODELS if not m.startswith("thermal."))
+    assert base_duty[-5:] == (
         "c1.tp_heater",
         "c1.tp_flash",
         "c1.reactor",

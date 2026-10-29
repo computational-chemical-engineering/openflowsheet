@@ -214,8 +214,10 @@ SPEC_PIN_KINDS = {
 def test_b10_the_model_is_the_thirteenth_builder_with_its_signature() -> None:
     # Since M02's join (R-280; design note §14.4 D5, B13's rule) restricted to the `syn001.`
     # keys, the literal unchanged; `tests/test_m02_join.py` pins all twenty-one.
+    # S11 (ADR 0050, R-810; design note §8.3, I1) registers the column after it, on purpose: the
+    # CSTR stays the thirteenth, and there are fourteen.
     syn001 = [model for model in MODEL_BUILDERS if model.startswith("syn001.")]
-    assert MODEL_ID in syn001 and len(syn001) == 13
+    assert syn001.index(MODEL_ID) == 12 and len(syn001) == 14
     signature = MODEL_SIGNATURES[MODEL_ID]
     assert signature.ports == PORTS
     assert [(p.name, p.kind, p.direction, p.multiplicity) for p in PORTS] == [

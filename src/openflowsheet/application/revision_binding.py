@@ -24,6 +24,7 @@ the signature constructs nothing.
 
 from __future__ import annotations
 
+import importlib.util
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from functools import partial
@@ -56,6 +57,7 @@ from openflowsheet.models.revision_flowsheet import (
     PHASE_CAPABILITIES,
     SYN001_BASIS,
     TARGET_PATH_KINDS,
+    WILSON_BASIS,
     ComponentBasis,
     InputMapping,
     InstanceView,
@@ -70,6 +72,7 @@ from openflowsheet.models.revision_flowsheet import (
 )
 from openflowsheet.models.syn001 import PROVIDER_ID as SYN001_PROVIDER_ID
 from openflowsheet.models.syn001 import (
+    column_unit,
     component_separator,
     conversion_reactor,
     feed,
@@ -84,6 +87,7 @@ from openflowsheet.models.syn001 import (
     splitter,
     valve,
 )
+from openflowsheet.models.syn001.column import MODEL_ID as COLUMN_MODEL_ID
 from openflowsheet.models.syn001.component_separator import ComponentSeparator
 from openflowsheet.models.syn001.conversion_reactor import ConversionReactor
 from openflowsheet.models.syn001.feed import FeedSource
@@ -97,6 +101,12 @@ from openflowsheet.models.syn001.pump import LiquidPump
 from openflowsheet.models.syn001.sink import ProductSink
 from openflowsheet.models.syn001.splitter import StreamSplitter
 from openflowsheet.models.syn001.valve import Valve
+from openflowsheet.models.thermal import flash as thermal_flash
+from openflowsheet.models.thermal import heater as thermal_heater
+from openflowsheet.models.thermal import machines as thermal_machines
+from openflowsheet.models.thermal import mixer as thermal_mixer
+from openflowsheet.models.thermal import valve as thermal_valve
+from openflowsheet.orchestrator.splits import split_owners, staged_units
 from openflowsheet.studies.surrogate import reactor as c1_surrogate
 from openflowsheet.studies.surrogate.manifest import check_manifest
 from openflowsheet.thermo import Phase, PropertyProvider
@@ -117,6 +127,7 @@ __all__ = [
     "basis_provider",
     "bind_revision_flowsheet",
     "instance_contract",
+    "provider_for",
     "pin_encodings",
     "render_encoding",
     "resolve_surrogate",
@@ -666,6 +677,21 @@ def instance_contract(
 # -- the six K02 builders (§1.3's table) --------------------------------------------------------
 
 
+def _routing_fields(provider: PropertyProvider) -> dict[str, Any]:
+    """S11 design §4.5: a routing model's manifest fields from the bound provider on a basis
+    other than SYN-001's; nothing on SYN-001's, whose defaults are its constants (so its
+    manifests do not change). The five γ–φ-faced units (mixer, heater, TP flash, PH flash,
+    valve) take the same fields (S11 units design §4.5, WO-D2)."""
+    described = provider.describe()
+    if described.provider_id == SYN001_PROVIDER_ID:
+        return {}
+    return {
+        "property_provider": described.provider_id,
+        "reference_convention": described.reference_convention,
+        "domain": {"T": tuple(described.domain["T"]), "P": tuple(described.domain["P"])},
+    }
+
+
 _FEED_SOURCE: Final = ModelSignature(
     model_id=feed.MODEL_ID,
     ports=feed.PORTS,
@@ -696,6 +722,7 @@ def _feed_source(
         temperature=_pinned(view, signature, "temperature"),
         pressure=_pinned(view, signature, "pressure"),
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {}
 
@@ -713,7 +740,11 @@ def _adiabatic_mixer(
 ) -> tuple[UnitModel, Configuration]:
     instance_contract(view, _ADIABATIC_MIXER, components)
     unit = AdiabaticMixer(
-        unit_id=view.unit_id, provider=provider, context=context, components=components
+        unit_id=view.unit_id,
+        provider=provider,
+        context=context,
+        components=components,
+        **_routing_fields(provider),
     )
     return unit, {}
 
@@ -743,6 +774,7 @@ def _tp_heater(
         inlet_phase=inlet_phase,
         pressure_drop=0.0,
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {"inlet_phase": inlet_phase}
 
@@ -788,6 +820,7 @@ def _tp_flash(
         context=context,
         inlet_phase=inlet_phase,
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {"inlet_phase": inlet_phase}
 
@@ -808,6 +841,7 @@ def _stream_splitter(
         unit_id=view.unit_id,
         split_fraction=parameters["split_fraction"],
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {}
 
@@ -822,7 +856,8 @@ def _product_sink(
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
     instance_contract(view, _PRODUCT_SINK, components)
-    return ProductSink(unit_id=view.unit_id, components=components), {}
+    unit = ProductSink(unit_id=view.unit_id, components=components, **_routing_fields(provider))
+    return unit, {}
 
 
 # -- the six T05 builders (§1.3's table, W11) ----------------------------------------------------
@@ -891,6 +926,7 @@ def _ph_flash(
         pressure_drop=parameters["pressure_drop"],
         inlet_phase=inlet_phase,
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {"inlet_phase": inlet_phase}
 
@@ -918,6 +954,7 @@ def _valve(
         context=context,
         inlet_phase=inlet_phase,
         components=components,
+        **_routing_fields(provider),
     )
     return unit, {"inlet_phase": inlet_phase}
 
@@ -1050,6 +1087,30 @@ def _kinetic_cstr(
         components=components,
     )
     return unit, {"inlet_phase": inlet_phase, "key_component": key_component, "phase": phase}
+
+
+#: S11 design §4.7.1 (registered at I1): `syn001.column`'s signature. Its end specifications are not
+#: `PinColumn`s (a pin is a stream quantity or a duty), so the signature names its one fixed
+#: parameter and no choice; the rest is `column_unit`'s to read and refuse. Its optional parameters
+#: — `stage_pressure.<j>`, `stage_duty.<j>`, `feed_stage.<stream>` and the twelve end parameters
+#: (§10.5) — have no `ModelSignature` field to be listed in (`docs/S11B_DECISIONS.md`, B3b).
+#: Defined here beside the others, because `column_binding` imports this module.
+_COLUMN: Final = ModelSignature(
+    model_id=COLUMN_MODEL_ID, ports=column_unit.PORTS, required=(column_unit.STAGE_COUNT,)
+)
+
+
+def _syn001_column(
+    view: InstanceView,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    components: tuple[str, ...],
+) -> tuple[UnitModel, Configuration]:
+    """`column_binding.build_column` (§4.7.1–§4.7.2), imported at the call: that module imports
+    `ModelSignature` and `Configuration` from this one."""
+    from openflowsheet.application.column_binding import build_column  # noqa: PLC0415
+
+    return build_column(view, provider, context, components)
 
 
 _COMPONENT_SEPARATOR: Final = ModelSignature(
@@ -1432,6 +1493,71 @@ _SYN001_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
     _KINETIC_CSTR,
 )
 
+# -- the `thermal.*` family (S11 units design §4.4, §5.4 I1b) -----------------------------------
+
+#: The seven `thermal.*` signatures, defined here beside the others because `thermal_binding`
+#: imports this module (as `_COLUMN` is for `column_binding`). What they cannot list: the heater's
+#: optional `pressure_drop` and `outlet_vapor_fraction` (`thermal_binding`'s docstring).
+_THERMAL_HEATER: Final = ModelSignature(
+    model_id=thermal_heater.MODEL_ID,
+    ports=thermal_heater.PORTS,
+    choices=(
+        SpecificationChoice(
+            "specification",
+            (
+                PinColumn("outlet_temperature", "temperature", "outlet"),
+                PinColumn("duty", "duty"),
+            ),
+        ),
+    ),
+)
+_THERMAL_VALVE: Final = ModelSignature(
+    model_id=thermal_valve.MODEL_ID,
+    ports=thermal_valve.PORTS,
+    pins=(PinColumn("outlet_pressure", "pressure", "outlet"),),
+)
+_THERMAL_MIXER: Final = ModelSignature(model_id=thermal_mixer.MODEL_ID, ports=thermal_mixer.PORTS)
+_THERMAL_FLASH: Final = ModelSignature(
+    model_id=thermal_flash.MODEL_ID,
+    ports=thermal_flash.PORTS,
+    required=("pressure_drop",),
+    pins=(PinColumn("duty", "duty"),),
+)
+#: Machine (`pump`, `compressor`, `turbine`) -> its signature.
+_THERMAL_MACHINES: Final[Mapping[str, ModelSignature]] = {
+    machine: ModelSignature(
+        model_id=model_id,
+        ports=thermal_machines.PORTS[machine],
+        required=("efficiency",),
+        pins=(PinColumn("outlet_pressure", "pressure", "outlet"),),
+    )
+    for machine, model_id in thermal_machines.MACHINE_MODEL_IDS.items()
+}
+_THERMAL_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
+    _THERMAL_HEATER,
+    _THERMAL_VALVE,
+    _THERMAL_MIXER,
+    _THERMAL_FLASH,
+    *_THERMAL_MACHINES.values(),
+)
+
+
+def _thermal_builder(model_id: str) -> Builder:
+    """`thermal_binding.BUILDERS[model_id]`, imported at the call: that module imports this one."""
+
+    def build(
+        view: InstanceView,
+        provider: PropertyProvider,
+        context: EvaluationContext,
+        components: tuple[str, ...],
+    ) -> tuple[UnitModel, Configuration]:
+        from openflowsheet.application.thermal_binding import BUILDERS  # noqa: PLC0415
+
+        return BUILDERS[model_id](view, provider, context, components)
+
+    return build
+
+
 #: M02's eight C1 models: the six units (design note §8) and the reactor's two ids (§4.1, WO-9),
 #: and M04's surrogate of the reactor (W27 Amendment 3, R-301). They bind on the C1 basis only
 #: (R-288).
@@ -1448,10 +1574,36 @@ _C1_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
 )
 
 #: Model id -> signature: what each builder reads (§1.3's table), for `list_models` (T07 §4.2):
-#: SYN-001's thirteen and, since M02's join (R-280), the eight C1 models; M04's surrogate (R-301).
+#: SYN-001's thirteen, S11's column (§4.7) and, since M02's join (R-280), the eight C1 models;
+#: M04's surrogate (R-301); the seven `thermal.*` models (S11 units design §5.4 I1b).
 MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
-    signature.model_id: signature for signature in (*_SYN001_SIGNATURES, *_C1_SIGNATURES)
+    signature.model_id: signature
+    for signature in (*_SYN001_SIGNATURES, _COLUMN, *_C1_SIGNATURES, *_THERMAL_SIGNATURES)
 }
+
+_IAPWS95: Final = "iapws95-v1"
+_COOLPROP: Final = "coolprop-heos-v1"
+#: Units design §4.6 (WO-D5): the Wilson record source selects `wilson-ig-v2`.
+_WILSON: Final = WILSON_BASIS.provider_id
+#: The provider ids of the bases S11 makes selectable (ADR 0050 D1).
+S11_BASES: Final = (_IAPWS95, _COOLPROP, _WILSON)
+#: S11 design §4.4: the models that hold no provider and evaluate no property.
+ROUTING_MODELS: Final = (feed.MODEL_ID, sink.MODEL_ID, splitter.MODEL_ID)
+#: Units design §4.5, §4.7: the five K02/T05 units with γ–φ faces, which bind on Wilson too.
+_GAMMA_PHI_MODELS: Final = (
+    _TP_HEATER.model_id,
+    _TP_FLASH.model_id,
+    _PH_FLASH.model_id,
+    _VALVE.model_id,
+    _ADIABATIC_MIXER.model_id,
+)
+#: Units design §4.7: the pure-fluid bases every `thermal.*` model binds on, and the vapour
+#: machines that bind on Wilson as well (L-GP-2).
+_PURE_FLUID_BASES: Final = frozenset({_IAPWS95, _COOLPROP})
+_WILSON_MACHINES: Final = (
+    thermal_machines.MACHINE_MODEL_IDS["compressor"],
+    thermal_machines.MACHINE_MODEL_IDS["turbine"],
+)
 
 #: Model id -> the provider ids of the bases it binds on (register R-288, design note §14.4 D3):
 #: each `syn001.*` model on SYN-001's basis only, each `c1.*` model on the C1 basis only. The one
@@ -1461,6 +1613,20 @@ MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
 MODEL_BASES: Final[Mapping[str, frozenset[str]]] = {
     **{s.model_id: frozenset({SYN001_PROVIDER_ID}) for s in _SYN001_SIGNATURES},
     **{s.model_id: frozenset({C1_PROVIDER_ID}) for s in _C1_SIGNATURES},
+    # S11 design §4.4 (ADR 0050 D3): the three routing models hold no provider and bind on every
+    # basis except C1's, which has their namesakes.
+    **dict.fromkeys(ROUTING_MODELS, frozenset({SYN001_PROVIDER_ID, *S11_BASES})),
+    # S11 design §4.7, §9 (I1): the column binds on SYN-001's basis and on the provider id the
+    # Wilson registry row holds (`WILSON_BASIS`); C1's is vapour-only and a pure fluid has no
+    # stage composition (`_UNADMITTED`).
+    _COLUMN.model_id: frozenset({SYN001_PROVIDER_ID, WILSON_BASIS.provider_id}),
+    # Units design §4.7 (I1b): the five γ–φ-faced units on Wilson as well (track D), and the seven
+    # `thermal.*` models on the pure-fluid bases, the compressor and turbine also on Wilson.
+    **{model_id: frozenset({SYN001_PROVIDER_ID, _WILSON}) for model_id in _GAMMA_PHI_MODELS},
+    **{
+        s.model_id: _PURE_FLUID_BASES | ({_WILSON} if s.model_id in _WILSON_MACHINES else set())
+        for s in _THERMAL_SIGNATURES
+    },
 }
 
 #: Model id -> what an instance of it takes as a target path, for `parse_revision`'s
@@ -1470,9 +1636,9 @@ _INSTANCE_TARGETS: Final[Mapping[str, str]] = {
 }
 
 #: Model id -> builder: the six K02 models, the six T05 ones (§1.3's table), T08's kinetic CSTR
-#: (build-first §A1), M02's six C1 units and two C1 reactor ids (R-280), and M04's surrogate of
-#: the C1 reactor (R-301): its registered builder refuses; the binder hands a resolved manifest to
-#: `_c1_reactor_surrogate_of` instead.
+#: (build-first §A1), S11's column (§4.7), M02's six C1 units and two C1 reactor ids (R-280), and
+#: M04's surrogate of the C1 reactor (R-301): its registered builder refuses; the binder hands a
+#: resolved manifest to `_c1_reactor_surrogate_of` instead.
 MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _FEED_SOURCE.model_id: _feed_source,
     _ADIABATIC_MIXER.model_id: _adiabatic_mixer,
@@ -1487,6 +1653,7 @@ MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     _COMPONENT_SEPARATOR.model_id: _component_separator,
     _HEAT_EXCHANGER.model_id: _heat_exchanger,
     _KINETIC_CSTR.model_id: _kinetic_cstr,
+    _COLUMN.model_id: _syn001_column,
     _C1_FEED_SOURCE.model_id: _c1_feed_source,
     _C1_ADIABATIC_MIXER.model_id: _c1_adiabatic_mixer,
     _C1_TP_HEATER.model_id: _c1_tp_heater,
@@ -1498,6 +1665,8 @@ MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     # recorded erratum (the module's bytes are the stand-in variant's pinned artifact).
     _C1_REACTOR_STANDIN.model_id: _c1_reactor,
     _C1_REACTOR_SURROGATE.model_id: _c1_reactor_surrogate,
+    # S11 units design §5.4 (I1b): the seven `thermal.*` builders (`thermal_binding`).
+    **{s.model_id: _thermal_builder(s.model_id) for s in _THERMAL_SIGNATURES},
 }
 
 #: The model performing the same function on the other basis, both ways (R-288's hint): the six
@@ -1533,6 +1702,10 @@ class _SelectableBases(Sequence[ComponentBasis]):
     def __len__(self) -> int:
         return len(selectable_bases())
 
+    def __iter__(self) -> Iterator[ComponentBasis]:
+        # One tuple per iteration, not one per index (S11 design §4.2).
+        return iter(selectable_bases())
+
 
 #: Every `ComponentBasis` the binder selects a revision's provider for (`component_basis`), in a
 #: fixed order, SYN-001's first (W27-R63; R-288). `basis_provider(b)` describes `b`'s provider id
@@ -1542,13 +1715,112 @@ SELECTABLE_BASES: Final[Sequence[ComponentBasis]] = _SelectableBases()
 
 def _basis_refusal(model_id: str, basis: ComponentBasis) -> Unbound:
     """R-288: `model_id` does not bind on `basis`. The hint names the bases it binds on and, when
-    there is one, the model of the same function on `basis`."""
-    own = ", ".join(sorted(MODEL_BASES[model_id]))
-    hint = f"{model_id} binds on the {own} basis only, not on this revision's {basis.provider_id}"
+    there is one, the model of the same function on `basis`.
+
+    S11.A13 (restated, R-841): on every basis the hint names every basis the model binds on
+    ("bases" when there is more than one), and appends `_UNADMITTED`'s reason where it has one.
+    A syn001/c1 hint is the base's byte for byte for a model whose bases S11 does not change."""
+    bases = MODEL_BASES[model_id]
+    own = ", ".join(sorted(bases))
+    noun = "bases" if len(bases) > 1 else "basis"
+    hint = f"{model_id} binds on the {own} {noun} only, not on this revision's {basis.provider_id}"
     other = _SAME_FUNCTION.get(model_id)
     if other is not None and basis.provider_id in MODEL_BASES[other]:
         hint += f"; on {basis.provider_id} the same function is {other}"
+    reason = _unadmitted(model_id, basis.provider_id)
+    if reason is not None:
+        hint += f"; {reason}"
     return Unbound("unsupported", f"model_unsupported({model_id})", hint=hint)
+
+
+#: S11 design §4.4, units design §4.7: why a model is not admitted on a basis S11 adds (or why
+#: `syn001.column` or a `thermal.*` model is not admitted on a basis), appended to R-288's hint.
+#: No pair between SYN-001 and C1 of a model outside the `thermal.*` family reads it.
+_UNADMITTED: Final[Mapping[str, str]] = {
+    # I1b (orchestrator ruling): the first pass's "S11b"/"S11c" texts restated to the admission
+    # S11 ends with; the pairs are those of §4.7's "—" cells that no rewritten reason covers.
+    "gamma_phi": (
+        "its EO face reads lnK and h_<c>, and S11 gives γ–φ faces to the five K02/T05 units "
+        "only (L-GP-1)"
+    ),
+    "pure_fluid": (
+        "pure-fluid streams are declared-regime (ADR 0051), which only the thermal.* units take; "
+        "none of them has this function"
+    ),
+    "c1_physics": "the c1.* units carry pr-c1-v1's own physics (ADR 0050 D3)",
+    "column_vapour": "pr-c1-v1 is vapour-only (S02 §0)",
+    "column_pure": "a pure fluid has no stage composition",
+    # Units design §4.7 (I1b).
+    "declared_regime": (
+        "use thermal.{namesake} (ADR 0051: pure-fluid streams are declared-regime)"
+    ),
+    "lifted": "use syn001.{namesake} (lifted two-phase streams)",
+    "no_volume": "wilson-ig-v2 has no liquid volume, which a pump needs (L-GP-1)",
+    "no_entropy": (
+        "thermal.* needs a provider with s (SYN-001: none; pr-c1-v1: vapour-only, no s)"
+    ),
+}
+#: Units design §4.7: a `syn001.*` model's `thermal.*` namesake on a pure fluid, and a
+#: `thermal.*` model's `syn001.*` namesake on Wilson.
+_THERMAL_NAMESAKE: Final[Mapping[str, str]] = {
+    _TP_HEATER.model_id: "heater",
+    _VALVE.model_id: "valve",
+    _ADIABATIC_MIXER.model_id: "mixer",
+    _PH_FLASH.model_id: "flash",
+    _TP_FLASH.model_id: "flash",
+    _LIQUID_PUMP.model_id: "pump",
+}
+_LIFTED_NAMESAKE: Final[Mapping[str, str]] = {
+    _THERMAL_HEATER.model_id: "tp_heater",
+    _THERMAL_VALVE.model_id: "valve",
+    _THERMAL_MIXER.model_id: "adiabatic_mixer",
+    _THERMAL_FLASH.model_id: "ph_flash",
+}
+_THERMAL_PUMP: Final = thermal_machines.MACHINE_MODEL_IDS["pump"]
+_COLUMN_MODEL: Final = "syn001.column"
+#: The C1 routing models, refused on S11's bases with their SYN-001 namesake's hint only.
+_C1_ROUTING: Final = frozenset(
+    c1_id for syn001_id, c1_id in _NAMESAKES if syn001_id in ROUTING_MODELS
+)
+
+
+def _unadmitted(model_id: str, provider_id: str) -> str | None:
+    """`_UNADMITTED`'s reason for `model_id` on `provider_id`, or `None` (S11 design §4.4)."""
+    if model_id == _COLUMN_MODEL:
+        if provider_id == C1_PROVIDER_ID:
+            return _UNADMITTED["column_vapour"]
+        if provider_id in (_IAPWS95, _COOLPROP):
+            return _UNADMITTED["column_pure"]
+        return None
+    if model_id in ROUTING_MODELS or model_id in _C1_ROUTING:
+        return None
+    if model_id.startswith("thermal."):
+        if provider_id in (SYN001_PROVIDER_ID, C1_PROVIDER_ID):
+            return _UNADMITTED["no_entropy"]
+        if provider_id == _WILSON:
+            if model_id == _THERMAL_PUMP:
+                return _UNADMITTED["no_volume"]
+            return _UNADMITTED["lifted"].format(namesake=_LIFTED_NAMESAKE[model_id])
+        return None
+    if provider_id in (_IAPWS95, _COOLPROP):
+        namesake = _THERMAL_NAMESAKE.get(model_id)
+        if namesake is not None:
+            return _UNADMITTED["declared_regime"].format(namesake=namesake)
+        return _UNADMITTED["pure_fluid" if model_id.startswith("syn001.") else "c1_physics"]
+    if provider_id == _WILSON:
+        if model_id == _LIQUID_PUMP.model_id:
+            return _UNADMITTED["no_volume"]
+        return _UNADMITTED["gamma_phi" if model_id.startswith("syn001.") else "c1_physics"]
+    return None
+
+
+#: S11 design §4.4: models outside `MODEL_BASES` refused with a hint (library-only).
+_LIBRARY_ONLY_HINTS: Final[Mapping[str, str]] = {
+    "syn001.cascade": (
+        "bind syn001.column with its top and bottom inlets connected (S02 §1: condenser none, "
+        "reboiler none is S01's cascade)"
+    ),
+}
 
 
 class _PinReader(Mapping[str, float]):
@@ -1606,15 +1878,76 @@ def _variant_backed_models() -> frozenset[str]:
 
 
 def basis_provider(basis: ComponentBasis) -> PropertyProvider:
-    """A fresh provider of `basis` (ADR 0034 D8): `pr-c1-v1` or SYN-001's."""
-    from openflowsheet.thermo.pr_c1 import PROVIDER_ID, PrC1Provider
-    from openflowsheet.thermo.syn001 import Syn001Provider
+    """A fresh provider of `basis` (ADR 0034 D8, ADR 0050 D1), raising `ValueError` for a basis
+    with no provider. The raising API W27's snapshot calls; the binder calls `provider_for`, which
+    checks the basis' preconditions first (S11 design §4.3)."""
+    if basis.provider_id == C1_PROVIDER_ID:
+        from openflowsheet.thermo.pr_c1 import PrC1Provider  # noqa: PLC0415
 
-    if basis.provider_id == PROVIDER_ID:
         return PrC1Provider()
+    if basis.provider_id == "iapws95-v1":
+        from openflowsheet.thermo.iapws95 import Iapws95Provider  # noqa: PLC0415
+
+        return Iapws95Provider()
+    if basis.provider_id == _WILSON:
+        from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2  # noqa: PLC0415
+
+        return WilsonIdealGasProviderV2()
+    if basis.provider_id == "coolprop-heos-v1":
+        from openflowsheet.thermo.coolprop_heos import CoolPropHeosProvider  # noqa: PLC0415
+
+        (component,) = basis.components
+        return CoolPropHeosProvider(component)
     if basis != SYN001_BASIS:
         raise ValueError(f"no provider for basis {basis.provider_id!r}")
+    from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: PLC0415
+
     return Syn001Provider()
+
+
+#: S11 design §4.3: the hint of a CoolProp basis without its optional extra.
+COOLPROP_UNAVAILABLE_HINT: Final = (
+    "the coolprop extra is not installed (pip install openflowsheet[coolprop])"
+)
+
+
+def provider_for(basis: ComponentBasis) -> PropertyProvider | Unbound:
+    """`basis_provider(basis)` once the basis' bind-time preconditions hold (S11 design §4.3,
+    ADR 0050 D4), else the typed refusal: CoolProp's optional extra must be importable, and
+    Wilson's records must load and satisfy the column theorem's premises P1–P3 in closed form
+    (`thermo.wilson_premises`; closes R-781)."""
+    if basis.provider_id == "coolprop-heos-v1" and importlib.util.find_spec("CoolProp") is None:
+        return Unbound(
+            "unsupported", "basis_unavailable(coolprop-heos-v1)", hint=COOLPROP_UNAVAILABLE_HINT
+        )
+    if basis.provider_id == _WILSON:
+        refusal = _wilson_refusal()
+        if refusal is not None:
+            code, hint = refusal
+            return Unbound("unsupported", code, hint=hint)
+    return basis_provider(basis)
+
+
+def _wilson_refusal() -> tuple[str, str] | None:
+    """The code and hint that refuse the Wilson basis in this installation, or `None` (S11 design
+    §4.3): `basis_unavailable` when the real records do not load (a wheel; R-706, Q-F3),
+    `basis_premises_unmet` naming the first violated premise. The verifier's `fresh_provider`
+    raises the same codes."""
+    from openflowsheet.thermo import wilson_ig, wilson_premises  # noqa: PLC0415
+
+    try:
+        records = wilson_ig.load_records()
+    except wilson_ig.RecordError as error:
+        cause = _first_line(error).split(":", 1)[0]
+        return (
+            f"basis_unavailable({_WILSON})",
+            f"{cause}: the records {wilson_ig.RECORDS_PATH} are repository-only until Frank's "
+            "Q-F3 (R-706)",
+        )
+    found = wilson_premises.violations(records)
+    if found:
+        return f"basis_premises_unmet({_WILSON})", found[0].hint
+    return None
 
 
 def bind_revision_flowsheet(
@@ -1650,7 +1983,11 @@ def bind_revision_flowsheet(
     for instance in view.instances:
         # R-288: a model binds on the bases `MODEL_BASES` lists for it, and nowhere else.
         if instance.model_id not in MODEL_BASES:
-            return Unbound("unsupported", f"model_unsupported({instance.model_id})")
+            return Unbound(
+                "unsupported",
+                f"model_unsupported({instance.model_id})",
+                hint=_LIBRARY_ONLY_HINTS.get(instance.model_id),
+            )
         if view.basis.provider_id not in MODEL_BASES[instance.model_id]:
             return _basis_refusal(instance.model_id, view.basis)
     manifests: dict[str, Mapping[str, Any]] = {}
@@ -1667,7 +2004,10 @@ def bind_revision_flowsheet(
     # and a plan run counts their calls (T02; `PropertyMeter`). The provider is the one the
     # revision's `record_source` selects (ADR 0034 D8): `pr-c1-v1` for the C1 records, SYN-001
     # for every other value, exactly as before.
-    provider = PropertyMeter(basis_provider(view.basis))
+    bound_provider = provider_for(view.basis)
+    if isinstance(bound_provider, Unbound):
+        return bound_provider
+    provider = PropertyMeter(bound_provider)
     built: list[tuple[InstanceView, UnitModel, Configuration, _PinReader]] = []
     for instance in view.instances:
         reader = _PinReader(instance.pins)
@@ -1689,6 +2029,20 @@ def bind_revision_flowsheet(
                 f"builder for {instance.model_id} built {unit.model_id} {unit.unit_id!r}"
             )
         built.append((instance, unit, configuration, reader))
+
+    # S11 design §10.2 step 9 (R-822): no instance id is a lifted-split key a staged unit supplies.
+    # The reader's id rule refuses the dotted spelling first (R-838); this is the binder's guard,
+    # a set intersection of the supplied keys with the ids, not parsing.
+    ids = {instance.unit_id for instance in view.instances}
+    owners = split_owners(staged_units([unit for _, unit, _, _ in built]))
+    for key, owner in owners.items():
+        if key in ids:
+            return Unbound(
+                "unsupported",
+                f"id_unsupported({key})",
+                hint=f"Instance id `{key}` is a lifted-split key of instance `{owner}`; "
+                "rename the instance.",
+            )
 
     for instance, unit, _, _ in built:
         declared = {port.name: port for port in unit.ports()}

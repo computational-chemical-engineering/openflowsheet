@@ -24,12 +24,17 @@ default) until an amendment registers its reading.
   `canonical_components`' set, and accepts every model of `MODEL_BUILDERS`.
 
 Either way a revision binds on one basis (`routes_per_revision = 1`).
+
+Registration version 3 (`docs/derivations/W27-registration-v3.md`) reads the same two ways, with
+`PROVIDER_LINES_V3` in place of `PROVIDER_LINES` (W27v3-R05), and each route also carries the
+`record_source` of its basis, the second member of its key (W27v3-R06), under schema
+`w27-registry-snapshot-v3`. Versions 1 and 2 build exactly the snapshot they built before.
 """
 
 from __future__ import annotations
 
 import subprocess
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Final
@@ -37,18 +42,29 @@ from typing import Any, Final
 from benchmarks.m06.w27 import registration
 
 SCHEMA: Final[str] = "w27-registry-snapshot-v1"
+#: W27v3-R06: a version 3 snapshot's routes carry `record_source`.
+SCHEMA_V3: Final[str] = "w27-registry-snapshot-v3"
 #: `syn001/components.yaml` is the SYN-001 records' source (the provider carries ids only).
 SYN001_RECORDS: Final = registration.ROOT / "benchmarks" / "syn001" / "components.yaml"
+#: The same file as the `record_source` a SYN-001 revision writes (S11 §4.1).
+SYN001_RECORD_SOURCE: Final[str] = "benchmarks/syn001/components.yaml"
 #: The provider's phase names, as the classifier's phase kinds (W27-R06).
 PHASE_KINDS: Final[Mapping[str, str]] = {"LIQUID": "liquid", "VAPOR": "vapor", "SOLID": "solid"}
+#: A provider line's result: the records file, and the phase kinds admitted per component.
+RecordLine = tuple[Path, dict[str, list[str]]]
 
 
 class SnapshotUnsupportedError(RuntimeError):
     """§17 Q1: this build's route enumeration is not registered; no snapshot is built."""
 
 
-def list_models_document() -> tuple[dict[str, Any], str]:
-    """`list_models` through the operations table, and the SHA-256 of its canonical JSON."""
+def list_models_document(
+    model_ids: Collection[str] | None = None,
+) -> tuple[dict[str, Any], str]:
+    """`list_models` through the operations table, and the SHA-256 of its canonical JSON. With
+    `model_ids` (a binder's `LIST_MODELS`; `restrict_to_v2_models`), the served document with only
+    those entries: what `list_models` serves when `MODEL_BUILDERS` holds only them, since it lists
+    each id's signature in sorted id order. An id it does not serve is refused."""
     from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
     from openflowsheet.application.operations import dispatch  # noqa: PLC0415
     from openflowsheet.canonical import canonical_json  # noqa: PLC0415
@@ -58,7 +74,32 @@ def list_models_document() -> tuple[dict[str, Any], str]:
         document: dict[str, Any] = dispatch(app, "list_models", {})
     finally:
         app.close()
+    if model_ids is not None:
+        served = {m["model_id"] for m in document["models"]}
+        unserved = sorted(set(model_ids) - served)
+        if unserved or set(document) != {"models"}:
+            raise SnapshotUnsupportedError(
+                f"registry_snapshot: unsupported(LIST_MODELS names unserved ids {unserved})"
+            )
+        document = {"models": [m for m in document["models"] if m["model_id"] in model_ids]}
     return document, registration.sha256_bytes(canonical_json(document))
+
+
+def restrict_to_v2_models(binding: ModuleType) -> ModuleType:
+    """The installed binder's models as W27 v1/v2 read them (S11 I1b, extending R-837):
+    `MODEL_BASES` and `MODEL_BUILDERS` keep only the ids of v1/v2's model table (W27-R12), and
+    `LIST_MODELS` names them, so `build_snapshot` reads `list_models` restricted to them. S11's
+    models (the column, the `thermal.*` family) have rows in W27 v3 only (R-805, §4.10), which
+    reads the unrestricted build."""
+    table = registration.model_functions(2)
+    binding.MODEL_BASES = {  # type: ignore[attr-defined]
+        m: on for m, on in binding.MODEL_BASES.items() if m in table
+    }
+    binding.MODEL_BUILDERS = {  # type: ignore[attr-defined]
+        m: build for m, build in binding.MODEL_BUILDERS.items() if m in table
+    }
+    binding.LIST_MODELS = frozenset(table)  # type: ignore[attr-defined]
+    return binding
 
 
 def _component_rows(
@@ -91,9 +132,10 @@ def _component_rows(
     return rows
 
 
-def _routes_0_1_1(binding: ModuleType) -> list[dict[str, Any]]:
+def _routes_0_1_1(binding: ModuleType, registration_version: int = 1) -> list[dict[str, Any]]:
     """0.1.1's binder: one implicit route over SYN-001 (`revision_binding.bind_revision_flowsheet`
-    constructs `Syn001Provider()`; `canonical_components` admits a permutation of its set)."""
+    constructs `Syn001Provider()`; `canonical_components` admits a permutation of its set). Under
+    version 3 the route's `record_source` is the SYN-001 records' path."""
     from openflowsheet.models.revision_flowsheet import canonical_components  # noqa: PLC0415
     from openflowsheet.thermo.syn001 import Syn001Provider  # noqa: PLC0415
 
@@ -105,13 +147,14 @@ def _routes_0_1_1(binding: ModuleType) -> list[dict[str, Any]]:
         )
     every = sorted(PHASE_KINDS[str(p)] for p in capabilities.phases)
     components = _component_rows(SYN001_RECORDS, admitted, {cid: every for cid in admitted})
-    return [
-        {
-            "provider_id": capabilities.provider_id,
-            "components": components,
-            "model_ids": sorted(binding.MODEL_BUILDERS),
-        }
-    ]
+    route: dict[str, Any] = {
+        "provider_id": capabilities.provider_id,
+        "components": components,
+        "model_ids": sorted(binding.MODEL_BUILDERS),
+    }
+    if registration_version == 3:
+        route["record_source"] = SYN001_RECORD_SOURCE
+    return [route]
 
 
 # -- bases-v1 (W27-R63 item 1) -------------------------------------------------------------------
@@ -155,8 +198,37 @@ PROVIDER_LINES: Final[
 }
 
 
-def _routes_bases_v1(binding: ModuleType, list_models_ids: Sequence[str]) -> list[dict[str, Any]]:
-    """W27-R63 item 1: one route per selectable basis, read from the binder's own tables."""
+def _record_line(basis: Any, components: Sequence[str], every: list[str]) -> RecordLine:
+    """W27v3-R05's line for every basis without a version 2 line: the records at
+    `ROOT / basis.record_source`, every phase of `describe()` for every component."""
+    return registration.ROOT / str(basis.record_source), {cid: every for cid in components}
+
+
+def _v2_line(
+    line: Callable[[Sequence[str], list[str]], RecordLine],
+) -> Callable[[Any, Sequence[str], list[str]], RecordLine]:
+    """W27v3-R05: a provider that keeps its version 2 line reads it whatever its basis says."""
+    return lambda _basis, components, every: line(components, every)
+
+
+#: W27v3-R05's per-provider lines, given the basis, its components (in order) and
+#: `describe().phases` as phase kinds. A provider with no line is refused (W27-R63).
+PROVIDER_LINES_V3: Final[Mapping[str, Callable[[Any, Sequence[str], list[str]], RecordLine]]] = {
+    "syn001": _record_line,
+    "pr-c1-v1": _v2_line(_pr_c1_line),
+    "pr-lib-v1": _v2_line(_pr_lib_line),
+    "iapws95-v1": _record_line,
+    "wilson-ig-v1": _record_line,
+    "wilson-ig-v2": _record_line,
+    "coolprop-heos-v1": _record_line,
+}
+
+
+def _routes_bases_v1(
+    binding: ModuleType, list_models_ids: Sequence[str], registration_version: int = 1
+) -> list[dict[str, Any]]:
+    """W27-R63 item 1: one route per selectable basis, read from the binder's own tables (version
+    3: W27v3-R05's lines, and each route's `record_source`)."""
     model_bases: dict[str, frozenset[str]] = {
         str(m): frozenset(str(p) for p in providers) for m, providers in binding.MODEL_BASES.items()
     }
@@ -181,23 +253,27 @@ def _routes_bases_v1(binding: ModuleType, list_models_ids: Sequence[str]) -> lis
                 f"registry_snapshot: unsupported(basis {provider_id!r} {list(ids)}: its provider "
                 f"describes {capabilities.provider_id!r} {list(capabilities.components)})"
             )
-        line = PROVIDER_LINES.get(provider_id)
-        if line is None:
+        lines = PROVIDER_LINES_V3 if registration_version == 3 else PROVIDER_LINES
+        if provider_id not in lines:
             raise SnapshotUnsupportedError(
                 f"registry_snapshot: unsupported(provider {provider_id!r}: no registered records "
                 "and phases, W27-R63)"
             )
         every = sorted(PHASE_KINDS[str(p)] for p in capabilities.phases)
-        records_path, phases = line(ids, every)
+        if registration_version == 3:
+            records_path, phases = PROVIDER_LINES_V3[provider_id](basis, ids, every)
+        else:
+            records_path, phases = PROVIDER_LINES[provider_id](ids, every)
         model_ids = sorted(m for m, on in model_bases.items() if provider_id in on)
         on_a_route.update(model_ids)
-        routes.append(
-            {
-                "provider_id": provider_id,
-                "components": _component_rows(records_path, ids, phases),
-                "model_ids": model_ids,
-            }
-        )
+        route: dict[str, Any] = {
+            "provider_id": provider_id,
+            "components": _component_rows(records_path, ids, phases),
+            "model_ids": model_ids,
+        }
+        if registration_version == 3:
+            route["record_source"] = str(basis.record_source)
+        routes.append(route)
     on_no_route = sorted(set(model_bases) - on_a_route)
     if on_no_route:
         raise SnapshotUnsupportedError(
@@ -229,22 +305,32 @@ def git_commit() -> str | None:
         return None
 
 
-def build_snapshot(version: str | None = None, binding: ModuleType | None = None) -> dict[str, Any]:
+def build_snapshot(
+    version: str | None = None,
+    binding: ModuleType | None = None,
+    *,
+    registration_version: int = 1,
+) -> dict[str, Any]:
     """W27-R22's document for the build at hand (`version` and `binding` default to this build's
-    `__version__` and `revision_binding`). Refuses a binder no registered reading fits (W27-R63)."""
+    `__version__` and `revision_binding`). Refuses a binder no registered reading fits (W27-R63).
+    `registration_version=3` builds W27v3-R05/R06's form; 1 and 2 build the same snapshot."""
+    if registration_version not in (1, 2, 3) or isinstance(registration_version, bool):
+        raise ValueError(f"registration version {registration_version!r} is not 1, 2 or 3")
+
     from openflowsheet import __version__  # noqa: PLC0415
     from openflowsheet.application import revision_binding  # noqa: PLC0415
 
     version = __version__ if version is None else version
     binding = revision_binding if binding is None else binding
     reading = reading_for(binding, version)
-    document, digest = list_models_document()
+    document, digest = list_models_document(getattr(binding, "LIST_MODELS", None))
     if reading == "bases-v1":
-        routes = _routes_bases_v1(binding, [m["model_id"] for m in document["models"]])
+        ids = [m["model_id"] for m in document["models"]]
+        routes = _routes_bases_v1(binding, ids, registration_version)
     else:
-        routes = _routes_0_1_1(binding)
+        routes = _routes_0_1_1(binding, registration_version)
     return {
-        "schema": SCHEMA,
+        "schema": SCHEMA_V3 if registration_version == 3 else SCHEMA,
         "package_version": version,
         "git_commit": git_commit(),
         "list_models_sha256": digest,

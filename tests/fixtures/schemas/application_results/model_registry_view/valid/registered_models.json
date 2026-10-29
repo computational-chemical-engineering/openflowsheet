@@ -486,6 +486,47 @@
     },
     {
       "choices": [],
+      "model_id": "syn001.column",
+      "pins": [],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": "many",
+          "name": "feed"
+        },
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "top"
+        },
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "bottom"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "distillate"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "bottoms"
+        }
+      ],
+      "required": [
+        "stage_count"
+      ],
+      "zero": []
+    },
+    {
+      "choices": [],
       "model_id": "syn001.component_separator",
       "pins": [],
       "ports": [
@@ -1188,6 +1229,378 @@
     {
       "choices": [],
       "model_id": "syn001.valve",
+      "pins": [
+        {
+          "name": "outlet_pressure",
+          "port": "outlet",
+          "quantity": "pressure",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{connection:outlet}",
+              "object_type": "connection",
+              "path": "state.P",
+              "si_unit": "Pa"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.P",
+              "si_unit": "Pa"
+            }
+          ]
+        }
+      ],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        }
+      ],
+      "required": [],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "thermal.compressor",
+      "pins": [
+        {
+          "name": "outlet_pressure",
+          "port": "outlet",
+          "quantity": "pressure",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{connection:outlet}",
+              "object_type": "connection",
+              "path": "state.P",
+              "si_unit": "Pa"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.P",
+              "si_unit": "Pa"
+            }
+          ]
+        }
+      ],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "work"
+        }
+      ],
+      "required": [
+        "efficiency"
+      ],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "thermal.flash",
+      "pins": [
+        {
+          "name": "duty",
+          "port": null,
+          "quantity": "duty",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "duty"
+              ],
+              "kind": "heat_rate",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "duty.Q",
+              "si_unit": "W"
+            }
+          ]
+        }
+      ],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "vapor"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "liquid"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "duty"
+        }
+      ],
+      "required": [
+        "pressure_drop"
+      ],
+      "zero": []
+    },
+    {
+      "choices": [
+        {
+          "name": "specification",
+          "options": [
+            {
+              "name": "outlet_temperature",
+              "port": "outlet",
+              "quantity": "temperature",
+              "specifications": [
+                {
+                  "component": null,
+                  "fixes": [
+                    "outlet_temperature"
+                  ],
+                  "kind": "temperature",
+                  "object_id": "{connection:outlet}",
+                  "object_type": "connection",
+                  "path": "state.T",
+                  "si_unit": "K"
+                }
+              ]
+            },
+            {
+              "name": "duty",
+              "port": null,
+              "quantity": "duty",
+              "specifications": [
+                {
+                  "component": null,
+                  "fixes": [
+                    "duty"
+                  ],
+                  "kind": "heat_rate",
+                  "object_id": "{instance}",
+                  "object_type": "instance",
+                  "path": "duty.Q",
+                  "si_unit": "W"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "model_id": "thermal.heater",
+      "pins": [],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "duty"
+        }
+      ],
+      "required": [],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "thermal.mixer",
+      "pins": [],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": "many",
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        }
+      ],
+      "required": [],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "thermal.pump",
+      "pins": [
+        {
+          "name": "outlet_pressure",
+          "port": "outlet",
+          "quantity": "pressure",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{connection:outlet}",
+              "object_type": "connection",
+              "path": "state.P",
+              "si_unit": "Pa"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.P",
+              "si_unit": "Pa"
+            }
+          ]
+        }
+      ],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "work"
+        }
+      ],
+      "required": [
+        "efficiency"
+      ],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "thermal.turbine",
+      "pins": [
+        {
+          "name": "outlet_pressure",
+          "port": "outlet",
+          "quantity": "pressure",
+          "specifications": [
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{connection:outlet}",
+              "object_type": "connection",
+              "path": "state.P",
+              "si_unit": "Pa"
+            },
+            {
+              "component": null,
+              "fixes": [
+                "outlet_pressure"
+              ],
+              "kind": "pressure",
+              "object_id": "{instance}",
+              "object_type": "instance",
+              "path": "outlet.P",
+              "si_unit": "Pa"
+            }
+          ]
+        }
+      ],
+      "ports": [
+        {
+          "direction": "inlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "inlet"
+        },
+        {
+          "direction": "outlet",
+          "kind": "material",
+          "multiplicity": 1,
+          "name": "outlet"
+        },
+        {
+          "direction": "inlet",
+          "kind": "energy",
+          "multiplicity": 1,
+          "name": "work"
+        }
+      ],
+      "required": [
+        "efficiency"
+      ],
+      "zero": []
+    },
+    {
+      "choices": [],
+      "model_id": "thermal.valve",
       "pins": [
         {
           "name": "outlet_pressure",

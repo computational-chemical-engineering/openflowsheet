@@ -18,9 +18,10 @@ provider's flash owns it, and this unit reports what it returns.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Final
 
 from openflowsheet.canonical import file_sha256
@@ -69,15 +70,21 @@ from openflowsheet.models.syn001 import (
     T_MIN,
     TEMPERATURE,
 )
-from openflowsheet.models.syn001.blocks import LnKBlock
+from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.tp_state import (
+    equilibrium_block,
     lnk_block_id,
     single_phase_enthalpy,
+    stream_enthalpy_terms,
     tp_state,
 )
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 MODEL_ID: Final = "syn001.tp_flash"
+#: SYN-001's state domain, the default `domain` (S11 units design §4.5).
+DOMAIN: Final[Mapping[str, tuple[float, float]]] = MappingProxyType(
+    {"T": (T_MIN, T_MAX), "P": (P_MIN, P_MAX)}
+)
 
 
 def total_flow_id(stream: str) -> str:
@@ -214,17 +221,23 @@ class TPFlash:
     #: is the SYN-001 case: the heater produces a possibly-two-phase stream and lifts it.
     inlet_phase: Phase | None = None
     components: tuple[str, ...] = COMPONENTS
+    #: S11 units design §4.5: the bound provider's identity, convention and domain, which
+    #: `manifest()`, every `UnitEvaluation` and the range checks read; SYN-001's by default.
+    property_provider: str = PROVIDER_ID
+    reference_convention: str = REFERENCE_CONVENTION
+    domain: Mapping[str, tuple[float, float]] = field(default=DOMAIN, hash=False)
 
     def __post_init__(self) -> None:
-        if not T_MIN <= self.temperature <= T_MAX:
+        (t_min, t_max), (p_min, p_max) = self.domain["T"], self.domain["P"]
+        if not t_min <= self.temperature <= t_max:
             raise SpecificationError(
                 f"{self.unit_id}: specified temperature {self.temperature} K is outside the "
-                f"declared domain [{T_MIN}, {T_MAX}] K"
+                f"declared domain [{t_min}, {t_max}] K"
             )
-        if not P_MIN <= self.pressure <= P_MAX:
+        if not p_min <= self.pressure <= p_max:
             raise SpecificationError(
                 f"{self.unit_id}: specified pressure {self.pressure} Pa is outside the declared "
-                f"domain [{P_MIN}, {P_MAX}] Pa"
+                f"domain [{p_min}, {p_max}] Pa"
             )
 
     @property
@@ -316,16 +329,16 @@ class TPFlash:
                     "analysis is what reports the rank, and this unit does not drop the row to "
                     "make a count come out.",
                 ),
-                temperature_k=(T_MIN, T_MAX),
-                pressure_pa=(P_MIN, P_MAX),
+                temperature_k=self.domain["T"],
+                pressure_pa=self.domain["P"],
             ),
             module=__name__,
             artifact_hash=_artifact_hash(),
             execution_class="native_equation",
             thread_safety="not_thread_safe",
             evaluation_cost_class="moderate",
-            property_provider=PROVIDER_ID,
-            reference_convention=REFERENCE_CONVENTION,
+            property_provider=self.property_provider,
+            reference_convention=self.reference_convention,
         )
 
     # -- rows --------------------------------------------------------------------------------
@@ -342,7 +355,15 @@ class TPFlash:
         duty = duty_id(self.unit_id)
         total_vapor, total_liquid = total_flow_id(vapor), total_flow_id(liquid)
 
-        lnk = LnKBlock(self.provider, self.components, self.context, block_id=lnk_block_id(vapor))
+        lnk, lnk_inputs = equilibrium_block(
+            self.provider,
+            self.components,
+            self.context,
+            block_id=lnk_block_id(vapor),
+            temperature=temperature_id(vapor),
+            pressure=pressure_id(vapor),
+            liquid=tuple(flow_id(liquid, name) for name in self.components),
+        )
         vapor_block, vapor_feeding, vapor_keys = single_phase_enthalpy(
             self.provider, self.components, self.context, vapor, "VAPOR"
         )
@@ -441,7 +462,7 @@ class TPFlash:
             row_kinds=kinds,
             blocks=(lnk, vapor_block, liquid_block, *inlet_blocks),
             block_inputs={
-                lnk.block_id: (temperature_id(vapor), pressure_id(vapor)),
+                lnk.block_id: lnk_inputs,
                 vapor_block.block_id: vapor_feeding,
                 liquid_block.block_id: liquid_feeding,
                 **inlet_inputs,
@@ -473,6 +494,11 @@ class TPFlash:
                 self.provider, self.components, self.context, inlet, self.inlet_phase
             )
             return single_keys, (block,), {block.block_id: feeding}
+
+        if composition_dependent(self.provider):
+            # S11 units design §4.5: mixture blocks on the producer's split variables, the
+            # construction T05's units share; the SYN-001 copy below stays as K02 wrote it.
+            return stream_enthalpy_terms(self.provider, self.components, self.context, inlet, None)
 
         from openflowsheet.models.syn001.blocks import EnthalpyFlowBlock  # noqa: PLC0415
         from openflowsheet.models.syn001.tp_state import enthalpy_block_id  # noqa: PLC0415
@@ -523,7 +549,7 @@ class TPFlash:
                     f"{self.pressure} Pa; FLASH-P declares them equal and the unit does not "
                     "repair a pressure network"
                 ),
-                reference_convention=REFERENCE_CONVENTION,
+                reference_convention=self.reference_convention,
             )
 
         if feed.is_dormant:
@@ -537,7 +563,7 @@ class TPFlash:
                 outlets={"vapor": dormant, "liquid": dormant},
                 duty=0.0,
                 phase_signature="ZERO_FLOW",
-                reference_convention=REFERENCE_CONVENTION,
+                reference_convention=self.reference_convention,
             )
 
         inlet_state = tp_state(self.provider, feed, context)

@@ -63,14 +63,23 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
     assert len(facts["operations"]) == 21  # spec §9's 20 and ADR 0019 Amendment 3's `list_audit`
     # Spec §9's 13 SYN-001 models, literal unchanged; M02's join adds the eight C1 models (R-280),
     # the stand-in synthetic only (R-280 (c)); W27 Amendment 3 adds M04's surrogate (R-301), which
-    # has no variant, so it is not synthetic only.
-    assert len([model for model in facts["models"] if model.startswith("syn001.")]) == 13
-    assert len(facts["models"]) == 22
+    # has no variant, so it is not synthetic only. S11 binds S02's column (ADR 0050, R-810;
+    # design note §8.3) and the seven `thermal.*` models (ADR 0051; units design §4.10, §8.3).
+    assert len([model for model in facts["models"] if model.startswith("syn001.")]) == 14
+    assert len([model for model in facts["models"] if model.startswith("thermal.")]) == 7
+    assert len(facts["models"]) == 30
     assert facts["synthetic_models"] == ["c1.reactor_standin"]
-    assert facts["providers"] == ["pr-c1-v1", "syn001"]  # M01 adds `pr-c1-v1` (ADR 0026)
+    # M01 adds `pr-c1-v1` (ADR 0026); S11 makes S05's `iapws95-v1`, S07's `coolprop-heos-v1` and
+    # S10's Wilson records selectable (ADR 0050, R-810), on `wilson-ig-v2` since WO-D5 (ADR 0051).
+    assert facts["providers"] == [
+        "coolprop-heos-v1",
+        "iapws95-v1",
+        "pr-c1-v1",
+        "syn001",
+        "wilson-ig-v2",
+    ]
     # The axis is the selectable providers (spec §5.7 Amendment S04, R-568); the module scan also
-    # finds S04's library-only `pr-lib-v1` (R-569), S05's `iapws95-v1` (spec S05 §8 F-2) and S07's
-    # `coolprop-heos-v1` (S07 spec §3.4, R-621) and S10's `wilson-ig-v1` (S10 spec §10, R-709).
+    # finds S04's library-only `pr-lib-v1` (R-569, R-809) and, since WO-D5, S10's `wilson-ig-v1`.
     assert facts["scanned_providers"] == [
         "coolprop-heos-v1",
         "iapws95-v1",
@@ -78,6 +87,7 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
         "pr-lib-v1",
         "syn001",
         "wilson-ig-v1",
+        "wilson-ig-v2",
     ]
     assert facts["unit_spellings"] == facts["adr_0016_spellings"]
 
@@ -151,8 +161,11 @@ def test_an_unbound_provider_is_rendered_apart_from_the_axes_with_its_limitation
     rendered = MATRIX.render(envelope).splitlines()
     (components,) = (line for line in rendered if line.startswith("- **Components:**"))
     assert "pr-c1-v1" not in components and "`syn001`" in components
+    # S11 adds three other-basis providers, each on its own line; this one is `pr-c1-v1`'s.
     (shipped,) = (
-        line for line in rendered if line.startswith("- **Shipped, bound on another basis:**")
+        line
+        for line in rendered
+        if line.startswith("- **Shipped, bound on another basis:** `pr-c1-v1`")
     )
     assert "`pr-c1-v1`" in shipped and "no mixture VLE validation" in shipped
     assert shipped.endswith("(L42)")
@@ -268,8 +281,9 @@ def test_m04_and_m05_harvest_rows_map_to_l49_not_the_alphas_l43(envelope: dict[s
 # -- D1-A03: the library-only tripwire (D1, R-561) --------------------------------------------
 
 #: The syn001 models that are library-only: package whose harvest items name them under U04.
-#: The package that binds either model writes its L-rows and reclassifies its U04 items.
-LIBRARY_ONLY = {"syn001.cascade": "S01", "syn001.column": "S02"}
+#: The package that binds one writes its L-rows and reclassifies its U04 items. S11 bound S02's
+#: `syn001.column` (ADR 0050, R-810; L-COL-1..10, S02's items reclassified, R-561).
+LIBRARY_ONLY = {"syn001.cascade": "S01"}
 
 
 def library_only_problems(builders: Any, harvest: list[dict[str, Any]]) -> list[str]:
@@ -326,7 +340,7 @@ def test_d1_a_u04_item_that_loses_its_model_id_trips_the_wire(envelope: dict[str
     assert "syn001.cascade" in problems[0]
     # no vacuous pass: a harvest with the package's U04 items removed is also a problem
     stripped = [i for i in envelope["harvest"] if "U04" not in (i.get("to") or [])]
-    assert len(library_only_problems(revision_binding.MODEL_BUILDERS, stripped)) == 2
+    assert len(library_only_problems(revision_binding.MODEL_BUILDERS, stripped)) == 1
 
 
 # -- C3: the library-only providers (T08 release spec §5.7 Amendment S04; R-568, R-569) --------
@@ -334,10 +348,12 @@ def test_d1_a_u04_item_that_loses_its_model_id_trips_the_wire(envelope: dict[str
 #: The provider modules of `openflowsheet.thermo` that no revision can select, and the package
 #: whose harvest items name each under U02. The commit that makes one selectable removes it here,
 #: adds it to the providers axis and reclassifies its package's U02 items (L01 spec §13.4).
+#: S11 (ADR 0050, R-810) made `iapws95-v1`, `coolprop-heos-v1` and `wilson-ig-v1` selectable;
+#: their packages' U02 harvest items are not edited (S11 §4.11: no earlier harvest entry is).
+#: S11 WO-D5 (ADR 0051, units design §4.6) selects `wilson-ig-v2` on the Wilson records, so
+#: `wilson-ig-v1` is library-only again, with S10's U02 items.
 LIBRARY_ONLY_PROVIDERS = {
     "pr-lib-v1": "S04",
-    "iapws95-v1": "S05",
-    "coolprop-heos-v1": "S07",
     "wilson-ig-v1": "S10",
 }
 
@@ -384,6 +400,28 @@ def library_only_provider_problems(
 
 def _selectable() -> set[str]:
     return {basis.provider_id for basis in revision_binding.SELECTABLE_BASES}
+
+
+def test_s11_a34_the_providers_axis_is_the_five_and_pr_lib_and_wilson_v1_are_library_only(
+    envelope: dict[str, Any],
+) -> None:
+    """S11.A34 (ADR 0050, R-809, R-810), with units design §4.6 (ADR 0051, WO-D5): `wilson-ig-v1`
+    library-only again."""
+    (axis,) = (row for row in envelope["axes"] if row["id"] == "property_model")
+    assert axis["providers"] == [
+        "coolprop-heos-v1",
+        "iapws95-v1",
+        "pr-c1-v1",
+        "syn001",
+        "wilson-ig-v2",
+    ]
+    assert [p["id"] for p in axis["other_basis_providers"]] == [
+        "pr-c1-v1",
+        "iapws95-v1",
+        "coolprop-heos-v1",
+        "wilson-ig-v2",
+    ]
+    assert LIBRARY_ONLY_PROVIDERS == {"pr-lib-v1": "S04", "wilson-ig-v1": "S10"}
 
 
 def test_c3_the_library_only_providers_are_unselectable_with_their_u02_items(

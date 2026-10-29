@@ -335,6 +335,10 @@ class UnitEvaluation:
     unit's outlet is a PH closure's — the valve, the PH flash, the duty-mode reactor — carrying its
     route and its split, from which the traversal start seeds a lifted split and records a band
     route. `None` for every other unit, for a dormant inlet, and on any status other than `ok`.
+
+    `owned` is S11's (design note §4.7.5): the values of columns the unit owns beyond its duty,
+    work and extent, by column id, which the traversal start copies — the embedded column's
+    internal state. Empty for every other unit, and on any status other than `ok`.
     """
 
     status: PropertyStatus
@@ -349,10 +353,13 @@ class UnitEvaluation:
     extent: float | None = None
     transferred_duty: float | None = None
     closure: PHState | None = None
+    owned: Mapping[str, float] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         answered = (self.duty, self.work, self.extent, self.transferred_duty, self.closure)
-        if self.status != "ok" and (self.outlets or any(v is not None for v in answered)):
+        if self.status != "ok" and (
+            self.outlets or self.owned or any(v is not None for v in answered)
+        ):
             raise ValueError(
                 f"status {self.status!r} carries outlets or a duty; a failed evaluation reports "
                 "what went wrong and nothing a caller could mistake for an answer"

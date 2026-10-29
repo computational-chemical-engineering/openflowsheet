@@ -224,6 +224,10 @@ On the revision path the verifier was SYN-001-shaped in five ways:
    - Both witness checks name the count in their `independence_qualification`.
    - The certificate carries the limitation `{"kind": "derivative_witness_partial", "columns": [...]}`.
    - The witness's claim is restricted to the differentiable columns, and the certificate says so.
+   - *Cross-reference (2026-10-28):* the Wilson companion of this item is S11 rulings item 2 (R-831,
+     `docs/reviews/S11-rulings.md`). On a `wilson-ig-v1` or `wilson-ig-v2` basis, the exactly-zero component columns
+     beside a positive sibling are differenced by a forward five-point stencil, with no limitation. R-281 is not
+     extended.
 8. **Near-dew window** (§14.3 C3; R-282). The equilibrium and liquid-total rows are singular at the dew point, so a
    flash within the window certifies UNVERIFIED (`rank_limitation`). It is stated in the unit's manifest, as
    SYN-001's `DEW_POINT_LIMITATION` is.

@@ -60,9 +60,10 @@ has no source term at all. A mixer that carried a duty variable would be a diffe
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Final
 
 from openflowsheet.canonical import file_sha256, normalize_zero
@@ -99,7 +100,9 @@ from openflowsheet.models.syn001 import (
     T_MAX,
     T_MIN,
     TEMPERATURE_TOLERANCE,
+    gamma_phi,
 )
+from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.tp_state import (
     single_phase_admissible,
     single_phase_enthalpy,
@@ -107,6 +110,10 @@ from openflowsheet.models.syn001.tp_state import (
 from openflowsheet.thermo import PropertyProvider, PropertyRequest, StreamState
 
 MODEL_ID: Final = "syn001.adiabatic_mixer"
+#: SYN-001's state domain, the default `domain` (S11 units design §4.5).
+DOMAIN: Final[Mapping[str, tuple[float, float]]] = MappingProxyType(
+    {"T": (T_MIN, T_MAX), "P": (P_MIN, P_MAX)}
+)
 
 #: The bracketed solve's iteration ceiling. Bisection halves an interval of at most 160 K down to
 #: one ulp in about 60 steps, so reaching this limit means the function is not what the bracket
@@ -218,6 +225,11 @@ class AdiabaticMixer:
     provider: PropertyProvider
     context: EvaluationContext
     components: tuple[str, ...] = COMPONENTS
+    #: S11 units design §4.5: the bound provider's identity, convention and domain, which
+    #: `manifest()`, every `UnitEvaluation` and the range checks read; SYN-001's by default.
+    property_provider: str = PROVIDER_ID
+    reference_convention: str = REFERENCE_CONVENTION
+    domain: Mapping[str, tuple[float, float]] = field(default=DOMAIN, hash=False)
 
     @property
     def model_id(self) -> str:
@@ -287,16 +299,16 @@ class AdiabaticMixer:
                     "MIX-dormant-inlet authors no residual row. It states a property of how the "
                     "two balance rows are written, and is tested as behaviour.",
                 ),
-                temperature_k=(T_MIN, T_MAX),
-                pressure_pa=(P_MIN, P_MAX),
+                temperature_k=self.domain["T"],
+                pressure_pa=self.domain["P"],
             ),
             module=__name__,
             artifact_hash=_artifact_hash(),
             execution_class="native_equation",
             thread_safety="not_thread_safe",
             evaluation_cost_class="moderate",
-            property_provider=PROVIDER_ID,
-            reference_convention=REFERENCE_CONVENTION,
+            property_provider=self.property_provider,
+            reference_convention=self.reference_convention,
         )
 
     # -- rows --------------------------------------------------------------------------------
@@ -403,7 +415,7 @@ class AdiabaticMixer:
                     "them equal to the outlet pressure and ADR 0001 D4.5 makes a mismatch a "
                     "validation failure, not something the unit repairs"
                 ),
-                reference_convention=REFERENCE_CONVENTION,
+                reference_convention=self.reference_convention,
             )
         pressure = connected[0].pressure
 
@@ -425,7 +437,7 @@ class AdiabaticMixer:
                 },
                 duty=None,
                 phase_signature="ZERO_FLOW",
-                reference_convention=REFERENCE_CONVENTION,
+                reference_convention=self.reference_convention,
                 message="every inlet is dormant; the outlet temperature is a retained label",
             )
 
@@ -445,7 +457,7 @@ class AdiabaticMixer:
                         "restricted to the subcooled-liquid domain; general PH support is T05 "
                         "(plan §3.2)"
                     ),
-                    reference_convention=REFERENCE_CONVENTION,
+                    reference_convention=self.reference_convention,
                 )
             target += liquid
 
@@ -459,7 +471,7 @@ class AdiabaticMixer:
                 status="not_converged",
                 iterations=iterations,
                 message=message,
-                reference_convention=REFERENCE_CONVENTION,
+                reference_convention=self.reference_convention,
             )
 
         outlet = StreamState(n=combined, temperature=outlet_temperature, pressure=pressure)
@@ -479,7 +491,7 @@ class AdiabaticMixer:
                     "liquid there. The v0.0 closure is restricted to the subcooled-liquid "
                     "domain; general PH support is T05 (plan §3.2)"
                 ),
-                reference_convention=REFERENCE_CONVENTION,
+                reference_convention=self.reference_convention,
             )
 
         return UnitEvaluation(
@@ -488,8 +500,8 @@ class AdiabaticMixer:
             duty=None,
             phase_signature="LIQUID",
             iterations=iterations,
-            provider_id=PROVIDER_ID,
-            reference_convention=REFERENCE_CONVENTION,
+            provider_id=self.property_provider,
+            reference_convention=self.reference_convention,
         )
 
     def _liquid_enthalpy(
@@ -512,7 +524,7 @@ class AdiabaticMixer:
                 UnitEvaluation(
                     status=status,
                     message=f"liquid enthalpy: {message}",
-                    reference_convention=REFERENCE_CONVENTION,
+                    reference_convention=self.reference_convention,
                 ),
             )
         return admissible, liquid, equivalent, None
@@ -536,8 +548,19 @@ class AdiabaticMixer:
             # by the same algebra that builds the bracket. SYN-001 at r = 0 lands here.
             return low, 0, True, ""
 
+        # S11 units design §4.5: a composition-dependent form has no `h_<c>`; its outlet enthalpy
+        # and slope are the mixture's, `n_tot h` and `n_tot dh/dT`.
+        gamma_phi_form = composition_dependent(self.provider)
+
         def residual(temperature: float) -> tuple[float, float, bool]:
             state = StreamState(n=flows, temperature=temperature, pressure=pressure)
+            if gamma_phi_form:
+                status, enthalpy, enthalpy_slope, _ = gamma_phi.enthalpy_and_slope(
+                    self.provider, state, "LIQUID", context
+                )
+                if status != "ok":
+                    return 0.0, 0.0, False
+                return enthalpy - target, enthalpy_slope, True
             result = self.provider.evaluate_phase(
                 PropertyRequest(state=state, phase="LIQUID", properties=("h",), derivatives=("T",)),
                 context,

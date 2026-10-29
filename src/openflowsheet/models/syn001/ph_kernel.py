@@ -59,6 +59,7 @@ from openflowsheet.models import UnitEvaluation
 from openflowsheet.models.syn001 import (
     ENERGY_TOLERANCE,
     FLOW_TOLERANCE,
+    PROVIDER_ID,
     REFERENCE_CONVENTION,
     gamma_phi,
 )
@@ -93,6 +94,7 @@ __all__ = [
     "Root",
     "bracketed_root",
     "closure_failure",
+    "failure_labels",
     "port_enthalpy",
     "ph_state",
     "typed_failure",
@@ -976,16 +978,43 @@ def _tp_enthalpy(
 # ------------------------------------------------------------ evaluator steps the units share
 
 
-def typed_failure(status: PropertyStatus, code: str, detail: str = "") -> UnitEvaluation:
-    """A non-`ok` `UnitEvaluation` whose message's first line is the registered `code` (§3.5)."""
+def failure_labels(provider_id: str, reference_convention: str) -> dict[str, str]:
+    """The labels a unit's typed failure carries (S11 rulings item 11, R-840; ADR 0001 D5.2): the
+    bound provider's id and reference convention. On SYN-001's provider none are added, so its
+    failures keep the label they always had (`REFERENCE_CONVENTION`, no provider id)."""
+    if provider_id == PROVIDER_ID:
+        return {}
+    return {"provider_id": provider_id, "reference_convention": reference_convention}
+
+
+def typed_failure(
+    status: PropertyStatus,
+    code: str,
+    detail: str = "",
+    *,
+    provider_id: str = "",
+    reference_convention: str = REFERENCE_CONVENTION,
+) -> UnitEvaluation:
+    """A non-`ok` `UnitEvaluation` whose message's first line is the registered `code` (§3.5),
+    labelled with `failure_labels`' provider id and convention (SYN-001's by default)."""
     message = code if not detail else f"{code}\n{detail}"
-    return UnitEvaluation(status=status, message=message, reference_convention=REFERENCE_CONVENTION)
+    return UnitEvaluation(
+        status=status,
+        message=message,
+        provider_id=provider_id,
+        reference_convention=reference_convention,
+    )
 
 
-def closure_failure(state: PHState) -> UnitEvaluation:
+def closure_failure(
+    state: PHState, *, provider_id: str = "", reference_convention: str = REFERENCE_CONVENTION
+) -> UnitEvaluation:
     """The unit's answer when the kernel did not return `ok`: the kernel's code, unchanged."""
     return UnitEvaluation(
-        status=state.status, message=state.message, reference_convention=REFERENCE_CONVENTION
+        status=state.status,
+        message=state.message,
+        provider_id=provider_id,
+        reference_convention=reference_convention,
     )
 
 
@@ -1008,6 +1037,7 @@ def port_enthalpy(
     context: EvaluationContext,
     *,
     port: str,
+    labels: dict[str, str] | None = None,
 ) -> PortEnthalpy:
     """Spec §5.2 step (3), shared by every T05 unit that reads a stream's enthalpy.
 
@@ -1016,13 +1046,18 @@ def port_enthalpy(
     evaluator and the rows describe the same function (spec F7). A lifted stream (`phase` is
     `None`): the provider's TP state at the stream's own `(T, P)`, which is what the producer's
     lifted rows describe at their physical root.
+
+    `labels` are the unit's `failure_labels`, carried by every failure this step returns.
     """
+    labels = labels or {}
     if phase is not None:
         admissible, enthalpy, gap, status, message = single_phase_admissible(
             provider, stream, phase, components, context
         )
         if status != "ok":
-            return PortEnthalpy(status=status, failure=_state_failure(status, port, message))
+            return PortEnthalpy(
+                status=status, failure=_state_failure(status, port, message, **labels)
+            )
         if not admissible:
             return PortEnthalpy(
                 status="unsupported",
@@ -1030,6 +1065,7 @@ def port_enthalpy(
                     "unsupported",
                     f"inadmissible_phase({port}, {phase})",
                     f"writing the stream's enthalpy as {phase} would be wrong by {gap:.3g} K",
+                    **labels,
                 ),
             )
         return PortEnthalpy(status="ok", enthalpy_flow=enthalpy, admissibility=gap)
@@ -1037,16 +1073,33 @@ def port_enthalpy(
     state = tp_state(provider, stream, context)
     if state.status != "ok":
         return PortEnthalpy(
-            status=state.status, failure=_state_failure(state.status, port, state.message)
+            status=state.status,
+            failure=_state_failure(state.status, port, state.message, **labels),
         )
     assert state.enthalpy_flow is not None
     return PortEnthalpy(status="ok", enthalpy_flow=state.enthalpy_flow)
 
 
-def _state_failure(status: PropertyStatus, port: str, detail: str) -> UnitEvaluation:
+def _state_failure(
+    status: PropertyStatus,
+    port: str,
+    detail: str,
+    *,
+    provider_id: str = "",
+    reference_convention: str = REFERENCE_CONVENTION,
+) -> UnitEvaluation:
     if status == "out_of_domain":
-        return typed_failure(status, f"state_outside_domain({port})", detail)
+        return typed_failure(
+            status,
+            f"state_outside_domain({port})",
+            detail,
+            provider_id=provider_id,
+            reference_convention=reference_convention,
+        )
     # A refusal the unit has no code for is surfaced with the provider's own status (§3.3).
     return UnitEvaluation(
-        status=status, message=f"{port} state: {detail}", reference_convention=REFERENCE_CONVENTION
+        status=status,
+        message=f"{port} state: {detail}",
+        provider_id=provider_id,
+        reference_convention=reference_convention,
     )

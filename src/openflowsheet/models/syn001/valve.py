@@ -17,9 +17,10 @@ the verifier checks it on a converged state (spec §12). Equality is allowed.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Final
 
 from openflowsheet.canonical import file_sha256
@@ -58,6 +59,7 @@ from openflowsheet.models.syn001 import (
 from openflowsheet.models.syn001.ph_kernel import (
     PHState,
     closure_failure,
+    failure_labels,
     ph_state,
     port_enthalpy,
     typed_failure,
@@ -66,6 +68,10 @@ from openflowsheet.models.syn001.tp_state import lift_two_phase_stream, stream_e
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 MODEL_ID: Final = "syn001.valve"
+#: SYN-001's state domain, the default `domain` (S11 units design §4.5).
+DOMAIN: Final[Mapping[str, tuple[float, float]]] = MappingProxyType(
+    {"T": (T_MIN, T_MAX), "P": (P_MIN, P_MAX)}
+)
 
 SPECIFICATION: Final = "docs/derivations/T05-unit-models-spec.md §8"
 
@@ -158,13 +164,19 @@ class Valve:
     #: The declared regime of the inlet; `None` means its split is lifted by its producer.
     inlet_phase: Phase | None = "LIQUID"
     components: tuple[str, ...] = COMPONENTS
+    #: S11 units design §4.5: the bound provider's identity, convention and domain, which
+    #: `manifest()`, every `UnitEvaluation` and the range checks read; SYN-001's by default.
+    property_provider: str = PROVIDER_ID
+    reference_convention: str = REFERENCE_CONVENTION
+    domain: Mapping[str, tuple[float, float]] = field(default=DOMAIN, hash=False)
 
     def __post_init__(self) -> None:
-        if not P_MIN <= self.outlet_pressure <= P_MAX:
+        p_min, p_max = self.domain["P"]
+        if not p_min <= self.outlet_pressure <= p_max:
             raise SpecificationError(
                 "pressure_outside_domain(outlet_pressure)\n"
                 f"{self.unit_id}: outlet pressure {self.outlet_pressure} Pa is outside the "
-                f"declared domain [{P_MIN}, {P_MAX}] Pa"
+                f"declared domain [{p_min}, {p_max}] Pa"
             )
 
     @property
@@ -249,16 +261,16 @@ class Valve:
                     "Relies on Hdot_TP being strictly increasing in T on the domain, which "
                     "holds for SYN-001 (T05 spec §4.2) and is not a PropertyCapabilities field.",
                 ),
-                temperature_k=(T_MIN, T_MAX),
-                pressure_pa=(P_MIN, P_MAX),
+                temperature_k=self.domain["T"],
+                pressure_pa=self.domain["P"],
             ),
             module=__name__,
             artifact_hash=_artifact_hash(),
             execution_class="native_equation",
             thread_safety="not_thread_safe",
             evaluation_cost_class="moderate",
-            property_provider=PROVIDER_ID,
-            reference_convention=REFERENCE_CONVENTION,
+            property_provider=self.property_provider,
+            reference_convention=self.reference_convention,
             package="T05",
         )
 
@@ -355,6 +367,10 @@ class Valve:
             )
         outlet_pressure = float(self.outlet_pressure)
 
+        # S11 rulings item 11 (R-840): a typed failure names the bound provider (none added on
+        # SYN-001's).
+        labels = failure_labels(self.property_provider, self.reference_convention)
+
         # Dormant: the outlet temperature is a retained label, the inlet's (spec §4.7).
         if feed.is_dormant:
             dormant = StreamState(
@@ -367,7 +383,7 @@ class Valve:
                     status="ok",
                     outlets={"outlet": dormant},
                     phase_signature="ZERO_FLOW",
-                    reference_convention=REFERENCE_CONVENTION,
+                    reference_convention=self.reference_convention,
                 ),
                 None,
             )
@@ -379,13 +395,20 @@ class Valve:
                     "out_of_domain",
                     "pressure_rise(valve)",
                     f"P_spec = {outlet_pressure} Pa exceeds the inlet's {feed.pressure} Pa",
+                    **labels,
                 ),
                 None,
             )
 
         # Inlet enthalpy (spec §5.2 (3)).
         inlet = port_enthalpy(
-            self.provider, feed, self.inlet_phase, self.components, context, port="inlet"
+            self.provider,
+            feed,
+            self.inlet_phase,
+            self.components,
+            context,
+            port="inlet",
+            labels=labels,
         )
         if inlet.failure is not None:
             return inlet.failure, None
@@ -393,7 +416,7 @@ class Valve:
 
         closure = ph_state(self.provider, feed.n, outlet_pressure, inlet.enthalpy_flow, context)
         if closure.status != "ok":
-            return closure_failure(closure), closure
+            return closure_failure(closure, **labels), closure
         assert closure.temperature is not None and closure.split is not None
 
         return (

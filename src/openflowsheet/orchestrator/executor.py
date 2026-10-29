@@ -50,6 +50,7 @@ from openflowsheet.orchestrator.mass import (
     syn001_residence_time,
 )
 from openflowsheet.orchestrator.merge import merge_due, merged_provenance, unsupported_note
+from openflowsheet.orchestrator.phase_contract import CONTRACT_V2
 from openflowsheet.orchestrator.recovery import (
     eo_recovery_due,
     recovered_provenance,
@@ -67,11 +68,11 @@ from openflowsheet.orchestrator.region import (
     syn001_lifted_splits,
 )
 from openflowsheet.orchestrator.splits import (
-    closure_types,
+    STAGED_MODELS,
+    RegionSplits,
     dormancy_forms,
-    lifted_splits,
+    region_splits,
     split_temperatures,
-    vapour_only_forms,
     zero_flow_forms,
 )
 from openflowsheet.orchestrator.tear import INITIALIZER_ID, Syn001TearProblem, solve_tear
@@ -393,18 +394,30 @@ def _initializer_event(run: Trace, spent: Counters, kind: EventKind, message: st
     )
 
 
+def _region_splits(flowsheet: RevisionFlowsheet) -> RegionSplits:
+    """S11 §10.2: a revision-built flowsheet's splits and maps, registry and staged merged."""
+    return region_splits(revision.instances_of(flowsheet), flowsheet.units(), flowsheet.components)
+
+
 def _splits(flowsheet: Flowsheet) -> tuple[LiftedSplit, ...]:
     """T05 §2.3's dispatch: SYN-001's own flowsheet takes every pre-T05 expression unchanged."""
     if isinstance(flowsheet, Syn001Flowsheet):
         return syn001_lifted_splits(flowsheet.components)
-    return lifted_splits(revision.instances_of(flowsheet), flowsheet.components)
+    return _region_splits(flowsheet).splits
+
+
+def _split_owners(flowsheet: Flowsheet) -> dict[str, str]:
+    """S11 §10.2, as `_splits`: each staged split's owner; SYN-001's own flowsheet has none."""
+    if isinstance(flowsheet, Syn001Flowsheet):
+        return {}
+    return dict(_region_splits(flowsheet).owners)
 
 
 def _closure_types(flowsheet: Flowsheet) -> dict[str, ClosureType]:
     """T05b spec §6.1, as `_splits`: SYN-001's two splits are TP-type (the region's default)."""
     if isinstance(flowsheet, Syn001Flowsheet):
         return {}
-    return closure_types(flowsheet.units())
+    return dict(_region_splits(flowsheet).closure_types)
 
 
 def _zero_flow_forms(flowsheet: Flowsheet) -> dict[str, ZeroFlowForm]:
@@ -412,11 +425,10 @@ def _zero_flow_forms(flowsheet: Flowsheet) -> dict[str, ZeroFlowForm]:
     SYN-001's two splits read their rules from SYN-001's own wiring."""
     if isinstance(flowsheet, Syn001Flowsheet):
         instances = tuple((u.unit_id, u.model_id, WIRING[u.unit_id]) for u in flowsheet.units())
-    else:
-        instances = revision.instances_of(flowsheet)
-    return zero_flow_forms(
-        instances, _splits(flowsheet), _closure_types(flowsheet), flowsheet.components
-    )
+        return zero_flow_forms(
+            instances, _splits(flowsheet), _closure_types(flowsheet), flowsheet.components
+        )
+    return dict(_region_splits(flowsheet).zero_flow_forms)
 
 
 def _vapour_only_forms(flowsheet: Flowsheet) -> dict[str, VapourOnlyForm]:
@@ -424,8 +436,7 @@ def _vapour_only_forms(flowsheet: Flowsheet) -> dict[str, VapourOnlyForm]:
     registry; SYN-001's own flowsheet has none (its rules declare no vapour-only component)."""
     if isinstance(flowsheet, Syn001Flowsheet):
         return {}
-    instances = revision.instances_of(flowsheet)
-    return vapour_only_forms(instances, _splits(flowsheet), flowsheet.components)
+    return dict(_region_splits(flowsheet).vapour_only_forms)
 
 
 def _split_temperatures(flowsheet: Flowsheet) -> dict[str, tuple[str, ...]]:
@@ -433,9 +444,8 @@ def _split_temperatures(flowsheet: Flowsheet) -> dict[str, tuple[str, ...]]:
     column of each split's streams, which an opening from a PH closure sets (read only under v2)."""
     if isinstance(flowsheet, Syn001Flowsheet):
         instances = tuple((u.unit_id, u.model_id, WIRING[u.unit_id]) for u in flowsheet.units())
-    else:
-        instances = revision.instances_of(flowsheet)
-    return split_temperatures(instances, _splits(flowsheet))
+        return split_temperatures(instances, _splits(flowsheet))
+    return dict(_region_splits(flowsheet).split_temperatures)
 
 
 def _dormancy_forms(flowsheet: Flowsheet) -> tuple[DormancyForm, ...]:
@@ -676,6 +686,25 @@ def _solve_revision_region(
                 region.units,
                 "UNSUPPORTED_RANK_STRUCTURE",
                 message="specification_region_unsupported(revision_flowsheet)",
+            ),
+            spent,
+            None,
+        )
+    # S11 §4.7.5 (A28): a staged unit's stage splits are PH-type and its standalone solve runs
+    # under phase contract v2; under v1 the region is refused before the traversal.
+    staged = [
+        unit.model_id
+        for unit in flowsheet.units()
+        if unit.model_id in STAGED_MODELS and unit.unit_id in region.units
+    ]
+    if staged and policy.phase_contract != CONTRACT_V2:
+        return (
+            StepResult(
+                index,
+                "solve_eo",
+                region.units,
+                "CAPABILITY_UNAVAILABLE",
+                message=f"phase_contract_unsupported({staged[0]})",
             ),
             spent,
             None,
@@ -1090,6 +1119,8 @@ def _region(
             warm_start=warm_start,
             # M02 design note §14.2 B13: read in every TWO_PHASE attempt; none for SYN-001.
             vapour_only_forms=_vapour_only_forms(flowsheet),
+            # S11 §10.2: a staged unit's split keys → their owner; none without a staged unit.
+            split_owners=_split_owners(flowsheet),
         )
     except BudgetExhaustedError:
         result = RegionResult(

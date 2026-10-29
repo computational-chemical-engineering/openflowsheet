@@ -24,11 +24,14 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.thermo import (
     FlashRequest,
     FlashResult,
+    Phase,
     PropertyCapabilities,
     PropertyProvider,
     PropertyRequest,
     PropertyResult,
+    StreamState,
 )
+from openflowsheet.thermo.stability import StabilityReport
 
 #: §11.2 and §13.6's registered cap for the SYN-001 capped-budget case.
 REGISTERED_MAX_PROPERTY_CALLS: Final = 20_000
@@ -126,3 +129,14 @@ class PropertyMeter:
     def flash(self, request: FlashRequest, context: EvaluationContext) -> FlashResult:
         self._spend("flash")
         return self._provider.flash(request, context)
+
+    def stability(
+        self, state: StreamState, phase: Phase, context: EvaluationContext
+    ) -> StabilityReport:
+        """Forwarded and counted as one call, for a provider that judges stability (outside the
+        frozen Protocol, `thermo.stability`): a Wilson machine asks it of its outlet (S11 units
+        design §4.4). A provider without it raises `AttributeError`, as it would unwrapped."""
+        judge = self._provider.stability  # type: ignore[attr-defined]
+        self._spend(f"stability({phase})")
+        report: StabilityReport = judge(state, phase, context)
+        return report

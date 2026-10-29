@@ -405,6 +405,33 @@ def scaled_definition_row(part: str, scale: str, scaled: str, whole: str) -> Row
     return build
 
 
+def scaled_sum_definition_row(
+    part: str, scale: str, scaled: str, wholes: tuple[str, ...]
+) -> RowBuilder:
+    """`F part - w (wholes[0] + wholes[1] + ...)`, the sum left-associated in the given order,
+    `F` a pinned input and `w` a free variable: S11's recovery definition in a flowsheet (S11
+    design note §4.7.4, `F_ref n_c - w sum_k n_k,c`), so that `w = F part / sum(wholes)`.
+
+    `scaled_definition_row` with a sum for its whole; bilinear and of the same kind
+    (`molar_flow_squared`). `F` is a pinned input (ADR 0008 D1.3), never a literal.
+    """
+    if not wholes:
+        raise ValueError("a scaled sum definition needs at least one term in its whole")
+
+    def build(
+        variables: Mapping[str, Expr],
+        blocks: Mapping[str, Expr],
+        parameters: Mapping[str, float],
+        algebra: Algebra,
+    ) -> Expr:
+        whole = variables[wholes[0]]
+        for name in wholes[1:]:
+            whole = whole + variables[name]
+        return parameters[scale] * variables[part] - variables[scaled] * whole
+
+    return build
+
+
 def bubble_row(flows: tuple[str, ...], ln_k_keys: tuple[str, ...], total: str) -> RowBuilder:
     """`sum_i K_i n_i - N`, `K_i = exp(lnK_i)` from a property block: a liquid of flows `n` at its
     bubble point (S02 spec §2.2, `sum_i K_i(T_c, P_c) v_i,2 - V_2`).

@@ -155,7 +155,11 @@ def test_a27_1_the_installed_binder_has_no_library_basis() -> None:
 
 
 def test_a27_2_the_default_snapshot_has_no_library_route() -> None:
-    assert all(r["provider_id"] != "pr-lib-v1" for r in snapshot.build_snapshot()["routes"])
+    # S11 (ADR 0050 D9): the installed binder is read under W27 v1/v2 through `v2_binder`.
+    from test_m06_w27_coverage import v2_binder  # noqa: PLC0415
+
+    routes = snapshot.build_snapshot(binding=v2_binder())["routes"]
+    assert all(r["provider_id"] != "pr-lib-v1" for r in routes)
 
 
 def test_a27_3_nothing_under_benchmarks_l01_is_packaged() -> None:

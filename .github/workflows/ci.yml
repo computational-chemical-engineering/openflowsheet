@@ -149,6 +149,12 @@ jobs:
           OPENFLOWSHEET_REQUIRE_COOLPROP: "1"
         run: python scripts/s07_platform_digest.py --report
 
+      # S11 (R-843): the thermal reference check's line, uncaptured, so that each architecture's
+      # worst |delta|/bound per class is readable (bitwise on x86-64, classed elsewhere).
+      - name: S11 thermal reference line (R-843)
+        if: ${{ !cancelled() }}
+        run: python docs/derivations/scripts/s11_thermal_reference.py --check
+
       # S07 (spec §20.9, R-627): A31's per-row report, whatever the outcome.
       - name: S07 A31 report (spec §20.9)
         if: always()

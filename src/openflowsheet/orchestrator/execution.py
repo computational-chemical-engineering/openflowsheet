@@ -411,8 +411,12 @@ def build_region(
     adjusted_variables: Sequence[str] = (),
     target_variables: Sequence[str] = (),
     removed_specification_rows: Sequence[str] = (),
+    staged_units: Mapping[str, tuple[str, ...]] | None = None,
 ) -> Region:
-    """The region's square system: its units' rows minus certified redundancy, over its columns."""
+    """The region's square system: its units' rows minus certified redundancy, over its columns.
+
+    `staged_units` (S11 §10.2) maps a staged instance to its split keys, in the order supplied:
+    `signature_units` lists them in place of the instance."""
     inside = set(units)
     certified = {entry.row_id for entry in report.certificates if entry.consistent}
     region_rows = [row for row in declaration.row_ids if declaration.rows[row].unit in inside]
@@ -431,7 +435,11 @@ def build_region(
         row_ids=rows,
         variable_ids=columns,
         eliminated_rows=tuple(row for row in region_rows if row in certified),
-        signature_units=_lifted_units(declaration, units),
+        signature_units=tuple(
+            key
+            for unit in _lifted_units(declaration, units)
+            for key in (staged_units or {}).get(unit, (unit,))
+        ),
         fixed_upstream=upstream,
         specification_rows=tuple(specification_rows),
         adjusted_variables=tuple(adjusted_variables),
