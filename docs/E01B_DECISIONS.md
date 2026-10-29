@@ -585,3 +585,18 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   `assessment.schema.json`.
 - **If the tree changes again:** re-run the generator (command in the WO-I1 handoff above), then re-harvest (append,
   re-pin HARVEST_SIZE).
+
+## E01b (2026-10-29; design note §10, ruling B on QA1; brief `docs/briefs/E01b-build.md`)
+
+- C1 f72af0c1: `QA1.patch` applied unchanged. `src/openflowsheet/_data/assessment/cost/sslw-idaes-v1.json` is a symlink
+  to `assessment/cost/sslw-idaes-v1.json`, so the two copies of §10.6.4 are one file and `cmp` holds by construction.
+- DECISION: C2 — the compressor's drive is the set's first `machine.drive` entry (`entry_for`, the lookup the drive's
+  electricity already uses, contributor `drives()`), resolved on its defaults; the loader refuses a compressor when that
+  entry is missing or not `sslw-motor-v1`. Alternative: any `sslw-motor-v1` entry anywhere in the set. Reversible by:
+  the `parse_set`/`resolve` hunks of C2.
+- DECISION: C2 — `ResolvedEntry.amended` keys each amended number by its set path as §10.4.2 writes it
+  (`options.<o>.choices.<k>.<n>`, `coefficients.<n>[.<m>]`, list items `[i]`); the old "repeats a coefficient" message
+  now names that same path. Alternative: key by the bare coefficient name. Reversible by: `_amendments`/`prefix` in
+  `sets._resolve`.
+- DECISION: C2 — "`source.checked_against`" in the loader is a shape check (an object with non-empty `citation` and
+  `scope`); the data lands in C3. Alternative: no loader check. Reversible by: the `parse_set` hunk.

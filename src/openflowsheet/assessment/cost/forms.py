@@ -142,7 +142,9 @@ class ResolvedEntry:
     `numbers` merges the entry's coefficients and the selected choices' values (floats, or tuples
     for listed coefficients); `ranges` merges the entry's and the selected choices' ranges;
     `options` is every option's chosen key and `defaulted` those taken from the IDAES default.
-    `ratio` is the set's index value over the entry's (§9.2.6; 1.0 when they agree)."""
+    `ratio` is the set's index value over the entry's (§9.2.6; 1.0 when they agree). `amended`
+    maps the set path of each amended number in `numbers` to its record (§10.4.8), and `drive` is
+    the set's resolved `machine.drive` entry for a form sized on consumed power (§10.4.4)."""
 
     set_id: str
     entry_id: str
@@ -155,9 +157,12 @@ class ResolvedEntry:
     continuous: Mapping[str, float] = field(default_factory=dict)
     ratio: float = 1.0
     includes_drive: bool = False
+    amended: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
+    drive: ResolvedEntry | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "options", MappingProxyType(dict(self.options)))
+        object.__setattr__(self, "amended", MappingProxyType(dict(self.amended)))
         object.__setattr__(self, "numbers", MappingProxyType(dict(self.numbers)))
         object.__setattr__(self, "ranges", MappingProxyType(dict(self.ranges)))
 
