@@ -1,7 +1,8 @@
 """E01 review S4: the A48 tripwire (§9.6 A48, §9.7 QA1; the MR-12 / S07 Ruling M pattern).
 
-The shipped SSLW set carries eight `primary` size ranges with `verified: false`; they set S_min and
-S_max, and so the floors and the parallel-unit splits. `a48_release_check()` is the release
+The shipped SSLW set carries three `primary` size ranges with `verified: false` (the compressors;
+QA1.patch verified the other five, E01b C1); they set S_min and S_max, and so the floors and the
+parallel-unit splits. `a48_release_check()` is the release
 candidate's measure: it fails while any primary range is unverified. This test pins today's count
 and the `fail`, so the normal suite passes while a release cannot: the release specification flips
 the ranges (after QA1) and this count together.
@@ -20,8 +21,9 @@ import e01_evidence_manifest as manifest  # noqa: E402
 
 from openflowsheet.assessment.cost.sets import unverified_primary_ranges  # noqa: E402
 
-#: The unverified primary ranges at the E01 review (2026-10-29); the release specification sets 0.
-UNVERIFIED_AT_REVIEW = 8
+#: The unverified primary ranges after QA1.patch (E01b C1, 2026-10-29); the release specification
+#: sets 0.
+UNVERIFIED_AT_REVIEW = 3
 SET = REPO / "src" / "openflowsheet" / "_data" / "assessment" / "cost" / "sslw-idaes-v1.json"
 
 

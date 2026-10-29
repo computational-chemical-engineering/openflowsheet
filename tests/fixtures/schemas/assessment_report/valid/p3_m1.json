@@ -683,9 +683,9 @@
       "min": 150.0,
       "role": "size",
       "source": {
-       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22: shell-and-tube heat exchanger purchase cost, Eq. 22.39-22.43 (size range of the equation, recalled; design note §9.2.5, QA1)",
+       "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 462, Eqs. (16.39)-(16.42): shell-and-tube base cost valid for tube outside area A = 150 to 12,000 ft2 (QA1; the coefficients are IDAES's, from the 3rd ed., ch. 22)",
        "kind": "primary",
-       "verified": false
+       "verified": true
       }
      },
      "pressure_psig": {
@@ -844,9 +844,9 @@
       "min": 150.0,
       "role": "size",
       "source": {
-       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22: shell-and-tube heat exchanger purchase cost, Eq. 22.39-22.43 (size range of the equation, recalled; design note §9.2.5, QA1)",
+       "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 462, Eqs. (16.39)-(16.42): shell-and-tube base cost valid for tube outside area A = 150 to 12,000 ft2 (QA1; the coefficients are IDAES's, from the 3rd ed., ch. 22)",
        "kind": "primary",
-       "verified": false
+       "verified": true
       }
      },
      "pressure_psig": {
@@ -900,7 +900,7 @@
   "opex.utility.HPS": 17909.41827525275
  },
  "provenance": {
-  "generated_utc": "2026-10-27T22:02:50+00:00",
+  "generated_utc": "2026-10-29T19:30:23+00:00",
   "openflowsheet_version": "0.3.0.dev0",
   "program_label": "ASM1-96c77d978276-154fafe0"
  },

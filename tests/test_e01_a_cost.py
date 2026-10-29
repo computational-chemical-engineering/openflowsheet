@@ -129,7 +129,17 @@ def test_the_shipped_set_loads_with_the_notes_entries_in_order(capsys: Any) -> N
         for name, r in found.items():
             kinds.append((item["entry_id"], name, r["source"]["kind"], r["source"].get("verified")))
     print("\n".join(f"{e} {n}: {k} verified={v}" for e, n, k, v in kinds))
-    assert all(v is False for _, _, k, v in kinds if k == "primary")
+    # QA1.patch (E01b C1): the five ranges that match the 4th ed. are verified; the compressor's
+    # (one row here: the three choices share the range name) is not.
+    primary = {(e, n): v for e, n, k, v in kinds if k == "primary"}
+    assert primary == {
+        ("exchanger.shell_tube", "area_ft2"): True,
+        ("pump", "size_factor"): True,
+        ("pump", "flow_gpm"): True,
+        ("pump", "power_hp"): True,
+        ("motor.electric", "motor_power_hp"): True,
+        ("compressor", "power_hp"): False,
+    }, primary
     assert {k for _, _, k, _ in kinds} == {"pinned", "primary"}
     assert "primary" in capsys.readouterr().out
 

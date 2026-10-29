@@ -600,3 +600,30 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   `sets._resolve`.
 - DECISION: C2 — "`source.checked_against`" in the loader is a shape check (an object with non-empty `citation` and
   `scope`); the data lands in C3. Alternative: no loader check. Reversible by: the `parse_set` hunk.
+
+## E01b (2026-10-29; design note §10, ruling B on QA1; brief `docs/briefs/E01b-build.md`)
+
+- C1 f72af0c1: `QA1.patch` applied unchanged. `src/openflowsheet/_data/assessment/cost/sslw-idaes-v1.json` is a symlink
+  to `assessment/cost/sslw-idaes-v1.json`, so the two copies of §10.6.4 are one file and `cmp` holds by construction.
+- C2 acc75185: loader (§10.4.1 `amended` + effective values, the five refusals, compressor-needs-motor, consumed-power
+  3× check, drive attached by `resolve()`, `checked_against` shape check). Inert on today's set (no `amended` number).
+- DECISION: C2 — the compressor's drive is the set's first `machine.drive` entry (`entry_for`, as `drives()` uses),
+  resolved on its defaults. Alternative: any `sslw-motor-v1` entry. Reversible by: the `parse_set`/`resolve` hunks.
+- DECISION: C2 — `ResolvedEntry.amended` keys by the set path as §10.4.2 writes it (`options.<o>.choices.<k>.<n>`,
+  `coefficients.<n>[i].<m>`); "repeats a coefficient" names that path. Alternative: bare names. Reversible by: C2.
+- DECISION: C1 pins (one commit after C2) — the tree stays green at C1+C2: A48 tripwire 8 → 3 (the compressors), the
+  primary-flag assertion (5 verified, compressor not), set sha256 `6ff671a7…eea9` in the t08 pin and
+  `docs/e01-data-licences.json`, the three report fixtures and the invalid one regenerated (only `citation`/`verified`
+  and the timestamp changed, audited). Alternative: leave C1 failing until C6. Reversible by: reverting that commit.
+- **STOPPED: held for the 3rd-ed. check, orchestrator 2026-10-29.** Frank supplied Seider 3rd ed.; §10's coefficient
+  and range amendments are re-checked and may change. Not on this branch: C3 (forms VI/VII depend on §10.4.3's range
+  names and the turbine range in the set, so they are held with the data), C4–C6, C7. The full C3–C6 implementation
+  (forms, set amendments, report `amended` block, cost_hand + seider4.yaml/A49, A15 re-run, fixtures, A44/A50/A51 tests;
+  E01 tests 222 passed there, ruff E501/format pending in `tests/test_e01_a_cost.py`) is parked on local branch
+  `wip/E01b-held` (f43f7dab, on e37dacb1 C3 / c73a0721 C4 / 02477928 C5) with its decision lines and moved-number audit
+  in that branch's copy of this file. A fresh engineer can cherry-pick from it once §10 is amended. Facts from it: the
+  A49 `index_log` gaps are all 0.976 half-unit (book adds 0.1258 for ln(567/500)); the P2 drum floors under M1, making
+  every P2 capital row floored; scratch IDAES env re-created at `/home/frankp/.cache/idaes-2.13/venv` (wheel sha256
+  verified; pyomo 6.10.1, pint 0.26.2).
+- Open: the S12b evidence manifest needs `scripts/e01_evidence_manifest.py` extended (package id, A49–A51), a file
+  outside §10.6.2's list — for the orchestrator to decide.

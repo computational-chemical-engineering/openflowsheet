@@ -292,9 +292,9 @@
       "min": 150.0,
       "role": "size",
       "source": {
-       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22: shell-and-tube heat exchanger purchase cost, Eq. 22.39-22.43 (size range of the equation, recalled; design note §9.2.5, QA1)",
+       "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 462, Eqs. (16.39)-(16.42): shell-and-tube base cost valid for tube outside area A = 150 to 12,000 ft2 (QA1; the coefficients are IDAES's, from the 3rd ed., ch. 22)",
        "kind": "primary",
-       "verified": false
+       "verified": true
       }
      },
      "pressure_psig": {
@@ -578,9 +578,9 @@
       "min": 400.0,
       "role": "size",
       "source": {
-       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22: centrifugal pump size factor S = Q H^0.5, gpm ft^0.5 (size range of the equation, recalled; design note §9.2.5, QA1)",
+       "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 452, Eq. (16.14): radial centrifugal pump, valid from S = Q H^0.5 = 400 to 100,000 gpm ft^0.5 (QA1; the coefficients are IDAES's, from the 3rd ed., ch. 22)",
        "kind": "primary",
-       "verified": false
+       "verified": true
       }
      }
     },
@@ -651,9 +651,9 @@
       "min": 1.0,
       "role": "size",
       "source": {
-       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22: electric motor power consumption P_C, hp (size range of the equation, recalled; design note §9.2.5, QA1)",
+       "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 453, Eq. (16.19) and Table 16.22: electric motor, 3,600 rpm open drip-proof, P_C = 1 to 700 Hp (QA1; the coefficients are IDAES's, from the 3rd ed., ch. 22)",
        "kind": "primary",
-       "verified": false
+       "verified": true
       }
      }
     },
@@ -692,7 +692,7 @@
   "opex.utility.HPS": 14400.0
  },
  "provenance": {
-  "generated_utc": "2026-10-27T22:02:48+00:00",
+  "generated_utc": "2026-10-29T19:30:22+00:00",
   "openflowsheet_version": "0.3.0.dev0",
   "program_label": "ASM1-1635c38aee50-2a9930bc"
  },
