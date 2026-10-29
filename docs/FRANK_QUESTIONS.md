@@ -243,3 +243,10 @@ All four answered with the recommended default (Frank, 2026-10-25):
 - **QA1** (Frank, 2026-10-29): "I have uploaded edition 4 of Seider et al." → Zotero `seider2017product` (4th ed., 2017;
   ch. 16 = 3rd ed. ch. 22; Table 16.32 pp. 481-485, CE 567). An agent compares the ranges against it; Frank approves the
   one commit that sets `verified: true` (A48). Edition differences are reported, not silently adopted.
+- **QA1 result** (agent, 2026-10-29, against Seider 4th ed. ch. 16): 5 of 8 primary ranges match exactly (exchanger,
+  centrifugal pump, gear pump, reciprocating pump, motor); 3 compressor ranges match in number but the book sizes on consumed
+  power incl. the motor, IDAES on brake power; several coefficients differ from the 4th ed. (refits; e.g. fixed-head α2
+  0.8228 vs 0.9228). **Frank, 2026-10-29:** the five ranges count as checked ("Yes, mark checked (Rec.)": cited to the 4th
+  ed. page, coefficients stay IDAES's 3rd-ed., stated); the differences are **fixed before 0.3.0** ("Fix before 0.3.0
+  (Rec.)": a design-lane ruling; coefficients settled with the 3rd ed. when it arrives, or the 4th ed.'s adopted).
+  3rd ed. requested via zotero (`seider2009product`, JFDFFJ4X).
