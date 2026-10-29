@@ -396,3 +396,6 @@ I1's.
 - DECISION: the golden-report comparison treats `state_sha256` per ADR 0025 D2 (a float digest, `run/compare.py`'s
   `_is_float_digest_v2`): exact on x86-64, kind (64 hex) elsewhere; exact digests (`assessment_sha256`) stay exact
   everywhere. Alternative: per-platform golden files. Reversible by: reverting this commit.
+- FACT: CI 40937174304 at `991dcde8`: x86-64 runners give `state_sha256` `8ad27fb2…` (workstation golden `e496390f…`):
+  the digest is not reproducible across x86-64 CPUs either. Amended DECISION: float digests compared for kind only on
+  every platform (ADR 0025 D2 as written); exact digests stay exact; numbers stay at rel 1e-9.
