@@ -31,7 +31,6 @@ numerics-changing. Each choice below is isolated so that a revert undoes it.
 - DECISION D7: the Wilson records → documented as read from a **source checkout** (today's code, `wilson_ig.load_records`,
   R-706). Frank decided on 2026-10-29 that 0.3.0 ships them (Q-F3); that packaging change is not on `main` yet. The
   property-basis page says so in one sentence, to be updated when the change lands (handoff item 2).
-
 - DECISION D8: Material's Google Fonts → off (`theme.font: false`), so the pages load no third-party font; the
   privacy page names the one third-party resource left, the shields.io version badge on the home page (kept: Peclet's
   rule that the badge carries the version). Alternative: Peclet's default fonts and a privacy line naming Google.
@@ -50,3 +49,24 @@ numerics-changing. Each choice below is isolated so that a revert undoes it.
 - Q1 (D3): should `process-revision.schema.json`'s `semantic_role` gain `compressor`, `turbine` (and `column`), or
   `other` as the S11 cases assume? Today every committed `thermal.*`/GP case fails application validation on
   `SCHEMA-01` and is solved only through the library path. Default taken: `pump` in the examples.
+
+## Handoff (end of the build pass)
+
+State: site builds with `mkdocs build --strict` (no warnings); four example notebooks; generated pages
+(`scripts/doc_pages.py --check`); `site.yml` builds on every push/PR and deploys from `main` only. Evidence:
+`evidence/S14/<commit>/manifest.json` (`scripts/s14_evidence_manifest.py --docs-python <docs venv python>`).
+
+Rebuild locally: a venv with `requirements.lock`, `--no-deps --require-hashes -r requirements-coolprop.lock`,
+`pip install --no-deps -e .`, `--no-deps --require-hashes -r requirements-docs.txt`; then
+`mkdocs build --strict --site-dir site` (about 50 s; the notebooks execute) or `mkdocs serve`.
+
+Left for after this branch:
+1. When E01 is on `main`: `docs-site/guide/assessment.md` (cost: accuracy class, uncertainty, data rights; LCA:
+   the `lca` extra if it exists then, IPCC AR6 GWP-100 with citation), an API page, a notebook with stated numbers
+   in `tests/test_doc_examples.py::STATED`, an install-table row (D2, D6).
+2. When the Wilson records ship in the wheel (Q-F3): drop "read from a source checkout" from
+   `docs-site/guide/property-bases.md`, `examples/README.md` and `docs-site/examples/index.md` (D7).
+3. The orchestrator enables Pages (`build_type=workflow`) after the merge; the first `main` push deploys.
+4. Q1 (semantic roles) for the design lane; if roles are added, change the two notebooks, the tutorial and the
+   change set (`examples/rankine-cycle.changeset.json`, regenerate from the notebook) together.
+5. `docs/support-matrix.md` is still titled for v0.2.0.dev0; the limitations page summarises it and links it.
