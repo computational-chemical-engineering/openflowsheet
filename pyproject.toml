@@ -89,6 +89,11 @@ openflowsheet = [
     "_data/benchmarks/m02/numerical_policy_external.yaml",
     # S05 (R-616): the IAPWS-95 coefficients `iapws95-v1` reads, with IAPWS's attribution in NOTICE.
     "_data/benchmarks/s05/iapws95_coefficients.json",
+    # E01 (ADR 0052): the assessment data (cost set, chain presets, index series, LCA tables), with
+    # the third-party attributions in NOTICE; one glob per directory.
+    "_data/assessment/cost/*.json",
+    "_data/assessment/index/*.json",
+    "_data/assessment/lca/*.json",
     # M06 (ADR 0030 D2): the diagnostic web shell, `_data/web` → `apps/web/`, one glob per
     # directory (`serve-http --ui`).
     "_data/web/*.html",

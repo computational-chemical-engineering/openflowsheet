@@ -397,3 +397,15 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   its fixture's items to `P_SIZES` in cost_hand.py and re-run both records. Most P-size items sit in `floor` (§9.7 risk).
 - **Open for the design lane (batched):** the decision lines above, and the pump_type_factor observation.
 - WO-B4 is complete. Nothing under compile/, thermo/, models/; no S11 file.
+
+## WO-I1 (integration)
+
+- DECISION: the single repository copy of the assessment data → top-level `assessment/{cost,index,lca}/*.json`, each
+  `src/openflowsheet/_data/assessment/<kind>/<file>` a per-file link to it, seven file entries in
+  `resources.PACKAGED` (S05's one-file pattern: repository path = package path, so `REPOSITORY_PATHS` and T08's
+  "only the web shell sits elsewhere" test are untouched), per-directory globs in `pyproject.toml`. T08 tests amended
+  as R-617 did: W4's packaged-file count 6 → 13; A32's `ATTRIBUTED_DATA` gains the six third-party files by hash, each
+  with its strings in NOTICE (`E01_ATTRIBUTION`; IDAES BSD licence in full), controls (pre-E01 NOTICE, changed bytes)
+  per file; `SHIPPED_DATA` gains the synthetic `test-background-v1.json`; L40's text names the six and
+  `docs/support-matrix.md` is re-emitted. Alternative: `assessment-data/` + a `REPOSITORY_PATHS` entry (ESC-B2's
+  proposal; amends the web-shell test). Reversible by: the packaging commit.

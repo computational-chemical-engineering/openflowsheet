@@ -1,0 +1,240 @@
+{
+ "format": "unit-score-table-v1",
+ "table_id": "test-background-v1",
+ "producer": {
+  "engine": "hand",
+  "derivation": "E01 design §4.8.5: q_k = c·B·A⁻¹e_k solved exactly; the nearest doubles of 16.965625/31, 5.8625/31, 27.9578125/31",
+  "created": "2026-10-27"
+ },
+ "background": [
+  {
+   "database": "test-background-v1",
+   "declared_version": "1",
+   "system_model": "synthetic (no allocation; three activities)",
+   "metadata_sha256": "6822cec2435da3b005a73f0a9a493f3665498eaf9074b7c0a30f282a4a231f6f"
+  }
+ ],
+ "categories": [
+  {
+   "category_id": "climate_change_test",
+   "method": [
+    "openflowsheet",
+    "test",
+    "climate_change_test"
+   ],
+   "unit": "kg CO2-eq"
+  }
+ ],
+ "activities": [
+  {
+   "activity_id": "tb.electricity",
+   "key": [
+    "test-background-v1",
+    "tb.electricity"
+   ],
+   "name": "tb.electricity",
+   "location": "GLO",
+   "unit": "kWh",
+   "si_per_unit": 3600000.0
+  },
+  {
+   "activity_id": "tb.heat",
+   "key": [
+    "test-background-v1",
+    "tb.heat"
+   ],
+   "name": "tb.heat",
+   "location": "GLO",
+   "unit": "MJ",
+   "si_per_unit": 1000000.0
+  },
+  {
+   "activity_id": "tb.chemical_x",
+   "key": [
+    "test-background-v1",
+    "tb.chemical_x"
+   ],
+   "name": "tb.chemical_x",
+   "location": "GLO",
+   "unit": "kg",
+   "si_per_unit": 1.0
+  }
+ ],
+ "scores": [
+  [
+   0.5472782258064516,
+   0.18911290322580646,
+   0.9018649193548387
+  ]
+ ],
+ "rights": {
+  "class": "open",
+  "licence": "Apache-2.0 (synthetic data authored in this repository)",
+  "redistribution": "allowed",
+  "notice": "Synthetic test background; not the inventory of any real process."
+ },
+ "brightway": {
+  "biosphere_database": "test-biosphere-v1",
+  "biosphere": {
+   "co2_fossil_air": {
+    "name": "Carbon dioxide, fossil",
+    "categories": [
+     "air"
+    ],
+    "unit": "kilogram",
+    "type": "emission"
+   },
+   "ch4_fossil_air": {
+    "name": "Methane, fossil",
+    "categories": [
+     "air"
+    ],
+    "unit": "kilogram",
+    "type": "emission"
+   }
+  },
+  "technosphere_database": "test-background-v1",
+  "activities": {
+   "tb.electricity": {
+    "name": "tb.electricity",
+    "unit": "kilowatt hour",
+    "location": "GLO",
+    "type": "process",
+    "exchanges": [
+     {
+      "input": [
+       "test-background-v1",
+       "tb.electricity"
+      ],
+      "amount": 1.0,
+      "type": "production"
+     },
+     {
+      "input": [
+       "test-background-v1",
+       "tb.heat"
+      ],
+      "amount": 0.25,
+      "type": "technosphere"
+     },
+     {
+      "input": [
+       "test-biosphere-v1",
+       "co2_fossil_air"
+      ],
+      "amount": 0.5,
+      "type": "biosphere"
+     }
+    ]
+   },
+   "tb.heat": {
+    "name": "tb.heat",
+    "unit": "megajoule",
+    "location": "GLO",
+    "type": "process",
+    "exchanges": [
+     {
+      "input": [
+       "test-background-v1",
+       "tb.heat"
+      ],
+      "amount": 1.0,
+      "type": "production"
+     },
+     {
+      "input": [
+       "test-background-v1",
+       "tb.electricity"
+      ],
+      "amount": 0.125,
+      "type": "technosphere"
+     },
+     {
+      "input": [
+       "test-biosphere-v1",
+       "co2_fossil_air"
+      ],
+      "amount": 0.0625,
+      "type": "biosphere"
+     },
+     {
+      "input": [
+       "test-biosphere-v1",
+       "ch4_fossil_air"
+      ],
+      "amount": 0.001953125,
+      "type": "biosphere"
+     }
+    ]
+   },
+   "tb.chemical_x": {
+    "name": "tb.chemical_x",
+    "unit": "kilogram",
+    "location": "GLO",
+    "type": "process",
+    "exchanges": [
+     {
+      "input": [
+       "test-background-v1",
+       "tb.chemical_x"
+      ],
+      "amount": 1.0,
+      "type": "production"
+     },
+     {
+      "input": [
+       "test-background-v1",
+       "tb.electricity"
+      ],
+      "amount": 0.5,
+      "type": "technosphere"
+     },
+     {
+      "input": [
+       "test-background-v1",
+       "tb.heat"
+      ],
+      "amount": 2.0,
+      "type": "technosphere"
+     },
+     {
+      "input": [
+       "test-biosphere-v1",
+       "co2_fossil_air"
+      ],
+      "amount": 0.25,
+      "type": "biosphere"
+     }
+    ]
+   }
+  },
+  "methods": [
+   {
+    "category_id": "climate_change_test",
+    "method": [
+     "openflowsheet",
+     "test",
+     "climate_change_test"
+    ],
+    "unit": "kg CO2-eq",
+    "cfs": [
+     [
+      [
+       "test-biosphere-v1",
+       "co2_fossil_air"
+      ],
+      1.0
+     ],
+     [
+      [
+       "test-biosphere-v1",
+       "ch4_fossil_air"
+      ],
+      29.8
+     ]
+    ]
+   }
+  ]
+ },
+ "sha256": "bb248b2a976567d8877e4f903120311d4145654899b5241a91c7cea78064fc23"
+}

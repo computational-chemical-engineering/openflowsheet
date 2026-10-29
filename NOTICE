@@ -42,3 +42,100 @@ Please cite as: International Association for the Properties of Water and
 Steam, IAPWS R6-95(2018), Revised Release on the IAPWS Formulation 1995 for
 the Thermodynamic Properties of Ordinary Water Substance for General and
 Scientific Use (2018).
+
+Third-party data: the assessment data (E01, ADR 0052)
+
+The assessment package reads seven data files, each packaged at
+openflowsheet/_data/assessment/<kind>/<file> (repository path
+assessment/<kind>/<file>). One, openflowsheet/_data/assessment/lca/test-
+background-v1.json, is synthetic data authored in this repository. The other
+six reproduce third-party numbers under the terms below; each file also
+records its source, licence text and retrieval date in its own fields.
+
+openflowsheet/_data/assessment/cost/sslw-idaes-v1.json transcribes the
+capital-cost correlations of Seider, Seader, Lewin and Widagdo, Product and
+Process Design Principles, 3rd ed., ch. 22, from idaes/models/costing/SSLW.py
+of the IDAES PSE Framework 2.13.0, which is distributed under this licence:
+
+License
+=======
+
+Institute for the Design of Advanced Energy Systems Process Systems Engineering
+Framework (IDAES PSE Framework) Copyright (c) 2018-2026, by the software owners: The
+Regents of the University of California, through Lawrence Berkeley National
+Laboratory,  National Technology & Engineering Solutions of Sandia, LLC,
+Carnegie Mellon University, West Virginia University Research Corporation, et al.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+
+3. Neither the name of the Institute for the Design of Advanced Energy Systems
+(IDAES), University of California, Lawrence Berkeley National Laboratory,
+National Technology & Engineering Solutions of Sandia, LLC, Sandia National
+Laboratories, Carnegie Mellon University, West Virginia University Research
+Corporation, U.S. Dept. of Energy, nor the names of its contributors may be used
+to endorse or promote products derived from this software without specific
+prior written permission.
+
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+You are under no obligation whatsoever to provide any bug fixes, patches, or
+upgrades to the features, functionality or performance of the source code
+("Enhancements") to anyone; however, if you choose to make your Enhancements
+available either publicly, or directly to Lawrence Berkeley National Laboratory,
+without imposing a separate written license agreement for such Enhancements,
+then you hereby grant Lawrence Berkeley National Laboratory the following
+license: a  non-exclusive, royalty-free perpetual license to install, use,
+modify, prepare derivative works, incorporate into other computer software,
+distribute, and sublicense such enhancements or derivative works thereof, in
+binary and source code form.
+
+openflowsheet/_data/assessment/cost/chains.json: the capital-chain preset
+ebtf-prisma-v1 takes its factors from the supporting information (section
+6.3.3) of Charalambous et al., Nature 632 (2024),
+doi:10.1038/s41586-024-07683-8, published under the Creative Commons
+Attribution licence (CC BY); the preset bare-module-total is this project's
+own.
+
+openflowsheet/_data/assessment/index/bls-ppi-wpu11-annual-v1.json: Producer
+Price Index by Commodity: Machinery and Equipment (WPU11), annual. Source:
+U.S. Bureau of Labor Statistics via FRED, Federal Reserve Bank of St. Louis.
+Public domain, citation requested.
+
+openflowsheet/_data/assessment/index/eurostat-ppi-c28-ea-annual-v1.json:
+Producer prices in industry, domestic market, annual data (sts_inppd_a), NACE
+Rev. 2 C28, euro area (EA20). Source: Eurostat. Reused under Eurostat's
+copyright notice (Creative Commons Attribution 4.0 International; Commission
+Decision 2011/833/EU); the annual values are reproduced unchanged.
+
+openflowsheet/_data/assessment/index/frb-g5a-annual-v1.json: G.5A Foreign
+Exchange Rates, annual averages. Source: Board of Governors of the Federal
+Reserve System, via FRED, Federal Reserve Bank of St. Louis. Public domain,
+citation requested.
+
+openflowsheet/_data/assessment/lca/gwp100-ipcc-ar6-v1.json: five GWP100 values
+from IPCC AR6 WG1 Chapter 7, Table 7.15 (© 2021 IPCC). Forster, P., T.
+Storelvmo, K. Armour, W. Collins, J.-L. Dufresne, D. Frame, D.J. Lunt, T.
+Mauritsen, M.D. Palmer, M. Watanabe, M. Wild, and H. Zhang, 2021: The Earth's
+Energy Budget, Climate Feedbacks, and Climate Sensitivity. In Climate Change
+2021: The Physical Science Basis. Contribution of Working Group I to the Sixth
+Assessment Report of the Intergovernmental Panel on Climate Change. Cambridge
+University Press, pp. 923-1054, doi:10.1017/9781009157896.009.
