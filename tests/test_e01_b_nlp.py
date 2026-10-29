@@ -50,6 +50,7 @@ from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.studies.nlp.closure import (
+    REGIME_NOTE,
     Readiness,
     SolverAvailability,
     StartEvidence,
@@ -726,6 +727,22 @@ def test_the_report_records_v7_and_the_formulation_assessment_valid_against_the_
     ]
     assert record["regime_sha256"] == p.regime.sha256
     assert record["regime_bounds_active"] == []  # the start is inside its size range
+    assert "regime_note" not in record
+    # E01 review N5: with an active row the record says in words what the status covers.
+    assert result.kkt is not None
+    row = closure.admissibility[0]
+    at_boundary = dataclasses.replace(
+        result,
+        slacks={**result.slacks, row: {"lower": 0.0}},
+        kkt=dataclasses.replace(result.kkt, multipliers={**result.kkt.multipliers, row: 0.5}),
+    )
+    active = assessment_record(f, closure, at_boundary)
+    assert active is not None
+    assert active["regime_bounds_active"] == [{"id": row, "slack": 0.0, "multiplier": 0.5}]
+    assert active["regime_note"] == REGIME_NOTE and "held regime" in REGIME_NOTE
+    with_note = json.loads((FIXTURES / "nlp_1_solved.json").read_text(encoding="utf-8"))
+    with_note["formulation"]["assessment"] = active
+    assert schema_errors("optimization-report.schema.json", with_note) == []
     report = json.loads((FIXTURES / "nlp_1_solved.json").read_text(encoding="utf-8"))
     report["candidate"] = result.as_document()
     report["formulation"]["assessment"] = record

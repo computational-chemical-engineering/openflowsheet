@@ -553,3 +553,8 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   passes once every range is flipped. The manifest's A48 stays `not run (RC item)`.
 - FACT (N1): the worst-case interval label is the review's text, "linear, first order; each input at its own adverse
   bound (box worst case; conservative for any correlation)"; the four assessment-report fixtures carry it (label only).
+- FACT (N5): `formulation.assessment` carries `regime_note` (closure `REGIME_NOTE`) when `regime_bounds_active` is
+  non-empty: the status holds for the held regime. Optional property added to `assessment.schema.json`'s
+  `formulation_assessment`; absent otherwise, so no fixture changes. N2 (layering) not changed: the review gives no
+  change to make until `numerics/` opens. N3 (platform piece provenance) and N4 need no code here; N3 left for the
+  data owner (it edits the shipped set's provenance).

@@ -1089,6 +1089,11 @@
               }
             }
           }
+        },
+        "regime_note": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Present when regime_bounds_active is non-empty (E01 review N5): the status is relative to the held regime."
         }
       }
     }

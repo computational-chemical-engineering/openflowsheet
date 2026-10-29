@@ -972,6 +972,8 @@ At `x_sim`, the re-solved certified state:
   - Status precedence: as V2.
 - **Report.** `regime_bounds_active`: each admissibility row with scaled slack ≤ τ_feas, with its multiplier from V5's
   least squares.
+  *Erratum 2026-10-29 (E01 review N5):* `KKT_POINT_VERIFIED` means a KKT point of the held-regime problem. When
+  `regime_bounds_active` is non-empty the record carries `regime_note`, saying so in words.
 - *Limitation 2026-10-29 (E01 review S3, R-871):* the closure (column overlap, §4.10.2) and V7 (every entry) together
   hold every regime of the program for any assessment objective. This is sound — no candidate is verified across a
   regime change — but over-restrictive: an impact objective is held to the capex size regimes whose rows share Q, and

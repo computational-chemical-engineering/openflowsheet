@@ -849,8 +849,9 @@ def assessment_record(
     """`formulation.assessment` (E01 §4.11): the assessment's and regime's identity, each bound
     output's scale, each admissibility row of the closure with its nominal, and
     `regime_bounds_active` — the rows with scaled slack ≤ τ_feas at the candidate, each with its
-    multiplier from V5's least squares. Without a closure (no certified start) the outputs carry
-    the binding's scales and there are no rows; without a candidate nothing is active."""
+    multiplier from V5's least squares, and then `regime_note` in words (E01 review N5). Without a
+    closure (no certified start) the outputs carry the binding's scales and there are no rows;
+    without a candidate nothing is active."""
     binding = formulation.assessment
     if binding is None:
         return None
@@ -872,7 +873,7 @@ def assessment_record(
             multiplier = candidate.kkt.multipliers.get(name)
             if slack is not None and slack <= TAU_FEAS and multiplier is not None:
                 active.append({"id": name, "slack": slack, "multiplier": multiplier})
-    return {
+    record = {
         "assessment_id": spec.assessment_id,
         "assessment_sha256": spec.assessment_sha256,
         "regime_sha256": program.regime.sha256,
@@ -881,6 +882,18 @@ def assessment_record(
         "admissibility": admissibility,
         "regime_bounds_active": active,
     }
+    if active:
+        record["regime_note"] = REGIME_NOTE
+    return record
+
+
+#: E01 review N5: the words a record with active regime rows carries.
+REGIME_NOTE: Final = (
+    "KKT_POINT_VERIFIED holds for the held regime: the candidate is a KKT point of the problem "
+    "with every regime choice held. The admissibility rows under regime_bounds_active are at "
+    "their boundary, where a choice (parallel units, a correlation piece) changes and the cost "
+    "may jump; a point beyond it is not covered by the verification."
+)
 
 
 def model_record(flowsheet: Syn001Flowsheet) -> dict[str, Any]:
