@@ -30,7 +30,6 @@ from s11_column_support import committed_case as column_case  # noqa: E402
 from s11_thermal_support import committed_case, solve  # noqa: E402
 from test_e01_a_contributor import C2_DOC  # noqa: E402
 from test_e01_a_contributor_c1 import C1_DOC, _c1  # noqa: E402
-from test_s11_thermal_binding import register  # noqa: E402
 
 from openflowsheet.application.policies import T06_REVISION_V2  # noqa: E402
 from openflowsheet.application.revision_binding import bind_revision_flowsheet  # noqa: E402
@@ -115,9 +114,10 @@ CONTRIBUTORS = (CostContributor(), DerivedContributor())
 
 @contextmanager
 def _registered() -> Iterator[pytest.MonkeyPatch]:
+    # Since S11 I1b the thermal models are rows of the binder's tables (no registration); the
+    # patch serves `column_registered` and other monkeypatched tables.
     patch = pytest.MonkeyPatch()
     try:
-        register(patch)
         yield patch
     finally:
         patch.undo()

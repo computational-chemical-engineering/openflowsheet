@@ -15,7 +15,6 @@ from typing import Any
 
 import pytest
 from s11_thermal_support import committed_case, solve
-from test_s11_thermal_binding import registered  # noqa: F401
 
 from openflowsheet.assessment.cost import uncertainty
 from openflowsheet.assessment.cost.contributor import CostContributor
@@ -27,6 +26,12 @@ from openflowsheet.assessment.views import view_of
 #: SSLW.py:1636-1641 (η_m) and :1150-1178 (compressor), restated.
 KAPPA_W = 1.0 / 745.6998715822702
 YEAR = 2023
+
+
+@pytest.fixture
+def registered() -> None:
+    """Since S11 I1b the thermal models are rows of the binder's tables: nothing to register."""
+
 
 C2_DOC: dict[str, Any] = {
     "schema_version": "assessment-v1",

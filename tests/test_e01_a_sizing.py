@@ -394,7 +394,7 @@ def test_syn001_area_gradient_against_central_differences() -> None:
 # -- the families on S11's TH-R1 (H2O, IAPWS-95): heater, flash drum, pump and drive ------------
 
 from s11_thermal_support import committed_case, solve  # noqa: E402
-from test_s11_thermal_binding import registered  # noqa: E402, F401
+from test_e01_a_contributor import registered  # noqa: E402, F401
 
 from openflowsheet.models.thermal.state import liquid_id, vapor_id  # noqa: E402
 

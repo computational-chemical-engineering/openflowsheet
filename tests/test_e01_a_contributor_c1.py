@@ -17,8 +17,13 @@ from typing import Any
 
 import pytest
 from s11_thermal_support import committed_case, solve
-from test_e01_a_contributor import C2_DOC, KAPPA_W, YEAR, eta_m
-from test_s11_thermal_binding import registered  # noqa: F401
+from test_e01_a_contributor import (
+    C2_DOC,
+    KAPPA_W,
+    YEAR,
+    eta_m,
+    registered,  # noqa: F401
+)
 
 from openflowsheet.assessment.cost.contributor import CostContributor
 from openflowsheet.assessment.cost.index import load_series

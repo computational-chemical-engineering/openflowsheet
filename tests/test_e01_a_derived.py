@@ -11,8 +11,11 @@ from typing import Any
 
 import numpy as np
 import pytest
-from test_e01_a_contributor import C2_DOC, _c2
-from test_s11_thermal_binding import registered  # noqa: F401
+from test_e01_a_contributor import (
+    C2_DOC,
+    _c2,
+    registered,  # noqa: F401
+)
 
 from openflowsheet.assessment.cost.contributor import CostContributor
 from openflowsheet.assessment.cost.derived import DerivedContributor
