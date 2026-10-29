@@ -34,6 +34,8 @@ from conftest import REPO_ROOT
 WORKFLOWS = REPO_ROOT / ".github" / "workflows"
 RELEASE = "release.yml"
 CI = "ci.yml"
+#: DOC (S14): the documentation site's build and Pages deployment.
+SITE = "site.yml"
 PUBLIC = "computational-chemical-engineering/openflowsheet"
 GUARD = f"github.repository == '{PUBLIC}'"
 C = "67c66d98587f23bd7dfe8da28a8facccc92da21e"
@@ -54,7 +56,7 @@ def step(job: str, name: str) -> dict[str, Any]:
 
 def test_one_release_workflow_and_no_other() -> None:
     assert not (WORKFLOWS / "cut-release.yml").exists()
-    assert sorted(path.name for path in WORKFLOWS.glob("*.yml")) == ["ci.yml", RELEASE]
+    assert sorted(path.name for path in WORKFLOWS.glob("*.yml")) == ["ci.yml", RELEASE, SITE]
     for gone in ("scripts/release_snapshot.py", "release/public-exclude.txt"):
         assert not (REPO_ROOT / gone).exists()
 
@@ -73,6 +75,34 @@ def test_ci_every_action_is_pinned_by_commit_id() -> None:
     assert uses
     for line in uses:
         assert PINNED.match(line), f"not pinned by commit id: {line.strip()}"
+
+
+def test_site_every_action_is_pinned_by_commit_id() -> None:
+    lines = (WORKFLOWS / SITE).read_text(encoding="utf-8").splitlines()
+    uses = [line for line in lines if re.match(r"^\s*(?:-\s*)?uses:", line)]
+    assert uses
+    for line in uses:
+        assert PINNED.match(line), f"not pinned by commit id: {line.strip()}"
+
+
+def test_site_deploys_only_from_main_in_the_public_repository() -> None:
+    """DOC (S14): every push and pull request builds the site; only a push to `main` in the public
+    repository uploads and deploys it, and only the deploy job may write to Pages."""
+    document: dict[Any, Any] = yaml.safe_load((WORKFLOWS / SITE).read_text(encoding="utf-8"))
+    assert document["permissions"] == {"contents": "read"}
+    jobs = document["jobs"]
+    assert list(jobs) == ["build", "deploy"]
+    main = "github.event_name == 'push' && github.ref == 'refs/heads/main'"
+    (upload,) = [s for s in jobs["build"]["steps"] if s.get("name") == "Upload Pages artifact"]
+    assert upload["if"] == main
+    deploy = jobs["deploy"]
+    assert deploy["needs"] == "build" and deploy["if"].startswith(main) and GUARD in deploy["if"]
+    assert deploy["permissions"] == {"pages": "write", "id-token": "write"}
+    assert deploy["environment"]["name"] == "github-pages"
+    assert "permissions" not in jobs["build"]
+    build = " ".join(str(s.get("run", "")) for s in jobs["build"]["steps"])
+    assert "mkdocs build --strict --site-dir site" in build
+    assert "--require-hashes -r requirements-docs.txt" in build
 
 
 def test_dispatch_only_a_dry_run_by_default_and_c_by_default() -> None:
