@@ -27,7 +27,7 @@ import hashlib
 import sys
 from pathlib import Path
 
-import mpmath
+import mpmath  # type: ignore[import-untyped]
 import yaml
 
 mpmath.mp.dps = 30
@@ -106,7 +106,7 @@ def inventory() -> dict[str, mpmath.mpf]:
 
 
 def s30(x: mpmath.mpf) -> str:
-    return mpmath.nstr(x, 30, min_fixed=-mpmath.inf, max_fixed=mpmath.inf)
+    return str(mpmath.nstr(x, 30, min_fixed=-mpmath.inf, max_fixed=mpmath.inf))
 
 
 def build() -> dict[str, object]:

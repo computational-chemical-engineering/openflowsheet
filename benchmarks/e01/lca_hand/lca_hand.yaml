@@ -1,6 +1,6 @@
 id: e01-lca-hand-v1
 script: benchmarks/e01/lca_hand/lca_hand.py
-script_sha256: e56a362768e2bca4dad83b307c56897775beb279de02e4226fced35d1b375da9
+script_sha256: 84fb7fc2dfed949e0fcb86aedc6d48c20101a84dccf419ab4825c355d405f13b
 mpmath_dps: 30
 background:
   table: test-background-v1

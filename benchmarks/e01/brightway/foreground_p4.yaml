@@ -2,7 +2,7 @@ id: e01-brightway-foreground-p4-v1
 script: benchmarks/e01/brightway/foreground_p4.py
 script_sha256: d16a30897c10e32956dfd8b58c5f985cda181755a0678eda57aa3fda84e2ee1c
 amounts_from: benchmarks/e01/lca_hand/lca_hand.yaml p4.exchange_amounts_per_s
-amounts_sha256: 248d3a0f315c7e47bc82abbcc693633a250c5a3bdae12294fc8b7f53aeb1925c
+amounts_sha256: 10b7cd245a3384e6e1acfc560d837de95aa7d35ac1ece1571de7f7c8b4ed883c
 environment:
   bw2calc: 2.5.0
   bw_processing: '1.6'
