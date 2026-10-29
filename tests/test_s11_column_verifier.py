@@ -39,7 +39,7 @@ from openflowsheet.models.syn001.column import ColumnSpec
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.splits import lifted_splits, split_owners
+from openflowsheet.orchestrator.splits import STAGED_MODELS, lifted_splits, split_owners
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify.certificate import (
     BoundDeclaration,
@@ -281,6 +281,22 @@ def test_a38_a_recovery_with_no_component_feed_fails(registered: pytest.MonkeyPa
 
 
 # -- the owner map in the verifier (§10.11) ----------------------------------------------------
+
+
+@pytest.mark.parametrize("name", ["M1", "C-MW"])
+def test_s1_the_verifiers_staged_splits_are_the_column_units_own(
+    name: str, registered: pytest.MonkeyPatch
+) -> None:
+    """S11 review S1 (§10.2 step 7, §10.11 B4): the verifier's `StagedSplits`, built from
+    `parse_revision`'s view of the column instance, equal (frozen-dataclass `==`) the copy the
+    binder's builder holds and the solver reads — on SYN-001's M1 and on Wilson's C-MW."""
+    binding, document, _, _ = solved(name)
+    staged = _staged_splits(parse_revision(document))
+    units = {u.unit_id: u for u in binding.flowsheet.units() if u.model_id in STAGED_MODELS}
+    assert list(staged) == list(units) == [column_case_spec(name).unit_id]
+    for unit_id, unit in units.items():
+        assert staged[unit_id] is not unit.staged_splits()
+        assert staged[unit_id] == unit.staged_splits()
 
 
 def test_the_certificate_lifts_the_column_stages(registered: pytest.MonkeyPatch) -> None:
