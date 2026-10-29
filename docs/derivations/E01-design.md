@@ -4,6 +4,7 @@
 **Brief:** `docs/briefs/E01-cost-lca-design.md`. **Records:** ADR 0052 (`docs/adr/0052-e01-assessment-functionals.md`,
 Proposed); register R-850…R-862.
 **Amended:** 2026-10-27, §9 (ruling A on ESC-A2…ESC-A5; register R-863…R-867). §9 wins where it conflicts.
+2026-10-29, §10 (ruling B on QA1, the Seider 4th-ed. differences; register R-890…R-894). §10 wins over §1–§9.
 **Manifest id (2026-10-29, orchestrator ruling on ESC-I2):** E01's evidence manifest is filed as package **`S12`**
 (`evidence/S12/<commit>/manifest.json`); E01 stays the package's name in the docs and is its alias. The frozen
 `schemas/evidence-manifest.schema.json` admits only `^[PKTMSR][0-9]{2}[a-z]?$`, and R-565 renamed L01 → S04 for the
@@ -1900,15 +1901,549 @@ passed as `aspect_ratio_range`, and N. It also:
 
 | # | Question | Needs | Default |
 | --- | --- | --- | --- |
-| QA1 | The primary ranges of §9.2.4 against Seider 3rd ed. ch. 22: exchanger 150–12 000 ft²; centrifugal pump S 400–100 000; external gear Q 10–900 gpm; reciprocating pump 1–200 hp; motor 1–700 hp; compressors 200–30 000, 100–20 000 and 10–750 hp. Also: the turbine's range; whether IDAES's docstring weight ranges (:534) match the book; whether `weight_limit` "2" is the book's tower fit | Fact: a person with the book | Ship the recalled values with `verified: false`. The release candidate is blocked until they are verified (A48). The turbine has no size regime |
+| QA1 | The primary ranges of §9.2.4 against Seider 3rd ed. ch. 22: exchanger 150–12 000 ft²; centrifugal pump S 400–100 000; external gear Q 10–900 gpm; reciprocating pump 1–200 hp; motor 1–700 hp; compressors 200–30 000, 100–20 000 and 10–750 hp. Also: the turbine's range; whether IDAES's docstring weight ranges (:534) match the book; whether `weight_limit` "2" is the book's tower fit | Fact: a person with the book | Ship the recalled values with `verified: false`. The release candidate is blocked until they are verified (A48). The turbine has no size regime **Closed 2026-10-29 by §10.** |
 | QA2 | Option defaults: IDAES's argument defaults (stainless steel exchanger, pump and compressor; U-tube; 12 ft tubes; pump type factor 1.4; open motor; carbon-steel vessel; sieve carbon-steel trays) or carbon steel throughout (the book's base) | Frank's preference | IDAES's defaults, each reported in `defaulted_inputs` |
 | QA3 | Below a stated lower bound: floors (conservative, at most +2.28 % on F_P; the platform terms at the boundary) or IDAES's extrapolation (with limitation and class `none`) | Frank's preference | Floors |
 | QA4 | Does any P1 exchanger's design pressure exceed 2000 psig (13.79 MPa gauge)? | Fact: I1 reads P1's state | The refusal stands. I1 sets `allow_extrapolation` explicitly per item if P1 needs a complete report, and logs it |
 | QA5 | Steam-turbine and gas-turbine compressor drives | Frank's preference (scope) | Not offered in E01 |
-| QA6 | Does SSLW's compressor base cost include the electric motor? This is inferred from F_D = 1 for an electric motor | Fact: QA1's book check | Included (`includes_drive: true`) |
+| QA6 | Does SSLW's compressor base cost include the electric motor? This is inferred from F_D = 1 for an electric motor | Fact: QA1's book check | Included (`includes_drive: true`) **Closed 2026-10-29 by §10.** |
 | QA7 | Wilson liquid volumes: declared per component, or a correlation | Frank's preference | Declared (§9.4); no correlation |
 | QA8 | Vessel shell thickness: an input (IDAES) or computed from the design pressure (ASME; not in the pinned source) | Frank's preference | An input, default 1.25 in, reported. A pressure-based thickness would need its own ADR |
 
 Risk (fact, measured in I1): on SYN-001 (P2), most items sit in the `floor` regime, because the flows are small. Their
 capital is then constant, so ∂tac/∂x comes from operating cost and from the items that are not floored. A33 still
 tests what it states. If I1 finds every capital row floored, it records that, and it does not resize P2.
+
+## 10. Amendment 2026-10-29 — ruling B on QA1: the differences from Seider's 4th edition (E01b)
+
+**Status:** design lane (`architect`), 2026-10-29, branch `wp/E01b` from `wp/E01` `84d71df8`. Brief:
+`docs/briefs/E01b-seider-ruling.md`. Register R-890…R-894. Evidence manifest id `S12b`. This section is normative and
+wins over §1–§9 where they conflict. It supersedes:
+- §9.2.3's number rule (extended by §10.4.1);
+- §9.2.4 form II's weight ranges, `weight_limit` "2" and two platform formulas; form IV's basis for the reciprocating
+  pump; form VI's size quantity; form VII's range and its single unit;
+- §9.2.5's definition of a `primary` range (§10.4.6);
+- §9.7 QA1 and QA6, which this section closes.
+
+One build-lane engineer implements it in one batch before 0.3.0 (§10.6). Nothing under `compile/`, `thermo/`,
+`models/` changes. Every number that moves is listed in §10.6.3.
+
+**Already decided by Frank (2026-10-29), not reopened here.**
+- The five ranges that match (exchanger, three pumps, motor) count as checked. They are cited to the 4th-ed. page, and
+  their coefficients stay IDAES's 3rd-ed. ones, stated as such. `QA1.patch` is applied as it stands.
+- The differences are fixed before 0.3.0, and the release waits for them. The compressor's size variable follows the
+  book. Coefficients are settled by the 3rd ed. when it arrives, or by adopting the 4th ed.'s.
+- Standing directives: as few limitations as possible; batch, then test once; independent expectations only;
+  post-solve functionals only; nothing outside E01's files moves.
+
+### 10.1 Facts
+
+**Source.** Seider, Lewin, Seader, Widagdo, Gani, Ng, *Product and Process Design Principles*, 4th ed., Wiley 2017,
+ch. 16, at CE 567 (Zotero `seider2017product`). Pages below are printed pages. QA1 made the comparison, and this ruling
+re-read each cited page. The 3rd ed. (`seider2009product`) is requested and not in hand.
+
+- **F1, motor efficiency** (p. 453, Eq. 16.18): η_M = 0.80 + 0.0319·ln P_B − 0.00182·(ln P_B)², stated for P_B
+  1–1,500 Hp. This is the set's `motor.electric` `eta` (SSLW.py:1638-1640). Eq. 16.16 defines P_C = P_B/η_M.
+- **F2, compressors** (p. 460). The base cost is plotted "as a function of consumed power, P_C". It "includes an
+  electric motor drive". Ranges: P_C 200–30,000, 100–20,000 and 10–750 Hp (Eqs. 16.36–16.38). In Example 16.9
+  (p. 461), 8,840 brake hp with an "assumed 95% efficiency for the motor" gives P_C = 9,300 Hp, which is then put into
+  Eq. 16.36.
+- **F3, screw compressor.** 8.2496 = 8.1238 + ln(567/500) to the printed digit, and 0.7243 is unchanged. It is the same
+  fit as IDAES's, and the 4th ed. states it on P_C.
+- **F4, exchangers** (p. 462, Eqs. 16.39–16.42).
+  - Floating head and kettle: index-only, exact.
+  - Fixed head: α1 11.4185 = 11.2927 + ln(567/500), and α3 0.09861 is unchanged. α2 is **0.9228** in the book and
+    **0.8228** in IDAES.
+  - U-tube: α2 and α3 are unchanged. The book's α1 is **11.5510**; IDAES's 11.3852 + ln(567/500) = **11.5110**. The two
+    differ in one printed digit.
+- **F5, fixed-head cost order** (computed at CE 500 from IDAES's other coefficients, z = 1.1·A).
+  - With α2 = 0.8228, the fixed head costs more than the U-tube at every size (15,715 against 10,375 USD at
+    150 ft²). It costs more than the floating head above 410 ft², and more than the kettle above 2,430 ft². At
+    12,000 ft² it is 1.85 times the floating head (233,989 against 126,573).
+  - With α2 = 0.9228, the order fixed < U-tube < floating < kettle holds over all of [150, 12,000] ft²: 9,431 /
+    10,375 / 18,144 / 24,492 at 150 ft², and 90,602 / 97,019 / 126,573 / 170,855 at 12,000 ft².
+  - The fixed-tubesheet construction is the simplest and cheapest shell-and-tube type.
+- **F6, reciprocating pump** (p. 454, Eq. 16.23): 7.9361 = 7.8103 + ln(567/500) to the printed digit, and 0.26986 and
+  0.06718 are unchanged. So the book's authors shifted it from CE 500. The centrifugal pump, the gear pump and the
+  motor, which IDAES also labels CE 394, were refit in the 4th ed. IDAES's CE 394 label is a single `units` statement
+  for all of `cost_pump` (SSLW.py:1579).
+- **F7, platforms** (pp. 464–465).
+  - Horizontal vessel: the book gives 2275·D^0.2094 (Eq. 16.55, 3 < D < 12 ft); IDAES has 2005·D^0.20294.
+  - Vertical vessel: 410·D^0.73960·L^0.70684 (Eq. 16.56). This is IDAES's 361.8 × 567/500 = 410.3: index-only.
+  - Tower: the book gives 341·D^0.63316·L^0.80161 (Eq. 16.58); IDAES's 309.9 × 567/500 = 351.4.
+  - The book's worked examples compute with the printed numbers: 2275·(78)^0.2094 = $5,660 (p. 467), and
+    341·(10)^0.63316·(212)^0.80161 = $107,300 (p. 468). With 0.20294, or with 351.4, they would give $5,507 and
+    $110,700.
+- **F8, vessel weights** (pp. 464–465).
+  - Horizontal: 1,000–920,000 lb (Eq. 16.53; refit).
+  - Vertical: 4,200–1,000,000 lb (Eq. 16.54). This is IDAES's `weight_limit` "1", index-only.
+  - Towers: 9,000–2,500,000 lb, C_V = exp(10.5449 − 0.4672·ln W + 0.05482·ln² W) (Eq. 16.57).
+  - IDAES's docstring (SSLW.py:534), "1: 1000 to 920,000 lb, 2: 4200 to 1M lb", lists the horizontal range and the
+    vertical range. 7.2756 appears nowhere in the 4th ed.
+- **F9, turbine** (p. 483, Table 16.32): gas expanders (pressure discharge), with power extracted 20–5,000 Hp and
+  C_P = 600·P^0.81 at CE 567. IDAES's 530 × 567/500 = 601.0, with the same exponent.
+- **F10, refits.** The 4th ed. has a different fit for the centrifugal pump, the gear pump, the motor cost, the
+  centrifugal and reciprocating compressors and the horizontal vessel shell.
+
+### 10.2 Scope
+
+**In scope:** F1–F10, and their effect on the set file, forms VI and VII, the loader, the hand transcription, the
+IDAES cross-check, the fixtures and the tests.
+
+**Out of scope:**
+- tray cost and the material, type and length factor tables (QA1 did not compare them; they stay pinned);
+- re-basing the set to CE 567;
+- a separate 4th-ed. set;
+- the default `weight_limit` of `column.shell` (Q-B2);
+- enforcing the horizontal platform D range (Q-B3);
+- liquid expanders (Q-B9);
+- turbine drives (QA5);
+- ASME thickness (QA8).
+
+### 10.3 Decisions
+
+**D-B1. The compressor is sized on consumed power (R-890).**
+
+*Decision.* Form VI's size quantity is the book's P_C, the power the motor draws:
+- per unit, w₁ = (W/N)·κ_W in brake hp, and P_C,1 = w₁/η_m(w₁);
+- η_m is the set's `machine.drive` entry's correlation (`motor.electric` `eta`, which is Eq. 16.18). It is evaluated
+  by `forms.motor_efficiency`, the same function on the same resolved entry that §9.2.7 uses for the drive's
+  electricity;
+- the item's size is S(N) = N·P_C,1 in hp. S/κ_W is exactly the electricity that `<U>.drive` charges, so capital and
+  energy see one motor;
+- the motor stays included (QA6 is now a fact, p. 460): `<U>.drive` capital is 0.0, and the drive keeps W/η_m(W/N);
+- C_B = exp(α1 + α2·ℓ(P_C,1)), with ℓ(S_min) when floored.
+
+*Coefficients.* Centrifugal and reciprocating are refits (F10), so IDAES's coefficients stay, stated as 3rd-ed. The
+screw compressor is the same fit, stated on P_C (F3). An index-only reprint keeps its variable, so F3 is also the
+evidence that the 3rd ed. used P_C.
+
+*η above 1,500 hp brake* (Eq. 16.18's stated range) is extrapolated. There η_m stays within [0.9354, 0.9398] up to
+30,000 hp. Adding a range would refuse the electricity of every large machine.
+
+*Effect.* In range, C_B rises by (1/η_m)^α2:
+- centrifugal and reciprocating: +12.4 % at 10 hp brake, +7.1 % at 200 hp, and +5.1 % to +5.5 % above 1,500 hp;
+- screw: +11.2 % at 10 hp and +5.3 % at 750 hp.
+
+A floored compressor keeps its cost. Only its floor boundary moves: brake 8.60 hp (screw), 90.68 hp (reciprocating)
+and 183.36 hp (centrifugal).
+
+*Rejected:*
+- *Brake power*: contradicts the book (Frank).
+- *A constant η parameter*: two efficiencies for one motor, so capital and electricity would disagree.
+- *The 95 % of Example 16.9*: an assumption for one example outside Eq. 16.18's range. At 8,840 hp, Eq. 16.18 gives
+  0.9396, 1.1 % apart in P_C.
+- *A copy of η's coefficients in the compressor entry*: a second copy that can drift.
+- *Printed P_C ranges converted to brake bounds by inverting w/η(w)*: derived numbers that hide the book's variable.
+
+**D-B2. The coefficients that differ (R-891).**
+
+The rule depends on how the 4th ed.'s correlation relates to IDAES's.
+- **Same fit, and every number agrees after the CE shift** (floating head, kettle, the fixed head's α1 and α3, the
+  U-tube's α2 and α3, the reciprocating pump's coefficients, the screw compressor, the vertical vessel, the
+  vertical-vessel platforms, the exchanger pressure factor, the turbine, motor η): unchanged. A49 makes the agreement a
+  test.
+- **Refit** (F10): IDAES's 3rd-ed. coefficients stay, stated as such (Frank). The 3rd ed. checks them on arrival
+  (§10.7).
+- **Same fit, but one number disagrees**: decided per number on the evidence in hand.
+  - Adopt the 4th ed.'s value where something in hand supports it: a worked example in the book computes with the
+    printed number, a physical test rejects IDAES's value, or the authors' own index shift states the basis.
+  - Keep IDAES's value where the only single-misprint explanation puts the error in the 4th ed. and nothing in hand
+    tells the two apart.
+
+| Number (set path; SSLW.py line) | IDAES | 4th ed. | Ruling | Evidence | Effect |
+| --- | --- | --- | --- | --- | --- |
+| `exchanger.shell_tube` `hx_type.fixed_head.alpha2` (:402) | 0.8228 | 0.9228 | **adopt** | F4 same fit; F5 cost order | fixed-head C_B × z^−0.1: 0.600 at 150 ft², 0.387 at 12,000 ft² |
+| `exchanger.shell_tube` `hx_type.Utube.alpha1` (:403) | 11.3852 | 11.5510 at CE 567 | **keep** | 11.3852 + ln(567/500) = 11.5110 is one printed digit from the book's figure. The reverse needs a two-digit IDAES error (11.4252 → 11.3852). No example uses it, and the cost order holds either way | none. Stated: 4.08 % below the 4th ed. |
+| `pump` `pump_type.Reciprocating.a0` basis (:1599, :1579) | CE 394 | CE 500, implied | **adopt CE 500**; coefficients stay IDAES's | F6: the authors' shift | reciprocating C_P × 394/500 = 0.788 exactly |
+| `vessel.horizontal` `platforms_horizontal.a`, `.b_D` (:749) | 2005, 0.20294 | 2275 at CE 567, 0.2094 | **adopt both** | F7: example p. 467 | C_PL × 1.000585·D_ft^0.00646 (+0.77 % at 3 ft, +1.68 % at 12 ft) |
+| `vessel.vertical` `platforms[1].a`, tower piece (:765) | 309.9 | 341 at CE 567 | **adopt** | F7: examples pp. 468–469 | piece-2 C_PL × 0.970331 |
+
+On fixed-head α2: 0.8228 against 0.9228 is a single-digit difference whichever source erred. Only F5 decides it, and
+F5 decides it firmly. When the 3rd ed. arrives it only tells us *whose* slip it was. It does not change the value.
+
+*Rejected:*
+- *A second set file from the 4th ed. (CE 567), made the default.* It contradicts Frank's ruling that the five keep
+  IDAES's coefficients. It needs either set layering or a full re-transcription, with its own B4 and no IDAES
+  cross-check. That is too much machinery for nine numbers.
+- *Keep every IDAES value, labelled, until the 3rd ed.* That leaves the fixed head 1.7 to 2.6 times wrong against
+  physics, and makes the release wait for a book not in hand.
+- *A typed refusal.* Frank wants few limitations, and every difference here has a verified replacement.
+- *Adopt every 4th-ed. figure uniformly.* That knowingly adopts the U-tube figure, which the evidence marks as the
+  likelier misprint, and moves every default exchanger by 4.08 % for the sake of uniformity.
+
+**D-B3. Vessel weight ranges (R-892).**
+- `weight_limit` "1" (the vertical-vessel fit): its range becomes [4,200, 1,000,000] lb. It stays `pinned` to
+  SSLW.py:534, text "2: 4200 to 1M lb", with a note naming the 4th ed. (F8).
+- `vessel.horizontal` keeps [1,000, 920,000] lb and gains a note.
+- `weight_limit` "2" becomes **the 4th-ed. tower fit**, with three amended numbers (§10.4.2) and range
+  [9,000, 2,500,000] lb (`primary`, p. 465, Eq. 16.57). IDAES's "2" is not in the 4th ed. Its attached range belongs to
+  "1". A correlation without a verifiable range cannot ship under A48.
+- The default stays "1" for every family (QA2).
+
+*Effect.*
+- A vertical vessel below 4,200 lb floors at 4,200 lb: C_v goes from 11,734.3 to 25,209.2 USD (× 2.148336).
+- Vessels from 1,000 to 4,200 lb leave the `units:1` regime and are floored.
+- Vessels from 920,000 to 1,000,000 lb are no longer refused.
+
+*Rejected:*
+- *"2" kept with the vertical range*: the range belongs to another fit.
+- *IDAES's 7.2756 re-ranged to 9,000–2.5 M lb as "the 3rd-ed. tower fit"*: the 4th ed. cannot confirm that
+  identification, and a primary range that cannot be verified blocks 0.3.0 under A48.
+- *"2" withdrawn*: a limitation, when a verified fit exists.
+- *The tower fit as `column.shell`'s default*: out of scope (Q-B2).
+
+**D-B4. Turbine range (R-893).**
+- `turbine` gains the size range `power_hp` [20, 5,000] hp (`primary`, p. 483, Table 16.32; F9).
+- Form VII becomes **parallel**: N units of at most 5,000 hp each, and a floor below 20 hp.
+- 530 matches 600 to the printed precision, so there is nothing to amend.
+
+*Effect.*
+- Below 20 hp: C_P = 530·20^0.81 = 5,999.4 USD (CE 500), against 3,422.0 for the power law at 10 hp.
+- Above 5,000 hp: N·530·(W/N)^0.81.
+- P1's turbine T (21.33 hp) is in range. Its cost is unchanged, and it gains the entry `T.size = units:1`.
+
+*Rejected:*
+- *No range*: the provenance would say "none stated" against a stated range, and extrapolate silently.
+- *A refusal above 5,000 hp*: a limitation, and parallel expanders can be built.
+
+**D-B5. One mechanism for amended numbers (R-891).** It is specified in §10.4.1.
+- A set number may carry `amended`: the book citation, the IDAES value it replaces, and optionally the CE basis it is
+  printed at.
+- The loader converts that number to the entry's basis. The form code reads effective values only.
+- The reciprocating pump uses the same mechanism as a basis-only amendment: its value stays IDAES's 7.8103, declared at
+  CE 500.
+
+*Rejected:*
+- *A choice-level `index_basis` override*: a second mechanism. It also cannot express a CE-567 term inside a CE-500
+  C_P1, which the vessel platforms need.
+- *Pre-converting book values to CE 500 in the file*: that writes digits nobody printed.
+
+**D-B6. Verification (R-894).**
+- After the batch, every `primary` range is cited to its 4th-ed. page.
+- The 4th-ed. consistency test A49 pins every relation in D-B2.
+- A48's count falls to 0 only through a commit that a person makes or approves (C7, §10.6). The five flags this ruling
+  adds (three compressors, the turbine, the towers) are written `false` by the engineer. Frank approves them as he
+  approved `QA1.patch`.
+
+### 10.4 Design
+
+#### 10.4.1 Amended numbers (extends §9.2.3 "Numbers")
+
+```json
+{"value": 0.9228, "source_line": "SSLW.py:402",
+ "amended": {"ruling": "R-891", "replaces": 0.8228,
+             "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 462, Eq. (16.40)"}}
+```
+
+**Fields.**
+- `value` is the decimal as printed: in the book, or in IDAES for a basis-only amendment.
+- `source_line` stays the IDAES line of the number replaced, so that B4 and A15 can pair them.
+- `amended` contains:
+  - `ruling`: a register id (required);
+  - `citation`: required;
+  - `replaces`: IDAES's printed value, ≠ `value`. It is required unless the amendment changes only the basis;
+  - `index_basis`: the CEPCI value of `value`. Optional;
+  - `scale`: `log` or `linear`, required exactly when `index_basis` is present.
+
+**Effective value v_e**, the only value a form sees. B is the entry's `index_basis` value, or the set's if the entry has
+none, and B/index_basis is one binary64 division.
+- With no `index_basis`: v_e = value.
+- `log`: v_e = value + math.log(B/index_basis).
+- `linear`: v_e = value·(B/index_basis).
+
+**Loader refusals (added to A45's list).** An `amended` object is refused if it:
+- lacks `ruling` or `citation`;
+- has neither `replaces` nor `index_basis`;
+- has `replaces == value`;
+- has `scale` without `index_basis`, or `index_basis` without `scale`;
+- has an unknown `scale`.
+
+**Top-level `source`** gains `"checked_against": {"citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and
+Process Design Principles, 4th ed. (Wiley, 2017), ch. 16", "scope": "QA1 range check; the numbers marked amended
+(design note §10): individual coefficients and bounds cited by page, no text or table reproduced"}`.
+`scripts/e01_d04_inventory.py` carries it into `docs/e01-data-licences.json`.
+
+**Unchanged:** `set_id` (`sslw-idaes-v1`, Q-B8) and the form ids. Nothing carrying v1 has been released, so the forms
+are amended in place, as §9.2.3 was.
+
+#### 10.4.2 The amended numbers, exactly
+
+All carry `ruling` R-891 unless marked R-892. Each citation is the §10.4.1 prefix followed by the page and equation shown.
+
+| Path | value | replaces | index_basis / scale | v_e (binary64) | Citation tail |
+| --- | --- | --- | --- | --- | --- |
+| `exchanger.shell_tube` `options.hx_type.choices.fixed_head.alpha2` | 0.9228 | 0.8228 | — | 0.9228 | p. 462, Eq. (16.40) |
+| `pump` `options.pump_type.choices.Reciprocating.a0` | 7.8103 | — | 500.0 / log | 7.8103 + log(394/500) = 7.572042810875742 | p. 454, Eq. (16.23): intercept 7.9361 = 7.8103 + ln(567/500), so these coefficients are at CE 500, not CE 394 |
+| `vessel.horizontal` `coefficients.platforms_horizontal.a` | 2275 | 2005 | 567.0 / linear | 2006.1728395061727 | p. 464, Eq. (16.55); used in the example on p. 467 |
+| `vessel.horizontal` `coefficients.platforms_horizontal.b_D` | 0.2094 | 0.20294 | — | 0.2094 | p. 464, Eq. (16.55) |
+| `vessel.vertical` `coefficients.platforms[1].a` | 341 | 309.9 | 567.0 / linear | 300.705467372134 | p. 465, Eq. (16.58); used in the examples on pp. 468–469 |
+| `vessel.vertical` `options.weight_limit.choices."2".alpha1` (R-892) | 10.5449 | 7.2756 | 567.0 / log | 10.41914879469444 | p. 465, Eq. (16.57) |
+| … `."2".alpha2` (R-892) | −0.4672 | 0.18255 | — | −0.4672 | p. 465, Eq. (16.57) |
+| … `."2".alpha3` (R-892) | 0.05482 | 0.02297 | — | 0.05482 | p. 465, Eq. (16.57) |
+
+Form II's C_v = exp(α1 + α2·ℓW + α3·ℓ²W) takes α as printed, sign included. The tower fit's minimum is at
+W = exp(0.4672/(2·0.05482)) = 70.9 lb, so the floor at 9,000 lb never undercuts.
+
+#### 10.4.3 Ranges after the batch
+
+| Entry, range | min–max | Kind | Citation (after the §10.4.1 prefix) | `verified` |
+| --- | --- | --- | --- | --- |
+| exchanger `area_ft2`; pumps `size_factor`, `flow_gpm`, `power_hp`; motor `motor_power_hp` | unchanged | primary | as `QA1.patch` | true (C1) |
+| compressor Centrifugal / Reciprocating / Screw `consumed_power_hp` (renamed from `power_hp`) | 200–30,000 / 100–20,000 / 10–750 | primary | p. 460, Eq. (16.36) / (16.37) / (16.38): …, valid from consumed power P_C = … Hp; the base cost includes an electric motor drive (QA1; centrifugal and reciprocating: the coefficients are IDAES's, from the 3rd ed., ch. 22; screw: the same fit, index-shifted) | false (C3) → true (C7) |
+| turbine `power_hp` (new) | 20–5,000 | primary | p. 483, Table 16.32: gas expander (pressure discharge), power extracted 20 to 5,000 Hp, C_P = 600 P^0.81 at CE 567, the same row as IDAES's 530 P^0.81 at CE 500 | false (C3) → true (C7) |
+| vessel.vertical "1" `weight_lb` | 4,200–1,000,000 | pinned SSLW.py:534, text "2: 4200 to 1M lb" | note: "IDAES's docstring labels this range '2'; the 4th ed. (p. 464, Eq. 16.54) gives it to the vertical-vessel fit, which is weight_limit '1' (7.0132 + ln(567/500) = 7.1390)" | — |
+| vessel.vertical "2" `weight_lb` | 9,000–2,500,000 | primary | p. 465, Eq. (16.57): towers, 9,000 < W < 2,500,000 lb | false (C3) → true (C7) |
+| vessel.horizontal `weight_lb` | unchanged | pinned :534 | note added: "the 4th ed. gives this range to horizontal vessels (p. 464, Eq. 16.53)" | — |
+
+#### 10.4.4 Form VI, amended (`sslw-compressor-v1`)
+
+**Size.**
+- The form declares `size_depends_on_units`. `quantities(e, x, alg, n)` returns two values:
+  - `consumed_power_hp` = n·(w₁/η_m(w₁)), with w₁ = (x.power/n)·κ_W;
+  - `brake_power_hp` = x.power·κ_W.
+- `resolve()` attaches the set's resolved `machine.drive` entry to the compressor's `ResolvedEntry`.
+- The loader refuses a set that has an `sslw-compressor-v1` entry but no `machine.drive` entry of form `sslw-motor-v1`.
+
+**Selection** (replaces §4.3.2 rule 4 for forms declaring `size_depends_on_units`; at present that is VI only).
+- S(n) = `consumed_power_hp` at n.
+- `floor` if S(1) < S_min.
+- Otherwise N is the smallest integer n ≥ n₀ with S(n) ≤ n·S_max. Here n₀ is the smallest integer ≥ 1 with
+  W_hp ≤ n₀·S_max; it is a lower bound because η_m ≤ 1. Evaluate n = n₀, n₀ + 1, … on floats. A tie selects n.
+- Rows keep §4.3.1's form at the held N: `S(N) − N·S_min`, `N·S_max − S(N)`, and `S_min − S(1)` for the floor. S is
+  evaluated by `quantities(e, x, alg, N)`, as `contributor.py` already does.
+
+**Loader check.** A `consumed_power_hp` range needs S_max ≥ 3·S_min. For u ≥ 1 hp, η_m(u/2)/η_m(u) ≤ 1.175. So the N
+selected for N ≥ 2 has S(N)/N ≥ S_max·η_m(u)/(2·η_m(u/2)) ≥ S_max/2.35 ≥ S_min, with u = W/(N−1). §4.3.3's honesty
+argument therefore holds. The shipped ratios are 75, 200 and 150.
+
+**Domain.** 0 < η_m ≤ 1 at every per-unit power evaluated, else `CORRELATION_OUT_OF_RANGE(<U>.eta)`.
+
+**Cost.** p = S_min if floored, else w₁/η_m(w₁) at N. C_P = N·F_D·F_M·exp(α1 + α2·ℓ(p)).
+
+**Provenance.** The range name and its citation state the size variable. `defaulted_inputs` gains nothing: η_m is a
+set correlation, not a θ.
+
+#### 10.4.5 Form VII, amended (`sslw-turbine-v1`)
+
+- `parallel = True` and `size_range = "power_hp"`. `quantities` = x.power·κ_W (total), with x.power = −W > 0.
+- Selection is §4.3.2 rule 4, unchanged.
+- C_P = N·a·p^b, where p = S_min if floored, else (x.power/N)·κ_W.
+- The generator (`GENERATOR_NOT_COSTED`) is unchanged.
+
+#### 10.4.6 §9.2.5 amended: what `primary` means
+
+A `primary` range is the range of the same equation in Seider et al., 4th ed. (2017), ch. 16. It is used where the
+4th ed.'s equation is the same fit as the set's, or states the same size variable. It is cited by page and equation.
+
+It is still **for size quantities only**: input ranges are never taken from the book (Q-B3). A48 is unchanged: a
+person makes or approves every flip to `verified: true`.
+
+#### 10.4.7 Departures from IDAES (appended to §9.2.2)
+
+8. **Compressor size.** IDAES evaluates the base cost at brake power (SSLW.py:1130-1132). Ours uses the consumed
+   power P_C = w₁/η_m(w₁) (D-B1).
+9. **Amended numbers.** Seven numbers and one basis differ from the pinned source. Each carries `amended` (§10.4.2).
+10. **Turbine.** It has a size range [20, 5,000] hp, a floor below it, and parallel units above it. IDAES has no
+    range and N = 1.
+11. **Vessel weight ranges.** The docstring's two ranges go to the fits the book gives them to (D-B3).
+
+#### 10.4.8 Report
+
+- Each item's `source` gains `amended`: for each amended number its selected options use, the value, `v_e`,
+  `replaces` (if any), `index_basis`/`scale` (if any), the citation and the ruling. `source_lines` is unchanged.
+- The item `source` is a free object in `assessment-report.schema.json`, so no schema changes.
+
+#### 10.4.9 Independent expectations
+
+**B4, `benchmarks/e01/cost_hand/cost_hand.py`.** Transcribed from this section and from the book, never from the set
+file. Changes:
+- fixed-head α2 = 0.9228, with one new case `fixed_head` at √(150·12,000) ft²;
+- the reciprocating pump's coefficients at CE 500, so no 500/394 factor;
+- `VESSEL_W_RANGE` "1" (4,200, 1e6) and "2" (9,000, 2.5e6). "2"'s α is (10.5449 + ln(500/567), −0.4672, 0.05482);
+- `PL_HORIZONTAL` = (2275·500/567, 0.2094); `PL_VERTICAL` piece 2 coefficient 341·500/567;
+- compressor on P_C with the N rule of §10.4.4. Its targets are built by inverting P_C, the way `motor_shaft_for`
+  already does;
+- turbine: `size_targets(20, 5000, parallel=True)` replaces (10, 100, 1000) hp.
+
+The A44 vessel hand case stays as it is: W = 6,777 lb, in range.
+
+**A15, `benchmarks/e01/brightway/idaes_crosscheck.py`.** IDAES is evaluated at our effective inputs, and each amended
+term is mapped by an exact factor. The YAML records the raw IDAES value, the factor and the compared value.
+- Compressor: `work_mechanical` = the case's effective total consumed power (S(N), or S_min floored) in W, with
+  `number_of_units` = N.
+- Turbine: IDAES at the per-unit effective power, × N.
+- Fixed head: C_P × exp(−(0.9228 − 0.8228)·ℓ(1.1·A_unit,ft²)).
+- Reciprocating pump: `pump_capital_cost` × 394/500.
+- Horizontal platform term × (2275·(500/567)/2005)·D_ft^(0.2094 − 0.20294). Piece-2 platform term ×
+  341·(500/567)/309.9.
+- `weight_limit` "2": C_v × exp((v_e,α1 − 7.2756) + (−0.4672 − 0.18255)·ℓW + (0.05482 − 0.02297)·ℓ²W), and then
+  C_P = F_M·C_v + C_PL.
+
+**A49 expectation, `benchmarks/e01/cost_hand/seider4.yaml`** (new). It holds the book numbers the set's numbers
+correspond to, typed from the pages of §10.1: the individual numbers only, each with page and equation, and never book
+text. Each record gives a set path, the book value, the page and equation, and a relation:
+- `index_log`: |v + ln(567/B_v) − book| ≤ ½ unit of the book's last printed decimal. B_v is the number's own basis:
+  `amended.index_basis`, else the entry's, else the set's;
+- `index_linear`: |v·567/B_v − book| ≤ ½ unit of its last significant digit. Table 16.32's "600" is read as 2
+  significant figures, unit 10;
+- `same`: decimal equality (slopes, exponents, pressure factor, η);
+- `amended`: `value == book`, with that page in `citation`;
+- `kept`: the U-tube α1. Asserts v = 11.3852 and book − (v + ln(567/500)) = 0.0400 ± 5e-5;
+- `refit`: entry only, with no numbers typed.
+
+Ranges compare by exact equality of min and max with the book's printed bounds.
+
+### 10.5 Assertions and gates
+
+- **A44 (amended).** The drive assertions stand. Add: the compressor's S(N)/κ_W equals its `<U>.drive` electricity to
+  rel ≤ 1e-15.
+- **A48 (amended).** After C7, `a48_release_check()` returns (`pass`, 0). The tripwire test pins 0 and `pass`. Its
+  negative case flips one primary range to `false` in a copy and asserts that `unverified_primary_ranges` returns
+  exactly that pointer.
+- **A49 (new, the 4th-ed. consistency).**
+  - Every relation in `seider4.yaml` holds.
+  - The YAML covers every `primary` range and every `amended` number in the shipped set (completeness), and the set
+    has no `amended` number the YAML lacks.
+- **A50 (new, compressor).**
+  - Shaft powers are constructed so that per-unit P_C sits at S_min·(1 ± 1e-9), S_max·(1 − 1e-12) and, at N = 2,
+    S_max·(1 + 1e-9). They select `floor`/`units:1`, `units:1` and `units:3` respectively.
+  - C_P equals cost_hand to A14's tolerance.
+  - The loader refuses a set with a compressor and no motor entry, and a `consumed_power_hp` range with max < 3·min.
+- **A51 (new, loader).**
+  - The five refusals of §10.4.1.
+  - v_e is bitwise equal to the expression in §10.4.2 for each amended number.
+  - The tower floor's no-undercut holds at 9,000 lb.
+- **A14 / A15.** Unchanged tolerances, on the regenerated cases. A15 is rel ≤ 1e-9 against IDAES with the factors
+  applied.
+- **Gates.** G4 adds A49–A51. G10 (A48) passes only after C7. The full `scripts/gate.sh` runs once before the merge,
+  and CI must be green on both architectures. A `reviewer` pass is needed: the batch changes numerics.
+
+### 10.6 Work order (one build-lane engineer, branch `wp/E01b`, about 150k context)
+
+#### 10.6.1 Commits, in order (test once, after C6)
+
+1. **C1. Apply `QA1.patch`.** It is Frank-approved, so apply it unchanged. It is committed with this ruling as
+   `docs/briefs/E01b-QA1.patch`; apply it with `git apply`.
+2. **C2. Loader** (`assessment/cost/sets.py`):
+   - `amended` objects and their effective values;
+   - the five refusals;
+   - the compressor-needs-motor check;
+   - the consumed-power 3× check;
+   - `resolve()` attaching the drive entry;
+   - `source.checked_against`.
+3. **C3. Forms and data.**
+   - `assessment/cost/forms.py`: form VI (§10.4.4) and form VII (§10.4.5);
+   - both copies of `sslw-idaes-v1.json`, kept byte-identical (`cmp`): §10.4.2's amendments, §10.4.3's ranges and
+     citations (new flags `false`), the compressor key renamed;
+   - the report's `amended` block.
+4. **C4. B4.**
+   - `cost_hand.py` as in §10.4.9, then regenerate `cost_hand.yaml` with its own `main()`;
+   - add `seider4.yaml` and `tests/test_e01_b_seider4.py` (A49).
+5. **C5. A15.** Update `idaes_crosscheck.py` and re-run it in the scratch IDAES environment (Q-B6) to regenerate
+   `idaes_crosscheck.yaml`.
+6. **C6. Fixtures and pins.**
+   - regenerate the three golden reports and `invalid/string_output_value.json` with `tests/test_e01_a_report.py`'s
+     `_write()`;
+   - pin the set's new sha256 in `tests/test_t08_w2_inventory.py`, in `docs/e01-data-licences.json` (by
+     `scripts/e01_d04_inventory.py`), and in `docs/E01A_DECISIONS.md` (append the new hash as superseding the old,
+     with a pointer to §10);
+   - `tests/test_e01_a_cost.py:132`: primary flags as §10.4.3, and 10 primary ranges;
+   - the A48 tripwire at 5;
+   - A44, A50 and A51 tests.
+   - Then run the E01 tests once (§10.6.4).
+7. **C7. The verification commit**, and nothing else in it:
+   - flip the five new ranges to `verified: true`;
+   - set the tripwire to 0/`pass` with its negative case;
+   - re-pin the sha256.
+
+   Prepare it as `QA1b.patch` for Frank. Commit it only after the coordinator relays his approval, and name the
+   approval in the message (A48). Until then G10 reads "pending person approval".
+
+Log every build choice in `docs/E01B_DECISIONS.md`. Write `evidence/S12b/<commit>/manifest.json`.
+
+#### 10.6.2 Files
+
+**Touched:**
+- `src/openflowsheet/assessment/cost/{sets,forms,contributor}.py` (contributor only if the report block lives there);
+- `assessment/cost/sslw-idaes-v1.json` and `src/openflowsheet/_data/assessment/cost/sslw-idaes-v1.json`;
+- `benchmarks/e01/cost_hand/{cost_hand.py,cost_hand.yaml,seider4.yaml}`;
+- `benchmarks/e01/brightway/{idaes_crosscheck.py,idaes_crosscheck.yaml}`;
+- `tests/test_e01_*.py`, `tests/test_t08_w2_inventory.py`;
+- the four report fixtures;
+- `docs/e01-data-licences.json`, `docs/E01A_DECISIONS.md`, `docs/E01B_DECISIONS.md`;
+- `evidence/S12b/`.
+
+**Nothing else.** The t08 inventory test pins this data file's hash, so it is the one file outside E01 that moves.
+
+#### 10.6.3 What moves, and by how much (any other moved number: stop and escalate)
+
+- **M1.** `vessel.vertical` with W < 4,200 lb: C_v floors at 25,209.2 instead of 11,734.3 (CE 500).
+  - P1 TH-R1 `D.drum` (W = 236.8 lb): C_P1 goes from 16,456.6 to 29,931.5 (C_PL 4,722.3 is unchanged), and every
+    quantity derived from it moves with it.
+  - P3 M1 `S02.shell` (W = 3,360.4 lb): `units:1` becomes `floor`, and C_v goes from 22,246.1 to 25,209.2
+    (+13.3 %). Its rows become the floor row.
+  - All `weight_limit` "1" and "2" cases are new.
+- **M2.** Horizontal vessels: C_PL × 1.000585·D_ft^0.00646.
+- **M3.** Vertical platform piece 2: C_PL × 0.970331.
+- **M4.** Reciprocating pump: C_P × 0.788.
+- **M5.** Every compressor case and regime boundary (D-B1).
+- **M6.** Turbine: the cases are new. P1's `T` cost is unchanged, and its report gains `T.size = units:1`.
+- **M7.** Fixed head: × z^−0.1 (new case).
+- **M8.** Citations, `verified` flags, range texts and notes in the provenance; the set's sha256.
+
+Exchangers (U-tube), centrifugal pumps and motors do not move.
+
+The batch leaves every P3 capital item floored. Do not resize P3, and do not loosen a test. If an assertion's premise
+was a non-floored P3 capital row, record it in `E01B_DECISIONS.md` for the reviewer and carry on. §9.7's risk paragraph
+already prescribes this for P2.
+
+#### 10.6.4 Acceptance commands
+
+- `cmp assessment/cost/sslw-idaes-v1.json src/openflowsheet/_data/assessment/cost/sslw-idaes-v1.json` exits 0.
+- `.venv/bin/python -I benchmarks/e01/cost_hand/cost_hand.py --check` exits 0.
+- `PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_e01_*.py tests/test_t08_w2_inventory.py` runs, through a
+  one-line wrapper with the log to a file. After C6 every test passes, with the tripwire at 5; after C7, at 0.
+- `PYTHONPATH=src .venv/bin/python -c "import sys; sys.path.insert(0,'scripts'); import e01_evidence_manifest as m;
+  print(m.a48_release_check())"` prints `('pass', …0…)` after C7.
+- `scripts/gate.sh` passes once before the merge. Then CI, then the `reviewer` pass.
+
+### 10.7 When the 3rd edition arrives (conditional work order; one commit per change; a reviewer pass if a number moves)
+
+1. **Refits (F10), and every number QA1 did not compare** (trays, factor tables, the pump and motor CE 394 labels).
+   Compare each IDAES number with ch. 22.
+   - If they match, record it; nothing changes.
+   - If they differ, amend the number to the 3rd ed.'s printed value: `amended` with the 3rd-ed. citation, at that
+     edition's stated basis, under a new register id. Add `seider3.yaml`, in the A49 pattern.
+2. **Numbers adopted from the 4th ed. (D-B2, D-B3).** Record which printing erred. The values do not change: the 4th ed.'s
+   figure is supported by an example, by physics or by the authors' own shift.
+3. **U-tube α1.**
+   - If the 3rd ed. prints 11.3852, close the item as a 4th-ed. misprint.
+   - If it prints 11.4252, amend to 11.5510 at CE 567 (`log`): IDAES miscopied.
+4. **Compressor variable.** If the 3rd ed. states the centrifugal or reciprocating fit on brake power, that type reverts
+   to brake, by a new ruling. The expected outcome is that it states P_C (F3).
+5. **`weight_limit` "2".** Record whether 7.2756 is the 3rd-ed. tower fit. Nothing changes.
+
+### 10.8 Open questions (work proceeds on the default)
+
+| # | Question | Needs | Default |
+| --- | --- | --- | --- |
+| Q-B1 | U-tube α1: 11.3852 (IDAES) or 11.5510 at CE 567 (4th ed.) | Fact: the 3rd ed. | Keep 11.3852; §10.7 item 3 |
+| Q-B2 | Should `column.shell` default to the tower fit ("2"), as the book costs towers? It moves P3 and every column | Frank's preference | No: "1" for every family. A user may select "2" per item |
+| Q-B3 | Enforce the horizontal platform range 3 < D < 12 ft (p. 464)? | Frank's preference | Not enforced (no new refusal); recorded here |
+| Q-B4 | Ship 7 values, one basis statement and 4 range bounds from the 4th ed. in the wheel | Frank (rights) | Ship: individual facts cited by page, no text or tables; recorded in the licence record via `checked_against` |
+| Q-B5 | η_m above 1,500 hp brake | Fact | Extrapolate (0.9354–0.9398 up to 30,000 hp) |
+| Q-B6 | The scratch IDAES 2.13.0 environment for A15 | Fact | Re-create it from the pinned wheel (sha256 `2b67301a…85f9`). If that is impossible, stop and report; A15 is not skipped |
+| Q-B7 | Approval of the five new `verified` flags | Frank | C7 is held as `QA1b.patch` until he approves; G10 is pending until then |
+| Q-B8 | `set_id` now that the set carries amendments | Frank's preference | Keep `sslw-idaes-v1`; the amendments are listed in the file |
+| Q-B9 | Liquid expanders (Table 16.32: 150–2,000 Hp, 1,590·P^0.70) | Frank's preference (scope) | Not offered; every turbine is a pressure-discharge gas expander, as in IDAES |
+| Q-B10 | Tray cost and the factor tables against the 4th ed. | Fact | Not compared by QA1. Pinned, so outside A48; checked on the 3rd ed.'s arrival |
+
+### 10.9 Records
+
+- Register: R-890 (compressor), R-891 (coefficient rule and amended numbers), R-892 (vessel weights), R-893 (turbine)
+  and R-894 (verification and the 3rd-ed. protocol).
+- §9.7 QA1 and QA6 are closed by this section.
+- Literature: the 4th ed. is already filed (`seider2017product`). The claim that fixed-tubesheet construction is the
+  cheapest (F5) is standard. A textbook citation for it, for example Towler and Sinnott, *Chemical Engineering Design*,
+  shell-and-tube types, goes to the reference library. No other new reference.

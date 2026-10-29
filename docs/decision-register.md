@@ -17211,3 +17211,134 @@ foreground. **Watch for.** A new report field that lists per-activity scores or 
 over-restrictive: an impact objective is held to the capex size regimes. **Rejected for now:** *closure and V7
 restricted to the entries a bound output reads*, which needs each `OutputDef` to declare the entries it reads (the
 follow-up). **Watch for.** A floor row outside the closure, which shows up as a V7 failure, not a binding row.
+
+## R-890 — E01b: the SSLW compressor is sized on consumed power P_C = W/η_m, with the motor entry's η_m
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`architect`), E01b ruling B on QA1; Frank: "correct the compressor size variable to the book's definition" |
+| Normative text | E01 design §10.3 D-B1, §10.4.4; departure 8; assertions A44 (amended), A50 |
+| Evidence | Seider 4th ed. p. 460 (cost "as a function of consumed power, P_C"; "includes an electric motor drive"); Eq. 16.18 (p. 453) equals the set's `motor.electric` `eta`; the screw fit is the same on P_C (8.2496 = 8.1238 + ln(567/500)) |
+| Affected packages | E01 (E01b batch); any set with an `sslw-compressor-v1` entry |
+
+**Decision.**
+- The size is the per-unit P_C,1 = w₁/η_m(w₁), with w₁ = (W/N)·κ_W. The total is S = N·P_C,1.
+- η_m is the set's `machine.drive` correlation, through the same function and the same resolved entry that the
+  drive's electricity uses. So S/κ_W is the electricity.
+- N is the smallest n with S(n) ≤ n·S_max.
+- The motor stays included: drive capital is 0 (QA6, now a fact).
+- The loader refuses a compressor entry without a motor entry, and a consumed-power range with max < 3·min.
+
+**Rejected:**
+- *Brake power (IDAES).*
+- *A constant η.*
+- *The 95 % of Example 16.9.*
+- *A copy of η inside the compressor entry.*
+- *Brake bounds by inverting P_C.*
+
+**Watch for.** A second η path, where the compressor's P_C and the drive's electricity stop being the same function at
+the same per-unit power.
+
+## R-891 — E01b: same-fit differences from Seider 4th ed. ruled per number; amended numbers carry their citation
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`architect`), E01b ruling B; Frank (2026-10-29): refit coefficients stay IDAES's 3rd-ed. ones; differences are fixed before 0.3.0 |
+| Normative text | E01 design §10.3 D-B2, D-B5; §10.4.1–§10.4.2; departure 9; assertions A49, A51 |
+| Evidence | §10.1 F4–F7: fixed-head α2 0.8228 makes the fixed head dearer than every other type (1.85× floating head at 12,000 ft²); the 4th ed.'s examples compute with 2275·D^0.2094 (p. 467) and 341 (pp. 468–469); the reciprocating pump's 4th-ed. intercept is IDAES's + ln(567/500); U-tube α1 11.3852 + ln(567/500) = 11.5110 is one printed digit from the book's 11.5510 |
+| Affected packages | E01 (E01b batch); later 3rd-ed. check (§10.7) |
+
+**Decision.**
+- A refit stays IDAES's, as stated.
+- Where every number agrees after the CE shift, nothing changes, and A49 tests the agreement.
+- Where one number disagrees, adopt the 4th ed.'s if the evidence in hand supports it, else keep IDAES's.
+- Adopted:
+  - fixed-head α2 0.9228;
+  - the reciprocating pump's coefficients at CE 500, not 394;
+  - horizontal platforms 2275·D^0.2094 at CE 567;
+  - tower-platform coefficient 341 at CE 567.
+- Kept: U-tube α1 11.3852, stated 4.08 % below the 4th ed.
+- An amended number is `{value, source_line, amended: {ruling, citation, replaces?, index_basis?, scale?}}`. The loader
+  converts it to the entry's basis, and the forms see effective values only.
+
+**Rejected:**
+- *A 4th-ed. set file as the default.*
+- *All IDAES values labelled until the 3rd ed.*
+- *Typed refusals.*
+- *Every 4th-ed. figure adopted uniformly.*
+- *A choice-level index-basis override.*
+- *Book values pre-converted to CE 500 in the file.*
+
+**Watch for.** A later "restore IDAES's value" on an amended number without new evidence. Only the 3rd ed. can reopen
+the U-tube α1, and none of the adopted values.
+
+## R-892 — E01b: vertical-vessel fit gets 4,200–1,000,000 lb; `weight_limit` "2" becomes the 4th-ed. tower fit
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`architect`), E01b ruling B; Frank: as few limitations as possible |
+| Normative text | E01 design §10.3 D-B3, §10.4.2–§10.4.3; departure 11 |
+| Evidence | Seider 4th ed. pp. 464–465: horizontal 1,000–920,000 lb (Eq. 16.53); vertical 4,200–1,000,000 lb (Eq. 16.54 = IDAES "1" index-only); towers 9,000–2,500,000 lb, (10.5449, −0.4672, 0.05482) (Eq. 16.57). IDAES's 7.2756 is not in the 4th ed. |
+| Affected packages | E01 (E01b batch): every vertical vessel under 4,200 lb is floored there (P1 TH-R1 drum, P3 M1 shell) |
+
+**Decision.**
+- `weight_limit` "1" takes [4,200, 1,000,000] lb, still pinned to SSLW.py:534 ("2: 4200 to 1M lb"), with a note.
+- "2" takes the tower fit as amended numbers, with the primary range [9,000, 2,500,000] lb.
+- The default stays "1".
+
+**Rejected:**
+- *"2" kept with the vertical range.*
+- *IDAES's 7.2756 re-ranged as the presumed 3rd-ed. tower fit.* It cannot be verified, so A48 would block it.
+- *"2" withdrawn.*
+- *The tower fit as `column.shell`'s default* (open question Q-B2, default no).
+
+**Watch for.** A vertical-vessel range copied back from the docstring's "1:" text.
+
+## R-893 — E01b: turbine size range 20–5,000 hp, floor below, parallel units above
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`architect`), E01b ruling B; Frank: as few limitations as possible |
+| Normative text | E01 design §10.3 D-B4, §10.4.5; departure 10 |
+| Evidence | Seider 4th ed. p. 483, Table 16.32: gas expander (pressure discharge), 20–5,000 Hp, 600·P^0.81 at CE 567 = IDAES's 530·P^0.81 at CE 500 |
+| Affected packages | E01 (E01b batch) |
+
+**Decision.** The turbine has a primary size range of [20, 5,000] hp. Form VII is parallel. Below 20 hp it floors at
+the 20-hp cost.
+
+**Rejected:**
+- *No range*, with silent extrapolation.
+- *A refusal above 5,000 hp.*
+
+**Watch for.** A turbine above 5,000 hp reported as one unit.
+
+## R-894 — E01b: verification after QA1 — the 4th-ed. consistency test, A48 at zero by a person-approved commit, the 3rd-ed. protocol
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`architect`), E01b ruling B; Frank approved `QA1.patch` (the five ranges) |
+| Normative text | E01 design §10.3 D-B6, §10.4.6, §10.4.9, §10.5 (A48 amended, A49), §10.6.1 C7, §10.7 |
+| Evidence | QA1 comparison (2026-10-29); `docs/briefs/E01b-QA1.patch` |
+| Affected packages | E01 (E01b batch); release 0.3.0 (G10) |
+
+**Decision.**
+- A `primary` range is now the same equation's range in Seider 4th ed., cited by page.
+- `benchmarks/e01/cost_hand/seider4.yaml` and A49 pin every relation, and they cover every primary range and every
+  amended number.
+- The five new primary flags are written `false` and flipped only in commit C7, which Frank approves. A48 then counts 0.
+- On the 3rd ed.'s arrival, §10.7 applies:
+  - refits and the numbers not compared are checked, and amended if they differ;
+  - adopted numbers stay;
+  - the U-tube α1 and the compressor variable are settled.
+
+**Rejected:**
+- *An agent flipping `verified`.*
+- *Waiting for the 3rd ed. before 0.3.0.*
+
+**Watch for.** A primary range or amended number added without a `seider4.yaml` record. A49's completeness check
+fails on it.
