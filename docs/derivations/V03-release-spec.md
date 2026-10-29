@@ -376,6 +376,9 @@ nothing that §3 pre-registers differently.
 
 Ask N-1, N-7 and N-8 in one message now, and N-2 to N-6 in one message after the verdict, as 0.2.0 did.
 
+**Answered, Frank, 2026-10-29:** N-1 "No, don't claim it (Rec.)" (W27 not claimed); N-7 "Keep the token (Rec.)"; N-8
+"Correct it (Rec.)". N-2 to N-6 remain for after the verdict.
+
 ## 12. What this specification does not establish
 
 - It records no verdict. Every gate's verdict is WO-7's, at C, on evidence that does not exist yet.
