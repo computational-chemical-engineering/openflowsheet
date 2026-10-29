@@ -17240,6 +17240,8 @@ follow-up). **Watch for.** A floor row outside the closure, which shows up as a 
 **Watch for.** A second η path, where the compressor's P_C and the drive's electricity stop being the same function at
 the same per-unit power.
 
+**Amended by R-895 (2026-10-29):** evidence re-cited to the 3rd ed., p. 569 (base cost against consumed power P_C, electric motor drive included), Eqs. (22.36)–(22.38), Example 22.9 (p. 570); η_M is Eq. 22.18 (p. 562). The decision is unchanged.
+
 ## R-891 — E01b: same-fit differences from Seider 4th ed. ruled per number; amended numbers carry their citation
 
 | | |
@@ -17274,6 +17276,8 @@ the same per-unit power.
 **Watch for.** A later "restore IDAES's value" on an amended number without new evidence. Only the 3rd ed. can reopen
 the U-tube α1, and none of the adopted values.
 
+**Amended by R-896 and R-897 (2026-10-29):** the adopted list is superseded. The horizontal platforms return to IDAES's 2005·D^0.20294 (the 3rd ed.'s; the 4th ed. refit them). The tower-platform coefficient is 300.9 (3rd ed.), not 341 at CE 567. The pump and motor entries are at CE 500 at entry level, replacing the reciprocating pump's basis-only amendment. Fixed-head α2 0.9228 stands, re-cited to the 3rd ed. The U-tube α1 is closed (a 4th-ed. misprint). The rule is superseded by R-895.
+
 ## R-892 — E01b: vertical-vessel fit gets 4,200–1,000,000 lb; `weight_limit` "2" becomes the 4th-ed. tower fit
 
 | | |
@@ -17297,6 +17301,8 @@ the U-tube α1, and none of the adopted values.
 
 **Watch for.** A vertical-vessel range copied back from the docstring's "1:" text.
 
+**Amended by R-898 (2026-10-29):** "2" keeps IDAES's (7.2756, 0.18255, 0.02297), which is the 3rd ed.'s tower fit (p. 575, Eq. 22.57), with the primary range [9,000, 2,500,000] lb. The 4th-ed. tower fit is not used. The "1" range [4,200, 1,000,000] lb stands, re-cited to the 3rd ed. (p. 574, Eq. 22.54).
+
 ## R-893 — E01b: turbine size range 20–5,000 hp, floor below, parallel units above
 
 | | |
@@ -17315,6 +17321,8 @@ the 20-hp cost.
 - *A refusal above 5,000 hp.*
 
 **Watch for.** A turbine above 5,000 hp reported as one unit.
+
+**Amended by R-895 (2026-10-29):** evidence re-cited to the 3rd ed., Table 22.32 (p. 593): gas expanders (pressure discharge), 20–5,000 Hp, 530·P^0.81 at CE 500. The decision is unchanged.
 
 ## R-894 — E01b: verification after QA1 — the 4th-ed. consistency test, A48 at zero by a person-approved commit, the 3rd-ed. protocol
 
@@ -17342,3 +17350,134 @@ the 20-hp cost.
 
 **Watch for.** A primary range or amended number added without a `seider4.yaml` record. A49's completeness check
 fails on it.
+
+**Amended by R-899 (2026-10-29):** a `primary` range is now the 3rd ed.'s; A49 runs on `seider3.yaml` (`seider4.yaml` is not shipped); the 3rd-ed. protocol (§10.7) was carried out by E01 design §10.10 and is closed.
+
+## R-895 — E01b Amendment 1: the Seider 3rd edition decides every SSLW number; the per-number rule
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`architect`), E01b Amendment 1; Frank (2026-10-29): prefer the 3rd ed. everywhere, a 4th-ed. number only where the 3rd ed. cannot settle it |
+| Normative text | E01 design §10.10.2, §10.10.3 |
+| Evidence | Seider, Seader, Lewin, Widagdo, 3rd ed. (Wiley 2009), ch. 22 §22.5 and Table 22.32, all at CE 500; the per-number table §10.10.3 (50 rows) |
+| Affected packages | E01 (E01b batch); every later check of `sslw-idaes-v1` |
+| Supersedes | R-891's rule |
+
+**Decision.** Each number is ruled by the first rule that applies:
+1. IDAES = 3rd ed.: keep, and cite the page.
+2. The 3rd ed. contradicts itself: its own worked example decides, when corroborated (the four exchanger intercepts:
+   Eqs. 22.39–22.42 print values 0.2382 = ln(500/394) truncated below IDAES's, and Example 22.10 computes with IDAES's
+   11.9052).
+3. IDAES ≠ 3rd ed.: correct it with `amended`. This covers bases and range attachments as well as coefficients.
+4. A 4th-ed. refit: keep the 3rd ed.'s.
+5. A 4th-ed. misprint: keep, and note it (U-tube α1: the 4th ed.'s 11.5510 for 11.5110).
+
+Outcome: no 4th-ed. number ships. R-890 and R-893 are re-cited to the 3rd ed. and unchanged.
+
+**Rejected:**
+- *Rule 3 applied to the exchanger intercepts.* It cuts every shell-and-tube exchanger by 21.2 %, to intercepts the
+  book's own example does not use.
+- *The 4th ed. as tie-breaker for refits.* Frank ruled that refits follow the 3rd ed.
+
+**Watch for.** "Correcting" an exchanger α1 to the printed Eq. 22.39–22.42 value. The printed block is stale (CE 394),
+and A49's `shift` records fail on it.
+
+## R-896 — E01b Amendment 1: the SSLW pump and motor correlations are at CE 500, not IDAES's CE 394
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`architect`), E01b Amendment 1 (rule 3 of R-895) |
+| Normative text | E01 design §10.10.1 G1, §10.10.4, §10.10.5.1–§10.10.5.2 |
+| Evidence | 3rd ed. p. 561 (centrifugal pump indexed to 2006, CE = 500), p. 562 (motor, likewise), p. 563 (gear and reciprocating, CE = 500), Figs. 22.3–22.6, Example 22.6 (pp. 564–565) computing both at CE 500; 4th ed. reciprocating pump = 7.8103 + ln(567/500) (E01 design §10.1 F6). IDAES: `USD_CE394` at SSLW.py:1579, :1604, :1647, :1661, unexplained |
+| Affected packages | E01 (E01b batch): every pump and motor purchase cost × 0.788 |
+| Supersedes | R-891's reciprocating-pump basis item |
+
+**Decision.**
+- The `pump` and `motor.electric` entries amend their `index_basis.value` from 394 to 500 (`replaces` 394, with the
+  3rd-ed. citation). The coefficients stay IDAES's, which equal the book's.
+- The reciprocating pump's basis-only amendment of a0 is withdrawn.
+- The loader lists the basis amendment in the report, and it refuses `index_basis` or `scale` inside it.
+
+**Rejected:**
+- *Keep 394.* No source states it.
+- *The reciprocating pump only.* The book says the same of all four correlations.
+- *Per-coefficient basis amendments.* Four amendments for one fact, and the entry would still say 394.
+- *Delete the entry basis.* That loses IDAES's value from the record.
+
+**Watch for.** The 2nd edition (2004, ch. 16): if it prints these same coefficients at CE 394, the 3rd ed. relabeled
+without re-indexing, and this decision is reversed by a new ruling (E01 design Q-B11).
+
+## R-897 — E01b Amendment 1: the amended coefficients — fixed-head α2 0.9228, tower platforms 300.9; horizontal platforms back to IDAES
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`architect`), E01b Amendment 1; Frank (2026-10-29): refits follow IDAES's 3rd-ed. values |
+| Normative text | E01 design §10.10.3 rows 1, 4, 18, 26; §10.10.5.1 |
+| Evidence | 3rd ed. p. 571, Eq. 22.40 (α2 0.9228); p. 575, Eq. 22.58 (300.9), Examples 22.13 (p. 578, $94,700) and 22.14 (p. 579); p. 574, Eq. 22.55 (2,005·D^0.20294), Example 22.12 (p. 577, $4,850); U-tube 11.147 + 0.2382 = 11.3852 |
+| Affected packages | E01 (E01b batch) |
+| Supersedes | R-891's adopted and kept lists |
+
+**Decision.**
+- Amended: fixed-head α2 = 0.9228 (replaces 0.8228); `vessel.vertical` `platforms[1].a` = 300.9 at CE 500 (replaces
+  309.9).
+- Kept as IDAES's: the horizontal platforms 2005·D^0.20294, where §10 had adopted the 4th-ed. refit 2275·D^0.2094;
+  the U-tube α1 11.3852, which closes Q-B1; the four exchanger intercepts (R-895 rule 2).
+
+**Rejected:**
+- *The 4th ed.'s 2275·D^0.2094.* A refit.
+- *341 at CE 567 for the tower platforms.* A three-figure re-index of 300.9.
+- *The printed 3rd-ed. intercepts.* They are stale, per R-895.
+
+**Watch for.** Restoring 309.9 or 0.8228 "to match IDAES". Neither number is in either edition.
+
+## R-898 — E01b Amendment 1: `weight_limit` "2" is the 3rd-ed. tower fit (IDAES's coefficients), 9,000–2,500,000 lb
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`architect`), E01b Amendment 1 |
+| Normative text | E01 design §10.10.3 rows 13–16, 24–25; §10.10.5.3 |
+| Evidence | 3rd ed. p. 574: horizontal 1,000–920,000 lb (Eq. 22.53), vertical 4,200–1,000,000 lb (Eq. 22.54, = "1"); p. 575: towers 9,000–2,500,000 lb, (7.2756, 0.18255, 0.02297) (Eq. 22.57, = "2"); Examples 22.13, 22.14 |
+| Affected packages | E01 (E01b batch): "2" cases below 9,000 lb floor at C_v 51,120.57 (CE 500); vertical "1" below 4,200 lb floors (M1, unchanged) |
+| Supersedes | R-892's ruling on "2" |
+
+**Decision.**
+- "2" keeps IDAES's coefficients and takes the primary range [9,000, 2,500,000] lb (p. 575), written `verified: false`
+  until C7.
+- "1" keeps [4,200, 1,000,000] lb, pinned to SSLW.py:534's "2:" text, with a note citing p. 574.
+- The horizontal range is unchanged, with a note citing p. 574.
+- The default stays "1".
+
+**Rejected:**
+- *The 4th-ed. tower fit (10.5449, −0.4672, 0.05482).* A refit.
+- *"2" with the vertical range.* That range belongs to "1".
+
+**Watch for.** A docstring range copied back onto "1" or "2".
+
+## R-899 — E01b Amendment 1: verification — `primary` means the 3rd ed.'s range; A49 on `seider3.yaml`, complete over every number
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`architect`), E01b Amendment 1; Frank approved `QA1.patch` and pre-approved adding the 3rd-ed. page to its five citations |
+| Normative text | E01 design §10.10.5.3, §10.10.5.5, §10.10.5.7, §10.10.6, §10.10.7–§10.10.8 |
+| Evidence | §10.10.3 |
+| Affected packages | E01 (E01b batch); release 0.3.0 (G10) |
+| Supersedes | R-894 |
+
+**Decision.**
+- A `primary` range is the range the 3rd ed., ch. 22 prints for the same equation, cited by page and equation. The
+  five QA1 ranges keep their 4th-ed. citation and add the 3rd-ed. page.
+- `benchmarks/e01/cost_hand/seider3.yaml` (A49) records every number object and range in the set: `same`, `shift`,
+  `amended`, `basis`, `range` or `not_in_book`. Completeness is asserted. `seider4.yaml` is not shipped.
+- There are 10 primary ranges. The five new flags (three compressors, the turbine, "2") are flipped only in C7, which
+  Frank approves. A48 is 5 after C6′ and 0 after C7.
+
+**Rejected:**
+- *Keeping a 4th-ed. consistency file beside the 3rd.* It no longer decides any number.
+- *Making the pinned vessel ranges primary.* That adds approvals for numbers already in the pinned source.
+
+**Watch for.** A number added to the set without a `seider3.yaml` record. A49's completeness check fails on it.
