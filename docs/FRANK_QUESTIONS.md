@@ -234,3 +234,5 @@ All four answered with the recommended default (Frank, 2026-10-25):
   package; two liquid phases wait for a case. "In some way I want OpenFlowsheet to be extensible … more about the flexibility
   of the basic infrastructure than having all models on board" → X01: extensibility infrastructure piloted by NRTL,
   UNIQUAC and original UNIFAC.
+- **Next release** (Frank, 2026-10-29): "cut 0.3.0 right after S11 and E01 merge, before starting the optimiser package,
+  and leave Wilson in." Still needed from Frank before the tag: Q-F3 (Wilson/S10 data rights), the E01 data rights, QA1.
