@@ -2,8 +2,15 @@
 
 **Authority.** Design lane (`specifier`), package V03 (manifest id `S13`, R-878). Policy: ADR 0053 (Proposed). Brief:
 `docs/briefs/V03-release-policy.md`. Builds on ADR 0042 and `docs/derivations/M07-spec.md` §7–§13; on ADR 0028 and
-`docs/derivations/V02-alpha-release-spec.md` §4–§8; and on `docs/RELEASING.md`. Register: R-872…R-880. Facts quoted
-here were measured at `main` = `a1b50ccf` and `wp/E01` = `84d71df8` unless stated otherwise.
+`docs/derivations/V02-alpha-release-spec.md` §4–§8; and on `docs/RELEASING.md`. Register: R-872…R-880, and R-881…R-883
+for Amendment 1. Facts quoted here were measured at `main` = `a1b50ccf` and `wp/E01` = `84d71df8` unless stated otherwise.
+
+**Amendment 1 (2026-10-29, design lane, ruling round 1, brief `docs/briefs/V03-rulings-1.md`).** Two build-lane
+questions are answered. (1) `semantic_role` has no role for S11's compressor and turbine: ADR 0054 widens the enum,
+§9.4 adds Table R and the corpus, V03.A28–A31 are new, WO-3 does the work, and `required_adrs` gains 0054 (R-881,
+R-882). (2) "`wilson-ig-v1` binds from package data" means the binder and the verifier pass the packaged path. v1 is
+not edited, and V03.A12 and A19 are restated (R-883). Changed: §1, §2.2, §6, §7 (A12, A19, A25, A27, A28–A31), §9.1,
+§9.4 (new), §10, §10.1, §11 (N-9), §12. Amendment 1's facts were measured at `wp/V03` = `98701cca`.
 
 **Scope.** What 0.3.0 claims and how each claim is judged. The registry entry, the release candidate C, the RC job,
 the version pin and the working form, the ADR acceptance route, the data the wheel ships, the release notes, numbered
@@ -23,8 +30,10 @@ for 0.2.0. Three choices are asked early (§11).
 3. The 0.3.0 pin, the working form after it, and A10's pairs, which resolves R-563 (§5).
 4. The acceptance route for ADRs 0046–0052 (§6).
 5. The wheel's new data (§9) and the release notes' phrases (§8).
-6. Assertions V03.A01–A27 (§7), work orders (§10), the `verdict` agent's inputs (§10.2), and open items with defaults
+6. Assertions V03.A01–A31 (§7), work orders (§10), the `verdict` agent's inputs (§10.2), and open items with defaults
    (§11).
+7. The widening of `semantic_role` (ADR 0054), the role of every bindable model (Table R) and the test corpus that
+   holds the repository to it (§9.4). Also what "binds from package data" means for Wilson (§9.1, R-883).
 
 ## 2. The claim set and the registry entry
 
@@ -55,7 +64,7 @@ for 0.2.0. Three choices are asked early (§11).
 | evidence_package | `S13`; its specification text is `("the V03 release specification", "§4")` |
 | packages (20) | M01, M02, M03, M04, M05, M06, S01, S02, S03, S04, S05, S06, S07, S08, S08b, S09, S10, S10c, S11, S12 |
 | envelope_id | `v0.3-envelope-1` |
-| required_adrs (24) | 0022, 0026, 0027, 0030, 0031, 0032, 0033, 0034, 0035, 0036, 0037, 0038, 0039, 0041, 0044, 0045, 0046, 0047, 0048, 0049, 0050, 0051, 0052, 0053 |
+| required_adrs (25) | 0022, 0026, 0027, 0030, 0031, 0032, 0033, 0034, 0035, 0036, 0037, 0038, 0039, 0041, 0044, 0045, 0046, 0047, 0048, 0049, 0050, 0051, 0052, 0053, 0054 |
 | frank_items | `Claim set`, `V17 carry`, `M02 N1`, `M03 N1` |
 | rejudge_waits | (V13, V17 carry), (V17, V17 carry), (W21, M02 N1), (W24, M03 N1) |
 | links_item | `V17 carry` |
@@ -218,12 +227,14 @@ and report. It is not a choice.
 | 0052 (E01) | manifest `tested` with G1–G9; `reviewer` passed tracks A, B and integration | `evidence/S12/d87078af…`; `docs/reviews/E01-review.md`; E01's merge record (G8); G8 again at C | Accepted after E01's merge and V03.A24 |
 | 0043 (L01/S04) | Frank's L01-Q1 and Q-2; manifest; review | L01-Q1 (W27 Amendment 3) is not done | **Stays Proposed.** It is not in `required_adrs`. `pr-lib-v1` is library-only, its records do not ship (L01-Q4), and no 0.3.0 claim rests on it |
 | 0053 | §ADR status line | Frank's tables; S13 manifest `tested` | Accepted at WO-8 |
+| 0054 (V03, Amendment 1) | S13's manifest `tested` at C, listing V03.A28–A31 with their commands | `evidence/S13/<C>/manifest.json` | Accepted at WO-8, with 0053 |
 
 ## 7. Assertions
 
 Gate column: **D** is the default gate (`scripts/gate.sh`), **R** is the RC job or the records at C, and **CI** is both
 CI architectures at C. "Exact" means string, byte or set equality. No assertion here compares a floating-point value
-except A19 and A24. Their tolerances are the registered ones cited.
+except A19 and A24. Their tolerances are the registered ones cited. A31 compares binding outcomes by `float.hex`
+as an identity, with no tolerance.
 
 | Id | Assertion | Expected | Tolerance and why | Gate |
 | --- | --- | --- | --- | --- |
@@ -238,26 +249,35 @@ except A19 and A24. Their tolerances are the registered ones cited.
 | V03.A09 | at K3 and C: the five version-carrying files read `0.3.0`; the envelope `v0.3-envelope-1` / `0.3.0` | as stated | exact | R |
 | V03.A10 | `test_e01_a48_tripwire`: count 0 after P2; `a48_release_check()` is `pass`; its synthetic unverified document still gives `fail` | 0; pass; fail | exact count (an accidental 0 is excluded by the `fail` control) | D |
 | V03.A11 | MR-12 v03 (§9.3) at HEAD: `new_since_v0_2_0 == ["coolprop", "lca"]`, both with entries; a control extra without an entry → `fail`; `mr12_extras_v02` at `RELEASE_0_2_0_COMMIT` unchanged (S07 A44's release clause) | pass; fail; unchanged | exact | D |
-| V03.A12 | the ship set (§9.1) is in `PACKAGED` with `_data` links, bytes equal to the `benchmarks/s10/` files; R-811's wheel row is gone. A bind of `wilson-ig-v1` from package data with the checkout path hidden succeeds, and S10/S11 identity tests are unchanged | as stated | exact (SHA-256) | D |
+| V03.A12 | the ship set (§9.1) is in `PACKAGED` with `_data` links, bytes equal to the `benchmarks/s10/` files; R-811's wheel row is gone. With `wilson_ig._checkout_records` returning `None`, as in a wheel (the fixture first checks that `wilson_ig.load_records()` then refuses `records_missing: `): (a) `revision_binding.provider_for(WILSON_BASIS)` is not `Unbound`, its `describe()` has `provider_id` `wilson-ig-v2` and the records' `data_sha256`, and `verify.certificate._wilson_provider().describe()` equals it; (b) `WilsonIdealGasProvider(resources.packaged_path(wilson_ig.RECORDS_PATH))` answers `evaluate_phase` (both phases, every property and derivative) and `flash` exactly as the checkout's provider does at one state; (c) S10/S11 identity tests are unchanged, and `tests/test_s11_wilson_v2.py::test_a75_v1_is_not_edited` passes (v1's bytes are not edited, R-883) | as stated | exact (SHA-256; `==` on the answers: same code, same bytes) | D |
 | V03.A13 | NOTICE holds the Wilson block (each of `Kurihara`, `J. Chem. Eng. Data 38 (1993) 446`, `NASA TM-4513`, `CoolProp 8.0.0`, `deReuck-BOOK-1993`, `Schroeder-JPCRD-2014`, `Wagner-JPCRD-2002`, `CIAAW`) and the IPCC block (`IPCC AR6 WG1`, `Table 7.15`), each once | 10 substrings | exact substring | D |
 | V03.A14 | `docs/s10-rights-check.md` §3 "Ships?" column equals §9.1's table; RC-05 and RC-08 cite Frank 2026-10-29 | equal | exact | D |
 | V03.A15 | the RC test step (WO-3) installs `requirements-coolprop.lock` after the main lock and sets `OPENFLOWSHEET_REQUIRE_COOLPROP=1` (read from the script) | present | exact | D |
 | V03.A16 | `registration.json` `changelog_what_it_is_not` equals §8's 17 phrases | equal | exact | D |
 | V03.A17 | the wheel at C: each §9.1 ship-set file once, with the repository SHA-256; E01's seven data files with `docs/e01-data-licences.json`'s SHA-256; no §9.1 repository-only file | as stated | exact | R |
 | V03.A18 | `CHANGELOG.md` `## v0.3.0` holds §8's 17 phrases verbatim | 17 | exact substring | R |
-| V03.A19 | in a fresh venv from the wheel: `wilson-ig-v1` binds; S10's P1 state's γ and K equal the checkout's at C | equal | bitwise (same code, data bytes and machine; x86-64) | R |
+| V03.A19 | in a fresh venv installed from the wheel (the package is imported from site-packages, so v1's own checkout lookup finds nothing): (a) `resources.packaged_path(wilson_ig.RECORDS_PATH)` is a file whose SHA-256 equals the repository's `benchmarks/s10/records.yaml`; (b) `provider_for(WILSON_BASIS)` gives `wilson-ig-v2` with that `data_sha256`, and `certificate._wilson_provider()` describes equal; (c) `WilsonIdealGasProvider(packaged_path(RECORDS_PATH))` gives S10's P1 state's γ and K equal to the checkout's at C; (d) `WilsonIdealGasProvider()` with no argument raises `RecordError` whose message starts `records_missing: `, the library's documented, typed refusal (R-883); a success or any other exception fails | (a), (b) equal; (c) equal; (d) the refusal | (a), (b), (d) exact; (c) bitwise (`float.hex`; same code, data bytes and machine; x86-64) | R |
 | V03.A20 | RC steps 1–14 and 16 pass at C; `docs/v03-rc-record.md` has a passed row for each of 1–17 | pass | per-step gates | R |
 | V03.A21 | step 15: K3's journey record is in C; `--carry-journey K3 --rc C` reports carried; `check` and `replay` (bitwise) pass at C | pass | bytes | R |
 | V03.A22 | step 17a–17e pass at C; an `unsupported` result is not a pass | pass | as each | R |
 | V03.A23 | step 8: served digest D_3 and chain rows as §3.3; otherwise STOP | equal | exact (SHA-256) | R |
 | V03.A24 | CI green at C on both architectures. S07 A31: x86-64 bitwise, aarch64 within R-627's classes. S11 thermal check: x86-64 bitwise, aarch64 within R-843/R-845 classes (flash class at the S11 merge: 0.024 of its bound), and the relative class's worst ≤ 0.1 of its bound (R-845's watch). THM-09/4's lines copied into `docs/t07-measurements.md` (R-796) | green; ratios recorded | registered classes; the 0.1 watch is R-845's, not new | CI |
-| V03.A25 | gate item 12 at C: the 24 required ADRs Accepted; 0043 Proposed and not required | as stated | exact | R |
+| V03.A25 | gate item 12 at C: the 25 required ADRs Accepted (0054 included, Amendment 1); 0043 Proposed and not required | as stated | exact | R |
 | V03.A26 | `docs/reviews/V03-verdicts.md`: header names C once and one `Judged`; 17 rows in claimed order; every clause parses under v0.3's grammar. ADR 0053's two tables pass the cell rule. `docs/requirements.yaml` X31 verdict and evidence written from it | as stated | exact | R |
-| V03.A27 | `evidence/S13/<C>/manifest.json` `tested`, listing V03.A01–A26 with commands run and `S11.G8`, `S12.G8`, `S12.G10`; step 18's last line `v0.3.0 tag may be proposed: YES` | present; YES | exact | R |
+| V03.A27 | `evidence/S13/<C>/manifest.json` `tested`, listing V03.A01–A26 and A28–A31 with commands run and `S11.G8`, `S12.G8`, `S12.G10`; step 18's last line `v0.3.0 tag may be proposed: YES` | present; YES | exact | R |
+| V03.A28 | `schemas/process-revision.schema.json`: `properties.instances.items.properties.semantic_role.enum` equals the eleven frozen values in their order (`feed` … `heat_exchanger`) followed by `compressor`, `turbine`, `other`; `$id` equals `https://github.com/frankp/process-runtime/schemas/process-revision.schema.json`; `properties.schema_version` equals `{"type": "integer", "const": 1}` (ADR 0054 D1) | 14 values in order; `$id` and `schema_version` unchanged | exact (list and string equality) | D |
+| V03.A29 | every document of §9.4's corpus gets no `SCHEMA-01` FAIL from `application.validation.validate(document)`. The corpus has at least 80 documents and contains the nine cases of §9.4 by path. Control: GP-M1 with `instances[1].semantic_role` set to `purge_sink` (the value V17 c1's agents wrote) gives a `SCHEMA-01` FAIL whose message starts `schema_invalid(/instances/1/semantic_role)` | 0 FAIL over ≥ 80 documents; the control FAILs | exact (count, path set, message prefix) | D |
+| V03.A30 | `tests/semantic_roles.py` `ROLE_OF_MODEL` is Table R (§9.4), and: (a) its keys equal `revision_binding.MODEL_SIGNATURES`' keys; (b) every value is in A28's enum, and the set of values equals the enum without `other` (13 values); (c) every instance of every corpus document whose model id is a key of `ROLE_OF_MODEL` has `semantic_role == ROLE_OF_MODEL[instance.model.id]`; an instance with any other model id is counted and not judged (0 of 441 at `98701cca`), because a declared model the binder does not accept may take any value A28 allows; (d) none of §9.4's five builders holds the string constant `"other"` (read by `ast`), and each imports from `semantic_roles`; (e) `ROLE_OF_MODEL` equals §9.4's Table R as parsed from this file (both column pairs, 30 rows), as `test_v03_v0_3_gate.py` parses §2.2. Controls: a copy of the table without `thermal.turbine` fails (a); a copy with `thermal.turbine: pump` fails (b), and (c) on TH-C1 and GP-M2 | (a)–(e) hold; each control fails | exact | D |
+| V03.A31 | (a) no `*.py` file under `src/openflowsheet/` contains the text `semantic_role`. (b) For every corpus document d, with d′ = d with every instance's `semantic_role` set to `other`: `s11_identity_recorder.outcome(bind(d), document_sha256(d)) == outcome(bind(d′), document_sha256(d′))`, where bind is `revision_binding.bind_revision_flowsheet` and a raise is compared as (type name, message). Control: GP-M1 with instance `M`'s `efficiency` value replaced by `math.nextafter(v, math.inf)` gives a different outcome | (a) none; (b) equal for every document (measured: 80 of 80; 63 bound, 17 typed `Unbound`, a split that depends on the installed extras and is not asserted); the control differs | exact (`float.hex` inside `outcome`) | D |
 
 **Falsifiability.** A06 and A07 flip one input at a time, so a dropped item or a mis-dated cell changes the answer.
 A10's `fail` control excludes a vacuous 0. A11's control excludes a measure that passes with no entries. A04's swapped
 control excludes an order-blind comparison.
+A29's control excludes a validator that accepts any role, and its count floor and named paths exclude a corpus that
+silently shrank. A30's controls exclude a table check that passes on any table. A31's control excludes an outcome
+comparison blind to parameters. A31 (a) alone is not enough: code could reach the role without naming it, for example
+by iterating an instance's members, and (b) would catch that. Every A28–A31 assertion is a string, set or identity
+comparison, so no tolerance applies. A difference in A31 (b) is a defect, not noise.
 
 ## 8. Release notes: `CHANGELOG.md` `## v0.3.0`, "What it is not"
 
@@ -300,6 +320,22 @@ RC-08 (cite CIAAW 2021); the IAPWS block (R-616) already serves RC-04. `docs/att
 provider's attribution page, after `iapws95-v1.md`. R-811's wheel refusal row is removed ("Reversible by: removing one
 registry row"). Bytes stay unchanged, so `data_sha256` does not move.
 
+**What "binds from package data" means (Amendment 1, R-883).** A revision on Wilson's record source selects
+`wilson-ig-v2` (S11 units design §4.6, WO-D5), which builds `wilson-ig-v1` from the path it is given. The binder
+(`revision_binding.basis_provider`, `_wilson_refusal`) and the verifier (`certificate._wilson_provider`) pass
+`resources.packaged_path(wilson_ig.RECORDS_PATH)` (WO-2, D-1 and D-4). So in a wheel, a revision on Wilson's records
+binds on the packaged records, and the verifier builds its provider from them. That is the whole of the claim in
+V03.A12 and A19, and it is enough.
+`thermo/wilson_ig.py` is not edited. Its bytes are pinned by `test_a75_v1_is_not_edited`, its SHA-256 enters both
+providers' `implementation_sha256` (v2's chains v1's), and S10's validation verdict names those bytes
+(`docs/reviews/S10-validation-verdict-val2.md`, `4bcd8f4dc8115b6b`). An edit would re-open S10's verdict for a library
+convenience. The consequence is a library limitation, stated and checkable. `WilsonIdealGasProvider()` and
+`WilsonIdealGasProviderV2()` with no argument read a source checkout only, and outside one they refuse
+`RecordError("records_missing: …")`, never a fallback (V03.A19 (d)). A library user passes
+`resources.packaged_path(wilson_ig.RECORDS_PATH)`. The refusal's text still says the records are read "from a source
+checkout only; R-706". That is stale since R-880, and it stays because the message is v1's bytes. The envelope row
+L-S11-3 and the attribution page carry the correction (WO-4, texts in §10.4).
+
 ### 9.2 E01
 
 The seven files of `docs/e01-data-licences.json` already ship. The five IPCC AR6 GWP-100 values ship as facts with
@@ -318,19 +354,88 @@ check passed at C.
 `test_the_git_backed_measure_at_head`'s HEAD clause moves to the v03 measure. The v02 measure stays judged at
 `RELEASE_0_2_0_COMMIT`.
 
+
+### 9.4 Semantic roles (Amendment 1; ADR 0054; R-881, R-882)
+
+**Table R, the role of each model the binder accepts.** Its keys are exactly `revision_binding.MODEL_SIGNATURES`
+(30 ids at `98701cca`). Its values cover the thirteen enum values other than `other`, each at least once.
+
+| Model id | Role | Model id | Role |
+| --- | --- | --- | --- |
+| `c1.adiabatic_mixer` | `mixer` | `syn001.ph_flash` | `flash` |
+| `c1.feed_source` | `feed` | `syn001.product_sink` | `product_sink` |
+| `c1.product_sink` | `product_sink` | `syn001.stream_splitter` | `splitter` |
+| `c1.reactor` | `reactor` | `syn001.tp_flash` | `flash` |
+| `c1.reactor_standin` | `reactor` | `syn001.tp_heater` | `heater` |
+| `c1.reactor_surrogate` | `reactor` | `syn001.valve` | `valve` |
+| `c1.stream_splitter` | `splitter` | `thermal.compressor` | `compressor` |
+| `c1.tp_flash` | `flash` | `thermal.flash` | `flash` |
+| `c1.tp_heater` | `heater` | `thermal.heater` | `heater` |
+| `syn001.adiabatic_mixer` | `mixer` | `thermal.mixer` | `mixer` |
+| `syn001.column` | `separator` | `thermal.pump` | `pump` |
+| `syn001.component_separator` | `separator` | `thermal.turbine` | `turbine` |
+| `syn001.conversion_reactor` | `reactor` | `thermal.valve` | `valve` |
+| `syn001.feed_source` | `feed` | `syn001.heat_exchanger` | `heat_exchanger` |
+| `syn001.kinetic_cstr` | `reactor` | `syn001.liquid_pump` | `pump` |
+
+Where it comes from. The 23 `c1.*` and `syn001.*` rows are the roles the committed documents already give those
+models: over the 80-document corpus at `98701cca`, each of them has exactly one role besides `other`. The five
+`thermal.*` rows for flash, heater, mixer, pump and valve take the role of the same kind of unit among those 23. In the
+corpus they appear only as `other`. The rows for `thermal.compressor` and `thermal.turbine` are ADR 0054 D1.
+`syn001.column` → `separator` is S11 design §4.7.1. The table lives in `tests/semantic_roles.py` as `ROLE_OF_MODEL: Final[Mapping[str, str]]` with `role_of(model) -> str` returning
+`ROLE_OF_MODEL[model]`. An unknown model raises `KeyError`, so a new model forces its row (ADR 0054 D5).
+
+**The corpus (V03.A29–A31).** Every file `git ls-files` lists under `benchmarks/`, `examples/`, `tests/` or `docs/`
+with suffix `.json`, `.yaml` or `.yml`, that parses (`json.loads`, `yaml.safe_load`) to a mapping holding all of
+`schema_version`, `revision_id`, `component_set` and `instances`. Two kinds of file are excluded. First, paths under
+`tests/fixtures/` with a segment `invalid`: those are registered schema-invalid fixtures. Second, paths under
+`benchmarks/t07/v17/runs/`: those are recorded campaign artifacts, evidence of what agents wrote, never corrected (one
+holds `purge_sink`, T07 decisions rf3a). A file that does not parse is not in the corpus. At `98701cca` the corpus is
+80 documents (benchmarks/m02 6, m04 1, s11 25, syn001 17, t05 4, t06 23, t08 1; tests/web 3), with 441 instances.
+
+**Measured at `98701cca`** (scratch script, not committed; the assertions are the record):
+
+- `validate`: 71 of 80 give no `SCHEMA-01` FAIL. The nine below FAIL with
+  `schema_invalid(/instances/<i>/semantic_role): 'other' is not one of […]`. So A29 would have caught the defect.
+- 34 of 441 instances differ from Table R, all `other`, all in the nine.
+- With the enum widened in memory and Table R applied: 0 of 80 FAIL. 71 documents are unchanged by the correction. The
+  `purge_sink` control FAILs at `/instances/1/semantic_role`.
+- The binder's `outcome` is equal for all 80 documents with roles as Table R and with every role `other` (63 bound, 16
+  `Unbound` `unsupported`, 1 `Unbound` `incomplete` in that environment). The `efficiency` nudge on GP-M1 changes it,
+  as does a `pressure_drop` nudge on SYN-001-nominal.
+- No file under `src/` contains `semantic_role`. No committed file contains any of the nine files' SHA-256 or
+  `document_sha256`. The served MCP tool list does not contain the enum (digest `455d01eb…` = D_3).
+
+**The nine cases and the five builders.** Cases: `benchmarks/s11/gp/GP-C1.json`, `GP-C2.json`, `GP-C3.json`,
+`GP-M1.json`, `GP-M2.json` (generator `tests/s11_gp_support.py`) and `benchmarks/s11/thermal/TH-C1.json`, `TH-C2.json`,
+`TH-R1.json`, `TH-V1.json` (generator `tests/s11_thermal_support.py`, through `test_s11_thermal_binding.instance`).
+Builders: `tests/test_s11_thermal_binding.py` `instance()`, `tests/s11_gp_support.py`, `tests/test_s11_gp_binding.py`,
+`tests/test_s11_routing.py` (each `ROLES.get(model, "other")`) and `tests/test_s11_gp_verifier.py` (`roles.get(model,
+"other")`). Each builder's role becomes `role_of(model)`, and each local `ROLES`/`roles` map is deleted. The nine files
+are regenerated by running their generators, never edited by hand. Their committed-equals-generated tests then hold.
+Each regenerated file differs from its predecessor only in `semantic_role` values (checked once by WO-3 and recorded in
+`docs/V03_DECISIONS.md`'s run log).
+
+**Identity across the correction.** The correction moves the nine documents' bytes, `document_sha256` and
+`revision_sha256`, and the same for documents the five builders make. It moves nothing the binder, solver or verifier
+computes (A31). `scripts/s11_identity.py` would report the family C keys of test nodes that bind those documents as
+changed, because its digest includes the document's SHA-256. That gate is S11's merge evidence against `8c34ecb0`, it is
+not an RC step, and it is not run across the correction as a proof of inertness: by construction it cannot be one. A31
+is the proof.
+
 ## 10. Work orders
 
 | WO | Lane | What | Depends | Assertions |
 | --- | --- | --- | --- | --- |
 | WO-1 | Opus | `scripts/v0_3_gate.py` on `v0_2_gate.py`'s engine (registry, line name and spec texts made parameters, v0.2 output byte-identical); `benchmarks/v03/registration.json`; tests in the pattern of `tests/test_m07_v0_2_gate.py`; A10's pairs | this spec | A01–A08, A16 |
 | WO-2 | Opus | Wilson ship set as package data; R-811 row removed; NOTICE blocks; `docs/attributions/wilson-ig-v1.md`; rights-check table | — | A12–A14 |
-| WO-3 | Opus | MR-12 v03; the RC CoolProp test step (F-8); A48 tripwire at 0 after P2 | E01 merged; P2 for A10 | A10, A11, A15 |
-| WO-4 | Sonnet | ADR checks and flips (§6, S07 F-1 transcribed); `## v0.3.0` draft; envelope U02 text (N-8); RELEASING "Per release" for 0.3.0 and the W27 sentence (F-4) | WO-1–3 | A25 (at C), A18 |
+| WO-3 | Opus | MR-12 v03; the RC CoolProp test step (F-8); A48 tripwire at 0 after P2; **Amendment 1:** ADR 0054's roles (§10.3) | E01 merged; P2 for A10 (§10.3 depends on neither) | A10, A11, A15, A28–A31 |
+| WO-4 | Sonnet | ADR checks and flips (§6, S07 F-1 transcribed); `## v0.3.0` draft; envelope U02 text (N-8); RELEASING "Per release" for 0.3.0 and the W27 sentence (F-4); **Amendment 1:** L-S11-3 and the attribution page (§10.4) | WO-1–3 | A25 (at C), A18 |
 | — | reviewer | one design-lane pass over WO-1–WO-4 before the merge into `main` | WO-1–4 | — |
 | WO-5 | Opus | K3 (§5.1); G10 re-take; the journey at K3 in the reactor environment; C | P1–P4 | A09, A21 |
 | WO-6 | Opus | the RC job at C, steps 1–17; RC record; tree record; S13 manifest | WO-5 | A17, A19–A24, A27 |
 | WO-7 | verdict (design) | `docs/reviews/V03-verdicts.md` at C | WO-6 | A26 |
-| WO-8 | Sonnet | ledger from WO-7; ask Frank the four items and the D3 rows (in plain words, with defaults); record his answers verbatim; step 18; ADR 0053 Accepted; hand to Frank for the tag | WO-7 | A26, A27 |
+| WO-8 | Sonnet | ledger from WO-7; ask Frank the four items and the D3 rows (in plain words, with defaults); record his answers verbatim; step 18; ADRs 0053 and 0054 Accepted (§6); hand to Frank for the tag | WO-7 | A26, A27 |
 | WO-9 | Sonnet | after the tag: §5.3 | the tag | — |
 
 ### 10.1 Stops (the engineer reports and does not choose)
@@ -343,6 +448,50 @@ The engineer stops on any of these:
 - An ADR condition in §6 is unmet.
 - The journey's R1 needs more than its registered budget.
 - Any step's result reads `unsupported`.
+- V03.A31 (b) differs for any corpus document. Production code then reads the role after all, and ADR 0054's premise is
+  false.
+- A regenerated S11 case differs from its predecessor in anything other than `semantic_role` values.
+
+### 10.3 WO-3, Amendment 1: the roles (one engineer, before the rest of WO-3)
+
+1. `schemas/process-revision.schema.json`: append `"compressor"`, `"turbine"`, `"other"` after `"heat_exchanger"` in
+   the `semantic_role` enum, in the file's existing format, and change nothing else (V03.A28).
+2. `tests/semantic_roles.py`: `ROLE_OF_MODEL` = Table R and `role_of` (§9.4).
+3. The five builders of §9.4 take `role_of(model)`, and their local maps are deleted. Then run
+   `python tests/s11_gp_support.py` and `python tests/s11_thermal_support.py` (each module's `__main__` writes its cases), and
+   check that each of the nine files differs only in `semantic_role` values.
+4. `tests/test_v03_semantic_roles.py`: V03.A28–A31 with their controls.
+5. Steps 1–4 are **one commit** (`V03 WO-3 (ADR 0054): …`). The schema without the corrections, or the corrections
+   without the schema, leaves the corpus invalid. Reversible by reverting that commit.
+6. A second commit: `0054` appended to `required_adrs` in `scripts/v0_3_gate.py` and `benchmarks/v03/registration.json`.
+   In `tests/test_v03_v0_3_gate.py`, `test_a01_the_entry_is_the_specification_s_table` reads the label
+   `required_adrs (25)` and expects length 25. It fails from this amendment's commit until this commit lands, on purpose
+   (the document leads; measured: 1 failed, 91 passed over the two V03 modules).
+7. `docs/interfaces-frozen.md` already carries ADR 0054's paragraph (this amendment's commit).
+8. Run the touched modules: `test_v03_semantic_roles.py`, `test_v03_v0_3_gate.py`, every `tests/test_s11_*.py`, and
+   `test_t08_w4_package_data.py`, `test_schemas_p01.py`, `test_m06_fixtures_valid.py`, `test_m07a_surface_chain.py` (the
+   served digest). Record the counts in `docs/V03_DECISIONS.md`'s run log. Do not run `scripts/s11_identity.py` as proof of
+   this commit (§9.4).
+9. Merge note: if `wp/DOC` is on `main` before V03 merges, V03.A30 (c) names DOC's examples that label
+   `thermal.turbine` or `thermal.compressor` `pump`. The merge sets them by Table R, roles only.
+
+### 10.4 WO-4, Amendment 1: the Wilson library limitation in words
+
+- `benchmarks/t08/support_envelope.yaml` row L-S11-3. Replace the sentence "Its records are in the source repository
+  only, so in a wheel binding is refused `basis_unavailable(wilson-ig-v2)` (R-706, R-811)." with "Its records ship as
+  package data (R-880), so it binds in a wheel. An installation with neither copy is refused
+  `basis_unavailable(wilson-ig-v2)`. The library constructors `WilsonIdealGasProvider()` and
+  `WilsonIdealGasProviderV2()` with no argument read a source checkout only and elsewhere refuse `records_missing`. A
+  library user passes `resources.packaged_path(wilson_ig.RECORDS_PATH)` (R-883)." Add the evidence nodes
+  `tests/test_v03_wilson_ship.py::test_a12_r_811_s_wheel_refusal_is_gone` and
+  `tests/test_v03_wilson_ship.py::test_a12_wilson_ig_v1_binds_from_package_data`. The crosswalk entry's note for L-S11-3
+  reads `S11's envelope row L-S11-3, amended by V03 (R-883)`. Re-emit `docs/support-matrix.md` with
+  `scripts/t08_support_matrix.py --emit`, and check with `--check` (T08.A23). This is done with WO-2's deferred L40/L-S11-3
+  edit, after E01's merge.
+- `docs/attributions/wilson-ig-v1.md` gains a section "Using the provider from the library" with the same three facts:
+  the records are package data; the no-argument constructors read a checkout only and otherwise refuse
+  `records_missing`, whose text still says "source checkout only" (v1's bytes are pinned, R-883); and the call
+  `WilsonIdealGasProvider(resources.packaged_path(wilson_ig.RECORDS_PATH))`.
 
 ### 10.2 What the `verdict` agent receives (WO-7)
 
@@ -369,12 +518,14 @@ nothing that §3 pre-registers differently.
 | N-6 | D3 `V14 (b)`: accept the PTC failure again? | Frank | **Accept** | after the verdict |
 | N-7 | Working form after the tag: keep the token, or D1-O2's version-free id? | Frank's preference | **Keep the token** (§5.3) | before the tag |
 | N-8 | S04-O2: correct U02's stale capability text ("any property method other than SYN-001") at K3? | Frank's preference | **Correct it** to name the bases 0.3.0 binds | before K3 |
+| N-9 | Keep `other` in the role enum (ADR 0054 D1)? Removing a value after 0.3.0 ships is a narrowing that can invalidate user documents, so the cheap time to decide is before K3 | Frank's preference | **Keep it** (his standing "as few limitations as possible"). Alternative: `compressor` and `turbine` only, with `other` dropped from the ADR, A28 and A30 (b) | before K3 |
 | F-1 | Is the served digest at C equal to D_3? | fact: step 8 | yes (R-860) | at C |
 | F-2 | Does the journey at K3 fit its registered budget? | fact: WO-5 | yes, as at 0.2.0 | at K3 |
 | F-3 | Do S11's and E01's modules import in step 9's default-install workload? | fact: step 9 | yes (`test_package_imports` lists `assessment`) | at C |
 | F-4 | Does any default-gate test need W27's v1 `coverage.json` at the new version? | fact: step 1 at K3 | no (R-566 dropped the byte pin) | at K3 |
 
-Ask N-1, N-7 and N-8 in one message now, and N-2 to N-6 in one message after the verdict, as 0.2.0 did.
+Ask N-1, N-7 and N-8 in one message now, and N-2 to N-6 in one message after the verdict, as 0.2.0 did. N-9 (Amendment
+1) rides on the next message to Frank before K3; work proceeds on its default.
 
 **Answered, Frank, 2026-10-29:** N-1 "No, don't claim it (Rec.)" (W27 not claimed); N-7 "Keep the token (Rec.)"; N-8
 "Correct it (Rec.)". N-2 to N-6 remain for after the verdict.
@@ -393,3 +544,11 @@ Ask N-1, N-7 and N-8 in one message now, and N-2 to N-6 in one message after the
 - No human numerical or process-modelling sign-off. That is Frank's, recorded separately.
 - None of these facts is re-established: any number this document quotes from another record (R-627, R-845, CI runs,
   S09 verdict 3). Each is re-measured at C where an assertion says so.
+- Table R is a repository convention checked by tests, not a validation rule. A user document is constrained by the
+  schema alone, and `validate` does not compare a role with its model (ADR 0054 D4).
+- The thirteen named roles are not a taxonomy of process units. They are the roles of the units this build binds, plus
+  `other`.
+- No inertness proof by the S11 identity gate across the role correction. Its family C differs there in document
+  digests by construction, and A31 is the proof (§9.4).
+- The no-argument Wilson constructors do not read package data, and their `records_missing` text stays stale (§9.1,
+  R-883). The envelope and the attribution page carry the correction.

@@ -16897,3 +16897,71 @@ judged at `RELEASE_0_2_0_COMMIT`.
 RC-06 files, the double entries and the derived reports stay repository-only.
 
 **Rejected alternative.** *Ship the 1993 ternary (Table V) too.* It is RC-06, which Frank's answer did not settle.
+
+## R-881 — `semantic_role` gains `compressor`, `turbine` and `other` by ADR 0054; no `column`; `$id` and `schema_version` unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 ruling round 1; keeping `other` is Frank's item N-9 (default) |
+| Normative text | ADR 0054 D1–D3, D5; V03 spec §9.4, V03.A28 |
+| Evidence | at `98701cca`: the frozen enum has 11 values; `revision_binding.MODEL_SIGNATURES` has 30 ids, two with no role; nine S11 cases fail `validate` with `SCHEMA-01` on `semantic_role`; no file under `src/` contains `semantic_role`; `wp/DOC` `docs/DOC_DECISIONS.md` D3/Q1 |
+| Affected packages | V03 (WO-3), S11, M06, DOC |
+
+**Decision.** Three enum values appended after `heat_exchanger`, through a new ADR (not an amendment to ADR 0051). A
+column stays a `separator` (S11 §4.7.1). `other` is for a unit none of the thirteen describes. It is never the role of
+a bindable model. `0054` joins `required_adrs` (25).
+
+**Rejected alternatives, and why.**
+- *Amend ADR 0051.* That would tie 0051's acceptance (R-876) to V03's evidence. The schema is the defect, not 0051.
+- *Bump `schema_version` or move `$id`.* `const 1` would invalidate every document, and the version enters every
+  content hash. The `$id` move is R-149's, out of scope by R-185.
+- *Add `column`.* Two names for one role, against 16 registered instances.
+- *No `other`.* It forces a wrong listed role on any unit outside the list (the docs' turbine labelled `pump`). R-882's
+  Table R test keeps the closed-enum check for the repository.
+
+**Watch for.** A new model id in `MODEL_SIGNATURES` without a Table R row (V03.A30 (a) fails). A future reader of the
+role in `src/` (V03.A31 (a) fails, and ADR 0054 D2 must be revisited).
+
+## R-882 — Repository revision documents follow Table R; the nine S11 cases and five builders are corrected; V03.A29–A31 are the catching test and the inertness proof
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 ruling round 1 |
+| Normative text | ADR 0054 D4; V03 spec §9.4, §10.3, V03.A29–A31 |
+| Evidence | corpus of 80 documents at `98701cca`: 71 pass, the nine fail; 34 of 441 instances differ from Table R; with the widening and Table R in memory, 80 of 80 pass and the binder's `outcome` (S11 recorder rule) is equal under any role for all 80, while a one-ulp parameter nudge changes it; no committed file pins the nine documents' SHA-256 or `document_sha256` |
+| Affected packages | V03 (WO-3), S11 |
+
+**Decision.** `tests/semantic_roles.py` holds Table R. The case generators and the five builders take
+`role_of(model)`, and the nine files are regenerated. V03.A29 runs every corpus document through
+`application.validation.validate`. V03.A30 holds the table to the binder and the corpus. V03.A31 proves the binder is
+role-blind. The role correction is one commit. `scripts/s11_identity.py` is not used as an inertness proof across it,
+because its family C digests the document's SHA-256 by construction.
+
+**Rejected alternatives, and why.**
+- *Leave the cases as `other` once it is valid.* That keeps 34 known roles misdescribed. The digest move it avoids
+  touches no registered record.
+- *A role-against-model check in `validate`.* It constrains user documents beyond the schema and changes validation
+  reports, for a field nothing reads.
+- *Hand-edit the nine JSON files.* Their generators and committed-equals-generated tests would then disagree.
+
+## R-883 — "`wilson-ig-v1` binds from package data" is met by the binder and verifier passing the packaged path; v1 is not edited; the no-argument constructors stay checkout-only and refuse `records_missing`
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 ruling round 1; confirms WO-2's D-1 default |
+| Normative text | V03 spec §9.1 ("What 'binds from package data' means"), §10.4, V03.A12, A19 (restated) |
+| Evidence | `365607f2`, `34236737` (D-1, D-4); `tests/test_s11_wilson_v2.py::test_a75_v1_is_not_edited` pins v1's SHA-256; v2's `implementation_sha256` chains v1's; `docs/reviews/S10-validation-verdict-val2.md` names v1 at `4bcd8f4dc8115b6b`; revisions select `wilson-ig-v2` (S11 units design §4.6) |
+| Affected packages | V03 (WO-2 done, WO-4, WO-6), S10, S11 |
+
+**Decision.** In a wheel, a revision on Wilson's record source binds on the packaged records, and the verifier builds
+its provider from them. A12 and A19 say so precisely. A19 (d) asserts that `WilsonIdealGasProvider()` with no argument refuses with a message
+starting `records_missing: `. L-S11-3 and `docs/attributions/wilson-ig-v1.md` give library users the call with
+`resources.packaged_path(wilson_ig.RECORDS_PATH)`. The refusal's stale "source checkout only" text stays, because it
+is v1's bytes.
+
+**Rejected alternative.** *Make `load_records(None)` read package data (`pr_c1`'s pattern).* That edits v1, which moves
+both providers' `implementation_sha256`, amends S11.A75's byte pin, and detaches S10's validation verdict from the
+shipped bytes, all for a library convenience that one argument already provides.
