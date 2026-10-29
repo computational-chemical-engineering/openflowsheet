@@ -107,6 +107,32 @@ PROTECTED = tuple(
 ASSERTIONS = tuple(f"A{index:02d}" for index in range(1, 49))
 #: Recorded, never run here (§9.6: G10 runs at the release-candidate cut).
 RC_ITEMS = ("A48",)
+
+
+def a48_release_check() -> tuple[str, dict[str, Any]]:
+    """§9.6 A48 at a release candidate: every primary range of every shipped cost set is
+    `verified: true`. It fails while any is not — the tripwire of the E01 review's S4 (the MR-12 /
+    S07 Ruling M pattern): the normal suite pins the count and the `fail`, and the release
+    specification, once §9.7 QA1 has checked the ranges, flips them and the count."""
+    from importlib.resources import files  # noqa: PLC0415
+
+    from openflowsheet.assessment.cost import sets  # noqa: PLC0415
+
+    root = files("openflowsheet").joinpath("_data", "assessment", "cost")
+    by_set: dict[str, list[str]] = {}
+    for path in sorted(root.iterdir(), key=lambda item: item.name):
+        if not path.name.endswith(".json"):
+            continue
+        document = json.loads(path.read_text(encoding="utf-8"))
+        if document.get("schema") != sets.SCHEMA:
+            continue
+        unverified = sets.unverified_primary_ranges(document)
+        if unverified:
+            by_set[str(document["set_id"])] = list(unverified)
+    count = sum(len(pointers) for pointers in by_set.values())
+    return ("fail" if count else "pass"), {"unverified_primary_ranges": count, "by_set": by_set}
+
+
 GATES: dict[str, tuple[str, tuple[str, ...], tuple[str, ...]]] = {
     "G1": ("identity: E01.A1, A2", ("A01", "A02"), ()),
     "G2": ("core: E01.A4–A8", tuple(f"A{i:02d}" for i in range(4, 9)), ()),

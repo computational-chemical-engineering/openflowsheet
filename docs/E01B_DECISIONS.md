@@ -547,3 +547,7 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   admissibility rows; the existing rows and values are untouched. Test: a TH-C1 contributor at zero slack.
 - FACT (S3, R-871; no code): the over-restriction is recorded as a dated limitation under design §4.10.3 and as a
   manifest limitation (generator text); R-871 is in the register since the review commit.
+- FACT (S4): `scripts/e01_evidence_manifest.py::a48_release_check()` (over every shipped `cost-set-v1` file, via
+  `sets.unverified_primary_ranges`) returns `fail` with 8 unverified primary ranges (all in `sslw-idaes-v1`);
+  `tests/test_e01_a48_tripwire.py` pins 8 and `fail` (normal suite passes, a release cannot) and checks the measure
+  passes once every range is flipped. The manifest's A48 stays `not run (RC item)`.

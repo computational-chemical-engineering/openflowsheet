@@ -43,6 +43,7 @@ __all__ = [
     "load_set",
     "parse_set",
     "resolve",
+    "unverified_primary_ranges",
 ]
 
 SCHEMA: Final = "cost-set-v1"
@@ -477,6 +478,30 @@ def entry_for(cost_set: CostSet, family: str, orientation: str | None = None) ->
 
 
 _SETS: dict[str, CostSet] = {}
+
+
+def unverified_primary_ranges(document: Mapping[str, Any]) -> tuple[str, ...]:
+    """The JSON pointers of every range in a set document whose source is `primary` with
+    `verified: false` (§9.6 A48: a release candidate ships none; §9.7 QA1 verifies them)."""
+    found: list[str] = []
+
+    def walk(node: Any, pointer: str) -> None:
+        if isinstance(node, Mapping):
+            source = node.get("source")
+            if (
+                isinstance(source, Mapping)
+                and source.get("kind") == "primary"
+                and source.get("verified") is False
+            ):
+                found.append(pointer)
+            for key, value in node.items():
+                walk(value, f"{pointer}/{key}")
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                walk(value, f"{pointer}/{index}")
+
+    walk(document, "")
+    return tuple(found)
 
 
 def load_set(set_id: str) -> CostSet:
