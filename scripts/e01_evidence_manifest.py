@@ -1,9 +1,11 @@
-"""Generate `evidence/S12/<commit>/manifest.json` (package E01) by running, not by transcribing.
+"""Generate `evidence/S12b/<commit>/manifest.json` (E01 with E01b) by running, not transcribing.
 
-E01 (WO-I1). The manifest is filed as package `S12`, E01's alias: the frozen manifest schema admits
-only `^[PKTMSR][0-9]{2}[a-z]?$` (orchestrator ruling on ESC-I2, 2026-10-29; R-565's precedent,
+E01 (WO-I1), extended for E01b (design note §10, Amendment 1 §10.10). The manifest is filed as
+package `S12b`, E01b's alias (E01's was `S12`): the frozen manifest schema admits only
+`^[PKTMSR][0-9]{2}[a-z]?$` (orchestrator ruling on ESC-I2, 2026-10-29; R-565's precedent,
 L01 → S04). The check list is the design note `docs/derivations/E01-design.md`: §6.1's E01.A1–A42
-with §9.6's A43–A48, §6.2's gates G1–G9 with §9.6's additions and G10. Everything recorded is
+with §9.6's A43–A48 and §10.5's A49–A51 (A49 and A51 as §10.10.6 restates them), §6.2's gates
+G1–G9 with §9.6's and §10.5's additions (G4 adds A49–A51) and G10. Everything recorded is
 produced here, at the checked-out commit (the script refuses to run when `HEAD` is not `--commit`
 or when a tracked source, test, script, schema or derivation file differs from it; S01's rule):
 
@@ -16,7 +18,7 @@ or when a tracked source, test, script, schema or derivation file differs from i
    inventory re-takes included), for A33–A36 and M03's own NLP tests. A node's outcome is the
    worse over the runs that ran it (`failed`/`error` in any fails it; `passed` in any passes it).
    An E01 test cites the assertions its name starts with (`test_a30_a31_…`, `test_a4_…`); tests
-   named otherwise cite through `CITATIONS`. `S12.Axx` passes only if at least one node cites it
+   named otherwise cite through `CITATIONS`. `S12b.Axx` passes only if at least one node cites it
    and every node citing it passed.
 2. **G1**: A1, `git diff` over §4.14's protected paths against the S11 head `wp/E01` merged
    (`S11_HEAD`); A2, `scripts/s11_identity.py` against its `main` baseline
@@ -30,12 +32,12 @@ or when a tracked source, test, script, schema or derivation file differs from i
 5. **`ruff check`, `ruff format --check`** on the Python files E01 adds or changes, and **`mypy`**.
 
 The gate rows aggregate their assertions and the checks named in `GATES`. G8 — `scripts/gate.sh`
-and CI on x86-64 and aarch64 — is not run here (it runs once before merge): `S12.G8`, `S12.gate`
-and `S12.ci` are `unsupported`. G10 (A48, release-candidate data) runs at the release-candidate
-cut (§9.6): `S12.A48` and `S12.G10` are `unsupported`, recorded `not run (RC item)`, which is not a
-pass. `status` is computed, never written: `tested` iff every other assertion and every required
-check passes; otherwise `implemented`. Both review fields stay `pending`; `reviewed` is the design
-lane's.
+and CI on x86-64 and aarch64 — is not run here (it runs once before merge): `S12b.G8`,
+`S12b.gate` and `S12b.ci` are `unsupported`. G10 (A48, release-candidate data) runs at the
+release-candidate cut (§9.6): `S12b.A48` and `S12b.G10` are `unsupported`, recorded `not run (RC
+item)`, which is not a pass. `status` is computed, never written: `tested` iff every other
+assertion and every required check passes; otherwise `implemented`. Both review fields stay
+`pending`; `reviewed` is the design lane's.
 
 Usage:
     TMPDIR=<disk dir> PYTHONPATH=src .venv/bin/python scripts/e01_evidence_manifest.py \\
@@ -81,8 +83,9 @@ from s01_evidence_manifest import (  # noqa: E402  (S01's generic helpers, uncha
 from s02_evidence_manifest import _verdict  # noqa: E402
 from s11_evidence_manifest import merged, skips, wall_times  # noqa: E402
 
-#: E01's manifest id (ESC-I2 ruling; R-565). E01 is its name in the docs.
-PACKAGE = "S12"
+#: E01b's manifest id (design note §10; E01's was S12, ESC-I2 ruling; R-565). E01 is its name in
+#: the docs.
+PACKAGE = "S12b"
 ALIAS = "E01"
 NOTE = ROOT / "docs" / "derivations" / "E01-design.md"
 ADR = ROOT / "docs" / "adr" / "0052-e01-assessment-functionals.md"
@@ -104,7 +107,10 @@ PROTECTED = tuple(
         "studies/estimation.py",
     )
 )
-ASSERTIONS = tuple(f"A{index:02d}" for index in range(1, 49))
+ASSERTIONS = tuple(f"A{index:02d}" for index in range(1, 52))
+#: Assertions a later section replaces (§10.10.6): their text is the note's last bullet, not its
+#: first.
+RESTATED = ("A49", "A51")
 #: Recorded, never run here (§9.6: G10 runs at the release-candidate cut).
 RC_ITEMS = ("A48",)
 
@@ -142,14 +148,14 @@ GATES: dict[str, tuple[str, tuple[str, ...], tuple[str, ...]]] = {
         (),
     ),
     "G4": (
-        "cost: E01.A14–A23, A44, A45",
-        (*(f"A{i:02d}" for i in range(14, 24)), "A44", "A45"),
-        ("S12.cost-hand",),
+        "cost: E01.A14–A23, A44, A45, A49–A51",
+        (*(f"A{i:02d}" for i in range(14, 24)), "A44", "A45", "A49", "A50", "A51"),
+        (f"{PACKAGE}.cost-hand",),
     ),
     "G5": (
         "LCA: E01.A24–A29 (A24, A25 in the lca environment)",
         tuple(f"A{i:02d}" for i in range(24, 30)),
-        ("S12.lca-data",),
+        (f"{PACKAGE}.lca-data",),
     ),
     "G6": (
         "studies: E01.A30–A37 (A33–A36 in the nlp environment), §4.13's timings recorded",
@@ -159,9 +165,13 @@ GATES: dict[str, tuple[str, tuple[str, ...], tuple[str, ...]]] = {
     "G7": (
         "schemas and rights: E01.A38–A43",
         tuple(f"A{i:02d}" for i in range(38, 44)),
-        ("S12.t08", "S12.d04", "S12.policy", "S12.m03-fixtures"),
+        (f"{PACKAGE}.t08", f"{PACKAGE}.d04", f"{PACKAGE}.policy", f"{PACKAGE}.m03-fixtures"),
     ),
-    "G9": ("M03 inert: E01.A3, A35", ("A03", "A35"), ("S12.m03-fixtures-nlp", "S12.nlp-check")),
+    "G9": (
+        "M03 inert: E01.A3, A35",
+        ("A03", "A35"),
+        (f"{PACKAGE}.m03-fixtures-nlp", f"{PACKAGE}.nlp-check"),
+    ),
 }
 TIMED = {"G6": tuple(f"A{i:02d}" for i in range(30, 38))}
 #: Nodes that cite assertions other than through their names: E01 tests named otherwise (cited by
@@ -241,38 +251,43 @@ POLICY_SHA256 = "6b449911f4e692051b08372fefaf0e205e9b2d746362e4fba2c4a9f6e19d707
 #: Each generator's `--check`: the script, its arguments, the line it must end with, and the
 #: environment it runs in ("default" or "nlp").
 GENERATOR_LINES: dict[str, tuple[str, tuple[str, ...], re.Pattern[str], str]] = {
-    "S12.t08": (
+    f"{PACKAGE}.t08": (
         "scripts/t08_support_matrix.py",
         ("--check",),
         re.compile(r"^0 problem\(s\)$"),
         "default",
     ),
-    "S12.d04": ("scripts/e01_d04_inventory.py", ("--check",), re.compile(r"^A42 PASS$"), "default"),
-    "S12.lca-data": (
+    f"{PACKAGE}.d04": (
+        "scripts/e01_d04_inventory.py",
+        ("--check",),
+        re.compile(r"^A42 PASS$"),
+        "default",
+    ),
+    f"{PACKAGE}.lca-data": (
         "scripts/e01_lca_data.py",
         ("--check",),
         re.compile(r"^e01_lca_data: current$"),
         "default",
     ),
-    "S12.policy": (
+    f"{PACKAGE}.policy": (
         "scripts/t08_numerical_policy.py",
         ("--check",),
         re.compile(rf"equals the regenerated bytes \(sha256 {POLICY_SHA256}\)$"),
         "default",
     ),
-    "S12.cost-hand": (
+    f"{PACKAGE}.cost-hand": (
         "benchmarks/e01/cost_hand/cost_hand.py",
         ("--check",),
         re.compile(r"^cost_hand\.yaml current$"),
         "default",
     ),
-    "S12.m03-fixtures": (
+    f"{PACKAGE}.m03-fixtures": (
         "scripts/m03_schema_fixtures.py",
         (),
         re.compile(r"^all M03 fixtures match what the code emits$"),
         "default",
     ),
-    "S12.m03-fixtures-nlp": (
+    f"{PACKAGE}.m03-fixtures-nlp": (
         "scripts/m03_schema_fixtures.py",
         ("--nlp",),
         re.compile(r"^all M03 fixtures match what the code emits$"),
@@ -281,14 +296,14 @@ GENERATOR_LINES: dict[str, tuple[str, tuple[str, ...], re.Pattern[str], str]] = 
 }
 #: The non-assertion checks `status` also requires.
 REQUIRED_CHECKS = (
-    "S12.suite",
-    "S12.suites",
-    "S12.nlp-check",
-    *(f"S12.{gate}" for gate in GATES),
+    f"{PACKAGE}.suite",
+    f"{PACKAGE}.suites",
+    f"{PACKAGE}.nlp-check",
+    *(f"{PACKAGE}.{gate}" for gate in GATES),
     *GENERATOR_LINES,
-    "S12.ruff",
-    "S12.format",
-    "S12.mypy",
+    f"{PACKAGE}.ruff",
+    f"{PACKAGE}.format",
+    f"{PACKAGE}.mypy",
 )
 
 
@@ -396,7 +411,8 @@ def _git(*arguments: str) -> str:
 
 
 def assertion_texts() -> dict[str, str]:
-    """Each id's bullet (`- **Axx…**` and its continuation lines), first occurrence."""
+    """Each id's bullet (`- **Axx…**` and its continuation lines): the first occurrence, or the
+    last for the ids in `RESTATED`."""
     found: dict[str, str] = {}
     lines = NOTE.read_text(encoding="utf-8").splitlines()
     for index, line in enumerate(lines):
@@ -404,7 +420,7 @@ def assertion_texts() -> dict[str, str]:
         if not match:
             continue
         identifier = f"A{int(match.group(1)):02d}"
-        if identifier in found:
+        if identifier in found and identifier not in RESTATED:
             continue
         body = [line[2:].strip()]
         for following in lines[index + 1 :]:
@@ -466,7 +482,7 @@ def suites_check(chosen: Sequence[Node]) -> dict[str, Any]:
     value = {**value, "not_passed": failed, "skipped": skips(chosen), "cited_skips": cited_skips}
     passed = bool(chosen) and not failed and not cited_skips
     return check(
-        "S12.suites",
+        f"{PACKAGE}.suites",
         "the other test files run here (§8.3's amended tests, A43's M04/M02/ADR 0025 tests, the "
         "T08 inventory, W4 package-data and S05 envelope tests, the identity tests, and the "
         "`nlp`-marked tests of M03 and M05): no node failed or errored in any run, and no skipped "
@@ -552,7 +568,7 @@ def m03_dump(environments: Environments, artifacts: Path) -> tuple[dict[str, Any
 def status(entries: Sequence[Mapping[str, Any]]) -> str:
     """`tested` iff every assertion but the RC items and every required check passes."""
     required = {
-        f"S12.{identifier}" for identifier in ASSERTIONS if identifier not in RC_ITEMS
+        f"{PACKAGE}.{identifier}" for identifier in ASSERTIONS if identifier not in RC_ITEMS
     } | set(REQUIRED_CHECKS)
     results = {entry["id"]: entry["result"] for entry in entries}
     missing = required - set(results)
@@ -578,14 +594,17 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], a33: Mapping[str, An
         "start does not hold at M03's starts 0 and 1, which violate recovery_A ≥ 0.",
         "A1 is judged against the S11 head wp/E01 merged (8d2ee175): S11 is not on main yet, so "
         "the literal `git diff --stat main...wp/E01` over the protected paths shows S11's own "
-        "changes (recorded in S12.A01: equal to S11's main...8d2ee175 set). The literal form "
-        "applies once S11 merges.",
+        f"changes (recorded in {PACKAGE}.A01: equal to S11's main...8d2ee175 set). The literal "
+        "form applies once S11 merges.",
         "G8 (scripts/gate.sh, CI on x86-64 and aarch64) was not run by this generator: it runs "
-        "once before merge into main. S12.G8, S12.gate and S12.ci are unsupported.",
+        f"once before merge into main. {PACKAGE}.G8, {PACKAGE}.gate and {PACKAGE}.ci are "
+        "unsupported.",
         "G10, release-candidate data (§9.6 A48: every primary range in shipped sets is "
-        "verified: true) is not run (RC item): S12.A48 and S12.G10 are unsupported, which is not "
-        "a pass. The shipped SSLW primary ranges carry verified: false until a person with Seider "
-        "3rd ed. ch. 22 checks them (§9.7 QA1); the release candidate is blocked until then.",
+        f"verified: true) is not run (RC item): {PACKAGE}.A48 and {PACKAGE}.G10 are unsupported, "
+        "which is not a pass. After Amendment 1 to ruling B five SSLW primary ranges carry "
+        "verified: false (the three compressors, the turbine and vessel fit '2'; design note "
+        "§10.10.8); C7 (docs/briefs/QA1b.patch, not applied) sets them on Frank's approval "
+        "(Q-B7), and the release candidate is blocked until then.",
         "Review: the design lane's reviewer pass (docs/reviews/E01-review.md, at de63b9a2) found "
         "two must-fix items (M1 derived-ratio denominators, R-868; M2 the default build, R-869), "
         "four should-fix items (S1 objective scaling, S2 sensitivity regime boundaries, S3 "
@@ -594,6 +613,15 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], a33: Mapping[str, An
         "confirmation (2026-10-29). The review fields stay pending until the design lane accepts "
         "the fixes, and the human numerical and process-model review is pending. This manifest "
         "claims neither.",
+        "E01b (design note §10 with Amendment 1, §10.10; R-890…R-899) changes numerics: the pump "
+        "and motor entries at CE 500 (× 0.788 on every pump and motor cost), the fixed-head "
+        "alpha2 and tower-platform amendments, the vessel weight ranges (the P2 drum and P3 M1's "
+        "column shell now floor), the compressor on consumed power and the turbine range. Its "
+        "reviewer pass is pending, and C7 (the five verified flags, docs/briefs/QA1b.patch) is not "
+        "applied. The open questions of §10.10.9 (Q-B2, Q-B3, Q-B8, Q-B9, Q-B11, Q-B12) are "
+        "worked on their defaults. A49 compares the set with the Seider 3rd ed. by page and "
+        "equation (benchmarks/e01/cost_hand/seider3.yaml): transcription verification, not "
+        "empirical validation of the correlations.",
         "Not applied from the review: the lower-priority domain entries for .per_fu, lcox and "
         "the allocation ratios (§4.7.5 erratum); N2 (layering, deferred by the review until "
         "numerics/ opens); N3 (the platform piece's provenance in the shipped set).",
@@ -617,24 +645,24 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], a33: Mapping[str, An
         "verified across a regime change, but over-restrictive (an impact objective is held to "
         "the capex size regimes; a floor row outside the closure shows as a V7 failure, not a "
         "binding row). Dependency-declared closures are the follow-up.",
-        "The wall times in S12.G6 are the JUnit times of the cited nodes in this run (each "
+        f"The wall times in {PACKAGE}.G6 are the JUnit times of the cited nodes in this run (each "
         "includes binding, solving and verification where the test does).",
         "The T08 support envelope's harvest of this manifest, if t08_support_matrix.py --check "
         "asks for one, follows its generation in a later commit.",
     ]
     for entry in entries:
-        if entry["id"] == "S12.suites" and entry["value"].get("skipped"):
+        if entry["id"] == f"{PACKAGE}.suites" and entry["value"].get("skipped"):
             listed = "; ".join(f"{n} × {key}" for key, n in entry["value"]["skipped"].items())
             items.append(
                 text(f"Skipped (not counted as passed; none cited by an E01 assertion): {listed}.")
             )
     for entry in entries:
         if entry["result"] == "pass" or entry["id"] in (
-            "S12.G8",
-            "S12.gate",
-            "S12.ci",
-            "S12.G10",
-            *(f"S12.{item}" for item in RC_ITEMS),
+            f"{PACKAGE}.G8",
+            f"{PACKAGE}.gate",
+            f"{PACKAGE}.ci",
+            f"{PACKAGE}.G10",
+            *(f"{PACKAGE}.{item}" for item in RC_ITEMS),
         ):
             continue
         value = entry.get("value")
@@ -711,7 +739,7 @@ def build(commit: str, environments: Environments) -> dict[str, Any]:
     dump_value: dict[str, Any] | None = None
     dump_runs: list[Run] = []
     if environments.nlp():
-        runs["S12.nlp-check"] = run(
+        runs[f"{PACKAGE}.nlp-check"] = run(
             environments,
             [
                 "bash",
@@ -738,10 +766,12 @@ def build(commit: str, environments: Environments) -> dict[str, Any]:
             )
         else:
             runs[name] = run(environments, [python, str(ROOT / script), *arguments])
-    runs["S12.ruff"] = run(environments, [str(tools / "ruff"), "check", *changed])
-    runs["S12.format"] = run(environments, [str(tools / "ruff"), "format", "--check", *changed])
-    runs["S12.mypy"] = run(environments, [str(tools / "mypy")])
-    runs["S12.G1"] = run(
+    runs[f"{PACKAGE}.ruff"] = run(environments, [str(tools / "ruff"), "check", *changed])
+    runs[f"{PACKAGE}.format"] = run(
+        environments, [str(tools / "ruff"), "format", "--check", *changed]
+    )
+    runs[f"{PACKAGE}.mypy"] = run(environments, [str(tools / "mypy")])
+    runs[f"{PACKAGE}.G1"] = run(
         environments,
         [
             python,
@@ -767,8 +797,10 @@ def build(commit: str, environments: Environments) -> dict[str, Any]:
         for name, value in values.items()
     }
 
-    g1_line = _last_line(runs["S12.G1"])
-    a2_result = "pass" if runs["S12.G1"].exit_code == 0 and G1_LINE.match(g1_line) else "fail"
+    g1_line = _last_line(runs[f"{PACKAGE}.G1"])
+    a2_result = (
+        "pass" if runs[f"{PACKAGE}.G1"].exit_code == 0 and G1_LINE.match(g1_line) else "fail"
+    )
     a1_result, a1_value = a1_check()
     special: dict[str, tuple[str, dict[str, Any]]] = {
         "A01": (a1_result, a1_value),
@@ -776,8 +808,8 @@ def build(commit: str, environments: Environments) -> dict[str, Any]:
             a2_result,
             {
                 "judged_by": "scripts/s11_identity.py against its main baseline 8c34ecb0",
-                "cmd": runs["S12.G1"].cmd,
-                "exit_code": runs["S12.G1"].exit_code,
+                "cmd": runs[f"{PACKAGE}.G1"].cmd,
+                "exit_code": runs[f"{PACKAGE}.G1"].exit_code,
                 "line": g1_line,
                 "expected": "S11-IDENTITY PASS n=‹N› changed=[]",
             },
@@ -787,7 +819,7 @@ def build(commit: str, environments: Environments) -> dict[str, Any]:
     if dump_value is None:
         special["A03"] = ("unsupported", {"judged_by": "not run: no NLP environment given"})
     else:
-        fixtures = runs.get("S12.m03-fixtures-nlp")
+        fixtures = runs.get(f"{PACKAGE}.m03-fixtures-nlp")
         fixtures_ok = fixtures is not None and fixtures.exit_code == 0
         tests_result, tests_value = _verdict(m03_tests)
         passed = dump_value["identical"] and fixtures_ok and tests_result == "pass"
@@ -815,29 +847,29 @@ def build(commit: str, environments: Environments) -> dict[str, Any]:
             result, value = _judged([item for item in found if identifier in cited(item.node)])
             if identifier == "A33":
                 value = {**value, "recorded_starts": a33}
-            for name, generator in (("A42", "S12.d04"), ("A43", "S12.policy")):
+            for name, generator in (("A42", f"{PACKAGE}.d04"), ("A43", f"{PACKAGE}.policy")):
                 if identifier == name:
                     script, _, pattern, _ = GENERATOR_LINES[generator]
                     line = _last_line(runs[generator])
                     ok = runs[generator].exit_code == 0 and bool(pattern.search(line))
                     value = {**value, "generator": {"script": script, "line": line, "ok": ok}}
                     result = result if ok else "fail"
-        entries.append(check(f"S12.{identifier}", texts[identifier], result, value))
+        entries.append(check(f"{PACKAGE}.{identifier}", texts[identifier], result, value))
 
     entries += [
         suite_check(
-            "S12.suite",
+            f"{PACKAGE}.suite",
             "every node of tests/test_e01_*.py passed (the worse over runs A, L and N), including "
             "those that cite no assertion",
             [item for item in found if item.node.startswith("tests/test_e01_")],
         ),
         suites_check([item for item in found if not item.node.startswith("tests/test_e01_")]),
     ]
-    if "S12.nlp-check" in runs:
-        nlp_entry = runs["S12.nlp-check"]
+    if f"{PACKAGE}.nlp-check" in runs:
+        nlp_entry = runs[f"{PACKAGE}.nlp-check"]
         entries.append(
             check(
-                "S12.nlp-check",
+                f"{PACKAGE}.nlp-check",
                 "scripts/m03_nlp_check.sh over every nlp-marked test file, with its two inventory "
                 "re-takes (NLP-1 and the Ipopt executable workloads)",
                 "pass" if nlp_entry.exit_code == 0 else "fail",
@@ -851,7 +883,12 @@ def build(commit: str, environments: Environments) -> dict[str, Any]:
         )
     else:
         entries.append(
-            check("S12.nlp-check", "scripts/m03_nlp_check.sh", "unsupported", "no NLP environment")
+            check(
+                f"{PACKAGE}.nlp-check",
+                "scripts/m03_nlp_check.sh",
+                "unsupported",
+                "no NLP environment",
+            )
         )
     for name, (script, arguments, pattern, where) in GENERATOR_LINES.items():
         described = " ".join((script, *arguments)) + (
@@ -873,7 +910,7 @@ def build(commit: str, environments: Environments) -> dict[str, Any]:
     results = {entry["id"]: entry["result"] for entry in entries}
 
     for gate, (description, members, extra) in GATES.items():
-        parts = {f"S12.{member}": results[f"S12.{member}"] for member in members}
+        parts = {f"{PACKAGE}.{member}": results[f"{PACKAGE}.{member}"] for member in members}
         parts.update({name: results[name] for name in extra})
         value = {"judged_by": "its assertions and checks", "parts": parts}
         if gate in TIMED:
@@ -884,12 +921,20 @@ def build(commit: str, environments: Environments) -> dict[str, Any]:
             }
         passed = all(result == "pass" for result in parts.values())
         entries.append(
-            check(f"S12.{gate}", f"§6.2 {gate}, {description}", "pass" if passed else "fail", value)
+            check(
+                f"{PACKAGE}.{gate}",
+                f"§6.2 {gate}, {description}",
+                "pass" if passed else "fail",
+                value,
+            )
         )
     for name, description in (
-        ("S12.ruff", "ruff check is clean on the Python files E01 adds or changes"),
-        ("S12.format", "ruff format --check is clean on the Python files E01 adds or changes"),
-        ("S12.mypy", "mypy (the project's configuration) is clean"),
+        (f"{PACKAGE}.ruff", "ruff check is clean on the Python files E01 adds or changes"),
+        (
+            f"{PACKAGE}.format",
+            "ruff format --check is clean on the Python files E01 adds or changes",
+        ),
+        (f"{PACKAGE}.mypy", "mypy (the project's configuration) is clean"),
     ):
         entries.append(
             check(
@@ -902,15 +947,19 @@ def build(commit: str, environments: Environments) -> dict[str, Any]:
         )
     for name, description, reason in (
         (
-            "S12.G8",
+            f"{PACKAGE}.G8",
             "§6.2 G8, release-level: full scripts/gate.sh PASS once before merge; CI green on "
             "x86-64 and aarch64",
             "not run by this generator; it runs once before merge (CLAUDE.md)",
         ),
-        ("S12.gate", "scripts/gate.sh passes before merge", "not run by this generator"),
-        ("S12.ci", "CI is green on x86-64 and aarch64 before merge", "not run by this generator"),
+        (f"{PACKAGE}.gate", "scripts/gate.sh passes before merge", "not run by this generator"),
         (
-            "S12.G10",
+            f"{PACKAGE}.ci",
+            "CI is green on x86-64 and aarch64 before merge",
+            "not run by this generator",
+        ),
+        (
+            f"{PACKAGE}.G10",
             "§9.6 G10, release-candidate data: E01.A48",
             "not run (RC item): it runs at the release-candidate cut; not a pass",
         ),
@@ -929,8 +978,9 @@ def build(commit: str, environments: Environments) -> dict[str, Any]:
         "requirements": [],
         "status": status(entries),
         "inputs": {
-            "case_id": "E01 (manifest id S12) acceptance: docs/derivations/E01-design.md §6.1 "
-            "(E01.A1–A42) and §9.6 (A43–A48), gates G1–G10, ESC-I1's and ESC-I2's rulings "
+            "case_id": f"E01 with E01b (manifest id {PACKAGE}) acceptance: "
+            "docs/derivations/E01-design.md §6.1 (E01.A1–A42), §9.6 (A43–A48) and §10.5/§10.10.6 "
+            "(A49–A51), gates G1–G10, ESC-I1's and ESC-I2's rulings and Amendment 1 to ruling B "
             "(docs/E01B_DECISIONS.md, 2026-10-29)",
             "case_hash": sha256_file(NOTE),
             "environment_lock_hash": sha256_file(LOCK),

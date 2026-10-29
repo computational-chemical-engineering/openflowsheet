@@ -751,3 +751,9 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   CAPEX was already regenerated in C4′). `idaes_crosscheck.yaml` re-run for the new `cases_sha256` only (values
   byte-identical). Set sha256 pinned `b70d6f22…933f` (t08, licences record with `checked_against`,
   `docs/E01A_DECISIONS.md`).
+- C6′ generator: `scripts/e01_evidence_manifest.py` files package `S12b` (schema pattern admits it): every
+  `S12.` check id now `{PACKAGE}.`; ASSERTIONS A01–A51; G4 adds A49–A51 (§10.5); A49/A51 take their text from the
+  note's *last* bullet (`RESTATED`, §10.10.6), the rest as before; A49–A51 cited by test name (`test_a49_*` in
+  `test_e01_b_seider3.py`, `test_a50_*`/`test_a51_*` in `test_e01_a_cost.py`); the G10 limitation states the five
+  unverified ranges and C7; one E01b limitation (numerics changed, reviewer pending, Q-B defaults, A49 is
+  transcription verification).
