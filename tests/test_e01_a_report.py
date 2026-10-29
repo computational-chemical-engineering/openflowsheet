@@ -14,6 +14,8 @@ from __future__ import annotations
 import copy
 import json
 import math
+import os
+import subprocess
 import sys
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
@@ -38,7 +40,12 @@ from openflowsheet.assessment.cost import uncertainty as aace  # noqa: E402
 from openflowsheet.assessment.cost.contributor import CostContributor  # noqa: E402
 from openflowsheet.assessment.cost.derived import DerivedContributor  # noqa: E402
 from openflowsheet.assessment.defaults import DEFAULTS  # noqa: E402
-from openflowsheet.assessment.program import AssessmentProgram, Refusal  # noqa: E402
+from openflowsheet.assessment.lca.section import LcaContributor  # noqa: E402
+from openflowsheet.assessment.program import (  # noqa: E402
+    CONTRIBUTOR_MODULES,
+    AssessmentProgram,
+    Refusal,
+)
 from openflowsheet.assessment.report import SCHEMA_REFERENCE, report_body  # noqa: E402
 from openflowsheet.assessment.spec import load_assessment  # noqa: E402
 from openflowsheet.assessment.views import view_of  # noqa: E402
@@ -109,7 +116,9 @@ P3_DOC: dict[str, Any] = {
     "utilities": _UTILITIES_520,
 }
 
-CONTRIBUTORS = (CostContributor(), DerivedContributor())
+#: P1 declares an `lca` section (its functional unit), so the `lca` contributor is chosen too: a
+#: section without its contributor is refused (R-869). It adds no output and no report change.
+CONTRIBUTORS = (CostContributor(), LcaContributor(), DerivedContributor())
 
 
 @contextmanager
@@ -198,6 +207,75 @@ def _same(a: Any, b: Any, where: str = "") -> None:
 
 
 # -- A38: schemas, fixtures and the registry -----------------------------------------------------
+
+
+# -- R-869: the default contributors, and a section without one (E01 review M2) ------------------
+
+#: Run in a fresh interpreter that imports `assessment.program` and `assessment.report` only: the
+#: default `build` must load the three contributors itself and plan P1 in full.
+_DEFAULT_BUILD = """
+import copy, json, sys
+sys.path.insert(0, sys.argv[1])
+from s11_thermal_support import committed_case, solve
+from openflowsheet.assessment.program import CONTRIBUTOR_MODULES, AssessmentProgram
+from openflowsheet.assessment.report import report_body
+from openflowsheet.assessment.spec import load_assessment
+from openflowsheet.assessment.views import view_of
+from openflowsheet.canonical import state_sha256
+preloaded = sorted(m for m in CONTRIBUTOR_MODULES.values() if m in sys.modules)
+document = copy.deepcopy(committed_case("TH-C1"))
+for spec in document["specifications"]:
+    if spec["id"] == "SPEC-P-P":
+        spec["value"] = 3.0e6
+binding, run = solve(document)
+state = dict(run.state)
+program = AssessmentProgram.build(
+    view_of(binding.flowsheet), binding.spec, load_assessment(json.loads(sys.stdin.read())), state
+)
+digest = state_sha256(state, binding.spec.variable_ids)
+report = report_body(program, state, state_sha256=digest, uncertainty=True)
+print(json.dumps({"preloaded": preloaded, "outputs": list(program.output_ids),
+                  "status": report["status"]}))
+"""
+
+
+def test_the_default_build_loads_its_contributors_in_a_fresh_interpreter() -> None:
+    tests = Path(__file__).resolve().parent
+    env = {**os.environ, "PYTHONPATH": os.pathsep.join([str(REPO / "src"), str(REPO)])}
+    result = subprocess.run(
+        [sys.executable, "-c", _DEFAULT_BUILD, str(tests)],
+        input=json.dumps(P1_DOC),
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr[-2000:]
+    fresh = json.loads(result.stdout.strip().splitlines()[-1])
+    assert fresh["preloaded"] == []
+    program, _, _ = _program("TH-C1", P1_DOC)
+    assert fresh["outputs"] == list(program.output_ids)
+    assert "derived.capex_per_opex" in fresh["outputs"] and "tac" in fresh["outputs"]
+    assert fresh["status"] == "COMPLETE"
+
+
+def test_a_section_without_its_contributor_is_refused(registered: None) -> None:
+    binding, host, state = _solved("TH-C1")
+    for chosen, missing in (
+        ((CostContributor(), DerivedContributor()), "lca"),
+        ((LcaContributor(),), "cost,derived"),
+        ((), "cost,lca,derived"),
+    ):
+        refused = AssessmentProgram.build(
+            view_of(binding.flowsheet),
+            host,
+            load_assessment(dict(P1_DOC)),
+            state,
+            contributors=chosen,
+        )
+        assert isinstance(refused, Refusal), chosen
+        assert (refused.code, refused.target) == ("ASSESSMENT_CONTRIBUTOR_MISSING", missing)
+    assert set(CONTRIBUTOR_MODULES) == {"cost", "lca", "derived"}
 
 
 def test_a38_registry_lists_both_schemas() -> None:

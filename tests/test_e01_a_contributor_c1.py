@@ -27,6 +27,7 @@ from test_e01_a_contributor import (
 
 from openflowsheet.assessment.cost.contributor import CostContributor
 from openflowsheet.assessment.cost.index import load_series
+from openflowsheet.assessment.lca.section import LcaContributor
 from openflowsheet.assessment.program import AssessmentProgram, Refusal
 from openflowsheet.assessment.regimes import Regime
 from openflowsheet.assessment.spec import load_assessment
@@ -86,7 +87,9 @@ def _program(
         load_assessment(dict(document)),
         state,
         regime,
-        contributors=[CostContributor()],
+        # C1 documents may declare an `lca` functional unit; its section needs its contributor
+        # (R-869), which adds no output for it.
+        contributors=[CostContributor(), LcaContributor()],
     )
     return program, state
 

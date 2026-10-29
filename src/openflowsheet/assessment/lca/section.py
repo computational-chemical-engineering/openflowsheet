@@ -19,6 +19,7 @@ from openflowsheet.assessment.program import (
     BuildContext,
     ContributionPlan,
     OutputDef,
+    declared_sections,
     register_contributor,
 )
 
@@ -46,12 +47,7 @@ class LcaContributor:
 
     def plan(self, ctx: BuildContext, state: Mapping[str, float]) -> ContributionPlan:
         document = ctx.spec.document
-        declares = "lca" in document or any(
-            entry.get("lca") or entry.get("emission")
-            for key in ("utilities", "materials")
-            for entry in document.get(key, ())
-        )
-        if not declares:
+        if "lca" not in declared_sections(document):
             return ContributionPlan()
         tables, refused = resolve_tables(document)
         inventory = plan_inventory(ctx, state, tables, refused)

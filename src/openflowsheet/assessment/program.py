@@ -17,6 +17,7 @@ builders as data (§4.2.2). The builders never branch on a symbol.
 from __future__ import annotations
 
 import dataclasses
+import importlib
 import math
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -46,6 +47,7 @@ from openflowsheet.compile.spec import (
 )
 
 __all__ = [
+    "CONTRIBUTOR_MODULES",
     "CONTRIBUTOR_ORDER",
     "THETA_PREFIX",
     "AssessmentProgram",
@@ -59,11 +61,21 @@ __all__ = [
     "Refusal",
     "Symbols",
     "Theta",
+    "declared_sections",
     "register_contributor",
 ]
 
 #: §4.2.2: contributors run in this order; `derived` may reference any earlier output.
 CONTRIBUTOR_ORDER: Final[tuple[str, ...]] = ("cost", "lca", "derived")
+#: The module that registers each contributor of `CONTRIBUTOR_ORDER` (§4.2.2 erratum, R-869):
+#: `AssessmentProgram.build`'s default imports them, so it can never be empty.
+CONTRIBUTOR_MODULES: Final[Mapping[str, str]] = MappingProxyType(
+    {
+        "cost": "openflowsheet.assessment.cost.contributor",
+        "lca": "openflowsheet.assessment.lca.section",
+        "derived": "openflowsheet.assessment.cost.derived",
+    }
+)
 #: §4.2.3: assessment parameters are `asm:<path>`; no host pinned input has this prefix.
 THETA_PREFIX: Final = "asm:"
 
@@ -166,7 +178,30 @@ def register_contributor(name: str, factory: Callable[[], Contributor]) -> None:
 
 
 def _registered() -> tuple[Contributor, ...]:
-    return tuple(_REGISTERED[name]() for name in CONTRIBUTOR_ORDER if name in _REGISTERED)
+    """The contributors of `CONTRIBUTOR_ORDER`, each module imported first (R-869)."""
+    for name in CONTRIBUTOR_ORDER:
+        importlib.import_module(CONTRIBUTOR_MODULES[name])
+    return tuple(_REGISTERED[name]() for name in CONTRIBUTOR_ORDER)
+
+
+def declared_sections(document: Mapping[str, Any]) -> tuple[str, ...]:
+    """The contributors the document has a section for, in `CONTRIBUTOR_ORDER` (R-869).
+
+    - `cost`: non-empty `items`, `capital` or `fixed_opex`;
+    - `lca`: an `lca` section, or a utility or material with `lca` or `emission` data;
+    - `derived`: a non-empty `derived` list.
+
+    Utilities and materials are shared data (a utility's price is required by the schema), so a
+    price alone declares no cost section.
+    """
+    shared = [entry for key in ("utilities", "materials") for entry in document.get(key, ())]
+    declared = {
+        "cost": any(document.get(key) for key in ("items", "capital", "fixed_opex")),
+        "lca": "lca" in document
+        or any(entry.get("lca") or entry.get("emission") for entry in shared),
+        "derived": bool(document.get("derived")),
+    }
+    return tuple(name for name in CONTRIBUTOR_ORDER if declared[name])
 
 
 # -- symbols and the per-pass memo (§4.2.2, §4.2.3) ----------------------------------------------
@@ -482,10 +517,19 @@ class AssessmentProgram:
 
         `regime=None` selects by the rule at `state`. A given regime is held: every one of its
         entries must be one the program has, and every admissibility row must be ≥ −τ_feas at
-        `state`, else `ASSESSMENT_REGIME_INADMISSIBLE`. `contributors` defaults to the registered
-        ones in `CONTRIBUTOR_ORDER`.
+        `state`, else `ASSESSMENT_REGIME_INADMISSIBLE`. `contributors` defaults to the three of
+        `CONTRIBUTOR_ORDER`; a document section whose contributor is not among them is refused
+        `ASSESSMENT_CONTRIBUTOR_MISSING(<section>)`, never silently ignored (R-869).
         """
         chosen = _registered() if contributors is None else tuple(contributors)
+        names = {contributor.name for contributor in chosen}
+        missing = [name for name in declared_sections(spec.document) if name not in names]
+        if missing:
+            return Refusal(
+                "ASSESSMENT_CONTRIBUTOR_MISSING",
+                ",".join(missing),
+                "the document has these sections and no contributor for them",
+            )
         held = regime if regime is not None else Regime()
         program = cls._plan(view, host_spec, spec, state, held, chosen)
         if regime is None:

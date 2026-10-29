@@ -514,3 +514,20 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
 - **For the reviewer:** ESC-I1/ESC-I2 rulings; the WO-I1 DECISION lines (repository path `assessment/`, MR-12
   pattern, P1–P4 configurations, A3/A1 bases); the default-build observation (`AssessmentProgram.build(
   contributors=None)` yields an empty program without a refusal).
+
+## E01 review fixes (2026-10-29; `docs/reviews/E01-review.md`)
+
+- FACT (M1, R-868, 7bc674b1): each ratio carries the `domain` entry `derived.<id>.denominator` (row `den/|den(x₀)| ≥ 0`;
+  kind `domain` added to `ENTRY_KINDS` and the report schema's enum). `AssessmentProgram.evaluate` raises
+  `METRIC_UNDEFINED(<output>)` when a domain row is ≤ 0; the report alone passes `domain_guard=False` and nulls the
+  ratio as before. Test (`test_e01_b_nlp.py`, `ncac ≤ 2·ncac(x₀)`, cc = S_TOY/480): start 0 cc > 1, unguarded ncac < 0,
+  V3/V5/V6 `not_evaluated`, V7 `fail`, status `NOT_VERIFIED`. `p1_th_c1` fixture re-taken: entry, signature, regime
+  sha256 and program label only, every value identical. Not done: `.per_fu`, `lcox`, allocation ratios (the review's
+  "lower priority").
+- DECISION (M2, R-869): "the document has a section" → `cost`: non-empty `items`, `capital` or `fixed_opex`; `lca`: the
+  `lca` key or a utility/material with `lca`/`emission` (the contributor's former test, now
+  `program.declared_sections`); `derived`: a non-empty list. A utility's `price` alone declares nothing (the schema
+  requires it, so an LCA-only document would always be refused). Tests choosing contributors now include `lca` where
+  the document declares a functional unit (adds no output; the three report fixtures are unchanged); A27's LCA-only
+  test drops the cost and derived sections. Alternative: count utility/material prices as a cost section.
+  Reversible by: `declared_sections` in the commit carrying this line.

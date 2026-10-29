@@ -233,6 +233,10 @@ def test_a27_one_kg_per_s_of_fossil_methane_is_29_8(registered: None) -> None:  
     }
     for entry in [*document["utilities"], *document["materials"]]:
         entry.pop("lca", None)
+    # The `lca` contributor alone: the cost and derived sections go too, since a section
+    # without its contributor is refused (R-869).
+    for key in ("items", "capital", "fixed_opex", "derived"):
+        document.pop(key, None)
     program = AssessmentProgram.build(
         view, host, load_assessment(document), state, contributors=[LcaContributor()]
     )
