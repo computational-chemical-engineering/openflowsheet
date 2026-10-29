@@ -50,8 +50,11 @@ STATED: dict[str, list[tuple[str, str]]] = {
         ("f'{efficiencies[573.15]:.4f}'", "0.2786"),
         ("f'{efficiencies[773.15]:.4f}'", "0.3020"),
         ("run.outcome", "INITIALIZATION_FAILED"),
-        ("'model_unsupported(thermal.pump)' if 'model_unsupported(thermal.pump)' in "
-         "check.message else check.message", "model_unsupported(thermal.pump)"),
+        (
+            "'model_unsupported(thermal.pump)' if 'model_unsupported(thermal.pump)' in "
+            "check.message else check.message",
+            "model_unsupported(thermal.pump)",
+        ),
     ],
 }
 
