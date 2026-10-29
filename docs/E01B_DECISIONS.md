@@ -473,3 +473,12 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   (dated note in the design note's header; the manifest's limitations say so), following R-565 (L01 → S04) because the
   frozen manifest schema admits only `^[PKTMSR][0-9]{2}[a-z]?$`; `evidence/` holds no S12. Alternative: a schema ADR
   widening the pattern. Reversible by: the commit carrying this line and the design-note note.
+- DECISION (orchestrator ruling on ESC-I1, A33): `tac(candidate) ≤ tac(start)` → judged over the **feasible** starts
+  only (feasible = the formulation's constraints within their stated tolerance at the start: box exactly, inequality
+  slack ≥ −τ_feas = 1e-8, V3's rule); the infeasible starts are recorded with their violations, not compared. The
+  strict xfail `test_a33_tac_at_the_candidate_exceeds_no_start` is removed; `test_a33_a34_…` asserts the restated
+  clause and records every start (JUnit properties `a33_start_<i>`, `a33_tac_candidate`); dated erratum under §6.1's
+  A33. Measured (nlp env): tac(candidate) 84481.63261772563; start 2 (feasible) 91092.79575671715 — compared, holds;
+  starts 0, 1 recovery_A:lower −0.015925571310171194, −0.05368521409840282 (tac 82439.78, 80977.14) — recorded.
+  Default env 3 passed; nlp env 1 passed. Alternative: keep the literal clause failing (A33 `fail`). Reversible by:
+  the commit carrying this line, the test and the erratum.

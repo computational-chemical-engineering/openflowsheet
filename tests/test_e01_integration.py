@@ -20,6 +20,7 @@ drum is sized (`units:1`), so `∂tac/∂x` has capital rows as well as the util
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from functools import cache
 from typing import Any
@@ -37,7 +38,7 @@ from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
 from openflowsheet.studies.nlp.closure import StartEvidence, classify_starts
 from openflowsheet.studies.nlp.formulation import FullSpaceNlp
-from openflowsheet.studies.nlp.verification import CHECKS
+from openflowsheet.studies.nlp.verification import CHECKS, TAU_FEAS
 
 #: P2's assessment: SSLW on SYN-001's heater and flash, the bare-module chain, 2023 USD. The
 #: F_BM values are test inputs (as P1's and P3's fixture documents).
@@ -154,45 +155,56 @@ def _twin_positions(p: AssessmentProgram, nlp: FullSpaceNlp) -> set[tuple[int, i
     return found
 
 
-def _start_tacs(p: AssessmentProgram) -> list[tuple[float, float]]:
-    """`tac` and the `recovery_A` value (M03's one inequality, `≥ 0`) at each M03 start."""
+def _start_tacs(p: AssessmentProgram) -> list[tuple[float, dict[str, float]]]:
+    """`tac` and the violated sides at each M03 start. A start is feasible (the ruling on ESC-I1,
+    `docs/E01B_DECISIONS.md`) when the formulation's constraints hold within their stated
+    tolerance there: each decision inside its box exactly and each inequality side's slack at
+    least `−τ_feas`, V3's rule (`verification._feasibility`). The map holds each violated side's
+    slack; it is empty at a feasible start."""
     f = bound(p, "tac")
-    (recovery,) = f.constraints
     found = []
     for record in m03_readiness().starts:
         assert record.state is not None
-        values = p.evaluate(record.state, f.decision_values(record.start))
+        decisions = f.decision_values(record.start)
+        values = p.evaluate(record.state, decisions)
         assert isinstance(values, Mapping)
-        found.append((values["tac"], recovery.expression.value(record.state)))
+        violated: dict[str, float] = {}
+        for decision in f.decisions:
+            value = decisions[decision.parameter_id]
+            for side, limit in (("lower", decision.lower), ("upper", decision.upper)):
+                if limit is None or not math.isfinite(limit):
+                    continue
+                slack = value - limit if side == "lower" else limit - value
+                if slack < 0.0:
+                    violated[f"{decision.parameter_id}:{side}"] = slack
+        for constraint in f.constraints:
+            value = constraint.expression.value(record.state)
+            for side, limit in (("lower", constraint.lower), ("upper", constraint.upper)):
+                if limit is None:
+                    continue
+                slack = value - limit if side == "lower" else limit - value
+                if slack < -TAU_FEAS:
+                    violated[f"{constraint.constraint_id}:{side}"] = slack
+        found.append((values["tac"], violated))
     return found
 
 
-def test_a33_m03_starts_0_and_1_are_infeasible_for_recovery() -> None:
+def test_a33_m03_starts_0_and_1_are_infeasible_for_recovery(
+    record_property: Any,
+) -> None:
     """The fact behind ESC-I1: two of M03's three starts violate `recovery_A ≥ 0`, and their `tac`
-    is below the constrained optimum's (84481.6); the feasible start's is above it."""
-    slacks = [slack for _, slack in _start_tacs(p2())]
-    assert [slack < 0.0 for slack in slacks] == [True, True, False]
+    is below the constrained optimum's (84481.6); the feasible start's is above it. A33 compares
+    the candidate with the feasible start only (the ruling); the infeasible ones are recorded."""
+    found = _start_tacs(p2())
+    assert [bool(violated) for _, violated in found] == [True, True, False]
+    for index, (tac, violated) in enumerate(found):
+        record_property(f"a33_start_{index}", {"tac": tac, "violated": violated})
 
 
 @pytest.mark.nlp
-@pytest.mark.xfail(
-    strict=True,
-    reason="ESC-I1 (docs/E01B_DECISIONS.md, WO-I1): A33's 'tac(candidate) <= tac(start)' over "
-    "every start fails at M03's infeasible starts 0 and 1; open for the design lane",
-)
-def test_a33_tac_at_the_candidate_exceeds_no_start() -> None:
-    from openflowsheet.studies.nlp.closure import optimize
-
-    p = p2()
-    report = optimize(bound(p, "tac"), flowsheet({})).as_document()
-    assert report["status"] == "KKT_POINT_VERIFIED"
-    v6 = next(check for check in report["candidate"]["checks"] if check["check"] == "V6")
-    at_x_sim = v6["assessment_values"]["tac"]
-    assert all(at_x_sim <= tac for tac, _ in _start_tacs(p))
-
-
-@pytest.mark.nlp
-def test_a33_a34_p2_tac_objective_from_every_start(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a33_a34_p2_tac_objective_from_every_start(
+    monkeypatch: pytest.MonkeyPatch, record_property: Any
+) -> None:
     from openflowsheet.studies.nlp import greybox
     from openflowsheet.studies.nlp.closure import optimize
 
@@ -241,11 +253,18 @@ def test_a33_a34_p2_tac_objective_from_every_start(monkeypatch: pytest.MonkeyPat
     lin = p.linearize(x_opt, d_opt, ("tac",), symbolic=tuple(d_opt))
     assert isinstance(lin, Linearization), lin
     assert abs(at_x_sim - lin.values["tac"]) <= 1e-6 * abs(at_x_sim)
-    # tac(candidate) ≤ tac(start) at every start feasible for M03's constraints (start 2); the
-    # literal clause over every start is `test_a33_tac_at_the_candidate_exceeds_no_start`.
-    feasible = [tac for tac, slack in _start_tacs(p) if slack >= 0.0]
+    # A33 as restated by the ruling on ESC-I1 (design §6.1's erratum): tac(candidate) ≤ tac(start)
+    # over the feasible starts (start 2); the infeasible starts 0 and 1 are recorded with their
+    # violations, not compared.
+    starts = _start_tacs(p)
+    feasible = [tac for tac, violated in starts if not violated]
     assert feasible
     assert all(at_x_sim <= tac for tac in feasible)
+    record_property("a33_tac_candidate", at_x_sim)
+    for index, (tac, violated) in enumerate(starts):
+        record_property(
+            f"a33_start_{index}", {"tac": tac, "violated": violated, "compared": not violated}
+        )
 
     # A34: one pattern through every evaluation of every start, the twin's structural one.
     assert patterns

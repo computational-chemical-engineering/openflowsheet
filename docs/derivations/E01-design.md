@@ -1195,6 +1195,11 @@ Studies:
   `evaluate_sensitivity`.
 - **A33** P2 with objective `1/|tac(x₀)| · assessment:tac`, from 2 starts. The candidate passes V1–V7. `tac` at `x_sim`
   agrees with the optimizer's output within 1e-6 relative, and `tac(candidate) ≤ tac(start)`.
+  *Erratum 2026-10-29 (orchestrator ruling on ESC-I1, `docs/E01B_DECISIONS.md`):* `tac(candidate) ≤ tac(start)` is
+  judged over the feasible starts only — a start is feasible when the formulation's constraints hold within their
+  stated tolerance there (box exactly, inequality slack ≥ −τ_feas, V3's rule). M03's starts 0 and 1 violate
+  `recovery_A ≥ 0` (−0.0159, −0.0537) and sit below the constrained optimum's `tac`; they are reported with their
+  violations, not compared.
 - **A34** The gray-box output Jacobian pattern never changes during A33's runs and equals the twin's structural
   pattern.
 - **A35** With `assessment=None`, `output_names() == []`, and the Pyomo model's component list equals that of `main`.
