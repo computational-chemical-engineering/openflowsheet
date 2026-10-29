@@ -760,3 +760,21 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
 - C6′ fix (found by the S12b generator's mypy at `da0eadd9`, status `implemented`, 70/76, fail `S12b.mypy`):
   `idaes_crosscheck.py` `motor()` builds its row as `pump()` does (`out.update`), so the dict type checks; YAML
   values byte-identical, only `script_sha256` moves. The `da0eadd9` manifest is discarded, not committed.
+
+## Handoff (2026-10-29, E01b build 3 complete) — resume from here
+
+- **Done on wp/E01b** (no push, no merge): `ed559607` A49 (`seider3.yaml`, `test_e01_b_seider3.py`; brief 3);
+  `11b9ab0b` C5′ (A15 worst rel 1.02e-14); `23a5d488` package tests (A44 at CE 500, A50, A51, tripwire 5);
+  `578e6929` P2 drum `floor` (isolated); `c0173953` fixtures + set sha256 `b70d6f22…933f` pinned; `da0eadd9`
+  generator → S12b; `1fd29546` crosscheck mypy fix; `0a6ef034` manifest `evidence/S12b/1fd29546…` (`tested`,
+  71/76, 0 fail; unsupported A48, G10, G8, gate, CI); `b4e161e5` T08 harvest.
+- **Gates run:** E01 suite + t08 inventory 222 passed, 1 skipped (acceptance §10.6.4 and §10.10.7 item 9: cmp 0,
+  `cost_hand.py --check` 0, grep 0 hits, `a48_release_check()` = (fail, 5)); `s11_identity.py` PASS n=54494
+  changed=[]; S12b manifest G6 (A33–A36, nlp env) pass. Not run: full `scripts/gate.sh`, CI.
+- **C7** is `docs/briefs/QA1b.patch` (untracked; `git apply --check` clean on `b4e161e5`): the five flags of
+  §10.10.8, tripwire 0/`pass` + negative case (turbine flipped back), primary-flag assertion all True, p1_th_c1
+  fixture (the turbine's `verified`), sha256 `23d103d8…f6fb` re-pinned (t08, licences, E01A log), generator texts.
+  Tested in a scratch tree: E01 suite 222 passed; `a48_release_check()` = (pass, 0). Apply only on Frank's approval.
+- **Next (orchestrator):** the `reviewer` pass (numerics changed); the batched design-lane items: the C4′/build-3
+  DECISION on A44 (orchestrator-ruled), the A49 FACT lines (set basis in the universe, implied constants as
+  `same`), `P1_OPEX_TOTAL` as a chain input; then gate, CI, merge.
