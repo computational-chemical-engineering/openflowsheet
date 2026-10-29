@@ -25,12 +25,19 @@ extra):
 
 Without CoolProp 8.0.0, `--check` prints `SKIP: ...` with the reason and exits 0 (units design
 §7 Q25); `--emit` exits 2.
+
+**The check (R-843).** On x86-64, the architecture that wrote the file, `--check` compares byte for
+byte. Elsewhere it compares the parsed documents leaf by leaf (`classed_problems`): the structure,
+key order, strings, integers and nulls exactly, and every other float within
+1e-10·max(|x|, s_f), with the floor s_f set by the leaf's key (`floor_class`). On every
+architecture it prints the worst |Δ|/bound per class.
 """
 
 from __future__ import annotations
 
 import argparse
 import importlib
+import platform
 import sys
 from pathlib import Path
 from typing import Any
@@ -40,6 +47,19 @@ import yaml
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / "benchmarks" / "s11" / "thermal_reference.yaml"
 PINNED_VERSION = "8.0.0"
+
+#: R-843: off x86-64, a float leaf passes when |Δ| <= B_REL·max(|x|, s_f).
+B_REL = 1e-10
+#: R-843's watch: a classed worst above this fraction of its bound (1e-11 relative) goes to the
+#: design lane with the printed line; the bound is never widened here.
+WATCH_FRACTION = 0.1
+#: The molar gas constant, J/(mol K) (CODATA 2018, exact): the floors' energy and entropy scale.
+R_GAS = 8.314462618
+#: R-843's floor classes, in print order.
+CLASSES = ("energy", "entropy", "unit", "relative")
+#: Keys of class `relative` (s_f = 0): temperatures and pressures (any key beginning `T` or `P`),
+#: and these flows and inputs.
+_RELATIVE_KEYS = frozenset({"n", "L", "V", "valve_P", "split_fraction"})
 
 _HEADER = """\
 # CoolProp 8.0.0 references for S11 track C (pure-fluid kernel, thermal.* units).
@@ -127,7 +147,11 @@ def _coolprop() -> Any:
         raise UnavailableError(f"CoolProp is not importable ({error})") from error
     if module.__version__ != PINNED_VERSION:
         raise UnavailableError(f"CoolProp {module.__version__} is not the pinned {PINNED_VERSION}")
-    return importlib.import_module("CoolProp.CoolProp")
+    cp = importlib.import_module("CoolProp.CoolProp")
+    # R-843 (as R-723 for S10): stated, not left to CoolProp's default. The committed file was
+    # written with superancillaries on; with them off the A55 CO2 PS flash refuses its PQ call.
+    cp.set_config_bool(cp.ENABLE_SUPERANCILLARIES, True)
+    return cp
 
 
 def _sanity(what: str, value: float, expected: float, bound: float) -> None:
@@ -465,11 +489,122 @@ def render(document: dict[str, Any]) -> str:
     return text
 
 
+def floor_class(key: str, where: str) -> str:
+    """R-843's class of a float leaf, by its key: `energy` (s_f = R·T_c, times the case's n for a
+    rate), `entropy` (s_f = R), `unit` (s_f = 1) or `relative` (s_f = 0).
+
+    A grid point's `nominal.Q` is the nominal quality, a generator input, so it takes beta's
+    class `unit`, not the heat-duty class its initial would give; `split_fraction` is a
+    dimensionless input of class `relative`, not an entropy. A key outside the map is an error.
+    """
+    if key == "Q" and where.endswith(".nominal.Q"):
+        return "unit"
+    if key in _RELATIVE_KEYS or key[:1] in ("T", "P"):
+        return "relative"
+    if key in ("beta", "efficiency", "COP"):
+        return "unit"
+    if key[:1] in ("h", "Q", "W"):
+        return "energy"
+    if key[:1] == "s":
+        return "entropy"
+    raise ValueError(f"{where}: no R-843 floor class for a float under {key!r}")
+
+
+def _is_rate(key: str) -> bool:
+    """A heat duty or work rate (W) of a unit or flowsheet case, as opposed to a molar h (J/mol)."""
+    return key[:1] in ("Q", "W") or key == "heater_duty"
+
+
+def classed_problems(
+    committed: Any, computed: Any
+) -> tuple[list[str], dict[str, tuple[float, str]]]:
+    """R-843's comparison: (problems, the worst |Δ|/bound per class with its leaf path).
+
+    Exact: keys and their order, list lengths, strings, integers, booleans and nulls (a `null`
+    that becomes a number, or the reverse, is a problem). Every other float: |Δ| <= B_REL·max(|x|,
+    s_f) with x the committed value and s_f the floor of `floor_class`: R·T_c of the case's fluid
+    for `energy` (times the case's n for a rate), R for `entropy`, 1 for `unit`, 0 for
+    `relative`. T_c is the committed document's; a case is a fluid's `saturation`/`grid` list, or a
+    `units`/`flowsheets` entry (its `fluid`, and its `n` or, for TH-R1, its feed's).
+    """
+    problems: list[str] = []
+    worst: dict[str, tuple[float, str]] = {c: (0.0, "-") for c in CLASSES}
+    t_c = {c: f["T_c"] for c, f in committed.get("fluids", {}).items()}
+
+    def case_of(path: tuple[str, ...]) -> tuple[str | None, float | None]:
+        if len(path) >= 2 and path[0] in ("saturation", "grid"):
+            return path[1], None
+        if len(path) >= 2 and path[0] in ("units", "flowsheets"):
+            case = committed[path[0]][path[1]]
+            n = case.get("n")
+            if n is None:
+                n = case.get("inputs", {}).get("feed", {}).get("n")
+            return case.get("fluid"), n
+        return None, None
+
+    def floor(key: str, where: str, path: tuple[str, ...]) -> tuple[str, float]:
+        kind = floor_class(key, where)
+        if kind == "unit":
+            return kind, 1.0
+        if kind == "relative":
+            return kind, 0.0
+        fluid, n = case_of(path)
+        if kind == "entropy":
+            return kind, R_GAS
+        if fluid not in t_c:
+            raise ValueError(f"{where}: an energy leaf outside a case with a known fluid")
+        scale = R_GAS * t_c[fluid]
+        if _is_rate(key):
+            if n is None:
+                raise ValueError(f"{where}: a rate outside a case with a molar flow n")
+            scale *= n
+        return kind, scale
+
+    def walk(a: Any, b: Any, where: str, path: tuple[str, ...], key: str) -> None:
+        if isinstance(a, dict) and isinstance(b, dict):
+            if list(a) != list(b):
+                problems.append(f"{where}: keys {list(a)} != {list(b)}")
+                return
+            for k in a:
+                walk(a[k], b[k], f"{where}.{k}", (*path, str(k)), str(k))
+        elif isinstance(a, list) and isinstance(b, list):
+            if len(a) != len(b):
+                problems.append(f"{where}: length {len(a)} != {len(b)}")
+                return
+            for i, (x, y) in enumerate(zip(a, b, strict=True)):
+                walk(x, y, f"{where}[{i}]", path, key)
+        elif type(a) is float and type(b) is float:
+            kind, s_f = floor(key, where, path)
+            bound = B_REL * max(abs(a), s_f)
+            delta = abs(a - b)
+            ratio = delta / bound if bound > 0.0 else (0.0 if delta == 0.0 else float("inf"))
+            if ratio > worst[kind][0] or worst[kind][1] == "-":
+                worst[kind] = (ratio, where)
+            if not delta <= bound:
+                problems.append(f"{where}: |delta| = {delta:.3e} > {bound:.3e} ({kind})")
+        elif type(a) is not type(b) or a != b:
+            problems.append(f"{where}: {a!r} != {b!r}")
+
+    walk(committed, computed, "$", (), "")
+    return problems, worst
+
+
+def _report(worst: dict[str, tuple[float, str]]) -> None:
+    for kind in CLASSES:
+        ratio, where = worst[kind]
+        watch = "  WATCH (R-843: escalate)" if ratio > WATCH_FRACTION else ""
+        print(f"  class {kind}: worst |delta|/bound {ratio:.3e} at {where}{watch}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--emit", action="store_true", help="write the YAML")
-    mode.add_argument("--check", action="store_true", help="regenerate and compare byte for byte")
+    mode.add_argument(
+        "--check",
+        action="store_true",
+        help="regenerate and compare (byte for byte on x86-64, classed elsewhere; R-843)",
+    )
     args = parser.parse_args(argv)
     try:
         text = render(build())
@@ -484,12 +619,27 @@ def main(argv: list[str] | None = None) -> int:
         OUT.write_text(text, encoding="utf-8")
         print(f"wrote {OUT.relative_to(ROOT)}")
         return 0
-    committed = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
-    if committed != text:
-        print(f"FAIL: {OUT.relative_to(ROOT)} differs from the regenerated references")
+    if not OUT.exists():
+        print(f"FAIL: {OUT.relative_to(ROOT)} is absent")
         return 1
-    print(f"OK: {OUT.relative_to(ROOT)} matches CoolProp {PINNED_VERSION}")
-    return 0
+    committed = OUT.read_text(encoding="utf-8")
+    machine = platform.machine()
+    problems, worst = classed_problems(yaml.safe_load(committed), yaml.safe_load(text))
+    if machine == "x86_64":
+        ok = committed == text
+        how = "bitwise"
+    else:
+        ok = not problems
+        how = f"classed, |delta| <= {B_REL:g}·max(|x|, s_f)"
+    verdict = "matches" if ok else "differs from"
+    print(
+        f"{'OK' if ok else 'FAIL'}: {OUT.relative_to(ROOT)} {verdict} CoolProp {PINNED_VERSION} "
+        f"({how}, {machine}; R-843)"
+    )
+    _report(worst)
+    for problem in problems[:10]:
+        print(f"  {problem}")
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
