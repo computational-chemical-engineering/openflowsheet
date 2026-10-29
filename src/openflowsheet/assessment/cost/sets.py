@@ -8,7 +8,8 @@ that has:
   index values), or an option default that is not one of its choices;
 - an `amended` number (§10.4.1) without `ruling` or `citation`, with neither `replaces` nor
   `index_basis`, with `replaces == value`, with `scale` and `index_basis` not both present, or with
-  an unknown `scale`;
+  an unknown `scale`, or an `amended` entry `index_basis.value` carrying `index_basis` or `scale`
+  (§10.10.5.2: a basis has no basis of its own);
 - an `sslw-compressor-v1` entry when the set's `machine.drive` entry is missing or is not of form
   `sslw-motor-v1` (§10.4.4: the compressor is sized on the motor's consumed power), or a
   `consumed_power_hp` range with `max < 3·min`;
@@ -25,7 +26,8 @@ outside an option's `choices`, or a combination the source refuses (the pump's m
 its type) is `NO_CORRELATION(<item>)` with the reason (§9.2.3). Every option the item leaves out
 takes the IDAES default and is listed in `defaulted`. A form sees only effective values: an
 `amended` number printed at its own `index_basis` is converted to the entry's basis (§10.4.1), and
-`ResolvedEntry.amended` lists every amended number the resolved entry carries, for the report.
+`ResolvedEntry.amended` lists every amended number the resolved entry carries (an amended entry
+basis under `index_basis.value`, §10.10.5.2), for the report.
 A compressor's resolved entry carries the set's resolved `machine.drive` entry (§10.4.4).
 
 Shipped sets live in `openflowsheet/_data/assessment/cost/<set_id>.json`.
@@ -394,7 +396,12 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
             for name, theta in dict(entry.get("continuous", {})).items():
                 _check_number(theta.get("default"), f"{at}.continuous.{name}.default", reasons)
             if "index_basis" in entry:
-                _check_number(entry["index_basis"].get("value"), f"{at}.index_basis.value", reasons)
+                where = f"{at}.index_basis.value"
+                value = entry["index_basis"].get("value")
+                _check_number(value, where, reasons)
+                amended = value.get("amended") if isinstance(value, Mapping) else None
+                if isinstance(amended, Mapping) and {"index_basis", "scale"} & set(amended):
+                    reasons.append(f"{where}.amended: a basis carries no index_basis or scale")
             _check_ranges(entry.get("ranges", {}), f"{at}.ranges", reasons)
         entries.append(
             CostEntry(
@@ -546,6 +553,9 @@ def _resolve(
     refused = take("coefficients", dict(entry.get("coefficients", {})))
     if refused is not None:
         return refused
+    if index is not None:
+        # §10.10.5.2: an amended entry basis is listed with the amended numbers it scales.
+        _amendments(index["value"], "index_basis.value", basis, amended)
     for name, r in dict(entry.get("ranges", {})).items():
         ranges.setdefault(name, _range(name, r))
     continuous = {

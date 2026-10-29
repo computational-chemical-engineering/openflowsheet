@@ -627,3 +627,24 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   verified; pyomo 6.10.1, pint 0.26.2).
 - Open: the S12b evidence manifest needs `scripts/e01_evidence_manifest.py` extended (package id, A49–A51), a file
   outside §10.6.2's list — for the orchestrator to decide.
+
+## E01b, build 2 (2026-10-29; design note §10.10, Amendment 1 to ruling B; brief `docs/briefs/E01b-build2.md`)
+
+- C3′: `forms.py` and `contributor.py` taken unchanged from held `e37dacb1` (form VI on P_C with the N rule, form VII
+  parallel with a floor, the report's `amended` block). The set file edited by hand from `15307c6a` (text
+  replacements, number literals untouched elsewhere): §10.10.5.1's four amendments, §10.10.5.3's ranges, citations and
+  notes, the compressor key rename, the turbine range, §10.10.5.4's `checked_against`. `e37dacb1`'s JSON hunk not taken.
+- C3′ loader (§10.10.5.2): `_resolve` lists an amended entry basis under `index_basis.value`; the sixth refusal (an
+  amended `index_basis.value` carrying `index_basis` or `scale`). Acceptance: every entry resolves on its defaults;
+  pump and motor ratio 1.0 (basis 500.0) with `amended = [index_basis.value]`; `vessel.vertical`
+  `[coefficients.platforms[1].a]`; five unverified primary ranges (three compressors, turbine, vertical "2").
+- FACT (C3′): pump and motor items no longer carry `source.index_basis` ("CEPCI 394 → 500 by the source's ratio"):
+  the contributor writes it only when the entry ratio ≠ 1.0, and the ratio is now 500/500. Their `source.amended`
+  states IDAES's 394 instead (M8).
+- DECISION (re-logged from `e37dacb1`): an item's `source.amended` is written only when its resolved entry carries an
+  amended number (absent, not `{}`, otherwise), so items without amendments keep their provenance bytes. Alternative:
+  always present. Reversible by: the `if e.amended:` hunk in `contributor._cost_item`.
+- DECISION (re-logged from `e37dacb1`): form VI's non-positive or non-finite power keeps its refusal on the size
+  quantity (`CORRELATION_OUT_OF_RANGE(<U>.power)`), and `η_m ∉ (0, 1]` at any per-unit power evaluated is
+  `CORRELATION_OUT_OF_RANGE(<U>.eta)` (§10.4.4 "Domain"; η_m is the 3rd ed.'s Eq. 22.18, p. 562). Alternative: route
+  both to `.eta`. Reversible by: `_Compressor.domain`.

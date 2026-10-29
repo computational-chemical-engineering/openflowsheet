@@ -7,11 +7,13 @@ E01 design §4.5.1 as amended by §9.2.4 (register R-864). Two kinds:
   quotes (§4.5.4).
 - **SSLW forms**, one per IDAES-PSE 2.13.0 `SSLWCostingData` method a day-one family uses
   (`sslw-exchanger-v1` … `sslw-turbine-v1`). Each mirrors the IDAES function it transcribes, line
-  for line, products left to right in the order IDAES writes them; the seven deliberate departures
-  are §9.2.2's (ranges, the exact tray-count `max`, the vessel wrappers, the vertical-platform
-  piece, the number of units, the electric-motor-only compressor drive, the exchanger design
-  pressure). Every number is `ResolvedEntry.numbers[...]`, read from `sslw-idaes-v1.json` with its
-  `source_line`; nothing numeric is written here except the exact unit factors of §2.1.
+  for line, products left to right in the order IDAES writes them; the deliberate departures are
+  §9.2.2's (ranges, the exact tray-count `max`, the vessel wrappers, the vertical-platform piece,
+  the number of units, the electric-motor-only compressor drive, the exchanger design pressure)
+  and §10.4.7's (the compressor sized on consumed power, the amended numbers, the turbine's range
+  and parallel units, the vessel weight ranges). Every number is `ResolvedEntry.numbers[...]`,
+  read from `sslw-idaes-v1.json` with its `source_line` (an amended number at its effective value,
+  §10.4.1); nothing numeric is written here except the exact unit factors of §2.1.
 
 Every expression is written with `Algebra`'s `exp`/`log` and `**`, so one builder serves the float
 reference path and the CasADi twin (§4.2.2). A regime choice — the number of parallel units, the
@@ -230,8 +232,11 @@ class Form:
 
     form_id: str = ""
     parallel: bool = False
-    #: the size range's name, or `None` when the source states none (turbine, §9.2.4 VII).
+    #: the size range's name, or `None` when the form has no size regime.
     size_range: str | None = None
+    #: the size quantity depends on the number of units (the compressor's consumed power,
+    #: §10.4.4): N is selected on `quantities(..., n)` rather than on one total size.
+    size_depends_on_units: bool = False
     #: the drive inherits the machine's N; its size rows are per unit (§9.2.4 V).
     inherits_units: bool = False
     #: refusal target and piece-entry stem of each range.
@@ -515,11 +520,77 @@ class _Motor(Form):
         return sel.n * c_p1
 
 
-# -- VI. sslw-compressor-v1 (SSLW.py:1080-1178) --------------------------------------------------
+# -- VI. sslw-compressor-v1 (SSLW.py:1080-1178; design §10.4.4) ---------------------------------
 
 
 class _Compressor(Form):
+    """Sized on the consumed power `P_C = w₁/η_m(w₁)` of each unit (§10.4.4, departure 8), with
+    `w₁ = (W/N)·κ_W` the per-unit brake power and `η_m` the set's `machine.drive` correlation, the
+    same one the drive's electricity uses (§9.2.7)."""
+
     form_id = "sslw-compressor-v1"
+    parallel = True
+    size_depends_on_units = True
+    size_range = "consumed_power_hp"
+    targets = MappingProxyType({"consumed_power_hp": "power"})
+    inputs = ("power",)
+
+    def _drive(self, e: ResolvedEntry) -> ResolvedEntry:
+        if e.drive is None:
+            raise ValueError(f"{e.entry_id}: a compressor needs the set's machine.drive entry")
+        return e.drive
+
+    def consumed_per_unit(self, e: ResolvedEntry, w_hp: Expr, alg: Algebra) -> Expr:
+        """`P_C,1 = w₁/η_m(w₁)` in hp, `w₁` the per-unit brake power in hp."""
+        return w_hp / motor_efficiency(self._drive(e), w_hp, alg)
+
+    def quantities(self, e: ResolvedEntry, x: Inputs, alg: Algebra, n: int = 1) -> dict[str, Expr]:
+        """`consumed_power_hp` = S(n) = n·P_C,1 at `n` units; `brake_power_hp` = W·κ_W."""
+        w_hp = (x["power"] / n) * KAPPA_W
+        return {
+            "consumed_power_hp": n * self.consumed_per_unit(e, w_hp, alg),
+            "brake_power_hp": x["power"] * KAPPA_W,
+        }
+
+    def domain(self, e: ResolvedEntry, x: Inputs, units: int) -> OutOfRange | None:
+        """§10.4.4: `0 < η_m ≤ 1` at the per-unit power of `units` units, else
+        `CORRELATION_OUT_OF_RANGE(<U>.eta)`; a non-finite or non-positive power is refused on the
+        size quantity, as before."""
+        w_hp = (float(x["power"]) / units) * KAPPA_W
+        if not (w_hp > 0.0 and math.isfinite(w_hp)):
+            r = e.ranges[self.size_range]
+            return OutOfRange(
+                self.size_range,
+                self.target(self.size_range),
+                float("nan"),
+                r.min,
+                r.max,
+                f"{self.size_range} is not a finite positive value: per-unit power {w_hp!r} hp",
+            )
+        eta = float(motor_efficiency(self._drive(e), w_hp, _FLOAT))
+        if not 0.0 < eta <= 1.0:
+            return OutOfRange("eta", "eta", eta, 0.0, 1.0, f"η_m = {eta!r} at {w_hp!r} hp")
+        return None
+
+    def cost(self, e: ResolvedEntry, x: Inputs, sel: Selection, alg: Algebra) -> Expr:
+        p: Expr = (
+            e.ranges["consumed_power_hp"].min
+            if sel.size == "floor"
+            else self.consumed_per_unit(e, (x["power"] / sel.n) * KAPPA_W, alg)
+        )
+        c_b = alg.exp(e.n("alpha1") + e.n("alpha2") * alg.log(p))
+        c_p1 = e.n("F_D") * e.n("F_M") * c_b
+        return sel.n * c_p1
+
+
+# -- VII. sslw-turbine-v1 (SSLW.py:1338-1386; design §10.4.5) ------------------------------------
+
+
+class _Turbine(Form):
+    """A gas expander, parallel above the range's maximum and floored below its minimum
+    (§10.4.5, departure 10)."""
+
+    form_id = "sslw-turbine-v1"
     parallel = True
     size_range = "power_hp"
     targets = MappingProxyType({"power_hp": "power"})
@@ -532,26 +603,7 @@ class _Compressor(Form):
         w_hp: Expr = (
             e.ranges["power_hp"].min if sel.size == "floor" else (x["power"] / sel.n) * KAPPA_W
         )
-        c_b = alg.exp(e.n("alpha1") + e.n("alpha2") * alg.log(w_hp))
-        c_p1 = e.n("F_D") * e.n("F_M") * c_b
-        return sel.n * c_p1
-
-
-# -- VII. sslw-turbine-v1 (SSLW.py:1338-1386) ----------------------------------------------------
-
-
-class _Turbine(Form):
-    form_id = "sslw-turbine-v1"
-    parallel = False
-    size_range = None
-    inputs = ("power",)
-
-    def quantities(self, e: ResolvedEntry, x: Inputs, alg: Algebra, n: int = 1) -> dict[str, Expr]:
-        return {"power_hp": x["power"] * KAPPA_W}
-
-    def cost(self, e: ResolvedEntry, x: Inputs, sel: Selection, alg: Algebra) -> Expr:
-        w_hp = (x["power"] / sel.n) * KAPPA_W
-        return e.n("a") * w_hp ** e.n("b")
+        return sel.n * (e.n("a") * w_hp ** e.n("b"))
 
 
 #: The SSLW forms by id (§9.2.4).
@@ -592,7 +644,9 @@ def select(
     """The regime of one item at a float state `x` (§4.3.2 rules 4 and 5, §9.2.5).
 
     Size: below `S_min` the floor; above `S_max` a parallel form splits into `units:N`, any other
-    form is refused (or extrapolated at `units:1`). A drive inherits `units` (the machine's N).
+    form is refused (or extrapolated at `units:1`). A drive inherits `units` (the machine's N). A
+    form whose size depends on N (§10.4.4) floors when `S(1) < S_min` and otherwise takes the
+    smallest `n ≥ n₀` with `S(n) ≤ n·S_max`, checking its domain at every `n` evaluated.
     Inputs: below `min` the floor where declared, else refused; above `max` refused; refused
     values are extrapolated on the nearest piece when `allow_extrapolation`. A non-finite or
     non-positive quantity is refused."""
@@ -619,7 +673,21 @@ def select(
                 r.max,
                 f"{size_name} is not a finite positive value: {s!r}",
             )
-        if form.inherits_units:
+        if form.size_depends_on_units:
+            if s < r.min:
+                size = "floor"
+            else:
+                n = _units_lower_bound(float(q["brake_power_hp"]), r.max)
+                while True:
+                    guard = form.domain(e, x, n) if n != units else None
+                    if guard is not None:
+                        return guard
+                    s_n = float(form.quantities(e, x, _FLOAT, n)[size_name])
+                    if s_n <= n * r.max:
+                        break
+                    n += 1
+                size = f"units:{n}"
+        elif form.inherits_units:
             n = units
             if s < r.min:
                 size = "floor"
@@ -680,6 +748,17 @@ def select(
         pieces[r.name] = 1 if z < low else len(intervals)
         extrapolated[r.name] = (z, low, high)
     return Selection(size, n, MappingProxyType(pieces), MappingProxyType(extrapolated))
+
+
+def _units_lower_bound(w_hp: float, s_max: float) -> int:
+    """§10.4.4: n₀, the smallest integer ≥ 1 with `W ≤ n₀·S_max` in binary64 (the brake power
+    bounds the consumed power from below, since η_m ≤ 1)."""
+    units = max(1, math.ceil(w_hp / s_max))
+    while units * s_max < w_hp:
+        units += 1
+    while units > 1 and (units - 1) * s_max >= w_hp:
+        units -= 1
+    return units
 
 
 def _upper(r: Range, pieces: Mapping[str, int]) -> float:
