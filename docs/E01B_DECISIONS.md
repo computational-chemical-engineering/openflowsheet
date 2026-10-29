@@ -568,3 +568,20 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
 - DECISION: the review-fix manifest's R-871 limitation → class P (scope note), like every other S12 item; an envelope
   row (class E) belongs to E01's release specification. Alternative: add an `L-…` envelope limitation now.
   Reversible by: re-classifying that harvest entry (the envelope is append-only, so a new manifest re-harvests).
+
+## Handoff (2026-10-29, E01 review fixes complete) — resume from here
+
+- **Done on wp/E01 (after de63b9a2):** ff537bc9 review + brief + R-868…R-871 + errata; 7bc674b1 M1 (domain entry,
+  METRIC_UNDEFINED at every state, p1_th_c1 identity re-take); 1a7a3244 M2 (contributor table, CONTRIBUTOR_MISSING);
+  bf353146 R-870 confirmed by Frank + `LCA_RESTRICTED_DATA_DERIVED`; 364a278a S1 (`ASSESSMENT_OBJECTIVE_UNSCALED`);
+  a9378b10 S2 (sensitivity `regime_bounds_active`); fdd2a7f6 S3 (limitation); e53f626d S4 (A48 tripwire); 2d2e8841 N1;
+  cfcf4acb N5 (`regime_note`); 02fc8d2f generator texts; manifest `evidence/S12/02fc8d2f…` (`tested`); 89df188b harvest.
+- **Not done:** the review's lower-priority domain entries (`.per_fu`, `lcox`, allocation ratios); N2 (deferred by the
+  review); N3 (platform-piece provenance in the shipped SSLW set); full `scripts/gate.sh`, push, CI, merge
+  (orchestrator). `reviewed` not set.
+- **For the design lane:** DECISION lines above — M2's section definition (utility prices declare no cost section),
+  S1's range and per-start rule, R-871 harvested as class P; the `domain` kind added to the report schema and the
+  `ASSESSMENT_OBJECTIVE_UNSCALED` code to the optimization-report schema's enums; `regime_note` optional in
+  `assessment.schema.json`.
+- **If the tree changes again:** re-run the generator (command in the WO-I1 handoff above), then re-harvest (append,
+  re-pin HARVEST_SIZE).
