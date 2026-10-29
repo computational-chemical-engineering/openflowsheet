@@ -389,3 +389,10 @@ I1's.
   fields §4.11 does not spell, the status rule, class `none` for an unclassed quote, and the LCA exchange
   convention for B2.
 - **For B1/I1 (unchanged):** package-data globs, `resources.PACKAGED`, M05 ADDENDA pin, A48 RC item, P3 volumes.
+
+## Merge CI (2026-10-29)
+- FACT: CI 40909427554 at `84d71df8`: aarch64 failed `test_a38_fixtures_validate_and_are_what_the_code_emits[p3_m1]` on
+  `/state_sha256` (golden `e496390f…`, aarch64 `245ea83d…`); every number matched to rel 1e-9; x86-64 green.
+- DECISION: the golden-report comparison treats `state_sha256` per ADR 0025 D2 (a float digest, `run/compare.py`'s
+  `_is_float_digest_v2`): exact on x86-64, kind (64 hex) elsewhere; exact digests (`assessment_sha256`) stay exact
+  everywhere. Alternative: per-platform golden files. Reversible by: reverting this commit.

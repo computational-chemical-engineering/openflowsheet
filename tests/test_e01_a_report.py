@@ -15,6 +15,7 @@ import copy
 import json
 import math
 import os
+import platform
 import subprocess
 import sys
 from collections.abc import Iterator, Mapping
@@ -52,6 +53,7 @@ from openflowsheet.assessment.views import view_of  # noqa: E402
 from openflowsheet.canonical import canonical_json, state_sha256  # noqa: E402
 from openflowsheet.orchestrator.executor import execute_plan  # noqa: E402
 from openflowsheet.orchestrator.revision import plan_revision  # noqa: E402
+from openflowsheet.run.compare import _is_float_digest_v2  # noqa: E402
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "schemas" / "assessment_report"
 REPO = Path(__file__).resolve().parents[1]
@@ -189,9 +191,19 @@ def _body(report: Mapping[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in report.items() if k != "provenance"}
 
 
+#: ADR 0025 D2: a float digest hashes the solved state's bits, so it is reproducible only where
+#: the state is bitwise (x86-64, the reference platform); elsewhere it is compared for kind.
+_BITWISE_STATE = platform.machine() in {"x86_64", "AMD64"}
+
+
 def _same(a: Any, b: Any, where: str = "") -> None:
     """Equal structure and strings; numbers to rel 1e-9 (regression across platforms' last bits
-    of the solved state; logged in docs/E01A_DECISIONS.md)."""
+    of the solved state; logged in docs/E01A_DECISIONS.md); float digests exactly on x86-64 and
+    for kind elsewhere."""
+    if _is_float_digest_v2(where.rsplit("/", 1)[-1]) and not _BITWISE_STATE:
+        assert isinstance(a, str) and isinstance(b, str), where
+        assert len(a) == len(b) == 64 and int(a, 16) >= 0 and int(b, 16) >= 0, (where, a, b)
+        return
     if isinstance(a, dict):
         assert isinstance(b, dict) and sorted(a) == sorted(b), where
         for k in a:
