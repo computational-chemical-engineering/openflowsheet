@@ -1,0 +1,1438 @@
+{
+  "work_package": "S12b",
+  "commit": "1fd295467af5263654d160dc39657735a6ff69dc",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "E01 with E01b (manifest id S12b) acceptance: docs/derivations/E01-design.md §6.1 (E01.A1–A42), §9.6 (A43–A48) and §10.5/§10.10.6 (A49–A51), gates G1–G10, ESC-I1's and ESC-I2's rulings and Amendment 1 to ruling B (docs/E01B_DECISIONS.md, 2026-10-29)",
+    "case_hash": "3c800a387a1aa13cf99abd6f92fb7bd5a9ce6ec7913ad8baa41a5000b4adc847",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "OFS_S05_BUILD_PYTHON=$BUILD_PYTHON PYTHONPATH=src:. .venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/e01-tests-a.junit.xml --basetemp=$BASETEMP/a tests/test_e01_a48_tripwire.py tests/test_e01_a_capital.py tests/test_e01_a_contributor.py tests/test_e01_a_contributor_c1.py tests/test_e01_a_core.py tests/test_e01_a_cost.py tests/test_e01_a_derived.py tests/test_e01_a_links.py tests/test_e01_a_report.py tests/test_e01_a_sizing.py tests/test_e01_b_cost_hand.py tests/test_e01_b_lca.py tests/test_e01_b_nlp.py tests/test_e01_b_seider3.py tests/test_e01_b_studies.py tests/test_e01_b_tables.py tests/test_e01_integration.py tests/test_m02_schemas.py tests/test_m03_nlp_status.py tests/test_m03_schemas.py tests/test_m04_numerical_policy.py tests/test_m05_study_record.py tests/test_m07_mr12_extras_v02.py tests/test_package_imports.py tests/test_s05_envelope.py tests/test_s08_identity.py tests/test_s08b_identity.py tests/test_s11_identity_gate.py tests/test_t02_identity.py tests/test_t05_identity.py tests/test_t05b_identity.py tests/test_t06_identity.py tests/test_t06_w14_identity.py tests/test_t07_identity.py tests/test_t08_adr0025.py tests/test_t08_w1_d2_replay_identity.py tests/test_t08_w1_identity_substitution.py tests/test_t08_w2_edge_identity.py tests/test_t08_w2_inventory.py tests/test_t08_w2_support_envelope.py tests/test_t08_w4_package_data.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "fc993b5f3e0b15b3579447b2f6dcb4f9bfe18fb046f4edfab766072a9f97bbea"
+    },
+    {
+      "cmd": "PYTHONPATH=src:. $LCA_PYTHON -m pytest -q -p no:cacheprovider --junitxml=evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/e01-tests-l.junit.xml --basetemp=$BASETEMP/l tests/test_e01_b_brightway.py tests/test_e01_b_lca.py tests/test_e01_b_tables.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "beb8503ee75d2c9b47394beb823630bdf87d896ea4ff3a39c28d965738099526"
+    },
+    {
+      "cmd": "bash scripts/m03_nlp_check.sh $NLP_PREFIX $NLP_CACHE -- -q -p no:cacheprovider --junitxml=evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/e01-tests-n.junit.xml --basetemp=$BASETEMP/n tests/test_e01_b_nlp.py tests/test_e01_integration.py tests/test_m03_nlp_greybox.py tests/test_m05_basis.py tests/test_m05_basis_v2_c1.py tests/test_m05_c1_projection.py tests/test_m05_g10_replay.py tests/test_m05_parent.py tests/test_m05_projection.py tests/test_m05_readiness.py tests/test_m05_surrogate_truth.py tests/test_m05_trf.py tests/test_m05_zero_flow.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "a1a53fbb181cbf62a1114f634985dc8f5eaf2df4689171cd6647b10334fbd407"
+    },
+    {
+      "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/t08_support_matrix.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "775d5fe5fd00080ce832de2da28ffc956116f6ba28b7b4b162f394e30ac957cb"
+    },
+    {
+      "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/e01_d04_inventory.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "5404aa7b1a63c8cd668684a787ba6e607a7a9cd2278beba55718cdd73e299329"
+    },
+    {
+      "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/e01_lca_data.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "8aeb23b4129fe6d171fe077aa41b4f9c75f5174014a8013d69958f0407f6e6f4"
+    },
+    {
+      "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/t08_numerical_policy.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "8106b7560d2abe8036e54ee7cb8ba1552e538fe2ed4a96b8a3397a79b7b6d300"
+    },
+    {
+      "cmd": "PYTHONPATH=src:. .venv/bin/python benchmarks/e01/cost_hand/cost_hand.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "57d18843984e2962b8c59a34a178ce8cd66ecdc65a70aa9ef0af4d622b270bfe"
+    },
+    {
+      "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/m03_schema_fixtures.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "348edd290341b3cba7ef436a5b80cac9c55a63302006a222443cc601cc006c5e"
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=$NLP_PREFIX/share/pyomo PYTHONPATH=src:$NLP_CACHE/nlp-test-tools $NLP_PREFIX/bin/python scripts/m03_schema_fixtures.py --nlp",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "3d89b092028ef8f25314fa6a1ed7e37b93930d5e3332a678f4a7b5adcb0f9d86"
+    },
+    {
+      "cmd": "PYTHONPATH=src:. .venv/bin/ruff check benchmarks/e01/brightway/foreground_p4.py benchmarks/e01/brightway/idaes_crosscheck.py benchmarks/e01/cost_hand/cost_hand.py benchmarks/e01/lca_hand/lca_hand.py docs/derivations/scripts/s11_measurements/m1_flash_floor.py docs/derivations/scripts/s11_thermal_reference.py scripts/e01_d04_inventory.py scripts/e01_evidence_manifest.py scripts/e01_lca_data.py scripts/e01_m03_dump.py scripts/s11_evidence_manifest.py scripts/t08_numerical_policy.py src/openflowsheet/assessment/__init__.py src/openflowsheet/assessment/blocks.py src/openflowsheet/assessment/cost/__init__.py src/openflowsheet/assessment/cost/capital.py src/openflowsheet/assessment/cost/contributor.py src/openflowsheet/assessment/cost/derived.py src/openflowsheet/assessment/cost/forms.py src/openflowsheet/assessment/cost/index.py src/openflowsheet/assessment/cost/operating.py src/openflowsheet/assessment/cost/quotes.py src/openflowsheet/assessment/cost/sets.py src/openflowsheet/assessment/cost/uncertainty.py src/openflowsheet/assessment/defaults.py src/openflowsheet/assessment/lca/__init__.py src/openflowsheet/assessment/lca/brightway.py src/openflowsheet/assessment/lca/impact.py src/openflowsheet/assessment/lca/inventory.py src/openflowsheet/assessment/lca/section.py src/openflowsheet/assessment/lca/tables.py src/openflowsheet/assessment/program.py src/openflowsheet/assessment/quantities.py src/openflowsheet/assessment/regimes.py src/openflowsheet/assessment/report.py src/openflowsheet/assessment/sizing/__init__.py src/openflowsheet/assessment/sizing/families.py src/openflowsheet/assessment/spec.py src/openflowsheet/assessment/views.py src/openflowsheet/resources.py src/openflowsheet/studies/assessment.py src/openflowsheet/studies/nlp/closure.py src/openflowsheet/studies/nlp/formulation.py src/openflowsheet/studies/nlp/greybox.py src/openflowsheet/studies/nlp/verification.py tests/test_e01_a48_tripwire.py tests/test_e01_a_capital.py tests/test_e01_a_contributor.py tests/test_e01_a_contributor_c1.py tests/test_e01_a_core.py tests/test_e01_a_cost.py tests/test_e01_a_derived.py tests/test_e01_a_links.py tests/test_e01_a_report.py tests/test_e01_a_sizing.py tests/test_e01_b_brightway.py tests/test_e01_b_cost_hand.py tests/test_e01_b_lca.py tests/test_e01_b_nlp.py tests/test_e01_b_seider3.py tests/test_e01_b_studies.py tests/test_e01_b_tables.py tests/test_e01_integration.py tests/test_m03_nlp_status.py tests/test_m05_study_record.py tests/test_m07_mr12_extras_v02.py tests/test_m07a_harvest.py tests/test_package_imports.py tests/test_s11_column_verifier.py tests/test_s11_thermal_kernel.py tests/test_s11_thermal_solve.py tests/test_t08_w2_inventory.py tests/test_t08_w4_package_data.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "PYTHONPATH=src:. .venv/bin/ruff format --check benchmarks/e01/brightway/foreground_p4.py benchmarks/e01/brightway/idaes_crosscheck.py benchmarks/e01/cost_hand/cost_hand.py benchmarks/e01/lca_hand/lca_hand.py docs/derivations/scripts/s11_measurements/m1_flash_floor.py docs/derivations/scripts/s11_thermal_reference.py scripts/e01_d04_inventory.py scripts/e01_evidence_manifest.py scripts/e01_lca_data.py scripts/e01_m03_dump.py scripts/s11_evidence_manifest.py scripts/t08_numerical_policy.py src/openflowsheet/assessment/__init__.py src/openflowsheet/assessment/blocks.py src/openflowsheet/assessment/cost/__init__.py src/openflowsheet/assessment/cost/capital.py src/openflowsheet/assessment/cost/contributor.py src/openflowsheet/assessment/cost/derived.py src/openflowsheet/assessment/cost/forms.py src/openflowsheet/assessment/cost/index.py src/openflowsheet/assessment/cost/operating.py src/openflowsheet/assessment/cost/quotes.py src/openflowsheet/assessment/cost/sets.py src/openflowsheet/assessment/cost/uncertainty.py src/openflowsheet/assessment/defaults.py src/openflowsheet/assessment/lca/__init__.py src/openflowsheet/assessment/lca/brightway.py src/openflowsheet/assessment/lca/impact.py src/openflowsheet/assessment/lca/inventory.py src/openflowsheet/assessment/lca/section.py src/openflowsheet/assessment/lca/tables.py src/openflowsheet/assessment/program.py src/openflowsheet/assessment/quantities.py src/openflowsheet/assessment/regimes.py src/openflowsheet/assessment/report.py src/openflowsheet/assessment/sizing/__init__.py src/openflowsheet/assessment/sizing/families.py src/openflowsheet/assessment/spec.py src/openflowsheet/assessment/views.py src/openflowsheet/resources.py src/openflowsheet/studies/assessment.py src/openflowsheet/studies/nlp/closure.py src/openflowsheet/studies/nlp/formulation.py src/openflowsheet/studies/nlp/greybox.py src/openflowsheet/studies/nlp/verification.py tests/test_e01_a48_tripwire.py tests/test_e01_a_capital.py tests/test_e01_a_contributor.py tests/test_e01_a_contributor_c1.py tests/test_e01_a_core.py tests/test_e01_a_cost.py tests/test_e01_a_derived.py tests/test_e01_a_links.py tests/test_e01_a_report.py tests/test_e01_a_sizing.py tests/test_e01_b_brightway.py tests/test_e01_b_cost_hand.py tests/test_e01_b_lca.py tests/test_e01_b_nlp.py tests/test_e01_b_seider3.py tests/test_e01_b_studies.py tests/test_e01_b_tables.py tests/test_e01_integration.py tests/test_m03_nlp_status.py tests/test_m05_study_record.py tests/test_m07_mr12_extras_v02.py tests/test_m07a_harvest.py tests/test_package_imports.py tests/test_s11_column_verifier.py tests/test_s11_thermal_kernel.py tests/test_s11_thermal_solve.py tests/test_t08_w2_inventory.py tests/test_t08_w4_package_data.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "9d67c799638d3a83a6700213f2611aca574ca19163ae4a9c3700b14d4e002c85"
+    },
+    {
+      "cmd": "PYTHONPATH=src:. .venv/bin/mypy",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "6cb7915ed73284233192b24786f597442487516d02619d3204a64a24403bafa2"
+    },
+    {
+      "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/s11_identity.py --keep evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/s11-identity",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "2eb322ac5182096e54be7ee5aec44eb5c922eb50d83563a2749c37ab58a78627"
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=$NLP_PREFIX/share/pyomo PYTHONPATH=‹worktree of 8d2ee175›/src:$NLP_CACHE/nlp-test-tools $NLP_PREFIX/bin/python scripts/e01_m03_dump.py ‹worktree of 8d2ee175› evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/m03-dump-base.json",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "08e498d8da23f4fb55b0878a75a76f2b08fc3583100cb510d99b180dfab4ae7c"
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=$NLP_PREFIX/share/pyomo PYTHONPATH=src:$NLP_CACHE/nlp-test-tools $NLP_PREFIX/bin/python scripts/e01_m03_dump.py . evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/m03-dump-head.json",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "08e498d8da23f4fb55b0878a75a76f2b08fc3583100cb510d99b180dfab4ae7c"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S12b.A01",
+      "description": "E01.A1 `git diff --stat main...wp/E01` over the protected paths of §4.14 is empty.",
+      "result": "pass",
+      "value": {
+        "judged_by": "git diff --name-only 8d2ee175..HEAD over §4.14's protected paths",
+        "protected": [
+          "src/openflowsheet/compile",
+          "src/openflowsheet/thermo",
+          "src/openflowsheet/models",
+          "src/openflowsheet/verify",
+          "src/openflowsheet/orchestrator",
+          "src/openflowsheet/numerics",
+          "src/openflowsheet/application",
+          "src/openflowsheet/adapters",
+          "src/openflowsheet/graph",
+          "src/openflowsheet/ir",
+          "src/openflowsheet/run",
+          "src/openflowsheet/units",
+          "src/openflowsheet/canonical.py",
+          "src/openflowsheet/compiled.py",
+          "src/openflowsheet/serialize.py",
+          "src/openflowsheet/studies/trust_region",
+          "src/openflowsheet/studies/sensitivity.py",
+          "src/openflowsheet/studies/sweep.py",
+          "src/openflowsheet/studies/estimation.py"
+        ],
+        "changed_against_s11_head": [],
+        "literal_main_three_dot_files": 0,
+        "s11_own_main_three_dot_files": 0,
+        "literal_equals_s11_own": true
+      }
+    },
+    {
+      "id": "S12b.A02",
+      "description": "E01.A2 `scripts/s11_identity.py` (S11's recorder, unchanged) prints `PASS … changed=[]` at the E01 head against its `main` baseline.",
+      "result": "pass",
+      "value": {
+        "judged_by": "scripts/s11_identity.py against its main baseline 8c34ecb0",
+        "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/s11_identity.py --keep evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/s11-identity",
+        "exit_code": 0,
+        "line": "S11-IDENTITY PASS n=54494 changed=[]",
+        "expected": "S11-IDENTITY PASS n=‹N› changed=[]"
+      }
+    },
+    {
+      "id": "S12b.A03",
+      "description": "E01.A3 Every committed M03 optimization fixture is reproduced bit-for-bit in the `nlp` environment, with no assessment named.",
+      "result": "pass",
+      "value": {
+        "judged_by": "the byte comparison of scripts/e01_m03_dump.py (base vs this tree), m03_schema_fixtures.py --nlp and M03's NLP tests",
+        "dump": {
+          "base": "8d2ee175",
+          "exit_codes": [
+            0,
+            0
+          ],
+          "lines": [
+            "dumped 7 entries; components 4",
+            "dumped 7 entries; components 4"
+          ],
+          "sha256": {
+            "base": "a2c8002de5853db1f18610278c0057a8fb9f3de47b43f7a4899e18251e015623",
+            "head": "a2c8002de5853db1f18610278c0057a8fb9f3de47b43f7a4899e18251e015623"
+          },
+          "identical": true
+        },
+        "fixtures_nlp_line": "all M03 fixtures match what the code emits",
+        "m03_nlp_tests": {
+          "judged_by": "tests",
+          "nodes": 18,
+          "outcomes": {
+            "passed": 18
+          },
+          "not_passed": []
+        }
+      }
+    },
+    {
+      "id": "S12b.A04",
+      "description": "E01.A4 For every output and admissibility row of P1–P4 at their solved states: `|twin − reference| ≤ 1e-13 · max(1, |reference|)`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_a_core.py::test_a4_the_twin_reproduces_the_reference_within_1e_13"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A05",
+      "description": "E01.A5 Gradient oracle. Central differences on the float path with `h_j = 1e-6 · max(|x_j|, S_x,j)` (and likewise for continuous θ, with `S_x,j` replaced by `max(|θ|, 1)`): `|∂y/∂x_j − FD| ≤ 1e-6 · max(|∂y/∂x_j|, |y|/S_x,j) + 1e-12/S_x,j`. This is checked for every stored nonzero and for 20 seeded structural zeros.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_a_core.py::test_a5_every_stored_nonzero_and_twenty_structural_zeros_match_central_differences"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A06",
+      "description": "E01.A6 `select` twice at one state gives identical signatures. Evaluation with the held regime at its selection state is bitwise equal to evaluation after selection.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_a_core.py::test_a6_selection_is_deterministic_and_a_held_regime_evaluates_bitwise_equal"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A07",
+      "description": "E01.A7 Every admissibility row is ≥ 0 at its selection state. At `S = 2·S_max` exactly, `units:2` is selected.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_a_core.py::test_a7_admissibility_holds_at_selection_and_two_s_max_selects_two_units"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A08",
+      "description": "E01.A8 Compiling P1–P4 with every continuous θ symbolic raises nothing. Requesting a structural θ symbolic gives `ASSESSMENT_PARAMETER_STRUCTURAL`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_a_core.py::test_a8_every_continuous_theta_compiles_symbolic_and_a_structural_one_is_refused"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A09",
+      "description": "E01.A9 Underwood: - `ΔT₁ = ΔT₂ = 10 K` → 10 K within 4 ulp; - ratio 10: `ΔT_lm/LMTD − 1 = 3.801e-3 ± 1e-6`; - ratio 50: `2.5592e-2 ± 1e-6`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_a_sizing.py::test_a9_underwood"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A10",
+      "description": "E01.A10 Exchanger hand case: `Q = 1.0e6 W`, `U = 500`, `F_T = 1`, isothermal steam at 433.15 K, process 300 → 400 K. Expected `ΔT_lm = 71.95947205233731 K` and `area = 27.79342236620868 m²` (rel 1e-13). The deviation from the exact LMTD of 71.92001136510889 K is reported as +5.4867e-4.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_e01_a_sizing.py::test_a10_auto_utility_is_the_cheapest_admissible_and_u_is_required",
+          "tests/test_e01_a_sizing.py::test_a10_exchanger_hand_case",
+          "tests/test_e01_b_cost_hand.py::test_a10_the_exchanger_hand_case"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A11",
+      "description": "E01.A11 Drum: B4's hand case on P1's flash (inputs: the recorded V̇_L, V̇_V, ρ_L, ρ_V). D, L, V and the controlling member match (rel 1e-12).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_b_cost_hand.py::test_a11_the_th_r1_flash_drum",
+          "tests/test_e01_b_cost_hand.py::test_the_recorded_states_are_the_solved_states"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A12",
+      "description": "E01.A12 Column: B4's hand case on P3 (stage vapour and liquid states recorded). Every `D_j²`, j*, D and H match (rel 1e-12).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_b_cost_hand.py::test_a12_the_m1_column_shell",
+          "tests/test_e01_b_cost_hand.py::test_the_recorded_states_are_the_solved_states"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A13",
+      "description": "E01.A13 `VolumetricFlowBlock` values and derivatives are bitwise equal to `n·v` and to the provider's derivatives at the same state, for every provider in P1–P3.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_e01_a_sizing.py::test_a13_mixture_block_carries_the_composition_derivatives",
+          "tests/test_e01_a_sizing.py::test_a13_saturated_block_chains_along_the_line",
+          "tests/test_e01_a_sizing.py::test_a13_single_phase_block_is_n_times_v_with_the_providers_derivatives"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A14",
+      "description": "E01.A14 Every SSLW entry used by P1–P3: our value vs B4's mpmath value at the 3 registered sizes and at the P-sizes, rel ≤ 1e-10.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_b_cost_hand.py::test_a14_every_form_at_its_registered_sizes",
+          "tests/test_e01_b_cost_hand.py::test_a14_p1_and_p3_sizes"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A15",
+      "description": "E01.A15 The same cases vs the IDAES evaluation, rel ≤ 1e-9. A larger difference is escalated to the design lane, never loosened.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_b_cost_hand.py::test_a15_package_and_transcription_against_idaes",
+          "tests/test_e01_b_cost_hand.py::test_a15_the_idaes_evaluation_is_current"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A16",
+      "description": "E01.A16 Escalation with target = base year and currency gives a factor of exactly 1.0. A base → target → base round trip is within 2 ulp.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_a_cost.py::test_a16_the_same_basis_is_exactly_one_and_round_trips_within_2_ulp"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A17",
+      "description": "E01.A17 `S = 2.5·S_max` → `units:3` and `C_P = 3·C_P1(S/3)`, bitwise equal to the formula.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_a_core.py::test_a17_a18_the_held_size_formulas_and_the_floor_has_an_empty_row",
+          "tests/test_e01_a_cost.py::test_a17_above_s_max_splits_into_parallel_units_bitwise"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A18",
+      "description": "E01.A18 `S = 0.5·S_min` → `floor`, `C_P = C_P1(S_min)`, and `∂C_P/∂x ≡ 0` (an empty row).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_a_core.py::test_a17_a18_the_held_size_formulas_and_the_floor_has_an_empty_row",
+          "tests/test_e01_a_cost.py::test_a18_below_s_min_is_the_floor_with_an_empty_derivative_row"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A19",
+      "description": "E01.A19 Quote: `C = cost·E` bitwise. With an exponent: `cost·E·(S/S_q)^n` (rel 1e-15).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_a_contributor_c1.py::test_a19_quote_item_through_the_contributor",
+          "tests/test_e01_a_cost.py::test_a19_quotes"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A20",
+      "description": "E01.A20 `ebtf-prisma-v1`: `capex.total/capex.TDC = 1.744314` within 4 ulp.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_a_capital.py::test_a20_ebtf_prisma_ratio"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A21",
+      "description": "E01.A21 `CRF(0.08, 20) = 0.10185220882315059 ± 2 ulp`. `i = 0.0009` is refused.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_a_capital.py::test_a21_crf_and_its_domain",
+          "tests/test_e01_a_contributor.py::test_a21_discount_rate_domain"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A22",
+      "description": "E01.A22 `tac` equals `CRF·capex.total + opex.total` computed independently from the report's own fields (rel 1e-15).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_a_contributor.py::test_th_c2_complete_cost_and_a22"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A23",
+      "description": "E01.A23 The AACE class is the maximum over items, and the ranges equal §4.9's table. One extrapolated item → class `none`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_e01_a_capital.py::test_a23_aace_table_and_class",
+          "tests/test_e01_a_contributor.py::test_a23_class_is_the_maximum_and_extrapolation_makes_it_none",
+          "tests/test_e01_a_contributor_c1.py::test_a23_extrapolated_item_end_to_end",
+          "tests/test_e01_a_report.py::test_a23_extrapolated_item_makes_the_report_class_none"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A24",
+      "description": "E01.A24 `build_unit_score_table` on `test-background-v1` reproduces `q_E, q_H, q_X` of §4.8.5, rel ≤ 1e-12.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_b_brightway.py::test_a24_the_adapter_reproduces_the_hand_unit_scores",
+          "tests/test_e01_b_brightway.py::test_the_float64_assembly_is_brightways_own_matrices_unrounded"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A25",
+      "description": "E01.A25 P4: our `impact.climate_change_test.rate` vs Brightway's `foreground_check` on the same exchange amounts, rel ≤ 1e-10. It also matches WO-A5's hand superposition (`benchmarks/e01/lca_hand/`), rel ≤ 1e-12.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 4,
+        "outcomes": {
+          "passed": 4
+        },
+        "selectors": [
+          "tests/test_e01_b_brightway.py::test_foreground_check_on_p4_against_the_b4_expectation",
+          "tests/test_e01_b_brightway.py::test_foreground_check_reproduces_the_hand_superposition",
+          "tests/test_e01_b_cost_hand.py::test_a25_the_p4_rate_against_brightways_score",
+          "tests/test_e01_b_lca.py::test_p4_matches_the_hand_superposition"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A26",
+      "description": "E01.A26 Doubling every inventory amount doubles `h` bitwise. `∂h/∂x` equals the hand-assembled `Σ_k q_k α_k ∂φ_k/∂x` bitwise.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_b_lca.py::test_a26_doubling_every_amount_doubles_h_bitwise",
+          "tests/test_e01_b_lca.py::test_a26_the_derivative_is_the_hand_assembled_sum"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A27",
+      "description": "E01.A27 1 kg/s CH4 fossil to air gives exactly 29.8 kg CO2-eq/s with `gwp100-ipcc-ar6-v1`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_b_lca.py::test_a27_one_kg_per_s_of_fossil_methane_is_29_8"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A28",
+      "description": "E01.A28 An assessment using a `redistribution: forbidden` table yields a report and bundle export containing that table's id and sha256 and none of its scores (byte search).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_b_lca.py::test_a28_a_forbidden_table_leaves_only_its_id_and_hash",
+          "tests/test_e01_b_lca.py::test_a28_a_ranged_score_of_a_forbidden_table_is_withheld"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A29",
+      "description": "E01.A29 Without `bw2data`/`bw2calc` importable, P4 evaluates from its tables and every adapter call returns `UNSUPPORTED(LCA_ENGINE_UNAVAILABLE)`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_b_lca.py::test_p4_matches_the_hand_superposition",
+          "tests/test_e01_b_tables.py::test_a29_every_adapter_call_is_unsupported_without_brightway"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A30",
+      "description": "E01.A30 P1: `d tac/d p` and `d impact/d p` for 2 pinned inputs (a heater outlet T, a pump outlet P), via the wrapper, vs central differences of certified re-solves (step `1e-4·s_p`): rel ≤ 1e-5.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_b_studies.py::test_a30_a31_tac_and_impact_sensitivities_match_resolved_differences"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A31",
+      "description": "E01.A31 Forward and adjoint modes agree, rel ≤ 1e-10.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_b_studies.py::test_a30_a31_tac_and_impact_sensitivities_match_resolved_differences"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A32",
+      "description": "E01.A32 A request with no assessment output never calls the wrapper. Its result is bitwise equal to the direct `evaluate_sensitivity`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_b_studies.py::test_a32_no_assessment_output_is_the_direct_evaluation"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A33",
+      "description": "E01.A33 P2 with objective `1/|tac(x₀)| · assessment:tac`, from 2 starts. The candidate passes V1–V7. `tac` at `x_sim` agrees with the optimizer's output within 1e-6 relative, and `tac(candidate) ≤ tac(start)`. *Erratum 2026-10-29 (orchestrator ruling on ESC-I1, `docs/E01B_DECISIONS.md`):* `tac(candidate) ≤ tac(start)` is judged over the feasible starts only — a start is feasible when the formulation's constraints hold within their stated tolerance there (box exactly, inequality slack ≥ −τ_feas, V3's rule). M03's starts 0 and 1 violate `recovery_A ≥ 0` (−0.0159, −0.0537) and sit below the constrained optimum's `tac`; they are reported with their violations, not compared.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_integration.py::test_a33_a34_p2_tac_objective_from_every_start",
+          "tests/test_e01_integration.py::test_a33_m03_starts_0_and_1_are_infeasible_for_recovery"
+        ],
+        "not_passed": [],
+        "recorded_starts": {
+          "a33_tac_candidate": "91504.73496785443",
+          "a33_start_0": "{'tac': 88591.2225654237, 'violated': {'recovery_A:lower': -0.015925571310171194}, 'compared': False}",
+          "a33_start_1": "{'tac': 82875.24536597816, 'violated': {'recovery_A:lower': -0.05368521409840282}, 'compared': False}",
+          "a33_start_2": "{'tac': 98552.19689397885, 'violated': {}, 'compared': True}"
+        }
+      }
+    },
+    {
+      "id": "S12b.A34",
+      "description": "E01.A34 The gray-box output Jacobian pattern never changes during A33's runs and equals the twin's structural pattern.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_integration.py::test_a33_a34_p2_tac_objective_from_every_start"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A35",
+      "description": "E01.A35 With `assessment=None`, `output_names() == []`, and the Pyomo model's component list equals that of `main`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_b_nlp.py::test_a35_without_an_assessment_the_model_is_m03s"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A36",
+      "description": "E01.A36 A constructed P2 variant whose dormant stream becomes active at `x_sim` gives V7 `ASSESSMENT_REGIME_CHANGED` and `NOT_VERIFIED`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_integration.py::test_a36_a_drum_stream_held_dormant_that_flows_at_x_sim_is_not_verified"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A37",
+      "description": "E01.A37 Naming an assessment output for a TR study → `UNSUPPORTED(ASSESSMENT_OUTPUT_IN_TRF)` before any solve.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_b_studies.py::test_a37_a_trust_region_objective_from_an_assessment_is_unsupported"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A38",
+      "description": "E01.A38 Fixtures emitted by real runs validate against the new schemas. Every existing `study` and `optimization-report` fixture validates unchanged against the widened schemas. The registry lists both new files.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 9,
+        "outcomes": {
+          "passed": 9
+        },
+        "selectors": [
+          "tests/test_e01_a_report.py::test_a38_fixtures_validate_and_are_what_the_code_emits[p1_th_c1]",
+          "tests/test_e01_a_report.py::test_a38_fixtures_validate_and_are_what_the_code_emits[p1_th_r1]",
+          "tests/test_e01_a_report.py::test_a38_fixtures_validate_and_are_what_the_code_emits[p3_m1]",
+          "tests/test_e01_a_report.py::test_a38_invalid_fixture_is_rejected_for_its_reason",
+          "tests/test_e01_a_report.py::test_a38_registry_lists_both_schemas",
+          "tests/test_e01_b_studies.py::test_a38_existing_fixtures_validate_against_the_widened_schemas[optimization-report.schema.json-optimization_report]",
+          "tests/test_e01_b_studies.py::test_a38_existing_fixtures_validate_against_the_widened_schemas[study.schema.json-study]",
+          "tests/test_e01_b_studies.py::test_a38_the_formulation_link_validates_through_its_ref",
+          "tests/test_e01_b_studies.py::test_a38_the_study_link_validates_through_its_ref"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A39",
+      "description": "E01.A39 Two evaluations give byte-identical canonical reports (excluding `provenance`).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1,
+        "outcomes": {
+          "passed": 1
+        },
+        "selectors": [
+          "tests/test_e01_a_report.py::test_a39_two_evaluations_give_byte_identical_reports"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A40",
+      "description": "E01.A40 One refused item: dependent totals are `null` and status is `PARTIAL`. With `exclude`, the totals return and the exclusion is listed. A study naming a `null` output → `ASSESSMENT_OUTPUT_UNAVAILABLE`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_a_contributor.py::test_a40_refused_item_withholds_totals_and_exclude_restores",
+          "tests/test_e01_a_report.py::test_a40_refused_item_nulls_totals_and_exclude_restores_them"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A41",
+      "description": "E01.A41 Every default used is in `defaulted_inputs`. The test enumerates `defaults.py` against P1–P3's reports.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_e01_a_report.py::test_a41_every_default_used_is_reported[p1_th_c1]",
+          "tests/test_e01_a_report.py::test_a41_every_default_used_is_reported[p1_th_r1]",
+          "tests/test_e01_a_report.py::test_a41_every_default_used_is_reported[p3_m1]"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A42",
+      "description": "E01.A42 Every new dependency and data file has a D04 entry with licence text and sha256. The checker script exits non-zero otherwise.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_b_tables.py::test_a42_the_checker_fails_on_an_unlisted_or_changed_file",
+          "tests/test_e01_b_tables.py::test_a42_the_d04_inventory_covers_every_data_file_and_dependency"
+        ],
+        "not_passed": [],
+        "generator": {
+          "script": "scripts/e01_d04_inventory.py",
+          "line": "A42 PASS",
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "S12b.A43",
+      "description": "E01.A43 (links). - `PYTHONPATH=src .venv/bin/python scripts/t08_numerical_policy.py --check` exits 0 and prints `equals`, with v2's sha256 unchanged (`6b449911…d707c`). - E01's `exact_sha256` is exactly `[assessment_sha256, regime_sha256]`, and it does not intersect `schema_sha256_names()` (v2's domain). - These pass: `test_m04_numerical_policy.py::test_a37_…`, `test_m02_schemas.py::test_g1_…` and the two `test_t08_adr0025.py` A1 tests. - Every existing study and optimization-report fixture validates. A study carrying `assessment` validates; one with an extra key inside `assessment` fails.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 32,
+        "outcomes": {
+          "passed": 32
+        },
+        "selectors": [
+          "tests/test_e01_a_links.py::test_the_assessment_link_validates_and_is_closed",
+          "tests/test_e01_a_links.py::test_the_e01_exact_names_are_the_two_link_digests_and_lie_outside_v2s_domain",
+          "tests/test_e01_a_links.py::test_the_formulation_assessment_validates_and_is_closed",
+          "tests/test_e01_a_links.py::test_the_policy_check_passes_with_v2_unchanged",
+          "tests/test_e01_a_report.py::test_a43_report_digests_are_classified",
+          "tests/test_m02_schemas.py::test_g1_a32_every_float_of_every_m02_fixture_is_classified[experiment_attempt]",
+          "tests/test_m02_schemas.py::test_g1_a32_every_float_of_every_m02_fixture_is_classified[experiment_body]",
+          "tests/test_m02_schemas.py::test_g1_a32_every_float_of_every_m02_fixture_is_classified[experiment_coupling]",
+          "tests/test_m02_schemas.py::test_g1_a32_every_float_of_every_m02_fixture_is_classified[experiment_request]",
+          "tests/test_m02_schemas.py::test_g1_a32_every_float_of_every_m02_fixture_is_classified[experiment_result]",
+          "tests/test_m02_schemas.py::test_g1_a32_every_float_of_every_m02_fixture_is_classified[model_variant]",
+          "tests/test_m02_schemas.py::test_g1_each_new_schema_is_published_by_its_id[experiment.schema.json]",
+          "tests/test_m02_schemas.py::test_g1_each_new_schema_is_published_by_its_id[model-replacement.schema.json]",
+          "tests/test_m02_schemas.py::test_g1_each_new_schema_is_published_by_its_id[model-variant.schema.json]",
+          "tests/test_m02_schemas.py::test_g1_the_addendum_covers_exactly_m02s_schemas_with_its_four_classes",
+          "tests/test_m02_schemas.py::test_g1_the_partition_refuses_an_unclassified_and_a_reclassified_name",
+          "tests/test_m02_schemas.py::test_g1_the_sha256_partition_holds_over_m02s_schemas",
+          "tests/test_m04_numerical_policy.py::test_a37_a19s_manifest_is_r0_no_decision_is_near_threshold",
+          "tests/test_m04_numerical_policy.py::test_a37_a_constructed_near_case_is_flagged",
+          "tests/test_m04_numerical_policy.py::test_a37_every_float_of_every_m04_fixture_is_classified[model_evidence]",
+          "tests/test_m04_numerical_policy.py::test_a37_every_float_of_every_m04_fixture_is_classified[surrogate_manifest]",
+          "tests/test_m04_numerical_policy.py::test_a37_every_float_of_every_m04_fixture_is_classified[surrogate_study_body]",
+          "tests/test_m04_numerical_policy.py::test_a37_every_float_of_every_m04_fixture_is_classified[surrogate_study_result]",
+          "tests/test_m04_numerical_policy.py::test_a37_every_rule_of_the_manifest_matches_a_float_of_a19s_manifest",
+          "tests/test_m04_numerical_policy.py::test_a37_the_sha256_partition_follows_the_schemas",
+          "tests/test_t08_adr0025.py::test_a1_a_tampered_policy_file_fails_its_audit",
+          "tests/test_t08_adr0025.py::test_a1_an_unclassified_sha256_name_is_refused",
+          "tests/test_t08_adr0025.py::test_a1_the_generator_refuses_each_condition[FLOAT_DIGESTS-value3-(d)]",
+          "tests/test_t08_adr0025.py::test_a1_the_generator_refuses_each_condition[KINDS-value0-(a)]",
+          "tests/test_t08_adr0025.py::test_a1_the_generator_refuses_each_condition[POST_PIVOTING-value1-(b)]",
+          "tests/test_t08_adr0025.py::test_a1_the_generator_refuses_each_condition[TOKEN--?\\\\d+\\\\.\\\\d+-(c)]",
+          "tests/test_t08_adr0025.py::test_a1_the_policy_file_is_what_its_generator_emits"
+        ],
+        "not_passed": [],
+        "generator": {
+          "script": "scripts/t08_numerical_policy.py",
+          "line": "benchmarks/t08/numerical_policy_v2.yaml equals the regenerated bytes (sha256 6b449911f4e692051b08372fefaf0e205e9b2d746362e4fba2c4a9f6e19d707c)",
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "S12b.A44",
+      "description": "E01.A44 (forms). - Exchanger. F_P at p ≤ 100 psig equals 1.0 bitwise, and its ∂/∂P row is structurally empty. At p = 2000·(1 + 1e-9) psig the item is refused `CORRELATION_OUT_OF_RANGE(‹item›.pressure)`. `CarbonSteelCarbonSteel` gives F_M == 1.0. - Trays. F_NT(10) = 1.4997082643358985 and F_NT(19) = 1.0409949546984238, each within rel 1e-15. F_NT(20) == F_NT(21) == 1.0. - Vessel hand case (vertical, `weight_limit` \"1\", CarbonSteel; D = 1 m, L = 3 m, t = 0.03175 m): - W = 6777.48970680199 lb (rel 1e-13); - C_v = 33222.512431689356 (rel 1e-12); - C_PL = 5045.446066094272 (L floored at 12 ft, D in range; rel 1e-12); - C_P1 = 38267.95849778363 at CE 500 (rel 1e-12). - CE 394 conversion. r == 500.0/394.0 == 1.2690355329949239. - Drives. η_m(1 hp) == 0.8, and η_m(10 hp) = 0.8638030099054395 (rel 1e-15). A compressor's `‹U›.drive` capital == 0.0, with provenance `included_in`, and its electricity = W/η_m(W/N) (rel 1e-15).",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_e01_a_contributor.py::test_a44_motor_efficiency_points",
+          "tests/test_e01_a_cost.py::test_a44_exchanger_pressure_floor_refusal_and_carbon_steel",
+          "tests/test_e01_a_cost.py::test_a44_motor_efficiency_and_the_motor_form",
+          "tests/test_e01_a_cost.py::test_a44_the_ce394_ratio_and_the_pump_forms",
+          "tests/test_e01_a_cost.py::test_a44_the_tray_count_factor",
+          "tests/test_e01_a_cost.py::test_a44_the_vessel_hand_case"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A45",
+      "description": "E01.A45 (loader). The loader refuses each of these, built in the test and never shipped: - a set missing a `source_line`; - a `primary` source without `verified`; - a `floor` on a decreasing form; - an unknown option choice; - non-contiguous pieces.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 5,
+        "outcomes": {
+          "passed": 5
+        },
+        "selectors": [
+          "tests/test_e01_a_cost.py::test_a45_the_loader_refuses_a_floor_on_a_decreasing_form",
+          "tests/test_e01_a_cost.py::test_a45_the_loader_refuses_a_missing_source_line",
+          "tests/test_e01_a_cost.py::test_a45_the_loader_refuses_a_primary_source_without_verified",
+          "tests/test_e01_a_cost.py::test_a45_the_loader_refuses_an_unknown_option_choice",
+          "tests/test_e01_a_cost.py::test_a45_the_loader_refuses_non_contiguous_pieces"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A46",
+      "description": "E01.A46 (volumes). - The §9.4 guards hold. - P2's drum is sized, with `v_source = model_identity` on both products. - P3's shell and trays are sized from the declared volumes. - For the new rows, twin = reference ≤ 1e-13, and A5's finite-difference oracle holds.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 6,
+        "outcomes": {
+          "passed": 6
+        },
+        "selectors": [
+          "tests/test_e01_a_sizing.py::test_a46_an_item_declaration_behind_an_identity_is_reported_unused",
+          "tests/test_e01_a_sizing.py::test_a46_guard_syn001_lnk_pressure_derivative_is_the_identity",
+          "tests/test_e01_a_sizing.py::test_a46_guard_wilson_vapour_is_ideal_gas",
+          "tests/test_e01_a_sizing.py::test_a46_only_the_tabled_providers_get_an_identity",
+          "tests/test_e01_a_sizing.py::test_a46_p2_drum_is_sized_from_the_identity_volumes",
+          "tests/test_e01_a_sizing.py::test_a46_wilson_column_shell_needs_declared_liquid_volumes"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A47",
+      "description": "E01.A47 (ESC-A4). - Kinetic CSTR: V = τ_R·V̇_out against a hand value (rel 1e-14). Without τ it is refused `SIZING_INPUT_MISSING(‹U›.vessel.residence_time_s)`, and the duty item remains. - Drum with a dormant liquid: with `dormant_liquid_density`, D_V matches the hand value (rel 1e-12). Without it, the item is refused `SIZING_INPUT_UNAVAILABLE(‹item›.rho_L)`.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_e01_a_sizing.py::test_a47_drum_with_a_dormant_liquid_reads_the_declared_density",
+          "tests/test_e01_a_sizing.py::test_a47_kinetic_cstr_volume_is_tau_times_the_outlet_flow",
+          "tests/test_e01_a_sizing.py::test_a47_kinetic_cstr_without_tau_is_refused_and_keeps_its_duty_item"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A48",
+      "description": "E01.A48 (release candidate). Every `primary` range in shipped sets is `verified: true`.",
+      "result": "unsupported",
+      "value": "not run (RC item): G10 runs at the release-candidate cut"
+    },
+    {
+      "id": "S12b.A49",
+      "description": "E01.A49 (replaced): every relation of §10.10.5.7 holds, and so does its completeness.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_e01_b_seider3.py::test_a49_every_relation_holds",
+          "tests/test_e01_b_seider3.py::test_a49_ranges_match_the_printed_bounds",
+          "tests/test_e01_b_seider3.py::test_a49_the_expectation_is_complete"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A50",
+      "description": "E01.A50 (new, compressor). - Shaft powers are constructed so that per-unit P_C sits at S_min·(1 ± 1e-9), S_max·(1 − 1e-12) and, at N = 2, S_max·(1 + 1e-9). They select `floor`/`units:1`, `units:1` and `units:3` respectively. - C_P equals cost_hand to A14's tolerance. - The loader refuses a set with a compressor and no motor entry, and a `consumed_power_hp` range with max < 3·min.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 2,
+        "outcomes": {
+          "passed": 2
+        },
+        "selectors": [
+          "tests/test_e01_a_cost.py::test_a50_the_compressor_regimes_at_their_boundaries",
+          "tests/test_e01_a_cost.py::test_a50_the_loader_refuses_a_compressor_without_a_motor_and_a_narrow_consumed_range"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.A51",
+      "description": "E01.A51 (amended): - the six refusals (§10.4.1's five and §10.10.5.2's); - v_e bitwise equal to `value` for each of the four amendments; - resolved `pump` and `motor.electric` entries list `index_basis.value` in `amended`, and resolve on basis 500.0; - the tower no-undercut clause is dropped. Fit \"2\" increases with W for W ≥ 1 lb, since α2, α3 > 0.",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 3,
+        "outcomes": {
+          "passed": 3
+        },
+        "selectors": [
+          "tests/test_e01_a_cost.py::test_a51_effective_values_are_the_notes_expressions_bitwise",
+          "tests/test_e01_a_cost.py::test_a51_fit_two_increases_with_weight",
+          "tests/test_e01_a_cost.py::test_a51_the_loader_refuses_a_malformed_amendment"
+        ],
+        "not_passed": []
+      }
+    },
+    {
+      "id": "S12b.suite",
+      "description": "every node of tests/test_e01_*.py passed (the worse over runs A, L and N), including those that cite no assertion",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 210,
+        "outcomes": {
+          "passed": 210
+        },
+        "not_passed": []
+      },
+      "expected": "every node passed"
+    },
+    {
+      "id": "S12b.suites",
+      "description": "the other test files run here (§8.3's amended tests, A43's M04/M02/ADR 0025 tests, the T08 inventory, W4 package-data and S05 envelope tests, the identity tests, and the `nlp`-marked tests of M03 and M05): no node failed or errored in any run, and no skipped node is cited by an assertion; the skipped nodes are listed with their reasons",
+      "result": "pass",
+      "value": {
+        "judged_by": "tests",
+        "nodes": 1002,
+        "outcomes": {
+          "passed": 1002
+        },
+        "not_passed": [],
+        "skipped": {},
+        "cited_skips": []
+      },
+      "expected": "no failure; skips listed, none cited"
+    },
+    {
+      "id": "S12b.nlp-check",
+      "description": "scripts/m03_nlp_check.sh over every nlp-marked test file, with its two inventory re-takes (NLP-1 and the Ipopt executable workloads)",
+      "result": "pass",
+      "value": {
+        "cmd": "bash scripts/m03_nlp_check.sh $NLP_PREFIX $NLP_CACHE -- -q -p no:cacheprovider --junitxml=evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/e01-tests-n.junit.xml --basetemp=$BASETEMP/n tests/test_e01_b_nlp.py tests/test_e01_integration.py tests/test_m03_nlp_greybox.py tests/test_m05_basis.py tests/test_m05_basis_v2_c1.py tests/test_m05_c1_projection.py tests/test_m05_g10_replay.py tests/test_m05_parent.py tests/test_m05_projection.py tests/test_m05_readiness.py tests/test_m05_surrogate_truth.py tests/test_m05_trf.py tests/test_m05_zero_flow.py",
+        "exit_code": 0,
+        "line": "=== m03_nlp_check.sh: PASSED ==="
+      },
+      "expected": "=== m03_nlp_check.sh: PASSED ==="
+    },
+    {
+      "id": "S12b.t08",
+      "description": "scripts/t08_support_matrix.py --check",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/t08_support_matrix.py --check",
+        "exit_code": 0,
+        "line": "0 problem(s)"
+      },
+      "expected": "^0 problem\\(s\\)$"
+    },
+    {
+      "id": "S12b.d04",
+      "description": "scripts/e01_d04_inventory.py --check",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/e01_d04_inventory.py --check",
+        "exit_code": 0,
+        "line": "A42 PASS"
+      },
+      "expected": "^A42 PASS$"
+    },
+    {
+      "id": "S12b.lca-data",
+      "description": "scripts/e01_lca_data.py --check",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/e01_lca_data.py --check",
+        "exit_code": 0,
+        "line": "e01_lca_data: current"
+      },
+      "expected": "^e01_lca_data: current$"
+    },
+    {
+      "id": "S12b.policy",
+      "description": "scripts/t08_numerical_policy.py --check",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/t08_numerical_policy.py --check",
+        "exit_code": 0,
+        "line": "benchmarks/t08/numerical_policy_v2.yaml equals the regenerated bytes (sha256 6b449911f4e692051b08372fefaf0e205e9b2d746362e4fba2c4a9f6e19d707c)"
+      },
+      "expected": "equals the regenerated bytes \\(sha256 6b449911f4e692051b08372fefaf0e205e9b2d746362e4fba2c4a9f6e19d707c\\)$"
+    },
+    {
+      "id": "S12b.cost-hand",
+      "description": "benchmarks/e01/cost_hand/cost_hand.py --check",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src:. .venv/bin/python benchmarks/e01/cost_hand/cost_hand.py --check",
+        "exit_code": 0,
+        "line": "cost_hand.yaml current"
+      },
+      "expected": "^cost_hand\\.yaml current$"
+    },
+    {
+      "id": "S12b.m03-fixtures",
+      "description": "scripts/m03_schema_fixtures.py",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src:. .venv/bin/python scripts/m03_schema_fixtures.py",
+        "exit_code": 0,
+        "line": "all M03 fixtures match what the code emits"
+      },
+      "expected": "^all M03 fixtures match what the code emits$"
+    },
+    {
+      "id": "S12b.m03-fixtures-nlp",
+      "description": "scripts/m03_schema_fixtures.py --nlp (nlp environment)",
+      "result": "pass",
+      "value": {
+        "cmd": "OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYOMO_CONFIG_DIR=$NLP_PREFIX/share/pyomo PYTHONPATH=src:$NLP_CACHE/nlp-test-tools $NLP_PREFIX/bin/python scripts/m03_schema_fixtures.py --nlp",
+        "exit_code": 0,
+        "line": "all M03 fixtures match what the code emits"
+      },
+      "expected": "^all M03 fixtures match what the code emits$"
+    },
+    {
+      "id": "S12b.G1",
+      "description": "§6.2 G1, identity: E01.A1, A2",
+      "result": "pass",
+      "value": {
+        "judged_by": "its assertions and checks",
+        "parts": {
+          "S12b.A01": "pass",
+          "S12b.A02": "pass"
+        }
+      }
+    },
+    {
+      "id": "S12b.G2",
+      "description": "§6.2 G2, core: E01.A4–A8",
+      "result": "pass",
+      "value": {
+        "judged_by": "its assertions and checks",
+        "parts": {
+          "S12b.A04": "pass",
+          "S12b.A05": "pass",
+          "S12b.A06": "pass",
+          "S12b.A07": "pass",
+          "S12b.A08": "pass"
+        }
+      }
+    },
+    {
+      "id": "S12b.G3",
+      "description": "§6.2 G3, sizing: E01.A9–A13, A46, A47",
+      "result": "pass",
+      "value": {
+        "judged_by": "its assertions and checks",
+        "parts": {
+          "S12b.A09": "pass",
+          "S12b.A10": "pass",
+          "S12b.A11": "pass",
+          "S12b.A12": "pass",
+          "S12b.A13": "pass",
+          "S12b.A46": "pass",
+          "S12b.A47": "pass"
+        }
+      }
+    },
+    {
+      "id": "S12b.G4",
+      "description": "§6.2 G4, cost: E01.A14–A23, A44, A45, A49–A51",
+      "result": "pass",
+      "value": {
+        "judged_by": "its assertions and checks",
+        "parts": {
+          "S12b.A14": "pass",
+          "S12b.A15": "pass",
+          "S12b.A16": "pass",
+          "S12b.A17": "pass",
+          "S12b.A18": "pass",
+          "S12b.A19": "pass",
+          "S12b.A20": "pass",
+          "S12b.A21": "pass",
+          "S12b.A22": "pass",
+          "S12b.A23": "pass",
+          "S12b.A44": "pass",
+          "S12b.A45": "pass",
+          "S12b.A49": "pass",
+          "S12b.A50": "pass",
+          "S12b.A51": "pass",
+          "S12b.cost-hand": "pass"
+        }
+      }
+    },
+    {
+      "id": "S12b.G5",
+      "description": "§6.2 G5, LCA: E01.A24–A29 (A24, A25 in the lca environment)",
+      "result": "pass",
+      "value": {
+        "judged_by": "its assertions and checks",
+        "parts": {
+          "S12b.A24": "pass",
+          "S12b.A25": "pass",
+          "S12b.A26": "pass",
+          "S12b.A27": "pass",
+          "S12b.A28": "pass",
+          "S12b.A29": "pass",
+          "S12b.lca-data": "pass"
+        }
+      }
+    },
+    {
+      "id": "S12b.G6",
+      "description": "§6.2 G6, studies: E01.A30–A37 (A33–A36 in the nlp environment), §4.13's timings recorded",
+      "result": "pass",
+      "value": {
+        "judged_by": "its assertions and checks",
+        "parts": {
+          "S12b.A30": "pass",
+          "S12b.A31": "pass",
+          "S12b.A32": "pass",
+          "S12b.A33": "pass",
+          "S12b.A34": "pass",
+          "S12b.A35": "pass",
+          "S12b.A36": "pass",
+          "S12b.A37": "pass"
+        },
+        "wall_time_s": {
+          "tests/test_e01_b_nlp.py::test_a35_without_an_assessment_the_model_is_m03s": 0.743,
+          "tests/test_e01_b_studies.py::test_a30_a31_tac_and_impact_sensitivities_match_resolved_differences": 0.477,
+          "tests/test_e01_b_studies.py::test_a32_no_assessment_output_is_the_direct_evaluation": 0.17,
+          "tests/test_e01_b_studies.py::test_a37_a_trust_region_objective_from_an_assessment_is_unsupported": 0.001,
+          "tests/test_e01_integration.py::test_a33_a34_p2_tac_objective_from_every_start": 1.258,
+          "tests/test_e01_integration.py::test_a33_m03_starts_0_and_1_are_infeasible_for_recovery": 0.001,
+          "tests/test_e01_integration.py::test_a36_a_drum_stream_held_dormant_that_flows_at_x_sim_is_not_verified": 0.326
+        }
+      }
+    },
+    {
+      "id": "S12b.G7",
+      "description": "§6.2 G7, schemas and rights: E01.A38–A43",
+      "result": "pass",
+      "value": {
+        "judged_by": "its assertions and checks",
+        "parts": {
+          "S12b.A38": "pass",
+          "S12b.A39": "pass",
+          "S12b.A40": "pass",
+          "S12b.A41": "pass",
+          "S12b.A42": "pass",
+          "S12b.A43": "pass",
+          "S12b.t08": "pass",
+          "S12b.d04": "pass",
+          "S12b.policy": "pass",
+          "S12b.m03-fixtures": "pass"
+        }
+      }
+    },
+    {
+      "id": "S12b.G9",
+      "description": "§6.2 G9, M03 inert: E01.A3, A35",
+      "result": "pass",
+      "value": {
+        "judged_by": "its assertions and checks",
+        "parts": {
+          "S12b.A03": "pass",
+          "S12b.A35": "pass",
+          "S12b.m03-fixtures-nlp": "pass",
+          "S12b.nlp-check": "pass"
+        }
+      }
+    },
+    {
+      "id": "S12b.ruff",
+      "description": "ruff check is clean on the Python files E01 adds or changes",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src:. .venv/bin/ruff check benchmarks/e01/brightway/foreground_p4.py benchmarks/e01/brightway/idaes_crosscheck.py benchmarks/e01/cost_hand/cost_hand.py benchmarks/e01/lca_hand/lca_hand.py docs/derivations/scripts/s11_measurements/m1_flash_floor.py docs/derivations/scripts/s11_thermal_reference.py scripts/e01_d04_inventory.py scripts/e01_evidence_manifest.py scripts/e01_lca_data.py scripts/e01_m03_dump.py scripts/s11_evidence_manifest.py scripts/t08_numerical_policy.py src/openflowsheet/assessment/__init__.py src/openflowsheet/assessment/blocks.py src/openflowsheet/assessment/cost/__init__.py src/openflowsheet/assessment/cost/capital.py src/openflowsheet/assessment/cost/contributor.py src/openflowsheet/assessment/cost/derived.py src/openflowsheet/assessment/cost/forms.py src/openflowsheet/assessment/cost/index.py src/openflowsheet/assessment/cost/operating.py src/openflowsheet/assessment/cost/quotes.py src/openflowsheet/assessment/cost/sets.py src/openflowsheet/assessment/cost/uncertainty.py src/openflowsheet/assessment/defaults.py src/openflowsheet/assessment/lca/__init__.py src/openflowsheet/assessment/lca/brightway.py src/openflowsheet/assessment/lca/impact.py src/openflowsheet/assessment/lca/inventory.py src/openflowsheet/assessment/lca/section.py src/openflowsheet/assessment/lca/tables.py src/openflowsheet/assessment/program.py src/openflowsheet/assessment/quantities.py src/openflowsheet/assessment/regimes.py src/openflowsheet/assessment/report.py src/openflowsheet/assessment/sizing/__init__.py src/openflowsheet/assessment/sizing/families.py src/openflowsheet/assessment/spec.py src/openflowsheet/assessment/views.py src/openflowsheet/resources.py src/openflowsheet/studies/assessment.py src/openflowsheet/studies/nlp/closure.py src/openflowsheet/studies/nlp/formulation.py src/openflowsheet/studies/nlp/greybox.py src/openflowsheet/studies/nlp/verification.py tests/test_e01_a48_tripwire.py tests/test_e01_a_capital.py tests/test_e01_a_contributor.py tests/test_e01_a_contributor_c1.py tests/test_e01_a_core.py tests/test_e01_a_cost.py tests/test_e01_a_derived.py tests/test_e01_a_links.py tests/test_e01_a_report.py tests/test_e01_a_sizing.py tests/test_e01_b_brightway.py tests/test_e01_b_cost_hand.py tests/test_e01_b_lca.py tests/test_e01_b_nlp.py tests/test_e01_b_seider3.py tests/test_e01_b_studies.py tests/test_e01_b_tables.py tests/test_e01_integration.py tests/test_m03_nlp_status.py tests/test_m05_study_record.py tests/test_m07_mr12_extras_v02.py tests/test_m07a_harvest.py tests/test_package_imports.py tests/test_s11_column_verifier.py tests/test_s11_thermal_kernel.py tests/test_s11_thermal_solve.py tests/test_t08_w2_inventory.py tests/test_t08_w4_package_data.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S12b.format",
+      "description": "ruff format --check is clean on the Python files E01 adds or changes",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src:. .venv/bin/ruff format --check benchmarks/e01/brightway/foreground_p4.py benchmarks/e01/brightway/idaes_crosscheck.py benchmarks/e01/cost_hand/cost_hand.py benchmarks/e01/lca_hand/lca_hand.py docs/derivations/scripts/s11_measurements/m1_flash_floor.py docs/derivations/scripts/s11_thermal_reference.py scripts/e01_d04_inventory.py scripts/e01_evidence_manifest.py scripts/e01_lca_data.py scripts/e01_m03_dump.py scripts/s11_evidence_manifest.py scripts/t08_numerical_policy.py src/openflowsheet/assessment/__init__.py src/openflowsheet/assessment/blocks.py src/openflowsheet/assessment/cost/__init__.py src/openflowsheet/assessment/cost/capital.py src/openflowsheet/assessment/cost/contributor.py src/openflowsheet/assessment/cost/derived.py src/openflowsheet/assessment/cost/forms.py src/openflowsheet/assessment/cost/index.py src/openflowsheet/assessment/cost/operating.py src/openflowsheet/assessment/cost/quotes.py src/openflowsheet/assessment/cost/sets.py src/openflowsheet/assessment/cost/uncertainty.py src/openflowsheet/assessment/defaults.py src/openflowsheet/assessment/lca/__init__.py src/openflowsheet/assessment/lca/brightway.py src/openflowsheet/assessment/lca/impact.py src/openflowsheet/assessment/lca/inventory.py src/openflowsheet/assessment/lca/section.py src/openflowsheet/assessment/lca/tables.py src/openflowsheet/assessment/program.py src/openflowsheet/assessment/quantities.py src/openflowsheet/assessment/regimes.py src/openflowsheet/assessment/report.py src/openflowsheet/assessment/sizing/__init__.py src/openflowsheet/assessment/sizing/families.py src/openflowsheet/assessment/spec.py src/openflowsheet/assessment/views.py src/openflowsheet/resources.py src/openflowsheet/studies/assessment.py src/openflowsheet/studies/nlp/closure.py src/openflowsheet/studies/nlp/formulation.py src/openflowsheet/studies/nlp/greybox.py src/openflowsheet/studies/nlp/verification.py tests/test_e01_a48_tripwire.py tests/test_e01_a_capital.py tests/test_e01_a_contributor.py tests/test_e01_a_contributor_c1.py tests/test_e01_a_core.py tests/test_e01_a_cost.py tests/test_e01_a_derived.py tests/test_e01_a_links.py tests/test_e01_a_report.py tests/test_e01_a_sizing.py tests/test_e01_b_brightway.py tests/test_e01_b_cost_hand.py tests/test_e01_b_lca.py tests/test_e01_b_nlp.py tests/test_e01_b_seider3.py tests/test_e01_b_studies.py tests/test_e01_b_tables.py tests/test_e01_integration.py tests/test_m03_nlp_status.py tests/test_m05_study_record.py tests/test_m07_mr12_extras_v02.py tests/test_m07a_harvest.py tests/test_package_imports.py tests/test_s11_column_verifier.py tests/test_s11_thermal_kernel.py tests/test_s11_thermal_solve.py tests/test_t08_w2_inventory.py tests/test_t08_w4_package_data.py",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S12b.mypy",
+      "description": "mypy (the project's configuration) is clean",
+      "result": "pass",
+      "value": {
+        "cmd": "PYTHONPATH=src:. .venv/bin/mypy",
+        "exit_code": 0
+      },
+      "expected": "exit code 0"
+    },
+    {
+      "id": "S12b.G8",
+      "description": "§6.2 G8, release-level: full scripts/gate.sh PASS once before merge; CI green on x86-64 and aarch64",
+      "result": "unsupported",
+      "value": "not run by this generator; it runs once before merge (CLAUDE.md)"
+    },
+    {
+      "id": "S12b.gate",
+      "description": "scripts/gate.sh passes before merge",
+      "result": "unsupported",
+      "value": "not run by this generator"
+    },
+    {
+      "id": "S12b.ci",
+      "description": "CI is green on x86-64 and aarch64 before merge",
+      "result": "unsupported",
+      "value": "not run by this generator"
+    },
+    {
+      "id": "S12b.G10",
+      "description": "§9.6 G10, release-candidate data: E01.A48",
+      "result": "unsupported",
+      "value": "not run (RC item): it runs at the release-candidate cut; not a pass"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/e01-tests-a.junit.xml",
+      "sha256": "4cc7316ababd2666ce6641678d240f0a1bbde3f78dff52e8380141302da583ba",
+      "description": "JUnit report of test run A (ignored; kept by hash)"
+    },
+    {
+      "path": "evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/e01-tests-l.junit.xml",
+      "sha256": "9ff9b224f0a718110b240c77ccfc65eb5f42f05d55233a56544bcb34de52c86c",
+      "description": "JUnit report of test run L (ignored; kept by hash)"
+    },
+    {
+      "path": "evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/e01-tests-n.junit.xml",
+      "sha256": "2785f2cfb3dd0d8637af75ebe1e4e163a35dd4d70b5686149da932910a48ea73",
+      "description": "JUnit report of test run N (ignored; kept by hash)"
+    },
+    {
+      "path": "evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/m03-dump-base.json",
+      "sha256": "a2c8002de5853db1f18610278c0057a8fb9f3de47b43f7a4899e18251e015623",
+      "description": "A3's dump, base tree (ignored; kept by hash)"
+    },
+    {
+      "path": "evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/artifacts/m03-dump-head.json",
+      "sha256": "a2c8002de5853db1f18610278c0057a8fb9f3de47b43f7a4899e18251e015623",
+      "description": "A3's dump, head tree (ignored; kept by hash)"
+    },
+    {
+      "path": "docs/derivations/E01-design.md",
+      "sha256": "3c800a387a1aa13cf99abd6f92fb7bd5a9ce6ec7913ad8baa41a5000b4adc847",
+      "description": "the E01 design note (§6 assertions and gates, §9 amendment, A33's erratum)"
+    },
+    {
+      "path": "docs/adr/0052-e01-assessment-functionals.md",
+      "sha256": "d48a2db84cc39b877898aea1bbe5cae3ce18d6d056ef1bbcc5ee85adfb0d577e",
+      "description": "the decision E01 implements"
+    },
+    {
+      "path": "docs/E01A_DECISIONS.md",
+      "sha256": "8ebaab40f13c38ef09d3b0e423e5d0cee5be03063ece3818028ecadf83ad6b41",
+      "description": "E01's build decisions with the measured facts"
+    },
+    {
+      "path": "docs/E01B_DECISIONS.md",
+      "sha256": "e49cb67f8558d064c3d55bd38a3eef6cfd35d946620dc0b119cbad038ba7de78",
+      "description": "E01's build decisions with the measured facts"
+    }
+  ],
+  "limitations": [
+    "Package id: this manifest is filed as S12b, the alias of E01 (orchestrator ruling on ESC-I2, 2026-10-29; R-565's precedent, L01 → S04): the frozen schemas/evidence-manifest.schema.json admits only ^[PKTMSR][0-9]{2}[a-z]?$. Check ids are S12b.*; each assertion's description names it E01.A#.",
+    "requirements is empty: the design note assigns E01 no D/A requirement id, and docs/requirements.yaml has no E01 entry.",
+    "A33 is judged as the orchestrator's ruling on ESC-I1 (2026-10-29) restates it (design note §6.1, A33's dated erratum): tac(candidate) ≤ tac(start) over the starts feasible for the formulation's constraints within their stated tolerance (box exactly, slack ≥ −τ_feas = 1e-8), M03's infeasible starts reported with their violations, not compared. Recorded at this commit (nlp environment): a33_start_0: {'tac': 88591.2225654237, 'violated': {'recovery_A:lower': -0.015925571310171194}, 'compared': False}; a33_start_1: {'tac': 82875.24536597816, 'violated': {'recovery_A:lower': -0.05368521409840282}, 'compared': False}; a33_start_2: {'tac': 98552.19689397885, 'violated': {}, 'compared': True}; a33_tac_candidate: 91504.73496785443. The literal clause over every start does not hold at M03's starts 0 and 1, which violate recovery_A ≥ 0.",
+    "A1 is judged against the S11 head wp/E01 merged (8d2ee175): S11 is not on main yet, so the literal `git diff --stat main...wp/E01` over the protected paths shows S11's own changes (recorded in S12b.A01: equal to S11's main...8d2ee175 set). The literal form applies once S11 merges.",
+    "G8 (scripts/gate.sh, CI on x86-64 and aarch64) was not run by this generator: it runs once before merge into main. S12b.G8, S12b.gate and S12b.ci are unsupported.",
+    "G10, release-candidate data (§9.6 A48: every primary range in shipped sets is verified: true) is not run (RC item): S12b.A48 and S12b.G10 are unsupported, which is not a pass. After Amendment 1 to ruling B five SSLW primary ranges carry verified: false (the three compressors, the turbine and vessel fit '2'; design note §10.10.8); C7 (docs/briefs/QA1b.patch, not applied) sets them on Frank's approval (Q-B7), and the release candidate is blocked until then.",
+    "Review: the design lane's reviewer pass (docs/reviews/E01-review.md, at de63b9a2) found two must-fix items (M1 derived-ratio denominators, R-868; M2 the default build, R-869), four should-fix items (S1 objective scaling, S2 sensitivity regime boundaries, S3 R-871, S4 the A48 tripwire) and notes; they are applied on wp/E01 after it (docs/E01B_DECISIONS.md, 'E01 review fixes'). R-870 is decided with Frank's confirmation (2026-10-29). The review fields stay pending until the design lane accepts the fixes, and the human numerical and process-model review is pending. This manifest claims neither.",
+    "E01b (design note §10 with Amendment 1, §10.10; R-890…R-899) changes numerics: the pump and motor entries at CE 500 (× 0.788 on every pump and motor cost), the fixed-head alpha2 and tower-platform amendments, the vessel weight ranges (the P2 drum and P3 M1's column shell now floor), the compressor on consumed power and the turbine range. Its reviewer pass is pending, and C7 (the five verified flags, docs/briefs/QA1b.patch) is not applied. The open questions of §10.10.9 (Q-B2, Q-B3, Q-B8, Q-B9, Q-B11, Q-B12) are worked on their defaults. A49 compares the set with the Seider 3rd ed. by page and equation (benchmarks/e01/cost_hand/seider3.yaml): transcription verification, not empirical validation of the correlations.",
+    "Not applied from the review: the lower-priority domain entries for .per_fu, lcox and the allocation ratios (§4.7.5 erratum); N2 (layering, deferred by the review until numerics/ opens); N3 (the platform piece's provenance in the shipped set).",
+    "Environments: run A is the locked environment; run L (A24, A25) is the lca extra's environment built by scripts/build-lca-env.sh in a scratch directory, outside requirements.lock; run N (A33–A36, M03 and M05 nlp tests, A3's dumps and m03_schema_fixtures.py --nlp) is the audited NLP environment of docs/m03-ipopt-audit.md from a sibling worktree, with scripts/m03_nlp_check.sh's two inventory re-takes.",
+    "G1's family C (scripts/s11_identity.py) runs every tests/test_*.py in the base and this tree and requires every shard to exit 0, so the whole default suite passed in this tree; it is not the full gate (no ruff/mypy over the repository, no packaging or wheel checks beyond the tests named).",
+    "The agreement with the hand and independent expectations (benchmarks/e01/cost_hand mpmath, the IDAES evaluation, benchmarks/e01/lca_hand, Brightway's foreground_check) is numerical verification against the pinned sources, not empirical validation of cost or impact; test-background-v1 is synthetic, and the KKT_POINT_VERIFIED candidate of A33 is a verified local point, not optimality evidence. Self-generated fixtures (the assessment-report fixtures) are regression fixtures.",
+    "Regimes (R-871, E01 review S3): the closure (column overlap) and V7 (every entry) hold every regime of the program for any assessment objective — sound, no candidate is verified across a regime change, but over-restrictive (an impact objective is held to the capex size regimes; a floor row outside the closure shows as a V7 failure, not a binding row). Dependency-declared closures are the follow-up.",
+    "The wall times in S12b.G6 are the JUnit times of the cited nodes in this run (each includes binding, solving and verification where the test does).",
+    "The T08 support envelope's harvest of this manifest, if t08_support_matrix.py --check asks for one, follows its generation in a later commit."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
