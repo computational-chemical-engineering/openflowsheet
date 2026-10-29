@@ -627,19 +627,19 @@ def main(argv: list[str] | None = None) -> int:
     problems, worst = classed_problems(yaml.safe_load(committed), yaml.safe_load(text))
     if machine == "x86_64":
         ok = committed == text
-        how = "bitwise"
+        print(f"check (R-843): bitwise on {machine}; the classed comparison, for the record:")
     else:
         ok = not problems
-        how = f"classed, |delta| <= {B_REL:g}·max(|x|, s_f)"
-    verdict = "matches" if ok else "differs from"
-    print(
-        f"{'OK' if ok else 'FAIL'}: {OUT.relative_to(ROOT)} {verdict} CoolProp {PINNED_VERSION} "
-        f"({how}, {machine}; R-843)"
-    )
+        print(f"check (R-843): classed on {machine}, |delta| <= {B_REL:g}·max(|x|, s_f):")
     _report(worst)
     for problem in problems[:10]:
         print(f"  {problem}")
-    return 0 if ok else 1
+    # The verdict is the last line (scripts/s11_evidence_manifest.py reads it).
+    if not ok:
+        print(f"FAIL: {OUT.relative_to(ROOT)} differs from the regenerated references")
+        return 1
+    print(f"OK: {OUT.relative_to(ROOT)} matches CoolProp {PINNED_VERSION}")
+    return 0
 
 
 if __name__ == "__main__":
