@@ -610,8 +610,9 @@ Data goes in `registration_v3.json`, from `docs/derivations/scripts/w27_registra
   7. Stage B on Wilson is tested at the opening level only (S10-C).
   8. SYN-001 columns are synthetic: no validation.
 - `LIBRARY_ONLY_PROVIDERS == {"pr-lib-v1": "S04"}`.
-- No earlier harvest entry is edited. S11's manifest is harvested by appending, which moves `HARVEST_SIZE` by S11's
-  appended counts only. `docs/support-matrix.md` is re-emitted.
+- No earlier harvest entry is edited. *Erratum 2026-10-29 (S11 review):* except S02's twelve U04 items, which
+  R-561 (the specific registered rule) has the binding package reclassify (`de7e23c1`). S11's manifest is harvested
+  by appending, which moves `HARVEST_SIZE` by S11's appended counts only. `docs/support-matrix.md` is re-emitted.
 
 ### 4.12 Performance
 
@@ -1074,6 +1075,10 @@ every changed expression reduces to today's:
 
 The proof is this argument together with `scripts/s11_identity.py`: `changed=[]`, no base-only keys, and `n ≥ 54497`
 because new tests add keys. The S08 and S10-C lines must reproduce, and the touched test files must pass (§10.12).
+
+*Erratum 2026-10-29 (S11 review):* family C counts only keys present at the base, so new tests add none. The floor
+is n = 54494: 54497 less the three keys of R-841's tests, which `AMENDED_TESTS` excludes. Measured:
+`S11-IDENTITY PASS n=54494 changed=[]`.
 
 ### 10.3 `check_agreement` with staged splits (R-823)
 

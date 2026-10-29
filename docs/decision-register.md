@@ -16580,3 +16580,74 @@ promoted-specification path.
 **Rejected:** *Excluding the three tests.* It loses 25 keys.
 
 **Watch for.** A binder change that starts reading either field. The new test fails.
+
+## R-843 — S11's thermal reference check: bitwise on x86-64; elsewhere classed (R-723's pattern), floats within 1e-10·max(|x|, s_f) with a physical s_f
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`reviewer`), S11 review |
+| Normative text | `docs/reviews/S11-review.md` M1; amends `docs/derivations/scripts/s11_thermal_reference.py --check` |
+| Evidence | CI 40610610012 at `8d2ee175`: x86-64 byte-identical; aarch64 "differs". Jet floor 1.05e-12 (R-627). No reference state within 1 % of T_c (CO2 at 6 MPa: 1 − T/T_c ≈ 0.03). Largest cancellation in the file: A54's pump work, κ = (h_s + h_I)/(h_s − h_I) ≈ 128 |
+| Affected packages | S11 |
+
+**Decision.**
+- On x86-64, byte equality, unchanged.
+- Elsewhere, `--check` parses both documents and compares them leaf by leaf:
+  - **Exact:** the structure and key order, every string (names, labels, `regime`, the `coolprop` block), every
+    integer, and every `null`. A `beta: null` that becomes a number, or the reverse, is a difference.
+  - **Every other float:** |Δ| ≤ 1e-10·max(|x|, s_f). The floor s_f is set by the leaf's key:
+    - R·T_c of the case's fluid, times the case's `n` for a rate, for keys beginning `h`, `Q` or `W`;
+    - R for keys beginning `s`;
+    - 1 for `beta`, `efficiency` and `COP`;
+    - 0 for every other key (T, P, flows).
+  - A float under a key outside this map is an error of the check, not a pass.
+- `_coolprop()` sets `ENABLE_SUPERANCILLARIES` explicitly, as S10's `compute()` does (R-723). It takes the value
+  under which the x86-64 byte check still passes, with no byte moved.
+- `--check` prints one line per class on every architecture: the leaf path of the worst |Δ|/bound, and that ratio.
+
+**Rejected alternatives, and why.**
+- *Run the check on x86-64 only.* aarch64 would then never confirm provenance (R-723's reason).
+- *1e-10·|x| without a floor.* It fails the cancelled differences (W, Q) by construction, since κ is up to 128.
+- *A flat bound fitted to the aarch64 worst.* That is fitting to a measurement (R-627).
+- *Tolerating a regime flip at the β = 0 or β = 1 grid points.* That flip is exactly what the check exists to show.
+
+**Watch for.** Stop and escalate to the design lane with the printed line, and never widen the bound in the harness,
+if either of these happens:
+- an exact leaf differs. The likely case is a `regime`/`beta` flip at a β = 0 or β = 1 grid point, which is fixed by
+  moving that nominal state off the boundary in the generator;
+- the classed worst exceeds 1e-11 relative to its bound.
+
+## R-844 — S11 O-C6-1: the verifier's dormant-outlet table gains no `thermal.*` outlet in S11; a converged dormant single-phase thermal outlet certifies UNVERIFIED/RANK_DEFICIENT under either contract, and L-TH-7 says so
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`reviewer`), S11 review (rules S11A_DECISIONS item 8's OPEN; confirms the build default) |
+| Normative text | `docs/reviews/S11-review.md` M2; erratum to S11 units design §4.9; envelope row L-TH-7 |
+| Evidence | `tests/test_s11_thermal_solve.py::test_o_c6_1_*` (v1: A62 Q = 0 CONVERGED, UNVERIFIED, RANK_DEFICIENT; Q = 1 kW LINEAR_SOLVE_FAILED; the SYN-001 pump's dormant case VERIFIED, NO_RANK_LOSS_DETECTED); S11A log item 8 (A62 under `T06-revision-v2`: UNVERIFIED, RANK_DEFICIENT) |
+| Affected packages | S11; a follow-on verifier package |
+
+**Decision.**
+- `verify.zero_flow.DORMANT_OUTLETS` is unchanged in S11.
+- L-TH-7's text becomes: "Dormant single-phase thermal outlets need T05b's v2 phase contract to solve. Under v1 a
+  converged start certifies RANK_DEFICIENT, and a solve that must move ends LINEAR_SOLVE_FAILED. Under either contract,
+  a converged run with such an outlet certifies UNVERIFIED, with regularity RANK_DEFICIENT. The verifier's own
+  dormant-outlet table (verify.zero_flow.DORMANT_OUTLETS, spec §7.6) has no thermal.* outlet, so it judges the outlet's
+  energy row, which reads no temperature at zero flow."
+- A new test pins A62 at Q = 0 under `T06-revision-v2`: CONVERGED, UNVERIFIED, RANK_DEFICIENT. It is added to
+  L-TH-7's evidence beside the two `test_o_c6_1_*` tests.
+- Follow-on (not S11):
+  - add the nine single-phase rules of units design §4.9 to `DORMANT_OUTLETS`;
+  - key each rule by a configuration the verifier reads from the revision: the heater's pinned column (as
+    `exchanger_specification` does) and the outlet's declared phase;
+  - make `tests/test_t05_table_independence.py` compare the two tables as data;
+  - the v2 pin then flips to VERIFIED on purpose.
+
+**Rejected alternatives, and why.**
+- *Add the entries in S11.* The verifier's configuration reading is unspecified, and no table-comparison test exists.
+  The risk is a reduction applied where the solver applies none (a T-mode heater), which would judge a label row the
+  solve never imposed.
+- *Keep L-TH-7 as written.* It tells a user that v2 suffices, and the certificate contradicts that.
+
+**Watch for.** A dormant thermal outlet that certifies VERIFIED before the follow-on lands.
