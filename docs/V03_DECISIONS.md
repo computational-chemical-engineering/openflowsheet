@@ -77,3 +77,7 @@ commit. Questions for the design lane are under "Open questions"; measurements u
   records, S07 registration, M07a harvest, T08 RC): 852 passed, 12 skipped, 1 failed (T08.A32 before the links were
   staged; passes after). `test_v03_wilson_ship.py`: 25 passed; three mutations (NOTICE, a rights cell, `PACKAGED`)
   each fail.
+- 2026-10-29, WO-2: `scripts/s11_identity.py` at `162b0dd8` FAIL `changed=[]`, the branch-only shard non-zero:
+  `test_s11_routing.py::test_a09_a_wilson_revision_without_its_records_is_unavailable` (the second test of the old
+  refusal; fixed in the D-4 follow-up). At the follow-up: `S11-IDENTITY PASS n=54494 changed=[]`; every shard exit 0
+  in both trees (branch 14417 passed, 3204 skipped; base 13288 passed, 3137 skipped).
