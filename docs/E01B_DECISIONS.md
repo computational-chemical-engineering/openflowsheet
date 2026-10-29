@@ -724,3 +724,14 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   rows × 0.788000000 with raw IDAES unchanged; vertical floor/"2"/piece-2 cases follow cost_hand's C4′ moves (P1
   TH-R1 drum × 1.818814470, P3 M1 shell × 1.096078350); compressor 18, turbine 6, fixed head 1 new; trays,
   horizontal, other exchangers unchanged.
+- DECISION (orchestrator ruling, brief `docs/briefs/E01b-build3.md`): removing `CE_RATIO` from `cost_hand.py` and
+  retiring A44's "CE 394 conversion" check is R-896's registered M4′ move (pump and motor at CE 500), not a loosened
+  check. `test_e01_a_cost.py::test_a44_the_ce394_ratio_and_the_pump_forms` (name kept for identity keys) now asserts
+  the CE 500 basis — `pump.ratio == 1.0`, the amended basis' effective value 500.0, and the three pump forms and the
+  motor form (incl. its floor `exp(5.8259)`) by hand with no factor; `test_e01_a_contributor_c1.py`'s motor floor
+  is `exp(5.8259)` (old × 0.788). Alternative: keep a 500/394 check. Reversible by: this commit.
+- C6′ tests from held `f43f7dab`, adapted: A51 six refusals (the sixth on both entry bases, §10.10.5.2), v_e bitwise
+  for the four amendments, pump/motor `amended == [index_basis.value]` at 500.0, horizontal platforms and fit "2"
+  IDAES's with no amendment, the tower no-undercut test replaced by "fit 2 increases with W ≥ 1 lb" (α2, α3 > 0
+  and a 1 lb – 1e7 lb grid); platform piece 2 by hand at 300.9, horizontal at 2005·D^0.20294; η_m citation S3
+  p. 562 Eq. 22.18; tripwire 5; ruff clean.
