@@ -1245,3 +1245,17 @@ Grep, don't read whole. Newest at the bottom.
 - Frank: "I am getting slightly impatient… implement many more features in one pass and then test them together" → batch per
   branch, two engineers in parallel, one gate + one CI per batch (memory `batch-then-test`).
 - Frank: "I want the binding package" → S11 (wp/S11); architect brief `docs/briefs/S11-binding-design.md`.
+
+## 2026-10-27/28 — S11 built; E01 designed and built; paused
+
+- S11 (binding package): design + ADR 0050, units design + ADR 0051 (Frank: pure-fluid and Wilson units in S11), Q9 ruling
+  (§10), batched rulings R-830…R-842; tracks A–D + I1/I1b/I2 on wp/S11 (head `8d2ee175`). Manifest
+  `evidence/S11/01e72ca4…` tested 123/126; `S11-IDENTITY PASS n=54494 changed=[]`; HARVEST_SIZE (60, 867, 104).
+- E01 (cost + LCA): design `49fef97c` (ADR 0052, R-850…R-862), ruling §9 (R-863…R-867); tracks A and B complete on wp/E01
+  (`cd85a773`). Verified cost-optimal SYN-001 tac (3 starts, V1–V7). Independent checks: hand SSLW 2.3e-15, IDAES 1e-14,
+  Brightway 3e-16.
+- PrISMa scoping digest `docs/briefs/PrISMa-scoping.md`; E01 and PrISMa queued per Frank.
+- Incident: one E01 engineer sent Frank's e-mail as a User-Agent to download.bls.gov once (logged in E01A_DECISIONS);
+  briefs now forbid personal identifiers to external services and nested subagents.
+- Frank, 2026-10-28: "finish what you are doing and then pause further development until budget is refreshed again" →
+  paused after S11 WO-I2 and E01 WO-B4; next actions in `docs/V02_STATE.md`.

@@ -1141,10 +1141,19 @@ limitations:
       - doc:docs/derivations/S11-units-design.md §4.10
   - id: L-TH-7
     text: >-
-      Dormant single-phase thermal outlets need T05b's v2 phase contract.
+      Dormant single-phase thermal outlets need T05b's v2 phase contract to solve. Under v1 a
+      converged start certifies RANK_DEFICIENT, and a solve that must move ends
+      LINEAR_SOLVE_FAILED. Under either contract, a converged run with such an outlet certifies
+      UNVERIFIED, with regularity RANK_DEFICIENT. The verifier's own dormant-outlet table
+      (verify.zero_flow.DORMANT_OUTLETS, spec §7.6) has no thermal.* outlet, so it judges the
+      outlet's energy row, which reads no temperature at zero flow.
     evidence:
       - tests/test_s11_thermal_solve.py::test_a62_a_dormant_heater_with_zero_duty_converges_on_the_label_row
+      - tests/test_s11_thermal_solve.py::test_o_c6_1_under_v1_a_dormant_heater_is_rank_deficient_or_singular
+      - tests/test_s11_thermal_solve.py::test_o_c6_1_the_syn001_pumps_dormant_case_under_v1_is_recorded
+      - tests/test_s11_thermal_solve.py::test_r844_under_v2_a_converged_dormant_heater_certifies_unverified_rank_deficient
       - doc:docs/derivations/S11-units-design.md §4.10
+      - doc:docs/reviews/S11-review.md §M2 (R-844)
   - id: L-TH-8
     text: >-
       A revision declares one phase per port (R4), so a `thermal.mixer` takes inlets of one

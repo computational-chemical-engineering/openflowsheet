@@ -716,7 +716,11 @@ Q_spec ≠ 0 the bound V, L ≥ 0 fails, which is the physically right refusal. 
 Dormancy forms act only under `T05b-phase-contract-v2` (ADR 0012 D12). Under v1, a dormant single-phase thermal
 outlet is typed `RANK_DEFICIENT`, as the SYN-001 pump's is (L-TH-7). *Erratum 2026-10-27 (R-839):* restated. A
 solve that must move ends `LINEAR_SOLVE_FAILED` (measured); a converged start certifies `RANK_DEFICIENT`, which is a
-fact checked at I1b (`docs/reviews/S11-rulings.md` item 10). Thermal units author no `molar_flow_squared`
+fact checked at I1b (`docs/reviews/S11-rulings.md` item 10). *Erratum 2026-10-29 (R-844):* "as the SYN-001
+pump's is" does not hold at the certificate. The SYN-001 pump's dormant outlet certifies VERIFIED under either
+contract, because the verifier reduces it by its own table. That table has no `thermal.*` outlet, so a converged
+dormant single-phase thermal outlet certifies UNVERIFIED, `RANK_DEFICIENT`, under v1 and v2 alike (L-TH-7). The
+verifier's thermal entries are a follow-on. Thermal units author no `molar_flow_squared`
 row, so they are not signature units and the regime machinery never touches them. Their owned columns enter the EO
 start through B2's `UnitEvaluation.owned`.
 

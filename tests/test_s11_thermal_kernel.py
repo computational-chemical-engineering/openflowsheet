@@ -640,3 +640,185 @@ def test_the_reference_regenerates_byte_for_byte() -> None:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     assert module.main(["--check"]) == 0
+
+
+# R-843: off x86-64 `--check` compares classed; these drive that comparison on perturbed copies
+# of the committed file (no CoolProp needed), and the whole check with the machine simulated.
+
+
+def _reference_module() -> Any:
+    path = ROOT / "docs/derivations/scripts/s11_thermal_reference.py"
+    spec = importlib.util.spec_from_file_location("s11_thermal_reference", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _committed() -> Any:
+    return yaml.safe_load((ROOT / "benchmarks/s11/thermal_reference.yaml").read_text())
+
+
+#: Float leaves of every R-843 class, with the expected class: a molar h, a rate (A54's cancelled
+#: pump work), an entropy, a quality, a nominal quality, a COP, a single-phase flash temperature
+#: (R-845, `flash`), a saturated temperature and a flow. Both
+#: energy leaves are water's at n = 1 mol/s, so their floor is R·T_c(H2O).
+_LEAVES = (
+    (("units", "A54_pump", "isentropic", "h"), "energy"),
+    (("units", "A54_pump", "W"), "energy"),
+    (("saturation", "H2O", 2, "s_vapor"), "entropy"),
+    (("units", "A53_turbine", "outlet", "beta"), "unit"),
+    (("grid", "CO2", 2, "nominal", "Q"), "unit"),
+    (("flowsheets", "TH-C2", "COP"), "unit"),
+    (("grid", "H2O", 0, "ph", "T"), "flash"),
+    (("flowsheets", "TH-C1", "pump_outlet", "T"), "flash"),
+    (("grid", "H2O", 2, "ph", "T"), "relative"),
+    (("flowsheets", "TH-R1", "recycle", "n"), "relative"),
+)
+
+
+def _set(document: Any, path: tuple[Any, ...], value: Any) -> None:
+    node = document
+    for part in path[:-1]:
+        node = node[part]
+    node[path[-1]] = value
+
+
+def _where(path: tuple[Any, ...]) -> str:
+    return "$" + "".join(f"[{p}]" if isinstance(p, int) else f".{p}" for p in path)
+
+
+def _floor(kind: str) -> float:
+    """R-843's s_f for the leaves of `_LEAVES`, written from the ruling, not from the script."""
+    t_c_water = _committed()["fluids"]["H2O"]["T_c"]
+    return {"energy": 8.314462618 * t_c_water, "entropy": 8.314462618, "unit": 1.0}.get(kind, 0.0)
+
+
+def _get(document: Any, path: tuple[Any, ...]) -> Any:
+    node = document
+    for part in path:
+        node = node[part]
+    return node
+
+
+def test_r843_the_committed_file_is_classed_equal_to_itself_with_every_float_classed() -> None:
+    module = _reference_module()
+    problems, worst = module.classed_problems(_committed(), _committed())
+    assert problems == []
+    assert set(worst) == {"energy", "entropy", "unit", "relative", "flash"}
+    assert all(ratio == 0.0 and where != "-" for ratio, where in worst.values())
+
+
+@pytest.mark.parametrize(("path", "kind"), _LEAVES)
+def test_r843_a_one_ulp_change_passes_in_its_class(path: tuple[Any, ...], kind: str) -> None:
+    module = _reference_module()
+    computed = _committed()
+    x = _get(computed, path)
+    _set(computed, path, math.nextafter(x, math.inf))
+    problems, worst = module.classed_problems(_committed(), computed)
+    assert problems == []
+    assert worst[kind][1] == _where(path)
+    assert 0.0 < worst[kind][0] < module.WATCH_FRACTION
+
+
+@pytest.mark.parametrize(("path", "kind"), _LEAVES)
+def test_r843_a_1e_9_change_fails(path: tuple[Any, ...], kind: str) -> None:
+    module = _reference_module()
+    computed = _committed()
+    x = _get(computed, path)
+    # Ten times the class's bound, also where x is small (beta = 0, a cancelled W): 1e-9·max(|x|,
+    # s_f), and for `flash` (R-845, bound 1e-8·|x|) 1e-7·|x|.
+    delta = 1e-7 * abs(x) if kind == "flash" else 1e-9 * max(abs(x), _floor(kind))
+    _set(computed, path, x + delta)
+    problems, worst = module.classed_problems(_committed(), computed)
+    assert len(problems) == 1
+    assert problems[0].startswith(_where(path)) and f"({kind})" in problems[0]
+    assert worst[kind][0] > 1.0
+
+
+def test_r845_the_flash_class_passes_its_measured_deviation_and_only_there() -> None:
+    module = _reference_module()
+    flash = ("flowsheets", "TH-C1", "pump_outlet", "T")
+    saturated = ("grid", "H2O", 2, "ph", "T")
+    computed = _committed()
+    _set(computed, flash, _get(computed, flash) * (1.0 + 2.403e-10))
+    problems, worst = module.classed_problems(_committed(), computed)
+    assert problems == []
+    assert worst["flash"][1] == _where(flash)
+    assert worst["flash"][0] == pytest.approx(0.02403, rel=1e-3)
+    assert worst["flash"][0] < module.WATCH_FRACTION
+    computed = _committed()
+    _set(computed, saturated, _get(computed, saturated) * (1.0 + 2.403e-10))
+    problems, worst = module.classed_problems(_committed(), computed)
+    assert len(problems) == 1 and "(relative)" in problems[0]
+    assert worst["relative"][1] == _where(saturated)
+    assert worst["relative"][0] > 1.0
+    computed = _committed()
+    _set(computed, flash, _get(computed, flash) * (1.0 + 1.5e-9))
+    problems, worst = module.classed_problems(_committed(), computed)
+    assert problems == []
+    assert worst["flash"][0] > module.WATCH_FRACTION
+
+
+def test_r843_the_floors_are_the_rulings() -> None:
+    module = _reference_module()
+    t_c = _committed()["fluids"]["H2O"]["T_c"]
+    computed = _committed()
+    # A54's W = 72.5 W sits under R·T_c(H2O)·n = 5380 W: a change of 4e-7 W passes (5.4e-7 bound),
+    # where a purely relative bound (7.3e-9) would fail it.
+    _set(computed, ("units", "A54_pump", "W"), _get(computed, ("units", "A54_pump", "W")) + 4e-7)
+    problems, worst = module.classed_problems(_committed(), computed)
+    assert problems == []
+    assert worst["energy"][0] == pytest.approx(4e-7 / (1e-10 * module.R_GAS * t_c), rel=1e-6)
+
+
+@pytest.mark.parametrize(
+    ("path", "value"),
+    [
+        (("grid", "H2O", 2, "ph", "regime"), "LIQUID"),
+        (("grid", "H2O", 0, "ph", "beta"), 0.0),
+        (("grid", "H2O", 2, "ph", "beta"), None),
+        (("flowsheets", "TH-R1", "sweeps"), 41),
+        (("coolprop", "backend"), "REFPROP"),
+    ],
+)
+def test_r843_an_exact_leaf_that_differs_fails(path: tuple[Any, ...], value: Any) -> None:
+    module = _reference_module()
+    computed = _committed()
+    _set(computed, path, value)
+    problems, _ = module.classed_problems(_committed(), computed)
+    assert len(problems) == 1
+
+
+def test_r843_a_float_under_an_unmapped_key_is_an_error_of_the_check() -> None:
+    module = _reference_module()
+    committed, computed = _committed(), _committed()
+    for document in (committed, computed):
+        document["units"]["A52_heater"]["rho"] = 958.0
+    with pytest.raises(ValueError, match="no R-843 floor class"):
+        module.classed_problems(committed, computed)
+
+
+@pytest.mark.parametrize(
+    ("perturb", "expected"),
+    [("ulp", 0), ("1e-9", 1), ("regime", 1)],
+)
+def test_r843_the_check_off_x86_64_on_a_perturbed_copy(
+    perturb: str, expected: int, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    require_coolprop()
+    module = _reference_module()
+    copy = _committed()
+    path = ("units", "A55_compressor", "W")
+    if perturb == "ulp":
+        _set(copy, path, math.nextafter(_get(copy, path), math.inf))
+    elif perturb == "1e-9":
+        _set(copy, path, _get(copy, path) * (1.0 + 1e-9))
+    else:
+        _set(copy, ("units", "A55_compressor", "outlet", "regime"), "SATURATED")
+    out = tmp_path / "thermal_reference.yaml"
+    out.write_text(module._HEADER + yaml.safe_dump(copy, sort_keys=False, width=100))
+    monkeypatch.setattr(module, "OUT", out)
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module.platform, "machine", lambda: "aarch64")
+    assert module.main(["--check"]) == expected

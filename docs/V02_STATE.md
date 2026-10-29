@@ -92,30 +92,40 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-26, workstation; no cloud sessions).** `main` = `77f54168` (wp/R796 merged at `3a2c17ae`, tree identical:
-R-795, R-796, T07 report line). Last full gate: PASS at `3a2c17ae`: 13288 passed, 3137 skipped. CI 40403579501 green.
-v0.3 packages tested: S01–S05, S07, S08, S08b, S09, S10, S10-C; R01–R03 open. **Way of working (Frank, 2026-10-26):** batch
-several items per branch, two engineers in parallel, one gate + one CI per batch.
-**S08b** (manifest `evidence/S08b/acbd1266…` tested 18/20, gate/CI unsupported; review `docs/reviews/S08b-review.md` sound,
-no must-fix): `S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61`; B2 1.6e-6 K. HARVEST_SIZE (59, 832, 101).
-**S10-C** (ADR 0049 Proposed; `evidence/S10c/2aedd250…` tested): γ–φ PH flash and column; R-782/R-785/R-786.
-
-**Next actions (in order):**
-1. **S11 — the binding package** (Frank, 2026-10-26: "I want the binding package"; supersedes the library-only defaults S05
-   Q-8, S10 Q-F2/R-709, S10-C Q1/Q3). wp/S11, worktree `s11`; brief `docs/briefs/S11-binding-design.md`, recon
-   `docs/briefs/S11-binding-recon.md`. Architect design + ADR 0050 running (register from R-800). Then tracks A and B in
-   parallel, one review, one gate, one CI. Fold in: the two stale S10 limitation sentences; R-796's limitation into the
-   S08b/S10-C manifests at their next regeneration.
-2. **E01 — cost estimation and LCA as general capabilities** (Frank, 2026-10-27: "I want cost estimation and LCA available,
-   because these are input in process optimization studies"). Cost and impact as differentiable model quantities usable as
-   objectives/constraints (blueprint §line 435-447: NLP bridge, "assessment adapters with currency year, location, factors,
-   uncertainty, and provenance"); open correlation sets (Turton/Seider/Woods, NETL QGESS) as registered cost providers,
-   public cost index (not CEPCI by default); LCA linear in inventory flows on Brightway with a pluggable background (free
-   data shipped; ecoinvent via the user's licence). Design done (`wp/E01` `49fef97c`, ADR 0052, R-850…R-862): post-solve
-   functionals through the parametric twin, exact Jacobians; SSLW from IDAES 2.13.0 (BSD); BLS/Eurostat PPI; AR6 GWP100.
-   Building (track A on `wp/E01`, which merged wp/S11). Frank 2026-10-27: optimiser generalisation = next package; Python
-   first; discrete choices fixed.
-2b. **NLP optimiser on revision flowsheets** (after E01; Frank 2026-10-27), with MCP/CLI/HTTP bindings for cost/LCA.
+**Position (2026-10-28, PAUSED by Frank: "finish what you are doing and then pause further development until budget is
+refreshed again").** `main` = `df5d5a3f` (README status by another session). Two branches complete, unpushed-to-main:
+- **wp/S11** (worktree `s11`, head `8d2ee175`): binding package complete through WO-I2. Manifest
+  `evidence/S11/01e72ca4…/manifest.json` **tested 123/126** (G8, gate, CI unsupported). `S11-IDENTITY PASS n=54494
+  changed=[]`; S08/S10-C lines reproduce. HARVEST_SIZE (60, 867, 104). ADR 0050/0051 Proposed ("implemented, tested").
+  Logs: `docs/S11{A,B,C,D}_DECISIONS.md`; rulings `docs/reviews/S11-rulings.md` (R-830…R-842).
+- **wp/E01** (worktree `e01`, head `cd85a773`; merged wp/S11 at an earlier point): cost + LCA tracks A and B complete
+  (WO-A1…A5, B1…B4). Cost-optimal SYN-001 tac verified from 3 starts (V1–V7); cost vs independent hand transcription 2.3e-15,
+  vs IDAES 1e-14; LCA vs Brightway 3e-16. Not done: E01's integration WO (I1: packaging `_data/assessment/**` under T08's
+  symlink rule, `MR12_AUDITS` entry for the `lca` extra — `test_m07_mr12_extras_v02::test_the_git_backed_measure_at_head`
+  fails until then, P1/P3 naming) and I2 (manifest). Logs `docs/E01A_DECISIONS.md`, `docs/E01B_DECISIONS.md`.
+Way of working (Frank, 2026-10-26): batch per branch, ≤ 2 agents, one gate + one CI per batch; briefs forbid subagents and
+sending personal identifiers to external services.
+**Next actions (in order) — on resume:**
+1. **S11 finish:** full gate (`scripts/gate.sh`) on wp/S11; in parallel the single `reviewer` pass over S11 (brief to write:
+   design notes S11-design §0–§10, S11-units-design, rulings; build logs; open items: O-C6-1 dormant thermal pump rank
+   (verifier `DORMANT_OUTLETS` lacks `thermal.*`), the R-561 reclassification, C3-1 kernel fix, the T08.A32 clause (vi),
+   the forward-stencil witness, the 29 skips incl. 26 archive-dependent W27 tests); push wp/S11 → CI both architectures;
+   merge `--no-ff` + tree check; push main.
+2. **E01 finish:** merge main (with S11) into wp/E01; I1 (packaging, MR12_AUDITS, P1/P3) and I2 (manifest, harvest); one
+   `reviewer` pass (batched build questions in the two E01 logs, incl. the uncertainty-interval disclosure of restricted
+   scores and QA1: Frank checks the Seider 3rd-ed size ranges before any release); gate; CI; merge.
+2b. **NLP optimiser on revision flowsheets** (Frank 2026-10-27: right after E01), with MCP/CLI/HTTP for cost/LCA.
+2c. **X01 — model extensibility infrastructure, piloted by NRTL + UNIQUAC (+ original UNIFAC), VLE only** (Frank,
+   2026-10-28: "more about the flexibility of the basic infrastructure than having all models on board"; adding a model
+   should be easy, e.g. by asking a coding agent). After the optimiser package. Design pass decides: one registration
+   point per provider (today a new basis touches ~10 sites: `SELECTABLE_BASES`, `basis_provider`, verifier
+   `fresh_provider`, `MODEL_BASES`, W27 lines, envelope, T08 inventory, records); an activity-model interface (ln γ(T,x)
+   with derivatives by AD) from which the γ–φ flash, column, binding and verifier follow; a conformance kit (derivatives,
+   Gibbs–Duhem, limits, symmetry, stability) plus a reference-comparison scaffold; library-only until both pass; an
+   agent recipe ("add a model") as a skill/doc. Pilots: NRTL, UNIQUAC, original UNIFAC (rights check of parameter
+   tables; Dortmund UNIFAC is licensed). A predicted liquid split is refused typed.
+2d. **Two liquid phases (LLE/VLLE)** — waits for a case (Frank 2026-10-28); needs an interface ADR (FlashResult carries
+   one liquid, S10 F-1), three-phase flash, decanter, verifier.
 3. **After S11 merges: revision-region continuation** (edge 3 for flowsheet regions; Frank 2026-10-27 "plan for it at the
    appropriate time"; removes S11's L-COL-9, R-827). Design pass first.
 4. **PrISMa rework as a test case** (Frank, 2026-10-27: "get OpenFlowsheet to the level that it can rework PrISMa analysis
