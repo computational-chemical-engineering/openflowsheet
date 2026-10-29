@@ -1265,3 +1265,6 @@ Grep, don't read whole. Newest at the bottom.
   Alternative: regenerate at the merge commit. Reversible by: re-running `scripts/e01_evidence_manifest.py`.
 - Frank, 2026-10-29: "cut 0.3.0 right after S11 and E01 merge, before starting the optimiser package, and leave Wilson
   in." Release work queued as step 2 of `docs/V02_STATE.md`.
+- Frank, 2026-10-29: Q-F3 → ship Wilson fitted parameters + transcribed points in 0.3.0; IPCC GWP values ship with
+  citation; QA1 checked against Seider 4th ed. (Frank uploaded it; Zotero `seider2017product`), Frank approves the flip.
+  E01 merge gate PASS `84d71df8` (14537 passed, 3205 skipped); CI 40909427554 running.

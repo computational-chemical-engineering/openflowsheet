@@ -236,3 +236,10 @@ All four answered with the recommended default (Frank, 2026-10-25):
   UNIQUAC and original UNIFAC.
 - **Next release** (Frank, 2026-10-29): "cut 0.3.0 right after S11 and E01 merge, before starting the optimiser package,
   and leave Wilson in." Still needed from Frank before the tag: Q-F3 (Wilson/S10 data rights), the E01 data rights, QA1.
+- **Q-F3 answered** (Frank, 2026-10-29): the 0.3.0 wheel ships the Wilson data, **fitted parameters and the transcribed
+  Kurihara 1993 points** ("Ship params + points"), with the three CIAAW atomic weights; S10-RC-05/RC-08 settled by Frank.
+- **E01 data rights answered** (Frank, 2026-10-29): ship the five IPCC AR6 GWP-100 values **as facts with the citation**
+  ("Ship with citation (Rec.)"); the other E01 data are open (BSD, US public domain, CC BY).
+- **QA1** (Frank, 2026-10-29): "I have uploaded edition 4 of Seider et al." → Zotero `seider2017product` (4th ed., 2017;
+  ch. 16 = 3rd ed. ch. 22; Table 16.32 pp. 481-485, CE 567). An agent compares the ranges against it; Frank approves the
+  one commit that sets `verified: true` (A48). Edition differences are reported, not silently adopted.
