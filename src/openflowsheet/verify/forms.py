@@ -34,6 +34,7 @@ from openflowsheet.verify.checks import KIND_REFERENCE, VerifierError, stream_of
 
 __all__ = [
     "DECLARED_MIXTURE",
+    "GAMMA_PHI_UNITS",
     "PR",
     "PURE_FLUID_MARGIN",
     "SYN",
@@ -41,14 +42,21 @@ __all__ = [
     "declared_phases",
     "enthalpy_flow",
     "form_of",
+    "pure_fluid_provider",
     "stream_admissibility",
 ]
 
-Form = Literal["SYN", "PR", "DECLARED_MIXTURE"]
+Form = Literal["SYN", "PR", "DECLARED_MIXTURE", "GAMMA_PHI_UNITS"]
 SYN: Final[Form] = "SYN"
 PR: Final[Form] = "PR"
 DECLARED_MIXTURE: Final[Form] = "DECLARED_MIXTURE"
-_FORMS: Final[Mapping[str, Form]] = {"syn001": SYN, "pr-c1-v1": PR}
+#: Units design §4.8 (I1b): `wilson-ig-v2`'s form, `verify.gamma_phi_units` (its `GAMMA_PHI_UNITS`).
+GAMMA_PHI_UNITS: Final[Form] = "GAMMA_PHI_UNITS"
+_FORMS: Final[Mapping[str, Form]] = {
+    "syn001": SYN,
+    "pr-c1-v1": PR,
+    "wilson-ig-v2": GAMMA_PHI_UNITS,
+}
 #: A09: the γ–φ admissibility criterion is the units' own implementation, not an independent one.
 _SHARED: Final = (
     "; the admissibility criterion is models.syn001.tp_state.single_phase_admissible, the "
@@ -61,6 +69,14 @@ PURE_FLUID_MARGIN: Final = 1e-9
 def form_of(provider_id: str) -> Form:
     """The verifier's form for a revision on `provider_id`'s basis."""
     return _FORMS.get(provider_id, DECLARED_MIXTURE)
+
+
+def pure_fluid_provider(provider: PropertyProvider) -> bool:
+    """Whether a declared-mixture revision's provider is composition-independent (a pure fluid,
+    not a γ–φ provider such as `wilson-ig-v1`): units design §4.8's test for lifting a
+    `thermal.*` saturated outlet. Here so that `verify.table` reads no model function (T05's
+    table-independence rule)."""
+    return not composition_dependent(provider)
 
 
 def declared_phases(view: RevisionView) -> dict[str, Phase | None]:

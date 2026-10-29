@@ -75,6 +75,12 @@ _BASE: Final[tuple[DeclaredEquation, ...]] = (
         source=SPECIFICATION,
     ),
 )
+#: Every configuration's equations, keyed by whether the outlet is saturated: the module-level
+#: declaration ADR 0008's readiness checks read (U1, E1); `declared_equations` returns one of them.
+EQUATIONS: Final[dict[bool, tuple[DeclaredEquation, ...]]] = {
+    False: _BASE,
+    True: (*_BASE, *saturated_declarations(SPECIFICATION)),
+}
 
 PORTS: Final[tuple[Port, ...]] = (
     material_port("inlet", "inlet", ("LIQUID", "VAPOR", "SATURATED")),
@@ -132,9 +138,7 @@ class ThermalValve:
         return PORTS
 
     def declared_equations(self) -> tuple[DeclaredEquation, ...]:
-        if self.outlet_form == "SATURATED":
-            return (*_BASE, *saturated_declarations(SPECIFICATION))
-        return _BASE
+        return EQUATIONS[self.outlet_form == "SATURATED"]
 
     def manifest(self) -> Mapping[str, Any]:
         return manifest(

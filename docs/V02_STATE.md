@@ -111,7 +111,11 @@ no must-fix): `S08B-IDENTITY PASS a=52 a_texts=11 b_keys=6075 b_moved=61`; B2 1.
    objectives/constraints (blueprint §line 435-447: NLP bridge, "assessment adapters with currency year, location, factors,
    uncertainty, and provenance"); open correlation sets (Turton/Seider/Woods, NETL QGESS) as registered cost providers,
    public cost index (not CEPCI by default); LCA linear in inventory flows on Brightway with a pluggable background (free
-   data shipped; ecoinvent via the user's licence); EF 3.x factors. Design pass right after S11; PrISMa builds on it.
+   data shipped; ecoinvent via the user's licence). Design done (`wp/E01` `49fef97c`, ADR 0052, R-850…R-862): post-solve
+   functionals through the parametric twin, exact Jacobians; SSLW from IDAES 2.13.0 (BSD); BLS/Eurostat PPI; AR6 GWP100.
+   Building (track A on `wp/E01`, which merged wp/S11). Frank 2026-10-27: optimiser generalisation = next package; Python
+   first; discrete choices fixed.
+2b. **NLP optimiser on revision flowsheets** (after E01; Frank 2026-10-27), with MCP/CLI/HTTP bindings for cost/LCA.
 3. **After S11 merges: revision-region continuation** (edge 3 for flowsheet regions; Frank 2026-10-27 "plan for it at the
    appropriate time"; removes S11's L-COL-9, R-827). Design pass first.
 4. **PrISMa rework as a test case** (Frank, 2026-10-27: "get OpenFlowsheet to the level that it can rework PrISMa analysis

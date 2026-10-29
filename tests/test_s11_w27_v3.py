@@ -71,8 +71,9 @@ def test_registered_state(state: dict[str, Any]) -> None:
     assert [[u["key"], u["models"]] for u in row["units"]] == expected["units"]
 
 
-def test_the_states_are_the_registered_eight() -> None:
-    assert [s["id"] for s in _states()] == [f"W27v3-A{n:02d}" for n in range(1, 9)]
+def test_the_states_are_the_registered_nine() -> None:
+    """A01-A08, and A09 added by R-832 (W27v3-R09)."""
+    assert [s["id"] for s in _states()] == [f"W27v3-A{n:02d}" for n in range(1, 10)]
 
 
 def test_r07_the_tie_goes_to_the_smaller_key_not_the_first_route() -> None:
@@ -103,6 +104,18 @@ def test_version_3_tables_are_read_from_registration_v3() -> None:
         "offers": [],
         "why_none": "column_function_unregistered",
     }
+    thermal = {
+        "thermal.heater": "heater",
+        "thermal.valve": "valve",
+        "thermal.mixer": "mixer",
+        "thermal.flash": "flash",
+        "thermal.pump": "pump",
+        "thermal.compressor": "compressor",
+        "thermal.turbine": "expander",
+    }
+    for model_id, function in thermal.items():  # S11 units design §4.10
+        assert registration.model_functions(3)[model_id] == {"function": function, "offers": []}
+        assert model_id not in registration.model_functions(2)
     assert registration.model_functions(1) == registration.model_functions(2)
     assert "syn001.column" not in registration.model_functions(2)
     with pytest.raises(ValueError, match="not 1, 2 or 3"):
@@ -234,13 +247,22 @@ def test_a33_the_iapws95_route_reads_water_from_the_s05_records() -> None:
 
 def test_v3_routes_are_the_v2_routes_with_their_record_sources() -> None:
     """W27v3-R05: `pr-c1-v1` keeps its v2 line and SYN-001's generic line reads what `_syn001_line`
-    read; only `record_source` is added."""
+    read; `record_source` is added, and a route's `model_ids` gain only S11's models on its basis,
+    which v1/v2's model table does not carry (R-805; `snapshot.restrict_to_v2_models`)."""
     from test_m06_w27_coverage import v2_binder  # noqa: PLC0415
 
     before = snapshot.build_snapshot(binding=v2_binder())["routes"]
     after = {r["provider_id"]: r for r in _build_v3()["routes"]}
+    table = registration.model_functions(2)
+    gained: dict[str, list[str]] = {}
     for r in before:
-        assert {k: v for k, v in after[r["provider_id"]].items() if k != "record_source"} == r
+        v3 = after[r["provider_id"]]
+        assert {k: v for k, v in v3.items() if k not in ("record_source", "model_ids")} == {
+            k: v for k, v in r.items() if k != "model_ids"
+        }
+        assert [m for m in v3["model_ids"] if m in table] == r["model_ids"]
+        gained[r["provider_id"]] = [m for m in v3["model_ids"] if m not in table]
+    assert gained == {"syn001": ["syn001.column"], "pr-c1-v1": []}
 
 
 def test_the_0_1_1_reading_carries_the_syn001_record_source_under_v3() -> None:
@@ -341,3 +363,67 @@ def test_a32_generator_check() -> None:
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "identical" in result.stdout and "DIFFER" not in result.stdout
+
+
+# =================================================================================================
+# S11.A40 and A84: snapshot S4 (W27v3-R08), and its classification of the development half
+# =================================================================================================
+
+S4_SCRIPT = ROOT / "scripts" / "s11_w27_s4.py"
+S4_RECORD = registration.RECORDS / "snapshot_s4.json"
+
+
+def test_a40_a84_the_build_snapshot_is_s4_and_classifies_the_225_rows() -> None:
+    """S11.A40: the build's version 3 snapshot equals S4 (every member but `git_commit`); rulings
+    item 3 acceptance 4: it classifies the 225 development rows with no refusal, to the recorded
+    tally. S11.A84: 127 routes, the Wilson route on `wilson-ig-v2`."""
+    env = {**os.environ, "PYTHONPATH": f"{ROOT / 'src'}{os.pathsep}{ROOT}"}
+    result = subprocess.run(
+        [sys.executable, str(S4_SCRIPT), "--check"],
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+        env=env,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "S4 OK: 0 problem(s)" in result.stdout
+    record = json.loads(S4_RECORD.read_bytes())
+    assert record["routes"] == len(record["snapshot"]["routes"]) == 127
+    assert record["wilson_route"] == ["wilson-ig-v2"]
+    assert record["snapshot"]["schema"] == "w27-registry-snapshot-v3"
+    assert record["development"]["rows"] == 225
+    # Regression pins (the S4 build's own output, not an independent expectation).
+    assert record["development"]["tally"]["classes"] == {
+        "ARTIFACT_INCOMPLETE": 0,
+        "CANDIDATE": 3,
+        "COMPONENT_UNAVAILABLE": 3,
+        "NOT_STEADY_STATE_SIMULATION": 32,
+        "PROPERTY_ROUTE_UNAVAILABLE": 3,
+        "UNIT_UNAVAILABLE": 184,
+    }
+    # W27v3-R08: S4 is registered with its SHA-256.
+    doc = (ROOT / "docs" / "derivations" / "W27-registration-v3.md").read_text(encoding="utf-8")
+    assert f"`{record['snapshot_sha256']}`" in doc
+
+
+def test_a40_the_s4_check_can_fail() -> None:
+    """The check sees a moved route, a moved tally and a stale SHA-256."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        import s11_w27_s4  # noqa: PLC0415
+    finally:
+        sys.path.remove(str(ROOT / "scripts"))
+    record = json.loads(S4_RECORD.read_bytes())
+    built = json.loads(S4_RECORD.read_bytes())
+    built["snapshot"]["git_commit"] = "0" * 40
+    assert s11_w27_s4.problems(record, built) == []
+    built["snapshot"]["routes"] = built["snapshot"]["routes"][1:]
+    built["development"]["tally"]["classes"]["CANDIDATE"] += 1
+    found = s11_w27_s4.problems(record, built)
+    assert "snapshot member 'routes' differs from the build's" in found
+    assert any(line.startswith("development differs") for line in found)
+    record["snapshot_sha256"] = "0" * 64
+    assert "snapshot_sha256 is not the SHA-256 of the stored snapshot" in s11_w27_s4.problems(
+        record, json.loads(S4_RECORD.read_bytes())
+    )

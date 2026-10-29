@@ -1,7 +1,7 @@
 """S11 WO-C4: the `thermal.*` builders through `bind_revision_flowsheet` (S11 units design §4.4).
 
-The seven builders, signatures and bases (`application.thermal_binding`) enter the binder's tables
-at I1b; here each test registers them in monkeypatched tables, as `test_m02_wo8_region` does.
+The seven builders, signatures and bases (`application.thermal_binding`) are rows of the binder's
+tables since I1b (units design §5.4).
 Every admitted mode and form binds to a square `ProblemSpec`, and every bind refusal of §4.4 gives
 its code and hint. CoolProp cases skip cleanly without the extra.
 """
@@ -57,31 +57,6 @@ UNIT_CLASS: Mapping[str, type[Any]] = {
     "thermal.turbine": ThermalMachine,
 }
 FORM = {"liquid": "LIQUID", "vapor": "VAPOR", "vapor_liquid": "SATURATED"}
-
-
-@pytest.fixture
-def registered(monkeypatch: pytest.MonkeyPatch) -> None:
-    register(monkeypatch)
-
-
-def register(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The seven models in the binder's tables, as I1b will register them."""
-    for model_id in THERMAL:
-        monkeypatch.setitem(
-            revision_binding.MODEL_BUILDERS,
-            model_id,
-            thermal_binding.BUILDERS[model_id],
-        )
-        monkeypatch.setitem(
-            revision_binding.MODEL_SIGNATURES,
-            model_id,
-            thermal_binding.SIGNATURES[model_id],
-        )
-        monkeypatch.setitem(
-            revision_binding.MODEL_BASES,
-            model_id,
-            thermal_binding.BASES[model_id],
-        )
 
 
 # -- documents -----------------------------------------------------------------------------------
@@ -264,17 +239,20 @@ def test_the_three_tables_name_the_seven_models() -> None:
     assert set(thermal_binding.SIGNATURES) == set(THERMAL)
     assert set(thermal_binding.BUILDERS) == set(THERMAL)
     assert set(thermal_binding.BASES) == set(THERMAL)
-    assert all(
-        bases == {"iapws95-v1", "coolprop-heos-v1"} for bases in thermal_binding.BASES.values()
-    )
+    wilson = {"thermal.compressor", "thermal.turbine"}
+    for model_id, bases in thermal_binding.BASES.items():
+        expected = {"iapws95-v1", "coolprop-heos-v1"} | (
+            {"wilson-ig-v2"} if model_id in wilson else set()
+        )
+        assert bases == expected, model_id
 
 
-def test_until_i1b_the_binder_refuses_the_family() -> None:
-    """Not registered on this branch: the binder's library-only refusal, as before S11 C4."""
-    answer = refused(
-        through("thermal.valve", "liquid", "liquid", None, [outlet_pressure("U", 5e4)])
-    )
-    assert answer == Unbound("unsupported", "model_unsupported(thermal.valve)")
+def test_since_i1b_the_binder_holds_the_family() -> None:
+    """Units design §5.4 (I1b): the seven are rows of the binder's three tables."""
+    for model_id in THERMAL:
+        assert revision_binding.MODEL_SIGNATURES[model_id] is thermal_binding.SIGNATURES[model_id]
+        assert revision_binding.MODEL_BASES[model_id] == thermal_binding.BASES[model_id]
+        assert model_id in revision_binding.MODEL_BUILDERS
 
 
 def test_outlet_vapor_fraction_is_a_dimensionless_parameter() -> None:
@@ -336,7 +314,6 @@ HEATER_CASES = [
 
 @pytest.mark.parametrize(("inlet", "outlet", "parameters", "specs", "mode"), HEATER_CASES)
 def test_heater_binds_every_mode_and_form(
-    registered: None,
     inlet: str,
     outlet: str,
     parameters: dict[str, Any],
@@ -351,7 +328,7 @@ def test_heater_binds_every_mode_and_form(
         assert unit.pressure_drop == 1.0e3
 
 
-def test_heater_quality_from_a_parameter_specification(registered: None) -> None:
+def test_heater_quality_from_a_parameter_specification() -> None:
     """A `role: fixed` specification of `parameters.outlet_vapor_fraction` lands on the
     parameter (R6), in the kind `_PARAMETER_KINDS` gives it."""
     beta = dict(
@@ -374,7 +351,7 @@ def test_heater_quality_from_a_parameter_specification(registered: None) -> None
         ("vapor_liquid", "vapor"),
     ],
 )
-def test_valve_binds_every_form(registered: None, inlet: str, outlet: str) -> None:
+def test_valve_binds_every_form(inlet: str, outlet: str) -> None:
     unit = unit_of(
         bound(through("thermal.valve", inlet, outlet, None, [outlet_pressure("U", 5e4)]))
     )
@@ -386,14 +363,14 @@ def test_valve_binds_every_form(registered: None, inlet: str, outlet: str) -> No
 @pytest.mark.parametrize(
     ("inlet", "outlet"), [("liquid", "liquid"), ("liquid", "vapor_liquid"), ("vapor", "vapor")]
 )
-def test_mixer_binds_every_form(registered: None, inlet: str, outlet: str) -> None:
+def test_mixer_binds_every_form(inlet: str, outlet: str) -> None:
     unit = unit_of(bound(mixing(inlet, outlet), excess=1))
     assert isinstance(unit, ThermalMixer)
     assert unit.forms == {"S1": FORM[inlet], "S3": FORM[inlet], "S2": FORM[outlet]}
 
 
 @pytest.mark.parametrize("inlet", ["liquid", "vapor"])
-def test_flash_binds(registered: None, inlet: str) -> None:
+def test_flash_binds(inlet: str) -> None:
     unit = unit_of(bound(drum(inlet)))
     assert isinstance(unit, ThermalFlash)
     assert (unit.duty, unit.pressure_drop) == (2.0e4, 0.0)
@@ -417,9 +394,7 @@ MACHINE_CASES = [
 
 
 @pytest.mark.parametrize(("model", "inlet", "outlet", "pressure"), MACHINE_CASES)
-def test_machines_bind_every_form(
-    registered: None, model: str, inlet: str, outlet: str, pressure: float
-) -> None:
+def test_machines_bind_every_form(model: str, inlet: str, outlet: str, pressure: float) -> None:
     document = through(
         model, inlet, outlet, {"efficiency": dimensionless(0.8)}, [outlet_pressure("U", pressure)]
     )
@@ -462,7 +437,6 @@ def test_machines_bind_every_form(
     ],
 )
 def test_coolprop_basis_binds(
-    registered: None,
     model: str,
     inlet: str,
     outlet: str,
@@ -474,7 +448,7 @@ def test_coolprop_basis_binds(
     assert unit.provider.describe().provider_id == "coolprop-heos-v1"
 
 
-def test_the_configuration_names_the_mode_and_forms(registered: None) -> None:
+def test_the_configuration_names_the_mode_and_forms() -> None:
     """Two revisions that differ only in a declared form or the mode label differently."""
     labels = {
         bound(through("thermal.heater", "liquid", outlet, None, [duty("U", 1.0e3)])).spec.label
@@ -537,7 +511,6 @@ HEATER_HINT_T = (
     ],
 )
 def test_heater_refusals(
-    registered: None,
     outlet: str,
     parameters: dict[str, Any],
     specs: list[dict[str, Any]],
@@ -549,7 +522,7 @@ def test_heater_refusals(
     assert answer.hint == hint
 
 
-def test_heater_without_a_specification_is_missing(registered: None) -> None:
+def test_heater_without_a_specification_is_missing() -> None:
     answer = refused(through("thermal.heater", "liquid", "vapor_liquid"))
     assert answer == Unbound("incomplete", "specification_missing(U.specification)")
     assert answer.hint is not None
@@ -574,7 +547,7 @@ def test_heater_without_a_specification_is_missing(registered: None) -> None:
     ],
 )
 def test_heater_with_two_specifications_conflicts(
-    registered: None, parameters: dict[str, Any], specs: list[dict[str, Any]]
+    parameters: dict[str, Any], specs: list[dict[str, Any]]
 ) -> None:
     answer = refused(through("thermal.heater", "liquid", "vapor_liquid", parameters, specs))
     assert answer == Unbound("conflict", "specification_conflict(U.specification)")
@@ -584,9 +557,7 @@ def test_heater_with_two_specifications_conflicts(
     ("vapor", "liquid", "port"),
     [("vapor", "vapor_liquid", "vapor"), ("vapor_liquid", "liquid", "liquid")],
 )
-def test_flash_products_must_be_saturated(
-    registered: None, vapor: str, liquid: str, port: str
-) -> None:
+def test_flash_products_must_be_saturated(vapor: str, liquid: str, port: str) -> None:
     answer = refused(drum(vapor=vapor, liquid=liquid))
     assert answer == Unbound("unsupported", f"specification_unsupported(U.{port})")
     assert answer.hint == "a drum's products are saturated (ADR 0051 D4)"
@@ -662,9 +633,7 @@ def test_flash_products_must_be_saturated(
         ),
     ],
 )
-def test_machine_port_refusals(
-    registered: None, model: str, inlet: str, outlet: str, what: str, hint: str
-) -> None:
+def test_machine_port_refusals(model: str, inlet: str, outlet: str, what: str, hint: str) -> None:
     document = through(
         model, inlet, outlet, {"efficiency": dimensionless(0.8)}, [outlet_pressure("U", 1.0e5)]
     )
@@ -673,7 +642,7 @@ def test_machine_port_refusals(
     assert answer.hint == hint
 
 
-def test_the_turbine_takes_no_isentropic_phase_parameter(registered: None) -> None:
+def test_the_turbine_takes_no_isentropic_phase_parameter() -> None:
     """C4-3: `isentropic_phase` is a choice of words, which a Quantity parameter cannot carry; a
     parameter of that name is refused as any parameter the model does not read."""
     document = through(
@@ -687,7 +656,7 @@ def test_the_turbine_takes_no_isentropic_phase_parameter(registered: None) -> No
 
 
 def _wilson_v2() -> Any:
-    """A provider that only describes itself as `wilson-ig-v2` (the C3-4 refusal comes first)."""
+    """A provider that only describes itself as `wilson-ig-v2` (construction reads no more)."""
     described = SimpleNamespace(
         provider_id="wilson-ig-v2",
         reference_convention="WILSON-IG-ref-v1",
@@ -731,23 +700,21 @@ def test_a_wilson_machine_port_must_be_vapour(
 
 
 @pytest.mark.parametrize("model", ["thermal.compressor", "thermal.turbine"])
-def test_an_all_vapour_wilson_machine_is_refused_until_d5(model: str) -> None:
-    """C3-4: the unit refuses the additive-vapour provider until WO-D4/D5; the builder reports it
-    as the binder's `unsupported`."""
-    with pytest.raises(RevisionError) as raised:
-        thermal_binding.BUILDERS[model](
-            _view(model, "VAPOR", "VAPOR"), _wilson_v2(), _CONTEXT, ("benzene", "toluene")
-        )
-    assert (raised.value.kind, raised.value.code) == (
-        "unsupported",
-        "specification_unsupported(U.provider)",
+def test_an_all_vapour_wilson_machine_binds_as_additive_vapour(model: str) -> None:
+    """§4.4 (C3-4 wired at I1b): an all-vapour compressor or turbine on `wilson-ig-v2` builds the
+    additive-vapour machine, its ports vapour."""
+    unit, _ = thermal_binding.BUILDERS[model](
+        _view(model, "VAPOR", "VAPOR"), _wilson_v2(), _CONTEXT, ("benzene", "toluene")
     )
+    assert isinstance(unit, ThermalMachine)
+    assert unit.variant == "additive-vapour"
+    assert (unit.inlet_form, unit.outlet_form) == ("VAPOR", "VAPOR")
 
 
 # -- the binder's other codes, unchanged for the family ------------------------------------------
 
 
-def test_an_efficiency_outside_the_interval_is_outside_the_domain(registered: None) -> None:
+def test_an_efficiency_outside_the_interval_is_outside_the_domain() -> None:
     """As the SYN-001 pump's: a value the unit refuses at construction (T07 round 5, S3)."""
     document = through(
         "thermal.pump",
@@ -803,13 +770,38 @@ def test_an_efficiency_outside_the_interval_is_outside_the_domain(registered: No
         ),
     ],
 )
-def test_the_binder_codes(registered: None, document: dict[str, Any], expected: Unbound) -> None:
+def test_the_binder_codes(document: dict[str, Any], expected: Unbound) -> None:
     assert refused(document) == expected
 
 
-def test_mixed_inlet_declarations_are_ambiguous(registered: None) -> None:
+def test_mixed_inlet_declarations_are_ambiguous() -> None:
     """R4 declares one phase per port, so a revision's mixer cannot take a liquid and a vapour
     inlet together (S11.A56's first case is a direct-construction case)."""
     document = mixing("liquid", "vapor_liquid")
     document["connections"][1]["phase_capability"] = "vapor"
     assert refused(document) == Unbound("unsupported", "port_phase_ambiguous(U.inlet)")
+
+
+def test_list_models_lists_each_thermal_pin_with_its_encodings(tmp_path: Any) -> None:
+    """G-R6-6 for the `thermal.*` family (I1b): `list_models` serves the seven, and each pin's and
+    each option's `specifications` is its `pin_encodings` (7 in all: the heater's two options,
+    the flash's duty, and each pressure-changer's outlet pressure)."""
+    from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.revision_binding import MODEL_SIGNATURES, pin_encodings
+
+    with LocalApplication.create(tmp_path / "p", project_id="s11-thermal") as application:
+        view = application.list_models().as_document()
+    served = [model for model in view["models"] if model["model_id"].startswith("thermal.")]
+    assert sorted(model["model_id"] for model in served) == sorted(thermal_binding.SIGNATURES)
+    checked = 0
+    for model in served:
+        signature = MODEL_SIGNATURES[model["model_id"]]
+        options = [o for c in signature.choices for o in c.options]
+        listed = [*model["pins"], *(o for c in model["choices"] for o in c["options"])]
+        for entry, pin in zip(listed, (*signature.pins, *options), strict=True):
+            assert entry["name"] == pin.name
+            assert entry["specifications"] == [
+                e.as_document() for e in pin_encodings(signature, pin)
+            ]
+            checked += 1
+    assert checked == 7

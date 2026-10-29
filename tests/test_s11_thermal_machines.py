@@ -23,7 +23,7 @@ import numpy as np
 import pytest
 import yaml
 from s07_coolprop_support import require_coolprop
-from test_s11_thermal_kernel import FD_TOL, _fd_worst
+from test_s11_thermal_kernel import FD_STEP, FD_TOL, _fd_worst
 
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import row_values
@@ -39,6 +39,7 @@ from openflowsheet.models import (
     temperature_id,
 )
 from openflowsheet.models.syn001.pump import work_id
+from openflowsheet.models.syn001.tp_state import enthalpy_block_id
 from openflowsheet.models.thermal import kernel as k
 from openflowsheet.models.thermal.blocks import (
     IsentropicEnthalpyBlock,
@@ -47,8 +48,10 @@ from openflowsheet.models.thermal.blocks import (
 )
 from openflowsheet.models.thermal.machines import ThermalMachine
 from openflowsheet.models.thermal.state import SaturatedStreamState, liquid_id, vapor_id
+from openflowsheet.orchestrator.budget import PropertyMeter
 from openflowsheet.thermo import PropertyProvider, PropertyRequest, PropertyResult, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
+from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2
 from openflowsheet.verify.checks import KIND_TOLERANCE
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -197,10 +200,11 @@ def test_a48_dormant_new_variants(
 
 
 def test_saturated_variants_refuse_a_single_phase_isentropic_state() -> None:
-    """beta_s outside [0, 1] is a trial-state DomainError (and the evaluate's refusal)."""
-    with pytest.raises(DomainError, match="isentropic_state_two_phase"):
+    """beta_s outside [0, 1] is a trial-state DomainError (and the evaluate's refusal), coded
+    `isentropic_state_single_phase` (C3-2, R-839)."""
+    with pytest.raises(DomainError, match="isentropic_state_single_phase"):
         _block("pure-single/sat", "VAPOR", "SATURATED").values((1.0, 900.0, 1.0e6, 5.0e5))
-    with pytest.raises(DomainError, match="isentropic_state_two_phase"):
+    with pytest.raises(DomainError, match="isentropic_state_single_phase"):
         # Saturated steam compressed: the isentropic state is superheated, not wet.
         _block("pure-sat/sat", "VAPOR", "SATURATED").values((1.0, 1.0e5, 3.0e5))
 
@@ -607,16 +611,36 @@ def test_a50_construction_refusals(
     assert str(raised.value).split("\n", 1)[0] == code
 
 
-def test_a50_the_wet_outlet_hint_and_the_wilson_machines() -> None:
+def test_a50_the_wet_outlet_hint() -> None:
     with pytest.raises(SpecificationError, match="a wet outlet has a wetter isentropic state"):
         _machine("turbine", "VAPOR", "SATURATED", 1.0e4, isentropic_phase="vapor")
-    wilson = _IdealGas(("A",))
+
+
+@pytest.mark.parametrize(
+    ("machine", "inlet", "outlet", "extra", "what"),
+    [
+        ("compressor", "SATURATED", "VAPOR", {}, "inlet"),
+        ("compressor", "LIQUID", "VAPOR", {}, "inlet"),
+        ("turbine", "SATURATED", "VAPOR", {}, "inlet"),
+        ("turbine", "VAPOR", "SATURATED", {}, "outlet"),
+        ("turbine", "VAPOR", "VAPOR", {"isentropic_phase": "vapor_liquid"}, "isentropic_phase"),
+    ],
+)
+def test_a_wilson_machine_is_vapour_on_both_ports(
+    machine: str, inlet: str, outlet: str, extra: dict[str, Any], what: str
+) -> None:
+    """§4.4 (L-GP-2): the additive-vapour machine refuses any non-vapour form, with the binder's
+    code and hint; the pump stays unadmitted on Wilson."""
     with pytest.raises(SpecificationError) as raised:
-        _machine("compressor", "VAPOR", "VAPOR", 3.0e5, provider=wilson)
-    assert str(raised.value).startswith("specification_unsupported(U1.provider)\n")
-    assert "wilson-ig-v2" in str(raised.value)
+        _machine(machine, inlet, outlet, 3.0e5, provider=_IdealGas(("A", "B")), **extra)
+    assert str(raised.value) == (
+        f"specification_unsupported(U1.{what})\nno γ–φ two-phase PS closure (L-GP-2)"
+    )
     with pytest.raises(SpecificationError, match=r"provider_not_admitted\(thermal\.pump\)"):
-        _machine("pump", "LIQUID", "LIQUID", 3.0e6, provider=wilson)
+        _machine("pump", "LIQUID", "LIQUID", 3.0e6, provider=_IdealGas(("A", "B")))
+    vapour = _machine(machine, "VAPOR", "VAPOR", 3.0e5, provider=_IdealGas(("A", "B")))
+    assert vapour.variant == "additive-vapour"
+    assert vapour.isentropic_form == "VAPOR"
 
 
 EVALUATE_REFUSALS: list[tuple[str, str, str, Any, float, dict[str, Any], str, str]] = [
@@ -682,7 +706,7 @@ EVALUATE_REFUSALS: list[tuple[str, str, str, Any, float, dict[str, Any], str, st
         "isentropic_state_two_phase(U1)",
         "unsupported",
     ),
-    # A wet isentropic state declared where it is superheated (C3-2).
+    # A wet isentropic state declared where it is superheated, beta_s > 1 (C3-7; C3-2, R-839).
     (
         "turbine",
         "VAPOR",
@@ -690,7 +714,7 @@ EVALUATE_REFUSALS: list[tuple[str, str, str, Any, float, dict[str, Any], str, st
         (900.0, 1.0e6),
         5.0e5,
         {"isentropic_phase": "vapor_liquid"},
-        "isentropic_state_two_phase(U1)",
+        "isentropic_state_single_phase(U1)",
         "unsupported",
     ),
     # A53's expansion with a vapour outlet declared: it lands wet.
@@ -855,3 +879,184 @@ def test_the_machine_compiles_and_agrees_with_the_reference_rows(case: int) -> N
     for row, value in zip(result.equation_ids, result.values, strict=True):
         assert abs(value - reference[row]) <= 1e-9 * max(1.0, abs(reference[row])), row
     assert compiled.jacobian(x, context).status == "ok"
+
+
+# -- the additive-vapour (Wilson) machines on wilson-ig-v2's real records (§4.4, C3-4 wired) -----
+
+WILSON = WilsonIdealGasProviderV2(ROOT / "benchmarks" / "s10" / "records.yaml")
+WILSON_COMPONENTS = WILSON.describe().components
+#: (machine, feed n, T_I, P_I, P_spec, eta): GP-M1's compression and an expansion, both vapour.
+WILSON_CASES = [
+    ("compressor", (0.4, 0.1, 0.5), 370.0, 40_000.0, 50_000.0, 0.8),
+    ("turbine", (0.4, 0.1, 0.5), 375.0, 60_000.0, 45_000.0, 0.85),
+]
+WILSON_IDS = ["compressor", "turbine"]
+
+
+def _wilson(machine: str, outlet_pressure: float, efficiency: float) -> ThermalMachine:
+    return _machine(machine, "VAPOR", "VAPOR", outlet_pressure, efficiency, provider=WILSON)
+
+
+def _wilson_values(
+    unit: ThermalMachine, feed: StreamState, answer: UnitEvaluation
+) -> dict[str, float]:
+    values: dict[str, float] = {}
+    for stream, state in (("S1", feed), ("S2", answer.outlets["outlet"])):
+        for name, flow in zip(WILSON_COMPONENTS, state.n, strict=True):
+            values[flow_id(stream, name)] = flow
+        values[temperature_id(stream)] = state.temperature
+        values[pressure_id(stream)] = state.pressure
+    assert answer.work is not None
+    values[work_id(unit.unit_id)] = answer.work
+    return values
+
+
+def _wilson_spec(unit: ThermalMachine) -> Any:
+    return assemble(
+        label="S11-I1b",
+        units=[unit],
+        wiring={unit.unit_id: Wiring(dict(unit.streams))},
+        streams=["S1", "S2"],
+        components=WILSON_COMPONENTS,
+    )
+
+
+@pytest.mark.parametrize(
+    ("machine", "n", "t_in", "p_in", "p_out", "eta"), WILSON_CASES, ids=WILSON_IDS
+)
+def test_the_wilson_machine_rows_vanish_at_its_evaluation(
+    machine: str, n: tuple[float, ...], t_in: float, p_in: float, p_out: float, eta: float
+) -> None:
+    """Square (C + 3 rows: the outlet's n, T, P and W), every row within its kind's tolerance at
+    the evaluate's answer, and the faces are the syn001 units' VAPOR mixture blocks (§4.3)."""
+    unit = _wilson(machine, p_out, eta)
+    feed = StreamState(n, t_in, p_in)
+    answer = _good(_run(unit, feed))
+    assert answer.phase_signature == "VAPOR"
+    assert (answer.provider_id, answer.reference_convention) == (
+        "wilson-ig-v2",
+        "WILSON-IG-ref-v1",
+    )
+    assert answer.outlets["outlet"].n == n
+    assert answer.outlets["outlet"].pressure == p_out
+    assert answer.work is not None and (answer.work < 0.0) == (machine == "turbine")
+    spec = _wilson_spec(unit)
+    contribution = unit.contribute(Wiring(dict(unit.streams)), WILSON_COMPONENTS)
+    assert [block.block_id for block in contribution.blocks] == [
+        enthalpy_block_id("S1", "VAPOR"),
+        enthalpy_block_id("S2", "VAPOR"),
+        isentropic_block_id("U1"),
+    ]
+    family = unit.family
+    assert set(spec.row_kinds) == {
+        *(f"U1:{family}-mole:{c}" for c in WILSON_COMPONENTS),
+        f"U1:{family}-P",
+        f"U1:{family}-work",
+        f"U1:{family}-energy",
+    }
+    assert len(spec.equations) == len(WILSON_COMPONENTS) + 3
+    for row, value in row_values(spec, _wilson_values(unit, feed, answer)).items():
+        assert abs(value) <= KIND_TOLERANCE[spec.row_kinds[row]], (row, value)
+
+
+@pytest.mark.parametrize(
+    ("machine", "n", "t_in", "p_in", "p_out", "eta"), WILSON_CASES, ids=WILSON_IDS
+)
+def test_a46_the_wilson_machine_jacobian(
+    machine: str, n: tuple[float, ...], t_in: float, p_in: float, p_out: float, eta: float
+) -> None:
+    """A46's convention on the compiled contribution at the evaluated state: each Jacobian entry
+    against a central difference of step 1e-6 x_j, judged relative to the larger of |dF_i/dx_j|
+    and the row's largest scaled entry max_k |dF_i/dx_k x_k| over |x_j| (the residual itself is
+    ~0 at the root, so C1-3's |F_i/x_j| has no scale here)."""
+    unit = _wilson(machine, p_out, eta)
+    feed = StreamState(n, t_in, p_in)
+    answer = _good(_run(unit, feed))
+    spec = _wilson_spec(unit)
+    compiled = compile_problem(spec)
+    context = EvaluationContext(
+        model_version=compiled.metadata.model_version,
+        constants_sha256=compiled.metadata.constants_sha256,
+    )
+    values = _wilson_values(unit, feed, answer)
+    ids = compiled.metadata.variable_ids
+    x = np.array([values[name] for name in ids])
+    jac = compiled.jacobian(x, context)
+    assert jac.status == "ok"
+    dense = np.zeros((len(jac.row_ids), len(jac.col_ids)))
+    for column in range(len(jac.col_ids)):
+        for at in range(jac.indptr[column], jac.indptr[column + 1]):
+            dense[jac.indices[at], column] = jac.data[at]
+    assert list(jac.col_ids) == list(ids)
+    scaled = np.abs(dense * x)
+    worst = 0.0
+    for j, value in enumerate(x):
+        h = FD_STEP * abs(value)
+        up, down = x.copy(), x.copy()
+        up[j], down[j] = value + h, value - h
+        f_up, f_down = compiled.residual(up, context), compiled.residual(down, context)
+        assert f_up.status == "ok" and f_down.status == "ok", ids[j]
+        assert f_up.values is not None and f_down.values is not None
+        fd = (np.array(f_up.values) - np.array(f_down.values)) / (up[j] - down[j])
+        for i in range(len(jac.row_ids)):
+            scale = max(abs(dense[i, j]), scaled[i].max() / abs(value))
+            worst = max(worst, abs(fd[i] - dense[i, j]) / scale)
+    assert worst <= FD_TOL, worst
+
+
+def test_the_wilson_machine_refusals_carry_the_bound_provider() -> None:
+    """The bound, a liquid inlet written as vapour (R-007), and a turbine whose vapour outlet the
+    provider judges unstable, each typed and labelled with `wilson-ig-v2` (R-840)."""
+    labels = ("wilson-ig-v2", "WILSON-IG-ref-v1")
+    compressor = _wilson("compressor", 50_000.0, 0.8)
+    bound = _run(compressor, StreamState((0.4, 0.1, 0.5), 370.0, 60_000.0))
+    _refusal(bound, "pressure_fall(compressor)", "out_of_domain")
+    wet = _run(compressor, StreamState((0.4, 0.1, 0.5), 320.0, 40_000.0))
+    _refusal(wet, "inadmissible_phase(inlet, VAPOR)")
+    assert (wet.provider_id, wet.reference_convention) == labels
+    # C-MW's vapour 3 K above its dew point at 150 kPa, expanded to 90 kPa (dew 358.5 K).
+    turbine = _wilson("turbine", 90_000.0, 0.85)
+    crossed = _run(turbine, StreamState((0.4, 0.0, 0.6), 375.25, 150_000.0))
+    assert crossed.status == "unsupported", crossed.message
+    assert crossed.message.split("\n", 1)[0] in {
+        "phase_regime_mismatch(S2)",
+        "isentropic_state_two_phase(U1)",
+    }
+    assert (crossed.provider_id, crossed.reference_convention) == labels
+
+
+def test_the_dormant_wilson_machine_and_its_manifest() -> None:
+    unit = _wilson("compressor", 50_000.0, 0.8)
+    answer = _good(_run(unit, StreamState((0.0, 0.0, 0.0), 370.0, 40_000.0)))
+    assert answer.work == 0.0 and answer.phase_signature == "ZERO_FLOW"
+    assert answer.outlets["outlet"] == StreamState((0.0, 0.0, 0.0), 370.0, 50_000.0)
+    limitations = unit.manifest()["validity"]["limitations"]
+    assert [text for text in limitations if text.startswith("L-GP-2")]
+    assert not [
+        text
+        for text in _machine("compressor", "VAPOR", "VAPOR", 3.0e5).manifest()["validity"][
+            "limitations"
+        ]
+        if text.startswith("L-GP-2")
+    ]
+
+
+def test_a_wilson_isentropic_state_past_the_dew_point_is_refused() -> None:
+    """§4.4 step 2 read on Wilson (S11D WO-I1b B): C-MW's vapour 3 K above its dew point at
+    150 kPa expanded to 90 kPa has T_s = 337.05 K, below the dew point there (358.5 K); the
+    provider judges that vapour UNSTABLE, so the machine refuses before its outlet."""
+    turbine = _wilson("turbine", 90_000.0, 0.85)
+    answer = _run(turbine, StreamState((0.4, 0.0, 0.6), 375.25, 150_000.0))
+    _refusal(answer, "isentropic_state_two_phase(U1)")
+    assert (answer.provider_id, answer.reference_convention) == ("wilson-ig-v2", "WILSON-IG-ref-v1")
+
+
+def test_the_meter_forwards_and_counts_stability() -> None:
+    """The binder's `PropertyMeter` forwards `stability()` (outside the frozen Protocol) as one
+    counted call, so a bound Wilson machine can ask it; a provider without it raises."""
+    meter = PropertyMeter(WILSON)
+    state = StreamState((0.4, 0.1, 0.5), 370.0, 40_000.0)
+    assert meter.stability(state, "VAPOR", CONTEXT) == WILSON.stability(state, "VAPOR", CONTEXT)
+    assert meter.calls == 1
+    with pytest.raises(AttributeError):
+        PropertyMeter(WATER).stability(StreamState((1.0,), 400.0, 1.0e5), "VAPOR", CONTEXT)

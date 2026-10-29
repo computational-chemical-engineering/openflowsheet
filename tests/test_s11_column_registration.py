@@ -73,7 +73,8 @@ def _column_instance(document: dict[str, Any], unit: str = "UCOL") -> dict[str, 
 
 def test_a39_the_registries_agree_and_the_column_binds_on_syn001_and_wilson() -> None:
     assert set(MODEL_BASES) == set(MODEL_BUILDERS) == set(MODEL_SIGNATURES)
-    assert len(MODEL_BUILDERS) == 23
+    # 23 at I1; units design §5.4 (I1b) adds the seven `thermal.*` models (S11.A82).
+    assert len(MODEL_BUILDERS) == 30
     # §9: the provider id the Wilson registry row holds (v2 since WO-D5, units design §4.6).
     assert MODEL_BASES[COLUMN] == frozenset({"syn001", WILSON_BASIS.provider_id})
     assert WILSON_BASIS.provider_id == "wilson-ig-v2"

@@ -24,6 +24,7 @@ from typing import Any
 
 import pytest
 from m02_c1_corpus import C1_CORPUS, surrogates
+from s11_thermal_support import THERMAL_SAMPLES, sample_case
 from t07_corpus import CORPUS
 from t07_v17_c1_documents import c1_document
 
@@ -74,7 +75,11 @@ def test_every_model_has_a_signature_and_the_triples_are_counted() -> None:
     assert len([triple for triple in TRIPLES if triple[0].startswith("syn001.")]) == 25
     # M02's join (R-280): the C1 feed 5, TP heater 2, TP flash 8; the C1 reactors pin nothing.
     assert len([triple for triple in TRIPLES if triple[0].startswith("c1.")]) == 15
-    assert len(TRIPLES) == 40
+    # S11 I1b (the C6-2 precedent): the base's count over the ids outside `thermal.`; the seven
+    # `thermal.*` models add 11 (the heater's T and duty, the flash's duty, and the outlet
+    # pressure of the valve, pump, compressor and turbine, two encodings each).
+    assert len([triple for triple in TRIPLES if not triple[0].startswith("thermal.")]) == 40
+    assert len([triple for triple in TRIPLES if triple[0].startswith("thermal.")]) == 11
 
 
 def _view(document: Document, unit: str) -> InstanceView:
@@ -149,6 +154,8 @@ def _bases() -> list[tuple[str, Document]]:
     bases.append(("v17-c1:T02-1/rev-000002", c1_document("T02-1", "rev-000002")))
     # M02's join (R-280 (a)): the C1 models' pins are proved on the registered C1 corpus.
     bases += [(name, C1_CORPUS[name]()) for name in sorted(C1_CORPUS)]
+    # S11 I1b (S11.A86): the `thermal.*` models' pins are proved on their committed sample.
+    bases += [(f"S11:{name}", sample_case(name)) for name in THERMAL_SAMPLES]
     return [
         (name, document)
         for name, document in bases
@@ -313,11 +320,27 @@ COVERED = {
     "c1.tp_heater/outlet_temperature/0": "C1-HEATER-M02-v1",
     "c1.tp_heater/outlet_temperature/1": "C1-HEATER-M02-v1",
 }
+#: S11 I1b (S11.A86): the `thermal.*` triples, each proved on its committed sample.
+THERMAL_COVERED = {
+    "thermal.compressor/outlet_pressure/0": "S11:GP-M1",
+    "thermal.compressor/outlet_pressure/1": "S11:GP-M1",
+    "thermal.flash/duty/0": "S11:TH-R1",
+    "thermal.heater/outlet_temperature/0": "S11:TH-C1",
+    "thermal.heater/duty/0": "S11:TH-R1",
+    "thermal.pump/outlet_pressure/0": "S11:TH-C1",
+    "thermal.pump/outlet_pressure/1": "S11:TH-C1",
+    "thermal.turbine/outlet_pressure/0": "S11:TH-C1",
+    "thermal.turbine/outlet_pressure/1": "S11:TH-C1",
+    "thermal.valve/outlet_pressure/0": "S11:TH-R1",
+    "thermal.valve/outlet_pressure/1": "S11:TH-R1",
+}
 
 
 def test_g_r6_5_i_every_triple_is_covered() -> None:
     covered = {f"{m}/{n}/{i}": _repair(m, n, i) for m, n, i in TRIPLES}
-    assert covered == COVERED
+    # S11 I1b (the C6-2 precedent): the base's table over the ids outside `thermal.`.
+    assert {k: v for k, v in covered.items() if not k.startswith("thermal.")} == COVERED
+    assert {k: v for k, v in covered.items() if k.startswith("thermal.")} == THERMAL_COVERED
 
 
 # -- (ii) the T05-2 chain -----------------------------------------------------------------------

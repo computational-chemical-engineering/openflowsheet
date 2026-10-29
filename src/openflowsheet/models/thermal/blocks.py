@@ -27,6 +27,7 @@ from openflowsheet.models.syn001.tp_state import _BLOCK_TOKEN
 from openflowsheet.models.thermal import ADDITIVE_VAPOUR
 from openflowsheet.models.thermal.kernel import (
     DOMAIN_CODES,
+    ISENTROPIC_FORM_CODES,
     Failure,
     Jet,
     Sat,
@@ -288,8 +289,9 @@ def isentropic_state(
     s* is s^{phi_I}(T_I, P_I), or s^{phi_I}_sat(P_I) for a saturated inlet. A single-phase
     isentropic state solves s^{phi_s}(T_s, P_O) = s* from the inlet temperature (T_sat(P_I) for a
     saturated inlet); a saturated one is beta_s = (s* - s^L_sat)/(s^V_sat - s^L_sat) at P_O. No
-    root on phi_s's side, or beta_s outside [0, 1], is `isentropic_state_two_phase`: the
-    isentropic state lies past the declared one (S11C_DECISIONS C3-2).
+    root on phi_s's side is `isentropic_state_two_phase` (the kernel's); beta_s outside [0, 1] is
+    `isentropic_state_single_phase`: the isentropic state is single-phase, not the declared
+    saturated one (R-839, replacing S11C_DECISIONS C3-2's code).
     """
     if variant not in PURE_VARIANTS:
         raise ValueError(f"{variant!r} is not a pure-fluid isentropic variant")
@@ -339,7 +341,7 @@ def isentropic_state(
     if not 0.0 <= beta <= 1.0:
         return Failure(
             "unsupported",
-            "isentropic_state_two_phase",
+            "isentropic_state_single_phase",
             f"s* = {inlet[0]!r} gives beta_s = {beta!r} at {outlet_pressure!r} Pa: the isentropic "
             "state is single-phase, not the declared saturated one",
         )
@@ -365,8 +367,9 @@ class IsentropicEnthalpyBlock:
     provider's T domain, s_j and h_j the provider's VAPOR s and h at the pure composition e_j;
     Hs = sum_j n_j h_j(T_s, P_O). Admitted by identity only (`ADDITIVE_VAPOUR`), phase VAPOR.
 
-    A state past the declared isentropic one (`isentropic_state_two_phase`) is a `DomainError` at
-    a trial (§4.3); the evaluate refuses it first at a solution.
+    An isentropic state other than the declared one (`isentropic_state_two_phase`,
+    `isentropic_state_single_phase`) is a `DomainError` at a trial (§4.3); the evaluate refuses it
+    first at a solution.
 
     **Dormant rule** (n == 0.0; n_tot == 0.0 for `additive-vapour`): value 0.0. For C = 1 the
     derivatives are evaluated at n = 1 and the n entry is the intensive value, the others 0.0. For
@@ -449,7 +452,7 @@ class IsentropicEnthalpyBlock:
             outlet_pressure,
         )
         if isinstance(answer, Failure):
-            if answer.code == "isentropic_state_two_phase":
+            if answer.code in ISENTROPIC_FORM_CODES:
                 raise DomainError(f"{self._block_id}: {answer.message}")
             _raise(answer, self._block_id)
         return answer
@@ -505,7 +508,9 @@ class IsentropicEnthalpyBlock:
 
     # -- additive-vapour -----------------------------------------------------------------------
 
-    def _component_jets(self, index: int, temperature: float, pressure: float) -> dict[str, Jet]:
+    def _component_jets(
+        self, index: int, temperature: float, pressure: float
+    ) -> dict[str, Jet] | Failure:
         """s_j and h_j, the provider's VAPOR s and h at e_j, with their T and P derivatives."""
         flows = tuple(1.0 if k == index else 0.0 for k in range(len(self._components)))
         result = self._provider.evaluate_phase(
@@ -518,7 +523,7 @@ class IsentropicEnthalpyBlock:
             self._context,
         )
         if result.status != "ok":
-            _raise(_refusal(result.status, result.message), self._block_id)
+            return _refusal(result.status, result.message)
         return {
             name: (
                 result.values[name],
@@ -530,16 +535,25 @@ class IsentropicEnthalpyBlock:
 
     def _additive_state(
         self, flows: tuple[float, ...], t_in: float, p_in: float, p_out: float
-    ) -> tuple[float, list[dict[str, Jet]], list[dict[str, Jet]]]:
-        """`(T_s, jets at (T_I, P_I), jets at (T_s, P_O))` per component."""
+    ) -> tuple[float, list[dict[str, Jet]], list[dict[str, Jet]]] | Failure:
+        """`(T_s, jets at (T_I, P_I), jets at (T_s, P_O))` per component, or the typed refusal."""
         count = len(self._components)
-        at_inlet = [self._component_jets(j, t_in, p_in) for j in range(count)]
+        at_inlet: list[dict[str, Jet]] = []
+        for j in range(count):
+            jets = self._component_jets(j, t_in, p_in)
+            if isinstance(jets, Failure):
+                return jets
+            at_inlet.append(jets)
         target = sum(n_j * jets["s"][0] for n_j, jets in zip(flows, at_inlet, strict=True))
 
-        def evaluate(temperature: float) -> tuple[float, float]:
-            at = [self._component_jets(j, temperature, p_out) for j in range(count)]
-            entropy = sum(n_j * jets["s"][0] for n_j, jets in zip(flows, at, strict=True))
-            slope = sum(n_j * jets["s"][1] for n_j, jets in zip(flows, at, strict=True))
+        def evaluate(temperature: float) -> tuple[float, float] | Failure:
+            entropy = slope = 0.0
+            for j, n_j in enumerate(flows):
+                jets = self._component_jets(j, temperature, p_out)
+                if isinstance(jets, Failure):
+                    return jets
+                entropy += n_j * jets["s"][0]
+                slope += n_j * jets["s"][1]
             return entropy - target, slope
 
         t_low, t_high = (float(value) for value in self._provider.describe().domain["T"])
@@ -551,10 +565,36 @@ class IsentropicEnthalpyBlock:
             what=f"additive-vapour isentropic state at {p_out!r} Pa",
         )
         if isinstance(solved, Failure):
-            _raise(solved, self._block_id)
+            return solved
         temperature = solved[0]
-        at_outlet = [self._component_jets(j, temperature, p_out) for j in range(count)]
+        at_outlet: list[dict[str, Jet]] = []
+        for j in range(count):
+            jets = self._component_jets(j, temperature, p_out)
+            if isinstance(jets, Failure):
+                return jets
+            at_outlet.append(jets)
         return temperature, at_inlet, at_outlet
+
+    def _raised_state(
+        self, flows: tuple[float, ...], t_in: float, p_in: float, p_out: float
+    ) -> tuple[float, list[dict[str, Jet]], list[dict[str, Jet]]]:
+        answer = self._additive_state(flows, t_in, p_in, p_out)
+        if isinstance(answer, Failure):
+            _raise(answer, self._block_id)
+        return answer
+
+    def additive_state(self, inputs: Sequence[float]) -> tuple[float, float] | Failure:
+        """`(T_s, Hs)` of the `additive-vapour` variant at a flowing state's inputs, or the typed
+        refusal `values` raises there: the function the work row reads, for the machine's
+        evaluate (§4.4)."""
+        flows, t_in, p_in, p_out = self._additive_inputs(inputs)
+        answer = self._additive_state(flows, t_in, p_in, p_out)
+        if isinstance(answer, Failure):
+            return answer
+        temperature, _, at_outlet = answer
+        return temperature, sum(
+            n_j * jets["h"][0] for n_j, jets in zip(flows, at_outlet, strict=True)
+        )
 
     def _additive_inputs(
         self, inputs: Sequence[float]
@@ -568,7 +608,7 @@ class IsentropicEnthalpyBlock:
         flows, t_in, p_in, p_out = self._additive_inputs(inputs)
         if sum(flows) == 0.0:
             return [0.0]
-        _, _, at_outlet = self._additive_state(flows, t_in, p_in, p_out)
+        _, _, at_outlet = self._raised_state(flows, t_in, p_in, p_out)
         return [sum(n_j * jets["h"][0] for n_j, jets in zip(flows, at_outlet, strict=True))]
 
     def _additive_jacobian(self, inputs: Sequence[float]) -> Sequence[tuple[int, int, float]]:
@@ -577,7 +617,7 @@ class IsentropicEnthalpyBlock:
         dormant = sum(flows) == 0.0
         if dormant:
             flows = (1.0,) * count
-        _, at_inlet, at_outlet = self._additive_state(flows, t_in, p_in, p_out)
+        _, at_inlet, at_outlet = self._raised_state(flows, t_in, p_in, p_out)
         pairs = list(zip(flows, at_inlet, at_outlet, strict=True))
         slope = sum(n_j * out["s"][1] for n_j, _, out in pairs)
         h_t = sum(n_j * out["h"][1] for n_j, _, out in pairs)

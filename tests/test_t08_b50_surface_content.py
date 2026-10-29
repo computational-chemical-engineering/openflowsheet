@@ -61,13 +61,22 @@ V02_ADDITIONS: dict[str, dict[str, str]] = {
         "c1.reactor_surrogate": "R-301",
         # S11's column (ADR 0050, R-810; design note §8.3, I1): registered on purpose.
         "syn001.column": "R-805",
+        # S11's `thermal.*` family (ADR 0051 D6, R-816; units design §8.3, I1b): registered on
+        # purpose; R-816's "Amended 2026-10-27" line spells the ids.
+        **{
+            f"thermal.{name}": "R-816"
+            for name in ("compressor", "flash", "heater", "mixer", "pump", "turbine", "valve")
+        },
     },
     "solve_policies": {},
 }
 #: M02's join (R-280 (b); R-234's method): the eight C1 models `list_models` serves since M02,
 #: stripped before B50's clause is judged, so the clause stands as T08 registered it.
 #: S11's addition (R-805), stripped like M02's and M04's.
-S11_MODELS = ("syn001.column",)
+S11_MODELS = (
+    "syn001.column",
+    *(m for m in sorted(V02_ADDITIONS["models"]) if m.startswith("thermal.")),
+)
 M02_MODELS = tuple(sorted(set(V02_ADDITIONS["models"]) - set(M04_MODELS) - set(S11_MODELS)))
 NEW_POLICIES = ("T08-ptc-v1", "T08-warm-v1")
 #: `get_project`'s members that the server determines, whatever the project's state.

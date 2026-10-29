@@ -50,6 +50,7 @@ import pytest
 import t08_cstr_support as cstr
 from m02_c1_corpus import C1_CORPUS, surrogates
 from s11_column_support import COLUMN_SAMPLES, committed_case
+from s11_thermal_support import THERMAL_SAMPLES, sample_case
 from t07_corpus import CORPUS
 from t07_jobs_support import commit
 
@@ -84,6 +85,8 @@ def _documents() -> dict[str, dict[str, Any]]:
     # S11 (ADR 0050, R-810): the column's instances are its committed sample cases, last, so the
     # earlier documents keep their order.
     documents |= {f"S11:{name}": committed_case(name) for name in COLUMN_SAMPLES}
+    # S11 units design §5.4 (I1b, S11.A86): the `thermal.*` models' sample, after the column's.
+    documents |= {f"S11:{name}": sample_case(name) for name in THERMAL_SAMPLES}
     return documents
 
 

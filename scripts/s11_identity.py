@@ -95,6 +95,11 @@ AMENDED_TESTS: tuple[str, ...] = (
     # tests/test_t08_b50_surface_content.py, its `list_models` surface (I1)
     "tests/test_t08_b50_surface_content.py::test_the_fixture_is_c7bbc98s_served_content",
     "tests/test_t08_b50_surface_content.py::test_b50_list_models_differs_by_the_kinetic_cstr_only",
+    # R-841 (S11.A13 restated): the syn001/c1 refusals of models that gained an S11 basis name
+    # every basis the model binds on.
+    "tests/test_m02_join.py::test_syn001s_feed_to_sink_is_refused_on_the_c1_basis",
+    "tests/test_m02_join.py::test_syn001s_splitter_is_refused_on_the_c1_basis",
+    "tests/test_m02_join.py::test_a_model_with_no_same_function_model_on_the_other_basis_names_none",
 )
 
 

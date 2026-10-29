@@ -194,3 +194,108 @@ file list (§5.3); a failure carries no value, so no number is mislabelled, but 
 - DECISION (D6): `MODEL_BASES` (the five) and `table.revision_checks`' v2 dispatch are monkeypatched in
   `tests/s11_gp_support.py` (`admit_wilson`, `dispatch_gamma_phi`) until I1b, as D2's and D3's tests do. Reversible
   by: dropping the two helpers at I1b.
+- DECISION (D6, R-840): `ph_kernel.failure_labels(provider_id, convention)` gives `{}` on SYN-001's provider and the
+  bound id and convention otherwise; `typed_failure`, `closure_failure`, `_state_failure` and `port_enthalpy` take
+  them as keywords (defaults: `""` and `REFERENCE_CONVENTION`, so a SYN-001 failure is the same `UnitEvaluation` as
+  before), and the valve and PH flash pass `failure_labels(self.property_provider, self.reference_convention)`.
+  Measured on `wilson-ig-v2`: pressure_rise(valve), inadmissible_phase(inlet, LIQUID), pressure_outside_domain(outlet),
+  ph_outside_domain(above), duty_into_dormant_stream each carry (`wilson-ig-v2`, `WILSON-IG-ref-v1`); on SYN-001
+  (`""`, `SYN-001-ref-v1`). Alternative: SYN-001 failures gain `provider_id="syn001"` (a moved field on every SYN-001
+  failure). Reversible by: the commit. K02/T05/T05b/S10-C/gp tests: 2157 passed.
+- GP-C2 (A70; feed 360 K, 180 kPa → valve to 101 325 Pa → PH flash, Q = 5 kW): CONVERGED (0 steps, 0.48 s), VERIFIED;
+  energy_balance V −6.75e-9 W, D 6.78e-9 W; |Z| = 6, one-sided worst 1.67e-10. First tried at 200 kPa, the records'
+  P_max: the central stencil's forward point on S1.P left the domain (`witness_stencil_invalid_trial_state(S1.P)`),
+  so the registered feed is 180 kPa (D1's valve case), inside the domain — a case choice, no check changed.
+- GP-C3 (A71; C-MW liquid 330 K + ethanol-water (0, 0.2, 0.3) liquid 320 K → mixer (declared liquid) → heater to
+  354 K, β ≈ 0.41): CONVERGED (0 steps), VERIFIED; |Z| = 2 (S1.n.C2H5OH, S2.n.CH3OH), one-sided worst 6.87e-11,
+  on-pattern 2.6e-9.
+- **OQ-5 (escalate, design lane):** GP-C3 with the heater at 345 K (below the mixture's bubble point, ≈ 351 K) lifts a
+  liquid-only outlet, β = 0: `S4.vap.{CH3OH, C2H5OH, H2O}` all exactly 0.0, no positive sibling, so not in Z; the
+  central backward point is a negative flow (`H_S4_vapor` refuses), both witness checks `unsupported`
+  (`witness_stencil_invalid_trial_state(S4.vap.CH3OH)`), UNVERIFIED. Pinned as a fact by
+  `test_oq5_a_liquid_only_lifted_heater_outlet_leaves_the_witness_unsupported`; not widened. Default if the design lane
+  does not rule: leave it UNVERIFIED (typed), as OQ-5's text says.
+- **GP-M1 / GP-M2 (A80, A81) blocked — no WO owns the Wilson machines' evaluate.** `thermal.compressor`/`turbine`
+  on `wilson-ig-v2` are refused at construction (`specification_unsupported(<U>.provider)`, C3-4: "D4/D5 wire it");
+  §4.4's Wilson path (inlet face by `tp_state.single_phase_enthalpy`, the vapour h-inversion, `stability()` on the
+  outlet) is in track C's `machines.py`, outside D5's §4.6 site list and D6's files, and the machines' Wilson row
+  (`thermal_binding.BASES`, then `MODEL_BASES`) is I1b's. A81's pump refusal text (`model_unsupported(thermal.pump)`,
+  the no-volume reason) is I1b's `_UNADMITTED`. Default: a short build-lane WO (C3-4's wiring in `machines.py` + the
+  machines' v2 row) before I1b, then GP-M1/GP-M2 in `tests/test_s11_gp_solve.py` on the `s11_gp_support` pattern.
+- Identity at `ad4be810` (D5 + its fix + the D6 spike + R-840; clean scratch worktree): `S11-IDENTITY FAIL n=54497
+  changed=[] (C branch shards [7, 15] exited non-zero)` — only I1b's W27 failures (`test_m06_w27_coverage` 4,
+  `test_l01_retake` 6 errors); `S08-IDENTITY PASS n=52 changed=[S02.P1] p1_stage_a=EQUAL`; `S10C-IDENTITY PASS n=858
+  changed=[]`. `86dd9b21` adds test and case files only (no run).
+
+## Handoff (after D5, D6 part 1)
+
+- Done on `wp/S11` (not pushed): D5 `df6e75be` + `1a6d2ac3` (two amended tests the switch moves); D6 spike
+  `ed2b3c94` (GP-C1, Q18 answered yes); R-840 labels `ad4be810`; GP-C2/GP-C3 + OQ-5 fact `86dd9b21`.
+- A79: Wilson entry `wilson-ig-v2`, 127 bases; column x_final `float.hex`-equal to before (1508 values); S11's Wilson
+  tests pass. `t08_support_matrix.py --check` 0 problems; `w27_registration_v3.py --check` identical.
+- Per GP certificate (|Z|, one-sided worst; limit 1e-8): GP-C1 6, 1.19e-10; GP-C2 6, 1.67e-10; GP-C3 2, 6.87e-11.
+- Not done: GP-M1, GP-M2 (A80, A81) — blocked, see the bullet above (no WO owns the Wilson machines' evaluate;
+  A81's pump text is I1b's). Cross-architecture comparison (G8) is I2's.
+- Open for the design lane (batch with the package's reviewer pass): OQ-5 fact (β = 0 lifted outlet → witness
+  unsupported); the R-840 choice of no label on SYN-001 failures; D5's envelope L-COL-4/7 renames and W27 B kept on v1;
+  the Wilson-machine WO assignment.
+- Still failing on the branch, not D5/D6's: `test_m06_w27_coverage` (4), `test_l01_retake` (6 errors) — I1b's
+  `model_functions`/S4.
+
+## WO-I1b (Wilson machines)
+
+- DECISION: Wilson machine wiring (C3-4) → I1b's first commits. Alternative: a separate WO. Reversible by: reverting them.
+- Commit A (C3-4 wired, §4.4 Wilson path): `ThermalMachine` admits `ADDITIVE_VAPOUR` on vapour ports only
+  (`specification_unsupported(<U>.inlet|outlet|isentropic_phase)`, hint `machines.WILSON_PORT_HINT`, which the
+  binder now imports, so code and hint have one source); variant `additive-vapour`; faces from
+  `tp_state.single_phase_enthalpy(…, "VAPOR")` (shared with syn001 readers); `F-mole:<c>` per component; the
+  evaluate reads Ḣ_s from the machine's own `PFs_<U>` (`IsentropicEnthalpyBlock.additive_state`, the function
+  `values` raises from), inverts n_tot·h^V(T, P_O, x) = Ḣ_I + W on the domain T box (`kernel._solve` with
+  `gamma_phi.enthalpy_and_slope`), then `stability(outlet, VAPOR)` must be STABLE_WITHIN_TESTED_SCOPE, else
+  `phase_regime_mismatch(<O>)`; every Wilson failure carries R-840's labels. `thermal_binding.BASES`: compressor and
+  turbine gain `wilson-ig-v2`. Structural enabler in `blocks.py`: the additive state returns its typed `Failure`
+  instead of raising (`values`/`jacobian` raise it exactly as before, same message), so the evaluate maps no
+  exception text.
+  Measured on the real records: compressor (0.4, 0.1, 0.5), 370 K, 40 → 50 kPa, η 0.8: T_O 389.58 K, W 876.22 W,
+  6 evaluations; contribution Jacobian vs central differences (step 1e-6·x, row-scaled) worst 6.24e-9 (compressor),
+  6.78e-9 (turbine 375 K, 60 → 45 kPa); every row within its kind's tolerance at the evaluation. Rewritten S11 tests
+  (no base keys): `test_a50_the_wet_outlet_hint_and_the_wilson_machines` → `test_a50_the_wet_outlet_hint` +
+  `test_a_wilson_machine_is_vapour_on_both_ports`; `test_an_all_vapour_wilson_machine_is_refused_until_d5` →
+  `…_binds_as_additive_vapour`; `test_the_three_tables_name_the_seven_models` (the Wilson row). S11 thermal/gp/v2
+  tests: 336 passed, 58 skipped (CoolProp).
+- DECISION: §4.4 Evaluate step 2 ("on the wrong side, `isentropic_state_two_phase(<U>)`") and L-TH-4 on Wilson →
+  the isentropic state (n, T_s, P_O) judged by `stability(…, VAPOR)`; UNSTABLE → `isentropic_state_two_phase(<U>)`
+  (UNKNOWN passes to the outlet's check). Why: the pure-fluid machines refuse an isentropic state past the declared
+  one (L-TH-4, OQ-1's typed refusal); the additive-vapour block evaluates a fictitious vapour below the dew point
+  without complaint, so only the evaluate can say so. Alternative: only the outlet's stability, as §4.4 lists for
+  Wilson (then GP-M2 gives `phase_regime_mismatch(<O>)`). Reversible by: reverting commit B (GP-M2 accepts either
+  code, as A81 does). Measured: C-MW vapour 375.25 K, 150 → 90 kPa: T_s 337.05 K < dew 358.47 K → refused.
+- Commit C (verifier): `verify.thermal.additive_isentropic_enthalpy` — T_s by bisection on the provider's T domain of
+  Σ_j n_j[s_j(T, P_O) − s_j(T_I, P_I)] (60 halvings or bracket ≤ 4ε·T, as the pure routine; zero-flow components
+  not asked), Ḣ_s = Σ_j n_j h_j(T_s, P_O); a root at a domain end → `IsentropicStateError` (check `unsupported`).
+  `_machine_specification` dispatches on the `ADDITIVE_VAPOUR` identity; the pure path's arithmetic is unchanged
+  (n·h_s − Ḣ_I, same order). Against the closed-form ideal-gas isentrope (20 states): worst |ΔḢ_s| 2.9e-11 W.
+- DECISION: the bound Wilson machine's provider is the binder's `PropertyMeter`, which forwarded only the frozen
+  Protocol's three methods, so §4.4's "the provider's `stability()`" raised `AttributeError` in a bound flowsheet →
+  `PropertyMeter.stability` forwards it, counted as one call (budget-enforced like the others); a provider without
+  it raises `AttributeError` as unwrapped. No Protocol change (stability stays a concrete-class addition,
+  `thermo.stability`); no existing call path moves. Alternative: judge the outlet by the frozen `flash()` (its label
+  in `message`) or by R-007's admissibility, neither of which is §4.4's `stability()`. Reversible by: the commit.
+- Commit D, GP-M1 (S11.A80; `benchmarks/s11/gp/GP-M1.json`, generated): C-MW's vapour (0.4, 0.0, 0.6) at 370 K,
+  40 kPa → `thermal.compressor` to 50 kPa, η 0.8 → sink, as registered (no P_O lowering needed). Dew points
+  (`saturation_band.band_temperature`, β = 1): 338.84 K at 40 kPa, 343.99 K at 50 kPa → margins 31.2 K (inlet),
+  47.7 K (outlet); T_O 391.72 K ≤ 400 K. CONVERGED (0.11 s), VERIFIED with the γ–φ dispatch, 41 checks;
+  energy_balance.M 0.0 W, envelope 7.3e-12 W; `specification.M.isentropic_work` 0.0 W; W 878.17 W equals
+  Σ_j n_j[h_j(T_s, P_O) − h_j(T_I, P_I)]/η with the verifier's bisection to 0.0 W; outlet STABLE_WITHIN_TESTED_SCOPE
+  (liquid-trial tm 0.826); |Z| = 2 (S1/S2 ethanol), one-sided worst 1.75e-10 (limit 1e-8).
+  DECISION: `s11_gp_support.admit_machines` registers the seven thermal models (`test_s11_thermal_binding.register`),
+  the two machines' `verify.thermal.MODEL_CHECKS` rows in `verify.table.MODEL_CHECKS`, and adds them to
+  `table.WORK_MODELS` (without which the envelope misses W: measured −878.17 W, `fail`). Alternative: none short of
+  I1b's registration. Reversible by: dropping the helper at I1b's registration commit (with `admit_wilson`).
+- Commit E, GP-M2 (S11.A81; `benchmarks/s11/gp/GP-M2.json`): C-MW's vapour at 375 K, 150 kPa (dew 372.25 K, margin
+  2.75 K) → `thermal.turbine` to 90 kPa (dew 358.47 K), η 0.85 → sink. T_s = 336.82 K, judged UNSTABLE as vapour →
+  `INITIALIZATION_FAILED`, `initializer_failed(M): isentropic_state_two_phase(M)` (commit B's reading; without B the
+  same expansion is `phase_regime_mismatch(S2)`, measured at commit A on 375.25 K → 90 kPa). The test accepts either
+  code, as A81 does. The pump half: `ThermalMachine(pump)` on `wilson-ig-v2` is `provider_not_admitted(thermal.pump)`
+  at construction; the binder's `model_unsupported(thermal.pump)` with the no-volume reason is I1b's `_UNADMITTED`
+  (its registration commit), not asserted here.

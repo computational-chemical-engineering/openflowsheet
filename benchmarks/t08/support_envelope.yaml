@@ -50,18 +50,19 @@ axes:
         limitation: L-S11-1
         caveat: >-
           its own component (H2O) and domain (273.16–1273.15 K, 10²–10⁸ Pa), the routing models
-          only, and S05's validation
+          and the `thermal.*` models, and S05's validation
       - id: coolprop-heos-v1
         limitation: L-S11-2
         caveat: >-
           one fluid per revision among 123, S07's tiers and per-fluid domains, the routing models
-          only, and the `coolprop` extra installed
+          and the `thermal.*` models, and the `coolprop` extra installed
       - id: wilson-ig-v2
         limitation: L-S11-3
         caveat: >-
           its own three components (CH3OH, C2H5OH, H2O; records in the source repository only)
-          and domain (300–400 K, 30–200 kPa), the routing models only, premises P1–P3 checked at
-          binding, and S10's VAL-1–3 bands
+          and domain (300–400 K, 30–200 kPa), the routing models, the column, five K02/T05 units
+          and two vapour machines (L-GP-1), premises P1–P3 checked at binding, and S10's VAL-1–3
+          bands
     reference_convention: SYN-001-ref-v1
     evidence:
       - check:T05.A23
@@ -102,11 +103,16 @@ axes:
   - id: unit_models
     title: Unit models
     statement: >-
-      The twenty-three models of `MODEL_BUILDERS`, each with its registered limitations (L02,
-      L27–L31, L-CSTR-1..3, L-COL-1..10; the surrogate's Q0–Q7): SYN-001's thirteen, on SYN-001's
-      basis only except the three routing models (`syn001.feed_source`, `syn001.product_sink`,
-      `syn001.stream_splitter`), which since S11 (R-810) bind on every selectable basis (L-S11-1..3);
-      since S11 the column `syn001.column`, on SYN-001's and `wilson-ig-v2`'s bases (L-S11-3); and
+      The thirty models of `MODEL_BUILDERS`, each with its registered limitations (L02,
+      L27–L31, L-CSTR-1..3, L-COL-1..10, L-TH-1..8, L-GP-1..3; the surrogate's Q0–Q7): SYN-001's
+      thirteen, on SYN-001's basis only except the three routing models (`syn001.feed_source`,
+      `syn001.product_sink`, `syn001.stream_splitter`), which since S11 (R-810) bind on every
+      selectable basis (L-S11-1..3), and the five K02/T05 units with γ–φ faces (`syn001.tp_heater`,
+      `tp_flash`, `ph_flash`, `valve`, `adiabatic_mixer`), which since S11 bind on `wilson-ig-v2`'s
+      basis too (L-GP-1); since S11 the column `syn001.column`, on SYN-001's and `wilson-ig-v2`'s
+      bases (L-S11-3); since S11 the seven `thermal.*` models (heater, valve, mixer, flash, pump,
+      compressor, turbine; ADR 0051), on the pure-fluid bases `iapws95-v1` and
+      `coolprop-heos-v1`, the compressor and turbine on `wilson-ig-v2`'s as well (L-TH-1..8); and
       since M02's join (R-280) the eight C1 models and since W27 Amendment 3 (R-301) M04's
       `c1.reactor_surrogate`, on the `pr-c1-v1` basis only (R-288). `c1.reactor_standin` is
       synthetic only: the stand-in for the C1 reactor (ADR 0034 D9), labelled synthetic in its
@@ -136,6 +142,13 @@ axes:
       - syn001.tp_flash
       - syn001.tp_heater
       - syn001.valve
+      - thermal.compressor
+      - thermal.flash
+      - thermal.heater
+      - thermal.mixer
+      - thermal.pump
+      - thermal.turbine
+      - thermal.valve
     #: Listed, and synthetic only (R-280 (c)): checked against the variant registry (T08.A20).
     synthetic_members: [c1.reactor_standin]
     evidence:
@@ -144,6 +157,8 @@ axes:
       - tests/test_m02_join.py::test_the_registry_holds_the_twenty_one_models_each_on_its_own_basis
       - tests/test_m02_wo9_reactor.py::test_g8e_the_stand_in_binds_and_says_synthetic_everywhere
       - tests/test_s11_column_registration.py::test_a39_the_registries_agree_and_the_column_binds_on_syn001_and_wilson
+      - tests/test_s11_routing.py::test_a82_the_registries_hold_thirty_members
+      - tests/test_s11_thermal_binding.py::test_the_three_tables_name_the_seven_models
       - check:T05.A17
       - check:T05.A18
       - check:T05.A19
@@ -947,11 +962,12 @@ limitations:
   - id: L-S11-1
     text: >-
       `iapws95-v1` (IAPWS-95, S05) is selected by `record_source: benchmarks/s05/components.yaml`
-      for the one component H2O, over 273.16–1273.15 K and 10²–10⁸ Pa. Only the routing models
-      (`syn001.feed_source`, `syn001.product_sink`, `syn001.stream_splitter`) bind on it; its
-      evidence is S05's validation against the IAPWS-95 reference equation (S05 spec).
+      for the one component H2O, over 273.16–1273.15 K and 10²–10⁸ Pa. The routing models
+      (`syn001.feed_source`, `syn001.product_sink`, `syn001.stream_splitter`) and the seven
+      `thermal.*` models (L-TH-1..8) bind on it; its evidence is S05's validation against the
+      IAPWS-95 reference equation (S05 spec).
     evidence:
-      - tests/test_s11_routing.py::test_a13_the_admission_matrix
+      - tests/test_s11_routing.py::test_a13_a82_the_admission_matrix
       - tests/test_s11_bases.py::test_a09_the_other_bases_have_their_providers
       - doc:docs/derivations/S05-IAPWS95-spec.md
       - doc:docs/derivations/S11-design.md §4.11
@@ -959,13 +975,13 @@ limitations:
     text: >-
       `coolprop-heos-v1` (CoolProp HEOS, S07) is selected by `record_source:
       benchmarks/s07/components.yaml` for exactly one admitted fluid per revision, among the 123
-      of S07's table; each fluid keeps S07's tier and domain. Only the routing models bind on it,
-      and it needs the `coolprop` extra: without CoolProp installed, binding is refused
+      of S07's table; each fluid keeps S07's tier and domain. The routing models and the seven
+      `thermal.*` models (L-TH-1..8) bind on it, and it needs the `coolprop` extra: without CoolProp installed, binding is refused
       `basis_unavailable(coolprop-heos-v1)`.
     evidence:
       - tests/test_s11_bases.py::test_a09_coolprop_without_its_extra_is_unavailable
       - tests/test_s11_bases.py::test_a06_the_coolprop_records_are_the_generators
-      - tests/test_s11_routing.py::test_a13_the_admission_matrix
+      - tests/test_s11_routing.py::test_a13_a82_the_admission_matrix
       - doc:docs/derivations/S07-spec.md
       - doc:docs/derivations/S11-design.md §4.11
   - id: L-S11-3
@@ -973,15 +989,16 @@ limitations:
       `wilson-ig-v2` (S10's Wilson activity model with an ideal-gas vapour; `wilson-ig-v1`'s answers
       with the molar entropy added, S11 units design §4.6) is selected by
       `record_source: benchmarks/s10/records.yaml` for its three record components (CH3OH,
-      C2H5OH, H2O, in any order), over 300–400 K and 30–200 kPa. The routing models and the
-      column (`syn001.column`, L-COL-1..10) bind on it. Its records are in the source repository
+      C2H5OH, H2O, in any order), over 300–400 K and 30–200 kPa. The routing models, the
+      column (`syn001.column`, L-COL-1..10), the five K02/T05 units with γ–φ faces and the
+      vapour machines `thermal.compressor` and `thermal.turbine` (L-GP-1..3) bind on it. Its records are in the source repository
       only, so in a wheel binding is refused `basis_unavailable(wilson-ig-v2)` (R-706, R-811). Premises P1–P3 are checked at binding.
       The S10 VAL-1–3 bands apply, and the VAL-3 latent-heat miss (methanol, +5.72 % against
       5 %) is carried. Results are compared across architectures by tolerance, not bitwise.
     evidence:
       - tests/test_s11_bases.py::test_a09_wilson_without_its_records_is_unavailable
       - tests/test_s11_bases.py::test_a08_the_binder_refuses_unmet_premises
-      - tests/test_s11_routing.py::test_a13_the_admission_matrix
+      - tests/test_s11_routing.py::test_a13_a82_the_admission_matrix
       - tests/test_s11_column_solve.py::test_the_wilson_column_in_a_flowsheet_reproduces_its_registered_root
       - doc:docs/derivations/S10-spec.md
       - doc:docs/s10-validation-report.md
@@ -1064,6 +1081,99 @@ limitations:
     evidence:
       - tests/test_s11_column_solve.py::test_a_column_under_the_ptc_policy_is_refused_typed
       - doc:docs/S11B_DECISIONS.md
+  - id: L-TH-1
+    text: >-
+      Pure-fluid stream regimes are declared (liquid, vapor, vapor_liquid = saturated); a
+      closure in another regime is refused `phase_regime_mismatch`.
+    evidence:
+      - tests/test_s11_thermal_kernel.py::test_a45_declared_state_table
+      - tests/test_s11_thermal_units.py::test_heater_temperature_mode_outside_the_declared_phase_is_a_mismatch
+      - tests/test_s11_thermal_solve.py::test_a63_a_liquid_valve_outlet_that_flashes_is_a_regime_mismatch
+      - doc:docs/adr/0051-s11-thermal-units-on-the-new-bases.md
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-TH-2
+    text: >-
+      Saturated pure-fluid streams are produced only by `thermal.*` units; there are no wet
+      feeds, and routing models do not carry them.
+    evidence:
+      - tests/test_s11_thermal_units.py::test_a58_the_carried_split_travels_bitwise_into_a_reader
+      - tests/test_s11_thermal_binding.py::test_flash_products_must_be_saturated
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-TH-3
+    text: >-
+      `thermal.flash` needs a two-phase state at drum pressure; its products are declared
+      `vapor_liquid`.
+    evidence:
+      - tests/test_s11_thermal_units.py::test_a57_drum_splits_wet_steam_at_its_saturation_temperature
+      - tests/test_s11_thermal_units.py::test_drum_refuses_a_single_phase_state
+      - tests/test_s11_thermal_binding.py::test_flash_products_must_be_saturated
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-TH-4
+    text: >-
+      Machine phase rules (S11 units design §4.4 table); a compressor with a two-phase
+      isentropic state is refused. In a revision, a turbine's isentropic state takes the outlet's
+      declared form. A vapour outlet whose isentropic state is two-phase is refused
+      `isentropic_state_two_phase({U})`.
+    evidence:
+      - tests/test_s11_thermal_machines.py::test_a55_dry_fluid_saturated_vapour_is_refused
+      - tests/test_s11_thermal_machines.py::test_a53_turbine
+      - tests/test_s11_thermal_binding.py::test_the_turbine_takes_no_isentropic_phase_parameter
+      - tests/test_s11_thermal_solve.py::test_q_c2_a_revision_turbines_isentropic_state_takes_the_vapour_outlets_form
+      - doc:docs/derivations/S11-units-design.md §4.10
+      - doc:docs/reviews/S11-rulings.md §4 (item 10, R-839)
+  - id: L-TH-5
+    text: >-
+      The near-critical box and the supercritical label rule of S05 §4.2 and S07. A
+      supercritical PH or PS closure whose root lies at the provider's label switch (T = T_c)
+      returns `not_converged` (measured: 4 of 11 200 grid outcomes, at 22.85 MPa).
+    evidence:
+      - tests/test_s11_thermal_kernel.py::test_a43_grid_covers_every_regime_and_supercritical
+      - doc:docs/derivations/S11-units-design.md §4.10
+      - doc:docs/reviews/S11-rulings.md §4 (item 10, R-839)
+  - id: L-TH-6
+    text: >-
+      No regime discovery for pure fluids.
+    evidence:
+      - tests/test_s11_thermal_units.py::test_a52_iv_duty_mode_declared_liquid_landing_saturated_is_a_mismatch
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-TH-7
+    text: >-
+      Dormant single-phase thermal outlets need T05b's v2 phase contract.
+    evidence:
+      - tests/test_s11_thermal_solve.py::test_a62_a_dormant_heater_with_zero_duty_converges_on_the_label_row
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-TH-8
+    text: >-
+      A revision declares one phase per port (R4), so a `thermal.mixer` takes inlets of one
+      declared phase. Mixing a liquid with a vapour is available by direct construction only, as
+      L-COL-1 is for the column's side feeds.
+    evidence:
+      - tests/test_s11_thermal_binding.py::test_mixed_inlet_declarations_are_ambiguous
+      - doc:docs/reviews/S11-rulings.md §4 (item 10, R-839)
+  - id: L-GP-1
+    text: >-
+      On Wilson (`wilson-ig-v2`), only the five K02/T05 units and the two machines; no pump
+      (no liquid volume); exchanger, separator and reactors refused.
+    evidence:
+      - tests/test_s11_routing.py::test_a13_a82_the_admission_matrix
+      - tests/test_s11_gp_solve.py::test_a81_the_binder_refuses_the_pump_on_wilson
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-GP-2
+    text: >-
+      Wilson machines are single-phase vapour, within the records' domain (300–400 K,
+      30–200 kPa).
+    evidence:
+      - tests/test_s11_thermal_machines.py::test_a_wilson_machine_is_vapour_on_both_ports
+      - tests/test_s11_gp_solve.py::test_a80_gp_m1_wilson_compressor
+      - tests/test_s11_gp_solve.py::test_a81_gp_m2_a_wilson_turbine_crossing_the_dew_point_is_refused
+      - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-GP-3
+    text: >-
+      A Wilson TP flash near an azeotrope has an E-2 noise floor (S10 §14); a
+      temperature-degenerate split is judged on its stored split.
+    evidence:
+      - tests/test_s11_gp_verifier.py::test_a72_the_azeotrope_is_temperature_degenerate_and_verifies
+      - doc:docs/derivations/S11-units-design.md §4.10
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
@@ -7325,6 +7435,264 @@ harvest:
   item: checks[19]
   check_id: S08b.ci
   sha256: daa0fb64d3c1848115f83b0e8f066a3599d12ef0fdf3c416a58500259a905841
+  class: P
+  to: []
+  note: CI on both architectures is checked before merge, not by the generator; unsupported here
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[0]
+  sha256: ef677c1e45f44865fc59bc373d6678efad8b78fcb8e825173dee0cab1814adfb
+  class: E
+  to:
+  - L-S11-1
+  note: 'S11''s envelope row L-S11-1, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[1]
+  sha256: 3e8c38b70e2f665da6ca12bf7253de10981d908f53715f235e462450c0f6a519
+  class: E
+  to:
+  - L-S11-2
+  note: 'S11''s envelope row L-S11-2, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[2]
+  sha256: b8d3a1320207fe7cd2ee98e695eaa7da6257f81f159f5c9187e143596f86e951
+  class: E
+  to:
+  - L-S11-3
+  note: 'S11''s envelope row L-S11-3, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[3]
+  sha256: aee0375ef0aaf2340f726c4e3e3df0b21bfb4c27c4802ca2b3b83fe6f0c88e3d
+  class: E
+  to:
+  - L-COL-1
+  note: 'S11''s envelope row L-COL-1, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[4]
+  sha256: 7eea5d2b68eb78937f7ae378c1e5f4cbbb9c8196587d97cd80878b6fe04c7351
+  class: E
+  to:
+  - L-COL-2
+  note: 'S11''s envelope row L-COL-2, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[5]
+  sha256: 7c6a7acc630da9225b17d87febadde203d08e0bddfa3c39348e01db5a74f69ea
+  class: E
+  to:
+  - L-COL-3
+  note: 'S11''s envelope row L-COL-3, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[6]
+  sha256: 5bafcdbb6c12c910be80b572b04d0b482b94e7eb87a513d49dc02e1f9e4c4742
+  class: E
+  to:
+  - L-COL-4
+  note: 'S11''s envelope row L-COL-4, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[7]
+  sha256: c582db1d9722b7cb489babc5386f275f007fe164fc8be5d50b2a5532a9faa631
+  class: E
+  to:
+  - L-COL-5
+  note: 'S11''s envelope row L-COL-5, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[8]
+  sha256: 369a19efe1f17e4c1a68052ec904f76d2b4793b66b3cb9fdd3708a2672f48bfb
+  class: E
+  to:
+  - L-COL-6
+  note: 'S11''s envelope row L-COL-6, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[9]
+  sha256: 18f04124327509f1fbc6f506d4cb46503434148db90e8fa062f294b272e62c5f
+  class: E
+  to:
+  - L-COL-7
+  note: 'S11''s envelope row L-COL-7, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[10]
+  sha256: 5fb29c3a2fc41f24212d01dfca5ae0f3ab7186a5b817823d2b8fbd1c13e80ef5
+  class: E
+  to:
+  - L-COL-8
+  note: 'S11''s envelope row L-COL-8, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[11]
+  sha256: b09586bc9536d08a8765315a4ad75561c97aecf4d0e70b7919d1986ea7badac6
+  class: E
+  to:
+  - L-COL-9
+  note: 'S11''s envelope row L-COL-9, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[12]
+  sha256: 532a226917fb7747cda9fba269420a91ba12973be47913cbaf742adc29ec7135
+  class: E
+  to:
+  - L-COL-10
+  note: 'S11''s envelope row L-COL-10, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[13]
+  sha256: b56507ecf60e64466da901eaf11393b0950113fa3f25a5d7e47aa4b016045425
+  class: E
+  to:
+  - L-TH-1
+  note: 'S11''s envelope row L-TH-1, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[14]
+  sha256: 78d823cf1f636e9d2b03e7695a222e3f53c6207891be8d2b165569b77b219f0a
+  class: E
+  to:
+  - L-TH-2
+  note: 'S11''s envelope row L-TH-2, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[15]
+  sha256: 742a3e79c21114ae56f15fe121a99caf9605a8ba00b80207280f058c432e3bdd
+  class: E
+  to:
+  - L-TH-3
+  note: 'S11''s envelope row L-TH-3, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[16]
+  sha256: 8bfd0697475923ad47a6a0bfb0dfaea10e1191e470113e538fb7bde2f3793521
+  class: E
+  to:
+  - L-TH-4
+  note: 'S11''s envelope row L-TH-4, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[17]
+  sha256: 2d8b557c2ac35c75dc821375ffca84fef4c78047c966c4d1e6169a96e055c650
+  class: E
+  to:
+  - L-TH-5
+  note: 'S11''s envelope row L-TH-5, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[18]
+  sha256: c057ad50c80794def2a6d90aa1c19e7a735297d173b5951ac3067f7ca1362388
+  class: E
+  to:
+  - L-TH-6
+  note: 'S11''s envelope row L-TH-6, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[19]
+  sha256: 044074c2709c3f012973fe49d2bac4a91c6913e02d379eaec8387de0ca8d74d2
+  class: E
+  to:
+  - L-TH-7
+  note: 'S11''s envelope row L-TH-7, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[20]
+  sha256: 0900304eab8a6747ac86fb52d672e8cef30bfb91b4c2cc4db5a134bf96adb2b6
+  class: E
+  to:
+  - L-TH-8
+  note: 'S11''s envelope row L-TH-8, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[21]
+  sha256: ee76521371dc9b5960773c2b18675d5990723a0ce45ddadd107eecefb2a54c32
+  class: E
+  to:
+  - L-GP-1
+  note: 'S11''s envelope row L-GP-1, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[22]
+  sha256: 2c8ecf748bfe2fcb56bd767d9942314857c32352b562d2e9753f9a4e0a7e3f03
+  class: E
+  to:
+  - L-GP-2
+  note: 'S11''s envelope row L-GP-2, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[23]
+  sha256: 6ff3836edac84d45163c42e07f6737e29decc8799b5f4300a9c2c8eb7ee7f696
+  class: E
+  to:
+  - L-GP-3
+  note: 'S11''s envelope row L-GP-3, carried verbatim'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[24]
+  sha256: 0ba2c2092916839e3b70865be0515b0482696bbc15a7b39c1b0944ef3de29c8e
+  class: P
+  to: []
+  note: 'platform note: THM-09/4''s uncapped length is pinned on ref-x86-64 and ci-aarch64 only (R-796)'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[25]
+  sha256: 1bbe3bf9bcfdb83a07f1d65e1e2d9c4ba1e131e2fb43ea40443510aebe96064d
+  class: P
+  to: []
+  note: 'requirements empty: no D/A id assigned to S11, no ledger entry'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[26]
+  sha256: 2b1a65040c66ef053c1822234d7a9d6e5d5ca65d41541c13d126dffa4a2b4ed9
+  class: P
+  to: []
+  note: 'G8 (gate, CI, cross-architecture comparisons) runs once before merge, not by the generator; aarch64 A46 values from that CI'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[27]
+  sha256: 680a3b5b1c3668134da462d9c6c26b6a431a052e98c9d678fcb6dafc42b0d348
+  class: P
+  to: []
+  note: 'S11''s single reviewer pass follows this manifest; human numerical and process-model review pending; neither reviewed nor released claimed'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[28]
+  sha256: fb57e23c997eddf5b16e1c655130628025a49687127ec2ca6a4df8bdb204eedf
+  class: E
+  to:
+  - L-TH-7
+  note: 'O-C6-1 open: a dormant thermal outlet certifies UNVERIFIED/RANK_DEFICIENT (no thermal.* entry in DORMANT_OUTLETS); the dormancy row is L-TH-7'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[29]
+  sha256: dbff1b2bd05d9913f94c336c893dd4d3f0c4a04855c6e9f6e061121a2f7137c8
+  class: P
+  to: []
+  note: 'environment note: the CoolProp checks ran with CoolProp 8.0.0 from a scratch site, outside requirements.lock'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[30]
+  sha256: 59f7bc9912151d4e1b2c6e21d43574cb9e78cc9ccc24f4d6818d0c4f9f1dd1bc
+  class: P
+  to: []
+  note: 'method note: family C runs the whole suite in both trees; it is not the full gate'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[31]
+  sha256: 035d3209674e819910da1c25277e1ee483a84ca5ed8b255141f748c449564fb1
+  class: E
+  to:
+  - L18
+  - L-COL-8
+  note: 'numerical verification, not empirical validation; SYN-001 columns synthetic (L18, L-COL-8)'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[32]
+  sha256: 2356d4719362db9ba4248473602db8f753098a612ad7323638600e31832e0afc
+  class: P
+  to: []
+  note: 'method note: the gate rows'' wall times are JUnit times; §4.12''s ratio gate is the build logs'''
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[33]
+  sha256: 5990531611847a1225af307250d08ea06f69ba268b36625adbbb81a0309355b2
+  class: P
+  to: []
+  note: 'process note: this harvest follows the manifest''s generation'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: limitations[34]
+  sha256: 0bc7abadfc93e51314b6f0e5503509e14c24dad7e27a783e2fc120231faf30f9
+  class: P
+  to: []
+  note: 'environment note: the OpenIDAES-450 archive, the S05/S07 build Python and L01''s source distributions are absent here; the skipped nodes are cited by no S11 assertion'
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: checks[123]
+  check_id: S11.G8
+  sha256: ca30a21172d6b4b1b8b95f940b6a37283b38d68e0b52387d2bb53b1b80736ebf
+  class: P
+  to: []
+  note: G8 runs once before merge (full gate, CI on both architectures, cross-architecture comparisons), not by the generator; unsupported here
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: checks[124]
+  check_id: S11.gate
+  sha256: 3c91c4e6dbdf7d41ac9d551d16cdd8553e7e9f8dbf3ac560212f771b20148fca
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
+  item: checks[125]
+  check_id: S11.ci
+  sha256: 35aa09b3a994dab5108284efef4e0a1c587945f8c0e7ab90796f47493a27ea6a
   class: P
   to: []
   note: CI on both architectures is checked before merge, not by the generator; unsupported here

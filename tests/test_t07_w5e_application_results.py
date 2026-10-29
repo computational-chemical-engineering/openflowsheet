@@ -271,6 +271,10 @@ def test_g_r6_6_every_pin_lists_its_pin_encodings() -> None:
     assert schema_errors(f"{SCHEMA}#/$defs/model_registry_view", view) == []
     checked = {"syn001.": 0, "c1.": 0}
     for model in view["models"]:
+        if model["model_id"].startswith("thermal."):
+            # S11 I1b (the C6-2 precedent): the `thermal.*` entries are checked by
+            # `test_s11_thermal_binding`, so this test's base keys stand.
+            continue
         signature = MODEL_SIGNATURES[model["model_id"]]
         options = [o for c in signature.choices for o in c.options]
         listed = [*model["pins"], *(o for c in model["choices"] for o in c["options"])]

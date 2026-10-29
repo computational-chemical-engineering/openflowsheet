@@ -59,6 +59,7 @@ from openflowsheet.models.syn001 import (
 from openflowsheet.models.syn001.ph_kernel import (
     PHState,
     closure_failure,
+    failure_labels,
     ph_state,
     port_enthalpy,
     typed_failure,
@@ -366,6 +367,10 @@ class Valve:
             )
         outlet_pressure = float(self.outlet_pressure)
 
+        # S11 rulings item 11 (R-840): a typed failure names the bound provider (none added on
+        # SYN-001's).
+        labels = failure_labels(self.property_provider, self.reference_convention)
+
         # Dormant: the outlet temperature is a retained label, the inlet's (spec §4.7).
         if feed.is_dormant:
             dormant = StreamState(
@@ -390,13 +395,20 @@ class Valve:
                     "out_of_domain",
                     "pressure_rise(valve)",
                     f"P_spec = {outlet_pressure} Pa exceeds the inlet's {feed.pressure} Pa",
+                    **labels,
                 ),
                 None,
             )
 
         # Inlet enthalpy (spec §5.2 (3)).
         inlet = port_enthalpy(
-            self.provider, feed, self.inlet_phase, self.components, context, port="inlet"
+            self.provider,
+            feed,
+            self.inlet_phase,
+            self.components,
+            context,
+            port="inlet",
+            labels=labels,
         )
         if inlet.failure is not None:
             return inlet.failure, None
@@ -404,7 +416,7 @@ class Valve:
 
         closure = ph_state(self.provider, feed.n, outlet_pressure, inlet.enthalpy_flow, context)
         if closure.status != "ok":
-            return closure_failure(closure), closure
+            return closure_failure(closure, **labels), closure
         assert closure.temperature is not None and closure.split is not None
 
         return (

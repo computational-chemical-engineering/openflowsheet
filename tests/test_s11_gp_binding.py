@@ -5,20 +5,19 @@
 `reference_convention` and `domain` from the bound provider's `describe()` on a basis other than
 SYN-001's, and nothing on SYN-001's, so the SYN-001 construction is identical.
 
-`MODEL_BASES` admits these models on SYN-001's basis only until the integration WO (I1b) adds
-Wilson's row; here it is monkeypatched to admit `wilson-ig-v2` (the provider WO-D5 selects), and one
-test pins the unpatched refusal so that the patch is seen to be what lets them bind.
+Since the integration WO (I1b) `MODEL_BASES` holds Wilson's row for the five (`wilson-ig-v2`, the
+provider WO-D5 selects), so they bind on it without a monkeypatched registry; one test pins that
+admission (S11D D6's DECISION: the monkeypatch helper is dropped at I1b).
 """
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 import pytest
 from m02_c1_support import connection, quantity, revision, specification
 
-from openflowsheet.application import revision_binding
 from openflowsheet.application.binding import Unbound
 from openflowsheet.application.revision_binding import (
     MODEL_BASES,
@@ -177,30 +176,20 @@ def syn001_revision(model: str, **kwargs: float) -> Document:
     return unit_revision(model, SYN001_RECORDS, SYN001_BASIS.components, (0.5, 0.3, 0.2), **kwargs)
 
 
-@pytest.fixture
-def wilson_admitted(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
-    """`MODEL_BASES` with Wilson's row for the five, as I1b will add it (v2 since WO-D5)."""
-    for model in FIVE:
-        monkeypatch.setitem(
-            revision_binding.MODEL_BASES, model, frozenset({*MODEL_BASES[model], WILSON})
-        )
-    yield
-
-
 def _unit(binding: RevisionBinding) -> Any:
     (unit,) = (u for u in binding.flowsheet.units() if u.unit_id == "U")
     return unit
 
 
 @pytest.mark.parametrize("model", FIVE)
-def test_unpatched_the_five_are_refused_on_wilson(model: str) -> None:
-    """Until I1b, R-288 refuses the five on Wilson's basis; the fixture is what admits them."""
-    refused = bind_revision_flowsheet(wilson_revision(model))
-    assert isinstance(refused, Unbound), refused
-    assert (refused.kind, refused.detail) == ("unsupported", f"model_unsupported({model})")
+def test_since_i1b_the_five_bind_on_wilson(model: str) -> None:
+    """Units design §4.7 (I1b): `MODEL_BASES` admits the five on Wilson's basis as well as on
+    SYN-001's, and the binder binds them on it with no monkeypatch."""
+    assert MODEL_BASES[model] == frozenset({"syn001", WILSON})
+    binding = bind_revision_flowsheet(wilson_revision(model))
+    assert isinstance(binding, RevisionBinding), binding
 
 
-@pytest.mark.usefixtures("wilson_admitted")
 @pytest.mark.parametrize("model", FIVE)
 def test_on_wilson_the_unit_carries_the_bound_providers_fields(model: str) -> None:
     document = wilson_revision(model)
@@ -232,7 +221,6 @@ def test_on_wilson_the_unit_carries_the_bound_providers_fields(model: str) -> No
     assert list(domain["components"]) == list(WILSON_BASIS.components)
 
 
-@pytest.mark.usefixtures("wilson_admitted")
 @pytest.mark.parametrize("model", FIVE)
 def test_on_syn001_the_builders_pass_nothing(model: str) -> None:
     bound = bind_revision_flowsheet(syn001_revision(model))
@@ -249,7 +237,6 @@ def test_on_syn001_the_builders_pass_nothing(model: str) -> None:
 # Wilson's domain is T ∈ [300, 400] K, P ∈ [3e4, 2e5] Pa; SYN-001's is [280, 440] K, [5e4, 2e5] Pa.
 
 
-@pytest.mark.usefixtures("wilson_admitted")
 def test_a_valve_outlet_inside_wilsons_pressure_domain_only_binds_on_wilson() -> None:
     assert isinstance(
         bind_revision_flowsheet(wilson_revision(VALVE, outlet_pressure=40_000.0)), RevisionBinding
@@ -263,7 +250,6 @@ def test_a_valve_outlet_inside_wilsons_pressure_domain_only_binds_on_wilson() ->
     )
 
 
-@pytest.mark.usefixtures("wilson_admitted")
 @pytest.mark.parametrize("model", (HEATER, TP_FLASH))
 def test_an_outlet_temperature_outside_wilsons_domain_is_refused_on_wilson(model: str) -> None:
     assert isinstance(

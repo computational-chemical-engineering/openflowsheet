@@ -80,6 +80,7 @@ from openflowsheet.models.syn001.flash import total_flow_id
 from openflowsheet.models.syn001.ph_kernel import (
     PHState,
     closure_failure,
+    failure_labels,
     ph_state,
     port_enthalpy,
     typed_failure,
@@ -552,6 +553,10 @@ class PHFlash:
             )
         outlet_pressure = feed.pressure - float(self.pressure_drop)
 
+        # S11 rulings item 11 (R-840): a typed failure names the bound provider (none added on
+        # SYN-001's).
+        labels = failure_labels(self.property_provider, self.reference_convention)
+
         # (1) Spec §4.7: dormant outlets carry the inlet temperature as a label.
         if feed.is_dormant:
             if self.duty != 0.0:
@@ -560,6 +565,7 @@ class PHFlash:
                         "error",
                         "duty_into_dormant_stream",
                         f"Q_spec = {self.duty} W into a dormant stream; PHF-duty forces Q = 0",
+                        **labels,
                     ),
                     None,
                 )
@@ -587,13 +593,20 @@ class PHFlash:
                     "out_of_domain",
                     "pressure_outside_domain(outlet)",
                     f"P_in - dP = {outlet_pressure} Pa outside [{p_min}, {p_max}] Pa",
+                    **labels,
                 ),
                 None,
             )
 
         # (3)
         inlet = port_enthalpy(
-            self.provider, feed, self.inlet_phase, self.components, context, port="inlet"
+            self.provider,
+            feed,
+            self.inlet_phase,
+            self.components,
+            context,
+            port="inlet",
+            labels=labels,
         )
         if inlet.failure is not None:
             return inlet.failure, None
@@ -604,7 +617,7 @@ class PHFlash:
             self.provider, feed.n, outlet_pressure, inlet.enthalpy_flow + self.duty, context
         )
         if closure.status != "ok":
-            return closure_failure(closure), closure
+            return closure_failure(closure, **labels), closure
         split = closure.split
         assert split is not None and split.vapor is not None and split.liquid is not None
 

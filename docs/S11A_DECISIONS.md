@@ -314,3 +314,314 @@ W27 `test_m06_w27_coverage` 4 and `test_l01_retake` 6 errors (`unregistered mode
 4. a20's `scanned_providers` now fails only on `wilson-ig-v2` (as c3): D5 registers it.
 
 Identity at `079be287` (final, clean scratch worktree): `S11-IDENTITY FAIL n=54497 changed=[] (C branch shards [1, 7, 15] exited non-zero)` — the remaining failures are exactly the envelope a20 + six c3 (`wilson-ig-v2`, D5), `test_m06_w27_coverage` 4 and `test_l01_retake` 6 errors (I1b). S08 and S10C lines as above, unchanged.
+
+## WO-I1b part 3a: rulings item 3 (R-832) and §4.10's model rows
+
+- W27v3-R09 implemented in the generator (`spelling_problems_v3`: W27v2-R08 over the records that have a CAS RN) and in
+  `coverage._check_snapshot_v3`; A08 restated by hand (A04's outcome on B), A09 added (S1co with record sources, case
+  `co`, `['co->630-08-0']`). Mutants `cas_less_refused` (changes only A08, back to `['H2O->None']`) and
+  `spelling_rule_off` (changes only A09, to `COMPONENT_UNAVAILABLE`). The generator's reference reproduced the
+  hand-written A08 at the first run. `--check` identical (9 states); GC-V3-5 holds (225/225); S11.A30 holds.
+- §4.10's seven `thermal.*` → function rows (`offers: []`) are in `MODEL_FUNCTIONS_ADD`; GC-V3-3 now claims each
+  non-null row is onto an existing `units.functions` name and only null rows carry `why_none`.
+- DECISION (I1b, item 3): the rules list of `registration_v3.json` names R09 as `c:no_cas_skipped` beside
+  `c:case_distinct`. Alternative: no tag (the list is descriptive). Reversible by: the one list entry and `--emit`.
+- Diagnosis (not cleared here): `test_m06_w27_coverage` (4) and `test_l01_retake` (6 errors) snapshot the installed
+  build under v1/v2 through `v2_binder()`. Since I1, `MODEL_BASES` puts `syn001.column` on SYN-001's basis, which
+  `v2_binder()` keeps, and `list_models` lists it; v1/v2's model table has no row for it (R-805: v3 only), so v1/v2
+  refuse (`unregistered model ids ['syn001.column']`, `list_models-only ['syn001.column']`,
+  `list_models_sha256` moved). v3's rows cannot clear a v1/v2 test, and S4 does not either. OPEN (design lane,
+  extends R-837): `v2_binder()` also restricts the models (and `list_models`) to v1's model table — default; or these
+  tests are amended under §8.3. The thermal models will meet the same refusal when they enter `MODEL_BASES`.
+- S4 (acceptance 4, next WO, after the thermal registry commit): `snapshot.build_snapshot(registration_version=3)` of
+  the installed build, then classify the 225 development rows under version 3 with no refusal and record the counts
+  (`benchmarks/m06/w27`, S11.A40; register S4's SHA-256 in W27v3-R08).
+
+## WO-I1b part 2: registration, hooks and refusal texts (registration commit), and the handoff
+
+- Registration: the seven `thermal.*` signatures are defined in `revision_binding` (`_THERMAL_*`, as `_COLUMN` is
+  for `column_binding`: `thermal_binding` imports `revision_binding`, so a bottom-of-module import breaks when
+  `thermal_binding` is imported first); `MODEL_BUILDERS` holds `_thermal_builder(id)`, which imports
+  `thermal_binding.BUILDERS` at the call; `thermal_binding.SIGNATURES`/`BASES` now read the binder's rows. The five
+  γ–φ-faced `syn001.*` units gain `wilson-ig-v2`. 30 members in all three tables (both import orders checked).
+- Hooks: `forms.GAMMA_PHI_UNITS` (`wilson-ig-v2` → it; v1 stays `DECLARED_MIXTURE`); `table.revision_checks`
+  dispatches it to `gamma_phi_units.revision_checks` (lazy import). `table.MODEL_CHECKS` is a `MutableMapping`
+  over the table's own rows then `verify.thermal.MODEL_CHECKS` (lazy; writes go to the own rows so
+  `monkeypatch.setitem` still works). `EXTERNAL_DUTY_MODELS` += thermal heater, flash; `WORK_MODELS` += the three
+  machines (without them the envelope misses Q/W; S11D D's DECISION measured −878.17 W).
+- DECISION: on a pure-fluid basis only a `vapor_liquid` outlet of a `thermal.*` instance is saturated (read from
+  its carried split, `verify.thermal.saturated_*`); any other undeclared stream stays unlifted, because S11.A17
+  (restated R-841) drives `vapor_liquid` routing products through `revision_checks` directly and needs them
+  blocked. Alternative: every `vapor_liquid` stream on a pure basis (§4.8's literal reading; breaks A17). Reversible
+  by: the `saturated` set in `table.revision_checks`.
+- DECISION: `thermal.flash` on Wilson names `syn001.ph_flash` (both duty-specified). Alternative: `syn001.tp_flash`.
+  Reversible by: `_LIFTED_NAMESAKE`.
+- DECISION: the no-volume reason reads "wilson-ig-v2 has no liquid volume, which a pump needs (L-GP-1)" (§4.7 gives
+  no literal). Alternative: any other wording. Reversible by: `_UNADMITTED["no_volume"]`.
+- OPEN: pairs §4.7 does not rewrite keep their first-pass reason, so `syn001.heat_exchanger`, separator and reactors
+  on a pure fluid still say "pure-fluid units are S11b (...)" and on Wilson "γ–φ faces are S11c", which are stale.
+  Default: leave (not this WO's text); design lane to give texts.
+- Dropped helpers: `test_s11_thermal_binding.register`/`registered`, `s11_gp_support.admit_wilson`,
+  `admit_machines`; `dispatch_gamma_phi` became `count_gamma_phi` (a spy on the real dispatch). The test
+  `test_until_i1b_the_binder_refuses_the_family` became `test_since_i1b_the_binder_holds_the_family`.
+
+**Handoff (context cap reached; the next engineer resumes here).** Done: brief part 2 items 1–3 (registration
+commit). Not done, in order:
+1. G1 identity on the registration commit (expect `changed=[]` plus possibly the new-matrix S11-own tests).
+2. `tests/test_s11_routing.py` A13 tests (`test_a13_the_admission_matrix`, `..._every_refused_pair_on_a_new_basis...`
+   `_expected_reason`) still encode the pre-I1b matrix: restate them to §4.7 (five units + Wilson; thermal rows;
+   new reasons) — S11's own tests, no AMENDED_TESTS entry. Add A82 (30 members, admission = §4.7) and the
+   `model_unsupported(thermal.pump)` no-volume assertion to GP-M2's test (A81 binder half).
+3. Item 12 (R-841): remove the `S11_BASES` filter in `_basis_refusal` ("bases" when > 1). NOTE: until then a
+   `thermal.*` refusal on SYN-001/C1 renders an empty basis list (all its bases are S11's) — do it next.
+   Expected moved base tests: `tests/test_m02_join.py` feed_source, stream_splitter and valve refusal tests
+   (`syn001.valve` gained Wilson) → `AMENDED_TESTS` citing R-841. Re-derive `BASE_SYN001_C1_HINTS` (22 pairs) as
+   the unchanged-model subset, measured at the base `8c34ecb0`.
+4. Brief items 5 (envelope, support matrix, L-TH-1…8, L-GP-1…3, providers axis, `--emit/--check`), 6 (samples,
+   §8.3 count tests), 7 (S4, `v2_binder()` restriction — the default stands: restrict models and `list_models` to
+   v1/v2's table, isolated commit, DECISION extending R-837), 8 (item 10: Q-C2, C3-2 new code
+   `isentropic_state_single_phase`, O-C6-1 RANK_DEFICIENT check — STOP if not), then G1/S08/S10C.
+5. Measured at this commit (`pytest tests/test_s11_*.py test_m02_wo8_registries test_t05_w1d_verifier
+   test_m02_wo9_reactor`): 978 passed, 64 skipped, **14 failed**, each the pre-I1b matrix pinned by a test:
+   `test_s11_routing` A13 ×6 (item 2/3 above), `test_s11_gp_binding::test_unpatched_the_five_are_refused_on_wilson`
+   ×5 (obsolete since the Wilson rows landed: restate as admitted), `test_s11_column_registration::test_a39_...`
+   (registry size 23 → 30), `test_s11_w27_v3::test_v3_routes_are_the_v2_routes_with_their_record_sources` (the
+   thermal models through `v2_binder()`: item 7's restriction), and the BASE test
+   `tests/test_m02_wo8_registries.py::test_the_envelope_sets_gain_the_c1_ids` (pins `EXTERNAL_DUTY_MODELS` /
+   `WORK_MODELS`, which now hold the thermal duty and work models). OPEN (design lane, not in §8.3): amend it under
+   §8.3 (restricted to non-`thermal.` ids, the C6-2 precedent) — default; or the envelope reads the thermal Q/W from
+   a separate set. Thermal/GP solve and verifier tests all pass through the real registration and hooks.
+
+## WO-I1b part 2 (continued): tests restated, R-841, envelope, samples, S4, item 10
+
+- `51dcc31d`: S11's own tests restated to §4.7 (A13, A39 23 → 30, the five admitted on Wilson, the
+  `wilson_admitted` fixture dropped); A82; A81's binder half (`thermal.pump` on GP-M2 → no-volume reason).
+- R-841 (rulings item 12): `_basis_refusal` names every basis the model binds on ("bases" when more than one); the
+  `S11_BASES` filter is gone. Measured at the base `8c34ecb0`: the 14 syn001/c1 pairs of the models whose
+  `MODEL_BASES` S11 does not change hash to `3bdca9c1…`, and the branch reproduces it byte for byte. The eight moved
+  pairs (three routing models, the five γ–φ units, on C1) and the new column/thermal pairs are asserted literally.
+  `AMENDED_TESTS` += `test_m02_join`'s three refusal tests (feed_source, stream_splitter, valve), citing R-841.
+- DECISION (orchestrator ruling): the first-pass `_UNADMITTED` reasons that said "S11b"/"S11c" → restated to the
+  admission S11 ends with: `syn001` exchanger/separator/reactors on a pure fluid read "pure-fluid streams are
+  declared-regime (ADR 0051), which only the thermal.* units take; none of them has this function"; on Wilson "its
+  EO face reads lnK and h_<c>, and S11 gives γ–φ faces to the five K02/T05 units only (L-GP-1)"; a non-routing
+  `c1.*` model on a pure fluid now reads C1's own-physics reason (ADR 0050 D3), as it does on Wilson. Alternative:
+  keep the first-pass texts. Reversible by: the two `_UNADMITTED` strings and the one `c1_physics` branch.
+- DECISION (orchestrator ruling): `test_m02_wo8_registries::test_the_envelope_sets_gain_the_c1_ids` → restricted to
+  the `EXTERNAL_DUTY_MODELS` ids outside `thermal.` (C6-2 precedent; its recorded operands stay the base's, so no
+  `AMENDED_TESTS` entry); `test_s11_thermal_verifier::test_the_envelope_reads_the_thermal_duty_and_work` pins the
+  thermal duty and work ids literally. Alternative: leave it failing for the reviewer. Reversible by: the one
+  `base_duty` line.
+- Item 5 (envelope, §4.10): `unit_models.members` += the seven (30), statement restated; L-TH-1…8 (L-TH-4/5 with
+  rulings item 10's appended sentences, L-TH-8 new) and L-GP-1…3 appended after L-COL-10, each with collected test
+  evidence; L-S11-1/2 drop "only the routing models", L-S11-3 and the three `other_basis_providers` caveats name what
+  binds now; the A13 evidence node follows its rename (`test_a13_a82_the_admission_matrix`). `t08_support_matrix.py`
+  A20 counts 30 models / 7 thermal; `--emit`, then `--check` 0 problems. `test_t08_w2_support_envelope::test_a20_…`
+  (already in `AMENDED_TESTS`, §8.3) restated to 30/7. A83 in `test_s11_bases`. Providers axis, scanned providers and
+  `LIBRARY_ONLY_PROVIDERS` were already §4.10's (A5).
+- DECISION (item 5): L-S11-3 and the `wilson-ig-v2` caveat now name the five K02/T05 units and the two vapour machines
+  (the old "routing models and the column" became false at I1b; §4.10 says only "L-S11-3 names wilson-ig-v2").
+  Alternative: leave L-S11-3's binding sentence as it was. Reversible by: the two text blocks and `--emit`.
+- Item 6 (samples, S11.A86): `s11_thermal_support.THERMAL_SAMPLES = ("TH-C1", "TH-R1", "GP-M1")` (committed cases that
+  bind without the coolprop extra; together one bound instance of each of the seven), appended last in the T07 W5c,
+  T08 edge-identity and T08 typed-ends corpora (COLUMN_SAMPLES precedent). W5c's EXPECTED gains three generated
+  binding pins (regression pins; the earlier rows unchanged).
+- DECISION (item 6): the W5c "signature describes every bound instance" test exempts the thermal heater's optional
+  `pressure_drop`/`outlet_vapor_fraction` and, in quality mode, its specification choice (as B3b exempts the
+  column's optional parameters: `ModelSignature` cannot list them; `thermal_binding`'s docstring says so).
+  Alternative: samples without a quality-mode heater (would hide the gap). Reversible by: the `quality_mode` block.
+- Item 6 (§8.3 count tests and registry corpora): `test_m02_join`'s registry table (in `AMENDED_TESTS`) gains the five
+  on Wilson and the seven thermal rows; `test_t08_b50_surface_content`'s `V02_ADDITIONS` registers the seven under
+  R-816 and strips them with the column (`S11_MODELS`); the W5e `list_models` fixtures regenerated
+  (`t07_schema_fixtures.py --write`; I1's `5d89a50c` precedent); `test_t07_r6_hints` proves the 11 thermal triples on
+  `THERMAL_SAMPLES` (`THERMAL_COVERED`).
+- DECISION (item 6): base tests that count or tabulate over every registered model and that §8.3 does not name
+  (`test_t07_r6_hints` count and coverage table, `test_t07_w5e…::test_g_r6_6…`) are restricted to the ids outside
+  `thermal.` and the thermal part is pinned apart (C6-2 precedent; the base's recorded operands stand), the W5e
+  thermal entries in `test_s11_thermal_binding::test_list_models_lists_each_thermal_pin_with_its_encodings`.
+  Alternative: amend them under §8.3 (needs a design-lane erratum). Reversible by: the filters.
+- DECISION (item 6): R-816's register entry spells the seven ids in full (`thermal.valve`, …), which
+  `test_m07a_a51_each_v0_2_addition_is_named_by_its_register_entry` requires of the entry naming an addition; the
+  decision is unchanged. Alternative: cite another entry. Reversible by: the one register line.
+- OPEN (design lane): `test_adr_0008_transient_readiness::test_e1_every_bindable_model_has_declarations_u1_reads`
+  fails since the registration commit: `thermal.heater`, `valve`, `mixer` and the machines declare no module-level
+  `EQUATIONS` U1 can read (they build `_BASE` + per-mode/per-machine rows; `machines.MODEL_IDS` is a dict, U1 reads a
+  tuple). Default: give heater/valve/mixer a module `EQUATIONS` mapping (configuration → rows, as `flash.py` has a
+  tuple) and the machines module `EQUATIONS` by machine plus a tuple of ids; this changes the four modules' bytes
+  (their manifests' `artifact_hash`), so it wants the reviewer's eye. Not done here.
+
+**Handoff (2026-10-27, context cap; the next engineer resumes here).** Commits since `cbc38ca2`: `51dcc31d` S11 tests
+restated to §4.7 + A82 + A81 binder half; `0f3db1b4` R-841 (item 12); `8044d5e2` stale "S11b/S11c" reasons
+restated (ruling); `693d9e8c` m02 envelope-sets test non-thermal (ruling); `97e1c456` envelope/support matrix (item
+5, A83; `--check` 0 problems); `5774b8d4` + `2c8dce6c` samples and registry-wide tests (item 6, A86). Not done, in
+order:
+1. ADR 0008 E1 for the thermal modules (OPEN above; default stated there) — touches model-module bytes.
+2. Item 7: `v2_binder()` restricts the models and `list_models` to v1/v2's model table (isolated commit, DECISION
+   extending R-837); then S4 = `snapshot.build_snapshot(registration_version=3)` of the build (127 routes, Wilson on
+   `wilson-ig-v2`), classify the 225 development rows under v3 with no refusal, record the counts
+   (`benchmarks/m06/w27`, S11.A40/A84), S4's SHA-256 into W27v3-R08; `w27_registration_v3 --check`. Must clear
+   `test_m06_w27_coverage` (4), `test_l01_retake` (6 errors) and
+   `test_s11_w27_v3::test_v3_routes_are_the_v2_routes_with_their_record_sources`.
+3. Item 8 (rulings item 10): Q-C2 test; C3-2 code `isentropic_state_single_phase` (kernel, blocks, machines +
+   manifest limitation text, verifier mirror); O-C6-1 (A62 under `T04-W12`: Q = 0 must certify `RANK_DEFICIENT`, else
+   STOP and escalate; Q = 1 kW `LINEAR_SOLVE_FAILED`; record the SYN-001 pump's dormant case); add
+   `test_the_dormancy_registry_is_syn001s_and_the_c1_mixers_vapour_outlet` to §8.3's record (design-doc erratum line).
+4. Gates on the final tree (scratch worktree, `scratchpad/i1b/identity.sh <commit> <tag>`), `t08_support_matrix.py
+   --check`, `w27_registration_v3 --check`, all `tests/test_s11_*`. Expected `AMENDED_TESTS` additions so far: only
+   R-841's three `test_m02_join` tests.
+Gates at `83185423` (measured): `S11-IDENTITY FAIL n=54490 changed=[]` (failing runs, not changed keys: the T05
+family exited 1 and C shards failed; base-only keys = `test_m06_w27_coverage` 4, item 7); `S08-IDENTITY PASS n=52
+changed=[S02.P1] p1_stage_a=EQUAL`; `S10C-IDENTITY FAIL n=858 changed=[]` (the same T05 run). The T05 failures were
+fixed in the next commit: `verify.table` imported `composition_dependent` from the models (cbc38ca2; T05
+table-independence, 3 tests), now `forms.pure_fluid_provider` (same predicate, same values); L-TH-7 spelled the v2
+contract id in `benchmarks/` (`test_b06_no_registered_policy_names_v2`), now "T05b's v2 phase contract". T05 modules +
+thermal/GP verifier tests: 1450 passed. Gates not re-run after that fix.
+Known red at this handoff: ADR 0008 E1 (item 1), the three W27 tests of item 7. Everything else touched passes
+(S11 battery, the 24 registry-dependent base files, envelope readers, T07/T08 corpora).
+
+## WO-I1b part 2 (finish): ADR 0008 E1, R-816, item 7 (v2 binder, S4), item 8 (rulings item 10)
+
+- DECISION (orchestrator ruling, closes the OPEN above): ADR 0008 E1 → the four thermal modules gain a module-level
+  `EQUATIONS` mapping U1 reads (configuration → rows): heater `(mode, saturated outlet)` (6), valve and mixer
+  `saturated outlet` (2 each), machines `(machine, saturated outlet)` over the outlet forms each machine has (4);
+  `declared_equations` now returns the mapping's entry (the same rows, in the same order). `machines.MODEL_IDS` becomes
+  the tuple U1 reads; the machine → id dict is `MACHINE_MODEL_IDS` (5 call sites in the binders). U1 attributes the
+  machine module's rows to all three ids (as `c1/reactor.py`'s ids share one tuple); E1 only checks reach, and no
+  machine row is a `holdup_balance`. New S11 modules: no registered result moves; the module bytes (manifest
+  `artifact_hash`) change. Alternative: extend U1's reader (a base test). Reversible by: the one commit.
+  Measured: `test_adr_0008_transient_readiness` + `test_s11_thermal_*` + `test_s11_gp_*` + `test_s11_bases`: 679
+  passed, 58 skipped; `t08_support_matrix.py --check` 0 problems; `t07_schema_fixtures.py` all "same".
+- DECISION (orchestrator ruling, replaces item 6's register DECISION above): R-816's decision text restored as the
+  ruling round wrote it (register entries are not rewritten); the seven ids in full go in a dated "Amended
+  2026-10-27" line under the entry, which `test_t08_b50_surface_content`'s `_register_entry` span includes (its
+  comment now says so). Alternative: the rewritten entry. Reversible by: the one commit. Measured: b50 7 passed;
+  `test_m07a_surface_chain` + `test_m07_mr12_extras_v02` pass.
+- DECISION (item 7, part 3a's OPEN, orchestrator default extending R-837): the v1/v2 reading of the installed build
+  also restricts its models: `snapshot.restrict_to_v2_models` keeps `MODEL_BASES`/`MODEL_BUILDERS` on v1/v2's model
+  table (W27-R12, 22 ids) and sets `LIST_MODELS`, which `build_snapshot` passes to `list_models_document`; that
+  filters the served document to those ids (what `list_models` serves when `MODEL_BUILDERS` holds only them: sorted
+  ids, one signature each; an unserved id is refused). Both v1/v2 readers use it: `v2_binder()` (tests) and L01's
+  `retake.measurement_binding()`. Follow-on test edits (same reading, no `AMENDED_TESTS` entry): `constructed_binder`
+  sets `LIST_MODELS` to the same 22 ids (its 13-id refusal still fires, "list_models-only");
+  `test_each_route_binds…` compares routes with `v2_binder().MODEL_BASES` (and checks it equals the installed one on
+  those ids); `test_s11_w27_v3::test_v3_routes_are_the_v2_routes…` states that v3's routes gain only S11's models
+  (`syn001.column` on SYN-001, none on `pr-c1-v1`). Alternative: amend the W27 tests under §8.3. Reversible by: the
+  one commit. Measured: the v2 reading's `list_models_sha256` = A3's `f070fbe0…` again; `test_m06_w27_coverage` +
+  `test_l01_retake` + `test_s11_w27_v3`: 95 passed, 2 skipped (was 8 failed, 6 errors).
+- Item 7 (S4, W27v3-R08, rulings item 3 acceptance 4, S11.A40/A84): `scripts/s11_w27_s4.py --emit` wrote
+  `benchmarks/m06/openidaes450/snapshot_s4.json` (S4 + its SHA-256 + the 225-row version 3 tally), built at
+  `82a1d87b`: 127 routes, Wilson on `wilson-ig-v2`, S4 SHA-256 `58ba0d48…3231`. No refusal on the 225 development
+  rows: 3 CANDIDATE, 3 COMPONENT_UNAVAILABLE, 3 PROPERTY_ROUTE_UNAVAILABLE, 32 NOT_STEADY, 184 UNIT_UNAVAILABLE
+  (committed v2 snapshot on the same rows: 9 COMPONENT_UNAVAILABLE, 0, 0; six rows move: the three IAPWS pump variants
+  → CANDIDATE, `official_btx_flash_canary`, `variant_hda_once_through_single_flash`,
+  `variant_methanol_water_nrtl_partial_condensation` → PROPERTY_ROUTE_UNAVAILABLE). `--check` rebuilds and compares
+  every member but `git_commit`. Tests `test_a40_a84_…` (+ the check-can-fail mutant) in `test_s11_w27_v3`.
+- DECISION (item 7): S4's SHA-256 registered by a dated "*Registered 2026-10-27 (WO-I1b)*" sentence under W27v3-R08
+  in `W27-registration-v3.md` (outside the generated blocks; `w27_registration_v3.py --check` identical), and S4 kept
+  in a record file beside `registration_v3.json`, with a `--check` generator (L01 retake record precedent: snapshot +
+  `snapshot_sha256`). Alternative: a member of `registration_v3.json` (would move the transcription the generator
+  pins). Reversible by: the record, the script, the one sentence.
+- Item 8, C3-2 (rulings item 10, R-839): new code `isentropic_state_single_phase` — `blocks.isentropic_state`'s
+  beta_s outside [0, 1], and `kernel.isentropic_temperature`'s root outside the saturation range with the other label;
+  `isentropic_state_two_phase` keeps s* past the saturated entropy (and the Wilson UNSTABLE vapour). Both codes are
+  `kernel.ISENTROPIC_FORM_CODES`: a `DomainError` at a trial in the block (behaviour unchanged, the code alone moves)
+  and `<code>(<U>)` in `machines.evaluate`; the machines' manifest limitation names both. C3-7's turbine (vapor_liquid
+  declared, beta_s > 1) → `isentropic_state_single_phase(U1)`; A55's n-pentane compressor still
+  `isentropic_state_two_phase(U1)` (CoolProp run). The verifier's mirror (`verify.thermal.isentropic_enthalpy`) names
+  no code (`isentropic_state_refused: <message>`): unchanged. Measured: thermal/GP/bases/ADR 0008 with CoolProp: 740
+  passed.
+- Item 8, Q-C2 (measured on iapws95-v1, `test_q_c2_…` in `test_s11_thermal_solve`): steam 1 MPa, 573.15 K → 0.1 MPa,
+  eta = 0.5, outlet `vapor`: x_s = 0.9613, the actual outlet 2.61 kJ/mol above h^V_sat; the revision is
+  INITIALIZATION_FAILED `initializer_failed(T): isentropic_state_two_phase(T)` (the ruling's numbers reproduce). The
+  `isentropic_phase` parameter's `parameter_unsupported` is the existing binding test. L-TH-4's evidence gains the
+  test (`t08_support_matrix.py --emit`, `--check` 0 problems).
+- Item 8, O-C6-1 (`test_o_c6_1_…`, two tests): A62's flowsheet under `T04-W12`: Q = 0 → CONVERGED, certificate
+  UNVERIFIED, regularity `RANK_DEFICIENT` (the ruling's condition holds, no stop); Q = 1 kW → `LINEAR_SOLVE_FAILED`
+  ("SuperLU: Factor is exactly singular"). The SYN-001 pump's dormant case (same topology, SYN-001 basis, 0.1 → 0.18
+  MPa, eta 0.75) under `T04-W12`: CONVERGED, VERIFIED, `NO_RANK_LOSS_DETECTED` — so §4.9's "as the SYN-001 pump's is"
+  does not hold at the certificate: the verifier reduces a dormant outlet by its own registry
+  (`verify.zero_flow.DORMANT_OUTLETS`, spec §7.6), under either phase contract, and that registry has the pump but no
+  `thermal.*` entry. Consequence, also measured: A62 at Q = 0 under `T06-revision-v2` converges but certifies
+  UNVERIFIED/`RANK_DEFICIENT` too.
+- OPEN (design lane, from O-C6-1): should `verify.zero_flow.DORMANT_OUTLETS` gain §4.9's single-phase `thermal.*`
+  outlets (so a v2 dormant thermal outlet certifies as the pump's does), and §4.9/L-TH-7's "as the SYN-001 pump's is"
+  be restated? Default: neither here (a verifier/certificate change, design-led); the measured pins stand.
+- Item 8, records: §8.3's R-839 erratum gains a dated line naming
+  `test_the_dormancy_registry_is_syn001s_and_the_c1_mixers_vapour_outlet` (no `AMENDED_TESTS` entry: it passes on both).
+- Gate finding (S11 identity at `aad5530f`: C branch shards 11, 12 non-zero) 1/2:
+  `test_m02_join::test_the_list_models_fixtures_decompose_onto_the_pre_m02_ones` failed since item 6 regenerated the
+  W5e `list_models` fixtures with the thermal entries. DECISION: its `_AFTER_M02` (added at I1 for the column) gains
+  the seven `thermal.*` ids, so the pre-M02 SHA-256 operands stand (C6-2 precedent; no `AMENDED_TESTS` entry).
+  Alternative: amend it under §8.3. Reversible by: the one tuple. Measured: `test_m02_join` 14 passed.
+- Gate finding 2/2: `test_t08_evidence_manifest::test_the_manifest_validates_and_holds_no_angle_bracketed_text`
+  failed since item 5: every envelope limitation travels into the T08 manifest, and L-TH-4's appended sentence (rulings
+  item 10) spelled `isentropic_state_two_phase(<U>)`. DECISION: L-TH-4 spells it `({U})`, the T08 generator's own
+  placeholder convention (it rewrites `<x>` to `{x}` in check descriptions); `test_s11_bases` follows;
+  `t08_support_matrix.py --emit`, `--check` 0 problems. Alternative: none that keeps the manifest rule. Reversible
+  by: the one envelope line. Measured: `test_s11_bases` + `test_t08_evidence_manifest` + `test_t08_w2_support_envelope`:
+  344 passed.
+
+**Handoff (2026-10-28, WO-I1b complete; I2 next).** Commits since `1cff5547`: `d5d1885a` ADR 0008 E1 (thermal module
+`EQUATIONS`; ruling); `ae76b063` R-816 text restored + dated amendment line (ruling); `82a1d87b` v1/v2 reading
+restricts models and `list_models` (`snapshot.restrict_to_v2_models`); `22cbe2a3` S4 registered (W27v3-R08,
+`snapshot_s4.json`, `scripts/s11_w27_s4.py`); `7492f7fc` C3-2 `isentropic_state_single_phase`; `aad5530f` Q-C2 and
+O-C6-1 pinned, §8.3 record line; `4215d5ee` `test_m02_join` `_AFTER_M02` gains the thermal ids; `c4bfc4ec` L-TH-4
+`{U}` (T08 manifest angle-bracket rule).
+Gates (clean scratch worktrees):
+- at `c4bfc4ec`: `S11-IDENTITY PASS n=54494 changed=[]`; `S08-IDENTITY PASS n=52 changed=[S02.P1]
+  p1_stage_a=EQUAL`; `S10C-IDENTITY PASS n=858 changed=[]`.
+- at `aad5530f` (nothing they read changed after, except `test_s11_bases`, re-run: pass): `tests/test_s11_*` 970
+  passed, 64 skipped; `tests/test_t05*` 1075 passed; `t08_support_matrix.py --check` 0 problems (re-run at
+  `c4bfc4ec`: 0); `w27_registration_v3.py --check` identical; `s11_w27_s4.py --check` S4 OK.
+- With the CoolProp path: thermal/GP/bases/ADR 0008 740 passed (A55's n-pentane still `isentropic_state_two_phase`).
+`AMENDED_TESTS` additions in WO-I1b: R-841's three `test_m02_join` refusal tests only (unchanged here).
+OPEN for the design lane (batch with the reviewer pass):
+1. O-C6-1: the SYN-001 pump's dormant case under `T04-W12` certifies VERIFIED/`NO_RANK_LOSS_DETECTED`, so §4.9/L-TH-7's
+   "as the SYN-001 pump's is" does not hold; the verifier's `DORMANT_OUTLETS` has no `thermal.*` entry, so A62 (Q = 0)
+   certifies UNVERIFIED/`RANK_DEFICIENT` under v2 as well. Should the verifier registry gain §4.9's thermal outlets?
+2. The build-lane DECISIONs above for the reviewer: E1 shape (`MACHINE_MODEL_IDS` rename), the v1/v2 model
+   restriction and its three test follow-ons, S4's record/registration form, `_AFTER_M02`, L-TH-4 `{U}`.
+Not done (out of scope): manifests/harvest (I2), the full gate, push. A stale scratch worktree `scratchpad/i1b/wt-E`
+from an earlier engineer is still registered (`git worktree remove --force` it when convenient).
+
+## WO-I2 (gates and records, minus the full gate, CI and the reviewer)
+
+- DECISION (I2): how CoolProp-dependent nodes are judged → two runs of the same files, A in the locked env, B with
+  `--coolprop-site` (CoolProp 8.0.0) importable; a node's outcome is the worse of the two (failed in either fails).
+  Alternative: one CoolProp run only (hides a CoolProp-absent defect). Reversible by: `merged()` in the generator.
+- DECISION (I2): `S11.suites` (the non-S11 files run) → no node failed or errored, no skipped node cited by an S11
+  assertion; the 29 skips are listed with reasons and in the limitations, never counted as passed (26 W27 nodes: the
+  OpenIDAES-450 archive is absent on this workstation; 2 `OFS_S0{5,7}_BUILD_PYTHON`; 1 L01 source re-run). `S11.suite`
+  (tests/test_s11_*) and every assertion stay strict. Alternative: S02's `_verdict` (a skip fails the package for an
+  environment fact S11 does not own). Reversible by: `suites_check`.
+- DECISION (I2): assertions not cited by name are cited through `CITATIONS` (A24′, A28, A41, A86, A87–A90, A92, read
+  from the tests' docstrings); A24 is judged by A24′ (§10.8); A23 and A85 by the S08/S10-C lines (+ G1 for A85).
+  Reversible by: the map.
+- DECISION (I2): the manifest's recorded numbers (G4 minima, item 2's table, F-1, item 5) are measured each run by
+  `scripts/s11_recorded_values.py`, which calls the tests' own helpers; rulings item 4's negative control runs in a
+  detached worktree of `36ea9175` on every generation (not once by hand). Reversible by: dropping the two checks.
+- Finding (I2, first generation at `893012f7`): `S11.ruff`, `S11.format`, `S11.mypy` failed on S11 code — mypy
+  `models/thermal/heater.py:131` (`_SPECIFICATION_ROWS` keyed `str`, `EQUATIONS` declared `Mode`), E501 in
+  `scripts/t08_support_matrix.py:9`, `tests/test_t07_w5c_signatures.py` unformatted. Fixed in `01e72ca4` (an annotation,
+  a docstring wrap, `ruff format`; no runtime change; G1 re-measured on it: PASS).
+- DECISION (I2): harvest classes → the 24 L-rows E to themselves; O-C6-1 E to L-TH-7; verification-not-validation E to
+  L18 and L-COL-8; the other 9 limitations and the 3 unsupported checks P. Reversible by: the 38 appended entries.
+
+**Handoff (2026-10-28, WO-I2 complete except the orchestrator's items).** Commits: `893012f7` generator
+(`scripts/s11_evidence_manifest.py`) and probe (`scripts/s11_recorded_values.py`); `01e72ca4` lint fixes; `76202522`
+manifest `evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json` — **`status: tested`, 123/126** (G8, gate,
+CI `unsupported`); `7c3284e0` T08 harvest (append-only; 35 limitations + 3 checks), `docs/support-matrix.md` re-emitted,
+`HARVEST_SIZE` (60, 867, 104); `862edb9d` records (ADR 0050/0051 implemented-tested lines, ADR 0050's R-830…R-842
+amendment line, ADR 0013 A3 item 7 → R-831, progress, FRANK_QUESTIONS).
+Measured at `01e72ca4` (generator, 1757 s): `S11-IDENTITY PASS n=54494 changed=[]`; `S08-IDENTITY PASS n=52
+changed=[S02.P1] p1_stage_a=EQUAL`; `S10C-IDENTITY PASS n=858 changed=[]`; S11 tests 1034 passed (worse of A/B); other
+files 1985 passed, 29 skipped (uncited); six generator `--check`s OK (t08 0 problems, W27 v3 identical, S4 OK, thermal
+reference matches CoolProp 8.0.0, 347 Wilson-entropy claims, 123 CoolProp records); R-831 |Z| 63/63/34, one-sided
+6.09e-10/6.22e-10/3.27e-10, central 8.243e-8/4.644e-8/2.083e-9; F-1 C-MW 7.42e-7/8.24e-8/7.42e-9/8.25e-10 at
+3e-5/1e-5/3e-6/1e-6; item 5 (x86-64) as the WO-I1b table (1.30e-6 and 3.53e-7 near the top); R-833 control: 4 passed
+at `36ea9175`, 4 failed `not_converged` with the line reverted; ruff/format/mypy clean.
+Regenerate: `PYTHONPATH=src .venv/bin/python scripts/s11_evidence_manifest.py --coolprop-site DIR` on a clean tree.
+Not done (orchestrator): full `scripts/gate.sh`, CI on both architectures (aarch64 A46 values; G8's cross-architecture
+comparisons), the single `reviewer` pass (O-C6-1 and the I1b/I2 DECISIONs for it), merge, push.
+Note: the rulings' Frank-preference questions OQ-1, OQ-2, OQ-3, OQ-6, OQ-7 (defaults applied) are not listed in
+`docs/FRANK_QUESTIONS.md`; adding them is the orchestrator's call.

@@ -1,8 +1,9 @@
 """The verifier's rows for the `thermal.*` family and the saturated pure-fluid stream (S11 units
 design §4.8; ADR 0051; WO-C5).
 
-Hooked at I1b into the first pass's `DECLARED_MIXTURE` form (`verify.table`, `verify.forms`); until
-then its tests call these functions directly. Everything here is the verifier's own computation
+Hooked at I1b into the first pass's `DECLARED_MIXTURE` form: `verify.table.MODEL_CHECKS` reads
+this module's `MODEL_CHECKS`, and on a pure-fluid basis `revision_checks` takes a saturated
+stream's enthalpy and checks from here. Everything here is the verifier's own computation
 from the fresh provider and the state; nothing calls `models.thermal.kernel` (S11.A66).
 
 - **The enthalpy map** (`enthalpy_map`). A single-phase stream keeps A3's rule, `n·h(T, P, phase)`
@@ -18,6 +19,9 @@ from the fresh provider and the state; nothing calls `models.thermal.kernel` (S1
   its bounds, and for the machines `specification.<U>.isentropic_work`, whose isentropic enthalpy
   flow is this module's own: a bisection on T over the declared isentropic side of
   `s^φ(T, P_O) − s*` (60 halvings, or until the bracket is ≤ 4ε·T), or the saturated closed form.
+  On an additive-vapour (Wilson) identity it is the same bisection, over the provider's T domain,
+  of `Σ_j n_j [s_j(T, P_O) − s_j(T_I, P_I)]`, with `s_j`, `h_j` the fresh provider's VAPOR `s` and
+  `h` at the pure composition `e_j`, and `Ḣ_s = Σ_j n_j h_j(T_s, P_O)` (S11.A80).
 """
 
 from __future__ import annotations
@@ -30,6 +34,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import duty_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import RevisionView
 from openflowsheet.models.syn001.pump import work_id
+from openflowsheet.models.thermal import ADDITIVE_VAPOUR
 from openflowsheet.models.thermal.state import liquid_id, vapor_id
 from openflowsheet.thermo import Phase, PropertyProvider, PropertyRequest, StreamState
 from openflowsheet.verify import CheckResult, dormant, evaluated, unsupported
@@ -41,6 +46,7 @@ __all__ = [
     "CARRIED_SPLIT_NOTE",
     "MODEL_CHECKS",
     "IsentropicStateError",
+    "additive_isentropic_enthalpy",
     "enthalpy_map",
     "isentropic_enthalpy",
     "saturated_enthalpy",
@@ -292,6 +298,75 @@ def isentropic_enthalpy(
     return _properties(provider, context, temperature, pressure, side, ("h",))["h"]
 
 
+def _vapour_at_pure(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    flows: Sequence[float],
+    temperature: float,
+    pressure: float,
+    name: str,
+) -> list[float]:
+    """`n_j` times `name` of the VAPOR at the pure composition `e_j`, for each flowing component
+    (`n_j != 0`); a zero flow adds nothing and is not asked."""
+    weighted: list[float] = []
+    for j, flow in enumerate(flows):
+        if flow == 0.0:
+            continue
+        result = provider.evaluate_phase(
+            PropertyRequest(
+                state=StreamState(
+                    n=tuple(1.0 if k == j else 0.0 for k in range(len(flows))),
+                    temperature=temperature,
+                    pressure=pressure,
+                ),
+                phase="VAPOR",
+                properties=(name,),
+            ),
+            context,
+        )
+        if result.status != "ok":
+            raise IsentropicStateError(
+                f"{name} of VAPOR at e_{j} ({temperature!r} K, {pressure!r} Pa) returned "
+                f"{result.status}: {result.message}"
+            )
+        weighted.append(flow * result.values[name])
+    return weighted
+
+
+def additive_isentropic_enthalpy(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    flows: Sequence[float],
+    inlet_temperature: float,
+    inlet_pressure: float,
+    outlet_pressure: float,
+) -> float:
+    """`Ḣ_s = Σ_j n_j h_j(T_s, P_O)` of an additive-vapour (Wilson) machine, the verifier's own.
+
+    T_s by bisection on the provider's T domain of `Σ_j n_j [s_j(T, P_O) − s_j(T_I, P_I)]` (it
+    rises with T), 60 halvings or until the bracket is ≤ 4ε·T, as `isentropic_enthalpy`; a root
+    at an end of the domain is not inside it. Raises `IsentropicStateError`."""
+    target = sum(_vapour_at_pure(provider, context, flows, inlet_temperature, inlet_pressure, "s"))
+    low, high = (float(bound) for bound in provider.describe().domain["T"])
+    lower, upper = low, high
+    for _ in range(_HALVINGS):
+        if upper - lower <= _BRACKET_ULPS * sys.float_info.epsilon * upper:
+            break
+        middle = 0.5 * (lower + upper)
+        entropy = sum(_vapour_at_pure(provider, context, flows, middle, outlet_pressure, "s"))
+        if entropy < target:
+            lower = middle
+        else:
+            upper = middle
+    if lower == low or upper == high:
+        raise IsentropicStateError(
+            f"the additive-vapour isentropic state at {outlet_pressure!r} Pa is outside the "
+            f"domain (its root is at an end of [{low!r}, {high!r}] K)"
+        )
+    temperature = 0.5 * (lower + upper)
+    return sum(_vapour_at_pure(provider, context, flows, temperature, outlet_pressure, "h"))
+
+
 def _inlet_entropy(unit: Unit, inlet: str, phase: Phase | None) -> float:
     """`s*`: the inlet's molar entropy in its declared phase, or from its carried split."""
     provider, context = _provider(unit)
@@ -491,9 +566,18 @@ def _machine_specification(unit: Unit, components: Sequence[str]) -> list[CheckR
     model = unit.view.model_id
     side = _ISENTROPIC_SIDE.get(model, unit.view.phases.get("outlet"))
     provider, context = _provider(unit)
+    described = provider.describe()
+    pressure = unit.state[pressure_id(outlet)]
     try:
-        entropy = _inlet_entropy(unit, inlet, unit.view.phases.get("inlet"))
-        h_s = isentropic_enthalpy(provider, context, entropy, unit.state[pressure_id(outlet)], side)
+        if (described.provider_id, described.reference_convention) in ADDITIVE_VAPOUR:
+            isentropic = additive_isentropic_enthalpy(
+                provider, context, carried.n, carried.temperature, carried.pressure, pressure
+            )
+        else:
+            entropy = _inlet_entropy(unit, inlet, unit.view.phases.get("inlet"))
+            isentropic = carried.total_flow * isentropic_enthalpy(
+                provider, context, entropy, pressure, side
+            )
     except IsentropicStateError as error:
         return [
             *checks,
@@ -504,7 +588,7 @@ def _machine_specification(unit: Unit, components: Sequence[str]) -> list[CheckR
                 reason=f"isentropic_state_refused: {error}",
             ),
         ]
-    rise = carried.total_flow * h_s - unit.enthalpy[inlet]
+    rise = isentropic - unit.enthalpy[inlet]
     work = unit.state[work_id(unit.id)]
     efficiency = unit.parameter("efficiency")
     value = work - efficiency * rise if model == _EXPANDS else efficiency * work - rise

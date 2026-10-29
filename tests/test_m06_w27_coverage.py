@@ -537,7 +537,9 @@ def v2_binder() -> ModuleType:
     S11 makes 127 bases selectable; v1/v2 have no line for `iapws95-v1`, `wilson-ig-v1` or
     `coolprop-heos-v1`, so the installed binder itself is refused under them (W27-R63; the next
     test) and W27 v3 reads it (WO-A4). The tests that follow, which read this build under v1/v2,
-    read it through this binder; their routes are the ones they read before S11."""
+    read it through this binder; their routes are the ones they read before S11. Its models and
+    `list_models` are v1/v2's model table's (`snapshot.restrict_to_v2_models`, S11 I1b): S11's
+    models have rows in v3 only (R-805)."""
     from openflowsheet.application import revision_binding  # noqa: PLC0415
 
     module = ModuleType("w27_v2_revision_binding")
@@ -547,7 +549,7 @@ def v2_binder() -> ModuleType:
     module.MODEL_BASES = revision_binding.MODEL_BASES  # type: ignore[attr-defined]
     module.MODEL_BUILDERS = revision_binding.MODEL_BUILDERS  # type: ignore[attr-defined]
     module.basis_provider = revision_binding.basis_provider  # type: ignore[attr-defined]
-    return module
+    return snapshot.restrict_to_v2_models(module)
 
 
 def test_s11_the_v2_snapshot_refuses_this_build() -> None:
@@ -679,6 +681,8 @@ def constructed_binder(
     module.MODEL_BASES = model_bases  # type: ignore[attr-defined]
     module.MODEL_BUILDERS = dict.fromkeys(model_bases)  # type: ignore[attr-defined]
     module.basis_provider = basis_provider  # type: ignore[attr-defined]
+    # This build's `list_models` as v1/v2 read it: their model table's 22 ids (`v2_binder`).
+    module.LIST_MODELS = frozenset(registration.model_functions(2))  # type: ignore[attr-defined]
     return module
 
 
@@ -816,12 +820,19 @@ def test_each_route_binds_a_revision_with_its_component_set() -> None:
         bind_revision_flowsheet,
     )
 
-    live = snapshot.build_snapshot(binding=v2_binder())
+    binder = v2_binder()
+    live = snapshot.build_snapshot(binding=binder)
     over = {"syn001": (_revision_over, "H2"), "pr-c1-v1": (_c1_revision_over, "A")}
     assert {route["provider_id"] for route in live["routes"]} == set(over)
+    assert all(
+        binder.MODEL_BASES[m] == on for m, on in MODEL_BASES.items() if m in binder.MODEL_BASES
+    )
     for route in live["routes"]:
         provider = route["provider_id"]
-        assert route["model_ids"] == sorted(m for m, b in MODEL_BASES.items() if provider in b)
+        # The v1/v2 reading's MODEL_BASES: the installed one on v1/v2's model table (`v2_binder`).
+        assert route["model_ids"] == sorted(
+            m for m, b in binder.MODEL_BASES.items() if provider in b
+        )
         build, extra = over[provider]
         ids = [c["id"] for c in route["components"]]
         bound = bind_revision_flowsheet(build(ids))

@@ -202,6 +202,10 @@ All four answered with the recommended default (Frank, 2026-10-25):
 
 ## S11 — the binding package (2026-10-26/27)
 
+*Resolved 2026-10-28:* every S11 question below is answered or its default applied, and the answers are built. S11 is
+`tested` on `wp/S11` (`evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json`); the full gate, CI and the
+`reviewer` pass come before the merge. The follow-ons named here (Q30's edge-3 continuation; E01) stay open as packages.
+
 - **Frank, 2026-10-26: "I want the binding package"** → S11 (`docs/derivations/S11-design.md`, ADR 0050). Supersedes the
   library-only defaults S05 Q-8, S10 Q-F2 / R-709, and S10-C Q1 / Q3 as far as S11 reaches.
 - **First-pass Q1 (Wilson exposure):** Frank, 2026-10-27: **yes** — selectable in a source checkout, refused typed in a wheel
@@ -216,3 +220,6 @@ All four answered with the recommended default (Frank, 2026-10-25):
   R-824).
 - **Cost estimation and LCA** (Frank, 2026-10-27): "I want cost estimation and LCA available, because these are input in
   process optimization studies" → package E01, design pass right after S11; PrISMa's rework builds on it.
+- **E01 scope answers** (Frank, 2026-10-27): (1) generalising the M03 optimiser to revision flowsheets → **a separate
+  package right after E01**; (2) cost/LCA access → **Python first**, MCP/CLI/HTTP in the next binding pass; (3) discrete
+  design choices (parallel units, utility, material) → **held fixed by the study for now**, compared as separate candidates.

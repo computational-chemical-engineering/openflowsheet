@@ -1,9 +1,10 @@
 """The revision builders of the `thermal.*` family (S11 units design §4.4; ADR 0051; WO-C4).
 
 `SIGNATURES` holds the seven models' signatures, `BUILDERS` their builders in the `Builder` shape of
-`revision_binding`, and `BASES` the bases they bind on. They enter `MODEL_SIGNATURES`,
-`MODEL_BUILDERS` and `MODEL_BASES` at the integration WO I1b, not here (units design §5.4); until
-then a test registers them in monkeypatched tables, as `test_m02_wo8_region` does.
+`revision_binding`, and `BASES` the bases they bind on. Since the integration WO I1b (units
+design §5.4) they are rows of `MODEL_SIGNATURES`, `MODEL_BUILDERS` and `MODEL_BASES`; the
+signatures are defined in `revision_binding` (this module imports it, as `column_binding` does),
+whose builders import `BUILDERS` at the call.
 
 **A port's form is its connection's declared `phase_capability`** (ADR 0051 D1): `liquid` and
 `vapor` are single-phase, `vapor_liquid` is SATURATED, a stream on the saturation line whose
@@ -18,8 +19,8 @@ line the code and the rest the hint; S11C build decisions C2/C3-7), so a builder
 exactly those into `RevisionError` and leaves every other construction refusal to the binder's
 `value_outside_model_domain` (T07 ruling round 5, S3), as the SYN-001 builders do. Two refusals
 are the binder's own: the heater's one-of specification, which the binder's missing and conflict
-codes report, and a Wilson machine's non-vapour port, which no unit can see once its provider is
-refused (C3-4).
+codes report, and a Wilson machine's non-vapour port, which the binder refuses before it constructs
+the unit (the unit refuses it too, with the same code and hint, `machines.WILSON_PORT_HINT`).
 
 What the signatures cannot list (as `column_binding`'s cannot; S11B build decision): the heater's
 optional parameters `pressure_drop` (default 0) and `outlet_vapor_fraction` (its quality mode).
@@ -31,11 +32,15 @@ from collections.abc import Callable, Mapping, Sequence
 from typing import Final
 
 from openflowsheet.application.revision_binding import (
+    _THERMAL_FLASH,
+    _THERMAL_HEATER,
+    _THERMAL_MACHINES,
+    _THERMAL_MIXER,
+    _THERMAL_VALVE,
+    MODEL_BASES,
     Builder,
     Configuration,
     ModelSignature,
-    PinColumn,
-    SpecificationChoice,
     _column,
     _missing_choice_hint,
     _pin,
@@ -45,10 +50,6 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import Port, SpecificationError, UnitModel
 from openflowsheet.models.revision_flowsheet import InstanceView, RevisionError
 from openflowsheet.models.thermal import ADDITIVE_VAPOUR, Form, machines
-from openflowsheet.models.thermal import flash as thermal_flash
-from openflowsheet.models.thermal import heater as thermal_heater
-from openflowsheet.models.thermal import mixer as thermal_mixer
-from openflowsheet.models.thermal import valve as thermal_valve
 from openflowsheet.models.thermal.flash import ThermalFlash
 from openflowsheet.models.thermal.heater import ThermalHeater
 from openflowsheet.models.thermal.machines import ThermalMachine
@@ -138,19 +139,7 @@ def _construct(build: Callable[[], UnitModel]) -> UnitModel:
 
 # -- thermal.heater ------------------------------------------------------------------------------
 
-_HEATER: Final = ModelSignature(
-    model_id=thermal_heater.MODEL_ID,
-    ports=thermal_heater.PORTS,
-    choices=(
-        SpecificationChoice(
-            "specification",
-            (
-                PinColumn("outlet_temperature", "temperature", "outlet"),
-                PinColumn("duty", "duty"),
-            ),
-        ),
-    ),
-)
+_HEATER: Final = _THERMAL_HEATER
 
 
 def _heater(
@@ -202,11 +191,7 @@ def _heater(
 
 # -- thermal.valve -------------------------------------------------------------------------------
 
-_VALVE: Final = ModelSignature(
-    model_id=thermal_valve.MODEL_ID,
-    ports=thermal_valve.PORTS,
-    pins=(PinColumn("outlet_pressure", "pressure", "outlet"),),
-)
+_VALVE: Final = _THERMAL_VALVE
 
 
 def _valve(
@@ -233,7 +218,7 @@ def _valve(
 
 # -- thermal.mixer -------------------------------------------------------------------------------
 
-_MIXER: Final = ModelSignature(model_id=thermal_mixer.MODEL_ID, ports=thermal_mixer.PORTS)
+_MIXER: Final = _THERMAL_MIXER
 
 
 def _mixer(
@@ -256,12 +241,7 @@ def _mixer(
 
 # -- thermal.flash -------------------------------------------------------------------------------
 
-_FLASH: Final = ModelSignature(
-    model_id=thermal_flash.MODEL_ID,
-    ports=thermal_flash.PORTS,
-    required=(_PRESSURE_DROP,),
-    pins=(PinColumn("duty", "duty"),),
-)
+_FLASH: Final = _THERMAL_FLASH
 
 
 def _flash(
@@ -291,18 +271,10 @@ def _flash(
 
 # -- thermal.pump, thermal.compressor, thermal.turbine -------------------------------------------
 
-_MACHINES: Final[Mapping[str, ModelSignature]] = {
-    machine: ModelSignature(
-        model_id=model_id,
-        ports=machines.PORTS[machine],
-        required=(_EFFICIENCY,),
-        pins=(PinColumn("outlet_pressure", "pressure", "outlet"),),
-    )
-    for machine, model_id in machines.MODEL_IDS.items()
-}
+_MACHINES: Final[Mapping[str, ModelSignature]] = _THERMAL_MACHINES
 
 #: §4.4: an additive-vapour (Wilson) machine has no γ–φ two-phase PS closure.
-_WILSON_PORT_HINT: Final = "no γ–φ two-phase PS closure (L-GP-2)"
+_WILSON_PORT_HINT: Final = machines.WILSON_PORT_HINT
 
 
 def _machine(
@@ -354,7 +326,7 @@ def _machine_builder(machine: str) -> Builder:
     return build
 
 
-# -- the registry rows I1b merges ----------------------------------------------------------------
+# -- the registry rows (`revision_binding`'s tables hold them since I1b) -------------------------
 
 #: Model id -> signature: what each builder reads, for `list_models` (T07 §4.2).
 SIGNATURES: Final[Mapping[str, ModelSignature]] = {
@@ -368,11 +340,14 @@ BUILDERS: Final[Mapping[str, Builder]] = {
     _VALVE.model_id: _valve,
     _MIXER.model_id: _mixer,
     _FLASH.model_id: _flash,
-    **{model_id: _machine_builder(machine) for machine, model_id in machines.MODEL_IDS.items()},
+    **{
+        model_id: _machine_builder(machine)
+        for machine, model_id in machines.MACHINE_MODEL_IDS.items()
+    },
 }
 
-#: Model id -> the provider ids of the bases it binds on (units design §4.7): the two pure-fluid
-#: bases. The compressor and turbine gain `wilson-ig-v2` when WO-D5 selects it.
-BASES: Final[Mapping[str, frozenset[str]]] = dict.fromkeys(
-    SIGNATURES, frozenset({"iapws95-v1", "coolprop-heos-v1"})
-)
+#: Model id -> the provider ids of the bases it binds on (units design §4.7): the binder's
+#: `MODEL_BASES` rows (the two pure-fluid bases, and for the compressor and turbine also Wilson's).
+BASES: Final[Mapping[str, frozenset[str]]] = {
+    model_id: MODEL_BASES[model_id] for model_id in SIGNATURES
+}

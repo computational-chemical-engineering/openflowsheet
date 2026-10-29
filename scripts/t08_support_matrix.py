@@ -6,8 +6,9 @@ evidence tree:
 
 - **T08.A20** — the enumerated axes equal the code: the twenty operations of `OPERATIONS` (with
   their transports), the models of `MODEL_BUILDERS` (SYN-001's thirteen and, since M02's join,
-  the eight C1 models, R-280, and since S11 the column, R-810) and which of them are synthetic only, the offered policies
-  (`APPLICATION_POLICIES`), the unit spellings of `CONVERSION_ROWS` *and* of ADR 0016's table, the
+  the eight C1 models, R-280, and since S11 the column, R-810) and which of them are synthetic
+  only, the offered policies (`APPLICATION_POLICIES`), the unit spellings of `CONVERSION_ROWS`
+  *and* of ADR 0016's table, the
   selectable providers (the provider ids of `revision_binding.SELECTABLE_BASES`; spec §5.7
   Amendment S04, R-568; the modules of `openflowsheet.thermo` that define `PROVIDER_ID` are
   reported as `scanned_providers`, and a scanned provider outside the axis is library-only), the
@@ -250,12 +251,20 @@ def check_a20(envelope: Mapping[str, Any], facts: Mapping[str, Any] | None = Non
     # 20 operations; this file is v0.2's working envelope (R-193), v0.1's stays as released.
     # M02's join (R-280 (c)) adds the eight C1 models to spec §9's 13 SYN-001 models, and W27
     # Amendment 3 (R-301) M04's `c1.reactor_surrogate`; S11 (ADR 0050, R-810) binds S02's
-    # `syn001.column`, the fourteenth `syn001.*` model.
+    # `syn001.column`, the fourteenth `syn001.*` model, and (ADR 0051, units design §4.10) the
+    # seven `thermal.*` models.
     syn001 = [model for model in claimed["models"] if model.startswith("syn001.")]
-    if len(claimed["operations"]) != 21 or len(syn001) != 14 or len(claimed["models"]) != 23:
+    thermal = [model for model in claimed["models"] if model.startswith("thermal.")]
+    if (
+        len(claimed["operations"]) != 21
+        or len(syn001) != 14
+        or len(thermal) != 7
+        or len(claimed["models"]) != 30
+    ):
         problems.append(
-            "A20: spec §9 registers 20 operations (21 with ADR 0019 A3.3) and 13 models (23 "
-            "with S11's column, M02's eight C1 models and M04's surrogate)"
+            "A20: spec §9 registers 20 operations (21 with ADR 0019 A3.3) and 13 models (30 "
+            "with S11's column and seven thermal.* models, M02's eight C1 models and M04's "
+            "surrogate)"
         )
     return problems
 

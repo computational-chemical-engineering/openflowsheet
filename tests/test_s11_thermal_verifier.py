@@ -1,13 +1,15 @@
 """S11 WO-C5: the verifier's `thermal.*` rows and saturated streams (S11 units design §4.8).
 
 The functions of `verify.thermal` are called directly (they enter the table at I1b) on states the
-C2/C3 units produce: each test binds a revision with the C4 builders (monkeypatched tables), runs
+C2/C3 units produce: each test binds a revision with the C4 builders (the binder's tables since
+I1b), runs
 the units' own `evaluate` in order, and judges that state with a fresh provider. S11.A64's check
 set on these states, A65's mutations, A66's independence from `models.thermal.kernel`.
 """
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
@@ -21,8 +23,8 @@ from test_s11_thermal_binding import (
     outlet_pressure,
     outlet_temperature,
     pascal,
-    register,
 )
+from test_s11_thermal_machines import ADDITIVE_STATES, CP, _closed_form, _IdealGas
 
 from openflowsheet.application.revision_binding import (
     _CONTEXT,
@@ -40,7 +42,7 @@ from openflowsheet.verify import CheckResult
 from openflowsheet.verify import thermal as vt
 from openflowsheet.verify.checks import KIND_TOLERANCE, qualification
 from openflowsheet.verify.forms import declared_phases, stream_admissibility
-from openflowsheet.verify.table import Unit
+from openflowsheet.verify.table import EXTERNAL_DUTY_MODELS, WORK_MODELS, Unit
 
 TAU_FLOW = KIND_TOLERANCE["molar_flow"]
 CONTEXT = _CONTEXT
@@ -213,9 +215,8 @@ def by_id(checks: Sequence[CheckResult]) -> dict[str, CheckResult]:
 
 
 @pytest.fixture
-def judged(monkeypatch: pytest.MonkeyPatch) -> Any:
-    """Returns `(view, state, checks)` for a case name, the C4 builders registered."""
-    register(monkeypatch)
+def judged() -> Any:
+    """Returns `(view, state, checks)` for a case name."""
 
     def judge(case: str) -> tuple[RevisionView, dict[str, float], dict[str, CheckResult]]:
         document = CASES[case]()
@@ -402,3 +403,49 @@ def test_a_dormant_saturated_stream(judged: Any) -> None:
         )
     )
     assert checks["phase_admissibility.stream.S4.fraction"].result == "fail"
+
+
+# -- the additive-vapour (Wilson) isentropic enthalpy flow, the verifier's own (S11.A80) ----------
+
+
+def test_the_additive_isentropic_enthalpy_is_the_ideal_gas_isentrope() -> None:
+    """`vt.additive_isentropic_enthalpy` against the closed-form isentrope of a constant-c_p ideal
+    gas (the fake `test_s11_thermal_machines` uses for the block): T_s within the bisection's
+    floor, a bracket of 4ε·T_s, so Ḣ_s within Σ n_j c_p,j · 4ε·T_s plus rounding, 8ε·|Ḣ_s|
+    (measured: worst |ΔḢ_s| 2.9e-11 W)."""
+    gas = _IdealGas(("A", "B", "C"))
+    for state in ADDITIVE_STATES:
+        *flows, t_in, p_in, p_out = state
+        t_s, expected = _closed_form(state)
+        found = vt.additive_isentropic_enthalpy(gas, CONTEXT, flows, t_in, p_in, p_out)
+        slope = sum(n * CP[name] for n, name in zip(flows, ("A", "B", "C"), strict=True))
+        floor = slope * 4.0 * sys.float_info.epsilon * t_s
+        assert abs(found - expected) <= floor + 8.0 * sys.float_info.epsilon * max(
+            abs(expected), 1.0e3
+        ), (
+            state,
+            found - expected,
+            floor,
+        )
+
+
+def test_an_additive_isentropic_state_outside_the_domain_is_refused() -> None:
+    """A root at an end of the provider's T domain is not inside it: `IsentropicStateError`."""
+    gas = _IdealGas(("A", "B", "C"))
+    with pytest.raises(vt.IsentropicStateError, match="at an end of"):
+        vt.additive_isentropic_enthalpy(gas, CONTEXT, (0.2, 0.5, 0.3), 1900.0, 1.0e5, 1.0e6)
+
+
+def test_the_envelope_reads_the_thermal_duty_and_work() -> None:
+    """Units design §4.4, §4.8 (I1b): the heater's and flash's `<U>.Q` are external duties, appended
+    after the base's ids, and the three machines' `<U>.W` is shaft work."""
+    assert EXTERNAL_DUTY_MODELS[-2:] == ("thermal.heater", "thermal.flash")
+    assert [m for m in EXTERNAL_DUTY_MODELS if m.startswith("thermal.")] == [
+        "thermal.heater",
+        "thermal.flash",
+    ]
+    assert {m for m in WORK_MODELS if m.startswith("thermal.")} == {
+        "thermal.pump",
+        "thermal.compressor",
+        "thermal.turbine",
+    }

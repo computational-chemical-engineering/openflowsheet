@@ -366,29 +366,25 @@ def test_a46_saturated_flow_block_jacobian_including_the_range_ends() -> None:
     assert worst <= FD_TOL, worst
 
 
+#: S11.A46 at the two near-top states (restated, R-834): the provider's Maxwell floor bounds the
+#: central quotient's error by eps_H/(h |elasticity|) = 1.29e-11/(1e-6 * 3.39) = 3.8e-6 at every
+#: admissible step; one fixed bound above it, no measured-noise term.
+FD_TOL_TOP = 1e-5
+
+
 def test_a46_saturated_flow_block_at_the_top_of_the_range() -> None:
-    """At 1e-6 below p_sigma(647.0 K) the difference quotient of H is at the provider's Maxwell
-    floor (iapws95 FLOOR_ONSET; ~1.5e-12/h relative), above 1e-6 at every admissible step; the
-    criterion adds that floor, measured as |D(h) - D(h/2)| (S11C_DECISIONS C1-4)."""
+    """S11.A46 (restated, R-834): at P = p_sigma(647.0 K)(1 - 1e-6) and (1 - 1e-4), a central step
+    of 1e-6 agrees within 1e-5, and the upper stencil point stays below p_sigma(647.0 K)."""
     from openflowsheet.thermo.iapws95 import _tsat_bounds  # noqa: PLC0415
 
     _, high = _tsat_bounds()
     block = SaturatedFlowBlock(WATER, "H2O", CONTEXT, block_id=saturated_block_id("S1"))
-    state = (0.7, 0.4, high * (1.0 - 1e-6))
-    analytic = {(i, j): value for i, j, value in block.jacobian(state)}
-
-    def quotient(i: int, step: float) -> float:
-        h = step * state[2]
-        up = block.values((state[0], state[1], state[2] + h))
-        down = block.values((state[0], state[1], state[2] - h))
-        return (up[i] - down[i]) / ((state[2] + h) - (state[2] - h))
-
-    for i in (0, 1):
-        coarse, fine = quotient(i, 0.5 * FD_STEP), quotient(i, 0.25 * FD_STEP)
-        floor = abs(coarse - fine)
-        assert abs(coarse - analytic[(i, 2)]) <= FD_TOL * abs(analytic[(i, 2)]) + floor
-        assert floor <= 1e-4 * abs(analytic[(i, 2)]), floor
-    assert _fd_worst(block, (0.7, 0.4, high * (1.0 - 1e-4)), step=FD_STEP) <= FD_TOL
+    worst = 0.0
+    for below in (1e-6, 1e-4):
+        state = (0.7, 0.4, high * (1.0 - below))
+        assert state[2] + FD_STEP * state[2] < high, below
+        worst = max(worst, _fd_worst(block, state, step=FD_STEP))
+    assert worst <= FD_TOL_TOP, worst
 
 
 ISENTROPIC_STATES = (

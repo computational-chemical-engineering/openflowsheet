@@ -4,10 +4,10 @@ Each case is a revision on Wilson's real records (`WILSON_RECORDS`, which select
 since WO-D5), built here and committed as `benchmarks/s11/gp/<name>.json` (regenerate with
 `python tests/s11_gp_support.py`; a test asserts the committed file is the generated one).
 
-`MODEL_BASES` admits the five K02/T05 units on SYN-001's basis only until the integration WO (I1b)
-adds Wilson's row, so `admit_wilson` monkeypatches that row, as `test_s11_gp_binding` does; and
-`table.revision_checks` dispatches the v2 basis to `gamma_phi_units.revision_checks` only from
-I1b, so `dispatch_gamma_phi` patches that one call.
+Since I1b `MODEL_BASES` admits the five K02/T05 units and the Wilson compressor and turbine on
+`wilson-ig-v2`, and `table.revision_checks` dispatches the v2 basis to
+`gamma_phi_units.revision_checks`; `count_gamma_phi` counts those calls, so a test can see the
+form was used.
 """
 
 from __future__ import annotations
@@ -19,10 +19,10 @@ from typing import Any
 
 import pytest
 from m02_c1_support import connection, quantity, revision, specification
+from test_s11_thermal_binding import dimensionless
 
 from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_binding import (
-    MODEL_BASES,
     RevisionBinding,
     bind_revision_flowsheet,
 )
@@ -31,7 +31,7 @@ from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePolicy
-from openflowsheet.verify import CheckResult, gamma_phi_units, table
+from openflowsheet.verify import CheckResult, gamma_phi_units
 
 GP = Path(__file__).resolve().parents[1] / "benchmarks" / "s11" / "gp"
 
@@ -130,9 +130,140 @@ def gp_c1() -> Document:
     )
 
 
+def gp_c2() -> Document:
+    """S11.A70 GP-C2: C-MW's feed, liquid at 360 K and 180 kPa → `valve` to 101 325 Pa (lifted
+    outlet) → `ph_flash` with 5 kW duty and no pressure drop → two sinks."""
+    instances = [
+        _instance("F", "syn001.feed_source"),
+        _instance("V", VALVE),
+        _instance("D", PH_FLASH, _zero_drop()),
+        _instance("KV", "syn001.product_sink"),
+        _instance("KL", "syn001.product_sink"),
+    ]
+    connections = [
+        connection("S1", ("F", "outlet"), ("V", "inlet"), "liquid"),
+        connection("S2", ("V", "outlet"), ("D", "inlet"), "vapor_liquid"),
+        connection("S3", ("D", "vapor"), ("KV", "inlet"), "vapor"),
+        connection("S4", ("D", "liquid"), ("KL", "inlet"), "liquid"),
+    ]
+    pins = [
+        *_feed_pins("S1", C_MW_FEED, 360.0, 180_000.0),
+        _p("SPEC-V-P", "S2", P_ATM),
+        specification("SPEC-D-Q", "instance", "D", "duty.Q", 5.0e3, "heat_rate"),
+    ]
+    return revision(
+        instances,
+        connections,
+        pins,
+        components=WILSON_BASIS.components,
+        record_source=WILSON_RECORDS,
+        revision_id="S11-GP-C2",
+    )
+
+
+#: GP-C3's second liquid: ethanol-water (no methanol), mol/s.
+EW_FEED = (0.0, 0.2, 0.3)
+
+
+def gp_c3(heater_temperature: float = 354.0) -> Document:
+    """S11.A71 GP-C3: C-MW's feed (liquid, 330 K) and an ethanol-water liquid (320 K), both at
+    101 325 Pa → `adiabatic_mixer` (declared liquid outlet, judged by `single_phase_admissible`) →
+    `tp_heater` to 354 K (lifted outlet, β ≈ 0.41) → a sink. At 345 K the lifted outlet is
+    liquid only (β = 0, the vapour columns exactly zero): S11 rulings OQ-5's case, kept as a test
+    of its own."""
+    instances = [
+        _instance("FA", "syn001.feed_source"),
+        _instance("FB", "syn001.feed_source"),
+        _instance("M", MIXER),
+        _instance("H", HEATER, _zero_drop()),
+        _instance("K", "syn001.product_sink"),
+    ]
+    connections = [
+        connection("S1", ("FA", "outlet"), ("M", "inlet"), "liquid"),
+        connection("S2", ("FB", "outlet"), ("M", "inlet"), "liquid"),
+        connection("S3", ("M", "outlet"), ("H", "inlet"), "liquid"),
+        connection("S4", ("H", "outlet"), ("K", "inlet"), "vapor_liquid"),
+    ]
+    pins = [
+        *_feed_pins("S1", C_MW_FEED, 330.0, P_ATM),
+        *_feed_pins("S2", EW_FEED, 320.0, P_ATM),
+        _t("SPEC-H-T", "S4", heater_temperature),
+    ]
+    return revision(
+        instances,
+        connections,
+        pins,
+        components=WILSON_BASIS.components,
+        record_source=WILSON_RECORDS,
+        revision_id="S11-GP-C3",
+    )
+
+
+COMPRESSOR = "thermal.compressor"
+TURBINE = "thermal.turbine"
+#: GP-M1's inlet (S11.A80): C-MW's vapour at 370 K, 40 kPa (dew point 338.84 K), compressed to
+#: 50 kPa (dew point 343.99 K) at eta = 0.8.
+GP_M1_INLET = (370.0, 40_000.0)
+GP_M1_OUTLET_P = 50_000.0
+
+
+def _outlet_pressure(unit: str, value: float) -> Document:
+    return specification(f"SPEC-{unit}-P", "instance", unit, "outlet.P", value, "pressure")
+
+
+def _machine_case(
+    model: str,
+    efficiency: float,
+    inlet: tuple[float, float],
+    outlet_pressure: float,
+    revision_id: str,
+) -> Document:
+    """C-MW's vapour → one Wilson machine → a sink, every stream declared `vapor` (L-GP-2)."""
+    instances = [
+        _instance("F", "syn001.feed_source"),
+        _instance("M", model, {"efficiency": dimensionless(efficiency)}),
+        _instance("K", "syn001.product_sink"),
+    ]
+    connections = [
+        connection("S1", ("F", "outlet"), ("M", "inlet"), "vapor"),
+        connection("S2", ("M", "outlet"), ("K", "inlet"), "vapor"),
+    ]
+    pins = [*_feed_pins("S1", C_MW_FEED, *inlet), _outlet_pressure("M", outlet_pressure)]
+    return revision(
+        instances,
+        connections,
+        pins,
+        components=WILSON_BASIS.components,
+        record_source=WILSON_RECORDS,
+        revision_id=revision_id,
+    )
+
+
+def gp_m1() -> Document:
+    """S11.A80 GP-M1: C-MW's vapour at 370 K and 40 kPa → `thermal.compressor` to 50 kPa at
+    eta = 0.8 (outlet ≈ 391.7 K, inside the records' 400 K) → a sink."""
+    return _machine_case(COMPRESSOR, 0.8, GP_M1_INLET, GP_M1_OUTLET_P, "S11-GP-M1")
+
+
+#: GP-M2's inlet (S11.A81): C-MW's vapour at 375 K, 150 kPa (2.75 K above its dew point there,
+#: 372.25 K), expanded to 90 kPa (dew point 358.47 K) at eta = 0.85.
+GP_M2_INLET = (375.0, 150_000.0)
+GP_M2_OUTLET_P = 90_000.0
+
+
+def gp_m2() -> Document:
+    """S11.A81 GP-M2: C-MW's vapour near its dew point → `thermal.turbine` to 90 kPa at
+    eta = 0.85 → a sink; the expansion crosses the dew point, so the machine refuses it."""
+    return _machine_case(TURBINE, 0.85, GP_M2_INLET, GP_M2_OUTLET_P, "S11-GP-M2")
+
+
 #: Case name -> document builder; the committed file is `GP / f"{name}.json"`.
 CASES: Mapping[str, Callable[[], Document]] = {
     "GP-C1": gp_c1,
+    "GP-C2": gp_c2,
+    "GP-C3": gp_c3,
+    "GP-M1": gp_m1,
+    "GP-M2": gp_m2,
 }
 
 
@@ -141,28 +272,18 @@ def committed_case(name: str) -> Document:
     return document
 
 
-def admit_wilson(monkeypatch: pytest.MonkeyPatch) -> None:
-    """`MODEL_BASES` with Wilson's row for the five, as I1b will add it."""
-    for model in FIVE:
-        monkeypatch.setitem(
-            MODEL_BASES, model, frozenset({*MODEL_BASES[model], WILSON_BASIS.provider_id})
-        )
-
-
-def dispatch_gamma_phi(monkeypatch: pytest.MonkeyPatch) -> list[int]:
-    """`table.revision_checks` sending the v2 basis to the γ–φ form, as I1b's hook will; returns
-    the number of checks of each dispatched call, so a test can see the form was used."""
-    original = table.revision_checks
+def count_gamma_phi(monkeypatch: pytest.MonkeyPatch) -> list[int]:
+    """`gamma_phi_units.revision_checks` wrapped to record the number of checks of each call that
+    `table.revision_checks` dispatches to it (I1b's hook), so a test can see the form was used."""
+    original = gamma_phi_units.revision_checks
     calls: list[int] = []
 
-    def dispatch(view: Any, *args: Any, **kwargs: Any) -> list[CheckResult]:
-        if view.basis.provider_id == WILSON_BASIS.provider_id:
-            found = gamma_phi_units.revision_checks(view, *args, **kwargs)
-            calls.append(len(found))
-            return found
-        return original(view, *args, **kwargs)
+    def counted(*args: Any, **kwargs: Any) -> list[CheckResult]:
+        found = original(*args, **kwargs)
+        calls.append(len(found))
+        return found
 
-    monkeypatch.setattr(table, "revision_checks", dispatch)
+    monkeypatch.setattr(gamma_phi_units, "revision_checks", counted)
     return calls
 
 
