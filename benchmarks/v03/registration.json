@@ -1,0 +1,334 @@
+{
+  "_comment": "V03 release specification §2.2, §2.3, §4, §8, §9.1 transcribed (WO-1); the design-lane review compares the two. Real registration, not a test input.",
+  "schema": "v03-registration-v1",
+  "specification": "docs/derivations/V03-release-spec.md",
+  "policy_adr": "docs/adr/0053-v0.3.0-release-policy.md",
+  "gate_set": {
+    "name": "v0.3-gate-v1",
+    "claimed": [
+      "V11",
+      "V12",
+      "V13",
+      "V14",
+      "V15",
+      "V16",
+      "V17",
+      "V18",
+      "V19",
+      "V20",
+      "W21",
+      "W22",
+      "W23",
+      "W24",
+      "W25",
+      "W26",
+      "X31"
+    ],
+    "clause": "\\b(?:V(?:1[1-9]|20)|W2[1-6]|X31) \\([a-z0-9]+\\)",
+    "covers": "0\\.3\\.0(?:(?:b|rc)[1-9][0-9]*)?",
+    "envelope_id": "v0.3-envelope-1",
+    "evidence_package": "S13",
+    "frank_items": [
+      "Claim set",
+      "V17 carry",
+      "M02 N1",
+      "M03 N1"
+    ],
+    "links_item": "V17 carry",
+    "not_claimed": [
+      "W27"
+    ],
+    "packages": [
+      "M01",
+      "M02",
+      "M03",
+      "M04",
+      "M05",
+      "M06",
+      "S01",
+      "S02",
+      "S03",
+      "S04",
+      "S05",
+      "S06",
+      "S07",
+      "S08",
+      "S08b",
+      "S09",
+      "S10",
+      "S10c",
+      "S11",
+      "S12"
+    ],
+    "policy_adr": "docs/adr/0053-v0.3.0-release-policy.md",
+    "rc_last_step": 18,
+    "rc_record": "docs/v03-rc-record.md",
+    "rc_steps": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "rejudge_waits": [
+      [
+        "V13",
+        "V17 carry"
+      ],
+      [
+        "V17",
+        "V17 carry"
+      ],
+      [
+        "W21",
+        "M02 N1"
+      ],
+      [
+        "W24",
+        "M03 N1"
+      ]
+    ],
+    "required_adrs": [
+      "0022",
+      "0026",
+      "0027",
+      "0030",
+      "0031",
+      "0032",
+      "0033",
+      "0034",
+      "0035",
+      "0036",
+      "0037",
+      "0038",
+      "0039",
+      "0041",
+      "0044",
+      "0045",
+      "0046",
+      "0047",
+      "0048",
+      "0049",
+      "0050",
+      "0051",
+      "0052",
+      "0053"
+    ],
+    "specification_texts": [
+      "the V03 release specification",
+      "§4"
+    ],
+    "verdict_document": "docs/reviews/V03-verdicts.md"
+  },
+  "versions": [
+    {
+      "version": "0.3.0",
+      "gate_set": "v0.3-gate-v1"
+    },
+    {
+      "version": "0.3.0b1",
+      "gate_set": "v0.3-gate-v1"
+    },
+    {
+      "version": "0.3.0rc1",
+      "gate_set": "v0.3-gate-v1"
+    },
+    {
+      "version": "0.3.0rc12",
+      "gate_set": "v0.3-gate-v1"
+    },
+    {
+      "version": "0.3.0a1",
+      "gate_set": null
+    },
+    {
+      "version": "0.3.0b0",
+      "gate_set": null
+    },
+    {
+      "version": "0.3.0rc0",
+      "gate_set": null
+    },
+    {
+      "version": "0.3.0rc01",
+      "gate_set": null
+    },
+    {
+      "version": "0.3.0.dev0",
+      "gate_set": null
+    },
+    {
+      "version": "0.3.0.post1",
+      "gate_set": null
+    },
+    {
+      "version": "0.3.1",
+      "gate_set": null
+    },
+    {
+      "version": "0.3",
+      "gate_set": null
+    },
+    {
+      "version": "0.30.0",
+      "gate_set": null
+    },
+    {
+      "version": "1.3.0",
+      "gate_set": null
+    },
+    {
+      "version": "0.2.0",
+      "gate_set": null
+    },
+    {
+      "version": "0.2.0rc1",
+      "gate_set": null
+    },
+    {
+      "version": "0.3.0 ",
+      "gate_set": null
+    }
+  ],
+  "rc_steps": [
+    {
+      "step": 1,
+      "what": "V02 alpha spec §8.2 step 1, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 2,
+      "what": "V02 alpha spec §8.2 step 2, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 3,
+      "what": "V02 alpha spec §8.2 step 3, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 4,
+      "what": "V02 alpha spec §8.2 step 4, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 5,
+      "what": "V02 alpha spec §8.2 step 5, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 6,
+      "what": "V02 alpha spec §8.2 step 6, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 7,
+      "what": "V02 alpha spec §8.2 step 7, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 8,
+      "what": "V02 alpha spec §8.2 step 8, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 9,
+      "what": "V02 alpha spec §8.2 step 9, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 10,
+      "what": "V02 alpha spec §8.2 step 10, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 11,
+      "what": "V02 alpha spec §8.2 step 11, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 12,
+      "what": "V02 alpha spec §8.2 step 12, read as in M07 §8, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 13,
+      "what": "W23 as M07 step 13, at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 14,
+      "what": "W24 as M07 step 14; the five in-process G10 records re-taken at K3 and proved with scripts/m05_retake_diff.py --digest-only (R-458)",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 15,
+      "what": "W25 per V03 spec §3.4: journey at K3, carried to C, check and replay at C",
+      "assertion": "V03.A21"
+    },
+    {
+      "step": 16,
+      "what": "W26 as M07 step 16 (G1-G15; the browser test on CI x86-64), at C",
+      "assertion": "V03.A20"
+    },
+    {
+      "step": 17,
+      "what": "v0.3 package items 17a-17e (V03 spec §4), at C",
+      "assertion": "V03.A22"
+    },
+    {
+      "step": 18,
+      "what": "scripts/v0_3_gate.py --rc C, not required in the record; run for its YES line only after the ledger is written",
+      "assertion": "V03.A27"
+    }
+  ],
+  "changelog_what_it_is_not": [
+    "numerical verification, not empirical validation",
+    "no global optimality",
+    "Linux only",
+    "not a sandbox",
+    "the stand-in reactor is synthetic",
+    "the optimization routes need the optional nlp extra",
+    "the CoolProp provider needs the optional coolprop extra",
+    "cost and LCA results are assessment estimates with an accuracy class",
+    "cost and LCA are Python-only",
+    "no ecoinvent data",
+    "Wilson is vapour-liquid only; no liquid-liquid split",
+    "no automatic liquid/vapour regime switching for pure fluids",
+    "X31: one independent reference for the refluxed absorber",
+    "no rate-based column models",
+    "no W27 claim in 0.3.0",
+    "no CFD or Peclet refinement",
+    "no external benchmark score"
+  ],
+  "ship_set": {
+    "ships": [
+      "benchmarks/s10/records.yaml",
+      "benchmarks/s10/vle/kurihara1993_binaries.csv"
+    ],
+    "repository_only": [
+      "benchmarks/s10/vle/kurihara1993_binaries.A.csv",
+      "benchmarks/s10/vle/kurihara1993_binaries.B.csv",
+      "benchmarks/s10/vle/kurihara1993_ternary.csv",
+      "benchmarks/s10/vle/kurihara1993_ternary.A.csv",
+      "benchmarks/s10/vle/kurihara1993_ternary.B.csv",
+      "benchmarks/s10/vle/kurihara1995_binaries.csv",
+      "benchmarks/s10/vle/kurihara1995_binaries.A.csv",
+      "benchmarks/s10/vle/kurihara1995_binaries.B.csv",
+      "benchmarks/s10/validation/report.json",
+      "benchmarks/s10/fit-report.json"
+    ]
+  }
+}
