@@ -7812,3 +7812,122 @@ harvest:
   class: P
   to: []
   note: G10 (A48) runs at the release-candidate cut; unsupported here, not a pass
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[0]
+  sha256: 260527737de33c4d457529e2c62ad599086da19ae60cd27c61b37ed0a2b1cc50
+  class: P
+  to: []
+  note: 'process note: filed as S12, E01''s alias (ESC-I2 ruling; R-565), the frozen schema''s id pattern'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[1]
+  sha256: 744cdad49817760a4965d1d298ac97702375c9c265c04f9dfea2411e9d95f117
+  class: P
+  to: []
+  note: 'requirements empty: no D/A id assigned to E01, no ledger entry'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[2]
+  sha256: 5c13cbd0d7f5b46005e4d4678a0ebc7c1f5fba8b733e3b6ef1ed84b89344b986
+  class: P
+  to: []
+  note: 'scope note: A33 judged over feasible starts (ESC-I1 ruling, design §6.1 erratum); the infeasible starts recorded'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[3]
+  sha256: 6f1cf2462f53690a70f1d05ea1af4ef59d0b6ea1fafc52459b0e438640e8bc02
+  class: P
+  to: []
+  note: 'scope note: A1 judged against the S11 head 8d2ee175 until S11 merges into main'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[4]
+  sha256: 27ebb8f5ae2772bd0772adda2626a02b0d4e2663ce6936d315d3f4bc5a434639
+  class: P
+  to: []
+  note: 'G8 runs once before merge (full gate, CI on both architectures), not by the generator; unsupported here'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[5]
+  sha256: 169f99ca59b28701bfb43c708bb47304f65807b4fd85f21238732e81e20a6c35
+  class: P
+  to: []
+  note: 'release-candidate item: G10/A48 (SSLW primary ranges verified, QA1) runs at the RC cut; unsupported here, not a pass'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[6]
+  sha256: c8b4093954401cda82351cae31b1099b68dba05a99840228fb451a84101f599d
+  class: P
+  to: []
+  note: 'process note: the E01 review (docs/reviews/E01-review.md) and its fixes; R-870 confirmed by Frank; review fields pending, no reviewed status claimed'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[7]
+  sha256: ffccbe0867f406797a9b8c3c74b0b42c95b3f9831e4b0e8fd89d12b26355e437
+  class: P
+  to: []
+  note: 'scope note: review items not applied (lower-priority domain entries, N2 deferred by the review, N3 data provenance)'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[8]
+  sha256: 9156f642b4696ef8fa4b7812a6c25c2286be03f5ff59435cf9aa2655664836cb
+  class: P
+  to: []
+  note: 'environment note: lca run in a scratch venv outside requirements.lock; nlp run in the audited env with its inventory re-takes'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[9]
+  sha256: 8679ea3ab693c6ff8a669a8c7d666732324f105b8d786a6acda73a832337e881
+  class: P
+  to: []
+  note: 'method note: G1''s family C ran the whole default suite; not the full gate'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[10]
+  sha256: f2e73024aa970309f2427b6276a11eb39b4e569887a98a449e444f4a9dc15214
+  class: P
+  to: []
+  note: 'numerical verification against pinned sources, not empirical validation; test-background-v1 synthetic'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[11]
+  sha256: 32ffe346f4528c4d29f81b4c57c37f733d287d695aa022fdab8e263cd6d90ae6
+  class: P
+  to: []
+  note: 'scope note: R-871 regime over-restriction (sound, not a false certificate); envelope row deferred to E01''s release specification'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[12]
+  sha256: 43960102cf3d7c7f88f60523127a47cd0cbfce5b2933aaa7497afac4d8ad3ea8
+  class: P
+  to: []
+  note: 'method note: G6 wall times are JUnit times'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: limitations[13]
+  sha256: 08f1f53b4018ef8d39839b8c7199fdbd8139f2b984995ef5030e0d0c731c8310
+  class: P
+  to: []
+  note: 'process note: this harvest follows the manifest''s generation'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: checks[47]
+  check_id: S12.A48
+  sha256: 4b5a99806e2a4853362b63e1a734b1dfab599515fd56f68c757b919ab58119af
+  class: P
+  to: []
+  note: 'release-candidate item (G10, §9.6): not run (RC item) at E01''s merge; unsupported here, not a pass'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: checks[69]
+  check_id: S12.G8
+  sha256: 10a52a7fed06621b6b978fe2d81ab35453923eb9af1d386cbcf7dcc61b05f23e
+  class: P
+  to: []
+  note: 'G8 runs once before merge (full gate, CI on both architectures), not by the generator; unsupported here'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: checks[70]
+  check_id: S12.gate
+  sha256: d1217bd1f908898ad32cf9184799c0920e7344541865d50410d3d2ead7b9ffe2
+  class: P
+  to: []
+  note: 'scripts/gate.sh runs once before merge, not by the generator; unsupported here'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: checks[71]
+  check_id: S12.ci
+  sha256: 49627e65c421f59cbc8c5c6d33794e6a3ef08a6bd1fcebdd15b2c792ad4fdf36
+  class: P
+  to: []
+  note: 'CI on both architectures is checked before merge, not by the generator; unsupported here'
+- manifest: evidence/S12/02fc8d2f6b01f7a7d39e7f9dfa3b964d8bd9a7de/manifest.json
+  item: checks[72]
+  check_id: S12.G10
+  sha256: 95fcb2164343b7f4526483d3166fb219802258a0598a6cf820bf7aecd5043590
+  class: P
+  to: []
+  note: 'G10 (A48) runs at the release-candidate cut; unsupported here, not a pass'

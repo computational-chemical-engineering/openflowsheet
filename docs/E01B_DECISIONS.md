@@ -558,3 +558,13 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   `formulation_assessment`; absent otherwise, so no fixture changes. N2 (layering) not changed: the review gives no
   change to make until `numerics/` opens. N3 (platform piece provenance) and N4 need no code here; N3 left for the
   data owner (it edits the shipped set's provenance).
+- GATES (review fixes; generator at 02fc8d2f, clean tree): `status tested`, 68/73 pass, 0 fail (A48/G10, G8/gate/ci
+  unsupported); `S11-IDENTITY PASS n=54494 changed=[]`; M03 dump identical (a2c8002d… base 8d2ee175 and head);
+  `m03_schema_fixtures --nlp` all match; suite 1002 passed; nlp check PASSED with inventories; separately
+  `m03_nlp_check.sh --no-inventory` over the 13 nlp-marked files (s10 excluded: no mpmath in the nlp env) 190 passed.
+  T08 `--check` asked for the harvest: 19 items appended (old 18 untouched; 16 reuse their class and note by sha256,
+  3 new class P), HARVEST_SIZE (61, 880, 109) → (62, 894, 114), matrix re-emitted, `--check` 0 problems;
+  `test_t08_*`/`test_m07a_*` 778 passed.
+- DECISION: the review-fix manifest's R-871 limitation → class P (scope note), like every other S12 item; an envelope
+  row (class E) belongs to E01's release specification. Alternative: add an `L-…` envelope limitation now.
+  Reversible by: re-classifying that harvest entry (the envelope is append-only, so a new manifest re-harvests).
