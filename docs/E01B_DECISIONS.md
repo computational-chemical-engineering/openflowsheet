@@ -735,3 +735,19 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   IDAES's with no amendment, the tower no-undercut test replaced by "fit 2 increases with W ≥ 1 lb" (α2, α3 > 0
   and a 1 lb – 1e7 lb grid); platform piece 2 by hand at 300.9, horizontal at 2005·D^0.20294; η_m citation S3
   p. 562 Eq. 22.18; tripwire 5; ruff clean.
+- C6′ fixtures (regenerated with `test_e01_a_report._write()`), every moved number against `15307c6a`:
+  P1 TH-C1 pump `P` and drive `P.drive` purchased/bare-module and their intervals/σ × 0.788000000 (M4′); derived
+  sum_purchased × 0.971250158, TDC/EPC/CAPEX/total/capital charge/maintenance × 0.970804299, opex.total ×
+  0.978034742, tac/lcox/profit × 0.972838597 (from the pump and drive; utilities unchanged); turbine `T`: regime
+  `units:1`, the primary `power_hp` range and its two admissibility rows added, its cost unchanged (M6). P1 TH-R1:
+  pump/drive × 0.788 (M4′), `D.drum` × 1.818814470 (M1), totals × 1.178765458, sum_purchased × 1.136852062. P3 M1:
+  `S02.shell` `units:1` → `floor`, × 1.096078350 (M1), totals × 1.029945863. Provenance (M8): pump/motor
+  `source.index_basis` ("CEPCI 394 → 500") replaced by `source.amended.index_basis.value`; vertical items gain
+  `amended.coefficients.platforms[1].a` and the weight-range note; `weight_lb` bounds 1,000/920,000 →
+  4,200/1,000,000 (× 4.2, × 1.0869565). No other number moved; the invalid fixture follows p1_th_r1.
+- C6′ cost_hand: `P1_OPEX_TOTAL` (the report's opex.total, an *input* of the hand chain, not an expectation —
+  cost_hand.py:897) updated 34,373.962267160525 → 33,618.92931669953 = the regenerated fixture's (maintenance
+  follows CAPEX × 0.970804299); hand tac 119,610.909 → 118,855.876 (× 0.993687591; the independent part CRF ×
+  CAPEX was already regenerated in C4′). `idaes_crosscheck.yaml` re-run for the new `cases_sha256` only (values
+  byte-identical). Set sha256 pinned `b70d6f22…933f` (t08, licences record with `checked_against`,
+  `docs/E01A_DECISIONS.md`).

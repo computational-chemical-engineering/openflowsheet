@@ -389,3 +389,10 @@ I1's.
   fields §4.11 does not spell, the status rule, class `none` for an unclassed quote, and the LCA exchange
   convention for B2.
 - **For B1/I1 (unchanged):** package-data globs, `resources.PACKAGED`, M05 ADDENDA pin, A48 RC item, P3 volumes.
+
+## E01b pin (2026-10-29): the SSLW set's sha256 after Amendment 1 to ruling B
+
+- `src/openflowsheet/_data/assessment/cost/sslw-idaes-v1.json` sha256 `b70d6f22afc6da185c531d1c3bf2bbf0f80f7866b686f3a102a466984a41933f`
+  supersedes `0ee43c89…0364` (D04 above) and the E01b C1 pin `6ff671a7…eea9`: the four amendments, the ranges,
+  citations and `checked_against` of design note §10.10 (R-895…R-899). Pinned in `tests/test_t08_w2_inventory.py`
+  and `docs/e01-data-licences.json` (`scripts/e01_d04_inventory.py --data`; `--check` A42 PASS).

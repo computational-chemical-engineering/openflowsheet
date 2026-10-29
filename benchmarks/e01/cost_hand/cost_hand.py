@@ -894,7 +894,7 @@ WPU11_ANNUAL = {2006: F("126.167"), 2023: F("174.192")}
 #: P1 (TH-C1) basis and the F_BM test inputs of its document (tests/test_e01_a_report.py P1_DOC:
 #: exchanger 3.17, pump 3.3, motor 1.5, turbine 3.5; E01A_DECISIONS "F_BM values ... test inputs").
 P1_F_BM = {"P": F("3.3"), "P.drive": F("1.5"), "B": F("3.17"), "T": F("3.5"), "C": F("3.17")}
-P1_OPEX_TOTAL = "34373.962267160525"  # the fixture's opex.total (an input here, not recomputed)
+P1_OPEX_TOTAL = "33618.92931669953"  # the fixture's opex.total (an input here, not recomputed)
 EBTF = (F("1.10"), F("1.14"), F("1.30"), F("1.07"))  # §4.7.1, PrISMa SI §6.3.3
 
 

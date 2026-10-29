@@ -396,7 +396,7 @@ ATTRIBUTED_DATA = {
         "d4707a829a9ed6136c7cd06b5e398dd1831ad6b1504af1dfbfe296e56e99fd52"
     ),
     "openflowsheet/_data/assessment/cost/sslw-idaes-v1.json": (
-        "6ff671a7afc9a94fc494738c45f60a8d6953f8659eabeff3f12abe87b455eea9"
+        "b70d6f22afc6da185c531d1c3bf2bbf0f80f7866b686f3a102a466984a41933f"
     ),
     "openflowsheet/_data/assessment/index/bls-ppi-wpu11-annual-v1.json": (
         "1c36f463a0a61123f7b71d82c848954aae61305a0a550a735cefb3c77c4ba578"

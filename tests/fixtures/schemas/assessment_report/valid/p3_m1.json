@@ -1,9 +1,9 @@
 {
  "annual": {
-  "annual.capital_charge": 100969.88212097516,
-  "profit": -148907.63936933767,
+  "annual.capital_charge": 103993.51242284688,
+  "profit": -152821.8631114916,
   "revenue.total": 0.0,
-  "tac": 148907.63936933767
+  "tac": 152821.8631114916
  },
  "assessment_id": "e01-a5-p3-m1",
  "assessment_sha256": "96c77d978276a1b84be62a83ec8aff07bb8cf50a9d4e7ef2d66ce42516c89f8d",
@@ -25,21 +25,21 @@
   "year": 2023
  },
  "capex": {
-  "capex.CAPEX": 991337.186376513,
-  "capex.EPC": 926483.3517537504,
-  "capex.TDC": 568324.9612033801,
+  "capex.CAPEX": 1021023.63438592,
+  "capex.EPC": 954227.6956877756,
+  "capex.TDC": 585343.9428829441,
   "capex.bare_module.S02.condenser": 189642.03165056967,
   "capex.bare_module.S02.reboiler": 189642.03165056967,
-  "capex.bare_module.S02.shell": 177136.48940122666,
+  "capex.bare_module.S02.shell": 194155.47108079062,
   "capex.bare_module.S02.trays": 11904.40850101413,
-  "capex.fci": 991337.186376513,
+  "capex.fci": 1021023.63438592,
   "capex.purchased.S02.condenser": 59823.984747813774,
   "capex.purchased.S02.reboiler": 59823.984747813774,
-  "capex.purchased.S02.shell": 42580.88687529487,
+  "capex.purchased.S02.shell": 46671.98824057467,
   "capex.purchased.S02.trays": 11904.40850101413,
-  "capex.sum_bare_module": 568324.9612033801,
-  "capex.sum_purchased": 174133.26487193655,
-  "capex.total": 991337.186376513
+  "capex.sum_bare_module": 585343.9428829441,
+  "capex.sum_purchased": 178224.36623721634,
+  "capex.total": 1021023.63438592
  },
  "defaulted_inputs": [
   {
@@ -189,7 +189,7 @@
   {
    "accuracy_class": 4,
    "bare_module": "capex.bare_module.S02.shell",
-   "bare_module_value": 177136.48940122666,
+   "bare_module_value": 194155.47108079062,
    "escalation": {
     "base": [
      "2006",
@@ -392,11 +392,11 @@
    ],
    "item_id": "S02.shell",
    "purchased": "capex.purchased.S02.shell",
-   "purchased_value": 42580.88687529487,
+   "purchased_value": 46671.98824057467,
    "regime": {
     "S02.shell.platforms.D.piece": "floor",
     "S02.shell.platforms.L.piece": "1",
-    "S02.shell.size": "units:1"
+    "S02.shell.size": "floor"
    },
    "relative_range": [
     -0.3,
@@ -407,6 +407,15 @@
     "height": 8.5344
    },
    "source": {
+    "amended": {
+     "coefficients.platforms[1].a": {
+      "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 575, Eq. (22.58); used in Examples 22.13 (p. 578) and 22.14 (p. 579)",
+      "effective_value": 300.9,
+      "replaces": 309.9,
+      "ruling": "R-897",
+      "value": 300.9
+     }
+    },
     "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
     "entry": "vessel.vertical",
     "form": "sslw-vessel-v1",
@@ -446,13 +455,14 @@
      },
      "weight_lb": {
       "below": "refuse",
-      "max": 920000.0,
-      "min": 1000.0,
+      "max": 1000000.0,
+      "min": 4200.0,
       "role": "size",
       "source": {
        "kind": "pinned",
+       "note": "IDAES's docstring labels this range '2'; the 3rd ed. (p. 574, Eq. 22.54) gives it to the vertical-vessel fit, weight_limit '1' (design note §10.10, R-898)",
        "source_line": "SSLW.py:534",
-       "text": "1: (default) 1000 to 920,000 lb"
+       "text": "2: 4200 to 1M lb"
       }
      }
     },
@@ -683,7 +693,7 @@
       "min": 150.0,
       "role": "size",
       "source": {
-       "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 462, Eqs. (16.39)-(16.42): shell-and-tube base cost valid for tube outside area A = 150 to 12,000 ft2 (QA1; the coefficients are IDAES's, from the 3rd ed., ch. 22)",
+       "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 462, Eqs. (16.39)-(16.42): shell-and-tube base cost valid for tube outside area A = 150 to 12,000 ft2 (QA1); the same range in Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 571, Eqs. (22.39)-(22.42)",
        "kind": "primary",
        "verified": true
       }
@@ -844,7 +854,7 @@
       "min": 150.0,
       "role": "size",
       "source": {
-       "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 462, Eqs. (16.39)-(16.42): shell-and-tube base cost valid for tube outside area A = 150 to 12,000 ft2 (QA1; the coefficients are IDAES's, from the 3rd ed., ch. 22)",
+       "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 462, Eqs. (16.39)-(16.42): shell-and-tube base cost valid for tube outside area A = 150 to 12,000 ft2 (QA1); the same range in Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 571, Eqs. (22.39)-(22.42)",
        "kind": "primary",
        "verified": true
       }
@@ -894,15 +904,15 @@
   }
  ],
  "opex": {
-  "opex.fixed.maintenance": 29740.115591295387,
-  "opex.total": 47937.75724836252,
+  "opex.fixed.maintenance": 30630.7090315776,
+  "opex.total": 48828.35068864473,
   "opex.utility.CW": 288.2233818143844,
   "opex.utility.HPS": 17909.41827525275
  },
  "provenance": {
-  "generated_utc": "2026-10-29T19:30:23+00:00",
+  "generated_utc": "2026-10-29T20:11:46+00:00",
   "openflowsheet_version": "0.3.0.dev0",
-  "program_label": "ASM1-96c77d978276-154fafe0"
+  "program_label": "ASM1-96c77d978276-5fd73f1c"
  },
  "refusals": [],
  "regime": {
@@ -1029,10 +1039,9 @@
    },
    {
     "admissibility": {
-     "weight_lb_hi": 0.996347367700844,
-     "weight_lb_lo": 2.360421715223598
+     "weight_lb_floor": 0.19989959161342907
     },
-    "choice": "units:1",
+    "choice": "floor",
     "entry_id": "S02.shell.size",
     "kind": "size",
     "rule": "§4.3.2 rule 4"
@@ -1102,8 +1111,8 @@
     "rule": "§4.3.2 rule 5; §9.2.5"
    }
   ],
-  "sha256": "154fafe0418ce3a25b36779a8e3ff9642ff4308984ef9a6b1c1578605a42e49f",
-  "signature": "{\"S02.condenser.pressure.piece\":\"floor\",\"S02.condenser.service\":\"cooling\",\"S02.condenser.size\":\"floor\",\"S02.condenser.utility\":\"CW\",\"S02.reboiler.pressure.piece\":\"floor\",\"S02.reboiler.service\":\"heating\",\"S02.reboiler.size\":\"floor\",\"S02.reboiler.utility\":\"HPS\",\"S02.shell.controlling\":\"2\",\"S02.shell.platforms.D.piece\":\"floor\",\"S02.shell.platforms.L.piece\":\"1\",\"S02.shell.size\":\"units:1\",\"S02.shell.stage.2.L.dormant\":\"active\",\"S02.shell.stage.2.V.dormant\":\"active\",\"S02.shell.stage.3.L.dormant\":\"active\",\"S02.shell.stage.3.V.dormant\":\"active\",\"S02.shell.stage.4.L.dormant\":\"active\",\"S02.shell.stage.4.V.dormant\":\"active\",\"S02.shell.stage.5.L.dormant\":\"active\",\"S02.shell.stage.5.V.dormant\":\"active\",\"S02.shell.stage.6.L.dormant\":\"active\",\"S02.shell.stage.6.V.dormant\":\"active\",\"S02.trays.size\":\"floor\"}"
+  "sha256": "5fd73f1c6db689ab5ba52d186bbd95746a05d6f70d316837a72e48a6f93735f3",
+  "signature": "{\"S02.condenser.pressure.piece\":\"floor\",\"S02.condenser.service\":\"cooling\",\"S02.condenser.size\":\"floor\",\"S02.condenser.utility\":\"CW\",\"S02.reboiler.pressure.piece\":\"floor\",\"S02.reboiler.service\":\"heating\",\"S02.reboiler.size\":\"floor\",\"S02.reboiler.utility\":\"HPS\",\"S02.shell.controlling\":\"2\",\"S02.shell.platforms.D.piece\":\"floor\",\"S02.shell.platforms.L.piece\":\"1\",\"S02.shell.size\":\"floor\",\"S02.shell.stage.2.L.dormant\":\"active\",\"S02.shell.stage.2.V.dormant\":\"active\",\"S02.shell.stage.3.L.dormant\":\"active\",\"S02.shell.stage.3.V.dormant\":\"active\",\"S02.shell.stage.4.L.dormant\":\"active\",\"S02.shell.stage.4.V.dormant\":\"active\",\"S02.shell.stage.5.L.dormant\":\"active\",\"S02.shell.stage.5.V.dormant\":\"active\",\"S02.shell.stage.6.L.dormant\":\"active\",\"S02.shell.stage.6.V.dormant\":\"active\",\"S02.trays.size\":\"floor\"}"
  },
  "schema_version": "assessment-report-v1",
  "state_sha256": "e496390f7e41cff7c2e3e315f7a1d8867c0c00d80aa7811f724b0dc446e2894e",
@@ -1128,20 +1137,20 @@
   },
   "linear_interval": {
    "annual.capital_charge": [
-    70678.91748468264,
-    151454.82318146274
+    72795.45869599283,
+    155990.26863427032
    ],
    "capex.CAPEX": [
-    693936.0304635591,
-    1487005.7795647695
+    714716.5440701441,
+    1531535.45157888
    ],
    "capex.EPC": [
-    648538.3462276252,
-    1389725.0276306253
+    667959.3869814429,
+    1431341.5435316633
    ],
    "capex.TDC": [
-    397827.47284236614,
-    852487.4418050703
+    409740.7600180609,
+    878015.9143244163
    ],
    "capex.bare_module.S02.condenser": [
     132749.42215539876,
@@ -1152,16 +1161,16 @@
     284463.0474758545
    ],
    "capex.bare_module.S02.shell": [
-    123995.54258085866,
-    265704.73410184
+    135908.82975655343,
+    291233.20662118593
    ],
    "capex.bare_module.S02.trays": [
     8333.08595070989,
     17856.612751521196
    ],
    "capex.fci": [
-    693936.0304635591,
-    1487005.7795647695
+    714716.5440701441,
+    1531535.45157888
    ],
    "capex.purchased.S02.condenser": [
     41876.78932346964,
@@ -1172,32 +1181,32 @@
     89735.97712172066
    ],
    "capex.purchased.S02.shell": [
-    29806.62081270641,
-    63871.3303129423
+    32670.391768402267,
+    70007.982360862
    ],
    "capex.purchased.S02.trays": [
     8333.08595070989,
     17856.612751521196
    ],
    "capex.sum_bare_module": [
-    397827.47284236614,
-    852487.4418050703
+    409740.7600180609,
+    878015.9143244163
    ],
    "capex.sum_purchased": [
-    121893.2854103556,
-    261199.89730790482
+    124757.05636605146,
+    267336.5493558245
    ],
    "capex.total": [
-    693936.0304635591,
-    1487005.7795647695
+    714716.5440701441,
+    1531535.45157888
    ],
    "opex.fixed.maintenance": [
-    20818.08091390677,
-    44610.173386943075
+    21441.49632210432,
+    45946.0635473664
    ],
    "opex.total": [
-    39015.7225709739,
-    62807.8150440102
+    39639.13797917145,
+    64143.70520443353
    ],
    "opex.utility.CW": [
     288.2233818143844,
@@ -1208,8 +1217,8 @@
     17909.41827525275
    ],
    "profit": [
-    -214262.63822547297,
-    -109694.64005565652
+    -220133.97383870385,
+    -112434.59667516427
    ],
    "revenue.total": [
     0.0,
@@ -1236,8 +1245,8 @@
     0.19200006751115933
    ],
    "tac": [
-    109694.64005565652,
-    214262.63822547297
+    112434.59667516427,
+    220133.97383870385
    ]
   },
   "parameters": [
@@ -1275,34 +1284,34 @@
    }
   ],
   "rss_sigma": {
-   "annual.capital_charge": 13196.354074653324,
-   "capex.CAPEX": 129563.74954584046,
-   "capex.EPC": 121087.61639798174,
-   "capex.TDC": 74277.76738926617,
+   "annual.capital_charge": 13593.425775502912,
+   "capex.CAPEX": 133462.25803610834,
+   "capex.EPC": 124731.08227673676,
+   "capex.TDC": 76512.74829882022,
    "capex.bare_module.S02.condenser": 43795.95120924957,
    "capex.bare_module.S02.reboiler": 43795.95120924957,
-   "capex.bare_module.S02.shell": 40907.9199356414,
+   "capex.bare_module.S02.shell": 44838.285397253225,
    "capex.bare_module.S02.trays": 2749.205381041511,
-   "capex.fci": 129563.74954584046,
+   "capex.fci": 133462.25803610834,
    "capex.purchased.S02.condenser": 13815.75747925854,
    "capex.purchased.S02.reboiler": 13815.75747925854,
-   "capex.purchased.S02.shell": 9833.6345999138,
+   "capex.purchased.S02.shell": 10778.433989724334,
    "capex.purchased.S02.trays": 2749.205381041511,
-   "capex.sum_bare_module": 74277.76738926617,
-   "capex.sum_purchased": 22045.60747911352,
-   "capex.total": 129563.74954584046,
-   "opex.fixed.maintenance": 3886.912486375213,
-   "opex.total": 3886.912486375213,
+   "capex.sum_bare_module": 76512.74829882022,
+   "capex.sum_purchased": 22482.950850574955,
+   "capex.total": 133462.25803610834,
+   "opex.fixed.maintenance": 4003.8677410832493,
+   "opex.total": 4003.8677410832493,
    "opex.utility.CW": 0.0,
    "opex.utility.HPS": 0.0,
-   "profit": 17083.266561028537,
+   "profit": 17597.293516586164,
    "revenue.total": 0.0,
    "size.S02.condenser.area": 0.0,
    "size.S02.reboiler.area": 0.0,
    "size.S02.shell.diameter": 0.0,
    "size.S02.shell.height": 0.0,
    "size.S02.trays.diameter": 0.0,
-   "tac": 17083.266561028537
+   "tac": 17597.293516586164
   }
  }
 }

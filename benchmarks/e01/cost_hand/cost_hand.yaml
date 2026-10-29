@@ -1,6 +1,6 @@
 id: e01-cost-hand-v1
 script: benchmarks/e01/cost_hand/cost_hand.py
-script_sha256: 403dea423b1033cbddcb1c81b08fe2de525040fe0e3e5f4545dc7541c7dc725d
+script_sha256: 9834d083dc2a1ca35e91bb1ce9c08a75da543155235d47be83eb6cd9101908c1
 mpmath_dps: 30
 transcribed_from:
   package: idaes-pse
@@ -3994,13 +3994,13 @@ chain:
     CRF:
       value: 0.10185220882315062
       mp30: '0.101852208823150616761070789147'
-    opex.total_input: '34373.962267160525'
+    opex.total_input: '33618.92931669953'
     annual.capital_charge:
       value: 85236.94659922415
       mp30: '85236.9465992241515418763540395'
     tac:
-      value: 119610.90886638468
-      mp30: '119610.90886638467654187635404'
+      value: 118855.87591592368
+      mp30: '118855.87591592368154187635404'
   crf_0.08_20:
     value: 0.10185220882315062
     mp30: '0.101852208823150616761070789147'

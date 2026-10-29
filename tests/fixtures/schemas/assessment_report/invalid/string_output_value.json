@@ -1,10 +1,10 @@
 {
  "document": {
   "annual": {
-   "annual.capital_charge": 62576.06596453452,
-   "profit": -95418.29211593355,
+   "annual.capital_charge": 73762.50507357878,
+   "profit": -109899.63446908939,
    "revenue.total": 0.0,
-   "tac": 95418.29211593355
+   "tac": 109899.63446908939
   },
   "assessment_id": "e01-a5-p1-th-r1",
   "assessment_sha256": "1635c38aee50f6e5ddffcfd0d29726a943b7756a289f4845d9c17c487557f43f",
@@ -26,20 +26,20 @@
    "year": 2023
   },
   "capex": {
-   "capex.CAPEX": 614381.0398180706,
-   "capex.EPC": 574187.8876804397,
-   "capex.TDC": 352219.29068852885,
-   "capex.bare_module.D.drum": 94518.4848069472,
+   "capex.CAPEX": 724211.1479551229,
+   "capex.EPC": 676832.8485561896,
+   "capex.TDC": 415183.93360090145,
+   "capex.bare_module.D.drum": 171911.5878562943,
    "capex.bare_module.H": 189642.03165056967,
-   "capex.bare_module.P": 67167.9260599007,
-   "capex.bare_module.P.drive": 890.8481711112703,
-   "capex.fci": 614381.0398180706,
-   "capex.purchased.D.drum": 22720.789617054616,
+   "capex.bare_module.P": 52928.325735201746,
+   "capex.bare_module.P.drive": 701.988358835681,
+   "capex.fci": 724211.1479551229,
+   "capex.purchased.D.drum": 41324.90092699382,
    "capex.purchased.H": 59823.984747813774,
-   "capex.purchased.P": 20353.916987848697,
-   "capex.purchased.P.drive": 593.8987807408469,
-   "capex.sum_bare_module": 352219.29068852885,
-   "capex.sum_purchased": 103492.59013345792,
+   "capex.purchased.P": 16038.886586424773,
+   "capex.purchased.P.drive": 467.9922392237873,
+   "capex.sum_bare_module": 415183.93360090145,
+   "capex.sum_purchased": 117655.76450045616,
    "capex.total": "1e6"
   },
   "defaulted_inputs": [
@@ -293,7 +293,7 @@
        "min": 150.0,
        "role": "size",
        "source": {
-        "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 462, Eqs. (16.39)-(16.42): shell-and-tube base cost valid for tube outside area A = 150 to 12,000 ft2 (QA1; the coefficients are IDAES's, from the 3rd ed., ch. 22)",
+        "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 462, Eqs. (16.39)-(16.42): shell-and-tube base cost valid for tube outside area A = 150 to 12,000 ft2 (QA1); the same range in Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 571, Eqs. (22.39)-(22.42)",
         "kind": "primary",
         "verified": true
        }
@@ -328,7 +328,7 @@
    {
     "accuracy_class": 4,
     "bare_module": "capex.bare_module.D.drum",
-    "bare_module_value": 94518.4848069472,
+    "bare_module_value": 171911.5878562943,
     "escalation": {
      "base": [
       "2006",
@@ -431,7 +431,7 @@
     ],
     "item_id": "D.drum",
     "purchased": "capex.purchased.D.drum",
-    "purchased_value": 22720.789617054616,
+    "purchased_value": 41324.90092699382,
     "regime": {
      "D.drum.platforms.D.piece": "floor",
      "D.drum.platforms.L.piece": "floor",
@@ -447,6 +447,15 @@
      "volume": 0.012551560856031718
     },
     "source": {
+     "amended": {
+      "coefficients.platforms[1].a": {
+       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 575, Eq. (22.58); used in Examples 22.13 (p. 578) and 22.14 (p. 579)",
+       "effective_value": 300.9,
+       "replaces": 309.9,
+       "ruling": "R-897",
+       "value": 300.9
+      }
+     },
      "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
      "entry": "vessel.vertical",
      "form": "sslw-vessel-v1",
@@ -486,13 +495,14 @@
       },
       "weight_lb": {
        "below": "refuse",
-       "max": 920000.0,
-       "min": 1000.0,
+       "max": 1000000.0,
+       "min": 4200.0,
        "role": "size",
        "source": {
         "kind": "pinned",
+        "note": "IDAES's docstring labels this range '2'; the 3rd ed. (p. 574, Eq. 22.54) gives it to the vertical-vessel fit, weight_limit '1' (design note §10.10, R-898)",
         "source_line": "SSLW.py:534",
-        "text": "1: (default) 1000 to 920,000 lb"
+        "text": "2: 4200 to 1M lb"
        }
       }
      },
@@ -511,7 +521,7 @@
    {
     "accuracy_class": 4,
     "bare_module": "capex.bare_module.P",
-    "bare_module_value": 67167.9260599007,
+    "bare_module_value": 52928.325735201746,
     "escalation": {
      "base": [
       "2006",
@@ -544,7 +554,7 @@
     ],
     "item_id": "P",
     "purchased": "capex.purchased.P",
-    "purchased_value": 20353.916987848697,
+    "purchased_value": 16038.886586424773,
     "regime": {
      "P.size": "floor"
     },
@@ -558,10 +568,18 @@
      "vol_flow": 2.0919268093386196e-05
     },
     "source": {
+     "amended": {
+      "index_basis.value": {
+       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, pp. 561 and 563, Eqs. (22.14), (22.21), (22.23): pump costs indexed to 2006 (CE = 500), Figs. 22.3, 22.5, 22.6; Example 22.6, p. 564. IDAES labels them USD_CE394 (SSLW.py:1579, :1604)",
+       "effective_value": 500.0,
+       "replaces": 394.0,
+       "ruling": "R-896",
+       "value": 500.0
+      }
+     },
      "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
      "entry": "pump",
      "form": "sslw-pump-v1",
-     "index_basis": "CEPCI 394 → 500 by the source's ratio",
      "options": {
       "material": "StainlessSteel",
       "pump_type": "Centrifugal",
@@ -579,7 +597,7 @@
        "min": 400.0,
        "role": "size",
        "source": {
-        "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 452, Eq. (16.14): radial centrifugal pump, valid from S = Q H^0.5 = 400 to 100,000 gpm ft^0.5 (QA1; the coefficients are IDAES's, from the 3rd ed., ch. 22)",
+        "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 452, Eq. (16.14): radial centrifugal pump, valid from S = Q H^0.5 = 400 to 100,000 gpm ft^0.5 (QA1); the same range in Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 561, Eq. (22.14)",
         "kind": "primary",
         "verified": true
        }
@@ -601,7 +619,7 @@
    {
     "accuracy_class": 4,
     "bare_module": "capex.bare_module.P.drive",
-    "bare_module_value": 890.8481711112703,
+    "bare_module_value": 701.988358835681,
     "escalation": {
      "base": [
       "2006",
@@ -623,7 +641,7 @@
     "inputs": [],
     "item_id": "P.drive",
     "purchased": "capex.purchased.P.drive",
-    "purchased_value": 593.8987807408469,
+    "purchased_value": 467.9922392237873,
     "regime": {
      "P.drive.size": "floor"
     },
@@ -635,10 +653,18 @@
      "power": 13.493696071150344
     },
     "source": {
+     "amended": {
+      "index_basis.value": {
+       "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 562, Eq. (22.19): motor costs indexed to 2006 (CE = 500), Fig. 22.4; Example 22.6, p. 565. IDAES labels them USD_CE394 (SSLW.py:1647, :1661)",
+       "effective_value": 500.0,
+       "replaces": 394.0,
+       "ruling": "R-896",
+       "value": 500.0
+      }
+     },
      "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles, 3rd ed., ch. 22",
      "entry": "motor.electric",
      "form": "sslw-motor-v1",
-     "index_basis": "CEPCI 394 → 500 by the source's ratio",
      "options": {
       "motor_type": "Open"
      },
@@ -652,7 +678,7 @@
        "min": 1.0,
        "role": "size",
        "source": {
-        "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 453, Eq. (16.19) and Table 16.22: electric motor, 3,600 rpm open drip-proof, P_C = 1 to 700 Hp (QA1; the coefficients are IDAES's, from the 3rd ed., ch. 22)",
+        "citation": "Seider, Lewin, Seader, Widagdo, Gani, Ng, Product and Process Design Principles, 4th ed. (Wiley, 2017), ch. 16, p. 453, Eq. (16.19) and Table 16.22: electric motor, 3,600 rpm open drip-proof, P_C = 1 to 700 Hp (QA1); the same range in Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 562, Eq. (22.19), and Table 22.22 (p. 563), which states 1 to 250 Hp for the totally enclosed and explosion-proof enclosures (not enforced; design note §10.10, Q-B12)",
         "kind": "primary",
         "verified": true
        }
@@ -687,13 +713,13 @@
    }
   ],
   "opex": {
-   "opex.fixed.maintenance": 18431.431194542118,
-   "opex.total": 32842.22615139904,
+   "opex.fixed.maintenance": 21726.334438653685,
+   "opex.total": 36137.12939551061,
    "opex.utility.EL": 10.794956856920276,
    "opex.utility.HPS": 14400.0
   },
   "provenance": {
-   "generated_utc": "2026-10-29T19:30:22+00:00",
+   "generated_utc": "2026-10-29T20:11:45+00:00",
    "openflowsheet_version": "0.3.0.dev0",
    "program_label": "ASM1-1635c38aee50-2a9930bc"
   },
@@ -769,7 +795,7 @@
     },
     {
      "admissibility": {
-      "weight_lb_floor": 0.7632113535005328
+      "weight_lb_floor": 0.9436217508334602
      },
      "choice": "floor",
      "entry_id": "D.drum.size",
@@ -839,76 +865,76 @@
    },
    "linear_interval": {
     "annual.capital_charge": [
-     43803.246175174165,
-     93864.0989468018
+     51633.75355150515,
+     110643.75761036816
     ],
     "capex.CAPEX": [
-     430066.72787264944,
-     921571.5597271059
+     506947.803568586,
+     1086316.7219326843
     ],
     "capex.EPC": [
-     401931.52137630776,
-     861281.8315206596
+     473782.9939893327,
+     1015249.2728342842
     ],
     "capex.TDC": [
-     246553.50348197026,
-     528328.9360327933
+     290628.75352063106,
+     622775.9004013522
     ],
     "capex.bare_module.D.drum": [
-     66162.93936486305,
-     141777.72721042082
+     120338.11149940602,
+     257867.38178444144
     ],
     "capex.bare_module.H": [
      132749.42215539876,
      284463.0474758545
     ],
     "capex.bare_module.P": [
-     47017.54824193049,
-     100751.88908985104
+     37049.82801464122,
+     79392.48860280262
     ],
     "capex.bare_module.P.drive": [
-     623.5937197778892,
-     1336.2722566669054
+     491.39185118497664,
+     1052.9825382535214
     ],
     "capex.fci": [
-     430066.72787264944,
-     921571.5597271059
+     506947.803568586,
+     1086316.7219326843
     ],
     "capex.purchased.D.drum": [
-     15904.55273193823,
-     34081.18442558192
+     28927.43064889567,
+     61987.35139049073
     ],
     "capex.purchased.H": [
      41876.78932346964,
      89735.97712172066
     ],
     "capex.purchased.P": [
-     14247.741891494088,
-     30530.875481773044
+     11227.220610497341,
+     24058.32987963716
     ],
     "capex.purchased.P.drive": [
-     415.7291465185928,
-     890.8481711112703
+     327.59456745665113,
+     701.988358835681
     ],
     "capex.sum_bare_module": [
-     246553.50348197026,
-     528328.9360327933
+     290628.75352063106,
+     622775.9004013522
     ],
     "capex.sum_purchased": [
-     72444.81309342054,
-     155238.8852001869
+     82359.03515031932,
+     176483.64675068425
     ],
     "capex.total": [
-     430066.72787264944,
-     921571.5597271059
+     506947.803568586,
+     1086316.7219326843
     ],
     "opex.fixed.maintenance": [
-     12902.001836179483,
-     27647.14679181318
+     15208.43410705758,
+     32589.501657980527
     ],
     "opex.total": [
-     27312.796793036403,
-     42057.94174867009
+     29619.229063914503,
+     47000.29661483744
     ],
     "opex.utility.EL": [
      10.794956856920276,
@@ -919,8 +945,8 @@
      14400.0
     ],
     "profit": [
-     -135922.0406954719,
-     -71116.04296821056
+     -157644.05422520565,
+     -81252.98261541965
     ],
     "revenue.total": [
      0.0,
@@ -959,8 +985,8 @@
      2.0919268093386196e-05
     ],
     "tac": [
-     71116.04296821056,
-     135922.0406954719
+     81252.98261541965,
+     157644.05422520565
     ]
    },
    "parameters": [
@@ -998,27 +1024,27 @@
     }
    ],
    "rss_sigma": {
-    "annual.capital_charge": 9120.163994773136,
-    "capex.CAPEX": 89543.11448079426,
-    "capex.EPC": 83685.15372036847,
-    "capex.TDC": 51334.286419070326,
-    "capex.bare_module.D.drum": 21828.10905867461,
+    "annual.capital_charge": 10724.254770873345,
+    "capex.CAPEX": 105292.31417547583,
+    "capex.EPC": 98404.03193969704,
+    "capex.TDC": 60363.16521880569,
+    "capex.bare_module.D.drum": 39701.28061025901,
     "capex.bare_module.H": 43795.95120924957,
-    "capex.bare_module.P": 15511.76807663702,
-    "capex.bare_module.P.drive": 205.73257255927106,
-    "capex.fci": 89543.11448079426,
-    "capex.purchased.D.drum": 5247.141600642935,
+    "capex.bare_module.P": 12223.27324438997,
+    "capex.bare_module.P.drive": 162.1172671767056,
+    "capex.fci": 105292.31417547583,
+    "capex.purchased.D.drum": 9543.577069773799,
     "capex.purchased.H": 13815.75747925854,
-    "capex.purchased.P": 4700.535780799098,
-    "capex.purchased.P.drive": 137.15504837284738,
-    "capex.sum_bare_module": 51334.286419070326,
-    "capex.sum_purchased": 15508.755521857734,
-    "capex.total": 89543.11448079426,
-    "opex.fixed.maintenance": 2686.2934344238274,
-    "opex.total": 2686.2934344238274,
+    "capex.purchased.P": 3704.022195269689,
+    "capex.purchased.P.drive": 108.07817811780374,
+    "capex.sum_bare_module": 60363.16521880569,
+    "capex.sum_purchased": 17195.53661064511,
+    "capex.total": 105292.31417547583,
+    "opex.fixed.maintenance": 3158.769425264275,
+    "opex.total": 3158.769425264275,
     "opex.utility.EL": 0.0,
     "opex.utility.HPS": 0.0,
-    "profit": 11806.457429196964,
+    "profit": 13883.024196137621,
     "revenue.total": 0.0,
     "size.D.drum.diameter": 0.0,
     "size.D.drum.height": 0.0,
@@ -1028,7 +1054,7 @@
     "size.P.head": 0.0,
     "size.P.power": 0.0,
     "size.P.vol_flow": 0.0,
-    "tac": 11806.457429196964
+    "tac": 13883.024196137621
    }
   }
  },
