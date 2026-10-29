@@ -1,0 +1,157 @@
+{
+  "work_package": "S14",
+  "commit": "03d8edb9d0a5037becd0e190660388e78c86a382",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "DOC (S14): the user documentation site, docs/briefs/DOC-site.md",
+    "case_hash": "bbf0bc704f4d876bc67b1bf9c60eb05fb0c580b2c4711910cdd16cd5755ba5b2",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/doc_pages.py --check",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "51fdd5c9f5bfa01289b4b23be8d997a67e7f1354b0f321800254bd6c7d9dd237"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/s14-tests.junit.xml tests/test_doc_examples.py tests/test_doc_pages.py tests/test_release_workflows.py tests/test_t08_w2_inventory.py tests/test_s07_packaging.py tests/test_evidence_manifests.py tests/test_k06_application.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "abb0127762d7766e159d818aef49e69187d81a424382349ba6cb9eb92578835f"
+    },
+    {
+      "cmd": "/home/frankp/.cache/doc-venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/s14-examples-coolprop.junit.xml tests/test_doc_examples.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "7807a03fc7af0d2efd94634968052e98ef786e048fe1aa25ccf7b31789e2cd62"
+    },
+    {
+      "cmd": "/home/frankp/.cache/doc-venv/bin/mkdocs build --strict --site-dir evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/site",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s11_identity.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "2eb322ac5182096e54be7ee5aec44eb5c922eb50d83563a2749c37ab58a78627"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m ruff check .",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m ruff format --check .",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "2854867803323f64a6c7723da2517180e382c49178faa2864373a330f3a7d3db"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S14.C1",
+      "description": "the generated pages (unit catalogue, operations table) equal the code's",
+      "result": "pass",
+      "value": "generated pages: up to date"
+    },
+    {
+      "id": "S14.C2",
+      "description": "the touched tests pass: the examples against their stated numbers, the quickstart and tutorial code, the generated pages, the workflow pins and guards, the sdist/wheel inventory, packaging, manifests, the application",
+      "result": "pass",
+      "value": "453 passed, 4 skipped in 33.66s"
+    },
+    {
+      "id": "S14.C3",
+      "description": "the example notebooks pass in the docs environment, with CoolProp installed (the refrigeration example runs rather than skips)",
+      "result": "pass",
+      "value": "13 passed in 26.81s"
+    },
+    {
+      "id": "S14.C4",
+      "description": "mkdocs build --strict: no warning, no broken link, every notebook executes",
+      "result": "pass",
+      "value": ""
+    },
+    {
+      "id": "S14.C5",
+      "description": "S11's identity gate is unchanged by the docstring edits",
+      "result": "pass",
+      "value": "S11-IDENTITY PASS n=54494 changed=[]"
+    },
+    {
+      "id": "S14.C6",
+      "description": "ruff check over the repository",
+      "result": "pass",
+      "value": "All checks passed!"
+    },
+    {
+      "id": "S14.C7",
+      "description": "ruff format --check over the repository",
+      "result": "pass",
+      "value": "990 files already formatted"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/S14.C1.log",
+      "sha256": "51fdd5c9f5bfa01289b4b23be8d997a67e7f1354b0f321800254bd6c7d9dd237",
+      "description": "output of S14.C1"
+    },
+    {
+      "path": "evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/S14.C2.log",
+      "sha256": "abb0127762d7766e159d818aef49e69187d81a424382349ba6cb9eb92578835f",
+      "description": "output of S14.C2"
+    },
+    {
+      "path": "evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/S14.C3.log",
+      "sha256": "7807a03fc7af0d2efd94634968052e98ef786e048fe1aa25ccf7b31789e2cd62",
+      "description": "output of S14.C3"
+    },
+    {
+      "path": "evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/S14.C4.log",
+      "sha256": "1ce840d9a8326d206f2cf77830b4785d3ec8e21914bdbdf8c97ec382a313de77",
+      "description": "output of S14.C4"
+    },
+    {
+      "path": "evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/S14.C5.log",
+      "sha256": "2eb322ac5182096e54be7ee5aec44eb5c922eb50d83563a2749c37ab58a78627",
+      "description": "output of S14.C5"
+    },
+    {
+      "path": "evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/S14.C6.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "description": "output of S14.C6"
+    },
+    {
+      "path": "evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/S14.C7.log",
+      "sha256": "2854867803323f64a6c7723da2517180e382c49178faa2864373a330f3a7d3db",
+      "description": "output of S14.C7"
+    },
+    {
+      "path": "evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/s14-tests.junit.xml",
+      "sha256": "f8922828f65c8e1ff9acaf4166b66bc3bc68eae423bfdd9a46f1e68fb8f4608c",
+      "description": "JUnit report"
+    },
+    {
+      "path": "evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/artifacts/s14-examples-coolprop.junit.xml",
+      "sha256": "7df8bc7f3d2e9f2e97b72e1cdacb8c433cbe6644eb16c56df5faad895a7e9f10",
+      "description": "JUnit report"
+    }
+  ],
+  "limitations": [
+    "Cost estimation and LCA (E01) are not documented: E01 is not on main at this branch's base (DOC_DECISIONS D2).",
+    "The examples are demonstrations, regression-checked against their own stated numbers; they are not verification or validation evidence.",
+    "The thermal machines carry semantic_role `pump` in the examples: the frozen schema has no turbine or compressor role (DOC_DECISIONS D3, question Q1).",
+    "The Wilson records are documented as read from a source checkout (DOC_DECISIONS D7).",
+    "The site has been built locally only; it is deployed by site.yml after the merge to main, once Pages is enabled."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
