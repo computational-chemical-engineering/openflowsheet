@@ -31,13 +31,14 @@ from test_s11_thermal_binding import (
 )
 from test_s11_thermal_verifier import CONTEXT, evaluated_state, verifier_checks
 
-from openflowsheet.application.policies import T04_W12
+from openflowsheet.application.policies import T04_W12, T06_REVISION_V2
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.thermal.kernel import Sat, phase_properties, saturation
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.splits import DORMANCY_RULES, DormancyRule
+from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.thermo import PropertyProvider, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
 from openflowsheet.verify import CheckResult
@@ -237,15 +238,22 @@ def test_a62_a_dormant_heater_with_a_duty_is_a_specification_conflict() -> None:
     assert run.message == "zero_flow_conflict(H:TH-energy)"
 
 
-def _under_v1(document: dict[str, Any]) -> tuple[PlanResult, SolutionCertificate | None]:
-    """Bind, plan and execute under `T04-W12` (the v1 phase contract); certify a converged run."""
+def _certified(
+    document: dict[str, Any], policy: SolvePolicy
+) -> tuple[PlanResult, SolutionCertificate | None]:
+    """Bind, plan and execute under `policy`; certify a converged run."""
     binding = bind_revision_flowsheet(document)
     assert isinstance(binding, RevisionBinding), binding
-    plan, _ = plan_revision(binding, T04_W12)
-    run = execute_plan(plan=plan, flowsheet=binding.flowsheet, spec=binding.spec, policy=T04_W12)
+    plan, _ = plan_revision(binding, policy)
+    run = execute_plan(plan=plan, flowsheet=binding.flowsheet, spec=binding.spec, policy=policy)
     if run.outcome != "CONVERGED":
         return run, None
     return run, verify_revision(binding, document, run, solve_plan=plan.steps[-1].solve_plan)
+
+
+def _under_v1(document: dict[str, Any]) -> tuple[PlanResult, SolutionCertificate | None]:
+    """Bind, plan and execute under `T04-W12` (the v1 phase contract); certify a converged run."""
+    return _certified(document, T04_W12)
 
 
 def _dormant_syn001_pump() -> dict[str, Any]:
@@ -288,6 +296,19 @@ def test_o_c6_1_under_v1_a_dormant_heater_is_rank_deficient_or_singular() -> Non
     assert certificate.verification_status == "UNVERIFIED"
     moved, _ = _under_v1(_dormant_heater(1.0e3))
     assert moved.outcome == "LINEAR_SOLVE_FAILED", moved.message
+
+
+def test_r844_under_v2_a_converged_dormant_heater_certifies_unverified_rank_deficient() -> None:
+    """R-844 (O-C6-1; L-TH-7): A62 at Q = 0 under `T06-revision-v2` converges, and its
+    certificate is UNVERIFIED with regularity `RANK_DEFICIENT`: `verify.zero_flow.DORMANT_OUTLETS`
+    has no `thermal.*` outlet, so the verifier judges the outlet's energy row, which reads no
+    temperature at zero flow. A pin: the follow-on verifier package flips it to VERIFIED on
+    purpose."""
+    run, certificate = _certified(_dormant_heater(0.0), T06_REVISION_V2)
+    assert run.outcome == "CONVERGED", run.message
+    assert certificate is not None
+    assert certificate.regularity.status == "RANK_DEFICIENT"
+    assert certificate.verification_status == "UNVERIFIED"
 
 
 def test_o_c6_1_the_syn001_pumps_dormant_case_under_v1_is_recorded() -> None:

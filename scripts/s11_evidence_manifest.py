@@ -573,12 +573,11 @@ def found_limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
         "(design note §5 row I2, units design §5.4 amendment 3, rulings §5 row I2) has not "
         "happened; the review fields stay pending and the human numerical and process-model "
         "review is pending. This manifest claims neither.",
-        "Open for the design lane (docs/S11A_DECISIONS.md, WO-I1b handoff; rulings OQ-4): "
-        "O-C6-1 — the SYN-001 pump's dormant case under T04-W12 certifies VERIFIED/"
-        "NO_RANK_LOSS_DETECTED while A62's thermal heater at Q = 0 certifies UNVERIFIED/"
-        "RANK_DEFICIENT under v1 and v2 (verify.zero_flow.DORMANT_OUTLETS holds no thermal.* "
-        "entry), so §4.9/L-TH-7's 'as the SYN-001 pump's is' does not hold at the certificate. "
-        "The measured pins stand; no verifier change was made.",
+        "O-C6-1, ruled by R-844 (docs/reviews/S11-review.md M2): the SYN-001 pump's dormant "
+        "case under T04-W12 certifies VERIFIED/NO_RANK_LOSS_DETECTED while A62's thermal heater "
+        "at Q = 0 certifies UNVERIFIED/RANK_DEFICIENT under v1 and v2 (pinned; "
+        "verify.zero_flow.DORMANT_OUTLETS holds no thermal.* entry). L-TH-7 states it; the "
+        "verifier's thermal entries are a follow-on package, not S11.",
         "The CoolProp-dependent checks (run B of the tests, s11_thermal_reference.py --check, "
         "s11_coolprop_records.py --check) were run with CoolProp 8.0.0 importable from a scratch "
         "site holding the coolprop extra's wheel, outside requirements.lock; run A is the locked "
