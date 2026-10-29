@@ -176,6 +176,12 @@ if either of these happens:
 - the classed worst exceeds 1e-11 relative to its bound.
 ```
 
+*Amended 2026-10-29 by R-845:* a `T` whose enclosing mapping has `regime` LIQUID or VAPOR (a single-phase
+PH/PS flash answer) is its own class `flash`, |Δ| ≤ 1e-8·|x|. CoolProp's flash converges T only to about 1e-9·T
+(measured 9.27e-10), and CI 40861460178 printed 2.403 at `TH-C1.pump_outlet.T`. The premise that A54's
+cancellation is the hazard for derived temperatures is measured false: through 1/c_p it contributes 6.4e-4 of the
+bound. Every other class, the watch and the x86-64 byte check are unchanged.
+
 ```
 ## R-844 — S11 O-C6-1: the verifier's dormant-outlet table gains no `thermal.*` outlet in S11; a converged dormant single-phase thermal outlet certifies UNVERIFIED/RANK_DEFICIENT under either contract, and L-TH-7 says so
 

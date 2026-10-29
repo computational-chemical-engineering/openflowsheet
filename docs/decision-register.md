@@ -16618,6 +16618,12 @@ if either of these happens:
   moving that nominal state off the boundary in the generator;
 - the classed worst exceeds 1e-11 relative to its bound.
 
+*Amended 2026-10-29 by R-845:* a `T` whose enclosing mapping has `regime` LIQUID or VAPOR (a single-phase
+PH/PS flash answer) is its own class `flash`, |Δ| ≤ 1e-8·|x|. CoolProp's flash converges T only to about 1e-9·T
+(measured 9.27e-10), and CI 40861460178 printed 2.403 at `TH-C1.pump_outlet.T`. The premise that A54's
+cancellation is the hazard for derived temperatures is measured false: through 1/c_p it contributes 6.4e-4 of the
+bound. Every other class, the watch and the x86-64 byte check are unchanged.
+
 ## R-844 — S11 O-C6-1: the verifier's dormant-outlet table gains no `thermal.*` outlet in S11; a converged dormant single-phase thermal outlet certifies UNVERIFIED/RANK_DEFICIENT under either contract, and L-TH-7 says so
 
 | | |
@@ -16651,3 +16657,100 @@ if either of these happens:
 - *Keep L-TH-7 as written.* It tells a user that v2 suffices, and the certificate contradicts that.
 
 **Watch for.** A dormant thermal outlet that certifies VERIFIED before the follow-on lands.
+
+## R-845 — S11's thermal reference check: the T of a single-phase PH/PS flash answer is its own class, |Δ| ≤ 1e-8·|T|; every other R-843 class unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), on R-843's watch (CI 40861460178, aarch64, at `021441ef`) |
+| Normative text | this entry; amends R-843 (`docs/reviews/S11-review.md` M1) and `docs/derivations/scripts/s11_thermal_reference.py --check` |
+| Evidence | CI 40861460178 at `021441ef`: x86-64 bitwise; aarch64 classed worst: energy 2.855e-03 (`$.grid.H2O[10].h`), entropy 2.380e-03, unit 5.920e-04, relative 2.403e+00 at `$.flowsheets.TH-C1.pump_outlet.T`; no exact leaf differed. `docs/derivations/scripts/s11_measurements/m1_flash_floor.py` (x86-64, CoolProp 8.0.0, 58 s): at TH-C1's own pump-outlet PH input, ulp perturbations \|k\| ≤ 64 move T by up to 7.6538e-8 K = 2.4032·1e-10·T, the aarch64 value to four digits; over all 40 single-phase flashes, 4096 ulp and 5000 random draws each, worst 9.269e-10·T. The committed file itself: at the 16 T-nominal grid points, \|T_flash − T_nominal\|/T reaches 8.441e-10 (`grid.R134a[0].ph.T`), 5.100e-10 (`N2[0].ph`), 4.550e-10 (`H2O[10].ph`), 1.388e-10 (`CO2[0].ph`) |
+| Affected packages | S11 |
+| Amends | R-843 (its "0 for every other key (T, P, flows)") |
+
+**Decision.**
+- **The escalation's premise is false, by measurement.** A54's cancellation does not cause the failure. The energy
+  class's aarch64 worst, 1.536e-9 J/mol, maps through 1/c_p (75.18 J/(mol K)) to 2.0e-11 K at TH-C1's pump outlet.
+  That is 6.4e-4 of the relative bound. The deviation is CoolProp's single-phase flash itself. The flash converges T
+  only to about 1e-9·T, and a different rounding path lands on a different converged value. R-843's relative class
+  (1e-10, R-627's jet floor 1.05e-12 times κ ≤ 100) holds for forward evaluations, but a flash root carries its
+  stopping error on top of that.
+- **New class `flash`.** It covers a float under key `T` whose enclosing mapping, in the committed document, has
+  `regime` LIQUID or VAPOR. The bound is |Δ| ≤ B_FLASH·|x| with B_FLASH = 1e-8 and no floor. The committed file has
+  40 such leaves:
+  - 32 in the grid: `ph` and `ps` of the 16 T-nominal points;
+  - 8 derived: A54 `isentropic`/`outlet`, A55 compressor `isentropic`/`outlet`, TH-C1 `pump_outlet`, TH-C2
+    `compressor_outlet`, TH-R1 `mixer_outlet`/`pump_outlet`.
+- **Unchanged.**
+  - A `T` in a SATURATED mapping stays `relative` (47 leaves). It is T_sat(P) from the saturation solver, not a
+    T-iteration.
+  - Every other T, P, flow and input stays `relative` at 1e-10.
+  - `energy`, `entropy` and `unit` are untouched.
+  - x86-64 stays bitwise, and no byte of the YAML moves.
+- **The constant is derived, not fitted.** B_FLASH is the floor measured on x86-64 (9.27e-10, independent of the
+  aarch64 run), rounded up to its decade and given one decade of margin, as R-627 derives class T (floor × factor).
+  R-843's watch (ratio > 0.1) puts this class's watch at 1e-9·T, which is the measured floor: an architecture whose
+  flash lands outside it escalates. aarch64's 2.403e-10·T is a ratio of 0.024 in the new class.
+- **It hides no regression.**
+  - The flash's inputs keep their own classes: h, s, W and Q at 1e-10·max(|x|, s_f). An input change at its bound
+    moves T by at most 1e-10·R·T_c/c_p, which at TH-C1 is 7.2e-9 K, or 2.2e-11·T. The T leaf was never the guard on
+    its input.
+  - The regime is compared exactly.
+  - A change of CoolProp's EOS or reference state moves the forward h and s leaves, which stay at 1e-10.
+  - The bound is at most 1e-8·700 K = 7e-6 K at the hottest flash state. That is below every S11 consumer's T
+    tolerance of 1e-5 K (`T_TOL`, `CLOSURE_T_TOL`, and TH-R1's 1e-5 K).
+- **The floor claim is executable.** At every grid point with a nominal T whose answer is single-phase, the generator
+  asserts |T_flash − T| ≤ WATCH_FRACTION·B_FLASH·T (1e-9·T) for both `ph` and `ps`. It does so with `_sanity`,
+  so it refuses to emit and `--check` fails, on any architecture. The committed worst is 8.441e-10.
+- **Build-lane change, exact intent.** In `docs/derivations/scripts/s11_thermal_reference.py`:
+  1. Add `B_FLASH = 1e-8`. Make `CLASSES = ("energy", "entropy", "unit", "relative", "flash")`.
+  2. `floor_class(key, where, parent)` takes the committed mapping that holds the leaf. Its first rule is: `key == "T"`
+     and `parent.get("regime") in ("LIQUID", "VAPOR")` gives `"flash"`. Every other rule stays as it is, in order.
+  3. In `classed_problems`, `walk` passes that parent mapping down. For class `flash`, the bound is B_FLASH·|a|, with
+     a the committed value. Every other class keeps B_REL·max(|a|, s_f). `_report` then prints five lines.
+     WATCH_FRACTION is unchanged.
+  4. In `_grid_point`, when the nominal key is `T`, apply `_sanity(..., answer["T"], value,
+     WATCH_FRACTION * B_FLASH * value)` to each of `ph` and `ps` whose regime is LIQUID or VAPOR.
+  5. The module docstring's check paragraph names R-845.
+
+  In `tests/test_s11_thermal_kernel.py`:
+  1. In `_LEAVES`, `grid.H2O[0].ph.T` becomes `"flash"`. Add `flowsheets.TH-C1.pump_outlet.T` as `"flash"` and
+     `grid.H2O[2].ph.T` (SATURATED) as `"relative"`.
+  2. The failing-change test perturbs by ten times the class's own bound: 1e-7·|x| for `flash`, written from this
+     ruling and not read from the script.
+  3. The self-comparison test's class set gains `"flash"`.
+  4. New test: TH-C1.pump_outlet.T × (1 + 2.403e-10) passes, with the flash worst at that path and a ratio of
+     0.02403 (rel 1e-3), below WATCH_FRACTION. The same relative change on `grid.H2O[2].ph.T` fails as `relative`
+     with a ratio above 1. A 1.5e-9 relative change on a flash T passes with a ratio above WATCH_FRACTION.
+  5. New test: in the committed file exactly 40 floats class `flash`, each under `T` beside a LIQUID or VAPOR
+     regime, and the 47 `T` floats beside SATURATED class `relative`.
+  6. New test, no CoolProp needed: at the 16 T-nominal grid points, |T_flash − T|/T ≤ 1e-9 for `ph` and `ps`. The
+     maximum is at `grid.R134a[0].ph.T` and exceeds 1e-10, which is why the class exists.
+
+  If `scripts/s11_evidence_manifest.py` or the CI step parses the class lines, it also learns `flash`.
+
+**Rejected alternatives, and why.**
+- *A temperature floor equal to the energy floor through c_p, s_f = R·T_c/c_p.* At TH-C1, R·T_c/c_p = 5380.3/75.18
+  = 71.6 K, which is below T = 318.5 K. The bound would not change, and the check would still fail at 2.403. Its
+  premise is the one measured false.
+- *Classing derived outlet temperatures with their energy source.* That puts a K leaf under a J/mol floor. Keyed to
+  "derived from a cancelling difference", it would also miss grid flashes with no cancellation that carry the same
+  error (`grid.R134a[0].ph.T`, 8.44e-10). Those passed on aarch64 only because their rounding paths coincided.
+- *Recording flash temperatures at fewer digits.* It moves x86-64 bytes. Two values within 1e-9 can round apart, so
+  the check would still need a class.
+- *Polishing each flash T with Newton steps on CoolProp's forward h(T, P) in the generator.* It would make 1e-10
+  honest. But it moves 40 leaves on x86-64, replaces §6.1's provenance (CoolProp's own flash answer) with generator
+  arithmetic, and no consumer needs better than 1e-5 K. It is the path to take if one ever does.
+- *Widening class `relative` to 1e-8.* That loosens 47 saturation temperatures and every P, flow and input, none of
+  which has this floor.
+- *A bound fitted to the aarch64 worst (for example 3e-10).* That is fitting to a measurement (R-627). The measured
+  floor, 9.27e-10, already exceeds it, so it would fail on the next rounding path.
+
+**Watch for.**
+- R-843's two stops apply unchanged, with `flash` among the classes. Escalate on an exact difference, or when any
+  class's worst exceeds 0.1 of its bound (for `flash`, |Δ| > 1e-9·T).
+- The generator's grid assertion refusing. That means the floor is larger than measured here: amend this entry, and
+  never widen the bound in the harness.
+- The next aarch64 run. The relative class's worst is then a non-flash leaf, and it must stay at or below 0.1 of its
+  bound, or it escalates under R-843.
