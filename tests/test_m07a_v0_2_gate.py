@@ -1038,6 +1038,8 @@ def test_a10_the_envelope_must_be_pinned_to_the_alpha() -> None:
         ("release: 0.2.0a1\n", "release: 0.2.0.dev0\n"),
         ("envelope_id: v0.2-envelope-1\n", "envelope_id: v0.2-envelope-dev\n"),
         ("release: 0.2.0\n", "release: 0.2.0.dev0\n"),
+        ("envelope_id: v0.3-envelope-1\n", "envelope_id: v0.2-envelope-dev\n"),
+        ("release: 0.3.0\n", "release: 0.2.0.dev0\n"),
     ):
         today = today.replace(pinned, working, 1)
     assert yaml.safe_load(today)["envelope_id"] == "v0.2-envelope-dev"
