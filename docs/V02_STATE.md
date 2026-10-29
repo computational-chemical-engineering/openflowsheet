@@ -92,18 +92,27 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-29, resumed).** **S11 merged into main** (`1b2758d1`; gate PASS `021441ef` 14318 passed; CI
-40877525424 green on x86-64 and aarch64, R-845 flash class 0.024 of its bound). **wp/E01** (worktree `e01`): reviewed
-(`docs/reviews/E01-review.md`, R-868…R-871; R-870 accepted by Frank); gate PASS `b666dfee` (14505 passed); main merged in
-at `84d71df8` (register by per-entry merge); manifest `evidence/S12/02fc8d2f…` tested 68/73, kept (S08b/S11 precedent).
-Way of working (Frank, 2026-10-26): batch per branch, ≤ 2 agents, one gate + one CI per batch; briefs forbid subagents and
-sending personal identifiers to external services. References go to the `zotero` session (Frank, 2026-10-29).
+**Position (2026-10-29 evening).** **S11 merged** (`1b2758d1`). **wp/E01**: gate PASS `84d71df8` (14537 passed); CI
+40909427554 failed aarch64 only (golden report's `state_sha256`, a float digest under ADR 0025 D2) → test fixed `991dcde8`,
+CI re-running; then merge `--no-ff` + tree check. Branches in flight (≤ 2 agents; batch, then test once):
+- **wp/E01b** (worktree `e01b`): Seider corrections. Frank: five 4th-ed.-matched ranges verified (C1 done); differences fixed
+  **before 0.3.0**; Frank supplied the **3rd ed.** (`seider2009product`; local text `~/.cache/seider3/`, 4th ed.
+  `~/.cache/seider4/`, never committed). §10 ruling R-890…R-894 (4th-ed. based) is being amended against the 3rd ed.
+  (`architect`, brief `docs/briefs/E01b-seider3-amendment.md`, R-895+). Done: C1, C2 loader, C1 pins (`15307c6a`); C3–C6 on
+  4th-ed. numbers parked on local `wip/E01b-held`. C7 (new `verified` flags) needs Frank's approval.
+- **wp/V03** (worktree `v03`): 0.3.0 release policy ADR 0053 + `docs/derivations/V03-release-spec.md` (R-872…R-880);
+  Frank: W27 not claimed, keep the token, correct U02 text; WO-1 (`scripts/v0_3_gate.py`, byte-identical v0.2) and WO-2
+  (Wilson data in the wheel, Frank: params + points) done at `98701cca`. Next: WO-3/WO-4 after E01 + E01b merge; reviewer
+  question: does `wilson-ig-v1` bind from package data without a path?
+- **wp/DOC** (worktree `doc`): GitHub Pages site (Frank 2026-10-29), MkDocs Material in Peclet's look (site.yml,
+  requirements-docs.txt) with PyMRM habits (NumPy docstrings, notebooks executed in CI, Getting Started / Coding Agents);
+  manifest id S14; engineer building. After merge: enable Pages (`build_type=workflow`).
 **Next actions (in order):**
-1. **E01 finish:** full gate at `84d71df8` (running) → push wp/E01 → CI both architectures → merge `--no-ff` + tree check.
-2. **Release 0.3.0** (Frank, 2026-10-29: "cut 0.3.0 right after S11 and E01 merge, before starting the optimiser package,
-   and leave Wilson in"): v0.3 release-policy ADR (ends R-563's dev envelope), acceptance of ADRs 0045–0052, RC cut, RC
-   steps, verdict; Frank signs off the Wilson/S10 data rights (Q-F3), the E01 data rights and QA1 (Seider ranges) before
-   the tag.
+1. E01 CI green → merge E01; merge main into V03/E01b/DOC as they need it.
+2. E01b: amended ruling → one engineer C3–C6 → Frank approves C7 → gate/CI → merge.
+3. DOC: build → merge → enable Pages.
+4. **Release 0.3.0** (Frank, 2026-10-29: "cut 0.3.0 right after S11 and E01 merge, before starting the optimiser package,
+   and leave Wilson in"): V03 WO-3/4, one reviewer pass, WO-5 K3/C, RC job, verdict, Frank's N-2…N-6, tag (Frank's).
 2b. **NLP optimiser on revision flowsheets** (Frank 2026-10-27: right after E01), with MCP/CLI/HTTP for cost/LCA.
 2c. **X01 — model extensibility infrastructure, piloted by NRTL + UNIQUAC (+ original UNIFAC), VLE only** (Frank,
    2026-10-28: "more about the flexibility of the basic infrastructure than having all models on board"; adding a model
