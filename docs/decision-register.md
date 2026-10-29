@@ -17005,12 +17005,12 @@ allocation, without the entry.
 because an empty program reports `COMPLETE`. **Watch for.** A fourth contributor added to `CONTRIBUTOR_ORDER` without
 an entry in the table.
 
-## R-870 — E01: results computed from a restricted LCA table may reveal its scores; labelled, not redacted (pending Frank's confirmation)
+## R-870 — E01: results computed from a restricted LCA table may reveal its scores; labelled, not redacted
 
 | | |
 | --- | --- |
 | Date | 2026-10-29 |
-| Decided by | design lane (`reviewer`), E01 review item 3 (ESC-B3 residue); **pending Frank's confirmation** |
+| Decided by | design lane (`reviewer`), E01 review item 3 (ESC-B3 residue); **confirmed by Frank, 2026-10-29** |
 | Normative text | E01 design §4.8.6 erratum 2026-10-29 |
 | Evidence | `docs/E01B_DECISIONS.md:166-169`; impacts are linear in q with the reported coefficients `A_fac·a_k` |
 | Affected packages | E01 |

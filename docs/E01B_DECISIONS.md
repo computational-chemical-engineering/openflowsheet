@@ -531,3 +531,6 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   the document declares a functional unit (adds no output; the three report fixtures are unchanged); A27's LCA-only
   test drops the cost and derived sections. Alternative: count utility/material prices as a cost section.
   Reversible by: `declared_sections` in the commit carrying this line.
+- FACT (R-870, Frank confirmed 2026-10-29): R-870 recorded as decided; each `impact.<m>.{rate,annual,per_fu}` computed
+  from a `redistribution: forbidden` table carries limitation `LCA_RESTRICTED_DATA_DERIVED` (target the output,
+  `table_id` beside it); values, intervals and σ are not redacted; θ withholding unchanged. A28 test asserts it.

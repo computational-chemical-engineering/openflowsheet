@@ -215,6 +215,7 @@ class _Planner:
                 continue
             assert unit is not None
             terms: list[tuple[str, str]] = []
+            forbidden: list[str] = []
             for e in exchanges:
                 table = self.tables[e.table_id]
                 letter = "q" if isinstance(table, UnitScoreTable) else "c"
@@ -228,6 +229,8 @@ class _Planner:
                     out.restricted[theta_id] = (
                         f"a score of table {e.table_id}, whose rights forbid redistribution"
                     )
+                    if e.table_id not in forbidden:
+                        forbidden.append(e.table_id)
                 terms.append((theta_id, e.output_id))
             factor = allocation if not isinstance(allocation, Refusal) else None
             out.outputs.append(OutputDef(ids[0], f"{unit}/s", _rate(terms, factor)))
@@ -237,6 +240,14 @@ class _Planner:
             else:
                 flow, per = fu
                 out.outputs.append(OutputDef(ids[2], f"{unit}/{per}", _per_fu(ids[0], flow)))
+            # R-870 (Frank, 2026-10-29): an impact computed from a restricted table may, with the
+            # inventory, reveal its scores; it is labelled, never redacted (§4.8.6 erratum).
+            out.limitations.extend(
+                Limitation("LCA_RESTRICTED_DATA_DERIVED", i, {"table_id": table_id})
+                for table_id in forbidden
+                for i in ids
+                if i not in dict(out.unavailable)
+            )
         if any(o.output_id.startswith("impact.") for o in out.outputs):
             out.limitations.append(Limitation("LCA_BACKGROUND_UNCERTAINTY_NOT_PROPAGATED", "lca"))
             out.limitations.append(Limitation("LCA_CAPITAL_GOODS_EXCLUDED", "lca"))

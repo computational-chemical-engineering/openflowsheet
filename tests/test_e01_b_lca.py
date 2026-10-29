@@ -395,6 +395,16 @@ def test_a28_a_forbidden_table_leaves_only_its_id_and_hash(
             "rights": "user-licensed; redistribution forbidden; a database licensed per user",
         }
     )
+    # R-870: every impact computed from the table is labelled; its value is not redacted.
+    labelled = sorted(
+        lim["target"]
+        for lim in report["limitations"]
+        if lim["code"] == "LCA_RESTRICTED_DATA_DERIVED" and lim["table_id"] == "licensed-background"
+    )
+    impacts = {entry["id"]: entry["value"] for entry in report["lca"]["impacts"]}
+    assert labelled == sorted(impacts) and RATE in labelled
+    assert all(value is not None for value in impacts.values())
+    assert schema_errors(SCHEMA_REFERENCE, report) == []
 
 
 def test_a28_a_ranged_score_of_a_forbidden_table_is_withheld(

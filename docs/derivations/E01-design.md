@@ -878,7 +878,7 @@ hash disagrees: `LCA_TABLE_HASH_MISMATCH`.
 - Test A28 asserts this on an export.
 - Tables and direct factors that ship carry their licence text and notice in the file and in the D04 inventory.
 
-*Erratum 2026-10-29 (E01 review item 3, R-870; pending Frank's confirmation):* the guarantee above covers tables,
+*Erratum 2026-10-29 (E01 review item 3, R-870; confirmed by Frank 2026-10-29):* the guarantee above covers tables,
 scores and θ values. Impacts are results of the user's licensed use and, with the reported inventory, may determine
 the scores of the activities used. Every impact that depends on such a table carries limitation
 `LCA_RESTRICTED_DATA_DERIVED(<table_id>)`; intervals and σ are not redacted.
