@@ -358,6 +358,10 @@ class ContributionPlan:
 `FunctionalBuilder = Callable[[Symbols, Algebra], Expr]`. `Symbols` gives `x(id)`, `theta(id)`, `pin(id)`,
 `block(block_id, output_id)` and `out(output_id)`. `out` is an earlier output's expression, so the DAG is shared.
 
+*Erratum 2026-10-29 (E01 review M2, R-869):* `_registered()` imports the fixed contributor table, so the default
+can never be empty. When a document section has no chosen contributor, `build` returns
+`ASSESSMENT_CONTRIBUTOR_MISSING(<section>)`.
+
 `BuildContext` carries the view, the host spec, the `AssessmentSpec` and the **regime as data**. Builders never branch
 on a symbol: a choice is made in the selection pass from float values and passed in.
 
@@ -770,6 +774,12 @@ Example, PrISMa's nCAC = CCC/(1 − CC):
 
 A non-positive denominator is an evaluation error: `METRIC_UNDEFINED(<id>)`. It is never a negative "cost".
 
+*Erratum 2026-10-29 (E01 review M1, R-868):* A ratio's denominator is a regime entry `derived.<id>.denominator` of
+kind `domain` (one choice, row `den/|den(x₀)| ≥ 0`), and on the float path a denominator ≤ 0 is the evaluation error
+`METRIC_UNDEFINED(derived.<id>)` at every state, not only at planning; a study candidate where it occurs is not
+verified (§4.10.3). Lower priority, same rule: `.per_fu`, `lcox` and the `mass`/`economic` allocation ratios. Their
+denominators are flows, ≥ 0 under M03's bounds, except a flow that is zero at the start, which M03 leaves unbounded.
+
 ### 4.8 LCA
 
 #### 4.8.1 Inventory (`assessment/lca/inventory.py`)
@@ -868,6 +878,11 @@ hash disagrees: `LCA_TABLE_HASH_MISMATCH`.
 - Test A28 asserts this on an export.
 - Tables and direct factors that ship carry their licence text and notice in the file and in the D04 inventory.
 
+*Erratum 2026-10-29 (E01 review item 3, R-870; pending Frank's confirmation):* the guarantee above covers tables,
+scores and θ values. Impacts are results of the user's licensed use and, with the reported inventory, may determine
+the scores of the activities used. Every impact that depends on such a table carries limitation
+`LCA_RESTRICTED_DATA_DERIVED(<table_id>)`; intervals and σ are not redacted.
+
 ### 4.9 Uncertainty and evidence statements
 
 - **AACE class.** The estimate's class = the maximum class number over costed items (a set entry's class, or a quote's
@@ -884,7 +899,7 @@ hash disagrees: `LCA_TABLE_HASH_MISMATCH`.
   An item computed with `CORRELATION_EXTRAPOLATED` makes the class `none`.
 - **First-order propagation.** Every θ with a declared `relative_range [lo, hi]` (set entries carry theirs) is
   symbolic in a twin. For each output y:
-  - linear worst-case interval `y + Σ_k min/max(∂y/∂θ_k·θ_k·lo_k, ∂y/∂θ_k·θ_k·hi_k)` (fully correlated, conservative);
+  - linear worst-case interval `y + Σ_k min/max(∂y/∂θ_k·θ_k·lo_k, ∂y/∂θ_k·θ_k·hi_k)` (box worst case; conservative for any correlation — erratum 2026-10-29, E01 review N1; was "fully correlated");
   - RSS standard deviation `σ_y = sqrt(Σ_k (∂y/∂θ_k·θ_k)² (hi_k − lo_k)²/12)` (independent uniform inputs).
 
   Both are labelled with their assumptions.
@@ -907,6 +922,9 @@ hash disagrees: `LCA_TABLE_HASH_MISMATCH`.
 4. An output with an empty `d_dx` row (e.g. all items in `floor`) gets `dy/dp = d_dp` only, labelled
    `STATE_INDEPENDENT`.
 5. A refusal of the underlying request propagates unchanged, with `None` values.
+6. *Erratum 2026-10-29 (E01 review S2):* Every admissibility row of the program with scaled slack ≤ τ_active at x* is
+   listed under `regime_bounds_active`. Each output whose closure contains it carries limitation
+   `REGIME_BOUNDARY_ACTIVE(<row>)`: the derivative is one-sided.
 
 `revision_sensitivity_host(flowsheet: RevisionFlowsheet, state) -> SensitivityHost` is built as `studies/syn001.py:71`
 `host_of` is: `spec = flowsheet.spec()`, the compiled problem, K03 scaling, and the alias rows eliminated by

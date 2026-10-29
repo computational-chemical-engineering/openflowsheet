@@ -16973,3 +16973,67 @@ matters against a class-4 range.
 - *Editing `thermo/`.*
 
 **Watch for.** A provider added to the identity table without a guard test.
+
+## R-868 — E01: a derived ratio's denominator is a `domain` regime entry and an evaluation error at every state
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`reviewer`), E01 review M1 |
+| Normative text | E01 design §4.7.5 erratum 2026-10-29 |
+| Evidence | `assessment/cost/derived.py:78-81`; `report.py:176-179` (the check ran only there and at planning); `verification.py` V3/V6 via `program.evaluate` |
+| Affected packages | E01 |
+
+**Decision.** Each derived ratio adds the single-choice entry `derived.<id>.denominator` with the row `den/|den(x₀)| ≥ 0`.
+On the float path, `den ≤ 0` raises `METRIC_UNDEFINED(derived.<id>)` at every state, so a study candidate where it
+occurs is not verified. **Rejected:** *a check in the report only*, which leaves a negative ratio able to satisfy a
+study constraint; *smoothing the denominator.* **Watch for.** A new ratio output, such as `per_fu`, `lcox` or an
+allocation, without the entry.
+
+## R-869 — E01: `AssessmentProgram.build` loads its contributors and refuses a section without one
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`reviewer`), E01 review M2 (brief item 5) |
+| Normative text | E01 design §4.2.2 erratum 2026-10-29 |
+| Evidence | `program.py:158-169, 478`; registration only by import side effect |
+| Affected packages | E01 |
+
+**Decision.** `_registered()` imports the fixed contributor table. When a document section has no chosen contributor,
+`build` returns `ASSESSMENT_CONTRIBUTOR_MISSING(<section>)`. **Rejected:** *registration by import side effect alone*,
+because an empty program reports `COMPLETE`. **Watch for.** A fourth contributor added to `CONTRIBUTOR_ORDER` without
+an entry in the table.
+
+## R-870 — E01: results computed from a restricted LCA table may reveal its scores; labelled, not redacted (pending Frank's confirmation)
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`reviewer`), E01 review item 3 (ESC-B3 residue); **pending Frank's confirmation** |
+| Normative text | E01 design §4.8.6 erratum 2026-10-29 |
+| Evidence | `docs/E01B_DECISIONS.md:166-169`; impacts are linear in q with the reported coefficients `A_fac·a_k` |
+| Affected packages | E01 |
+
+**Decision.** §4.8.6 guarantees that no table, score or θ value of a `redistribution: forbidden` table is written to
+a report, bundle, fixture or evidence. Impacts are results of the user's licensed use. Together with the reported
+inventory, a single exchange, an interval or several states, they can determine the scores of the activities used,
+as any published LCA result can. Every impact that depends on such a table carries limitation
+`LCA_RESTRICTED_DATA_DERIVED(<table_id>)`. **Rejected:** *withholding intervals and σ*, which hides nothing the value
+reveals; *withholding the impacts*, which defeats the feature; *withholding the inventory*, which is the user's own
+foreground. **Watch for.** A new report field that lists per-activity scores or contributions directly.
+
+## R-871 — E01: on day one every regime of the program is held for any assessment objective
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`reviewer`), E01 review S3 |
+| Normative text | E01 design §4.10.2–§4.10.3 as built (closure by column overlap; V7 over every entry) |
+| Evidence | `studies/nlp/formulation.py:376-415`; `verification.py` `_regime_held` |
+| Affected packages | E01; the follow-up that adds dependency-declared closures |
+
+**Decision.** Accepted for E01. It is sound, because no candidate is verified across a regime change, but
+over-restrictive: an impact objective is held to the capex size regimes. **Rejected for now:** *closure and V7
+restricted to the entries a bound output reads*, which needs each `OutputDef` to declare the entries it reads (the
+follow-up). **Watch for.** A floor row outside the closure, which shows up as a V7 failure, not a binding row.
