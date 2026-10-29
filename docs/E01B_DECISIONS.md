@@ -414,3 +414,32 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   `MR12_AUDITS` entry, and still expects `fail`; the measure is unchanged and the release specification supplies the
   entries (F-9). Alternative: an `MR12_AUDITS["lca"]` entry now — it needs a step-14 RC check id that does not exist,
   so the measure would still fail and the entry would be invented. Reversible by: the MR-12 commit.
+- DECISION: §5.4's configurations → P1 = TH-C1 (pump, boiler, turbine, condenser) with TH-R1 (heater, flash, pump)
+  for the drum (no S11 case holds all four P1 units; E01A's FACT); P2 = SYN-001 with `P2_DOCUMENT` in
+  `tests/test_e01_integration.py` (registered cost + derived contributors on SSLW); P3 = M1; P4 = TH-C1 + LCA. P1
+  unchanged from the tracks, so cost_hand/lca_hand/IDAES/Brightway records need no re-run. Alternative: a new
+  registered flowsheet with all four units (a new case, not I1's). Reversible by: the integration test's docstring.
+- FACT (QA4): no P1 exchanger exceeds 2000 psig: TH-C1's boiler is costed in pressure piece 1, the condenser and
+  TH-R1's heater in `floor`; no `allow_extrapolation` set.
+- FACT (§9.7 risk, P2): U-HEAT and U-FLASH.duty sit in `floor`, the drum is sized `units:1`; tac(x0) 81823.70.
+- **ESC-I1 (open, design lane; A33).** On the registered P2 the `tac` objective verifies from all three M03 starts
+  (V1–V7 pass, status KKT_POINT_VERIFIED, candidate split 0.5000000001, T_spec 361.4996 K, recovery_A active), the
+  x_sim/optimizer agreement holds (≤ 1e-6) and A34 holds (one output pattern, the twin's). But A33's
+  `tac(candidate) ≤ tac(start)` fails: tac(candidate) 84481.63 vs starts 82439.78 and 80977.14 (starts 0 and 1 violate
+  `recovery_A ≥ 0`: −0.0159, −0.0537) and 91092.80 (start 2, feasible). Default (implemented, not a pass of the
+  literal text): the clause is asserted over feasible starts; the literal clause is a strict `xfail` naming ESC-I1;
+  the manifest records A33 `fail` until a ruling.
+- **ESC-I2 (open, design lane; manifest id).** `schemas/evidence-manifest.schema.json` (frozen) admits
+  `work_package` `^[PKTMSR][0-9]{2}[a-z]?$`: `E01` is refused. R-565 renamed L01 → S04 for the same reason; S12/S13
+  are named in the docs, so no free alias is evident. Needs: an alias ruling (R-565 style) or a schema ADR. Default:
+  the generator takes the id as an option and refuses to write an invalid manifest; no manifest is committed.
+- FACT (observation for the reviewer): `AssessmentProgram.build(contributors=None)` takes the registered contributors,
+  which register only when `assessment.cost.contributor`/`cost.derived`/`lca.section` are imported; nothing in `src`
+  imports them, so a default build yields an empty program without a refusal. Tests pass explicit contributors.
+- FACT (merge repair): at the S11 merge 4f000563 eight E01 test modules failed to import (S11 I1b removed
+  `test_s11_thermal_binding.registered`); fixed test-only in 4a5e5659. `test_package_imports` lists `assessment`.
+- FACT (A1): protected paths (§4.14) unchanged against the S11 head 8d2ee175 (`git diff --stat` empty); against
+  `main` they show S11's 47 files because S11 is not yet on `main` — A1's literal `main...wp/E01` form applies once
+  S11 merges.
+- FACT (G9/A3): M03 NLP fixture dump (`$SCRATCH/b3/g9.sh i1`) IDENTICAL to the pre-E01 base; nlp env
+  `test_m03_nlp_greybox` + `test_e01_b_nlp` + `test_e01_integration`: 22 passed, 1 xfailed (ESC-I1).
