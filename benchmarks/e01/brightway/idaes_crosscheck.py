@@ -14,6 +14,19 @@ the versions, this script's sha256 and every value. It evaluates IDAES's own cos
   (departure 2: IDAES's smooth_max with eps = 1e-4);
 - pump and motor read as `pump_capital_cost` and `motor_capital_cost` (USD_CE500).
 
+Ruling B on QA1 as amended by the 3rd edition (design §10.10.5.7): IDAES is evaluated at our
+effective inputs and each amended term is mapped by an exact factor; a row records the raw IDAES
+value (`C_P_idaes`), the factor of each amended term (`amended`) and the compared value (`C_P`):
+
+- compressor: `work_mechanical` = the case's total consumed power S(N) (cost_hand's `P_C_hp_total`,
+  or S_min floored) in W, with `number_of_units` = N (departure 8);
+- turbine: IDAES at the per-unit effective power (S_min floored), times N (departure 10);
+- fixed head: C_P · exp(−(0.9228 − 0.8228)·ln(1.1·A_unit,ft²));
+- every pump and motor: IDAES's capital · 394/500. IDAES converts its USD_CE394 base cost to
+  CE 500 by 500/394, and the set's basis is CE 500 throughout (R-896);
+- the vertical platforms' piece 2 · 300.9/309.9 (R-897);
+- the horizontal platforms and `weight_limit` "2" carry no factor (IDAES's numbers, R-897, R-898).
+
 The unit model is a stand-in namespace holding the Pyomo variables the methods read (area and the
 hot side's inlet pressure; work, deltaP, inlet density and volumetric flow; the config flags).
 Every constraint the methods write is `var == expression` in declaration order, so each is
@@ -59,11 +72,17 @@ G = 9.80665
 
 #: Effective-input floors (the ranges of §9.2.4; the same numbers as cost_hand.py's).
 HX_AREA_MIN, HX_P_MIN = 150.0, 100.0
-W_MIN = {"1": 1000.0, "2": 4200.0}
+W_MIN = {("vertical", "1"): 4200.0, ("vertical", "2"): 9000.0, ("horizontal", "1"): 1000.0}
 TRAY_D_MIN = 2.0
 PUMP_MIN = {"Centrifugal": 400.0, "ExternalGear": 10.0, "Reciprocating": 1.0}
 COMPRESSOR_MIN = {"Centrifugal": 200.0, "Reciprocating": 100.0, "Screw": 10.0}
 PL_FLOOR = {"L": 12.0, "D": 3.0}
+TURBINE_MIN = 20.0
+#: §10.10.5.1's amended numbers, as the design note states them (IDAES's value, ours).
+FIXED_HEAD_ALPHA2 = (0.8228, 0.9228)
+PL_VERTICAL_2 = (309.9, 300.9)
+#: The pump and motor entry basis (IDAES's USD_CE394 label, the book's CE 500).
+CE_BASIS = (394.0, 500.0)
 
 
 def _var(m: Any, name: str, value: float, units: Any) -> Any:
@@ -120,13 +139,20 @@ def exchanger(case: Mapping[str, Any]) -> dict[str, float]:
     )
     blk.number_of_units.fix(n)
     _solve(blk)
-    return {"C_P": pyo.value(blk.capital_cost), "N": n, "area_m2": area, "P_Pa": pressure}
+    raw = pyo.value(blk.capital_cost)
+    out = {"C_P": raw, "N": n, "area_m2": area, "P_Pa": pressure}
+    if opt["hx_type"] == "fixed_head":
+        z = 1.1 * (area / n) * KAPPA_A
+        factor = math.exp(-(FIXED_HEAD_ALPHA2[1] - FIXED_HEAD_ALPHA2[0]) * math.log(z))
+        out.update({"C_P": raw * factor, "C_P_idaes": raw, "amended": {"alpha2": factor}})
+    return out
 
 
 def vessel(case: Mapping[str, Any], entry: str) -> dict[str, float]:
     x, opt, regime = case["inputs"], case["options"], case["regime"]
     vertical = entry == "vessel.vertical"
     limit = int(opt.get("weight_limit", "1"))
+    w_min = W_MIN[("vertical" if vertical else "horizontal", str(limit))]
     m, blk = _model()
     d = _var(m, "D", x["D_m"], U.m)
     length = _var(m, "L", x["L_m"], U.m)
@@ -143,11 +169,13 @@ def vessel(case: Mapping[str, Any], entry: str) -> dict[str, float]:
     out: dict[str, float] = {}
     if regime["size"] == "floor":
         blk.weight_eq.deactivate()
-        blk.weight.fix(W_MIN[str(limit)])
-        out["W_lb"] = W_MIN[str(limit)]
+        blk.weight.fix(w_min)
+        out["W_lb"] = w_min
     _solve(blk)
     out.setdefault("W_lb", pyo.value(blk.weight))
     shell = pyo.value(blk.capital_cost)
+    raw = {"shell": shell}
+    amended: dict[str, float] = {}
     platforms = 0.0
     if opt["platforms_ladders"]:
         d_ft, l_ft = x["D_m"] / FT, x["L_m"] / FT
@@ -168,8 +196,16 @@ def vessel(case: Mapping[str, Any], entry: str) -> dict[str, float]:
         )
         _solve(blk2)
         platforms = pyo.value(blk2.base_cost_platforms_ladders)
+        raw["platforms"] = platforms
+        if vertical and formula == 2:
+            amended["platforms"] = PL_VERTICAL_2[1] / PL_VERTICAL_2[0]
+        platforms *= amended.get("platforms", 1.0)
         out.update({"platform_D_ft": d_ft, "platform_L_ft": l_ft, "aspect_ratio_range": formula})
-    return {"C_P": shell + platforms, "shell": shell, "platforms": platforms, **out}
+    result = {"C_P": shell + platforms, "shell": shell, "platforms": platforms, **out}
+    if amended:
+        result["C_P_idaes"] = sum(raw.values())
+        result["amended"] = amended
+    return result
 
 
 def trays(case: Mapping[str, Any]) -> dict[str, float]:
@@ -246,13 +282,17 @@ def pump(case: Mapping[str, Any]) -> dict[str, float]:
         else:
             work = PUMP_MIN[kind] / KAPPA_W
     blk = _pump_block(work, head * G * 1000.0, flow, opt, n)
-    return {
-        "C_P": pyo.value(blk.pump_capital_cost),
+    raw = pyo.value(blk.pump_capital_cost)
+    out = {
+        "C_P": raw,
         "N": n,
         "vol_flow_m3s": flow,
         "power_W": work,
         "deltaP_Pa": head * G * 1000.0,
     }
+    factor = CE_BASIS[0] / CE_BASIS[1]  # the coefficients are at CE 500, not IDAES's CE 394 label
+    out.update({"C_P": raw * factor, "C_P_idaes": raw, "amended": {"basis": factor}})
+    return out
 
 
 def motor(case: Mapping[str, Any], floor_shaft: float) -> dict[str, float]:
@@ -261,14 +301,27 @@ def motor(case: Mapping[str, Any], floor_shaft: float) -> dict[str, float]:
     work = floor_shaft * n if regime["size"] == "floor" else x["shaft_power_W"]
     pump_opt = {"pump_type": "Centrifugal", "material": "StainlessSteel"}
     blk = _pump_block(work, 1.0e5, 1.0e-3, pump_opt, n, motor_type=opt["motor_type"])
-    return {"C_P": pyo.value(blk.motor_capital_cost), "N": n, "shaft_power_W": work}
+    raw = pyo.value(blk.motor_capital_cost)
+    factor = CE_BASIS[0] / CE_BASIS[1]  # as the pump: CE 500, not IDAES's CE 394 label
+    return {
+        "C_P": raw * factor,
+        "N": n,
+        "shaft_power_W": work,
+        "C_P_idaes": raw,
+        "amended": {"basis": factor},
+    }
 
 
 def compressor(case: Mapping[str, Any]) -> dict[str, float]:
-    x, opt, regime = case["inputs"], case["options"], case["regime"]
+    opt, regime = case["options"], case["regime"]
     kind = opt["compressor_type"]
     n = _units(regime)
-    work = COMPRESSOR_MIN[kind] / KAPPA_W if regime["size"] == "floor" else x["power_W"]
+    consumed = (
+        COMPRESSOR_MIN[kind]
+        if regime["size"] == "floor"
+        else case["quantities"]["P_C_hp_total"]["value"]
+    )
+    work = consumed / KAPPA_W  # departure 8: IDAES's work/N is the per-unit consumed power
     m, blk = _model()
     blk.unit_model = _unit(
         config=SimpleNamespace(
@@ -284,18 +337,23 @@ def compressor(case: Mapping[str, Any]) -> dict[str, float]:
     )
     blk.number_of_units.fix(n)
     _solve(blk)
-    return {"C_P": pyo.value(blk.capital_cost), "N": n, "power_W": work}
+    return {"C_P": pyo.value(blk.capital_cost), "N": n, "consumed_power_W": work}
 
 
 def turbine(case: Mapping[str, Any]) -> dict[str, float]:
+    regime = case["regime"]
+    n = _units(regime)
+    per_unit = (
+        -TURBINE_MIN / KAPPA_W if regime["size"] == "floor" else case["inputs"]["power_W"] / n
+    )
     m, blk = _model()
     blk.unit_model = _unit(
         config=SimpleNamespace(compressor=False),
-        work_mechanical={0: _var(m, "W", case["inputs"]["power_W"], U.W)},
+        work_mechanical={0: _var(m, "W", per_unit, U.W)},
     )
     SSLW.SSLWCostingData.cost_turbine(blk)
     _solve(blk)
-    return {"C_P": pyo.value(blk.capital_cost), "power_W": case["inputs"]["power_W"]}
+    return {"C_P": n * pyo.value(blk.capital_cost), "N": n, "power_W_per_unit": per_unit}
 
 
 def evaluate(entry: str, case: Mapping[str, Any], floor_shaft: float) -> dict[str, float]:
@@ -356,7 +414,8 @@ def build() -> dict[str, Any]:
             "SSLW.py_sha256": hashlib.sha256(sslw).hexdigest(),
         },
         "basis": "C_P in USD_CE500; pump and motor are IDAES's pump_capital_cost and "
-        "motor_capital_cost (converted from USD_CE394 by IDAES's units)",
+        "motor_capital_cost (converted from USD_CE394 by IDAES's units) times 394/500, since "
+        "their coefficients are at CE 500 (design note §10.10, R-896)",
         "forms": forms,
         "p_sizes": p_sizes,
     }

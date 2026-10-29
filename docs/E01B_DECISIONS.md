@@ -715,3 +715,12 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   `not_in_book` (design §10.10.3 rows 7, 28, 36, 47 class them M): exchanger `unity` (a = b = 0 in Eq. 22.44),
   tray carbon-steel F_TM α2 = 0 (printed without a D term), `type_factor_other` (Eqs. 22.22/22.23 carry no F_T),
   compressor `ElectricMotor.F_D` and `CarbonSteel.F_M` = 1 (the base cost of Eq. 22.35).
+- C5′ (A15): `02477928` cherry-picked with `-n` (its log hunk not taken; its two lines stand: env re-created from the
+  pinned wheel; DECISION compressor `work_mechanical` = cost_hand's `P_C_hp_total`), then §10.10.5.7's deltas: every
+  pump and motor case × 394/500 (`amended.basis`), piece 2 × 300.9/309.9, horizontal platforms and "2" without a
+  factor (the 4th-ed. constants `CE567`/`PL_HORIZONTAL`/`TOWER_ALPHA` removed); held F841 (unused `x` in
+  `compressor()`) fixed. Re-run in `/home/frankp/.cache/idaes-2.13/venv`: A15 worst rel package 1.01e-14, hand
+  1.02e-14 (bound 1e-9). Audit against `15307c6a`'s YAML: pump 18 + motor 6 form cases and the four P1 pump/drive
+  rows × 0.788000000 with raw IDAES unchanged; vertical floor/"2"/piece-2 cases follow cost_hand's C4′ moves (P1
+  TH-R1 drum × 1.818814470, P3 M1 shell × 1.096078350); compressor 18, turbine 6, fixed head 1 new; trays,
+  horizontal, other exchangers unchanged.
