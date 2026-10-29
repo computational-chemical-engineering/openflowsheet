@@ -109,6 +109,8 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
+**E01 (cost and LCA assessment functionals, ADR 0052) is implemented on `wp/E01` (2026-10-29), not tested.** Tracks A and B complete (`docs/E01A_DECISIONS.md`, `docs/E01B_DECISIONS.md`); WO-I1 done except the manifest: assessment data packaged (`assessment/` + links, NOTICE, T08.A32/L40), MR-12 tripwire, merge repair of eight E01 test modules, `tests/test_e01_integration.py` (P2: A33/A34/A36), the `docs/interfaces-frozen.md` note. Gates measured: protected paths unchanged vs S11 head; G9 M03 dump IDENTICAL; nlp env 22 passed + 1 strict xfail; S11 identity `changed=[]` n=54494, every E01-tree shard exit 0 (one base-tree browser-smoke timing flake). **Blockers (design lane):** ESC-I1 (A33 clause vs infeasible M03 starts), ESC-I2 (manifest id `E01` refused by the frozen schema). **Next:** rulings; then `scripts/e01_evidence_manifest.py` (modelled on S11's), the manifest, T08 harvest if `--check` asks, full gate, CI, one `reviewer` pass. G10/A48 (Seider ranges `verified: false`) blocks a release, not this merge.
+
 **S11 (the binding package) is tested on `wp/S11` (2026-10-28), not yet merged.** ADRs 0050 and 0051 (Proposed;
 implemented, tested), design notes `docs/derivations/S11-design.md` and `S11-units-design.md`, rulings
 `docs/reviews/S11-rulings.md` (R-830…R-842). Manifest `evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json`:

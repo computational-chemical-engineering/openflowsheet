@@ -4,6 +4,8 @@
 - E01's evidence manifest is `tested`, with gates G1–G9 of the design note passing;
 - the `reviewer` has passed tracks A and B and the integration WO against the design note.
 
+**Implemented, not yet tested (2026-10-29, WO-I1):** tracks A and B and the integration work are on `wp/E01`; no manifest yet: A33's `tac(candidate) ≤ tac(start)` fails at M03's two infeasible starts (ESC-I1) and the manifest schema refuses the id `E01` (ESC-I2), both open for the design lane (`docs/E01B_DECISIONS.md`, WO-I1).
+
 **Date:** 2026-10-27
 **Author:** design lane (`architect`), brief `docs/briefs/E01-cost-lca-design.md`.
 **Normative text:** `docs/derivations/E01-design.md`.
