@@ -482,3 +482,35 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   starts 0, 1 recovery_A:lower −0.015925571310171194, −0.05368521409840282 (tac 82439.78, 80977.14) — recorded.
   Default env 3 passed; nlp env 1 passed. Alternative: keep the literal clause failing (A33 `fail`). Reversible by:
   the commit carrying this line, the test and the erratum.
+- DECISION: the manifest's A3 (G9) is measured in the generator, not by the scratch dump: committed
+  `scripts/e01_m03_dump.py` (the scratch `m03_dump.py`, same bytes out — compared IDENTICAL to both the I1 dump and
+  the pre-E01 base dump) runs in a detached worktree of the S11 head 8d2ee175 and in this tree (nlp env), byte
+  comparison; plus `m03_schema_fixtures.py --nlp` and M03's NLP tests. A1 is judged against 8d2ee175 (the literal
+  `main...wp/E01` set is recorded and equals S11's own). Alternative: base = `main`'s merge base (lacks S11).
+  Reversible by: the generator.
+- FACT (S12.mypy): the project's mypy failed on `benchmarks/e01/lca_hand/lca_hand.py` (untyped `mpmath`, Any return);
+  fixed in a42c43ca — only `lca_hand.yaml`'s `script_sha256` and `foreground_p4.yaml`'s `amounts_sha256` moved
+  (re-run in `$SCRATCH/venv-lca`); every number unchanged. The full gate would have caught it.
+- FACT (environment): another engineer's `s11_identity.py` runs put their TMPDIR inside /tmp (97 % inodes) and
+  tripped this run's /tmp guard twice; the generator writes nothing to /tmp (`TMPDIR=~/.cache/e01-i1-tmp`), so the
+  guard now only logs. The generator's own S11 identity run passed.
+- GATES (generator at d87078af, clean tree): `status tested`, 68/73 pass, 0 fail; unsupported S12.A48, S12.G10 (RC
+  item), S12.G8/gate/ci. A2 `S11-IDENTITY PASS n=54494 changed=[]`; A3 dump sha256 a2c8002d… both trees; suite 195
+  passed, other files 1002 passed, 0 skipped; nlp check PASSED (190 nlp tests, both inventory re-takes). T08
+  `--check` then asked for the harvest: 18 items appended (class P), HARVEST_SIZE (60, 867, 104) → (61, 880, 109),
+  matrix re-emitted, `--check` 0, envelope/matrix tests 673 passed.
+
+## Handoff (2026-10-29, WO-I1 complete) — resume from here
+
+- **Done on wp/E01:** 19744492 ESC-I2 (S12); a1e1fa14 ESC-I1 (A33 restated, erratum); 0a935a35 + d87078af generator
+  `scripts/e01_evidence_manifest.py` and `scripts/e01_m03_dump.py`; a42c43ca lca_hand mypy fix; 8bbe71ca manifest
+  `evidence/S12/d87078af…/manifest.json` (`tested`) + ADR 0052 "Implemented, tested"; ea80d71d T08 harvest.
+- **Re-run the generator** (if the tree changes before merge): commit, then
+  `TMPDIR=~/.cache/e01-i1-tmp PYTHONPATH=src .venv/bin/python scripts/e01_evidence_manifest.py --lca-python
+  $SCRATCH/venv-lca/bin/python --nlp-prefix $W/.venv-nlp --nlp-cache $W/.reference-downloads/m03-ipopt
+  --build-python /usr/bin/python3 --basetemp ~/.cache/e01-i1-tmp/pt-m` (W = the m05 worktree; ~20 min; the
+  scratch wrapper `$SCRATCH/i1e01/manifest_run.sh`); then harvest the new manifest (append, re-pin HARVEST_SIZE).
+- **Not done (orchestrator):** full `scripts/gate.sh`, push, CI on both architectures, the `reviewer` pass, merge.
+- **For the reviewer:** ESC-I1/ESC-I2 rulings; the WO-I1 DECISION lines (repository path `assessment/`, MR-12
+  pattern, P1–P4 configurations, A3/A1 bases); the default-build observation (`AssessmentProgram.build(
+  contributors=None)` yields an empty program without a refusal).
