@@ -745,13 +745,28 @@ def _covers(entry: str, path: str) -> bool:
     )
 
 
+#: V03 spec §9.1 (R-880, Frank's Q-F3): from 0.3.0 the wheel carries exactly these S10 files, each
+#: as its own `PACKAGED` entry. A28 is inverted for them as S05.A26 was for its file (R-616); the
+#: verification records, the reference values and every other S10 file stay out.
+SHIPPED_S10 = ("benchmarks/s10/records.yaml", "benchmarks/s10/vle/kurihara1993_binaries.csv")
+
+
 def test_a28_no_s10_records_file_is_packaged() -> None:
+    assert wilson_ig.RECORDS_PATH in SHIPPED_S10
+    assert [e for e in PACKAGED if _covers(e, "benchmarks/s10")] == list(SHIPPED_S10)
+    unshipped = [
+        str(path.relative_to(REPO_ROOT))
+        for path in sorted((REPO_ROOT / "benchmarks" / "s10").rglob("*"))
+        if path.is_file() and str(path.relative_to(REPO_ROOT)) not in SHIPPED_S10
+    ]
     forbidden = (
-        wilson_ig.RECORDS_PATH,
         "benchmarks/s10/verification-records.yaml",
         "benchmarks/s10/reference_values.yaml",
-        "benchmarks/s10",
+        "benchmarks/s10/vle/kurihara1993_binaries.A.csv",
+        "benchmarks/s10/vle/kurihara1993_ternary.csv",
+        *unshipped,
     )
+    assert len(unshipped) >= 20
     assert [(e, p) for e in PACKAGED for p in forbidden if _covers(e, p)] == []
     # control: `_covers` does see a packaged file and a file below a packaged directory
     assert _covers("benchmarks/m01/components.yaml", "benchmarks/m01/components.yaml")
