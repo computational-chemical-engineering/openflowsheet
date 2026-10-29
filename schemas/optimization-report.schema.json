@@ -627,6 +627,7 @@
                     "HESSIAN_UNAVAILABLE",
                     "SIMULATION_NOT_READY",
                     "ASSESSMENT_REGIME_INADMISSIBLE",
+                    "ASSESSMENT_OBJECTIVE_UNSCALED",
                     "NLP_SOLVER_UNAVAILABLE"
                   ]
                 }
@@ -683,6 +684,7 @@
             "HESSIAN_UNAVAILABLE",
             "SIMULATION_NOT_READY",
             "ASSESSMENT_REGIME_INADMISSIBLE",
+            "ASSESSMENT_OBJECTIVE_UNSCALED",
             "NLP_SOLVER_UNAVAILABLE",
             "KKT_POINT_VERIFIED",
             "NOT_VERIFIED",

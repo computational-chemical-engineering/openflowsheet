@@ -952,6 +952,9 @@ the scores of the activities used. Every impact that depends on such a table car
   - `ASSESSMENT_REGIME_INADMISSIBLE` at the start;
   - `ASSESSMENT_OUTPUT_UNAVAILABLE` when a named output is `null` (§4.9);
   - `ASSESSMENT_PARAMETER_STRUCTURAL` when a decision is a structural θ.
+  - *Erratum 2026-10-29 (E01 review S1):* `ASSESSMENT_OBJECTIVE_UNSCALED` when an objective naming an assessment
+    output has |f(x₀)| ∉ [1e-3, 1e3] at a start, f(x₀) = 0 included; the message tells the user to divide by the
+    binding's recorded scale. The objective is never normalised silently.
 
   Assessment parameters are never decisions on day one: `UNSUPPORTED(ASSESSMENT_PARAMETER_DECISION)`.
 

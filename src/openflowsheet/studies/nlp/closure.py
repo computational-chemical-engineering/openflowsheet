@@ -18,6 +18,7 @@ importable; otherwise `unsupported` with every failing reason, in the specificat
 | `HESSIAN_UNAVAILABLE` | the Hessian policy is the limited-memory approximation |
 | `SIMULATION_NOT_READY` | every start solves and certifies `VERIFIED` |
 | `ASSESSMENT_REGIME_INADMISSIBLE` | the held regime's rows are ≥ −τ_feas at every start |
+| `ASSESSMENT_OBJECTIVE_UNSCALED` | an objective on outputs has 1e-3 ≤ abs(f) ≤ 1e3 at every start |
 | `NLP_SOLVER_UNAVAILABLE` | the `nlp` extra and its adapter installed; [A10] verdict `PASS` |
 
 `optimize()` calls it first and returns an `OptimizationReport` with status `UNSUPPORTED` and those
@@ -44,6 +45,7 @@ from typing import Any, Final, Literal
 
 import numpy as np
 
+from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
 from openflowsheet.compile.casadi_backend import TwinEvaluationError, compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.models import SpecificationError
@@ -58,6 +60,7 @@ from openflowsheet.studies.nlp.formulation import (
     NlpFormulation,
     assessment_closure,
     assessment_twin,
+    is_assessment_name,
 )
 from openflowsheet.studies.nlp.verification import (
     CHECKS,
@@ -104,6 +107,7 @@ ReadinessCode = Literal[
     "HESSIAN_UNAVAILABLE",
     "SIMULATION_NOT_READY",
     "ASSESSMENT_REGIME_INADMISSIBLE",
+    "ASSESSMENT_OBJECTIVE_UNSCALED",
     "NLP_SOLVER_UNAVAILABLE",
 ]
 #: Spec §8.7's order, which is the order reasons are listed in.
@@ -120,8 +124,13 @@ READINESS_ORDER: Final[tuple[ReadinessCode, ...]] = (
     "HESSIAN_UNAVAILABLE",
     "SIMULATION_NOT_READY",
     "ASSESSMENT_REGIME_INADMISSIBLE",
+    "ASSESSMENT_OBJECTIVE_UNSCALED",
     "NLP_SOLVER_UNAVAILABLE",
 )
+#: E01 review S1: the range of `|f(x₀)|` an objective naming an assessment output must lie in.
+#: V5 scores stationarity in the objective's declared units (TAU_KKT absolute), so an unscaled
+#: SI output (an impact rate of 1e-5 kg/s) would pass V5 everywhere.
+OBJECTIVE_SCALE_RANGE: Final = (1.0e-3, 1.0e3)
 ReadinessStatus = Literal["READY_FOR_OPTIMIZATION", "unsupported"]
 ReportStatus = Literal[
     "KKT_POINT_VERIFIED", "NOT_VERIFIED", "INFEASIBLE_REPORTED", "SOLVER_FAILED", "UNSUPPORTED"
@@ -370,6 +379,7 @@ def optimization_readiness(
             starts.append(record)
             reasons.extend(found)
             reasons.extend(_assessment_regime(formulation, index, record))
+            reasons.extend(_assessment_objective_scale(formulation, index, record))
 
     solver = solver_probe()
     if not solver.available:
@@ -459,6 +469,44 @@ def _assessment_regime(
             "ASSESSMENT_REGIME_INADMISSIBLE",
             f"start {index}: rows below -tau_feas={TAU_FEAS}: {','.join(violated)}",
             ",".join(violated),
+        )
+    ]
+
+
+def _assessment_objective_scale(
+    formulation: NlpFormulation, index: int, start: StartReadiness
+) -> list[ReadinessReason]:
+    """E01 review S1: an objective naming an assessment output has `|f| ∈ OBJECTIVE_SCALE_RANGE`
+    at a verified start, `f = 0` included in the refusal, else `ASSESSMENT_OBJECTIVE_UNSCALED`.
+    It is never normalised silently: that would change the declared problem. A start where the
+    program cannot be evaluated is `_assessment_regime`'s to report."""
+    binding = formulation.assessment
+    objective = formulation.objective
+    named = [name for name in objective.variables if is_assessment_name(name)]
+    if binding is None or start.state is None or not named:
+        return []
+    try:
+        values = binding.program.evaluate(start.state, formulation.decision_values(start.start))
+    except TwinEvaluationError:
+        return []
+    if not isinstance(values, Mapping) or any(
+        name.removeprefix(ASSESSMENT_PREFIX) not in values for name in named
+    ):
+        return []  # unknown or null outputs are `_assessment_outputs`'s to report
+    point = {**start.state, **{f"{ASSESSMENT_PREFIX}{k}": float(v) for k, v in values.items()}}
+    f = objective.value(point)
+    low, high = OBJECTIVE_SCALE_RANGE
+    if low <= abs(f) <= high:
+        return []
+    scales = {
+        name: binding.output_scales.get(name.removeprefix(ASSESSMENT_PREFIX)) for name in named
+    }
+    return [
+        ReadinessReason(
+            "ASSESSMENT_OBJECTIVE_UNSCALED",
+            f"start {index}: |f| = {abs(f)!r} is outside [{low!r}, {high!r}]; divide the "
+            f"objective's assessment terms by the binding's recorded scale {scales}",
+            ",".join(named),
         )
     ]
 

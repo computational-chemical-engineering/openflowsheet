@@ -209,6 +209,11 @@ def tac_objective(scale: float = 1.0) -> QuadraticExpression:
     return QuadraticExpression(linear={"assessment:tac": 1.0 / scale}, text="tac/|tac(x0)|")
 
 
+def scaled_tac() -> QuadraticExpression:
+    """`tac/|tac(x₀)|`, the objective readiness accepts (E01 review S1)."""
+    return tac_objective(binding(("tac",)).output_scales["tac"])
+
+
 def available() -> SolverAvailability:
     return SolverAvailability(True, "test double: the audited extra is present")
 
@@ -266,7 +271,7 @@ def test_the_binding_scale_is_max_abs_y_at_the_state_and_one_at_least() -> None:
 def test_an_unknown_assessment_name_is_refused_before_any_solve() -> None:
     p = program()
     cases = {
-        "no binding": (tac_objective(), None),
+        "no binding": (scaled_tac(), None),
         "not bound": (
             QuadraticExpression(linear={"assessment:size.FAR.area": 1.0}),
             binding(("tac",), p),
@@ -290,7 +295,7 @@ def test_an_unknown_assessment_name_is_refused_before_any_solve() -> None:
 
 def test_a_null_output_is_unavailable_and_an_assessment_parameter_is_never_a_decision() -> None:
     withheld = program(unavailable=("tac",))
-    f = formulation(tac_objective(), AssessmentBinding(withheld, ("tac",), {"tac": 1.0}))
+    f = formulation(scaled_tac(), AssessmentBinding(withheld, ("tac",), {"tac": 1.0}))
     assert ready(f).codes == ("ASSESSMENT_OUTPUT_UNAVAILABLE",)
 
     m03 = nlp_formulation()
@@ -299,7 +304,7 @@ def test_a_null_output_is_unavailable_and_an_assessment_parameter_is_never_a_dec
         (MATERIAL, "ASSESSMENT_PARAMETER_STRUCTURAL"),
     ):
         decisions = (*m03.decisions, Decision(theta, 0.5, 2.0, 1.0))
-        found = ready(formulation(tac_objective(), binding(("tac",)), decisions))
+        found = ready(formulation(scaled_tac(), binding(("tac",)), decisions))
         assert found.codes == (code,), theta
         assert found.reasons[0].subject == theta
 
@@ -317,7 +322,7 @@ def test_the_held_regime_is_checked_at_every_start() -> None:
     far = sizes(base()[1])["FAR"]
     p = program({"TOY": (at_base / 4.0, high), "FAR": (far / 4.0, far * 2.0)})
     assert p.regime.choice("TOY.size") == "units:1"
-    found = ready(formulation(tac_objective(), binding(("tac",), p)))
+    found = ready(formulation(scaled_tac(), binding(("tac",), p)))
     assert set(found.codes) == {"ASSESSMENT_REGIME_INADMISSIBLE"}
     violated = {reason.subject for reason in found.reasons}
     assert violated == {"adm.TOY.size.max"}
@@ -326,9 +331,21 @@ def test_the_held_regime_is_checked_at_every_start() -> None:
 
 
 def test_a_bound_formulation_without_violations_is_ready() -> None:
-    assert ready(formulation(tac_objective(), binding(("tac",)))).status == (
-        "READY_FOR_OPTIMIZATION"
-    )
+    assert ready(formulation(scaled_tac(), binding(("tac",)))).status == ("READY_FOR_OPTIMIZATION")
+
+
+def test_an_unscaled_assessment_objective_is_refused() -> None:
+    """E01 review S1: `|f(x₀)| ∉ [1e-3, 1e3]` is refused, `f` never normalised silently."""
+    b = binding(("tac",))
+    tac0 = b.output_scales["tac"]
+    assert tac0 > 1e3  # tac in currency/yr, unscaled
+    for objective in (tac_objective(), tac_objective(tac0 * 1e6)):
+        found = ready(formulation(objective, b))
+        assert found.codes == ("ASSESSMENT_OBJECTIVE_UNSCALED",)
+        assert {reason.subject for reason in found.reasons} == {"assessment:tac"}
+        assert len(found.reasons) == len(m03_readiness().starts)
+        assert "divide" in found.reasons[0].detail
+    assert ready(formulation(tac_objective(tac0), b)).status == "READY_FOR_OPTIMIZATION"
 
 
 # -- the gray box's outputs (FullSpaceNlp; no Pyomo) --------------------------------------------

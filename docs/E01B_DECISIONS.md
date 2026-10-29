@@ -534,3 +534,9 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
 - FACT (R-870, Frank confirmed 2026-10-29): R-870 recorded as decided; each `impact.<m>.{rate,annual,per_fu}` computed
   from a `redistribution: forbidden` table carries limitation `LCA_RESTRICTED_DATA_DERIVED` (target the output,
   `table_id` beside it); values, intervals and σ are not redacted; θ withholding unchanged. A28 test asserts it.
+- DECISION (S1, the reviewer's choice): an objective naming an assessment output with |f| ∉ [1e-3, 1e3] at any verified
+  start (f = 0 included) → readiness refusal `ASSESSMENT_OBJECTIVE_UNSCALED` (closure `OBJECTIVE_SCALE_RANGE`; code added
+  to `ReadinessCode`, `READINESS_ORDER` after `ASSESSMENT_REGIME_INADMISSIBLE`, and the optimization-report schema's two
+  enums), one reason per start, subject the named outputs, detail with the binding's scales. Four existing readiness
+  tests used the unscaled `tac_objective()` and now use `tac/|tac(x₀)|` (`scaled_tac()`). Alternative: silent
+  normalisation (rejected by the review: it changes the declared problem). Reversible by: the commit carrying this line.
