@@ -388,6 +388,14 @@ ATTRIBUTED_DATA = {
     "openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json": (
         "b9e93877e37874f1b3a483e298a45692e264d70686d4c158372084b96abbe6ed"
     ),
+    # V03 spec §9.1 (R-880, Frank's Q-F3): Wilson's records and the Kurihara 1993 Table II points,
+    # under the same rule, each with its own attribution (`WILSON_ATTRIBUTION`) in NOTICE.
+    "openflowsheet/_data/benchmarks/s10/records.yaml": (
+        "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6"
+    ),
+    "openflowsheet/_data/benchmarks/s10/vle/kurihara1993_binaries.csv": (
+        "986641d8a6d6b6d44ac1eb3cfc8f35e39d71d72fe549978d34197a4449eb1cd3"
+    ),
 }
 IAPWS_ATTRIBUTION = (
     "\u00a9 2018 International Association for the Properties of Water and Steam",
@@ -399,20 +407,45 @@ IAPWS_ATTRIBUTION = (
 )
 
 
+#: V03 spec §9.1 and V03.A13: the citations NOTICE gives the Wilson files, RC-01 (TM-4513), RC-03's
+#: three conditions (CoolProp 8.0.0, the three EOS keys; the IAPWS block above), RC-05 (the paper)
+#: and RC-08 (CIAAW) of `docs/s10-rights-check.md`.
+WILSON_CITATIONS = (
+    "NASA TM-4513",
+    "CoolProp 8.0.0",
+    "deReuck-BOOK-1993",
+    "Schroeder-JPCRD-2014",
+    "Wagner-JPCRD-2002",
+    "J. Chem. Eng. Data 38 (1993) 446",
+    "CIAAW",
+)
+WILSON_ATTRIBUTION = {
+    "openflowsheet/_data/benchmarks/s10/records.yaml": (*WILSON_CITATIONS, *IAPWS_ATTRIBUTION),
+    "openflowsheet/_data/benchmarks/s10/vle/kurihara1993_binaries.csv": (
+        "K. Kurihara, M. Nakamichi and K. Kojima",
+        "J. Chem. Eng. Data 38 (1993) 446-449, Table II",
+    ),
+}
+#: The NOTICE before the Wilson section (bytes): it attributes the IAPWS file and neither of these.
+PRE_WILSON_NOTICE_BYTES = 2237
+
+
 def _attributed(name: str, content: bytes, notice: bytes) -> bool:
     path = name.removeprefix("src/")
     if path not in ATTRIBUTED_DATA:
         return False
     text = " ".join(notice.decode("utf-8").split())
+    strings = WILSON_ATTRIBUTION.get(path, IAPWS_ATTRIBUTION)
     return (
         hashlib.sha256(content).hexdigest() == ATTRIBUTED_DATA[path]
         and path in text
-        and all(" ".join(string.split()) in text for string in IAPWS_ATTRIBUTION)
+        and all(" ".join(string.split()) in text for string in strings)
     )
 
 
 def test_a32_no_third_party_data_in_the_sdist_or_the_wheel(built: dict[str, Path]) -> None:
-    """Amended for one attributed file by S05 spec §16.12 (R-617)."""
+    """Amended for one attributed file by S05 spec §16.12 (R-617), and for Wilson's two (V03 spec
+    §9.1, R-880) under the same rule."""
     for kind in ("sdist", "wheel"):
         contents = (_sdist_members if kind == "sdist" else _wheel_members)(built[kind])
         members = list(contents)
@@ -422,13 +455,18 @@ def test_a32_no_third_party_data_in_the_sdist_or_the_wheel(built: dict[str, Path
         assert len(notices) == 1, kind
         notice = contents[notices[0]]
         admitted = [name for name in members if _attributed(name, contents[name], notice)]
-        (path,) = ATTRIBUTED_DATA
-        assert admitted == (["src/" + path] if kind == "sdist" else [path]), kind
+        prefix = "src/" if kind == "sdist" else ""
+        assert sorted(admitted) == sorted(prefix + path for path in ATTRIBUTED_DATA), kind
         if kind == "wheel":
-            name, content = admitted[0], contents[admitted[0]]
+            iapws = "openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json"
+            name, content = iapws, contents[iapws]
             assert not _attributed(name, content, notice[:1292])
             assert not _attributed(name, content + b"\n", notice)
             assert not _attributed("openflowsheet/_data/benchmarks/s05/x.json", content, notice)
+            for path in WILSON_ATTRIBUTION:
+                assert _attributed(path, contents[path], notice), path
+                assert not _attributed(path, contents[path], notice[:PRE_WILSON_NOTICE_BYTES]), path
+                assert not _attributed(path, contents[path] + b"\n", notice), path
         other = [
             name
             for name in members
