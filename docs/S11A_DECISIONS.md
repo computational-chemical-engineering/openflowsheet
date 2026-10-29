@@ -625,3 +625,35 @@ Not done (orchestrator): full `scripts/gate.sh`, CI on both architectures (aarch
 comparisons), the single `reviewer` pass (O-C6-1 and the I1b/I2 DECISIONs for it), merge, push.
 Note: the rulings' Frank-preference questions OQ-1, OQ-2, OQ-3, OQ-6, OQ-7 (defaults applied) are not listed in
 `docs/FRANK_QUESTIONS.md`; adding them is the orchestrator's call.
+
+## S11 review applied (2026-10-29; `00e98e3e`..`5219f107`) — handoff
+
+Commits: `00e98e3e` review + brief committed, R-843/R-844 appended verbatim, errata E1 (units §4.9), E2 (§10.2,
+n = 54494), E3 (§4.11); `1dbaa8e7` + `069ae1eb` M1; `48234cbc` M2 + S2; `5219f107` S1.
+
+- E2 confirmed before committing: from `079be287` (last n=54497) to HEAD, `scripts/s11_identity.py` changed only by
+  R-841's three `test_m02_join` prefixes in `AMENDED_TESTS` (`0f3db1b4`), each one family-C key (`#0`, as WO-A1's FAIL
+  line listed them); the recorder is unchanged. Measured again below: n=54494.
+- DECISION: two keys R-843's prefix map would misclass → the tighter class: a grid point's `nominal.Q` (a quality) is
+  class `unit` (s_f = 1, as beta), not R·T_c; `split_fraction` is `relative` (s_f = 0), not R. Both are generator
+  literals, so neither can differ across machines. Alternative: the literal prefix rule (looser). Reversible by:
+  `floor_class` in `s11_thermal_reference.py`. For the design lane at its next ruling round.
+- DECISION: TH-R1 has no case-level `n` → its rates (`heater_duty`, `W_pump`) take `inputs.feed.n` (1.0). Every
+  rate in the file has n = 1, so the floors are unchanged by the choice. Reversible by: `case_of`.
+- DECISION: the check's verdict stays its last line with the old text (class lines first), so
+  `s11_evidence_manifest.py`'s required checks and patterns are unchanged → no manifest regeneration. CI gains an
+  uncaptured step "S11 thermal reference line (R-843)" so aarch64's per-class worst is readable.
+- `ENABLE_SUPERANCILLARIES` = True: x86-64 byte check passes; with False the A55 CO2 PS flash refuses (PQ range).
+- M2: L-TH-7 text = R-844's; evidence + the two `test_o_c6_1_*`, the new
+  `test_r844_under_v2_a_converged_dormant_heater_certifies_unverified_rank_deficient`, `§M2 (R-844)`.
+  `t08_support_matrix.py --check` 0 problem(s) → no re-harvest. The manifest generator's O-C6-1 limitation now says
+  "ruled by R-844" (text only; the committed manifest at `01e72ca4` keeps the old wording until regenerated).
+
+Gates at `5219f107` (clean scratch worktree): `S11-IDENTITY PASS n=54494 changed=[]`; `S08-IDENTITY PASS n=52
+changed=[S02.P1] p1_stage_a=EQUAL`; `S10C-IDENTITY PASS n=858 changed=[]`. Touched tests: thermal kernel 149 passed
+(CoolProp site), thermal solve + envelope consumers 1048 passed 12 skipped, column verifier 27 passed, workflow tests
+96 passed 3 skipped; ruff/format clean, mypy 270 files clean. Note: a first identity run with TMPDIR under the long
+scratchpad path failed shard 1 in base and branch alike (n=54389); rerun with TMPDIR=/tmp/s11fx passed — environmental.
+
+Not done (orchestrator): R-843's aarch64 numbers (CI's new step; stop rule: an exact-leaf difference or a class worst
+> 0.1 of its bound → design lane, never widen); manifest regeneration at the merge commit; full gate; CI; merge; push.
