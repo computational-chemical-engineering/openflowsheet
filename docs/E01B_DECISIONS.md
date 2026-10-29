@@ -466,3 +466,10 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   `E01`) and **ESC-I1** (A33). T08 harvest only if `t08_support_matrix.py --check` asks after a manifest exists.
 - **Open for the design lane:** ESC-I1, ESC-I2, and the WO-I1 DECISION lines (repository path `assessment/`, MR-12
   pattern, configurations), plus the default-build observation.
+
+## WO-I1 rulings and the manifest (2026-10-29)
+
+- DECISION (orchestrator ruling on ESC-I2): E01's manifest package id → **`S12`**, E01 kept as an alias in the docs
+  (dated note in the design note's header; the manifest's limitations say so), following R-565 (L01 → S04) because the
+  frozen manifest schema admits only `^[PKTMSR][0-9]{2}[a-z]?$`; `evidence/` holds no S12. Alternative: a schema ADR
+  widening the pattern. Reversible by: the commit carrying this line and the design-note note.

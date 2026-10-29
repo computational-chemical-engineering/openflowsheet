@@ -4,6 +4,10 @@
 **Brief:** `docs/briefs/E01-cost-lca-design.md`. **Records:** ADR 0052 (`docs/adr/0052-e01-assessment-functionals.md`,
 Proposed); register R-850…R-862.
 **Amended:** 2026-10-27, §9 (ruling A on ESC-A2…ESC-A5; register R-863…R-867). §9 wins where it conflicts.
+**Manifest id (2026-10-29, orchestrator ruling on ESC-I2):** E01's evidence manifest is filed as package **`S12`**
+(`evidence/S12/<commit>/manifest.json`); E01 stays the package's name in the docs and is its alias. The frozen
+`schemas/evidence-manifest.schema.json` admits only `^[PKTMSR][0-9]{2}[a-z]?$`, and R-565 renamed L01 → S04 for the
+same reason. Rejected: a schema ADR widening the pattern.
 **Normative for:** where cost and impact live and how they are differentiated; the assessment document, program,
 regimes and report; the sizing model of every day-one unit family; the cost-provider forms, data sets, quotes and
 provenance; the cost basis (index, currency, location); operating cost and annualisation; the LCA formulation, its
