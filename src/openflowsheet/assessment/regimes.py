@@ -37,8 +37,10 @@ __all__ = [
     "size_units",
 ]
 
-EntryKind = Literal["service", "utility", "size", "piece", "argmax", "dormant"]
-#: §4.3.1's entry kinds, in its table order.
+EntryKind = Literal["service", "utility", "size", "piece", "argmax", "dormant", "domain"]
+#: §4.3.1's entry kinds, in its table order, then `domain` (§4.7.5 erratum 2026-10-29, R-868): a
+#: single-choice entry `<output_id>.<what>` whose rows bound the domain of `<output_id>`; on the
+#: float path a row ≤ 0 is the evaluation error `METRIC_UNDEFINED(<output_id>)`.
 ENTRY_KINDS: Final[tuple[EntryKind, ...]] = (
     "service",
     "utility",
@@ -46,6 +48,7 @@ ENTRY_KINDS: Final[tuple[EntryKind, ...]] = (
     "piece",
     "argmax",
     "dormant",
+    "domain",
 )
 
 #: `(Symbols, Algebra) -> Expr`, `program.FunctionalBuilder`; restated here to avoid the import.

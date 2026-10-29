@@ -16,6 +16,12 @@ Planning, on floats at the planning state (§4.2.2):
 - a denominator ≤ 0 is refused `METRIC_UNDEFINED(derived.<id>)` and the output is unavailable: a
   non-positive denominator is never a negative "cost" (§4.7.5). The report repeats the check at
   the state it reports (`undefined` in the section).
+
+Every ratio carries the single-choice `domain` regime entry `derived.<id>.denominator` with the
+row `den/|den(x₀)| ≥ 0` (§4.7.5 erratum 2026-10-29, R-868): it enters a study's closure like any
+other admissibility row, so the optimizer is told about the pole, and on the float path a row ≤ 0
+is the evaluation error `METRIC_UNDEFINED(derived.<id>)` at every state
+(`AssessmentProgram.evaluate`), so a study candidate where it occurs is not verified.
 """
 
 from __future__ import annotations
@@ -33,12 +39,15 @@ from openflowsheet.assessment.program import (
     Symbols,
     register_contributor,
 )
+from openflowsheet.assessment.regimes import AdmissibilityRow, RegimeEntry
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.compile.spec import Algebra, Expr
 
 __all__ = ["Affine", "DerivedContributor"]
 
 PREFIX = "derived."
+#: The `domain` entry of ratio `derived.<id>` is `derived.<id>.denominator`, its one row `den`.
+DENOMINATOR = "denominator"
 
 
 @dataclass(frozen=True)
@@ -98,6 +107,7 @@ class DerivedContributor:
         theta = tuple(t for plan in ctx.earlier.values() for t in plan.theta)
         blocks = tuple(b for plan in ctx.earlier.values() for b in plan.blocks)
         outputs: list[OutputDef] = []
+        entries: list[RegimeEntry] = []
         refusals: list[Refusal] = []
         withheld: dict[str, str] = {}
         ratios: dict[str, tuple[Affine, Affine | None]] = {}
@@ -150,6 +160,7 @@ class DerivedContributor:
                     withheld[output_id] = "non-positive denominator"
                     unavailable[output_id] = withheld[output_id]
                     continue
+                entries.append(_domain_entry(output_id, denominator, d))
             if y is not None:
                 n = numerator.value(y)
                 y[output_id] = n if denominator is None else n / denominator.value(y)
@@ -164,10 +175,22 @@ class DerivedContributor:
 
         return ContributionPlan(
             outputs=tuple(outputs),
+            regime_entries=tuple(entries),
             refusals=tuple(refusals),
             section=section,
             unavailable=tuple(withheld.items()),
         )
+
+
+def _domain_entry(output_id: str, denominator: Affine, d: float) -> RegimeEntry:
+    """The single-choice `domain` entry of a ratio: row `den/|den(x₀)| ≥ 0`, `d = den(x₀) > 0`."""
+    return RegimeEntry(
+        f"{output_id}.{DENOMINATOR}",
+        "domain",
+        "positive",
+        "a ratio's denominator is > 0 (§4.7.5)",
+        (AdmissibilityRow("den", denominator.build, abs(d)),),
+    )
 
 
 def _undefined(

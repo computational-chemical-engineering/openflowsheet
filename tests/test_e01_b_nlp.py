@@ -48,6 +48,7 @@ from openflowsheet.assessment.regimes import (
 )
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
+from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.studies.nlp.closure import (
     Readiness,
     SolverAvailability,
@@ -63,6 +64,7 @@ from openflowsheet.studies.nlp.formulation import (
     AssessmentOutputUnknownError,
     Decision,
     FullSpaceNlp,
+    InequalityConstraint,
     NlpFormulation,
     QuadraticExpression,
 )
@@ -744,3 +746,82 @@ def test_a_tac_objective_solves_to_a_verified_point_with_v7_from_every_m03_start
         assert isinstance(values, Mapping)
         assert at_candidate <= values["tac"]
     assert report["formulation"]["assessment"]["outputs"][0]["id"] == "tac"
+
+
+# -- a derived ratio's pole (E01 review M1, R-868; §4.7.5 erratum) ------------------------------
+
+#: `derived.cc = size.TOY.area/CC_SIZE`: below 1 at the base state (S = 454.2) and at start 2
+#: (417.3), above 1 at start 0 (506.3), so `derived.ncac = tac/(1 − cc)` has its pole between.
+CC_SIZE = 480.0
+NCAC = (
+    {"id": "cc", "unit": "1", "numerator": {"terms": {"size.TOY.area": 1.0 / CC_SIZE}}},
+    {
+        "id": "ncac",
+        "unit": "currency/yr",
+        "numerator": {"terms": {"tac": 1.0}},
+        "denominator": {"terms": {"derived.cc": -1.0}, "constant": 1.0},
+    },
+)
+
+
+def ncac_program() -> AssessmentProgram:
+    from openflowsheet.assessment.cost.derived import DerivedContributor
+
+    sheet, state = base()
+    made = AssessmentProgram.build(
+        view_of(sheet),
+        sheet.spec(),
+        load_assessment({**DOCUMENT, "derived": list(NCAC)}),
+        state,
+        contributors=[Steam(default_bounds()), DerivedContributor()],
+    )
+    assert isinstance(made, AssessmentProgram), made
+    return made
+
+
+def ncac_formulation(p: AssessmentProgram) -> NlpFormulation:
+    """§4.7.5's scenario: minimise `tac` subject to `ncac ≤ 2·ncac(x₀)`."""
+    b = binding(("tac", "derived.ncac"), p)
+    scale = b.output_scales["derived.ncac"]
+    limit = InequalityConstraint(
+        "ncac_limit",
+        QuadraticExpression(linear={"assessment:derived.ncac": 1.0 / scale}, text="ncac/scale"),
+        upper=2.0,
+    )
+    f = formulation(tac_objective(b.output_scales["tac"]), b)
+    return dataclasses.replace(f, constraints=(*f.constraints, limit))
+
+
+def test_a_ratio_past_its_pole_is_metric_undefined_and_the_point_is_not_verified() -> None:
+    p = ncac_program()
+    entry = "derived.ncac.denominator"
+    row = f"adm.{entry}.den"
+    assert dict(p.regime.entries)[entry] == "positive"
+    assert p.domain_rows == {row: "derived.ncac"}
+    f = ncac_formulation(p)
+    # Where the denominator is positive the row is in the closure of the bound ratio (it shares
+    # the size columns), so the optimizer is told about the pole.
+    inside = verify(f, start=2)
+    assert inside.outcome("V6") == "pass"
+    assert row in inside.assessment_values and inside.assessment_values[row] > 0.0
+    # Past the pole: the float path refuses the ratio rather than report a negative "cost" that
+    # would satisfy `ncac ≤ L`.
+    record = m03_readiness().starts[0]
+    assert record.state is not None
+    decisions = f.decision_values(record.start)
+    unguarded = p.evaluate(record.state, decisions, domain_guard=False)
+    assert isinstance(unguarded, Mapping)
+    assert unguarded["derived.cc"] > 1.0 and unguarded["derived.ncac"] < 0.0
+    with pytest.raises(TwinEvaluationError, match=r"METRIC_UNDEFINED\(derived\.ncac\)"):
+        p.evaluate(record.state, decisions)
+    result = verify(f, start=0)
+    for check in ("V3", "V5", "V6"):
+        assert result.outcome(check) == "not_evaluated", check
+        detail = next(c for c in result.checks if c.check == check).detail
+        assert "METRIC_UNDEFINED(derived.ncac)" in detail["reason"]
+    assert result.outcome("V7") == "fail"
+    assert not result.passed
+    outcomes = {check.check: check.outcome for check in result.checks}
+    verdict = classify_starts([StartEvidence(0, outcomes)])
+    assert verdict.status != "KKT_POINT_VERIFIED"
+    assert verdict.status == "NOT_VERIFIED"

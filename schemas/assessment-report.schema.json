@@ -453,7 +453,8 @@
             "size",
             "piece",
             "argmax",
-            "dormant"
+            "dormant",
+            "domain"
           ]
         },
         "choice": {

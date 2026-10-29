@@ -152,7 +152,8 @@ def report_body(
     withheld: dict[str, str] = dict(program.unavailable)
     values: Mapping[str, float] | None
     try:
-        evaluated = program.evaluate(x)
+        # The `derived` section reports each undefined ratio below; the guard would null them all.
+        evaluated = program.evaluate(x, domain_guard=False)
     except TwinEvaluationError as error:
         refusals.append(Refusal("ASSESSMENT_EVALUATION_FAILED", "", str(error)))
         values = None
@@ -161,7 +162,11 @@ def report_body(
         values = evaluated
     if values is not None:
         tau = _feasibility_tolerance()
-        violated = [n for n in program.admissibility_ids if values[n] < -tau]
+        violated = [
+            n
+            for n in program.admissibility_ids
+            if values[n] < -tau and n not in program.domain_rows
+        ]
         if violated:
             refusals.append(
                 Refusal("ASSESSMENT_REGIME_INADMISSIBLE", ",".join(violated), f"tau_feas={tau}")

@@ -443,6 +443,16 @@ class AssessmentProgram:
         self.entries = entries
         self.output_ids: tuple[str, ...] = tuple(row.output_id for row in rows)
         self.admissibility_ids: tuple[str, ...] = self.output_ids[output_count:]
+        #: The rows of the `domain` entries, each to the output it guards: an entry
+        #: `<output_id>.<what>` bounds the domain of `<output_id>` (§4.7.5 erratum, R-868).
+        self.domain_rows: Mapping[str, str] = MappingProxyType(
+            {
+                f"adm.{entry.entry_id}.{row.row_id}": entry.entry_id.rsplit(".", 1)[0]
+                for entry in entries
+                if entry.kind == "domain"
+                for row in entry.admissibility
+            }
+        )
         self.units: Mapping[str, str] = MappingProxyType({r.output_id: r.unit for r in rows})
         self.theta: Mapping[str, Theta] = MappingProxyType({t.theta_id: t for t in theta})
         self.plans = MappingProxyType(dict(plans))
@@ -587,15 +597,31 @@ class AssessmentProgram:
         return dataclasses.replace(self._functional, parameters=MappingProxyType(parameters))
 
     def evaluate(
-        self, x: Mapping[str, float], decisions: Mapping[str, float] = MappingProxyType({})
+        self,
+        x: Mapping[str, float],
+        decisions: Mapping[str, float] = MappingProxyType({}),
+        *,
+        domain_guard: bool = True,
     ) -> Mapping[str, float] | Refusal:
         """Every output and admissibility row at `(x, d)` on the float path (§4.2.1).
 
-        Raises `TwinEvaluationError` where a value cannot be evaluated (§4.2.3)."""
+        Raises `TwinEvaluationError` where a value cannot be evaluated (§4.2.3), including a
+        `domain` row ≤ 0: `METRIC_UNDEFINED(<output_id>)` at every state (§4.7.5 erratum, R-868).
+        `domain_guard=False` is the report's alone: it nulls each undefined output itself and
+        reports the others (§4.9)."""
         spec = self._with_decisions(decisions)
         if isinstance(spec, Refusal):
             return spec
-        return MappingProxyType(_float_rows(spec, x))
+        values = _float_rows(spec, x)
+        if domain_guard:
+            undefined = [
+                f"METRIC_UNDEFINED({output_id}): {row} = {values[row]!r} ≤ 0"
+                for row, output_id in self.domain_rows.items()
+                if not values[row] > 0.0
+            ]
+            if undefined:
+                raise TwinEvaluationError("; ".join(undefined))
+        return MappingProxyType(values)
 
     def twin(self, symbolic: Sequence[str]) -> ParametricTwin | Refusal:
         """The functional spec compiled with `symbolic` (host pins or continuous θ) as symbols,

@@ -738,7 +738,7 @@
  "provenance": {
   "generated_utc": "2026-10-27T22:02:47+00:00",
   "openflowsheet_version": "0.3.0.dev0",
-  "program_label": "ASM1-923c80392eaf-7ba56735"
+  "program_label": "ASM1-923c80392eaf-4c96c5e8"
  },
  "refusals": [],
  "regime": {
@@ -842,10 +842,19 @@
     "entry_id": "C.pressure.piece",
     "kind": "piece",
     "rule": "§4.3.2 rule 5; §9.2.5"
+   },
+   {
+    "admissibility": {
+     "den": 1.0
+    },
+    "choice": "positive",
+    "entry_id": "derived.capex_per_opex.denominator",
+    "kind": "domain",
+    "rule": "a ratio's denominator is > 0 (§4.7.5)"
    }
   ],
-  "sha256": "7ba567357e7260b3b7b462fb7209c78454332b9f0ccbb3070cc73454316c74e4",
-  "signature": "{\"B.pressure.piece\":\"1\",\"B.service\":\"heating\",\"B.size\":\"floor\",\"B.utility\":\"HPS\",\"C.pressure.piece\":\"floor\",\"C.service\":\"cooling\",\"C.size\":\"floor\",\"C.utility\":\"CW\",\"P.S1.dormant\":\"active\",\"P.drive.size\":\"floor\",\"P.size\":\"floor\"}"
+  "sha256": "4c96c5e8bfde7c7763caa5d8eb9287d754951a0ef5a6fc3720ff29511eb0b0e2",
+  "signature": "{\"B.pressure.piece\":\"1\",\"B.service\":\"heating\",\"B.size\":\"floor\",\"B.utility\":\"HPS\",\"C.pressure.piece\":\"floor\",\"C.service\":\"cooling\",\"C.size\":\"floor\",\"C.utility\":\"CW\",\"P.S1.dormant\":\"active\",\"P.drive.size\":\"floor\",\"P.size\":\"floor\",\"derived.capex_per_opex.denominator\":\"positive\"}"
  },
  "schema_version": "assessment-report-v1",
  "state_sha256": "a23b2407ff55ea7c4056d39f87be504592e4759ea13fdc04f4273eb304ef5c3d",
