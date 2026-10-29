@@ -32,6 +32,19 @@ numerics-changing. Each choice below is isolated so that a revert undoes it.
   R-706). Frank decided on 2026-10-29 that 0.3.0 ships them (Q-F3); that packaging change is not on `main` yet. The
   property-basis page says so in one sentence, to be updated when the change lands (handoff item 2).
 
+- DECISION D8: Material's Google Fonts → off (`theme.font: false`), so the pages load no third-party font; the
+  privacy page names the one third-party resource left, the shields.io version badge on the home page (kept: Peclet's
+  rule that the badge carries the version). Alternative: Peclet's default fonts and a privacy line naming Google.
+  Reversible by: one line in `mkdocs.yml` and one bullet in `docs-site/privacy.md`.
+- DECISION D9: `site.yml` concurrency → per ref for the build (`pages-<ref>`, so a branch build never cancels a `main`
+  deployment) and `pages` on the deploy job only; Pages permissions on the deploy job only; the deploy job also
+  carries the public-repository guard of `release.yml`. Alternative: Peclet's workflow-level `concurrency: pages` and
+  workflow-level permissions (Peclet builds only on `main`; this site builds on every push and PR, as the brief asks).
+  Reversible by: editing the workflow and `test_site_deploys_only_from_main_in_the_public_repository`.
+- DECISION D10: the generated pages → one script, `scripts/doc_pages.py` (`--check`), writing the unit catalogue and
+  the operations table (`docs-site/api/operations.md`, from `OPERATIONS`), so neither can drift; CI's site job runs its
+  `--check` before building. Alternative: a hand-written operations table. Reversible by: deleting the second page.
+
 ## Questions for the design lane (batched)
 
 - Q1 (D3): should `process-revision.schema.json`'s `semantic_role` gain `compressor`, `turbine` (and `column`), or
