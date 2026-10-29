@@ -16754,3 +16754,146 @@ bound. Every other class, the watch and the x86-64 byte check are unchanged.
   never widen the bound in the harness.
 - The next aarch64 run. The relative class's worst is then a non-flash leaf, and it must stay at or below 0.1 of its
   bound, or it escalates under R-843.
+
+---
+
+**Numbering note (V03, 2026-10-29).** R-846…R-871 are E01's, on `wp/E01`, and are not on `main` yet. V03's entries start at
+R-872.
+
+## R-872 — 0.3.0 claims V11–V20, W21–W26 and X31; W27 is not claimed, because 0.2.0's campaign cannot reach the S11 build
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03; claim set is Frank's item `Claim set` (default) |
+| Normative text | ADR 0053 D1; `docs/derivations/V03-release-spec.md` §2.1 |
+| Evidence | `python -m benchmarks.m06.w27.coverage --out <scratch>` at `a1b50ccf`: `REFUSED: registry_snapshot: unsupported(provider 'iapws95-v1': no registered records and phases, W27-R63)`; W27v3 classifies 127 routes (R-808) |
+| Affected packages | V03 (S13), W27 |
+
+**Decision.** Seventeen claimed gates, judged at one candidate C; W27 printed `not claimed (v0.3-gate-v1)`. The v0.3
+packages enter through gate items 8–9 (twenty packages' manifests), RC step 17 and the release notes.
+
+**Rejected alternatives, and why.**
+- *Carry 0.2.0's W27 campaign.* M07 §9 needs equal coverage rows; version 1 cannot be built at the S11 build.
+- *A new W27 campaign by default.* It is billed (USD 15–45); it is Frank's alternative (N-1).
+- *New gate ids for S05–S12.* It re-plans plan §5's gates.
+
+## R-873 — X31 (c) is PASS only on "met with two references"; "met where available" is FAIL (c), releasable by a dated D3 row
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03; the acceptance is Frank's (N-5) |
+| Normative text | ADR 0053 D3; V03 spec §3.2 |
+| Evidence | `docs/reviews/S09-verdicts.md` verdict 3 ("met where available, 3 of 4"; RC4 one reference); S03 Q-A2-4; R-643 |
+| Affected packages | V03, X31 |
+
+**Decision.** X31's clauses (a)–(c) are as V03 spec §3.2; the verdict agent applies the reading and does not choose it.
+
+**Rejected alternative.** *PASS with a travelling limitation.* S03 and S09 both left the acceptance to Frank; a D3 row
+is the dated record of it.
+
+## R-874 — The 0.3 line has its own gate module, `scripts/v0_3_gate.py`, on `v0_2_gate.py`'s engine
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 |
+| Normative text | ADR 0053 D4; V03 spec §2.2, V03.A01–A08 |
+| Evidence | `release.yml:90` resolves `scripts/v${major}_${minor}_gate.py`; M07.A30 (29-row Table T-V) and A32 (two entries) pin the v0.2 registry |
+| Affected packages | V03 (WO-1) |
+
+**Decision.** One registry entry `v0.3-gate-v1`. `v0_2_gate.py` may be parameterised (registry, line name,
+specification texts) with byte-identical v0.2 output.
+
+**Rejected alternative.** *A third entry in `v0_2_gate.py`.* Moves M07.A30 and A32, registered facts of a released gate.
+
+## R-875 — The 0.3.0 pin is `v0.3-envelope-1`; after the tag `main` carries `0.4.0.dev0` and returns to the existing token; A10 gains two pairs (resolves R-563)
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03; the working form is Frank's item N-7 (default) |
+| Normative text | ADR 0053 D5; V03 spec §5 |
+| Evidence | `tests/test_m07a_v0_2_gate.py:1028-1043` (literal `str.replace` pairs); `tests/test_m07_v0_2_gate.py:372-378` (`ast.literal_eval` of the tuple) |
+| Affected packages | V03 (WO-1, WO-5, WO-9) |
+
+**Decision.** `A10_PINS_0_3_0` = the two pairs undoing `v0.3-envelope-1` / `release: 0.3.0`; the working form stays
+`v0.2-envelope-dev` / `0.2.0.dev0` (R-563's fixed token).
+
+**Rejected alternative.** *D1-O2's version-free id with `release` = `main`'s version.* Every version bump would add an
+A10 pair, so the recurrence it meant to stop grows.
+
+## R-876 — ADRs 0046–0052 are Accepted by the build lane on cited evidence; S11's and E01's G8 shown again at C; ADR 0043 stays Proposed
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 |
+| Normative text | ADR 0053 D6; V03 spec §6 |
+| Evidence | each ADR's status line; manifests and reviews cited in spec §6; S07 F-1 absent from ADR 0001 and `interfaces-frozen.md` at `a1b50ccf` |
+| Affected packages | V03 (WO-4), S07, S10, S10c, S08, S11, E01 |
+
+**Decision.** As spec §6's table; S07 F-1's fixed line is transcribed verbatim before 0046 is marked; an unmet condition
+stops the RC.
+
+**Rejected alternative.** *Require ADR 0043.* Its acceptance waits on L01-Q1 (W27 Amendment 3), and no 0.3.0 claim
+rests on `pr-lib-v1`.
+
+## R-877 — W25 at 0.3.0: the journey re-runs at the cut commit K3 and carries to C by identity
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 |
+| Normative text | V03 spec §3.4; M07 §4.6 (unchanged rule) |
+| Evidence | `benchmarks/m07/registration.json` `carry.journey_files` includes `src/openflowsheet/**`, changed since K = `2c508b5` |
+| Affected packages | V03 (WO-5) |
+
+**Decision.** Re-run at K3 in the reactor environment (no money); R3 by `carry.r3_files` or re-run.
+
+**Rejected alternative.** *Leave W25 unclaimed.* Frank asked for as few limitations as possible, and the re-run costs
+workstation time only.
+
+## R-878 — V03's manifest id is `S13`
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 |
+| Normative text | V03 spec header, §2.2 `evidence_package` |
+| Evidence | `schemas/evidence-manifest.schema.json:23` `^[PKTMSR][0-9]{2}[a-z]?$` (frozen); R-565; E01 took `S12` |
+| Affected packages | V03 |
+
+**Decision.** `evidence/S13/<C>/manifest.json`. **Rejected alternative.** *A schema ADR for `V03`.* Moves a frozen
+schema for a label.
+
+## R-879 — MR-12 v03 audits `coolprop` and `lca`; the RC tests CoolProp with its lock installed (S07 F-8, F-9)
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03; S07 F-8/F-9's recommended defaults adopted |
+| Normative text | V03 spec §9.3, step 17b–17c, V03.A11, A15 |
+| Evidence | `wp/E01:tests/test_m07_mr12_extras_v02.py:178` (`["coolprop", "lca", "nlp"]` at HEAD); S07 spec §17.7 |
+| Affected packages | V03 (WO-3) |
+
+**Decision.** A v03 measure over extras new since `v0.2.0`, with the two entries of spec §9.3; the v02 measure stays
+judged at `RELEASE_0_2_0_COMMIT`.
+
+**Rejected alternative.** *Edit the v02 measure's audit table.* It would re-judge v0.2's measure.
+
+## R-880 — The 0.3.0 wheel ships Wilson's `records.yaml` and the Kurihara 1993 Table II points; R-811's wheel refusal is removed
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | Frank (the ship decision, 2026-10-29, Q-F3); design lane (`specifier`) for the file set |
+| Normative text | V03 spec §9.1; `docs/s10-rights-check.md` §3 |
+| Evidence | `docs/FRANK_QUESTIONS.md` (Q-F3 answered; RC-05 and RC-08 settled by Frank); S10-RC-06 unresolved |
+| Affected packages | V03 (WO-2), S10, S11 |
+
+**Decision.** Two files become package data by R-616's pattern, bytes unchanged; NOTICE carries the Wilson block. The
+RC-06 files, the double entries and the derived reports stay repository-only.
+
+**Rejected alternative.** *Ship the 1993 ternary (Table V) too.* It is RC-06, which Frank's answer did not settle.
