@@ -1890,9 +1890,12 @@ def basis_provider(basis: ComponentBasis) -> PropertyProvider:
 
         return Iapws95Provider()
     if basis.provider_id == _WILSON:
+        from openflowsheet import resources  # noqa: PLC0415
+        from openflowsheet.thermo import wilson_ig  # noqa: PLC0415
         from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2  # noqa: PLC0415
 
-        return WilsonIdealGasProviderV2()
+        # V03 spec §9.1 (R-880): the records the package carries; `None` is a checkout's copy.
+        return WilsonIdealGasProviderV2(resources.packaged_path(wilson_ig.RECORDS_PATH))
     if basis.provider_id == "coolprop-heos-v1":
         from openflowsheet.thermo.coolprop_heos import CoolPropHeosProvider  # noqa: PLC0415
 
@@ -1930,19 +1933,21 @@ def provider_for(basis: ComponentBasis) -> PropertyProvider | Unbound:
 
 def _wilson_refusal() -> tuple[str, str] | None:
     """The code and hint that refuse the Wilson basis in this installation, or `None` (S11 design
-    §4.3): `basis_unavailable` when the real records do not load (a wheel; R-706, Q-F3),
-    `basis_premises_unmet` naming the first violated premise. The verifier's `fresh_provider`
-    raises the same codes."""
+    §4.3): `basis_unavailable` when the real records do not load, `basis_premises_unmet` naming
+    the first violated premise. The verifier's `fresh_provider` raises the same codes. Since
+    0.3.0 the records are package data (V03 spec §9.1, R-880), so a wheel binds the basis and
+    R-811's refusal of a wheel is gone; an installation without the file is still refused."""
+    from openflowsheet import resources  # noqa: PLC0415
     from openflowsheet.thermo import wilson_ig, wilson_premises  # noqa: PLC0415
 
     try:
-        records = wilson_ig.load_records()
+        records = wilson_ig.load_records(resources.packaged_path(wilson_ig.RECORDS_PATH))
     except wilson_ig.RecordError as error:
         cause = _first_line(error).split(":", 1)[0]
         return (
             f"basis_unavailable({_WILSON})",
-            f"{cause}: the records {wilson_ig.RECORDS_PATH} are repository-only until Frank's "
-            "Q-F3 (R-706)",
+            f"{cause}: the records {wilson_ig.RECORDS_PATH} are neither package data nor in a "
+            "source checkout (R-880)",
         )
     found = wilson_premises.violations(records)
     if found:

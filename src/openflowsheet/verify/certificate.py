@@ -625,18 +625,21 @@ FRESH_PROVIDERS: Final = (
 
 
 def _wilson_provider() -> PropertyProvider:
-    """S11 design §4.3, as the binder checks it: the real records must load and satisfy P1–P3."""
+    """S11 design §4.3, as the binder checks it: the real records must load and satisfy P1–P3.
+    They are read where the binder reads them: package data, else a source checkout (V03 §9.1)."""
+    from openflowsheet import resources  # noqa: PLC0415
     from openflowsheet.thermo import wilson_ig, wilson_ig_v2, wilson_premises  # noqa: PLC0415
 
+    path = resources.packaged_path(wilson_ig.RECORDS_PATH)
     try:
-        records = wilson_ig.load_records()
+        records = wilson_ig.load_records(path)
     except wilson_ig.RecordError as error:
         cause = (str(error).splitlines() or [""])[0].split(":", 1)[0]
         raise VerifierError(f"basis_unavailable(wilson-ig-v2): {cause}") from error
     found = wilson_premises.violations(records)
     if found:
         raise VerifierError(f"basis_premises_unmet(wilson-ig-v2): {found[0].hint}")
-    return wilson_ig_v2.WilsonIdealGasProviderV2()
+    return wilson_ig_v2.WilsonIdealGasProviderV2(path)
 
 
 def fresh_provider(basis: ComponentBasis) -> PropertyProvider:
