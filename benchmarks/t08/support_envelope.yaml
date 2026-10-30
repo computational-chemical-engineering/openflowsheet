@@ -1197,6 +1197,16 @@ limitations:
     evidence:
       - tests/test_s11_gp_verifier.py::test_a72_the_azeotrope_is_temperature_degenerate_and_verifies
       - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-E01-1
+    text: >-
+      Since R-898 every P2 capital row is floored, so P2's optimization exercises operating
+      cost only; no registered NLP case carries a capital row in a `units:N` regime. A floor's
+      derivative row is empty (E01.A18), so E01.A33–A36 show nothing about capital
+      sensitivities through the optimizer. P2 is not resized (E01 design §9.7).
+    evidence:
+      - tests/test_e01_integration.py::test_p2_is_a_complete_sslw_program_with_floored_exchangers_and_a_sized_drum
+      - tests/test_e01_a_cost.py::test_a18_below_s_min_is_the_floor_with_an_empty_derivative_row
+      - doc:docs/derivations/E01-design.md §10.10.7
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json

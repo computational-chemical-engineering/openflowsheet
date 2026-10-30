@@ -136,6 +136,14 @@ no erratum (R-901). Q3: cite R-900 (F-V1); MR-12 v03's `lca` entry now runs `scr
   directory on `a48_release_check()` (default: the package data, unchanged), and a test over `tmp_path` with the turbine
   range flipped: `fail`, count 1, that one pointer; the shipped bytes in the same directory: `pass`, 0. Alternative:
   monkeypatch `importlib.resources.files`. Reversible by: reverting the A10 commit.
+- F-E1: the review's sentence is appended to S12b's E01b limitation in `scripts/e01_evidence_manifest.py` (the next
+  S12b manifest carries it; the committed `evidence/S12b/1fd29546…` is evidence at its commit and is not edited).
+  The envelope has no E01 row for P2 (S12/S12b's harvest notes say E01's envelope rows were "deferred to E01's release
+  specification", and V03's spec adds none).
+  DECISION: where "the E01 envelope row for P2" goes → a new limitation row `L-E01-1` in
+  `benchmarks/t08/support_envelope.yaml` with the review's sentence, evidence the P2 floor test, A18's empty-row test
+  and E01 design §10.10.7; the matrix re-emitted, `--check` 0. Alternative: no envelope row, the manifest limitation
+  only. Reversible by: reverting the L-E01-1 commit and re-emitting the matrix.
 
 ## Merge notes for E01 (expected conflicts, all additive)
 
