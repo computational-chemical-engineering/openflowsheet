@@ -1,0 +1,232 @@
+diff --git a/assessment/cost/sslw-idaes-v1.json b/assessment/cost/sslw-idaes-v1.json
+index f79c8d0e..92a37dbd 100644
+--- a/assessment/cost/sslw-idaes-v1.json
++++ b/assessment/cost/sslw-idaes-v1.json
+@@ -486,7 +486,7 @@
+                   "source": {
+                     "kind": "primary",
+                     "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 575, Eq. (22.57): towers, 9,000 < W < 2,500,000 lb, the fit of weight_limit '2' (design note §10.10, R-898)",
+-                    "verified": false
++                    "verified": true
+                   }
+                 }
+               }
+@@ -1356,7 +1356,7 @@
+                   "source": {
+                     "kind": "primary",
+                     "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 569, Eq. (22.36): centrifugal compressor, valid from consumed power P_C = 200 to 30,000 Hp; the base cost includes an electric motor drive (design note §10, R-890)",
+-                    "verified": false
++                    "verified": true
+                   }
+                 }
+               }
+@@ -1378,7 +1378,7 @@
+                   "source": {
+                     "kind": "primary",
+                     "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 569, Eq. (22.37): reciprocating compressor, valid from consumed power P_C = 100 to 20,000 Hp; the base cost includes an electric motor drive (design note §10, R-890)",
+-                    "verified": false
++                    "verified": true
+                   }
+                 }
+               }
+@@ -1400,7 +1400,7 @@
+                   "source": {
+                     "kind": "primary",
+                     "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 569, Eq. (22.38): screw compressor, valid from consumed power P_C = 10 to 750 Hp; the base cost includes an electric motor drive (design note §10, R-890)",
+-                    "verified": false
++                    "verified": true
+                   }
+                 }
+               }
+@@ -1479,7 +1479,7 @@
+           "source": {
+             "kind": "primary",
+             "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 593, Table 22.32: gas expanders (pressure discharge), power extracted P = 20 to 5,000 Hp, C_P = 530 P^0.81 (design note §10, R-893)",
+-            "verified": false
++            "verified": true
+           }
+         }
+       },
+diff --git a/docs/E01A_DECISIONS.md b/docs/E01A_DECISIONS.md
+index dcdec5b6..6417012d 100644
+--- a/docs/E01A_DECISIONS.md
++++ b/docs/E01A_DECISIONS.md
+@@ -396,3 +396,5 @@ I1's.
+   supersedes `0ee43c89…0364` (D04 above) and the E01b C1 pin `6ff671a7…eea9`: the four amendments, the ranges,
+   citations and `checked_against` of design note §10.10 (R-895…R-899). Pinned in `tests/test_t08_w2_inventory.py`
+   and `docs/e01-data-licences.json` (`scripts/e01_d04_inventory.py --data`; `--check` A42 PASS).
++- C7 (E01b, on Frank's approval, design note §10.10.8): the five `verified` flags set; sha256 `23d103d897d01c436f191285e38f305ff4374e42aa75c7f2c5a080984dbef6fb`
++  supersedes `b70d6f22…933f` (t08 pin, `docs/e01-data-licences.json`).
+diff --git a/docs/e01-data-licences.json b/docs/e01-data-licences.json
+index e478c5a0..b9e50f42 100644
+--- a/docs/e01-data-licences.json
++++ b/docs/e01-data-licences.json
+@@ -20,7 +20,7 @@
+    "licence_text_sha256": "4fdde00bd663a045a688899c7e6924bd3b747204518e75540273c97f4bc98fa0",
+    "path": "openflowsheet/_data/assessment/cost/sslw-idaes-v1.json",
+    "redistribution": "allowed",
+-   "sha256": "b70d6f22afc6da185c531d1c3bf2bbf0f80f7866b686f3a102a466984a41933f",
++   "sha256": "23d103d897d01c436f191285e38f305ff4374e42aa75c7f2c5a080984dbef6fb",
+    "source": {
+     "checked_against": {
+      "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22",
+diff --git a/scripts/e01_evidence_manifest.py b/scripts/e01_evidence_manifest.py
+index 43fc90c2..1651af67 100644
+--- a/scripts/e01_evidence_manifest.py
++++ b/scripts/e01_evidence_manifest.py
+@@ -601,10 +601,9 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], a33: Mapping[str, An
+         "unsupported.",
+         "G10, release-candidate data (§9.6 A48: every primary range in shipped sets is "
+         f"verified: true) is not run (RC item): {PACKAGE}.A48 and {PACKAGE}.G10 are unsupported, "
+-        "which is not a pass. After Amendment 1 to ruling B five SSLW primary ranges carry "
+-        "verified: false (the three compressors, the turbine and vessel fit '2'; design note "
+-        "§10.10.8); C7 (docs/briefs/QA1b.patch, not applied) sets them on Frank's approval "
+-        "(Q-B7), and the release candidate is blocked until then.",
++        "which is not a pass. Every SSLW primary range is verified: true since C7 (the three "
++        "compressors, the turbine and vessel fit '2', design note §10.10.8, on Frank's approval, "
++        "Q-B7); a48_release_check() returns pass at this commit.",
+         "Review: the design lane's reviewer pass (docs/reviews/E01-review.md, at de63b9a2) found "
+         "two must-fix items (M1 derived-ratio denominators, R-868; M2 the default build, R-869), "
+         "four should-fix items (S1 objective scaling, S2 sensitivity regime boundaries, S3 "
+@@ -617,8 +616,8 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], a33: Mapping[str, An
+         "and motor entries at CE 500 (× 0.788 on every pump and motor cost), the fixed-head "
+         "alpha2 and tower-platform amendments, the vessel weight ranges (the P2 drum and P3 M1's "
+         "column shell now floor), the compressor on consumed power and the turbine range. Its "
+-        "reviewer pass is pending, and C7 (the five verified flags, docs/briefs/QA1b.patch) is not "
+-        "applied. The open questions of §10.10.9 (Q-B2, Q-B3, Q-B8, Q-B9, Q-B11, Q-B12) are "
++        "reviewer pass is pending; C7 (the five verified flags of §10.10.8) is applied on Frank's "
++        "approval. The open questions of §10.10.9 (Q-B2, Q-B3, Q-B8, Q-B9, Q-B11, Q-B12) are "
+         "worked on their defaults. A49 compares the set with the Seider 3rd ed. by page and "
+         "equation (benchmarks/e01/cost_hand/seider3.yaml): transcription verification, not "
+         "empirical validation of the correlations.",
+diff --git a/tests/fixtures/schemas/assessment_report/valid/p1_th_c1.json b/tests/fixtures/schemas/assessment_report/valid/p1_th_c1.json
+index 3e96922d..7468fdc4 100644
+--- a/tests/fixtures/schemas/assessment_report/valid/p1_th_c1.json
++++ b/tests/fixtures/schemas/assessment_report/valid/p1_th_c1.json
+@@ -547,7 +547,7 @@
+       "source": {
+        "citation": "Seider, Seader, Lewin, Widagdo, Product and Process Design Principles: Synthesis, Analysis, and Evaluation, 3rd ed. (Wiley, 2009), ch. 22, p. 593, Table 22.32: gas expanders (pressure discharge), power extracted P = 20 to 5,000 Hp, C_P = 530 P^0.81 (design note §10, R-893)",
+        "kind": "primary",
+-       "verified": false
++       "verified": true
+       }
+      }
+     },
+@@ -766,7 +766,7 @@
+   "opex.utility.HPS": 18922.463266177867
+  },
+  "provenance": {
+-  "generated_utc": "2026-10-29T20:11:45+00:00",
++  "generated_utc": "2026-10-29T20:18:55+00:00",
+   "openflowsheet_version": "0.3.0.dev0",
+   "program_label": "ASM1-923c80392eaf-f3a2a03d"
+  },
+diff --git a/tests/test_e01_a48_tripwire.py b/tests/test_e01_a48_tripwire.py
+index 18b35bbd..3d32bdf9 100644
+--- a/tests/test_e01_a48_tripwire.py
++++ b/tests/test_e01_a48_tripwire.py
+@@ -1,12 +1,10 @@
+ """E01 review S4: the A48 tripwire (§9.6 A48, §9.7 QA1; the MR-12 / S07 Ruling M pattern).
+ 
+-The shipped SSLW set carries five `primary` size ranges with `verified: false` after Amendment 1 to
+-ruling B on QA1 (E01b, design §10.10.5.3: three compressors, the turbine, the towers' fit "2";
+-QA1.patch verified the other five); they set S_min and S_max, and so the floors and the
+-parallel-unit splits. `a48_release_check()` is the release candidate's measure: it fails while
+-any primary range is unverified. This test pins today's count and the `fail`, so the normal suite
+-passes while a release cannot: the release specification flips the ranges (after QA1) and this
+-count together.
++Every `primary` size range of the shipped SSLW set is `verified: true` after C7 (E01b, design note
++§10.10.8: the three compressors, the turbine and fit "2", on Frank's approval; QA1.patch verified
++the other five). `a48_release_check()` is the release candidate's measure: it fails while any
++primary range is unverified. This test pins the count 0 and the `pass`, and its negative case
++flips one range back in a copy (design note §10.5 A48, amended).
+ """
+ 
+ from __future__ import annotations
+@@ -22,28 +20,24 @@ import e01_evidence_manifest as manifest  # noqa: E402
+ 
+ from openflowsheet.assessment.cost.sets import unverified_primary_ranges  # noqa: E402
+ 
+-#: The unverified primary ranges after Amendment 1 to ruling B (E01b, design §10.10.6): the three
+-#: compressors, the turbine and fit "2"; C7 (person-approved) sets 0.
+-UNVERIFIED_AT_REVIEW = 5
++#: The unverified primary ranges after C7 (E01b, design §10.10.6, §10.10.8).
++UNVERIFIED_AT_REVIEW = 0
+ SET = REPO / "src" / "openflowsheet" / "_data" / "assessment" / "cost" / "sslw-idaes-v1.json"
+ 
+ 
+ def test_e01_a48_tripwire() -> None:
+     result, value = manifest.a48_release_check()
+     assert value["unverified_primary_ranges"] == UNVERIFIED_AT_REVIEW, value
+-    assert list(value["by_set"]) == ["sslw-idaes-v1"]
+-    assert result == "fail"
++    assert value["by_set"] == {}
++    assert result == "pass"
+ 
+ 
+-def test_the_release_check_passes_once_every_primary_range_is_verified() -> None:
++def test_the_release_check_finds_one_range_flipped_back() -> None:
++    """§10.5 A48's negative case: one primary range set to `false` in a copy is exactly what
++    `unverified_primary_ranges` returns."""
+     document = json.loads(SET.read_text(encoding="utf-8"))
+-    pointers = unverified_primary_ranges(document)
+-    assert len(pointers) == UNVERIFIED_AT_REVIEW
+-    verified = copy.deepcopy(document)
+-    for pointer in pointers:
+-        node = verified
+-        for key in pointer.strip("/").split("/"):
+-            node = node[int(key)] if isinstance(node, list) else node[key]
+-        assert node["source"]["kind"] == "primary"
+-        node["source"]["verified"] = True
+-    assert unverified_primary_ranges(verified) == ()
++    assert unverified_primary_ranges(document) == ()
++    flipped = copy.deepcopy(document)
++    turbine = next(i for i, e in enumerate(flipped["entries"]) if e["entry_id"] == "turbine")
++    flipped["entries"][turbine]["ranges"]["power_hp"]["source"]["verified"] = False
++    assert unverified_primary_ranges(flipped) == (f"/entries/{turbine}/ranges/power_hp",)
+diff --git a/tests/test_e01_a_cost.py b/tests/test_e01_a_cost.py
+index fbb54487..90bb80d3 100644
+--- a/tests/test_e01_a_cost.py
++++ b/tests/test_e01_a_cost.py
+@@ -129,21 +129,21 @@ def test_the_shipped_set_loads_with_the_notes_entries_in_order(capsys: Any) -> N
+         for name, r in found:
+             kinds.append((item["entry_id"], name, r["source"]["kind"], r["source"].get("verified")))
+     print("\n".join(f"{e} {n}: {k} verified={v}" for e, n, k, v in kinds))
+-    # §10.4.3: the five ranges QA1 found matching are verified (QA1.patch); the five ruling B adds
+-    # wait for a person's approval (A48, C7).
++    # §10.4.3: the five ranges QA1 found matching are verified (QA1.patch), and so, after C7, are
++    # the five ruling B adds (§10.10.8, on Frank's approval; A48).
+     primary = sorted((e, n, v) for e, n, k, v in kinds if k == "primary")
+     assert primary == sorted(
+         [
+             ("exchanger.shell_tube", "area_ft2", True),
+-            ("vessel.vertical", "weight_lb", False),
++            ("vessel.vertical", "weight_lb", True),
+             ("pump", "size_factor", True),
+             ("pump", "flow_gpm", True),
+             ("pump", "power_hp", True),
+             ("motor.electric", "motor_power_hp", True),
+-            ("compressor", "consumed_power_hp", False),
+-            ("compressor", "consumed_power_hp", False),
+-            ("compressor", "consumed_power_hp", False),
+-            ("turbine", "power_hp", False),
++            ("compressor", "consumed_power_hp", True),
++            ("compressor", "consumed_power_hp", True),
++            ("compressor", "consumed_power_hp", True),
++            ("turbine", "power_hp", True),
+         ]
+     ), primary
+     assert {k for _, _, k, _ in kinds} == {"pinned", "primary"}
+diff --git a/tests/test_t08_w2_inventory.py b/tests/test_t08_w2_inventory.py
+index 3395e3c9..e95594ba 100644
+--- a/tests/test_t08_w2_inventory.py
++++ b/tests/test_t08_w2_inventory.py
+@@ -396,7 +396,7 @@ ATTRIBUTED_DATA = {
+         "d4707a829a9ed6136c7cd06b5e398dd1831ad6b1504af1dfbfe296e56e99fd52"
+     ),
+     "openflowsheet/_data/assessment/cost/sslw-idaes-v1.json": (
+-        "b70d6f22afc6da185c531d1c3bf2bbf0f80f7866b686f3a102a466984a41933f"
++        "23d103d897d01c436f191285e38f305ff4374e42aa75c7f2c5a080984dbef6fb"
+     ),
+     "openflowsheet/_data/assessment/index/bls-ppi-wpu11-annual-v1.json": (
+         "1c36f463a0a61123f7b71d82c848954aae61305a0a550a735cefb3c77c4ba578"

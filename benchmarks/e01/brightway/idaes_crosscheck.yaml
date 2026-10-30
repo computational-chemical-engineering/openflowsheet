@@ -1,8 +1,8 @@
 id: e01-idaes-crosscheck-v1
 script: benchmarks/e01/brightway/idaes_crosscheck.py
-script_sha256: efe13eb1bd55093fc52580f1fb91b3fdccbb6daa92772d7bda7ac5a8b26617ff
+script_sha256: 94c0ad5ba33063401c769c13cd7dcd62b2687700873bab105a3e0845e9b4f0c1
 cases_from: benchmarks/e01/cost_hand/cost_hand.yaml
-cases_sha256: b2644840cdfcd1446ca3b1b0b3973957c106f7a6cd5733d3236e77ca7d87ec0e
+cases_sha256: b73bb4eaf055cd8fa34cc7b1dcfebd515ff3c05478aa956c6cee766b67bad3eb
 environment:
   idaes_pse: 2.13.0
   pyomo: 6.10.1
@@ -11,7 +11,8 @@ environment:
   machine: x86_64
   SSLW.py_sha256: 362b0a22e78ad578c4ce6408224aa6193fc6330cb7041fc1d4aaee0e060b1184
 basis: C_P in USD_CE500; pump and motor are IDAES's pump_capital_cost and motor_capital_cost (converted
-  from USD_CE394 by IDAES's units)
+  from USD_CE394 by IDAES's units) times 394/500, since their coefficients are at CE 500 (design note
+  §10.10, R-896)
 forms:
   exchanger.shell_tube:
   - label: area S_min
@@ -69,57 +70,65 @@ forms:
     N: 1
     area_m2: 124.64250765382924
     P_Pa: 3000000.0
+  - label: fixed_head (alpha2 0.9228, S3 p. 571)
+    C_P: 86359.00995451922
+    N: 1
+    area_m2: 124.64250765382924
+    P_Pa: 3000000.0
+    C_P_idaes: 179147.41609992943
+    amended:
+      alpha2: 0.48205557096256235
   vessel.vertical:
   - label: weight_limit 1 W S_min
-    C_P: 11734.307822899515
-    shell: 11734.307822899515
-    platforms: 0.0
-    W_lb: 1000.0
-  - label: weight_limit 1 W floor_bound_inside
-    C_P: 11734.313688788185
-    shell: 11734.313688788185
-    platforms: 0.0
-    W_lb: 1000.001
-  - label: weight_limit 1 W geometric_mean
-    C_P: 84409.74341200401
-    shell: 84409.74341200401
-    platforms: 0.0
-    W_lb: 30331.50177620621
-  - label: weight_limit 1 W S_max
-    C_P: 1036628.7347571673
-    shell: 1036628.7347571673
-    platforms: 0.0
-    W_lb: 919999.9999999908
-  - label: weight_limit 1 W below_floor
-    C_P: 11734.307822899515
-    shell: 11734.307822899515
-    platforms: 0.0
-    W_lb: 1000.0
-  - label: weight_limit 2 W S_min
-    C_P: 32773.17960748621
-    shell: 32773.17960748621
+    C_P: 25209.237277989858
+    shell: 25209.237277989858
     platforms: 0.0
     W_lb: 4199.999999999999
-  - label: weight_limit 2 W floor_bound_inside
-    C_P: 32773.198151205375
-    shell: 32773.198151205375
+  - label: weight_limit 1 W floor_bound_inside
+    C_P: 25209.251541879494
+    shell: 25209.251541879494
     platforms: 0.0
     W_lb: 4200.0042
-  - label: weight_limit 2 W geometric_mean
-    C_P: 183070.7204270574
-    shell: 183070.7204270574
+  - label: weight_limit 1 W geometric_mean
+    C_P: 140818.5987802062
+    shell: 140818.5987802062
     platforms: 0.0
     W_lb: 64807.406984078596
-  - label: weight_limit 2 W S_max
-    C_P: 1442469.3623592725
-    shell: 1442469.3623592725
+  - label: weight_limit 1 W S_max
+    C_P: 1109552.1660534674
+    shell: 1109552.1660534674
     platforms: 0.0
     W_lb: 999999.9999999898
-  - label: weight_limit 2 W below_floor
-    C_P: 32773.17960748621
-    shell: 32773.17960748621
+  - label: weight_limit 1 W below_floor
+    C_P: 25209.237277989858
+    shell: 25209.237277989858
     platforms: 0.0
     W_lb: 4200.0
+  - label: weight_limit 2 W S_min
+    C_P: 51120.56754787683
+    shell: 51120.56754787683
+    platforms: 0.0
+    W_lb: 8999.999999999998
+  - label: weight_limit 2 W floor_bound_inside
+    C_P: 51120.59826278429
+    shell: 51120.59826278429
+    platforms: 0.0
+    W_lb: 9000.009
+  - label: weight_limit 2 W geometric_mean
+    C_P: 332417.01756806363
+    shell: 332417.01756806363
+    platforms: 0.0
+    W_lb: 149999.99999999997
+  - label: weight_limit 2 W S_max
+    C_P: 3109513.4935558187
+    shell: 3109513.4935558187
+    platforms: 0.0
+    W_lb: 2499999.9999999744
+  - label: weight_limit 2 W below_floor
+    C_P: 51120.56754787683
+    shell: 51120.56754787683
+    platforms: 0.0
+    W_lb: 9000.0
   - label: platforms L and D at their floor bounds
     C_P: 39089.86452189656
     shell: 34367.53906878494
@@ -137,10 +146,10 @@ forms:
     platform_L_ft: 12.000012
     aspect_ratio_range: 1
   - label: platforms L and D floored
-    C_P: 26537.778234675665
-    shell: 21815.452781564047
+    C_P: 29931.562731101476
+    shell: 25209.237277989858
     platforms: 4722.325453111619
-    W_lb: 3244.0839723205077
+    W_lb: 4200.0
     platform_D_ft: 3.0
     platform_L_ft: 12.0
     aspect_ratio_range: 1
@@ -161,13 +170,16 @@ forms:
     platform_L_ft: 39.999999999959996
     aspect_ratio_range: 1
   - label: platforms piece 2 at its L start
-    C_P: 185659.039571102
+    C_P: 184914.9421161978
     shell: 160037.28387390074
-    platforms: 25621.755697201257
+    platforms: 24877.658242297057
     W_lb: 77890.13497904736
     platform_D_ft: 10.0
     platform_L_ft: 40.00000000004
     aspect_ratio_range: 2
+    C_P_idaes: 185659.039571102
+    amended:
+      platforms: 0.9709583736689255
   - label: platforms piece 1 at D max
     C_P: 304420.6512872038
     shell: 266360.5148683248
@@ -177,13 +189,16 @@ forms:
     platform_L_ft: 30.0
     aspect_ratio_range: 1
   - label: platforms piece 2 at D and L max
-    C_P: 1004413.7386777186
+    C_P: 1000282.4340536322
     shell: 862159.1494550114
-    platforms: 142254.58922270723
+    platforms: 138123.28459862087
     W_lb: 732409.5044441212
     platform_D_ft: 23.999999999975998
     platform_L_ft: 169.99999999982998
     aspect_ratio_range: 2
+    C_P_idaes: 1004413.7386777186
+    amended:
+      platforms: 0.9709583736689255
   - label: design note A44 hand case (D 1 m, L 3 m)
     C_P: 38267.95849778369
     shell: 33222.51243168942
@@ -266,233 +281,326 @@ forms:
     D_ft: 2.0
   pump:
   - label: Centrifugal S_min
-    C_P: 14742.311039576467
+    C_P: 11616.941099186257
     N: 1
     vol_flow_m3s: 0.002523607856
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 14742.311039576467
+    amended:
+      basis: 0.788
   - label: Centrifugal floor_bound_inside
-    C_P: 14742.311334629994
+    C_P: 11616.941331688437
     N: 1
     vol_flow_m3s: 0.002523610379607856
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 14742.311334629994
+    amended:
+      basis: 0.788
   - label: Centrifugal geometric_mean
-    C_P: 23139.42126781767
+    C_P: 18233.863959040325
     N: 1
     vol_flow_m3s: 0.039901743730271104
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 23139.42126781767
+    amended:
+      basis: 0.788
   - label: Centrifugal S_max
-    C_P: 80116.29224793096
+    C_P: 63131.6382913696
     N: 1
     vol_flow_m3s: 0.6309019639999937
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 80116.29224793096
+    amended:
+      basis: 0.788
   - label: Centrifugal below_floor
-    C_P: 14742.311039576467
+    C_P: 11616.941099186257
     N: 1
     vol_flow_m3s: 0.002523607856
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 14742.311039576467
+    amended:
+      basis: 0.788
   - label: Centrifugal above_S_max
-    C_P: 216085.5134960964
+    C_P: 170275.38463492398
     N: 3
     vol_flow_m3s: 1.57725491
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 216085.5134960964
+    amended:
+      basis: 0.788
   - label: ExternalGear S_min
-    C_P: 10294.684820371433
+    C_P: 8112.211638452689
     N: 1
     vol_flow_m3s: 0.000630901964
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 10294.684820371433
+    amended:
+      basis: 0.788
   - label: ExternalGear floor_bound_inside
-    C_P: 10294.68824449039
+    C_P: 8112.214336658427
     N: 1
     vol_flow_m3s: 0.000630902594901964
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 10294.68824449039
+    amended:
+      basis: 0.788
   - label: ExternalGear geometric_mean
-    C_P: 25210.885832517262
+    C_P: 19866.178036023604
     N: 1
     vol_flow_m3s: 0.005985261559540665
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 25210.885832517262
+    amended:
+      basis: 0.788
   - label: ExternalGear S_max
-    C_P: 82891.83864603775
+    C_P: 65318.76885307775
     N: 1
     vol_flow_m3s: 0.056781176759999434
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 82891.83864603775
+    amended:
+      basis: 0.788
   - label: ExternalGear below_floor
-    C_P: 10294.684820371433
+    C_P: 8112.211638452689
     N: 1
     vol_flow_m3s: 0.000630901964
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 10294.684820371433
+    amended:
+      basis: 0.788
   - label: ExternalGear above_S_max
-    C_P: 223346.89899657376
+    C_P: 175997.35640930012
     N: 3
     vol_flow_m3s: 0.1419529419
     power_W: 1000.0
     deltaP_Pa: 298906.692
+    C_P_idaes: 223346.89899657376
+    amended:
+      basis: 0.788
   - label: Reciprocating S_min
-    C_P: 6884.408867751117
+    C_P: 5424.914187787881
     N: 1
     vol_flow_m3s: 0.000630901964
     power_W: 745.6998715822702
     deltaP_Pa: 298906.692
+    C_P_idaes: 6884.408867751117
+    amended:
+      basis: 0.788
   - label: Reciprocating floor_bound_inside
-    C_P: 6884.410725577487
+    C_P: 5424.91565175506
     N: 1
     vol_flow_m3s: 0.000630901964
     power_W: 745.7006172821418
     deltaP_Pa: 298906.692
+    C_P_idaes: 6884.410725577487
+    amended:
+      basis: 0.788
   - label: Reciprocating geometric_mean
-    C_P: 22547.70475663447
+    C_P: 17767.591348227965
     N: 1
     vol_flow_m3s: 0.000630901964
     power_W: 10545.78871851522
     deltaP_Pa: 298906.692
+    C_P_idaes: 22547.70475663447
+    amended:
+      basis: 0.788
   - label: Reciprocating S_max
-    C_P: 189606.59415308468
+    C_P: 149409.99619263073
     N: 1
     vol_flow_m3s: 0.000630901964
     power_W: 149139.97431645254
     deltaP_Pa: 298906.692
+    C_P_idaes: 189606.59415308468
+    amended:
+      basis: 0.788
   - label: Reciprocating below_floor
-    C_P: 6884.408867751117
+    C_P: 5424.914187787881
     N: 1
     vol_flow_m3s: 0.000630901964
     power_W: 745.6998715822702
     deltaP_Pa: 298906.692
+    C_P_idaes: 6884.408867751117
+    amended:
+      basis: 0.788
   - label: Reciprocating above_S_max
-    C_P: 476660.30205309775
+    C_P: 375608.318017841
     N: 3
     vol_flow_m3s: 0.000630901964
     power_W: 372849.9357911351
     deltaP_Pa: 298906.692
+    C_P_idaes: 476660.30205309775
+    amended:
+      basis: 0.788
   motor.electric:
   - label: W_m S_min
-    C_P: 430.15998134088295
+    C_P: 338.9660652966158
     N: 1
     shaft_power_W: 590.9537787171283
+    C_P_idaes: 430.15998134088295
+    amended:
+      basis: 0.788
   - label: W_m floor_bound_inside
-    C_P: 430.1600378682051
+    C_P: 338.96610984014563
     N: 1
     shaft_power_W: 590.9543951425915
+    C_P_idaes: 430.1600378682051
+    amended:
+      basis: 0.788
   - label: W_m geometric_mean
-    C_P: 2127.8178747528436
+    C_P: 1676.7204853052408
     N: 1
     shaft_power_W: 17409.89464384707
+    C_P_idaes: 2127.8178747528436
+    amended:
+      basis: 0.788
   - label: W_m S_max
-    C_P: 44881.5457737709
+    C_P: 35366.65806973147
     N: 1
     shaft_power_W: 485596.5538262081
+    C_P_idaes: 44881.5457737709
+    amended:
+      basis: 0.788
   - label: W_m below_floor
-    C_P: 430.15998134088295
+    C_P: 338.9660652966158
     N: 1
     shaft_power_W: 590.9537787171283
+    C_P_idaes: 430.15998134088295
+    amended:
+      basis: 0.788
   - label: W_hp 10 hp (design note eta_m)
-    C_P: 1094.438824706158
+    C_P: 862.4177938684525
     N: 1
     shaft_power_W: 7456.998715822702
+    C_P_idaes: 1094.438824706158
+    amended:
+      basis: 0.788
   compressor:
-  - label: Centrifugal W_hp S_min
+  - label: Centrifugal P_C S_min
     C_P: 339403.39175325877
     N: 1
-    power_W: 149139.97431645406
-  - label: Centrifugal W_hp floor_bound_inside
-    C_P: 339403.6632759447
+    consumed_power_W: 149139.97431645406
+  - label: Centrifugal P_C floor_bound_inside
+    C_P: 339403.6632759453
     N: 1
-    power_W: 149140.12345642835
-  - label: Centrifugal W_hp geometric_mean
+    consumed_power_W: 149140.12345642838
+  - label: Centrifugal P_C geometric_mean
     C_P: 2518562.204150079
     N: 1
-    power_W: 1826584.186635504
-  - label: Centrifugal W_hp S_max
+    consumed_power_W: 1826584.1866355042
+  - label: Centrifugal P_C S_max
     C_P: 18689134.31715089
     N: 1
-    power_W: 22370996.14746788
-  - label: Centrifugal W_hp below_floor
+    consumed_power_W: 22370996.147467885
+  - label: Centrifugal P_C below_floor
     C_P: 339403.39175325877
     N: 1
-    power_W: 149139.97431645406
-  - label: Centrifugal W_hp above_S_max
-    C_P: 48457995.26434646
+    consumed_power_W: 149139.97431645406
+  - label: Centrifugal P_C above_S_max
+    C_P: 48153419.27104904
     N: 3
-    power_W: 55927490.36867027
-  - label: Reciprocating W_hp S_min
+    consumed_power_W: 55488430.5573849
+  - label: Reciprocating P_C S_min
     C_P: 286796.1262062367
     N: 1
-    power_W: 74569.98715822703
-  - label: Reciprocating W_hp floor_bound_inside
+    consumed_power_W: 74569.98715822703
+  - label: Reciprocating P_C floor_bound_inside
     C_P: 286796.355643115
     N: 1
-    power_W: 74570.06172821418
-  - label: Reciprocating W_hp geometric_mean
+    consumed_power_W: 74570.06172821419
+  - label: Reciprocating P_C geometric_mean
     C_P: 2387730.347434347
     N: 1
-    power_W: 1054578.8718515218
-  - label: Reciprocating W_hp S_max
+    consumed_power_W: 1054578.871851522
+  - label: Reciprocating P_C S_max
     C_P: 19879125.591672394
     N: 1
-    power_W: 14913997.431645256
-  - label: Reciprocating W_hp below_floor
+    consumed_power_W: 14913997.431645256
+  - label: Reciprocating P_C below_floor
     C_P: 286796.1262062367
     N: 1
-    power_W: 74569.98715822703
-  - label: Reciprocating W_hp above_S_max
-    C_P: 51543456.07632522
+    consumed_power_W: 74569.98715822703
+  - label: Reciprocating P_C above_S_max
+    C_P: 51290784.53784731
     N: 3
-    power_W: 37284993.57911351
-  - label: Screw W_hp S_min
+    consumed_power_W: 37056664.96184996
+  - label: Screw P_C S_min
     C_P: 44705.55808104764
     N: 1
-    power_W: 7456.998715822702
-  - label: Screw W_hp floor_bound_inside
+    consumed_power_W: 7456.998715822702
+  - label: Screw P_C floor_bound_inside
     C_P: 44705.59046127895
     N: 1
-    power_W: 7457.006172821418
-  - label: Screw W_hp geometric_mean
+    consumed_power_W: 7457.006172821418
+  - label: Screw P_C geometric_mean
     C_P: 213508.3957101402
     N: 1
-    power_W: 64579.50323890396
-  - label: Screw W_hp S_max
+    consumed_power_W: 64579.50323890396
+  - label: Screw P_C S_max
     C_P: 1019690.5484565024
     N: 1
-    power_W: 559274.9036866971
-  - label: Screw W_hp below_floor
+    consumed_power_W: 559274.9036866971
+  - label: Screw P_C below_floor
     C_P: 44705.55808104764
     N: 1
-    power_W: 7456.998715822702
-  - label: Screw W_hp above_S_max
-    C_P: 2680641.100399615
+    consumed_power_W: 7456.998715822702
+  - label: Screw P_C above_S_max
+    C_P: 2696013.2820959184
     N: 3
-    power_W: 1398187.2592167566
+    consumed_power_W: 1409269.2265281945
   turbine:
-  - label: W_hp 10 hp
-    C_P: 3421.9674138836754
-    power_W: -7456.998715822702
-  - label: W_hp 100 hp
-    C_P: 22094.077323927784
-    power_W: -74569.98715822703
-  - label: W_hp 1000 hp
-    C_P: 142651.3446081266
-    power_W: -745699.8715822703
+  - label: W_hp S_min
+    C_P: 5999.432426334933
+    N: 1
+    power_W_per_unit: -14913.997431645405
+  - label: W_hp floor_bound_inside
+    C_P: 5999.437285874736
+    N: 1
+    power_W_per_unit: -14914.012345642835
+  - label: W_hp geometric_mean
+    C_P: 56140.44743439633
+    N: 1
+    power_W_per_unit: -235811.00450950424
+  - label: W_hp S_max
+    C_P: 525341.3346734875
+    N: 1
+    power_W_per_unit: -3728499.357911314
+  - label: W_hp below_floor
+    C_P: 5999.432426334933
+    N: 1
+    power_W_per_unit: -14913.997431645405
+  - label: W_hp above_S_max
+    C_P: 1359646.5296449445
+    N: 3
+    power_W_per_unit: -3107082.7982594594
 p_sizes:
   p1_th_c1:
   - item: P
-    C_P: 14742.311039576467
+    C_P: 11616.941099186257
     N: 1
     vol_flow_m3s: 0.0007939801193454953
     power_W: 72.48740658841477
     deltaP_Pa: 3019674.442785939
+    C_P_idaes: 14742.311039576467
+    amended:
+      basis: 0.788
   - item: P.drive
-    C_P: 430.15998134088295
+    C_P: 338.9660652966158
     N: 1
     shaft_power_W: 590.9537787171283
+    C_P_idaes: 430.15998134088295
+    amended:
+      basis: 0.788
   - item: B
     C_P: 47057.82171419224
     N: 1
@@ -500,7 +608,8 @@ p_sizes:
     P_Pa: 3000000.0
   - item: T
     C_P: 6320.382134615302
-    power_W: -15905.094362301697
+    N: 1
+    power_W_per_unit: -15905.094362301697
   - item: C
     C_P: 43330.420935963855
     N: 1
@@ -513,29 +622,35 @@ p_sizes:
     area_m2: 13.935456
     P_Pa: 790800.7293168361
   - item: D.drum
-    C_P: 16456.633276011133
-    shell: 11734.307822899515
+    C_P: 29931.562731101476
+    shell: 25209.237277989858
     platforms: 4722.325453111619
-    W_lb: 1000.0
+    W_lb: 4200.0
     platform_D_ft: 3.0
     platform_L_ft: 12.0
     aspect_ratio_range: 1
   - item: P
-    C_P: 14742.311039576467
+    C_P: 11616.941099186257
     N: 1
     vol_flow_m3s: 0.0024460788569881575
     power_W: 8.367131010182973
     deltaP_Pa: 318154.79435046157
+    C_P_idaes: 14742.311039576467
+    amended:
+      basis: 0.788
   - item: P.drive
-    C_P: 430.15998134088295
+    C_P: 338.9660652966158
     N: 1
     shaft_power_W: 590.9537787171283
+    C_P_idaes: 430.15998134088295
+    amended:
+      basis: 0.788
   p3_m1:
   - item: S02.shell
-    C_P: 30841.271438385927
-    shell: 22246.058797042046
+    C_P: 33804.44991933374
+    shell: 25209.237277989858
     platforms: 8595.212641343882
-    W_lb: 3360.421715223598
+    W_lb: 4200.0
     platform_D_ft: 3.0
     platform_L_ft: 27.999999999999996
     aspect_ratio_range: 1

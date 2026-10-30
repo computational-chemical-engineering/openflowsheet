@@ -33,10 +33,10 @@ from openflowsheet.assessment.regimes import Regime
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
 
-#: SSLW.py:1650-1661, the motor's base cost at λ = ℓ(W_m) = 0 (the floor, W_m = 1 hp), CE 394.
-MOTOR_FLOOR_CE394 = math.exp(5.8259)
-#: The set's CE 500 over the motor entry's CE 394 (§9.2.6).
-CE_RATIO = 500.0 / 394.0
+#: SSLW.py:1650-1661, the motor's base cost at λ = ℓ(W_m) = 0 (the floor, W_m = 1 hp), at CE 500:
+#: the motor entry's basis is amended from IDAES's CE 394 label to the 3rd ed.'s CE 500 (p. 562,
+#: Eq. 22.19; design note §10.10.4, R-896), so no 500/394 factor applies.
+MOTOR_FLOOR_CE500 = math.exp(5.8259)
 #: §4.4.5's defaults.generator_efficiency.
 ETA_GEN = 0.95
 #: §4.7.2: an annual amount is rate·3600·h_op; the price is per SI unit (kWh → J).
@@ -116,7 +116,7 @@ def test_pump_drive_costed_by_motor_and_turbine_generation_netted(registered: No
     w_p = state["P.W"]
     assert w_p * KAPPA_W / eta_m(w_p * KAPPA_W) < 1.0
     assert program.regime.entries["P.drive.size"] == "floor"
-    expected = MOTOR_FLOOR_CE394 * CE_RATIO * _escalation()
+    expected = MOTOR_FLOOR_CE500 * _escalation()
     assert values["capex.purchased.P.drive"] == pytest.approx(expected, rel=1e-14)
     assert values["capex.bare_module.P.drive"] == pytest.approx(1.5 * expected, rel=1e-15)
     drive = _items(program, values)["P.drive"]

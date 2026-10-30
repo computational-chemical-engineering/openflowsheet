@@ -585,3 +585,196 @@ Disagreements between the two transcriptions, or with IDAES: none beyond 1.02e-1
   `assessment.schema.json`.
 - **If the tree changes again:** re-run the generator (command in the WO-I1 handoff above), then re-harvest (append,
   re-pin HARVEST_SIZE).
+
+## E01b (2026-10-29; design note §10, ruling B on QA1; brief `docs/briefs/E01b-build.md`)
+
+- C1 f72af0c1: `QA1.patch` applied unchanged. `src/openflowsheet/_data/assessment/cost/sslw-idaes-v1.json` is a symlink
+  to `assessment/cost/sslw-idaes-v1.json`, so the two copies of §10.6.4 are one file and `cmp` holds by construction.
+- DECISION: C2 — the compressor's drive is the set's first `machine.drive` entry (`entry_for`, the lookup the drive's
+  electricity already uses, contributor `drives()`), resolved on its defaults; the loader refuses a compressor when that
+  entry is missing or not `sslw-motor-v1`. Alternative: any `sslw-motor-v1` entry anywhere in the set. Reversible by:
+  the `parse_set`/`resolve` hunks of C2.
+- DECISION: C2 — `ResolvedEntry.amended` keys each amended number by its set path as §10.4.2 writes it
+  (`options.<o>.choices.<k>.<n>`, `coefficients.<n>[.<m>]`, list items `[i]`); the old "repeats a coefficient" message
+  now names that same path. Alternative: key by the bare coefficient name. Reversible by: `_amendments`/`prefix` in
+  `sets._resolve`.
+- DECISION: C2 — "`source.checked_against`" in the loader is a shape check (an object with non-empty `citation` and
+  `scope`); the data lands in C3. Alternative: no loader check. Reversible by: the `parse_set` hunk.
+
+## E01b (2026-10-29; design note §10, ruling B on QA1; brief `docs/briefs/E01b-build.md`)
+
+- C1 f72af0c1: `QA1.patch` applied unchanged. `src/openflowsheet/_data/assessment/cost/sslw-idaes-v1.json` is a symlink
+  to `assessment/cost/sslw-idaes-v1.json`, so the two copies of §10.6.4 are one file and `cmp` holds by construction.
+- C2 acc75185: loader (§10.4.1 `amended` + effective values, the five refusals, compressor-needs-motor, consumed-power
+  3× check, drive attached by `resolve()`, `checked_against` shape check). Inert on today's set (no `amended` number).
+- DECISION: C2 — the compressor's drive is the set's first `machine.drive` entry (`entry_for`, as `drives()` uses),
+  resolved on its defaults. Alternative: any `sslw-motor-v1` entry. Reversible by: the `parse_set`/`resolve` hunks.
+- DECISION: C2 — `ResolvedEntry.amended` keys by the set path as §10.4.2 writes it (`options.<o>.choices.<k>.<n>`,
+  `coefficients.<n>[i].<m>`); "repeats a coefficient" names that path. Alternative: bare names. Reversible by: C2.
+- DECISION: C1 pins (one commit after C2) — the tree stays green at C1+C2: A48 tripwire 8 → 3 (the compressors), the
+  primary-flag assertion (5 verified, compressor not), set sha256 `6ff671a7…eea9` in the t08 pin and
+  `docs/e01-data-licences.json`, the three report fixtures and the invalid one regenerated (only `citation`/`verified`
+  and the timestamp changed, audited). Alternative: leave C1 failing until C6. Reversible by: reverting that commit.
+- **STOPPED: held for the 3rd-ed. check, orchestrator 2026-10-29.** Frank supplied Seider 3rd ed.; §10's coefficient
+  and range amendments are re-checked and may change. Not on this branch: C3 (forms VI/VII depend on §10.4.3's range
+  names and the turbine range in the set, so they are held with the data), C4–C6, C7. The full C3–C6 implementation
+  (forms, set amendments, report `amended` block, cost_hand + seider4.yaml/A49, A15 re-run, fixtures, A44/A50/A51 tests;
+  E01 tests 222 passed there, ruff E501/format pending in `tests/test_e01_a_cost.py`) is parked on local branch
+  `wip/E01b-held` (f43f7dab, on e37dacb1 C3 / c73a0721 C4 / 02477928 C5) with its decision lines and moved-number audit
+  in that branch's copy of this file. A fresh engineer can cherry-pick from it once §10 is amended. Facts from it: the
+  A49 `index_log` gaps are all 0.976 half-unit (book adds 0.1258 for ln(567/500)); the P2 drum floors under M1, making
+  every P2 capital row floored; scratch IDAES env re-created at `/home/frankp/.cache/idaes-2.13/venv` (wheel sha256
+  verified; pyomo 6.10.1, pint 0.26.2).
+- Open: the S12b evidence manifest needs `scripts/e01_evidence_manifest.py` extended (package id, A49–A51), a file
+  outside §10.6.2's list — for the orchestrator to decide.
+
+## E01b, build 2 (2026-10-29; design note §10.10, Amendment 1 to ruling B; brief `docs/briefs/E01b-build2.md`)
+
+- C3′: `forms.py` and `contributor.py` taken unchanged from held `e37dacb1` (form VI on P_C with the N rule, form VII
+  parallel with a floor, the report's `amended` block). The set file edited by hand from `15307c6a` (text
+  replacements, number literals untouched elsewhere): §10.10.5.1's four amendments, §10.10.5.3's ranges, citations and
+  notes, the compressor key rename, the turbine range, §10.10.5.4's `checked_against`. `e37dacb1`'s JSON hunk not taken.
+- C3′ loader (§10.10.5.2): `_resolve` lists an amended entry basis under `index_basis.value`; the sixth refusal (an
+  amended `index_basis.value` carrying `index_basis` or `scale`). Acceptance: every entry resolves on its defaults;
+  pump and motor ratio 1.0 (basis 500.0) with `amended = [index_basis.value]`; `vessel.vertical`
+  `[coefficients.platforms[1].a]`; five unverified primary ranges (three compressors, turbine, vertical "2").
+- FACT (C3′): pump and motor items no longer carry `source.index_basis` ("CEPCI 394 → 500 by the source's ratio"):
+  the contributor writes it only when the entry ratio ≠ 1.0, and the ratio is now 500/500. Their `source.amended`
+  states IDAES's 394 instead (M8).
+- DECISION (re-logged from `e37dacb1`): an item's `source.amended` is written only when its resolved entry carries an
+  amended number (absent, not `{}`, otherwise), so items without amendments keep their provenance bytes. Alternative:
+  always present. Reversible by: the `if e.amended:` hunk in `contributor._cost_item`.
+- DECISION (re-logged from `e37dacb1`): form VI's non-positive or non-finite power keeps its refusal on the size
+  quantity (`CORRELATION_OUT_OF_RANGE(<U>.power)`), and `η_m ∉ (0, 1]` at any per-unit power evaluated is
+  `CORRELATION_OUT_OF_RANGE(<U>.eta)` (§10.4.4 "Domain"; η_m is the 3rd ed.'s Eq. 22.18, p. 562). Alternative: route
+  both to `.eta`. Reversible by: `_Compressor.domain`.
+- C4′ part 1 (B4): `c73a0721` cherry-picked with `-n`, then §10.10.5.7's deltas (S3 pages; pumps and motor at CE 500,
+  every base-cost key `C_B_CE500`; `PL_HORIZONTAL` IDAES's (2005, 0.20294); piece 2 300.9; "2" IDAES's fit; ranges "1"
+  (4,200, 1e6), "2" (9,000, 2.5e6)). Held `seider4.yaml` and its test not taken (A49 on `seider3.yaml` still to do).
+  `cost_hand.py --check` exits 0. `test_e01_b_cost_hand.py`: 8 passed, 4 failed — A14 and the chain compare against
+  the report fixtures (C6′), A15 against `idaes_crosscheck.yaml` (C5′); the package-vs-hand forms test passes.
+- DECISION: C4′ — `cost_hand.py` has no `CE_RATIO` at all (§10.10.5.7 "no 500/394 factor anywhere"): the YAML loses
+  `design_note.A44.ce_ratio` and `units.ce394_to_ce500`, and the stated check of 1.2690355329949239 goes. A44's "CE 394
+  conversion" bullet is thereby superseded by R-896; in C6′ the package tests `test_e01_a_cost.py::
+  test_a44_the_ce394_ratio_and_the_pump_forms` (pump.ratio == 500/394, × 500/394 on four costs) and
+  `test_e01_a_contributor_c1.py` (motor floor × 500/394) must follow R-896 (ratio 1.0, basis 500.0, no factor) — a
+  registered move (M4′), not a widened check. Alternative: keep the constant for the stated check only. Reversible by:
+  the C4′ hunks and a regeneration. For the design lane (batched).
+- C4′ cost_hand.yaml audit against `15307c6a` (script ratios): pump 72 and motor 24 values × 0.788 (C_P, C_P1; base
+  costs unchanged, key renamed); p1_th_c1/p1_th_r1 pump and drive items × 0.788; chain p1_th_c1 totals × 0.970804299,
+  0.971250158, 0.979018563 (derived from the pump and drive, M4′); vertical piece-2 C_PL × 0.970958374 (M3′); vertical
+  "platforms L and D floored" (W < 4,200 lb) `units:1` → `floor`, C_v × 1.155567915 (M1); P1 TH-R1 drum C_P1
+  × 1.81881447, C_v × 2.14833611 (16,456.63 → 29,931.56; M1); P3 M1 `S02.shell` `units:1` → `floor`, C_P1 × 1.09607835,
+  C_v × 1.13320016 (M1); vertical "1"/"2" weight cases regenerated on the new ranges (targets moved; "2" below floor
+  C_v 51,120.6 = 32,773.18 × 1.559829, M2′); new fixed-head case (M7), compressor cases on P_C (M5), turbine cases on
+  20–5,000 hp (M6). Horizontal vessels, the other exchangers and trays: unchanged. No other number moved.
+
+## Handoff (2026-10-29, E01b build 2 at the context cap) — resume from here
+
+- **Done on wp/E01b** (no push, no merge): `cf3adaa1` C3′ (forms/contributor from `e37dacb1`; loader §10.10.5.2; set
+  data §10.10.5.1/.3/.4; brief 2 committed); `c2695ec0` C4′ part 1 (B4 + regenerated `cost_hand.yaml`, audit above).
+- **Next: C4′ part 2, A49.** Write `benchmarks/e01/cost_hand/seider3.yaml` and `tests/test_e01_b_seider3.py` per
+  §10.10.5.7 (relations `same`/`shift`/`amended`/`basis`/`range`/`not_in_book`; completeness over every number object
+  `{value, source_line}` — both entry bases included — and every range). Reuse `_at`/`_walk`/`same`+`sign` from held
+  `git show c73a0721:tests/test_e01_b_seider4.py`. The universe is ~200 numbers: list it with a walk over
+  `entries[*]` minus `entry_id/form/family/method_lines` (exchanger 43 numbers + 2 ranges, vertical 33 + ranges incl.
+  `platform_length_ft` pieces, horizontal 27 + 1, trays 18 + 1, pump 39 + 3, motor 12 + 1, compressor 10 + 3, turbine
+  2 + 1). Book values: §10.10.1/§10.10.3 give most; the factor tables (Tables 22.20–22.22, 22.25, 22.26, p. 577 tray
+  factors) must be typed from `/home/frankp/.cache/seider3/ch22_534_595.md` (licensed: numbers + page only; grep the
+  table, never copy text). Signs: exchanger α2, pump Centrifugal a1, motor eta[2], base[4], horizontal α2 are
+  applied with the form's sign — check `forms.py` before typing `sign`. `not_in_book`: G11 (oversize, nine densities,
+  `shell_thickness_in`) plus any structural constant you find (e.g. `unity`, `count_floor`, `type_factor_other`,
+  `material_area_ref_ft2`, `pressure_ref_psig`) only if the book does not print it — else `same`.
+- **Then C5′** (`git cherry-pick -n 02477928`, resolve the log conflict to ours; A15 deltas §10.10.5.7: pump/motor
+  × 394/500, horizontal platforms and "2" no factor, piece 2 × 300.9/309.9; re-run in
+  `/home/frankp/.cache/idaes-2.13/venv`; acceptance rel ≤ 1e-9). **Then C6′** per §10.10.7 item 4, plus the two
+  package tests named in the C4′ DECISION (A44 CE-394 bullet and `test_e01_a_contributor_c1.py` motor floor → R-896).
+  The P2 drum `floor` assertion in its own commit. Fixtures via `test_e01_a_report._write()`; pins (t08, licences via
+  `scripts/e01_d04_inventory.py`, `docs/E01A_DECISIONS.md`); extend `scripts/e01_evidence_manifest.py` for S12b;
+  manifest `evidence/S12b/<commit>/manifest.json`; `QA1b.patch` (C7, five flags of §10.10.8) uncommitted.
+- **Known now-failing tests (expected until C5′/C6′):** `test_e01_b_cost_hand.py` A14 + chain (fixtures), A15 ×2
+  (crosscheck yaml); `test_e01_a_cost.py` A44 CE-394 test; `test_e01_a_contributor_c1.py` motor floor; A48 tripwire
+  (pins 3, now 5); t08 set sha256 pin; report-fixture tests. Not yet run: the E01 suite, acceptance grep, S11 identity.
+- **Acceptance grep pre-check:** `cost_hand.py` has no 2275/0.2094/10.5449/0.4672/0.05482/567; the set JSON has "567"
+  only if inside a hash (check and log); `idaes_crosscheck.py` is C5′'s.
+- **Open for the design lane (batched):** the C4′ DECISION (A44 "CE 394 conversion" superseded by R-896). No number
+  outside §10.10.7's list has moved so far.
+
+## E01b, build 3 (2026-10-29; brief `docs/briefs/E01b-build3.md`; work order design note §10.10.7)
+
+- C4′ part 2 (A49): `seider3.yaml` typed from the 3rd ed.'s pages (printed page = PDF page − 38 in the local
+  copy; numbers with page and equation/table only). 188 number records (187 number objects; the floating-head
+  α1 twice: `shift` and Example 22.10's `same`), 21 `not_in_book` (oversize, 2 × 9 densities, 2 ×
+  `shell_thickness_in`) among them, 17 range records. `test_e01_b_seider3.py`: 3 passed; four mutations of the
+  YAML (a book digit, a dropped record, a range bound, a sign) each fail it.
+- FACT (A49): the completeness universe includes the set's own `basis.index.value` (500, entry `set`), besides the
+  two entry bases — "every number object in the set" read literally; its record is `same` against p. 561's
+  CE = 500 (the first §22.5 statement of the basis). Pump F_T keys contain a dot (`"1.1"` …): a path step with a
+  dot is written quoted (`choices."1.1".F_T`); amended paths have none, so they match `ResolvedEntry.amended`.
+- FACT (A49): structural constants the book implies rather than prints are `same` with a note, not
+  `not_in_book` (design §10.10.3 rows 7, 28, 36, 47 class them M): exchanger `unity` (a = b = 0 in Eq. 22.44),
+  tray carbon-steel F_TM α2 = 0 (printed without a D term), `type_factor_other` (Eqs. 22.22/22.23 carry no F_T),
+  compressor `ElectricMotor.F_D` and `CarbonSteel.F_M` = 1 (the base cost of Eq. 22.35).
+- C5′ (A15): `02477928` cherry-picked with `-n` (its log hunk not taken; its two lines stand: env re-created from the
+  pinned wheel; DECISION compressor `work_mechanical` = cost_hand's `P_C_hp_total`), then §10.10.5.7's deltas: every
+  pump and motor case × 394/500 (`amended.basis`), piece 2 × 300.9/309.9, horizontal platforms and "2" without a
+  factor (the 4th-ed. constants `CE567`/`PL_HORIZONTAL`/`TOWER_ALPHA` removed); held F841 (unused `x` in
+  `compressor()`) fixed. Re-run in `/home/frankp/.cache/idaes-2.13/venv`: A15 worst rel package 1.01e-14, hand
+  1.02e-14 (bound 1e-9). Audit against `15307c6a`'s YAML: pump 18 + motor 6 form cases and the four P1 pump/drive
+  rows × 0.788000000 with raw IDAES unchanged; vertical floor/"2"/piece-2 cases follow cost_hand's C4′ moves (P1
+  TH-R1 drum × 1.818814470, P3 M1 shell × 1.096078350); compressor 18, turbine 6, fixed head 1 new; trays,
+  horizontal, other exchangers unchanged.
+- DECISION (orchestrator ruling, brief `docs/briefs/E01b-build3.md`): removing `CE_RATIO` from `cost_hand.py` and
+  retiring A44's "CE 394 conversion" check is R-896's registered M4′ move (pump and motor at CE 500), not a loosened
+  check. `test_e01_a_cost.py::test_a44_the_ce394_ratio_and_the_pump_forms` (name kept for identity keys) now asserts
+  the CE 500 basis — `pump.ratio == 1.0`, the amended basis' effective value 500.0, and the three pump forms and the
+  motor form (incl. its floor `exp(5.8259)`) by hand with no factor; `test_e01_a_contributor_c1.py`'s motor floor
+  is `exp(5.8259)` (old × 0.788). Alternative: keep a 500/394 check. Reversible by: this commit.
+- C6′ tests from held `f43f7dab`, adapted: A51 six refusals (the sixth on both entry bases, §10.10.5.2), v_e bitwise
+  for the four amendments, pump/motor `amended == [index_basis.value]` at 500.0, horizontal platforms and fit "2"
+  IDAES's with no amendment, the tower no-undercut test replaced by "fit 2 increases with W ≥ 1 lb" (α2, α3 > 0
+  and a 1 lb – 1e7 lb grid); platform piece 2 by hand at 300.9, horizontal at 2005·D^0.20294; η_m citation S3
+  p. 562 Eq. 22.18; tripwire 5; ruff clean.
+- C6′ fixtures (regenerated with `test_e01_a_report._write()`), every moved number against `15307c6a`:
+  P1 TH-C1 pump `P` and drive `P.drive` purchased/bare-module and their intervals/σ × 0.788000000 (M4′); derived
+  sum_purchased × 0.971250158, TDC/EPC/CAPEX/total/capital charge/maintenance × 0.970804299, opex.total ×
+  0.978034742, tac/lcox/profit × 0.972838597 (from the pump and drive; utilities unchanged); turbine `T`: regime
+  `units:1`, the primary `power_hp` range and its two admissibility rows added, its cost unchanged (M6). P1 TH-R1:
+  pump/drive × 0.788 (M4′), `D.drum` × 1.818814470 (M1), totals × 1.178765458, sum_purchased × 1.136852062. P3 M1:
+  `S02.shell` `units:1` → `floor`, × 1.096078350 (M1), totals × 1.029945863. Provenance (M8): pump/motor
+  `source.index_basis` ("CEPCI 394 → 500") replaced by `source.amended.index_basis.value`; vertical items gain
+  `amended.coefficients.platforms[1].a` and the weight-range note; `weight_lb` bounds 1,000/920,000 →
+  4,200/1,000,000 (× 4.2, × 1.0869565). No other number moved; the invalid fixture follows p1_th_r1.
+- C6′ cost_hand: `P1_OPEX_TOTAL` (the report's opex.total, an *input* of the hand chain, not an expectation —
+  cost_hand.py:897) updated 34,373.962267160525 → 33,618.92931669953 = the regenerated fixture's (maintenance
+  follows CAPEX × 0.970804299); hand tac 119,610.909 → 118,855.876 (× 0.993687591; the independent part CRF ×
+  CAPEX was already regenerated in C4′). `idaes_crosscheck.yaml` re-run for the new `cases_sha256` only (values
+  byte-identical). Set sha256 pinned `b70d6f22…933f` (t08, licences record with `checked_against`,
+  `docs/E01A_DECISIONS.md`).
+- C6′ generator: `scripts/e01_evidence_manifest.py` files package `S12b` (schema pattern admits it): every
+  `S12.` check id now `{PACKAGE}.`; ASSERTIONS A01–A51; G4 adds A49–A51 (§10.5); A49/A51 take their text from the
+  note's *last* bullet (`RESTATED`, §10.10.6), the rest as before; A49–A51 cited by test name (`test_a49_*` in
+  `test_e01_b_seider3.py`, `test_a50_*`/`test_a51_*` in `test_e01_a_cost.py`); the G10 limitation states the five
+  unverified ranges and C7; one E01b limitation (numerics changed, reviewer pending, Q-B defaults, A49 is
+  transcription verification).
+- C6′ fix (found by the S12b generator's mypy at `da0eadd9`, status `implemented`, 70/76, fail `S12b.mypy`):
+  `idaes_crosscheck.py` `motor()` builds its row as `pump()` does (`out.update`), so the dict type checks; YAML
+  values byte-identical, only `script_sha256` moves. The `da0eadd9` manifest is discarded, not committed.
+
+## Handoff (2026-10-29, E01b build 3 complete) — resume from here
+
+- **Done on wp/E01b** (no push, no merge): `ed559607` A49 (`seider3.yaml`, `test_e01_b_seider3.py`; brief 3);
+  `11b9ab0b` C5′ (A15 worst rel 1.02e-14); `23a5d488` package tests (A44 at CE 500, A50, A51, tripwire 5);
+  `578e6929` P2 drum `floor` (isolated); `c0173953` fixtures + set sha256 `b70d6f22…933f` pinned; `da0eadd9`
+  generator → S12b; `1fd29546` crosscheck mypy fix; `0a6ef034` manifest `evidence/S12b/1fd29546…` (`tested`,
+  71/76, 0 fail; unsupported A48, G10, G8, gate, CI); `b4e161e5` T08 harvest.
+- **Gates run:** E01 suite + t08 inventory 222 passed, 1 skipped (acceptance §10.6.4 and §10.10.7 item 9: cmp 0,
+  `cost_hand.py --check` 0, grep 0 hits, `a48_release_check()` = (fail, 5)); `s11_identity.py` PASS n=54494
+  changed=[]; S12b manifest G6 (A33–A36, nlp env) pass. Not run: full `scripts/gate.sh`, CI.
+- **C7** is `docs/briefs/QA1b.patch` (untracked; `git apply --check` clean on `b4e161e5`): the five flags of
+  §10.10.8, tripwire 0/`pass` + negative case (turbine flipped back), primary-flag assertion all True, p1_th_c1
+  fixture (the turbine's `verified`), sha256 `23d103d8…f6fb` re-pinned (t08, licences, E01A log), generator texts.
+  Tested in a scratch tree: E01 suite 222 passed; `a48_release_check()` = (pass, 0). Apply only on Frank's approval.
+- **Next (orchestrator):** the `reviewer` pass (numerics changed); the batched design-lane items: the C4′/build-3
+  DECISION on A44 (orchestrator-ruled), the A49 FACT lines (set basis in the universe, implied constants as
+  `same`), `P1_OPEX_TOTAL` as a chain input; then gate, CI, merge.

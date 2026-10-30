@@ -107,7 +107,10 @@ def test_p2_is_a_complete_sslw_program_with_floored_exchangers_and_a_sized_drum(
         assert f"capex.purchased.{item}" in p.output_ids
     entries = dict(p.regime.entries)
     assert entries["U-HEAT.size"] == entries["U-FLASH.duty.size"] == "floor"
-    assert entries["U-FLASH.drum.size"] == "units:1"
+    # E01b (design §10.10.7 M1, R-898): the vertical-vessel fit's range starts at 4,200 lb, so the
+    # drum (≈ 237 lb) is floored too; every P2 capital row is now floored (§9.7's risk; P2 is not
+    # resized). The drum still carries its own size regime and rows.
+    assert entries["U-FLASH.drum.size"] == "floor"
     assert entries[DORMANT] == "active"
 
 
