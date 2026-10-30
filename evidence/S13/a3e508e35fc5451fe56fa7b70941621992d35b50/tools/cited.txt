@@ -58,6 +58,7 @@ step11/venv-idaes.freeze.txt
 step12/rc-step12.json
 step12/g10-adapter-halves-v3.json
 step12/g11-coverage-v3.json
+step12/g11-coverage-v3.runs.json
 step12/g12-real-loop-v3.json
 step12/g12-real-loop-v3-edges.json
 step12/m02-tests.junit.xml

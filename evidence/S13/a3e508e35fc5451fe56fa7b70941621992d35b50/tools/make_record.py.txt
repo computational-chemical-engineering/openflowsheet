@@ -114,8 +114,9 @@ ROWS: list[tuple[int, str, str, str, list[str], str | None]] = [
     (12, "V03.A20 (M07a.A41: M02 G10, G11, G12)", f"{L}, reactor environment from `C`'s lock, one thread",
      "environment built and verified; G10v3 (A42 1.56e-08), G11v3 and G12 as M02's manifest judges them; M02 tests "
      "with the reactor 570 passed", ["step12/rc-step12.json"], "step12/rc-step12.json"),
-    (12, "(G10, G11, G12, G12 edges, M02 tests, environment, host)", "local", "—",
-     ["step12/g10-adapter-halves-v3.json", "step12/g11-coverage-v3.json", "step12/g12-real-loop-v3.json",
+    (12, "(G10, G11, G11's runs, G12, G12 edges, M02 tests, environment, host)", "local", "—",
+     ["step12/g10-adapter-halves-v3.json", "step12/g11-coverage-v3.json", "step12/g11-coverage-v3.runs.json",
+      "step12/g12-real-loop-v3.json",
       "step12/g12-real-loop-v3-edges.json", "step12/m02-tests.junit.xml", "step12/env-manifest.json",
       "step12/host.txt"], None),
     (13, "V03.A20 (W23)", "local, project venv", "`m04_reference.py --check` exit 0 (\"11943 claims passed\"); "
