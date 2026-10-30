@@ -1,0 +1,13 @@
+tests/test_e01_b_nlp.py
+tests/test_e01_integration.py
+tests/test_m03_nlp_greybox.py
+tests/test_m05_basis.py
+tests/test_m05_basis_v2_c1.py
+tests/test_m05_c1_projection.py
+tests/test_m05_g10_replay.py
+tests/test_m05_parent.py
+tests/test_m05_projection.py
+tests/test_m05_readiness.py
+tests/test_m05_surrogate_truth.py
+tests/test_m05_trf.py
+tests/test_m05_zero_flow.py

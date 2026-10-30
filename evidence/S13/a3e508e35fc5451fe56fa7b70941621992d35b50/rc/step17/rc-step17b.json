@@ -1,0 +1,49 @@
+{
+ "checks": [
+  {
+   "command": "rc venv + requirements-coolprop.lock (--no-deps --require-hashes), OPENFLOWSHEET_REQUIRE_COOLPROP=1, OFS_S07_BUILD_PYTHON: pytest -rs <modules>",
+   "exit_code": 0,
+   "id": "a22.17b.coolprop_modules",
+   "junit": {
+    "failed": 0,
+    "passed": 4174,
+    "skipped": 0
+   },
+   "junit_sha256": "c0a143af3a70bdf2126fd79f05cd97bb19cfd166a409ed8ae8535bcf23815481",
+   "modules": [
+    "tests/test_s07_broad.py",
+    "tests/test_s07_coolprop.py",
+    "tests/test_s07_near_critical.py",
+    "tests/test_s07_packaging.py",
+    "tests/test_s07_registration.py",
+    "tests/test_s11_bases.py",
+    "tests/test_s11_routing.py",
+    "tests/test_s11_thermal_binding.py",
+    "tests/test_s11_thermal_kernel.py",
+    "tests/test_s11_thermal_machines.py",
+    "tests/test_s11_thermal_solve.py",
+    "tests/test_s11_thermal_units.py",
+    "tests/test_s11_verifier_forms.py",
+    "tests/test_s11_w27_v3.py"
+   ],
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "17b"
+}

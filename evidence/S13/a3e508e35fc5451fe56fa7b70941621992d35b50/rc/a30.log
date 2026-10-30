@@ -1,0 +1,3 @@
+wrote /home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/rc/a30/a30-inventory-x86_64.json (322564 bytes) and /home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/rc/a30/t08-a30-x86_64.json
+x86_64: 381 objects in 8 compiled distributions (casadi, cffi, cryptography, numpy, pydantic-core, pyyaml, rpds-py, scipy); required closure 150
+A30 PASS: {'undispositioned_in_required_closure': [], 'metis_reached_from_project_paths': [], 'pass': True}

@@ -1,0 +1,84 @@
+{
+ "checks": [
+  {
+   "command": "scripts/m03_nlp_check.sh PREFIX CACHE -- -o junit_family=xunit1 --junitxml=...",
+   "exit_code": 0,
+   "id": "a60.w24.nlp_tier_and_inventory",
+   "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 190
+   },
+   "result": "pass"
+  },
+  {
+   "command": "nlp env: pytest -q -rs -p no:cacheprovider -m 'nlp or not nlp' tests/test_m05_*.py tests/test_m03_nlp_isolation.py tests/test_m03_nlp_greybox.py",
+   "exit_code": 0,
+   "id": "a60.w24.m03_m05_all_tiers",
+   "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 2,
+    "tests": 642
+   },
+   "junit_sha256": "156ff438509b4bc80cb2163097643679f93af03878ea6bd6b5d9910c94ff1d39",
+   "result": "pass"
+  },
+  {
+   "command": "nlp env: python scripts/m05_wo9_real.py --replay",
+   "exit_code": 0,
+   "id": "a60.w24.m05_g10_real_replay",
+   "last_line": "REPLAY PASS REAL differences=0",
+   "result": "pass"
+  },
+  {
+   "command": "python docs/derivations/scripts/m03_reference.py --check",
+   "exit_code": 0,
+   "id": "a60.w24.m03_reference_check",
+   "last_line": "benchmarks/m03/reference_values.json is byte-identical to the generator's output",
+   "result": "pass"
+  },
+  {
+   "all_count": 190,
+   "command": "nlp env: pytest --collect-only -q -p no:cacheprovider -m nlp <the modules>; the same over tests/ (its exit status not judged)",
+   "equal": true,
+   "id": "a60.w24.nlp_selection",
+   "modules": [
+    "tests/test_e01_b_nlp.py",
+    "tests/test_e01_integration.py",
+    "tests/test_m03_nlp_greybox.py",
+    "tests/test_m05_basis.py",
+    "tests/test_m05_basis_v2_c1.py",
+    "tests/test_m05_c1_projection.py",
+    "tests/test_m05_g10_replay.py",
+    "tests/test_m05_parent.py",
+    "tests/test_m05_projection.py",
+    "tests/test_m05_readiness.py",
+    "tests/test_m05_surrogate_truth.py",
+    "tests/test_m05_trf.py",
+    "tests/test_m05_zero_flow.py"
+   ],
+   "result": "pass",
+   "selected_count": 190,
+   "selected_exit_code": 0
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "w24-nlp-trf"
+}

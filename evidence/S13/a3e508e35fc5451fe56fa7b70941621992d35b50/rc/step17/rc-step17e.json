@@ -1,0 +1,170 @@
+{
+ "checks": [
+  {
+   "exit_code": 0,
+   "id": "a22.17e.t08_a43",
+   "record_sha256": "97d466f37ecc95f00970437901c5b49e4d7cb73751cc1c5a9108bf9fb358ed09",
+   "result": "pass"
+  },
+  {
+   "id": "a17.ship_set",
+   "members": 367,
+   "result": "pass",
+   "rows": {
+    "benchmarks/s10/records.yaml": {
+     "count": 1,
+     "expected": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6",
+     "member": "openflowsheet/_data/benchmarks/s10/records.yaml",
+     "ok": true,
+     "sha256": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6"
+    },
+    "benchmarks/s10/vle/kurihara1993_binaries.csv": {
+     "count": 1,
+     "expected": "986641d8a6d6b6d44ac1eb3cfc8f35e39d71d72fe549978d34197a4449eb1cd3",
+     "member": "openflowsheet/_data/benchmarks/s10/vle/kurihara1993_binaries.csv",
+     "ok": true,
+     "sha256": "986641d8a6d6b6d44ac1eb3cfc8f35e39d71d72fe549978d34197a4449eb1cd3"
+    }
+   },
+   "wheel": "openflowsheet-0.3.0-py3-none-any.whl"
+  },
+  {
+   "id": "a17.e01_data",
+   "result": "pass",
+   "rows": {
+    "openflowsheet/_data/assessment/cost/chains.json": {
+     "count": 1,
+     "expected": "d4707a829a9ed6136c7cd06b5e398dd1831ad6b1504af1dfbfe296e56e99fd52",
+     "member": "openflowsheet/_data/assessment/cost/chains.json",
+     "ok": true,
+     "sha256": "d4707a829a9ed6136c7cd06b5e398dd1831ad6b1504af1dfbfe296e56e99fd52"
+    },
+    "openflowsheet/_data/assessment/cost/sslw-idaes-v1.json": {
+     "count": 1,
+     "expected": "23d103d897d01c436f191285e38f305ff4374e42aa75c7f2c5a080984dbef6fb",
+     "member": "openflowsheet/_data/assessment/cost/sslw-idaes-v1.json",
+     "ok": true,
+     "sha256": "23d103d897d01c436f191285e38f305ff4374e42aa75c7f2c5a080984dbef6fb"
+    },
+    "openflowsheet/_data/assessment/index/bls-ppi-wpu11-annual-v1.json": {
+     "count": 1,
+     "expected": "1c36f463a0a61123f7b71d82c848954aae61305a0a550a735cefb3c77c4ba578",
+     "member": "openflowsheet/_data/assessment/index/bls-ppi-wpu11-annual-v1.json",
+     "ok": true,
+     "sha256": "1c36f463a0a61123f7b71d82c848954aae61305a0a550a735cefb3c77c4ba578"
+    },
+    "openflowsheet/_data/assessment/index/eurostat-ppi-c28-ea-annual-v1.json": {
+     "count": 1,
+     "expected": "a16dad15929cf747c57621b104ee15ce4a885215ae00442396bc81fd977a5529",
+     "member": "openflowsheet/_data/assessment/index/eurostat-ppi-c28-ea-annual-v1.json",
+     "ok": true,
+     "sha256": "a16dad15929cf747c57621b104ee15ce4a885215ae00442396bc81fd977a5529"
+    },
+    "openflowsheet/_data/assessment/index/frb-g5a-annual-v1.json": {
+     "count": 1,
+     "expected": "0be392930ed58c6c035e274cdcfbdfe058eced3dd8a79c573bf0c71ab5cc78a6",
+     "member": "openflowsheet/_data/assessment/index/frb-g5a-annual-v1.json",
+     "ok": true,
+     "sha256": "0be392930ed58c6c035e274cdcfbdfe058eced3dd8a79c573bf0c71ab5cc78a6"
+    },
+    "openflowsheet/_data/assessment/lca/gwp100-ipcc-ar6-v1.json": {
+     "count": 1,
+     "expected": "9b307aad8fa5faae7dba951b4097b4eebe030436019cd16a113fc71e11b808de",
+     "member": "openflowsheet/_data/assessment/lca/gwp100-ipcc-ar6-v1.json",
+     "ok": true,
+     "sha256": "9b307aad8fa5faae7dba951b4097b4eebe030436019cd16a113fc71e11b808de"
+    },
+    "openflowsheet/_data/assessment/lca/test-background-v1.json": {
+     "count": 1,
+     "expected": "a7bfffe64fe824ba255d3b8625a3014d4a7209fdb4ff1dd74caeca7510a58d63",
+     "member": "openflowsheet/_data/assessment/lca/test-background-v1.json",
+     "ok": true,
+     "sha256": "a7bfffe64fe824ba255d3b8625a3014d4a7209fdb4ff1dd74caeca7510a58d63"
+    }
+   }
+  },
+  {
+   "id": "a17.no_repository_only_file",
+   "present": [],
+   "result": "pass"
+  },
+  {
+   "exits": {
+    "step17e-checkout": 0,
+    "step17e-lock": 0,
+    "step17e-probe": 0,
+    "step17e-venv": 0,
+    "step17e-wheel": 0
+   },
+   "id": "a19.fresh_venv",
+   "result": "pass"
+  },
+  {
+   "id": "a19.site_packages",
+   "result": "pass"
+  },
+  {
+   "a": {
+    "is_file": true,
+    "path": "/home/frankp/.cache/of-rc-v03-a3e508e/wheelvenv/lib/python3.13/site-packages/openflowsheet/_data/benchmarks/s10/records.yaml",
+    "sha256": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6"
+   },
+   "id": "a19.a",
+   "result": "pass"
+  },
+  {
+   "b": {
+    "certificate_describes_equal": true,
+    "data_sha256": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6",
+    "provider_id": "wilson-ig-v2"
+   },
+   "id": "a19.b",
+   "result": "pass"
+  },
+  {
+   "checkout_sha256": "c1fe6d21d9574253e56b09276854e4ac71d40e9ed5d0d7aebd5792b38826f63b",
+   "id": "a19.c",
+   "installed_sha256": "c1fe6d21d9574253e56b09276854e4ac71d40e9ed5d0d7aebd5792b38826f63b",
+   "result": "pass",
+   "states": [
+    "A12",
+    "RE1",
+    "RE2",
+    "RE3"
+   ]
+  },
+  {
+   "d": {
+    "message": "records_missing: benchmarks/s10/records.yaml does not exist (the real records are WO-S10-3's, read from a source checkout only; R-706)",
+    "type": "RecordError"
+   },
+   "id": "a19.d",
+   "result": "pass"
+  },
+  {
+   "checkout_sha256": "f316359925292eea80015da733a11c366d4525882cc2cf0f21134d9e16b25953",
+   "id": "a19.probe_outputs",
+   "installed_sha256": "2a7dc4a48fb14a727126b56ec6b197941a78a00242250bb64e123e06e618e6f3",
+   "module_file": "/home/frankp/.cache/of-rc-v03-a3e508e/wheelvenv/lib/python3.13/site-packages/openflowsheet/__init__.py",
+   "result": "pass",
+   "version": "0.3.0"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "17e"
+}

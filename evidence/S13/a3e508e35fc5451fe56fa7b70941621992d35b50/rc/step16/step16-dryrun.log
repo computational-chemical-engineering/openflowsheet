@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/benchmarks/m06/w27/dryrun.py", line 189, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/benchmarks/m06/w27/dryrun.py", line 160, in main
+    summary = run(args.out, work)
+  File "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/benchmarks/m06/w27/dryrun.py", line 52, in run
+    coverage = classifier.coverage_document(facts.load_facts(), snapshot.build_snapshot())
+                                                                ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/benchmarks/m06/w27/snapshot.py", line 329, in build_snapshot
+    routes = _routes_bases_v1(binding, ids, registration_version)
+  File "/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/benchmarks/m06/w27/snapshot.py", line 258, in _routes_bases_v1
+    raise SnapshotUnsupportedError(
+    ...<2 lines>...
+    )
+benchmarks.m06.w27.snapshot.SnapshotUnsupportedError: registry_snapshot: unsupported(provider 'iapws95-v1': no registered records and phases, W27-R63)

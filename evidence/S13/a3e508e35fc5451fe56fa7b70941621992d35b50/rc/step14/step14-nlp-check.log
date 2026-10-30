@@ -1,0 +1,14 @@
+=== pytest -m nlp (/home/frankp/Codes/OpenFlowsheet/.claude/worktrees/m05/.venv-nlp) ===
+........................................................................ [ 37%]
+........................................................................ [ 75%]
+..............................................                           [100%]
+- generated xml file: /home/frankp/Codes/OpenFlowsheet/.claude/worktrees/rc-v03-a3e508e/evidence/S13/a3e508e35fc5451fe56fa7b70941621992d35b50/artifacts/rc/step14/nlp.junit.xml -
+190 passed, 49 deselected in 48.00s
+--- pytest -m nlp: exit 0
+=== inventory --check (NLP-1 workload) ===
+--check passed: /home/frankp/.cache/of-rc-v03-a3e508e/nlp-wt/benchmarks/m03/ipopt-inventory-x86_64.json reproduced (G1 PASS G2 PASS G3 PASS G4 PASS G5 PASS G6 PASS)
+--- inventory --check: exit 0
+=== inventory --check (ipopt executable workload) ===
+--check passed: /home/frankp/.cache/of-rc-v03-a3e508e/nlp-wt/benchmarks/m05/trsp-inventory-x86_64.json reproduced (G1 PASS G2 PASS G3 PASS G4 PASS G5 PASS G6 PASS)
+--- inventory --check (trsp-exe): exit 0
+=== m03_nlp_check.sh: PASSED ===

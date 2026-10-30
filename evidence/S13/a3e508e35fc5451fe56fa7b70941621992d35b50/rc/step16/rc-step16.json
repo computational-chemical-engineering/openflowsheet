@@ -1,0 +1,82 @@
+{
+ "checks": [
+  {
+   "command": "OPENFLOWSHEET_REQUIRE_BROWSER=1 pytest -q -rs -p no:cacheprovider tests/test_m06_*.py",
+   "exit_code": 0,
+   "id": "a60.w26.m06_tests",
+   "junit": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 662
+   },
+   "junit_sha256": "af34d2cbebc6d6b9e58eba1f98b012c2114fe75feeeb19656a14c1412645737a",
+   "result": "pass"
+  },
+  {
+   "command": "node --test --test-reporter=spec \"tests/web/*.test.mjs\"",
+   "exit_code": 0,
+   "id": "a60.w26.web_unit_tests",
+   "last_line": "\u2139 duration_ms 190.274731",
+   "result": "pass"
+  },
+  {
+   "id": "a60.w26.g15_registered_states",
+   "junit_sha256": "af34d2cbebc6d6b9e58eba1f98b012c2114fe75feeeb19656a14c1412645737a",
+   "nodes": {
+    "tests.test_m06_w27_coverage::test_committed_coverage_json_is_g14_and_this_builds_classification": "passed",
+    "tests.test_m06_w27_coverage::test_s11_the_v2_snapshot_refuses_this_build": "passed",
+    "tests.test_m06_w27_harness::test_a23_run_record": "passed",
+    "tests.test_m06_w27_harness::test_a79b_an_unpinned_attempt_through_the_harness": "passed",
+    "tests.test_m06_w27_scorer::test_candidate_states[W27-S11]": "passed",
+    "tests.test_m06_w27_scorer::test_candidate_states[W27-S12]": "passed",
+    "tests.test_m06_w27_scorer::test_candidate_states[W27-S13]": "passed",
+    "tests.test_m06_w27_scorer::test_candidate_states[W27-S14]": "passed",
+    "tests.test_m06_w27_scorer::test_candidate_states[W27-S15]": "passed",
+    "tests.test_m06_w27_scorer::test_candidate_states[W27-S16]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S01]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S02]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S03]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S04]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S05]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S06]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S07]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S08]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S09]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S10]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S17]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S18]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S19]": "passed",
+    "tests.test_m06_w27_scorer::test_harness_states[W27-S20]": "passed",
+    "tests.test_m06_w27_scorer::test_the_twenty_states_are_registered": "passed"
+   },
+   "result": "pass",
+   "skipped_total": 0
+  },
+  {
+   "command": "python -m benchmarks.m06.w27.dryrun --out evidence/M06/W27/artifacts/dry-run/a3e508e",
+   "exit_code": 1,
+   "id": "a60.w26.w27_v1_refusal",
+   "last_line": "benchmarks.m06.w27.snapshot.SnapshotUnsupportedError: registry_snapshot: unsupported(provider 'iapws95-v1': no registered records and phases, W27-R63)",
+   "result": "pass",
+   "summary_written": false
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "a3e508e35fc5451fe56fa7b70941621992d35b50",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "w26-web-shell"
+}
