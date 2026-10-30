@@ -108,3 +108,32 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   skip, matched by its reason text, on aarch64 only; x86-64 stays 0 skipped; any other skip fails (`ci.yml`, 17b
   step; tried on five synthetic logs: arm+A31b pass, x86+A31b fail, arm+other fail, arm+both fail, none pass).
   Reversible by: reverting that commit.
+
+## WO-6 handoff (the new C is the commit that adds this section)
+
+- **Branch** `wp/V03-rc`. Old C `4fa15efa` is superseded, never to be judged. The new C is this commit, = `4fa15efa` +
+  `fe61ae9d` (R-902 in `scripts/s11_w27_s4.py`, with a control) + `49a9dfc5` (17b's aarch64 A31b skip in `ci.yml`) +
+  this log. No D2.4 path changed after WO-5 (`git diff --name-only 28a2be21 <C> -- src schemas benchmarks
+  requirements*.lock pyproject.toml MANIFEST.in README.md LICENSE NOTICE` is empty). Dispatch: `gh workflow run ci.yml
+  --ref wp/V03-rc -f rc_alpha=true` (only that input).
+- **Full gate at `fe61ae9d`** (clean worktree `.claude/worktrees/gate-v03-fe61ae9`, main `.venv` tools): GATE PASS,
+  14757 passed, 3206 skipped, 197 deselected (2710 s). `49a9dfc5` changes only `ci.yml` (A15 test 2 passed).
+- **Runner** (out of tree, as 0.2.0's): `~/.cache/of-rc-v03-4fa15ef/tools/` — `run_local.sh` (steps 2, 6–17),
+  `run_step14.sh` (now passes the 13 `mark.nlp` modules), `m07_rc_external.py` (0.2.0's, output path S13),
+  `g12keep.py`, `collect_records.py` (args: artifacts/rc, evidence/S13/<C>/rc, cited.txt, C, docs/v03-rc-record.md).
+  Re-run from a fresh `W` and a clean detached worktree at the new C: copy `tools/`, set the worktree path, then
+  `bash $W/tools/run_local.sh <wt>` (about 1 h 40 min).
+- **What ran at old C (local, 63 commands)**: all exit 0 except steps 14, 16 and 17b (above). Records at old C passed:
+  2, 6–13, 15 (carry from `2d945b5d`: carried; check, replay exit 0), 17a, 17c (`["coolprop", "lca"]`, measure
+  `pass`), 17d (A24, A25 lca; A33–A36 nlp), 17e (A17, A19 (a)–(d) incl. the superset (c)); step 8 surface PASS.
+  **None carries**: the RC record must cite records whose `commit` is C, so every step re-runs at the new C. The old
+  run is diagnostic only (`~/.cache/of-rc-v03-4fa15ef/`, worktree `.claude/worktrees/rc-v03-4fa15ef`).
+- **Expected at the new C**: steps 14 and 17b pass (the fixes above); **step 16 still FAILs** on G15's W27 dry run
+  (`registry_snapshot: unsupported(… iapws95-v1 …, W27-R63)`). That is a design-lane stop (W26's G15 vs §2.1's v1
+  snapshot refusal). Record it as FAIL; do not change the step.
+- **Not done**: steps 2–17 at the new C; `collect_records.py` + `cited.txt`; `docs/v03-rc-record.md` (in
+  `v02-rc-record.md`'s form; step cells must be digits, so 17a–17e are rows with step `17`); `release/rc-trees/<C>.json`
+  (`v0_3_gate.py --rc C --write-tree-record`); the S13 manifest generator (none exists; S13a's pattern: A25–A27
+  `unsupported` until WO-7/8, the 17c part calls `MEASURES["mr12_extras_v03"]` with `evidence=evidence/S13`); CI ids.
+- **Open for the design lane (batched)**: step 16's G15 dry run (stop); R-902's reach to the S4 check; A19 (c)'s "P1
+  state" (superset accepted for now); the 17b A31b skip (orchestrator ruling).
