@@ -938,8 +938,18 @@ jobs:
           set -e
           echo "17b pytest exit status $status" | tee -a "$OUT/17b-${{ matrix.runner }}.log"
           [ "$status" -eq 0 ] || exit 1
-          if grep -qE '[0-9]+ skipped' "$OUT/17b-${{ matrix.runner }}.log"; then
-            echo "::error::step 17b requires 0 skipped"; exit 1
+          # 0 skipped, except S07's one registered platform skip on aarch64 (A31a is x86-64's;
+          # orchestrator ruling, docs/V03_RC_DECISIONS.md), matched by its reason text.
+          log="$OUT/17b-${{ matrix.runner }}.log"
+          a31b="A31a holds on x86_64 only; this machine is aarch64 (A31b)"
+          skipped=$(grep -oE '[0-9]+ skipped' "$log" | tail -n1 | grep -oE '^[0-9]+' || true)
+          allowed=0
+          if [ "${{ matrix.runner }}" = "ubuntu-24.04-arm" ] && grep -E '^SKIPPED ' "$log" | grep -qF "$a31b"; then
+            allowed=1
+          fi
+          other=$(grep -E '^SKIPPED ' "$log" | grep -vcF "$a31b" || true)
+          if [ "${skipped:-0}" -gt "$allowed" ] || [ "${other:-0}" -ne 0 ]; then
+            echo "::error::step 17b requires 0 skipped (aarch64: only A31b's registered skip)"; exit 1
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

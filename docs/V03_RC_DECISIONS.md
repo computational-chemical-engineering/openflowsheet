@@ -95,8 +95,16 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
 - **Step 14 FAIL (tooling)** — `m03_nlp_check.sh` with no test paths collects all of `tests/`; three
   `tests/test_s10_*.py` modules (newer than 0.2.0) import `mpmath` at module level, absent from the audited nlp
   environment → collection errors, `pytest -m nlp: exit 2`. Both inventory `--check`s exit 0. Fix in the runner only
-  (not in C): pass the modules that hold `mark.nlp`, as E01's manifest does (run N); `-m nlp` selects the same nodes.
+  (not in C): pass the modules that hold `mark.nlp`, as E01's manifest does (run N); measured at C: `-m nlp`
+  collects the same 190 nodes from those 13 modules as from `tests/` (`--collect-only` lists identical).
 - **Step 16 FAIL — stop (design lane)** — `python -m benchmarks.m06.w27.dryrun` (M06 G15's dry run, part of W26's
   G1–G15) refuses: `SnapshotUnsupportedError: registry_snapshot: unsupported(provider 'iapws95-v1': no registered
   records and phases, W27-R63)`, the v1 snapshot refusal spec §2.1 records for W27's coverage. `tests/test_m06_*.py`
   passed and `node --test` passed. A fix touches `benchmarks/` (D2.4) or changes what step 16 runs: not chosen here.
+- CI at `4fa15efa` (push 41092667441, dispatch 41092667216; orchestrator's reading): `rc-steps` (both), `dist`,
+  `bundle-set`, `rc-ensemble` success; every default-suite job fails exactly the S4 test above; `rc-coolprop` aarch64
+  also has one skip, `tests/test_s07_registration.py:242: A31a holds on x86_64 only; this machine is aarch64 (A31b)`.
+- DECISION (orchestrator ruling, batched for the verdict): 17b's CI check allows exactly that registered platform
+  skip, matched by its reason text, on aarch64 only; x86-64 stays 0 skipped; any other skip fails (`ci.yml`, 17b
+  step; tried on five synthetic logs: arm+A31b pass, x86+A31b fail, arm+other fail, arm+both fail, none pass).
+  Reversible by: reverting that commit.
