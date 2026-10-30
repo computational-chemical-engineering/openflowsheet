@@ -119,6 +119,19 @@ ROWS: list[tuple[int, str, str, str, list[str], str | None]] = [
       "step12/g12-real-loop-v3.json",
       "step12/g12-real-loop-v3-edges.json", "step12/m02-tests.junit.xml", "step12/env-manifest.json",
       "step12/host.txt"], None),
+    (12, "V03.A34 (W21 (e); R-375, R-909): G11's experiment results kept and audited",
+     f"{L}, reactor environment from `C`'s lock, one thread; the audit over the committed records",
+     "G11 re-run at `C` with step 12's command through `tools/g11keep.py.txt` (`tools/run_g11keep.sh`, exit 0, 1758 s; "
+     "worktree clean before and after); `tools/g11collect.py.txt`: 2 runs, 121 points each, 105 boundary points each "
+     "with one experiment, 16 direct points without a store; (b) the re-run's runs file equals step 12's own "
+     "(`cdb7d999…`, committed before the re-run) in `stage`, `accepted`, `child_accepted`, `tube_outlet`, `path` and "
+     "`attempts` at all 242 point-runs, 0 differences; (c) `scripts/m07_g11_experiments_audit.py --runs` step 12's own "
+     "runs file: 210 results, 210 attempts, 0 without a result, 32 direct points, 6 items + schema 0 problems "
+     "(context `job_id` 420, not judged)",
+     ["step12/experiments/rc-step12-experiments.json", "step12/experiments/g11-experiments-run1.json",
+      "step12/experiments/g11-experiments-run2.json", "step12/experiments/g11-experiments-audit.json",
+      "step12/experiments/g11-coverage-v3.json", "step12/experiments/g11-coverage-v3.runs.json"],
+     "step12/experiments/rc-step12-experiments.json"),
     (13, "V03.A20 (W23)", "local, project venv", "`m04_reference.py --check` exit 0 (\"11943 claims passed\"); "
      "`m04_schema_fixtures.py` exit 0; `tests/test_m04_*.py tests/test_evidence_manifests.py` 677 passed",
      ["step13/rc-step13.json", "step13/m04-tests.junit.xml", "step13/step13-generator.log",

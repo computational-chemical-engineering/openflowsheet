@@ -198,3 +198,29 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   at C — design lane. Options: (a) R-902's reach to `s11_identity.py` (exclude `openflowsheet_version` from the
   document digest, with a control); (b) judge A12 (c) at C by S13a's pass at `0ce3748a` plus "src diff = version only";
   (c) a base at K3. Default I would take: (a). Nothing else depends on it.
+
+## WO-7b at C = `a3e508e3`: the verdict's build-lane fixes (F1 = V03.A34, F3, F6, F8)
+
+- F1 step 1 (`3b05511d`): step 12's own `step12/g11-coverage-v3.runs.json` (`cdb7d999…fd0a`) committed before the
+  re-run. Then `tools/run_g11keep.sh` (out of tree, copied to `evidence/S13/<C>/tools/`): `step12-g11`'s exact
+  arguments through 0.2.0's `g11keep.py`, OMP/OPENBLAS/MKL = 1, `OPENFLOWSHEET_EXTERNAL_ROOT` as step 12: exit 0,
+  1758 s (step 12: 1755 s); RC worktree clean before and after; keep dir 105 MB (ignored). `g11collect.py`: 2 runs,
+  121 points, 105 boundary with one experiment each, 16 direct. `g11keep.py.txt` and `g11collect.py.txt` are
+  byte-identical to `evidence/M07/ce993651…/tools/` (`cmp`), so no diff to record (§4 item 2).
+- V03.A34 (Amendment 3, R-909) record `step12/experiments/rc-step12-experiments.json` (`c8e9be63…`), written by
+  `tools/g11record.py.txt`: (a) exit 0; (b) 242 point-runs, 6 members incl. `attempts`, 0 differences
+  (`tools/g11equal.py.txt`); (c) the audit given step 12's own runs file: exit 0, the registered line, j = 420. Also:
+  S12.2/S12.3 (0.2.0's `s12_check.py.txt` against `6fec822`'s record) hold; the collected records are runs 1, 2 bound
+  to the re-run's runs file, per-run (label, path) multisets equal step 12's own (210 boundary, 32 direct).
+  Controls of `g11equal.py` on 0.2.0's committed records: passes unmodified; fails with one `stage` changed, one
+  `attempts` changed, two labels swapped, a member added on one side only, run 1 given twice, one record path changed.
+- DECISION: TMPDIR for the re-run → private `~/.cache/v03rc-tmp/wo7b/tmp` (brief rule; inert: G11's stores go to the
+  keep dir, step 12 used the default). Alternative: the default. Reversible by: deleting one `export` in
+  `run_g11keep.sh` and re-running.
+- DECISION: A34's record is written by a new tool `g11record.py` (t08_rc's `check`/`finish`, rc-step12.json's
+  provenance) rather than a step in `m07_rc_external.py` → the RC runner stays as it ran. Alternative: a step-12b in
+  `m07_rc_external.py`. Reversible by: moving the function.
+- RC record: step 12's data row cites the runs file; a new step-12 row (V03.A34) cites the six files; `records.json`
+  110 entries (two gzip); `rc_record_problems` → `[]`. F6: step 8's local cell now reads "served D_3 (c_3, R-295)
+  `455d01eb…`; strip c_3 → `383b4e2c…`" (`3970c35a`). F3: one bullet in `## v0.3.0` "What it is not" (`41b99a9b`).
+  F8: ADRs 0050–0052 Accepted (`fa8d4f0e`; rows in `docs/V03_DECISIONS.md`).

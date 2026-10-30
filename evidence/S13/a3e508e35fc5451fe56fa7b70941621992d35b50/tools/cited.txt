@@ -64,6 +64,12 @@ step12/g12-real-loop-v3-edges.json
 step12/m02-tests.junit.xml
 step12/env-manifest.json
 step12/host.txt
+step12/experiments/rc-step12-experiments.json
+step12/experiments/g11-experiments-run1.json
+step12/experiments/g11-experiments-run2.json
+step12/experiments/g11-experiments-audit.json
+step12/experiments/g11-coverage-v3.json
+step12/experiments/g11-coverage-v3.runs.json
 step13/rc-step13.json
 step13/m04-tests.junit.xml
 step13/step13-generator.log
