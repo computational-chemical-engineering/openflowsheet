@@ -80,3 +80,23 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   a superset of any one state. Alternative: one state of the design lane's naming. Reversible by: editing
   `v03_rc.A19_STATES`. **Question for the design lane** (batched): which state "P1" meant.
 - Step 15's carry argument is `2d945b5d` (WO-5's decision above), not the spec's K3; A21's wording follows it.
+
+## The local run at C = `4fa15efa` (2026-10-30, `~/.cache/of-rc-v03-4fa15ef`, worktree `rc-v03-4fa15ef`)
+
+63 commands; all exit 0 except three steps (and the records that read them):
+- **Step 17b FAIL** — `tests/test_s11_w27_v3.py::test_a40_a84_the_build_snapshot_is_s4_and_classifies_the_225_rows`
+  (1 failed, 4173 passed): `scripts/s11_w27_s4.py` compares the S4 snapshot in every member but `git_commit`, so at
+  0.3.0 `package_version` differs from the committed `0.3.0.dev0` (`S4 DIFFERS: 1 problem(s)`). Not CoolProp-gated:
+  it fails in the default suite too, so CI's `check` at C is red on both architectures. K3 had no full gate (R-902's
+  fix covered `test_m06_w27_coverage.py` only).
+- DECISION: apply R-902 to the S4 check (`package_version` excluded beside `git_commit`; the control test also sets
+  it) → outside D2.4, a new C. It narrows a check, so the orchestrator confirms it as R-902's reach before the RC
+  re-runs. Alternative: a register entry of its own. Reversible by: reverting that commit.
+- **Step 14 FAIL (tooling)** — `m03_nlp_check.sh` with no test paths collects all of `tests/`; three
+  `tests/test_s10_*.py` modules (newer than 0.2.0) import `mpmath` at module level, absent from the audited nlp
+  environment → collection errors, `pytest -m nlp: exit 2`. Both inventory `--check`s exit 0. Fix in the runner only
+  (not in C): pass the modules that hold `mark.nlp`, as E01's manifest does (run N); `-m nlp` selects the same nodes.
+- **Step 16 FAIL — stop (design lane)** — `python -m benchmarks.m06.w27.dryrun` (M06 G15's dry run, part of W26's
+  G1–G15) refuses: `SnapshotUnsupportedError: registry_snapshot: unsupported(provider 'iapws95-v1': no registered
+  records and phases, W27-R63)`, the v1 snapshot refusal spec §2.1 records for W27's coverage. `tests/test_m06_*.py`
+  passed and `node --test` passed. A fix touches `benchmarks/` (D2.4) or changes what step 16 runs: not chosen here.

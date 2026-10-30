@@ -57,8 +57,10 @@ def problems(record: dict[str, Any], built: dict[str, Any]) -> list[str]:
     if record["snapshot_sha256"] != registration.sha256_bytes(registration.dump(stored)):
         found.append("snapshot_sha256 is not the SHA-256 of the stored snapshot")
     live = built["snapshot"]
+    # R-902: the build provenance, `git_commit` and `package_version`, is not compared.
+    provenance = ("git_commit", "package_version")
     for key in sorted(set(stored) | set(live)):
-        if key != "git_commit" and stored.get(key) != live.get(key):
+        if key not in provenance and stored.get(key) != live.get(key):
             found.append(f"snapshot member {key!r} differs from the build's")
     for key in ("routes", "wilson_route", "development", "registration_version", "schema"):
         if record.get(key) != built[key]:
