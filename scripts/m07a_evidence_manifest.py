@@ -486,20 +486,28 @@ def mr12_extras_v03(
     return ("pass" if ok else "fail"), value
 
 
-def _m_mr12_extras_v03(inputs: Inputs) -> Part:
-    """`mr12_extras_v03` at `inputs.commit`, from git and step 17c's committed RC record."""
-    ours = _extras(t08._git("show", f"{inputs.commit}:pyproject.toml"))
+def mr12_extras_v03_at(commit: str, step17c: Mapping[str, Any]) -> Part:
+    """`mr12_extras_v03` at `commit`, its new extras and files read from git, over the step 17c
+    record `step17c` (V03 spec §9.3). `scripts/v03_rc.py step17c` calls it on the record it is
+    writing, and the measure on the committed record."""
+    ours = _extras(t08._git("show", f"{commit}:pyproject.toml"))
     theirs = _extras(t08._git("show", f"{V0_2_0}:pyproject.toml"))
     new = sorted(set(ours) - set(theirs))
 
     def show(path: str) -> str | None:
-        if not t08._git_ok("cat-file", "-e", f"{inputs.commit}:{path}"):
+        if not t08._git_ok("cat-file", "-e", f"{commit}:{path}"):
             return None
-        return t08._git("show", f"{inputs.commit}:{path}")
+        return t08._git("show", f"{commit}:{path}")
 
+    return mr12_extras_v03(commit, new, show, step17c)
+
+
+def _m_mr12_extras_v03(inputs: Inputs) -> Part:
+    """`mr12_extras_v03` at `inputs.commit`, from git and step 17c's committed RC record (a
+    missing record fails: its checks are absent)."""
     record = inputs.rc_dir / STEP17C_RECORD
     step17c = _json(inputs, STEP17C_RECORD) if record.is_file() else {}
-    return mr12_extras_v03(inputs.commit, new, show, step17c)
+    return mr12_extras_v03_at(inputs.commit, step17c)
 
 
 STEP12_CERTIFICATES = "step12/certificates"

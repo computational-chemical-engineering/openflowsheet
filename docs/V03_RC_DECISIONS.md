@@ -66,3 +66,17 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   job's `if` becomes `inputs.rc || inputs.rc_alpha`; the dispatch is `rc_alpha=true` (which includes the
   distribution). A15's test reads `inputs.rc` as a substring and still holds. Alternative: a new `rc_v03` input on
   seven jobs. Reversible by: reverting the ci.yml commit.
+- DECISION: where is step 17c's producer (F-V3) and the `mr12_extras_v03` call? → `scripts/v03_rc.py` (committed in
+  C, linted, `tests/test_v03_rc.py`) writes the `t08-rc-v1` records of step 15 and 17a–17e; `step17c` records one
+  check per `MR12_AUDITS_V03` entry (id = its `check` command, result = its exit status) and then calls
+  `m07a_evidence_manifest.mr12_extras_v03_at(C, record)` (the measure's git reading, factored out of
+  `_m_mr12_extras_v03`, behaviour unchanged) as a third check `a22.17c.mr12_extras_v03` (pass, `["coolprop",
+  "lca"]`). The S13 manifest calls `MEASURES["mr12_extras_v03"]` again over the committed record. Steps 11–14 and
+  16 use 0.2.0's `m07_rc_external.py` as 0.2.0 kept it (a tool beside the records). Alternative: everything as
+  out-of-tree tools. Reversible by: reverting the producer commit.
+- DECISION: V03.A19 (c) names "S10's P1 state", which no S10 record defines (S10's real reference states are
+  RE1–RE3; P1–P3 are S10C's column premises) → (c) compares, bitwise (`float.hex`), `evaluate_phase` (both phases,
+  every property and derivative; the liquid's `lnphi` carries γ) and `flash` (K) at RE1, RE2, RE3 and A12's state,
+  a superset of any one state. Alternative: one state of the design lane's naming. Reversible by: editing
+  `v03_rc.A19_STATES`. **Question for the design lane** (batched): which state "P1" meant.
+- Step 15's carry argument is `2d945b5d` (WO-5's decision above), not the spec's K3; A21's wording follows it.
