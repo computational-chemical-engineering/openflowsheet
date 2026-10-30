@@ -869,14 +869,18 @@ def test_coverage_document_and_g14() -> None:
 
 def test_committed_coverage_json_is_g14_and_this_builds_classification() -> None:
     """The committed Tier 0 record: G14 holds, and re-classifying its own snapshot reproduces
-    every row (the classification is a function of facts and snapshot)."""
+    every row (the classification is a function of facts and snapshot). The live snapshot equals
+    the committed one in every field but the build provenance, `git_commit` and `package_version`
+    (R-902: the v1 snapshot refuses this build at W27-R63, so `coverage.json` is not re-taken at a
+    new version)."""
     document = json.loads(registration.COVERAGE_JSON.read_bytes())
     assert coverage.g14(document)["passed"]
     again = coverage.coverage_document(FACTS, document["snapshot"])
     assert again["rows"] == document["rows"] and again["summary"] == document["summary"]
     live = snapshot.build_snapshot(binding=v2_binder())
-    assert {k: v for k, v in live.items() if k != "git_commit"} == {
-        k: v for k, v in document["snapshot"].items() if k != "git_commit"
+    provenance = ("git_commit", "package_version")
+    assert {k: v for k, v in live.items() if k not in provenance} == {
+        k: v for k, v in document["snapshot"].items() if k not in provenance
     }
 
 

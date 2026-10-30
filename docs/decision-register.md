@@ -17726,3 +17726,20 @@ files and a passing verdict, held by E01.A42. This confirms R-857's licence prem
 §9.1 ship set as S05.A26 was for R-616. Both amendments stand as committed.
 
 **Rejected.** *An erratum per assertion*: it would restate R-880's ship set twice and add no check.
+
+## R-902 — W27's committed snapshot is compared with the live build without its build provenance: `package_version` is excluded beside `git_commit`
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | orchestrator ruling on V03 WO-5's F-4 stop (V03 spec §10.1) |
+| Normative text | `tests/test_m06_w27_coverage.py::test_committed_coverage_json_is_g14_and_this_builds_classification`; `docs/RELEASING.md` "After a tag" |
+| Evidence | `docs/V03_RC_DECISIONS.md`: at K3 (0.3.0) the test failed on `package_version` `0.3.0` != the committed `0.3.0.dev0` alone, and the v1 re-take refuses (`registry_snapshot: unsupported(provider 'iapws95-v1': no registered records and phases, W27-R63)`), so `coverage.json` cannot be re-taken at a new version |
+| Affected packages | V03 (WO-5, K3; WO-9), M06 (W27) |
+
+**Decision.** `package_version` in the committed snapshot is build provenance, as `git_commit` already is, and is
+excluded from the live-versus-committed equality the same way. Rows, summary and `list_models_sha256` stay compared
+exactly. RELEASING's claim that no default-gate test needs `coverage.json` at a new version is corrected to this.
+
+**Rejected.** *Compare the base version* (`0.3.0` against `0.3.0.dev0`): it breaks again at `0.4.0.dev0` (WO-9).
+*Re-take `coverage.json`*: the v1 snapshot refuses this build (W27-R63), and V03 spec §5.1 does not re-take it.

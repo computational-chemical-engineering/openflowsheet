@@ -184,7 +184,8 @@ unreleased working envelope, not "v0.2 under development"; they stay until v0.3'
 `pyproject.toml`, `src/openflowsheet/__init__.py`, the two `project_summary` fixtures and
 `tests/test_m06_w27_coverage.py`. At 0.2.0 W27's `coverage.json` was re-taken at that build; from
 0.3.0 it is not, because W27's version-1 snapshot refuses the S11 build (`registry_snapshot: unsupported(provider
-'iapws95-v1' …)`), 0.3.0 claims no W27, and no default-gate test needs it at a new version (R-566 dropped the byte
+'iapws95-v1' …)`), 0.3.0 claims no W27, and the one default-gate test that compares it with the live build treats
+`package_version`, like `git_commit`, as build provenance outside the comparison (R-902; R-566 dropped the byte
 pin; V03 spec §2.1, §5.1, F-4). A version
 string that names a release identifies that release's D2.4 tree and nothing else
 (`tests/test_v02_main_version.py`). `release.yml` refuses a `.devN` version and the gate answers NO
