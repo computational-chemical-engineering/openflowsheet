@@ -1,6 +1,6 @@
 # ADR 0051 — Thermal units on the new bases: declared-regime pure-fluid streams with a carried split under `nTP-v1`, the `thermal.*` family, γ–φ faces for the K02/T05 units, and `wilson-ig-v2` (package S11, second pass)
 
-**Status:** **Proposed, 2026-10-27** (design lane, `architect`; register R-813…R-821). It becomes **Accepted** when:
+**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-27 (design lane, `architect`; register R-813…R-821). It becomes **Accepted** when:
 - S11's evidence manifest is `tested`, with gates G1–G13 passing (`docs/derivations/S11-design.md` §6 and
   `docs/derivations/S11-units-design.md` §6);
 - the single `reviewer` pass has passed tracks C and D against the units design note.
