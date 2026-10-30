@@ -17694,3 +17694,35 @@ is v1's bytes.
 **Rejected alternative.** *Make `load_records(None)` read package data (`pr_c1`'s pattern).* That edits v1, which moves
 both providers' `implementation_sha256`, amends S11.A75's byte pin, and detaches S10's validation verdict from the
 shipped bytes, all for a library convenience that one argument already provides.
+
+## R-900 — MR-12 v03's `lca` entry: the decision is WO-B1/D04's licence audit, and the check is `scripts/e01_d04_inventory.py --check` (V03 spec §9.3 erratum)
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`reviewer`), V03 review (Q3) |
+| Normative text | V03 spec §9.3 (erratum); `scripts/m07a_evidence_manifest.py` `MR12_AUDITS_V03["lca"]` |
+| Evidence | R-870 decides how results from restricted LCA tables are labelled, not the extra's licences. R-857 leaves the Brightway licences "to be confirmed at pinned versions, WO-B1". `docs/E01B_DECISIONS.md` D04 records them in `docs/e01-lca-licences.json`, judged by `scripts/e01_d04_inventory.py --check` (E01.A42). The script requires one of `--packages`, `--data`, `--check`, so the bare command exits 2 |
+| Affected packages | V03 (WO-3, WO-6 step 17c); E01 |
+
+**Decision.** The `lca` extra's licences are accepted on WO-B1/D04's audit. The user installs the extra from PyPI, and
+nothing of it is redistributed. Every distribution in `benchmarks/e01/brightway/lca-pip.lock` has a row with its licence
+files and a passing verdict, held by E01.A42. This confirms R-857's licence premise at the pinned versions. MR-12 v03's
+`lca` entry cites R-900, and its check is `scripts/e01_d04_inventory.py --check`.
+
+**Rejected.** *Cite R-870*: it decides something else. *Cite R-857*: it left the licences unconfirmed.
+
+## R-901 — V03 D-2 and D-3 (T08.A32, S10.A28) are confirmed as amendments under R-617's and R-616's rules; no erratum
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`reviewer`), V03 review (Q2) |
+| Normative text | `tests/test_t08_w2_inventory.py` (`0977e3aa`); `tests/test_s10_provider.py::test_a28_…` (`9bd23e9a`) |
+| Evidence | Each admitted file is pinned by SHA-256, with its own NOTICE strings and three controls each (the pre-Wilson NOTICE, changed bytes, one appended byte). S10's `PACKAGED` entries equal V03 spec §9.1's two files exactly, and at least 20 other S10 files are asserted absent |
+| Affected packages | T08, S10, V03 |
+
+**Decision.** T08.A32 admits Wilson's two files under R-617's attributed-data rule, and S10.A28 is inverted for the
+§9.1 ship set as S05.A26 was for R-616. Both amendments stand as committed.
+
+**Rejected.** *An erratum per assertion*: it would restate R-880's ship set twice and add no check.

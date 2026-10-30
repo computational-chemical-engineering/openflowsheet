@@ -194,7 +194,7 @@ def test_the_git_backed_measure_at_head(tmp_path: Path) -> None:
 # -- MR-12 v03 (V03 spec §9.3, V03.A11): synthetic clauses -----------------------------------------
 
 V03_AUDITS = manifest.MR12_AUDITS_V03
-V03_REGISTER = "# Decision register\n\n## R-624 — coolprop\n\n## R-870 — lca\n"
+V03_REGISTER = "# Decision register\n\n## R-624 — coolprop\n\n## R-900 — lca\n"
 
 
 def _step17c(commit: str = COMMIT, results: dict[str, str] | None = None) -> dict[str, Any]:
@@ -256,7 +256,7 @@ def test_v03_a_record_of_another_commit_fails() -> None:
     assert manifest.mr12_extras_v03(COMMIT, NEW_V03, _show_v03(), other)[0] == "fail"
 
 
-@pytest.mark.parametrize("decision", ["R-624", "R-870"])
+@pytest.mark.parametrize("decision", ["R-624", "R-900"])
 def test_v03_a_decision_not_in_the_register_fails(decision: str) -> None:
     register = V03_REGISTER.replace(f"## {decision} — ", f"## {decision}x — ")
     show = _show_v03(register=register)

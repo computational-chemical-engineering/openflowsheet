@@ -438,8 +438,8 @@ MR12_AUDITS_V03: dict[str, dict[str, str]] = {
         "audit": "docs/derivations/E01-design.md",
         "audit_section": "§4.8.4 and WO-B1",
         "inventory": "docs/e01-lca-licences.json",
-        "check": "scripts/e01_d04_inventory.py",
-        "decision": "R-870",
+        "check": "scripts/e01_d04_inventory.py --check",
+        "decision": "R-900",
     },
 }
 V0_2_0 = "v0.2.0"

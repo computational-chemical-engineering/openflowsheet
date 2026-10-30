@@ -117,6 +117,10 @@ commit. Questions for the design lane are under "Open questions"; measurements u
    turbine/compressor `semantic_role` (Table R: `turbine`, `compressor`) are open for the merge that brings `wp/DOC`
    (spec §10.3 item 9).
 
+**Rulings (V03 review, `docs/reviews/V03-review.md`, 2026-10-30).** Q1: ruled by R-883, the default stands. Q2: confirmed,
+no erratum (R-901). Q3: cite R-900 (F-V1); MR-12 v03's `lca` entry now runs `scripts/e01_d04_inventory.py --check`
+(spec §9.3 erratum). Q4: see "Review fixes" below. Q5: see "Review fixes" below.
+
 ## Merge notes for E01 (expected conflicts, all additive)
 
 - `NOTICE`: E01 and WO-2 each append a block after the IAPWS block; keep both. `PRE_E01_NOTICE_BYTES` and

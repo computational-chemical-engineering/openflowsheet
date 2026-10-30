@@ -348,8 +348,9 @@ check passed at C.
 
 - `coolprop`: audit S07 spec §17, inventory `docs/s07-coolprop-licences.json`, decision R-624, check
   `t07_licence_inventory.py --extra coolprop` (G19).
-- `lca`: audit E01 design §4.8.4 and WO-B1, inventory `docs/e01-lca-licences.json`, decision R-870, check
-  `scripts/e01_d04_inventory.py`.
+- `lca`: audit E01 design §4.8.4 and WO-B1, inventory `docs/e01-lca-licences.json`, decision R-900, check
+  `scripts/e01_d04_inventory.py --check` (E01.A42). *Erratum 2026-10-30 (V03 review, R-900): the decision read R-870 and
+  the check had no mode.*
 
 `test_the_git_backed_measure_at_head`'s HEAD clause moves to the v03 measure. The v02 measure stays judged at
 `RELEASE_0_2_0_COMMIT`.
