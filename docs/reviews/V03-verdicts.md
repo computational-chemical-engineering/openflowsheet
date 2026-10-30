@@ -1,31 +1,229 @@
 # V03 — verdicts on V11–V20, W21–W26 and X31 for `0.3.0`
 
 **Release candidate:** `a3e508e35fc5451fe56fa7b70941621992d35b50`   **Judged:** 2026-10-30   **By:** design lane (`verdict`)
+**Re-judged:** 2026-10-31 (V13, V17, W21, W24)
 
 *WO-7 of the V03 release specification (`docs/derivations/V03-release-spec.md` §10.2, as amended by Amendments 1 and 2).
 Seventeen claimed gates, judged at C. W27 is not claimed (`v0.3-gate-v1`) and has no row. W21 was judged again on
 2026-10-30 in a new judgement (§19.2 item 2), on the same day, so the `Judged` date above is unchanged; see "W21
-re-judged (2026-10-30)". Every other row stands as first judged.*
+re-judged (2026-10-30)". V13, V17, W21 and W24 then re-judged on 2026-10-31 on Frank's ADR 0053
+answers; see "Re-judgement". Every other row stands as first judged.*
 
 | Gate | Verdict | Failing clauses | Travelling limitations | Basis |
 | --- | --- | --- | --- | --- |
 | V11 | PASS | — | L38 | T08 §4.1 with MR-10; at C: K06, T01, T06 and T07 nodes, T08.A10, T08.A35 and M07a.A42 green in step 1 on both architectures (CI dispatch 41108983463: `check.sh: PASSED`, 17856 and 17826 passed, 107 skipped each) |
 | V12 | PASS | — | L02, L26, L27, L28, L29, L30, L-CSTR-1, L-CSTR-2, L-CSTR-3 | T08 §4.2, denominator unchanged (alpha spec §5.1; the v0.3 units are not in it); T05, T05b and build-first B10–B19 nodes green in step 1 on both architectures |
-| V13 | BLOCKED | V13 (e): Frank's `V17 carry` answer in ADR 0053, pending | L10, L22, L23, L24, L36, L38, L43, L-WS-1, L-WS-2 | T08 §4.3, T08.A71 and MR-7; T01, T02, K03 and B40–B49 nodes green in step 1; B50's counterpart: content by M07a.A51 in step 1, digest and schemas by the chain (step 8, three hosts, LINKS unchanged since 0.2.0); the carry under which MR-7 places them is asked again per release (ADR 0053 D2) |
+| V13 | PASS | — | L10, L22, L23, L24, L36, L38, L43, L-WS-1, L-WS-2 | T08 §4.3, T08.A71 and MR-7; T01, T02, K03 and B40–B49 nodes green in step 1; B50's counterpart: content by M07a.A51 in step 1, digest and schemas by the chain (step 8, three hosts, LINKS unchanged since 0.2.0), under Frank's `V17 carry` (ADR 0053, accepted 2026-10-30); re-judged 2026-10-31 |
 | V14 | FAIL | V14 (b) | L01, L08, L20, L21, L43, L-COL-10 | T08 §4.4; T08-verdict-V14b.md (PTC-R1: the saddle clause fails on both registered platforms), unchanged at C: no PTC, homotopy, globalization or continuation source changed since 0.2.0's candidate and no PTC family or SER settings preregistered since (checked); Frank's D3 acceptance in ADR 0053 pending; typed homotopy and the three recovery edges: T04, T02 and T08.A33 nodes green in step 1 |
 | V15 | PASS | — | L02, L14, L19, L20, L33, L-COL-5 | T08 §4.5; T02, T03 and T06 (ADV-05, THM-09) nodes green in step 1 on both architectures; all five step-12 certificates carry uniqueness and dynamic stability NOT_ASSESSED (checked here) |
 | V16 | PASS | — | L16, L17, L18, L32 | T08 §4.6; T06 verdict 1 stands; T08.A48 12 of 12 at C on ref-x86-64, ci-x86-64 and ci-aarch64 (step 7) |
-| V17 | BLOCKED | V17 (a): Frank's `V17 carry` answer in ADR 0053, pending | L11, L12, L13 | T08 §4.7 with MR-1, MR-2 and MR-6; V03 spec §3.3 at step 8 on three hosts: served digest 455d01eb…e125 = D_3, chain rows exactly (1,c_3), (2,c_3), (2,c_2), (2,c_1), (3,None), giving 383b4e2c…, 6c4375b4…, 171dd768… and, with v17-c2's texts, 6d13e13d…; 17 tools and files as registered; G16-b 40 of 40 clean |
+| V17 | PASS | — | L11, L12, L13 | T08 §4.7 with MR-1, MR-2 and MR-6; Frank's `V17 carry` of v17-c2's agent evidence across R-192, R-234 and R-295 (ADR 0053, accepted 2026-10-30; re-judged 2026-10-31); V03 spec §3.3 at step 8 on three hosts: served digest 455d01eb…e125 = D_3, chain rows exactly (1,c_3), (2,c_3), (2,c_2), (2,c_1), (3,None), giving 383b4e2c…, 6c4375b4…, 171dd768… and, with v17-c2's texts, 6d13e13d…; 17 tools and files as registered; G16-b 40 of 40 clean |
 | V18 | PASS | — | L03, L05, L06, L15, L19, L25, L34, L37, L39, L40, L41 | T08 §4.8 with MR-11, and MR-12 as V03 spec §9.3 restates it for the extras new since 0.2.0; T08.A30 PASS on three hosts (244 modules walked, 241 imported, the three registered nlp-extra modules refused as registered; required closures 150, 150, 147, none undispositioned); step 17c: `coolprop` and `lca` each with its entry and its check passing at C; T08.A34 0 violations on every audited set (step 10); T08.A31–A33 nodes green |
 | V19 | PASS | — | — | T08 §4.9; ADR 0022 Accepted with Frank's selection (R-145); `docs/v02-real-chemistry-dossier.md` and `benchmarks/t08/v19/` byte-identical to 0.2.0's candidate (git diff ce993651..C empty, checked here); the A60–A64 record tests green in step 1 |
 | V20 | PASS | — | L04, L07, L09, L31, L32, L38 | T08 §4.10; T08.A46 S = 437 of 440 on ref-x86-64 and ci-aarch64 (gate 418), no crash or other-root, same-class replay 25 of 25; T08.A47 12 of 12 on three hosts, worst success ratio 0.0968; T08.A10 node green |
-| W21 | BLOCKED | W21 (c): Frank's `M02 N1` answer in ADR 0053, pending | L05, L06, L07, L15, L19, L20, L44, L45, L46, L48 | alpha spec §6.1 (ADR 0028 D7) with V03 spec §4 and A34 (R-909); step 12 at C: G10v3, G11v3 and G12 met, reproduce MATCH; judged again 2026-10-30: G11 re-run at C with outcomes equal to step 12's own runs file at 242 of 242 point-runs, its 210 experiment results (105 boundary points per run, 2 runs) kept under rc/step12/experiments/ and audited for blueprint §9.1's six items against the schema with step 12's own runs file, 0 problems (bytes, equality and audit re-run here); the draft notes carry the four reactor statements; out-of-process clause waits on Frank's `M02 N1` answer in ADR 0053, pending |
+| W21 | PASS | — | L05, L06, L07, L15, L19, L20, L44, L45, L46, L48 | alpha spec §6.1 (ADR 0028 D7) with V03 spec §4 and A34 (R-909); step 12 at C: G10v3, G11v3 and G12 met, reproduce MATCH; judged again 2026-10-30: G11 re-run at C with outcomes equal to step 12's own runs file at 242 of 242 point-runs, its 210 experiment results (105 boundary points per run, 2 runs) kept under rc/step12/experiments/ and audited for blueprint §9.1's six items against the schema with step 12's own runs file, 0 problems (bytes, equality and audit re-run here); the draft notes carry the four reactor statements; out-of-process policy: "not a sandbox" in the support matrix and the notes, M02 N1 accepted by Frank (ADR 0053, 2026-10-30); re-judged 2026-10-31 |
 | W22 | PASS | — | L42, L47 | alpha spec §6.2; step 1: M01.A05–A22, A34, A37 and M02 G7, G8 nodes green on both architectures; step 11: crosscheck recomputes byte-equal, IDAES re-run numbers identical (one input hash differs, as registered); step 12: G12 VERIFIED on the route |
 | W23 | PASS | — | L49 | M07 §7.3 and M04 §15: A01–A30, A34, A35 green in step 1; step 13 at C: `m04_reference.py --check` 11943 claims, schema fixtures exit 0, 677 M04 and manifest tests passed, none skipped |
-| W24 | BLOCKED | W24 (a): Frank's `M03 N1` answer in ADR 0053, pending | L19, L44, L46, L48, L49 | M07 §7.3; step 14 at C in the audited nlp environment: nlp tier 190 passed over the 13 modules that carry the marker (the same 190 node ids as over the whole test tree, V03.A33), inventory check exit 0 for both workloads, M03 and M05 tiers 640 passed and 2 skipped (the default-install answers), M05's REAL record replays with 0 differences, `m03_reference.py --check` exit 0 |
+| W24 | PASS | — | L19, L44, L46, L48, L49 | M07 §7.3; step 14 at C in the audited nlp environment: nlp tier 190 passed over the 13 modules that carry the marker (the same 190 node ids as over the whole test tree, V03.A33), inventory check exit 0 for both workloads, M03 and M05 tiers 640 passed and 2 skipped (the default-install answers), M05's REAL record replays with 0 differences, `m03_reference.py --check` exit 0; M03 N1 (the nlp extra's licences) accepted by Frank (ADR 0053, 2026-10-30); re-judged 2026-10-31 |
 | W25 | PASS | — | L44, L45, L46, L48, L49 | M07 §5 on the journey record of J = 2d945b5d (V03 spec §3.4, R-908): step 15 at C carried, `check: ACCEPT`, `replay: bitwise`; decision refined at 653.1500351610193 K at the lower bound, TC-1 holds; R1 36 of 60 cold, R3 48 of 400 cold, none exhausted |
 | W26 | PASS | — | L-WEB-1, L-WEB-2, L-WEB-3, L-WEB-4 | M07 §7.3 with (a) as V03 spec §3.5 restates it (R-903): V03.A32 4 of 4 at step 16 (662 passed with the browser required, 0 skipped; node 92 of 92; the 25 named nodes once each and clean; the dry run's exact W27-R63 refusal, exit 1, no summary file); (b) the CI x86-64 check exports the browser requirement and skips no browser node. G14 not judged at 0.3.0: W27 registration v1 refuses this build (ADR 0050 D9, W27-R63); W27 not claimed |
 | X31 | FAIL | X31 (c) | L-COL-1, L-COL-2, L-COL-3, L-COL-4, L-COL-5, L-COL-6, L-COL-7, L-COL-8, L-COL-9, L-COL-10 | V03 spec §3.2 as pre-registered; RC1–RC4 and their registered matches, and the invalid-specification and phase refusals, green in step 1 on both architectures; S09 verdict 3: "met where available, 3 of 4" (RC4, the refluxed absorber, has one independent reference, BioSTEAM), which §3.2 registers as the failure of the reference clause; Frank's D3 acceptance in ADR 0053 pending |
+
+## Re-judgement
+
+**2026-10-31, at the same candidate C = `a3e508e3…`, under alpha spec §19.2 (R-371) as ADR 0053 D2 and the
+`v0.3-gate-v1` entry carry it (V03 spec §3.1).** Four rows change, in place: V13, V17, W21 and W24 go from `BLOCKED` to
+`PASS`. No other row changes. `Judged` stays 2026-10-30, the date of W21's new judgement. From "Read this first"
+onward, this document is kept as recorded. For the four rows, this section replaces the verdict lines of their
+sections, the "Verdict: W21 `BLOCKED`" line of "W21 re-judged (2026-10-30)", and the statement that all six ADR 0053
+cells are empty. For V14 and X31 it replaces only the word "pending" (Basis cells) and "D3 acceptance to be recorded"
+(limitations list): their D3 cells are now filled, and their verdict words do not change. For every clause not named
+below, the earlier text and evidence stand. This is still an agent verdict, numerical and procedural only. It sets no
+`reviewed`, claims no scientific review or human sign-off, and moves no tolerance, band or classification rule.
+
+**Nothing at C has moved.** The candidate and its step records are those judged on 2026-10-30, first and in W21's new
+judgement (`972343ba`, 23:54:21 +0100). Since then the branch carries one commit, `5cc63136` (23:59:11 +0100), and
+`git diff --stat 972343ba 5cc63136` lists two files: ADR 0053 (its six cells) and the V03 spec (one paragraph after the
+§11 table). No D2.4 path changed since C: `git diff --stat a3e508e3 5cc63136` over `v0_1_gate.TREES` (`src`, `schemas`,
+`benchmarks`, `requirements.lock`, `pyproject.toml`, `MANIFEST.in`, `README.md`, `LICENSE`, `NOTICE`) is empty.
+`scripts/m07a_rc.py` and `docs/support-matrix.md` are byte-unchanged since C, and `CHANGELOG.md` since `41b99a9b`.
+
+### The answers read (ADR 0053 at `5cc63136`, l.49–59; V03 spec §11, the paragraph after the table)
+
+| Item read | Cell (text as committed) | Table T7, with J = 2026-10-30 and R = 2026-10-31 | Counts | What it does here |
+| --- | --- | --- | --- | --- |
+| decisions, `V17 carry` | `accepted, 2026-10-30` — Frank, verbatim: "Reuse 0.2.0's (Recommended)" (the default in this row) | J ≤ 2026-10-30 ≤ R: V13 and V17, listed, wait on it | yes, on its text; the gate reads the cell as empty (F10) | unblocks clause (e) of V13 and clause (a) of V17 |
+| decisions, `M02 N1` | `accepted, 2026-10-30` — "Yes, ship it (Recommended)" (the default) | J ≤ 2026-10-30 ≤ R: W21, listed, waits on it | yes, as above (F10) | unblocks clause (c) of W21 |
+| decisions, `M03 N1` | `accepted, 2026-10-30` — "Accept (Recommended)" (the default) | J ≤ 2026-10-30 ≤ R: W24, listed, waits on it | yes, as above (F10) | unblocks clause (a) of W24 |
+| decisions, `Claim set` | `accepted, 2026-10-30` — "Yes, no W27 claim (Recommended)" (the default) | ≥ J; no listed gate waits on it | yes, as above (F10) | confirms the claim set judged here: seventeen rows, W27 not claimed. N-1's answer of 2026-10-29 fell before J and did not count; this one does |
+| D3, clause `V14 (b)` | `accepted, 2026-10-30` — "Accept (Recommended)" (the default) | ≥ J; V14 is not listed (Table T8 cannot list a FAIL) | yes; the gate reads it | changes no verdict word. V14 stays `FAIL`, and the FAIL is releasable (ADR 0053 D2), with PTC experimental |
+| D3, clause `X31 (c)` | `accepted, 2026-10-30` — "Accept (Recommended)" (the default) | ≥ J; X31 is not listed | yes; the gate reads it | changes no verdict word. X31 stays `FAIL`, releasable with the notes' phrase 13 ("met where available, 3 of 4") |
+| spec §11, N-10 | "Judge as planned (Recommended)": option 1, §3.5's reading | not a gate cell | — | W26 stays `PASS`; it was judged on this default |
+| spec §11, N-11 | "Accept (Recommended)": R-624 and R-900 accepted | not a gate cell; recorded in spec §11, as registered | — | V18 stays `PASS`. MR-12's decision leg (F4) now carries Frank's recorded decision for `coolprop` and `lca` |
+
+**What these answers are.** Each takes its row's default. None chooses an alternative or declines, so §7.3 item 11's
+refusal does not apply. The `V17 carry` row names R-192, R-234 and R-295. Those are the registers of every link in
+`scripts/m07a_rc.py` `LINKS` at C: the gate's own `link_registers` on `git show a3e508e3:scripts/m07a_rc.py` returns
+exactly `('R-192', 'R-234', 'R-295')`, and `links_problems` on ADR 0053 at `5cc63136` returns none. The build lane
+recorded the cells in `5cc63136`. They record Frank's answers to the six items put to him in plain words after W21's new
+judgement. This verdict did not witness that exchange. It reads the record as the authority's decision, as 0.2.0's
+re-judgement read ADR 0042. Evidence class: decisions. Unlike 0.2.0's, whose answer `docs/V02_DECISIONS.md` also logged,
+these answers have no second record: the ADR cells and the spec §11 paragraph of `5cc63136` are the only one.
+
+**Same-day sequencing (a limitation, not a failure).** Table T7 is day-granular. Every cell is dated 2026-10-30 = J,
+and this re-judgement is dated R = 2026-10-31, the day it was written. By the timestamps, W21's new judgement was
+committed at 23:54:21 and the answers at 23:59:11 (+0100), and each cell says it was asked after W21's new judgement.
+The registered order (the Sequencing paragraph above: the audit, W21's new judgement, Frank's answers, one re-judgement
+line) was followed. M02 N1's subject is clause (c), the "not a sandbox" profile, and does not depend on the (e)
+evidence the new judgement added, so the answer waives nothing that judgement found.
+
+### F10 — the decisions table as the gate reads it (blocks step 18's YES; changes no verdict here)
+
+At `5cc63136`, each of the four rows of ADR 0053's decisions table reads `| <item> | <default> || accepted, … |`. The
+`||` makes the third cell empty and puts the answer in a fourth cell that has no header. The gate reads the column
+`Frank's answer`, which is the third. With the gate's own reader, `v0_2_gate.frank_table(text, "frank's answer")` at
+`5cc63136` returns `''` for `Claim set`, `V17 carry`, `M02 N1` and `M03 N1`, and `acceptance_date` returns `None` for
+each. `policy()` therefore reports all four as "not an acceptance of the default". A GFM renderer drops the excess cell
+too, so the rendered ADR shows the column empty. The D3 table is well formed, and the gate reads `V14 (b)` and `X31 (c)`
+as accepted on 2026-10-30. `links_problems` joins the whole row, so it does not see the defect.
+
+*Why it changes no verdict.* The four clauses wait on Frank's decision. The record of that decision exists at
+`5cc63136`: verbatim, dated, in the right row of the right table, and the cell rule (Table T4) applied to the text it
+holds is met. What is wrong is the cell's position, a recording error of the build lane. The gate checks the policy
+ADR independently of this document (§7.2 item 3), so it refuses until the position is corrected. No route lets these
+four `PASS` rows reach a YES while the table reads empty. 0.2.0's re-judgement stood on the same footing: it read
+ADR 0042's cells uncommitted and made their commit, unchanged, a condition.
+
+*The fix (build lane, before step 18).* In each of the four rows, replace `||` with `|`, so the answer is the third
+cell; the answer text and its date stay byte for byte. Checked here on a scratch copy of the ADR with only that change:
+`policy()` then reports no problem for any of Frank's items, with J = 2026-10-30 and R = 2026-10-31. A re-recorded
+answer with a different text, or dated after 2026-10-31, is not the answer read here: Table T7 refuses a date after R
+for the listed gates, and the four rows reopen.
+
+### V13 — BLOCKED → PASS (clause (e) judged again)
+
+- **(e) compatible warm starts: met.** B40–B49 nodes green in step 1. B50's counterpart (MR-7) has its content by
+  M07a.A51 (step 1), and its digest and schemas by the chain, M07a.A37, 8 of 8 on three hosts, as judged on 2026-10-30
+  (V13 table). The carry that MR-7 names is ADR 0053's `V17 carry`, accepted 2026-10-30, whose row names "V17, and
+  T08.B50's surface" and all three registers.
+- (a)–(d): met, unchanged.
+- **Against 0.2.0 (PASS).** Same word. The carry is dated for 0.3.0, over the same three links (`LINKS` byte-unchanged
+  since `ce99365`).
+- **Does not establish:** that agents behave correctly on the 0.3.0 surface, because Frank's carry accepts that
+  evidence and does not measure it. Nor warm starts beyond exact id-set compatibility (L-WS-1, L-WS-2).
+
+### V17 — BLOCKED → PASS (clause (a) judged again)
+
+- **(a) a surface to which Frank has carried `v17-c2`'s evidence, with M07a.A37's chain holding: met.** The carry is
+  ADR 0053's `V17 carry`, accepted 2026-10-30, across R-192, R-234 and R-295. The chain is as read on 2026-10-30 under
+  V03 spec §3.3: served digest D_3 = `455d01eb…e125`, chain rows exactly `[(1,c_3),(2,c_3),(2,c_2),(2,c_1),(3,None)]`,
+  stripping to `383b4e2c…`, `6c4375b4…` and `171dd768…`, and giving `6d13e13d…` with `v17-c2`'s texts; the 17 tools and
+  description files as registered. The step-8 records were not re-read, because C and its records are unchanged.
+- (b) G16-b 40 of 40: met, unchanged.
+- **Evidence classes.** The chain is identity verification against registered digests, tested on three hosts. The
+  agent evidence is `v17-c2`'s, measured on the R-137 surface, and it reaches 0.3.0 only by Frank's decision. No agent
+  ran on the 0.3.0 surface (L12).
+
+### W21 — BLOCKED → PASS (clause (c) judged again)
+
+- **(c) out-of-process execution policy: met.**
+  - G3–G5 nodes in step 1: unchanged.
+  - At C, the support matrix row "External model execution" (l.23) states `external-subprocess-v1`, "not a sandbox",
+    and "Linux is registered; macOS best effort; Windows is refused before spawn". L45 (l.139) states it again.
+  - The `## v0.3.0` notes carry "not a sandbox" under "What it is not" (`CHANGELOG.md` l.86 at `5cc63136`).
+  - All of the above re-read here.
+  - M02 N1 was accepted on 2026-10-30 with its default, "ship the reactor child process labelled 'not a sandbox'".
+- (e) and (f): met, as judged in "W21 re-judged (2026-10-30)". (a), (b) and (d): met, as in the W21 table.
+- **F9's count.** At `5cc63136`, in `## v0.3.0 — unreleased` (`CHANGELOG.md` l.3–103), after whitespace normalization,
+  each of (f4)'s four phrases appears exactly once: **4 of 4**, at l.88–90 in "What it is not". `awaits Frank's
+  statement` appears 0 times. `CHANGELOG.md` is unchanged since `41b99a9b`, so this is the text W21's new judgement
+  read. F9 stands for the tag candidate: step 18's notes record counts the four phrases again.
+- **Observation (0.2.0's F10, not applied).** The bullet still reads only "not a sandbox" and does not name the reactor
+  child process; the support matrix and L45 do, so (c) is met. A recommendation; it changes nothing.
+- **Does not establish:** that the reactor is right (L46), or that the child process is isolated. It is not isolated,
+  and that is what the label says (L45).
+
+### W24 — BLOCKED → PASS (clause (a) judged again)
+
+- **(a) M03's fixed-topology NLP with final parent checks: met.** Step 14 at C, in the audited nlp environment: the nlp
+  tier passed 190 over the 13 modules that carry the marker, the same 190 node ids as over the whole tree (V03.A33), and
+  inventory `--check` exited 0 for both workloads. MR-12 for the nlp extra holds by S9.4 (V18). M03 N1 was accepted on
+  2026-10-30 with its default, "accept the licences of the optional `nlp` extra".
+- (b)–(g): met, unchanged.
+- **Evidence classes.** The inventory is a tested record. The licence acceptance is a decision.
+- **Does not establish:** global optimality; any optimization result on aarch64; that the bound-active REAL decision
+  says anything outside the box; the licences' fitness for a user's own use beyond Frank's acceptance for this release.
+
+### The D3 rows, N-10 and N-11 (no row changes)
+
+- **V14 (b) and X31 (c).** The gate's `judge_gate`, run here on this document with this section and the ADR at
+  `5cc63136`, reports no D3 problem for either clause: each is dated 2026-10-30, on or after J, and neither gate is
+  listed on the re-judgement line. X31's only problem is the ledger's null verdict (item 2 below). Both stay `FAIL` with
+  their clauses, and ADR 0053 D2 now lets each be released.
+- **N-10** confirms the reading W26 was judged on (§3.5; V03.A32). W26 stays `PASS`. **N-11** accepts R-624 and R-900.
+  V18 stays `PASS`, and F4's open point is answered by the default.
+
+### After this re-judgement
+
+Fifteen PASS (V11, V12, V13, V15, V16, V17, V18, V19, V20, W21, W22, W23, W24, W25, W26). Two FAIL, V14 on (b) and X31
+on (c), each with its D3 acceptance as the gate reads it. None BLOCKED. ADR 0053 D2 no longer refuses a row of this
+document. Read with `scripts/v0_3_gate.py`'s gate set through `v0_2_gate.verdict_document` at C: seventeen rows, the
+fifteen above `PASS`, V14 `FAIL` (`V14 (b)`) and X31 `FAIL` (`X31 (c)`), re-judged 2026-10-31 on (V13, V17, W21, W24),
+one `Judged` token. The gate's `build`, run here over the files at `5cc63136` with this document in place, refuses on
+exactly eight reasons: F10's four, X31's ledger verdict, S13's manifest `implemented`, and ADRs 0053 and 0054
+`Proposed`. With F10 corrected on a scratch copy, the last four remain. Whether the gate may propose the tag depends on
+items this document does not decide:
+
+1. **F10**: the four decisions-table cells moved into the `Frank's answer` column, text and date unchanged. As
+   committed at `5cc63136`, the gate refuses all four of Frank's items.
+2. **The ledger** (`docs/requirements.yaml`, D2.1): X31's `verdict` is null and must read `FAIL`. V13, V17, W21 and
+   W24 `PASS` and V14 `FAIL` already agree with this table.
+3. **WO-8**: ADRs 0053 and 0054 Accepted, S13's manifest `tested`, and step 18's YES line.
+4. **The notes' final edit**, keeping §8's seventeen phrases and (f4)'s four statements, counted again at the tag
+   candidate (F9).
+5. The full gate and CI on both architectures before the merge; Frank's dispatch and the tag (ADR 0053 D7).
+
+**What would reopen these four rows:** any of the six cells withdrawn or changed; a corrected ADR 0053 whose cells
+differ in text or date from those read here (a date after 2026-10-31 fails Table T7); any change to a D2.4 path, which
+makes a new candidate on which every row is judged again; a served digest other than D_3 or a changed `LINKS` (V13,
+V17); any of (f4)'s four statements removed or altered in the section the tag carries (W21 (f), F9); and, for W21 (e),
+the triggers that "W21 re-judged (2026-10-30)" lists. **Limitations that travel with them:** V13 and V17 rest on
+Frank's carry of `v17-c2`'s evidence, measured on the R-137 surface, with no agent measured on the 0.3.0 surface (L12).
+W21 (c) rests on an accepted "not a sandbox" profile (L45), and W21 (e) on a re-run of G11 at C, not on step 12's own
+records (that judgement's list). W24 (a) rests on the nlp extra's licences being accepted by decision. V14 (b) is an
+accepted FAIL, with PTC experimental (L01). X31 (c) is an accepted FAIL: "met where available, 3 of 4", and RC4 has one
+independent reference (BioSTEAM). All six answers are dated J, and this re-judgement is dated the day after (the
+sequencing note above); the only record of the answers is `5cc63136`. No registered check guards (f4)'s four statements
+at the tag candidate (F9).
+
+### Alternatives considered and rejected (this re-judgement)
+
+1. **Keep the four rows `BLOCKED` until F10 is fixed.** Rejected. `BLOCKED` names a missing input only Frank can give.
+   Frank's input exists; the missing piece is a cell's position, which is the build lane's. Writing `BLOCKED` would
+   misstate what is missing and would imply asking Frank again. The gate refuses on F10 independently, so `PASS` lets
+   nothing through. Calling the position defect missing lane evidence would make the rows `FAIL` under T08 §3.3, not
+   `BLOCKED`. A `FAIL` cannot stand on a re-judgement line, so a one-character recording fix would cost a new judgement.
+   It would also misclassify Frank's decision as lane evidence.
+2. **Judge the ADR as a renderer shows it (the column empty, so not answered).** Rejected for the same reason. The raw
+   text is the record the gate and this verdict read. The renderer dropping the excess cell is why F10 must be fixed
+   before the tag. It is not a reason to say that Frank has not answered.
+3. **A new judgement (new `Judged` date) instead of a re-judgement line.** Rejected. §19.2 item 2 makes the re-judgement
+   line the form for gates `BLOCKED` on a registered answer. A new judgement would move the floor to 2026-10-31, and all
+   six answers, dated 2026-10-30, would stop counting (Table T6).
+4. **Date the re-judgement 2026-10-30, as 0.2.0's matched its answers.** Rejected. It was written on 2026-10-31.
+   Table T7 is met with R = 2026-10-31, and back-dating would misstate the record.
+5. **Edit the V14 and X31 rows' Basis cells ("pending").** Rejected. Their verdict words do not change and Table T8
+   cannot list them; 0.2.0 left V14's Basis as recorded. This section records the change.
+6. **Correct ADR 0053 here.** Rejected. This verdict edits no evidence it judged. The fix is the build lane's (F10).
+
+### What this re-judgement does not establish
+
+- That agents behave correctly on the 0.3.0 surface (L12), or that the reactor child process is isolated (L45).
+- That the reactor is right (L46), or any empirical validation; any global optimality.
+- Anything on a platform or host beyond those the cited step records name.
+- That Frank's answers were given as recorded: this verdict reads `5cc63136` and did not witness the exchange.
+- Releasability: the gate's other items above, F10 among them.
+- Any scientific or process-model review, human sign-off, or `reviewed` status.
 
 ## Read this first
 
