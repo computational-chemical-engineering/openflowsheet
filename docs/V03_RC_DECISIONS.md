@@ -171,3 +171,30 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   on `test_harness_states[W27-S04]`, and with `test_candidate_states[W27-S11]` deleted (reported `missing`); (d) fails
   on the `unsupported(route enumeration) for openflowsheet 0.3.0` last line, and on exit 0; `nlp_selection` fails with
   one id removed from either list, and on two empty lists.
+
+## The RC run at C = `a3e508e3` (2026-10-30, `~/.cache/of-rc-v03-a3e508e`, worktree `rc-v03-a3e508e`)
+
+- Fresh `W`, clean detached worktree, the handoff's runner plus: a private `--basetemp` per pytest under
+  `~/.cache/v03rc-tmp/rc-a3e508e/` (inert), and Amendment 2's step-14/16 changes (above). 65 commands, 3994 s; every
+  exit 0 except `step14-nlp-collect-all` 2 and `step16-dryrun` 1 (both registered by Amendment 2). Tree clean at start,
+  after venv, after archive, at end; nlp worktree: 50 ignored `__pycache__` entries at the end, as at `4fa15efa`.
+- Every record passes at C: steps 2, 6–16 and 17a–17e (`passed`, all checks `pass`, `commit` = C, `tree_clean`); step 16
+  4/4 (662 passed, 0 skipped; node 92/92; G15 25 of 25; the exact W27-R63 refusal, exit 1, no `summary.json`); step 14
+  5/5 (190 = 190, equal sets, 13 modules); step 15 "the journey at 2d945b5d carried", ACCEPT, bitwise; 17b 4174 passed,
+  0 skipped; ensemble S = 437 (F-FALSE-SUCCESS-CAUGHT 3).
+- CI at C: dispatch 41108983463 (`rc_alpha=true`) success, push 41108983672 success, Site 41108983605 success.
+  THM-09/4 rows copied (`0b112d13`). Records, tools, step-1 skips and `docs/v03-rc-record.md` committed (`0caf09a0`);
+  `rc_record_problems` reads the record with no problem.
+- S13 generator at C (`--gate-log gate-fe61ae9.log --ci-run 41108983463 --ci-run 41108983672`): 47 checks, 40 pass,
+  1 fail (V03.A12), 6 unsupported (A08 R part, A25, A26, A27, ADR.0053, ADR.0054: pending WO-7/WO-8). Manifest not
+  committed (removed: an untracked manifest makes `test_m07a_a50_the_harvest_size…` and `test_t08_w2_support_envelope
+  ::test_a21…` fail — committing S13's manifest needs the harvest/envelope update S13a's commit made).
+- **STOP — V03.A12 (c) fails at C.** `scripts/s11_identity.py` (base `8c34ecb0`): `S11-IDENTITY FAIL n=54494`, 47
+  family-C digests differ, all binder calls of `tests/test_m04_wo{7,8,19,20}_*.py` (surrogate manifests); identical key
+  set on a second run with a fresh `TMPDIR`. Cause: the only `src/` change since S13a's passing run (`0ce3748a`) is K3's
+  `__version__` `0.3.0.dev0` → `0.3.0`, and `adapters/experiments/backends.py:174` writes `openflowsheet_version` into
+  each experiment manifest, so the bound documents' SHA-256 change. Not a numerics change; the same class as R-902
+  (version as build provenance). A fix changes a check (s11_identity's comparison or its base) or how A12 (c) is judged
+  at C — design lane. Options: (a) R-902's reach to `s11_identity.py` (exclude `openflowsheet_version` from the
+  document digest, with a control); (b) judge A12 (c) at C by S13a's pass at `0ce3748a` plus "src diff = version only";
+  (c) a base at K3. Default I would take: (a). Nothing else depends on it.
