@@ -573,7 +573,7 @@ def test_snapshot_of_this_build_is_todays_registry() -> None:
     live = snapshot.build_snapshot(binding=v2_binder())
     assert snapshot.reading_for(revision_binding, live["package_version"]) == "bases-v1"
     assert live["schema"] == "w27-registry-snapshot-v1"
-    assert live["package_version"] == "0.3.0.dev0"
+    assert live["package_version"] == "0.3.0"
     assert live["list_models_sha256"] == A3_LIST_MODELS_SHA256
     assert live["list_models_sha256"] not in (
         TODAY["list_models_sha256"],
