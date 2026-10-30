@@ -53,3 +53,16 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   record `93886ac3` (J = `2d945b5d`), this log.
 - WO-5 steps 1–3 done. At C the RC job carries the journey with `--carry-journey 2d945b5d --rc C` (not K3).
 - Not done: C itself (WO-6's RC job). Scratch: `~/.cache/v03rc-tmp`, `~/.cache/v03rc-journey`, `~/.cache/v03rc-tools`.
+
+# WO-6 (brief `docs/briefs/V03-WO6-RC.md`, on `main` at `4e8c3ba0`)
+
+- First check (before C): `v0_3_gate.py`'s tree rule is `v0_2_gate.main` → `v0_1_gate.tree_differences(rc=C,
+  candidate)`: it compares the **candidate with C** under `TREES`, never K3 with C; `m07a`/`m07_evidence_manifest`
+  call it as `(C, HEAD)`. No rule or test diffs K3..C, so `2d945b5d`'s and `93886ac3`'s `benchmarks/m05/records` and
+  `benchmarks/m07/journey/2d945b5d…` are not refused. Their C-tree bytes enter `release/rc-trees/<C>.json`.
+- DECISION: how does the RC dispatch run both the alpha's step 8 (`m07a_rc.py surface`, §3.3) and `rc-coolprop`
+  (17b)? `rc-coolprop` ran only under `inputs.rc`, whose `rc-steps` runs T08.A49's surface (`served ==
+  R133_DESCRIPTIONS_SHA256`, D_0), red at D_3; with both inputs the two surface steps share `$OUT/surface`. → the
+  job's `if` becomes `inputs.rc || inputs.rc_alpha`; the dispatch is `rc_alpha=true` (which includes the
+  distribution). A15's test reads `inputs.rc` as a substring and still holds. Alternative: a new `rc_v03` input on
+  seven jobs. Reversible by: reverting the ci.yml commit.

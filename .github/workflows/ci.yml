@@ -880,8 +880,10 @@ jobs:
     # --require-hashes, OPENFLOWSHEET_REQUIRE_COOLPROP=1), then every S07 and S11 test module that
     # imports CoolProp. Under the flag an absent CoolProp fails instead of skipping, and the step
     # fails on any skip at all, so A29's sdist/wheel test gets T08.A43's build Python. A job of its
-    # own, so that `rc-steps`' A30 inventory keeps reading the base install.
-    if: github.event_name == 'workflow_dispatch' && inputs.rc
+    # own, so that `rc-steps`' A30 inventory keeps reading the base install. It runs under
+    # `rc_alpha` too: 0.3.0's RC job is `rc_alpha`'s (step 8 is the alpha's surface chain, V03 spec
+    # §3.3), and `rc`'s T08.A49 surface step would fail on the served digest D_3.
+    if: github.event_name == 'workflow_dispatch' && (inputs.rc || inputs.rc_alpha)
     strategy:
       fail-fast: false
       matrix:
