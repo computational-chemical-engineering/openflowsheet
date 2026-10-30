@@ -457,7 +457,13 @@ def _feasibility_tolerance() -> float:
 
 
 class AssessmentProgram:
-    """One assessment over one host at one held regime (§4.1, §4.2.1)."""
+    """One assessment over one host at one held regime (§4.1, §4.2.1).
+
+    The outputs (sizes, costs, inventory, impacts, derived ratios) are rows of one functional
+    `ProblemSpec` over the host's variables, compiled by the existing compiler and never part of
+    the host's `CompiledProblem`. Build one with `AssessmentProgram.build`; then `evaluate`,
+    `linearize` and `report` it at a state.
+    """
 
     def __init__(
         self,
@@ -520,6 +526,26 @@ class AssessmentProgram:
         `state`, else `ASSESSMENT_REGIME_INADMISSIBLE`. `contributors` defaults to the three of
         `CONTRIBUTOR_ORDER`; a document section whose contributor is not among them is refused
         `ASSESSMENT_CONTRIBUTOR_MISSING(<section>)`, never silently ignored (R-869).
+
+        Parameters
+        ----------
+        view
+            The flowsheet's view, `view_of(flowsheet)`.
+        host_spec
+            The host's problem specification (a revision binding's `spec`).
+        spec
+            The assessment document, `load_assessment(...)`.
+        state
+            The solved state by variable id, normally a certified solution.
+        regime
+            A regime to hold, or `None` to select one by the rule at `state`.
+        contributors
+            The contributors to plan; by default the registered cost, LCA and derived ones.
+
+        Returns
+        -------
+        AssessmentProgram or Refusal
+            The program, or a typed refusal; an unsupported request is never raised.
         """
         chosen = _registered() if contributors is None else tuple(contributors)
         names = {contributor.name for contributor in chosen}
@@ -652,7 +678,23 @@ class AssessmentProgram:
         Raises `TwinEvaluationError` where a value cannot be evaluated (§4.2.3), including a
         `domain` row ≤ 0: `METRIC_UNDEFINED(<output_id>)` at every state (§4.7.5 erratum, R-868).
         `domain_guard=False` is the report's alone: it nulls each undefined output itself and
-        reports the others (§4.9)."""
+        reports the others (§4.9).
+
+        Parameters
+        ----------
+        x
+            The state by host variable id.
+        decisions
+            Host pinned inputs at other values than the program's; an assessment parameter is
+            refused `UNSUPPORTED(ASSESSMENT_PARAMETER_DECISION)`.
+        domain_guard
+            Raise on an undefined output (see above); `True` except in the report.
+
+        Returns
+        -------
+        Mapping[str, float] or Refusal
+            Every output and every admissibility row (`adm.*`) by id; units in `units`.
+        """
         spec = self._with_decisions(decisions)
         if isinstance(spec, Refusal):
             return spec
@@ -703,7 +745,25 @@ class AssessmentProgram:
     ) -> Linearization | Refusal:
         """Values (twin) of every row, and `∂(outputs)/∂x` (outputs x host variable ids) and
         `∂(outputs)/∂p` (outputs x `symbolic`), at `(x, d)`. The decisions are symbols of the twin
-        whether or not they are requested, so the graph is the one the NLP differentiates."""
+        whether or not they are requested, so the graph is the one the NLP differentiates.
+
+        Parameters
+        ----------
+        x
+            The state by host variable id.
+        decisions
+            Host pinned inputs at other values than the program's (may be empty).
+        outputs
+            The output ids to differentiate.
+        symbolic
+            Host pinned inputs or assessment parameters (`theta` ids) to differentiate by.
+
+        Returns
+        -------
+        Linearization or Refusal
+            `values` (every row), `d_dx` and `d_dp` as sparse matrices; a refusal for an unknown
+            or unavailable output, or for an assessment parameter given as a decision.
+        """
         withheld = [name for name in outputs if name in self.unavailable]
         if withheld:
             return Refusal(
@@ -743,7 +803,23 @@ class AssessmentProgram:
         self, x: Mapping[str, float], *, state_sha256: str, uncertainty: bool = True
     ) -> dict[str, Any]:
         """The assessment report at `x` (§4.2.1, §4.9, §4.11): a document valid against
-        `assessment-report.schema.json`. Built by `assessment.report.build_report`."""
+        `assessment-report.schema.json`. Built by `assessment.report.build_report`.
+
+        Parameters
+        ----------
+        x
+            The state by host variable id.
+        state_sha256
+            The state's identity (`openflowsheet.canonical.state_sha256`), recorded in the report.
+        uncertainty
+            Whether to propagate the declared input ranges (first-order interval and σ).
+
+        Returns
+        -------
+        dict
+            The report: status, regime, items, capital, operating and annual figures, LCA
+            inventory and impacts, uncertainty, limitations, refusals and the evidence statement.
+        """
         from openflowsheet.assessment.report import build_report  # noqa: PLC0415
 
         return build_report(self, x, state_sha256=state_sha256, uncertainty=uncertainty)

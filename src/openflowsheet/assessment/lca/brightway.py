@@ -238,7 +238,31 @@ def build_unit_score_table(
     `categories` `[(category_id, method)]` in `project` (§4.8.4).
 
     `si_per_unit` gives an activity's unit in SI where `SI_PER_UNIT` does not know its unit. A
-    key or a method the project lacks is refused `LCA_ACTIVITY_UNKNOWN` (never raised)."""
+    key or a method the project lacks is refused `LCA_ACTIVITY_UNKNOWN` (never raised).
+
+    Parameters
+    ----------
+    project
+        The Brightway project, prepared by the user (no database is downloaded).
+    activities
+        `(activity_id, key)` pairs: the id the assessment document uses, and the activity's
+        Brightway key.
+    categories
+        `(category_id, method)` pairs: the id the document uses, and the LCIA method tuple.
+    rights
+        The table's rights: `class` (`open` or `user-licensed`), `licence`, `redistribution`
+        (`allowed` or `forbidden`) and `notice`.
+    table_id
+        The new table's id.
+    si_per_unit
+        SI amount per activity unit, for units the adapter does not know.
+
+    Returns
+    -------
+    dict or Refusal
+        A `unit-score-table-v1` document; `UNSUPPORTED(LCA_ENGINE_UNAVAILABLE)` without the
+        `lca` extra.
+    """
     engine = _engine()
     if isinstance(engine, Refusal):
         return engine

@@ -1,0 +1,408 @@
+{
+  "edits": [
+    {
+      "operation": "set",
+      "path": [
+        "schema_version"
+      ],
+      "value": 1
+    },
+    {
+      "operation": "set",
+      "path": [
+        "revision_id"
+      ],
+      "value": "rankine"
+    },
+    {
+      "operation": "set",
+      "path": [
+        "parent_revision"
+      ],
+      "value": null
+    },
+    {
+      "operation": "set",
+      "path": [
+        "title"
+      ],
+      "value": "rankine"
+    },
+    {
+      "operation": "set",
+      "path": [
+        "description"
+      ],
+      "value": "rankine"
+    },
+    {
+      "operation": "set",
+      "path": [
+        "component_set"
+      ],
+      "value": {
+        "record_source": "benchmarks/s05/components.yaml",
+        "components": [
+          "H2O"
+        ]
+      }
+    },
+    {
+      "operation": "set",
+      "path": [
+        "instances"
+      ],
+      "value": [
+        {
+          "id": "F",
+          "model": {
+            "id": "syn001.feed_source",
+            "version": "0.0.0-declared",
+            "artifact_ref": null
+          },
+          "semantic_role": "feed",
+          "parameters": {},
+          "policy": {
+            "fidelity": "example",
+            "validity": "example"
+          }
+        },
+        {
+          "id": "P",
+          "model": {
+            "id": "thermal.pump",
+            "version": "0.0.0-declared",
+            "artifact_ref": null
+          },
+          "semantic_role": "pump",
+          "parameters": {
+            "efficiency": {
+              "value": 0.75,
+              "unit": "1",
+              "dimension": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "kind": "dimensionless",
+              "meaning": "isentropic efficiency",
+              "role": "fixed"
+            }
+          },
+          "policy": {
+            "fidelity": "example",
+            "validity": "example"
+          }
+        },
+        {
+          "id": "B",
+          "model": {
+            "id": "thermal.heater",
+            "version": "0.0.0-declared",
+            "artifact_ref": null
+          },
+          "semantic_role": "heater",
+          "parameters": {},
+          "policy": {
+            "fidelity": "example",
+            "validity": "example"
+          }
+        },
+        {
+          "id": "T",
+          "model": {
+            "id": "thermal.turbine",
+            "version": "0.0.0-declared",
+            "artifact_ref": null
+          },
+          "semantic_role": "pump",
+          "parameters": {
+            "efficiency": {
+              "value": 0.85,
+              "unit": "1",
+              "dimension": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "kind": "dimensionless",
+              "meaning": "isentropic efficiency",
+              "role": "fixed"
+            }
+          },
+          "policy": {
+            "fidelity": "example",
+            "validity": "example"
+          }
+        },
+        {
+          "id": "C",
+          "model": {
+            "id": "thermal.heater",
+            "version": "0.0.0-declared",
+            "artifact_ref": null
+          },
+          "semantic_role": "heater",
+          "parameters": {
+            "outlet_vapor_fraction": {
+              "value": 0.0,
+              "unit": "1",
+              "dimension": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "kind": "dimensionless",
+              "meaning": "saturated liquid out",
+              "role": "fixed"
+            }
+          },
+          "policy": {
+            "fidelity": "example",
+            "validity": "example"
+          }
+        },
+        {
+          "id": "K",
+          "model": {
+            "id": "syn001.product_sink",
+            "version": "0.0.0-declared",
+            "artifact_ref": null
+          },
+          "semantic_role": "product_sink",
+          "parameters": {},
+          "policy": {
+            "fidelity": "example",
+            "validity": "example"
+          }
+        }
+      ]
+    },
+    {
+      "operation": "set",
+      "path": [
+        "connections"
+      ],
+      "value": [
+        {
+          "id": "S1",
+          "kind": "material",
+          "from": {
+            "instance": "F",
+            "port": "outlet"
+          },
+          "to": {
+            "instance": "P",
+            "port": "inlet"
+          },
+          "state_definition": "nTP-v1",
+          "component_mapping": "revision_component_set",
+          "phase_capability": "liquid",
+          "notes": "S1"
+        },
+        {
+          "id": "S2",
+          "kind": "material",
+          "from": {
+            "instance": "P",
+            "port": "outlet"
+          },
+          "to": {
+            "instance": "B",
+            "port": "inlet"
+          },
+          "state_definition": "nTP-v1",
+          "component_mapping": "revision_component_set",
+          "phase_capability": "liquid",
+          "notes": "S2"
+        },
+        {
+          "id": "S3",
+          "kind": "material",
+          "from": {
+            "instance": "B",
+            "port": "outlet"
+          },
+          "to": {
+            "instance": "T",
+            "port": "inlet"
+          },
+          "state_definition": "nTP-v1",
+          "component_mapping": "revision_component_set",
+          "phase_capability": "vapor",
+          "notes": "S3"
+        },
+        {
+          "id": "S4",
+          "kind": "material",
+          "from": {
+            "instance": "T",
+            "port": "outlet"
+          },
+          "to": {
+            "instance": "C",
+            "port": "inlet"
+          },
+          "state_definition": "nTP-v1",
+          "component_mapping": "revision_component_set",
+          "phase_capability": "vapor_liquid",
+          "notes": "S4"
+        },
+        {
+          "id": "S5",
+          "kind": "material",
+          "from": {
+            "instance": "C",
+            "port": "outlet"
+          },
+          "to": {
+            "instance": "K",
+            "port": "inlet"
+          },
+          "state_definition": "nTP-v1",
+          "component_mapping": "revision_component_set",
+          "phase_capability": "vapor_liquid",
+          "notes": "S5"
+        }
+      ]
+    },
+    {
+      "operation": "set",
+      "path": [
+        "specifications"
+      ],
+      "value": [
+        {
+          "id": "feed-n",
+          "target": {
+            "object_type": "connection",
+            "object_id": "S1",
+            "path": "state.n",
+            "component": "H2O"
+          },
+          "kind": "molar_flow",
+          "unit": "mol/s",
+          "value": 1.0,
+          "tolerance": {
+            "absolute": 1e-09,
+            "relative": 1e-08,
+            "scale": 3.0
+          },
+          "role": "fixed",
+          "provenance": "example"
+        },
+        {
+          "id": "feed-T",
+          "target": {
+            "object_type": "connection",
+            "object_id": "S1",
+            "path": "state.T"
+          },
+          "kind": "temperature",
+          "unit": "K",
+          "value": 318.15,
+          "tolerance": {
+            "absolute": 1e-06
+          },
+          "role": "fixed",
+          "provenance": "example"
+        },
+        {
+          "id": "feed-P",
+          "target": {
+            "object_type": "connection",
+            "object_id": "S1",
+            "path": "state.P"
+          },
+          "kind": "pressure",
+          "unit": "Pa",
+          "value": 10000.0,
+          "tolerance": {
+            "absolute": 0.01
+          },
+          "role": "fixed",
+          "provenance": "example"
+        },
+        {
+          "id": "pump-P",
+          "target": {
+            "object_type": "instance",
+            "object_id": "P",
+            "path": "outlet.P"
+          },
+          "kind": "pressure",
+          "unit": "Pa",
+          "value": 3000000.0,
+          "tolerance": {
+            "absolute": 0.01
+          },
+          "role": "fixed",
+          "provenance": "example"
+        },
+        {
+          "id": "boiler-T",
+          "target": {
+            "object_type": "instance",
+            "object_id": "B",
+            "path": "outlet.T"
+          },
+          "kind": "temperature",
+          "unit": "K",
+          "value": 673.15,
+          "tolerance": {
+            "absolute": 1e-06
+          },
+          "role": "fixed",
+          "provenance": "example"
+        },
+        {
+          "id": "turbine-P",
+          "target": {
+            "object_type": "instance",
+            "object_id": "T",
+            "path": "outlet.P"
+          },
+          "kind": "pressure",
+          "unit": "Pa",
+          "value": 10000.0,
+          "tolerance": {
+            "absolute": 0.01
+          },
+          "role": "fixed",
+          "provenance": "example"
+        }
+      ]
+    },
+    {
+      "operation": "set",
+      "path": [
+        "provenance"
+      ],
+      "value": {
+        "actor": "example",
+        "operation": "create",
+        "timestamp": "2026-10-29T00:00:00Z",
+        "source_references": [],
+        "notes": "built in an OpenFlowsheet example"
+      }
+    }
+  ],
+  "expected_revision": null,
+  "idempotency_key": "create-rankine-cycle",
+  "new_revision_id": null,
+  "restore_from": null,
+  "task": "simulation",
+  "author": "quickstart"
+}
