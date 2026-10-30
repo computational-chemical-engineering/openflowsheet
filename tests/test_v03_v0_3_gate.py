@@ -334,8 +334,8 @@ def test_a01_the_entry_is_the_specification_s_table() -> None:
     assert _gate_range(not_claimed) == list(V03.not_claimed) == ["W27"]
     (packages,) = table["packages (20) (text)"]
     assert packages.split(", ") == list(V03.packages) and len(V03.packages) == 20
-    (adrs,) = table["required_adrs (24) (text)"]
-    assert adrs.split(", ") == list(V03.required_adrs) and len(V03.required_adrs) == 24
+    (adrs,) = table["required_adrs (25) (text)"]
+    assert adrs.split(", ") == list(V03.required_adrs) and len(V03.required_adrs) == 25
     (steps,) = table["rc_steps / rc_last_step (text)"]
     assert _numbers(steps) == ["1–17", "18"]
     assert V03.rc_steps == tuple(range(1, 18)) and V03.rc_last_step == 18

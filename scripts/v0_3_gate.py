@@ -101,6 +101,7 @@ GATE_SETS: Final = (
             "0051",
             "0052",
             "0053",
+            "0054",
         ),
         frank_items=("Claim set", "V17 carry", "M02 N1", "M03 N1"),
         rejudge_waits=(
