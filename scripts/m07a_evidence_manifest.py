@@ -422,6 +422,86 @@ def _m_mr12_extras_v02(inputs: Inputs) -> Part:
     return mr12_extras_v02(inputs.commit, new, show, step14, summaries)
 
 
+#: MR-12 v03 (V03 spec §9.3, S07 F-9, R-879): each extra declared since `v0.2.0` and the audit,
+#: inventory, check and recorded decision that close it. A table of its own, so that the v02
+#: measure, judged at `RELEASE_0_2_0_COMMIT`, is not re-judged (R-879's rejected alternative).
+#: `check` is the command whose result step 17c's RC record carries under that id.
+MR12_AUDITS_V03: dict[str, dict[str, str]] = {
+    "coolprop": {
+        "audit": "docs/derivations/S07-spec.md",
+        "audit_section": "§17",
+        "inventory": "docs/s07-coolprop-licences.json",
+        "check": "scripts/t07_licence_inventory.py --extra coolprop",
+        "decision": "R-624",
+    },
+    "lca": {
+        "audit": "docs/derivations/E01-design.md",
+        "audit_section": "§4.8.4 and WO-B1",
+        "inventory": "docs/e01-lca-licences.json",
+        "check": "scripts/e01_d04_inventory.py",
+        "decision": "R-870",
+    },
+}
+V0_2_0 = "v0.2.0"
+#: Step 17c's RC record (V03 spec §4), which carries each v03 audit's check at C.
+STEP17C_RECORD = "step17/rc-step17c.json"
+
+
+def mr12_extras_v03(
+    commit: str,
+    new: Sequence[str],
+    show: Callable[[str], str | None],
+    step17c: Mapping[str, Any],
+) -> Part:
+    """MR-12 v03 (V03 spec §9.3, step 17c). `show(path)` is the file at `commit`, or `None`.
+    Every extra new since `v0.2.0` needs an `MR12_AUDITS_V03` entry (without one it fails); for
+    each entry both files exist at `commit`, step 17c's record has the check `pass` and its
+    provenance names `commit`, and the register at `commit` has the decision's `## R-… — ` line."""
+    register = show("docs/decision-register.md") or ""
+    provenance = step17c.get("provenance") or {}
+    results = {entry.get("id"): entry.get("result") for entry in step17c.get("checks", [])}
+    extras: dict[str, dict[str, Any]] = {}
+    ok = True
+    for extra in new:
+        audit = MR12_AUDITS_V03.get(extra)
+        if audit is None:
+            extras[extra] = {"audit": None, "reason": "no MR12_AUDITS_V03 entry"}
+            ok = False
+            continue
+        files = {key: show(audit[key]) is not None for key in ("audit", "inventory")}
+        check = results.get(audit["check"])
+        decided = any(
+            line.startswith(f"## {audit['decision']} — ") for line in register.splitlines()
+        )
+        extras[extra] = {
+            **audit,
+            "files_at_commit": files,
+            "check_result": check,
+            "step17c_commit": provenance.get("commit"),
+            "decision_in_register": decided,
+        }
+        ok = ok and all(files.values()) and check == "pass" and decided
+        ok = ok and provenance.get("commit") == commit
+    value = {"new_since_v0_2_0": list(new), "extras": extras}
+    return ("pass" if ok else "fail"), value
+
+
+def _m_mr12_extras_v03(inputs: Inputs) -> Part:
+    """`mr12_extras_v03` at `inputs.commit`, from git and step 17c's committed RC record."""
+    ours = _extras(t08._git("show", f"{inputs.commit}:pyproject.toml"))
+    theirs = _extras(t08._git("show", f"{V0_2_0}:pyproject.toml"))
+    new = sorted(set(ours) - set(theirs))
+
+    def show(path: str) -> str | None:
+        if not t08._git_ok("cat-file", "-e", f"{inputs.commit}:{path}"):
+            return None
+        return t08._git("show", f"{inputs.commit}:{path}")
+
+    record = inputs.rc_dir / STEP17C_RECORD
+    step17c = _json(inputs, STEP17C_RECORD) if record.is_file() else {}
+    return mr12_extras_v03(inputs.commit, new, show, step17c)
+
+
 STEP12_CERTIFICATES = "step12/certificates"
 STEP12_BUNDLE = "g12-bundles/m02-g12-0/bundle/solution-certificate.json"
 
@@ -577,6 +657,7 @@ MEASURES: dict[str, Callable[[Inputs], Part]] = {
     "cp_bound": _m_cp_bound,
     "mr12_extras": _m_mr12_extras,
     "mr12_extras_v02": _m_mr12_extras_v02,
+    "mr12_extras_v03": _m_mr12_extras_v03,
     "mr11_step12": _m_mr11_step12,
     "provenance": _m_provenance,
     "envelope": _m_envelope,

@@ -50,6 +50,19 @@ commit. Questions for the design lane are under "Open questions"; measurements u
   `docs/attributions/wilson-ig-v1.md`: an edit would move `data_sha256`, which R-880 keeps.
 - `docs/s10-rights-check.md` §3 already agrees with §9.1 (the spec author's edit at `d60f7f73`); no change.
 
+## WO-3: the roles (ADR 0054), MR-12 v03, the RC CoolProp step
+
+- The roles (§10.3 steps 1–4) are `0461c6ec`, 0054 in `required_adrs` is `d5586f29`; both as the spec prescribes, no
+  choice made.
+- DECISION: where MR-12 v03 lives and where its check results come from → `mr12_extras_v03` and
+  `_m_mr12_extras_v03` in `scripts/m07a_evidence_manifest.py` beside the v02 measure (`MEASURES["mr12_extras_v03"]`,
+  not in `SPECS`), over its own table `MR12_AUDITS_V03` (R-879 rejects editing the v02 table). Each entry is §9.3's
+  audit (file + `audit_section`), inventory, decision, and `check` = the command; the check's result is read from
+  step 17c's RC record `step17/rc-step17c.json` (`checks[].id` = the command, provenance commit = C), in step 14's
+  pattern. `test_the_git_backed_measure_at_head` (node name kept; S07's manifest maps it to A44) now runs the v03
+  measure at HEAD over a synthetic 17c record. Alternative: the measure runs the two check scripts itself at the
+  checkout. Reversible by: reverting the MR-12 v03 commit.
+
 ## Open questions (for the design-lane review of WO-1–WO-4)
 
 1. D-1: is "a bind of `wilson-ig-v1` from package data" (V03.A12, A19) satisfied by `WilsonIdealGasProvider(
@@ -57,6 +70,12 @@ commit. Questions for the design lane are under "Open questions"; measurements u
    identity and needs S11.A75 amended)? Default taken: the former.
 2. D-2, D-3: the build lane amended two other packages' assertions (T08.A32, S10.A28) by their established patterns
    (R-617, R-616). Confirm, or issue errata.
+
+3. MR-12 v03's `lca` decision: spec §9.3 names R-870, which on `main` is "results computed from a restricted LCA
+   table may reveal its scores" (E01 review item 3), not a licence decision for the `lca` extra. The register has no
+   entry deciding the extra's licences (the audit is `docs/E01B_DECISIONS.md` D04; the extra itself is R-857).
+   Default taken: transcribed R-870 as the spec says (the register check passes on it). Proposed: cite R-857, or
+   register the WO-B1/D04 licence acceptance as its own entry and cite that.
 
 ## Merge notes for E01 (expected conflicts, all additive)
 
