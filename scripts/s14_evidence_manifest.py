@@ -32,11 +32,22 @@ TESTS = (
     "tests/test_s07_packaging.py",
     "tests/test_evidence_manifests.py",
     "tests/test_k06_application.py",
+    # The assessment entry points whose docstrings DOC extends (brief 2).
+    "tests/test_e01_a_report.py",
+    "tests/test_e01_b_lca.py",
+    "tests/test_e01_b_studies.py",
+    "tests/test_e01_b_brightway.py",
 )
 
 LIMITATIONS = (
-    "Cost estimation and LCA (E01) are not documented: E01 is not on main at this branch's base "
-    "(DOC_DECISIONS D2).",
+    "The cost and impact example states only figures no cost correlation reads (the impact, the "
+    "steam bill and their sensitivities); its capital figures are printed, not stated, because "
+    "wp/E01b moves them (DOC_DECISIONS D11).",
+    "The assessment guide states the SSLW set's page-level check against Seider et al. 3rd ed. "
+    "that wp/E01b lands; on main 05363060 the set cites chapter and equations only "
+    "(DOC_DECISIONS D13; revert 5ce7ff92 if DOC merges first).",
+    "The assessment is documented as a library layer: no transport offers it (ADR 0052 D10); the "
+    "example assesses the bundle's state through openflowsheet.assessment (DOC_DECISIONS D12).",
     "The examples are demonstrations, regression-checked against their own stated numbers; they "
     "are not verification or validation evidence.",
     "The thermal machines carry semantic_role `pump` in the examples: the frozen schema has no "
