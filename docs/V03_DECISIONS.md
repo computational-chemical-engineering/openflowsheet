@@ -93,7 +93,7 @@ commit. Questions for the design lane are under "Open questions"; measurements u
 | 0046 | manifest `tested` both architectures; reviewer passed provider and generator; Q-1 with its number; Q-S07-1; F-1 written; Amendment 1 in the manifest | `evidence/S07/7bfab70d…` (A01–A50 pass, A33–A35 pass; `S07.ci`: S07 steps success on both `check` jobs; `S07.gate` `unsupported` by design); `docs/reviews/S07-review.md`, `S07-generator-review.md`; ADR status Q-1 note (R-627); Frank 2026-10-23; `7ccb13a3` | met → **Accepted** |
 | 0047 | WO-S10-1/2 manifest `tested` covering A01–A28; `s10_reference.py --check`; reviewer passed | `evidence/S10/c4f3751e…` (A01–A45 pass); `--check` at `wp/V03`: "113 claims hold; reference_values.yaml matches", exit 0 (again at C by the RC); `docs/reviews/S10-review-wo1-wo2.md`, `S10-review-final.md` | met → **Accepted** |
 | 0048 | manifest `tested`; G1, G2; full gate and CI at merge; reviewer read the ADR | `evidence/S08/6d7d1a6d…` (G1, G2 pass); merge `d96c17ae`: gate PASS `f5565a34` 12356/3137, CI 40248543872 green both architectures; `docs/reviews/S08-review.md` | met → **Accepted** |
-| 0049 | manifest `tested` with G1–G9; reviewer passed WO-1…4 | `evidence/S10c/2aedd250…`, `8f38f963…` (G1, G1-flowsheets, G2, G-R3, G-R7; G3 by A60/A61; G9 in WO-4); merge `8654aabc` gate PASS 13249/3137, CI 40315691647; `docs/reviews/S10C-review.md` (must-fix F1 carried by A60/A61) | met → **Accepted** |
+| 0049 | manifest `tested` with G1–G9; reviewer passed WO-1…4 | `evidence/S10c/2aedd250…`, `8f38f963…` (G1, G1-flowsheets, G2, G-R3, G-R7; G3 by A60/A61; G9 in WO-4); merge `8654aabc` gate PASS 13249/3137, CI 40315691647; `docs/reviews/S10C-review.md` (must-fix F1 carried by A60/A61). G3–G8 are the S10-C specification's assertions S10C.A01–A61 (spec §6), all `pass` in `2aedd250…`. | met → **Accepted** |
 | 0050, 0051 | Accepted **after** V03.A24 holds at C | — | not yet: stays Proposed until C |
 | 0052 | after E01's merge (`05363060`) and V03.A24 | E01 merged | not yet: V03.A24 is at C |
 | 0043 | stays Proposed | — | unchanged |
@@ -120,6 +120,14 @@ commit. Questions for the design lane are under "Open questions"; measurements u
 **Rulings (V03 review, `docs/reviews/V03-review.md`, 2026-10-30).** Q1: ruled by R-883, the default stands. Q2: confirmed,
 no erratum (R-901). Q3: cite R-900 (F-V1); MR-12 v03's `lca` entry now runs `scripts/e01_d04_inventory.py --check`
 (spec §9.3 erratum). Q4: see "Review fixes" below. Q5: see "Review fixes" below.
+
+## Review fixes (brief 3, `docs/briefs/V03-fixes.md`, 2026-10-30)
+
+- F-V2 check before writing: in `evidence/S10c/2aedd250…/manifest.json` every S10C.A01–A61 id that spec §6 maps to
+  G3–G8 (G3 A01–A07, G4 A10–A15, G5 A20–A22, G6 A30–A36, G7 A40–A45, G8 A50–A56; A60/A61) is `pass`, and each of G4–G8
+  has passing test nodes (G4 54, G5 28, G6 108, G7 13, G8 23). Two ids carry no node by the spec's own text: A07
+  ("covered by G1", `S10C-IDENTITY PASS n=858 changed=[]`) and A15 ("recorded, not gated", every target returned a
+  PHState). `8f38f963…` agrees. So the sentence was appended to ADR 0049's *Met* line and the 0049 row above.
 
 ## Merge notes for E01 (expected conflicts, all additive)
 

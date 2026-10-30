@@ -4,7 +4,7 @@
 - S10-C's evidence manifest is `tested`, with gates G1–G9 of the design note passing;
 - the `reviewer` has passed WO-1…WO-4 against the design note and the S10-C specification.
 
-*Met 2026-10-30 (V03 WO-4):* `evidence/S10c/2aedd250…/manifest.json` (and the earlier `8f38f963…`) is `tested`: `S10C.G1`, `S10C.G1-flowsheets`, `S10C.G2`, `S10C.G-R3` and `S10C.G-R7` pass, G3 is held by S10C.A60/A61 against its registered references (the review's must-fix F1), and G9's wall times are recorded in WO-4; the merge `8654aabc` records the gate PASS (13249/3137) and CI 40315691647. `docs/reviews/S10C-review.md` passed WO-1…WO-4 with that one must-fix, which the manifest carries.
+*Met 2026-10-30 (V03 WO-4):* `evidence/S10c/2aedd250…/manifest.json` (and the earlier `8f38f963…`) is `tested`: `S10C.G1`, `S10C.G1-flowsheets`, `S10C.G2`, `S10C.G-R3` and `S10C.G-R7` pass, G3 is held by S10C.A60/A61 against its registered references (the review's must-fix F1), and G9's wall times are recorded in WO-4; the merge `8654aabc` records the gate PASS (13249/3137) and CI 40315691647. `docs/reviews/S10C-review.md` passed WO-1…WO-4 with that one must-fix, which the manifest carries. G3–G8 are the S10-C specification's assertions S10C.A01–A61 (spec §6), all `pass` in `2aedd250…`.
 
 **Date:** 2026-10-26
 **Author:** design lane (`architect`), brief `docs/briefs/S10C-flash-and-column.md`.
