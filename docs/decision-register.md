@@ -8614,6 +8614,7 @@ A decimal composition built as `y·n_tot` is accepted at every scaling tested, w
   which is harmless as long as it is not used as an oracle.
 - A change of evaluation order or of the summation, which moves the budget. `StreamState.total_flow` is compensated for
   `float` elements and naive for `np.float64`.
+
 ## R-400 — `M05-basis-v2`: the no-surrogate link basis carries the truth's curvature along the decision path
 
 | | |
@@ -9007,6 +9008,7 @@ name it.
 **Rejected alternatives, and why.** The literal "best verified grid point": it reports a bound-active decision from differences the parent cannot resolve.
 
 **Watch for.** —
+
 ## R-430 — §7.4's at-bound distance stays 1e-6 as a classification; G8 and G9 stop gating Ipopt's offset
 
 | | |
@@ -17212,6 +17214,11 @@ over-restrictive: an impact objective is held to the capex size regimes. **Rejec
 restricted to the entries a bound output reads*, which needs each `OutputDef` to declare the entries it reads (the
 follow-up). **Watch for.** A floor row outside the closure, which shows up as a V7 failure, not a binding row.
 
+---
+
+**Numbering note (V03, 2026-10-29).** R-846…R-871 are E01's, on `wp/E01`, and are not on `main` yet. V03's entries start at
+R-872.
+
 ## R-890 — E01b: the SSLW compressor is sized on consumed power P_C = W/η_m, with the motor entry's η_m
 
 | | |
@@ -17481,3 +17488,241 @@ without re-indexing, and this decision is reversed by a new ruling (E01 design Q
 - *Making the pinned vessel ranges primary.* That adds approvals for numbers already in the pinned source.
 
 **Watch for.** A number added to the set without a `seider3.yaml` record. A49's completeness check fails on it.
+
+## R-872 — 0.3.0 claims V11–V20, W21–W26 and X31; W27 is not claimed, because 0.2.0's campaign cannot reach the S11 build
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03; claim set is Frank's item `Claim set` (default) |
+| Normative text | ADR 0053 D1; `docs/derivations/V03-release-spec.md` §2.1 |
+| Evidence | `python -m benchmarks.m06.w27.coverage --out <scratch>` at `a1b50ccf`: `REFUSED: registry_snapshot: unsupported(provider 'iapws95-v1': no registered records and phases, W27-R63)`; W27v3 classifies 127 routes (R-808) |
+| Affected packages | V03 (S13), W27 |
+
+**Decision.** Seventeen claimed gates, judged at one candidate C; W27 printed `not claimed (v0.3-gate-v1)`. The v0.3
+packages enter through gate items 8–9 (twenty packages' manifests), RC step 17 and the release notes.
+
+**Rejected alternatives, and why.**
+- *Carry 0.2.0's W27 campaign.* M07 §9 needs equal coverage rows; version 1 cannot be built at the S11 build.
+- *A new W27 campaign by default.* It is billed (USD 15–45); it is Frank's alternative (N-1).
+- *New gate ids for S05–S12.* It re-plans plan §5's gates.
+
+## R-873 — X31 (c) is PASS only on "met with two references"; "met where available" is FAIL (c), releasable by a dated D3 row
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03; the acceptance is Frank's (N-5) |
+| Normative text | ADR 0053 D3; V03 spec §3.2 |
+| Evidence | `docs/reviews/S09-verdicts.md` verdict 3 ("met where available, 3 of 4"; RC4 one reference); S03 Q-A2-4; R-643 |
+| Affected packages | V03, X31 |
+
+**Decision.** X31's clauses (a)–(c) are as V03 spec §3.2; the verdict agent applies the reading and does not choose it.
+
+**Rejected alternative.** *PASS with a travelling limitation.* S03 and S09 both left the acceptance to Frank; a D3 row
+is the dated record of it.
+
+## R-874 — The 0.3 line has its own gate module, `scripts/v0_3_gate.py`, on `v0_2_gate.py`'s engine
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 |
+| Normative text | ADR 0053 D4; V03 spec §2.2, V03.A01–A08 |
+| Evidence | `release.yml:90` resolves `scripts/v${major}_${minor}_gate.py`; M07.A30 (29-row Table T-V) and A32 (two entries) pin the v0.2 registry |
+| Affected packages | V03 (WO-1) |
+
+**Decision.** One registry entry `v0.3-gate-v1`. `v0_2_gate.py` may be parameterised (registry, line name,
+specification texts) with byte-identical v0.2 output.
+
+**Rejected alternative.** *A third entry in `v0_2_gate.py`.* Moves M07.A30 and A32, registered facts of a released gate.
+
+## R-875 — The 0.3.0 pin is `v0.3-envelope-1`; after the tag `main` carries `0.4.0.dev0` and returns to the existing token; A10 gains two pairs (resolves R-563)
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03; the working form is Frank's item N-7 (default) |
+| Normative text | ADR 0053 D5; V03 spec §5 |
+| Evidence | `tests/test_m07a_v0_2_gate.py:1028-1043` (literal `str.replace` pairs); `tests/test_m07_v0_2_gate.py:372-378` (`ast.literal_eval` of the tuple) |
+| Affected packages | V03 (WO-1, WO-5, WO-9) |
+
+**Decision.** `A10_PINS_0_3_0` = the two pairs undoing `v0.3-envelope-1` / `release: 0.3.0`; the working form stays
+`v0.2-envelope-dev` / `0.2.0.dev0` (R-563's fixed token).
+
+**Rejected alternative.** *D1-O2's version-free id with `release` = `main`'s version.* Every version bump would add an
+A10 pair, so the recurrence it meant to stop grows.
+
+## R-876 — ADRs 0046–0052 are Accepted by the build lane on cited evidence; S11's and E01's G8 shown again at C; ADR 0043 stays Proposed
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 |
+| Normative text | ADR 0053 D6; V03 spec §6 |
+| Evidence | each ADR's status line; manifests and reviews cited in spec §6; S07 F-1 absent from ADR 0001 and `interfaces-frozen.md` at `a1b50ccf` |
+| Affected packages | V03 (WO-4), S07, S10, S10c, S08, S11, E01 |
+
+**Decision.** As spec §6's table; S07 F-1's fixed line is transcribed verbatim before 0046 is marked; an unmet condition
+stops the RC.
+
+**Rejected alternative.** *Require ADR 0043.* Its acceptance waits on L01-Q1 (W27 Amendment 3), and no 0.3.0 claim
+rests on `pr-lib-v1`.
+
+## R-877 — W25 at 0.3.0: the journey re-runs at the cut commit K3 and carries to C by identity
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 |
+| Normative text | V03 spec §3.4; M07 §4.6 (unchanged rule) |
+| Evidence | `benchmarks/m07/registration.json` `carry.journey_files` includes `src/openflowsheet/**`, changed since K = `2c508b5` |
+| Affected packages | V03 (WO-5) |
+
+**Decision.** Re-run at K3 in the reactor environment (no money); R3 by `carry.r3_files` or re-run.
+
+**Rejected alternative.** *Leave W25 unclaimed.* Frank asked for as few limitations as possible, and the re-run costs
+workstation time only.
+
+## R-878 — V03's manifest id is `S13`
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 |
+| Normative text | V03 spec header, §2.2 `evidence_package` |
+| Evidence | `schemas/evidence-manifest.schema.json:23` `^[PKTMSR][0-9]{2}[a-z]?$` (frozen); R-565; E01 took `S12` |
+| Affected packages | V03 |
+
+**Decision.** `evidence/S13/<C>/manifest.json`. **Rejected alternative.** *A schema ADR for `V03`.* Moves a frozen
+schema for a label.
+
+## R-879 — MR-12 v03 audits `coolprop` and `lca`; the RC tests CoolProp with its lock installed (S07 F-8, F-9)
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03; S07 F-8/F-9's recommended defaults adopted |
+| Normative text | V03 spec §9.3, step 17b–17c, V03.A11, A15 |
+| Evidence | `wp/E01:tests/test_m07_mr12_extras_v02.py:178` (`["coolprop", "lca", "nlp"]` at HEAD); S07 spec §17.7 |
+| Affected packages | V03 (WO-3) |
+
+**Decision.** A v03 measure over extras new since `v0.2.0`, with the two entries of spec §9.3; the v02 measure stays
+judged at `RELEASE_0_2_0_COMMIT`.
+
+**Rejected alternative.** *Edit the v02 measure's audit table.* It would re-judge v0.2's measure.
+
+## R-880 — The 0.3.0 wheel ships Wilson's `records.yaml` and the Kurihara 1993 Table II points; R-811's wheel refusal is removed
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | Frank (the ship decision, 2026-10-29, Q-F3); design lane (`specifier`) for the file set |
+| Normative text | V03 spec §9.1; `docs/s10-rights-check.md` §3 |
+| Evidence | `docs/FRANK_QUESTIONS.md` (Q-F3 answered; RC-05 and RC-08 settled by Frank); S10-RC-06 unresolved |
+| Affected packages | V03 (WO-2), S10, S11 |
+
+**Decision.** Two files become package data by R-616's pattern, bytes unchanged; NOTICE carries the Wilson block. The
+RC-06 files, the double entries and the derived reports stay repository-only.
+
+**Rejected alternative.** *Ship the 1993 ternary (Table V) too.* It is RC-06, which Frank's answer did not settle.
+
+## R-881 — `semantic_role` gains `compressor`, `turbine` and `other` by ADR 0054; no `column`; `$id` and `schema_version` unchanged
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 ruling round 1; keeping `other` is Frank's item N-9 (default) |
+| Normative text | ADR 0054 D1–D3, D5; V03 spec §9.4, V03.A28 |
+| Evidence | at `98701cca`: the frozen enum has 11 values; `revision_binding.MODEL_SIGNATURES` has 30 ids, two with no role; nine S11 cases fail `validate` with `SCHEMA-01` on `semantic_role`; no file under `src/` contains `semantic_role`; `wp/DOC` `docs/DOC_DECISIONS.md` D3/Q1 |
+| Affected packages | V03 (WO-3), S11, M06, DOC |
+
+**Decision.** Three enum values appended after `heat_exchanger`, through a new ADR (not an amendment to ADR 0051). A
+column stays a `separator` (S11 §4.7.1). `other` is for a unit none of the thirteen describes. It is never the role of
+a bindable model. `0054` joins `required_adrs` (25).
+
+**Rejected alternatives, and why.**
+- *Amend ADR 0051.* That would tie 0051's acceptance (R-876) to V03's evidence. The schema is the defect, not 0051.
+- *Bump `schema_version` or move `$id`.* `const 1` would invalidate every document, and the version enters every
+  content hash. The `$id` move is R-149's, out of scope by R-185.
+- *Add `column`.* Two names for one role, against 16 registered instances.
+- *No `other`.* It forces a wrong listed role on any unit outside the list (the docs' turbine labelled `pump`). R-882's
+  Table R test keeps the closed-enum check for the repository.
+
+**Watch for.** A new model id in `MODEL_SIGNATURES` without a Table R row (V03.A30 (a) fails). A future reader of the
+role in `src/` (V03.A31 (a) fails, and ADR 0054 D2 must be revisited).
+
+## R-882 — Repository revision documents follow Table R; the nine S11 cases and five builders are corrected; V03.A29–A31 are the catching test and the inertness proof
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 ruling round 1 |
+| Normative text | ADR 0054 D4; V03 spec §9.4, §10.3, V03.A29–A31 |
+| Evidence | corpus of 80 documents at `98701cca`: 71 pass, the nine fail; 34 of 441 instances differ from Table R; with the widening and Table R in memory, 80 of 80 pass and the binder's `outcome` (S11 recorder rule) is equal under any role for all 80, while a one-ulp parameter nudge changes it; no committed file pins the nine documents' SHA-256 or `document_sha256` |
+| Affected packages | V03 (WO-3), S11 |
+
+**Decision.** `tests/semantic_roles.py` holds Table R. The case generators and the five builders take
+`role_of(model)`, and the nine files are regenerated. V03.A29 runs every corpus document through
+`application.validation.validate`. V03.A30 holds the table to the binder and the corpus. V03.A31 proves the binder is
+role-blind. The role correction is one commit. `scripts/s11_identity.py` is not used as an inertness proof across it,
+because its family C digests the document's SHA-256 by construction.
+
+**Rejected alternatives, and why.**
+- *Leave the cases as `other` once it is valid.* That keeps 34 known roles misdescribed. The digest move it avoids
+  touches no registered record.
+- *A role-against-model check in `validate`.* It constrains user documents beyond the schema and changes validation
+  reports, for a field nothing reads.
+- *Hand-edit the nine JSON files.* Their generators and committed-equals-generated tests would then disagree.
+
+## R-883 — "`wilson-ig-v1` binds from package data" is met by the binder and verifier passing the packaged path; v1 is not edited; the no-argument constructors stay checkout-only and refuse `records_missing`
+
+| | |
+| --- | --- |
+| Date | 2026-10-29 |
+| Decided by | design lane (`specifier`), V03 ruling round 1; confirms WO-2's D-1 default |
+| Normative text | V03 spec §9.1 ("What 'binds from package data' means"), §10.4, V03.A12, A19 (restated) |
+| Evidence | `365607f2`, `34236737` (D-1, D-4); `tests/test_s11_wilson_v2.py::test_a75_v1_is_not_edited` pins v1's SHA-256; v2's `implementation_sha256` chains v1's; `docs/reviews/S10-validation-verdict-val2.md` names v1 at `4bcd8f4dc8115b6b`; revisions select `wilson-ig-v2` (S11 units design §4.6) |
+| Affected packages | V03 (WO-2 done, WO-4, WO-6), S10, S11 |
+
+**Decision.** In a wheel, a revision on Wilson's record source binds on the packaged records, and the verifier builds
+its provider from them. A12 and A19 say so precisely. A19 (d) asserts that `WilsonIdealGasProvider()` with no argument refuses with a message
+starting `records_missing: `. L-S11-3 and `docs/attributions/wilson-ig-v1.md` give library users the call with
+`resources.packaged_path(wilson_ig.RECORDS_PATH)`. The refusal's stale "source checkout only" text stays, because it
+is v1's bytes.
+
+**Rejected alternative.** *Make `load_records(None)` read package data (`pr_c1`'s pattern).* That edits v1, which moves
+both providers' `implementation_sha256`, amends S11.A75's byte pin, and detaches S10's validation verdict from the
+shipped bytes, all for a library convenience that one argument already provides.
+
+## R-900 — MR-12 v03's `lca` entry: the decision is WO-B1/D04's licence audit, and the check is `scripts/e01_d04_inventory.py --check` (V03 spec §9.3 erratum)
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`reviewer`), V03 review (Q3) |
+| Normative text | V03 spec §9.3 (erratum); `scripts/m07a_evidence_manifest.py` `MR12_AUDITS_V03["lca"]` |
+| Evidence | R-870 decides how results from restricted LCA tables are labelled, not the extra's licences. R-857 leaves the Brightway licences "to be confirmed at pinned versions, WO-B1". `docs/E01B_DECISIONS.md` D04 records them in `docs/e01-lca-licences.json`, judged by `scripts/e01_d04_inventory.py --check` (E01.A42). The script requires one of `--packages`, `--data`, `--check`, so the bare command exits 2 |
+| Affected packages | V03 (WO-3, WO-6 step 17c); E01 |
+
+**Decision.** The `lca` extra's licences are accepted on WO-B1/D04's audit. The user installs the extra from PyPI, and
+nothing of it is redistributed. Every distribution in `benchmarks/e01/brightway/lca-pip.lock` has a row with its licence
+files and a passing verdict, held by E01.A42. This confirms R-857's licence premise at the pinned versions. MR-12 v03's
+`lca` entry cites R-900, and its check is `scripts/e01_d04_inventory.py --check`.
+
+**Rejected.** *Cite R-870*: it decides something else. *Cite R-857*: it left the licences unconfirmed.
+
+## R-901 — V03 D-2 and D-3 (T08.A32, S10.A28) are confirmed as amendments under R-617's and R-616's rules; no erratum
+
+| | |
+| --- | --- |
+| Date | 2026-10-30 |
+| Decided by | design lane (`reviewer`), V03 review (Q2) |
+| Normative text | `tests/test_t08_w2_inventory.py` (`0977e3aa`); `tests/test_s10_provider.py::test_a28_…` (`9bd23e9a`) |
+| Evidence | Each admitted file is pinned by SHA-256, with its own NOTICE strings and three controls each (the pre-Wilson NOTICE, changed bytes, one appended byte). S10's `PACKAGED` entries equal V03 spec §9.1's two files exactly, and at least 20 other S10 files are asserted absent |
+| Affected packages | T08, S10, V03 |
+
+**Decision.** T08.A32 admits Wilson's two files under R-617's attributed-data rule, and S10.A28 is inverted for the
+§9.1 ship set as S05.A26 was for R-616. Both amendments stand as committed.
+
+**Rejected.** *An erratum per assertion*: it would restate R-880's ship set twice and add no check.

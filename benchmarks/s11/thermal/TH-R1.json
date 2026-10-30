@@ -165,7 +165,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "feed"
     },
     {
       "id": "M",
@@ -179,7 +179,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "mixer"
     },
     {
       "id": "H",
@@ -193,7 +193,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "heater"
     },
     {
       "id": "V",
@@ -207,7 +207,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "valve"
     },
     {
       "id": "D",
@@ -238,7 +238,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "flash"
     },
     {
       "id": "P",
@@ -269,7 +269,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "pump"
     },
     {
       "id": "SP",
@@ -300,7 +300,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "splitter"
     },
     {
       "id": "KV",
@@ -314,7 +314,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "product_sink"
     },
     {
       "id": "KP",
@@ -328,7 +328,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "product_sink"
     }
   ],
   "parent_revision": null,

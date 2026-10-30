@@ -21,6 +21,7 @@ from m02_c1_corpus import C1_CORPUS
 from t07_corpus import CORPUS
 from test_schemas_p01 import schema_errors
 
+from openflowsheet import resources
 from openflowsheet.application import revision_binding
 from openflowsheet.application.binding import Unbound
 from openflowsheet.application.revision_binding import (
@@ -300,16 +301,20 @@ def test_a09_coolprop_without_its_extra_is_unavailable(monkeypatch: pytest.Monke
 def test_a09_wilson_without_its_records_is_unavailable(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    # V03 spec §9.1 (R-880): the records are package data, so a wheel binds the basis; only an
+    # installation with neither the package's copy nor a checkout's is refused.
     load = wilson_ig.load_records
     monkeypatch.setattr(wilson_ig, "_checkout_records", lambda: tmp_path / "absent.yaml")
     with pytest.raises(wilson_ig.RecordError):
         load()
+    assert not isinstance(provider_for(WILSON_BASIS), Unbound)
+    monkeypatch.setattr(resources, "packaged_path", lambda relative: None)
     refused = provider_for(WILSON_BASIS)
     assert isinstance(refused, Unbound)
     assert (refused.kind, refused.detail) == ("unsupported", "basis_unavailable(wilson-ig-v2)")
     assert refused.hint is not None
-    assert refused.hint.startswith("records_missing: ") and "R-706" in refused.hint
-    assert "Q-F3" in refused.hint
+    assert refused.hint.startswith("records_missing: ") and "R-880" in refused.hint
+    assert "Q-F3" not in refused.hint
 
 
 def test_a09_the_other_bases_have_their_providers() -> None:

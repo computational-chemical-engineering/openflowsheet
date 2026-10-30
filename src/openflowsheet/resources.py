@@ -11,8 +11,12 @@ since M02 the external addendum whose `compare` rules a coupled replay reads
 coefficient file the library-only provider `iapws95-v1` reads
 (`benchmarks/s05/iapws95_coefficients.json`, R-616; its attribution is in NOTICE), the
 diagnostic web shell's static files (`apps/web/`, served by `serve-http --ui`; M06, ADR 0030 D2),
-and since E01 the assessment data (`assessment/{cost,index,lca}/*.json`: the SSLW cost set, the
+since E01 the assessment data (`assessment/{cost,index,lca}/*.json`: the SSLW cost set, the
 capital-chain presets, three index series and two LCA tables, ADR 0052; their attributions are in
+NOTICE),
+and since 0.3.0 the Wilson records `wilson-ig-v1` and `wilson-ig-v2` read
+(`benchmarks/s10/records.yaml`) with the Kurihara 1993 Table II points they are fitted to
+(`benchmarks/s10/vle/kurihara1993_binaries.csv`; V03 spec §9.1, R-880; their attribution is in
 NOTICE).
 Each has exactly one copy in the repository, at the path its registration names. Until T08 they were
 found by walking up from a module's `__file__` to the repository root, which an installed wheel does
@@ -35,10 +39,18 @@ from __future__ import annotations
 from collections.abc import Mapping
 from importlib.resources import files
 from importlib.resources.abc import Traversable
+from pathlib import Path
 from types import MappingProxyType
 from typing import Final
 
-__all__ = ["DIRECTORIES", "PACKAGED", "REPOSITORY_PATHS", "packaged", "repository_path"]
+__all__ = [
+    "DIRECTORIES",
+    "PACKAGED",
+    "REPOSITORY_PATHS",
+    "packaged",
+    "packaged_path",
+    "repository_path",
+]
 
 #: The paths below `_data/` the package carries, each a file or a directory of them.
 PACKAGED: Final[tuple[str, ...]] = (
@@ -60,6 +72,10 @@ PACKAGED: Final[tuple[str, ...]] = (
     "assessment/index/frb-g5a-annual-v1.json",
     "assessment/lca/gwp100-ipcc-ar6-v1.json",
     "assessment/lca/test-background-v1.json",
+    # V03 (R-880, Frank's Q-F3): Wilson's records and the Table II points of their fit, one file
+    # entry each like S05's; the double entries, the RC-06 files and the reports stay out (§9.1).
+    "benchmarks/s10/records.yaml",
+    "benchmarks/s10/vle/kurihara1993_binaries.csv",
     "web",
 )
 #: The entries of `PACKAGED` that are directories: a file anywhere below one is packaged too.
@@ -85,3 +101,12 @@ def packaged(relative: str) -> Traversable:
     ):
         raise KeyError(f"{relative!r} is not runtime data the package carries; see PACKAGED")
     return files("openflowsheet").joinpath("_data", *relative.split("/"))
+
+
+def packaged_path(relative: str) -> Path | None:
+    """The packaged file `relative` (one of `PACKAGED`) as a path on the file system, for a reader
+    that takes a path rather than bytes; `None` where the installed package does not carry it as
+    a file on disk (V03 spec §9.1: the binder and the verifier hand Wilson's records to
+    `thermo.wilson_ig`, whose own lookup finds a source checkout only)."""
+    copy = packaged(relative)
+    return copy if isinstance(copy, Path) and copy.is_file() else None

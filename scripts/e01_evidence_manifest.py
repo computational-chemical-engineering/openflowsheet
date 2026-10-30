@@ -115,18 +115,25 @@ RESTATED = ("A49", "A51")
 RC_ITEMS = ("A48",)
 
 
-def a48_release_check() -> tuple[str, dict[str, Any]]:
+def a48_release_check(root: Path | None = None) -> tuple[str, dict[str, Any]]:
     """§9.6 A48 at a release candidate: every primary range of every shipped cost set is
     `verified: true`. It fails while any is not — the tripwire of the E01 review's S4 (the MR-12 /
     S07 Ruling M pattern): the normal suite pins the count and the `fail`, and the release
-    specification, once §9.7 QA1 has checked the ranges, flips them and the count."""
+    specification, once §9.7 QA1 has checked the ranges, flips them and the count.
+
+    `root` is the directory of cost-set documents, the package data by default; a test passes a
+    directory holding a synthetic document, so that the `fail` control runs this function itself
+    (V03.A10)."""
     from importlib.resources import files  # noqa: PLC0415
+    from importlib.resources.abc import Traversable  # noqa: PLC0415
 
     from openflowsheet.assessment.cost import sets  # noqa: PLC0415
 
-    root = files("openflowsheet").joinpath("_data", "assessment", "cost")
+    directory: Traversable = (
+        files("openflowsheet").joinpath("_data", "assessment", "cost") if root is None else root
+    )
     by_set: dict[str, list[str]] = {}
-    for path in sorted(root.iterdir(), key=lambda item: item.name):
+    for path in sorted(directory.iterdir(), key=lambda item: item.name):
         if not path.name.endswith(".json"):
             continue
         document = json.loads(path.read_text(encoding="utf-8"))
@@ -620,7 +627,10 @@ def found_limitations(entries: Sequence[Mapping[str, Any]], a33: Mapping[str, An
         "approval. The open questions of §10.10.9 (Q-B2, Q-B3, Q-B8, Q-B9, Q-B11, Q-B12) are "
         "worked on their defaults. A49 compares the set with the Seider 3rd ed. by page and "
         "equation (benchmarks/e01/cost_hand/seider3.yaml): transcription verification, not "
-        "empirical validation of the correlations.",
+        "empirical validation of the correlations. Since R-898 every P2 capital row is floored, "
+        "so P2's optimization exercises operating cost only; no registered NLP case carries a "
+        "capital row in a `units:N` regime (V03 review F-E1; E01.A18 makes a floor's derivative "
+        "row empty, so A33–A36 show nothing about capital sensitivities through the optimizer).",
         "Not applied from the review: the lower-priority domain entries for .per_fu, lcox and "
         "the allocation ratios (§4.7.5 erratum); N2 (layering, deferred by the review until "
         "numerics/ opens); N3 (the platform piece's provenance in the shipped set).",

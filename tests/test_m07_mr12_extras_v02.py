@@ -6,6 +6,10 @@ the alpha's records are judged under it. `mr12_extras_v02` accepts an extra only
 check `pass` at that commit, and the register holds the decision. It also reads S9.2 and S9.3 off
 each of step 9's A30 summaries. These tests decide each clause on synthetic inputs, then run the
 git-backed measure at `HEAD` over records written to `tmp_path`.
+
+MR-12 v03 (V03 spec §9.3, V03.A11, R-879) is `mr12_extras_v03` over `MR12_AUDITS_V03`: every extra
+new since `v0.2.0` (`coolprop`, `lca`) passes through its own entry, whose check step 17c's record
+carries at the commit. The `HEAD` test moved to it; the v02 measure stays judged at v0.2.0.
 """
 
 from __future__ import annotations
@@ -167,14 +171,105 @@ def test_the_git_backed_measure_at_the_v0_2_0_commit(tmp_path: Path) -> None:
 
 
 def test_the_git_backed_measure_at_head(tmp_path: Path) -> None:
-    """The tripwire (S07 Ruling M, A44): `coolprop`, an extra added after v0.2, has no `MR12_AUDITS`
-    entry, so the measure fails at `HEAD` until the next release specification adds one (F-9).
-    E01 (ADR 0052) adds `lca` the same way: no entry until the release specification supplies it."""
+    """The tripwire (S07 Ruling M, A44) moved to the v03 measure (V03 spec §9.3, V03.A11):
+    `coolprop` and `lca`, the extras added since v0.2.0, each pass through their
+    `MR12_AUDITS_V03` entry at `HEAD`, over a step 17c record written to `tmp_path`; an extra
+    without an entry still fails."""
     head = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True, check=True
     ).stdout.strip()
-    _, (result, value), _ = _git_backed(head, tmp_path)
-    assert result == "fail", value
-    assert value["new_since_v0_1_1"] == ["coolprop", "lca", "nlp"]
-    assert value["extras"]["coolprop"] == {"audit": None, "reason": "no MR12_AUDITS entry"}
-    assert value["extras"]["lca"] == {"audit": None, "reason": "no MR12_AUDITS entry"}
+    rc = tmp_path / head / "rc"
+    (rc / manifest.STEP17C_RECORD).parent.mkdir(parents=True, exist_ok=True)
+    (rc / manifest.STEP17C_RECORD).write_text(json.dumps(_step17c(head)), encoding="utf-8")
+    inputs = manifest.Inputs(commit=head, tests=None, evidence=tmp_path)  # type: ignore[arg-type]
+    result, value = manifest.MEASURES["mr12_extras_v03"](inputs)
+    assert result == "pass", value
+    assert value["new_since_v0_2_0"] == ["coolprop", "lca"]
+    assert set(value["extras"]) == {"coolprop", "lca"}
+    for extra in ("coolprop", "lca"):
+        assert value["extras"][extra]["files_at_commit"] == {"audit": True, "inventory": True}
+        assert value["extras"][extra]["decision_in_register"] is True
+
+
+# -- MR-12 v03 (V03 spec §9.3, V03.A11): synthetic clauses -----------------------------------------
+
+V03_AUDITS = manifest.MR12_AUDITS_V03
+V03_REGISTER = "# Decision register\n\n## R-624 — coolprop\n\n## R-900 — lca\n"
+
+
+def _step17c(commit: str = COMMIT, results: dict[str, str] | None = None) -> dict[str, Any]:
+    results = results or {}
+    return {
+        "format": "t08-rc-v1",
+        "step": "17c",
+        "provenance": {"commit": commit, "tree_clean": True},
+        "checks": [
+            {"id": audit["check"], "result": results.get(extra, "pass")}
+            for extra, audit in V03_AUDITS.items()
+        ],
+    }
+
+
+def _show_v03(
+    register: str = V03_REGISTER, missing: str | None = None
+) -> Callable[[str], str | None]:
+    files = {"docs/decision-register.md": register}
+    for audit in V03_AUDITS.values():
+        files[audit["audit"]] = "x"
+        files[audit["inventory"]] = "{}"
+    return lambda path: None if path == missing else files.get(path)
+
+
+NEW_V03 = ["coolprop", "lca"]
+
+
+def test_v03_the_control_passes() -> None:
+    result, value = manifest.mr12_extras_v03(COMMIT, NEW_V03, _show_v03(), _step17c())
+    assert result == "pass", value
+    assert value["new_since_v0_2_0"] == NEW_V03
+
+
+def test_v03_an_extra_without_an_entry_fails() -> None:
+    result, value = manifest.mr12_extras_v03(COMMIT, [*NEW_V03, "gpu"], _show_v03(), _step17c())
+    assert result == "fail"
+    assert value["extras"]["gpu"] == {"audit": None, "reason": "no MR12_AUDITS_V03 entry"}
+
+
+@pytest.mark.parametrize("extra", NEW_V03)
+@pytest.mark.parametrize("key", ["audit", "inventory"])
+def test_v03_a_missing_file_fails(extra: str, key: str) -> None:
+    show = _show_v03(missing=V03_AUDITS[extra][key])
+    assert manifest.mr12_extras_v03(COMMIT, NEW_V03, show, _step17c())[0] == "fail"
+
+
+@pytest.mark.parametrize("extra", NEW_V03)
+def test_v03_a_failed_or_absent_check_fails(extra: str) -> None:
+    failed = _step17c(results={extra: "fail"})
+    assert manifest.mr12_extras_v03(COMMIT, NEW_V03, _show_v03(), failed)[0] == "fail"
+    absent = _step17c()
+    absent["checks"] = [c for c in absent["checks"] if c["id"] != V03_AUDITS[extra]["check"]]
+    assert manifest.mr12_extras_v03(COMMIT, NEW_V03, _show_v03(), absent)[0] == "fail"
+
+
+def test_v03_a_record_of_another_commit_fails() -> None:
+    other = _step17c("d" * 40)
+    assert manifest.mr12_extras_v03(COMMIT, NEW_V03, _show_v03(), other)[0] == "fail"
+
+
+@pytest.mark.parametrize("decision", ["R-624", "R-900"])
+def test_v03_a_decision_not_in_the_register_fails(decision: str) -> None:
+    register = V03_REGISTER.replace(f"## {decision} — ", f"## {decision}x — ")
+    show = _show_v03(register=register)
+    assert manifest.mr12_extras_v03(COMMIT, NEW_V03, show, _step17c())[0] == "fail"
+
+
+def test_v03_the_v02_table_is_unchanged() -> None:
+    """R-879: the v02 measure's table is not edited, so v0.2's judgement does not move."""
+    assert manifest.MR12_AUDITS == {
+        "nlp": {
+            "audit": "docs/m03-ipopt-audit.md",
+            "inventory": "benchmarks/m03/ipopt-inventory-x86_64.json",
+            "check": "a60.w24.nlp_tier_and_inventory",
+            "decision": "R-450",
+        }
+    }

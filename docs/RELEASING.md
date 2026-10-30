@@ -103,6 +103,30 @@ makes it read-only on GitHub; that is Frank's call.
 5. **Verify.** In a fresh environment `pip install openflowsheet==X.Y.Z`, and look at the release
    page and https://pypi.org/project/openflowsheet/.
 
+**0.3.0** (V03 spec §4–§5, ADR 0053, R-872–R-877). `scripts/v0_3_gate.py` holds the 0.3 line's one gate set,
+`v0.3-gate-v1`, on `v0_2_gate.py`'s engine. It covers `0.3.0`, `0.3.0bN` and `0.3.0rcN`, claims V11–V20, W21–W26 and
+X31, prints W27 as not claimed, and reads ADR 0053's two tables, `docs/reviews/V03-verdicts.md`, `docs/v03-rc-record.md`
+(steps 1–17), S13's manifest at C, the twenty packages' manifests at ancestors of C, and the 25 required ADRs, every
+input at C (`git show`). The steps follow `0.2.0a1`'s ([Pre-releases](#pre-releases)) with these values:
+
+1. The cut commit K3 on `main` declares `0.3.0` in `pyproject.toml`, `src/openflowsheet/__init__.py`, the two
+   `project_summary` fixtures and `tests/test_m06_w27_coverage.py`, and pins the envelope (`envelope_id:
+   v0.3-envelope-1`, `release: 0.3.0`). From K3 until the dispatch `main` takes no change to a D2.4 path.
+2. C is K3 plus commits outside the D2.4 paths: K3's journey record, the RC records, `release/rc-trees/<C>.json`,
+   `evidence/S13/<C>/manifest.json`, the verdicts, the ledger and the `## v0.3.0` section of `CHANGELOG.md`. C is
+   merged into `main` with a merge commit, never squashed.
+3. The RC job runs at C: steps 1–17 (step 17b is CI's `rc-coolprop` job, the CoolProp tests with
+   `requirements-coolprop.lock` installed), then
+
+   ```sh
+   PYTHONPATH=src .venv/bin/python scripts/v0_3_gate.py --rc <C>
+   ```
+
+   must end with `v0.3.0 tag may be proposed: YES`.
+4. **Dispatch** as in steps 2–5 above, with `version` `0.3.0` and **`rc` = C**.
+5. After the tag, the first D2.4 change sets `0.4.0.dev0`, returns the envelope to its working form and re-takes the
+   five in-process G10 records (R-875, R-458).
+
 ## Pre-releases
 
 V02 alpha release spec §9 (ADR 0028 D4–D6). A pre-release has a canonical PEP 440 version,
@@ -158,7 +182,10 @@ that sorts after the tagged version, and returns the envelope to its working for
 unreleased working envelope, not "v0.2 under development"; they stay until v0.3's release-policy ADR names the
 0.3.0 pin and its successor together with M07a.A10's pairs (D1, R-563). The version is set in
 `pyproject.toml`, `src/openflowsheet/__init__.py`, the two `project_summary` fixtures and
-`tests/test_m06_w27_coverage.py`, and W27's `coverage.json` is re-taken at that build. A version
+`tests/test_m06_w27_coverage.py`. At 0.2.0 W27's `coverage.json` was re-taken at that build; from
+0.3.0 it is not, because W27's version-1 snapshot refuses the S11 build (`registry_snapshot: unsupported(provider
+'iapws95-v1' …)`), 0.3.0 claims no W27, and no default-gate test needs it at a new version (R-566 dropped the byte
+pin; V03 spec §2.1, §5.1, F-4). A version
 string that names a release identifies that release's D2.4 tree and nothing else
 (`tests/test_v02_main_version.py`). `release.yml` refuses a `.devN` version and the gate answers NO
 for it, so a head between releases cannot be dispatched. The version is part of the in-process

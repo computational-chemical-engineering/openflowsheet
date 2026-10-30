@@ -19,7 +19,9 @@ from typing import Any
 import pytest
 from m02_c1_support import connection, quantity, revision, specification
 from m02_wo8_support import Solved, solve
+from semantic_roles import role_of
 
+from openflowsheet import resources
 from openflowsheet.application import revision_binding
 from openflowsheet.application.binding import Unbound
 from openflowsheet.application.revision_binding import (
@@ -53,18 +55,13 @@ needs_coolprop = pytest.mark.skipif(
 
 ROUTING = ("syn001.feed_source", "syn001.product_sink", "syn001.stream_splitter")
 NEW = ("iapws95-v1", "coolprop-heos-v1", "wilson-ig-v2")
-ROLES = {
-    "syn001.feed_source": "feed",
-    "syn001.product_sink": "product_sink",
-    "syn001.stream_splitter": "splitter",
-}
 
 
 def instance(unit: str, model: str, parameters: Mapping[str, Any] | None = None) -> dict[str, Any]:
     return {
         "id": unit,
         "model": {"id": model, "version": "0.0.0-declared", "artifact_ref": None},
-        "semantic_role": ROLES.get(model, "other"),
+        "semantic_role": role_of(model),
         "parameters": dict(parameters or {}),
         "policy": {"fidelity": "test", "validity": "test"},
     }
@@ -280,7 +277,11 @@ def test_a09_a_coolprop_revision_without_the_extra_is_unavailable(
 def test_a09_a_wilson_revision_without_its_records_is_unavailable(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    # V03 spec §9.1 (R-880): the records are package data, so hiding the checkout's copy alone
+    # binds; only an installation with neither copy is refused.
     monkeypatch.setattr(wilson_ig, "_checkout_records", lambda: tmp_path / "absent.yaml")
+    assert not isinstance(bind_revision_flowsheet(case_revision("wilson")), Unbound)
+    monkeypatch.setattr(resources, "packaged_path", lambda relative: None)
     refused = bind_revision_flowsheet(case_revision("wilson"))
     assert isinstance(refused, Unbound)
     assert (refused.kind, refused.detail) == ("unsupported", "basis_unavailable(wilson-ig-v2)")

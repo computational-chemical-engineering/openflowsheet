@@ -1,0 +1,503 @@
+{
+  "work_package": "S13a",
+  "commit": "0ce3748a7a473950a295e2668201fb96c44d0ec1",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "V03 WO-1…WO-4 (manifest id S13a): docs/derivations/V03-release-spec.md §7 (V03.A01–A08, A10–A16, A18, A28–A31; §10's work-order table) and the reviewer pass docs/reviews/V03-review.md",
+    "case_hash": "d7d8348676f75e7a625cbc94afe8ade554e0a5a62ea9464a6f47d03731d490c7",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A01.junit.xml tests/test_v03_v0_3_gate.py -k a01_ or otherwise_passing_fixture",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "1f22c5fb38e52a1ecd7fbafa5a983abb697d08a6b69c4b01ab581c28078cab5a"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A02.junit.xml tests/test_v03_v0_3_gate.py -k a02_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "d118a7e88dd72a376edf7d9f0c41259b34f92d49d772a8709819a338ce8f6553"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A03.junit.xml tests/test_v03_v0_3_gate.py tests/test_m07a_v0_2_gate.py tests/test_m07_v0_2_gate.py -k a03_ or test_m07a_v0_2_gate or test_m07_v0_2_gate",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "d5356a4d244b1ed60958d0ca8ec6ae3894460942e65585c3c1c9c4bcdb930b75"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A04.junit.xml tests/test_v03_v0_3_gate.py -k a04_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "a831adb1dcf952f91f855128c73b1fe6db18441088e08ddbcc3dbd33b2e49a18"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A05.junit.xml tests/test_v03_v0_3_gate.py -k a05_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "a61785eb9f66454725059fcdd6080feab0a1b875ae6c22dc54b11a7bd2078846"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A06.junit.xml tests/test_v03_v0_3_gate.py -k a06_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "6e84cc5888cc2863eba066e1c34abcf966379e3583a48e1ce4c2dc80878ddf0e"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A07.junit.xml tests/test_v03_v0_3_gate.py -k a07_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "b0762747dc8e05278ba583ac2d51ac9a89229145b1f1b30bf329df36e3a4912c"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A08.junit.xml tests/test_v03_v0_3_gate.py -k a08_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "bb8c1a0e5f1e4abfde06c32af484656cd4da35381da9cb5f750077cb396c21fe"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A10.junit.xml tests/test_e01_a48_tripwire.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "9b62e3c56cba6bfd6bb57ac541857b5fd57cdf4a008ae67f253a147f1e5bb453"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A11.junit.xml tests/test_m07_mr12_extras_v02.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "500a7d1aeb9e6ab2b354de876d2d7b544cffed9e32473f2d71a6612aadc9dfff"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A12.junit.xml tests/test_v03_wilson_ship.py tests/test_s11_wilson_v2.py::test_a75_v1_is_not_edited -k a12_ or test_a75_v1_is_not_edited",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "af70fe01b4d6322f01764d0620d9903f2ab8f09565ef2da114469066b1f6e374"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A13.junit.xml tests/test_v03_wilson_ship.py -k a13_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "d40abddff2cce4e7d52342b5b1fe5a8ceaf220924f31ed5c70489df7eaa0a16a"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A14.junit.xml tests/test_v03_wilson_ship.py -k a14_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "fd6e074f9158f30f08bedc7e78ca20644faebb52e4a552185d10fbe7c847ab83"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A15.junit.xml tests/test_v03_rc_coolprop.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "8ddd0e2d1d3937b38b0cb99c08e23efaa7b3320998347b8d7bfad31a43c59083"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A16.junit.xml tests/test_v03_v0_3_gate.py -k a16_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "ee6d6f040b44bacf9366396f020b84303d6d16c03ba1d2157ae6374265697fd8"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A28.junit.xml tests/test_v03_semantic_roles.py -k a28_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "11dcc7cf8b6bd365a0cd067f0f13092ae2c0c466dafe56d85adab795c40050ed"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A29.junit.xml tests/test_v03_semantic_roles.py -k a29_ or nine_cases_and_its_floor",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "8fb1616d358cf65838c01505c4fed4865dd14cca6a160bedf56997f70a670ffd"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A30.junit.xml tests/test_v03_semantic_roles.py -k a30_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "9ed421a05a55d6656fbb91a843536e5be4bdf78f63691b6b5de4a0f9472a0c99"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python -m pytest -q -p no:cacheprovider --junitxml=evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A31.junit.xml tests/test_v03_semantic_roles.py -k a31_",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "4ecf5dabc1acef3ad6c506d2418c6087a4f2d47aa23d8ec628ade918cbfb13f2"
+    },
+    {
+      "cmd": "/home/frankp/Codes/OpenFlowsheet/.venv/bin/python scripts/s11_identity.py",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "2eb322ac5182096e54be7ee5aec44eb5c922eb50d83563a2749c37ab58a78627"
+    },
+    {
+      "cmd": "scripts/gate.sh > /home/frankp/.cache/v03-gate/gate-0ce3748a.log 2>&1",
+      "cwd": ".",
+      "exit_code": 0,
+      "stdout_sha256": "b561c5365c55250f6d56d02b62e36585012f43d411a0f29c0f5987c30521cf48"
+    }
+  ],
+  "checks": [
+    {
+      "id": "S13a.A01",
+      "description": "V03.A01 (WO-1; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "3 passed, 64 deselected in 0.08s"
+    },
+    {
+      "id": "S13a.A02",
+      "description": "V03.A02 (WO-1; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "20 passed, 47 deselected in 0.08s"
+    },
+    {
+      "id": "S13a.A03",
+      "description": "V03.A03 (WO-1; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "297 passed, 66 deselected in 4.45s"
+    },
+    {
+      "id": "S13a.A04",
+      "description": "V03.A04 (WO-1; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "3 passed, 64 deselected in 0.17s"
+    },
+    {
+      "id": "S13a.A05",
+      "description": "V03.A05 (WO-1; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "12 passed, 55 deselected in 0.08s"
+    },
+    {
+      "id": "S13a.A06",
+      "description": "V03.A06 (WO-1; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "14 passed, 53 deselected in 0.14s"
+    },
+    {
+      "id": "S13a.A07",
+      "description": "V03.A07 (WO-1; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "5 passed, 62 deselected in 0.36s"
+    },
+    {
+      "id": "S13a.A08",
+      "description": "V03.A08 (WO-1; §7 gate D, R): its test nodes pass",
+      "result": "pass",
+      "value": "7 passed, 60 deselected in 0.70s"
+    },
+    {
+      "id": "S13a.A10",
+      "description": "V03.A10 (WO-3; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "3 passed in 0.17s"
+    },
+    {
+      "id": "S13a.A11",
+      "description": "V03.A11 (WO-3; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "29 passed in 0.20s"
+    },
+    {
+      "id": "S13a.A12",
+      "description": "V03.A12 (WO-2; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "9 passed, 17 deselected in 0.85s"
+    },
+    {
+      "id": "S13a.A13",
+      "description": "V03.A13 (WO-2; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "11 passed, 14 deselected in 0.58s"
+    },
+    {
+      "id": "S13a.A14",
+      "description": "V03.A14 (WO-2; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "5 passed, 20 deselected in 0.59s"
+    },
+    {
+      "id": "S13a.A15",
+      "description": "V03.A15 (WO-3; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "2 passed in 0.11s"
+    },
+    {
+      "id": "S13a.A16",
+      "description": "V03.A16 (WO-1; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "1 passed, 66 deselected in 0.07s"
+    },
+    {
+      "id": "S13a.A18",
+      "description": "V03.A18 (WO-4; §7 gate R): judged at C (S13)",
+      "result": "unsupported",
+      "value": {
+        "planned": "at C (records)",
+        "draft_at_commit": {
+          "phrases": 17,
+          "present_in_draft": 17
+        }
+      }
+    },
+    {
+      "id": "S13a.A28",
+      "description": "V03.A28 (WO-3; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "1 passed, 19 deselected in 3.91s"
+    },
+    {
+      "id": "S13a.A29",
+      "description": "V03.A29 (WO-3; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "3 passed, 17 deselected in 10.21s"
+    },
+    {
+      "id": "S13a.A30",
+      "description": "V03.A30 (WO-3; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "12 passed, 8 deselected in 3.97s"
+    },
+    {
+      "id": "S13a.A31",
+      "description": "V03.A31 (WO-3; §7 gate D): its test nodes pass",
+      "result": "pass",
+      "value": "3 passed, 17 deselected in 8.38s"
+    },
+    {
+      "id": "S13a.A12c",
+      "description": "V03.A12 (c) (WO-2; §7 gate D): the S10/S11 identity is unchanged (scripts/s11_identity.py, S11 gate G1)",
+      "result": "pass",
+      "value": "S11-IDENTITY PASS n=54494 changed=[]"
+    },
+    {
+      "id": "S13a.gate",
+      "description": "the full gate (scripts/gate.sh) at this commit, read from its log",
+      "result": "pass",
+      "value": "14712 passed, 3206 skipped, 196 deselected, 1 warning in 2705.61s (0:45:05); === check.sh: PASSED ==="
+    },
+    {
+      "id": "S13a.review",
+      "description": "the design-lane reviewer pass over WO-1…WO-4 is recorded, and the commits that closed its findings are in this commit's history",
+      "result": "pass",
+      "value": {
+        "record": "docs/reviews/V03-review.md",
+        "record_sha256": "2e88c078e093e5599e72f387ab924d995c1435994775cf6b9c9d1d1ddda9cc35",
+        "fix_commits": {
+          "F-V1": "1a2388cf94f13fb0c2fb262c38c3e61ae81cea28",
+          "F-V2": "030226c403506a0c3fe4a42123ab042a3bc302ca",
+          "F-V3, F-V4": "b0d71e2f589948e0e67d6e5a79e31e629fd7811f"
+        }
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A01.log",
+      "sha256": "1f22c5fb38e52a1ecd7fbafa5a983abb697d08a6b69c4b01ab581c28078cab5a",
+      "description": "output of S13a.A01"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A01.junit.xml",
+      "sha256": "2060f0fcdb4a93998661c1b785efff5794d72777908be4a08964dfba87658e91",
+      "description": "JUnit report of S13a.A01"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A02.log",
+      "sha256": "d118a7e88dd72a376edf7d9f0c41259b34f92d49d772a8709819a338ce8f6553",
+      "description": "output of S13a.A02"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A02.junit.xml",
+      "sha256": "a08b65876ae79a143fbd3620912e1991f66e34faea91d10f448ebbd14785e355",
+      "description": "JUnit report of S13a.A02"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A03.log",
+      "sha256": "d5356a4d244b1ed60958d0ca8ec6ae3894460942e65585c3c1c9c4bcdb930b75",
+      "description": "output of S13a.A03"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A03.junit.xml",
+      "sha256": "5c3c56706b043a59ce1ce10ac9272050a11a72c50e334f7e5ecfe33caa4248dd",
+      "description": "JUnit report of S13a.A03"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A04.log",
+      "sha256": "a831adb1dcf952f91f855128c73b1fe6db18441088e08ddbcc3dbd33b2e49a18",
+      "description": "output of S13a.A04"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A04.junit.xml",
+      "sha256": "6de82d63eaada244e707580cf992fcbb92d28c5e256bdd4b1287974cb4ab6c3a",
+      "description": "JUnit report of S13a.A04"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A05.log",
+      "sha256": "a61785eb9f66454725059fcdd6080feab0a1b875ae6c22dc54b11a7bd2078846",
+      "description": "output of S13a.A05"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A05.junit.xml",
+      "sha256": "fd0a1253de6f479df7c1f0ed44e47666aad87d6e247192ccf2fa397ec3d5fea6",
+      "description": "JUnit report of S13a.A05"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A06.log",
+      "sha256": "6e84cc5888cc2863eba066e1c34abcf966379e3583a48e1ce4c2dc80878ddf0e",
+      "description": "output of S13a.A06"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A06.junit.xml",
+      "sha256": "0e351984e19179616f00cc3745ed9e3931d53a9f97c2f8a9f86e139c82b2ba38",
+      "description": "JUnit report of S13a.A06"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A07.log",
+      "sha256": "b0762747dc8e05278ba583ac2d51ac9a89229145b1f1b30bf329df36e3a4912c",
+      "description": "output of S13a.A07"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A07.junit.xml",
+      "sha256": "b35133d87d9140d330253468471b8a52bb0851c6b9d39b780b253b81a94ded2d",
+      "description": "JUnit report of S13a.A07"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A08.log",
+      "sha256": "bb8c1a0e5f1e4abfde06c32af484656cd4da35381da9cb5f750077cb396c21fe",
+      "description": "output of S13a.A08"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A08.junit.xml",
+      "sha256": "720491fe208442d3da7aade4b099fedb9b31b1f505fe27a4046a3e1a249a13c1",
+      "description": "JUnit report of S13a.A08"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A10.log",
+      "sha256": "9b62e3c56cba6bfd6bb57ac541857b5fd57cdf4a008ae67f253a147f1e5bb453",
+      "description": "output of S13a.A10"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A10.junit.xml",
+      "sha256": "f5de19f794bcb25d296a53e95bccfa8260208d8a42365e0d8953aaa50c0fbb7d",
+      "description": "JUnit report of S13a.A10"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A11.log",
+      "sha256": "500a7d1aeb9e6ab2b354de876d2d7b544cffed9e32473f2d71a6612aadc9dfff",
+      "description": "output of S13a.A11"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A11.junit.xml",
+      "sha256": "477b739a6e450469dd5e096c22c71554f0066153544771cf981636b1bec95354",
+      "description": "JUnit report of S13a.A11"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A12.log",
+      "sha256": "af70fe01b4d6322f01764d0620d9903f2ab8f09565ef2da114469066b1f6e374",
+      "description": "output of S13a.A12"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A12.junit.xml",
+      "sha256": "3123ad038c11db5893a56354a4c92dd99a06c67289d61aa13c8f104947d43f11",
+      "description": "JUnit report of S13a.A12"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A13.log",
+      "sha256": "d40abddff2cce4e7d52342b5b1fe5a8ceaf220924f31ed5c70489df7eaa0a16a",
+      "description": "output of S13a.A13"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A13.junit.xml",
+      "sha256": "24b395b0e964c655b38b01a9871716616065393fbc5409be87e3379b2b2fb379",
+      "description": "JUnit report of S13a.A13"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A14.log",
+      "sha256": "fd6e074f9158f30f08bedc7e78ca20644faebb52e4a552185d10fbe7c847ab83",
+      "description": "output of S13a.A14"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A14.junit.xml",
+      "sha256": "f7c6daf9678f856edbdf4a116e32a1bd87b2b062e35d8c85531aa36e2d9029d6",
+      "description": "JUnit report of S13a.A14"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A15.log",
+      "sha256": "8ddd0e2d1d3937b38b0cb99c08e23efaa7b3320998347b8d7bfad31a43c59083",
+      "description": "output of S13a.A15"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A15.junit.xml",
+      "sha256": "ec16609bcabcd2d9455c52a48b034218dd7081445bfcf042febd1732cd8ad38b",
+      "description": "JUnit report of S13a.A15"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A16.log",
+      "sha256": "ee6d6f040b44bacf9366396f020b84303d6d16c03ba1d2157ae6374265697fd8",
+      "description": "output of S13a.A16"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A16.junit.xml",
+      "sha256": "317600b9172e36c06d5b6593381b7d070fd4f68167f1e28743bb685486756df6",
+      "description": "JUnit report of S13a.A16"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A28.log",
+      "sha256": "11dcc7cf8b6bd365a0cd067f0f13092ae2c0c466dafe56d85adab795c40050ed",
+      "description": "output of S13a.A28"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A28.junit.xml",
+      "sha256": "a24ec342bdfce1fb68047e3afd0301d60aaa43595a7d667f248bd223128ac2bd",
+      "description": "JUnit report of S13a.A28"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A29.log",
+      "sha256": "8fb1616d358cf65838c01505c4fed4865dd14cca6a160bedf56997f70a670ffd",
+      "description": "output of S13a.A29"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A29.junit.xml",
+      "sha256": "3ad45aae93e132934aa15fa2922a097823864e189ff3be511a3957403c794556",
+      "description": "JUnit report of S13a.A29"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A30.log",
+      "sha256": "9ed421a05a55d6656fbb91a843536e5be4bdf78f63691b6b5de4a0f9472a0c99",
+      "description": "output of S13a.A30"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A30.junit.xml",
+      "sha256": "a1190e4a99006a4456f8ee37e5428a0e3968e0074d433e7cc4e90656103ac9c5",
+      "description": "JUnit report of S13a.A30"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A31.log",
+      "sha256": "4ecf5dabc1acef3ad6c506d2418c6087a4f2d47aa23d8ec628ade918cbfb13f2",
+      "description": "output of S13a.A31"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A31.junit.xml",
+      "sha256": "2a6a393dd993431e01b61a1fe5cf8e945c4c75f39ed352d40faef2a643fe5652",
+      "description": "JUnit report of S13a.A31"
+    },
+    {
+      "path": "evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/artifacts/S13a.A12c.log",
+      "sha256": "2eb322ac5182096e54be7ee5aec44eb5c922eb50d83563a2749c37ab58a78627",
+      "description": "output of S13a.A12c"
+    }
+  ],
+  "limitations": [
+    "Package id: this manifest is filed as S13a, a sub-manifest of V03's S13 for WO-1…WO-4 (orchestrator's decision, docs/V03_DECISIONS.md; E01b's S12b is the precedent): spec P3 merges WO-1…WO-4 into main before K3, and S13's manifest is written only at C (WO-6). Check ids are S13a.*; each description names its assertion V03.A#.",
+    "requirements is empty: V03's claims (X31 and the carried rows) are judged by the verdict document at C (spec §3, A26), and the frozen schema admits only D/A requirement ids.",
+    "V03.A18 (CHANGELOG.md `## v0.3.0` holds §8's 17 phrases) has gate R: it is judged at C, in S13. S13a.A18 is unsupported, which is not a pass; it records the draft's count at this commit.",
+    "V03.A08's gate is D and R: S13a.A08 is its D part; the RC record's step 18 output at C is S13's.",
+    "The assertions WO-1…WO-4 do not own, or that exist only at K3 or C (A09, A17, A19–A27), are not in this manifest: S13 at C carries them. A25 (WO-4's ADR flips) is judged at C.",
+    "The full gate (scripts/gate.sh) was run once at this commit before the merge and is recorded from its log (S13a.gate), not re-run by this generator. CI on x86-64 and aarch64 is checked on the push before the merge into main, not recorded here.",
+    "Review: the design lane's single reviewer pass over wp/V03 (docs/reviews/V03-review.md) found one must-fix (F-V1), one should-fix (F-V2) and two notes (F-V3, F-V4); S13a.review lists the commits that closed them. The manifest's review field stays pending."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

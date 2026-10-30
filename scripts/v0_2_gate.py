@@ -58,6 +58,12 @@ if the verdict document is malformed or `C` cannot be found.
     PYTHONPATH=src .venv/bin/python scripts/v0_2_gate.py --rc C [--candidate REF] [--json]
     PYTHONPATH=src .venv/bin/python scripts/v0_2_gate.py --rc C --markdown   # the notes' table
     PYTHONPATH=src .venv/bin/python scripts/v0_2_gate.py --rc C --write-tree-record  # R-151
+
+**The engine of later lines (V03 release spec §2.2, `docs/derivations/V03-release-spec.md`).** The
+registry, the line's name in the report (`v0.2`) and a set's specification texts are parameters: a
+`ReleaseLine` names a line and its registry, and `GateSet.specification_texts` overrides the
+evidence-package lookup. `scripts/v0_3_gate.py` passes its own; every default is this script's, so
+its output is unchanged byte for byte (V03.A03).
 """
 
 from __future__ import annotations
@@ -166,6 +172,9 @@ class GateSet:
     #: `None` when the set reads no links (the alpha, whose record is its own). Registered as
     #: `gate.gate_sets.<set>.links_item` (M07 spec §20 A3.2, R-462; GC-SET-3).
     links_item: str | None = None
+    #: How reasons name the set's specification and its RC step table, `(text, section)`, where
+    #: `_SPECIFICATION_TEXTS` does not key them by `evidence_package` (V03 spec §2.2: S13's).
+    specification_texts: tuple[str, str] | None = None
 
     @property
     def gates(self) -> tuple[str, ...]:
@@ -175,13 +184,19 @@ class GateSet:
     def specification(self) -> str:
         """The specification a non-acceptance answer is sent to amend, from `evidence_package`
         (M07 spec §20 Q-A3-1): the alpha's text byte for byte, "the M07 specification" for M07."""
-        return _SPECIFICATION_TEXTS[self.evidence_package][0]
+        return self._texts[0]
 
     @property
     def rc_section(self) -> str:
         """The section of the RC job's step table that RC-record reasons cite, from
         `evidence_package` (§20 Q-A3-1): the alpha's §8.2, M07's §8."""
-        return _SPECIFICATION_TEXTS[self.evidence_package][1]
+        return self._texts[1]
+
+    @property
+    def _texts(self) -> tuple[str, str]:
+        if self.specification_texts is not None:
+            return self.specification_texts
+        return _SPECIFICATION_TEXTS[self.evidence_package]
 
     @property
     def adr(self) -> str:
@@ -269,16 +284,33 @@ GATE_SETS: Final = (
 )
 
 
-def gate_set_of(version: str) -> GateSet | None:
+@dataclass(frozen=True)
+class ReleaseLine:
+    """A release line's gate script, `scripts/v<major>_<minor>_gate.py`: the name its report and
+    refusals print, its registry, and its command line's description (V03 spec §2.2)."""
+
+    name: str
+    gate_sets: tuple[GateSet, ...]
+    description: str
+
+
+def _line(release: ReleaseLine | None) -> ReleaseLine:
+    """`release`, or this script's line, read at the call so that `GATE_SETS` is the current one."""
+    if release is not None:
+        return release
+    return ReleaseLine("v0.2", GATE_SETS, (__doc__ or "").splitlines()[0])
+
+
+def gate_set_of(version: str, release: ReleaseLine | None = None) -> GateSet | None:
     """The registered gate set covering `version`, if one does (§7.1)."""
-    covering = [entry for entry in GATE_SETS if entry.covers.fullmatch(version)]
+    covering = [entry for entry in _line(release).gate_sets if entry.covers.fullmatch(version)]
     if len(covering) > 1:
         raise ValueError(f"version {version} is covered by {len(covering)} gate sets, not 1")
     return covering[0] if covering else None
 
 
-def not_covered(version: str) -> str:
-    return f"version {version} is not covered by a registered v0.2 gate set"
+def not_covered(version: str, release: ReleaseLine | None = None) -> str:
+    return f"version {version} is not covered by a registered {_line(release).name} gate set"
 
 
 # -- reading the verdict document ------------------------------------------------------------
@@ -902,12 +934,13 @@ def build(
     version: str,
     differences: Sequence[str] | None,
     is_ancestor: Callable[[str], bool],
+    release: ReleaseLine | None = None,
 ) -> dict[str, Any]:
     """The report, from the candidate's files (path → text; a missing path is a missing file)
     and the facts about `C` that git gives. `differences` is the D2.4 tree check's result
     (`tree_differences`); `None` means it was not run, which refuses. A malformed verdict
     document is a `ValueError`."""
-    gate_set = gate_set_of(version)
+    gate_set = gate_set_of(version, release)
     if gate_set is None:
         return {
             "gate_set": None,
@@ -916,7 +949,7 @@ def build(
             "version": version,
             "gates": [],
             "tag_may_be_proposed": False,
-            "reasons": [not_covered(version)],
+            "reasons": [not_covered(version, release)],
         }
     ledger = yaml.safe_load(files[LEDGER]) if LEDGER in files else None
     entries = {
@@ -1028,9 +1061,9 @@ def _verdict_word(entry: Mapping[str, Any]) -> str:
     return str(entry["ledger"]) if entry["ledger"] else "no verdict"
 
 
-def _adr(report: Mapping[str, Any]) -> str:
+def _adr(report: Mapping[str, Any], release: ReleaseLine | None = None) -> str:
     """The policy ADR of the report's gate set, as the report names it."""
-    (gate_set,) = [entry for entry in GATE_SETS if entry.name == report["gate_set"]]
+    (gate_set,) = [entry for entry in _line(release).gate_sets if entry.name == report["gate_set"]]
     return gate_set.adr
 
 
@@ -1048,14 +1081,14 @@ def _notes(entry: Mapping[str, Any], adr: str) -> str:
     return "; ".join(notes)
 
 
-def markdown(report: Mapping[str, Any]) -> str:
+def markdown(report: Mapping[str, Any], release: ReleaseLine | None = None) -> str:
     lines = [
         "| Gate | Verdict at C | Required evidence | Clauses and travelling limitations |",
         "| --- | --- | --- | --- |",
     ]
     for entry in report["gates"]:
         if entry["claimed"]:
-            word, notes = _verdict_word(entry), _notes(entry, _adr(report)) or NONE
+            word, notes = _verdict_word(entry), _notes(entry, _adr(report, release)) or NONE
         else:
             word, notes = "not claimed", NONE
         lines.append(f"| {entry['gate']} | {word} | {entry['requirement']} | {notes} |")
@@ -1072,18 +1105,19 @@ def _last_line(report: Mapping[str, Any]) -> str:
     )
 
 
-def text(report: Mapping[str, Any]) -> str:
+def text(report: Mapping[str, Any], release: ReleaseLine | None = None) -> str:
     if report["gate_set"] is None:
         return "\n".join([*report["reasons"], _last_line(report)]) + "\n"
     out = [
-        f"v0.2 gates ({report['gate_set']}) at C = {report['rc']}; candidate {report['candidate']}"
+        f"{_line(release).name} gates ({report['gate_set']}) at C = {report['rc']}; "
+        f"candidate {report['candidate']}"
     ]
     for entry in report["gates"]:
         if not entry["claimed"]:
             out.append(f"{entry['gate']}  {_not_claimed(report)}")
             continue
         out.append(f"{entry['gate']}  {_verdict_word(entry):<11}{entry['requirement']}")
-        notes = _notes(entry, _adr(report))
+        notes = _notes(entry, _adr(report, release))
         if notes:
             out.append(f"      {notes}")
         for problem in entry["problems"]:
@@ -1111,7 +1145,7 @@ def text(report: Mapping[str, Any]) -> str:
     out.append("envelope (§7.2 item 6): " + _summary(report["envelope_problems"], "pinned"))
     out.append("ADRs (§7.2 item 7): " + _summary(report["adr_problems"], "every one Accepted"))
     out.append(
-        f"Frank's answers ({_adr(report)}): "
+        f"Frank's answers ({_adr(report, release)}): "
         + _summary(report["frank_problems"], "every one accepted")
     )
     gates = tuple(entry["gate"] for entry in report["gates"])
@@ -1227,8 +1261,8 @@ def is_ancestor_of(rc: str) -> Callable[[str], bool]:
     return check
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+def main(argv: Sequence[str] | None = None, release: ReleaseLine | None = None) -> int:
+    parser = argparse.ArgumentParser(description=_line(release).description)
     parser.add_argument("--rc", required=True, help="the release candidate C")
     parser.add_argument("--candidate", default="HEAD", help="the tag candidate (default HEAD)")
     output = parser.add_mutually_exclusive_group()
@@ -1278,7 +1312,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0 if carry.carried else 1
         candidate = git("rev-parse", f"{arguments.candidate}^{{commit}}").decode().strip()
         version = version_at(candidate)
-        gate_set = gate_set_of(version)
+        gate_set = gate_set_of(version, release)
         report = build(
             files={} if gate_set is None else files_at(candidate, rc, gate_set),
             rc=rc,
@@ -1288,6 +1322,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             version=version,
             differences=None if gate_set is None else tree_differences(rc, candidate),
             is_ancestor=is_ancestor_of(rc),
+            release=release,
         )
     except ValueError as error:
         print(f"error: {error}", file=sys.stderr)
@@ -1298,9 +1333,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         if report["gate_set"] is None:
             print(f"error: {report['reasons'][0]}", file=sys.stderr)
             return 1
-        print(markdown(report), end="")
+        print(markdown(report, release), end="")
     else:
-        print(text(report), end="")
+        print(text(report, release), end="")
     return 0 if report["tag_may_be_proposed"] else 1
 
 

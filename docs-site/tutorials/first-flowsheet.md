@@ -38,7 +38,7 @@ instances = [
     unit("F", "syn001.feed_source", "feed"),
     unit("P", "thermal.pump", "pump", efficiency=efficiency(0.75)),
     unit("B", "thermal.heater", "heater"),
-    unit("T", "thermal.turbine", "pump", efficiency=efficiency(0.85)),
+    unit("T", "thermal.turbine", "turbine", efficiency=efficiency(0.85)),
     unit("C", "thermal.heater", "heater",
          outlet_vapor_fraction={**efficiency(0.0), "meaning": "saturated liquid out"}),
     unit("K", "syn001.product_sink", "product_sink"),
@@ -47,9 +47,8 @@ instances = [
 
 The feed source and product sink are routing models that bind on every basis but the
 ammonia loop's. The condenser is a heater in *quality mode*: `outlet_vapor_fraction = 0` asks for
-saturated liquid at its outlet. The schema's role vocabulary has no turbine, so the turbine
-carries the nearest pressure-changer role, `pump`; roles are descriptive and the binder does not
-read them.
+saturated liquid at its outlet. Each unit carries the role of its kind, the turbine `turbine`;
+roles are descriptive and the binder does not read them.
 
 ## 3. Connections
 

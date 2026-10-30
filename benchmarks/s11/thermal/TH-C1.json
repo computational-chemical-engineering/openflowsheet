@@ -101,7 +101,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "feed"
     },
     {
       "id": "P",
@@ -132,7 +132,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "pump"
     },
     {
       "id": "B",
@@ -146,7 +146,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "heater"
     },
     {
       "id": "T",
@@ -177,7 +177,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "turbine"
     },
     {
       "id": "C",
@@ -208,7 +208,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "heater"
     },
     {
       "id": "K",
@@ -222,7 +222,7 @@
         "fidelity": "test",
         "validity": "test"
       },
-      "semantic_role": "other"
+      "semantic_role": "product_sink"
     }
   ],
   "parent_revision": null,

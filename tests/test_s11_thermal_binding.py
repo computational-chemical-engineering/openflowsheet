@@ -15,6 +15,7 @@ from typing import Any
 
 import pytest
 from m02_c1_support import connection, quantity, revision, specification
+from semantic_roles import role_of
 
 from openflowsheet.application import revision_binding, thermal_binding
 from openflowsheet.application.binding import Unbound
@@ -66,7 +67,7 @@ def instance(unit: str, model: str, parameters: Mapping[str, Any] | None = None)
     return {
         "id": unit,
         "model": {"id": model, "version": "0.0.0-declared", "artifact_ref": None},
-        "semantic_role": "other",
+        "semantic_role": role_of(model),
         "parameters": dict(parameters or {}),
         "policy": {"fidelity": "test", "validity": "test"},
     }

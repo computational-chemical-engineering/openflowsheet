@@ -82,7 +82,10 @@
               "separator",
               "valve",
               "pump",
-              "heat_exchanger"
+              "heat_exchanger",
+              "compressor",
+              "turbine",
+              "other"
             ]
           },
           "parameters": {

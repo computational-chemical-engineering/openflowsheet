@@ -1,6 +1,6 @@
 # ADR 0046 — CoolProp as an optional pure-fluid Helmholtz evaluator: a library-only provider `coolprop-heos-v1` (package S07)
 
-**Status:** **Proposed, 2026-10-23** (design lane, `specifier`; R-618…R-622; Amendment 1: R-623; Erratum 1: R-624). It becomes
+**Status:** **Accepted, 2026-10-30**, marked by the build lane (V03 spec §6, R-876; the check is recorded in `docs/V03_DECISIONS.md` for S13's manifest). Proposed 2026-10-23 (design lane, `specifier`; R-618…R-622; Amendment 1: R-623; Erratum 1: R-624). It becomes
 Accepted when all of these hold:
 - `evidence/S07/<commit>/manifest.json` is `tested`, with spec §13's check list complete, on both CI architectures;
 - the `reviewer` has passed `thermo/coolprop_heos.py` and the generator `s07_reference.py`;
@@ -9,6 +9,8 @@ Accepted when all of these hold:
   the package's review;
 - spec §10 F-1 is written into ADR 0001 D5 and `interfaces-frozen.md` §3 by the design lane;
 - Amendment 1's acceptance evidence (below) is in the same manifest.
+
+*Met 2026-10-30 (V03 WO-4):* `evidence/S07/7bfab70d…/manifest.json` is `tested` with §13's checks (A01–A50 pass; `S07.ci` shows the S07 tests and A31's line passing on `check (ubuntu-latest)` and `check (ubuntu-24.04-arm)`; `S07.gate` is the generator's `unsupported`, the full gate running at merge); the reviewer passed the provider (`docs/reviews/S07-review.md`) and the generator (`docs/reviews/S07-generator-review.md`); Q-1 is answered below (R-627: x86-64 bit-identical, aarch64 within the classes); Q-S07-1 is answered (Frank, 2026-10-23, "Yes, they wait"); F-1 is written into ADR 0001 D5 item 5 and `interfaces-frozen.md` §3, transcribed verbatim from S07 spec §3.5 as V03 spec §6 prescribes; Amendment 1's A33–A35 pass in the same manifest.
 
 *Met 2026-10-23:* Frank answered Q-S07-1, "Yes, they wait". He also chose the broad fluid list, which Amendment 1
 below records.

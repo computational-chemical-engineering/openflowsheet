@@ -360,7 +360,9 @@ unsupported:
       - check:T06.A08
 
   - id: U02
-    capability: Any property method other than the five selectable bases
+    capability: >-
+      Any property method other than the five selectable bases (`syn001`, `pr-c1-v1`,
+      `iapws95-v1`, `wilson-ig-v2`, `coolprop-heos-v1`)
     outcome: >-
       Not representable: a revision has no property-method member, so naming one is `SCHEMA-01`
       INVALID; a model of another package is `model_unsupported(<id>)` at binding. A
@@ -818,7 +820,10 @@ limitations:
       (S05 spec §16, R-616, R-617), and since E01 six third-party assessment data files under
       `assessment/` (the SSLW cost set transcribed from IDAES under its BSD licence, the PrISMa chain
       factors, the BLS, Eurostat and Federal Reserve index series, and five IPCC AR6 GWP100 values),
-      each with its attribution in NOTICE (ADR 0052), and nothing else; every ComponentRecord is
+      each with its attribution in NOTICE (ADR 0052), and since 0.3.0 Wilson's records
+      `benchmarks/s10/records.yaml` and the Kurihara 1993 Table II points
+      `benchmarks/s10/vle/kurihara1993_binaries.csv`, with their attribution in NOTICE (V03 spec
+      §9.1, R-880), and nothing else; every ComponentRecord is
       synthetic (SYN-001) or one of M01's five real C1 records, each with its identifiers, rights, per-parameter provenance and
       retrieval equality (M01 spec §3.5, R-158).
     evidence:
@@ -994,12 +999,18 @@ limitations:
       `record_source: benchmarks/s10/records.yaml` for its three record components (CH3OH,
       C2H5OH, H2O, in any order), over 300–400 K and 30–200 kPa. The routing models, the
       column (`syn001.column`, L-COL-1..10), the five K02/T05 units with γ–φ faces and the
-      vapour machines `thermal.compressor` and `thermal.turbine` (L-GP-1..3) bind on it. Its records are in the source repository
-      only, so in a wheel binding is refused `basis_unavailable(wilson-ig-v2)` (R-706, R-811). Premises P1–P3 are checked at binding.
+      vapour machines `thermal.compressor` and `thermal.turbine` (L-GP-1..3) bind on it. Its records ship as package data (R-880), so it binds in a wheel. An
+      installation with neither copy is refused `basis_unavailable(wilson-ig-v2)`. The library
+      constructors `WilsonIdealGasProvider()` and `WilsonIdealGasProviderV2()` with no argument read
+      a source checkout only and elsewhere refuse `records_missing`. A library user passes
+      `resources.packaged_path(wilson_ig.RECORDS_PATH)` (R-883). Premises P1–P3 are checked at
+      binding.
       The S10 VAL-1–3 bands apply, and the VAL-3 latent-heat miss (methanol, +5.72 % against
       5 %) is carried. Results are compared across architectures by tolerance, not bitwise.
     evidence:
       - tests/test_s11_bases.py::test_a09_wilson_without_its_records_is_unavailable
+      - tests/test_v03_wilson_ship.py::test_a12_r_811_s_wheel_refusal_is_gone
+      - tests/test_v03_wilson_ship.py::test_a12_wilson_ig_v1_binds_from_package_data
       - tests/test_s11_bases.py::test_a08_the_binder_refuses_unmet_premises
       - tests/test_s11_routing.py::test_a13_a82_the_admission_matrix
       - tests/test_s11_column_solve.py::test_the_wilson_column_in_a_flowsheet_reproduces_its_registered_root
@@ -1186,6 +1197,16 @@ limitations:
     evidence:
       - tests/test_s11_gp_verifier.py::test_a72_the_azeotrope_is_temperature_degenerate_and_verifies
       - doc:docs/derivations/S11-units-design.md §4.10
+  - id: L-E01-1
+    text: >-
+      Since R-898 every P2 capital row is floored, so P2's optimization exercises operating
+      cost only; no registered NLP case carries a capital row in a `units:N` regime. A floor's
+      derivative row is empty (E01.A18), so E01.A33–A36 show nothing about capital
+      sensitivities through the optimizer. P2 is not resized (E01 design §9.7).
+    evidence:
+      - tests/test_e01_integration.py::test_p2_is_a_complete_sslw_program_with_floored_exchangers_and_a_sized_drum
+      - tests/test_e01_a_cost.py::test_a18_below_s_min_is_the_floor_with_an_empty_derivative_row
+      - doc:docs/derivations/E01-design.md §10.10.7
 
 harvest:
 - manifest: evidence/K01/b44dea0e96eb61f42f34249eee69a20d1ddb6a8a/manifest.json
@@ -7470,7 +7491,7 @@ harvest:
   class: E
   to:
   - L-S11-3
-  note: 'S11''s envelope row L-S11-3, carried verbatim'
+  note: 'S11''s envelope row L-S11-3, amended by V03 (R-883)'
 - manifest: evidence/S11/01e72ca464dcb68c489e235d3d5446d450e109e1/manifest.json
   item: limitations[3]
   sha256: aee0375ef0aaf2340f726c4e3e3df0b21bfb4c27c4802ca2b3b83fe6f0c88e3d
@@ -8137,3 +8158,52 @@ harvest:
   class: P
   to: []
   note: 'process note: the site is deployed by site.yml after the merge to main, once Pages is enabled'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[0]
+  sha256: 066c291c6ba93e88ebb25702c936a8a7752236dab114d4c427fe7af93d16b358
+  class: P
+  to: []
+  note: 'process note: filed as S13a, V03''s sub-manifest for WO-1…WO-4 (orchestrator''s decision; S12b''s precedent), merged before K3; S13 at C carries the rest'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[1]
+  sha256: dd2df36dcf0f5e95b346eb82022d2fa821e1801dbf1df52b8a2af0f808bcb53f
+  class: P
+  to: []
+  note: 'process note: requirements empty; V03''s claims are judged by the verdict document at C (A26)'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[2]
+  sha256: fc0c9621dda6c25ea44a6f15bfaa896af9c80b3d8604d164f0563b37c2990a71
+  class: P
+  to: []
+  note: 'release-candidate item: V03.A18 (CHANGELOG phrases) has gate R and is judged at C, in S13'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[3]
+  sha256: 9927c869b8f059f14ecbedbec19844d59ccada9c4f546c18bd7b3d693a178e95
+  class: P
+  to: []
+  note: 'release-candidate item: V03.A08''s R part (step 18''s output) is judged at C, in S13'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[4]
+  sha256: dab14c2d753a2f5b6f478113dda159d1fbc32c3ebf5f4bb553812ff6cda60f4c
+  class: P
+  to: []
+  note: 'release-candidate item: A09, A17, A19–A27 exist only at K3 or C, or belong to WO-5…WO-8; S13 carries them'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[5]
+  sha256: 7e8679aa763eed17748893b285082a8f458a4e3d3844d6e146083a711237f457
+  class: P
+  to: []
+  note: 'process note: the full gate is read from its log; CI on both architectures is checked before the merge'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: limitations[6]
+  sha256: dac2c22bbbdb3c3ec8e676357a15a2a12adb34e81f6cab44acecbbf52f8e10fb
+  class: P
+  to: []
+  note: 'process note: the reviewer pass (docs/reviews/V03-review.md) and its fix commits; review field pending'
+- manifest: evidence/S13a/0ce3748a7a473950a295e2668201fb96c44d0ec1/manifest.json
+  item: checks[15]
+  check_id: S13a.A18
+  sha256: 60ad3bbbcfab8937b0b61870053c070f6879e8564b03ddbd8a5c86aaa00f17ab
+  class: P
+  to: []
+  note: 'release-candidate item (gate R): V03.A18 judged on CHANGELOG.md at C; unsupported here, not a pass'

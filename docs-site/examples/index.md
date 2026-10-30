@@ -11,7 +11,7 @@ code.
 | --- | --- | --- |
 | [Rankine cycle](rankine-cycle.ipynb) | A once-through Rankine cycle on IAPWS-95 water; reading the solved state and the certificate | — |
 | [Refrigeration cycle](refrigeration-cycle.ipynb) | An R134a vapour-compression cycle on CoolProp, and its coefficient of performance | the `coolprop` extra; without it the notebook says it is skipped |
-| [Methanol–water column](methanol-water-column.ipynb) | A 20-stage distillation column on the Wilson γ–φ basis | a source checkout (the Wilson records) |
+| [Methanol–water column](methanol-water-column.ipynb) | A 20-stage distillation column on the Wilson γ–φ basis | — |
 | [What-if studies and refusals](what-if-and-refusals.ipynb) | A sweep by edits; a state outside the domain; a unit on a basis it does not support | — |
 | [Cost and climate impact](rankine-cost-and-gwp.ipynb) | The Rankine cycle's capital and operating cost, its impact on a synthetic background, and their sensitivity to the boiler temperature | a source checkout (it reads the Rankine change set) |
 

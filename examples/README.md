@@ -15,7 +15,7 @@ notebook's closing cell states in bold with the value it computes.
 | --- | --- | --- |
 | `rankine-cycle.ipynb` | A Rankine cycle on IAPWS-95 water; reading the state and the certificate | — |
 | `refrigeration-cycle.ipynb` | An R134a vapour-compression cycle on CoolProp | the `coolprop` extra (a stated skip without it) |
-| `methanol-water-column.ipynb` | A 20-stage methanol–water column on the Wilson γ–φ basis | a source checkout (the Wilson records) |
+| `methanol-water-column.ipynb` | A 20-stage methanol–water column on the Wilson γ–φ basis | — |
 | `what-if-and-refusals.ipynb` | A sweep by edits; a state outside the domain; a unit on the wrong basis | — |
 | `rankine-cost-and-gwp.ipynb` | Capital and operating cost and climate impact of the Rankine cycle (E01 assessment, synthetic LCA background) | a source checkout (the Rankine change set) |
 

@@ -38,8 +38,7 @@ make venv        # .venv with the project and its dev extra, from the pinned loc
 make check       # ruff, mypy --strict and the test suite
 ```
 
-A source checkout also carries the registered benchmark cases and the Wilson model's records
-(see [Property bases](../guide/property-bases.md#wilson-activity-model-wilson-ig-v2)).
+A source checkout also carries the registered benchmark cases.
 
 ## Verify the installation
 
