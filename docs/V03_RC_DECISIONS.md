@@ -17,11 +17,39 @@ refuses (`registry_snapshot: unsupported(provider 'iapws95-v1': no registered re
 Orchestrator ruling: `package_version` is build provenance and is excluded beside `git_commit` (R-902, rejected:
 base-version comparison). Fix commit `91d1cc54` on 4a664416 (W27 tests at 0.3.0.dev0: 56 passed, 2 skipped), then K3.
 
+## Step 2: the G10 re-take (`2d945b5d`)
+
+From a clean detached worktree at K3 (`.claude/worktrees/rc-k3-295a2e6`), E6/K's recipe (alpha-main's `.venv-nlp`,
+OMP 1, `PYTHONNOUSERSITE=1`, `PYTHONPATH=src:<nlp-test-tools>`): `--digest-only --old-version 0.3.0.dev0` PASS for all
+five, changed digests / version leaves 41/4, 79/7, 70/4, 91/3, 37/4, `other=0`, `environment=equal`; AM-23 5 passed.
+
+- FINDING: `benchmarks/m05/records/**` is a D2.4 path (`v0_1_gate.TREES` holds `benchmarks`), so the brief's "one
+  commit (outside D2.4)" is not literally true; the commit changes nothing outside `benchmarks/m05/records/` (36 files).
+  0.2.0 put the records inside K (`2c508b5` = A + records); here they follow K3 by the orchestrator's order.
+- DECISION: the journey runs at `2d945b5d` (K3 + the G10 records), not at K3 itself → `carry.journey_files` holds
+  `benchmarks/m05/**`, so a journey recorded at K3 cannot carry to C (`git diff --name-only K3 2d945b5d -- <carry
+  paths>`: 36 files; `v0_2_gate.journey_carry` would answer `JOURNEY_RERUN`). This is 0.2.0's K exactly (A + the G10
+  records). Alternative: run at K3 and re-run at C. Reversible by: re-running at K3 (one hour of compute); the carry
+  argument at C is then `--carry-journey 2d945b5d`.
+
+## Step 3: the journey (`93886ac3`)
+
+Clean detached worktree at `2d945b5d`, m05's `.venv-nlp`, OMP 1, `PYTHONNOUSERSITE=1`, `PYTHONPATH=src`,
+`--m05-record benchmarks/m05/records/trust-region-study-real.json`, artifacts in `~/.cache/v03rc-journey/artifacts`;
+budgets unchanged. Exit 0, 3304 s. Decision `refined`, T* = 653.1500351610193 K, BOUND_LOWER, J = 0.4524965242483627;
+R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTABLE, R3 DECISION_STABLE.
+- R3: M05's REAL record is **not** carried (`carry_identity_differs` from anchor `cdacc32`); M05's study re-ran at
+  `2d945b5d` (cold 48, 1455 s; T* 653.1500351610193).
+- Against 0.2.0's K record (`2c508b5`): 69 leaves differ, all walls, coupling/run digests, `commit` and R3's
+  `m05_record` {path, sha256}; every other number bitwise equal (K's comparison with J′ had 70: it also held
+  `registration_sha256`, unchanged here). No stop: nothing differs for a reason other than the code changes.
+- `check` ACCEPT; `replay` at `93886ac3` (clean worktree): bitwise, 19 s; `OMP_NUM_THREADS=2` exit 2.
+  `tests/test_m07_journey_record.py`: 56 passed. `v0_2_gate.journey_carry(2d945b5d, 93886ac3)`: carried; from K3 it
+  would not carry (36 files of `benchmarks/m05/**`).
+
 ## Handoff
 
-- Branch `wp/V03-rc`, worktree `.claude/worktrees/v03rc`, from `main` 4a664416: fix `91d1cc54`, K3 `295a2e65`.
-- K3 tests (17 modules: A10 / M07a gate, M07 gate, `test_v03*`, W27 coverage, project_summary schema tests,
-  main-version, package imports, T08 gate/surface/envelope, retake digest-only): 806 passed, 2 skipped, 0 failed.
-  `t08_support_matrix.py --check`: 0 problems.
-- Next: the orchestrator fast-forwards `main` to K3 and sends the go for step 2 (G10 re-take at K3) and step 3
-  (journey at K3).
+- Branch `wp/V03-rc` (not pushed): fix `91d1cc54`, K3 `295a2e65` (on `main`), log, G10 re-take `2d945b5d`, journey
+  record `93886ac3` (J = `2d945b5d`), this log.
+- WO-5 steps 1–3 done. At C the RC job carries the journey with `--carry-journey 2d945b5d --rc C` (not K3).
+- Not done: C itself (WO-6's RC job). Scratch: `~/.cache/v03rc-tmp`, `~/.cache/v03rc-journey`, `~/.cache/v03rc-tools`.
