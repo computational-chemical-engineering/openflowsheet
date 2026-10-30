@@ -197,13 +197,23 @@ no erratum (R-901). Q3: cite R-900 (F-V1); MR-12 v03's `lca` entry now runs `scr
 - 2026-10-30, at `bc1f68f6`: `S11-IDENTITY PASS n=54494 changed=[]`; every shard exit 0 (branch 14665 passed, 3205
   skipped; base 13288 passed, 3137 skipped). The full gate (`scripts/gate.sh`) was not run.
 
-## Handoff (WO-3 and WO-4, 2026-10-30)
+- 2026-10-30, brief 3, merge of `main` (`51cd6847`): register per-entry (R-890…R-899 then R-872…R-883, pure additions
+  against both sides); `HARVEST_SIZE` (63, 909, 119) = main's S12b increment (none on `wp/V03`); `--emit` no change,
+  `--check` 0 problem(s). Merge-touched modules (harvest, surface chain, MR-12, B50, T08 W2/W4, E01, V03, S05 envelope)
+  661 passed, 2 skipped.
+- 2026-10-30, brief 3 fixes: MR-12/RC-record/surface modules 64 passed (the HEAD measure passes once R-900 is committed);
+  `e01_d04_inventory.py --check` exit 0 "A42 PASS", bare exit 2; A48 tripwire 3 passed; envelope + P2 floor/A18 284
+  passed, 1 skipped; cost tests 35 passed (inverted-ratio mutation: 1 failed). Touched modules together (V03, T08 ADR,
+  MR-12, E01, T08 W2 envelope, harvest, W5c) 543 passed, 1 skipped. `t08_support_matrix.py --check` 0 problem(s).
+- 2026-10-30, at `b0d71e2f`: `S11-IDENTITY PASS n=54494 changed=[]`. The full gate (`scripts/gate.sh`) was not run.
 
-Done on `wp/V03` (not pushed): merge of `main` `912504d9`; WO-3 roles `0461c6ec`, `required_adrs` `d5586f29`, MR-12 v03
-`4ace93d4`, RC CoolProp job `990a03a3`, W5c re-pin `8c6ddb8a`; WO-4 F-1 `7ccb13a3`, ADR flips `da3a8482`, CHANGELOG
-`c55a0f76`, envelope `a73d72db`, attribution page `a50eb9df`, RELEASING `bc1f68f6`.
-Not done (not these work orders' or blocked): the A48 tripwire at 0 (`wp/E01b`, P2); ADRs 0050/0051/0052 (after
-V03.A24 at C), 0053/0054 (WO-8); `docs-site/` fixes (not on `main`); the full gate and CI before V03 merges; the
-design-lane `reviewer` pass over WO-1–WO-4 (open questions 1–3 above go to it).
-Next: the reviewer pass, then the full gate, CI on both architectures, merge into `main`; then WO-5 (K3).
+## Handoff (brief 3, review fixes, 2026-10-30)
 
+Done on `wp/V03` (not pushed): merge of `main` `51cd6847` (`eba0029b`); F-V1 + R-900/R-901 (`1a2388cf`); F-V2 (`030226c4`);
+A10 (`aa92f09f`, DECISION); F-E1 (`d5b32132` manifest limitation, `4dde9d5a` envelope L-E01-1, DECISION); F-E2
+(`354701d3`); F-V3/F-V4 notes (`b0d71e2f`). Open questions 1–3 ruled (R-883, R-901, R-900).
+Not done: `docs-site/` fixes — `main` (`51cd6847`) has no `docs-site/` yet; the Q-B11 evidence note of the review (E01b's
+record, not this brief's); the full gate and CI before V03 merges.
+Next: when `wp/DOC` is on `main`, merge it and fix the site's Wilson "source checkout" lines and the examples'
+turbine/compressor `semantic_role` (`tests/test_doc_examples.py`, `mkdocs build --strict`); then the full gate, CI on
+both architectures, merge into `main`; then WO-5 (K3).
