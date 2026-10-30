@@ -358,9 +358,11 @@ EXPECTED: dict[str, str] = {
     "S11:C-MW": ("binds 90452d2807b3ec3f6ec02c01bf70edf54184bc70ad50715b4f8b5c259d2ae58d"),
     # S11 units design §5.4 (I1b, S11.A86): the `thermal.*` sample, generated at its registration
     # (a regression pin). The rows above are unchanged by it.
-    "S11:TH-C1": ("binds 761b0be00991dfe89c15091509f9ba18daa859c60745b5d8afeff9d1a86e3e3b"),
-    "S11:TH-R1": ("binds 12c7f4711875cefd0b8c455b41454febc5ed2cd1dd80d1857866918578fbd335"),
-    "S11:GP-M1": ("binds dbc60ac7c2721013ea32f75b29902654975f71ef51edc6798ef271af8b2ac776"),
+    # V03 (ADR 0054): the three below re-pinned after the semantic_role correction; of the pinned
+    # structure only `revision_sha256` (the document's SHA-256) moved (docs/V03_DECISIONS.md).
+    "S11:TH-C1": ("binds 546ba02b122cac5da29128f9d697dcf3735be8aa5f764e6dcdd6d962238ac6c5"),
+    "S11:TH-R1": ("binds 04843a703d426ea8a5caf0336c8f92650c9a3bc459b82c0c3a2925c6af1626c1"),
+    "S11:GP-M1": ("binds ff4d8270c97f31902785f3096ba43e12489e863c8916da8b5cf4c631eeb8a01b"),
 }
 
 

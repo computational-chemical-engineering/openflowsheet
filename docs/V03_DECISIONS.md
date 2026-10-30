@@ -71,6 +71,12 @@ commit. Questions for the design lane are under "Open questions"; measurements u
   its own so `rc-steps`' A30 inventory still reads the base install. (The `check` job, RC step 1, already has the two
   lines; its suite does not set the build Python, so its S07.A29 skip remains.) Alternative: add the steps to
   `rc-steps`. Reversible by: reverting the RC CoolProp commit.
+- DECISION: `tests/test_t07_w5c_signatures.py::test_binding_outcome_is_unchanged[S11:TH-C1|TH-R1|GP-M1]` pin a SHA-256
+  of the binding's structure, which includes `revision_sha256` (= the document's SHA-256), so the role correction moves
+  them (spec §9.4 expects `revision_sha256` to move; its "no committed file contains the nine files' SHA-256" missed
+  this indirect pin). → re-pinned, after proving that of the pinned structure only `revision_sha256` differs between
+  the predecessor and the regenerated document for each of the three (and the predecessor reproduces the old pin).
+  Alternative: stop for the design lane. Reversible by: reverting the re-pin commit (with `0461c6ec`).
 
 ## Open questions (for the design-lane review of WO-1–WO-4)
 
