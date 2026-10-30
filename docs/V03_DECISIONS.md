@@ -112,6 +112,10 @@ commit. Questions for the design lane are under "Open questions"; measurements u
    entry deciding the extra's licences (the audit is `docs/E01B_DECISIONS.md` D04; the extra itself is R-857).
    Default taken: transcribed R-870 as the spec says (the register check passes on it). Proposed: cite R-857, or
    register the WO-B1/D04 licence acceptance as its own entry and cite that.
+4. Not done here, not WO-3's: the A48 tripwire at 0 (V03.A10) arrives with `wp/E01b` (P2).
+5. `docs-site/` is not on `main` at this merge (`c9f5e895`): its Wilson "source checkout" lines and its examples'
+   turbine/compressor `semantic_role` (Table R: `turbine`, `compressor`) are open for the merge that brings `wp/DOC`
+   (spec §10.3 item 9).
 
 ## Merge notes for E01 (expected conflicts, all additive)
 
@@ -136,3 +140,35 @@ commit. Questions for the design lane are under "Open questions"; measurements u
   `test_s11_routing.py::test_a09_a_wilson_revision_without_its_records_is_unavailable` (the second test of the old
   refusal; fixed in the D-4 follow-up). At the follow-up: `S11-IDENTITY PASS n=54494 changed=[]`; every shard exit 0
   in both trees (branch 14417 passed, 3204 skipped; base 13288 passed, 3137 skipped).
+- 2026-10-30, merge of `main` (`912504d9`): packaging/NOTICE/E01/V03-gate modules 1070 passed, 13 skipped, 1 failed
+  (`test_a01`'s `required_adrs (25)`, on purpose until `d5586f29`).
+- 2026-10-30, WO-3 roles (`0461c6ec`): the nine regenerated cases differ from their predecessors only in `semantic_role`
+  lines (34 instances; 0 other changed lines). Corpus 80 documents, 441 instances, 0 unjudged; A31 (b) equal for 80 of
+  80 (63 bound, 16 `Unbound` unsupported, 1 `Unbound` incomplete). `test_v03_semantic_roles.py` 20 passed; step 8's
+  modules (`test_v03_*`, every `test_s11_*`, T08 W4, schemas P01, M06 fixtures, M07a surface chain) 1370 passed, 67
+  skipped, 1 failed (`test_a01`, as above). Mutations: the old schema fails A28 and A29; the old GP-M1 fails A30 (c).
+- 2026-10-30, after `d5586f29`: `test_v03_v0_3_gate.py` + `test_v03_semantic_roles.py` 87 passed.
+- 2026-10-30, MR-12 v03 (`4ace93d4`): MR-12, M07a gate, S07 registration/packaging 198 passed, 13 skipped; a mutated
+  `lca` inventory path fails the HEAD test.
+- 2026-10-30, RC CoolProp (`990a03a3`): local trial with the coolprop lock (`--target`), flag set: the 14 S07/S11
+  modules 4173 passed, 1 skipped (S07.A29 without a build Python); with T08.A43's build Python `test_s07_registration`
+  15 passed, 0 skipped.
+- 2026-10-30, `scripts/s11_identity.py` at `8c6ddb8a`'s tests (before the re-pin): `S11-IDENTITY FAIL n=54494
+  changed=[] (C branch shards [15] exited non-zero)`: the three W5c pins (re-pinned in `8c6ddb8a`). The nine cases'
+  binder keys are branch-only against the base `8c34ecb0`, so they are counted, not judged.
+- 2026-10-30, WO-4: `s10_reference.py --check` "113 claims hold; reference_values.yaml matches"; F-1 modules 294
+  passed; changelog/gate modules 400 passed; `t08_support_matrix.py --check` 0 problem(s); envelope/inventory/Wilson
+  modules 742 passed, 11 skipped.
+- 2026-10-30, at `bc1f68f6`: `S11-IDENTITY PASS n=54494 changed=[]`; every shard exit 0 (branch 14665 passed, 3205
+  skipped; base 13288 passed, 3137 skipped). The full gate (`scripts/gate.sh`) was not run.
+
+## Handoff (WO-3 and WO-4, 2026-10-30)
+
+Done on `wp/V03` (not pushed): merge of `main` `912504d9`; WO-3 roles `0461c6ec`, `required_adrs` `d5586f29`, MR-12 v03
+`4ace93d4`, RC CoolProp job `990a03a3`, W5c re-pin `8c6ddb8a`; WO-4 F-1 `7ccb13a3`, ADR flips `da3a8482`, CHANGELOG
+`c55a0f76`, envelope `a73d72db`, attribution page `a50eb9df`, RELEASING `bc1f68f6`.
+Not done (not these work orders' or blocked): the A48 tripwire at 0 (`wp/E01b`, P2); ADRs 0050/0051/0052 (after
+V03.A24 at C), 0053/0054 (WO-8); `docs-site/` fixes (not on `main`); the full gate and CI before V03 merges; the
+design-lane `reviewer` pass over WO-1–WO-4 (open questions 1–3 above go to it).
+Next: the reviewer pass, then the full gate, CI on both architectures, merge into `main`; then WO-5 (K3).
+
