@@ -3,7 +3,9 @@
 **Release candidate:** `a3e508e35fc5451fe56fa7b70941621992d35b50`   **Judged:** 2026-10-30   **By:** design lane (`verdict`)
 
 *WO-7 of the V03 release specification (`docs/derivations/V03-release-spec.md` §10.2, as amended by Amendments 1 and 2).
-Seventeen claimed gates, judged at C. W27 is not claimed (`v0.3-gate-v1`) and has no row.*
+Seventeen claimed gates, judged at C. W27 is not claimed (`v0.3-gate-v1`) and has no row. W21 was judged again on
+2026-10-30 in a new judgement (§19.2 item 2), on the same day, so the `Judged` date above is unchanged; see "W21
+re-judged (2026-10-30)". Every other row stands as first judged.*
 
 | Gate | Verdict | Failing clauses | Travelling limitations | Basis |
 | --- | --- | --- | --- | --- |
@@ -17,7 +19,7 @@ Seventeen claimed gates, judged at C. W27 is not claimed (`v0.3-gate-v1`) and ha
 | V18 | PASS | — | L03, L05, L06, L15, L19, L25, L34, L37, L39, L40, L41 | T08 §4.8 with MR-11, and MR-12 as V03 spec §9.3 restates it for the extras new since 0.2.0; T08.A30 PASS on three hosts (244 modules walked, 241 imported, the three registered nlp-extra modules refused as registered; required closures 150, 150, 147, none undispositioned); step 17c: `coolprop` and `lca` each with its entry and its check passing at C; T08.A34 0 violations on every audited set (step 10); T08.A31–A33 nodes green |
 | V19 | PASS | — | — | T08 §4.9; ADR 0022 Accepted with Frank's selection (R-145); `docs/v02-real-chemistry-dossier.md` and `benchmarks/t08/v19/` byte-identical to 0.2.0's candidate (git diff ce993651..C empty, checked here); the A60–A64 record tests green in step 1 |
 | V20 | PASS | — | L04, L07, L09, L31, L32, L38 | T08 §4.10; T08.A46 S = 437 of 440 on ref-x86-64 and ci-aarch64 (gate 418), no crash or other-root, same-class replay 25 of 25; T08.A47 12 of 12 on three hosts, worst success ratio 0.0968; T08.A10 node green |
-| W21 | FAIL | W21 (e) | L05, L06, L07, L15, L19, L20, L44, L45, L46, L48 | alpha spec §6.1 (ADR 0028 D7); step 12 at C: G10v3, G11v3 and G12 met, reproduce MATCH; but G11's experiment results that step 12 wrote were neither kept nor audited for blueprint §9.1's six items, the evidence 0.2.0's re-judgement rested on (absent at C, owed by the lanes); out-of-process clause also waits on Frank's `M02 N1` answer in ADR 0053, pending |
+| W21 | BLOCKED | W21 (c): Frank's `M02 N1` answer in ADR 0053, pending | L05, L06, L07, L15, L19, L20, L44, L45, L46, L48 | alpha spec §6.1 (ADR 0028 D7) with V03 spec §4 and A34 (R-909); step 12 at C: G10v3, G11v3 and G12 met, reproduce MATCH; judged again 2026-10-30: G11 re-run at C with outcomes equal to step 12's own runs file at 242 of 242 point-runs, its 210 experiment results (105 boundary points per run, 2 runs) kept under rc/step12/experiments/ and audited for blueprint §9.1's six items against the schema with step 12's own runs file, 0 problems (bytes, equality and audit re-run here); the draft notes carry the four reactor statements; out-of-process clause waits on Frank's `M02 N1` answer in ADR 0053, pending |
 | W22 | PASS | — | L42, L47 | alpha spec §6.2; step 1: M01.A05–A22, A34, A37 and M02 G7, G8 nodes green on both architectures; step 11: crosscheck recomputes byte-equal, IDAES re-run numbers identical (one input hash differs, as registered); step 12: G12 VERIFIED on the route |
 | W23 | PASS | — | L49 | M07 §7.3 and M04 §15: A01–A30, A34, A35 green in step 1; step 13 at C: `m04_reference.py --check` 11943 claims, schema fixtures exit 0, 677 M04 and manifest tests passed, none skipped |
 | W24 | BLOCKED | W24 (a): Frank's `M03 N1` answer in ADR 0053, pending | L19, L44, L46, L48, L49 | M07 §7.3; step 14 at C in the audited nlp environment: nlp tier 190 passed over the 13 modules that carry the marker (the same 190 node ids as over the whole test tree, V03.A33), inventory check exit 0 for both workloads, M03 and M05 tiers 640 passed and 2 skipped (the default-install answers), M05's REAL record replays with 0 differences, `m03_reference.py --check` exit 0 |
@@ -71,14 +73,14 @@ the RC job (alpha spec §4 rule 3).
 
 All six cells are empty at C and at `bb51ed75`. Under ADR 0053 D2 and Tables T6/T7 (alpha spec §7.2, §19.2), an answer
 counts only if it starts `accepted, YYYY-MM-DD`, dated **on or after the `Judged` date in force**, which is 2026-10-30
-here and moves if W21 is judged again (see Sequencing).
+here. W21's new judgement ("W21 re-judged (2026-10-30)") fell on the same day, so the date stays 2026-10-30.
 
 | Row (verdict, clause) | ADR 0053 table and item | What a counting answer looks like | What it does |
 | --- | --- | --- | --- |
 | V13 BLOCKED, clause (e) | decisions, `V17 carry` | `accepted, <date>`, Judged ≤ date ≤ the re-judgement's date | unblocks (e); expected met, since M07a.A37 and A51 hold at C |
 | V17 BLOCKED, clause (a) | decisions, `V17 carry` (the same answer) | as above | unblocks (a), as above |
 | W24 BLOCKED, clause (a) | decisions, `M03 N1` | as above | unblocks (a), whose evidence (step 14) is otherwise met |
-| W21 FAIL, clause (e); clause (c) waits too | decisions, `M02 N1` | as above | unblocks (c) only. W21 stays `FAIL` until (e) is measured and judged again |
+| W21 BLOCKED, clause (c) (since "W21 re-judged (2026-10-30)"; (e) met) | decisions, `M02 N1` | as above | unblocks (c); with (a), (b), (d), (e) and (f) met, W21 is then expected PASS |
 | V14 FAIL, clause (b) | D3, row `V14 (b)` | `accepted, <date>`, date ≥ Judged | changes no verdict word; makes the FAIL releasable (D2) |
 | X31 FAIL, clause (c) | D3, row `X31 (c)` | `accepted, <date>`, date ≥ Judged | changes no verdict word; makes the FAIL releasable, with the notes' phrase 13 |
 | no row (gate item 11) | decisions, `Claim set` | `accepted, <date>`, date ≥ Judged | confirms the claim set judged here (seventeen; W27 not claimed) |
@@ -86,7 +88,9 @@ here and moves if W21 is judged again (see Sequencing).
 **Sequencing.** §19.2 item 2: a re-judgement may list only gates `BLOCKED` on a registered answer. W21 is `FAIL` on
 evidence the lanes owe, so its change after the G11 audit is a **new judgement**, with a new `Judged` date, and every
 answer must then be dated on or after it. The cheapest order is 0.2.0's: the audit first, then W21 judged again (new
-`Judged`), then Frank's six answers, then one re-judgement line listing V13, V17, W21 and W24.
+`Judged`), then Frank's six answers, then one re-judgement line listing V13, V17, W21 and W24. The first two steps are
+done: the audit at C (`fb73821e`) and W21's new judgement ("W21 re-judged (2026-10-30)"), on the same day, so `Judged`
+stays 2026-10-30. Frank's answers are next.
 
 Choosing an alternative or declining is not an acceptance (alpha spec §7.3 item 11): a new V17 campaign, a declined
 `M02 N1` or `M03 N1`, or a different claim set each needs a spec amendment, not a D3 row. **Do not route W21 (e) to the
@@ -468,7 +472,8 @@ BioSTEAM at L2(c).
 - V14 (b) FAIL, PTC experimental (L01), D3 acceptance to be recorded.
 - X31 (c) FAIL, "met where available, 3 of 4"; RC4 has one independent reference (BioSTEAM); D3 acceptance to be
   recorded; the notes' phrase 13.
-- W21 FAIL on (e) until the G11 audit at C; until then G11's provenance at 0.3.0 is unevidenced.
+- W21: (e) met and the verdict `BLOCKED` on (c) since "W21 re-judged (2026-10-30)"; that section's limitations replace
+  this line.
 - W26: `G14 not judged at 0.3.0: W27 registration v1 refuses this build (ADR 0050 D9, W27-R63); W27 not claimed`.
 - W24 and W25: no global optimality; the decision is bound-active at the lower bound (no envelope row; the notes' phrase).
 - Step 12's and the journey's timings were measured on a possibly shared host and bound nothing.
@@ -554,9 +559,229 @@ or an excluded fingerprint member with a control and a fresh run at C.
 **N-items as they stand:**
 - **N-2 (`V17 carry`)**: needed. V13 (e) and V17 (a) wait on it. The evidence at C supports the default: D_3 served,
   chain rows exact, LINKS unchanged, no new link.
-- **N-3 (`M02 N1`)**: needed. W21 (c) waits on it. Accepting it does not make W21 releasable while (e) fails.
+- **N-3 (`M02 N1`)**: needed. W21 (c) waits on it. (e) is met since "W21 re-judged (2026-10-30)", so accepting it is
+  expected to make W21 PASS on the re-judgement line.
 - **N-4 (`M03 N1`)**: needed. W24 (a) waits on it; it also keeps V18 (a)'s `nlp` leg (R-450) consistent.
 - **N-5 (D3 `X31 (c)`)** and **N-6 (D3 `V14 (b)`)**: needed, as above.
 - **N-10 (W26)**: this verdict applied option 1 (§3.5), as pre-registered; W26 is PASS on it. Option 2 would make W26
   (a) FAIL on G14 and G15 and needs an ADR 0053 amendment for its D3 row.
 - **Timing**: ask after W21's new judgement, so that every answer is dated on or after the `Judged` in force.
+
+## W21 re-judged (2026-10-30) — BLOCKED on W21 (c)
+
+*Judged 2026-10-30, at C = `a3e508e35fc5451fe56fa7b70941621992d35b50`, on `wp/V03-rc` read at `f3cda7db` (`4ecfc162`
+plus one decisions-log commit), by the design lane (`verdict`). This is a new judgement. The header's `Judged` date is
+now this judgement's date and keeps its value.*
+
+**A new judgement, not a re-judgement line.** Earlier on 2026-10-30, W21 was `FAIL` on (e), on evidence the lanes owed
+(finding F1). §19.2 item 2 lets a re-judgement line list only gates `BLOCKED` on a registered answer, so W21 is judged
+again here (see the Sequencing paragraph above). This judgement falls on the same day as the first. The document keeps
+its one `Judged` date, 2026-10-30, which now belongs to this judgement, and the floor for Frank's answers stays
+2026-10-30. The gate reads exactly one `Judged` token in this document (`scripts/v0_2_gate.py` `_header`), so the date
+is not written again in that form. Only W21 (e) and the notes' half of (f4) are judged again. (a), (b), (d), (f1)–(f3)
+and the verdict's half of (f4) stand on the evidence in the W21 table above. Nothing read here touches them: no D2.4
+path changed, no RC record cited there changed, and `docs/support-matrix.md` and ADR 0053 are unchanged since C. (c)
+waits on `M02 N1` as before. The other sixteen rows keep their verdicts and their evidence.
+
+**Criteria, read before the evidence.** For (e): alpha spec §6.1 W21 (e) bullet 2, with 0.2.0's denominator (the 210
+experiment results); V03 spec §4 "Step 12's G11 results" and V03.A34 (Amendment 3); and R-909 decision 2, which §10.2
+makes the test ("(e) is met if and only if R-909's four conditions hold"). For (f4): alpha §6.1 (f4) and the four
+phrases of alpha §19.5 item 1, as 0.2.0's re-judgement read them. Nothing that V03 §3 pre-registers differently is
+judged here.
+
+| Clause | Judgement | Evidence |
+| --- | --- | --- |
+| (e) provenance | **met** | R-909's four conditions hold (below). G11 was re-run at C through 0.2.0's store-keeping wrapper. Its per-point outcomes equal step 12's own runs file at 242 of 242 point-runs. Its 210 experiment results and 210 attempts are kept under `rc/step12/experiments/` and were audited for the six items against `experiment.schema.json`, with step 12's own runs file: 0 problems. Re-checked here: the bytes, A34 (b), and the audit's line and report. Unchanged: G6 nodes in step 1, G12's `reproduce` `MATCH`, reactor commit `6089593…` = ADR 0022's pin |
+| (f) parent-model validation | **met** | (f4)'s notes half: the draft `## v0.3.0` carries the four statements (below). With (f1)–(f3) and the verdict's half (W21 table above), (f) is met |
+| (c) out-of-process execution policy | **waits on M02 N1** | unchanged: the `M02 N1` cell of ADR 0053's decisions table is empty |
+
+**Verdict: W21 `BLOCKED` on W21 (c).** Every other clause is met. ADR 0053 D2 no longer refuses W21 as a `FAIL`. It
+refuses W21 until Frank's `M02 N1` answer is recorded `accepted, <date>` with 2026-10-30 ≤ date. Because W21 is now
+`BLOCKED` on a registered answer, it can then be listed on the re-judgement line (`scripts/v0_3_gate.py`
+`rejudge_waits`: W21 on `M02 N1`).
+
+### (e): R-909's four conditions, and what was checked here
+
+**Production (build lane; build log `docs/V03_RC_DECISIONS.md` "WO-7b").** `3b05511d` committed step 12's own runs file,
+`step12/g11-coverage-v3.runs.json` (`cdb7d999…fd0a`). `tools/run_g11keep.sh` then re-ran G11 with step 12's arguments
+(`tools/run_local.sh` l.94–97, read here) through `tools/g11keep.py.txt`, on one thread, in the reactor environment from
+C's lock. `g11collect.py.txt` collected one record per run. `tools/g11record.py.txt` wrote
+`step12/experiments/rc-step12-experiments.json`, and `fb73821e` committed the six files under `step12/experiments/`.
+
+**(i) V03.A34 holds on the committed record: met.** Read here: step `g11-keep-and-audit`, format `t08-rc-v1`, `passed`
+true, and exactly three checks (`r375.g11_rerun`, `r375.same_computation`, `r375.audit`), each `pass`. Provenance:
+commit C, `tree_clean` true, `ref-x86-64`, x86_64, Python 3.13.5, the three thread variables at 1, lock `ead4edf1…`.
+It is member for member equal to the provenance of `rc-step12.json`.
+- (a): exit 0 in 1758 s. The re-run's own G11 record, written by the frozen script, has `elapsed_s` 1758.2 (step 12:
+  1755.1).
+- (b): 242 point-runs, the six members, 0 differences, naming `cdb7d999…` and the re-run's `cf7ed741…`.
+- (c): the audit was given `step12/g11-coverage-v3.runs.json`. It exits 0 and prints the registered line with 210, 210,
+  210, 0, 32 and 0; j = 420.
+
+**(ii) The verdict's own re-check agrees: met.**
+1. *Bytes.* All seven new files were hashed here: the five committed as plain files, and the two collected records
+   decompressed from their `.gz`. Each SHA-256 and byte count equals its `rc/records.json` entry. The six A34 files match
+   the RC record's new step-12 row (`docs/v03-rc-record.md` l.120) token for token, and `cdb7d999…` is the file step
+   12's data row cites. `records.json` grew from 103 to 110 entries. None of the 103 entries the first judgement
+   recomputed was changed or removed.
+2. *A34 (b), recomputed here* with a script written for this judgement, not the build lane's `g11equal.py`. Both runs
+   files have 2 runs, with the same labels in the same order. At all 242 point-runs, `stage`, `accepted`,
+   `child_accepted`, `tube_outlet`, `path` and `attempts` are equal as JSON, where a member present on one side only
+   counts as a difference: 0 differences.
+3. *The audit, re-run here:* `PYTHONPATH=src .venv/bin/python scripts/m07_g11_experiments_audit.py --variant-file
+   benchmarks/m02/variant-v3-provisional.json --runs <rc>/step12/g11-coverage-v3.runs.json --out <scratch> run1.json
+   run2.json`, over the decompressed committed records. It exits 0 and prints exactly: "G11 experiments audit: 2 runs, 210
+   boundary points, 210 results, 210 attempts, 0 without a result, 32 direct points (no records); 6 items + schema: 0
+   problems; context (job_id): 420 findings: PASS". The report it wrote is byte-equal to the committed
+   `g11-experiments-audit.json` (`e36eb2fc…`). The audit script is unchanged since C. Its last change, `46b5c418`
+   (0.2.0's F8), compares each point's path with the runs file. The variant file is a D2.4 path and is unchanged since C.
+
+**(iii) Ancestry and D2.4: met.** `git merge-base --is-ancestor 3b05511d fb73821e` returns yes. `git diff --name-only
+a3e508e3 fb73821e` touches no D2.4 path (ADR 0021 revision 2: `src/`, `schemas/`, `benchmarks/`, `requirements.lock`,
+`pyproject.toml`, `MANIFEST.in`, `README.md`, `LICENSE`, `NOTICE`). It touches `CHANGELOG.md`, `docs/`, `evidence/S13/`,
+`release/rc-trees/<C>.json` and `scripts/s13_evidence_manifest.py`. The same holds at `f3cda7db`.
+
+**(iv) The rest of (e), as judged earlier on 2026-10-30: met.** No record that judgement cited has changed (see above),
+and no D2.4 path has. The audit's `version` item ties each of the 210 results to the pinned variant and its reactor
+commit `6089593…`, ADR 0022's pin: 0 problems.
+
+**Checked here beyond R-909**, because these bear on what the record proves:
+5. *The reference is step 12's own output.* Step 12's own runs file equals step 12's G11 record,
+   `step12/g11-coverage-v3.json`, which was committed in the RC records commit `0caf09a0` before the first judgement. They
+   agree in label order, and in `stage`, `accepted`, `tube_outlet`, `envelope_code` and `wall_s`, at all 242 point-runs:
+   0 differences. The re-run's `wall_s` equals step 12's at 0 of 242 point-runs. So the reference was written by step 12,
+   and the re-run is a separate execution, whatever the commit times. The two G11 records differ only in timing and load
+   members (`wall_s`, `startup_s`, `solve_s`, `certificate_wall_s`, `run_s`, `loadavg`, `elapsed_s` and shares of them).
+   As corroboration outside the tree, not as registered evidence: the re-run's empty tree-status files in the build
+   lane's cache are dated 22:24:56 (start) and 22:54:14 (end). That is 28 s after `3b05511d`'s commit time, and 1758 s
+   apart.
+6. *The denominator.* Step 12's own file has 105 boundary points and 16 direct points in each run. `attempts` is 1 at
+   every boundary point and absent at every direct one. Each collected record names run 1 or 2, commit C, `tree_clean`
+   true and the re-run's runs file (`cf7ed741…`). Its (label, path) sequence equals step 12's own, in order, with one
+   experiment at each boundary point and none at a direct point. The registered denominator is the 210 results (R-909
+   decision 2).
+7. *Does the audit discriminate?* Five mutated copies of run 1 were audited here with step 12's own runs file:
+   - reactor commit changed in one result: `version` 1 problem, exit 1;
+   - `wall_s` removed from one attempt: `schema` 1, exit 1;
+   - one boundary point relabelled `direct`, with its experiment removed: `structural` ("path direct is not the runs
+     file's boundary"; "0 experiments, not 1"), exit 1;
+   - two boundary points swapped: `structural`, exit 1;
+   - one boundary point dropped: `structural`, exit 1.
+
+   The relabelled copy passed 0.2.0's audit (exit 0 on 209; V02 finding F8). It fails now because the audit takes each
+   point's path from step 12's own runs file. F8 is closed at its root, as R-909 intends.
+8. *The wrappers.* `g11keep.py.txt` and `g11collect.py.txt` are byte-identical to the copies in
+   `evidence/M07/ce993651…/tools/` (`cmp`, here), so §4 item 2 has no diff to record. The re-run's `env_id`
+   (`pymrm-6089593-032a050c6cf3`), runner hash and variant hash equal step 12's.
+9. *Tests.* `tests/test_m07_g11_experiments_audit.py`: 12 passed here.
+
+**Evidence class.** Implemented and tested by the build lane, and checked here. This is numerical and procedural
+verification. It shows that a re-run of G11 at C wrote experiment records that carry the registered provenance fields
+with the pinned values, and that the re-run equals step 12's own record at every point-run in six members. It is not
+empirical validation, and it is not evidence that the reactor is right. Every number is still the group's model at the
+pin, a regression.
+
+*Observation.* The `description` of each collected record reads "at C'". That is the text of 0.2.0's collector, copied
+unchanged as §4 item 2 requires. Its `provenance.commit` names C. No check reads the description.
+
+### (f4)'s notes half
+
+The section read is `## v0.3.0 — unreleased` in `CHANGELOG.md` at `f3cda7db`, unchanged since `41b99a9b`. The statements
+are in the "What it is not" bullet at l.88–90. After whitespace normalization, each of the four phrases in alpha §19.5
+item 1 appears exactly once in the section:
+
+- `no reactor result has been compared with experimental data` (followed by "by this project");
+- `the group's published comparison is the group's evidence`;
+- `the group's model at the pin, a regression`;
+- `discretization bias is 1.0–1.4 % in NH₃`.
+
+`awaits Frank's statement` is absent. The notes half is **met**. The bullet stands in "What it is not", as 0.2.0's did
+when its re-judgement read that half as met; `## v0.3.0` has no "Not empirically validated" heading. As at 0.2.0, this
+reads the draft before its final edit.
+
+**Finding F9 (the guard; does not change this judgement).** At 0.2.0, A52's counterpart re-checked the four phrases at
+the tag candidate. At 0.3.0 nothing registered does. V03 §8's seventeen phrases (A16, A18) do not include them. Adding
+them would mean editing `benchmarks/v03/registration.json`, a D2.4 path, which forces a new C. So an edit after this
+reading could drop a statement and nothing would notice. The cheapest guard needs no amendment. The re-judgement that
+lists W21 counts the four phrases again in the section at the commit it reads, and WO-8's step-18 notes record counts
+them again at the tag candidate. Both counts go in the record. The next release spec should register the four phrases
+with §8's.
+
+### Alternatives considered and rejected (this judgement)
+
+1. **(e) met on the build lane's record alone** (A34 `pass` in S13's manifest at `4ecfc162`). Rejected as a basis: R-909
+   (ii) requires the verdict's own re-check, which is done above.
+2. **(e) not met because the records come from a re-run, not from step 12's first run.** Rejected. R-909 registers the
+   re-run as 0.3.0's remedy, on condition that (b) shows equality with step 12's own record, and it does, at 242 of 242.
+   From the next release, R-909's standing form keeps the records in step 12's first run.
+3. **(e) not met because the 32 direct evaluations have no records (denominator 242).** Rejected, as at 0.2.0 and by
+   R-909 decision 2.
+4. **(e) not met because 420 `job_id` values fail the schema's pattern.** Rejected. `job_id` is not one of the six
+   items, and A34 leaves j free (0.2.0's J78 ruling and finding F7; the limitation travels).
+5. **(e) not met because the runs file was committed only 28 s before the re-run started.** Rejected. R-909 (iii) asks
+   for ancestry, and ancestry holds. Check 5 shows independently that the reference is step 12's own output, since it
+   equals a record committed before the first judgement, `wall_s` included.
+6. **A re-judgement line instead of a new judgement.** Rejected under §19.2 item 2: W21 was `FAIL`, not `BLOCKED` on an
+   answer.
+7. **W21 `PASS`.** Rejected: the `M02 N1` cell is empty.
+8. **A second `Judged` line or a moved date.** Not done. The new judgement falls on the same day, and the gate requires
+   exactly one `Judged` token in the document. The header's date is this judgement's date.
+9. **(f4)'s notes half not met because the bullet is not under a "Not empirically validated" heading.** Rejected. Alpha
+   §19.5's phrase list is the test, and 0.2.0 read the same placement as met.
+
+### What would change this judgement
+
+- **Frank records `M02 N1` as `accepted, <date>` with 2026-10-30 ≤ date** → W21 (c) is met on the re-judgement line, and
+  W21 becomes `PASS`. A declined `M02 N1` needs a spec amendment.
+- **A file under `step12/experiments/`, or step 12's own runs file, whose bytes no longer match `records.json` or the RC
+  row** → (e) reopens.
+- **A result found to lack one of the six items, for example through a defect in the audit's item checks** → (e) is not
+  met, on a record.
+- **Any of the four statements removed or altered in the section the tag carries** → (f4)'s notes half reopens (F9).
+- **Any change to a D2.4 path** → a new candidate, and every row is judged again.
+
+### What this judgement does not establish
+
+- That the reactor is right (L46).
+- That step 12's own experiment records carried the six items. Those records were deleted at exit. What is shown is that
+  a re-run with step 12's per-point outcomes wrote records that carry them.
+- §9.1 provenance for G11's 32 direct evaluations, which have no experiment records.
+- That the kept records conform to the schema as whole records (`job_id`).
+- Anything about a platform other than `ref-x86-64`, any aarch64 run, or any cross-machine reproduction (L44, L15).
+- Timings under other load.
+- Any scientific or process-model review, human sign-off, or `reviewed` status.
+
+### Limitations that must travel (they replace the list's line "W21 FAIL on (e) until the G11 audit at C …")
+
+- W21 (e) at 0.3.0 rests on a re-run of G11 at C (R-909). The re-run equals step 12's own runs file in six per-point
+  members at 242 point-runs. Step 12's own experiment records were not kept.
+- G11's 420 kept records (210 results, 210 attempts) carry a `job_id` that `experiment.schema.json` refuses. A consumer
+  that validates whole records against the schema will reject them (0.2.0's F7). Its remedy, due at the next M02 touch,
+  is not applied at C. The six items are unaffected.
+- G11's 32 direct evaluations per two runs are coverage evidence without experiment records. W21 (e) covers the 210
+  boundary results.
+- No registered check guards W21 (f4)'s four statements at the tag candidate (F9).
+
+### Frank's items after this judgement
+
+Ask now. This judgement is the "W21's new judgement" that the spec's timing and N-11 wait on. An answer counts if it
+starts `accepted, YYYY-MM-DD` with 2026-10-30 ≤ date; an answer that a re-judgement reads must also be dated on or before
+that re-judgement.
+- **N-2 (`V17 carry`)**: needed. V13 (e) and V17 (a) wait on it.
+- **N-3 (`M02 N1`)**: needed. W21 (c) is the only clause W21 still waits on.
+- **N-4 (`M03 N1`)**: needed. W24 (a) waits on it.
+- **N-5 (D3 `X31 (c)`)** and **N-6 (D3 `V14 (b)`)**: needed. Each makes a pre-registered `FAIL` releasable.
+- **The `Claim set` cell**: Frank answered N-1 on 2026-10-29, before `Judged`. That answer counts only once it is
+  recorded in ADR 0053 with a date on or after 2026-10-30.
+- **N-10 (W26)**: unanswered. Its default, option 1 (§3.5), is applied, and W26 is PASS on it.
+- **N-11 (the `coolprop` and `lca` licences)**: unanswered. The default is to accept (V18 stays PASS). The answer is
+  recorded verbatim in spec §11, not in ADR 0053.
+
+**What still stands between this document and proposing the tag.** Of W21, only (c) remains. The rest:
+- the six ADR 0053 cells, dated as above;
+- the re-judgement line listing V13, V17, W21 and W24;
+- WO-8: ADRs 0053 and 0054 Accepted, S13's manifest `tested`, and step 18's YES line. At `4ecfc162` the manifest is
+  `implemented`, 43 of 48 pass, with 5 pending (V03.A08, A25, A27, ADR.0053, ADR.0054);
+- the notes' final edit, keeping §8's seventeen phrases and the four statements (F9);
+- the full gate and CI on both architectures before the merge;
+- Frank's dispatch.
