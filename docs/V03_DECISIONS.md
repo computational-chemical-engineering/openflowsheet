@@ -161,6 +161,23 @@ no erratum (R-901). Q3: cite R-900 (F-V1); MR-12 v03's `lca` entry now runs `scr
 - `src/openflowsheet/resources.py`, `pyproject.toml`, `tests/test_t08_w4_package_data.py`: both lists grow; the
   packaged-file count becomes 15.
 
+## Brief 4: the docs site (`docs/briefs/V03-docs-merge.md`, 2026-10-30)
+
+- Merge of `main` `8f402cfa` at `627d182e`: no conflicts. `main` left the register untouched, so no per-entry merge
+  was needed; the envelope auto-merged (main's S14 harvest block appended, V03's row edits elsewhere).
+  `HARVEST_SIZE` (65, 921, 119) = base (63, 909, 119) + main's S14 (+2 manifests, +12 items) + V03's (none).
+- O1 at `d38fa23d`, O2 at `82b61f07`; both closed in `docs/DOC_DECISIONS.md`.
+- DECISION: O2's scope "the two notebooks" → all three notebooks with a thermal machine (`rankine-cycle`,
+  `refrigeration-cycle`, `what-if-and-refusals`), the tutorial and the change set. Alternative: leave `what-if` on
+  `pump`. Reversible by: revert the `what-if-and-refusals.ipynb` hunk of `82b61f07`.
+- DECISION: O1 covers the Wilson lines only → the cost example's "source checkout (the Rankine change set)" and the
+  examples page's "run one locally from a source checkout" stay (`examples/` does not ship). Alternative: reword them
+  too. Reversible by: a docs edit.
+- Cost example (`rankine-cost-and-gwp`): costing maps the model id (`assessment/sizing/families.py:1032`,
+  `thermal.turbine` → `_Machine("turbine")`), never `semantic_role` (no file under `src/` contains it, ADR 0054 D2).
+  Its full stdout with the old and the new change set is byte-identical: impact 0.024320 kg CO2-eq/s, total capital
+  836869 USD, turbine purchased 8726 / bare module 30542 USD. No number moved.
+
 ## Run log
 
 - 2026-10-29, WO-1: `v0_2_gate.py` output before/after the engine change, 18 runs (text, `--json`, `--markdown` over
@@ -207,13 +224,15 @@ no erratum (R-901). Q3: cite R-900 (F-V1); MR-12 v03's `lca` entry now runs `scr
   MR-12, E01, T08 W2 envelope, harvest, W5c) 543 passed, 1 skipped. `t08_support_matrix.py --check` 0 problem(s).
 - 2026-10-30, at `b0d71e2f`: `S11-IDENTITY PASS n=54494 changed=[]`. The full gate (`scripts/gate.sh`) was not run.
 
-## Handoff (brief 3, review fixes, 2026-10-30)
+- 2026-10-30, brief 4 at `82b61f07`: `doc_pages.py --check` "up to date"; `t08_support_matrix.py --emit` no change,
+  `--check` 0 problem(s); `mkdocs build --strict` exit 0 (docs venv installed into `.venv` from `requirements-docs.txt`
+  with `--require-hashes`, nothing uninstalled); doc examples/pages + harvest + release workflows 56 passed, 1 skipped
+  (refrigeration: no CoolProp in `.venv`); the refrigeration notebook in `~/.cache/doc-venv` (CoolProp) 2 passed.
+  `S11-IDENTITY PASS n=54494 changed=[]`. The full gate (`scripts/gate.sh`) was not run.
 
-Done on `wp/V03` (not pushed): merge of `main` `51cd6847` (`eba0029b`); F-V1 + R-900/R-901 (`1a2388cf`); F-V2 (`030226c4`);
-A10 (`aa92f09f`, DECISION); F-E1 (`d5b32132` manifest limitation, `4dde9d5a` envelope L-E01-1, DECISION); F-E2
-(`354701d3`); F-V3/F-V4 notes (`b0d71e2f`). Open questions 1–3 ruled (R-883, R-901, R-900).
-Not done: `docs-site/` fixes — `main` (`51cd6847`) has no `docs-site/` yet; the Q-B11 evidence note of the review (E01b's
-record, not this brief's); the full gate and CI before V03 merges.
-Next: when `wp/DOC` is on `main`, merge it and fix the site's Wilson "source checkout" lines and the examples'
-turbine/compressor `semantic_role` (`tests/test_doc_examples.py`, `mkdocs build --strict`); then the full gate, CI on
-both architectures, merge into `main`; then WO-5 (K3).
+## Handoff (brief 4, the docs site, 2026-10-30)
+
+Done on `wp/V03` (not pushed): merge of `main` `8f402cfa` (`627d182e`); O1 (`d38fa23d`); O2 (`82b61f07`); O1/O2 closed
+in `docs/DOC_DECISIONS.md`. No printed or asserted number moved.
+Not done: the full gate and CI on both architectures before V03 merges into `main`.
+Next: the full gate, CI, merge into `main`; then WO-5 (K3).

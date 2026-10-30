@@ -72,9 +72,11 @@ numerics-changing. Each choice below is isolated so that a revert undoes it.
 - O1 (D7): the Wilson "source checkout" lines (`docs-site/guide/property-bases.md`, `examples/README.md`,
   `docs-site/examples/index.md`, `docs-site/getting-started/install.md`): the Wilson records ship in the wheel on
   `wp/V03`. Drop the lines when V03 merges.
+  **Closed** on `wp/V03` at `d38fa23d`: the four Wilson lines dropped; the property-bases page says the records ship with the package.
 - O2 (D3, Q1): `semantic_role` of `thermal.turbine`/`thermal.compressor` in the examples is `pump`; ADR 0054 on
   `wp/V03` adds `compressor`/`turbine`. Change the two notebooks, the tutorial and `examples/rankine-cycle.changeset.json`
   together when V03 merges (the cost example reads the change set, so it follows).
+  **Closed** on `wp/V03` at `82b61f07`: roles `turbine`/`compressor` in three notebooks, the tutorial and the change set; the cost example's output is byte-identical (costing reads the model id).
 
 ## Questions for the design lane (batched)
 
