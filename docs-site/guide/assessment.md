@@ -97,8 +97,10 @@ vessel, column trays, pump, electric motor, compressor and turbine.
 - **Transcribed** from the IDAES process modelling framework's `SSLW.py` (idaes-pse 2.13.0,
   BSD-3-Clause; the file's SHA-256 is recorded). Every coefficient carries the source line it was
   read from.
-- **Cited**: each validity range cites the book's chapter and equations, for example the
-  shell-and-tube exchanger's 150–12,000 ft² (ch. 22, Eqs. 22.39–22.43).
+- **Checked** against the book, number by number, by page and equation. Each validity range
+  cites its page, for example the shell-and-tube exchanger's 150–12,000 ft² (p. 571,
+  Eqs. 22.39–22.42), the electric motor's range (p. 562, Eq. 22.19) and the gas expander's
+  20–5,000 hp (p. 593, Table 22.32).
 - **Reported** per item: the set, the entry, the form, the citation, the source lines, the
   ranges, the options and which options were defaulted.
 
