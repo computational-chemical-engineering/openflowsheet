@@ -320,3 +320,25 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   Alternative: judge only the dates of cells that are acceptances (the gate refuses a non-accepted clause only where a
   FAIL names it). Reason: ADR 0053's own condition is "every cell starts `accepted, YYYY-MM-DD`". Reversible by: one
   `date is None or` in `_m_policy`.
+- **Step 2 (H1 = `9e998beb`): S13's manifest regenerated at G = `04c503e5`** (clean tree; `PYTHONPATH=src:.
+  python scripts/s13_evidence_manifest.py --commit a3e508e35fc5451fe56fa7b70941621992d35b50 --gate-log
+  gate-fe61ae9.log --ci-run 41108983463 --ci-run 41108983672`, 4ecfc162's arguments, main `.venv` python, private
+  `--tmp` under `~/.cache/v03rc-tmp`): `S13 tested a3e508e3: 48 checks, 48 pass, 0 fail, 0 unsupported`; exit 0;
+  `t08.problems` none. Against 4ecfc162's: A08, A25, A27, ADR.0053, ADR.0054 `unsupported` → `pass`; every other
+  result unchanged, values differing only in test timings and `judged_at`. ADR.0053/0054 `status: Proposed`, ranges
+  complete; A25 (a) `at_wo8` = the two problems; A26 `policy` D3 V14 (b), X31 (c), `frank` [] ; A27 47 others, 41
+  commands. Review fields `pending`. SHA-256 `3e3d0b3d8228b7c0dba61d123c75894664f5ff7048a54075f41f7371f6098eb4`.
+- **Step 3 (H2 = `e55f9efd`)**: precondition at H1 checked (`tested`, 48/48 `pass`, the SHA-256 above); ADR 0053 and
+  0054 Status paragraphs from §6.1's templates (date 2026-10-31, G `04c503e5`, H1 `9e998beb`, `3e3d0b3d…`); nothing
+  else in either ADR. Tests reading `docs/adr/` plus the route and gate tests at H2: 855 passed.
+- **Step 4: step 18 at H2** (HEAD = `e55f9efd`, clean): `PYTHONPATH=src .venv/bin/python scripts/v0_3_gate.py --rc
+  a3e508e35fc5451fe56fa7b70941621992d35b50` (main `.venv` python) → exit 0; log
+  `evidence/S13/a3e508e3…/artifacts/step18-H2.log` (git-ignored), SHA-256
+  `ad31dc6b1fc1632a0b6847860a6ea3fb62b4c92c31fe22ae39c56b7d2e3bbbfb`; last line
+  **`v0.3.0 tag may be proposed: YES`**. Items: tree equal to C; RC record passed; manifests tested; envelope pinned;
+  ADRs every one Accepted; Frank's answers every one accepted.
+- A08's R part (grammar script, one line): `A08-R PASS: first line §2.2's (candidate e55f9efd); 18 gate rows (17
+  claimed in order, then W27 not claimed (v0.3-gate-v1)); non-PASS rows: V14=FAIL X31=FAIL; last line 'v0.3.0 tag may
+  be proposed: YES'`. (The same script on the 2b7fc98e dry run fails on its last line only.)
+- F9 at H2 (`## v0.3.0 — unreleased`, l.3–103): **4 of 4**, each phrase exactly once; `awaits Frank's statement` 0.
+- H3 touches only this file and `docs/progress.md`; the manifest is not regenerated. Next: hand to Frank for the tag.
