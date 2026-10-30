@@ -22,6 +22,7 @@ SciPy, PyYAML, jsonschema and [CasADi](https://web.casadi.org/), all pinned to e
 | `coolprop` | `pip install "openflowsheet[coolprop]"` | The CoolProp pure-fluid basis (`coolprop-heos-v1`): one of 123 fluids per flowsheet, for the `thermal.*` units | CoolProp (MIT), inventoried in `docs/s07-coolprop-licences.json` |
 | `server` | `pip install "openflowsheet[server]"` | The HTTP server (`openflowsheet serve-http`, with the optional web shell) and the MCP server (`openflowsheet serve-mcp`) | mcp (MIT), Starlette and Uvicorn (BSD-3-Clause) and their dependencies, all permissive; the closure is inventoried in the repository (`docs/t07-server-licences.json`) |
 | `nlp` | see below | The general NLP bridge of the studies layer (Pyomo and Ipopt through cyipopt) | Pyomo (BSD-3-Clause), cyipopt and Ipopt (EPL-2.0); the audited environment's binaries are inventoried in `docs/m03-ipopt-audit.md` |
+| `lca` | `pip install "openflowsheet[lca]"` | The offline Brightway adapter that builds unit-score tables for the LCA from a database you have prepared (see [Cost estimation and LCA](../guide/assessment.md#building-a-table-the-lca-extra)); assessments evaluate without it | Brightway's `bw2data` and `bw2calc` (BSD-3-Clause) and their dependencies, inventoried in `docs/e01-lca-licences.json` |
 | `dev` | `pip install -e ".[dev]"` | The test and lint tools, for working on OpenFlowsheet itself | — |
 
 The `nlp` extra cannot be installed from PyPI alone: PyPI has no cyipopt wheel for CPython 3.13. It

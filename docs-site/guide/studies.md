@@ -14,6 +14,7 @@ ammonia-synthesis (C1) loop.
 | NLP bridge | the flowsheet as a grey box inside Pyomo, solved by Ipopt | needs the `nlp` extra in its audited environment |
 | Surrogates | surrogate models of an expensive unit with their evidence (`SurrogateManifest`) | the C1 reactor |
 | Trust-region study | a trust-region refinement of the C1 loop with surrogate and full-fidelity reactor | the C1 loop |
+| Cost and impact outputs | cost and life-cycle impact as study outputs and NLP objectives (`assessment:<output_id>`), with exact derivatives; see [Cost estimation and LCA](assessment.md) | sensitivities on any solved revision; the NLP on SYN-001 |
 
 A sensitivity is never computed by finite differences: differencing is a test oracle only.
 Studies emit `Study` and `OptimizationReport` documents with their schemas.

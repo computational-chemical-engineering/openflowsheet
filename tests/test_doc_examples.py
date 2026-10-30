@@ -49,6 +49,18 @@ STATED: dict[str, list[tuple[str, str]]] = {
         ("f\"{x_b['CH3OH']:.6f}\"", "0.003916"),
         ("run.verification_status", "VERIFIED"),
     ],
+    # E01b moves pump, motor, turbine and vessel costs: the capital figures are printed by the
+    # notebook, never stated; what is stated reads no cost correlation (DOC_DECISIONS D11).
+    "rankine-cost-and-gwp.ipynb": [
+        ("run.verification_status", "VERIFIED"),
+        ("report['status']", "COMPLETE"),
+        ("','.join(sorted({item['status'] for item in report['items']}))", "costed"),
+        ("f'{gwp_rate:.6f}'", "0.024320"),
+        ("f'{gwp_per_kg:.4f}'", "1.3500"),
+        ("f'{1e6 * dgwp_dt:.3f}'", "5.115"),
+        ("f\"{report['opex']['opex.utility.HPS']:.0f}\"", "18922"),
+        ("f'{dsteam_dt:.2f}'", "14.20"),
+    ],
     "what-if-and-refusals.ipynb": [
         ("f'{efficiencies[573.15]:.4f}'", "0.2786"),
         ("f'{efficiencies[773.15]:.4f}'", "0.3020"),

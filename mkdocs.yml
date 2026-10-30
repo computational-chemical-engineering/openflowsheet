@@ -98,6 +98,7 @@ nav:
       - Refrigeration cycle (CoolProp): examples/refrigeration-cycle.ipynb
       - Methanol–water column (Wilson): examples/methanol-water-column.ipynb
       - What-if studies and refusals: examples/what-if-and-refusals.ipynb
+      - Cost and climate impact: examples/rankine-cost-and-gwp.ipynb
   - Coding Agents: agents.md
   - User guide:
       - Concepts: guide/concepts.md
@@ -105,6 +106,7 @@ nav:
       - Unit catalogue: guide/units.md
       - Distillation column: guide/column.md
       - Studies and optimisation: guide/studies.md
+      - Cost estimation and LCA: guide/assessment.md
       - Interfaces: guide/interfaces.md
       - Limitations and support: guide/limitations.md
   - Python API:
@@ -115,6 +117,7 @@ nav:
       - Errors and pages: api/contract.md
       - Operations table: api/operations.md
       - Replay: api/replay.md
+      - Assessment (cost and LCA): api/assessment.md
   - Design: design.md
   - Releasing:
       - Release workflow: releasing.md
