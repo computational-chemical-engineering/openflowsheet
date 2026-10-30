@@ -92,19 +92,19 @@ F5 education mode deferred.
 
 ## Next action
 
-**Position (2026-10-30).** Merged into main: S11 (`1b2758d1`), E01 (`05363060`), E01b (`51cd6847`, Seider 3rd-ed.
-check, QA1 closed, C7 approved by Frank), **DOC (`8f402cfa`**, CI 41041080081 green both runners). GitHub Pages enabled
-(`build_type=workflow`); site https://computational-chemical-engineering.github.io/openflowsheet/ deploys from `site.yml` on
-push to main.
-- **wp/V03** (worktree `v03`, head `aa83d975`): ADR 0053/0054, spec + Amendment 1, WO-1…WO-4 and the review fixes
-  (`docs/reviews/V03-review.md`, R-900/R-901) done; S11-IDENTITY PASS n=54494. Running: brief 4
-  (`docs/briefs/V03-docs-merge.md`): merge main 8f402cfa, close DOC O1 (Wilson ships in the wheel) and O2 (turbine/compressor
-  roles in the examples). Then full gate → push → CI both runners → merge (spec P3).
+**Position (2026-10-30 night).** Main: DOC merged (`8f402cfa`, Pages live), V03 merged (`8076b283`, S13a), **K3 `295a2e65`
+(0.3.0, `v0.3-envelope-1`) is main's head + briefs**; main takes no D2.4 change until dispatch.
+- **wp/V03-rc** (worktree `v03rc`, log `docs/V03_RC_DECISIONS.md`): R-902 (version = build provenance); G10 re-take + journey at
+  J = `2d945b5d` (T* 653.1500351610193 K, BOUND_LOWER, bitwise = 0.2.0 but walls); **C = `a3e508e3`** (first C `4fa15efa`
+  superseded: S4 version, 17b aarch64 skip). Full gate PASS `fe61ae9d` 14757; CI 41108983672 + RC dispatch 41108983463 green.
+  RC steps 2–17 all PASS at C (`0caf09a0`, `docs/v03-rc-record.md`). Amendment 2 `8e0cb1a1` (R-903…R-908: W26 without G14).
+- **Verdicts `617459a7`:** 11 PASS; FAIL V14 (b), X31 (c) (D3, Frank), **W21 (e)** (G11 results not kept/audited — fixing at
+  C); BLOCKED V13 (e)/V17 (a)/W24 (a)/W21 (c) on Frank's N-2…N-4. A12 (c) fails only by the version string (counterfactual
+  `changed=[]`). Running: Amendment 3 (`specifier`: F1 standing keep-and-audit, A12, S13 harvest exclusion, grammar) and the
+  build fixes (G11 keep+audit at C, CHANGELOG W21 (f4), F6, ADR 0050–0052 Accepted).
 **Next actions (in order):**
-1. V03 brief 4 → full gate → CI → merge into main.
-2. **Release 0.3.0** (spec §4): WO-5 K3 cut + G10 re-take + W25 journey at K3 (reactor env) + C; WO-6 RC steps 1–17
-   (17a A48, 17b CoolProp 0 skips, 17c MR-12 v03, 17d lca/nlp, 17e wheel), RC record, S13 manifest; WO-7 verdict; WO-8 Frank's
-   N-2…N-6 in plain words, ADR 0053/0054 Accepted, tag is Frank's; WO-9 main → 0.4.0.dev0.
+1. Apply Amendment 3 → S13 manifest → re-judge W21 (new Judged date) → ask Frank N-2…N-6, N-10 (+ F4 licences line).
+2. WO-8: ledger, step 18 YES, ADR 0053/0054 Accepted, merge C into main, tag is Frank's; WO-9 main → 0.4.0.dev0.
 2b. **NLP optimiser on revision flowsheets** (Frank 2026-10-27: right after E01), with MCP/CLI/HTTP for cost/LCA.
 2c. **X01 — model extensibility infrastructure, piloted by NRTL + UNIQUAC (+ original UNIFAC), VLE only** (Frank,
    2026-10-28: "more about the flexibility of the basic infrastructure than having all models on board"; adding a model
