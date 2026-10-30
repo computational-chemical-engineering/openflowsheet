@@ -137,3 +137,24 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   `unsupported` until WO-7/8, the 17c part calls `MEASURES["mr12_extras_v03"]` with `evidence=evidence/S13`); CI ids.
 - **Open for the design lane (batched)**: step 16's G15 dry run (stop); R-902's reach to the S4 check; A19 (c)'s "P1
   state" (superset accepted for now); the 17b A31b skip (orchestrator ruling).
+
+## WO-6 at C = `a3e508e3`: the S13 generator and the tree record
+
+- Tree record `release/rc-trees/a3e508e3….json` written by `v0_3_gate.py --rc C --write-tree-record` (`d963c64b`);
+  the four test modules that read tree records: 287 passed.
+- `scripts/s13_evidence_manifest.py` in `m07_evidence_manifest.py`'s pattern: one check per §7 assertion (catalogue
+  read from the spec; a missing rule stops it), D-gated ones by S13a's selections run here (A12 (c) by
+  `s11_identity.py` with its own `TMPDIR`), R-gated ones from `rc/records.json`'s committed records, CI runs at C,
+  and the gate's own readers (`rc_record_problems`, `adr_problems`, `verdict_document`); 17c also through M07a's
+  `MEASURES["mr12_extras_v03"]` with `evidence/S13` (F-V3).
+- DECISION: what `S11.G8`, `S12.G8`, `S12.G10` are at C (A27 names them, the spec does not define them at C) →
+  S11.G8 = full gate log + `check` and `rc-coolprop` on both architectures + step 17b's record; S12.G8 = full gate log +
+  `check` on both; S12.G10 = step 17a's record (E01 §9.6 G10 is A48 = 17a). Alternative: the CI jobs only.
+  Reversible by: editing `GATES` in the generator.
+- DECISION: "one check per ADR in S13's manifest" (§6) → `ADR.<n>` checks transcribed from WO-4's table: `met` rows
+  pass iff the status line is Accepted; 0050–0052 take V03.A24's result (their condition); 0043 passes iff Proposed and
+  not required; 0053/0054 are `unsupported` (pending) until Accepted at WO-8. Alternative: a committed JSON. Reversible
+  by: editing `adr_checks`.
+- DECISION: before WO-7/WO-8, V03.A25 (when the verdict document does not exist yet) and V03.A27 (while step 18 has
+  not run) are `unsupported` with `state: pending`, not `fail` (S13a's pattern; the handoff's "A25–A27 unsupported
+  until WO-7/8"). `unsupported` is not a pass, so the status stays `implemented`. Reversible by: two `if`s.
