@@ -296,3 +296,27 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   (Frank's six cells, A01–A31 listed). Order: S13 `tested` → 0053, 0054 Accepted → step 18 YES → record. The final
   state is a fixed point of the current generator (re-generated with `--step18-log` it stays `tested`), so the
   amendment changes only the bootstrap order, no numerics and no D2.4 path.
+
+## WO-8 under Amendment 4 (2026-10-31, brief 10): §6.1's five steps
+
+- **Step 1 (commit G): the generator's rules (g1)–(g6)** in `scripts/s13_evidence_manifest.py` (docstring included):
+  A08 = its tests; A27 = `_self` (every other check `pass`, commands > 0); `_m_step18`, `Inputs.step18_log`,
+  `--step18-log` and `STEP18_YES` removed (the parser refuses the option, exit 2); A25 (a) admits only
+  `ADR 0053/0054 is not Accepted: ` for a `Status: Proposed` line (`at_wo8`); new `_m_policy` (the gate's `policy` over
+  ADR 0053, D3 dated ≥ `Judged`, ≥ `Re-judged` for a re-judged gate's clause) feeding ADR.0053 and A26; ADR.0053/0054
+  pass Proposed or Accepted on their other conditions (status, policy for 0053, catalogue range); `guard` (g4) before
+  `_self`; the two (g6) limitation sentences verbatim. `main` takes `argv` (for (c9)).
+- 4ac5b66c's rule (A25 `unsupported`/pending while only 0053/0054 are open, ratified 2026-10-30) is **superseded by
+  R-913** (g2): such a tree now gives A25 (a) `pass`, with the two problems in `at_wo8`.
+- **Controls** `tests/test_v03_s13_route.py`, (c1)–(c10): 13 passed (c5 three cases, c7 for 0053 and 0054). Mutation
+  checks, each restored: no Proposed check in A25 (a) → 1 failed; no D3 date rule → 1 failed; no guard → 2 failed;
+  `_self` without commands → 1 failed; A26 without `policy` → 2 failed; `Withdrawn` admitted → 1 failed.
+  With the manifest-scanning and ledger tests (`test_evidence_manifests`, `test_t05_manifests`,
+  `test_t07_evidence_manifest`, `test_t08_evidence_manifest`, `test_s01/s02/s06_evidence_manifest`,
+  `test_v03_v0_3_gate`, `test_v03_ledger`, `test_m07_ledger`, `test_m07a_ledger`, `test_requirements_ledger`,
+  `test_t08_w1_ledger`): 696 passed, 29 skipped (28 `test_t07_evidence_manifest.py`, pre-0.1.0 history archived,
+  R-150; 1 `test_t08_w1_ledger.py:87`, "not in A02", registered). ruff check and format clean.
+- DECISION: a D3 cell of ADR 0053 that is not an acceptance (`_m_policy`) → `fail`, like one dated too early.
+  Alternative: judge only the dates of cells that are acceptances (the gate refuses a non-accepted clause only where a
+  FAIL names it). Reason: ADR 0053's own condition is "every cell starts `accepted, YYYY-MM-DD`". Reversible by: one
+  `date is None or` in `_m_policy`.

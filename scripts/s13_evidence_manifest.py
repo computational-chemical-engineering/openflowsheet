@@ -27,23 +27,31 @@ that evidence; its result is the worst of its parts (`fail` over `unsupported` o
 4. **Direct measurements** at the commit the script runs at (`judged_at`): the version files at K3
    and C (A09), `## v0.3.0`'s phrases (A18), the RC record by the gate's own `rc_record_problems`
    (A20), the THM-09/4 rows of `docs/t07-measurements.md` (A24, R-796), the required ADRs by the
-   gate's own `adr_problems` (A25), the verdict document by its own parser (A26), and step 18's
-   last line from `--step18-log` (A08's R part, A27).
-5. **V03.A27** is this manifest: `pass` iff every other check passes, commands were run and step
-   18's last line is YES.
+   gate's own `adr_problems` (A25 (a): only ADRs 0053 and 0054 may be open, each Proposed), the
+   verdict document by its own parser and ADR 0053's tables by the gate's own `policy` (A26).
+5. **V03.A27** is this manifest (its part (a)): `pass` iff every other check passes and commands
+   were run, as M07.A43's is.
+
+Step 18 (`scripts/v0_3_gate.py --rc C`) is not run here and is not judged here (V03 spec §6.1,
+R-913, R-914): it reads this manifest and ADRs 0053 and 0054, which are marked Accepted on it, so
+it runs after both. V03.A08's R part, A25 (b) and A27 (b) are judged from its output in
+`docs/V03_RC_DECISIONS.md`, as M07.A36's R part was at 0.2.0. `--step18-log` is refused.
 
 `S11.G8` and `S12.G8` (the full gate and CI on both architectures) read `--gate-log` (the full
 gate's log at a commit whose distribution trees equal C's) and the CI jobs; `S12.G10` is step
 17a's record. The `ADR.<number>` checks transcribe the WO-4 table of `docs/V03_DECISIONS.md` (its
 DECISION: WO-6's generator carries it into this manifest), each condition measured where it is
-measurable here. `S13.S13a` cites S13a's manifest (WO-1…WO-4, merged before K3).
+measurable here. ADR.0053 and ADR.0054 judge their conditions other than this manifest's own
+status (Frank's six cells by the gate's `policy` for 0053; the listed range), and pass with the
+status line Proposed or Accepted; a guard fails one marked Accepted while another check does not
+pass (R-913 (g3), (g4)). `S13.S13a` cites S13a's manifest (WO-1…WO-4, merged before K3).
 
 Status is `tested` iff every check is `pass`; otherwise `implemented`. `reviewed` is never set,
 and both review fields stay `pending`.
 
 Usage:
     PYTHONPATH=src:. .venv/bin/python scripts/s13_evidence_manifest.py --commit C \\
-        --gate-log LOG --ci-run ID [--ci-run ID] [--step18-log LOG] [--tmp DIR] [--out PATH]
+        --gate-log LOG --ci-run ID [--ci-run ID] [--tmp DIR] [--out PATH]
 """
 
 from __future__ import annotations
@@ -103,7 +111,10 @@ ENVELOPE = (
 )
 #: R-796: the CI jobs whose THM-09/4 lines are copied into `docs/t07-measurements.md`.
 THM09_JOBS = ("check (ubuntu-latest)", "check (ubuntu-24.04-arm)", "default-install")
-STEP18_YES = "v0.3.0 tag may be proposed: YES"
+#: R-913 (g2): the only `adr_problems` A25 (a) admits, each for a status line `Status: Proposed`.
+AT_WO8 = re.compile(r"^ADR (0053|0054) is not Accepted: ")
+#: R-913 (g3): the catalogue range each WO-8 ADR's condition names.
+AT_WO8_RANGES = {"0053": (1, 31), "0054": (28, 31)}
 #: V03.A32 (Amendment 2, R-903…R-908): step 16's record's four checks (a)–(d).
 A32_CHECKS = (
     "a60.w26.m06_tests",
@@ -185,7 +196,7 @@ _STEP17 = {item: f"step17/rc-step17{item}.json" for item in "abcde"}
 
 SPECS: tuple[Spec, ...] = (
     *(Spec(f"A{n:02d}", tests=True) for n in range(1, 8)),
-    Spec("A08", tests=True, measures=("step18",)),
+    Spec("A08", tests=True),
     Spec("A09", measures=("versions",)),
     *(Spec(f"A{n:02d}", tests=True) for n in range(10, 17)),
     Spec("A17", records=(_STEP17["e"],)),
@@ -202,8 +213,8 @@ SPECS: tuple[Spec, ...] = (
     Spec("A23", records=(_STEP[8],)),
     Spec("A24", jobs=(*_CHECK, *_COOLPROP), measures=("ci_runs", "thm09")),
     Spec("A25", measures=("adrs",)),
-    Spec("A26", measures=("verdict_document",)),
-    Spec("A27", measures=("self", "step18")),
+    Spec("A26", measures=("verdict_document", "policy")),
+    Spec("A27", measures=("self",)),
     *(Spec(f"A{n:02d}", tests=True) for n in range(28, 32)),
     Spec("A32", records=(_STEP[16],), measures=("step16_checks",)),
     Spec("A33", records=(_STEP[14],), measures=("nlp_selection",)),
@@ -257,7 +268,6 @@ class Inputs:
     #: The commit the script ran at: the candidate, after the verdicts and the ledger.
     judged_at: str | None = None
     gate_log: Path | None = None
-    step18_log: Path | None = None
     commands: int = 0
 
     @property
@@ -608,17 +618,34 @@ def _m_thm09(inputs: Inputs) -> Part:
     return "pass", value
 
 
+def _bare_status(files: Mapping[str, str], number: str) -> str:
+    """ADR `number`'s status line with `*` removed and stripped (Table T5's reading); `""` if
+    there is not exactly one such ADR or it has no status line."""
+    paths = [path for path in files if path.startswith(f"docs/adr/{number}-")]
+    line = (v0_2_gate.status_line(files[paths[0]]) or "") if len(paths) == 1 else ""
+    return line.replace("*", "").strip()
+
+
 def _m_adrs(inputs: Inputs) -> Part:
-    """V03.A25: gate item 12 at the candidate (the gate's own `adr_problems` over `docs/adr/`):
-    the 25 required ADRs Accepted; 0043 Proposed and not required."""
+    """V03.A25 (a) (R-913 (g2)): the gate's own `adr_problems` over `docs/adr/` at the commit this
+    runs at returns no problem but `ADR 0053/0054 is not Accepted: `, each for a status line
+    `Status: Proposed` (their route is "at WO-8", after this manifest, spec §6.1); 0043 Proposed
+    and not required. Item 12 in full is step 18's (A25 (b))."""
     files = _working_files("docs/adr")
     found = v0_2_gate.adr_problems(files, GATE_SET)
     (adr_0043,) = [path for path in files if path.startswith("docs/adr/0043-")]
     line = v0_2_gate.status_line(files[adr_0043]) or ""
     proposed = "Proposed" in line and "0043" not in GATE_SET.required_adrs
+    at_wo8 = [
+        problem
+        for problem in found
+        if (match := AT_WO8.match(problem))
+        and _bare_status(files, match[1]).startswith("Status: Proposed")
+    ]
     value = {
         "required": len(GATE_SET.required_adrs),
         "problems": found,
+        "at_wo8": at_wo8,
         "adr_0043_status": line,
         "judged_at": inputs.judged_at,
     }
@@ -626,11 +653,7 @@ def _m_adrs(inputs: Inputs) -> Part:
         # Before WO-7 the routes "after V03.A24" and "at WO-8" (§6) cannot have run yet.
         value["state"] = "pending"
         return "unsupported", value
-    if found and all(re.match(r"ADR (0053|0054) is not Accepted", p) for p in found):
-        # After WO-7 only the "at WO-8" route (0053, 0054; §6) can still be open.
-        value["state"] = "pending"
-        return "unsupported", value
-    return ("pass" if not found and proposed else "fail"), value
+    return ("pass" if len(at_wo8) == len(found) and proposed else "fail"), value
 
 
 def _m_verdict_document(inputs: Inputs) -> Part:
@@ -654,17 +677,50 @@ def _m_verdict_document(inputs: Inputs) -> Part:
     return ("pass" if ok else "fail"), value
 
 
-def _m_step18(inputs: Inputs) -> Part:
-    """V03.A08 (R part) and A27: step 18's output (`v0_3_gate.py --rc C`), its last line YES."""
-    if inputs.step18_log is None:
+def _verdict(inputs: Inputs) -> v0_2_gate.VerdictDocument | None:
+    """The verdict document at the commit this runs at, by the gate's own parser; `None` before
+    WO-7."""
+    path = ROOT / GATE_SET.verdict_document
+    if not path.is_file():
+        return None
+    return v0_2_gate.verdict_document(path.read_text(encoding="utf-8"), GATE_SET, inputs.commit)
+
+
+def _m_policy(inputs: Inputs) -> Part:
+    """V03.A26 and ADR.0053 (R-913 (g3), (g5)): Frank's six cells in ADR 0053. The gate's own
+    `policy` against the verdict document's `Judged` and `Re-judged` returns no `problems` and no
+    `frank` refusal, and every D3 cell is an acceptance dated on or after `Judged`, or on or after
+    `Re-judged` for a clause of a gate the re-judgement lists (Table T7; `judge_gate`'s rule)."""
+    document = _verdict(inputs)
+    if document is None:
         return "unsupported", {
             "state": "pending",
-            "reason": "step 18 runs after the ledger (WO-8); no --step18-log was given",
+            "reason": f"{GATE_SET.verdict_document} does not exist (WO-7, after steps 1–17)",
         }
-    text = inputs.step18_log.read_text(encoding="utf-8")
-    last = (text.strip().splitlines() or [""])[-1]
-    value = {"log_sha256": _sha256(inputs.step18_log), "last_line": last}
-    return ("pass" if last == STEP18_YES else "fail"), value
+    files = _working_files("docs/adr")
+    found = v0_2_gate.policy(
+        files.get(GATE_SET.policy_adr), GATE_SET, document.judged, document.rejudged
+    )
+    gate_of = {clause: gate for gate, row in document.rows.items() for clause in row.clauses}
+    rejudged = document.rejudged
+    late = []
+    for clause, (cell, date) in found.accepted.items():
+        floor = document.judged
+        if rejudged is not None and gate_of.get(clause) in rejudged.gates:
+            floor = max(floor, rejudged.date)
+        if date is None or date < floor:
+            late.append(f"{clause}: {cell}")
+    value = {
+        "adr": GATE_SET.policy_adr,
+        "judged": document.judged.isoformat(),
+        "rejudged": rejudged.date.isoformat() if rejudged else None,
+        "d3": {clause: cell for clause, (cell, _) in found.accepted.items()},
+        "frank_items": list(GATE_SET.frank_items),
+        "problems": found.problems,
+        "frank": found.frank,
+        "d3_not_accepted_on_time": late,
+    }
+    return ("pass" if not (found.problems or found.frank or late) else "fail"), value
 
 
 def _m_gate(inputs: Inputs) -> Part:
@@ -753,7 +809,7 @@ MEASURES: dict[str, Callable[[Inputs], Part]] = {
     "thm09": _m_thm09,
     "adrs": _m_adrs,
     "verdict_document": _m_verdict_document,
-    "step18": _m_step18,
+    "policy": _m_policy,
     "gate": _m_gate,
 }
 
@@ -813,7 +869,7 @@ def adr_checks(inputs: Inputs, a24: str) -> list[dict[str, Any]]:
     for number, (condition, checked, said) in _wo4_rows().items():
         paths = [path for path in files if path.startswith(f"docs/adr/{number}-")]
         line = (v0_2_gate.status_line(files[paths[0]]) or "") if len(paths) == 1 else ""
-        accepted = line.replace("*", "").strip().startswith("Status: Accepted")
+        accepted = _bare_status(files, number).startswith("Status: Accepted")
         value: dict[str, Any] = {
             "wo4_checked_against": checked,
             "wo4_result": said,
@@ -829,10 +885,8 @@ def adr_checks(inputs: Inputs, a24: str) -> list[dict[str, Any]]:
             result = (
                 "pass" if "Proposed" in line and number not in GATE_SET.required_adrs else "fail"
             )
-        else:  # 0053, 0054: Accepted at WO-8, with S13's manifest tested
-            result = "pass" if accepted else "unsupported"
-            if not accepted:
-                value["state"] = "pending"
+        else:  # 0053, 0054: marked Accepted at WO-8, on this manifest (§6.1)
+            result = _at_wo8(number, files, inputs, value)
         entries.append(
             {
                 "id": f"ADR.{number}",
@@ -842,6 +896,42 @@ def adr_checks(inputs: Inputs, a24: str) -> list[dict[str, Any]]:
             }
         )
     return entries
+
+
+def _at_wo8(number: str, files: Mapping[str, str], inputs: Inputs, value: dict[str, Any]) -> str:
+    """ADR.0053 and ADR.0054 (R-913 (g3)): their conditions other than this manifest's own
+    status. The status line is Proposed or Accepted; for 0053, Frank's six cells (`_m_policy`);
+    the catalogue lists V03.A01–A31 (0053) or V03.A28–A31 (0054). Pending before WO-7."""
+    if _verdict(inputs) is None:
+        value["state"] = "pending"
+        return "unsupported"
+    bare = _bare_status(files, number)
+    status = next((s for s in ("Proposed", "Accepted") if bare.startswith(f"Status: {s}")), None)
+    value["status"] = status
+    parts = ["pass" if status else "fail"]
+    if number == "0053":
+        result, value["policy"] = _m_policy(inputs)
+        parts.append(result)
+    first, last = AT_WO8_RANGES[number]
+    listed = catalogue()
+    missing = [f"V03.A{n:02d}" for n in range(first, last + 1) if f"A{n:02d}" not in listed]
+    value["listed"] = {"range": f"V03.A{first:02d}–A{last:02d}", "missing": missing}
+    parts.append("pass" if not missing else "fail")
+    return t08._result(parts)
+
+
+def guard(entries: Sequence[dict[str, Any]], inputs: Inputs) -> None:
+    """R-913 (g4): with every check but V03.A27 decided, an ADR.0053 or ADR.0054 whose status is
+    Accepted fails (`accepted_early`) if some other check does not pass or no command was run:
+    its condition, this manifest `tested`, does not hold."""
+    at_wo8 = ("ADR.0053", "ADR.0054")
+    others = [entry for entry in entries if entry["id"] not in (*at_wo8, "V03.A27")]
+    if inputs.commands > 0 and all(entry["result"] == "pass" for entry in others):
+        return
+    for entry in entries:
+        if entry["id"] in at_wo8 and entry["value"].get("status") == "Accepted":
+            entry["result"] = "fail"
+            entry["value"]["accepted_early"] = True
 
 
 def s13a_check() -> dict[str, Any]:
@@ -864,19 +954,15 @@ def s13a_check() -> dict[str, Any]:
 
 
 def _self(entry: dict[str, Any], others: Sequence[Mapping[str, Any]], inputs: Inputs) -> None:
-    """V03.A27: this manifest is `tested` iff every other check passes, with commands run, and
-    step 18's last line is YES."""
+    """V03.A27 (a): this manifest is `tested` iff every other check passes, with commands run, as
+    M07.A43's is (R-913 (g1)). Step 18's YES is A27 (b), judged from its output, not here."""
     failing = [other["id"] for other in others if other["result"] != "pass"]
     entry["value"]["self"] = {
         "other_checks": len(others),
         "not_pass": failing,
         "commands": inputs.commands,
     }
-    step18 = entry["value"].get("step18", {})
-    if step18.get("state") == "pending":  # before WO-8: judged once step 18 has run
-        entry["result"] = "unsupported"
-        return
-    ok = not failing and inputs.commands > 0 and step18.get("last_line") == STEP18_YES
+    ok = not failing and inputs.commands > 0
     entry["result"] = "pass" if ok else "fail"
 
 
@@ -900,6 +986,7 @@ def checks(inputs: Inputs) -> list[dict[str, Any]]:
     (a24,) = [entry["result"] for entry in entries if entry["id"] == "V03.A24"]
     entries += adr_checks(inputs, a24)
     entries.append(s13a_check())
+    guard(entries, inputs)
     (own,) = [entry for entry in entries if entry["id"] == "V03.A27"]
     _self(own, [entry for entry in entries if entry is not own], inputs)
     return entries
@@ -925,8 +1012,15 @@ def limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
         "assert them; the ratios themselves are recorded in docs/v03-rc-record.md, not here.",
         "S11.G8 and S12.G8 read the full gate from --gate-log, run at a commit whose distribution "
         "trees equal C's; the log's commit is named in the build log.",
-        "The design lane's verdicts are not judged here; A25, A26, A27 and ADRs 0053/0054 are "
-        "judged at the candidate after the verdicts and the ledger (WO-7, WO-8).",
+        "Step 18 (scripts/v0_3_gate.py --rc C) is not run by this script and is not judged here. "
+        "It reads this manifest and ADRs 0053 and 0054, which are marked Accepted on this "
+        "manifest, so it runs after both (V03 spec §6.1, R-913). V03.A08's R part, A25 (b) and "
+        "A27 (b) are judged from its output, which docs/V03_RC_DECISIONS.md records with its "
+        "SHA-256, as M07.A36's R part was at 0.2.0.",
+        "ADR.0053 and ADR.0054 judge their conditions other than this manifest's own status, and "
+        "pass with the status line Proposed or Accepted; one Accepted while another check does "
+        "not pass fails (R-913). V03.A25 here is its part (a); item 12 in full is step 18's "
+        "(A25 (b)).",
         "Not harvested into v0.3-envelope-1. This manifest is written after C, and classifying its "
         "items would change benchmarks/t08/support_envelope.yaml, a D2.4 path. "
         "scripts/t08_support_matrix.py excludes evidence/S13/, as R-485 excluded M07's manifest "
@@ -1035,15 +1129,14 @@ def build(
     }
 
 
-def main() -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     parser.add_argument("--commit", required=True, help="the release candidate C")
     parser.add_argument("--gate-log", type=Path, default=None, help="scripts/gate.sh's log")
     parser.add_argument("--ci-run", action="append", default=[], help="a CI run id (repeatable)")
-    parser.add_argument("--step18-log", type=Path, default=None, help="step 18's output")
     parser.add_argument("--tmp", type=Path, default=None, help="private pytest temp root")
     parser.add_argument("--out", type=Path, default=None)
-    arguments = parser.parse_args()
+    arguments = parser.parse_args(argv)
 
     commit = t08._git("rev-parse", f"{arguments.commit}^{{commit}}").strip()
     differing = v0_1_gate.tree_differences(commit, "HEAD")
@@ -1073,7 +1166,6 @@ def main() -> int:
         ci,
         judged_at=head,
         gate_log=arguments.gate_log,
-        step18_log=arguments.step18_log,
     )
     commands.extend(_rc_commands(inputs))
     commands.append(
@@ -1082,7 +1174,6 @@ def main() -> int:
             f"--commit {commit}"
             + (f" --gate-log {arguments.gate_log.name}" if arguments.gate_log else "")
             + "".join(f" --ci-run {run_id}" for run_id in arguments.ci_run)
-            + (f" --step18-log {arguments.step18_log.name}" if arguments.step18_log else "")
             + f" (run at {head})",
             "cwd": ".",
             "exit_code": 0,
