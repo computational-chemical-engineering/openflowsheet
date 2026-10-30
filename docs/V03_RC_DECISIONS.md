@@ -224,3 +224,17 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   110 entries (two gzip); `rc_record_problems` → `[]`. F6: step 8's local cell now reads "served D_3 (c_3, R-295)
   `455d01eb…`; strip c_3 → `383b4e2c…`" (`3970c35a`). F3: one bullet in `## v0.3.0` "What it is not" (`41b99a9b`).
   F8: ADRs 0050–0052 Accepted (`fa8d4f0e`; rows in `docs/V03_DECISIONS.md`).
+- **Amendment 3 in the S13 generator** (§10.5 items 2, 4): V03.A34 = `step12/experiments/rc-step12-experiments.json`
+  through T08's `_record` (re-hashed against `records.json`) plus a measure requiring exactly A34's three ids, each
+  `pass`; A12 (c) decided by `a12c_decide` (a pure function of §7.1's facts) after R0, with R1 in a detached worktree
+  of HEAD (version line V_C → V_B, `--keep` under `artifacts/V03.A12c-aligned-keep/`, worktree removed after);
+  the three limitation texts verbatim (checked against the spec text). `s11_identity.py` not edited.
+  Controls (`tools/s13_controls.py.txt`, before the commit): 15 of 15 as expected — A12 (c) passes on a PASS-shaped
+  R0 with everything else broken and on the lines measured at C (R0 `n=54494 … (47 digests differ)`, R1
+  `n=54494 changed=[] (C branch shards [1, 3, 7, 11] exited non-zero)`, the five readers from
+  `~/.cache/v03rc-a12-keep/branch/`); fails on R0 key `A:`, R0 naming a failed shard, R1 with a changed key, R1
+  naming a base shard, n+1, a sixth id, four of five, a two-line numstat, V_C = V_B. A34 passes on the committed
+  record, fails with one check `fail`, with a fourth check, and without its `records.json` entry.
+- DECISION: when R0 passes, §7.1 says (c) passes "whatever else it is given" → the clean-tracked-files fact is
+  recorded but not required in that branch (the generator refuses a dirty tree before it runs anyway).
+  Alternative: require it in both branches. Reversible by: moving one line in `a12c_decide`.

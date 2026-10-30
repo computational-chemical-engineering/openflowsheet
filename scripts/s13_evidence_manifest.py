@@ -1,6 +1,6 @@
 """Generate `evidence/S13/<C>/manifest.json` at V03's release candidate `C` (manifest id S13,
 R-878), by measuring, not by transcribing. V03 release spec
-(`docs/derivations/V03-release-spec.md`) §7 V03.A27: `tested`, listing V03.A01–A26 and A28–A33
+(`docs/derivations/V03-release-spec.md`) §7 V03.A27: `tested`, listing V03.A01–A26 and A28–A34
 with the commands run, and `S11.G8`, `S12.G8`, `S12.G10`; §6: one check per ADR. The pattern is
 `scripts/m07_evidence_manifest.py` (0.2.0's RC manifest), whose T08 readers this script uses, with
 S13a's selections for the D-gated assertions.
@@ -14,11 +14,14 @@ that evidence; its result is the worst of its parts (`fail` over `unsupported` o
    refuses otherwise): each D-gated assertion's nodes in their own pytest process, with S13a's
    selection (`scripts/s13a_evidence_manifest.py` `ITEMS`); a part passes only if its process
    exits 0 with at least one test passed and none skipped. V03.A12 (c) is `scripts/s11_identity.py`
-   (S11's G1), run with its own `TMPDIR` and no shared `--basetemp`.
+   (S11's G1), run with its own `TMPDIR` and no shared `--basetemp`, and decided as spec §7.1
+   (Amendment 3, R-910) states: at a version cut, with the version held equal in an aligned
+   worktree.
 2. **The RC records** of steps 2 and 6–17 under `evidence/S13/<C>/rc/`, each re-hashed against
    `rc/records.json` and read for its own verdict (T08's `_record`: `passed` and every check
    `pass`, `commit` = `C`, `tree_clean`). Step 17c is also read by M07a's measure
-   `mr12_extras_v03` (V03 review F-V3), with `evidence/S13`.
+   `mr12_extras_v03` (V03 review F-V3), with `evidence/S13`. Step 12's G11 keep-and-audit record
+   (V03.A34, R-909) must hold exactly A34's three checks, as step 16's must hold A32's four.
 3. **CI**, read only from the runs named on the command line (`--ci-run ID`): a run counts only if
    its head is `C`. Steps 1, 3, 4 and 5 are CI jobs (§4: the alpha spec §8.2 steps, M07 §8).
 4. **Direct measurements** at the commit the script runs at (`judged_at`): the version files at K3
@@ -108,6 +111,30 @@ A32_CHECKS = (
     "a60.w26.g15_registered_states",
     "a60.w26.w27_v1_refusal",
 )
+#: V03.A34 (Amendment 3, R-909): step 12's G11 keep-and-audit record and its three checks (a)–(c).
+A34_RECORD = "step12/experiments/rc-step12-experiments.json"
+A34_CHECKS = ("r375.g11_rerun", "r375.same_computation", "r375.audit")
+#: V03.A12 (c) at a version cut (spec §7.1, R-910): the base of `scripts/s11_identity.py`, the
+#: version literal, the registered and the aligned runs' last lines, and the five tests that read
+#: the version or hash `src/**` and so fail in the aligned tree.
+A12C_BASE = "8c34ecb0"
+A12C_VERSION = re.compile(r'^__version__ = "([^"]+)"$', re.MULTILINE)
+A12C_R0_FAIL = re.compile(
+    r"^S11-IDENTITY FAIL n=(\d+) changed=\[(C:.+)\] \((\d+) digests differ\)$"
+)
+A12C_R1_FAIL = re.compile(
+    r"^S11-IDENTITY FAIL n=(\d+) changed=\[\] "
+    r"\(C branch shards \[\d+(?:, \d+)*\] exited non-zero\)$"
+)
+A12C_NUMSTAT = "1\t1\tsrc/openflowsheet/__init__.py"
+A12C_FAILED = re.compile(r"^(?:FAILED|ERROR) (\S+)", re.MULTILINE)
+A12C_READERS = (
+    "tests/test_package_imports.py::test_root_package_exposes_version",
+    "tests/test_v02_main_version.py::test_the_envelope_matches_the_version",
+    "tests/test_m06_w27_coverage.py::test_snapshot_of_this_build_is_todays_registry",
+    "tests/test_t07_w5e_application_results.py::test_the_fixtures_are_what_real_responses_emit_today",
+    "tests/test_m07_journey.py::test_a21_the_carry_identity_is_the_determining_files_at_the_anchor_and_j",
+)
 
 
 # ----------------------------------------------------------------------------- the catalogue
@@ -180,6 +207,7 @@ SPECS: tuple[Spec, ...] = (
     *(Spec(f"A{n:02d}", tests=True) for n in range(28, 32)),
     Spec("A32", records=(_STEP[16],), measures=("step16_checks",)),
     Spec("A33", records=(_STEP[14],), measures=("nlp_selection",)),
+    Spec("A34", records=(A34_RECORD,), measures=("step12_experiments",)),
 )
 #: The gates V03.A27 names beside the assertions (build decision, docs/V03_RC_DECISIONS.md).
 GATES: tuple[tuple[str, str, Spec], ...] = (
@@ -300,27 +328,176 @@ def _pytest_part(
     return part, record, [log, junit]
 
 
-def _identity_part(artifacts: Path, tmp: Path) -> tuple[Part, dict[str, Any], list[Path]]:
-    """V03.A12 (c): `scripts/s11_identity.py` (S11's G1). Its shards run in parallel, so it gets a
-    private `TMPDIR` and no `PYTEST_ADDOPTS` (no shared `--basetemp`)."""
-    private = tmp / "s11-identity"
+def a12c_decide(
+    *,
+    clean: bool,
+    v_c: str | None,
+    v_b: str | None,
+    r0: tuple[int, str],
+    r1: tuple[int, str] | None = None,
+    numstat: str | None = None,
+    failed: Sequence[str] = (),
+) -> Part:
+    """V03.A12 (c)'s identity part as spec §7.1 (R-910) decides it, from the measured facts only:
+    the judged checkout's cleanliness, V_C and V_B, R0's and R1's exit codes and last lines, the
+    aligned worktree's numstat and the node ids that failed in its branch shards. Pure."""
+    value: dict[str, Any] = {
+        "a12c_mode": "plain",
+        "V_C": v_c,
+        "V_B": v_b,
+        "r0_last_line": r0[1][:300],
+        "tracked_clean": clean,
+    }
+    if r0[0] == 0 and r0[1].startswith("S11-IDENTITY PASS"):
+        return "pass", value
+    value["a12c_mode"] = "version_aligned"
+    r0_match = A12C_R0_FAIL.match(r0[1])
+    r1_match = A12C_R1_FAIL.match(r1[1]) if r1 is not None else None
+    value.update(
+        {
+            "r1_last_line": None if r1 is None else r1[1][:300],
+            "n": None if r0_match is None else int(r0_match[1]),
+            "n_r1": None if r1_match is None else int(r1_match[1]),
+            "k": None if r0_match is None else int(r0_match[3]),
+            "numstat": numstat,
+            "failed": sorted(failed),
+        }
+    )
+    reasons = [
+        reason
+        for reason, broken in (
+            ("tracked files not clean", not clean),
+            ("V_C or V_B missing, or V_C = V_B", v_c is None or v_b is None or v_c == v_b),
+            ("R0 is not exit 1 with only family-C digests changed", r0[0] != 1 or r0_match is None),
+            ("R1 did not run", r1 is None),
+            (
+                "R1 is not exit 1 with no digest changed and only branch shards failed",
+                r1 is None or r1[0] != 1 or r1_match is None,
+            ),
+            ("the aligned tree changes more than the version line", numstat != A12C_NUMSTAT),
+            (
+                "n(R1) != n(R0)",
+                r0_match is None or r1_match is None or r0_match[1] != r1_match[1],
+            ),
+            (
+                "the aligned tree's failed tests are not exactly the five readers",
+                len(failed) != len(A12C_READERS) or sorted(failed) != sorted(A12C_READERS),
+            ),
+        )
+        if broken
+    ]
+    value["reasons"] = reasons
+    return ("fail" if reasons else "pass"), value
+
+
+def _identity_run(cwd: Path, private: Path, keep: Path | None) -> tuple[int, bytes, str]:
     private.mkdir(parents=True, exist_ok=True)
-    environment = {**os.environ, "PYTHONPATH": f"{ROOT / 'src'}{os.pathsep}{ROOT}"}
+    environment = {**os.environ, "PYTHONPATH": f"{cwd / 'src'}{os.pathsep}{cwd}"}
     environment.pop("PYTEST_ADDOPTS", None)
     environment["TMPDIR"] = str(private)
     command = [sys.executable, "scripts/s11_identity.py"]
-    completed = subprocess.run(command, cwd=ROOT, env=environment, capture_output=True, check=False)
-    log = artifacts / "V03.A12c.log"
-    log.write_bytes(completed.stdout + completed.stderr)
+    if keep is not None:
+        command += ["--keep", str(keep)]
+    completed = subprocess.run(command, cwd=cwd, env=environment, capture_output=True, check=False)
     last = (completed.stdout.decode(errors="replace").strip().splitlines() or [""])[-1]
-    record = {
-        "cmd": "TMPDIR=TMP python scripts/s11_identity.py",
-        "cwd": ".",
-        "exit_code": completed.returncode,
-        "stdout_sha256": hashlib.sha256(completed.stdout).hexdigest(),
-    }
-    ok = completed.returncode == 0 and last.startswith("S11-IDENTITY PASS")
-    return (("pass" if ok else "fail"), {"a12c": last[:300]}), record, [log]
+    return completed.returncode, completed.stdout + completed.stderr, last
+
+
+def _identity_part(artifacts: Path, tmp: Path) -> tuple[Part, list[dict[str, Any]], list[Path]]:
+    """V03.A12 (c): `scripts/s11_identity.py` (S11's G1), decided as spec §7.1 states. Its shards
+    run in parallel, so each run gets a private `TMPDIR` and no `PYTEST_ADDOPTS` (no shared
+    `--basetemp`). R0 runs in the checkout; if it does not pass, R1 runs in a detached worktree
+    of HEAD whose only change is the version line, with `--keep`, and the worktree is removed."""
+    clean = (
+        subprocess.run(["git", "diff", "--quiet", "HEAD"], cwd=ROOT, check=False).returncode == 0
+    )
+
+    def version(text: str | None) -> str | None:
+        found = A12C_VERSION.findall(text or "")
+        return found[0] if len(found) == 1 else None
+
+    v_c = version(_show("HEAD", "src/openflowsheet/__init__.py"))
+    v_b = version(_show(A12C_BASE, "src/openflowsheet/__init__.py"))
+    code, output, last = _identity_run(ROOT, tmp / "s11-identity", None)
+    log = artifacts / "V03.A12c.log"
+    log.write_bytes(output)
+    commands = [
+        {
+            "cmd": "TMPDIR=TMP python scripts/s11_identity.py",
+            "cwd": ".",
+            "exit_code": code,
+            "stdout_sha256": hashlib.sha256(output).hexdigest(),
+        }
+    ]
+    files = [log]
+    if code == 0 and last.startswith("S11-IDENTITY PASS"):
+        return a12c_decide(clean=clean, v_c=v_c, v_b=v_b, r0=(code, last)), commands, files
+    aligned = tmp / "a12c-aligned"
+    keep = artifacts / "V03.A12c-aligned-keep"
+    subprocess.run(
+        ["git", "worktree", "remove", "--force", str(aligned)],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    subprocess.run(["rm", "-rf", str(aligned), str(keep)], check=True)
+    subprocess.run(
+        ["git", "worktree", "add", "--detach", str(aligned), "HEAD"],
+        cwd=ROOT,
+        capture_output=True,
+        check=True,
+    )
+    try:
+        init = aligned / "src" / "openflowsheet" / "__init__.py"
+        text = init.read_text(encoding="utf-8")
+        if v_c is not None and v_b is not None:
+            init.write_text(
+                text.replace(f'__version__ = "{v_c}"\n', f'__version__ = "{v_b}"\n', 1),
+                encoding="utf-8",
+            )
+        numstat = subprocess.run(
+            ["git", "-C", str(aligned), "diff", "--numstat"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        r1_code, r1_output, r1_last = _identity_run(aligned, tmp / "s11-identity-aligned", keep)
+    finally:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", str(aligned)],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+        )
+    aligned_log = artifacts / "V03.A12c-aligned.log"
+    aligned_log.write_bytes(r1_output)
+    shard_logs = sorted((keep / "branch").glob("shard-*.log"))
+    failed = [
+        node
+        for shard in shard_logs
+        for node in A12C_FAILED.findall(shard.read_text(errors="replace"))
+    ]
+    commands.append(
+        {
+            "cmd": "git worktree add --detach W HEAD; "
+            f"W/src/openflowsheet/__init__.py: {v_c} -> {v_b}; "
+            "cd W; PYTHONPATH=W/src:W TMPDIR=TMP2 python scripts/s11_identity.py --keep K",
+            "cwd": "W",
+            "exit_code": r1_code,
+            "stdout_sha256": hashlib.sha256(r1_output).hexdigest(),
+        }
+    )
+    files += [aligned_log, *shard_logs]
+    part = a12c_decide(
+        clean=clean,
+        v_c=v_c,
+        v_b=v_b,
+        r0=(code, last),
+        r1=(r1_code, r1_last),
+        numstat=numstat,
+        failed=failed,
+    )
+    return part, commands, files
 
 
 def run_tests(
@@ -339,10 +516,10 @@ def run_tests(
         parts[assertion] = part
         commands.append(command)
         files.extend(written)
-    (result, said), command, written = _identity_part(artifacts, tmp)
+    (result, said), identity_commands, written = _identity_part(artifacts, tmp)
     a12_result, a12_value = parts["A12"]
-    parts["A12"] = (t08._result([a12_result, result]), {**a12_value, **said})
-    commands.append(command)
+    parts["A12"] = (t08._result([a12_result, result]), {**a12_value, "a12c": said})
+    commands.extend(identity_commands)
     files.extend(written)
     return parts, commands, files
 
@@ -523,6 +700,24 @@ def _m_step16_checks(inputs: Inputs) -> Part:
     return ("pass" if sorted(found) == sorted(A32_CHECKS) else "fail"), value
 
 
+def _m_step12_experiments(inputs: Inputs) -> Part:
+    """V03.A34 (Amendment 3, R-909): step 12's G11 keep-and-audit record holds exactly the three
+    checks (a)–(c), each `pass` (the record itself is re-hashed and read by T08's `_record`)."""
+    record = json.loads((inputs.rc_dir / A34_RECORD).read_text(encoding="utf-8"))
+    found = {check["id"]: check for check in record["checks"]}
+    value = {
+        "checks": sorted(found),
+        "rerun_exit_code": found.get(A34_CHECKS[0], {}).get("exit_code"),
+        "point_runs": found.get(A34_CHECKS[1], {}).get("point_runs"),
+        "differences": found.get(A34_CHECKS[1], {}).get("differences"),
+        "audit_line": found.get(A34_CHECKS[2], {}).get("last_line"),
+    }
+    ok = sorted(found) == sorted(A34_CHECKS) and all(
+        check.get("result") == "pass" for check in found.values()
+    )
+    return ("pass" if ok else "fail"), value
+
+
 def _m_nlp_selection(inputs: Inputs) -> Part:
     """V03.A33 (R-907): step 14's record carries the `mark.nlp` modules, and `-m nlp` collects
     the same 190 node ids over them as over `tests/`."""
@@ -545,6 +740,7 @@ def _m_nlp_selection(inputs: Inputs) -> Part:
 MEASURES: dict[str, Callable[[Inputs], Part]] = {
     "step16_checks": _m_step16_checks,
     "nlp_selection": _m_nlp_selection,
+    "step12_experiments": _m_step12_experiments,
     "versions": _m_versions,
     "changelog": _m_changelog,
     "rc_record": _m_rc_record,
@@ -727,6 +923,19 @@ def limitations(entries: Sequence[Mapping[str, Any]]) -> list[str]:
         "trees equal C's; the log's commit is named in the build log.",
         "The design lane's verdicts are not judged here; A25, A26, A27 and ADRs 0053/0054 are "
         "judged at the candidate after the verdicts and the ledger (WO-7, WO-8).",
+        "Not harvested into v0.3-envelope-1. This manifest is written after C, and classifying its "
+        "items would change benchmarks/t08/support_envelope.yaml, a D2.4 path. "
+        "scripts/t08_support_matrix.py excludes evidence/S13/, as R-485 excluded M07's manifest "
+        "from 0.2.0's harvest; the next envelope's package harvests it (R-911).",
+        "V03.A12 (c) is judged version-aligned (V03 spec §7.1, R-910). The registered identity run "
+        "differs from its base only in family-C digests, through the version string; with the "
+        "version held equal, no digest differs. This shows that no binding outcome changed. It "
+        "does not make the version string inert: the experiment fingerprint carries it by design "
+        "(R-458).",
+        'L-S11-1, L-S11-2, L-S11-3 and L-E01-1, and W26\'s sentence "G14 not judged at 0.3.0", '
+        "travel in the prose of docs/reviews/V03-verdicts.md and in the envelope, not in the "
+        "verdict table's limitation column, whose grammar (v0_2_gate.LIMITATION) cannot carry them "
+        "(R-912).",
     ]
     for entry in entries:
         if entry["result"] != "pass":
