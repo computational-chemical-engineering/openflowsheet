@@ -254,3 +254,7 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
   44 passed with the exclusion; with `HARVEST_EXCLUDED = ()` 3 failed (`test_c4…`, `…harvest_size…`, `test_a21…`);
   `t08_support_matrix.py --check` 0 problems with the exclusion. Manifest-scanning tests + `test_v03_v0_3_gate.py`:
   766 passed, 1 skipped (`test_t08_w1_ledger.py:87`, "not in A02", registered).
+
+- DECISION (orchestrator, 2026-10-30): WO-7b's A25 choice (4ac5b66c, A25 `unsupported` while ADRs 0053/0054 are the only
+  problems) → ratified. Alternative: `fail` until WO-8 accepts them. Reversible by: revert 4ac5b66c, regenerate S13's
+  manifest. W21 re-judgement started (brief `V03-w21-rejudge-brief.md`, scratchpad).
