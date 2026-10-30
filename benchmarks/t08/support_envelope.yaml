@@ -7951,3 +7951,128 @@ harvest:
   class: P
   to: []
   note: 'G10 (A48) runs at the release-candidate cut; unsupported here, not a pass'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[0]
+  sha256: 7a877d07229027d0e8e4455e76275ae394cc1462ea635abb84be584cf640441e
+  class: P
+  to: []
+  note: 'process note: filed as S12b, E01b''s alias (E01''s was S12; ESC-I2 ruling, R-565), the frozen schema''s id pattern'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[1]
+  sha256: 744cdad49817760a4965d1d298ac97702375c9c265c04f9dfea2411e9d95f117
+  class: P
+  to: []
+  note: 'requirements empty: no D/A id assigned to E01, no ledger entry'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[2]
+  sha256: 8bbec5286e3b69b89a0b2ca8f344ccbbf9c8763e68468965cf5c2f7ad30b0a8a
+  class: P
+  to: []
+  note: 'scope note: A33 judged over feasible starts (ESC-I1 ruling, design §6.1 erratum); the infeasible starts recorded'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[3]
+  sha256: 4699fbf9212f0322684fe365699a7db9e75c264c25cdcc9f166365e719bfe83e
+  class: P
+  to: []
+  note: 'scope note: A1 judged against the S11 head 8d2ee175 until S11 merges into main'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[4]
+  sha256: b0e4e915bffa089e34709a080caae1e3d3321a3b66c4bde681590a4453b0ee22
+  class: P
+  to: []
+  note: G8 runs once before merge (full gate, CI on both architectures), not by the generator; unsupported here
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[5]
+  sha256: 4386101703fa3c2dd9864e5e8d4f91fcf865ec35b7c69c306889350a957010ab
+  class: P
+  to: []
+  note: 'release-candidate item: G10/A48 runs at the RC cut; five SSLW primary ranges unverified until C7 (design note §10.10.8, Frank''s approval Q-B7); unsupported here, not a pass'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[6]
+  sha256: c8b4093954401cda82351cae31b1099b68dba05a99840228fb451a84101f599d
+  class: P
+  to: []
+  note: 'process note: the E01 review (docs/reviews/E01-review.md) and its fixes; R-870 confirmed by Frank; review fields pending, no reviewed status claimed'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[7]
+  sha256: 4c492d513929ac9a08cc69957edcc99a0f5b0459c7b0ecc33ef6f347ce357038
+  class: P
+  to: []
+  note: 'process note: E01b changes numerics (design note §10, §10.10); reviewer pass pending, C7 not applied, §10.10.9 questions on their defaults; A49 is transcription verification'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[8]
+  sha256: ffccbe0867f406797a9b8c3c74b0b42c95b3f9831e4b0e8fd89d12b26355e437
+  class: P
+  to: []
+  note: 'scope note: review items not applied (lower-priority domain entries, N2 deferred by the review, N3 data provenance)'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[9]
+  sha256: 9156f642b4696ef8fa4b7812a6c25c2286be03f5ff59435cf9aa2655664836cb
+  class: P
+  to: []
+  note: 'environment note: lca run in a scratch venv outside requirements.lock; nlp run in the audited env with its inventory re-takes'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[10]
+  sha256: 8679ea3ab693c6ff8a669a8c7d666732324f105b8d786a6acda73a832337e881
+  class: P
+  to: []
+  note: 'method note: G1''s family C ran the whole default suite; not the full gate'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[11]
+  sha256: f2e73024aa970309f2427b6276a11eb39b4e569887a98a449e444f4a9dc15214
+  class: P
+  to: []
+  note: numerical verification against pinned sources, not empirical validation; test-background-v1 synthetic
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[12]
+  sha256: 32ffe346f4528c4d29f81b4c57c37f733d287d695aa022fdab8e263cd6d90ae6
+  class: P
+  to: []
+  note: 'scope note: R-871 regime over-restriction (sound, not a false certificate); envelope row deferred to E01''s release specification'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[13]
+  sha256: 30ca1dcea14517e810653c1c4de5205343807dd0af941037f2ad594eecc26040
+  class: P
+  to: []
+  note: 'method note: G6 wall times are JUnit times'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: limitations[14]
+  sha256: 08f1f53b4018ef8d39839b8c7199fdbd8139f2b984995ef5030e0d0c731c8310
+  class: P
+  to: []
+  note: 'process note: this harvest follows the manifest''s generation'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: checks[47]
+  check_id: S12b.A48
+  sha256: 3001ed22650c5fd6a70268a6e22416a14591ca10e788d427ac59d8fe6018bf1e
+  class: P
+  to: []
+  note: 'release-candidate item (G10, §9.6): not run (RC item) at E01''s merge; unsupported here, not a pass'
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: checks[72]
+  check_id: S12b.G8
+  sha256: 13af24dba3327130c059f701f8ff0bb3f0ea87aeb861fe80e79940b00b1a5cff
+  class: P
+  to: []
+  note: G8 runs once before merge (full gate, CI on both architectures), not by the generator; unsupported here
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: checks[73]
+  check_id: S12b.gate
+  sha256: 6b0496642011c431da1f33114de2acb6e95d5d71b751b0e5329df47d77a53615
+  class: P
+  to: []
+  note: scripts/gate.sh runs once before merge, not by the generator; unsupported here
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: checks[74]
+  check_id: S12b.ci
+  sha256: 2a6339913691f528f77630e230c87dfd01bed506a9a969f379d1f5341abfd195
+  class: P
+  to: []
+  note: CI on both architectures is checked before merge, not by the generator; unsupported here
+- manifest: evidence/S12b/1fd295467af5263654d160dc39657735a6ff69dc/manifest.json
+  item: checks[75]
+  check_id: S12b.G10
+  sha256: d11df5c356c7c8f5cc609d626b598a365480a750f12577b5805fe94f6e218256
+  class: P
+  to: []
+  note: G10 (A48) runs at the release-candidate cut; unsupported here, not a pass

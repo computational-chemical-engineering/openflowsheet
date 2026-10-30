@@ -439,6 +439,9 @@ class _Planner:
                 for name, r in sorted(e.ranges.items())
             },
         }
+        if e.amended:
+            # §10.4.8: each amended number the resolved entry carries, with its effective value.
+            record.source["amended"] = {path: dict(a) for path, a in sorted(e.amended.items())}
         if e.ratio != 1.0:
             index = entry_doc["index_basis"]
             record.source["index_basis"] = (

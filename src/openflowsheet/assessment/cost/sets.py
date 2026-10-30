@@ -6,6 +6,14 @@ that has:
 - an unknown `schema` or entry `form`;
 - a number taken from the source without its `source_line` (coefficients, choice values, defaults,
   index values), or an option default that is not one of its choices;
+- an `amended` number (§10.4.1) without `ruling` or `citation`, with neither `replaces` nor
+  `index_basis`, with `replaces == value`, with `scale` and `index_basis` not both present, or with
+  an unknown `scale`, or an `amended` entry `index_basis.value` carrying `index_basis` or `scale`
+  (§10.10.5.2: a basis has no basis of its own);
+- an `sslw-compressor-v1` entry when the set's `machine.drive` entry is missing or is not of form
+  `sslw-motor-v1` (§10.4.4: the compressor is sized on the motor's consumed power), or a
+  `consumed_power_hp` range with `max < 3·min`;
+- a top-level `source.checked_against` that is not an object with a `citation` and a `scope`;
 - a range without a `source`, a `pinned` source without its `source_line`, or a `primary` source
   without `citation` and a boolean `verified`;
 - a `size` range with `max < 2·min` (§4.3.2), an `input` range whose `below` is not `floor` or
@@ -16,7 +24,11 @@ that has:
 `resolve` applies an item's options to an entry: an option the entry does not have, a choice
 outside an option's `choices`, or a combination the source refuses (the pump's material against
 its type) is `NO_CORRELATION(<item>)` with the reason (§9.2.3). Every option the item leaves out
-takes the IDAES default and is listed in `defaulted`.
+takes the IDAES default and is listed in `defaulted`. A form sees only effective values: an
+`amended` number printed at its own `index_basis` is converted to the entry's basis (§10.4.1), and
+`ResolvedEntry.amended` lists every amended number the resolved entry carries (an amended entry
+basis under `index_basis.value`, §10.10.5.2), for the report.
+A compressor's resolved entry carries the set's resolved `machine.drive` entry (§10.4.4).
 
 Shipped sets live in `openflowsheet/_data/assessment/cost/<set_id>.json`.
 """
@@ -39,6 +51,7 @@ __all__ = [
     "CostSet",
     "CostSetError",
     "NoCorrelation",
+    "effective_value",
     "entry_for",
     "load_set",
     "parse_set",
@@ -50,6 +63,10 @@ SCHEMA: Final = "cost-set-v1"
 #: The SSLW forms plus the generic layout (§4.5.2).
 KNOWN_FORMS: Final = (*FORMS, "generic-v1")
 _SOURCE_KINDS: Final = ("pinned", "primary")
+#: §10.4.1: how an amended number printed at its own CEPCI basis is converted.
+_SCALES: Final = ("log", "linear")
+#: §10.4.4: the loader's bound on a consumed-power range, so that the N rule stays honest.
+_CONSUMED_RATIO: Final = 3.0
 
 
 class CostSetError(ValueError):
@@ -108,11 +125,55 @@ def _is_number(value: Any) -> TypeGuard[int | float]:
 
 
 def _check_number(node: Any, where: str, reasons: list[str]) -> None:
-    """A number from the source: `{value, source_line}` (§9.2.3 "Numbers")."""
+    """A number from the source: `{value, source_line}` (§9.2.3 "Numbers"), optionally `amended`
+    (§10.4.1)."""
     if not isinstance(node, Mapping) or not _is_number(node.get("value")):
         reasons.append(f"{where}: not a number object {{value, source_line}}")
-    elif not (isinstance(node.get("source_line"), str) and node["source_line"]):
+        return
+    if not (isinstance(node.get("source_line"), str) and node["source_line"]):
         reasons.append(f"{where}: missing source_line")
+    if "amended" in node:
+        _check_amended(node["amended"], node["value"], f"{where}.amended", reasons)
+
+
+def _check_amended(amended: Any, value: Any, where: str, reasons: list[str]) -> None:
+    """§10.4.1's five refusals of an `amended` object."""
+    if not isinstance(amended, Mapping):
+        reasons.append(f"{where}: must be an object")
+        return
+    for key in ("ruling", "citation"):
+        if not (isinstance(amended.get(key), str) and amended[key]):
+            reasons.append(f"{where}: missing {key}")
+    if "replaces" not in amended and "index_basis" not in amended:
+        reasons.append(f"{where}: neither replaces nor index_basis")
+    if "replaces" in amended:
+        if not _is_number(amended["replaces"]):
+            reasons.append(f"{where}: replaces is not a number")
+        elif amended["replaces"] == value:
+            reasons.append(f"{where}: replaces {amended['replaces']!r} equals value")
+    if ("scale" in amended) != ("index_basis" in amended):
+        reasons.append(f"{where}: scale and index_basis go together")
+    if "index_basis" in amended and not (
+        _is_number(amended["index_basis"]) and amended["index_basis"] > 0
+    ):
+        reasons.append(f"{where}: index_basis is not a positive number")
+    if "scale" in amended and amended["scale"] not in _SCALES:
+        reasons.append(f"{where}: scale {amended['scale']!r} is not one of {list(_SCALES)}")
+
+
+def effective_value(node: Mapping[str, Any], basis: float) -> float:
+    """§10.4.1: the value a form sees. An amended number printed at its own `index_basis` is
+    converted to `basis` (the entry's index, else the set's) by one binary64 ratio: `value +
+    log(ratio)` on a `log` scale, `value·ratio` on a `linear` one; any other number is its
+    `value`."""
+    value = float(node["value"])
+    amended = node.get("amended")
+    if not isinstance(amended, Mapping) or "index_basis" not in amended:
+        return value
+    ratio = basis / float(amended["index_basis"])
+    if amended["scale"] == "log":
+        return value + math.log(ratio)
+    return value * ratio
 
 
 def _check_numbers(node: Any, where: str, reasons: list[str]) -> None:
@@ -199,6 +260,8 @@ def _check_ranges(ranges: Any, where: str, reasons: list[str]) -> None:
                 reasons.append(f"{at}: size range needs positive numbers min and max")
             elif high < 2.0 * low:
                 reasons.append(f"{at}: size range max {high!r} < 2·min {low!r} (§4.3.2)")
+            elif name == "consumed_power_hp" and high < _CONSUMED_RATIO * low:
+                reasons.append(f"{at}: consumed-power range max {high!r} < 3·min {low!r} (§10.4.4)")
             if "below" in r or "above" in r:
                 reasons.append(f"{at}: a size range declares no below/above")
         elif role == "input":
@@ -306,6 +369,13 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
             if _is_number(dict(basis["index"].get("value") or {}).get("value"))
             else 1.0
         )
+    source = document.get("source")
+    if isinstance(source, Mapping) and "checked_against" in source:
+        checked = source["checked_against"]
+        if not isinstance(checked, Mapping) or not all(
+            isinstance(checked.get(k), str) and checked[k] for k in ("citation", "scope")
+        ):
+            reasons.append("source.checked_against needs a citation and a scope")
     entries: list[CostEntry] = []
     seen: set[str] = set()
     for position, entry in enumerate(document.get("entries", [])):
@@ -326,13 +396,25 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
             for name, theta in dict(entry.get("continuous", {})).items():
                 _check_number(theta.get("default"), f"{at}.continuous.{name}.default", reasons)
             if "index_basis" in entry:
-                _check_number(entry["index_basis"].get("value"), f"{at}.index_basis.value", reasons)
+                where = f"{at}.index_basis.value"
+                value = entry["index_basis"].get("value")
+                _check_number(value, where, reasons)
+                amended = value.get("amended") if isinstance(value, Mapping) else None
+                if isinstance(amended, Mapping) and {"index_basis", "scale"} & set(amended):
+                    reasons.append(f"{where}.amended: a basis carries no index_basis or scale")
             _check_ranges(entry.get("ranges", {}), f"{at}.ranges", reasons)
         entries.append(
             CostEntry(
                 at, str(form), tuple(entry.get("family", ())), entry.get("orientation"), entry
             )
         )
+    if any(e.form == "sslw-compressor-v1" for e in entries):
+        drive = next((e for e in entries if "machine.drive" in e.family), None)
+        if drive is None or drive.form != "sslw-motor-v1":
+            reasons.append(
+                "an sslw-compressor-v1 entry needs the set's machine.drive entry of form "
+                "sslw-motor-v1 (§10.4.4)"
+            )
     if not reasons:
         for entry in document.get("entries", []):
             if entry["form"] != "generic-v1":
@@ -361,21 +443,54 @@ def _check_generic(entry: Mapping[str, Any], at: str, reasons: list[str]) -> Non
             reasons.append(f"{at}.factors[{index}]: missing source_line")
 
 
-def _plain(node: Any) -> Any:
-    """A coefficient tree with its number objects replaced by floats (lists become tuples)."""
+def _plain(node: Any, basis: float | None = None) -> Any:
+    """A coefficient tree with its number objects replaced by their effective values at `basis`
+    (§10.4.1; lists become tuples). Without a `basis`, a number printed at its own index basis is
+    an error."""
     if isinstance(node, list):
-        return tuple(_plain(item) for item in node)
+        return tuple(_plain(item, basis) for item in node)
     if isinstance(node, Mapping) and "value" in node:
-        return float(node["value"])
+        if basis is None:
+            if "index_basis" in dict(node.get("amended") or {}):
+                raise ValueError("an amended number at its own index basis needs the entry basis")
+            return float(node["value"])
+        return effective_value(node, basis)
     if isinstance(node, Mapping):
-        return MappingProxyType({k: _plain(v) for k, v in node.items()})
+        return MappingProxyType({k: _plain(v, basis) for k, v in node.items()})
     return node
 
 
+def _amendments(node: Any, path: str, basis: float, out: dict[str, Mapping[str, Any]]) -> None:
+    """§10.4.8: every amended number under `node`, by its set path, with its effective value."""
+    if isinstance(node, list):
+        for index, item in enumerate(node):
+            _amendments(item, f"{path}[{index}]", basis, out)
+    elif isinstance(node, Mapping) and "value" in node:
+        amended = node.get("amended")
+        if isinstance(amended, Mapping):
+            record: dict[str, Any] = {"value": float(node["value"])}
+            record["effective_value"] = effective_value(node, basis)
+            for key in ("replaces", "index_basis", "scale"):
+                if key in amended:
+                    record[key] = amended[key]
+            record["citation"] = amended["citation"]
+            record["ruling"] = amended["ruling"]
+            out[path] = MappingProxyType(record)
+    elif isinstance(node, Mapping):
+        for key, item in node.items():
+            _amendments(item, f"{path}.{key}", basis, out)
+
+
 def _resolve(
-    set_id: str, entry: Mapping[str, Any], options: Mapping[str, str], set_index: float
+    set_id: str,
+    entry: Mapping[str, Any],
+    options: Mapping[str, str],
+    set_index: float,
+    drive: ResolvedEntry | None = None,
 ) -> ResolvedEntry | NoCorrelation:
     entry_id = str(entry["entry_id"])
+    index = entry.get("index_basis")
+    basis = set_index if index is None else _number(index["value"])
     declared = dict(entry.get("options", {}))
     unknown = sorted(set(options) - set(declared))
     if unknown:
@@ -385,6 +500,7 @@ def _resolve(
     numbers: dict[str, Any] = {}
     sources: dict[str, str] = {}
     ranges: dict[str, Range] = {}
+    amended: dict[str, Mapping[str, Any]] = {}
 
     def take(prefix: str, body: Mapping[str, Any]) -> NoCorrelation | None:
         for key, value in body.items():
@@ -394,7 +510,8 @@ def _resolve(
                 continue
             if key in numbers:
                 return NoCorrelation(entry_id, f"{prefix}.{key} repeats a coefficient")
-            numbers[key] = _plain(value)
+            numbers[key] = _plain(value, basis)
+            _amendments(value, f"{prefix}.{key}", basis, amended)
             if isinstance(value, Mapping) and "source_line" in value:
                 sources[key] = value["source_line"]
         return None
@@ -413,9 +530,12 @@ def _resolve(
             key = str(option["default"])
             defaulted.append(name)
         if "choices_by" in option:
-            table = dict(option["choices_by"]).get(chosen.get(option["depends_on"], ""), {})
+            by = chosen.get(option["depends_on"], "")
+            table = dict(option["choices_by"]).get(by, {})
+            prefix = f"options.{name}.choices_by.{by}.{key}"
         else:
             table = dict(option["choices"])
+            prefix = f"options.{name}.choices.{key}"
         if key not in table:
             return NoCorrelation(
                 entry_id,
@@ -427,19 +547,21 @@ def _resolve(
                 ),
             )
         chosen[name] = key
-        refused = take(f"{name}.{key}", table[key])
+        refused = take(prefix, table[key])
         if refused is not None:
             return refused
     refused = take("coefficients", dict(entry.get("coefficients", {})))
     if refused is not None:
         return refused
+    if index is not None:
+        # §10.10.5.2: an amended entry basis is listed with the amended numbers it scales.
+        _amendments(index["value"], "index_basis.value", basis, amended)
     for name, r in dict(entry.get("ranges", {})).items():
         ranges.setdefault(name, _range(name, r))
     continuous = {
         name: float(theta["default"]["value"])
         for name, theta in dict(entry.get("continuous", {})).items()
     }
-    index = entry.get("index_basis")
     ratio = 1.0 if index is None else set_index / _number(index["value"])
     return ResolvedEntry(
         set_id=set_id,
@@ -453,17 +575,31 @@ def _resolve(
         continuous=continuous,
         ratio=ratio,
         includes_drive=bool(entry.get("includes_drive", False)),
+        amended=amended,
+        drive=drive,
     )
 
 
 def resolve(
     cost_set: CostSet, entry_id: str, options: Mapping[str, str] | None = None
 ) -> ResolvedEntry | NoCorrelation:
-    """Entry `entry_id` with the item's `options` applied (§9.2.3 "Options")."""
+    """Entry `entry_id` with the item's `options` applied (§9.2.3 "Options"). A compressor carries
+    the set's `machine.drive` entry, resolved on its defaults (§10.4.4)."""
     entry = cost_set.entry(entry_id)
     if entry.form == "generic-v1":
         raise NotImplementedError("generic-v1 entries are resolved by the cost contributor (WO-A4)")
-    return _resolve(cost_set.set_id, entry.document, dict(options or {}), cost_set.index_value)
+    drive: ResolvedEntry | None = None
+    if entry.form == "sslw-compressor-v1":
+        motor = entry_for(cost_set, "machine.drive")
+        if motor is None or motor.form != "sslw-motor-v1":
+            raise CostSetError(cost_set.set_id, ["a compressor needs an sslw-motor-v1 drive"])
+        found = _resolve(cost_set.set_id, motor.document, {}, cost_set.index_value)
+        if isinstance(found, NoCorrelation):
+            return NoCorrelation(entry_id, f"its drive entry: {found.detail}")
+        drive = found
+    return _resolve(
+        cost_set.set_id, entry.document, dict(options or {}), cost_set.index_value, drive
+    )
 
 
 def entry_for(cost_set: CostSet, family: str, orientation: str | None = None) -> CostEntry | None:
