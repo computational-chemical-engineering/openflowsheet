@@ -77,7 +77,7 @@ ROWS: list[tuple[int, str, str, str, list[str], str | None]] = [
      f"ci/rc-steps-{X}/corpus-{X}.json"),
     (7, "V03.A20 (T08.A47, A48)", "CI aarch64", "the same", [f"ci/rc-steps-{A}/corpus-{A}.json"],
      f"ci/rc-steps-{A}/corpus-{A}.json"),
-    (8, "V03.A20, A23 (§3.3 chain + G16-b)", L, "c_3 (R-295) `455d01eb…`; served `383b4e2c…`; strip c_2 → "
+    (8, "V03.A20, A23 (§3.3 chain + G16-b)", L, "served D_3 (c_3, R-295) `455d01eb…`; strip c_3 → `383b4e2c…`; strip c_2 → "
      "`6c4375b4…`; strip c_1 → `171dd768…`; with `v17-c2`'s texts `6d13e13d…`; G16-b 40 of 40 clean",
      ["surface/rc-alpha-surface.json"], "surface/rc-alpha-surface.json"),
     (8, "V03.A20, A23", "CI x86-64", "the same digests; 40 of 40 clean",
