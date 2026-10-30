@@ -1,6 +1,6 @@
 """Generate `evidence/S13/<C>/manifest.json` at V03's release candidate `C` (manifest id S13,
 R-878), by measuring, not by transcribing. V03 release spec
-(`docs/derivations/V03-release-spec.md`) §7 V03.A27: `tested`, listing V03.A01–A26 and A28–A31
+(`docs/derivations/V03-release-spec.md`) §7 V03.A27: `tested`, listing V03.A01–A26 and A28–A33
 with the commands run, and `S11.G8`, `S12.G8`, `S12.G10`; §6: one check per ADR. The pattern is
 `scripts/m07_evidence_manifest.py` (0.2.0's RC manifest), whose T08 readers this script uses, with
 S13a's selections for the D-gated assertions.
@@ -101,6 +101,13 @@ ENVELOPE = (
 #: R-796: the CI jobs whose THM-09/4 lines are copied into `docs/t07-measurements.md`.
 THM09_JOBS = ("check (ubuntu-latest)", "check (ubuntu-24.04-arm)", "default-install")
 STEP18_YES = "v0.3.0 tag may be proposed: YES"
+#: V03.A32 (Amendment 2, R-903…R-908): step 16's record's four checks (a)–(d).
+A32_CHECKS = (
+    "a60.w26.m06_tests",
+    "a60.w26.web_unit_tests",
+    "a60.w26.g15_registered_states",
+    "a60.w26.w27_v1_refusal",
+)
 
 
 # ----------------------------------------------------------------------------- the catalogue
@@ -171,6 +178,8 @@ SPECS: tuple[Spec, ...] = (
     Spec("A26", measures=("verdict_document",)),
     Spec("A27", measures=("self", "step18")),
     *(Spec(f"A{n:02d}", tests=True) for n in range(28, 32)),
+    Spec("A32", records=(_STEP[16],), measures=("step16_checks",)),
+    Spec("A33", records=(_STEP[14],), measures=("nlp_selection",)),
 )
 #: The gates V03.A27 names beside the assertions (build decision, docs/V03_RC_DECISIONS.md).
 GATES: tuple[tuple[str, str, Spec], ...] = (
@@ -495,7 +504,47 @@ def _m_gate(inputs: Inputs) -> Part:
     return ("pass" if ok else "fail"), value
 
 
+def _record_checks(inputs: Inputs, step: int) -> dict[str, Mapping[str, Any]]:
+    record = json.loads((inputs.rc_dir / _STEP[step]).read_text(encoding="utf-8"))
+    return {check["id"]: check for check in record["checks"]}
+
+
+def _m_step16_checks(inputs: Inputs) -> Part:
+    """V03.A32 (Amendment 2): step 16's record holds exactly the four checks (a)–(d)."""
+    found = _record_checks(inputs, 16)
+    value = {
+        "checks": sorted(found),
+        "g15_nodes": len(found.get(A32_CHECKS[2], {}).get("nodes", {})),
+        "w27_v1_refusal": {
+            key: found.get(A32_CHECKS[3], {}).get(key)
+            for key in ("exit_code", "last_line", "summary_written")
+        },
+    }
+    return ("pass" if sorted(found) == sorted(A32_CHECKS) else "fail"), value
+
+
+def _m_nlp_selection(inputs: Inputs) -> Part:
+    """V03.A33 (R-907): step 14's record carries the `mark.nlp` modules, and `-m nlp` collects
+    the same 190 node ids over them as over `tests/`."""
+    found = _record_checks(inputs, 14)
+    selection = found.get("a60.w24.nlp_selection", {})
+    value = {
+        key: selection.get(key)
+        for key in ("modules", "selected_count", "all_count", "equal", "selected_exit_code")
+    }
+    ok = (
+        found.get("a60.w24.nlp_tier_and_inventory", {}).get("result") == "pass"
+        and selection.get("result") == "pass"
+        and bool(selection.get("modules"))
+        and selection.get("selected_count") == selection.get("all_count") == 190
+        and selection.get("equal") is True
+    )
+    return ("pass" if ok else "fail"), value
+
+
 MEASURES: dict[str, Callable[[Inputs], Part]] = {
+    "step16_checks": _m_step16_checks,
+    "nlp_selection": _m_nlp_selection,
     "versions": _m_versions,
     "changelog": _m_changelog,
     "rc_record": _m_rc_record,

@@ -158,3 +158,16 @@ R0 INDIFFERENT, R1 DECIDED 653.15 K (cold 36, 1554 s), R2 SURROGATE_NOT_PROMOTAB
 - DECISION: before WO-7/WO-8, V03.A25 (when the verdict document does not exist yet) and V03.A27 (while step 18 has
   not run) are `unsupported` with `state: pending`, not `fail` (S13a's pattern; the handoff's "A25–A27 unsupported
   until WO-7/8"). `unsupported` is not a pass, so the status stays `implemented`. Reversible by: two `if`s.
+- **Amendment 2 (`8e0cb1a1`, R-903…R-908) in the runner and the generator.** C stays `a3e508e3`. Out of tree
+  (`~/.cache/of-rc-v03-a3e508e/tools/`, edited while the run was at step 12, before step 14 started; `run_local.sh`
+  untouched): `run_step14.sh` writes `step14/nlp-modules.txt` (the `grep -l 'mark.nlp'` list) and adds
+  `step14-nlp-collect-selected` / `step14-nlp-collect-all` (`--collect-only -q -m nlp`, modules vs `tests/`);
+  `m07_rc_external.py` step 14 adds `a60.w24.nlp_selection` (A33), step 16 is `W26 (V03 spec §3.5, V03.A32)` with
+  `a60.w26.g15_registered_states` (the 25 nodes, `skipped_total`) and `a60.w26.w27_v1_refusal` (exit 1, the exact
+  W27-R63 last line, no `<C7>/summary.json`) in place of `w27_dry_run`. Generator: A32 (step 16's record, exactly the
+  four checks), A33 (step 14's record, modules carried, 190 equal sets).
+- **Controls (§4 of the ruling), on `4fa15efa`'s inputs** (its step-16 junit and dry-run log, `nlp-files.txt` /
+  `nlp-all.txt`): unmodified, (c), (d) and `nlp_selection` pass (190 = 190, equal). (c) fails with a `<skipped>` child
+  on `test_harness_states[W27-S04]`, and with `test_candidate_states[W27-S11]` deleted (reported `missing`); (d) fails
+  on the `unsupported(route enumeration) for openflowsheet 0.3.0` last line, and on exit 0; `nlp_selection` fails with
+  one id removed from either list, and on two empty lists.
