@@ -52,7 +52,25 @@ class AssessmentSpec:
 
 
 def load_assessment(source: Mapping[str, Any] | str | Path) -> AssessmentSpec:
-    """An `AssessmentSpec` from a document or a JSON file; `AssessmentDocumentError` otherwise."""
+    """An `AssessmentSpec` from a document or a JSON file; `AssessmentDocumentError` otherwise.
+
+    Parameters
+    ----------
+    source
+        The assessment document (`schemas/assessment.schema.json`), or the path of a JSON file
+        holding it. A mapping is deep-copied; the caller's object is never kept.
+
+    Returns
+    -------
+    AssessmentSpec
+        The validated document and its identity, `assessment_sha256` (the canonical hash).
+
+    Raises
+    ------
+    AssessmentDocumentError
+        When the document has no canonical JSON form or does not validate against the schema;
+        `errors` lists every reason.
+    """
     if isinstance(source, str | Path):
         document: Any = json.loads(Path(source).read_text(encoding="utf-8"))
     else:

@@ -103,7 +103,25 @@ def _basis(provider: PropertyProvider, components: tuple[str, ...]) -> Component
 
 
 def view_of(flowsheet: RevisionFlowsheet | Syn001Flowsheet) -> FlowsheetView:
-    """The assessment's view of a bound flowsheet."""
+    """The assessment's view of a bound flowsheet.
+
+    Parameters
+    ----------
+    flowsheet
+        A bound revision flowsheet (`bind_revision_flowsheet(document).flowsheet`) or the
+        SYN-001 flowsheet.
+
+    Returns
+    -------
+    FlowsheetView
+        The components, the property provider, the units with their ports and connections, and
+        the molar masses: everything the contributors read, and nothing they could change.
+
+    Raises
+    ------
+    TypeError
+        For any other kind of flowsheet.
+    """
     if isinstance(flowsheet, RevisionFlowsheet):
         wiring: Mapping[str, Wiring] = flowsheet.wiring
     elif isinstance(flowsheet, Syn001Flowsheet):

@@ -8065,3 +8065,75 @@ harvest:
   class: P
   to: []
   note: G10 (A48) runs at the release-candidate cut; unsupported here, not a pass
+- manifest: evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/manifest.json
+  item: limitations[0]
+  sha256: 5a10d1ddad4adcd2e04b007e0eef830b4cccadf7b95588d180d0cc07d3ea9577
+  class: P
+  to: []
+  note: 'process note: superseded by DOC brief 2 (the assessment pages and example, DOC_DECISIONS D2 closed)'
+- manifest: evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/manifest.json
+  item: limitations[1]
+  sha256: 09471591757416874a6341022281d8dc494f600fed123f83178506da7e52dc1a
+  class: P
+  to: []
+  note: 'scope note: the examples are demonstrations regression-checked against their own text, not V&V evidence'
+- manifest: evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/manifest.json
+  item: limitations[2]
+  sha256: 5c238d2b98bf6f534a70281f7a0e919daffd22cd02128dbb6fa2319e7504e22d
+  class: P
+  to: []
+  note: 'documentation note: semantic_role pump for the thermal machines until ADR 0054 (wp/V03) lands (DOC_DECISIONS D3, O2)'
+- manifest: evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/manifest.json
+  item: limitations[3]
+  sha256: cd89589d703db2397637a53870b7d65d6f6953b9fdceabc1b64fb6d27d08fa64
+  class: P
+  to: []
+  note: 'documentation note: Wilson records documented from a source checkout until wp/V03 ships them (DOC_DECISIONS D7, O1)'
+- manifest: evidence/S14/03d8edb9d0a5037becd0e190660388e78c86a382/manifest.json
+  item: limitations[4]
+  sha256: 229c6e082739107630046ff6166e52c5ad0f3b8627a054bb794f64d58a936573
+  class: P
+  to: []
+  note: 'process note: the site is deployed by site.yml after the merge to main, once Pages is enabled'
+- manifest: evidence/S14/dfd886c1407192e5a376a05fe8c4811e0edaeb94/manifest.json
+  item: limitations[0]
+  sha256: 1d04458a21f61897803ede703fa18cd1726caa5326a82f8ce5eaa20ff31036ec
+  class: P
+  to: []
+  note: 'scope note: the cost example states no capital figure while wp/E01b moves them (DOC_DECISIONS D11)'
+- manifest: evidence/S14/dfd886c1407192e5a376a05fe8c4811e0edaeb94/manifest.json
+  item: limitations[1]
+  sha256: cb038ed60fdf0f6a965d33207f13424b5af951a3c34060e1d607b7c77f7f54ac
+  class: P
+  to: []
+  note: 'process note: the SSLW page-citation sentence assumes wp/E01b merges first (DOC_DECISIONS D13)'
+- manifest: evidence/S14/dfd886c1407192e5a376a05fe8c4811e0edaeb94/manifest.json
+  item: limitations[2]
+  sha256: f0d418c6f9b02a209bf9a014dbb0b1441e50a267d6a532b296d171b95e1b2e45
+  class: P
+  to: []
+  note: 'scope note: assessment documented as a library layer; no transport offers it (ADR 0052 D10, DOC_DECISIONS D12)'
+- manifest: evidence/S14/dfd886c1407192e5a376a05fe8c4811e0edaeb94/manifest.json
+  item: limitations[3]
+  sha256: 09471591757416874a6341022281d8dc494f600fed123f83178506da7e52dc1a
+  class: P
+  to: []
+  note: 'scope note: the examples are demonstrations regression-checked against their own text, not V&V evidence'
+- manifest: evidence/S14/dfd886c1407192e5a376a05fe8c4811e0edaeb94/manifest.json
+  item: limitations[4]
+  sha256: 5c238d2b98bf6f534a70281f7a0e919daffd22cd02128dbb6fa2319e7504e22d
+  class: P
+  to: []
+  note: 'documentation note: semantic_role pump for the thermal machines until ADR 0054 (wp/V03) lands (DOC_DECISIONS D3, O2)'
+- manifest: evidence/S14/dfd886c1407192e5a376a05fe8c4811e0edaeb94/manifest.json
+  item: limitations[5]
+  sha256: cd89589d703db2397637a53870b7d65d6f6953b9fdceabc1b64fb6d27d08fa64
+  class: P
+  to: []
+  note: 'documentation note: Wilson records documented from a source checkout until wp/V03 ships them (DOC_DECISIONS D7, O1)'
+- manifest: evidence/S14/dfd886c1407192e5a376a05fe8c4811e0edaeb94/manifest.json
+  item: limitations[6]
+  sha256: 229c6e082739107630046ff6166e52c5ad0f3b8627a054bb794f64d58a936573
+  class: P
+  to: []
+  note: 'process note: the site is deployed by site.yml after the merge to main, once Pages is enabled'

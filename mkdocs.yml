@@ -1,0 +1,126 @@
+site_name: OpenFlowsheet
+site_description: An agent-native, open, equation-oriented process simulator that reports what it has and has not shown
+# Without site_url, MkDocs cannot build absolute URLs and emits an EMPTY sitemap.xml (Peclet, 2026-09-19).
+site_url: https://computational-chemical-engineering.github.io/openflowsheet/
+repo_url: https://github.com/computational-chemical-engineering/openflowsheet
+repo_name: openflowsheet
+# The user documentation. `docs/` holds the internal design records (ADRs, derivations, plans) and is
+# not published wholesale: the Design page links to them on GitHub.
+docs_dir: docs-site
+edit_uri: ""
+
+theme:
+  name: material
+  # No Google Fonts: the pages load nothing from third parties (privacy.md; DOC_DECISIONS D8).
+  font: false
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - toc.integrate
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/computational-chemical-engineering/openflowsheet
+      name: openflowsheet on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/openflowsheet/
+      name: openflowsheet on PyPI
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.details
+  # Repository files rendered as they are (CHANGELOG.md, docs/RELEASING.md, LICENSE, NOTICE), so the
+  # site never carries a second copy; a missing file fails the build.
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+
+plugins:
+  - search
+  # The Python API pages, from the docstrings at build time (NumPy style, PyMRM's convention).
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: numpy
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            members_order: source
+            filters: ["!^_"]
+            heading_level: 2
+            merge_init_into_class: true
+            show_signature_annotations: true
+            separate_signature: true
+  # The example notebooks (examples/*.ipynb, linked into docs-site/examples/), executed at build time,
+  # so the published output is what the software computes today; an error fails the build.
+  - mkdocs-jupyter:
+      include: ["*.ipynb"]
+      execute: true
+      allow_errors: false
+      include_source: true
+
+# Keep version numbers OUT of the pages listed here: the PyPI badge on the home page and the
+# changelog carry the current version (Peclet's rule).
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/install.md
+      - Quickstart: getting-started/quickstart.md
+  - Tutorials:
+      - Your first flowsheet: tutorials/first-flowsheet.md
+      - Working from the command line: tutorials/cli.md
+  - Examples:
+      - Overview: examples/index.md
+      - Rankine cycle (water): examples/rankine-cycle.ipynb
+      - Refrigeration cycle (CoolProp): examples/refrigeration-cycle.ipynb
+      - Methanol–water column (Wilson): examples/methanol-water-column.ipynb
+      - What-if studies and refusals: examples/what-if-and-refusals.ipynb
+      - Cost and climate impact: examples/rankine-cost-and-gwp.ipynb
+  - Coding Agents: agents.md
+  - User guide:
+      - Concepts: guide/concepts.md
+      - Property bases: guide/property-bases.md
+      - Unit catalogue: guide/units.md
+      - Distillation column: guide/column.md
+      - Studies and optimisation: guide/studies.md
+      - Cost estimation and LCA: guide/assessment.md
+      - Interfaces: guide/interfaces.md
+      - Limitations and support: guide/limitations.md
+  - Python API:
+      - Overview: api/index.md
+      - LocalApplication: api/local.md
+      - Requests and results: api/types.md
+      - Validation: api/validation.md
+      - Errors and pages: api/contract.md
+      - Operations table: api/operations.md
+      - Replay: api/replay.md
+      - Assessment (cost and LCA): api/assessment.md
+  - Design: design.md
+  - Releasing:
+      - Release workflow: releasing.md
+      - Changelog: changelog.md
+      - Licence and attributions: licence.md
+  - Privacy: privacy.md

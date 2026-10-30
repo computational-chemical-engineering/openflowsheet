@@ -28,3 +28,7 @@ evidence/**/artifacts/
 
 # Agent worktrees created by Claude Code subagents
 .claude/worktrees/
+
+# Documentation site build output (mkdocs build; DOC)
+site/
+.cache/
