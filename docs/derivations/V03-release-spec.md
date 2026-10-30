@@ -406,6 +406,12 @@ holds `purge_sink`, T07 decisions rf3a). A file that does not parse is not in th
   as does a `pressure_drop` nudge on SYN-001-nominal.
 - No file under `src/` contains `semantic_role`. No committed file contains any of the nine files' SHA-256 or
   `document_sha256`. The served MCP tool list does not contain the enum (digest `455d01eb…` = D_3).
+  *Erratum 2026-10-30 (V03 review F-V4): the search missed indirect pins. `tests/test_t07_w5c_signatures.py` pins the
+  binding structures of TH-C1, TH-R1 and GP-M1 (through `_structure`), and `revision_sha256` is one of their keys. WO-3
+  re-pinned the three in `8c6ddb8a`; the review bound the predecessors and the regenerated documents and found
+  `revision_sha256` the only key that differs. A31 (b) exercises little for the 17 corpus documents that come back
+  `Unbound` before roles could matter; A31 (a), with the surrogate-bound W5c structures, covers that gap. ADR 0054's
+  "no committed record pins" sentence has the same omission.*
 
 **The nine cases and the five builders.** Cases: `benchmarks/s11/gp/GP-C1.json`, `GP-C2.json`, `GP-C3.json`,
 `GP-M1.json`, `GP-M2.json` (generator `tests/s11_gp_support.py`) and `benchmarks/s11/thermal/TH-C1.json`, `TH-C2.json`,
@@ -434,7 +440,7 @@ is the proof.
 | WO-4 | Sonnet | ADR checks and flips (§6, S07 F-1 transcribed); `## v0.3.0` draft; envelope U02 text (N-8); RELEASING "Per release" for 0.3.0 and the W27 sentence (F-4); **Amendment 1:** L-S11-3 and the attribution page (§10.4) | WO-1–3 | A25 (at C), A18 |
 | — | reviewer | one design-lane pass over WO-1–WO-4 before the merge into `main` | WO-1–4 | — |
 | WO-5 | Opus | K3 (§5.1); G10 re-take; the journey at K3 in the reactor environment; C | P1–P4 | A09, A21 |
-| WO-6 | Opus | the RC job at C, steps 1–17; RC record; tree record; S13 manifest | WO-5 | A17, A19–A24, A27 |
+| WO-6 | Opus | the RC job at C, steps 1–17; RC record; tree record; S13 manifest. *V03 review F-V3:* WO-6 owns the producer of step 17c's record `step17/rc-step17c.json` (`checks[].id` = each `MR12_AUDITS_V03` entry's `check` command, `provenance.commit` = C) and the call of `mr12_extras_v03`, which is in the M07a script's `MEASURES` but not in its `SPECS`; a missing record fails the measure (fail-safe) | WO-5 | A17, A19–A24, A27 |
 | WO-7 | verdict (design) | `docs/reviews/V03-verdicts.md` at C | WO-6 | A26 |
 | WO-8 | Sonnet | ledger from WO-7; ask Frank the four items and the D3 rows (in plain words, with defaults); record his answers verbatim; step 18; ADRs 0053 and 0054 Accepted (§6); hand to Frank for the tag | WO-7 | A26, A27 |
 | WO-9 | Sonnet | after the tag: §5.3 | the tag | — |

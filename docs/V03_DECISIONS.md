@@ -148,6 +148,9 @@ no erratum (R-901). Q3: cite R-900 (F-V1); MR-12 v03's `lca` entry now runs `scr
   with the pump's `index_basis.value` at 394 (the `amended` block dropped, since `replaces 394` would equal the value):
   ratio 500/394, each of the three pump forms' C_P = shipped × 500/394 to rel 1e-15, the motor's cost equal exactly.
   Mutation: an inverted ratio in `sets.py` fails it (1 failed, 34 passed); unmutated 35 passed.
+- Review notes for WO-6: F-V3 is in spec §10's WO-6 row (the producer of `step17/rc-step17c.json`, and the call of
+  `mr12_extras_v03`, in `MEASURES` but not `SPECS`; confirmed: no producer exists yet). F-V4 is a dated erratum in spec
+  §9.4 (the W5c pins), with a one-line erratum on ADR 0054's matching sentence.
 
 ## Merge notes for E01 (expected conflicts, all additive)
 

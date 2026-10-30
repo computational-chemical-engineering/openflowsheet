@@ -71,7 +71,9 @@ ADR). Precedents for an additive enum widening without a version move: ADRs 0012
 - *Keep the nine cases as `other` once `other` is valid.* No document digest would move. But 34 instances whose role
   is known would stay misdescribed, and the web shell shows them. The correction moves only the digests of nine
   documents that no committed record pins (searched at `98701cca`: neither file SHA-256 nor `document_sha256` occurs
-  anywhere in the repository).
+  anywhere in the repository). *Erratum 2026-10-30 (V03 review F-V4): three W5c binding-structure pins in
+  `tests/test_t07_w5c_signatures.py` carry `revision_sha256` of TH-C1, TH-R1 and GP-M1; re-pinned in `8c6ddb8a`
+  (V03 spec §9.4).*
 - *A role-against-model check in `validate`.* It would change validation reports and constrain user documents beyond
   the schema, for a field nothing reads.
 
